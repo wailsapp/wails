@@ -432,9 +432,29 @@ function defineHandlerProperty(target: EventTarget, type: string): void {
  * The object-shaped view of a stream returned by {@link JSONStream}: `send`
  * takes a value to stringify, and `ev.data` on a message is the parsed result.
  */
-export interface JSONSocket extends Omit<WailsSocket, "send" | "onmessage"> {
+export interface JSONSocket extends Omit<WailsSocket, "send" | "onmessage" | "addEventListener" | "removeEventListener"> {
     send(value: unknown): void;
     onmessage: ((ev: MessageEvent<any>) => void) | null;
+    addEventListener(
+        type: "message",
+        listener: ((this: JSONSocket, ev: MessageEvent<any>) => any) | EventListenerObject | null,
+        options?: boolean | AddEventListenerOptions,
+    ): void;
+    addEventListener(
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: boolean | AddEventListenerOptions,
+    ): void;
+    removeEventListener(
+        type: "message",
+        listener: ((this: JSONSocket, ev: MessageEvent<any>) => any) | EventListenerObject | null,
+        options?: boolean | EventListenerOptions,
+    ): void;
+    removeEventListener(
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: boolean | EventListenerOptions,
+    ): void;
 }
 
 /**

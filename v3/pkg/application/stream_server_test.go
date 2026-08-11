@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -115,6 +116,86 @@ func TestServerModeCarriesLargeFrames(t *testing.T) {
 		if data[i] != payload[i] {
 			t.Fatalf("payload differs at byte %d", i)
 		}
+	}
+}
+
+// coder/websocket defaults to a 32 KiB inbound limit. The Stream endpoint
+// promises streamMaxSendBytes, so exercise the client-to-Go direction over a
+// real socket rather than relying on the independent Go-to-client test above.
+func TestServerModeAcceptsLargeInboundFrame(t *testing.T) {
+	a := newServerTestApp(t)
+
+	a.HandleStream("large-inbound", func(c *StreamConn) {
+		frame, err := c.Receive()
+		if err != nil {
+			t.Errorf("receive: %v", err)
+			return
+		}
+		if err := c.Send(frame); err != nil {
+			t.Errorf("echo: %v", err)
+		}
+	})
+
+	srv := httptest.NewServer(http.HandlerFunc(a.serveStreamWS))
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	conn, _, err := websocket.Dial(ctx, wsURL(srv.URL)+"?name=large-inbound", nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+
+	payload := make([]byte, 1<<20) // safely beyond coder/websocket's 32 KiB default
+	for i := range payload {
+		payload[i] = byte(i)
+	}
+	if err := conn.Write(ctx, websocket.MessageBinary, payload); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	conn.SetReadLimit(int64(len(payload)) * 2)
+	_, echoed, err := conn.Read(ctx)
+	if err != nil {
+		t.Fatalf("read echo: %v", err)
+	}
+	if len(echoed) != len(payload) {
+		t.Fatalf("received %d bytes, want %d", len(echoed), len(payload))
+	}
+	for i := range echoed {
+		if echoed[i] != payload[i] {
+			t.Fatalf("payload differs at byte %d", i)
+		}
+	}
+}
+
+// TrySend is documented as non-blocking in both transports. Pin the
+// server-mode sink contract directly so a future inline websocket.Write does
+// not make a broker callback or fan-out producer block again.
+func TestServerModeTrySendReportsFullWithoutBlocking(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	sink := &wsStreamSink{}
+	sink.cond = sync.NewCond(&sink.mu)
+	c := &StreamConn{sink: sink, ctx: ctx, cancel: cancel}
+	c.inCond = sync.NewCond(&c.inMu)
+
+	for i := 0; i < streamOutQueueDepth; i++ {
+		if err := c.TrySend([]byte("x")); err != nil {
+			t.Fatalf("fill %d: %v", i, err)
+		}
+	}
+
+	done := make(chan error, 1)
+	go func() { done <- c.TrySend([]byte("overflow")) }()
+	select {
+	case err := <-done:
+		if err != ErrStreamFull {
+			t.Fatalf("TrySend on full server queue = %v, want ErrStreamFull", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("TrySend blocked on a full server queue")
 	}
 }
 

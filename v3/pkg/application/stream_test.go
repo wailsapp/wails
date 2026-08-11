@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -434,6 +435,34 @@ func TestStreamPollReturnsOnHoldTimeout(t *testing.T) {
 	}
 }
 
+// HEAD used to take the normal poll path: net/http suppressed the body after
+// the handler had already drained it, silently losing every queued frame.
+func TestStreamHeadPollDoesNotDrainFrames(t *testing.T) {
+	mgr, s := newTestSession(t)
+	c := newTestConn(s, 1)
+	if err := s.enqueue(c, 1, frameData, []byte("still queued"), false); err != nil {
+		t.Fatalf("enqueue: %v", err)
+	}
+
+	a := &App{streams: mgr}
+	req := httptest.NewRequest(http.MethodHead, streamPathPoll, nil)
+	rw := httptest.NewRecorder()
+	a.serveStreamPoll(rw, req)
+	if rw.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("HEAD status = %d, want 405", rw.Code)
+	}
+	if allow := rw.Header().Get("Allow"); allow != "GET" {
+		t.Fatalf("Allow = %q, want GET", allow)
+	}
+
+	s.mu.Lock()
+	frames, _ := s.drainLocked(streamMaxResponseBytes)
+	s.mu.Unlock()
+	if len(frames) != 1 || string(frames[0].data) != "still queued" {
+		t.Fatalf("frames after HEAD = %+v, want original queued frame", frames)
+	}
+}
+
 // Closing the session must unblock everything: a handler parked in Receive, and
 // a producer parked on a full buffer.
 func TestStreamSessionCloseUnblocksHandlers(t *testing.T) {
@@ -820,6 +849,171 @@ func TestStreamControlFramesBypassFullQueue(t *testing.T) {
 	}
 }
 
+// A page can issue open requests faster than it polls their acknowledgements.
+// Protocol frames must remain reliable, but that must not turn the control
+// queue or connection lifecycle into an unbounded allocation. In particular,
+// handlers that return immediately leave an open acknowledgement and a close
+// notification queued for every request.
+func TestStreamControlStateBoundedWithoutPolling(t *testing.T) {
+	const maxConnections = 256
+
+	t.Run("accepted connections", func(t *testing.T) {
+		mgr, s := newTestSession(t)
+		handled := make(chan *StreamConn)
+		mgr.handlers["short"] = func(c *StreamConn) { handled <- c }
+
+		for id := uint32(1); id <= maxConnections; id++ {
+			if err := s.open(id, "short"); err != nil {
+				t.Fatalf("open %d: %v", id, err)
+			}
+			c := <-handled
+			select {
+			case <-c.Context().Done():
+			case <-time.After(time.Second):
+				t.Fatalf("connection %d did not close after its handler returned", id)
+			}
+		}
+		if err := s.open(maxConnections+1, "short"); !errors.Is(err, ErrStreamFull) {
+			t.Fatalf("open past the bound = %v, want ErrStreamFull", err)
+		}
+
+		s.mu.Lock()
+		queued := len(s.out)
+		s.mu.Unlock()
+		if queued > 2*maxConnections {
+			t.Fatalf("queued %d control frames without a poll, want at most %d", queued, 2*maxConnections)
+		}
+	})
+
+	t.Run("refused connections", func(t *testing.T) {
+		_, s := newTestSession(t)
+		for id := uint32(1); id <= maxConnections; id++ {
+			if err := s.open(id, "missing"); err != nil {
+				t.Fatalf("refuse %d: %v", id, err)
+			}
+		}
+		if err := s.open(maxConnections+1, "missing"); !errors.Is(err, ErrStreamFull) {
+			t.Fatalf("refusal past the bound = %v, want ErrStreamFull", err)
+		}
+
+		s.mu.Lock()
+		queued := len(s.out)
+		s.mu.Unlock()
+		if queued > maxConnections {
+			t.Fatalf("queued %d refusal frames without a poll, want at most %d", queued, maxConnections)
+		}
+	})
+}
+
+func TestStreamPendingClosesReserveConnectionCapacity(t *testing.T) {
+	mgr, s := newTestSession(t)
+	release := make(chan struct{})
+	started := make(chan struct{}, streamMaxConnections)
+	mgr.handlers["held"] = func(c *StreamConn) {
+		started <- struct{}{}
+		<-release
+	}
+
+	for id := uint32(1); id <= streamMaxConnections; id++ {
+		if err := s.open(id, "held"); err != nil {
+			t.Fatalf("open %d: %v", id, err)
+		}
+	}
+	for range streamMaxConnections {
+		<-started
+	}
+
+	// Drain every acknowledgement, then let all handlers return. Their close
+	// notifications now occupy the reserved capacity while no live connection
+	// remains in the map.
+	s.mu.Lock()
+	frames, _ := s.drainLocked(streamMaxResponseBytes)
+	s.mu.Unlock()
+	if len(frames) != streamMaxConnections {
+		t.Fatalf("drained %d acknowledgements, want %d", len(frames), streamMaxConnections)
+	}
+	close(release)
+
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		s.mu.Lock()
+		conns, closes := len(s.conns), s.outCloses
+		s.mu.Unlock()
+		if conns == 0 && closes == streamMaxConnections {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("after handlers returned: %d connections, %d queued closes", conns, closes)
+		}
+		time.Sleep(time.Millisecond)
+	}
+
+	if err := s.open(streamMaxConnections+1, "held"); !errors.Is(err, ErrStreamFull) {
+		t.Fatalf("open while close notifications are pending = %v, want ErrStreamFull", err)
+	}
+
+	s.mu.Lock()
+	closes, _ := s.drainLocked(streamMaxResponseBytes)
+	s.mu.Unlock()
+	if len(closes) != streamMaxConnections {
+		t.Fatalf("drained %d closes, want %d", len(closes), streamMaxConnections)
+	}
+	if err := s.open(streamMaxConnections+1, "held"); err != nil {
+		t.Fatalf("open after close notifications drained: %v", err)
+	}
+}
+
+func TestStreamOpenBackpressureIsRetryableAtHTTPBoundary(t *testing.T) {
+	mgr, s := newTestSession(t)
+	s.generation = 1
+	started := make(chan struct{}, 1)
+	mgr.handlers["held"] = func(c *StreamConn) {
+		started <- struct{}{}
+		<-c.Context().Done()
+	}
+	a := &App{streams: mgr}
+
+	// Fill only the non-close control allowance with refusal notifications.
+	// This must not consume the slots reserved for existing connections to
+	// report close, but it must backpressure another open until a poll drains it.
+	for id := uint32(1); id <= streamOutControlDepth; id++ {
+		if err := s.open(id, "missing"); err != nil {
+			t.Fatalf("queue refusal %d: %v", id, err)
+		}
+	}
+
+	sendOpen := func() *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodPost, streamPathSend, nil)
+		req.Header.Set(streamHeaderSession, s.id)
+		req.Header.Set(streamHeaderGeneration, "1")
+		req.Header.Set(streamHeaderConn, "1000")
+		req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameOpen)))
+		req.Header.Set(streamHeaderName, "held")
+		rw := httptest.NewRecorder()
+		a.serveStreamSend(rw, req)
+		return rw
+	}
+
+	if rw := sendOpen(); rw.Code != http.StatusTooManyRequests || rw.Header().Get("Retry-After") == "" {
+		t.Fatalf("full control queue response = %d Retry-After=%q, want retryable 429", rw.Code, rw.Header().Get("Retry-After"))
+	}
+	if s.conn(1000) != nil {
+		t.Fatal("backpressured open registered a connection")
+	}
+
+	s.mu.Lock()
+	_, _ = s.drainLocked(streamMaxResponseBytes)
+	s.mu.Unlock()
+	if rw := sendOpen(); rw.Code != http.StatusNoContent {
+		t.Fatalf("retried open status = %d, want 204", rw.Code)
+	}
+	select {
+	case <-started:
+	case <-time.After(time.Second):
+		t.Fatal("retried open did not start its handler")
+	}
+}
+
 // Send queues the caller's slice rather than copying it. The ownership rule is
 // documented on Send; this pins the behaviour so a copy is not reintroduced for
 // tidiness, since at these rates a memcpy per frame is the dominant cost.
@@ -901,6 +1095,120 @@ func TestStreamChunkRejectionIsReportedAndAccounted(t *testing.T) {
 	}
 	if len(store.items) != 0 {
 		t.Fatal("inconsistent set was not discarded")
+	}
+}
+
+func TestStreamChunkRejectionsReturnBadRequestAndReleaseAccounting(t *testing.T) {
+	newEndpoint := func(t *testing.T) (*App, *streamSession) {
+		t.Helper()
+		mgr, s := newTestSession(t)
+		s.generation = 1
+		newTestConn(s, 7)
+		return &App{streams: mgr}, s
+	}
+	sendChunk := func(t *testing.T, a *App, s *streamSession, id string, index, total int, data string) *httptest.ResponseRecorder {
+		t.Helper()
+		req := httptest.NewRequest(http.MethodPost, streamPathSend, bytes.NewReader([]byte(data)))
+		req.Header.Set(streamHeaderSession, s.id)
+		req.Header.Set(streamHeaderGeneration, "1")
+		req.Header.Set(streamHeaderConn, "7")
+		req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameData)))
+		req.Header.Set(streamHeaderChunkID, id)
+		req.Header.Set(streamHeaderChunkIndex, strconv.Itoa(index))
+		req.Header.Set(streamHeaderChunkTotal, strconv.Itoa(total))
+		rw := httptest.NewRecorder()
+		a.serveStreamSend(rw, req)
+		return rw
+	}
+
+	t.Run("duplicate", func(t *testing.T) {
+		a, s := newEndpoint(t)
+		if got := sendChunk(t, a, s, "duplicate", 0, 2, "a").Code; got != http.StatusNoContent {
+			t.Fatalf("first chunk status = %d, want 204", got)
+		}
+		if got := sendChunk(t, a, s, "duplicate", 0, 2, "a").Code; got != http.StatusBadRequest {
+			t.Fatalf("duplicate status = %d, want 400", got)
+		}
+		if store := s.chunks(); store.bytes != 0 || len(store.items) != 0 {
+			t.Fatalf("duplicate retained %d bytes in %d sets", store.bytes, len(store.items))
+		}
+	})
+
+	t.Run("conflicting total", func(t *testing.T) {
+		a, s := newEndpoint(t)
+		if got := sendChunk(t, a, s, "conflict", 0, 2, "a").Code; got != http.StatusNoContent {
+			t.Fatalf("first chunk status = %d, want 204", got)
+		}
+		if got := sendChunk(t, a, s, "conflict", 1, 3, "b").Code; got != http.StatusBadRequest {
+			t.Fatalf("conflict status = %d, want 400", got)
+		}
+		if store := s.chunks(); store.bytes != 0 || len(store.items) != 0 {
+			t.Fatalf("conflict retained %d bytes in %d sets", store.bytes, len(store.items))
+		}
+	})
+
+	t.Run("aggregate overflow", func(t *testing.T) {
+		a, s := newEndpoint(t)
+		store := s.chunks()
+		store.items["overflow"] = &streamChunkSet{
+			parts:   map[int][]byte{0: nil},
+			total:   2,
+			size:    streamMaxSendBytes,
+			created: time.Now(),
+		}
+		store.bytes = streamMaxSendBytes
+		if got := sendChunk(t, a, s, "overflow", 1, 2, "x").Code; got != http.StatusBadRequest {
+			t.Fatalf("overflow status = %d, want 400", got)
+		}
+		if store.bytes != 0 || len(store.items) != 0 {
+			t.Fatalf("overflow retained %d bytes in %d sets", store.bytes, len(store.items))
+		}
+	})
+
+	t.Run("invalid completed retry", func(t *testing.T) {
+		a, s := newEndpoint(t)
+		c := s.conn(7)
+		for i := 0; i < streamInQueueDepth; i++ {
+			if err := c.deliver([]byte("queued")); err != nil {
+				t.Fatalf("fill inbox %d: %v", i, err)
+			}
+		}
+		if got := sendChunk(t, a, s, "completed", 0, 2, "hello ").Code; got != http.StatusNoContent {
+			t.Fatalf("first chunk status = %d, want 204", got)
+		}
+		if got := sendChunk(t, a, s, "completed", 1, 2, "world").Code; got != http.StatusTooManyRequests {
+			t.Fatalf("completed chunk status = %d, want 429", got)
+		}
+		if got := sendChunk(t, a, s, "completed", 1, 2, "changed").Code; got != http.StatusBadRequest {
+			t.Fatalf("changed retry status = %d, want 400", got)
+		}
+		if store := s.chunks(); store.bytes != 0 || len(store.items) != 0 {
+			t.Fatalf("invalid retry retained %d bytes in %d sets", store.bytes, len(store.items))
+		}
+	})
+}
+
+func TestStreamChunkStoreReapsExpiredIncompleteSets(t *testing.T) {
+	store := &streamChunkStore{
+		items: map[string]*streamChunkSet{
+			"expired": {
+				parts:   map[int][]byte{0: []byte("old")},
+				total:   2,
+				size:    3,
+				created: time.Now().Add(-streamHoldTimeout - time.Second),
+			},
+		},
+		bytes: 3,
+	}
+
+	if _, done, err := store.add("fresh", 0, 2, []byte("new")); done || err != nil {
+		t.Fatalf("fresh chunk: done=%v err=%v", done, err)
+	}
+	if _, ok := store.items["expired"]; ok {
+		t.Fatal("expired chunk set was not removed")
+	}
+	if store.bytes != 3 {
+		t.Fatalf("bytes after reap = %d, want only the 3 fresh bytes", store.bytes)
 	}
 }
 

@@ -384,7 +384,21 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 			http.Error(rw, "missing stream name", http.StatusBadRequest)
 			return
 		}
-		s.open(connID, name)
+		switch err := s.open(connID, name); {
+		case errors.Is(err, ErrStreamFull):
+			rw.Header().Set("Retry-After", "0")
+			http.Error(rw, "stream session is at capacity", http.StatusTooManyRequests)
+			return
+		case errors.Is(err, ErrStreamClosed):
+			http.Error(rw, "session closed", http.StatusGone)
+			return
+		case errors.Is(err, errStreamDuplicateConnection):
+			http.Error(rw, "duplicate connection id", http.StatusConflict)
+			return
+		case err != nil:
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 	case frameData:
 		c := s.conn(connID)
@@ -566,9 +580,13 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 		if index == set.retryIndex && bytes.Equal(data, set.retryPart) {
 			return set.assembled, true, nil
 		}
+		c.bytes -= set.size
+		delete(c.items, id)
 		return nil, false, errStreamChunkDup
 	}
 	if _, dup := set.parts[index]; dup {
+		c.bytes -= set.size
+		delete(c.items, id)
 		return nil, false, errStreamChunkDup
 	}
 	if c.bytes+len(data) > streamMaxSendBytes {

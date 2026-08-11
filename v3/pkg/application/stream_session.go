@@ -2,9 +2,12 @@ package application
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"time"
 )
+
+var errStreamDuplicateConnection = errors.New("wails: duplicate stream connection id")
 
 // Frame kinds, on the wire in both directions.
 const (
@@ -41,8 +44,14 @@ type streamSession struct {
 	space    *sync.Cond // producers waiting for room in out
 	out      []outFrame
 	outBytes int
-	conns    map[uint32]*StreamConn
-	closed   bool
+	// Data and protocol frames have independent bounds. Control frames cannot
+	// consume data capacity, and close frames have a reserved allowance so an
+	// accepted connection can always report its end.
+	outDataFrames int
+	outControls   int
+	outCloses     int
+	conns         map[uint32]*StreamConn
+	closed        bool
 
 	// pollGen supersedes an earlier poll when a new one arrives. A page that
 	// reloads leaves its predecessor's poll parked in the platform layer with
@@ -113,10 +122,11 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Control frames bypass the caps. They are a handful of bytes, and dropping
-	// one is not a slow-down but a protocol failure: a lost open ack leaves the
-	// frontend in CONNECTING forever, and a lost close leaves it believing an
-	// ended connection is live. Data frames alone are subject to backpressure.
+	// Control frames bypass the data caps, but not their own bounds. Dropping one
+	// is a protocol failure: a lost open ack leaves the frontend in CONNECTING
+	// forever, and a lost close leaves it believing an ended connection is live.
+	// Separate close capacity plus the admission invariant in open guarantees
+	// one reliable close slot for every accepted connection.
 	control := kind != frameData
 
 	for {
@@ -129,7 +139,18 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 			return ErrStreamClosed
 		}
 		if control {
-			break
+			if kind == frameClose {
+				if s.outCloses < streamMaxConnections {
+					break
+				}
+			} else if s.outControls < streamOutControlDepth {
+				break
+			}
+			if !block {
+				return ErrStreamFull
+			}
+			s.space.Wait()
+			continue
 		}
 		// An empty queue always accepts one frame, however large. Enforcing the
 		// byte cap unconditionally would make a frame bigger than the cap
@@ -140,8 +161,8 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 		// marshals to — so the cap governs how much may accumulate, not how
 		// large any single frame may be. Same principle as drainLocked always
 		// taking at least one frame.
-		if len(s.out) < streamOutQueueDepth &&
-			(len(s.out) == 0 || s.outBytes+len(data) <= streamOutQueueBytes) {
+		if s.outDataFrames < streamOutQueueDepth &&
+			(s.outDataFrames == 0 || s.outBytes+len(data) <= streamOutQueueBytes) {
 			break
 		}
 		if !block {
@@ -157,8 +178,20 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 	// instead — do not mutate a slice after passing it.
 	s.out = append(s.out, outFrame{connID: connID, kind: kind, data: data})
 	s.outBytes += len(data)
+	s.countQueued(kind, 1)
 	s.wake()
 	return nil
+}
+
+func (s *streamSession) countQueued(kind uint8, delta int) {
+	switch kind {
+	case frameData:
+		s.outDataFrames += delta
+	case frameClose:
+		s.outCloses += delta
+	default:
+		s.outControls += delta
+	}
 }
 
 // awaitFrames parks until there is something to send, the hold expires, this
@@ -225,6 +258,7 @@ func (s *streamSession) drainLocked(maxBytes int) (frames []outFrame, more bool)
 	copy(frames, s.out[:n])
 	for i := 0; i < n; i++ {
 		s.outBytes -= len(s.out[i].data)
+		s.countQueued(s.out[i].kind, -1)
 		s.out[i] = outFrame{}
 	}
 	s.out = s.out[n:]
@@ -238,11 +272,10 @@ func (s *streamSession) drainLocked(maxBytes int) (frames []outFrame, more bool)
 // open accepts a connection request from the frontend. The ack is queued before
 // the handler starts, so the frontend cannot see data from a stream it has not
 // yet been told is open.
-func (s *streamSession) open(connID uint32, name string) {
+func (s *streamSession) open(connID uint32, name string) error {
 	handler, ok := s.mgr.handler(name)
 	if !ok {
-		_ = s.enqueue(nil, connID, frameError, []byte("no handler registered for stream "+name), false)
-		return
+		return s.enqueue(nil, connID, frameError, []byte("no handler registered for stream "+name), false)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -260,25 +293,31 @@ func (s *streamSession) open(connID uint32, name string) {
 	if s.closed {
 		s.mu.Unlock()
 		cancel()
-		return
+		return ErrStreamClosed
 	}
 	if _, exists := s.conns[connID]; exists {
 		// The frontend allocates connection ids; a duplicate means a buggy or
 		// hostile client. Refuse rather than replacing a live connection.
 		s.mu.Unlock()
 		cancel()
-		return
+		return errStreamDuplicateConnection
+	}
+	// A queued close still owns its connection slot until the frontend drains
+	// that notification. This invariant reserves enough close-frame capacity
+	// even when short-lived connection ids are recycled without any polling.
+	if len(s.conns)+s.outCloses >= streamMaxConnections || s.outControls >= streamOutControlDepth {
+		s.mu.Unlock()
+		cancel()
+		return ErrStreamFull
 	}
 	s.conns[connID] = c
+	// Queue the acknowledgement in the same critical section as registration.
+	// A poll can therefore never deliver the ack before data requests can find
+	// the connection, and no competing open can consume its reserved slot.
+	s.out = append(s.out, outFrame{connID: connID, kind: frameOpen})
+	s.outControls++
 	s.mu.Unlock()
-
-	if err := s.enqueue(c, connID, frameOpen, nil, false); err != nil {
-		// The session can close after registration but before the ack acquires
-		// the queue lock. Do not launch application code for a connection the
-		// frontend was never told had opened.
-		c.shutdown()
-		return
-	}
+	s.wake()
 
 	go func() {
 		defer handlePanic()
@@ -290,6 +329,7 @@ func (s *streamSession) open(connID uint32, name string) {
 		defer c.Close()
 		handler(c)
 	}()
+	return nil
 }
 
 // connCount reports how many connections the session still has.
@@ -334,6 +374,9 @@ func (s *streamSession) close() {
 	// Release buffered payloads immediately; nothing will ever poll for them.
 	s.out = nil
 	s.outBytes = 0
+	s.outDataFrames = 0
+	s.outControls = 0
+	s.outCloses = 0
 	s.space.Broadcast()
 	s.mu.Unlock()
 

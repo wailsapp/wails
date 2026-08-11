@@ -104,6 +104,19 @@ const (
 	// multi-connection uploads.
 	streamInQueueDepth = 256
 	streamInQueueBytes = 8 << 20
+
+	// A page normally has only a handful of Streams. The limit is deliberately
+	// much larger than that, but finite: open acknowledgements and close
+	// notifications must bypass data backpressure, and without a connection
+	// admission bound a page that stopped polling could grow both protocol state
+	// and handler goroutines without limit.
+	streamMaxConnections = 256
+
+	// Non-close control frames (open acknowledgements and refused opens) have a
+	// separate allowance. Close notifications have their own reserved allowance
+	// below, so a burst of bad opens cannot consume the space required to tell
+	// already accepted peers that their connections ended.
+	streamOutControlDepth = streamMaxConnections
 )
 
 // StreamHandler is invoked once per connection, on its own goroutine. The

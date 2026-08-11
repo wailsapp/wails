@@ -148,12 +148,11 @@ always binary, and a `Blob` would force an extra async hop to read every message
 Many connections to the same stream name are allowed, from one window or several. Each
 gets its own `StreamConn` and its own handler goroutine.
 
-**Buffer ownership — neither side copies.** `Send` queues your slice and `send()` queues
-your buffer; the bytes are read when the frame is written. Do not mutate or reuse either
-until the frame has gone out. A real WebSocket copies on send, and this deliberately does
-not: matching the API shape is the goal, and a memcpy per frame is the single largest cost
-at these rates — removing it took JS→Go from 1,568 to 2,793 MB/s. Hand over a fresh buffer,
-or a string, if you want to reuse storage.
+**Buffer ownership differs by direction.** JavaScript `send()` snapshots mutable binary
+inputs synchronously, matching native WebSocket behaviour, so callers may reuse them as
+soon as `send()` returns. Go `Send` transfers ownership of its slice to the transport and
+does not copy it; do not mutate or reuse that slice after a successful call. Hand over a
+fresh slice when the producer needs to reuse its storage.
 
 ## Lifecycle
 

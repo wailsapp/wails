@@ -141,11 +141,11 @@ without limit.
 slow-down; losing an open ack leaves the frontend in `CONNECTING` forever, and losing a
 close leaves it believing a dead connection is live.
 
-**Frames transfer ownership rather than being copied.** Go `Send` retains the caller's
-slice until the poll writes it, and JavaScript `send()` retains mutable array storage until
-the POST is issued. Callers must not mutate or reuse that storage after handing it over.
-Strings and freshly marshalled buffers are naturally safe. This deliberate difference from
-a real WebSocket avoids a full-frame copy on both hot paths.
+**Go frames transfer ownership; JavaScript frames are snapshotted.** Go `Send` retains the
+caller's slice until the transport writes it, so callers must not mutate or reuse that
+storage after a successful call. JavaScript `send()` copies mutable binary inputs before it
+returns, matching native WebSocket ownership semantics. The asymmetric rule avoids a
+second full-frame copy inside Go while keeping the browser-facing API unsurprising.
 
 **`streamSessionTTL` must stay comfortably above `streamHoldTimeout`**, or a session would
 be reaped while its own poll is legitimately parked.
