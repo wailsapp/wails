@@ -70,6 +70,18 @@ This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wail
 
 **Decision**: No changes needed - system tray is already GTK-agnostic.
 
+### Decision 6: Cross Image GTK Baseline (2026-08-10)
+**Context**: The Debian 12 (Bookworm) cross image provides GTK 4.8, but the default
+Linux backend uses APIs introduced through GTK 4.14. This made the official image
+fail to compile otherwise supported GTK4 applications (#5928).
+
+**Decision**: Base the canonical cross image on Debian 13 (Trixie) and assert GTK
+4.14 or newer while retaining the GTK3/WebKit2GTK 4.1 development packages.
+
+**Rationale**: This aligns cross-compilation with the existing Ubuntu 24.04+ and
+Debian 13+ GTK4 support contract, fails early if the image regresses, and preserves
+the legacy `-tags gtk3` path for the v3.0.x compatibility window.
+
 ## Implementation Progress
 
 ### Phase 1: Build Infrastructure ✅ COMPLETE
@@ -228,26 +240,30 @@ TODO (deferred to testing phase):
 
 ### Phase 6: Docker & Build System ✅ COMPLETE
 
+Current post-default-flip state: the canonical `Dockerfile.cross` uses Debian 13,
+requires GTK 4.14+ for the default GTK4/WebKitGTK 6.0 backend, and retains the
+GTK3/WebKit2GTK 4.1 packages needed by the legacy `-tags gtk3` build.
+
 #### 6.1 Docker Container Updates
 Updated both Dockerfile.linux-x86_64 and Dockerfile.linux-arm64 to install:
-- GTK3 + WebKit2GTK 4.1 (default build target)
-- GTK4 + WebKitGTK 6.0 (for experimental `-tags gtk4` builds)
+- GTK4 + WebKitGTK 6.0 (default build target)
+- GTK3 + WebKit2GTK 4.1 (legacy opt-in via `-tags gtk3`)
 
 Build scripts now support `BUILD_TAGS` environment variable:
-- Default: Builds with GTK3/WebKit2GTK 4.1
-- `BUILD_TAGS=gtk4`: Builds with GTK4/WebKitGTK 6.0 (experimental)
+- Default (unset): Builds with GTK4/WebKitGTK 6.0
+- `BUILD_TAGS=gtk3`: Builds with GTK3/WebKit2GTK 4.1 (legacy)
 
 #### 6.2 Taskfile Targets
 New targets added to `v3/Taskfile.yaml`:
 
 | Target | Description |
 |--------|-------------|
-| `test:example:linux` | Build single example with GTK3 (native, default) |
-| `test:example:linux:gtk4` | Build single example with GTK4 (native, experimental) |
-| `test:examples:linux:docker:x86_64` | Build all examples with GTK3 in Docker |
-| `test:examples:linux:docker:x86_64:gtk4` | Build all examples with GTK4 in Docker (experimental) |
-| `test:examples:linux:docker:arm64` | Build all examples with GTK3 in Docker (ARM64) |
-| `test:examples:linux:docker:arm64:gtk4` | Build all examples with GTK4 in Docker (ARM64, experimental) |
+| `test:example:linux` | Build single example with GTK4 (native, default) |
+| `test:example:linux:gtk3` | Build single example with GTK3 (native, legacy) |
+| `test:examples:linux:docker:x86_64` | Build all examples with GTK4 in Docker |
+| `test:examples:linux:docker:x86_64:gtk3` | Build all examples with GTK3 in Docker (legacy) |
+| `test:examples:linux:docker:arm64` | Build all examples with GTK4 in Docker (ARM64) |
+| `test:examples:linux:docker:arm64:gtk3` | Build all examples with GTK3 in Docker (ARM64, legacy) |
 
 TODO (deferred):
 - [ ] Update CI/CD workflows to test both GTK versions
@@ -455,6 +471,20 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-08-11
+- Corrected the Phase 6 build guidance to reflect GTK4 as the default and
+  `-tags gtk3` as the legacy opt-in, and extended the cross-image contract test
+  to cover every GTK/WebKit `pkg-config` check (#5928).
+
+### 2026-08-10
+- Fixed the canonical cross image's GTK API mismatch by moving its base from
+  Debian 12 to Debian 13 and asserting GTK 4.14+ at image-build time (#5928).
+- Preserved GTK3/WebKit2GTK 4.1 packages for legacy `-tags gtk3` builds and added
+  regression coverage for the cross-image Linux dependency contract.
+- Files: `v3/internal/commands/build_assets/docker/Dockerfile.cross`,
+  `v3/internal/commands/cross_dockerfile_test.go`,
+  `v3/UNRELEASED_CHANGELOG.md`, and `IMPLEMENTATION.md`.
 
 ### 2026-07-26
 - Fixed GTK4 `Size()` returning the requested default instead of the live configured window size.
