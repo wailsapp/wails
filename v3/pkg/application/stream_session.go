@@ -377,8 +377,12 @@ func (s *streamSession) close() {
 	s.outDataFrames = 0
 	s.outControls = 0
 	s.outCloses = 0
+	chunks := s.chunkStore
 	s.space.Broadcast()
 	s.mu.Unlock()
+	if chunks != nil {
+		chunks.close()
+	}
 
 	s.wake()
 

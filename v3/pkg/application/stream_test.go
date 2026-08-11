@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -1310,6 +1311,146 @@ func TestStreamChunkStoreReapsExpiredIncompleteSets(t *testing.T) {
 	}
 	if store.bytes != 3 {
 		t.Fatalf("bytes after reap = %d, want only the 3 fresh bytes", store.bytes)
+	}
+}
+
+func TestStreamChunkStoreBoundsZeroByteIncompleteSets(t *testing.T) {
+	const desiredMaxSets = 256
+	store := &streamChunkStore{items: make(map[string]*streamChunkSet)}
+
+	for i := 0; i < desiredMaxSets; i++ {
+		id := fmt.Sprintf("set-%d", i)
+		if _, done, err := store.add(id, 0, 2, nil); done || err != nil {
+			t.Fatalf("add %s: done=%v err=%v", id, done, err)
+		}
+	}
+	if _, done, err := store.add("one-too-many", 0, 2, nil); done || !errors.Is(err, ErrStreamFull) {
+		t.Fatalf("add past item bound: done=%v err=%v, want ErrStreamFull", done, err)
+	}
+	if len(store.items) != desiredMaxSets || store.bytes != 0 {
+		t.Fatalf("store after overflow = %d sets, %d bytes", len(store.items), store.bytes)
+	}
+}
+
+func TestStreamSessionCloseReleasesChunkAccounting(t *testing.T) {
+	_, s := newTestSession(t)
+	store := s.chunks()
+	if _, done, err := store.add("partial", 0, 2, []byte("retained")); done || err != nil {
+		t.Fatalf("add partial set: done=%v err=%v", done, err)
+	}
+
+	s.close()
+	if len(store.items) != 0 || store.bytes != 0 {
+		t.Fatalf("closed session retained %d sets and %d bytes", len(store.items), store.bytes)
+	}
+	if _, _, err := store.add("late", 0, 2, []byte("late")); !errors.Is(err, ErrStreamClosed) {
+		t.Fatalf("add after session close = %v, want ErrStreamClosed", err)
+	}
+}
+
+func TestStreamChunkCapacityReturnsRetryableHTTPStatus(t *testing.T) {
+	mgr, s := newTestSession(t)
+	s.generation = 1
+	newTestConn(s, 7)
+	a := &App{streams: mgr}
+	store := s.chunks()
+	for i := 0; i < streamMaxChunkSets; i++ {
+		id := fmt.Sprintf("held-%d", i)
+		if _, done, err := store.add(id, 0, 2, nil); done || err != nil {
+			t.Fatalf("fill %s: done=%v err=%v", id, done, err)
+		}
+	}
+
+	send := func() *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodPost, streamPathSend, nil)
+		req.Header.Set(streamHeaderSession, s.id)
+		req.Header.Set(streamHeaderGeneration, "1")
+		req.Header.Set(streamHeaderConn, "7")
+		req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameData)))
+		req.Header.Set(streamHeaderChunkID, "retry-after-capacity")
+		req.Header.Set(streamHeaderChunkIndex, "0")
+		req.Header.Set(streamHeaderChunkTotal, "2")
+		rw := httptest.NewRecorder()
+		a.serveStreamSend(rw, req)
+		return rw
+	}
+
+	if rw := send(); rw.Code != http.StatusTooManyRequests || rw.Header().Get("Retry-After") == "" {
+		t.Fatalf("capacity response = %d Retry-After=%q, want retryable 429", rw.Code, rw.Header().Get("Retry-After"))
+	}
+	store.remove("held-0")
+	if rw := send(); rw.Code != http.StatusNoContent {
+		t.Fatalf("retry after capacity freed = %d, want 204", rw.Code)
+	}
+}
+
+func TestStreamChunkPermutationsAndExpiredIDReuse(t *testing.T) {
+	parts := []string{"a", "b", "c"}
+	orders := [][]int{
+		{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
+		{1, 2, 0}, {2, 0, 1}, {2, 1, 0},
+	}
+	for _, order := range orders {
+		name := fmt.Sprint(order)
+		t.Run(name, func(t *testing.T) {
+			store := &streamChunkStore{items: make(map[string]*streamChunkSet)}
+			var assembled []byte
+			for step, index := range order {
+				got, done, err := store.add("permutation", index, len(parts), []byte(parts[index]))
+				if err != nil {
+					t.Fatalf("step %d: %v", step, err)
+				}
+				if done != (step == len(order)-1) {
+					t.Fatalf("step %d done=%v", step, done)
+				}
+				if done {
+					assembled = got
+				}
+			}
+			if string(assembled) != "abc" {
+				t.Fatalf("assembled %q, want abc", assembled)
+			}
+			store.remove("permutation")
+			if len(store.items) != 0 || store.bytes != 0 {
+				t.Fatalf("delivered permutation retained %d sets and %d bytes", len(store.items), store.bytes)
+			}
+		})
+	}
+
+	store := &streamChunkStore{items: make(map[string]*streamChunkSet)}
+	if _, done, err := store.add("reused", 0, 2, []byte("old")); done || err != nil {
+		t.Fatalf("old incomplete set: done=%v err=%v", done, err)
+	}
+	store.items["reused"].created = time.Now().Add(-streamHoldTimeout - time.Second)
+	if _, done, err := store.add("reused", 1, 2, []byte("new-b")); done || err != nil {
+		t.Fatalf("first chunk after expiry: done=%v err=%v", done, err)
+	}
+	got, done, err := store.add("reused", 0, 2, []byte("new-a"))
+	if !done || err != nil || string(got) != "new-anew-b" {
+		t.Fatalf("reused id assembled %q done=%v err=%v", got, done, err)
+	}
+	store.remove("reused")
+	if len(store.items) != 0 || store.bytes != 0 {
+		t.Fatalf("reused id retained %d sets and %d bytes", len(store.items), store.bytes)
+	}
+}
+
+func TestStreamRejectsOversizedChunkIdentifier(t *testing.T) {
+	mgr, s := newTestSession(t)
+	s.generation = 1
+	newTestConn(s, 7)
+	req := httptest.NewRequest(http.MethodPost, streamPathSend, nil)
+	req.Header.Set(streamHeaderSession, s.id)
+	req.Header.Set(streamHeaderGeneration, "1")
+	req.Header.Set(streamHeaderConn, "7")
+	req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameData)))
+	req.Header.Set(streamHeaderChunkID, strings.Repeat("x", streamMaxChunkIDLen+1))
+	req.Header.Set(streamHeaderChunkIndex, "0")
+	req.Header.Set(streamHeaderChunkTotal, "2")
+	rw := httptest.NewRecorder()
+	(&App{streams: mgr}).serveStreamSend(rw, req)
+	if rw.Code != http.StatusBadRequest {
+		t.Fatalf("oversized chunk id status = %d, want 400", rw.Code)
 	}
 }
 

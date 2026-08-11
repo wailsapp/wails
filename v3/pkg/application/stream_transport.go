@@ -49,6 +49,8 @@ const (
 
 	streamMaxSendBytes  = 64 << 20
 	streamMaxChunkTotal = 4096
+	streamMaxChunkSets  = 256
+	streamMaxChunkIDLen = 64
 
 	// Frame header on the wire: connID(4) + kind(1) + length(4).
 	streamFrameHeaderBytes = 9
@@ -324,7 +326,15 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 
 	body, complete, err := readStreamBody(s, req)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
+		switch {
+		case errors.Is(err, ErrStreamFull):
+			rw.Header().Set("Retry-After", "0")
+			http.Error(rw, "chunk reassembly is at capacity", http.StatusTooManyRequests)
+		case errors.Is(err, ErrStreamClosed):
+			http.Error(rw, "session closed", http.StatusGone)
+		default:
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+		}
 		return
 	}
 	if !complete {
@@ -475,6 +485,9 @@ func readStreamBody(s *streamSession, req *http.Request) (body []byte, complete 
 		}
 		return data, true, nil
 	}
+	if len(chunkID) > streamMaxChunkIDLen {
+		return nil, false, errStreamBadChunk
+	}
 
 	total, err := strconv.Atoi(req.Header.Get(streamHeaderChunkTotal))
 	if err != nil || total <= 0 || total > streamMaxChunkTotal {
@@ -517,9 +530,10 @@ const (
 // ---------------------------------------------------------------------------
 
 type streamChunkStore struct {
-	mu    sync.Mutex
-	items map[string]*streamChunkSet
-	bytes int
+	mu     sync.Mutex
+	items  map[string]*streamChunkSet
+	bytes  int
+	closed bool
 }
 
 type streamChunkSet struct {
@@ -536,7 +550,7 @@ func (s *streamSession) chunks() *streamChunkStore {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.chunkStore == nil {
-		s.chunkStore = &streamChunkStore{items: make(map[string]*streamChunkSet)}
+		s.chunkStore = &streamChunkStore{items: make(map[string]*streamChunkSet), closed: s.closed}
 	}
 	return s.chunkStore
 }
@@ -550,6 +564,9 @@ func (s *streamSession) chunks() *streamChunkStore {
 func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte, bool, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	if c.closed {
+		return nil, false, ErrStreamClosed
+	}
 
 	// Reap anything a disappearing page left behind before taking more.
 	now := time.Now()
@@ -562,6 +579,9 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 
 	set, ok := c.items[id]
 	if !ok {
+		if len(c.items) >= streamMaxChunkSets {
+			return nil, false, ErrStreamFull
+		}
 		set = &streamChunkSet{parts: make(map[int][]byte, total), total: total, created: now}
 		c.items[id] = set
 	}
@@ -619,6 +639,17 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 	set.retryIndex = index
 	set.retryPart = assembled[retryStart:retryEnd]
 	return assembled, true, nil
+}
+
+// close releases every incomplete or retryable upload when its page session
+// ends and prevents an already-dispatched request from recreating state after
+// cancellation.
+func (c *streamChunkStore) close() {
+	c.mu.Lock()
+	c.closed = true
+	c.items = make(map[string]*streamChunkSet)
+	c.bytes = 0
+	c.mu.Unlock()
 }
 
 // remove acknowledges a completed set after its frame has been accepted by
