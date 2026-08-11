@@ -32,11 +32,11 @@ const urlAlphabet =
 
 // MODIFIED FOR WAILS: the upstream implementation draws from Math.random(),
 // which is not a cryptographic source. These ids are used for the runtime
-// client id, binding call ids and stream session ids, and at least one of those
-// (a stream session in server mode, where no window-id header exists to bind
-// against) is reachable by anything that can reach the port. Predictable ids
-// there would be guessable. The alphabet is 64 characters, so masking a random
-// byte with 63 is uniform — no rejection sampling needed.
+// client id, binding call ids, chunk ids, and desktop stream session ids. They
+// are correlation identifiers rather than authentication capabilities, but a
+// stronger source makes accidental collisions negligible even across many
+// concurrently loaded runtimes. The alphabet is 64 characters, so masking a
+// random byte with 63 is uniform — no rejection sampling needed.
 export function nanoid(size: number = 21): string {
     const source = typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function"
         ? crypto

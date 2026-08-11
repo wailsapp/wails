@@ -1,6 +1,7 @@
 package application
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -28,10 +29,11 @@ const (
 	streamPathPoll = streamPath + "poll"
 	streamPathSend = streamPath + "send"
 
-	streamHeaderSession = "x-wails-stream-session"
-	streamHeaderConn    = "x-wails-stream-conn"
-	streamHeaderKind    = "x-wails-stream-kind"
-	streamHeaderName    = "x-wails-stream-name"
+	streamHeaderSession    = "x-wails-stream-session"
+	streamHeaderGeneration = "x-wails-stream-generation"
+	streamHeaderConn       = "x-wails-stream-conn"
+	streamHeaderKind       = "x-wails-stream-kind"
+	streamHeaderName       = "x-wails-stream-name"
 
 	// Large frames are split by the client, for the same WebView2 body limit
 	// the runtime's own chunking works around.
@@ -122,10 +124,23 @@ func (a *App) sessionFor(rw http.ResponseWriter, req *http.Request, create, mayS
 	}
 
 	windowID := streamRequestWindow(req)
+	rawGeneration := req.Header.Get(streamHeaderGeneration)
+	if rawGeneration == "" {
+		// A runtime from before page generations cannot participate safely in
+		// reload superseding. Gone is deliberate: old poll clients understand it
+		// and close their sockets, whereas a generic 400 makes them retry forever.
+		http.Error(rw, "stream runtime is out of date", http.StatusGone)
+		return nil
+	}
+	generation, err := strconv.ParseUint(rawGeneration, 10, 64)
+	if err != nil || generation == 0 {
+		http.Error(rw, "bad session generation", http.StatusBadRequest)
+		return nil
+	}
 
 	var s *streamSession
 	if create {
-		s = a.streams.session(id, windowID, maySupersede)
+		s = a.streams.session(id, windowID, generation, maySupersede)
 	} else {
 		s = a.streams.existingSession(id)
 	}
@@ -137,6 +152,10 @@ func (a *App) sessionFor(rw http.ResponseWriter, req *http.Request, create, mayS
 	}
 	if windowID != 0 && s.windowID != windowID {
 		http.Error(rw, "session belongs to another window", http.StatusForbidden)
+		return nil
+	}
+	if s.generation != generation {
+		http.Error(rw, "session generation mismatch", http.StatusForbidden)
 		return nil
 	}
 	return s
@@ -259,6 +278,9 @@ func decodeStreamBatch(body []byte) ([][]byte, error) {
 		frames = append(frames, body[off:off+n])
 		off += n
 	}
+	if off != len(body) {
+		return nil, errStreamBadBody
+	}
 	return frames, nil
 }
 
@@ -279,6 +301,14 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 	kind64, err := strconv.ParseUint(req.Header.Get(streamHeaderKind), 10, 8)
 	if err != nil {
 		http.Error(rw, "bad frame kind", http.StatusBadRequest)
+		return
+	}
+	isBatch := req.Header.Get(streamHeaderBatch) != ""
+	if isBatch && (uint8(kind64) != frameData || req.Header.Get(streamHeaderChunkID) != "") {
+		// Runtime batches are already bounded below the platform body limit and
+		// therefore are never chunked. Combining both retry protocols would make
+		// a partial-batch acknowledgement ambiguous on a final-chunk retry.
+		http.Error(rw, "invalid batched frame", http.StatusBadRequest)
 		return
 	}
 
@@ -303,9 +333,21 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// A completed chunk set must survive a 429 from the connection inbox. The
+	// client retries only the chunk whose request was rejected; deleting the set
+	// before downstream acceptance would turn that retry into a new, incomplete
+	// upload that answers 204 and silently loses the frame.
+	chunkID := req.Header.Get(streamHeaderChunkID)
+	removeChunk := chunkID != ""
+	defer func() {
+		if removeChunk {
+			s.chunks().remove(chunkID)
+		}
+	}()
+
 	// A batch is several data frames for one connection in one body. Splitting
 	// here keeps the rest of the path identical to a single frame.
-	if req.Header.Get(streamHeaderBatch) != "" && uint8(kind64) == frameData {
+	if isBatch {
 		c := s.conn(connID)
 		if c == nil {
 			http.Error(rw, "unknown connection", http.StatusGone)
@@ -319,6 +361,7 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		for i, f := range frames {
 			switch err := c.deliver(f); {
 			case errors.Is(err, ErrStreamFull):
+				removeChunk = false
 				// Partial acceptance: tell the client how many landed so it can
 				// resend only the remainder, preserving order.
 				rw.Header().Set(streamHeaderBatch, strconv.Itoa(i))
@@ -354,6 +397,7 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		// frontend send order the order the handler observes.
 		switch err := c.deliver(body); {
 		case errors.Is(err, ErrStreamFull):
+			removeChunk = false
 			// Backpressure, signalled rather than held. Waiting here would
 			// occupy a request slot and starve the window's poll; the client
 			// retries this same frame instead, so order is preserved and the
@@ -459,17 +503,19 @@ const (
 // ---------------------------------------------------------------------------
 
 type streamChunkStore struct {
-	mu     sync.Mutex
-	items  map[string]*streamChunkSet
-	bytes  int
-	closed bool
+	mu    sync.Mutex
+	items map[string]*streamChunkSet
+	bytes int
 }
 
 type streamChunkSet struct {
-	parts   map[int][]byte
-	total   int
-	size    int
-	created time.Time
+	parts      map[int][]byte
+	total      int
+	size       int
+	created    time.Time
+	assembled  []byte
+	retryIndex int
+	retryPart  []byte
 }
 
 func (s *streamSession) chunks() *streamChunkStore {
@@ -512,6 +558,16 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 		delete(c.items, id)
 		return nil, false, errStreamChunkConflict
 	}
+	if set.assembled != nil {
+		// Only the request that completed this set can legitimately be retried:
+		// it is the one that may have received 429 after assembly. Return the
+		// same immutable frame until the endpoint acknowledges downstream
+		// delivery and removes the set.
+		if index == set.retryIndex && bytes.Equal(data, set.retryPart) {
+			return set.assembled, true, nil
+		}
+		return nil, false, errStreamChunkDup
+	}
 	if _, dup := set.parts[index]; dup {
 		return nil, false, errStreamChunkDup
 	}
@@ -530,10 +586,31 @@ func (c *streamChunkStore) add(id string, index, total int, data []byte) ([]byte
 	}
 
 	assembled := make([]byte, 0, set.size)
+	retryStart := 0
+	retryEnd := 0
 	for i := 0; i < total; i++ {
+		start := len(assembled)
 		assembled = append(assembled, set.parts[i]...)
+		if i == index {
+			retryStart = start
+			retryEnd = len(assembled)
+		}
 	}
-	c.bytes -= set.size
-	delete(c.items, id)
+	set.parts = nil
+	set.assembled = assembled
+	set.retryIndex = index
+	set.retryPart = assembled[retryStart:retryEnd]
 	return assembled, true, nil
+}
+
+// remove acknowledges a completed set after its frame has been accepted by
+// the connection inbox (or permanently rejected for some reason other than
+// backpressure).
+func (c *streamChunkStore) remove(id string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if set, ok := c.items[id]; ok {
+		c.bytes -= set.size
+		delete(c.items, id)
+	}
 }

@@ -30,8 +30,11 @@ import (
 // migration guide pick TrySend precisely to avoid stalling their producer. The
 // queue keeps one contract across both transports.
 type wsStreamSink struct {
-	conn *websocket.Conn
-	ctx  context.Context
+	conn     *websocket.Conn
+	ioCtx    context.Context
+	cancelIO context.CancelFunc
+	done     chan struct{}
+	shutOnce sync.Once
 
 	mu     sync.Mutex
 	cond   *sync.Cond
@@ -40,8 +43,22 @@ type wsStreamSink struct {
 	closed bool
 }
 
-func newWSStreamSink(ctx context.Context, conn *websocket.Conn) *wsStreamSink {
-	w := &wsStreamSink{conn: conn, ctx: ctx}
+func newWSStreamSink(conn *websocket.Conn, parent context.Context) *wsStreamSink {
+	// Accepted writes must outlive the handler context long enough to drain.
+	// StreamConn.Close cancels that context immediately after enqueueing the
+	// close frame, so using it for writes loses any data queued just before a
+	// handler returns. It is still rooted in the application context so app
+	// shutdown closes server streams and releases handlers blocked in Receive.
+	if parent == nil {
+		parent = context.Background()
+	}
+	ioCtx, cancelIO := context.WithCancel(parent)
+	w := &wsStreamSink{
+		conn:     conn,
+		ioCtx:    ioCtx,
+		cancelIO: cancelIO,
+		done:     make(chan struct{}),
+	}
 	w.cond = sync.NewCond(&w.mu)
 	go w.pump()
 	return w
@@ -57,6 +74,9 @@ func (w *wsStreamSink) enqueue(c *StreamConn, connID uint32, kind uint8, data []
 
 	for !control {
 		if w.closed {
+			return ErrStreamClosed
+		}
+		if c != nil && c.ctx.Err() != nil {
 			return ErrStreamClosed
 		}
 		if len(w.out) < streamOutQueueDepth &&
@@ -83,6 +103,7 @@ func (w *wsStreamSink) enqueue(c *StreamConn, connID uint32, kind uint8, data []
 // pump is the single writer. websocket.Conn does not permit concurrent writes,
 // and serialising here also preserves the order frames were accepted in.
 func (w *wsStreamSink) pump() {
+	defer close(w.done)
 	for {
 		w.mu.Lock()
 		for len(w.out) == 0 && !w.closed {
@@ -90,6 +111,7 @@ func (w *wsStreamSink) pump() {
 		}
 		if w.closed && len(w.out) == 0 {
 			w.mu.Unlock()
+			w.shut(websocket.StatusNormalClosure, "")
 			return
 		}
 		frame := w.out[0]
@@ -101,7 +123,7 @@ func (w *wsStreamSink) pump() {
 
 		switch frame.kind {
 		case frameData:
-			if err := w.conn.Write(w.ctx, websocket.MessageBinary, frame.data); err != nil {
+			if err := w.conn.Write(w.ioCtx, websocket.MessageBinary, frame.data); err != nil {
 				w.shut(websocket.StatusNormalClosure, "")
 				return
 			}
@@ -118,15 +140,23 @@ func (w *wsStreamSink) pump() {
 }
 
 func (w *wsStreamSink) shut(code websocket.StatusCode, reason string) {
-	w.mu.Lock()
-	if w.closed {
+	w.shutOnce.Do(func() {
+		w.mu.Lock()
+		w.closed = true
+		w.cond.Broadcast()
 		w.mu.Unlock()
-		return
-	}
+		_ = w.conn.Close(code, reason)
+		w.cancelIO()
+	})
+}
+
+func (w *wsStreamSink) abort() {
+	w.cancelIO()
+	_ = w.conn.CloseNow()
+	w.mu.Lock()
 	w.closed = true
 	w.cond.Broadcast()
 	w.mu.Unlock()
-	_ = w.conn.Close(code, reason)
 }
 
 // The connection table is a session concept; a socket is its own connection.
@@ -181,7 +211,7 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 	ctx, cancel := context.WithCancel(req.Context())
 	defer cancel()
 
-	sink := newWSStreamSink(ctx, conn)
+	sink := newWSStreamSink(conn, a.ctx)
 	c := &StreamConn{
 		name: name,
 		sink: sink,
@@ -195,9 +225,13 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 	// Read pump. A read error is the socket closing, which is what ends the
 	// handler — the same signal a reload gives the desktop build.
 	go func() {
-		defer c.shutdown()
+		defer c.closedByPeer()
 		for {
-			_, data, err := conn.Read(ctx)
+			// Socket I/O has a separate lifetime from the StreamConn context.
+			// A local Close cancels the latter to unblock the handler, but the
+			// reader must stay alive while the writer flushes accepted data and
+			// completes the WebSocket close handshake.
+			_, data, err := conn.Read(sink.ioCtx)
 			if err != nil {
 				return
 			}
@@ -221,9 +255,24 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 		}
 	}()
 
-	defer func() {
-		_ = conn.CloseNow()
+	defer func() { _ = conn.CloseNow() }()
+
+	// Match the desktop lifecycle: returning from a handler closes the stream.
+	// Keep panic recovery and Close in an inner scope so the accepted write
+	// queue is still drained below after either a normal return or a panic.
+	func() {
+		defer handlePanic()
+		defer c.Close()
+		handler(c)
 	}()
-	defer handlePanic()
-	handler(c)
+
+	// Close queues a control frame behind every accepted data frame. Do not
+	// tear down the socket until the writer has drained that queue. A bounded
+	// escape hatch is still required for a peer that has stopped reading.
+	select {
+	case <-sink.done:
+	case <-time.After(5 * time.Second):
+		sink.abort()
+		<-sink.done
+	}
 }

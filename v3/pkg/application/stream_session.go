@@ -30,7 +30,12 @@ type outFrame struct {
 type streamSession struct {
 	id       string
 	windowID uint
-	mgr      *streamManager
+	// generation orders page sessions within a window. It is assigned by the
+	// client when the session is first created and never changes. A poll may
+	// retire only an older generation, so a delayed request from the previous
+	// page cannot tear down its replacement.
+	generation uint64
+	mgr        *streamManager
 
 	mu       sync.Mutex
 	space    *sync.Cond // producers waiting for room in out
@@ -267,7 +272,13 @@ func (s *streamSession) open(connID uint32, name string) {
 	s.conns[connID] = c
 	s.mu.Unlock()
 
-	_ = s.enqueue(c, connID, frameOpen, nil, false)
+	if err := s.enqueue(c, connID, frameOpen, nil, false); err != nil {
+		// The session can close after registration but before the ack acquires
+		// the queue lock. Do not launch application code for a connection the
+		// frontend was never told had opened.
+		c.shutdown()
+		return
+	}
 
 	go func() {
 		defer handlePanic()

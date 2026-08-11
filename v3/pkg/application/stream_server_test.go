@@ -166,6 +166,88 @@ func TestServerModeSocketCloseEndsHandler(t *testing.T) {
 	}
 }
 
+func TestServerModeAppContextCancellationEndsHandler(t *testing.T) {
+	a := newServerTestApp(t)
+	appCtx, stopApp := context.WithCancel(context.Background())
+	a.ctx = appCtx
+
+	started := make(chan struct{})
+	finished := make(chan error, 1)
+	a.HandleStream("shutdown", func(c *StreamConn) {
+		close(started)
+		_, err := c.Receive()
+		finished <- err
+	})
+
+	srv := httptest.NewServer(http.HandlerFunc(a.serveStreamWS))
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	conn, _, err := websocket.Dial(ctx, wsURL(srv.URL)+"?name=shutdown", nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer conn.CloseNow()
+	<-started
+
+	stopApp()
+	select {
+	case err := <-finished:
+		if err != ErrStreamClosed {
+			t.Fatalf("Receive after app shutdown = %v, want ErrStreamClosed", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("handler never returned after application context cancellation")
+	}
+}
+
+// Returning from a handler is a graceful close. Data accepted immediately
+// before that return must reach the peer before the socket closes.
+func TestServerModeFlushesFinalFrameBeforeHandlerReturn(t *testing.T) {
+	a := newServerTestApp(t)
+
+	a.HandleStream("final", func(c *StreamConn) {
+		if err := c.Send([]byte("final frame")); err != nil {
+			t.Errorf("send: %v", err)
+		}
+	})
+
+	srv := httptest.NewServer(http.HandlerFunc(a.serveStreamWS))
+	defer srv.Close()
+
+	for i := 0; i < 20; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		conn, _, err := websocket.Dial(ctx, wsURL(srv.URL)+"?name=final", nil)
+		if err != nil {
+			cancel()
+			t.Fatalf("iteration %d dial: %v", i, err)
+		}
+
+		typ, data, err := conn.Read(ctx)
+		if err != nil {
+			_ = conn.CloseNow()
+			cancel()
+			t.Fatalf("iteration %d read: %v", i, err)
+		}
+		if typ != websocket.MessageBinary || string(data) != "final frame" {
+			_ = conn.CloseNow()
+			cancel()
+			t.Fatalf("iteration %d frame = (%v, %q), want binary final frame", i, typ, data)
+		}
+
+		_, _, err = conn.Read(ctx)
+		if status := websocket.CloseStatus(err); status != websocket.StatusNormalClosure {
+			_ = conn.CloseNow()
+			cancel()
+			t.Fatalf("iteration %d close status = %v (err %v), want normal closure", i, status, err)
+		}
+
+		_ = conn.CloseNow()
+		cancel()
+	}
+}
+
 func wsURL(httpURL string) string {
 	return "ws" + strings.TrimPrefix(httpURL, "http")
 }

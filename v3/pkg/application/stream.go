@@ -239,6 +239,10 @@ func (c *StreamConn) Receive() ([]byte, error) {
 // is safe to call more than once and from any goroutine.
 func (c *StreamConn) Close() error {
 	c.closeOnce.Do(func() {
+		// Mark the connection closed before queueing the notification. Otherwise
+		// a concurrent Send can slip in behind the close frame, report success,
+		// and then be discarded by a frontend that has already processed close.
+		c.cancel()
 		// Best-effort notification: if the buffer is full or the session is
 		// already gone the frontend finds out via the session going away
 		// instead, so this must not block.
@@ -317,7 +321,11 @@ type streamManager struct {
 	mu       sync.Mutex
 	handlers map[string]StreamHandler
 	sessions map[string]*streamSession
-	closed   bool
+	// retiredThrough is the highest page generation that has finished in each
+	// window. Keeping a watermark rather than every retired session id prevents
+	// reloads from growing manager memory for the lifetime of the application.
+	retiredThrough map[uint]uint64
+	closed         bool
 
 	janitor sync.Once
 	once    sync.Once
@@ -326,10 +334,11 @@ type streamManager struct {
 
 func newStreamManager(app *App) *streamManager {
 	return &streamManager{
-		app:      app,
-		handlers: make(map[string]StreamHandler),
-		sessions: make(map[string]*streamSession),
-		stop:     make(chan struct{}),
+		app:            app,
+		handlers:       make(map[string]StreamHandler),
+		sessions:       make(map[string]*streamSession),
+		retiredThrough: make(map[uint]uint64),
+		stop:           make(chan struct{}),
 	}
 }
 
@@ -369,21 +378,56 @@ func (m *streamManager) handler(name string) (StreamHandler, bool) {
 // session returns the session for id, creating it if this is the first request
 // from that page. Sessions are created by whichever of poll or send arrives
 // first; the frontend does not perform a separate handshake.
-func (m *streamManager) session(id string, windowID uint, maySupersede bool) *streamSession {
+func (m *streamManager) session(id string, windowID uint, generation uint64, maySupersede bool) *streamSession {
 	m.mu.Lock()
 	if m.closed {
 		m.mu.Unlock()
 		return nil
 	}
-
 	s, ok := m.sessions[id]
+	// Resolve an existing id only within the window that owns it. sessionFor
+	// reports the eventual 403, but the manager must avoid mutating anything
+	// before that check: a foreign poll used to borrow this session's newer
+	// generation and retire legitimate sessions in the requesting window.
+	if ok && windowID != 0 && s.windowID != windowID {
+		m.mu.Unlock()
+		return s
+	}
+	// The same rule applies to a generation mismatch. sessionFor reports 403,
+	// but an invalid poll must not use the generation stored on the colliding
+	// session id to retire other valid sessions before that rejection.
+	if ok && s.generation != generation {
+		m.mu.Unlock()
+		return s
+	}
+	if !ok {
+		// Once a page generation has finished, no delayed request from that page
+		// may recreate it. Without this watermark, a late open POST could
+		// allocate the old session again after its replacement retired it.
+		if generation <= m.retiredThrough[windowID] {
+			m.mu.Unlock()
+			return nil
+		}
+		s = newStreamSession(id, windowID, m)
+		s.generation = generation
+		m.sessions[id] = s
+		m.janitor.Do(func() { go m.reap() })
+	}
+
 	var superseded []*streamSession
-	// Supersede on any poll, not only when this session is new. The client
-	// starts its open POST and its first poll concurrently, so the POST can
-	// create the session first — and then the poll would find ok already true
-	// and skip the sweep, leaving the previous page's session and handlers
-	// alive for the whole live-connection grace period.
+	// The open POST and first poll start concurrently. Whichever request creates
+	// the new session gives it a generation; when its poll arrives it retires
+	// only older sessions. A late poll from the old page sees the newer
+	// generation and leaves it alone.
 	if maySupersede {
+		// A poll proves that this is the current page generation for the window.
+		// Retire the entire lower generation range, not just sessions that happen
+		// to exist already: an older page may have dispatched its first request
+		// before navigation but reach Go only after this poll completes.
+		if s.generation > 1 && s.generation-1 > m.retiredThrough[windowID] {
+			m.retiredThrough[windowID] = s.generation - 1
+		}
+
 		// A new session id in a window that already has one means that window
 		// navigated or reloaded: the previous page is gone. Without this, the
 		// old session survives until the TTL sweep — up to
@@ -401,19 +445,12 @@ func (m *streamManager) session(id string, windowID uint, maySupersede bool) *st
 		// its parent, which would close the parent's session; if that ever
 		// needs supporting it wants a per-document key, not a per-window one.
 		for otherID, other := range m.sessions {
-			// Never the session being polled for — this loop now runs on every
-			// poll, not only on creation, so it must skip itself.
-			if otherID != id && other.windowID == windowID {
+			if otherID != id && other.windowID == windowID && other.generation < s.generation {
 				superseded = append(superseded, other)
 				delete(m.sessions, otherID)
+				m.retireLocked(other)
 			}
 		}
-
-	}
-	if !ok {
-		s = newStreamSession(id, windowID, m)
-		m.sessions[id] = s
-		m.janitor.Do(func() { go m.reap() })
 	}
 	m.mu.Unlock()
 
@@ -437,8 +474,17 @@ func (m *streamManager) existingSession(id string) *streamSession {
 
 func (m *streamManager) removeSession(id string) {
 	m.mu.Lock()
-	delete(m.sessions, id)
+	if s, ok := m.sessions[id]; ok {
+		delete(m.sessions, id)
+		m.retireLocked(s)
+	}
 	m.mu.Unlock()
+}
+
+func (m *streamManager) retireLocked(s *streamSession) {
+	if s.generation > m.retiredThrough[s.windowID] {
+		m.retiredThrough[s.windowID] = s.generation
+	}
 }
 
 // dropWindow closes every session belonging to a window that is going away.
@@ -451,6 +497,7 @@ func (m *streamManager) dropWindow(windowID uint) {
 		if s.windowID == windowID {
 			doomed = append(doomed, s)
 			delete(m.sessions, id)
+			m.retireLocked(s)
 		}
 	}
 	m.mu.Unlock()
@@ -491,6 +538,7 @@ func (m *streamManager) reap() {
 				if now.Sub(s.lastSeenAt()) > ttl {
 					doomed = append(doomed, s)
 					delete(m.sessions, id)
+					m.retireLocked(s)
 				}
 			}
 			m.mu.Unlock()
@@ -510,6 +558,7 @@ func (m *streamManager) close() {
 		doomed = append(doomed, s)
 	}
 	m.sessions = map[string]*streamSession{}
+	m.retiredThrough = map[uint]uint64{}
 	m.mu.Unlock()
 
 	for _, s := range doomed {

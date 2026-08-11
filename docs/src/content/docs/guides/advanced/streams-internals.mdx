@@ -33,7 +33,7 @@ Send() ─► per-window queue ─────────► GET  /wails/stream
                                       └─ one held request per window,
                                          carrying frames for every connection
 
-Receive() ◄─ per-conn inbox ◄──────── POST /wails/stream/send   (one per frame)
+Receive() ◄─ per-conn inbox ◄──────── POST /wails/stream/send   (one or more frames)
 ```
 
 **Go→JS is a held poll.** The request parks until there is something to deliver. There is
@@ -44,10 +44,11 @@ which makes the round trip itself the batching window — it widens as load rise
 anything measuring it. Measured: 1.0 frames per response at 100/s, still 1.0 at 5,000/s,
 3.4 at 20,000/s, and p99 latency *falls* as the rate climbs.
 
-**JS→Go is an ordinary POST per frame.** Sends are serialised per connection with a promise
-chain, because concurrent `fetch` calls do not preserve order and Go relies on send order
-being the order it observes. Go appends to the connection's inbox *before* responding, so
-the client cannot issue the next send until the previous one is queued.
+**JS→Go uses ordinary POSTs.** Sends are serialised per connection with a promise chain,
+because concurrent `fetch` calls do not preserve order and Go relies on send order being
+the order it observes. Frames accumulated behind an in-flight request are batched into the
+next POST. Go appends the accepted frame or batch prefix to the connection's inbox *before*
+responding, so the client cannot advance past bytes Go has not queued.
 
 **One poll in flight per window, multiplexing every connection.** This is what makes
 ordering correct by construction — one queue, one drainer, no second delivery path that
@@ -98,7 +99,8 @@ All in `stream.go`. **They are compile-time constants, not options** — there i
 | `streamOutQueueDepth` | 256 | frames buffered per window |
 | `streamMaxResponseBytes` | 1 MB | one poll response |
 | `streamHoldTimeout` | 20 s | how long an empty poll parks |
-| `streamSessionTTL` | 60 s | no poll for this long ⇒ session is dead |
+| `streamSessionTTL` | 60 s | no poll for this long and no live connections ⇒ session is dead |
+| `streamSessionGrace` | 10 min | no poll for this long with live connections ⇒ session is dead |
 | `streamMaxSendBytes` | 64 MB | one JS→Go frame |
 | `streamInQueueDepth` / `streamInQueueBytes` | 256 / 8 MB | frames received and not yet taken by `Receive` |
 
@@ -128,19 +130,22 @@ response is an unbounded allocation there. Raising it does *not* buy Windows thr
 measured, the Windows bottleneck is per-byte, not per-response: responses/s varies 4×
 across the frame sweep while MB/s stays flat at ~90.
 
-**The inbound bound is what makes the frontend wait.** `deliver` blocks while a
-connection's inbox is full, which on the desktop leaves the client's `fetch` unresolved so
-it cannot post again, and in server mode stalls the socket read pump so TCP does the rest.
-Without it a handler slow to call `Receive` let the frontend grow host memory without
-limit.
+**The inbound bound is what makes the frontend wait.** On the desktop, `deliver` reports
+fullness, the endpoint responds `429`, and the client retries the same frame or unaccepted
+batch suffix with bounded backoff. This avoids occupying a webview request slot while the
+handler catches up. In server mode the socket read pump waits and lets TCP apply
+backpressure. Without the bound, a handler slow to call `Receive` could grow host memory
+without limit.
 
 **Control frames bypass every cap.** Losing a data frame under backpressure is a
 slow-down; losing an open ack leaves the frontend in `CONNECTING` forever, and losing a
 close leaves it believing a dead connection is live.
 
-**Frames are copied on the way in.** `Send` reports acceptance before a poll encodes the
-frame, so retaining the caller's slice would let a pooled or reused buffer alter a frame
-already acknowledged. The client snapshots at its `send()` boundary for the same reason.
+**Frames transfer ownership rather than being copied.** Go `Send` retains the caller's
+slice until the poll writes it, and JavaScript `send()` retains mutable array storage until
+the POST is issued. Callers must not mutate or reuse that storage after handing it over.
+Strings and freshly marshalled buffers are naturally safe. This deliberate difference from
+a real WebSocket avoids a full-frame copy on both hot paths.
 
 **`streamSessionTTL` must stay comfortably above `streamHoldTimeout`**, or a session would
 be reaped while its own poll is legitimately parked.
@@ -156,10 +161,13 @@ runtime's `clientId`). Sessions are created lazily by whichever request arrives 
 
 Three mechanisms close things, in order of how quickly they notice:
 
-1. **A new session for a window supersedes the old one.** A reload gives the page a new
-   session id; the previous session's connections close immediately. Measured over six
-   reloads: 7 connects, 6 disconnects, never more than one live at a time, and the old
-   connection closes *before* its replacement appears.
+1. **A newer session poll for a window supersedes older generations.** A reload gives the
+   page a new session id and increments a generation stored in that window's
+   `sessionStorage`. Every request carries both values. A poll retires only lower page
+   generations, so server scheduling cannot make a delayed request from the previous page
+   look newer than its replacement. The manager retains a per-window retired-generation
+   watermark so an already in-flight request cannot recreate the old page without retaining
+   every historical session id. The previous session's connections close immediately.
 2. **Window destroy** drops every session for that window, like `eventPayloadStore.dropWindow`.
 3. **TTL reaping** catches anything else — a crashed renderer, a machine asleep.
 
@@ -196,7 +204,7 @@ If you add a third transport, put it in the prelude too. Do not be tempted back 
 | Typed streams | not done, deliberately — frames are `[]byte` by decision |
 | Pipelining (a second poll in flight) | not done; would need ordered reassembly in JS |
 | Per-connection fairness | not done — connections in a window share one queue, so a flooding connection slows its neighbours |
-| JS→Go frame coalescing | not done — every frame is its own POST, which is why small-frame upload rate is ~100× below the downward rate |
+| JS→Go frame coalescing | **done** — frames accumulated behind an in-flight request are sent in bounded batches; lightly loaded connections still send one frame per POST |
 | Windows throughput | ~100 MB/s, bounded by `WebResourceRequested` marshalling. Shared buffers (`PostSharedBufferToScript`) are the candidate fix; bindings exist under `internal/webview2/pkg/webview2/` but are not wired into `pkg/edge` |
 | `wails3 dev` / Vite | **works** — verified with a generated `vanilla-js` project: the Vite dev server proxies at `/`, and `/wails/stream/*` is matched by the asset server middleware before the proxy, so streams are unaffected |
 | Multi-window | untested under load, though sessions are window-scoped by construction |
@@ -228,6 +236,7 @@ frontend imports), while `task v3:runtime:build:assets` produces
 ```bash
 go test ./pkg/application/ -run TestStream -race        # protocol, ordering, backpressure
 go test -tags server ./pkg/application/ -run TestServerMode
+pnpm --dir v3/internal/runtime/desktop/@wailsio/runtime test
 ```
 
 The ordering test is the one that matters: eight goroutines send concurrently against a

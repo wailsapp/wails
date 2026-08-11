@@ -35,14 +35,50 @@ import { hasDOM } from "./environment.js";
 // only the other instance knew about. The session id alone was not enough.
 interface StreamGlobals {
     session: string;
+    generation: number;
     nextConnID: number;
     connections: Map<number, WailsSocket>;
     polling: boolean;
 }
 
+const GENERATION_KEY = "__wails_stream_generation";
+
+// Request arrival order is not page order: a request started just before a
+// navigation can reach Go after the replacement page's first request. Keep a
+// monotonic counter in this top-level browsing context so Go can distinguish
+// those page incarnations without trusting server scheduling order.
+function nextPageGeneration(): number {
+    if (!hasDOM) return 1;
+    // Anchor the value to the page's creation time as well as the stored
+    // counter. If application code clears sessionStorage, the next reload must
+    // still be newer than the generation Go has already retired; restarting
+    // from 1 would make every stream request receive 410 until the host exits.
+    // Performance.timeOrigin is absent on older WebKit releases that Wails
+    // still targets. Date.now keeps those engines on the protocol; the stored
+    // counter disambiguates reloads that happen within the same millisecond.
+    const origin = typeof performance !== "undefined" && Number.isFinite(performance.timeOrigin)
+        ? performance.timeOrigin
+        : Date.now();
+    const pageTime = Math.max(1, Math.floor(origin * 1000));
+    try {
+        const raw = window.sessionStorage.getItem(GENERATION_KEY);
+        const current = raw === null ? 0 : Number(raw);
+        const next = Number.isSafeInteger(current) && current >= 0 && current < Number.MAX_SAFE_INTEGER
+            ? Math.max(current + 1, pageTime)
+            : pageTime;
+        window.sessionStorage.setItem(GENERATION_KEY, String(next));
+        return next;
+    } catch {
+        // Storage can be disabled by policy. timeOrigin identifies this page
+        // and is chronological for successive navigations in the same webview.
+        return pageTime;
+    }
+}
+
 function streamGlobals(): StreamGlobals {
     const fresh = (): StreamGlobals => ({
         session: nanoid(),
+        generation: nextPageGeneration(),
         nextConnID: 1,
         connections: new Map<number, WailsSocket>(),
         polling: false,
@@ -55,6 +91,7 @@ function streamGlobals(): StreamGlobals {
 const G = streamGlobals();
 
 const HDR_SESSION = "x-wails-stream-session";
+const HDR_GENERATION = "x-wails-stream-generation";
 const HDR_CONN = "x-wails-stream-conn";
 const HDR_KIND = "x-wails-stream-kind";
 const HDR_NAME = "x-wails-stream-name";
@@ -71,6 +108,7 @@ const KIND_ERROR = 3;
 // Matches the runtime's own limit: stay under WebView2's ~2MB request body
 // buffering limit in WebResourceRequested.
 const CHUNK_THRESHOLD = 512 * 1024;
+const MAX_BATCH_FRAMES = 4096;
 
 // Backoff floor and ceiling for a failing poll. This is the "reasonable lower
 // limit" on polling — an error backoff, not a steady-state interval. In normal
@@ -140,7 +178,7 @@ export class WailsSocket extends EventTarget {
     // Sends are serialised per connection: concurrent fetch() POSTs do not
     // preserve order, and Go relies on send order being the order it observes.
     private _chain: Promise<void> = Promise.resolve();
-    private _pending: { bytes: Promise<Uint8Array>; counted: number }[] = [];
+    private _pending: Promise<Uint8Array>[] = [];
     private _flushing = false;
 
     /** Bytes queued by send() that have not yet reached Go. */
@@ -208,7 +246,7 @@ export class WailsSocket extends EventTarget {
         if (immediate) {
             this._buffered += immediate.byteLength;
         }
-        this._pending.push({ bytes: snapshot, counted: immediate ? immediate.byteLength : blobSize });
+        this._pending.push(snapshot);
 
         // Queue rather than post. Whatever accumulates while a request is in
         // flight goes out together in the next one, so the per-request cost —
@@ -222,18 +260,26 @@ export class WailsSocket extends EventTarget {
         this._chain = this._chain.then(async () => {
             try {
                 while (this._pending.length > 0) {
-                    const queued = this._pending.splice(0);
-                    const batch = await Promise.all(queued.map((q) => q.bytes));
+                    // Bound the work and temporary promise array for one pass.
+                    // postBatch applies the wire-size bound after resolution.
+                    const queued = this._pending.splice(0, MAX_BATCH_FRAMES);
+                    const batch = await Promise.all(queued);
+
+                    // A remote close may arrive while a Blob is being read.
+                    // The connection is already gone in that case, so do not
+                    // issue a late POST for bytes the peer can no longer take.
+                    if (this.readyState === WailsSocket.CLOSED) {
+                        break;
+                    }
 
                     const total = batch.reduce((n, b) => n + b.byteLength, 0);
-                    const already = queued.reduce((n, q) => n + q.counted, 0);
-                    // Sized frames were counted at the send() boundary; a Blob,
-                    // whose length was unknown then, is added now.
-                    this._buffered += total - already;
                     try {
                         await postBatch(this._id, batch);
                     } finally {
-                        this._buffered -= total;
+                        // _closed resets the counter immediately. A request
+                        // already in flight may finish afterwards, and must
+                        // not drive bufferedAmount below zero.
+                        this._buffered = Math.max(0, this._buffered - total);
                     }
                 }
             } finally {
@@ -285,6 +331,10 @@ export class WailsSocket extends EventTarget {
 
     /** @internal */
     _fail(err: unknown): void {
+        // An in-flight send can reject after a clean close has already arrived.
+        // The socket's lifecycle is complete then: emitting error after close
+        // reverses the WebSocket event order and reports a false failure.
+        if (this.readyState === WailsSocket.CLOSED) return;
         this.dispatchEvent(new Event("error"));
         // 1006: closed abnormally, no close frame. Same code a real WebSocket
         // reports when the connection drops without a handshake.
@@ -296,6 +346,8 @@ export class WailsSocket extends EventTarget {
         if (this.readyState === WailsSocket.CLOSED) return;
         this.readyState = WailsSocket.CLOSED;
         G.connections.delete(this._id);
+        this._pending.length = 0;
+        this._buffered = 0;
 
         const ev = typeof CloseEvent === "function"
             ? new CloseEvent("close", { code, reason, wasClean })
@@ -389,6 +441,9 @@ export function JSONStream(name: string): JSONSocket {
         const remove = native.removeEventListener.bind(native);
 
         const decode = (listener: any): EventListener => {
+            const existing = wrapped.get(listener as object);
+            if (existing) return existing;
+
             const fn: EventListener = (ev) => {
                 let value: unknown;
                 try {
@@ -469,6 +524,7 @@ async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob):
 async function postFrame(connID: number, kind: number, body: Uint8Array, name?: string): Promise<void> {
     const headers: Record<string, string> = {
         [HDR_SESSION]: G.session,
+        [HDR_GENERATION]: String(G.generation),
         [HDR_CONN]: String(connID),
         [HDR_KIND]: String(kind),
         "Content-Type": "application/octet-stream",
@@ -517,15 +573,51 @@ async function postWithRetry(headers: Record<string, string>, body: Uint8Array):
     }
 }
 
-// postBatch sends several data frames for one connection in a single request.
-// Body: count u32, then count x ( len u32 | payload ). A frame past the chunk
-// threshold is sent on its own, since it has to be split anyway.
+// postBatch sends several data frames for one connection in bounded requests.
+// Body: count u32, then count x ( len u32 | payload ). The combined body stays
+// within CHUNK_THRESHOLD: several individually small frames must not recreate
+// the WebView2 body-size problem that chunking single large frames avoids.
 async function postBatch(connID: number, frames: Uint8Array[]): Promise<void> {
-    if (frames.length === 1 || frames.some((f) => f.byteLength > CHUNK_THRESHOLD)) {
-        for (const f of frames) {
-            await postFrame(connID, KIND_DATA, f);
+    let start = 0;
+    while (start < frames.length) {
+        if (frames[start].byteLength > CHUNK_THRESHOLD) {
+            await postFrame(connID, KIND_DATA, frames[start]);
+            start++;
+            continue;
         }
-        return;
+
+        let end = start;
+        let size = 4; // frame count
+        while (end < frames.length && end - start < MAX_BATCH_FRAMES) {
+            const frame = frames[end];
+            if (frame.byteLength > CHUNK_THRESHOLD || size + 4 + frame.byteLength > CHUNK_THRESHOLD) {
+                break;
+            }
+            size += 4 + frame.byteLength;
+            end++;
+        }
+
+        // A near-threshold frame fits as a normal POST body but not inside a
+        // batch once its count and length headers are included.
+        if (end === start) {
+            await postFrame(connID, KIND_DATA, frames[start]);
+            start++;
+            continue;
+        }
+
+        const group = frames.slice(start, end);
+        if (group.length === 1) {
+            await postFrame(connID, KIND_DATA, group[0]);
+        } else {
+            await postBatchGroup(connID, group);
+        }
+        start = end;
+    }
+}
+
+async function postBatchGroup(connID: number, frames: Uint8Array[]): Promise<void> {
+    if (frames.length === 0 || frames.length > MAX_BATCH_FRAMES) {
+        throw new Error("invalid stream batch size");
     }
 
     let body = buildBatch(frames);
@@ -536,6 +628,7 @@ async function postBatch(connID: number, frames: Uint8Array[]): Promise<void> {
             method: "POST",
             headers: {
                 [HDR_SESSION]: G.session,
+                [HDR_GENERATION]: String(G.generation),
                 [HDR_CONN]: String(connID),
                 [HDR_KIND]: String(KIND_DATA),
                 [HDR_BATCH]: String(frames.length - sent),
@@ -550,6 +643,12 @@ async function postBatch(connID: number, frames: Uint8Array[]): Promise<void> {
         // The receiver took a prefix of the batch. Resend only what is left,
         // which keeps ordering without re-delivering anything.
         const accepted = Number(resp.headers.get(HDR_BATCH) ?? 0);
+        const remaining = frames.length - sent;
+        if (!Number.isInteger(accepted) || accepted < 0 || accepted >= remaining) {
+            // Zero is valid (no progress), but an out-of-range acknowledgement
+            // is a protocol error. Keep zero on the retry path below.
+            if (accepted !== 0) throw new Error("invalid stream batch acknowledgement");
+        }
         sent += accepted;
         body = buildBatch(frames.slice(sent));
         await sleep(wait);
@@ -596,7 +695,10 @@ async function pollLoop(): Promise<void> {
         try {
             const resp = await fetch(streamURL("poll"), {
                 method: "GET",
-                headers: { [HDR_SESSION]: G.session },
+                headers: {
+                    [HDR_SESSION]: G.session,
+                    [HDR_GENERATION]: String(G.generation),
+                },
                 cache: "no-store",
             });
 
@@ -613,7 +715,8 @@ async function pollLoop(): Promise<void> {
             backoff = 0;
             if (resp.status !== 204) {
                 const buf = await resp.arrayBuffer();
-                if (!validFraming(buf)) {
+                const frames = decodeFrames(buf);
+                if (frames === null) {
                     // A framing mismatch means a stale cached runtime against a
                     // newer Go side. Retrying cannot fix that, and letting it
                     // fall into the backoff below would spin silently forever,
@@ -621,7 +724,7 @@ async function pollLoop(): Promise<void> {
                     closeAll(1002, "unrecognised stream framing");
                     break;
                 }
-                deliver(buf);
+                deliver(frames);
             }
             // Re-poll immediately, on data and on an expired hold alike.
         } catch (err) {
@@ -638,24 +741,47 @@ async function pollLoop(): Promise<void> {
     }
 }
 
-function validFraming(buf: ArrayBuffer): boolean {
-    if (buf.byteLength < 9) return false;
-    const dv = new DataView(buf);
-    return dv.getUint8(0) === 0x57 && dv.getUint8(1) === 0x53 &&
-           dv.getUint8(2) === 0x31 && dv.getUint8(3) === 0x00;
+interface InFrame {
+    connID: number;
+    kind: number;
+    payload: ArrayBuffer;
 }
 
-function deliver(buf: ArrayBuffer): void {
+// Validate the complete response before dispatching any part of it. A short
+// platform response must not deliver a valid prefix and then throw RangeError:
+// the Go queue has already been drained, so retrying cannot recover those
+// frames. Treat the whole response as a protocol error instead.
+function decodeFrames(buf: ArrayBuffer): InFrame[] | null {
+    if (buf.byteLength < 9) return null;
     const dv = new DataView(buf);
+    if (dv.getUint8(0) !== 0x57 || dv.getUint8(1) !== 0x53 ||
+        dv.getUint8(2) !== 0x31 || dv.getUint8(3) !== 0x00 ||
+        (dv.getUint8(4) & ~1) !== 0) {
+        return null;
+    }
+
     const count = dv.getUint32(5);
+    const frames: InFrame[] = [];
     let off = 9;
 
     for (let i = 0; i < count; i++) {
+        if (off + 9 > buf.byteLength) return null;
         const connID = dv.getUint32(off); off += 4;
         const kind = dv.getUint8(off); off += 1;
         const len = dv.getUint32(off); off += 4;
+        if (kind > KIND_ERROR || len > buf.byteLength - off) return null;
         const payload = buf.slice(off, off + len); off += len;
+        frames.push({ connID, kind, payload });
+    }
 
+    return off === buf.byteLength ? frames : null;
+}
+
+function deliver(frames: InFrame[]): void {
+    for (const frame of frames) {
+        const connID = frame.connID;
+        const kind = frame.kind;
+        const payload = frame.payload;
         const conn = G.connections.get(connID);
         if (!conn) continue;
 

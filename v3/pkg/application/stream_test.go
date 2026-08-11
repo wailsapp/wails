@@ -1,9 +1,13 @@
 package application
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -30,6 +34,27 @@ func newTestConn(s *streamSession, id uint32) *StreamConn {
 	s.mu.Unlock()
 	return c
 }
+
+type blockingCloseSink struct {
+	closeStarted chan struct{}
+	releaseClose chan struct{}
+}
+
+func (s *blockingCloseSink) enqueue(c *StreamConn, _ uint32, kind uint8, _ []byte, _ bool) error {
+	if kind == frameClose {
+		close(s.closeStarted)
+		<-s.releaseClose
+		return nil
+	}
+	if c.ctx.Err() != nil {
+		return ErrStreamClosed
+	}
+	return nil
+}
+
+func (*blockingCloseSink) removeConn(uint32) {}
+func (*blockingCloseSink) wake()             {}
+func (*blockingCloseSink) wakeProducers()    {}
 
 func TestStreamFrameRoundTrip(t *testing.T) {
 	frames := []outFrame{
@@ -70,6 +95,70 @@ func TestStreamFrameRoundTrip(t *testing.T) {
 	}
 	if off != len(body) {
 		t.Fatalf("trailing bytes: consumed %d of %d", off, len(body))
+	}
+}
+
+func TestStreamCloseRejectsSendRacingBehindCloseFrame(t *testing.T) {
+	sink := &blockingCloseSink{
+		closeStarted: make(chan struct{}),
+		releaseClose: make(chan struct{}),
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	c := &StreamConn{id: 1, sink: sink, ctx: ctx, cancel: cancel}
+	c.inCond = sync.NewCond(&c.inMu)
+
+	closed := make(chan struct{})
+	go func() {
+		_ = c.Close()
+		close(closed)
+	}()
+	<-sink.closeStarted
+
+	if err := c.Send([]byte("too late")); err != ErrStreamClosed {
+		t.Fatalf("Send racing behind close frame = %v, want ErrStreamClosed", err)
+	}
+	close(sink.releaseClose)
+	<-closed
+}
+
+func TestStreamBatchRejectsTrailingBytes(t *testing.T) {
+	body := binary.BigEndian.AppendUint32(nil, 1)
+	body = binary.BigEndian.AppendUint32(body, 3)
+	body = append(body, []byte("one")...)
+	body = append(body, 0xff)
+
+	if _, err := decodeStreamBatch(body); err == nil {
+		t.Fatal("batch with trailing bytes was accepted")
+	}
+}
+
+func TestStreamSendRejectsChunkedBatch(t *testing.T) {
+	req := httptest.NewRequest(http.MethodPost, streamPathSend, nil)
+	req.Header.Set(streamHeaderConn, "1")
+	req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameData)))
+	req.Header.Set(streamHeaderBatch, "1")
+	req.Header.Set(streamHeaderChunkID, "chunked-batch")
+	rw := httptest.NewRecorder()
+
+	(&App{}).serveStreamSend(rw, req)
+
+	if rw.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", rw.Code, http.StatusBadRequest)
+	}
+}
+
+func TestStreamMissingGenerationStopsStaleRuntime(t *testing.T) {
+	a := &App{streams: newStreamManager(nil)}
+	t.Cleanup(a.streams.close)
+	req := httptest.NewRequest(http.MethodGet, streamPathPoll, nil)
+	req.Header.Set(streamHeaderSession, "old-runtime")
+	rw := httptest.NewRecorder()
+
+	if got := a.sessionFor(rw, req, true, true); got != nil {
+		t.Fatal("request without a page generation created a session")
+	}
+	if rw.Code != http.StatusGone {
+		t.Fatalf("status = %d, want %d so an old poll client stops retrying", rw.Code, http.StatusGone)
 	}
 }
 
@@ -495,7 +584,7 @@ func TestStreamNewSessionSupersedesPreviousInSameWindow(t *testing.T) {
 	t.Cleanup(mgr.close)
 	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
 
-	first := mgr.session("page-1", 1, true)
+	first := mgr.session("page-1", 1, 1, true)
 	if first == nil {
 		t.Fatal("first session not created")
 	}
@@ -506,11 +595,11 @@ func TestStreamNewSessionSupersedesPreviousInSameWindow(t *testing.T) {
 	}
 
 	// Another window's session must be untouched by the reload below.
-	other := mgr.session("other-window", 2, true)
+	other := mgr.session("other-window", 2, 1, true)
 	other.open(1, "s")
 	otherConn := other.conn(1)
 
-	second := mgr.session("page-2", 1, true)
+	second := mgr.session("page-2", 1, 2, true)
 	if second == first {
 		t.Fatal("reload reused the previous session")
 	}
@@ -595,8 +684,63 @@ func TestStreamChunkAssembly(t *testing.T) {
 	if string(got) != "one two three" {
 		t.Fatalf("assembled = %q", got)
 	}
+	// Completion remains retained until the endpoint acknowledges downstream
+	// delivery, so a final-chunk retry after 429 can reproduce the same frame.
+	store.remove("c1")
 	if len(store.items) != 0 || store.bytes != 0 {
 		t.Fatalf("store not drained: %d items, %d bytes", len(store.items), store.bytes)
+	}
+}
+
+func TestStreamChunkRetryAfterBackpressureKeepsAssembledFrame(t *testing.T) {
+	mgr, s := newTestSession(t)
+	s.generation = 1
+	c := newTestConn(s, 7)
+	a := &App{streams: mgr}
+
+	for i := 0; i < streamInQueueDepth; i++ {
+		if err := c.deliver([]byte("queued")); err != nil {
+			t.Fatalf("fill inbox %d: %v", i, err)
+		}
+	}
+
+	sendChunk := func(index int, data string) *httptest.ResponseRecorder {
+		t.Helper()
+		req := httptest.NewRequest(http.MethodPost, streamPathSend, bytes.NewReader([]byte(data)))
+		req.Header.Set(streamHeaderSession, s.id)
+		req.Header.Set(streamHeaderGeneration, "1")
+		req.Header.Set(streamHeaderConn, "7")
+		req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameData)))
+		req.Header.Set(streamHeaderChunkID, "large-frame")
+		req.Header.Set(streamHeaderChunkIndex, strconv.Itoa(index))
+		req.Header.Set(streamHeaderChunkTotal, "2")
+		rw := httptest.NewRecorder()
+		a.serveStreamSend(rw, req)
+		return rw
+	}
+
+	if rw := sendChunk(0, "hello "); rw.Code != http.StatusNoContent {
+		t.Fatalf("first chunk status = %d, want 204", rw.Code)
+	}
+	if rw := sendChunk(1, "world"); rw.Code != http.StatusTooManyRequests {
+		t.Fatalf("completed frame against full inbox status = %d, want 429", rw.Code)
+	}
+
+	if _, err := c.Receive(); err != nil {
+		t.Fatalf("free inbox slot: %v", err)
+	}
+	if rw := sendChunk(1, "world"); rw.Code != http.StatusNoContent {
+		t.Fatalf("retried final chunk status = %d, want 204", rw.Code)
+	}
+
+	c.inMu.Lock()
+	if got := string(c.in[len(c.in)-1]); got != "hello world" {
+		c.inMu.Unlock()
+		t.Fatalf("retried assembled frame = %q, want %q", got, "hello world")
+	}
+	c.inMu.Unlock()
+	if len(s.chunks().items) != 0 || s.chunks().bytes != 0 {
+		t.Fatal("acknowledged chunk set was not released")
 	}
 }
 
@@ -765,7 +909,7 @@ func TestStreamPollSupersedesWhenOpenWonTheRace(t *testing.T) {
 	t.Cleanup(mgr.close)
 	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
 
-	old := mgr.session("page-1", 1, true)
+	old := mgr.session("page-1", 1, 1, true)
 	old.open(1, "s")
 	victim := old.conn(1)
 	if victim == nil {
@@ -773,7 +917,7 @@ func TestStreamPollSupersedesWhenOpenWonTheRace(t *testing.T) {
 	}
 
 	// The new page's open POST lands first: creates the session, no supersede.
-	fresh := mgr.session("page-2", 1, false)
+	fresh := mgr.session("page-2", 1, 2, false)
 	if fresh == nil {
 		t.Fatal("send did not create the session")
 	}
@@ -783,7 +927,7 @@ func TestStreamPollSupersedesWhenOpenWonTheRace(t *testing.T) {
 
 	// Its poll follows, and must retire the previous page even though the
 	// session already exists.
-	if got := mgr.session("page-2", 1, true); got != fresh {
+	if got := mgr.session("page-2", 1, 2, true); got != fresh {
 		t.Fatal("poll did not resolve to the session the send created")
 	}
 	if victim.ctx.Err() == nil {
@@ -794,5 +938,180 @@ func TestStreamPollSupersedesWhenOpenWonTheRace(t *testing.T) {
 	}
 	if mgr.existingSession("page-2") == nil {
 		t.Fatal("poll superseded the session doing the polling")
+	}
+}
+
+// A poll issued by the previous page can reach the manager after the new
+// page's open POST. It must not retire the newer session merely because it was
+// processed later.
+func TestStreamLateOldPollDoesNotSupersedeFreshOpen(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
+
+	old := mgr.session("page-1", 1, 1, true)
+	old.open(1, "s")
+	oldConn := old.conn(1)
+	if oldConn == nil {
+		t.Fatal("old session has no connection")
+	}
+
+	// The replacement page's open POST wins its race with its first poll.
+	fresh := mgr.session("page-2", 1, 2, false)
+	fresh.open(1, "s")
+	freshConn := fresh.conn(1)
+	if freshConn == nil {
+		t.Fatal("fresh session has no connection")
+	}
+
+	// A delayed poll from page 1 must not close page 2.
+	if got := mgr.session("page-1", 1, 1, true); got != old {
+		t.Fatal("late old poll did not resolve to the old session")
+	}
+	if freshConn.ctx.Err() != nil {
+		t.Fatal("late old poll closed the fresh page connection")
+	}
+
+	// The first poll from page 2 now retires page 1.
+	if got := mgr.session("page-2", 1, 2, true); got != fresh {
+		t.Fatal("fresh poll did not resolve to the session created by its open")
+	}
+	if oldConn.ctx.Err() == nil {
+		t.Fatal("fresh poll did not close the old page connection")
+	}
+	if freshConn.ctx.Err() != nil {
+		t.Fatal("fresh poll closed its own connection")
+	}
+}
+
+// Page order must not be inferred from server arrival order. An old page can
+// start a request just before navigation and have that first request dispatched
+// only after the replacement page is already connected.
+func TestStreamPreviouslyUnseenOldPageCannotBecomeNewerByArrivingLate(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
+
+	fresh := mgr.session("page-2", 1, 2, false)
+	fresh.open(1, "s")
+	freshConn := fresh.conn(1)
+
+	// The old page's first request reaches Go second, but carries its older page
+	// generation. Its handler may start briefly; the next fresh poll retires it.
+	old := mgr.session("page-1", 1, 1, false)
+	old.open(1, "s")
+	oldConn := old.conn(1)
+	if freshConn == nil || oldConn == nil {
+		t.Fatal("failed to establish test connections")
+	}
+
+	if got := mgr.session("page-2", 1, 2, true); got != fresh {
+		t.Fatal("fresh poll did not retain the current page session")
+	}
+	if freshConn.ctx.Err() != nil {
+		t.Fatal("late old request closed the current page connection")
+	}
+	if oldConn.ctx.Err() == nil {
+		t.Fatal("current page poll did not retire the late old session")
+	}
+	if got := mgr.session("page-1", 1, 1, true); got != nil {
+		t.Fatal("retired late page was recreated by its delayed poll")
+	}
+}
+
+// Once the current page has polled, even a previously unseen request from an
+// older page generation must be rejected immediately. There may be no older
+// session for the supersede sweep to discover when the current poll arrives.
+func TestStreamCurrentPollRejectsPreviouslyUnseenOlderPage(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	fresh := mgr.session("page-2", 1, 2, false)
+	if fresh == nil {
+		t.Fatal("failed to create current page session")
+	}
+	if got := mgr.session("page-2", 1, 2, true); got != fresh {
+		t.Fatal("current page poll did not retain its session")
+	}
+
+	if got := mgr.session("page-1", 1, 1, false); got != nil {
+		t.Fatal("late open created a previously unseen older page session")
+	}
+	if got := mgr.session("page-1", 1, 1, true); got != nil {
+		t.Fatal("late poll created a previously unseen older page session")
+	}
+	if got := mgr.existingSession("page-2"); got != fresh {
+		t.Fatal("late older request disturbed the current page session")
+	}
+}
+
+// Once a session is superseded, a request that was already in flight for its
+// id must receive Gone rather than recreating the old page as a newer session.
+func TestStreamRetiredSessionCannotBeRecreated(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	old := mgr.session("page-1", 1, 1, true)
+	fresh := mgr.session("page-2", 1, 2, true)
+	if old == nil || fresh == nil {
+		t.Fatal("failed to create test sessions")
+	}
+
+	if got := mgr.session("page-1", 1, 1, false); got != nil {
+		t.Fatal("late open recreated a retired session")
+	}
+	if got := mgr.session("page-1", 1, 1, true); got != nil {
+		t.Fatal("late poll recreated a retired session")
+	}
+	if got := mgr.existingSession("page-2"); got != fresh {
+		t.Fatal("late retired request disturbed the active session")
+	}
+}
+
+func TestStreamForeignSessionIDCannotSupersedeRequestingWindow(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+	mgr.handlers["s"] = func(c *StreamConn) { <-c.Context().Done() }
+
+	// Create the legitimate session first so the foreign session has the newer
+	// generation that triggered the old, destructive sweep.
+	legitimate := mgr.session("window-2", 2, 1, true)
+	legitimate.open(1, "s")
+	conn := legitimate.conn(1)
+	foreign := mgr.session("window-1", 1, 2, true)
+	if conn == nil || foreign == nil {
+		t.Fatal("failed to establish test sessions")
+	}
+
+	// The request claims window 2 while carrying window 1's id. sessionFor will
+	// reject it as forbidden; manager lookup must have no lifecycle side effect.
+	if got := mgr.session("window-1", 2, 2, true); got != foreign {
+		t.Fatal("foreign lookup did not return the existing session for ownership validation")
+	}
+	if conn.ctx.Err() != nil {
+		t.Fatal("foreign session id closed the requesting window's legitimate connection")
+	}
+	if mgr.existingSession("window-2") != legitimate {
+		t.Fatal("foreign session id removed the requesting window's session")
+	}
+}
+
+func TestStreamGenerationMismatchCannotSupersedeOtherSessions(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	current := mgr.session("current", 1, 3, false)
+	other := mgr.session("other", 1, 2, false)
+	if current == nil || other == nil {
+		t.Fatal("failed to create test sessions")
+	}
+
+	// This request claims the current id but carries an older generation. The
+	// endpoint will reject it; the lookup must be side-effect free first.
+	if got := mgr.session("current", 1, 1, true); got != current {
+		t.Fatal("generation mismatch did not resolve for endpoint validation")
+	}
+	if got := mgr.existingSession("other"); got != other {
+		t.Fatal("generation-mismatched poll retired another valid session")
 	}
 }

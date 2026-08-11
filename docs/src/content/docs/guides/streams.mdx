@@ -207,9 +207,10 @@ Measured with `v3/tests/stream-performance`, unthrottled, 0 drops and 0 reorders
 Shape matters more than the peaks:
 
 - **Go→JS is much faster for small frames** — 634,000 frames/s on macOS against ~6,200/s
-  the other way. A single response coalesces up to 256 frames; every JS→Go frame is its
-  own request. If you are sending many small messages, prefer Go→JS, or batch them
-  yourself before sending up.
+  the other way. A single response coalesces up to 256 frames; JS→Go also batches frames
+  that accumulate behind an in-flight request, but each connection still serialises its
+  own POST chain. If you are sending many small messages, prefer Go→JS, or batch them at
+  the application level before sending up.
 - **On Windows, 512 KB is the sweet spot for uploads.** Frames larger than that are split
   into several requests, and a 4 MB frame measures *slower* than a 512 KB one.
 - **Latency is low and stays low**: ~1–2 ms p99 on macOS, and it does not degrade with
