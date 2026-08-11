@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed `runtime:ready` being dispatched as an application message in the dev server, causing spurious "Unknown message from front end" errors for browser clients [#5795](https://github.com/wailsapp/wails/issues/5795) by @Trainingdlu
 
+## v2.14.0 - 2026-08-10
+
+### Fixed
+
+- Fixed nil pointer crash and swallowed network error when downloading the WebView2 bootstrapper, which made the app exit instead of showing the installation error dialog by @jannskiee
+
 ## v2.13.0 - 2026-07-06
 ### Added
 
