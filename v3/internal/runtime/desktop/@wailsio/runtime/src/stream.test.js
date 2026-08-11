@@ -384,6 +384,37 @@ describe("WailsSocket protocol handling", () => {
         socket._closed(1000, "", true);
     });
 
+    it("reuses one encoder across string sends", async () => {
+        const poll = deferred();
+        const NativeTextEncoder = globalThis.TextEncoder;
+        let constructions = 0;
+        vi.stubGlobal("TextEncoder", class {
+            encoder = new NativeTextEncoder();
+
+            constructor() {
+                constructions++;
+            }
+
+            encode(value) {
+                return this.encoder.encode(value);
+            }
+        });
+        vi.stubGlobal("fetch", vi.fn((input) =>
+            String(input).endsWith("/poll") ? poll.promise : Promise.resolve(response(204))
+        ));
+
+        const { WailsSocket } = await import("./stream");
+        const socket = new WailsSocket("test");
+        socket._opened();
+        socket.send("one");
+        socket.send("two");
+        socket.send("three");
+
+        await vi.waitFor(() => expect(socket.bufferedAmount).toBe(0), { interval: 1, timeout: 100 });
+        expect(constructions).toBe(1);
+        socket._closed(1000, "", true);
+    });
+
     it("retries the completing chunk unchanged when Go applies backpressure", async () => {
         const poll = deferred();
         const chunks = [];

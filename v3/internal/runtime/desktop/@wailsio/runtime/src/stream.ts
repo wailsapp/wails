@@ -150,6 +150,7 @@ const MAX_BATCH_FRAMES = 4096;
 // provided whatever delay was appropriate.
 const BACKOFF_MIN = 250;
 const BACKOFF_MAX = 5000;
+const textEncoder = new TextEncoder();
 
 function streamURL(endpoint: string): string {
     return window.location.origin + "/wails/stream/" + endpoint;
@@ -535,7 +536,7 @@ export function JSONStream(name: string): JSONSocket {
 // and, more importantly, lets bufferedAmount be exact the moment send() returns.
 function toBytesSync(data: string | ArrayBufferLike | ArrayBufferView | Blob): Uint8Array | null {
     if (typeof data === "string") {
-        return new TextEncoder().encode(data);
+        return textEncoder.encode(data);
     }
     if (typeof Blob !== "undefined" && data instanceof Blob) {
         return null;
@@ -548,7 +549,7 @@ function toBytesSync(data: string | ArrayBufferLike | ArrayBufferView | Blob): U
 
 async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob): Promise<Uint8Array> {
     if (typeof data === "string") {
-        return new TextEncoder().encode(data);
+        return textEncoder.encode(data);
     }
     if (typeof Blob !== "undefined" && data instanceof Blob) {
         return new Uint8Array(await data.arrayBuffer());
