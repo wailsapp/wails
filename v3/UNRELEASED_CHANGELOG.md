@@ -17,15 +17,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- macOS app activation now respects activation policy for regular apps only in [PR](https://github.com/wailsapp/wails/pull/5897) by @julianstorer
-- Guard uninitialized GTK windows in Linux builds in [PR](https://github.com/wailsapp/wails/pull/5898) by @julianstorer
-- Set explicit opaque background color for Linux WebKit windows before URL load in [PR](https://github.com/wailsapp/wails/pull/5899) by @julianstorer
+- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

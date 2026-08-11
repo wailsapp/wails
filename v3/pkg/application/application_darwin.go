@@ -141,7 +141,19 @@ static void destroyApp(void) {
 // Set the application menu
 static void setApplicationMenu(void *menu) {
 	NSMenu *nsMenu = (__bridge NSMenu *)menu;
-	[NSApp setMainMenu:menu];
+	void (^apply)(void) = ^{
+		[NSApp setMainMenu:nsMenu];
+	};
+
+	// AppKit requires the main menu to be replaced on the main thread. Menu.Set
+	// may be called from Wails event listeners, which execute on worker
+	// goroutines, so marshal the update synchronously. Avoid dispatch_sync when
+	// already on the main thread because that would deadlock.
+	if ([NSThread isMainThread]) {
+		apply();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), apply);
+	}
 }
 
 // Get the application name
