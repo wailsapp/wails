@@ -2,6 +2,7 @@ package main
 
 import (
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -31,6 +32,13 @@ type Scenario struct {
 	AltPayloadBytes int
 
 	counter *atomic.Int64 // shared across copies of the struct
+
+	// emitMu serialises taking a sequence number with the dispatch call that
+	// carries it. Without it, two emitters can take seq N and N+1 and then
+	// reach the framework in the other order, and the reorders the JS side
+	// counts are this harness racing itself rather than anything the framework
+	// did. Only used by MixedSource scenarios.
+	emitMu *sync.Mutex
 }
 
 func (s Scenario) nextSeq() int64   { return s.counter.Add(1) - 1 }
@@ -39,6 +47,7 @@ func (s Scenario) resetCounter()    { s.counter.Store(0) }
 
 func newScenario(s Scenario) Scenario {
 	s.counter = &atomic.Int64{}
+	s.emitMu = &sync.Mutex{}
 	return s
 }
 
