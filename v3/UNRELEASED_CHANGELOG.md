@@ -22,6 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- macOS zoom animation uses CADisplayLink or NSTimer for smoother performance in [PR](https://github.com/wailsapp/wails/pull/5945) by @savely-krasovsky
 
 ## Fixed
 <!-- Bug fixes -->
