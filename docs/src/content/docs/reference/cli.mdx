@@ -21,6 +21,7 @@ wails3 <command> --help
 | Command | Description |
 |---------|-------------|
 | `wails3 init` | Create a new project from a template. Flags: `-n` (project name), `-t` (template, default `vanilla`), `-p` (Go package name, default `main`), `-d` (project directory, default `.`), `-q` (quiet), `-l` (list templates), `-mod` (Go module path), `--git` (Git repository URL), `--skipgomodtidy`, `-s` (skip remote-template warning), `--productname`/`--productdescription`/`--productversion`/`--productcompany`/`--productcopyright`/`--productcomments`/`--productidentifier`. |
+| `wails3 migrate` | Migrate a V2 project into a separate V3 output directory. Experimental: use `-d` for the V2 project, `-o` for the new output directory, `-f` to allow a non-empty output directory, `-q` for quiet output, and `-skipgomodtidy` to skip dependency cleanup. Review the generated `MIGRATION.md`; application logic and remaining V2 API calls require manual porting. |
 | `wails3 dev` | Run the application in development mode with frontend hot reload. Flags: `--config` (default `./build/config.yml`), `--port` (Vite dev port), `-s` (enable HTTPS). |
 | `wails3 build` | Build the project. Thin wrapper around the Taskfile `build` task. Flags: `--tags` (forwarded as `EXTRA_TAGS=`), `--obfuscated` (build with Garble; see [Obfuscated Builds](/guides/build/obfuscation)), `--garbleargs` (extra flags forwarded to `garble` before the `build` subcommand). |
 | `wails3 package` | Run the platform-specific `package` Taskfile task. |

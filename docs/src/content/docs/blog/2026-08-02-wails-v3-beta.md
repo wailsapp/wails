@@ -134,9 +134,11 @@ expect every v2 project to convert without review: test the result, port your
 runtime calls deliberately, and keep v2 in place until the new application is
 ready.
 
-We are also evaluating an experimental migration assistant. It is not part of
-this beta release, and we will only recommend it once it has been validated
-against representative real-world v2 projects.
+The beta CLI also includes an experimental migration assistant:
+`wails3 migrate -d /path/to/v2-project -o /path/to/v3-project`. It creates a
+separate V3 project and a `MIGRATION.md` checklist, but it does not promise a
+zero-touch conversion. Review the generated project, port the listed V2 API
+calls, and report reproducible problems in the issue tracker.
 
 ## A candid note on the journey
 

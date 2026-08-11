@@ -70,6 +70,16 @@ This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wail
 
 **Decision**: No changes needed - system tray is already GTK-agnostic.
 
+### Decision 6: Go 1.25 Minimum for v3 Migration (2026-08-09)
+**Context**: Wails v3 requires Go 1.25+, and the migration command generates a
+new v3 module for the user's project.
+
+**Decision**: `wails3 migrate` raises generated modules to `go 1.25` when the
+source project declares an older version.
+
+**Rationale**: Migrated projects must declare the same minimum toolchain as the
+v3 project and its released dependencies so the generated module is buildable.
+
 ## Implementation Progress
 
 ### Phase 1: Build Infrastructure ✅ COMPLETE
