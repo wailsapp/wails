@@ -472,12 +472,12 @@ func (m *streamManager) existingSession(id string) *streamSession {
 	return m.sessions[id]
 }
 
+// removeSession forgets closed transport state. It must not retire the page
+// generation: the document that observed the close may still be loaded and
+// create another stream later.
 func (m *streamManager) removeSession(id string) {
 	m.mu.Lock()
-	if s, ok := m.sessions[id]; ok {
-		delete(m.sessions, id)
-		m.retireLocked(s)
-	}
+	delete(m.sessions, id)
 	m.mu.Unlock()
 }
 
@@ -519,34 +519,42 @@ func (m *streamManager) reap() {
 		case <-m.stop:
 			return
 		case now := <-ticker.C:
-			m.mu.Lock()
-			var doomed []*streamSession
-			for id, s := range m.sessions {
-				// A session with live connections is owned by running handlers,
-				// and under saturation the page can be busy dispatching a large
-				// response for longer than the TTL before it issues the next
-				// poll. Reaping on that basis killed streams mid-run at full
-				// load — measured, after 230,077 frames. Idle time alone is only
-				// trustworthy once nothing is connected; a page that really has
-				// gone is caught by window destroy or by the next page's poll
-				// superseding it, and the long grace below is the backstop for a
-				// renderer that died without either.
-				ttl := streamSessionTTL
-				if s.connCount() > 0 {
-					ttl = streamSessionGrace
-				}
-				if now.Sub(s.lastSeenAt()) > ttl {
-					doomed = append(doomed, s)
-					delete(m.sessions, id)
-					m.retireLocked(s)
-				}
-			}
-			m.mu.Unlock()
-
-			for _, s := range doomed {
-				s.close()
-			}
+			m.reapStale(now)
 		}
+	}
+}
+
+// reapStale performs one janitor sweep. Expiring a session is deliberately not
+// the same as retiring its page generation: a still-loaded page stops polling
+// when its last connection closes and must be able to create another stream
+// after the idle session has expired. Only a newer page poll or destruction of
+// the owning window proves that the page generation itself can never return.
+func (m *streamManager) reapStale(now time.Time) {
+	m.mu.Lock()
+	var doomed []*streamSession
+	for id, s := range m.sessions {
+		// A session with live connections is owned by running handlers,
+		// and under saturation the page can be busy dispatching a large
+		// response for longer than the TTL before it issues the next
+		// poll. Reaping on that basis killed streams mid-run at full
+		// load — measured, after 230,077 frames. Idle time alone is only
+		// trustworthy once nothing is connected; a page that really has
+		// gone is caught by window destroy or by the next page's poll
+		// superseding it, and the long grace below is the backstop for a
+		// renderer that died without either.
+		ttl := streamSessionTTL
+		if s.connCount() > 0 {
+			ttl = streamSessionGrace
+		}
+		if now.Sub(s.lastSeenAt()) > ttl {
+			doomed = append(doomed, s)
+			delete(m.sessions, id)
+		}
+	}
+	m.mu.Unlock()
+
+	for _, s := range doomed {
+		s.close()
 	}
 }
 

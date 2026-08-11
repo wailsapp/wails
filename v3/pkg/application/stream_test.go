@@ -496,10 +496,11 @@ func TestStreamDropWindowClosesOnlyThatWindow(t *testing.T) {
 	mgr := newStreamManager(nil)
 	t.Cleanup(mgr.close)
 
-	s1 := newStreamSession("a", 1, mgr)
-	s2 := newStreamSession("b", 2, mgr)
-	mgr.sessions["a"] = s1
-	mgr.sessions["b"] = s2
+	s1 := mgr.session("a", 1, 1, true)
+	s2 := mgr.session("b", 2, 1, true)
+	if s1 == nil || s2 == nil {
+		t.Fatal("failed to create test sessions")
+	}
 
 	c1 := newTestConn(s1, 1)
 	c2 := newTestConn(s2, 1)
@@ -517,6 +518,9 @@ func TestStreamDropWindowClosesOnlyThatWindow(t *testing.T) {
 	}
 	if mgr.existingSession("b") == nil {
 		t.Fatal("unrelated session was removed")
+	}
+	if got := mgr.session("a", 1, 1, false); got != nil {
+		t.Fatal("destroyed window generation was recreated by a late request")
 	}
 }
 
@@ -1065,6 +1069,90 @@ func TestStreamRetiredSessionCannotBeRecreated(t *testing.T) {
 	}
 	if got := mgr.existingSession("page-2"); got != fresh {
 		t.Fatal("late retired request disturbed the active session")
+	}
+}
+
+// Expiring an idle session cleans up transport state, not the page that owned
+// it. A page stops polling when it has no connections, so it must be able to
+// open another stream after the janitor has removed that idle session.
+func TestStreamReapedIdleSessionCanBeRecreated(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	now := time.Now()
+	old := mgr.session("page-1", 1, 1, true)
+	if old == nil {
+		t.Fatal("failed to create page session")
+	}
+	old.mu.Lock()
+	old.lastSeen = now.Add(-streamSessionTTL - time.Second)
+	old.mu.Unlock()
+
+	mgr.reapStale(now)
+	if got := mgr.existingSession("page-1"); got != nil {
+		t.Fatal("idle session was not reaped")
+	}
+	old.mu.Lock()
+	closed := old.closed
+	old.mu.Unlock()
+	if !closed {
+		t.Fatal("reaped session was not closed")
+	}
+
+	reopened := mgr.session("page-1", 1, 1, false)
+	if reopened == nil {
+		t.Fatal("live page could not recreate its session after idle reap")
+	}
+	if reopened == old {
+		t.Fatal("idle reap reused the closed session")
+	}
+	if got := mgr.session("page-1", 1, 1, true); got != reopened {
+		t.Fatal("poll did not retain the live page's recreated session")
+	}
+}
+
+// The poll cleanup path observes an already-closed session. Removing that
+// transport state must likewise leave the still-loaded page generation usable.
+func TestStreamRemovedClosedSessionCanBeRecreated(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	old := mgr.session("page-1", 1, 1, true)
+	if old == nil {
+		t.Fatal("failed to create page session")
+	}
+	old.close()
+	mgr.removeSession(old.id)
+
+	if got := mgr.session("page-1", 1, 1, false); got == nil {
+		t.Fatal("live page could not recreate its session after closed-session cleanup")
+	}
+}
+
+// Reaping the current page's idle transport must not weaken the watermark
+// established when that page superseded its predecessor. The current page may
+// reopen; a delayed request from the previous page must remain gone.
+func TestStreamReapPreservesSupersededGenerationWatermark(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	old := mgr.session("page-1", 1, 1, true)
+	current := mgr.session("page-2", 1, 2, true)
+	if old == nil || current == nil {
+		t.Fatal("failed to create page generations")
+	}
+
+	now := time.Now()
+	current.mu.Lock()
+	current.lastSeen = now.Add(-streamSessionTTL - time.Second)
+	current.mu.Unlock()
+	mgr.reapStale(now)
+
+	if got := mgr.session("page-1", 1, 1, false); got != nil {
+		t.Fatal("idle reap allowed the superseded page generation to return")
+	}
+	if got := mgr.session("page-2", 1, 2, false); got == nil {
+		t.Fatal("idle reap prevented the current page generation from reopening")
 	}
 }
 

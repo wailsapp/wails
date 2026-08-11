@@ -171,6 +171,12 @@ Three mechanisms close things, in order of how quickly they notice:
 2. **Window destroy** drops every session for that window, like `eventPayloadStore.dropWindow`.
 3. **TTL reaping** catches anything else — a crashed renderer, a machine asleep.
 
+Only the first two mechanisms retire the page generation. TTL cleanup removes the idle
+session without advancing the retired-generation watermark: a page stops polling whenever
+its last connection closes, but that same still-loaded page must be able to open another
+stream later. A genuinely superseded generation remains blocked because the newer page's
+poll advances the watermark before the old session is removed.
+
 **The platform layer does not report a cancelled request.** The webview request context is
 `context.Background()` with a deferred cancel (`assetserver_webview.go`), so a poll
 belonging to a page that has navigated away stays parked until the hold expires. Rule 1
