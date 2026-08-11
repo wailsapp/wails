@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
 - Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
 - Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
 
