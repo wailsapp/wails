@@ -222,10 +222,10 @@ export class WailsSocket extends EventTarget {
             return;
         }
 
-        // Resolved now rather than inside the chain, so a Blob is read once and
-        // a typed array is captured at its current identity. The bytes are not
-        // copied — see toBytes — so a caller must not mutate a buffer it has
-        // handed to send().
+        // Resolve now rather than inside the chain. Mutable binary inputs are
+        // copied synchronously so send() snapshots their bytes like a native
+        // WebSocket, even when a batch waits behind an in-flight request. A
+        // Blob is immutable and is therefore safe to read asynchronously once.
         const immediate = toBytesSync(data);
         const snapshot = immediate ? Promise.resolve(immediate) : toBytes(data);
 
@@ -498,9 +498,9 @@ function toBytesSync(data: string | ArrayBufferLike | ArrayBufferView | Blob): U
         return null;
     }
     if (ArrayBuffer.isView(data)) {
-        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice();
     }
-    return new Uint8Array(data as ArrayBufferLike);
+    return new Uint8Array(data as ArrayBufferLike).slice();
 }
 
 async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob): Promise<Uint8Array> {
@@ -510,15 +510,10 @@ async function toBytes(data: string | ArrayBufferLike | ArrayBufferView | Blob):
     if (typeof Blob !== "undefined" && data instanceof Blob) {
         return new Uint8Array(await data.arrayBuffer());
     }
-    // A view, not a copy. Copying every frame costs a full memcpy per send,
-    // which at several hundred MB/s is enough allocation churn to dominate the
-    // transport and destabilise the page. The ownership rule is documented
-    // instead: do not mutate a buffer you have passed to send() until the
-    // send has been issued.
     if (ArrayBuffer.isView(data)) {
-        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice();
     }
-    return new Uint8Array(data as ArrayBufferLike);
+    return new Uint8Array(data as ArrayBufferLike).slice();
 }
 
 async function postFrame(connID: number, kind: number, body: Uint8Array, name?: string): Promise<void> {
