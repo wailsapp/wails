@@ -168,7 +168,7 @@ export default defineConfig({
         {
           label: "Tutorials",
           collapsed: true,
-          autogenerate: { directory: "tutorials" },
+          items: [{ autogenerate: { directory: "tutorials" } }],
         },
 
         // Core Concepts
@@ -244,47 +244,47 @@ export default defineConfig({
             {
               label: "Autostart",
               collapsed: true,
-              autogenerate: { directory: "features/autostart" },
+              items: [{ autogenerate: { directory: "features/autostart" } }],
             },
             {
               label: "Clipboard",
               collapsed: true,
-              autogenerate: { directory: "features/clipboard" },
+              items: [{ autogenerate: { directory: "features/clipboard" } }],
             },
             {
               label: "Browser",
               collapsed: true,
-              autogenerate: { directory: "features/browser" },
+              items: [{ autogenerate: { directory: "features/browser" } }],
             },
             {
               label: "Drag & Drop",
               collapsed: true,
-              autogenerate: { directory: "features/drag-and-drop" },
+              items: [{ autogenerate: { directory: "features/drag-and-drop" } }],
             },
             {
               label: "Keyboard",
               collapsed: true,
-              autogenerate: { directory: "features/keyboard" },
+              items: [{ autogenerate: { directory: "features/keyboard" } }],
             },
             {
               label: "Notifications",
               collapsed: true,
-              autogenerate: { directory: "features/notifications" },
+              items: [{ autogenerate: { directory: "features/notifications" } }],
             },
             {
               label: "Screens",
               collapsed: true,
-              autogenerate: { directory: "features/screens" },
+              items: [{ autogenerate: { directory: "features/screens" } }],
             },
             {
               label: "Environment",
               collapsed: true,
-              autogenerate: { directory: "features/environment" },
+              items: [{ autogenerate: { directory: "features/environment" } }],
             },
             {
               label: "Platform-Specific",
               collapsed: true,
-              autogenerate: { directory: "features/platform" },
+              items: [{ autogenerate: { directory: "features/platform" } }],
             },
           ],
         },
@@ -446,10 +446,10 @@ export default defineConfig({
                 { label: "Overview", link: "/community/showcase" },
                 {
                   label: "Applications",
-                  autogenerate: {
+                  items: [{ autogenerate: {
                     directory: "community/showcase",
                     collapsed: true,
-                  },
+                  } }],
                 },
               ],
             },
