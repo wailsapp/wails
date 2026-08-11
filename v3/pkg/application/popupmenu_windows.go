@@ -195,7 +195,8 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 			// The append above passed the submenu HMENU as uIDNewItem, so this
 			// item currently has no command ID. Restore it, otherwise runtime
 			// updates to the submenu item itself are silently dropped.
-			if !assignCommandID(parentMenu, w32.GetMenuItemCount(parentMenu)-1, menuItemImpl.id) {
+			pos := w32.GetMenuItemCount(parentMenu) - 1
+			if pos < 0 || !assignCommandID(parentMenu, pos, menuItemImpl.id) {
 				return fmt.Errorf("assigning a command ID failed for %q: %v", menuText, syscall.GetLastError())
 			}
 		}
