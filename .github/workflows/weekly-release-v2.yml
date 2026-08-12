@@ -251,6 +251,7 @@ jobs:
           --verify-tag \
           --fail-on-no-commits \
           --latest
+
     - name: Dry run summary
       if: steps.should_release.outputs.proceed == 'true' && github.event.inputs.dry_run == 'true'
       run: |
