@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add documentation URL generation to automatic changelog entries in [PR](https://github.com/wailsapp/wails/pull/5957) by @taliesin-ai
 - Add Streams: bidirectional byte streams between Go and JavaScript with the WebSocket
   programming model and no listening socket. Declare a stream in Go with
   `app.HandleStream(name, handler)` and connect from the frontend with `Stream(name)`,
