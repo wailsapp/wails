@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -81,8 +82,9 @@ func main() {
 
 	// Documentation is still being built when this job runs, so the public URL
 	// must be derived from the source path rather than checked against the live
-	// site. Only Added entries get the link; the generated prose remains model
-	// controlled, while the URL is deterministic and cannot be hallucinated.
+	// site. Added entries and conventional-commit feat PRs get the link; the
+	// generated prose remains model controlled, while the URL is deterministic
+	// and cannot be hallucinated.
 	docURLs, err := documentationURLs(pr.Files)
 	if err != nil {
 		fmt.Printf("⚠️  Could not calculate documentation URL: %v — continuing without a documentation link\n", err)
@@ -161,7 +163,7 @@ func fetchPR(repo, prNumber, token string) (prInfo, error) {
 
 func fetchPRFiles(repo, prNumber, token string) ([]string, error) {
 	var files []string
-	for page := 1; page <= 10; page++ {
+	for page := 1; page <= 30; page++ {
 		apiURL := fmt.Sprintf("https://api.github.com/repos/%s/pulls/%s/files?per_page=100&page=%d", repo, prNumber, page)
 		body, err := githubGet(apiURL, token)
 		if err != nil {
@@ -170,11 +172,15 @@ func fetchPRFiles(repo, prNumber, token string) ([]string, error) {
 
 		var raw []struct {
 			Filename string `json:"filename"`
+			Status   string `json:"status"`
 		}
 		if err := json.Unmarshal(body, &raw); err != nil {
 			return nil, fmt.Errorf("parse changed files: %w", err)
 		}
 		for _, file := range raw {
+			if file.Status == "removed" {
+				continue
+			}
 			files = append(files, file.Filename)
 		}
 		if len(raw) < 100 {
@@ -221,6 +227,10 @@ func documentationURLForFile(file string) (string, error) {
 
 	slug, err := readFrontmatterSlug(file)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Printf("⚠️  Documentation file %q is not present in the checkout; skipping link\n", file)
+			return "", nil
+		}
 		return "", err
 	}
 	return documentationURLFromPath(file, slug)

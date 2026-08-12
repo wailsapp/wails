@@ -81,13 +81,24 @@ jobs:
         # Run the release script in check mode to see if there's content
         cd v3/tasks/release
         
-        # Use the release script itself to check for content
-        if go run release.go --check-only 2>/dev/null; then
+        # Use the release script itself to check for content. The script uses
+        # exit status 1 for the expected "no content" result, so preserve that
+        # result while allowing read/parse failures to fail this workflow.
+        set +e
+        CHECK_OUTPUT=$(go run release.go --check-only 2>&1)
+        CHECK_STATUS=$?
+        set -e
+
+        if [ "$CHECK_STATUS" -eq 0 ]; then
           echo "has_unreleased_content=true" >> $GITHUB_OUTPUT
           echo "✅ Found unreleased changelog content"
-        else
+        elif [ "$CHECK_STATUS" -eq 1 ] && grep -Fq "No unreleased changelog content found." <<< "$CHECK_OUTPUT"; then
           echo "has_unreleased_content=false" >> $GITHUB_OUTPUT
           echo "ℹ️  No unreleased changelog content found"
+        else
+          echo "$CHECK_OUTPUT" >&2
+          echo "❌ Changelog check failed (exit status $CHECK_STATUS)" >&2
+          exit "$CHECK_STATUS"
         fi
 
     - name: Quick change detection and early exit

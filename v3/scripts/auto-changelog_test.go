@@ -49,3 +49,13 @@ func TestDocumentationURLForSlug(t *testing.T) {
 		t.Fatalf("got %q", got)
 	}
 }
+
+func TestDocumentationURLForMissingFile(t *testing.T) {
+	got, err := documentationURLForFile("docs/src/content/docs/removed-by-pr.mdx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "" {
+		t.Fatalf("documentationURLForFile() = %q, want empty URL for a missing file", got)
+	}
+}
