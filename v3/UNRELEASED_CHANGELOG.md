@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update docs sidebar autogeneration and blog author type derivation in [PR](https://github.com/wailsapp/wails/pull/5938) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
