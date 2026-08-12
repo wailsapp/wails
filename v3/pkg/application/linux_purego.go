@@ -901,9 +901,11 @@ func (w *linuxWebviewWindow) present() {
 }
 
 func (w *linuxWebviewWindow) setTitle(title string) {
-	if !w.parent.options.Frameless {
-		gtk_window_set_title(uintptr(w.window), title)
-	}
+	// Set unconditionally, frameless included: gtk_window_set_title writes the
+	// WM_NAME/_NET_WM_NAME hints that taskbars and window switchers label the
+	// window with, it does not draw a titlebar. Decorations are governed
+	// separately, by gtk_window_set_decorated.
+	gtk_window_set_title(uintptr(w.window), title)
 }
 
 func (w *linuxWebviewWindow) setSize(width, height int) {
