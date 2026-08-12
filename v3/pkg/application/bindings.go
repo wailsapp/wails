@@ -84,10 +84,11 @@ type BoundMethod struct {
 }
 
 type Bindings struct {
-	marshalError  func(error) []byte
-	boundMethods  map[string]*BoundMethod
-	boundByID     map[uint32]*BoundMethod
-	methodAliases map[uint32]uint32
+	marshalError      func(error) []byte
+	boundMethods      map[string]*BoundMethod
+	boundByID         map[uint32]*BoundMethod
+	boundServiceTypes map[reflect.Type]struct{}
+	methodAliases     map[uint32]uint32
 }
 
 var registeredBindingMethodIDs sync.Map
@@ -123,10 +124,11 @@ func getRegisteredBindingMethodID(method reflect.Method) (uint32, bool) {
 
 func NewBindings(marshalError func(error) []byte, aliases map[uint32]uint32) *Bindings {
 	return &Bindings{
-		marshalError:  wrapErrorMarshaler(marshalError, defaultMarshalError),
-		boundMethods:  make(map[string]*BoundMethod),
-		boundByID:     make(map[uint32]*BoundMethod),
-		methodAliases: aliases,
+		marshalError:      wrapErrorMarshaler(marshalError, defaultMarshalError),
+		boundMethods:      make(map[string]*BoundMethod),
+		boundByID:         make(map[uint32]*BoundMethod),
+		boundServiceTypes: make(map[reflect.Type]struct{}),
+		methodAliases:     aliases,
 	}
 }
 
@@ -135,6 +137,10 @@ func (b *Bindings) Add(service Service) error {
 	methods, err := getMethods(service.Instance(), service.bindingProjection)
 	if err != nil {
 		return err
+	}
+	serviceType := reflect.TypeOf(service.Instance())
+	if _, registered := b.boundServiceTypes[serviceType]; registered {
+		return fmt.Errorf("service type '%s' is already registered. Please note that you can register at most one service of each type; additional instances must be wrapped in dedicated structs", serviceType)
 	}
 
 	marshalError := wrapErrorMarshaler(service.options.MarshalError, defaultMarshalError)
@@ -164,6 +170,7 @@ func (b *Bindings) Add(service Service) error {
 		b.boundMethods[method.FQN] = method
 		b.boundByID[method.ID] = method
 	}
+	b.boundServiceTypes[serviceType] = struct{}{}
 
 	return nil
 }
@@ -223,6 +230,9 @@ func getMethods(value any, bindingProjection reflect.Type) ([]*BoundMethod, erro
 			return nil, fmt.Errorf("%s is a named type, not a pointer to named type", valueType)
 		}
 		return nil, fmt.Errorf("%s is not a pointer to named type", valueType)
+	}
+	if reflect.ValueOf(value).IsNil() {
+		return nil, errors.New("service instance is nil")
 	}
 
 	// Process Named Type

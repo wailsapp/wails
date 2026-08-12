@@ -25,6 +25,10 @@ type FrontendProjection interface {
 	Echo(string) string
 }
 
+type BackendProjection interface {
+	BackendOnly() string
+}
+
 type privateProjection interface {
 	private()
 }
@@ -324,6 +328,14 @@ func TestServiceBindingProjectionValidation(t *testing.T) {
 			}(),
 			want: "service instance is nil",
 		},
+		{
+			name: "typed nil concrete pointer",
+			service: func() application.Service {
+				var instance *ProjectedService
+				return application.NewServiceAs[FrontendProjection](instance)
+			}(),
+			want: "service instance is nil",
+		},
 	}
 
 	for _, test := range tests {
@@ -331,6 +343,47 @@ func TestServiceBindingProjectionValidation(t *testing.T) {
 			err := application.NewBindings(nil, nil).Add(test.service)
 			if err == nil || !strings.Contains(err.Error(), test.want) {
 				t.Fatalf("bindings.Add() error = %v, want error containing %q", err, test.want)
+			}
+		})
+	}
+}
+
+func TestServiceBindingRejectsDuplicateConcreteType(t *testing.T) {
+	_ = application.New(application.Options{})
+
+	tests := []struct {
+		name     string
+		services func(*ProjectedService) (application.Service, application.Service)
+	}{
+		{
+			name: "different projections",
+			services: func(instance *ProjectedService) (application.Service, application.Service) {
+				return application.NewServiceAs[FrontendProjection](instance), application.NewServiceAs[BackendProjection](instance)
+			},
+		},
+		{
+			name: "projected then unprojected",
+			services: func(instance *ProjectedService) (application.Service, application.Service) {
+				return application.NewServiceAs[FrontendProjection](instance), application.NewService(instance)
+			},
+		},
+		{
+			name: "unprojected then projected",
+			services: func(instance *ProjectedService) (application.Service, application.Service) {
+				return application.NewService(instance), application.NewServiceAs[FrontendProjection](instance)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			first, second := test.services(&ProjectedService{})
+			bindings := application.NewBindings(nil, nil)
+			if err := bindings.Add(first); err != nil {
+				t.Fatalf("first bindings.Add() error = %v", err)
+			}
+			if err := bindings.Add(second); err == nil || !strings.Contains(err.Error(), "is already registered") {
+				t.Fatalf("second bindings.Add() error = %v, want already registered error", err)
 			}
 		})
 	}

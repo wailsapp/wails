@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +12,12 @@ import (
 )
 
 const projectionFixture = "github.com/wailsapp/wails/v3/internal/generator/testdata/service_projection"
+
+const (
+	projectionConflictFixture    = "github.com/wailsapp/wails/v3/internal/generator/testdata/service_projection_conflict"
+	projectionMixedFixture       = "github.com/wailsapp/wails/v3/internal/generator/testdata/service_projection_mixed"
+	projectionUnsupportedFixture = "github.com/wailsapp/wails/v3/internal/generator/testdata/service_projection_unsupported"
+)
 
 func TestFindProjectedService(t *testing.T) {
 	pkgs, err := LoadPackages(nil, projectionFixture)
@@ -42,6 +49,81 @@ func TestFindProjectedService(t *testing.T) {
 	}
 	if found[0].Projection == nil || found[0].Projection.Name() != "FrontendAPI" {
 		t.Fatalf("service projection = %v, want FrontendAPI", found[0].Projection)
+	}
+}
+
+func TestFindProjectedServiceRegistrationConflicts(t *testing.T) {
+	tests := []struct {
+		name    string
+		fixture string
+	}{
+		{name: "different projections", fixture: projectionConflictFixture},
+		{name: "projected and unprojected", fixture: projectionMixedFixture},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			pkgs, err := LoadPackages(nil, test.fixture)
+			if err != nil {
+				t.Fatal(err)
+			}
+			systemPaths, err := ResolveSystemPaths(nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			report := NewErrorReport(nil)
+			services, _, err := FindServices(pkgs, systemPaths, report)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var found []*ServiceBinding
+			for service := range services {
+				found = append(found, service)
+			}
+			if len(found) != 1 {
+				t.Fatalf("found %d services, want 1", len(found))
+			}
+			if !report.HasErrors() {
+				t.Fatal("conflicting service registrations did not report an error")
+			}
+			if got := strings.Join(report.Errors(), "\n"); !strings.Contains(got, "conflicting frontend binding projections") {
+				t.Fatalf("errors = %q, want conflicting projection error", got)
+			}
+		})
+	}
+}
+
+func TestGenerateRejectsUnsupportedProjectedServiceShapes(t *testing.T) {
+	options := &flags.GenerateBindingsOptions{
+		ModelsFilename:    "models",
+		IndexFilename:     "index",
+		TimeType:          "string",
+		TS:                true,
+		UseBundledRuntime: true,
+		NoEvents:          true,
+	}
+
+	generator := NewGenerator(options, config.NullCreator, config.NullLogger)
+	if _, err := generator.Generate(projectionUnsupportedFixture); err == nil {
+		t.Fatal("Generate() error = nil, want unsupported projected service error")
+	} else {
+		var report *ErrorReport
+		if !errors.As(err, &report) {
+			t.Fatalf("Generate() error = %T, want *ErrorReport", err)
+		}
+		if !report.HasErrors() {
+			t.Fatalf("Generate() report = %v, want errors", report)
+		}
+		if report.HasWarnings() {
+			t.Fatalf("Generate() warnings = %v, want unsupported shapes classified as errors", report.Warnings())
+		}
+		messages := strings.Join(report.Errors(), "\n")
+		for _, want := range []string{"argument T", "FrontendAPI"} {
+			if !strings.Contains(messages, want) {
+				t.Errorf("Generate() errors = %q, want %q", messages, want)
+			}
+		}
 	}
 }
 

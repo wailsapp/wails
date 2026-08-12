@@ -326,7 +326,7 @@ func findProjectedServices(pkgs []*packages.Package, systemPaths *config.SystemP
 				service, ok := namedServicePointer(argumentType)
 				if !ok {
 					if pkg.PkgPath != systemPaths.ApplicationPackage {
-						logger.Warningf(
+						logger.Errorf(
 							"%s: cannot determine concrete service type from projected service argument %s; pass a concrete service pointer directly",
 							position,
 							argumentType,

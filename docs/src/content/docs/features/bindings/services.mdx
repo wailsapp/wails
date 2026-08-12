@@ -112,7 +112,7 @@ Generator directives such as `//wails:ignore` control generated JavaScript and T
 Projection requirements and tradeoffs:
 
 - Supply the named interface type explicitly: `NewServiceAs[FrontendAuth](authService)`.
-- Pass the concrete service pointer directly so the binding generator can identify its package and type. Do not first store it in an interface-typed variable.
+- Pass the concrete service pointer directly so the binding generator can identify its package and type. Binding generation reports an error if it is first stored in an interface-typed variable or passed through a generic wrapper.
 - The generated module and method IDs retain the concrete service identity, preserving the normal Wails binding layout and obfuscated-build support.
 - Lifecycle hooks, HTTP routing, service naming, and backend access still use the concrete instance; only frontend method registration is filtered.
 - The interface is an additional API declaration, but it replaces forwarding facade structs and makes the exposed surface easy to review and mock.
