@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- WebView2 cookie test skips in CI unless opt-in and locks execution to current OS thread in [PR](https://github.com/wailsapp/wails/pull/5951) by @leaanthony
 - Windows menu builders restore command IDs for submenu parent items in [PR](https://github.com/wailsapp/wails/pull/5944) by @gilad-ch
 - Align the official cross-compilation image with the GTK 4.14+ Linux support baseline (#5928)
 - Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
