@@ -495,7 +495,7 @@ func readStreamFrameBody(req *http.Request) ([]byte, error) {
 		if n > streamMaxFrameBytes {
 			return nil, errStreamBadBody
 		}
-		buf := make([]byte, n)
+		buf := make([]byte, int(n))
 		if _, err := io.ReadFull(req.Body, buf); err != nil {
 			return nil, errStreamBadBody
 		}
