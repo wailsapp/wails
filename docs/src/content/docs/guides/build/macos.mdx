@@ -20,6 +20,34 @@ This creates `bin/<AppName>.app` containing:
 - App icon in `Contents/Resources/` (from `icons.icns` or, when present, from an asset catalog `Assets.car`)
 - `Info.plist` with app metadata
 
+## Optional private macOS APIs
+
+Wails uses public macOS APIs by default. A small set of behaviors that WebKit
+does not expose publicly remains available through the opt-in `privatemacapis`
+Go build tag:
+
+- transparent `WKWebView` content used by transparent, translucent, and
+  full-window Liquid Glass backdrops;
+- programmatically opening Web Inspector and the developer-extras fallback on
+  macOS versions before 13.3;
+- legacy cross-window Liquid Glass grouping and undocumented native style
+  values.
+
+Application code and window options do not change between modes. Opt in for a
+development session, production build, or package with:
+
+```bash
+EXTRA_TAGS=privatemacapis wails3 dev
+wails3 build -tags privatemacapis
+wails3 package EXTRA_TAGS=privatemacapis GOOS=darwin
+```
+
+<Aside type="caution">
+Private APIs are unsupported and may change between macOS releases. Apple
+requires Mac App Store submissions to use public APIs, so leave this tag off for
+those builds.
+</Aside>
+
 ### Universal Binary
 
 Build for both Apple Silicon and Intel Macs:

@@ -43,4 +43,11 @@ void windowSetLiquidGlass(void* window, int style, int material, double cornerRa
 void windowRemoveVisualEffects(void* window);
 void configureWebViewForLiquidGlass(void* window);
 
+// Implemented by the privatemacapis build-tag variants. The default
+// implementation uses public WebKit APIs only; the opt-in implementation
+// restores WKWebView transparency and undocumented Liquid Glass grouping.
+void wailsSetWebViewTransparent(void* window);
+void wailsSetWebViewBackgroundColour(void* window, int r, int g, int b, int alpha);
+void wailsConfigurePrivateLiquidGlass(void* glassView, int style, const char* groupID, double groupSpacing);
+
 #endif /* WebviewWindowDelegate_h */

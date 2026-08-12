@@ -195,6 +195,7 @@ type WebviewWindowOptions struct {
 	Permissions map[PermissionType]Permission
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
+	// On macOS, programmatic opening requires the privatemacapis build tag.
 	OpenInspectorOnStartup bool
 
 	// Mac options
@@ -504,11 +505,14 @@ type MacBackdrop int
 const (
 	// MacBackdropNormal - The default value. The window will have a normal opaque background.
 	MacBackdropNormal MacBackdrop = iota
-	// MacBackdropTransparent - The window will have a transparent background, with the content underneath it being visible
+	// MacBackdropTransparent - The window will have a transparent background, with the content underneath it being visible.
+	// Full WKWebView transparency requires the privatemacapis build tag.
 	MacBackdropTransparent
-	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted"
+	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted".
+	// Full WKWebView transparency requires the privatemacapis build tag.
 	MacBackdropTranslucent
-	// MacBackdropLiquidGlass - The window will use Apple's Liquid Glass effect (macOS 15.0+ with fallback to translucent)
+	// MacBackdropLiquidGlass - The window will use Apple's Liquid Glass effect (macOS 26.0+ with fallback to translucent).
+	// Revealing the effect behind web content requires the privatemacapis build tag.
 	MacBackdropLiquidGlass
 )
 
@@ -582,10 +586,12 @@ type MacLiquidGlass struct {
 	// Tint color for the glass (optional, nil for no tint)
 	TintColor *RGBA
 
-	// Group identifier for merging multiple glass windows
+	// Group identifier for merging multiple glass windows.
+	// This uses an undocumented AppKit API and requires the privatemacapis build tag.
 	GroupID string
 
-	// Spacing between grouped glass elements (in points)
+	// Spacing between grouped glass elements (in points).
+	// This uses an undocumented AppKit API and requires the privatemacapis build tag.
 	GroupSpacing float64
 }
 
