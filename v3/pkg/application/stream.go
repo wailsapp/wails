@@ -142,10 +142,16 @@ const (
 	streamInQueueBytesGlobal  = 256 << 20
 	streamInQueueDepthGlobal  = 8192
 
-	// Live desktop connections and their queued close notifications share this
-	// lifecycle allowance. Non-close controls have a separate cap so refused
-	// opens cannot consume the slots reserved for accepted connections to end.
-	streamMaxConnectionsGlobal  = 4096
+	// A live desktop connection holds one lifecycle slot from open until its
+	// StreamConn is torn down.
+	streamMaxConnectionsGlobal = 4096
+
+	// Queued close notifications are counted separately from other controls, so
+	// refused opens cannot consume the capacity an accepted connection needs to
+	// report that it ended. Each connection queues at most one close, and a
+	// close carries no payload, so matching the connection allowance bounds this
+	// at a few kilobytes of bookkeeping.
+	streamOutCloseDepthGlobal   = streamMaxConnectionsGlobal
 	streamOutControlDepthGlobal = streamMaxConnectionsGlobal
 )
 
@@ -192,7 +198,6 @@ type StreamConn struct {
 	shutdownOnce sync.Once
 	manager      *streamManager
 	lifecycle    bool
-	closeQueued  atomic.Bool
 }
 
 // Name is the stream name this connection was opened against.
@@ -302,10 +307,7 @@ func (c *StreamConn) Close() error {
 		// Best-effort notification: if the buffer is full or the session is
 		// already gone the frontend finds out via the session going away
 		// instead, so this must not block.
-		c.closeQueued.Store(true)
-		if err := c.sink.enqueue(c, c.id, frameClose, nil, false); err != nil {
-			c.closeQueued.Store(false)
-		}
+		_ = c.sink.enqueue(c, c.id, frameClose, nil, false)
 		c.shutdown()
 	})
 	return nil
@@ -338,7 +340,12 @@ func (c *StreamConn) shutdown() {
 		c.inMu.Unlock()
 		if c.manager != nil {
 			c.manager.releaseInbound(releasedBytes, releasedFrames)
-			if c.lifecycle && !c.closeQueued.Load() {
+			// The lifecycle slot belongs to this connection for exactly as long
+			// as the connection exists, and shutdown runs exactly once. A queued
+			// close frame owns a separate close slot, released when that frame is
+			// drained or discarded, so nothing here has to reason about whether
+			// the notification made it out.
+			if c.lifecycle {
 				c.manager.releaseLifecycle()
 			}
 			c.manager.signalBudget()
@@ -442,6 +449,7 @@ type streamManager struct {
 	outBytes    atomic.Int64
 	outFrames   atomic.Int64
 	outControls atomic.Int64
+	outCloses   atomic.Int64
 	lifecycles  atomic.Int64
 	inBytes     atomic.Int64
 	inFrames    atomic.Int64
@@ -566,9 +574,12 @@ func (m *streamManager) reserveOutbound(kind uint8, bytes int, block bool, ctx c
 				reserved = false
 			}
 		case frameClose:
-			// The lifecycle slot reserved by open transfers from the live
-			// connection to this close notification; no new slot is needed.
-			return nil
+			// Closes draw on their own allowance rather than inheriting the
+			// connection's lifecycle slot. Ownership that moves between two
+			// parties has to be handed over atomically; a separate counter has
+			// no handover at all, so a close that fails to queue and a shutdown
+			// that runs concurrently cannot disagree about who releases what.
+			reserved = reserveCounter(&m.outCloses, 1, streamOutCloseDepthGlobal)
 		default:
 			reserved = reserveCounter(&m.outControls, 1, streamOutControlDepthGlobal)
 		}
@@ -578,6 +589,8 @@ func (m *streamManager) reserveOutbound(kind uint8, bytes int, block bool, ctx c
 				case frameData:
 					releaseCounter(&m.outBytes, int64(bytes))
 					releaseCounter(&m.outFrames, 1)
+				case frameClose:
+					releaseCounter(&m.outCloses, 1)
 				default:
 					releaseCounter(&m.outControls, 1)
 				}
@@ -594,27 +607,17 @@ func (m *streamManager) reserveOutbound(kind uint8, bytes int, block bool, ctx c
 	}
 }
 
-// rollbackOutbound returns capacity acquired by reserveOutbound when a frame
-// could not be queued. A close frame acquires no new capacity: it transfers the
-// live connection's lifecycle slot only after it is queued, so rolling back a
-// failed close must leave that slot for StreamConn.shutdown to release.
-func (m *streamManager) rollbackOutbound(kind uint8, bytes int) {
-	if kind == frameClose {
-		return
-	}
-	m.releaseOutbound(kind, bytes)
-}
-
-// releaseOutbound returns the capacity owned by a frame that was successfully
-// queued and has now been drained. A delivered close releases the lifecycle
-// slot transferred from its live connection.
+// releaseOutbound returns the capacity reserveOutbound acquired for a frame,
+// whether that frame was drained, discarded with its session, or never queued
+// at all. Every kind releases exactly what it reserved, so the rollback and the
+// drain paths are the same call.
 func (m *streamManager) releaseOutbound(kind uint8, bytes int) {
 	switch kind {
 	case frameData:
 		releaseCounter(&m.outBytes, int64(bytes))
 		releaseCounter(&m.outFrames, 1)
 	case frameClose:
-		releaseCounter(&m.lifecycles, 1)
+		releaseCounter(&m.outCloses, 1)
 	default:
 		releaseCounter(&m.outControls, 1)
 	}

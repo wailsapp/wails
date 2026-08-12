@@ -176,7 +176,7 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 		s.mu.Lock()
 		if s.closed || (!control && c != nil && c.ctx.Err() != nil) {
 			s.mu.Unlock()
-			s.mgr.rollbackOutbound(kind, len(data))
+			s.mgr.releaseOutbound(kind, len(data))
 			return ErrStreamClosed
 		}
 		if control {
@@ -191,7 +191,7 @@ func (s *streamSession) enqueue(c *StreamConn, connID uint32, kind uint8, data [
 		}
 		if !localRoom {
 			s.mu.Unlock()
-			s.mgr.rollbackOutbound(kind, len(data))
+			s.mgr.releaseOutbound(kind, len(data))
 			if !block {
 				return ErrStreamFull
 			}

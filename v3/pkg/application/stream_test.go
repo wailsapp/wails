@@ -2507,7 +2507,7 @@ func TestStreamGlobalConnectionAdmissionCoversDesktopOpen(t *testing.T) {
 	}
 }
 
-func TestStreamCloseRollbackPreservesLifecycleReservation(t *testing.T) {
+func TestStreamCloseAccountingIsIndependentOfLifecycle(t *testing.T) {
 	mgr := newStreamManager(nil)
 	t.Cleanup(mgr.close)
 
@@ -2517,19 +2517,64 @@ func TestStreamCloseRollbackPreservesLifecycleReservation(t *testing.T) {
 	if err := mgr.reserveOutbound(frameClose, 0, false, nil); err != nil {
 		t.Fatalf("reserve close frame: %v", err)
 	}
-
-	// A close reserves no additional capacity. If enqueue fails, its rollback
-	// must leave the live connection's slot for shutdown to release.
-	mgr.rollbackOutbound(frameClose, 0)
-	if got := mgr.lifecycles.Load(); got != 1 {
-		t.Fatalf("lifecycle after failed close enqueue = %d, want 1", got)
+	if got := mgr.outCloses.Load(); got != 1 {
+		t.Fatalf("close slots after reserve = %d, want 1", got)
 	}
 
-	// Once a close is successfully queued, draining it completes the ownership
-	// transfer and releases that same slot.
+	// Releasing the close frame — whether it was drained or never queued at all
+	// — returns only the close slot. The connection keeps its lifecycle slot
+	// until shutdown, so neither path depends on the other's ordering.
 	mgr.releaseOutbound(frameClose, 0)
+	if got := mgr.outCloses.Load(); got != 0 {
+		t.Fatalf("close slots after release = %d, want 0", got)
+	}
+	if got := mgr.lifecycles.Load(); got != 1 {
+		t.Fatalf("lifecycle after close released = %d, want 1", got)
+	}
+
+	mgr.releaseLifecycle()
 	if got := mgr.lifecycles.Load(); got != 0 {
-		t.Fatalf("lifecycle after delivered close = %d, want 0", got)
+		t.Fatalf("lifecycle after shutdown = %d, want 0", got)
+	}
+}
+
+// A close racing its own session's teardown must still return the connection's
+// lifecycle slot. These leak permanently, so a slow drip eventually refuses
+// every new connection application-wide.
+func TestStreamLifecycleSlotSurvivesCloseTeardownRace(t *testing.T) {
+	const iterations = 3000
+	for i := 0; i < iterations; i++ {
+		mgr := newStreamManager(nil)
+		s := newStreamSession("sess", 1, mgr)
+		mgr.sessions["sess"] = s
+
+		if !mgr.reserveOpen() {
+			t.Fatal("failed to reserve open")
+		}
+		ctx, cancel := context.WithCancel(context.Background())
+		c := &StreamConn{
+			id: 1, name: "t", sink: s, ctx: ctx, cancel: cancel,
+			manager: mgr, lifecycle: true,
+		}
+		c.inCond = sync.NewCond(&c.inMu)
+		s.mu.Lock()
+		s.conns[1] = c
+		s.out = append(s.out, outFrame{connID: 1, kind: frameOpen})
+		s.outControls++
+		s.mu.Unlock()
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() { defer wg.Done(); _ = c.Close() }()
+		go func() { defer wg.Done(); s.close() }()
+		wg.Wait()
+
+		if got := mgr.lifecycles.Load(); got != 0 {
+			t.Fatalf("iteration %d: lifecycle slots outstanding = %d, want 0", i, got)
+		}
+		if got := mgr.outCloses.Load(); got != 0 {
+			t.Fatalf("iteration %d: close slots outstanding = %d, want 0", i, got)
+		}
 	}
 }
 
