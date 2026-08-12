@@ -30,6 +30,42 @@ tasks:
       - rm -rf {{.TEMPLATE_DIR}}
       - mkdir -p {{.TEMPLATE_DIR}}
 
+  install-runtime:
+    desc: Install this checkout's @wailsio/runtime into an app's frontend. Call with `task v3:install-runtime -- ./path/to/app/frontend`
+    summary: |
+      Installs the runtime package from this working tree into an application's
+      frontend, replacing the published npm version.
+
+      A generated app imports @wailsio/runtime from npm, not from the
+      /wails/runtime.js the asset server serves. Under `wails3 dev` Vite
+      resolves it from node_modules, so an app will not see client-side runtime
+      changes made in this checkout until they are published — or until this
+      task points it at the working tree.
+
+      Rebuilds dist/ first, so it always installs current sources.
+
+      Undo with `npm install @wailsio/runtime@latest` in the same directory.
+    silent: true
+    deps:
+      - runtime:build:package
+    cmds:
+      - cmd: |
+          set -eu
+          TARGET="{{.CLI_ARGS}}"
+          if [ -z "$TARGET" ]; then
+            echo "usage: task v3:install-runtime -- <path to your app's frontend directory>"
+            exit 1
+          fi
+          if [ ! -f "$TARGET/package.json" ]; then
+            echo "no package.json found in $TARGET"
+            echo "point this at the directory holding your frontend's package.json"
+            exit 1
+          fi
+          PKG="{{.TASKFILE_DIR}}/internal/runtime/desktop/@wailsio/runtime"
+          cd "$TARGET"
+          npm install "file:$PKG"
+          echo "Installed @wailsio/runtime from $PKG"
+
   install:
     dir: cmd/wails3
     silent: true
