@@ -210,25 +210,77 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		e.errorCallback(fmt.Errorf("error getting Webview2 runtime version: %s", err.Error()))
 	}
 
-	var msg w32.Msg
-	for {
-		if atomic.LoadUintptr(&e.inited) != 0 {
-			break
-		}
-		r, _, _ := w32.User32GetMessageW.Call(
-			uintptr(unsafe.Pointer(&msg)),
-			0,
-			0,
-			0,
-		)
-		if r == 0 {
-			break
-		}
-		w32.User32TranslateMessage.Call(uintptr(unsafe.Pointer(&msg)))
-		w32.User32DispatchMessageW.Call(uintptr(unsafe.Pointer(&msg)))
+	// Pump until the controller reports ready, but never without a deadline.
+	//
+	// CreateCoreWebView2Controller is asynchronous and is not guaranteed to
+	// call back at all: in a session with no interactive window station it
+	// returns success, reports no error, and simply never completes. A
+	// GetMessageW loop keyed only on e.inited then blocks forever, so the
+	// failure presents as a hung window with nothing logged. Wait on the
+	// message queue with a timeout instead, so it fails loudly and promptly.
+	//
+	// A webview that never initialises leaves nothing to host the application,
+	// so this is fatal by design: errorCallback reports and exits, and nothing
+	// below runs.
+	if !e.pumpUntilInited(embedTimeout) {
+		e.errorCallback(fmt.Errorf("timed out after %s waiting for the WebView2 controller; "+
+			"the WebView2 runtime did not complete initialisation", embedTimeout))
 	}
+
 	e.Init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}")
 	return true
+}
+
+// embedTimeout bounds how long Embed waits for CreateCoreWebView2Controller to
+// complete. Controller creation is normally well under a second; this is a
+// backstop for the case where the callback never arrives, not a budget.
+const embedTimeout = 30 * time.Second
+
+// pumpUntilInited runs a message loop until the controller is ready, the queue
+// receives WM_QUIT, or timeout elapses. It reports whether the controller
+// became ready.
+func (e *Chromium) pumpUntilInited(timeout time.Duration) bool {
+	var msg w32.Msg
+	deadline := time.Now().Add(timeout)
+
+	for {
+		if atomic.LoadUintptr(&e.inited) != 0 {
+			return true
+		}
+
+		remaining := time.Until(deadline)
+		if remaining <= 0 {
+			return false
+		}
+
+		// Wake on any queued message or when the deadline expires, whichever
+		// comes first. Unlike GetMessageW this cannot park indefinitely.
+		r, _, _ := w32.User32MsgWaitForMultipleObjects.Call(
+			0, 0, 0,
+			uintptr(uint32(remaining.Milliseconds())),
+			w32.QS_ALLINPUT,
+		)
+		if r == w32.WAIT_TIMEOUT {
+			continue // re-check inited once more, then fail on the deadline
+		}
+
+		// MsgWaitForMultipleObjects only signals that the queue is non-empty;
+		// it does not remove anything. Drain what is there before waiting again,
+		// or the next wait returns immediately on the same message.
+		for {
+			got, _, _ := w32.User32PeekMessageW.Call(
+				uintptr(unsafe.Pointer(&msg)), 0, 0, 0, w32.PM_REMOVE,
+			)
+			if got == 0 {
+				break
+			}
+			if msg.Message == w32.WM_QUIT {
+				return atomic.LoadUintptr(&e.inited) != 0
+			}
+			w32.User32TranslateMessage.Call(uintptr(unsafe.Pointer(&msg)))
+			w32.User32DispatchMessageW.Call(uintptr(unsafe.Pointer(&msg)))
+		}
+	}
 }
 
 func (e *Chromium) SetPadding(padding Rect) {
