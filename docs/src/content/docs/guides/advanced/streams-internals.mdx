@@ -99,12 +99,20 @@ All in `stream.go`. **They are compile-time constants, not options** — there i
 | `streamOutQueueDepth` | 256 | frames buffered per window |
 | `streamOutQueueBytesGlobal` / `streamOutQueueDepthGlobal` | 256 MB / 8,192 | outbound data buffered across the application |
 | `streamInQueueBytesGlobal` / `streamInQueueDepthGlobal` | 256 MB / 8,192 | inbound data awaiting `Receive` across the application |
+| `streamMaxConnections` | 256 | live connections plus queued closes in one session |
 | `streamMaxConnectionsGlobal` | 4,096 | live connections across the application |
 | `streamOutCloseDepthGlobal` | 4,096 | undelivered close notifications across the application |
+| `streamMaxSessionsPerWindow` | 16 | sessions one window may hold before a newer generation must supersede an older one |
+| `streamMaxSessions` | 1,024 | sessions across the application |
+| `streamOutControlDepth` / `streamOutControlDepthGlobal` | 256 / 4,096 | queued non-close control frames, per session and across the application |
+| `streamMaxChunkSets` / `streamMaxChunkTotal` | 256 / 4,096 | incomplete uploads per session, and parts in one upload |
+| `streamMaxChunkBytesGlobal` / `streamMaxChunkPartsGlobal` | 128 MB / 4,096 | chunk payload and part metadata across the application |
+| `streamMaxChunkIDLen` | 64 bytes | one client-supplied chunk-set identifier |
 | `streamMaxResponseBytes` | 1 MB | one poll response |
 | `streamHoldTimeout` | 20 s | how long an empty poll parks |
 | `streamSessionTTL` | 60 s | no poll for this long and no live connections ⇒ session is dead |
 | `streamSessionGrace` | 10 min | no poll for this long with live connections ⇒ session is dead |
+| `streamSessionSweep` | 20 s | how often the janitor looks for dead sessions |
 | `streamMaxFrameBytes` | 64 MB | one frame in either direction |
 | `streamMaxNameLen` | 256 bytes | one registered or requested stream name |
 | `streamInQueueDepth` / `streamInQueueBytes` | 256 / 8 MB | frames received and not yet taken by `Receive` |

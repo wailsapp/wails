@@ -222,16 +222,23 @@ feature.
 
 ## Limits
 
-| | limit |
-|---|---|
-| Buffered per window, awaiting collection | 8 MB or 256 frames, whichever first |
-| Buffered across the application, awaiting collection/write | 256 MB or 8,192 data frames, whichever first |
-| Received per connection, awaiting `Receive` | 8 MB or 256 frames — the frontend is then made to wait |
-| Received across the application, awaiting `Receive` | 256 MB or 8,192 frames, whichever first |
-| Live connections across the application | 4,096 |
-| A single frame, either direction | 64 MB |
-| A stream name | 256 UTF-8 bytes |
-| Idle poll hold | 20 s |
+| | limit | what happens when you reach it |
+|---|---|---|
+| Buffered per window, awaiting collection | 8 MB or 256 frames, whichever first | `Send` blocks; `TrySend` returns `ErrStreamFull` |
+| Buffered across the application, awaiting collection/write | 256 MB or 8,192 data frames | same |
+| Received per connection, awaiting `Receive` | 8 MB or 256 frames | the frontend's `send()` is retried for you until the handler catches up |
+| Received across the application, awaiting `Receive` | 256 MB or 8,192 frames | same |
+| Connections per window | 256 | the open is retried for you until a slot frees |
+| Live connections across the application | 4,096 | same |
+| Sessions per window | 16 | a reload supersedes its own older session; otherwise the open is retried |
+| A single frame, either direction | 64 MB | Go returns `ErrStreamTooLarge`; from JS the stream raises `error` and closes |
+| A stream name | 256 UTF-8 bytes | the open is rejected and the stream raises `error` |
+| Idle poll hold | 20 s | the poll returns empty and the runtime immediately reissues it |
+
+Nothing above drops data silently. The two rows that say *retried for you* are ordinary
+backpressure — the runtime holds the frame and retries with a short backoff, so your code
+sees a slower stream rather than an error. The rows that raise `error` are programming
+mistakes rather than load, and they surface rather than being papered over.
 
 These are compile-time constants today, not options. See the internals guide if you need to
 change them.
