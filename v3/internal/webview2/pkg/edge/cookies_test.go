@@ -3,6 +3,8 @@
 package edge
 
 import (
+	"os"
+	"runtime"
 	"testing"
 	"time"
 	"unsafe"
@@ -14,7 +16,22 @@ import (
 )
 
 func TestCookieManager(t *testing.T) {
+	// This is the only test here that embeds a real WebView2. It needs an
+	// interactive window station and a runtime that delivers the
+	// environment-created callback, neither of which CI reliably provides.
+	//
+	// When that callback does not arrive, Chromium.Embed's message pump has no
+	// deadline — GetMessageW returns 0 only on WM_QUIT — so it spins until the
+	// 10 minute package timeout and takes the whole Windows job down with it,
+	// blocking unrelated pull requests. Skipping keeps that failure mode out of
+	// CI; the pump itself still needs a deadline, which is tracked separately.
+	if os.Getenv("WAILS_TEST_WEBVIEW2") == "" && os.Getenv("CI") != "" {
+		t.Skip("skipping WebView2 embed test in CI; set WAILS_TEST_WEBVIEW2=1 to run it")
+	}
+
 	// Initialize COM
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	err := windows.CoInitializeEx(0, windows.COINIT_APARTMENTTHREADED)
 	if err != nil {
 		t.Fatalf("Failed to initialize COM: %v", err)
