@@ -28,6 +28,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Fix `wails3 dev` hanging for 60s against Vite: the automatic frontend readiness gate now uses a TCP probe instead of an HTTP GET that sent no `Accept` header and received a 404 ([#6209](https://github.com/wailsapp/wails/issues/6209))
 - Keep systray menus working when updated while open in [PR](https://github.com/wailsapp/wails/pull/6301) by @taliesin-ai
 - Handle transient WebView2 COM errors gracefully in runtime operations in [PR](https://github.com/wailsapp/wails/pull/6302) by @leaanthony
+- Apply the window title to frameless windows on Linux, so taskbars and window switchers can tell an application's windows apart in [PR](https://github.com/wailsapp/wails/pull/5960) by @julianstorer
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
