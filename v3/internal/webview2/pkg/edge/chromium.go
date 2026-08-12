@@ -215,13 +215,16 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 	// CreateCoreWebView2Controller is asynchronous and is not guaranteed to
 	// call back at all: in a session with no interactive window station it
 	// returns success, reports no error, and simply never completes. A
-	// GetMessageW loop keyed only on e.inited then blocks forever, so a
-	// recoverable environment failure presents as a hung window with nothing
-	// logged. Wait on the message queue with a timeout instead, and give up.
+	// GetMessageW loop keyed only on e.inited then blocks forever, so the
+	// failure presents as a hung window with nothing logged. Wait on the
+	// message queue with a timeout instead, so it fails loudly and promptly.
+	//
+	// A webview that never initialises leaves nothing to host the application,
+	// so this is fatal by design: errorCallback reports and exits, and nothing
+	// below runs.
 	if !e.pumpUntilInited(embedTimeout) {
 		e.errorCallback(fmt.Errorf("timed out after %s waiting for the WebView2 controller; "+
 			"the WebView2 runtime did not complete initialisation", embedTimeout))
-		return false
 	}
 
 	e.Init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}")
