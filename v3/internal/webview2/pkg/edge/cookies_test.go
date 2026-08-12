@@ -3,7 +3,6 @@
 package edge
 
 import (
-	"os"
 	"runtime"
 	"testing"
 	"time"
@@ -16,22 +15,20 @@ import (
 )
 
 func TestCookieManager(t *testing.T) {
-	// This is the only test here that embeds a real WebView2. It needs an
-	// interactive window station and a runtime that delivers the
-	// environment-created callback, neither of which CI reliably provides.
+	// WebView2 has thread affinity: the control must be created on a thread
+	// with a message pump, and every later call on it — including the cookie
+	// manager and Release — has to happen on that same thread. A Go test
+	// goroutine is free to migrate between OS threads, so pin it for the whole
+	// test before initialising the apartment.
 	//
-	// When that callback does not arrive, Chromium.Embed's message pump has no
-	// deadline — GetMessageW returns 0 only on WM_QUIT — so it spins until the
-	// 10 minute package timeout and takes the whole Windows job down with it,
-	// blocking unrelated pull requests. Skipping keeps that failure mode out of
-	// CI; the pump itself still needs a deadline, which is tracked separately.
-	if os.Getenv("WAILS_TEST_WEBVIEW2") == "" && os.Getenv("CI") != "" {
-		t.Skip("skipping WebView2 embed test in CI; set WAILS_TEST_WEBVIEW2=1 to run it")
-	}
-
-	// Initialize COM
+	// This is also why the cookie assertions below are plain blocks rather than
+	// t.Run subtests: t.Run invokes each subtest on a new goroutine, and
+	// LockOSThread does not extend to it, so the subtests were calling into the
+	// control from outside the apartment that created it.
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+
+	// Initialize COM
 	err := windows.CoInitializeEx(0, windows.COINIT_APARTMENTTHREADED)
 	if err != nil {
 		t.Fatalf("Failed to initialize COM: %v", err)
@@ -100,7 +97,8 @@ func TestCookieManager(t *testing.T) {
 	err = cookieManager.DeleteAllCookies()
 	require.NoError(t, err, "Should delete all cookies without error")
 
-	t.Run("Test Cookie Creation and Properties", func(t *testing.T) {
+	// Cookie creation and properties.
+	{
 		// Create a new cookie
 		cookie, err := cookieManager.CreateCookie("testCookie", "testValue", "example.com", "/test")
 		require.NoError(t, err, "Should create cookie without error")
@@ -162,9 +160,10 @@ func TestCookieManager(t *testing.T) {
 		sameSite, err := cookie.GetSameSite()
 		assert.NoError(t, err, "Should get SameSite without error")
 		assert.Equal(t, int32(2), sameSite, "Cookie SameSite should be Lax")
-	})
+	}
 
-	t.Run("Test Cookie Management", func(t *testing.T) {
+	// Cookie management.
+	{
 		// Create and add a cookie
 		cookie, err := cookieManager.CreateCookie("managedCookie", "testValue", "example.com", "/test")
 		require.NoError(t, err, "Should create cookie without error")
@@ -180,5 +179,5 @@ func TestCookieManager(t *testing.T) {
 		// Delete all cookies
 		err = cookieManager.DeleteAllCookies()
 		assert.NoError(t, err, "Should delete all cookies without error")
-	})
+	}
 }
