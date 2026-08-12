@@ -54,11 +54,11 @@ const (
 	streamMaxNameLen    = 256
 
 	// Chunk reassembly is bounded both per session and across the application.
-	// A per-session 64 MiB cap alone can be multiplied by every admitted
-	// session, retaining tens of gigabytes before any individual store reports
-	// backpressure. The shared allowance supports four simultaneous maximum-size
-	// uploads while keeping total retained host memory defensible.
-	streamMaxChunkBytesGlobal = 4 * streamMaxFrameBytes
+	// Completing a set temporarily retains both its parts and the contiguous
+	// assembled frame, so the admitted payload allowance is half the effective
+	// 256 MiB memory ceiling. This supports two simultaneous maximum-size uploads
+	// without letting their reassembly copies double retained data past the cap.
+	streamMaxChunkBytesGlobal = 2 * streamMaxFrameBytes
 
 	// Payload bytes do not account for maps, slice headers, identifiers, and
 	// per-part bookkeeping. Tiny or empty chunks could otherwise multiply that
@@ -330,8 +330,17 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		http.Error(rw, "bad frame kind", http.StatusBadRequest)
 		return
 	}
+	kind := uint8(kind64)
+	switch kind {
+	case frameOpen, frameData, frameClose:
+	default:
+		http.Error(rw, "unknown frame kind", http.StatusBadRequest)
+		return
+	}
+
 	isBatch := req.Header.Get(streamHeaderBatch) != ""
-	if isBatch && (uint8(kind64) != frameData || req.Header.Get(streamHeaderChunkID) != "") {
+	hasChunks := req.Header.Get(streamHeaderChunkID) != ""
+	if isBatch && (kind != frameData || hasChunks) {
 		// Runtime batches are already bounded below the platform body limit and
 		// therefore are never chunked. Combining both retry protocols would make
 		// a partial-batch acknowledgement ambiguous on a final-chunk retry.
@@ -339,8 +348,15 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	name := req.Header.Get(streamHeaderName)
-	if uint8(kind64) == frameOpen && (name == "" || len(name) > streamMaxNameLen) {
+	if kind == frameOpen && (name == "" || len(name) > streamMaxNameLen) {
 		http.Error(rw, "invalid stream name", http.StatusBadRequest)
+		return
+	}
+	if kind != frameData && (hasChunks || req.ContentLength != 0) {
+		// Open and close carry all of their protocol data in headers. Reject a
+		// body before session lookup so control requests cannot retain chunks that
+		// no later dispatch path consumes.
+		http.Error(rw, "control frame must not carry a body", http.StatusBadRequest)
 		return
 	}
 
@@ -349,9 +365,18 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 	// Go then held a live session with no connections while the page believed
 	// its streams were open, and every later send succeeded into the void. The
 	// client is told the session is gone instead, so it surfaces a close.
-	s := a.sessionFor(rw, req, uint8(kind64) == frameOpen, false)
+	s := a.sessionFor(rw, req, kind == frameOpen, false)
 	if s == nil {
 		return
+	}
+
+	var dataConn *StreamConn
+	if kind == frameData {
+		dataConn = s.conn(connID)
+		if dataConn == nil {
+			http.Error(rw, "unknown connection", http.StatusGone)
+			return
+		}
 	}
 
 	body, complete, err := readStreamBody(s, req)
@@ -388,18 +413,13 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 	// A batch is several data frames for one connection in one body. Splitting
 	// here keeps the rest of the path identical to a single frame.
 	if isBatch {
-		c := s.conn(connID)
-		if c == nil {
-			http.Error(rw, "unknown connection", http.StatusGone)
-			return
-		}
 		frames, err := decodeStreamBatch(body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
 		for i, f := range frames {
-			switch err := c.deliver(f); {
+			switch err := dataConn.deliver(f); {
 			case errors.Is(err, ErrStreamFull):
 				removeChunk = false
 				// Partial acceptance: tell the client how many landed so it can
@@ -417,7 +437,7 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	switch uint8(kind64) {
+	switch kind {
 	case frameOpen:
 		switch err := s.open(connID, name); {
 		case errors.Is(err, ErrStreamFull):
@@ -436,15 +456,10 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 		}
 
 	case frameData:
-		c := s.conn(connID)
-		if c == nil {
-			http.Error(rw, "unknown connection", http.StatusGone)
-			return
-		}
 		// Queue before responding. The client does not issue its next send
 		// until this response lands, so append-then-respond is what makes
 		// frontend send order the order the handler observes.
-		switch err := c.deliver(body); {
+		switch err := dataConn.deliver(body); {
 		case errors.Is(err, ErrStreamFull):
 			removeChunk = false
 			// Backpressure, signalled rather than held. Waiting here would
@@ -464,9 +479,6 @@ func (a *App) serveStreamSend(rw http.ResponseWriter, req *http.Request) {
 			c.closedByPeer()
 		}
 
-	default:
-		http.Error(rw, "unknown frame kind", http.StatusBadRequest)
-		return
 	}
 
 	rw.WriteHeader(http.StatusNoContent)

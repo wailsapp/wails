@@ -75,7 +75,7 @@ app := application.New(application.Options{
         Port: 8080,
         // Same-origin WebSockets are allowed automatically. Add only trusted
         // cross-origin frontend hosts when needed.
-        WebSocketOriginPatterns: []string{"app.example.com"},
+        WebSocketOriginPatterns: []string{"https://app.example.com"},
     },
 
     // ... other options work the same as desktop mode

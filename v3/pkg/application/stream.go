@@ -578,8 +578,6 @@ func (m *streamManager) reserveOutbound(kind uint8, bytes int, block bool, ctx c
 				case frameData:
 					releaseCounter(&m.outBytes, int64(bytes))
 					releaseCounter(&m.outFrames, 1)
-				case frameClose:
-					releaseCounter(&m.lifecycles, 1)
 				default:
 					releaseCounter(&m.outControls, 1)
 				}
@@ -596,6 +594,20 @@ func (m *streamManager) reserveOutbound(kind uint8, bytes int, block bool, ctx c
 	}
 }
 
+// rollbackOutbound returns capacity acquired by reserveOutbound when a frame
+// could not be queued. A close frame acquires no new capacity: it transfers the
+// live connection's lifecycle slot only after it is queued, so rolling back a
+// failed close must leave that slot for StreamConn.shutdown to release.
+func (m *streamManager) rollbackOutbound(kind uint8, bytes int) {
+	if kind == frameClose {
+		return
+	}
+	m.releaseOutbound(kind, bytes)
+}
+
+// releaseOutbound returns the capacity owned by a frame that was successfully
+// queued and has now been drained. A delivered close releases the lifecycle
+// slot transferred from its live connection.
 func (m *streamManager) releaseOutbound(kind uint8, bytes int) {
 	switch kind {
 	case frameData:

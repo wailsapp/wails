@@ -173,12 +173,14 @@ leave the socket stuck in `CLOSING`.
 
 **Chunk reassembly has a shared host-memory allowance.** Each session may assemble a
 single frame up to 64 MiB, but that allowance must not be multiplied by every admitted
-session. Incomplete and retryable chunk sets therefore also share a 256 MiB
-application-wide budget. Retained parts also share a 4,096-entry metadata allowance, so
-tiny or empty chunks cannot grow maps and slice bookkeeping without approaching the byte
-limit. A request that would cross either allowance receives retryable backpressure;
-delivery, rejection, expiry, or session shutdown returns both bytes and part entries to
-the shared budgets.
+session. Incomplete and retryable chunk sets therefore share a 128 MiB admitted-payload
+budget. Completing a set briefly retains both its parts and its contiguous assembled
+frame, so doubling that logical allowance still stays within the 256 MiB effective memory
+ceiling. Retained parts also share a 4,096-entry metadata allowance, so tiny or empty
+chunks cannot grow maps and slice bookkeeping without approaching the byte limit. A
+request that would cross either allowance receives retryable backpressure; delivery,
+rejection, expiry, or session shutdown returns both bytes and part entries to the shared
+budgets.
 
 **Polling retries only recoverable failures.** Network errors, request-timeout responses
 (`408`), early-data responses (`425`), backpressure (`429`), and server errors (`5xx`)
@@ -208,11 +210,16 @@ Three mechanisms close things, in order of how quickly they notice:
 
 1. **A newer session poll for a window supersedes older generations.** A reload gives the
    page a new session id and increments a generation stored in that window's
-   `sessionStorage`. Every request carries both values. A poll retires only lower page
-   generations, so server scheduling cannot make a delayed request from the previous page
-   look newer than its replacement. The manager retains a per-window retired-generation
-   watermark so an already in-flight request cannot recreate the old page without retaining
-   every historical session id. The previous session's connections close immediately.
+   `sessionStorage`. The same value is mirrored in `window.name`, which survives reloads
+   when storage is disabled, and is anchored to `performance.timeOrigin` (or `Date.now()`
+   on older engines) so clearing both stores does not restart at one. Every request carries
+   the session id and generation. A poll retires only lower page generations, so server
+   scheduling cannot make a delayed request from the previous page look newer than its
+   replacement. If policy blocks both storage and `window.name`, ordering falls back to the
+   page clock and therefore depends on later pages receiving a later time origin. The manager
+   retains a per-window retired-generation watermark so an already in-flight request cannot
+   recreate the old page without retaining every historical session id. The previous
+   session's connections close immediately.
 2. **Window destroy** drops every session for that window, like `eventPayloadStore.dropWindow`.
 3. **TTL reaping** catches anything else — a crashed renderer, a machine asleep.
 

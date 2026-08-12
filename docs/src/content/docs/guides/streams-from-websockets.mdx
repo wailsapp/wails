@@ -249,6 +249,22 @@ export function TextStream(name) {
         add(type, type === "message" && listener ? wrap(listener) : listener, options);
     s.removeEventListener = (type, listener, options) =>
         remove(type, type === "message" && listener ? wrappers.get(listener) ?? listener : listener, options);
+
+    // A WailsSocket implements onmessage through addEventListener, but a native
+    // WebSocket uses an internal event-handler slot. Define the property on the
+    // instance so both transports pass property handlers through the same
+    // decoding wrapper as addEventListener listeners.
+    let onmessage = null;
+    Object.defineProperty(s, "onmessage", {
+        get: () => onmessage,
+        set(listener) {
+            if (onmessage) s.removeEventListener("message", onmessage);
+            onmessage = typeof listener === "function" ? listener : null;
+            if (onmessage) s.addEventListener("message", onmessage);
+        },
+        configurable: true,
+        enumerable: true,
+    });
     return s;
 }
 ```

@@ -182,6 +182,101 @@ func TestStreamSendRejectsChunkedBatch(t *testing.T) {
 	}
 }
 
+func TestStreamSendRejectsInvalidFramesBeforeRetainingBodies(t *testing.T) {
+	t.Run("unsupported kind before session admission", func(t *testing.T) {
+		mgr := newStreamManager(nil)
+		t.Cleanup(mgr.close)
+		a := &App{streams: mgr}
+		req := httptest.NewRequest(http.MethodPost, streamPathSend, strings.NewReader("ignored"))
+		req.Header.Set(streamHeaderSession, "invalid-kind")
+		req.Header.Set(streamHeaderGeneration, "1")
+		req.Header.Set(streamHeaderConn, "7")
+		req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameError)))
+		rw := httptest.NewRecorder()
+
+		a.serveStreamSend(rw, req)
+
+		if rw.Code != http.StatusBadRequest {
+			t.Fatalf("unsupported kind status = %d, want 400", rw.Code)
+		}
+		mgr.mu.Lock()
+		defer mgr.mu.Unlock()
+		if len(mgr.sessions) != 0 {
+			t.Fatalf("unsupported kind admitted %d sessions", len(mgr.sessions))
+		}
+	})
+
+	t.Run("unknown data connection before chunk storage", func(t *testing.T) {
+		mgr, s := newTestSession(t)
+		s.generation = 1
+		a := &App{streams: mgr}
+		req := httptest.NewRequest(http.MethodPost, streamPathSend, strings.NewReader("partial"))
+		req.Header.Set(streamHeaderSession, s.id)
+		req.Header.Set(streamHeaderGeneration, "1")
+		req.Header.Set(streamHeaderConn, "404")
+		req.Header.Set(streamHeaderKind, strconv.Itoa(int(frameData)))
+		req.Header.Set(streamHeaderChunkID, "orphan")
+		req.Header.Set(streamHeaderChunkIndex, "0")
+		req.Header.Set(streamHeaderChunkTotal, "2")
+		rw := httptest.NewRecorder()
+
+		a.serveStreamSend(rw, req)
+
+		if rw.Code != http.StatusGone {
+			t.Fatalf("unknown connection status = %d, want 410", rw.Code)
+		}
+		s.mu.Lock()
+		chunkStore := s.chunkStore
+		s.mu.Unlock()
+		if chunkStore != nil || mgr.chunkBytes != 0 || mgr.chunkParts != 0 {
+			t.Fatalf("unknown connection retained chunk state: store=%v bytes=%d parts=%d", chunkStore != nil, mgr.chunkBytes, mgr.chunkParts)
+		}
+	})
+
+	for _, tc := range []struct {
+		name   string
+		kind   uint8
+		body   string
+		chunks bool
+	}{
+		{name: "open body", kind: frameOpen, body: "unexpected"},
+		{name: "open chunks", kind: frameOpen, chunks: true},
+		{name: "close body", kind: frameClose, body: "unexpected"},
+		{name: "close chunks", kind: frameClose, chunks: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mgr := newStreamManager(nil)
+			t.Cleanup(mgr.close)
+			a := &App{streams: mgr}
+			req := httptest.NewRequest(http.MethodPost, streamPathSend, strings.NewReader(tc.body))
+			req.Header.Set(streamHeaderSession, "control")
+			req.Header.Set(streamHeaderGeneration, "1")
+			req.Header.Set(streamHeaderConn, "7")
+			req.Header.Set(streamHeaderKind, strconv.Itoa(int(tc.kind)))
+			if tc.kind == frameOpen {
+				req.Header.Set(streamHeaderName, "test")
+			}
+			if tc.chunks {
+				req.Header.Set(streamHeaderChunkID, "control-chunk")
+				req.Header.Set(streamHeaderChunkIndex, "0")
+				req.Header.Set(streamHeaderChunkTotal, "2")
+			}
+			rw := httptest.NewRecorder()
+
+			a.serveStreamSend(rw, req)
+
+			if rw.Code != http.StatusBadRequest {
+				t.Fatalf("control frame status = %d, want 400", rw.Code)
+			}
+			mgr.mu.Lock()
+			defer mgr.mu.Unlock()
+			if len(mgr.sessions) != 0 || mgr.chunkBytes != 0 || mgr.chunkParts != 0 {
+				t.Fatalf("control frame retained sessions=%d bytes=%d parts=%d", len(mgr.sessions), mgr.chunkBytes, mgr.chunkParts)
+			}
+		})
+	}
+}
+
 func TestStreamOpenRejectsOversizedNameBeforeSessionAdmission(t *testing.T) {
 	mgr := newStreamManager(nil)
 	t.Cleanup(mgr.close)
@@ -1716,6 +1811,63 @@ func TestStreamChunkGlobalBudgetIsAtomicAcrossSessions(t *testing.T) {
 	}
 }
 
+func TestStreamChunkReassemblyCopyFitsEffectiveGlobalBudget(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	// Two maximum-size sets consume the admitted 128 MiB payload budget. Their
+	// final chunks arrive concurrently, so each store temporarily retains both
+	// its parts and its 64 MiB contiguous result. The conservative 2x admission
+	// bound keeps that peak within the 256 MiB effective ceiling.
+	half := make([]byte, streamMaxFrameBytes/2)
+	stores := []*streamChunkStore{
+		{items: make(map[string]*streamChunkSet), mgr: mgr},
+		{items: make(map[string]*streamChunkSet), mgr: mgr},
+	}
+	for i, store := range stores {
+		if _, done, err := store.add("maximum", 0, 2, half); done || err != nil {
+			t.Fatalf("store %d first half: done=%v err=%v", i, done, err)
+		}
+	}
+
+	var wg sync.WaitGroup
+	errs := make(chan error, len(stores))
+	for i, store := range stores {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			assembled, done, err := store.add("maximum", 1, 2, half)
+			if err != nil {
+				errs <- fmt.Errorf("store %d final half: %w", i, err)
+				return
+			}
+			if !done || len(assembled) != streamMaxFrameBytes {
+				errs <- fmt.Errorf("store %d assembled %d bytes, done=%v", i, len(assembled), done)
+			}
+		}()
+	}
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		t.Error(err)
+	}
+
+	if got := mgr.chunkBytes; got != streamMaxChunkBytesGlobal {
+		t.Fatalf("shared payload accounting = %d, want %d", got, streamMaxChunkBytesGlobal)
+	}
+	overflow := &streamChunkStore{items: make(map[string]*streamChunkSet), mgr: mgr}
+	if _, done, err := overflow.add("third", 0, 2, []byte{1}); done || !errors.Is(err, ErrStreamFull) {
+		t.Fatalf("third upload at effective memory ceiling: done=%v err=%v, want ErrStreamFull", done, err)
+	}
+
+	for _, store := range stores {
+		store.remove("maximum")
+	}
+	if mgr.chunkBytes != 0 || mgr.chunkParts != 0 {
+		t.Fatalf("completed sets retained %d bytes and %d parts", mgr.chunkBytes, mgr.chunkParts)
+	}
+}
+
 func TestStreamChunkStoresShareGlobalMetadataBudget(t *testing.T) {
 	mgr := newStreamManager(nil)
 	t.Cleanup(mgr.close)
@@ -2352,6 +2504,32 @@ func TestStreamGlobalConnectionAdmissionCoversDesktopOpen(t *testing.T) {
 	}
 	if got := mgr.outControls.Load(); got != 0 {
 		t.Fatalf("controls after cleanup = %d, want 0", got)
+	}
+}
+
+func TestStreamCloseRollbackPreservesLifecycleReservation(t *testing.T) {
+	mgr := newStreamManager(nil)
+	t.Cleanup(mgr.close)
+
+	if !mgr.reserveLifecycle() {
+		t.Fatal("failed to reserve lifecycle slot")
+	}
+	if err := mgr.reserveOutbound(frameClose, 0, false, nil); err != nil {
+		t.Fatalf("reserve close frame: %v", err)
+	}
+
+	// A close reserves no additional capacity. If enqueue fails, its rollback
+	// must leave the live connection's slot for shutdown to release.
+	mgr.rollbackOutbound(frameClose, 0)
+	if got := mgr.lifecycles.Load(); got != 1 {
+		t.Fatalf("lifecycle after failed close enqueue = %d, want 1", got)
+	}
+
+	// Once a close is successfully queued, draining it completes the ownership
+	// transfer and releases that same slot.
+	mgr.releaseOutbound(frameClose, 0)
+	if got := mgr.lifecycles.Load(); got != 0 {
+		t.Fatalf("lifecycle after delivered close = %d, want 0", got)
 	}
 }
 
