@@ -124,7 +124,8 @@ jobs:
     - name: Early exit - No changes detected
       if: |
         steps.quick_check.outputs.should_continue == 'false' && 
-        github.event.inputs.force_release != 'true'
+        github.event.inputs.force_release != 'true' &&
+        inputs.release_version == ''
       run: |
         echo "🛑 EARLY EXIT: ${{ steps.quick_check.outputs.reason }}"
         echo ""
@@ -142,7 +143,8 @@ jobs:
     - name: Continue with release process
       if: |
         steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        github.event.inputs.force_release == 'true' ||
+        inputs.release_version != ''
       run: |
         echo "✅ Proceeding with release process..."
         if [ "${{ github.event.inputs.force_release }}" == "true" ]; then
@@ -153,7 +155,8 @@ jobs:
       id: release
       if: |
         steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        github.event.inputs.force_release == 'true' ||
+        inputs.release_version != ''
       env:
         # Keep these DISTINCT: the release script validates WAILS_REPO_TOKEN
         # against the API before pushing anything and falls back to
