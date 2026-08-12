@@ -24,7 +24,10 @@
 import { JSONStream } from "/wails/runtime.js";
 
 const log = (text) => {
-    document.getElementById("log").insertAdjacentHTML("afterbegin", `<div>${text}</div>`);
+    const line = document.createElement("div");
+    line.textContent = text;
+    const output = document.getElementById("log");
+    output.insertBefore(line, output.firstChild);
 };
 
 // Connects in the background; returns immediately, like `new WebSocket(url)`.

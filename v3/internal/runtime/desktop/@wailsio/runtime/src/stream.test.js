@@ -43,6 +43,7 @@ beforeEach(() => {
 afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     delete window._wails;
 });
 

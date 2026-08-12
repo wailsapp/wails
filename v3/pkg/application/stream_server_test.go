@@ -28,6 +28,69 @@ func newServerTestApp(t *testing.T) *App {
 	return a
 }
 
+func TestServerModeStreamOriginPolicy(t *testing.T) {
+	tests := []struct {
+		name       string
+		server     ServerOptions
+		origin     string
+		wantAccept bool
+	}{
+		{
+			name:   "cross origin rejected by default",
+			origin: "https://untrusted.example",
+		},
+		{
+			name: "configured origin accepted",
+			server: ServerOptions{
+				WebSocketOriginPatterns: []string{"trusted.example"},
+			},
+			origin:     "https://trusted.example",
+			wantAccept: true,
+		},
+		{
+			name: "all origins require explicit opt in",
+			server: ServerOptions{
+				WebSocketAllowAllOrigins: true,
+			},
+			origin:     "https://untrusted.example",
+			wantAccept: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := newServerTestApp(t)
+			a.options.Server = tt.server
+			a.HandleStream("origin", func(c *StreamConn) {
+				<-c.Context().Done()
+			})
+
+			srv := httptest.NewServer(http.HandlerFunc(a.serveStreamWS))
+			defer srv.Close()
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			conn, resp, err := websocket.Dial(ctx, wsURL(srv.URL)+"?name=origin", &websocket.DialOptions{
+				HTTPHeader: http.Header{"Origin": []string{tt.origin}},
+			})
+			if tt.wantAccept {
+				if err != nil {
+					t.Fatalf("dial from %s: %v", tt.origin, err)
+				}
+				conn.CloseNow()
+				return
+			}
+			if err == nil {
+				conn.CloseNow()
+				t.Fatalf("dial from %s unexpectedly succeeded", tt.origin)
+			}
+			if resp == nil || resp.StatusCode != http.StatusForbidden {
+				t.Fatalf("rejected response = %#v, want HTTP %d", resp, http.StatusForbidden)
+			}
+		})
+	}
+}
+
 func TestServerModeStreamEchoesBothWays(t *testing.T) {
 	a := newServerTestApp(t)
 

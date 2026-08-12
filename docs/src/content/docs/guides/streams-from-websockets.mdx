@@ -218,20 +218,37 @@ import { Stream } from "@wailsio/runtime";
 export function TextStream(name) {
     const s = Stream(name);
     const dec = new TextDecoder();
+    s.binaryType = "arraybuffer";
 
-    s.addEventListener("message", (ev) => {
-        if (typeof ev.data === "string") return;
-        const text = dec.decode(ev.data);
-        // Re-dispatch as a string message for handlers assigned to onmessage.
-        if (typeof s.onmessage === "function") {
-            s.onmessage(new MessageEvent("message", { data: text }));
-        }
-    });
+    const add = s.addEventListener.bind(s);
+    const remove = s.removeEventListener.bind(s);
+    const wrappers = new WeakMap();
+    const decoded = new WeakMap();
 
-    // Prevent the raw ArrayBuffer event from also reaching onmessage.
-    Object.defineProperty(s, "onmessage", {
-        value: null, writable: true, configurable: true,
-    });
+    const decodeEvent = (ev) => {
+        if (decoded.has(ev)) return decoded.get(ev);
+        const data = typeof ev.data === "string" ? ev.data : dec.decode(ev.data);
+        const textEvent = new MessageEvent("message", { data });
+        decoded.set(ev, textEvent);
+        return textEvent;
+    };
+
+    const wrap = (listener) => {
+        let wrapper = wrappers.get(listener);
+        if (wrapper) return wrapper;
+        wrapper = (ev) => {
+            const textEvent = decodeEvent(ev);
+            if (typeof listener === "function") listener.call(s, textEvent);
+            else listener.handleEvent(textEvent);
+        };
+        wrappers.set(listener, wrapper);
+        return wrapper;
+    };
+
+    s.addEventListener = (type, listener, options) =>
+        add(type, type === "message" && listener ? wrap(listener) : listener, options);
+    s.removeEventListener = (type, listener, options) =>
+        remove(type, type === "message" && listener ? wrappers.get(listener) ?? listener : listener, options);
     return s;
 }
 ```

@@ -260,11 +260,7 @@ func (a *App) serveStreamWS(rw http.ResponseWriter, req *http.Request) {
 	}
 	defer a.streams.releaseLifecycle()
 
-	conn, err := websocket.Accept(rw, req, &websocket.AcceptOptions{
-		// Matches the events broadcaster: server mode serves whatever origin
-		// the operator points at it.
-		InsecureSkipVerify: true,
-	})
+	conn, err := websocket.Accept(rw, req, a.websocketAcceptOptions())
 	if err != nil {
 		a.error("stream websocket accept failed: %w", err)
 		return

@@ -54,7 +54,7 @@ either way, and a Go handler cannot tell which the frontend used. Swap in `Strea
 binary format.
 
 One thing to know if you do: **`ev.data` is then an `ArrayBuffer`, never a string.**
-`JSON.parse(ev.data)` will not throw — it will parse `"[object ArrayBuffer]"`. Decode it
+`JSON.parse(ev.data)` receives the string `"[object ArrayBuffer]"` and fails. Decode it
 first:
 
 ```js

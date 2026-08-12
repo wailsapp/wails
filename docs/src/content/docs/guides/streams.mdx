@@ -190,7 +190,9 @@ than letting an unread stream grow without limit.
 Building with `-tags server` swaps the transport for a **real WebSocket** at
 `/wails/stream/ws`, since server mode already has a listener to upgrade on. The Go handler
 and the frontend code are identical — nothing in your app changes. The runtime picks the
-transport for you before any module code runs.
+transport for you before any module code runs. WebSocket connections are same-origin by
+default. A server that deliberately hosts its frontend on another trusted origin can add
+that host with `ServerOptions.WebSocketOriginPatterns`.
 
 ## Performance
 

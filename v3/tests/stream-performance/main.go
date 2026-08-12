@@ -153,8 +153,12 @@ func main() {
 	// whole run; the emitter goroutine below does the sending.
 	app.HandleStream("perf", func(c *application.StreamConn) {
 		h.connects.Add(1)
-		if n := h.live.Add(1); n > h.maxLive.Load() {
-			h.maxLive.Store(n)
+		n := h.live.Add(1)
+		for {
+			current := h.maxLive.Load()
+			if n <= current || h.maxLive.CompareAndSwap(current, n) {
+				break
+			}
 		}
 		log.Printf("stream connected: %s (live=%d)", c.Name(), h.live.Load())
 
