@@ -4,6 +4,7 @@ package edge
 
 import (
 	"os"
+	"runtime"
 	"testing"
 	"time"
 	"unsafe"
@@ -29,6 +30,8 @@ func TestCookieManager(t *testing.T) {
 	}
 
 	// Initialize COM
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	err := windows.CoInitializeEx(0, windows.COINIT_APARTMENTTHREADED)
 	if err != nil {
 		t.Fatalf("Failed to initialize COM: %v", err)
