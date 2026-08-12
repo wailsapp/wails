@@ -299,6 +299,13 @@ func decodeStreamBatch(body []byte) ([][]byte, error) {
 		}
 		n := int(binary.BigEndian.Uint32(body[off : off+4]))
 		off += 4
+		// n < 0 is unreachable where int is 64 bits and looks like dead code
+		// there, but it is the guard that holds on a 32-bit build: a wire length
+		// above math.MaxInt32 wraps negative, and body[off:off+n] would then
+		// panic rather than be rejected. Keep it.
+		//
+		// The upper bound is written as n > len(body)-off rather than
+		// off+n > len(body) so it cannot overflow before it is compared.
 		if n < 0 || n > len(body)-off {
 			return nil, errStreamBadBody
 		}

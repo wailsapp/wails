@@ -99,7 +99,8 @@ All in `stream.go`. **They are compile-time constants, not options** — there i
 | `streamOutQueueDepth` | 256 | frames buffered per window |
 | `streamOutQueueBytesGlobal` / `streamOutQueueDepthGlobal` | 256 MB / 8,192 | outbound data buffered across the application |
 | `streamInQueueBytesGlobal` / `streamInQueueDepthGlobal` | 256 MB / 8,192 | inbound data awaiting `Receive` across the application |
-| `streamMaxConnectionsGlobal` | 4,096 | live connections plus undelivered close notifications across the application |
+| `streamMaxConnectionsGlobal` | 4,096 | live connections across the application |
+| `streamOutCloseDepthGlobal` | 4,096 | undelivered close notifications across the application |
 | `streamMaxResponseBytes` | 1 MB | one poll response |
 | `streamHoldTimeout` | 20 s | how long an empty poll parks |
 | `streamSessionTTL` | 60 s | no poll for this long and no live connections ⇒ session is dead |
@@ -144,17 +145,27 @@ without limit.
 **Control frames bypass the data caps, but have independent lifecycle bounds.** Losing a
 data frame under backpressure is a slow-down; losing an open ack leaves the frontend in
 `CONNECTING` forever, and losing a close leaves it believing a dead connection is live.
-Non-close controls therefore have their own bounded queue, while connection admission
-reserves one close slot per accepted connection. When that capacity is occupied, a new
-open receives retryable backpressure before it is registered.
+Non-close controls therefore have their own bounded queue, separate from the one closes
+draw on, so a burst of refused opens cannot consume the capacity an accepted connection
+needs to report that it ended. Each session also reserves one close slot per accepted
+connection. When that capacity is occupied, a new open receives retryable backpressure
+before it is registered.
 
 **Per-session bounds also have application-wide counterparts.** Without them, every
 admitted session or connection could retain its full local allowance at once. Outbound
 and inbound data therefore share separate 256 MiB / 8,192-frame budgets across desktop
-and server transports. Live connections and pending close notifications share a 4,096
-entry lifecycle budget. Reaching a shared allowance applies the same blocking `Send` or
-non-blocking `TrySend` behaviour as reaching a local allowance, and every drain, receive,
-close, failed write, and shutdown path returns its reservation.
+and server transports. Live connections have a 4,096-entry budget, and undelivered close
+notifications have a second one of the same size. Reaching a shared allowance applies the
+same blocking `Send` or non-blocking `TrySend` behaviour as reaching a local allowance,
+and every drain, receive, close, failed write, and shutdown path returns its reservation.
+
+Those two budgets are deliberately separate rather than one allowance a connection hands
+to its own close frame. Each reservation is released by exactly one owner: a connection's
+slot by `shutdown`, which runs once, and a close frame's slot by whatever disposes of the
+frame — a drain, or its session being torn down. Ownership that migrates between two
+parties has to be transferred atomically, and an earlier revision that let a close inherit
+the connection's slot leaked one permanently whenever teardown ran between a close being
+attempted and that attempt failing.
 
 **Go frames transfer ownership; JavaScript frames are snapshotted.** Go `Send` retains the
 caller's slice until the transport writes it, so callers must not mutate or reuse that
