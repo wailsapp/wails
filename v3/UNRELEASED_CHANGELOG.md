@@ -23,6 +23,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent legacy GTK3 service-only applications from crashing when screen
+  discovery runs before an active window or display is available (#5966)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
