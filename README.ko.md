@@ -125,7 +125,7 @@ Wails는 다르게 접근합니다: Go 코드와 웹 프론트엔드를 단일 �
 
 ## Stargazers 성장 추세
 
-[![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=wailsapp/wails&type=Date)](https://star-history.dera.page/#wailsapp/wails&Date)
 
 ## 기여자
 

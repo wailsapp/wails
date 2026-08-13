@@ -123,7 +123,7 @@ Roadmap проекта вы можете найти [здесь](https://github.
 
 ## График звёздочек репозитория по времени
 
-[![График звёзд](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+[![График звёзд](https://star-history.dera.page/svg?repos=wailsapp/wails&type=Date)](https://star-history.dera.page/#wailsapp/wails&Date)
 
 ## Контрибьюторы
 

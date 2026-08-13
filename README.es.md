@@ -137,7 +137,7 @@ Este Proyecto cuenta con el apoyo de estas amables personas/ compañías:
 
 ## Estrellas a lo Largo del Tiempo
 
-[![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=wailsapp/wails&type=Date)](https://star-history.dera.page/#wailsapp/wails&Date)
 
 ## Colaboradores
 
