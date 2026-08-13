@@ -463,11 +463,36 @@ app := application.New(application.Options{
 app := application.New(application.Options{
     Name: "My App",
     Linux: application.LinuxOptions{
+        ApplicationID:                 "com.myapp.myapplication",
         ProgramName:                   "my-app",
         DisableQuitOnLastWindowClosed: false,
     },
 })
 ```
+
+- `ApplicationID` - The GTK application id. Defaults to `org.wails.` followed by a sanitised `Name`.
+- `ProgramName` - Sets the program name for the window manager via `g_set_prgname()`.
+- `DisableQuitOnLastWindowClosed` - Keeps the application running after its last window closes.
+
+Set `ApplicationID` to match the identity your packaging declares. It should be
+the same reverse-DNS id you use for the `.desktop` file, so the desktop
+environment can associate the application's windows with its launcher.
+
+:::note
+Sandboxed builds must set this. A flatpak may only own D-Bus names prefixed with
+its own app id, and WebKit asks the portal to own
+`<application id>.Sandboxed.WebProcess-<uuid>` for the accessibility bus. With
+the default id that request is refused and the web process aborts, taking the
+application down during startup:
+
+```
+Portal call failed: Invalid sandbox a11y own name:
+  'org.wails.myapp.Sandboxed.WebProcess-<uuid>' doesn't match app id
+```
+
+Setting `ApplicationID` to the `app-id` in your flatpak manifest resolves it.
+See the `linux-flatpak-appid` example.
+:::
 
 ## Complete Application Example
 
