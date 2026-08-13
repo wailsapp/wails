@@ -6,6 +6,7 @@
 #import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
+extern void cancelURLRequest(void *);
 extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
@@ -651,6 +652,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     processURLRequest(self.windowId, urlSchemeTask);
 }
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    cancelURLRequest(urlSchemeTask);
     NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
     if (stream) {
         NSStreamStatus status = stream.streamStatus;

@@ -443,6 +443,11 @@ func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	}
 }
 
+//export cancelURLRequest
+func cancelURLRequest(wkUrlSchemeTask unsafe.Pointer) {
+	webview.CancelRequest(wkUrlSchemeTask)
+}
+
 //export processWindowKeyDownEvent
 func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 	windowKeyEvents <- &windowKeyEvent{

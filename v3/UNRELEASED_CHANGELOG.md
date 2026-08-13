@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Cancel macOS and iOS asset request contexts when WebKit aborts the matching custom-scheme task (#5963)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

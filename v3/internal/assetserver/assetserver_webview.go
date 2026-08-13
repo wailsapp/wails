@@ -1,7 +1,6 @@
 package assetserver
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -125,7 +124,7 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	}
 	defer body.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := webview.RequestContext(r)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, method, uri, body)
