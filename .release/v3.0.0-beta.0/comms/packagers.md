@@ -21,18 +21,17 @@ reported unrelated versions. From this release the package version is derived
 from the same file the CLI embeds. If you pin the runtime, expect the version
 string to jump series rather than increment.
 
-**Release artifacts now ship with checksums and provenance.** Each release
-carries a `SHA256SUMS` file generated in the same job that publishes the
-binaries, plus a signed build-provenance attestation. If you verify downloads,
-you can now do so properly.
+**The current beta is tag-only.** Wails does not publish prebuilt v3 CLI
+binaries, checksums or platform signatures under the current policy. Users
+install the CLI from the Go module channel:
 
-**Artifact names are unchanged:** `wails3-linux-amd64`, `wails3-linux-arm64`,
-`wails3-windows-amd64.exe`, `wails3-darwin-amd64`, `wails3-darwin-arm64`,
-`wails3-darwin-universal`.
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
 
-**macOS signing.** Whether the darwin binaries are signed and notarized in this
-release depends on the signing credentials being in place. If they are not, the
-release will say so explicitly rather than shipping silently unsigned binaries.
+Packagers should build from the published source tag and must not wait for
+GitHub release assets. If binary distribution returns later, this notice and
+the release ledger will be updated before that policy is used.
 
 **The repository no longer ships a `go.work`.** If your build tooling assumed a
 workspace at the repository root, it does not need one now.
