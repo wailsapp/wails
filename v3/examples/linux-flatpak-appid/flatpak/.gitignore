@@ -1,0 +1,5 @@
+build-dir/
+.flatpak-builder/
+repo/
+wails-flatpak-appid
+*.flatpak

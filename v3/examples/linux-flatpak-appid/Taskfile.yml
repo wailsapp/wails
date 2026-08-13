@@ -1,0 +1,47 @@
+version: '3'
+
+vars:
+  APP_ID: com.example.WailsFlatpakAppId
+  BINARY: wails-flatpak-appid
+
+tasks:
+  build:
+    summary: Builds the binary into the flatpak build context
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - go build -o flatpak/{{.BINARY}} .
+
+  package:
+    summary: Builds the flatpak
+    deps: [build]
+    dir: '{{.TASKFILE_DIR}}/flatpak'
+    cmds:
+      - flatpak-builder --force-clean --disable-rofiles-fuse build-dir {{.APP_ID}}.yml
+
+  run:
+    summary: Runs the app inside the sandbox without installing it
+    deps: [package]
+    dir: '{{.TASKFILE_DIR}}/flatpak'
+    cmds:
+      - flatpak-builder --run build-dir {{.APP_ID}}.yml {{.BINARY}}
+
+  install:
+    summary: Installs the flatpak so it can be launched from the desktop
+    deps: [build]
+    dir: '{{.TASKFILE_DIR}}/flatpak'
+    cmds:
+      - flatpak-builder --force-clean --disable-rofiles-fuse --user --install build-dir {{.APP_ID}}.yml
+
+  bundle:
+    summary: Builds a single-file .flatpak to install elsewhere
+    deps: [build]
+    dir: '{{.TASKFILE_DIR}}/flatpak'
+    cmds:
+      - flatpak-builder --force-clean --disable-rofiles-fuse --repo=repo build-dir {{.APP_ID}}.yml
+      - flatpak build-bundle repo {{.APP_ID}}.flatpak {{.APP_ID}}
+      - 'echo "Install it with: flatpak install --user ./{{.APP_ID}}.flatpak"'
+
+  clean:
+    dir: '{{.TASKFILE_DIR}}/flatpak'
+    cmds:
+      - rm -rf build-dir .flatpak-builder repo {{.BINARY}} {{.APP_ID}}.flatpak

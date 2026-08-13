@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Wails Flatpak App ID
+Exec=wails-flatpak-appid
+Icon=com.example.WailsFlatpakAppId
+Categories=Development;
+Terminal=false

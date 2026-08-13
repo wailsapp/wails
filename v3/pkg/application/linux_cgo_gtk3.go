@@ -618,9 +618,8 @@ func appName() string {
 	return C.GoString(name)
 }
 
-func appNew(name string) pointer {
-	// Name is already sanitized by sanitizeAppName() in application_linux.go
-	appId := fmt.Sprintf("org.wails.%s", name)
+func appNew(appId string) pointer {
+	// Already assembled and sanitized by applicationID() in application_linux_gtk3.go
 	nameC := C.CString(appId)
 	defer C.free(unsafe.Pointer(nameC))
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))

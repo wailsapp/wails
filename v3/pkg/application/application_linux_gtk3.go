@@ -50,6 +50,16 @@ func sanitizeAppName(name string) string {
 	return strings.ToLower(name)
 }
 
+// applicationID returns the id to build the GtkApplication with. Options.Linux
+// wins when it sets one, so sandboxed builds can match the id their runtime
+// expects; everything else keeps the derived "org.wails.<name>".
+func applicationID(options Options) string {
+	if options.Linux.ApplicationID != "" {
+		return options.Linux.ApplicationID
+	}
+	return "org.wails." + sanitizeAppName(options.Name)
+}
+
 func init() {
 	// FIXME: This should be handled appropriately in the individual files most likely.
 	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
@@ -227,10 +237,9 @@ func (a *linuxApp) getAccentColor() string {
 }
 
 func newPlatformApp(parent *App) *linuxApp {
-	name := sanitizeAppName(parent.options.Name)
 	app := &linuxApp{
 		parent:      parent,
-		application: appNew(name),
+		application: appNew(applicationID(parent.options)),
 		windowMap:   map[windowPointer]uint{},
 	}
 

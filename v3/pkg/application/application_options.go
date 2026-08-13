@@ -329,6 +329,16 @@ type LinuxOptions struct {
 	//
 	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
 	ProgramName string
+
+	// ApplicationID overrides the GTK application id, which otherwise defaults
+	// to "org.wails." followed by a sanitised Name.
+	//
+	// Sandboxed builds have to set this. A flatpak may only own bus names
+	// prefixed with its app id, and WebKit asks the portal to own
+	// "<application id>.Sandboxed.WebProcess-<uuid>" for the accessibility bus.
+	// With the default id that request is refused and the web process aborts,
+	// taking the application down from inside g_application_run.
+	ApplicationID string
 }
 
 /********* iOS Options *********/
