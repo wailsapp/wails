@@ -124,6 +124,67 @@ func TestDerivedApplicationIDIsAlwaysValid(t *testing.T) {
 	}
 }
 
+// On Wayland the surface app_id comes from g_get_prgname(), so setting only
+// ApplicationID has to be enough to have windows match their .desktop file.
+func TestProgramName(t *testing.T) {
+	tests := []struct {
+		name    string
+		options Options
+		want    string
+	}{
+		{
+			name:    "left alone when neither option is set",
+			options: Options{Name: "My App"},
+			want:    "",
+		},
+		{
+			name: "inherits the application id",
+			options: Options{
+				Name:  "My App",
+				Linux: LinuxOptions{ApplicationID: "com.example.MyApp"},
+			},
+			want: "com.example.MyApp",
+		},
+		{
+			name: "an explicit program name wins",
+			options: Options{
+				Name: "My App",
+				Linux: LinuxOptions{
+					ApplicationID: "com.example.MyApp",
+					ProgramName:   "myapp",
+				},
+			},
+			want: "myapp",
+		},
+		{
+			name: "kept without an application id",
+			options: Options{
+				Name:  "My App",
+				Linux: LinuxOptions{ProgramName: "myapp"},
+			},
+			want: "myapp",
+		},
+		{
+			// The id GTK was given, not the one it would have rejected.
+			name: "inherits the fallback when the id is invalid",
+			options: Options{
+				Name:  "My App",
+				Linux: LinuxOptions{ApplicationID: "yeehaw"},
+			},
+			want: "org.wails.my_app",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			appID, _ := applicationID(tt.options)
+			if got := programName(tt.options, appID); got != tt.want {
+				t.Errorf("programName() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 // Mirrors the contract of g_application_id_is_valid().
 // See: https://docs.gtk.org/gio/type_func.Application.id_is_valid.html
 func TestValidateApplicationID(t *testing.T) {

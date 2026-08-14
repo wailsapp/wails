@@ -471,7 +471,7 @@ app := application.New(application.Options{
 ```
 
 - `ApplicationID` - The GTK application id. Defaults to `org.wails.` followed by a sanitised `Name`.
-- `ProgramName` - Sets the program name for the window manager via `g_set_prgname()`.
+- `ProgramName` - Sets the program name for the window manager via `g_set_prgname()`. Defaults to `ApplicationID` when that is set.
 - `DisableQuitOnLastWindowClosed` - Keeps the application running after its last window closes.
 
 Set `ApplicationID` to match the identity your packaging declares. It should be
@@ -486,6 +486,20 @@ and at most 255 characters in total. So `com.example.MyApp` is fine, while
 would reject is reported through the application's error handler and replaced
 with the derived default, because GTK only asserts on the id and would otherwise
 abort the process during startup.
+
+On Wayland, GTK takes the surface `app_id` from the program name rather than the
+application id, so `ProgramName` defaults to `ApplicationID` when you set one.
+Setting the same string twice is not needed, and setting `ProgramName`
+explicitly still wins:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ApplicationID: "com.example.MyApp", // also becomes the program name
+    },
+})
+```
 
 :::note
 Sandboxed builds must set this. A flatpak may only own D-Bus names prefixed with

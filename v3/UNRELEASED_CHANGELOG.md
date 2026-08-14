@@ -21,6 +21,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Default `Options.Linux.ProgramName` to `ApplicationID` when only the latter is set, so windows keep matching their `.desktop` file on Wayland, where GTK takes the surface `app_id` from the program name (#5972)
 
 ## Fixed
 <!-- Bug fixes -->

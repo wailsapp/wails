@@ -111,3 +111,26 @@ func applicationID(options Options) (string, error) {
 	}
 	return id, nil
 }
+
+// programName returns the name to hand to g_set_prgname, or "" to leave the
+// program name at whatever GTK picked up from the executable.
+//
+// GTK takes the Wayland surface app_id from g_get_prgname(), so a window is only
+// matched with its .desktop file when the program name carries the application
+// id as well. An application that sets Options.Linux.ApplicationID inherits it
+// here rather than having to repeat the same string in ProgramName.
+//
+// What is inherited is appID, the id the GtkApplication was built with, so the
+// program name cannot disagree with it: an ApplicationID that validation
+// rejected falls back to the derived id in both places. Without an
+// ApplicationID nothing is derived, keeping the program name of applications
+// that set neither option as it was.
+func programName(options Options, appID string) string {
+	if options.Linux.ProgramName != "" {
+		return options.Linux.ProgramName
+	}
+	if options.Linux.ApplicationID != "" {
+		return appID
+	}
+	return ""
+}

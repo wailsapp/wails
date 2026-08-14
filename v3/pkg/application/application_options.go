@@ -327,6 +327,11 @@ type LinuxOptions struct {
 	//When a .desktop file is created this value helps with window grouping and desktop icons when the .desktop file's Name
 	//property differs form the executable's filename.
 	//
+	//Defaults to ApplicationID when that is set, because GTK takes the Wayland
+	//surface app_id from the program name: leaving this empty there would have
+	//windows fall back to the executable's name and stop matching the .desktop
+	//file. Applications that set neither option keep the executable's name.
+	//
 	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
 	ProgramName string
 
