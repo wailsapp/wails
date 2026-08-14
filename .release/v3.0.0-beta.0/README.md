@@ -51,8 +51,8 @@ Against this branch: 17 checks passing, 0 warnings, 2 blockers.
    binaries, checksums and platform signing are not part of this path. PR #5946
    removed the obsolete asset workflow and its nightly dispatch.
 2. Rehearse the tag-only path in dry-run mode and verify the candidate from the
-   Go module channel. A gate remains open until that evidence is recorded here;
-   the policy decision alone does not pass or waive it.
+   Go module channel. A gate remains open until that evidence is recorded in
+   `plan.json`; the policy decision alone does not pass or waive it.
 3. This branch drifts behind master quickly. Re-sync and re-audit immediately
    before tagging; `relman audit` now blocks on it.
 

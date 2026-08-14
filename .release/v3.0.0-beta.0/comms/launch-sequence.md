@@ -42,18 +42,20 @@ Owners are blank on purpose. Fill them in before the go/no-go, not on the day.
 
 Agreed in advance, while nobody is under pressure:
 
-- Install fails on any supported platform: stop, unpublish, fix
-- Data loss or a security regression: stop, unpublish, advisory
+- A pre-publication install fails on any supported platform: hold publication
+  and the announcement, then fix and reverify the candidate
+- A post-publication install failure, data-loss defect, or security regression:
+  hold the announcement, publish an advisory when appropriate, and recover with
+  a new semver patch tag rather than replacing the cached version
 - Docs site down or the upgrade guide missing: hold the announcement, ship the fix
 - Anything else: continue, log it, decide at the T+3h sweep
 
 ## Rollback
 
-The GitHub release can be deleted and the tag removed, but **npm cannot be
-unpublished after 72 hours** and the Go module proxy caches versions
-permanently. In practice, the recovery for anything found after publishing is a
-fast patch release, which is why the hotfix path has to be rehearsed rather than
-assumed.
+Deleting the GitHub release or tag does not retract a version already cached by
+the Go module proxy, and **npm cannot be unpublished after 72 hours**. In
+practice, the recovery for anything found after publishing is a fast patch
+release, which is why the hotfix path has to be rehearsed rather than assumed.
 
 Write the exact commands here once step 2 has actually been executed, so this
 section describes something that has been done rather than something believed.
