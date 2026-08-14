@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server && (!production || devtools) && privatemacapis
+//go:build darwin && !ios && !server && (!production || devtools) && !noprivateapis
 
 package application
 

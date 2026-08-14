@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server && privatemacapis
+//go:build darwin && !ios && !server && !noprivateapis
 
 package application
 
@@ -12,7 +12,7 @@ package application
 #include "webview_window_darwin.h"
 
 // Keep every private macOS API used by the normal window implementation in
-// this opt-in translation unit so default builds cannot accidentally link it.
+// this translation unit so noprivateapis builds cannot accidentally link it.
 void wailsSetWebViewTransparent(void* nsWindow) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	[window.webView setValue:@NO forKey:@"drawsBackground"];
@@ -31,7 +31,7 @@ void wailsSetWebViewBackgroundColour(void* nsWindow, int r, int g, int b, int al
 void wailsConfigurePrivateLiquidGlass(void* nativeGlassView, int style, const char* groupID, double groupSpacing) {
 	NSView* glassView = (NSView*)nativeGlassView;
 	if ([glassView respondsToSelector:@selector(setStyle:)]) {
-		// Preserve the legacy Wails mapping in opt-in builds. Values above 1
+		// Preserve the legacy Wails mapping in default builds. Values above 1
 		// are undocumented NSGlassEffectView styles.
 		NSInteger nativeStyle = style == 3 ? 1 : style;
 		[glassView setValue:@(nativeStyle) forKey:@"style"];

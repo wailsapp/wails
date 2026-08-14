@@ -29,6 +29,11 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Isolate Wails' private macOS WebKit and AppKit usage and add the
+  `noprivateapis` build tag. Default builds preserve existing transparency,
+  Liquid Glass grouping and inspector behaviour; public-only builds keep the
+  same Go API and use documented fallbacks or no-ops where no public equivalent
+  exists. [PR #5955](https://github.com/wailsapp/wails/pull/5955) by @taliesin-ai
 - Update docs sidebar autogeneration and blog author type derivation in [PR](https://github.com/wailsapp/wails/pull/5938) by @leaanthony
 
 ## Fixed

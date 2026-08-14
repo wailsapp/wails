@@ -17,6 +17,10 @@ This example demonstrates how to create a Spotlight-like launcher window using t
 go run .
 ```
 
+The translucent web content uses Wails' default private macOS integration. Run
+`go run -tags noprivateapis .` to exercise the public-only fallback; the window
+behaviour remains intact, but the webview is opaque and obscures the backdrop.
+
 **Note**: This example is macOS-specific due to the use of `CollectionBehavior`.
 
 ## Combining CollectionBehaviors

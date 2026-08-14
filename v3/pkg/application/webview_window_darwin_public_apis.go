@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server && !privatemacapis
+//go:build darwin && !ios && !server && noprivateapis
 
 package application
 

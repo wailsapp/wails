@@ -444,7 +444,7 @@ BackgroundType: application.BackgroundTypeTranslucent,
 - `BackgroundTypeTranslucent` - Semi-transparent blur
 
 **Platform support:**
-- **macOS:** Solid backgrounds use public APIs. Transparent and translucent web content require the opt-in `privatemacapis` build tag.
+- **macOS:** Transparent and translucent web content uses private WebKit APIs by default. With `noprivateapis`, the native window effect remains configured but the webview is opaque.
 - **Windows:** Transparent and Translucent (Windows 11+)
 - **Linux:** Solid only
 
@@ -823,38 +823,36 @@ Mac: application.MacWindow{
 - `MacBackdropTransparent` - Fully transparent background
 - `MacBackdropLiquidGlass` - Native Liquid Glass on macOS 26+, with a translucent fallback on older releases
 
-`MacBackdropLiquidGlass` uses public AppKit glass APIs by default. macOS does not
-provide a public API that makes `WKWebView` itself transparent, so revealing a
-native backdrop through transparent HTML requires the opt-in `privatemacapis`
-build tag. The same tag is required for `MacBackdropTransparent` and
-`MacBackdropTranslucent` to reveal content behind the webview.
+macOS does not provide a public API that makes `WKWebView` itself transparent.
+Wails therefore uses private WebKit APIs by default for
+`MacBackdropTransparent`, `MacBackdropTranslucent`, and full-window
+`MacBackdropLiquidGlass`.
 
-The Go API is identical in both modes. Enable the complete macOS behavior when
-developing, building, or packaging with:
+The Go API is identical in both modes. To exclude Wails' known private macOS
+APIs, build with:
 
 ```bash
 # Development
-EXTRA_TAGS=privatemacapis wails3 dev
+EXTRA_TAGS=noprivateapis wails3 dev
 
 # Production build
-wails3 build -tags privatemacapis
+wails3 build -tags noprivateapis
 
 # Package through the generated Taskfile
-wails3 package EXTRA_TAGS=privatemacapis GOOS=darwin
+wails3 package EXTRA_TAGS=noprivateapis GOOS=darwin
 ```
 
 <Aside type="caution">
-The `privatemacapis` build tag enables undocumented WebKit and AppKit APIs. Do
-not use it for Mac App Store submissions. Without the tag, Wails uses the public
-`WKWebView.inspectable` API on macOS 13.3+, so a window can still be inspected
-manually from Safari's Develop menu; automatic inspector opening is disabled.
+Default macOS builds contain private WebKit and AppKit API references and may be
+unsuitable for Mac App Store submission. Use `noprivateapis` when private APIs
+are prohibited. See [macOS Packaging](/guides/build/macos#private-macos-apis)
+for the complete fallback table.
 </Aside>
 
-`MacLiquidGlass.Style`, `CornerRadius`, and `TintColor` remain available in
-public builds. `Automatic`, `Light`, and `Dark` use the public regular glass
-style with system appearance selection, while `Vibrant` uses the public clear
-style. Cross-window `GroupID` and `GroupSpacing` have no public AppKit
-equivalent and are active only with `privatemacapis`.
+With `noprivateapis`, `Automatic`, `Light`, and `Dark` use the public regular
+glass style, while `Vibrant` uses the public clear style. `CornerRadius` and
+`TintColor` remain active. Cross-window `GroupID` and `GroupSpacing` have no
+public AppKit equivalent and are ignored.
 
 **InvisibleTitleBarHeight** (`int`)
 - Height of invisible title bar area (for dragging)

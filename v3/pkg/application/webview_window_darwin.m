@@ -1145,8 +1145,8 @@ void windowRemoveVisualEffects(void* nsWindow) {
 void configureWebViewForLiquidGlass(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     WKWebView* webView = window.webView;
-    // Full WKWebView transparency is only available in privatemacapis builds.
-    // The public implementation sets the documented under-page colour only.
+    // Full WKWebView transparency is enabled in default builds. The
+    // noprivateapis implementation sets the documented under-page colour only.
     wailsSetWebViewTransparent(nsWindow);
     // Ensure WebView is above glass layer
     if (webView.layer) {
@@ -1203,8 +1203,8 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                 [glassView setAppearance:nil];
             }
 
-            // Cross-window grouping has no public AppKit equivalent. It is
-            // retained as an opt-in for applications that already depend on it.
+            // Cross-window grouping has no public AppKit equivalent. The
+            // noprivateapis implementation leaves it unconfigured.
             wailsConfigurePrivateLiquidGlass(glassView, style, groupID, groupSpacing);
         }
     }

@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server && (!production || devtools) && !privatemacapis
+//go:build darwin && !ios && !server && (!production || devtools) && noprivateapis
 
 package application
 
@@ -13,7 +13,7 @@ package application
 
 void openDevTools(void *window) {
 	(void)window;
-	NSLog(@"Programmatically opening the Web Inspector requires the privatemacapis build tag. Use Safari's Develop menu to inspect this window.");
+	NSLog(@"Programmatically opening the Web Inspector is disabled by the noprivateapis build tag. Use Safari's Develop menu to inspect this window.");
 }
 
 // Enable NSWindow devtools
@@ -25,7 +25,7 @@ void windowEnableDevTools(void* nsWindow) {
 		return;
 	}
 #endif
-	NSLog(@"Web Inspector requires macOS 13.3 or the privatemacapis build tag.");
+	NSLog(@"Web Inspector requires macOS 13.3 when built with noprivateapis.");
 }
 
 */

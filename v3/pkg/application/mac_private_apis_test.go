@@ -14,34 +14,34 @@ func TestMacPrivateAPIBuildVariantsAreExclusive(t *testing.T) {
 	defaultBuild.GOOS = "darwin"
 	defaultBuild.CgoEnabled = true
 
-	privateBuild := defaultBuild
-	privateBuild.BuildTags = []string{"privatemacapis"}
+	publicBuild := defaultBuild
+	publicBuild.BuildTags = []string{"noprivateapis"}
 
 	tests := []struct {
 		name           string
 		file           string
 		defaultMatches bool
-		privateMatches bool
+		publicMatches  bool
 	}{
 		{
-			name:           "window public implementation",
-			file:           "webview_window_darwin_public_apis.go",
-			defaultMatches: true,
+			name:          "window public implementation",
+			file:          "webview_window_darwin_public_apis.go",
+			publicMatches: true,
 		},
 		{
 			name:           "window private implementation",
 			file:           "webview_window_darwin_private_apis.go",
-			privateMatches: true,
+			defaultMatches: true,
 		},
 		{
-			name:           "devtools public implementation",
-			file:           "webview_window_darwin_dev.go",
-			defaultMatches: true,
+			name:          "devtools public implementation",
+			file:          "webview_window_darwin_dev.go",
+			publicMatches: true,
 		},
 		{
 			name:           "devtools private implementation",
 			file:           "webview_window_darwin_dev_private_apis.go",
-			privateMatches: true,
+			defaultMatches: true,
 		},
 	}
 
@@ -55,18 +55,18 @@ func TestMacPrivateAPIBuildVariantsAreExclusive(t *testing.T) {
 				t.Fatalf("default build match = %v, want %v", defaultMatches, test.defaultMatches)
 			}
 
-			privateMatches, err := privateBuild.MatchFile(".", test.file)
+			publicMatches, err := publicBuild.MatchFile(".", test.file)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if privateMatches != test.privateMatches {
-				t.Fatalf("privatemacapis build match = %v, want %v", privateMatches, test.privateMatches)
+			if publicMatches != test.publicMatches {
+				t.Fatalf("noprivateapis build match = %v, want %v", publicMatches, test.publicMatches)
 			}
 		})
 	}
 }
 
-func TestPrivateMacAPIReferencesStayInOptInFiles(t *testing.T) {
+func TestPrivateMacAPIReferencesStayOutOfNoPrivateAPIFiles(t *testing.T) {
 	t.Parallel()
 
 	allowedFiles := map[string]bool{
