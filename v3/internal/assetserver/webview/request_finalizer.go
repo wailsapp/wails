@@ -12,17 +12,27 @@ var _ Request = &requestFinalizer{}
 
 type requestFinalizer struct {
 	Request
-	context  context.Context
-	cancel   context.CancelFunc
-	nativeID uintptr
-	closed   int32
+	context     context.Context
+	cancel      context.CancelFunc
+	nativeID    uintptr
+	nativeToken *nativeRequestToken
+	closed      int32
+}
+
+type nativeRequestToken struct {
+	_ byte
+}
+
+type nativeRequestContext struct {
+	cancel context.CancelFunc
+	token  *nativeRequestToken
 }
 
 var nativeRequestContexts = struct {
 	sync.RWMutex
-	active map[uintptr]*requestFinalizer
+	active map[uintptr]nativeRequestContext
 }{
-	active: make(map[uintptr]*requestFinalizer),
+	active: make(map[uintptr]nativeRequestContext),
 }
 
 // newRequestFinalizer returns a request with a runtime finalizer to make sure it will be closed from the finalizer
@@ -41,20 +51,24 @@ func newNativeRequestFinalizer(r Request, nativeID uintptr) Request {
 	}
 	if nativeID != 0 {
 		rf.context, rf.cancel = context.WithCancel(context.Background())
+		rf.nativeToken = &nativeRequestToken{}
 		nativeRequestContexts.Lock()
 		previous := nativeRequestContexts.active[nativeID]
-		nativeRequestContexts.active[nativeID] = rf
+		nativeRequestContexts.active[nativeID] = nativeRequestContext{
+			cancel: rf.cancel,
+			token:  rf.nativeToken,
+		}
 		nativeRequestContexts.Unlock()
 
 		// A retained native task should keep its address unique for its lifetime.
 		// If a platform nevertheless reuses an address before cleanup, retire the
 		// old context without letting its eventual Close remove the replacement.
-		if previous != nil {
+		if previous.cancel != nil {
 			previous.cancel()
 		}
 	}
 	// Make sure to async release since it might block the finalizer goroutine for a longer period
-	runtime.SetFinalizer(rf, func(obj *requestFinalizer) { rf.close(true) })
+	runtime.SetFinalizer(rf, func(obj *requestFinalizer) { obj.close(true) })
 	return rf
 }
 
@@ -80,12 +94,12 @@ func CancelRequest(nativeRequest unsafe.Pointer) bool {
 
 func cancelRequest(nativeID uintptr) bool {
 	nativeRequestContexts.RLock()
-	rf := nativeRequestContexts.active[nativeID]
+	entry, ok := nativeRequestContexts.active[nativeID]
 	nativeRequestContexts.RUnlock()
-	if rf == nil {
+	if !ok {
 		return false
 	}
-	rf.cancel()
+	entry.cancel()
 	return true
 }
 
@@ -105,7 +119,7 @@ func (r *requestFinalizer) close(asyncRelease bool) error {
 		}
 		if r.nativeID != 0 {
 			nativeRequestContexts.Lock()
-			if nativeRequestContexts.active[r.nativeID] == r {
+			if entry, ok := nativeRequestContexts.active[r.nativeID]; ok && entry.token == r.nativeToken {
 				delete(nativeRequestContexts.active, r.nativeID)
 			}
 			nativeRequestContexts.Unlock()

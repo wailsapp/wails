@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -66,6 +67,26 @@ func TestNativeRequestPointerReuseKeepsReplacementRegistered(t *testing.T) {
 	}
 }
 
+func TestNativeRequestFinalizerCleansRegistration(t *testing.T) {
+	const nativeID = uintptr(0x5966)
+	raw := &finalizerTestRequest{}
+	abandonNativeRequest(raw, nativeID)
+
+	deadline := time.Now().Add(5 * time.Second)
+	for raw.closeCount.Load() == 0 && time.Now().Before(deadline) {
+		runtime.GC()
+		runtime.Gosched()
+		time.Sleep(time.Millisecond)
+	}
+
+	if got := raw.closeCount.Load(); got != 1 {
+		t.Fatalf("underlying request closed %d times after finalization, want 1", got)
+	}
+	if cancelRequest(nativeID) {
+		t.Fatal("finalized request remained in the native request registry")
+	}
+}
+
 func TestNativeRequestConcurrentCancelAndClose(t *testing.T) {
 	const nativeID = uintptr(0x5965)
 	raw := &finalizerTestRequest{}
@@ -95,6 +116,11 @@ func TestNativeRequestConcurrentCancelAndClose(t *testing.T) {
 
 type finalizerTestRequest struct {
 	closeCount atomic.Int32
+}
+
+func abandonNativeRequest(raw Request, nativeID uintptr) {
+	wrapped := newNativeRequestFinalizer(raw, nativeID)
+	runtime.KeepAlive(wrapped)
 }
 
 func requestContext(r Request) context.Context {
