@@ -68,7 +68,9 @@ func newNativeRequestFinalizer(r Request, nativeID uintptr) Request {
 		}
 	}
 	// Make sure to async release since it might block the finalizer goroutine for a longer period
-	runtime.SetFinalizer(rf, func(obj *requestFinalizer) { obj.close(true) })
+	runtime.SetFinalizer(rf, func(obj *requestFinalizer) {
+		_ = obj.close(true)
+	})
 	return rf
 }
 
