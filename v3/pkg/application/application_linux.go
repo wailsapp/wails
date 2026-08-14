@@ -17,40 +17,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 	"sync"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
-
-var invalidAppNameChars = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
-var leadingDigits = regexp.MustCompile(`^[0-9]+`)
-
-func sanitizeAppName(name string) string {
-	name = invalidAppNameChars.ReplaceAllString(name, "_")
-	name = leadingDigits.ReplaceAllString(name, "_$0")
-	for strings.Contains(name, "__") {
-		name = strings.ReplaceAll(name, "__", "_")
-	}
-	name = strings.Trim(name, "_")
-	if name == "" {
-		name = "wailsapp"
-	}
-	return strings.ToLower(name)
-}
-
-// applicationID returns the id to build the GtkApplication with. Options.Linux
-// wins when it sets one, so sandboxed builds can match the id their runtime
-// expects; everything else keeps the derived "org.wails.<name>".
-func applicationID(options Options) string {
-	if options.Linux.ApplicationID != "" {
-		return options.Linux.ApplicationID
-	}
-	return "org.wails." + sanitizeAppName(options.Name)
-}
 
 func init() {
 	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
@@ -219,9 +191,14 @@ func (a *linuxApp) unregisterWindow(window windowPointer) {
 }
 
 func newPlatformApp(parent *App) *linuxApp {
+	appID, err := applicationID(parent.options)
+	if err != nil {
+		parent.error("invalid Linux.ApplicationID: %w; falling back to %q", err, appID)
+	}
+
 	app := &linuxApp{
 		parent:      parent,
-		application: appNew(applicationID(parent.options)),
+		application: appNew(appID),
 		activated:   make(chan struct{}),
 		windowMap:   map[windowPointer]uint{},
 	}

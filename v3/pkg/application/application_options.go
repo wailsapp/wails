@@ -333,11 +333,20 @@ type LinuxOptions struct {
 	// ApplicationID overrides the GTK application id, which otherwise defaults
 	// to "org.wails." followed by a sanitised Name.
 	//
+	// The id has to satisfy g_application_id_is_valid(): two or more non-empty
+	// elements separated by a '.', each holding only the ASCII characters A-Z,
+	// a-z, 0-9, '_' and '-', none of them starting with a digit, and at most
+	// 255 characters in total, e.g. "com.example.MyApp". An id that does not is
+	// reported through the error handler and replaced with the derived default,
+	// because GTK only asserts on it and would abort the process instead.
+	//
 	// Sandboxed builds have to set this. A flatpak may only own bus names
 	// prefixed with its app id, and WebKit asks the portal to own
 	// "<application id>.Sandboxed.WebProcess-<uuid>" for the accessibility bus.
 	// With the default id that request is refused and the web process aborts,
 	// taking the application down from inside g_application_run.
+	//
+	// See: https://docs.gtk.org/gio/type_func.Application.id_is_valid.html
 	ApplicationID string
 }
 

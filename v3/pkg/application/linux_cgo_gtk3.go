@@ -619,7 +619,7 @@ func appName() string {
 }
 
 func appNew(appId string) pointer {
-	// Already assembled and sanitized by applicationID() in application_linux_gtk3.go
+	// Already assembled and validated by applicationID() in application_linux_appid.go
 	nameC := C.CString(appId)
 	defer C.free(unsafe.Pointer(nameC))
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
