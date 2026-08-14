@@ -190,6 +190,10 @@ jobs:
           git add -A
           echo "Files committed back to master:"
           git status --short
+          if git diff --cached --quiet; then
+            echo "No regenerated runtime changes to commit. Continuing to publish the already-synchronized version."
+            exit 0
+          fi
           git commit -m "[skip ci] Publish @wailsio/runtime ${{ steps.bump-version.outputs.version }}"
           # master moves while this job runs (nightly release, auto-changelog
           # commits), so a bare push races and gets rejected — which aborts the
