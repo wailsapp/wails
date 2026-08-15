@@ -1,6 +1,7 @@
 package assetserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -10,6 +11,40 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 )
+
+type requestContextResponseWriter struct {
+	webview.ResponseWriter
+	ctx context.Context
+}
+
+func (rw *requestContextResponseWriter) Write(buf []byte) (int, error) {
+	if rw.ctx.Err() != nil {
+		return len(buf), nil
+	}
+	return rw.ResponseWriter.Write(buf)
+}
+
+func (rw *requestContextResponseWriter) WriteHeader(code int) {
+	if rw.ctx.Err() == nil {
+		rw.ResponseWriter.WriteHeader(code)
+	}
+}
+
+func (rw *requestContextResponseWriter) Finish() error {
+	if rw.ctx.Err() != nil {
+		return nil
+	}
+	return rw.ResponseWriter.Finish()
+}
+
+func (rw *requestContextResponseWriter) Flush() {
+	if rw.ctx.Err() != nil {
+		return
+	}
+	if flusher, ok := rw.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
+}
 
 type assetServerWebView struct {
 	// ExpectedWebViewHost is checked against the Request Host of every WebViewRequest, other hosts won't be processed.
@@ -80,7 +115,13 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	uri := "unknown"
 	var err error
 
-	wrw := r.Response()
+	ctx, cancel := webview.RequestContext(r)
+	defer cancel()
+
+	wrw := &requestContextResponseWriter{
+		ResponseWriter: r.Response(),
+		ctx:            ctx,
+	}
 	defer func() {
 		if err := wrw.Finish(); err != nil {
 			a.options.Logger.Error("Error finishing request.", "uri", uri, "error", err)
@@ -123,9 +164,6 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 		body = http.NoBody
 	}
 	defer body.Close()
-
-	ctx, cancel := webview.RequestContext(r)
-	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
