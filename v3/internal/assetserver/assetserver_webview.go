@@ -19,7 +19,7 @@ type requestContextResponseWriter struct {
 
 func (rw *requestContextResponseWriter) Write(buf []byte) (int, error) {
 	if rw.ctx.Err() != nil {
-		return len(buf), nil
+		return len(buf), nil //nolint:nilerr // Response writes are intentionally discarded after cancellation.
 	}
 	return rw.ResponseWriter.Write(buf)
 }
@@ -32,7 +32,7 @@ func (rw *requestContextResponseWriter) WriteHeader(code int) {
 
 func (rw *requestContextResponseWriter) Finish() error {
 	if rw.ctx.Err() != nil {
-		return nil
+		return nil //nolint:nilerr // Finishing a cancelled response is intentionally a no-op.
 	}
 	return rw.ResponseWriter.Finish()
 }
