@@ -1,0 +1,365 @@
+# Wails v3 Manifest Build System
+
+Status: design proposal
+
+## Summary
+
+Wails v3 should move from generated Taskfiles to a built-in, Wails-aware build
+pipeline configured by one root-level `wails.toml` file. New projects emit only
+the required project identity; build behavior stays implicit until customized
+or ejected.
+
+The normal project should not contain a generated build graph. Wails owns the
+default graph, its platform behavior, its cache, and the temporary files needed
+by platform packagers. The project declares intent and only records deviations
+from the defaults.
+
+The existing Taskfile system is migrated into this model. It is not retained as
+the long-term user-facing build API.
+
+## Goals
+
+- Make a new project's build system understandable from one file.
+- Keep the default configuration close to zero lines.
+- Make the exact default set observable, with reproducibility provided by a
+  pinned CLI or an ejected snapshot.
+- Allow advanced users to eject and fully own a default profile.
+- Generate platform configuration at build time instead of committing it.
+- Reuse Wake's graph, cache, parallel executor, and structured reporting.
+- Support common customizations without requiring users to understand the
+  internal pipeline.
+- Provide a safe migration path from default and modified v3 Taskfiles.
+
+## Non-goals
+
+- Preserve arbitrary Taskfile syntax as a second build language.
+- Support inline shell as a general-purpose extension mechanism.
+- Require users to learn internal task names such as
+  `common:generate:bindings`.
+- Make generated platform files the primary customization surface.
+
+## Project layout
+
+A default project should look like:
+
+```text
+my-app/
+  wails.toml              # required identity; build defaults remain implicit
+  main.go
+  go.mod
+  frontend/
+  assets/
+  scripts/                # optional user-owned build hooks
+```
+
+The `build/` directory is no longer generated for orchestration. Generated
+plists, manifests, NSIS files, nfpm files, Xcode projects, and similar files
+are written to an ignored `.wails/` working directory or passed through memory
+where the toolchain permits it. They are build products, not project source.
+
+User-owned resources remain ordinary project files and are referenced from the
+manifest, for example `assets/appicon.png` or
+`packaging/windows/installer.nsi`.
+
+## Manifest principles
+
+The manifest is declarative. It describes the application, selected profile,
+frontend, targets, packaging preferences, and extensions. It does not describe
+the complete implementation graph.
+
+The initial parser has no `schema` field and rejects it like any other unknown
+top-level field. Explicit schema versioning should be introduced only if a
+future incompatible format actually requires it.
+
+The built-in defaults are keyed by the complete version of the running Wails
+CLI. An ordinary project follows the defaults compiled into that CLI. An
+ejected scope records the same complete version in `ejected_by`, freezes the
+resolved values, and does not inherit later default changes.
+
+Illustrative configuration:
+
+```toml
+[project]
+name = "badge"
+product_name = "Badge"
+company_name = "My Company"
+identifier = "com.mycompany.badge"
+version = "0.1.0"
+description = "A Wails application"
+icon = "assets/appicon.png"
+
+[frontend]
+directory = "frontend"
+package_manager = "auto"
+build_command = "build"
+dev_command = "dev"
+
+[dev]
+port = 9245
+
+[targets.darwin]
+minimum_version = "12.0"
+
+[targets.darwin.arm64]
+
+[targets.darwin.amd64]
+
+[package.linux]
+formats = ["appimage", "deb", "rpm"]
+
+[package.windows]
+formats = ["nsis", "msix"]
+
+[package.darwin]
+formats = ["app", "dmg"]
+```
+
+The exact field names are subject to schema review. The important distinction
+is between user concepts (`frontend.package_manager`) and implementation
+details (the individual dependency, binding, and compile tasks).
+
+## Profiles
+
+Profiles are available but are not emitted by default. The implicit default
+profile covers normal development, production builds, packaging, and the
+supported targets.
+
+Users materialize the effective top-level base with:
+
+```bash
+wails3 eject
+```
+
+This expands normal top-level configuration in `wails.toml`. The result is
+fully frozen:
+
+- It contains every resolved value, including values that were previously
+  implicit.
+- It has no inheritance relationship with the built-in default.
+- Future Wails releases do not silently modify it.
+- Re-running ejection leaves active values unchanged and may add commented
+  upgrade suggestions; adopting them is a manual edit.
+
+Named profiles may be added later:
+
+```toml
+[profiles.debug.build]
+production = false
+
+[profiles.release.build]
+production = true
+```
+
+Profile selection should be exposed by the primary commands, for example
+`wails3 build --profile release`, but profiles should not be required to use
+Wails.
+
+## Customization
+
+Customization has three layers, in order of preference.
+
+### Structured configuration
+
+Common needs are first-class manifest fields: package manager, output path,
+Go tags, architectures, signing options, package formats, metadata, file
+associations, protocols, and development settings.
+
+### Script hooks
+
+Shell is intentionally limited to invoking a user-owned script:
+
+```toml
+[hooks]
+before_build = "scripts/generate-version.sh"
+after_package = "scripts/publish-artifact.sh"
+```
+
+A cache-aware hook uses the long form for the same phase:
+
+```toml
+[hooks.before_build]
+script = "scripts/generate-version.sh"
+inputs = ["version.txt"]
+outputs = ["generated/version.go"]
+```
+
+Wails provides a stable environment to hooks:
+
+```text
+WAILS_PROJECT_DIR
+WAILS_TARGET_OS
+WAILS_TARGET_ARCH
+WAILS_PROFILE
+WAILS_OUTPUT
+WAILS_PIPELINE_VERSION
+```
+
+Hooks that participate in caching may declare inputs and outputs. Hooks without
+declarations are treated as side-effectful and run every time. The referenced
+script and relevant executable metadata are always cache inputs; users do not
+need to repeat the script path in `inputs`.
+
+### User-owned templates and extensions
+
+Structured configuration should cover the common case. When it cannot, the
+manifest can point to a stable user-owned template:
+
+```toml
+[package.windows.nsis]
+template = "packaging/windows/installer.nsi"
+```
+
+Wails must never overwrite referenced user-owned files. Extension namespaces
+can provide configuration for tooling that Wails does not understand without
+exposing the full internal pipeline.
+
+## Built-in pipeline
+
+The built-in pipeline is represented internally as typed nodes rather than
+Taskfile tasks:
+
+```text
+inspect project
+    ├── install frontend dependencies
+    ├── generate bindings
+    └── generate icons
+          ↓
+     build frontend
+          ↓
+     compile Go binary
+          ↓
+     create platform bundle
+          ↓
+     package and sign
+```
+
+The actual graph is target- and profile-dependent. Wails derives inputs from:
+
+- `go.mod`, `go.sum`, and the Go package graph;
+- Go source and embedded files;
+- frontend source, `package.json`, and the selected lockfile;
+- generated bindings and frontend output;
+- manifest values and target environment;
+- declared hook inputs and outputs.
+
+Wake should execute this graph. Its useful Taskfile-specific behavior should be
+refactored into reusable graph, cache, execution, and reporting packages. The
+new cache key should include the pipeline node, resolved manifest/profile,
+target, toolchain identity, environment inputs, and discovered file inputs.
+
+## Generated platform assets
+
+Platform assets are generated at build time from the single manifest:
+
+- macOS `Info.plist`, entitlements, app bundles, and Xcode support;
+- Windows manifests, NSIS inputs, MSIX metadata, and `.syso` resources;
+- Linux desktop metadata, AppImage inputs, and nfpm configuration;
+- iOS and Android generated project/configuration files.
+
+There is no general-purpose `update build-assets` operation in the new model.
+Changing `wails.toml` changes the next generated build inputs. User-owned
+templates and resources are explicit exceptions and are never regenerated.
+
+## Migration
+
+The migration command is:
+
+```bash
+wails3 migrate
+wails3 migrate --dry-run
+```
+
+Migration discovers the root Taskfile, included common/platform Taskfiles, and
+`build/config.yml`. It parses them through the Task/Wake AST, normalizes the
+result, and compares it with the known generated Wails templates.
+
+Migration tiers:
+
+1. **Unmodified generated projects** — migrate automatically and completely.
+2. **Modified generated projects** — translate recognizable differences into
+   manifest fields, profiles, hooks, or user-owned template references.
+3. **Arbitrary Taskfile logic** — report the unsupported portions and require
+   manual conversion to structured config or scripts.
+
+Inline shell blocks are deliberately not converted into generated scripts.
+They produce a migration warning and require the user to create a script. This
+avoids creating opaque generated files while keeping the new system's shell
+boundary clear.
+
+Migration writes `wails.toml` without deleting existing files. It should emit a
+machine-readable report and a human-readable summary. Removal is explicit:
+
+```bash
+wails3 migrate --remove-old-files
+```
+
+Migration must not cut over execution or remove files merely because it wrote a
+Manifest. The machine-readable completion state, explicit cutover marker,
+behavior when `wails.toml` already exists, and provenance requirements for
+removing only fully represented legacy files are resolved by the
+[Taskfile migration decision](wayfinder/wails-build-system/issues/06-taskfile-migration.md).
+Command precedence while Taskfiles and a Manifest coexist is resolved by the
+[CLI cutover decision](wayfinder/wails-build-system/issues/07-cli-compatibility.md).
+
+## CLI surface
+
+Initial commands:
+
+```bash
+wails3 build
+wails3 build --profile release
+wails3 package
+wails3 sign
+wails3 dev
+wails3 eject
+wails3 migrate
+wails3 config check
+wails3 config show
+```
+
+`wails3 task` is not part of the new public build API. Existing Taskfile-based
+projects continue to work during the migration period, but newly initialized
+projects do not receive Taskfiles.
+
+## Implementation phases
+
+### Phase 1: manifest and defaults
+
+- Define typed manifest structs and validation.
+- Implement implicit defaults and profile resolution.
+- Add `wails3 config check` and `wails3 config show`.
+- Add `wails3 eject` with full materialization and no inheritance.
+
+### Phase 2: built-in graph
+
+- Extract Wake's DAG, cache, execution, and reporting layers from Taskfile
+  assumptions.
+- Implement project inspection and frontend/Go input discovery.
+- Implement the default build, dev, package, and sign nodes.
+
+### Phase 3: generated platform assets
+
+- Replace project-generated Taskfile/config templates with runtime generation.
+- Move packaging inputs to typed manifest structures.
+- Add explicit user-owned template references.
+- Keep generated material under `.wails/` or in memory.
+
+### Phase 4: migration
+
+- Add Taskfile/config discovery and AST normalization.
+- Recognize the shipped v3 templates.
+- Translate common modifications.
+- Produce warnings and dry-run reports for unsupported behavior.
+
+### Phase 5: new project templates and documentation
+
+- Stop generating Taskfiles from `wails init`.
+- Update examples and documentation.
+- Retain legacy Taskfile execution only for projects that have not migrated.
+
+## Open design work
+
+- Exact pipeline/default version compatibility policy.
+- Structured signing configuration for each platform.
+- Which existing packaging customizations deserve first-class fields.
+- Migration mappings for the most common modified Taskfiles.

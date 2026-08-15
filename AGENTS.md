@@ -140,3 +140,20 @@ docs: update implementation tracker for [phase/feature]
 - Use the `taliesin-ai` identity for every commit.
 - Do not push without explicit manual confirmation.
 - Report clearly whether changes are uncommitted, committed locally, or pushed.
+
+## Agent skills
+
+### Issue tracker
+
+Planning tickets use local Markdown under `history/wayfinder/`. See
+`docs/agents/issue-tracker.md` before creating, claiming, blocking, or resolving
+a ticket.
+
+### Triage labels
+
+Local tickets use the canonical triage vocabulary. See
+`docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Domain documentation uses a single root context with system ADRs under
