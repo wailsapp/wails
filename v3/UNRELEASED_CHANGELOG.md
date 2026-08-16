@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Cancel macOS and iOS asset request contexts when WebKit aborts the matching custom-scheme task (#5963)
 - Handle WindowSetFullscreenButtonEnabled message in [PR](https://github.com/wailsapp/wails/pull/5976) by @archy-rock3t-cloud
 - Import Fragment in preact-ts template to resolve build failure in [PR](https://github.com/wailsapp/wails/pull/5979) by @haoku123
 - Prevent legacy GTK3 service-only applications from crashing when screen
