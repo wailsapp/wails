@@ -3,7 +3,7 @@
 This is the dependency-free Go generator for `website/static/img/star-history.svg`.
 It calls GitHub's timestamped stargazers endpoint, groups the visible stars into
 weekly points, and renders a self-contained SVG using the Digital Wales artwork
-as a faded background.
+as a faded background with the horizontal Wails logo embedded in the header.
 
 GitHub now requires the token to belong to a repository admin or collaborator for
 the stargazers endpoint. The workflow passes the existing `WAILS_REPO_TOKEN`

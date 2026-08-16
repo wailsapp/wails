@@ -16,6 +16,7 @@ import (
 func main() {
 	repo := flag.String("repo", "wailsapp/wails", "GitHub repository in owner/name form")
 	background := flag.String("background", "../../docs/public/digital_wales_master.webp", "background image to embed in the SVG")
+	logo := flag.String("logo", "../../website/static/img/wails-logo-horizontal-dark.svg", "horizontal Wails logo to embed in the SVG")
 	out := flag.String("out", "../../website/static/img/star-history.svg", "output SVG path")
 	flag.Parse()
 
@@ -30,6 +31,10 @@ func main() {
 	backgroundData, err := os.ReadFile(*background)
 	if err != nil {
 		fatal("read background image: %v", err)
+	}
+	logoData, err := os.ReadFile(*logo)
+	if err != nil {
+		fatal("read Wails logo: %v", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
@@ -50,6 +55,7 @@ func main() {
 		Repo:           *repo,
 		History:        history,
 		BackgroundData: backgroundData,
+		LogoData:       logoData,
 		RefreshedAt:    time.Now().UTC(),
 	})
 	if err := os.MkdirAll(filepath.Dir(*out), 0o755); err != nil {

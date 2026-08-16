@@ -15,6 +15,7 @@ type RenderOptions struct {
 	Repo           string
 	History        []WeeklyPoint
 	BackgroundData []byte
+	LogoData       []byte
 	RefreshedAt    time.Time
 }
 
@@ -61,6 +62,10 @@ func RenderSVG(opts RenderOptions) string {
 	}
 	b.WriteString(fmt.Sprintf(`<title>Wails star history — %s stars</title>`, formatCount(current)))
 	b.WriteString(`<text x="72" y="88" class="title">Stargazers over time</text>`)
+	if len(opts.LogoData) > 0 {
+		encoded := base64.StdEncoding.EncodeToString(opts.LogoData)
+		b.WriteString(fmt.Sprintf(`<image href="data:image/svg+xml;base64,%s" x="910" y="49" width="210" height="51" preserveAspectRatio="xMidYMid meet" opacity="0.94"/>`, encoded))
+	}
 
 	b.WriteString(`<g class="grid">`)
 	for i := 0; i <= 4; i++ {
