@@ -149,6 +149,7 @@ func (s *mcpServer) runHTTP(ctx context.Context, token string, port int) error {
 			protectedHandler.ServeHTTP(w, r)
 		}),
 		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
 		IdleTimeout:       30 * time.Second,
 	}
 	go func() {
