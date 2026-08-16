@@ -456,12 +456,11 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 			r.s.bold(r.s.fg(Failure, padRight("command", labelW))),
 			f.Command)
 	}
-	// Skip the "status exited N" body row when there's an exit code — the
-	// panel header carries the "exit N" badge already, and repeating it in
-	// the body just adds chrome. Keep the "error" row when there's an err
-	// because the body needs to carry the error *message*, not just its
-	// type.
-	if f.ExitCode == 0 && f.Err != nil {
+	// Skip the error body only for a known non-zero process exit code — the
+	// panel header carries the "exit N" badge and captured output supplies
+	// the detail. ExitCode -1 means unknown, so startup errors must retain
+	// their actionable message instead of appearing as an empty panel.
+	if f.ExitCode <= 0 && f.Err != nil {
 		fmt.Fprintf(&body, "%s %s\n",
 			r.s.bold(r.s.fg(Failure, padRight("error", labelW))),
 			f.Err.Error())
@@ -500,7 +499,7 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 	// carries the headline in one line instead of two.
 	badge := ""
 	badgeW := 0
-	if f.ExitCode != 0 {
+	if f.ExitCode > 0 {
 		s := fmt.Sprintf("exit %d", f.ExitCode)
 		badge = r.s.bold(r.s.fg(Failure, s))
 		badgeW = visibleWidth(s)
