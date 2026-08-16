@@ -82,6 +82,27 @@ fail to compile otherwise supported GTK4 applications (#5928).
 Debian 13+ GTK4 support contract, fails early if the image regresses, and preserves
 the legacy `-tags gtk3` path for the v3.0.x compatibility window.
 
+### Decision 7: Shared Linux Application Identity (2026-08-16)
+
+**Context**: Flatpak only permits D-Bus names prefixed by the manifest's application
+ID, while WebKit derives its sandboxed accessibility bus name from the
+`GtkApplication` ID. The previous hard-coded `org.wails.<sanitised Name>` ID could
+therefore make the WebKit process abort during startup. On Wayland, GTK separately
+derives the surface `app_id` from the GLib program name.
+
+**Decision**: Add `Options.Linux.ApplicationID` and resolve it through one shared
+validation and fallback path for both the default GTK4 and legacy GTK3 backends.
+When `ProgramName` is unset, an explicit application ID also supplies the program
+name so the Wayland surface identity and packaging identity agree. Invalid explicit
+IDs are reported through the application error handler and replaced with the safe
+derived ID before either backend calls `gtk_application_new()`.
+
+**Rationale**: Matching the packaging identity prevents Flatpak's portal from
+rejecting WebKit's accessibility bus name, while shared resolution and focused
+dual-build tests prevent the default and legacy backends from drifting. Applications
+with already-valid derived IDs that set neither option retain their previous
+application ID and executable program name behavior.
+
 ## Implementation Progress
 
 ### Phase 1: Build Infrastructure ✅ COMPLETE
@@ -408,6 +429,7 @@ the v3 Beta gate.
 | Window State Events | Configure/window-state events | `GdkToplevel:state` notifications |
 | Destroy | `gtk_widget_destroy()` | `gtk_window_destroy()` |
 | Drag Start | `gtk_window_begin_move_drag()` | `gtk_native_get_surface()` + surface drag |
+| Application identity | Shared validated `Options.Linux.ApplicationID`; passed to `gtk_application_new()` | Shared validated `Options.Linux.ApplicationID`; passed to `gtk_application_new()` |
 
 ## Files Reference
 
@@ -459,9 +481,12 @@ v3/internal/operatingsystem/
 
 > **Historical note:** The Phase tracker blocks earlier in this document (Phases 1–4) reference the pre-flip filenames (`*_linux_gtk4.go`, `webkit6.go`, etc.) as a record of work done at the time. Those references are historical and have not been retconned; new work should reference the post-flip layout above.
 
-### Shared Files (no GTK-specific code)
+### Shared Linux Files
 ```
 v3/pkg/application/
+  application_linux_appid.go      # Shared GTK application-ID resolution and validation
+  application_linux_appid_test.go # Shared GTK3/GTK4 identity parity tests
+  application_options.go          # Public LinuxOptions identity fields
   webview_window_linux.go    # Window wrapper (uses methods from CGO files)
   systemtray_linux.go        # D-Bus based, GTK-agnostic
   
@@ -471,6 +496,23 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-08-16
+- Added a validated `Options.Linux.ApplicationID` override for Flatpak and other
+  packaging identities, shared by the default GTK4 and legacy GTK3 backends (#5972).
+- Kept Wayland window identity aligned by inheriting an explicit application ID as
+  `ProgramName` when no program name override is provided.
+- Added parity coverage for derived, explicit, invalid, and length-limited IDs, and
+  corrected derived IDs whose application names begin with digits.
+- Files: `v3/pkg/application/application_linux.go`,
+  `v3/pkg/application/application_linux_gtk3.go`,
+  `v3/pkg/application/application_linux_appid.go`,
+  `v3/pkg/application/application_linux_appid_test.go`,
+  `v3/pkg/application/application_options.go`,
+  `v3/pkg/application/application_options_test.go`,
+  `v3/pkg/application/linux_cgo.go`, `v3/pkg/application/linux_cgo_gtk3.go`,
+  `docs/src/content/docs/reference/application.mdx`,
+  `v3/UNRELEASED_CHANGELOG.md`, and `IMPLEMENTATION.md`.
 
 ### 2026-08-11
 - Corrected the Phase 6 build guidance to reflect GTK4 as the default and

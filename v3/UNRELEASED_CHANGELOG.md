@@ -18,10 +18,13 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Add `Options.Linux.ApplicationID` to override the GTK application id, which sandboxed (flatpak) builds have to set to the id their manifest declares (#5972)
+- Add Condui showcase page and index entry — see [documentation](https://v3.wails.io/community/showcase/condui) and [documentation](https://v3.wails.io/community/showcase) in [PR](https://github.com/wailsapp/wails/pull/5962) by @mgueregath
+- Add Redis Viewer showcase page with screenshots and project link — see [documentation](https://v3.wails.io/community/showcase) and [documentation](https://v3.wails.io/community/showcase/redisviewer) in [PR](https://github.com/wailsapp/wails/pull/5984) by @redisviewer
 
 ## Changed
 <!-- Changes in existing functionality -->
 - Default `Options.Linux.ProgramName` to `ApplicationID` when only the latter is set, so windows keep matching their `.desktop` file on Wayland, where GTK takes the surface `app_id` from the program name (#5972)
+- Log missing window events at debug level instead of warning in [PR](https://github.com/wailsapp/wails/pull/5914) by @julianstorer
 
 ## Fixed
 <!-- Bug fixes -->
