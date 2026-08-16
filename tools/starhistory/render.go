@@ -22,9 +22,9 @@ const (
 	chartWidth  = 1200
 	chartHeight = 640
 	plotLeft    = 100
-	plotTop     = 185
+	plotTop     = 135
 	plotWidth   = 1020
-	plotHeight  = 320
+	plotHeight  = 370
 )
 
 // RenderSVG creates a self-contained SVG so README renderers do not need a
@@ -52,7 +52,6 @@ func RenderSVG(opts RenderOptions) string {
 	}
 	b.WriteString(`<rect width="1200" height="640" fill="url(#veil)"/>`)
 	b.WriteString(`<rect x="28" y="28" width="1144" height="584" rx="28" fill="none" stroke="#ff5364" stroke-opacity="0.28"/>`)
-	b.WriteString(`<path d="M28 118H1172" stroke="#ff5364" stroke-opacity="0.35"/>`)
 
 	current := 0
 	firstDate := refreshedAt
@@ -61,11 +60,7 @@ func RenderSVG(opts RenderOptions) string {
 		firstDate = history[0].Date
 	}
 	b.WriteString(fmt.Sprintf(`<title>Wails star history — %s stars</title>`, formatCount(current)))
-	b.WriteString(fmt.Sprintf(`<text x="72" y="73" class="eyebrow">WAILS  /  OPEN SOURCE MOMENTUM</text>`))
-	b.WriteString(fmt.Sprintf(`<text x="72" y="111" class="title">Stargazers over time</text>`))
-	b.WriteString(fmt.Sprintf(`<text x="72" y="143" class="subtitle">%s  ·  a weekly snapshot of the Wails community</text>`, xmlEscape(opts.Repo)))
-	b.WriteString(fmt.Sprintf(`<text x="1128" y="92" text-anchor="end" class="metric">%s</text>`, formatCount(current)))
-	b.WriteString(`<text x="1128" y="116" text-anchor="end" class="metric-label">STARS</text>`)
+	b.WriteString(`<text x="72" y="88" class="title">Stargazers over time</text>`)
 
 	b.WriteString(`<g class="grid">`)
 	for i := 0; i <= 4; i++ {
@@ -125,11 +120,7 @@ func svgDefs() string {
 </defs>
 <style>
 text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #fff4f5; }
-.eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 3.2px; fill: #ff9ba5; }
-.title { font-size: 34px; font-weight: 750; letter-spacing: -0.6px; }
-.subtitle { font-size: 15px; fill: #eabdc2; }
-.metric { font-size: 34px; font-weight: 750; fill: #ff6675; }
-.metric-label { font-size: 11px; font-weight: 700; letter-spacing: 2.8px; fill: #eabdc2; }
+.title { font-size: 36px; font-weight: 750; letter-spacing: -0.7px; }
 .grid line { stroke: #ffd9dd; stroke-opacity: 0.14; stroke-dasharray: 3 9; }
 .axis-label { font-size: 12px; fill: #eabdc2; }
 .callout { font-size: 13px; font-weight: 700; fill: #fff4f5; }
