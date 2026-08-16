@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/report"
+	"github.com/wailsapp/wails/v3/internal/report/pulse/ansi"
 )
 
 func TestUnknownExitCodeShowsUnderlyingError(t *testing.T) {
@@ -28,5 +29,19 @@ func TestUnknownExitCodeShowsUnderlyingError(t *testing.T) {
 	}
 	if strings.Contains(rendered, "exit -1") {
 		t.Fatalf("failure panel rendered an unknown exit code as a real exit status:\n%s", rendered)
+	}
+	if strings.Contains(rendered, "│ error     npm not found") {
+		t.Fatalf("failure panel repeated the error badge inside the body:\n%s", rendered)
+	}
+}
+
+func TestFailurePanelHeaderKeepsBorderColourAfterStyledLabels(t *testing.T) {
+	var output bytes.Buffer
+	reporter := &Reporter{w: &output, s: newStyler(ProfileANSI)}
+	reporter.writePanelLocked("frontend:install", report.Failure{ExitCode: -1, Err: errors.New("npm not found")})
+
+	top := strings.SplitN(output.String(), "\n", 2)[0]
+	if strings.Contains(top, ansi.Reset+" ") {
+		t.Fatalf("failure header returned to the terminal's default colour between red labels:\n%q", top)
 	}
 }
