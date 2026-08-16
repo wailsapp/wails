@@ -130,7 +130,7 @@ This project is supported by these kind people / companies:
 ## Stargazers over time
 
 <a href="https://github.com/wailsapp/wails/stargazers">
-  <img alt="Wails star history chart" src="website/static/img/star-history.svg" width="100%" />
+  <img alt="Wails star history chart" src="website/static/img/star-history.svg" width="800" />
 </a>
 
 ## Contributors

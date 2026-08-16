@@ -120,12 +120,12 @@ func svgDefs() string {
 </defs>
 <style>
 text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #fff4f5; }
-.title { font-size: 36px; font-weight: 750; letter-spacing: -0.7px; }
+.title { font-size: 42px; font-weight: 750; letter-spacing: -0.8px; }
 .grid line { stroke: #ffd9dd; stroke-opacity: 0.14; stroke-dasharray: 3 9; }
-.axis-label { font-size: 12px; fill: #eabdc2; }
-.callout { font-size: 13px; font-weight: 700; fill: #fff4f5; }
-.empty { font-size: 18px; fill: #eabdc2; }
-.footer { font-size: 12px; fill: #ca9da3; }
+.axis-label { font-size: 22px; fill: #eabdc2; }
+.callout { font-size: 20px; font-weight: 700; fill: #fff4f5; }
+.empty { font-size: 22px; fill: #eabdc2; }
+.footer { font-size: 18px; fill: #ca9da3; }
 </style>
 `
 }
