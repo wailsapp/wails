@@ -235,7 +235,7 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	doc.Associations = associations
 	doc.Protocols = protocols
 	doc.Hooks = hooks
-	doc.Wake.Migration = &manifest.Migration{CompletedBy: version.String(), Complete: report.Complete, Sources: report.Sources}
+	doc.Wake.Migration = &manifest.Migration{CompletedBy: version.String(), Complete: report.Complete}
 	if packageManager != "" {
 		doc.Frontend.PackageManager = packageManager
 	}

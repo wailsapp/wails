@@ -140,7 +140,9 @@ Migration writes an inactive manifest when unsupported customizations remain;
 normal commands cut over only after `wake.migration.complete = true`. Stock
 historical templates migrate automatically. Modified sources are never
 deleted unless their digest still matches the analyzed source and migration is
-complete. Taskfile is not retained after an explicit completed cutover.
+complete. Source digests and detailed diagnostics live in the hidden
+`.wails/migration-report.json`, not the user-owned manifest. Taskfile is not
+retained after an explicit completed cutover.
 
 The public CLI verbs remain, with manifest-native profile, target, format,
 force, config, eject, and migration options. Arbitrary Task variables are

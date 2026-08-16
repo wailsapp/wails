@@ -23,6 +23,8 @@ func TestAnalyseMigrationTranslatesLegacyConfig(t *testing.T) {
 	assert.Equal(t, []string{"demo"}, doc.Associations[0].Extensions)
 	require.NotNil(t, doc.Wake.Migration)
 	assert.False(t, doc.Wake.Migration.Complete)
+	assert.NotEmpty(t, report.Sources)
+	assert.Empty(t, doc.Wake.Migration.Sources, "source digests belong in .wails/migration-report.json, not wails.toml")
 }
 
 func TestMigrationRecognizesHistoricalGeneratedDefaults(t *testing.T) {

@@ -281,5 +281,5 @@ type Wake struct {
 type Migration struct {
 	CompletedBy string            `toml:"completed_by" json:"completed_by"`
 	Complete    bool              `toml:"complete" json:"complete"`
-	Sources     map[string]string `toml:"sources" json:"sources"`
+	Sources     map[string]string `toml:"sources,omitempty" json:"sources,omitempty"`
 }
