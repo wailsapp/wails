@@ -20,10 +20,10 @@ generated Taskfiles stop being supported.
 
 - New projects contain `wails.toml` and no Taskfiles. Manifest-only projects
   use the built-in Pipeline for build, package, sign, and dev.
-- A project containing both systems uses the Manifest only when it is native
-  (no migration metadata) or `[wake.migration].complete = true`. An incomplete
-  migrated Manifest leaves build verbs on the legacy path and prints a concise
-  migration status hint.
+- A project containing both systems uses the Manifest when there is no pending
+  migration marker. `[wake.migration].complete = false` leaves build verbs on
+  the legacy path and prints a concise migration status hint. Older preview
+  manifests with `complete = true` remain compatible.
 - `config check`, `config show`, `eject`, and `migrate` are Manifest-aware
   commands and never dispatch through Task. `eject` requires a Manifest;
   `migrate` requires legacy inputs.

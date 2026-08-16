@@ -27,11 +27,12 @@ inline shell blocks are never silently converted into generated scripts.
   byte equality. Known variables and task differences map to typed Manifest
   fields; script-file commands may map to hooks; inline shell and arbitrary
   task logic are manual diagnostics and are never copied into generated files.
-- A new Manifest records only `[wake.migration] completed_by` and `complete`.
-  Source digests are internal workflow state and live exclusively in
-  `.wails/migration-report.json`. Execution cuts over only when `complete =
-  true`; an incomplete Manifest may be inspected and edited while legacy
-  execution remains active.
+- A completed migration produces the same Manifest shape as a native project:
+  no migration metadata. An incomplete migration records only
+  `[wake.migration] complete = false` so legacy execution remains active while
+  the Manifest is inspected and edited. Completion provenance, source digests,
+  and diagnostics are internal workflow state and live exclusively in
+  `.wails/migration-report.json`.
 - Existing `wails.toml` is never overwritten unless it already carries the
   same migration provenance and the update is a safe merge. Conflicts stop
   before writing.

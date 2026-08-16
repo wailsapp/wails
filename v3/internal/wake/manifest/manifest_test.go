@@ -199,10 +199,21 @@ func TestEncodeDocumentStaysSparse(t *testing.T) {
 	require.NoError(t, err)
 	text := string(data)
 	assert.Contains(t, text, `package_manager = "pnpm"`)
-	assert.Contains(t, text, "[wake.migration]")
-	assert.NotContains(t, text, "[wake.migration.sources]")
+	assert.NotContains(t, text, "[wake.migration]")
 	assert.NotContains(t, text, "[targets]")
 	assert.NotContains(t, text, "debounce_ms")
+}
+
+func TestEncodeDocumentKeepsOnlyIncompleteMigrationMarker(t *testing.T) {
+	doc := NewDocument(Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"})
+	doc.Wake.Migration = &Migration{CompletedBy: "v3", Complete: false, Sources: map[string]string{"Taskfile.yml": "digest"}}
+	data, err := EncodeDocument(doc)
+	require.NoError(t, err)
+	text := string(data)
+	assert.Contains(t, text, "[wake.migration]")
+	assert.Contains(t, text, "complete = false")
+	assert.NotContains(t, text, "completed_by")
+	assert.NotContains(t, text, "[wake.migration.sources]")
 }
 
 func TestCachedHookLongFormLoadsInputsAndOutputs(t *testing.T) {

@@ -23,6 +23,7 @@ func TestAnalyseMigrationTranslatesLegacyConfig(t *testing.T) {
 	assert.Equal(t, []string{"demo"}, doc.Associations[0].Extensions)
 	require.NotNil(t, doc.Wake.Migration)
 	assert.False(t, doc.Wake.Migration.Complete)
+	assert.NotEmpty(t, report.CompletedBy)
 	assert.NotEmpty(t, report.Sources)
 	assert.Empty(t, doc.Wake.Migration.Sources, "source digests belong in .wails/migration-report.json, not wails.toml")
 }
@@ -34,9 +35,10 @@ func TestMigrationRecognizesHistoricalGeneratedDefaults(t *testing.T) {
 }
 
 func TestAnalyseMigrationRecognizesShippedDefault(t *testing.T) {
-	report, _, err := analyseMigration(filepath.Join("..", "..", "examples", "badge"))
+	report, doc, err := analyseMigration(filepath.Join("..", "..", "examples", "badge"))
 	require.NoError(t, err)
 	assert.Truef(t, report.Complete, "diagnostics: %#v", report.Diagnostics)
+	assert.Nil(t, doc.Wake.Migration, "completed migrations must look like native manifests")
 }
 
 func TestAnalyseMigrationFindsModifiedKnownRootTask(t *testing.T) {

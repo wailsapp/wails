@@ -36,6 +36,7 @@ type MigrationDiagnostic struct {
 
 type MigrationReport struct {
 	Version     int                   `json:"version"`
+	CompletedBy string                `json:"completed_by"`
 	Complete    bool                  `json:"complete"`
 	Wrote       []string              `json:"wrote,omitempty"`
 	Removed     []string              `json:"removed,omitempty"`
@@ -104,7 +105,7 @@ func Migrate(options *MigrateOptions) error {
 }
 
 func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
-	report := MigrationReport{Version: 1, Complete: true, Sources: map[string]string{}}
+	report := MigrationReport{Version: 1, CompletedBy: version.String(), Complete: true, Sources: map[string]string{}}
 	root, err := filepath.Abs(root)
 	if err != nil {
 		return report, manifest.Document{}, err
@@ -235,7 +236,9 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	doc.Associations = associations
 	doc.Protocols = protocols
 	doc.Hooks = hooks
-	doc.Wake.Migration = &manifest.Migration{CompletedBy: version.String(), Complete: report.Complete}
+	if !report.Complete {
+		doc.Wake.Migration = &manifest.Migration{Complete: false}
+	}
 	if packageManager != "" {
 		doc.Frontend.PackageManager = packageManager
 	}
