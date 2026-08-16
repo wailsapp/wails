@@ -1,6 +1,6 @@
 # Wails v3 Manifest Build System
 
-Status: design proposal
+Status: MVP implemented for backwards review
 
 ## Summary
 
@@ -16,6 +16,48 @@ from the defaults.
 
 The existing Taskfile system is migrated into this model. It is not retained as
 the long-term user-facing build API.
+
+## Implementation snapshot (2026-08-16)
+
+The MVP now exercises the proposal as one product surface rather than as an
+isolated cache prototype:
+
+- `internal/wake/manifest` owns sparse loading, compiled defaults, strict
+  validation, named profiles, full/profile ejection, and migration cutover.
+- `internal/wake/pipeline` resolves typed build/package/sign DAGs and executes
+  them through a bounded critical-path scheduler with receipts and restorable
+  content-addressed artifacts.
+- `wails3 build`, `package`, `sign`, and `dev` select the manifest pipeline for
+  native or completed-migration projects; incomplete migrations retain the
+  legacy Taskfile path.
+- Platform inputs are generated under `.wails/`; desktop, iOS, Android,
+  packaging, signing, hooks, target overlays, and Darwin universal builds all
+  use typed specs rather than Task variables.
+- `wails3 migrate` recognizes shipped historical Taskfiles, translates project
+  metadata, records source digests and diagnostics, and only removes unchanged,
+  fully represented sources when explicitly requested.
+- New templates contain a minimal `wails.toml` and no generated Taskfile or
+  build directory. Older community templates are analysed and remain on legacy
+  execution when their customizations are not completely represented.
+
+Measured on the disposable badge fixture after the production integration:
+
+| Scenario | Result |
+|---|---:|
+| cold desktop build with warm language/tool caches | 2.88 s |
+| warm no-op desktop build | 70–80 ms wall; 4/4 cached |
+| service method-body edit | 0.91 s; only Go compile ran |
+| first DEB package after CLI rebuild | 2.80–2.81 s |
+| warm no-op DEB package | 70–90 ms wall; 6/6 cached |
+
+Linux build and DEB packaging have been exercised end to end. Windows, macOS,
+iOS, Android, and their native signing tools are represented in deterministic
+plans and covered by host-independent tests, but still require native-host
+release verification before this moves beyond MVP status.
+
+The final repeatability run also verified that packaging over an existing DEB
+uses an isolated staging directory and replaces the expected artifact instead
+of misidentifying the previous output as another packager candidate.
 
 ## Goals
 

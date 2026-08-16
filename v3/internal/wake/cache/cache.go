@@ -1,10 +1,15 @@
-package mvpprototype
+package cache
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go/ast"
+	"go/format"
+	"go/parser"
+	"go/token"
 	"io"
 	"io/fs"
 	"os"
@@ -17,7 +22,10 @@ import (
 	"github.com/zeebo/blake3"
 )
 
-const handlerVersion = "wake-mvp-1"
+const (
+	handlerVersion         = "wake-pipeline-1"
+	metadataFastPathWindow = 2 * time.Second
+)
 
 type FileRecord struct {
 	Size      int64  `json:"size"`
@@ -34,6 +42,7 @@ type ActionResult struct {
 
 type indexData struct {
 	Files    map[string]FileRecord   `json:"files"`
+	GoAPI    map[string]FileRecord   `json:"go_api"`
 	Actions  map[string]ActionResult `json:"actions"`
 	Receipts map[string]time.Time    `json:"receipts"`
 }
@@ -78,19 +87,20 @@ func OpenCache(root string) (*Cache, error) {
 	}
 	stateDir := filepath.Join(absRoot, ".wails")
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
-		return nil, fmt.Errorf("wake mvp: create state directory: %w", err)
+		return nil, fmt.Errorf("wake: create state directory: %w", err)
 	}
 	userCache, err := os.UserCacheDir()
 	if err != nil {
-		return nil, fmt.Errorf("wake mvp: locate user cache: %w", err)
+		return nil, fmt.Errorf("wake: locate user cache: %w", err)
 	}
 	c := &Cache{
 		root:         absRoot,
 		stateDir:     stateDir,
-		indexPath:    filepath.Join(stateDir, "wake-mvp-index.json"),
-		artifactRoot: filepath.Join(userCache, "wails", "wake-mvp", "artifacts"),
+		indexPath:    filepath.Join(stateDir, "wake-index.json"),
+		artifactRoot: filepath.Join(userCache, "wails", "wake", "artifacts"),
 		index: indexData{
 			Files:    make(map[string]FileRecord),
+			GoAPI:    make(map[string]FileRecord),
 			Actions:  make(map[string]ActionResult),
 			Receipts: make(map[string]time.Time),
 		},
@@ -103,13 +113,16 @@ func OpenCache(root string) (*Cache, error) {
 			c.index = indexData{}
 		}
 	} else if !errors.Is(err, fs.ErrNotExist) {
-		return nil, fmt.Errorf("wake mvp: read action index: %w", err)
+		return nil, fmt.Errorf("wake: read action index: %w", err)
 	}
 	if c.index.Files == nil {
 		c.index.Files = make(map[string]FileRecord)
 	}
 	if c.index.Actions == nil {
 		c.index.Actions = make(map[string]ActionResult)
+	}
+	if c.index.GoAPI == nil {
+		c.index.GoAPI = make(map[string]FileRecord)
 	}
 	if c.index.Receipts == nil {
 		c.index.Receipts = make(map[string]time.Time)
@@ -120,9 +133,9 @@ func OpenCache(root string) (*Cache, error) {
 func (c *Cache) Save() error {
 	data, err := json.Marshal(c.index)
 	if err != nil {
-		return fmt.Errorf("wake mvp: encode action index: %w", err)
+		return fmt.Errorf("wake: encode action index: %w", err)
 	}
-	tmp, err := os.CreateTemp(c.stateDir, ".wake-mvp-index-*")
+	tmp, err := os.CreateTemp(c.stateDir, ".wake-index-*")
 	if err != nil {
 		return err
 	}
@@ -156,9 +169,9 @@ func (c *Cache) Snapshot(options SnapshotOptions) (string, error) {
 		return "", err
 	}
 	if _, statErr := os.Stat(root); errors.Is(statErr, fs.ErrNotExist) {
-		return "", fmt.Errorf("wake mvp: snapshot root %q does not exist", root)
+		return "", fmt.Errorf("wake: snapshot root %q does not exist", root)
 	} else if statErr != nil {
-		return "", fmt.Errorf("wake mvp: inspect snapshot root %q: %w", root, statErr)
+		return "", fmt.Errorf("wake: inspect snapshot root %q: %w", root, statErr)
 	}
 	includeNames := makeSet(options.IncludeNames)
 	includeExts := makeSet(options.IncludeExtensions)
@@ -255,6 +268,109 @@ func (c *Cache) SnapshotFiles(label string, paths ...string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
+// SnapshotGoAPI fingerprints binding-relevant Go syntax while ignoring method
+// bodies. Free-function bodies remain inputs because main may delegate Wails
+// service registration to helpers. Per-file semantic digests use the same
+// metadata fast path as content Snapshots, so an unchanged tree is not reparsed.
+func (c *Cache) SnapshotGoAPI(label, root string, exclude []string) (string, error) {
+	if !filepath.IsAbs(root) {
+		root = filepath.Join(c.root, root)
+	}
+	root, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	excluded := makeSet(exclude)
+	type entry struct{ path, digest string }
+	var entries []entry
+	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+		if d.IsDir() {
+			if rel != "." && (excluded[d.Name()] || excluded[rel]) {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(d.Name(), ".go") || strings.HasSuffix(d.Name(), "_test.go") {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		digest, err := c.goAPIDigest(path, info)
+		if err != nil {
+			return err
+		}
+		entries = append(entries, entry{rel, digest})
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	sort.Slice(entries, func(i, j int) bool { return entries[i].path < entries[j].path })
+	h := blake3.New()
+	writePart(h, "wake.go-api.v1")
+	writePart(h, label)
+	for _, entry := range entries {
+		writePart(h, entry.path)
+		writePart(h, entry.digest)
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func (c *Cache) goAPIDigest(path string, info fs.FileInfo) (string, error) {
+	c.stats.Files++
+	identity := fileIdentity(info)
+	key := filepath.Clean(path)
+	record, ok := c.index.GoAPI[key]
+	if metadataFastPathSafe(info) && ok && record.Size == info.Size() && record.ModTimeNS == info.ModTime().UnixNano() && record.Mode == uint32(info.Mode()) && record.Identity == identity {
+		c.stats.DigestsReused++
+		return record.Digest, nil
+	}
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
+	if err != nil {
+		return "", fmt.Errorf("wake: parse Go API %s: %w", path, err)
+	}
+	semantic := &ast.File{Name: file.Name}
+	for _, decl := range file.Decls {
+		if fn, ok := decl.(*ast.FuncDecl); ok {
+			copy := *fn
+			if fn.Recv != nil {
+				copy.Body = nil
+			}
+			semantic.Decls = append(semantic.Decls, &copy)
+			continue
+		}
+		semantic.Decls = append(semantic.Decls, decl)
+	}
+	var data bytes.Buffer
+	for _, group := range file.Comments {
+		for _, comment := range group.List {
+			if strings.HasPrefix(comment.Text, "//go:build") || strings.HasPrefix(comment.Text, "// +build") {
+				data.WriteString(comment.Text)
+				data.WriteByte('\n')
+			}
+		}
+	}
+	if err := format.Node(&data, fset, semantic); err != nil {
+		return "", err
+	}
+	sum := blake3.Sum256(data.Bytes())
+	digest := hex.EncodeToString(sum[:])
+	c.stats.BytesRead += int64(data.Len())
+	c.index.GoAPI[key] = FileRecord{Size: info.Size(), ModTimeNS: info.ModTime().UnixNano(), Mode: uint32(info.Mode()), Identity: identity, Digest: digest}
+	return digest, nil
+}
+
 func ActionKey(kind string, spec any, inputs, dependencies []string) (string, error) {
 	payload := struct {
 		Domain       string   `json:"domain"`
@@ -281,7 +397,10 @@ func (c *Cache) Lookup(actionKey, output string) (LookupStatus, string, error) {
 	_, err := os.Lstat(absOutput)
 	if errors.Is(err, fs.ErrNotExist) {
 		if err := c.restoreArtifact(result.Artifact, absOutput); err != nil {
-			return LookupMiss, "", nil
+			if errors.Is(err, fs.ErrNotExist) {
+				return LookupMiss, "", nil
+			}
+			return LookupMiss, "", fmt.Errorf("wake: restore artifact %s: %w", result.Artifact, err)
 		}
 		return LookupRestored, result.Artifact, nil
 	}
@@ -332,7 +451,7 @@ func (c *Cache) fileDigest(path string, info fs.FileInfo) (string, error) {
 	identity := fileIdentity(info)
 	key := filepath.Clean(path)
 	record, ok := c.index.Files[key]
-	if ok && record.Size == info.Size() && record.ModTimeNS == info.ModTime().UnixNano() &&
+	if metadataFastPathSafe(info) && ok && record.Size == info.Size() && record.ModTimeNS == info.ModTime().UnixNano() &&
 		record.Mode == uint32(info.Mode()) && record.Identity == identity {
 		c.stats.DigestsReused++
 		return record.Digest, nil
@@ -369,6 +488,13 @@ func (c *Cache) fileDigest(path string, info fs.FileInfo) (string, error) {
 		Identity: identity, Digest: digest,
 	}
 	return digest, nil
+}
+
+// Files modified very recently are re-read even when their metadata matches
+// the index. This closes the correctness hole on filesystems with coarse
+// timestamp resolution, while retaining the fast path for stable source trees.
+func metadataFastPathSafe(info fs.FileInfo) bool {
+	return time.Since(info.ModTime()) >= metadataFastPathWindow
 }
 
 func fileIdentity(info fs.FileInfo) string {

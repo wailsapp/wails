@@ -1,7 +1,7 @@
 # Manifest-to-binary cache fast-path MVP
 
 Type: prototype
-Status: claimed
+Status: resolved
 Blocked by: 01, 02, 03
 
 ## Question
@@ -57,3 +57,20 @@ packaging, signing, hooks, or migration.
   analysis itself.
 - Awaiting hands-on review before this prototype ticket is resolved or its
   ideas are lifted into production Wake code.
+
+## Answer
+
+The prototype is accepted as proof of the cache fast path, not as the complete
+build-system replacement. It proved that a minimal Manifest can drive typed
+work without Taskfiles, that downstream Nodes can consume Artifact content
+digests, and that a correct no-op build can complete in roughly 60–70ms while
+missing outputs are restored instead of rebuilt.
+
+The production implementation will keep these contracts and replace the
+prototype package. The remaining system—resolved configuration, the complete
+Planner and scheduler, generated platform assets, hooks, Dev Session,
+migration, and CLI cutover—must be reviewed together as one solution. The
+largest measured incremental-build opportunity is persistent binding/package
+analysis, because an implementation-only Go edit still pays about one second
+for analysis even though byte-identical bindings correctly stop downstream
+frontend invalidation.

@@ -3,8 +3,8 @@ module github.com/wailsapp/wails/v3
 go 1.25.0
 
 require (
-	github.com/BurntSushi/toml v1.6.0
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
+	github.com/BurntSushi/toml v1.6.0
 	github.com/adrg/xdg v0.5.3
 	github.com/atotto/clipboard v0.1.4
 	github.com/atterpac/refresh v1.0.0
@@ -138,7 +138,7 @@ require (
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rjeczalik/notify v0.9.3 // indirect
+	github.com/rjeczalik/notify v0.9.3
 	github.com/sajari/fuzzy v1.0.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
@@ -158,7 +158,7 @@ require (
 	golang.org/x/image v0.41.0
 	golang.org/x/mod v0.37.0
 	golang.org/x/net v0.56.0 // indirect
-	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sync v0.21.0
 	golang.org/x/text v0.39.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

@@ -204,7 +204,7 @@ func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
 		"main.go.tmpl",
 		"go.mod.tmpl",
 		"greetservice.go",
-		"Taskfile.tmpl.yml",
+		"wails.tmpl.toml",
 		"gitignore.tmpl",
 		filepath.Join("frontend", "index.html"),
 	}
@@ -280,4 +280,3 @@ func TestGenerateTemplate_GeneratedTemplateCanBeInstalled(t *testing.T) {
 		t.Errorf("WailsVersion = %d, want 3", tmpl.WailsVersion)
 	}
 }
-

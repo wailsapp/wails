@@ -17,3 +17,22 @@ user-owned, or incompletely represented files. Define the safety rule that
 inline shell blocks are never silently converted into generated scripts.
 
 ## Comments
+
+### 2026-08-16 — Accepted implementation default
+
+- `wails3 migrate` always analyses first and produces a human summary plus a
+  stable JSON report under `.wails/migration-report.json`; `--json` writes the
+  report to stdout and `--dry-run` performs no project writes.
+- Migration recognizes shipped Taskfiles/config by structure, not only by
+  byte equality. Known variables and task differences map to typed Manifest
+  fields; script-file commands may map to hooks; inline shell and arbitrary
+  task logic are manual diagnostics and are never copied into generated files.
+- A new Manifest records `[wake.migration] completed_by`, source digests, and
+  `complete`. Execution cuts over only when `complete = true`; an incomplete
+  Manifest may be inspected and edited while legacy execution remains active.
+- Existing `wails.toml` is never overwritten unless it already carries the
+  same migration provenance and the update is a safe merge. Conflicts stop
+  before writing.
+- `--remove-old-files` removes only files whose current digests match the
+  recorded, fully represented sources. Any unsupported or subsequently
+  modified file remains, and removal failure does not invalidate the Manifest.
