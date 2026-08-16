@@ -25,6 +25,12 @@ func TestAnalyseMigrationTranslatesLegacyConfig(t *testing.T) {
 	assert.False(t, doc.Wake.Migration.Complete)
 }
 
+func TestMigrationRecognizesHistoricalGeneratedDefaults(t *testing.T) {
+	assert.True(t, knownStockTaskfiles["common"]["4ab65b0363866b550ef897db8f7aae12794789056dd4f2e82407a738a64f6819"])
+	assert.True(t, legacyDevCommand("wails3 build DEV=true"))
+	assert.False(t, legacyDevCommand("wails3 build DEV=true && publish"))
+}
+
 func TestAnalyseMigrationRecognizesShippedDefault(t *testing.T) {
 	report, _, err := analyseMigration(filepath.Join("..", "..", "examples", "badge"))
 	require.NoError(t, err)
