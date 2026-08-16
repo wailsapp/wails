@@ -18,9 +18,18 @@ type DevOptions struct {
 	Config   string `description:"The config file including path" default:"./build/config.yml"`
 	VitePort int    `name:"port" description:"Specify the vite dev server port"`
 	Secure   bool   `name:"s" description:"Enable HTTPS"`
+	Profile  string `name:"profile" description:"Manifest profile to apply"`
+	Target   string `name:"target" description:"Target platform and architecture"`
 }
 
 func Dev(options *DevOptions) error {
+	active, err := activeManifestProject()
+	if err != nil {
+		return err
+	}
+	if active {
+		return runManifestDev(options)
+	}
 	host := "localhost"
 
 	// flag takes precedence over environment variable

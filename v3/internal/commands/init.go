@@ -16,6 +16,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/setupwizard"
 	"github.com/wailsapp/wails/v3/internal/templates"
 	"github.com/wailsapp/wails/v3/internal/term"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 var DisableFooter bool
@@ -240,12 +241,6 @@ func Init(options *flags.Init) error {
 		}
 	}
 
-	// Determine the binding language AFTER global defaults are applied: when no
-	// -t is given, applyGlobalDefaults may have just set options.TemplateName
-	// from the wizard's configured default template, and that must drive the
-	// TypeScript-vs-JavaScript bindings choice.
-	isTypescript := templates.IsTypescript(options.TemplateName)
-
 	if options.ModulePath == "" {
 		if options.Git == "" {
 			options.ModulePath = "changeme"
@@ -272,32 +267,33 @@ func Init(options *flags.Init) error {
 		_ = os.Rename(npmrcSrc, filepath.Join(options.ProjectDir, "frontend", ".npmrc"))
 	}
 
-	// Generate build assets
-	buildAssetsOptions := &BuildAssetsOptions{
-		Name:               options.ProjectName,
-		Dir:                filepath.Join(options.ProjectDir, "build"),
-		Silent:             true,
-		ProductCompany:     options.ProductCompany,
-		ProductName:        options.ProductName,
-		ProductDescription: options.ProductDescription,
-		ProductVersion:     options.ProductVersion,
-		ProductIdentifier:  options.ProductIdentifier,
-		ProductCopyright:   options.ProductCopyright,
-		ProductComments:    options.ProductComments,
-		Typescript:         isTypescript,
-		UseInterfaces:      options.UseInterfaces,
-	}
-	err = GenerateBuildAssets(buildAssetsOptions)
-	if err != nil {
-		return err
-	}
-
-	// In UI mode the wizard is explicitly about the project config, so write the
-	// chosen values into build/config.yml itself (the generated assets already
-	// carry them; the source config.yml is otherwise a static copy).
-	if options.UI {
-		if err := writeProjectConfigYML(options); err != nil {
-			term.Warningf("Could not update build/config.yml: %v\n", err)
+	// Built-in templates already include the minimal manifest. An older
+	// community template may still ship a customised Taskfile: analyse it and
+	// retain legacy execution until migration is complete instead of silently
+	// switching the project to the built-in pipeline. Templates with neither
+	// file receive the new minimal manifest.
+	if !manifest.Exists(options.ProjectDir) {
+		if _, taskfileErr := findTaskfile(options.ProjectDir); taskfileErr == nil {
+			report, doc, migrationErr := analyseMigration(options.ProjectDir)
+			if migrationErr != nil {
+				return fmt.Errorf("analyse community template Taskfile: %w", migrationErr)
+			}
+			doc.Project.Name = options.ProjectName
+			doc.Project.ProductName = options.ProductName
+			doc.Project.Identifier = options.ProductIdentifier
+			doc.Project.Version = options.ProductVersion
+			err = manifest.WriteDocument(options.ProjectDir, doc)
+			if err == nil && !report.Complete && !options.Quiet {
+				term.Warningf("The template contains Taskfile customisations; legacy Taskfile builds remain active. Review wails.toml and migration diagnostics, then set wake.migration.complete only when all custom logic is represented.\n")
+			}
+		} else {
+			err = manifest.WriteMinimal(options.ProjectDir, manifest.Project{
+				Name: options.ProjectName, ProductName: options.ProductName,
+				Identifier: options.ProductIdentifier, Version: options.ProductVersion,
+			})
+		}
+		if err != nil {
+			return err
 		}
 	}
 

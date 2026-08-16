@@ -14,3 +14,23 @@ fast path and lifecycle contract without turning persistent processes into DAG
 Nodes.
 
 ## Comments
+
+### 2026-08-16 — Accepted implementation default
+
+- Dev is a long-lived Session owning one frontend process, filesystem watcher,
+  current backend process, and generation counter. Each coalesced change burst
+  requests a finite incremental Plan from the same production Planner.
+- Frontend-source changes are left to the frontend server/HMR; Go, Manifest,
+  binding, embed, or generated-input changes invalidate the corresponding
+  Nodes. Binding-byte changes notify the frontend path; byte-identical output
+  does not restart it.
+- A newer generation cancels stale planning/execution. The currently healthy
+  app stays alive until a replacement binary builds successfully, then is
+  terminated gracefully and atomically replaced. A failed rebuild leaves it
+  running and reports the failure.
+- Manifest changes re-resolve the Session. Changes to frontend command, port,
+  target, or watch policy restart the affected persistent process; cache and
+  CLI changes do not turn those processes into graph Nodes.
+- Readiness is explicit: frontend listening, backend built, backend started.
+  Shutdown cancels work, terminates child process groups, flushes reporting,
+  and leaves no detached children.

@@ -5,6 +5,9 @@ type Build struct {
 	Tags       string `name:"tags" description:"Additional build tags to pass to the Go compiler (comma-separated)"`
 	Obfuscated bool   `name:"obfuscated" description:"Build with garble and stable obfuscated binding IDs"`
 	GarbleArgs string `name:"garbleargs" description:"Additional arguments to pass to garble before the build command"`
+	Profile    string `name:"profile" description:"Manifest profile to apply"`
+	Target     string `name:"target" description:"Target platform and architecture (for example darwin/arm64)"`
+	Force      bool   `name:"force" description:"Ignore Wake cache entries"`
 }
 
 type Dev struct {
@@ -13,8 +16,15 @@ type Dev struct {
 
 type Package struct {
 	Common
+	Profile string `name:"profile" description:"Manifest profile to apply"`
+	Target  string `name:"target" description:"Target platform and architecture"`
+	Formats string `name:"formats" description:"Comma-separated package formats"`
+	Force   bool   `name:"force" description:"Ignore Wake cache entries"`
 }
 
 type SignWrapper struct {
 	Common
+	Profile string `name:"profile" description:"Manifest profile to apply"`
+	Target  string `name:"target" description:"Target platform and architecture"`
+	Formats string `name:"formats" description:"Comma-separated package formats to build and sign"`
 }

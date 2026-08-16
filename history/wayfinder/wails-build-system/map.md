@@ -1,6 +1,6 @@
 # Wayfinder map: Wails manifest build system
 
-Status: open
+Status: implementation review
 Type: map
 
 ## Destination
@@ -21,9 +21,9 @@ architecture decisions.
   resolved defaults; shell customization calls user-owned scripts; platform
   configuration is generated at build time; inline Taskfile shell migration is
   manual; default and modified Taskfiles should be migrated where possible.
-- Prefer a narrow, measurable vertical-slice MVP over resolving every edge in
-  advance. This map may carry that prototype far enough for hands-on review;
-  production implementation remains outside the planning tickets.
+- The narrow cache slice has now been expanded into a complete MVP surface for
+  hands-on backwards review. Native-host platform verification and iteration
+  remain; the implementation is no longer outside this map.
 - Consult the existing proposal at
   [`history/wails-toml-build-system.md`](../../wails-toml-build-system.md).
 - Use the `wayfinder`, `grilling`, and `domain-modeling` skills while resolving
@@ -44,6 +44,22 @@ architecture decisions.
   — typed handlers derive portable content-addressed Action Keys from narrow
   automatic inputs, propagate Artifact content rather than transitive sources,
   and use persistent snapshots plus local cross-project storage for fast hits.
+- [Manifest-to-binary cache fast-path MVP](issues/11-cache-fast-path-mvp.md)
+  — the executable slice validated a 60–70ms no-op path, content-based
+  Artifact propagation, and missing-output restoration; it now graduates into
+  the complete production implementation.
+
+## Implementation evidence
+
+- Minimal config, base/profile ejection, migration/cutover, generated assets,
+  hooks, target overlays, build/package/sign plans, and the manifest dev
+  lifecycle are implemented behind the normal CLI commands.
+- Badge no-op builds measure 70–80ms and DEB package no-ops measure 70–90ms
+  wall time with all planned Nodes cached; a service method-body edit skips
+  bindings and the frontend and executes only Go compilation.
+- The full Go suite reaches unrelated desktop-environment failures only;
+  focused manifest/Wake/command tests, race detection, vet, and real Linux
+  build/package runs pass.
 
 ## Not yet specified
 

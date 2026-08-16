@@ -11,6 +11,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 // runTaskFunc is a variable to allow mocking in tests
@@ -68,15 +69,19 @@ func mergeTags(tags string, extra ...string) string {
 
 func Build(buildFlags *flags.Build, otherArgs []string) error {
 	buildFlags.Tags = mergeTags(buildFlags.Tags, envTags()...)
-	if os.Getenv("WAILS_WAKE_MVP") == "1" {
-		cwd, err := os.Getwd()
+	active, err := activeManifestProject()
+	if err != nil {
+		return err
+	}
+	if active {
+		if len(otherArgs) > 0 {
+			return fmt.Errorf("manifest builds do not accept Task variables (%s); use --target, --profile, or wails.toml", strings.Join(otherArgs, ", "))
+		}
+		goos, goarch, err := splitTarget(buildFlags.Target)
 		if err != nil {
 			return err
 		}
-		if !hasWakeMVPManifest(cwd) {
-			return fmt.Errorf("WAILS_WAKE_MVP=1 requires a wails.toml manifest in %s", cwd)
-		}
-		return runWakeMVP(buildFlags)
+		return runManifestPipeline(manifestRunOptions{Verb: "build", Profile: buildFlags.Profile, TargetOS: goos, TargetArch: goarch, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags)})
 	}
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
@@ -90,12 +95,88 @@ func Build(buildFlags *flags.Build, otherArgs []string) error {
 	return wrapTask("build", otherArgs)
 }
 
-func Package(_ *flags.Package, otherArgs []string) error {
+func Package(options *flags.Package, otherArgs []string) error {
+	active, err := activeManifestProject()
+	if err != nil {
+		return err
+	}
+	if active {
+		if len(otherArgs) > 0 {
+			return fmt.Errorf("manifest packages do not accept Task variables: %s", strings.Join(otherArgs, ", "))
+		}
+		goos, goarch, err := splitTarget(options.Target)
+		if err != nil {
+			return err
+		}
+		return runManifestPipeline(manifestRunOptions{Verb: "package", Profile: options.Profile, TargetOS: goos, TargetArch: goarch, Formats: splitComma(options.Formats), Force: options.Force, Tags: envTags()})
+	}
 	return wrapTask("package", otherArgs)
 }
 
-func SignWrapper(_ *flags.SignWrapper, otherArgs []string) error {
+func SignWrapper(options *flags.SignWrapper, otherArgs []string) error {
+	active, err := activeManifestProject()
+	if err != nil {
+		return err
+	}
+	if active {
+		if len(otherArgs) > 0 {
+			return fmt.Errorf("manifest signing does not accept Task variables: %s", strings.Join(otherArgs, ", "))
+		}
+		goos, goarch, err := splitTarget(options.Target)
+		if err != nil {
+			return err
+		}
+		return runManifestPipeline(manifestRunOptions{Verb: "sign", Profile: options.Profile, TargetOS: goos, TargetArch: goarch, Formats: splitComma(options.Formats), Tags: envTags()})
+	}
 	return wrapTask("sign", otherArgs)
+}
+
+func activeManifestProject() (bool, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return false, err
+	}
+	active, err := manifest.Active(cwd)
+	if err != nil {
+		return false, err
+	}
+	if !active && manifest.Exists(cwd) {
+		term.Warningf("wails.toml migration is incomplete; falling back to the legacy Taskfile")
+	}
+	return active, nil
+}
+
+func splitTarget(target string) (string, string, error) {
+	if target == "" {
+		return "", "", nil
+	}
+	parts := strings.Split(target, "/")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("target must be platform/architecture, got %q", target)
+	}
+	if !slices.Contains([]string{"windows", "darwin", "linux", "ios", "android"}, parts[0]) {
+		return "", "", fmt.Errorf("unsupported target platform %q", parts[0])
+	}
+	if !slices.Contains([]string{"amd64", "arm64", "386", "arm", "universal"}, parts[1]) {
+		return "", "", fmt.Errorf("unsupported target architecture %q", parts[1])
+	}
+	if parts[1] == "universal" && parts[0] != "darwin" {
+		return "", "", fmt.Errorf("universal target is only valid for darwin")
+	}
+	return parts[0], parts[1], nil
+}
+
+func splitComma(value string) []string {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	var result []string
+	for _, item := range strings.Split(value, ",") {
+		if item = strings.TrimSpace(item); item != "" {
+			result = append(result, item)
+		}
+	}
+	return result
 }
 
 func wrapTask(action string, otherArgs []string) error {
