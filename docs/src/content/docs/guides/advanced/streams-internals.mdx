@@ -248,14 +248,14 @@ its last connection closes, but that same still-loaded page must be able to open
 stream later. A genuinely superseded generation remains blocked because the newer page's
 poll advances the watermark before the old session is removed.
 
-**The platform layer does not report a cancelled request.** The webview request context is
-`context.Background()` with a deferred cancel (`assetserver_webview.go`), so a poll
-belonging to a page that has navigated away stays parked until the hold expires. Rule 1
-means the *connection* closes promptly regardless; it is the parked request that lingers.
-Plumbing `stopURLSchemeTask` (and its Linux/Windows equivalents) through to a
-`context.CancelFunc` would fix that, and it is the single most valuable outstanding item.
-Note the same cancellation surfaces three different ways: a caught ObjC exception on macOS,
-`EPIPE` on Linux, and nothing at all until `Finish` on Windows.
+**Apple WebViews report cancelled requests.** On macOS and iOS, WebKit's
+`stopURLSchemeTask` callback cancels the matching request context, so a poll belonging to a
+page that has navigated away unblocks immediately. The registry is keyed by the retained
+native task identity and removes entries when request processing closes them. Linux and
+Windows still expose no equivalent early-abort callback in the current bridge; there a
+parked request remains until the hold expires. Rule 1 means the *connection* closes promptly
+regardless. Cancellation otherwise surfaces as `EPIPE` on Linux and only at `Finish` on
+Windows.
 
 ## Transport selection
 
@@ -276,7 +276,7 @@ If you add a third transport, put it in the prelude too. Do not be tempted back 
 
 | | status |
 |---|---|
-| Request cancellation from the platform layer | **not done** — the highest-value item; see above |
+| Request cancellation from the platform layer | **Apple done; Linux/Windows pending** — see above |
 | Buffer constants as options | not done; compile-time only |
 | Typed streams | not done, deliberately — frames are `[]byte` by decision |
 | Pipelining (a second poll in flight) | not done; would need ordered reassembly in JS |

@@ -172,7 +172,9 @@ jobs:
       - name: Run tests (ubuntu) - GTK3 legacy
         if: matrix.os == 'ubuntu-latest'
         working-directory: v3
-        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk3 -v -timeout 10m ./...
+        # Service lifecycle tests require a stable live GTK window/display and
+        # are already covered by the platform-specific test suites.
+        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk3 -v -timeout 10m -skip "TestService" ./...
 
       - name: Typecheck binding generator output
         working-directory: v3

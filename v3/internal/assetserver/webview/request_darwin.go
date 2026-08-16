@@ -121,7 +121,7 @@ import (
 // NewRequest creates as new WebViewRequest based on a pointer to an `id<WKURLSchemeTask>`
 func NewRequest(wkURLSchemeTask unsafe.Pointer) Request {
 	C.URLSchemeTaskRetain(wkURLSchemeTask)
-	return newRequestFinalizer(&request{task: wkURLSchemeTask})
+	return newNativeRequestFinalizer(&request{task: wkURLSchemeTask}, uintptr(wkURLSchemeTask))
 }
 
 var _ Request = &request{}
