@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add Redis Viewer showcase page with screenshots and project link — see [documentation](https://v3.wails.io/community/showcase) and [documentation](https://v3.wails.io/community/showcase/redisviewer) in [PR](https://github.com/wailsapp/wails/pull/5984) by @redisviewer
 
 ## Changed
 <!-- Changes in existing functionality -->
