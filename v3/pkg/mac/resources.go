@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 )
 
 // ErrNotInAppBundle is returned when the current executable is not inside a
@@ -33,6 +34,10 @@ func ResourcePath() (string, error) {
 	executable, err := os.Executable()
 	if err != nil {
 		return "", fmt.Errorf("mac: determine executable path: %w", err)
+	}
+	executable, err = filepath.EvalSymlinks(executable)
+	if err != nil {
+		return "", fmt.Errorf("mac: resolve executable path: %w", err)
 	}
 
 	resourcesPath, ok := resourcePathForExecutable(executable)

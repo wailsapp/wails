@@ -72,7 +72,7 @@ func openCatalogue() (fs.File, error) {
 }
 ```
 
-Resource names are slash-separated paths relative to `Contents/Resources`. `ResourceFS` and `LoadResource` return `mac.ErrNotInAppBundle` when the executable is not running inside a `.app` bundle.
+Resource names are slash-separated paths relative to `Contents/Resources`. `ResourceFS` and `LoadResource` return `mac.ErrNotInAppBundle` unless the executable runs from `.app/Contents/MacOS`.
 
 Treat bundle resources as immutable. Changing files inside a signed application invalidates its code signature; store downloaded, generated, or user-editable data in the user's Application Support directory instead.
 
