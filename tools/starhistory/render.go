@@ -72,7 +72,7 @@ func RenderSVG(opts RenderOptions) string {
 		y := plotTop + plotHeight - float64(i)*plotHeight/4
 		value := maxY * i / 4
 		b.WriteString(fmt.Sprintf(`<line x1="%d" y1="%s" x2="%d" y2="%s"/>`, plotLeft, number(y), plotLeft+plotWidth, number(y)))
-		b.WriteString(fmt.Sprintf(`<text x="%d" y="%s" text-anchor="end" class="axis-label">%s</text>`, plotLeft-18, number(y+4), formatCount(value)))
+		b.WriteString(fmt.Sprintf(`<text x="%d" y="%s" text-anchor="end" class="axis-label">%s</text>`, plotLeft-18, number(y+4), formatAxisCount(value)))
 	}
 	b.WriteString(`</g>`)
 
@@ -125,7 +125,7 @@ func svgDefs() string {
 </defs>
 <style>
 text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #fff4f5; }
-.title { font-size: 42px; font-weight: 750; letter-spacing: -0.8px; }
+.title { font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', 'Liberation Sans Narrow', sans-serif; font-size: 42px; font-style: italic; font-weight: 900; letter-spacing: 0.4px; }
 .grid line { stroke: #ffd9dd; stroke-opacity: 0.14; stroke-dasharray: 3 9; }
 .axis-label { font-size: 22px; fill: #eabdc2; }
 .callout { font-size: 20px; font-weight: 700; fill: #fff4f5; }
@@ -182,6 +182,16 @@ func niceCeiling(value int) int {
 
 func formatCount(value int) string {
 	return fmt.Sprintf("%s", formatWithCommas(value))
+}
+
+func formatAxisCount(value int) string {
+	if value < 1000 {
+		return strconv.Itoa(value)
+	}
+	if value%1000 == 0 {
+		return fmt.Sprintf("%dk", value/1000)
+	}
+	return fmt.Sprintf("%.1fk", float64(value)/1000)
 }
 
 func formatWithCommas(value int) string {
