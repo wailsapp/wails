@@ -234,7 +234,10 @@ func (c *Cache) Snapshot(options SnapshotOptions) (string, error) {
 }
 
 func (c *Cache) SnapshotFiles(label string, paths ...string) (string, error) {
-	type entry struct{ path, digest string }
+	type entry struct {
+		path, digest string
+		mode         fs.FileMode
+	}
 	entries := make([]entry, 0, len(paths))
 	for _, path := range paths {
 		if !filepath.IsAbs(path) {
@@ -255,7 +258,7 @@ func (c *Cache) SnapshotFiles(label string, paths ...string) (string, error) {
 		if err != nil || strings.HasPrefix(logical, "..") {
 			logical = "external/" + filepath.Base(path)
 		}
-		entries = append(entries, entry{filepath.ToSlash(logical), digest})
+		entries = append(entries, entry{path: filepath.ToSlash(logical), digest: digest, mode: info.Mode()})
 	}
 	sort.Slice(entries, func(i, j int) bool { return entries[i].path < entries[j].path })
 	h := blake3.New()
@@ -263,6 +266,7 @@ func (c *Cache) SnapshotFiles(label string, paths ...string) (string, error) {
 	writePart(h, label)
 	for _, e := range entries {
 		writePart(h, e.path)
+		writePart(h, fmt.Sprintf("%o", relevantMode(e.mode)))
 		writePart(h, e.digest)
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil

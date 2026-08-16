@@ -22,6 +22,7 @@ manifest/             Sparse wails.toml defaults, validation, profiles, eject
 migration/            Private migration report, provenance, and cutover state
 pipeline/             Typed manifest Planner, Plan, scheduler and handlers seam
 cache/                BLAKE3 Snapshots, Receipts, Action Index, Artifact Store
+packagetemplate/      Atomic rendering of user-owned package files/directories
 ast/                 Taskfile AST types + deep Clone() for include isolation
 parse/               YAML parsing, include resolution, var/shell expansion, template expansion
 resolve/             DAG builder (topological sort, cycle detection), platform filtering
@@ -43,8 +44,38 @@ Build output is rendered through `internal/report` (a leaf contract) and
 2. Plan one immutable typed graph for every requested Target and package format.
 3. Snapshot direct inputs and calculate tool/environment-aware Action Keys.
 4. Prune or restore reusable Artifacts; validate stateful Receipts.
-5. Run the remaining critical path with bounded CPU and exclusive-tool claims.
+5. Run the remaining critical path with bounded CPU, memory, and exclusive-tool
+   claims. The default memory capacity is one logical GiB per worker; constrained
+   callers may provide a tighter `MemoryLimitMB`.
 6. Generate platform state under `.wails/` and report user-visible Artifacts.
+
+Package templates use a versioned, format-neutral model containing resolved
+Project, Target, Package, Paths, Associations, Protocols, and opaque Options.
+The renderer accepts one file or a directory tree, renders files ending in
+`.tmpl`, copies other files byte-for-byte, rejects symlinks, and atomically
+replaces its generated destination. Package adapters render only into their
+own `.wails/package/` workspace or final Artifact; they must never mutate the
+platform-assets Artifact they consume.
+
+`RunHook` Nodes invoke one project-owned script file without interpolated
+shell. `before_build` is one shared Project Node; `after_build` is Target scoped;
+package/sign phases are Target barriers around the requested package set.
+Hooks are non-reusable unless `cache = true` and complete inputs and outputs
+are declared. Their Action Key includes script bytes/mode, phase, environment
+contract version, and resolved scope. Resolve scripts and working directories
+through symlinks inside the Project, keep cached output roots disjoint from
+scripts/inputs, make stable `WAILS_*` values override inherited environment,
+and terminate the process group on cancellation.
+
+The Dev Session is outside the Plan: it owns persistent frontend/backend
+processes and replaceable watch sets while requesting ordinary finite
+development Plans. Treat a generation update as cancellation, not failure.
+Use compile and `after_build` results to avoid replacing an unchanged backend;
+stage changed frontend/port sessions before the backend that consumes them.
+Keep candidate `FRONTEND_DEVSERVER_URL`/`WAILS_VITE_PORT` values scoped to the
+build and child process, pin both sides to the same loopback address, replace
+watches transactionally, and terminate/reap complete process groups on every
+exit path.
 
 ### Legacy Taskfile pipeline
 
@@ -199,6 +230,7 @@ Current results (badge example, no-op cached build): wake **~20ms** vs task CLI 
 | `migration/` | Private migration report, Taskfile classifications, and cutover state |
 | `pipeline/` | Typed multi-Target planning and critical-path execution |
 | `cache/` | Content Snapshots, Action Index, Receipts and Artifact Store |
+| `packagetemplate/` | Stable package template model and atomic renderer |
 | `ast/ast.go` | Taskfile AST types, `Task.Clone()` deep copy |
 | `ast/walk.go` | AST visitor pattern |
 | `parse/parse.go` | YAML parsing, include resolution, var resolution, builtins |

@@ -35,6 +35,19 @@ func TestUnknownExitCodeShowsUnderlyingError(t *testing.T) {
 	}
 }
 
+func TestCanceledBuildDoesNotRenderFailureOrSuccessSummary(t *testing.T) {
+	var output bytes.Buffer
+	reporter := New(&output, report.Normal)
+	reporter.BuildStart("build", "linux/amd64", 1)
+	reporter.StepStart("target:linux/amd64:compile", "Compile linux/amd64")
+	reporter.BuildCanceled(20 * time.Millisecond)
+
+	rendered := output.String()
+	if strings.Contains(rendered, "build failed") || strings.Contains(rendered, "build succeeded") {
+		t.Fatalf("canceled generation rendered a terminal build verdict:\n%s", rendered)
+	}
+}
+
 func TestFailurePanelHeaderKeepsBorderColourAfterStyledLabels(t *testing.T) {
 	var output bytes.Buffer
 	reporter := &Reporter{w: &output, s: newStyler(ProfileANSI)}

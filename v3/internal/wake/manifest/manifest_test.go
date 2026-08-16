@@ -191,6 +191,117 @@ script=42
 	require.ErrorContains(t, err, `hook field "script" must be a string`)
 }
 
+func TestPackageOptionsAreTypedUnlessOwnedByCustomTemplate(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "AppxManifest.xml.tmpl"), []byte("manifest"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[package.darwin.dmg.options]
+window_width=640
+
+[package.linux.appimage.options]
+categories="Development;"
+
+[package.windows.msix]
+template="packaging/AppxManifest.xml.tmpl"
+[package.windows.msix.options]
+channel="preview"
+`), 0o644))
+	loaded, err := Load(root, "")
+	require.NoError(t, err)
+	assert.EqualValues(t, 640, loaded.Config.Package.Darwin.DMG.Options["window_width"])
+	assert.Equal(t, "preview", loaded.Config.Package.Windows.MSIX.Options["channel"])
+
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+[package.windows.msix.options]
+channel="preview"
+`), 0o644))
+	_, err = Load(root, "")
+	require.ErrorContains(t, err, "package.windows.msix.options requires a custom template")
+}
+
+func TestPackageTemplateMustExistInsideProject(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[package.windows.msix]
+template="packaging/missing.xml.tmpl"
+`), 0o644))
+
+	_, err := Load(root, "")
+	require.ErrorContains(t, err, "package.windows.msix.template")
+	require.ErrorContains(t, err, "does not exist")
+}
+
+func TestPackageTemplateSymlinkMustResolveInsideProject(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(outside, "template.tmpl"), []byte("outside"), 0o644))
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
+	if err := os.Symlink(filepath.Join(outside, "template.tmpl"), filepath.Join(root, "packaging", "template.tmpl")); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[package.windows.msix]
+template="packaging/template.tmpl"
+`), 0o644))
+
+	_, err := Load(root, "")
+	require.ErrorContains(t, err, "package.windows.msix.template")
+	require.ErrorContains(t, err, "must resolve inside the project")
+}
+
+func TestInvalidDevWatchPatternFailsAtLoad(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[dev]
+watch=["[invalid"]
+`), 0o644))
+
+	_, err := Load(root, "")
+	require.ErrorContains(t, err, `dev.watch[0] "[invalid"`)
+	require.ErrorContains(t, err, "invalid pattern")
+}
+
+func TestDMGFileOptionsCannotEscapeProject(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[package.darwin.dmg.options]
+background="../background.png"
+`), 0o644))
+
+	_, err := Load(root, "")
+	require.ErrorContains(t, err, "package.darwin.dmg.options.background must be project-relative")
+}
+
 func TestEncodeDocumentStaysSparse(t *testing.T) {
 	doc := NewDocument(Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"})
 	doc.Frontend.PackageManager = "pnpm"
@@ -222,6 +333,60 @@ outputs=["generated/version.go"]
 	assert.Equal(t, []string{"generated/version.go"}, loaded.Config.Hooks.BeforeBuild.Outputs)
 }
 
+func TestCachedHookOutputsMustHaveOneSafeArtifactRoot(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[hooks.before_build]
+script="generate"
+cache=true
+inputs=["version.txt"]
+outputs=["generated/version.go", "dist/version.txt"]
+`), 0o644))
+	_, err := Load(root, "")
+	require.ErrorContains(t, err, "multiple outputs must share a top-level directory")
+
+	output, err := HookOutputRoot([]string{"generated/version.go", "generated/version.txt"})
+	require.NoError(t, err)
+	assert.Equal(t, "generated", output)
+}
+
+func TestHookCacheDeclarationsRequireOptInAndCannotCaptureInputs(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[hooks.before_build]
+script="scripts/generate.sh"
+inputs=["version.txt"]
+outputs=["generated/version.go"]
+`), 0o644))
+	_, err := Load(root, "")
+	require.ErrorContains(t, err, "inputs and outputs require cache = true")
+
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[hooks.before_build]
+script="generated/generate.sh"
+cache=true
+inputs=["version.txt"]
+outputs=["generated/version.go", "generated/metadata.json"]
+`), 0o644))
+	_, err = Load(root, "")
+	require.ErrorContains(t, err, `output root "generated" contains input "generated/generate.sh"`)
+}
+
 func TestProjectPathsCannotEscape(t *testing.T) {
 	root := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
@@ -235,6 +400,50 @@ output_directory="..\\outside"
 `), 0o644))
 	_, err := Load(root, "")
 	require.ErrorContains(t, err, "build.output_directory must be a project-relative path")
+}
+
+func TestSigningAndRegistrationPathsCannotEscape(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[signing.darwin]
+entitlements="../outside.plist"
+`), 0o644))
+	_, err := Load(root, "")
+	require.ErrorContains(t, err, "signing.darwin.entitlements must be project-relative")
+
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[[associations]]
+extensions=["demo"]
+icon="../outside.ico"
+`), 0o644))
+	_, err = Load(root, "")
+	require.ErrorContains(t, err, "associations[0].icon must be project-relative")
+}
+
+func TestRegistrationPlatformsAreValidated(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[[protocols]]
+scheme="example"
+platforms=["plan9"]
+`), 0o644))
+	_, err := Load(root, "")
+	require.ErrorContains(t, err, `protocols[0].platforms contains unsupported platform "plan9"`)
 }
 
 func TestLegacyMigrationFieldsAreIgnoredAndNotReencoded(t *testing.T) {

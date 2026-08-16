@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -268,6 +269,11 @@ func validateConfig(config Config) error {
 	if config.Frontend.InstallCommand == "" || config.Frontend.BuildCommand == "" || config.Frontend.DevCommand == "" {
 		return fmt.Errorf("frontend install_command, build_command, and dev_command cannot be empty")
 	}
+	for index, pattern := range config.Dev.Watch {
+		if err := validateDevWatchPattern(pattern); err != nil {
+			return fmt.Errorf("dev.watch[%d] %q: %w", index, pattern, err)
+		}
+	}
 	for name, value := range map[string]string{
 		"project.icon":                       config.Project.Icon,
 		"frontend.directory":                 config.Frontend.Directory,
@@ -297,10 +303,210 @@ func validateConfig(config Config) error {
 		if hook.Cache && (len(hook.Inputs) == 0 || len(hook.Outputs) == 0) {
 			return fmt.Errorf("cached hook %s requires inputs and outputs", name)
 		}
+		if !hook.Cache && (len(hook.Inputs) > 0 || len(hook.Outputs) > 0) {
+			return fmt.Errorf("hook %s inputs and outputs require cache = true", name)
+		}
+		if hook.Cache {
+			outputRoot, err := HookOutputRoot(hook.Outputs)
+			if err != nil {
+				return fmt.Errorf("cached hook %s outputs: %w", name, err)
+			}
+			for _, input := range append([]string{hook.Script}, hook.Inputs...) {
+				if pathContains(outputRoot, input) {
+					return fmt.Errorf("cached hook %s output root %q contains input %q", name, outputRoot, input)
+				}
+			}
+		}
+	}
+	for name, signing := range signingMap(config.Signing) {
+		for field, value := range map[string]string{"certificate": signing.Certificate, "entitlements": signing.Entitlements} {
+			if value != "" && (manifestPathIsAbsolute(value) || pathEscapes(value)) {
+				return fmt.Errorf("signing.%s.%s must be project-relative", name, field)
+			}
+		}
+	}
+	for index, association := range config.Associations {
+		if len(association.Extensions) == 0 {
+			return fmt.Errorf("associations[%d].extensions requires at least one extension", index)
+		}
+		for _, extension := range association.Extensions {
+			if strings.TrimSpace(strings.TrimPrefix(extension, ".")) == "" {
+				return fmt.Errorf("associations[%d].extensions contains an empty extension", index)
+			}
+		}
+		if association.Icon != "" && (manifestPathIsAbsolute(association.Icon) || pathEscapes(association.Icon)) {
+			return fmt.Errorf("associations[%d].icon must be project-relative", index)
+		}
+		if err := validateRegistrationPlatforms(fmt.Sprintf("associations[%d]", index), association.Platforms); err != nil {
+			return err
+		}
+	}
+	for index, protocol := range config.Protocols {
+		if strings.TrimSpace(protocol.Scheme) == "" {
+			return fmt.Errorf("protocols[%d].scheme is required", index)
+		}
+		if err := validateRegistrationPlatforms(fmt.Sprintf("protocols[%d]", index), protocol.Platforms); err != nil {
+			return err
+		}
 	}
 	for name, format := range packageFormatMap(config.Package) {
-		if format.Template != "" && (manifestPathIsAbsolute(format.Template) || pathEscapes(format.Template)) {
-			return fmt.Errorf("package.%s.template must be project-relative", name)
+		if format.Template != "" {
+			if manifestPathIsAbsolute(format.Template) || pathEscapes(format.Template) {
+				return fmt.Errorf("package.%s.template must be project-relative", name)
+			}
+			if err := validateResolvedProjectPath(config.Root, format.Template); err != nil {
+				if os.IsNotExist(err) {
+					return fmt.Errorf("package.%s.template %q does not exist", name, format.Template)
+				}
+				return fmt.Errorf("package.%s.template %q: %w", name, format.Template, err)
+			}
+		}
+		if err := validatePackageOptions(name, format); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateDevWatchPattern(pattern string) error {
+	pattern = strings.Trim(strings.TrimPrefix(filepath.ToSlash(pattern), "./"), "/")
+	if pattern == "" {
+		return fmt.Errorf("pattern cannot be empty")
+	}
+	for _, segment := range strings.Split(pattern, "/") {
+		if segment == "**" {
+			continue
+		}
+		if _, err := path.Match(segment, ""); err != nil {
+			return fmt.Errorf("invalid pattern: %w", err)
+		}
+	}
+	return nil
+}
+
+func validateResolvedProjectPath(root, value string) error {
+	resolvedRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return err
+	}
+	resolvedPath, err := filepath.EvalSymlinks(filepath.Join(root, filepath.FromSlash(value)))
+	if err != nil {
+		return err
+	}
+	relative, err := filepath.Rel(resolvedRoot, resolvedPath)
+	if err != nil {
+		return err
+	}
+	if relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return fmt.Errorf("must resolve inside the project")
+	}
+	return nil
+}
+
+func pathContains(parent, child string) bool {
+	parent = filepath.ToSlash(filepath.Clean(filepath.FromSlash(parent)))
+	child = filepath.ToSlash(filepath.Clean(filepath.FromSlash(child)))
+	return child == parent || strings.HasPrefix(child, parent+"/")
+}
+
+func validateRegistrationPlatforms(field string, platforms []string) error {
+	for _, platform := range platforms {
+		if !contains([]string{"windows", "darwin", "linux", "ios", "android"}, platform) {
+			return fmt.Errorf("%s.platforms contains unsupported platform %q", field, platform)
+		}
+	}
+	return nil
+}
+
+// HookOutputRoot returns the single file/directory that owns a cacheable
+// hook's declared outputs. Multiple outputs must share a non-project-root
+// ancestor so recording the Artifact cannot capture unrelated project files.
+func HookOutputRoot(outputs []string) (string, error) {
+	if len(outputs) == 0 {
+		return "", fmt.Errorf("at least one output is required")
+	}
+	cleaned := make([]string, len(outputs))
+	for index, output := range outputs {
+		cleaned[index] = filepath.ToSlash(filepath.Clean(filepath.FromSlash(output)))
+		if cleaned[index] == "." {
+			return "", fmt.Errorf("project root cannot be a cached output")
+		}
+	}
+	if len(cleaned) == 1 {
+		return cleaned[0], nil
+	}
+	common := strings.Split(cleaned[0], "/")
+	for _, output := range cleaned[1:] {
+		parts := strings.Split(output, "/")
+		limit := len(common)
+		if len(parts) < limit {
+			limit = len(parts)
+		}
+		matched := 0
+		for matched < limit && common[matched] == parts[matched] {
+			matched++
+		}
+		common = common[:matched]
+	}
+	if len(common) == 0 {
+		return "", fmt.Errorf("multiple outputs must share a top-level directory")
+	}
+	return strings.Join(common, "/"), nil
+}
+
+func validatePackageOptions(name string, format PackageFormat) error {
+	if len(format.Options) == 0 || format.Template != "" {
+		return nil
+	}
+	allowed := map[string]map[string]string{
+		"darwin.dmg": {
+			"background": "string", "volume_icon": "string", "file_icon": "string", "files": "string",
+			"window_width": "integer", "window_height": "integer",
+		},
+		"linux.appimage": {"categories": "string"},
+	}[name]
+	if allowed == nil {
+		return fmt.Errorf("package.%s.options requires a custom template", name)
+	}
+	for key, value := range format.Options {
+		typeName, ok := allowed[key]
+		if !ok {
+			return fmt.Errorf("unknown package.%s.options field %q", name, key)
+		}
+		valid := false
+		switch typeName {
+		case "string":
+			_, valid = value.(string)
+		case "integer":
+			switch value.(type) {
+			case int, int64:
+				valid = true
+			}
+		}
+		if !valid {
+			return fmt.Errorf("package.%s.options.%s must be a %s", name, key, typeName)
+		}
+		if name == "darwin.dmg" && contains([]string{"background", "volume_icon", "file_icon"}, key) {
+			path := value.(string)
+			if path != "" && (manifestPathIsAbsolute(path) || pathEscapes(path)) {
+				return fmt.Errorf("package.%s.options.%s must be project-relative", name, key)
+			}
+		}
+		if name == "darwin.dmg" && key == "files" {
+			for _, item := range strings.Split(value.(string), ",") {
+				item = strings.TrimSpace(item)
+				if item == "" {
+					continue
+				}
+				entry, path, ok := strings.Cut(item, "=")
+				path = strings.TrimSpace(path)
+				if !ok || strings.TrimSpace(entry) == "" || path == "" {
+					return fmt.Errorf("package.%s.options.files entry %q must be name=path", name, item)
+				}
+				if manifestPathIsAbsolute(path) || pathEscapes(path) {
+					return fmt.Errorf("package.%s.options.files path %q must be project-relative", name, path)
+				}
+			}
 		}
 	}
 	return nil
@@ -308,6 +514,10 @@ func validateConfig(config Config) error {
 
 func hookMap(h Hooks) map[string]Hook {
 	return map[string]Hook{"before_build": h.BeforeBuild, "after_build": h.AfterBuild, "before_package": h.BeforePackage, "after_package": h.AfterPackage, "before_sign": h.BeforeSign, "after_sign": h.AfterSign}
+}
+
+func signingMap(signing Signing) map[string]SigningPlatform {
+	return map[string]SigningPlatform{"windows": signing.Windows, "darwin": signing.Darwin, "linux": signing.Linux, "ios": signing.IOS, "android": signing.Android}
 }
 
 func packageFormatMap(packages Packages) map[string]PackageFormat {

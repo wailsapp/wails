@@ -285,7 +285,7 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 					report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "package-manager", File: rel, Message: "translated PACKAGE_MANAGER=" + value.Static})
 				}
 				if key == "APP_NAME" && value.Static != "" && !strings.Contains(value.Static, "{{") {
-					binaryName = value.Static
+					binaryName = normalizeLegacyAppName(value.Static)
 				}
 			}
 		}
@@ -343,6 +343,13 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		doc.Frontend.PackageManager = packageManager
 	}
 	return report, doc, nil
+}
+
+func normalizeLegacyAppName(value string) string {
+	// Older generated root Taskfiles escaped spaces because APP_NAME was
+	// interpolated into unquoted shell commands. The backslash is command
+	// syntax, not part of the executable's file name.
+	return strings.ReplaceAll(value, `\ `, " ")
 }
 
 func migrateScriptHook(root, taskfileDir, name string, task *wakeast.Task) (string, manifest.Hook, bool) {
@@ -654,9 +661,11 @@ var knownStockTaskfiles = map[string]map[string]bool{
 	"windows": set(
 		"2036534db056f76202df0ade442e697a4572643b985ed5bc3c0042f97de773ea",
 		"ca9fb9e4d61c1816b6cc6919598feb54adc69451c444afe3af68588ed1d7d441",
+		"ab1b5cec4dc3f7f42a8c222b3b87744405e9b1b20f520ab7d9ab44bfcca88013",
 	),
 	"darwin": set(
 		"ed7dd8950f9422105e7d4349c223e0aeda1eca364186a621b4083052c9e4ca68",
+		"9c030aea973144d4041859e6a82fe791a5a3b919d1fbe3549830b19f93cb25b2",
 	),
 	"linux": set(
 		"5fed27274feb32c231426a77edd1f66fdf8fb77a0f074ab7db862dc0d3f31d6e",

@@ -1,6 +1,6 @@
 # Wayfinder map: Wails manifest build system
 
-Status: implementation review
+Status: resolved
 Type: map
 
 ## Destination
@@ -21,9 +21,10 @@ architecture decisions.
   resolved defaults; shell customization calls user-owned scripts; platform
   configuration is generated at build time; inline Taskfile shell migration is
   manual; default and modified Taskfiles should be migrated where possible.
-- The narrow cache slice has now been expanded into a complete MVP surface for
-  hands-on backwards review. Native-host platform verification and iteration
-  remain; the implementation is no longer outside this map.
+- The narrow cache slice has now been expanded into a complete implementation
+  surface for hands-on backwards review. Matching-host release verification
+  remains a release operation governed by the acceptance contract, not an
+  unresolved build-system decision.
 - Consult the existing proposal at
   [`history/wails-toml-build-system.md`](../../wails-toml-build-system.md).
 - Use the `wayfinder`, `grilling`, and `domain-modeling` skills while resolving
@@ -48,12 +49,28 @@ architecture decisions.
   — the executable slice validated a 60–70ms no-op path, content-based
   Artifact propagation, and missing-output restoration; it now graduates into
   the complete production implementation.
+- [Runtime-generated platform assets and customization escape hatches](issues/04-generated-platform-assets.md)
+  — typed metadata generates target-local disposable assets, while every
+  package format supports a strict, versioned user-owned template adapter.
+- [Current build performance baseline](issues/08-performance-baseline.md)
+  — reproducible complete-command and graph microbenchmarks establish no-op,
+  incremental, packaging, restoration, Dev, Task, and larger-app timings.
 - [Taskfile migration and customization classification](issues/06-taskfile-migration.md)
   — private migration reports classify current, historical, and customised
   Taskfiles; complete migrations digest-check and retire represented sources.
 - [CLI migration cutover](issues/07-cli-compatibility.md)
   — one routing seam selects native Manifest, deliberate legacy fallback, or
   an actionable ambiguity error without storing workflow state in `wails.toml`.
+- [Script hook contract and safe extension boundary](issues/05-script-hook-contract.md)
+  — six typed file-script phases have fixed Project/Target/package barriers,
+  stable environment and failure semantics, safe cancellation, and explicit
+  bounded cache opt-in.
+- [Dev Session invalidation and process lifecycle](issues/10-dev-session-lifecycle.md)
+  — finite generations drive a transactional, readiness-gated frontend,
+  backend, and watch lifecycle with no-op preservation and clean cancellation.
+- [Build performance acceptance matrix and regression budget](issues/09-performance-acceptance.md)
+  — permanent semantic, variance, latency, concurrency, native-host, mobile,
+  and signing gates make speed and platform correctness verifiable.
 
 ## Implementation evidence
 
@@ -68,6 +85,9 @@ architecture decisions.
 - Badge no-op builds measure 70–80ms and DEB package no-ops measure 70–90ms
   wall time with all planned Nodes cached; a service method-body edit skips
   bindings and the frontend and executes only Go compilation.
+- The final controlled run measured a 93.503ms badge median with 8.19% MAD,
+  3.22% cold orchestration overhead, concurrent native Linux package adapters,
+  and a 0/9 cached rerun after AppImage packaging.
 - The full Go suite reaches unrelated desktop-environment failures only;
   focused manifest/Wake/command tests, race detection, vet, and real Linux
   build/package runs pass.
@@ -77,8 +97,7 @@ architecture decisions.
 
 ## Not yet specified
 
-- The acceptance matrix across desktop, server, iOS, Android, packaging,
-  signing, cross-compilation, and development mode.
+None. The route to the destination is fully specified.
 
 ## Out of scope
 

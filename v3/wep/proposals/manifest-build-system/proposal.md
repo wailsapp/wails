@@ -53,7 +53,7 @@ inferred where user values are absent.
 read-only Planner. The Planner emits one immutable typed Plan for all requested
 targets. Project nodes are shared only when their specs are equivalent;
 target/package outputs have one owner. The executor schedules the critical
-path with bounded CPU and exclusive-tool claims, continues independent
+path with bounded CPU, memory, and exclusive-tool claims, continues independent
 branches after failure, and reports each node through the existing Wake UI.
 
 Direct inputs are content-snapshotted with BLAKE3. Action keys include typed
@@ -67,6 +67,52 @@ Generated platform resources live under ignored `.wails/` state. Stable
 customization is expressed through structured manifest fields or optional
 user-owned templates. Hooks call one project-relative user-owned script;
 cacheable hooks must declare inputs and outputs.
+
+Hooks are invoked as files, never as inline shell. Executable/shebang scripts
+run directly on Unix; Windows `.cmd`/`.bat` and `.ps1` files are passed as a
+single script path to the platform command or PowerShell interpreter. The
+stable environment is `WAILS_PROJECT_DIR`, `WAILS_TARGET_OS`,
+`WAILS_TARGET_ARCH`, `WAILS_PROFILE`, `WAILS_OUTPUT`, and
+`WAILS_PIPELINE_VERSION`. `WAILS_OUTPUT` names the phase Artifact rather than
+the hook's own cache output. Cacheable hooks fingerprint the script bytes and
+executable mode and must declare complete inputs and outputs. Multiple outputs
+must share a non-root directory so Wails can store one bounded Artifact.
+Declaring inputs or outputs without `cache = true` is an error, and a cached
+output root cannot contain its script or an input. Script and working-directory
+symlinks must resolve inside the Project. Cancellation terminates the hook's
+whole process group.
+
+`before_build` runs once at Project scope with empty target and output values.
+`after_build` runs once per Target with the binary as output. Package and sign
+hooks are barriers around each Target's complete requested format set:
+`before_package`, `after_package`, `before_sign`, and `after_sign` each run once
+at the corresponding boundary. A single-format invocation receives that
+package path; a multi-format invocation receives their common parent. Package
+Nodes within a barrier remain independent and may execute concurrently.
+
+A package template is either one file or one directory. File templates render
+directly to the format-owned input. In directory templates, files ending in
+`.tmpl` are rendered with that suffix removed and all other files are copied;
+symlinks are rejected. Rendering is strict (`missingkey=error`) and atomically
+replaces only the package Node's workspace. Wails never edits the source.
+
+The template model is versioned independently through `.Version` (initially
+`1`) and exposes only stable build intent:
+
+- `.Project`: resolved project and target metadata;
+- `.Target`: `OS`, `Arch`, `Variant`, and `MinimumVersion`;
+- `.Package.Format`;
+- `.Paths`: absolute `Project`, `Binary`, `Output`, `Assets`, `Icon`, and
+  package `Workspace` paths;
+- `.Associations`, `.Protocols`, and the format's opaque `.Options` map.
+
+The template destination is format-specific: NSIS `project.nsi`, MSIX
+`AppxManifest.xml`, macOS/iOS `Info.plist`, AppImage desktop entry, Linux nfpm
+configuration, DMG JSON options, or a complete Android Gradle directory.
+Structured DMG options override values rendered by its JSON template. Built-in
+DMG resource paths are project-relative and are content-snapshotted. A custom
+template's project root participates in its Action Key because the stable
+model deliberately exposes absolute paths.
 
 `wails3 eject` materializes and freezes the resolved base. `wails3 eject
 <profile>` freezes an existing sparse profile or creates one from the effective
@@ -84,8 +130,19 @@ diagnostics and explicitly confirms the reviewed cutover with `--complete`.
 
 The Dev Session owns persistent frontend/backend processes and watchers. File
 bursts request finite production Plans; a newer generation cancels stale work.
-The healthy app remains alive until a replacement builds and starts. Manifest
-changes reload watch policy and restart only affected persistent processes.
+Canceled generations leave no failed-build verdict. The healthy app remains
+alive until a replacement builds and starts; a cache-hit/restored binary does
+not cause a restart. Manifest changes transactionally reload watch policy and
+restart only affected persistent processes.
+Frontend readiness means the configured TCP port is listening; backend
+readiness requires the process to survive startup stabilization. Shutdown
+cancels and waits for in-flight builds, then terminates each owned process
+group. With `dev.use_gitignore = true`, root and nested ignore files bound the
+watch tree and changes to an ignore file reload that policy without rebuilding.
+New directories are registered and checked for inputs already created inside
+them. Frontend and backend processes receive isolated session environment and
+share one explicit IPv4 loopback URL. A port change starts the new frontend and
+then its backend before retiring the old pair.
 
 ## Non-Goals
 
@@ -101,11 +158,15 @@ Windows, macOS, Linux, iOS, and Android use the same manifest and Plan model.
 Target overlays supply platform and architecture policy. Platform assets are
 generated into `.wails/`, and package/sign adapters continue to call native
 toolchains such as NSIS, Xcode/codesign, Android SDK tools, nfpm, and AppImage
-tools. Unsupported target/format combinations fail during planning.
+tools. Legacy adapters that mutate process state, including AppImage
+generation, run behind an isolated CLI subprocess boundary. Unsupported
+target/format combinations fail during planning.
 
-Linux build and DEB packaging are exercised end to end by the reference
-implementation. Other plans are host-independent and tested structurally but
-must pass native-host release verification before rollout.
+Linux build plus AppImage, DEB, RPM, and Arch packaging are exercised end to
+end by the reference implementation. Every supported Target/format pair is
+tested structurally, and the permanent acceptance matrix requires Windows,
+macOS, iOS, Android, cross-architecture, and signing runs on matching native or
+credentialed release hosts before rollout.
 
 ## Pros/Cons
 

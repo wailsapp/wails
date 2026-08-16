@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "scenario": "badge-noop-linux-amd64",
+  "command": [
+    "wails3",
+    "build",
+    "--target",
+    "linux/amd64"
+  ],
+  "samples": [
+    {
+      "wall_ms": 83.332,
+      "cpu_ms": 95.113,
+      "reported_build_ms": 7,
+      "cached_steps": 4
+    },
+    {
+      "wall_ms": 75.552,
+      "cpu_ms": 87.516,
+      "reported_build_ms": 8,
+      "cached_steps": 4
+    },
+    {
+      "wall_ms": 88.037,
+      "cpu_ms": 99.107,
+      "reported_build_ms": 10,
+      "cached_steps": 4
+    },
+    {
+      "wall_ms": 87.756,
+      "cpu_ms": 101.405,
+      "reported_build_ms": 8,
+      "cached_steps": 4
+    },
+    {
+      "wall_ms": 81.314,
+      "cpu_ms": 92.552,
+      "reported_build_ms": 10,
+      "cached_steps": 4
+    }
+  ],
+  "median_wall_ms": 83.332,
+  "min_wall_ms": 75.552,
+  "max_wall_ms": 88.037,
+  "median_cpu_ms": 95.113,
+  "median_reported_build_ms": 8
+}

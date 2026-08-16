@@ -45,6 +45,17 @@ func TestAnalyseMigrationRecognizesShippedDefault(t *testing.T) {
 	}
 }
 
+func TestAnalyseMigrationRecognizesOlderGeneratedDefaultsAndUnescapesAppName(t *testing.T) {
+	report, doc, err := analyseMigration(filepath.Join("..", "..", "examples", "notifications"))
+	require.NoError(t, err)
+	assert.Truef(t, report.Complete, "diagnostics: %#v", report.Diagnostics)
+	assert.Equal(t, "Notifications Demo", doc.Project.Name)
+	assert.Equal(t, "Notifications Demo", doc.Project.BinaryName)
+	for _, taskfile := range report.Taskfiles {
+		assert.Contains(t, []string{"current-default", "historical-default"}, taskfile.Classification, "%s", taskfile.File)
+	}
+}
+
 func TestAnalyseMigrationFindsModifiedKnownRootTask(t *testing.T) {
 	root := t.TempDir()
 	require.NoError(t, os.CopyFS(root, os.DirFS(filepath.Join("..", "..", "examples", "badge"))))
@@ -184,6 +195,22 @@ tasks:
 	assert.True(t, report.Complete)
 	assert.Equal(t, "scripts/before.sh", doc.Hooks.BeforeBuild.Script)
 	assert.Contains(t, report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "script-hook", File: "Taskfile.yml", Task: "before-build", Message: "translated script-file task to hooks.before_build"})
+}
+
+func TestAnalyseMigrationLeavesInlineShellHookManual(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte(`version: '3'
+tasks:
+  before-build:
+    cmds:
+      - echo generated > version.txt
+`), 0o644))
+
+	report, doc, err := analyseMigration(root)
+	require.NoError(t, err)
+	assert.False(t, report.Complete)
+	assert.Empty(t, doc.Hooks.BeforeBuild.Script)
+	assert.Contains(t, report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "unsupported-task", File: "Taskfile.yml", Task: "before-build", Message: "custom task requires a user-owned hook script or manual migration"})
 }
 
 func TestRemoveLegacySourcesRequiresMatchingDigest(t *testing.T) {

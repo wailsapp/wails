@@ -77,6 +77,7 @@ func TestNopIsReporter(t *testing.T) {
 	r.StepEnd(id, StatusOK, time.Second)
 	r.StepFailed(id, Failure{})
 	r.BuildEnd(time.Second, true)
+	r.BuildCanceled(time.Second)
 	if r.Level() != Normal {
 		t.Fatalf("Nop level = %v", r.Level())
 	}

@@ -1,7 +1,7 @@
 # Current build performance baseline
 
 Type: task
-Status: open
+Status: resolved
 Blocked by: none
 
 ## Question
@@ -38,3 +38,46 @@ arbitrary percentage.
   six Nodes cached. The final run included the coarse-timestamp cache safety
   window and packaging over an existing output. Broader five-sample and
   native-platform measurements remain.
+
+## Answer
+
+The reproducible baseline, environment, commands, semantic work matrix, and
+measurement caveats are recorded in
+[`performance-baseline.md`](../performance-baseline.md). A checked-in Go
+benchmark package now measures complete CLI processes, strips terminal control
+sequences, records wall/CPU/reported graph duration and ran/cached counts,
+computes medians and ranges, reads and writes atomic JSON baselines, and applies
+absolute plus relative median budgets. The CLI wrapper is
+`v3/scripts/benchmark-manifest-build.go`; in-process Planner and Executor
+benchmarks isolate orchestration overhead.
+
+Five-sample results on the Ryzen 3950X Linux host establish:
+
+- manifest badge no-op: 87.6ms median, 77.9–89.8ms, all four Nodes cached;
+- larger dock no-op: 74.2ms median, 72.5–83.1ms, all four Nodes cached;
+- Taskfile Wake no-op: 91.2ms median; external Task: 228.5ms median;
+- DEB and AppImage no-op package: 92.0ms and 84.7ms median, respectively;
+- method-body edit: 904.6ms, only compile ran;
+- binding-shape edit: 2,816.2ms median, with generated-output identity safely
+  skipping frontend work where different Go types produced identical
+  TypeScript;
+- frontend comment with identical bundle: 965.1ms, only frontend ran;
+- frontend output change: 1,787.9ms, frontend and compile ran;
+- missing binary restoration: 85.3ms, no handlers ran and restored bytes
+  matched the removed Artifact;
+- cache-cold dock build with warm tool caches: 3,184ms; first AppImage package:
+  21,173ms including linuxdeploy/tool work;
+- live Dev method-body rebuild: 870ms, compile only, followed by a clean
+  backend replacement and child-process shutdown.
+
+The three-target Planner median is 687µs/op; warm fake-handler Executor medians
+are 2.26ms for one Target and 3.28ms for three Targets. Native multi-platform
+tool timing is deliberately left to host acceptance rather than represented by
+cross-compilation from Linux.
+
+The checked baseline is
+`v3/internal/wake/benchmark/testdata/badge-noop-linux-amd64.json` at 83.332ms.
+The rebuilt CLI passes the sub-100ms absolute gate and the allowed 20% median
+regression. This resolves the factual baseline; the permanent CI/release
+workload and enforcement policy remain in the dependent performance-acceptance
+ticket.

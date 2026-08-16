@@ -47,9 +47,10 @@ isolated cache prototype:
 - Compile cache identity includes local module/workspace sources and relevant
   execution environment. Receipts are state evidence rather than Artifacts,
   and signing-bearing iOS assembly never enters the reusable Artifact Store.
-- The Dev Session cancels stale generations, preserves the healthy app through
-  failed builds, reloads watch policy, and restarts the frontend only when its
-  command, directory, manager, or port changes.
+- The Dev Session cancels stale generations without presenting them as failed
+  builds, preserves the healthy app through failures, skips replacement when
+  the binary is unchanged, reloads watch policy without rebuilding, and stages
+  frontend/port changes before committing the new session.
 - The repository-required draft WEP is recorded at
   `v3/wep/proposals/manifest-build-system/proposal.md` for review without any
   GitHub activity.
@@ -235,6 +236,7 @@ A cache-aware hook uses the long form for the same phase:
 ```toml
 [hooks.before_build]
 script = "scripts/generate-version.sh"
+cache = true
 inputs = ["version.txt"]
 outputs = ["generated/version.go"]
 ```
@@ -250,10 +252,36 @@ WAILS_OUTPUT
 WAILS_PIPELINE_VERSION
 ```
 
-Hooks that participate in caching may declare inputs and outputs. Hooks without
-declarations are treated as side-effectful and run every time. The referenced
-script and relevant executable metadata are always cache inputs; users do not
-need to repeat the script path in `inputs`.
+Hook scope and `WAILS_OUTPUT` are fixed by phase:
+
+| Phase | Invocation scope | `WAILS_OUTPUT` |
+| --- | --- | --- |
+| `before_build` | once for the shared Project | empty; target variables are also empty |
+| `after_build` | once per Target | compiled binary |
+| `before_package` | once per Target before its requested formats | future package path, or their common parent |
+| `after_package` | once after the Target's requested formats | package path, or their common parent |
+| `before_sign` | once before the Target's requested signing work | unsigned package path, or their common parent |
+| `after_sign` | once after the Target's requested signing work | signed package path, or their common parent |
+
+Package and signing hooks deliberately form barriers around the requested
+format set. The package Nodes inside those barriers remain independent and may
+run concurrently.
+
+Hooks without `cache = true` are side-effectful and run every time. A cached
+hook must declare complete inputs and outputs; declaring either without the
+explicit cache opt-in is an error. The referenced script and relevant
+executable metadata are always cache inputs, so users do not repeat the script
+path in `inputs`.
+
+Unix hooks are executable files with their own shebang. Windows `.cmd`, `.bat`,
+and `.ps1` hooks are invoked through the corresponding platform interpreter,
+with the script path passed as one argument rather than interpolated shell.
+For cached hooks, multiple outputs must share one non-root directory; that
+directory is the bounded Artifact Wails records and restores. The output root
+cannot contain the script or any declared input. Scripts and working
+directories are resolved through symlinks and must remain inside the Project.
+Cancellation terminates the hook's process group so a stale build cannot leave
+detached children.
 
 ### User-owned templates and extensions
 
@@ -268,6 +296,27 @@ template = "packaging/windows/installer.nsi"
 Wails must never overwrite referenced user-owned files. Extension namespaces
 can provide configuration for tooling that Wails does not understand without
 exposing the full internal pipeline.
+
+Package templates use strict Go `text/template` rendering against a versioned
+model with `.Project`, `.Target`, `.Package`, `.Paths`, `.Associations`,
+`.Protocols`, and `.Options`. A single source file renders to the input owned by
+that package format. A directory source is copied atomically; `*.tmpl` files
+are rendered with the suffix removed, ordinary files retain their mode, and
+symlinks are rejected. The current destinations are:
+
+| Format | User-owned template output |
+| --- | --- |
+| NSIS | `project.nsi` |
+| MSIX | `AppxManifest.xml` |
+| macOS app / iOS app or IPA | `Info.plist` |
+| DMG | JSON package options |
+| AppImage | desktop entry |
+| DEB / RPM / Arch Linux | nfpm YAML |
+| APK / AAB | complete Android Gradle directory |
+
+The source remains beside the project while Wails renders into a disposable
+`.wails/package/<format>/<target>/` workspace or the final package Artifact.
+Package Nodes never modify the generated platform-assets Artifact they consume.
 
 ## Built-in pipeline
 
@@ -338,6 +387,29 @@ modified generated outputs are dirty misses and are atomically replaced by a
 successful rebuild. Signing, notarization, publication, credential access, and
 network side effects always run. Hooks run by default and become cacheable only
 with an explicit opt-in and complete declared inputs and outputs.
+
+### Development lifecycle
+
+`wails3 dev` owns a long-lived Dev Session rather than representing watchers or
+persistent processes as graph Nodes. A coalesced file burst requests the normal
+finite development Plan. A newer generation cancels stale work and removes its
+live report without rendering a failed-build verdict. A compile cache hit or
+restoration leaves the current backend running; an executed `after_build` hook
+or changed binary stages a replacement and swaps only after startup readiness.
+A failed Plan or replacement leaves the healthy app intact.
+
+The frontend server and backend receive explicit per-process
+`FRONTEND_DEVSERVER_URL` and `WAILS_VITE_PORT` values; the CLI does not leak
+candidate configuration through process-global environment. Both sides use
+the same pinned IPv4 loopback address, avoiding `localhost` IPv4/IPv6
+resolution disagreement. Port changes stage the new frontend first, then the
+backend that consumes it, before terminating the old pair.
+
+Watch sets are replaced transactionally. Root and nested `.gitignore` changes
+reload policy immediately without a build, newly created directories are
+registered and scanned for already-created inputs, and a failed replacement
+retains the old watches. Shutdown cancels and waits for in-flight Plans, then
+terminates and reaps the backend, frontend, and their complete process groups.
 
 ## Generated platform assets
 

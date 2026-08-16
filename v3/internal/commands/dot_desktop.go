@@ -58,7 +58,10 @@ func (d *DotDesktopOptions) asBytes() []byte {
 
 func GenerateDotDesktop(options *DotDesktopOptions) error {
 	DisableFooter = true
+	return generateDotDesktop(options)
+}
 
+func generateDotDesktop(options *DotDesktopOptions) error {
 	if options.Name == "" {
 		return fmt.Errorf("name is required")
 	}
@@ -72,7 +75,5 @@ func GenerateDotDesktop(options *DotDesktopOptions) error {
 	}
 
 	// Write to file
-	err := os.WriteFile(options.OutputFile, options.asBytes(), 0755)
-
-	return err
+	return os.WriteFile(options.OutputFile, options.asBytes(), 0755)
 }
