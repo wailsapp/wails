@@ -136,13 +136,14 @@ rejected in favor of typed first-party nodes plus stable script/template seams.
 ## Backwards Compatibility
 
 Existing projects without `wails.toml` continue through Taskfile execution.
-Migration writes an inactive manifest when unsupported customizations remain;
-normal commands cut over only after `wake.migration.complete = true`. Stock
-historical templates migrate automatically. Modified sources are never
-deleted unless their digest still matches the analyzed source and migration is
-complete. Source digests and detailed diagnostics live in the hidden
-`.wails/migration-report.json`, not the user-owned manifest. Taskfile is not
-retained after an explicit completed cutover.
+Migration writes an inactive manifest with `wake.migration.complete = false`
+when unsupported customizations remain. A completed migration has no migration
+section and activates the built-in pipeline like a native manifest. Stock
+historical templates migrate automatically. Modified sources are never deleted
+unless their digest still matches the analyzed source and migration is
+complete. Completion provenance, source digests, and detailed diagnostics live
+in the hidden `.wails/migration-report.json`, not the user-owned manifest.
+Taskfile is not retained after an explicit completed cutover.
 
 The public CLI verbs remain, with manifest-native profile, target, format,
 force, config, eject, and migration options. Arbitrary Task variables are
