@@ -23,10 +23,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update GTK application flags to G_APPLICATION_NON_UNIQUE for Linux in [PR](https://github.com/wailsapp/wails/pull/5971) by @overlordtm
 - Log missing window events at debug level instead of warning in [PR](https://github.com/wailsapp/wails/pull/5914) by @julianstorer
 
 ## Fixed
 <!-- Bug fixes -->
+- Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
