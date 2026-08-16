@@ -3,6 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.25.0
 
 require (
+	github.com/BurntSushi/toml v1.6.0
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
 	github.com/adrg/xdg v0.5.3
 	github.com/atotto/clipboard v0.1.4
@@ -33,6 +34,7 @@ require (
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
 	github.com/zalando/go-keyring v0.2.6
+	github.com/zeebo/blake3 v0.2.4
 	golang.org/x/sys v0.46.0
 	golang.org/x/term v0.44.0
 	golang.org/x/tools v0.47.0
@@ -77,7 +79,6 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/AlekSi/pointer v1.2.0 // indirect
-	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/Ladicle/tabwriter v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect

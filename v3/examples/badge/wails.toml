@@ -1,0 +1,6 @@
+[project]
+name = "badge"
+product_name = "Badge"
+identifier = "com.wails.badge"
+version = "0.1.0"
+# binary_name = "badge"
