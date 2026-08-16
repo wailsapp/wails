@@ -110,3 +110,17 @@ func TestRenderSVGIncludesFadedBackgroundAndRedChart(t *testing.T) {
 		}
 	}
 }
+
+func TestFormatAxisCountUsesCompactThousands(t *testing.T) {
+	for value, want := range map[int]string{
+		0:     "0",
+		999:   "999",
+		1000:  "1k",
+		12500: "12.5k",
+		50000: "50k",
+	} {
+		if got := formatAxisCount(value); got != want {
+			t.Errorf("formatAxisCount(%d) = %q, want %q", value, got, want)
+		}
+	}
+}
