@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Import Fragment in preact-ts template to resolve build failure in [PR](https://github.com/wailsapp/wails/pull/5979) by @haoku123
 - Prevent legacy GTK3 service-only applications from crashing when screen
   discovery runs before an active window or display is available (#5966)
 - Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
