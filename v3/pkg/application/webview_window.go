@@ -189,6 +189,15 @@ type WebviewWindow struct {
 	menuBindings     map[string]*MenuItem
 	menuBindingsLock sync.RWMutex
 
+	// Events are queued and drained by a single consumer on the UI thread so
+	// that delivery order matches emit order. See enqueueEventJS.
+	eventQueueMu     sync.Mutex
+	eventQueueCond   *sync.Cond
+	eventQueue       []string
+	eventDraining    bool
+	eventQueueClosed bool
+	eventQueueHigh   int
+
 	// Indicates that the window is destroyed
 	destroyed     bool
 	destroyedLock sync.RWMutex
@@ -268,8 +277,24 @@ func (w *WebviewWindow) onApplicationEvent(
 
 func (w *WebviewWindow) markAsDestroyed() {
 	w.destroyedLock.Lock()
-	defer w.destroyedLock.Unlock()
 	w.destroyed = true
+	w.destroyedLock.Unlock()
+
+	// Release anyone blocked on a full queue. Done outside destroyedLock so the
+	// lock order between it and eventQueueMu is always one-way.
+	w.closeEventQueue()
+
+	// Anything parked for this window will never be fetched now. TTL would
+	// eventually reclaim it, but the window is gone, so release immediately.
+	if globalApplication != nil && globalApplication.eventPayloads != nil {
+		globalApplication.eventPayloads.dropWindow(w.id)
+	}
+
+	// Same reasoning for streams: nothing in this window will ever poll again,
+	// so close the connections now and let the handlers unblock.
+	if globalApplication != nil && globalApplication.streams != nil {
+		globalApplication.streams.dropWindow(w.id)
+	}
 }
 
 func (w *WebviewWindow) setupEventMapping() {
@@ -700,7 +725,8 @@ func (w *WebviewWindow) SetFullscreenButtonState(state ButtonState) Window {
 }
 
 // Flash flashes the window's taskbar button/icon.
-// Useful to indicate that attention is required. Windows only.
+// Useful to indicate that attention is required. On Windows this flashes the
+// taskbar button; on macOS it bounces the app's Dock icon (Linux: no-op).
 func (w *WebviewWindow) Flash(enabled bool) {
 	if w.impl == nil || w.isDestroyed() {
 		return
@@ -1369,15 +1395,199 @@ func (w *WebviewWindow) SetFrameless(frameless bool) Window {
 	return w
 }
 
+// Event delivery templates.
+//
+// All three keep the existing guard against the runtime not being mounted yet
+// (during page reload WindowLoadFinished can fire before dispatchWailsEvent
+// exists), and all three call the same public dispatchWailsEvent entry point,
+// so no runtime JS or third-party page code has to change.
+// Whether an event can be delivered synchronously depends on whether an
+// earlier event for the same window is still being fetched. That decision is
+// made in JavaScript rather than in Go, deliberately: evals execute serially on
+// the UI thread in the order they were enqueued, so `w.__eq` is observed in
+// delivery order and needs no locking. Deciding it in Go would require holding
+// a lock across the ExecJS main-thread hop, which is the same shape as the
+// deadlock documented in transport_event_ipc.go.
+//
+// Both templates terminate the chain with a catch. Without it a single throwing
+// listener would leave `w.__eq` permanently rejected and silently stop every
+// later event for that window.
+const (
+	// inline: small enough to splice directly. Dispatches synchronously unless
+	// a fetch is already outstanding, in which case it queues behind it so it
+	// cannot overtake.
+	inlineEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
+		"if(w.__eq){w.__eq=w.__eq.then(function(){w.dispatchWailsEvent(%s);}).catch(function(){});}" +
+		"else{w.dispatchWailsEvent(%[1]s);}}"
+
+	// ref: the payload is parked host-side; fetch it over the asset server
+	// rather than passing it through evaluateJavaScript. Creating w.__eq is
+	// what makes every subsequent event for this window queue behind it.
+	refEventJS = "if(window._wails&&window._wails.dispatchWailsEvent){var w=window._wails;" +
+		"w.__eq=(w.__eq||Promise.resolve()).then(function(){" +
+		"return fetch(%q,{cache:'no-store'}).then(function(r){return r.json();})" +
+		".then(function(e){w.dispatchWailsEvent(e);});}).catch(function(){});}"
+)
+
 func (w *WebviewWindow) DispatchWailsEvent(event *CustomEvent) {
 	if w.impl == nil || w.isDestroyed() {
 		return
 	}
-	// Guard against race condition where event fires before runtime is initialized
-	// This can happen during page reload when WindowLoadFinished fires before
-	// the JavaScript runtime has mounted dispatchWailsEvent on window._wails
-	msg := fmt.Sprintf("if(window._wails&&window._wails.dispatchWailsEvent){window._wails.dispatchWailsEvent(%s);}", event.ToJSON())
-	w.ExecJS(msg)
+
+	payload := event.ToJSON()
+
+	// Large payloads are delivered by reference. Splicing them into the eval
+	// source makes WebKit transfer them out-of-line via shared memory, and the
+	// host process retains ownership of those regions while the app keeps
+	// emitting — 100 ev/s of 1 MB events reached 11.5 GB before this change.
+	// See event_payload_store.go for the measurements.
+	if len(payload) > maxInlineEventPayload {
+		if store := globalApplication.eventPayloads; store != nil {
+			if id, ok := store.put(w.id, []byte(payload)); ok {
+				if w.enqueueEventJS(fmt.Sprintf(refEventJS, eventPayloadPath+id)) {
+					return
+				}
+				// The window closed between put and enqueue, so nothing will
+				// ever fetch this. dropWindow has already run by then and
+				// cannot see it, so reclaim it here rather than leaving it for
+				// the TTL sweep.
+				store.take(id, w.id)
+				return
+			}
+		}
+		// Store unavailable, full, or shutting down: fall back to inline. This
+		// event pays the out-of-line retention cost, which beats dropping it.
+	}
+
+	w.enqueueEventJS(fmt.Sprintf(inlineEventJS, payload))
+}
+
+// eventQueueCapacity bounds how many events may be waiting for the UI thread
+// before an emitting goroutine is made to wait. Typical apps emit far below
+// this, so the queue stays empty and the bound never engages; it exists to stop
+// a runaway producer from growing the queue without limit.
+//
+// A main-thread emitter is never blocked by it — see enqueueEventJS.
+//
+// Chosen by measurement (v3/tests/event-performance, macOS, 25s runs). Ordering
+// held at every size, and 5000 ev/s was sustained at every size, so the only
+// thing that moved was tail latency, which grows with depth because an event
+// waits behind whatever is already queued:
+//
+//	capacity   5000 ev/s        mixed-source p99
+//	      16   5000/s, 0 inv    179us
+//	      64   4991/s, 0 inv    257us
+//	     256   4995/s, 0 inv    329us
+//	    1024   5000/s, 0 inv    427us
+//
+// Shallow is better on both counts, so this is deliberately small: enough to
+// absorb a burst without making a producer wait, not so much that an event can
+// sit behind a long backlog. Raise it only with a measurement that shows a
+// producer being throttled.
+const eventQueueCapacity = 64
+
+// enqueueEventJS appends an event's JavaScript to the window's queue and makes
+// sure a drain is scheduled.
+//
+// This exists because dispatchOnMainThread runs inline when the caller is
+// already on the UI thread. Without a queue, an event emitted from the UI
+// thread executes its eval immediately while an event emitted moments earlier
+// from a goroutine is still sitting in the dispatch queue, so the later event
+// overtakes the earlier one. TestEventFromMainThreadDoesNotOvertakeQueuedEvent
+// reproduces it deterministically.
+//
+// Appending under a mutex makes the queue the single ordering authority: the
+// order events are added is the order one drainer emits them, whichever thread
+// each came from.
+//
+// Returns false when the queue has been closed because the window is going
+// away, so a caller that has already parked a payload can reclaim it.
+func (w *WebviewWindow) enqueueEventJS(js string) bool {
+	// Whether we are on the UI thread decides if we may block below, so it must
+	// be read before taking the queue lock.
+	onMainThread := globalApplication != nil &&
+		globalApplication.impl != nil &&
+		globalApplication.impl.isOnMainThread()
+
+	w.eventQueueMu.Lock()
+	if w.eventQueueCond == nil {
+		w.eventQueueCond = sync.NewCond(&w.eventQueueMu)
+	}
+
+	// Backpressure for goroutine emitters only. The UI thread is the drainer,
+	// so blocking it on a full queue could never be relieved — it would be a
+	// guaranteed deadlock rather than a slow path. It is allowed past the bound
+	// instead, and the drain it schedules runs inline immediately afterwards.
+	for !onMainThread && !w.eventQueueClosed && len(w.eventQueue) >= eventQueueCapacity {
+		w.eventQueueCond.Wait()
+	}
+	if w.eventQueueClosed {
+		w.eventQueueMu.Unlock()
+		return false
+	}
+
+	w.eventQueue = append(w.eventQueue, js)
+	if n := len(w.eventQueue); n > w.eventQueueHigh {
+		w.eventQueueHigh = n
+	}
+
+	scheduleDrain := !w.eventDraining
+	if scheduleDrain {
+		w.eventDraining = true
+	}
+	w.eventQueueMu.Unlock()
+
+	if scheduleDrain {
+		// Runs inline when already on the UI thread, which is what lets a
+		// main-thread emitter make progress past the bound.
+		InvokeAsync(w.drainEventQueue)
+	}
+	return true
+}
+
+// drainEventQueue empties the queue in order. It always runs on the UI thread,
+// and only one drain is ever in flight per window.
+func (w *WebviewWindow) drainEventQueue() {
+	for {
+		w.eventQueueMu.Lock()
+		if len(w.eventQueue) == 0 || w.eventQueueClosed {
+			w.eventDraining = false
+			w.eventQueueMu.Unlock()
+			return
+		}
+		// Take the whole batch rather than popping one at a time: repeatedly
+		// reslicing the front would keep the original backing array alive.
+		batch := w.eventQueue
+		w.eventQueue = nil
+		w.eventQueueCond.Broadcast() // space is available again
+		w.eventQueueMu.Unlock()
+
+		for _, js := range batch {
+			if w.isDestroyed() {
+				return
+			}
+			w.ExecJS(js)
+		}
+	}
+}
+
+// closeEventQueue discards anything still queued and wakes blocked emitters.
+func (w *WebviewWindow) closeEventQueue() {
+	w.eventQueueMu.Lock()
+	w.eventQueueClosed = true
+	w.eventQueue = nil
+	if w.eventQueueCond != nil {
+		w.eventQueueCond.Broadcast()
+	}
+	w.eventQueueMu.Unlock()
+}
+
+// eventQueueHighWater reports the deepest the window's event queue has been.
+// Diagnostics for tests; deliberately unexported so it is not public API.
+func (w *WebviewWindow) eventQueueHighWater() int {
+	w.eventQueueMu.Lock()
+	defer w.eventQueueMu.Unlock()
+	return w.eventQueueHigh
 }
 
 func (w *WebviewWindow) dispatchWindowEvent(id uint) {

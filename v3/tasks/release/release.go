@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -25,6 +26,8 @@ const (
 	defaultReleaseTarget = "master"
 	githubDefaultAPI     = "https://api.github.com"
 	githubAPIVersion     = "2022-11-28"
+	runtimePackageJSON   = "v3/internal/runtime/desktop/@wailsio/runtime/package.json"
+	runtimePackageLock   = "v3/internal/runtime/desktop/@wailsio/runtime/package-lock.json"
 )
 
 var (
@@ -289,6 +292,79 @@ func updateVersion() string {
 	return newVersion
 }
 
+// syncRuntimePackageVersion keeps the published runtime package metadata in
+// lockstep with the CLI version. This runs for every release, even when no
+// runtime source files changed, so a release tag never contains an older
+// runtime version than the CLI it ships.
+func syncRuntimePackageVersion(repoDir, releaseVersion string) error {
+	version := strings.TrimPrefix(strings.TrimSpace(releaseVersion), "v")
+	if version == "" {
+		return errors.New("runtime package version cannot be empty")
+	}
+
+	files := []struct {
+		path            string
+		versionFields   int
+		validatePackage bool
+	}{
+		{path: runtimePackageJSON, versionFields: 1, validatePackage: true},
+		{path: runtimePackageLock, versionFields: 2, validatePackage: false},
+	}
+
+	versionField := regexp.MustCompile(`(?m)^([ \t]*"version"[ \t]*:[ \t]*)"[^"]*"([ \t]*,?[ \t]*)$`)
+	for _, file := range files {
+		path := filepath.Join(repoDir, file.path)
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read runtime package metadata %s: %w", file.path, err)
+		}
+
+		matches := versionField.FindAllIndex(data, -1)
+		if len(matches) < file.versionFields {
+			return fmt.Errorf("runtime package metadata %s has %d version fields, want at least %d", file.path, len(matches), file.versionFields)
+		}
+
+		// The first version field is the package version. In package-lock.json,
+		// the second is the root package entry under packages[""]; dependency
+		// versions occur later and must remain untouched.
+		replacements := 0
+		updated := versionField.ReplaceAllFunc(data, func(field []byte) []byte {
+			if replacements >= file.versionFields {
+				return field
+			}
+			submatches := versionField.FindSubmatch(field)
+			replacements++
+			return []byte(string(submatches[1]) + `"` + version + `"` + string(submatches[2]))
+		})
+
+		var metadata struct {
+			Version  string `json:"version"`
+			Packages map[string]struct {
+				Version string `json:"version"`
+			} `json:"packages"`
+		}
+		if err := json.Unmarshal(updated, &metadata); err != nil {
+			return fmt.Errorf("updated runtime package metadata %s is invalid JSON: %w", file.path, err)
+		}
+		if metadata.Version != version {
+			return fmt.Errorf("runtime package metadata %s has version %q, want %q", file.path, metadata.Version, version)
+		}
+		if !file.validatePackage {
+			root, ok := metadata.Packages[""]
+			if !ok || root.Version != version {
+				return fmt.Errorf("runtime package metadata %s root package has version %q, want %q", file.path, root.Version, version)
+			}
+		}
+
+		if err := os.WriteFile(path, updated, 0o644); err != nil {
+			return fmt.Errorf("failed to update runtime package metadata %s: %w", file.path, err)
+		}
+	}
+
+	fmt.Printf("🔗 Synchronized @wailsio/runtime metadata to %s\n", version)
+	return nil
+}
+
 func computeNextVersion(currentVersion string) string {
 	if currentVersion == "" {
 		return "v0.0.1"
@@ -494,7 +570,7 @@ func runRelease(opts releaseOptions) error {
 		return fmt.Errorf("failed to extract unreleased changelog content: %w", err)
 	}
 	changelogContent = strings.TrimSpace(changelogContent)
-	if changelogContent == "" {
+	if changelogContent == "" && strings.TrimSpace(opts.version) == "" {
 		fmt.Println("ℹ️  UNRELEASED_CHANGELOG.md has no unreleased entries. Skipping release.")
 		writeGitHubOutput("release_skipped", "true")
 		writeGitHubOutput("release_reason", "no_unreleased_changelog_content")
@@ -553,6 +629,9 @@ func runRelease(opts releaseOptions) error {
 	}
 
 	if !opts.dryRun {
+		if err := syncRuntimePackageVersion(repoDir, newVersion); err != nil {
+			return err
+		}
 		if err := applyChangelogUpdates(newVersion, changelogContent); err != nil {
 			return err
 		}
@@ -580,6 +659,8 @@ func runRelease(opts releaseOptions) error {
 
 	filesToAdd := []string{
 		"v3/internal/version/version.txt",
+		runtimePackageJSON,
+		runtimePackageLock,
 		"docs/src/content/docs/changelog.mdx",
 		"v3/UNRELEASED_CHANGELOG.md",
 	}
@@ -595,7 +676,9 @@ func runRelease(opts releaseOptions) error {
 		return errors.New("no changes were staged for commit")
 	}
 
-	commitMessage := fmt.Sprintf("chore(v3): bump to %s and update changelog [skip ci]", newVersion)
+	// Do not add [skip ci] here: version.txt changes must trigger
+	// publish-npm.yml so the matching runtime package is published.
+	commitMessage := fmt.Sprintf("chore(v3): bump to %s and update changelog", newVersion)
 	if err := git.commit(commitMessage); err != nil {
 		return fmt.Errorf("failed to commit release changes: %w", err)
 	}

@@ -141,7 +141,19 @@ static void destroyApp(void) {
 // Set the application menu
 static void setApplicationMenu(void *menu) {
 	NSMenu *nsMenu = (__bridge NSMenu *)menu;
-	[NSApp setMainMenu:menu];
+	void (^apply)(void) = ^{
+		[NSApp setMainMenu:nsMenu];
+	};
+
+	// AppKit requires the main menu to be replaced on the main thread. Menu.Set
+	// may be called from Wails event listeners, which execute on worker
+	// goroutines, so marshal the update synchronously. Avoid dispatch_sync when
+	// already on the main thread because that would deadlock.
+	if ([NSThread isMainThread]) {
+		apply();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), apply);
+	}
 }
 
 // Get the application name
@@ -314,7 +326,14 @@ func (m *macosApp) run() error {
 				C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed),
 			)
 			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-			C.activateIgnoringOtherApps()
+			// Only bring the app to the foreground for a regular (UI) app.
+			// Accessory and Prohibited apps are background/agent processes;
+			// force-activating them steals focus from whatever the user was
+			// using (e.g. the terminal that launched a headless server), which a
+			// background app should never do.
+			if m.parent.options.Mac.ActivationPolicy == ActivationPolicyRegular {
+				C.activateIgnoringOtherApps()
+			}
 			if err := m.processAndCacheScreens(); err != nil {
 				m.parent.handleError(err)
 			}
@@ -430,6 +449,36 @@ func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 		windowId:          uint(windowID),
 		acceleratorString: C.GoString(acceleratorString),
 	}
+}
+
+// processWindowKeyEquivalent is the synchronous counterpart to
+// processWindowKeyDownEvent. Called from -[WebviewWindow performKeyEquivalent:]
+// before the responder chain runs, so the caller can decide whether to
+// consume a modifier-key combo (returning true) or let the WKWebView see it
+// (returning false). Required for accelerators the webview would otherwise
+// swallow before NSWindow's keyDown: is ever reached — Ctrl+Tab is the
+// canonical example.
+//
+//export processWindowKeyEquivalent
+func processWindowKeyEquivalent(windowID C.uint, acceleratorString *C.char) C.bool {
+	if globalApplication == nil {
+		return C.bool(false)
+	}
+	globalApplication.windowsLock.RLock()
+	window, ok := globalApplication.windows[uint(windowID)]
+	globalApplication.windowsLock.RUnlock()
+	if !ok {
+		return C.bool(false)
+	}
+	webviewWindow, ok := window.(*WebviewWindow)
+	if !ok {
+		return C.bool(false)
+	}
+	accelerator, err := parseAccelerator(C.GoString(acceleratorString))
+	if err != nil {
+		return C.bool(false)
+	}
+	return C.bool(webviewWindow.processKeyBinding(accelerator.String()))
 }
 
 //export processDragItems
