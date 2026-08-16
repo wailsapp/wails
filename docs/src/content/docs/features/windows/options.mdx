@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## Window Configuration Options
 
@@ -444,7 +444,7 @@ BackgroundType: application.BackgroundTypeTranslucent,
 - `BackgroundTypeTranslucent` - Semi-transparent blur
 
 **Platform support:**
-- **macOS:** All types supported
+- **macOS:** Transparent and translucent web content uses private WebKit APIs by default. With `noprivateapis`, the native window effect remains configured but the webview is opaque.
 - **Windows:** Transparent and Translucent (Windows 11+)
 - **Linux:** Solid only
 
@@ -821,6 +821,38 @@ Mac: application.MacWindow{
 - `MacBackdropNormal` - Standard opaque background
 - `MacBackdropTranslucent` - Blurred translucent background
 - `MacBackdropTransparent` - Fully transparent background
+- `MacBackdropLiquidGlass` - Native Liquid Glass on macOS 26+, with a translucent fallback on older releases
+
+macOS does not provide a public API that makes `WKWebView` itself transparent.
+Wails therefore uses private WebKit APIs by default for
+`MacBackdropTransparent`, `MacBackdropTranslucent`, and full-window
+`MacBackdropLiquidGlass`.
+
+The Go API is identical in both modes. To exclude Wails' known private macOS
+APIs, build with:
+
+```bash
+# Development
+EXTRA_TAGS=noprivateapis wails3 dev
+
+# Production build
+wails3 build -tags noprivateapis
+
+# Package through the generated Taskfile
+wails3 package EXTRA_TAGS=noprivateapis GOOS=darwin
+```
+
+<Aside type="caution">
+Default macOS builds contain private WebKit and AppKit API references and may be
+unsuitable for Mac App Store submission. Use `noprivateapis` when private APIs
+are prohibited. See [macOS Packaging](/guides/build/macos#private-macos-apis)
+for the complete fallback table.
+</Aside>
+
+With `noprivateapis`, `Automatic`, `Light`, and `Dark` use the public regular
+glass style, while `Vibrant` uses the public clear style. `CornerRadius` and
+`TintColor` remain active. Cross-window `GroupID` and `GroupSpacing` have no
+public AppKit equivalent and are ignored.
 
 **InvisibleTitleBarHeight** (`int`)
 - Height of invisible title bar area (for dragging)

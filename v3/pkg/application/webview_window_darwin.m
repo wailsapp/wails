@@ -1145,11 +1145,9 @@ void windowRemoveVisualEffects(void* nsWindow) {
 void configureWebViewForLiquidGlass(void* nsWindow) {
     WebviewWindow* window = (WebviewWindow*)nsWindow;
     WKWebView* webView = window.webView;
-    // Make WebView background transparent
-    [webView setValue:@NO forKey:@"drawsBackground"];
-    if (@available(macOS 10.12, *)) {
-        [webView setValue:[NSColor clearColor] forKey:@"backgroundColor"];
-    }
+    // Full WKWebView transparency is enabled in default builds. The
+    // noprivateapis implementation sets the documented under-page colour only.
+    wailsSetWebViewTransparent(nsWindow);
     // Ensure WebView is above glass layer
     if (webView.layer) {
         webView.layer.zPosition = 1.0;
@@ -1188,26 +1186,26 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                 // Use performSelector to safely set tintColor if the setter exists
                 [glassView performSelector:@selector(setTintColor:) withObject:tintColor];
             }
-            // Set style if the property exists
+            // Preserve the Wails style API while using only the two public
+            // NSGlassEffectView styles: regular (0) and clear (1).
             if ([glassView respondsToSelector:@selector(setStyle:)]) {
-                // For vibrant style, try to use Light style for a lighter effect
-                int lightStyle = (style == LiquidGlassStyleVibrant) ? LiquidGlassStyleLight : style;
-                [glassView setValue:@(lightStyle) forKey:@"style"];
+                NSInteger nativeStyle = style == LiquidGlassStyleVibrant ? 1 : 0;
+                [glassView setValue:@(nativeStyle) forKey:@"style"];
             }
-            // Set group identifier if the property exists and groupID is specified
-            if (groupID && strlen(groupID) > 0) {
-                if ([glassView respondsToSelector:@selector(setGroupIdentifier:)]) {
-                    NSString* groupIDString = [NSString stringWithUTF8String:groupID];
-                    [glassView performSelector:@selector(setGroupIdentifier:) withObject:groupIDString];
-                } else if ([glassView respondsToSelector:@selector(setGroupName:)]) {
-                    NSString* groupIDString = [NSString stringWithUTF8String:groupID];
-                    [glassView performSelector:@selector(setGroupName:) withObject:groupIDString];
-                }
+
+            // Light and dark are Wails semantic styles, not native glass enum
+            // values. Map them through the public NSAppearance API.
+            if (style == LiquidGlassStyleLight) {
+                [glassView setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua]];
+            } else if (style == LiquidGlassStyleDark) {
+                [glassView setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]];
+            } else {
+                [glassView setAppearance:nil];
             }
-            // Set group spacing if the property exists and spacing is specified
-            if (groupSpacing > 0 && [glassView respondsToSelector:@selector(setGroupSpacing:)]) {
-                [glassView setValue:@(groupSpacing) forKey:@"groupSpacing"];
-            }
+
+            // Cross-window grouping has no public AppKit equivalent. The
+            // noprivateapis implementation leaves it unconfigured.
+            wailsConfigurePrivateLiquidGlass(glassView, style, groupID, groupSpacing);
         }
     }
     // Fallback to NSVisualEffectView if NSGlassEffectView is not available

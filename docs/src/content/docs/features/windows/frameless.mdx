@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import { Aside, Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
 import { Image } from "astro:assets";
 import wailsAppRegionVideo from "../../../../assets/windows-native-non-client-regions/wails-app-region.mp4";
 import framelessV3NativeCornersMacOS from "../../../../assets/screenshots/frameless-v3-native-corners-macos.png";
@@ -109,6 +109,12 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     BackgroundType: application.BackgroundTypeTransparent,
 })
 ```
+
+<Aside type="caution">
+On macOS, transparent web content uses private WebKit APIs in the default build.
+With [`noprivateapis`](/guides/build/macos#private-macos-apis), the window remains
+frameless but the webview is opaque.
+</Aside>
 
 **Use cases:**
 - Rounded corners

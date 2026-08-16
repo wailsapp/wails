@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server && (!production || devtools)
+//go:build darwin && !ios && !server && (!production || devtools) && noprivateapis
 
 package application
 
@@ -7,42 +7,25 @@ package application
 #cgo LDFLAGS: -framework Cocoa
 
 #import <Cocoa/Cocoa.h>
+#import <WebKit/WebKit.h>
 
 #include "webview_window_darwin.h"
 
-@interface _WKInspector : NSObject
-- (void)show;
-- (void)detach;
-@end
-
-@interface WKWebView ()
-- (_WKInspector *)_inspector;
-@end
-
 void openDevTools(void *window) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
-	if (@available(macOS 12.0, *)) {
-	    dispatch_async(dispatch_get_main_queue(), ^{
-			WebviewWindow* nsWindow = (WebviewWindow*)window;
-
-			@try {
-				[nsWindow.webView._inspector show];
-			} @catch (NSException *exception) {
-				NSLog(@"Opening the inspector failed: %@", exception.reason);
-				return;
-			}
-		});
-	}
-#else
-	NSLog(@"Opening the inspector needs at least MacOS 12");
-#endif
+	(void)window;
+	NSLog(@"Programmatically opening the Web Inspector is disabled by the noprivateapis build tag. Use Safari's Develop menu to inspect this window.");
 }
 
 // Enable NSWindow devtools
 void windowEnableDevTools(void* nsWindow) {
 	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// Enable devtools in webview
-	[window.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 130300
+	if (@available(macOS 13.3, *)) {
+		window.webView.inspectable = YES;
+		return;
+	}
+#endif
+	NSLog(@"Web Inspector requires macOS 13.3 when built with noprivateapis.");
 }
 
 */

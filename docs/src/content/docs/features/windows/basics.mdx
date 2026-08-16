@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import { Aside, Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
 
 ## Window Management
 
@@ -428,6 +428,12 @@ mainWindow.AttachModal(childWindow)
     - `MacBackdropNormal` - Standard window
     - `MacBackdropTranslucent` - Translucent background
     - `MacBackdropTransparent` - Fully transparent
+
+    <Aside type="caution">
+    Transparent web content uses private WebKit APIs in default macOS builds.
+    The [`noprivateapis` build variant](/guides/build/macos#private-macos-apis)
+    keeps the API unchanged but leaves the webview opaque.
+    </Aside>
 
     **Collection behavior:**
     Control how windows behave across Spaces:

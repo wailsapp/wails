@@ -195,6 +195,8 @@ type WebviewWindowOptions struct {
 	Permissions map[PermissionType]Permission
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
+	// On macOS this uses a private WebKit API by default and is a no-op in
+	// noprivateapis builds. Manual inspection remains available on macOS 13.3+.
 	OpenInspectorOnStartup bool
 
 	// Mac options
@@ -504,11 +506,17 @@ type MacBackdrop int
 const (
 	// MacBackdropNormal - The default value. The window will have a normal opaque background.
 	MacBackdropNormal MacBackdrop = iota
-	// MacBackdropTransparent - The window will have a transparent background, with the content underneath it being visible
+	// MacBackdropTransparent - The window will have a transparent background, with the content underneath it being visible.
+	// On macOS this uses a private WebKit API by default. In noprivateapis builds
+	// the native window remains transparent but the webview content is opaque.
 	MacBackdropTransparent
-	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted"
+	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted".
+	// On macOS this uses a private WebKit API by default. In noprivateapis builds
+	// the native effect remains configured but is obscured by the opaque webview.
 	MacBackdropTranslucent
-	// MacBackdropLiquidGlass - The window will use Apple's Liquid Glass effect (macOS 15.0+ with fallback to translucent)
+	// MacBackdropLiquidGlass - The window will use Apple's Liquid Glass effect (macOS 26.0+ with fallback to translucent).
+	// Full-window use relies on private WebKit APIs by default. In noprivateapis
+	// builds the native glass remains configured but is obscured by the webview.
 	MacBackdropLiquidGlass
 )
 
@@ -582,10 +590,14 @@ type MacLiquidGlass struct {
 	// Tint color for the glass (optional, nil for no tint)
 	TintColor *RGBA
 
-	// Group identifier for merging multiple glass windows
+	// Group identifier for merging multiple glass windows.
+	// This uses an undocumented AppKit API by default and is ignored in
+	// noprivateapis builds.
 	GroupID string
 
-	// Spacing between grouped glass elements (in points)
+	// Spacing between grouped glass elements (in points).
+	// This uses an undocumented AppKit API by default and is ignored in
+	// noprivateapis builds.
 	GroupSpacing float64
 }
 

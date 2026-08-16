@@ -43,4 +43,11 @@ void windowSetLiquidGlass(void* window, int style, int material, double cornerRa
 void windowRemoveVisualEffects(void* window);
 void configureWebViewForLiquidGlass(void* window);
 
+// Implemented by mutually exclusive build variants. Default builds retain
+// private macOS behaviour; noprivateapis builds use public APIs and documented
+// fallbacks only.
+void wailsSetWebViewTransparent(void* window);
+void wailsSetWebViewBackgroundColour(void* window, int r, int g, int b, int alpha);
+void wailsConfigurePrivateLiquidGlass(void* glassView, int style, const char* groupID, double groupSpacing);
+
 #endif /* WebviewWindowDelegate_h */

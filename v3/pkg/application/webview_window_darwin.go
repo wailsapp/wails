@@ -456,16 +456,12 @@ void windowSetTranslucent(void* nsWindow) {
 
 // Make webview background transparent
 void webviewSetTransparent(void* nsWindow) {
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// Set webview background transparent
-	[window.webView setValue:@NO forKey:@"drawsBackground"];
+	wailsSetWebViewTransparent(nsWindow);
 }
 
 // Set webview background colour
 void webviewSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-	// Set webview background color
-	[window.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
+	wailsSetWebViewBackgroundColour(nsWindow, r, g, b, alpha);
 }
 
 // Set the window background colour

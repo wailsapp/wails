@@ -1,6 +1,6 @@
 # Liquid Glass Demo for Wails v3
 
-This demo showcases the native Liquid Glass effect available in macOS 15.0+ with fallback to NSVisualEffectView for older systems.
+This demo showcases the native Liquid Glass effect available in macOS 26.0+ with fallback to NSVisualEffectView for older systems.
 
 ## Features Demonstrated
 
@@ -29,15 +29,27 @@ This demo showcases the native Liquid Glass effect available in macOS 15.0+ with
   - And more...
 - **CornerRadius**: Rounded corners (0 for square corners)
 - **TintColor**: Custom RGBA tint overlay
-- **GroupID**: For grouping multiple glass windows (future feature)
-- **GroupSpacing**: Spacing between grouped windows (future feature)
+- **GroupID**: Groups multiple glass windows in default builds
+- **GroupSpacing**: Spacing between grouped windows in default builds
 
 ### Running the Demo
 
 ```bash
+go run .
+
+# Or build a binary
 go build -o liquid-glass-demo .
 ./liquid-glass-demo
 ```
+
+The complete demo uses Wails' default private macOS integrations because macOS
+does not provide a public API for making `WKWebView` transparent or grouping
+glass views across windows.
+
+To exercise the public-only fallback, run `go run -tags noprivateapis .`. Wails
+still creates each native glass view and preserves the same Go API, but the
+opaque webview obscures the full-window effect, grouping options are ignored,
+and styles map to public regular or clear values.
 
 ### Requirements
 
@@ -50,7 +62,8 @@ The implementation uses:
 - Native `NSGlassEffectView` on macOS 26.0+ for authentic glass effect
 - Falls back to `NSVisualEffectView` on older systems
 - Runtime detection using `NSClassFromString` for compatibility
-- Key-Value Coding (KVC) for dynamic property setting
+- Private WKWebView transparency and legacy grouping in default builds
+- An isolated `noprivateapis` variant using public regular and clear styles
 
 ### Example Usage
 

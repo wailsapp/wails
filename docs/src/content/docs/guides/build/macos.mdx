@@ -20,6 +20,57 @@ This creates `bin/<AppName>.app` containing:
 - App icon in `Contents/Resources/` (from `icons.icns` or, when present, from an asset catalog `Assets.car`)
 - `Info.plist` with app metadata
 
+## Private macOS APIs
+
+Wails enables a small set of undocumented WebKit and AppKit APIs in default
+macOS builds. They provide functionality for which macOS has no equivalent
+public API, including transparent web content and programmatically opening Web
+Inspector.
+
+<Aside type="caution">
+Private APIs are unsupported and may change between macOS releases. They may
+also make an application unsuitable for Mac App Store submission. If your
+distribution requirements prohibit private APIs, build with `noprivateapis`.
+</Aside>
+
+### Build without private APIs
+
+The `noprivateapis` build tag removes Wails' known private macOS API references
+from the selected implementation. Application code and window options remain
+unchanged:
+
+```bash
+# Development
+EXTRA_TAGS=noprivateapis wails3 dev
+
+# Production build
+wails3 build -tags noprivateapis
+
+# Package through the generated Taskfile
+wails3 package EXTRA_TAGS=noprivateapis GOOS=darwin
+```
+
+Using this tag does not by itself guarantee App Store acceptance; application
+code, dependencies, entitlements, and packaging must also satisfy Apple's
+requirements.
+
+### Graceful degradation
+
+The public-only build retains the same Go API. Unsupported behaviour degrades
+as follows:
+
+| API or option | Default macOS behaviour | Behaviour with `noprivateapis` |
+| --- | --- | --- |
+| `BackgroundTypeTransparent`, `BackgroundTypeTranslucent`, `MacBackdropTransparent` | Private WebKit background controls make the webview transparent. | The native window or backdrop is still configured, but the webview remains opaque. `underPageBackgroundColor` is set where available. |
+| `MacBackdropLiquidGlass` | The native glass view is visible through transparent web content. | The native glass view is still created, but an opaque webview obscures the full-window effect. |
+| `MacLiquidGlass.Style` | Preserves Wails' existing native style mapping, including undocumented values. | `Automatic`, `Light`, and `Dark` use the public regular style; `Vibrant` uses the public clear style. Light and dark are represented with public appearances. |
+| `MacLiquidGlass.GroupID`, `GroupSpacing` | Uses undocumented cross-window grouping selectors. | Ignored; each glass view remains independent. |
+| `OpenInspectorOnStartup` | Uses WebKit's private inspector API to open Web Inspector. | Does not open automatically. On macOS 13.3+, the webview remains manually inspectable from Safari's Develop menu. |
+| Developer tools before macOS 13.3 | Uses the undocumented developer-extras preference. | Disabled. |
+
+Liquid Glass `CornerRadius` and `TintColor` continue to use public APIs in both
+build variants.
+
 ### Universal Binary
 
 Build for both Apple Silicon and Intel Macs:
