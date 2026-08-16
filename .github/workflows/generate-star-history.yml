@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           # Publishing is restricted to an explicitly dispatched run.
-          token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+          persist-credentials: false
 
       - name: Download generated image
         uses: actions/download-artifact@v4
@@ -55,13 +55,21 @@ jobs:
           path: website/static/img
 
       - name: Commit updated image
+        id: commit-image
         run: |
           git config user.name "taliesin-ai"
           git config user.email "bot@taliesin.ai"
           if git diff --quiet -- website/static/img/star-history.svg; then
             echo "No star-history changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git add website/static/img/star-history.svg
           git commit -m "chore: update star history [skip ci]"
-          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push updated image
+        if: steps.commit-image.outputs.changed == 'true'
+        env:
+          WAILS_PUSH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        run: git push "https://x-access-token:${WAILS_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"
