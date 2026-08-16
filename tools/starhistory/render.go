@@ -52,7 +52,7 @@ func RenderSVG(opts RenderOptions) string {
 		b.WriteString(fmt.Sprintf(`<image href="data:image/webp;base64,%s" x="0" y="0" width="%d" height="%d" preserveAspectRatio="xMidYMid slice" opacity="0.24"/>`, encoded, chartWidth, chartHeight))
 	}
 	b.WriteString(`<rect width="1200" height="640" fill="url(#veil)"/>`)
-	b.WriteString(`<rect x="28" y="28" width="1144" height="584" rx="28" fill="none" stroke="#ff5364" stroke-opacity="0.28"/>`)
+	b.WriteString(`<rect x="16" y="16" width="1168" height="608" rx="28" fill="none" stroke="#ff5364" stroke-opacity="0.28"/>`)
 
 	current := 0
 	firstDate := refreshedAt
@@ -125,7 +125,7 @@ func svgDefs() string {
 </defs>
 <style>
 text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #fff4f5; }
-.title { font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', 'Liberation Sans Narrow', sans-serif; font-size: 42px; font-style: italic; font-weight: 900; letter-spacing: 0.4px; }
+.title { font-family: Haettenschweiler, 'Arial Narrow', 'Nimbus Sans Narrow', 'Liberation Sans Narrow', Impact, sans-serif; font-size: 42px; font-style: italic; font-weight: 600; letter-spacing: 0.4px; }
 .grid line { stroke: #ffd9dd; stroke-opacity: 0.14; stroke-dasharray: 3 9; }
 .axis-label { font-size: 22px; fill: #eabdc2; }
 .callout { font-size: 20px; font-weight: 700; fill: #fff4f5; }
