@@ -28,6 +28,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
 - Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
 
 ## Deprecated
