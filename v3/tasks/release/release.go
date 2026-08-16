@@ -570,7 +570,7 @@ func runRelease(opts releaseOptions) error {
 		return fmt.Errorf("failed to extract unreleased changelog content: %w", err)
 	}
 	changelogContent = strings.TrimSpace(changelogContent)
-	if changelogContent == "" {
+	if changelogContent == "" && strings.TrimSpace(opts.version) == "" {
 		fmt.Println("ℹ️  UNRELEASED_CHANGELOG.md has no unreleased entries. Skipping release.")
 		writeGitHubOutput("release_skipped", "true")
 		writeGitHubOutput("release_reason", "no_unreleased_changelog_content")

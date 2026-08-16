@@ -17,17 +17,22 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add native weekly star-history chart generation and publication — see [documentation](https://v3.wails.io/credits) and [documentation](https://v3.wails.io/de/credits) and [documentation](https://v3.wails.io/fr/credits) and [documentation](https://v3.wails.io/id/credits) and [documentation](https://v3.wails.io/ja/credits) and [documentation](https://v3.wails.io/ko/credits) and [documentation](https://v3.wails.io/pt/credits) and [documentation](https://v3.wails.io/ru/credits) and [documentation](https://v3.wails.io/zh-cn/credits) and [documentation](https://v3.wails.io/zh-tw/credits) in [PR](https://github.com/wailsapp/wails/pull/5986) by @leaanthony
+- Add Darwin-only mac package for resolving application bundle resources — see [documentation](https://v3.wails.io/guides/build/macos) in [PR](https://github.com/wailsapp/wails/pull/5965) by @leaanthony
 - Add Condui showcase page and index entry — see [documentation](https://v3.wails.io/community/showcase/condui) and [documentation](https://v3.wails.io/community/showcase) in [PR](https://github.com/wailsapp/wails/pull/5962) by @mgueregath
 - Add Redis Viewer showcase page with screenshots and project link — see [documentation](https://v3.wails.io/community/showcase) and [documentation](https://v3.wails.io/community/showcase/redisviewer) in [PR](https://github.com/wailsapp/wails/pull/5984) by @redisviewer
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update GTK application flags to G_APPLICATION_NON_UNIQUE for Linux in [PR](https://github.com/wailsapp/wails/pull/5971) by @overlordtm
 - Log missing window events at debug level instead of warning in [PR](https://github.com/wailsapp/wails/pull/5914) by @julianstorer
 
 ## Fixed
 <!-- Bug fixes -->
 - Prevent legacy GTK3 service-only applications from crashing when screen
   discovery runs before an active window or display is available (#5966)
+- Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
+- Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
