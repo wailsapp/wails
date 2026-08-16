@@ -7,9 +7,31 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
+
+func TestRunManifestPipelineMarksRenderedFailure(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	require.NoError(t, manifest.WriteMinimal(root, manifest.Project{
+		Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0",
+	}))
+	t.Setenv("PATH", t.TempDir())
+
+	err := runManifestPipeline(manifestRunOptions{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.Error(t, err)
+	assert.True(t, wake.IsReported(err), "execution failure was rendered by Pulse and must not be printed again by the CLI")
+}
+
+func TestRunManifestPipelineLeavesUnrenderedFailurePrintable(t *testing.T) {
+	t.Chdir(t.TempDir())
+
+	err := runManifestPipeline(manifestRunOptions{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.Error(t, err)
+	assert.False(t, wake.IsReported(err), "errors raised before Pulse starts still need the CLI error printer")
+}
 
 func TestApplyGeneratedTargetSettings(t *testing.T) {
 	root := t.TempDir()

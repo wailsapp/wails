@@ -25,6 +25,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/report/pulse"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
+	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 	"gopkg.in/yaml.v3"
@@ -67,7 +68,7 @@ func runManifestPipeline(options manifestRunOptions) error {
 	results, err := (pipeline.Executor{Handler: &manifestHandler{root: root, config: loaded.Config}}).Execute(ctx, plan, pipeline.ExecuteOptions{Root: root, Force: options.Force, Reporter: reporter})
 	if err != nil {
 		reporter.BuildEnd(time.Since(started), false)
-		return err
+		return wake.MarkReported(err)
 	}
 	resultKeys := make([]string, 0, len(results))
 	for key := range results {

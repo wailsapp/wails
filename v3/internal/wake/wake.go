@@ -177,7 +177,7 @@ func Execute(name string, opts ExecuteOptions) error {
 
 	rep.BuildEnd(time.Since(start), runErr == nil)
 	if runErr != nil {
-		return errReported{runErr}
+		return MarkReported(runErr)
 	}
 	return nil
 }
@@ -235,6 +235,15 @@ func (e errReported) Unwrap() error { return e.err }
 func IsReported(err error) bool {
 	var r errReported
 	return errors.As(err, &r)
+}
+
+// MarkReported preserves an error for exit-status propagation while telling
+// the top-level CLI that a build reporter has already presented it.
+func MarkReported(err error) error {
+	if err == nil || IsReported(err) {
+		return err
+	}
+	return errReported{err}
 }
 
 func discoverAndParse(dir string) (*ast.Taskfile, error) {
