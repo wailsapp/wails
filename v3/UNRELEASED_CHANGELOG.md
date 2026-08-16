@@ -27,6 +27,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

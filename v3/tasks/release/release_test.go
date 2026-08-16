@@ -146,6 +146,87 @@ func TestExtractChangelogContent_AllEmpty(t *testing.T) {
 	}
 }
 
+func TestRunRelease_EmptyChangelogSkipsAutomaticRelease(t *testing.T) {
+	cleanup, projectRoot := setupTestEnvironment(t)
+	defer cleanup()
+
+	unreleasedFile := filepath.Join(projectRoot, "v3", "UNRELEASED_CHANGELOG.md")
+	if err := os.WriteFile(unreleasedFile, []byte(getUnreleasedChangelogTemplate()), 0o644); err != nil {
+		t.Fatalf("Failed to create unreleased changelog: %v", err)
+	}
+
+	githubOutput := filepath.Join(t.TempDir(), "github-output")
+	if err := os.WriteFile(githubOutput, nil, 0o644); err != nil {
+		t.Fatalf("Failed to create GitHub output file: %v", err)
+	}
+	t.Setenv("GITHUB_OUTPUT", githubOutput)
+
+	if err := runRelease(releaseOptions{dryRun: true, branch: defaultReleaseBranch, target: defaultReleaseTarget}); err != nil {
+		t.Fatalf("runRelease() failed: %v", err)
+	}
+
+	output, err := os.ReadFile(githubOutput)
+	if err != nil {
+		t.Fatalf("Failed to read GitHub output: %v", err)
+	}
+	got := string(output)
+	if !strings.Contains(got, "release_skipped=true\n") {
+		t.Fatalf("Expected automatic release to be skipped, got output:\n%s", got)
+	}
+	if strings.Contains(got, "release_version=") {
+		t.Fatalf("Skipped release unexpectedly produced a version, got output:\n%s", got)
+	}
+}
+
+func TestRunRelease_ExplicitVersionContinuesWithEmptyChangelog(t *testing.T) {
+	cleanup, projectRoot := setupTestEnvironment(t)
+	defer cleanup()
+
+	unreleasedFile := filepath.Join(projectRoot, "v3", "UNRELEASED_CHANGELOG.md")
+	if err := os.WriteFile(unreleasedFile, []byte(getUnreleasedChangelogTemplate()), 0o644); err != nil {
+		t.Fatalf("Failed to create unreleased changelog: %v", err)
+	}
+
+	versionDir := filepath.Join(projectRoot, "v3", "internal", "version")
+	if err := os.MkdirAll(versionDir, 0o755); err != nil {
+		t.Fatalf("Failed to create version directory: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(versionDir, "version.txt"), []byte("v3.0.0-beta.8"), 0o644); err != nil {
+		t.Fatalf("Failed to create version file: %v", err)
+	}
+
+	githubOutput := filepath.Join(t.TempDir(), "github-output")
+	if err := os.WriteFile(githubOutput, nil, 0o644); err != nil {
+		t.Fatalf("Failed to create GitHub output file: %v", err)
+	}
+	t.Setenv("GITHUB_OUTPUT", githubOutput)
+
+	opts := releaseOptions{
+		version: "3.0.0-beta.9",
+		dryRun:  true,
+		branch:  defaultReleaseBranch,
+		target:  defaultReleaseTarget,
+	}
+	if err := runRelease(opts); err != nil {
+		t.Fatalf("runRelease() failed: %v", err)
+	}
+
+	output, err := os.ReadFile(githubOutput)
+	if err != nil {
+		t.Fatalf("Failed to read GitHub output: %v", err)
+	}
+	got := string(output)
+	if strings.Contains(got, "release_skipped=true\n") {
+		t.Fatalf("Explicit-version release was unexpectedly skipped, got output:\n%s", got)
+	}
+	if !strings.Contains(got, "release_version=v3.0.0-beta.9\n") {
+		t.Fatalf("Expected explicit version output, got:\n%s", got)
+	}
+	if !strings.Contains(got, "release_outcome=dry-run\n") {
+		t.Fatalf("Expected dry-run outcome, got:\n%s", got)
+	}
+}
+
 func TestExtractChangelogContent_MixedSections(t *testing.T) {
 	cleanup, _ := setupTestEnvironment(t)
 	defer cleanup()
