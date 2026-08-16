@@ -37,7 +37,10 @@ func isAtomicSystem() bool {
 
 func isAtomicSystemAt(path string) bool {
 	_, err := os.Stat(path)
-	return err == nil
+	if err == nil {
+		return true
+	}
+	return !os.IsNotExist(err)
 }
 
 // Packages returns the libraries that we need for Wails to compile
