@@ -93,11 +93,13 @@ func TestRenderSVGIncludesFadedBackgroundAndRedChart(t *testing.T) {
 		Repo:           "wailsapp/wails",
 		History:        history,
 		BackgroundData: []byte("background-bytes"),
+		LogoData:       []byte("<svg>logo</svg>"),
 		RefreshedAt:    time.Date(2024, 1, 9, 0, 0, 0, 0, time.UTC),
 	})
 
 	for _, want := range []string{
 		`data:image/webp;base64,YmFja2dyb3VuZC1ieXRlcw==`,
+		`data:image/svg+xml;base64,PHN2Zz5sb2dvPC9zdmc+`,
 		`fill="url(#chartFill)"`,
 		`stroke="#ff5364"`,
 		"Wails",
