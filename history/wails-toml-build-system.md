@@ -215,25 +215,19 @@ exposing the full internal pipeline.
 
 ## Built-in pipeline
 
-The built-in pipeline is represented internally as typed nodes rather than
-Taskfile tasks:
+The built-in Pipeline is resolved by a read-only Planner into one immutable,
+multi-Target Plan of typed Nodes rather than Taskfile tasks:
 
 ```text
-inspect project
-    ├── install frontend dependencies
-    ├── generate bindings
-    └── generate icons
-          ↓
-     build frontend
-          ↓
-     compile Go binary
-          ↓
-     create platform bundle
-          ↓
-     package and sign
+install frontend dependencies ─┐
+generate bindings ─────────────┼─→ build frontend ─┐
+generate target assets ────────┘                  ├─→ compile / bundle
+                                                  └─→ package / sign per format
 ```
 
-The actual graph is target- and profile-dependent. Wails derives inputs from:
+Project inspection, toolchain checks, Target expansion, and input discovery
+happen during planning rather than as dynamic Nodes. The actual graph is
+Target- and Profile-dependent. Wails derives inputs from:
 
 - `go.mod`, `go.sum`, and the Go package graph;
 - Go source and embedded files;
@@ -242,10 +236,52 @@ The actual graph is target- and profile-dependent. Wails derives inputs from:
 - manifest values and target environment;
 - declared hook inputs and outputs.
 
-Wake should execute this graph. Its useful Taskfile-specific behavior should be
-refactored into reusable graph, cache, execution, and reporting packages. The
-new cache key should include the pipeline node, resolved manifest/profile,
-target, toolchain identity, environment inputs, and discovered file inputs.
+Wake executes this graph through a single non-recursive, resource-aware worker
+scheduler. Structural Node Keys deduplicate shared work; separate cache
+fingerprints cover resolved configuration, tools, environment, source inputs,
+and dependency results. Ready work is prioritized by estimated critical-path
+duration. Wails operations run in-process where possible and unavoidable tools
+are launched directly with typed arguments rather than shell strings.
+
+The reporting contract, Pulse renderer, output capture, process cancellation,
+and generalized DAG algorithms are reusable. Taskfile parsing, templates,
+variables, namespaces, overrides, fallback, recursive execution, and the mtime
+task cache remain isolated in the legacy migration/compatibility path.
+
+### Cache and automatic input discovery
+
+Each typed Node handler discovers the narrow input set implied by its resolved
+Spec. Built-in Nodes do not require users to maintain source globs. Wake forms
+an Action Key from the handler version, effective typed config, relevant
+Target, recognized environment and tool identities, direct input Snapshots,
+and consumed upstream Artifact digests. BLAKE3 and canonical typed encodings
+provide fast, portable content identity.
+
+Snapshots use a persistent filesystem fast path: unchanged file identity,
+size, modification time, and change stamp reuse the previous content digest.
+Directory inventories detect added and removed inputs, while Dev Session
+watchers invalidate touched paths in memory. A full-verification path remains
+available for unusual metadata-preserving workflows.
+
+Go discovery caches the package inventory per Target, tags, module/workspace
+state, and toolchain. It tracks selected source, Cgo, assembly, embed, and local
+replacement files without scanning the module cache. Binding analysis produces
+a semantic Binding Model, and downstream frontend work depends on generated
+binding content, so implementation-only Go changes do not cascade when the
+generated files remain identical.
+
+Frontend installation uses a Receipt over package/workspace manifests,
+lockfile, package-manager config, and tool identity; dependency directories are
+not scanned or archived. Frontend builds exclude dependencies, previous output,
+VCS data, and Wake state while including generated bindings and recognized
+build configuration.
+
+The project keeps a local Action Index backed by a machine-global
+content-addressed Artifact Store. Missing outputs may be restored from it;
+modified generated outputs are dirty misses and are atomically replaced by a
+successful rebuild. Signing, notarization, publication, credential access, and
+network side effects always run. Hooks run by default and become cacheable only
+with an explicit opt-in and complete declared inputs and outputs.
 
 ## Generated platform assets
 
