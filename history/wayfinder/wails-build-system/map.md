@@ -21,6 +21,9 @@ architecture decisions.
   resolved defaults; shell customization calls user-owned scripts; platform
   configuration is generated at build time; inline Taskfile shell migration is
   manual; default and modified Taskfiles should be migrated where possible.
+- Prefer a narrow, measurable vertical-slice MVP over resolving every edge in
+  advance. This map may carry that prototype far enough for hands-on review;
+  production implementation remains outside the planning tickets.
 - Consult the existing proposal at
   [`history/wails-toml-build-system.md`](../../wails-toml-build-system.md).
 - Use the `wayfinder`, `grilling`, and `domain-modeling` skills while resolving
@@ -33,13 +36,17 @@ architecture decisions.
   Platform/Target/Profile overlays; `wails3 eject [profile]` creates an
   independently frozen, host-neutral snapshot with safe three-way upgrade
   suggestions.
+- [Wake's typed build graph and execution boundary](issues/02-wake-domain-graph.md)
+  — Wake produces one immutable multi-Target Plan of typed Nodes, deduplicates
+  shared work, runs in-process handlers through a critical-path scheduler, and
+  keeps Taskfile semantics isolated in legacy migration code.
+- [Automatic input discovery and cache identity](issues/03-cache-and-input-discovery.md)
+  — typed handlers derive portable content-addressed Action Keys from narrow
+  automatic inputs, propagate Artifact content rather than transitive sources,
+  and use persistent snapshots plus local cross-project storage for fast hits.
 
 ## Not yet specified
 
-- The exact typed node model Wake should execute after Taskfile assumptions are
-  removed.
-- The cache identity and invalidation rules for inferred project inputs,
-  generated platform files, and script hooks.
 - The migration report format and the set of recognizable modifications that
   can be translated without preserving Taskfile semantics.
 - The compatibility and release policy for projects before and after
