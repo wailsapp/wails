@@ -1164,7 +1164,7 @@ type InstallResponse struct {
 // those to prevent an adversarial local process from invoking arbitrary binaries.
 var allowedInstallers = map[string]bool{
 	// Linux package managers (invoked directly or via sudo)
-	"sudo": true, "apt": true, "apt-get": true, "dnf": true, "yum": true,
+	"sudo": true, "apt": true, "apt-get": true, "dnf": true, "yum": true, "rpm-ostree": true,
 	"pacman": true, "zypper": true, "emerge": true, "xbps-install": true,
 	"eopkg": true, "nix-env": true,
 	// macOS
@@ -1178,7 +1178,7 @@ var allowedInstallers = map[string]bool{
 // allowedSudoSubcmds lists the second word (the real executable) when the
 // command starts with "sudo", so callers cannot do e.g. "sudo rm -rf /".
 var allowedSudoSubcmds = map[string]bool{
-	"apt": true, "apt-get": true, "dnf": true, "yum": true,
+	"apt": true, "apt-get": true, "dnf": true, "yum": true, "rpm-ostree": true,
 	"pacman": true, "zypper": true, "emerge": true, "xbps-install": true,
 	"eopkg": true, "nix-env": true,
 }
@@ -2081,4 +2081,3 @@ func getMacOSSigningIdentities() []string {
 
 	return identities
 }
-

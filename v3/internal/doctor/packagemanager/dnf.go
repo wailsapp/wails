@@ -3,22 +3,44 @@
 package packagemanager
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 )
 
 // Dnf represents the Dnf manager
 type Dnf struct {
-	name string
-	osid string
+	name   string
+	osid   string
+	atomic bool
 }
 
 // NewDnf creates a new Dnf instance
 func NewDnf(osid string) *Dnf {
+	return newDnf(osid, isAtomicSystem())
+}
+
+func newDnf(osid string, atomic bool) *Dnf {
 	return &Dnf{
-		name: "dnf",
-		osid: osid,
+		name:   "dnf",
+		osid:   osid,
+		atomic: atomic,
 	}
+}
+
+// isAtomicSystem reports whether the current system was booted from an
+// ostree deployment. Fedora Atomic desktops, including Bazzite, expose this
+// marker and require rpm-ostree for host package installation.
+func isAtomicSystem() bool {
+	return isAtomicSystemAt("/run/ostree-booted")
+}
+
+func isAtomicSystemAt(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	return !os.IsNotExist(err)
 }
 
 // Packages returns the libraries that we need for Wails to compile
@@ -116,6 +138,9 @@ func (y *Dnf) PackageAvailable(pkg *Package) (bool, error) {
 func (y *Dnf) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
 		return pkg.InstallCommand
+	}
+	if y.atomic {
+		return "sudo rpm-ostree install " + pkg.Name
 	}
 	return "sudo dnf install " + pkg.Name
 }
