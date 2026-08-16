@@ -1,13 +1,26 @@
-# Wake - Go-native Build System for Wails v3
+# Wake - Go-native Build Systems for Wails v3
 
 ## Overview
 
-Wake is a Go-native Taskfile executor embedded in `wailsapp/wails/v3/internal/wake/`. It replaces the external `task` CLI dependency, executing `Taskfile.yml` files directly in Go. Enabled via `WAILS_USE_WAKE=true` env var; falls back to `task` CLI when unset or unsupported features are used.
+Wake contains two deliberately separated paths:
+
+- The manifest-native Wails pipeline (`manifest/`, `pipeline/`, and `cache/`)
+  is selected automatically when an active root `wails.toml` exists. It is the
+  default build/package/sign/dev implementation for new and fully migrated
+  projects and does not interpret Taskfiles.
+- The Go-native Taskfile executor is the legacy compatibility and migration
+  path. `WAILS_USE_WAKE=true` selects it instead of the external `task` CLI for
+  Taskfile projects; unsupported Taskfile features still fall back to `task`.
+
+The Taskfile environment flag does not gate the manifest pipeline.
 
 ## Architecture
 
 ```
 wake.go              Entry point: Parse -> Resolve -> DAG -> Execute (serial or parallel)
+manifest/             Sparse wails.toml defaults, validation, profiles, eject
+pipeline/             Typed manifest Planner, Plan, scheduler and handlers seam
+cache/                BLAKE3 Snapshots, Receipts, Action Index, Artifact Store
 ast/                 Taskfile AST types + deep Clone() for include isolation
 parse/               YAML parsing, include resolution, var/shell expansion, template expansion
 resolve/             DAG builder (topological sort, cycle detection), platform filtering
@@ -22,6 +35,17 @@ Build output is rendered through `internal/report` (a leaf contract) and
 `internal/report/termui` (the lipgloss renderer). See "Build Reporting" below.
 
 ## Execution Flow
+
+### Manifest pipeline
+
+1. Load and strictly validate sparse `wails.toml`; resolve defaults and Profile.
+2. Plan one immutable typed graph for every requested Target and package format.
+3. Snapshot direct inputs and calculate tool/environment-aware Action Keys.
+4. Prune or restore reusable Artifacts; validate stateful Receipts.
+5. Run the remaining critical path with bounded CPU and exclusive-tool claims.
+6. Generate platform state under `.wails/` and report user-visible Artifacts.
+
+### Legacy Taskfile pipeline
 
 1. **Discover** `Taskfile.yml` / `Taskfile.yaml` / `build/Taskfile.yml`
 2. **Parse** YAML into AST, recursively resolve includes with cycle detection
@@ -122,7 +146,7 @@ producers can instead use `report.Active()`.
 are rendered in a bordered panel; `wake.Execute` wraps the error as
 `errReported` and `cmd/wails3/main.go` skips re-printing it (no double output).
 
-## Unsupported Features (triggers fallback)
+## Unsupported Taskfile Features (triggers legacy fallback)
 
 - `dotenv` at taskfile level
 - `output` modes other than `interleaved`
@@ -136,6 +160,9 @@ are rendered in a bordered panel; `wake.Execute` wraps the error as
 
 ```bash
 go test ./internal/wake/...
+go test ./internal/commands ./cmd/wails3
+go test -race ./internal/wake/... ./internal/commands ./cmd/wails3
+go vet ./internal/wake/... ./internal/commands ./cmd/wails3
 ```
 
 All packages have tests. Run from `wails-v3/v3/` directory.
@@ -154,6 +181,9 @@ Current results (badge example, no-op cached build): wake **~20ms** vs task CLI 
 | File | Purpose |
 |------|---------|
 | `wake.go` | Entry point, orchestration, parallel execution, platform filtering |
+| `manifest/` | Root manifest defaults, strict decoding, Profiles and ejection |
+| `pipeline/` | Typed multi-Target planning and critical-path execution |
+| `cache/` | Content Snapshots, Action Index, Receipts and Artifact Store |
 | `ast/ast.go` | Taskfile AST types, `Task.Clone()` deep copy |
 | `ast/walk.go` | AST visitor pattern |
 | `parse/parse.go` | YAML parsing, include resolution, var resolution, builtins |

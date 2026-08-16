@@ -119,6 +119,7 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	}
 	packageManager := ""
 	binaryName := ""
+	hooks := manifest.Hooks{}
 	for _, path := range files {
 		rel, err := filepath.Rel(root, path)
 		if err != nil {
@@ -150,6 +151,11 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 			stock = nil
 		}
 		for name := range tf.Tasks {
+			if phase, hook, ok := migrateScriptHook(root, filepath.Dir(path), name, tf.Tasks[name]); ok {
+				setMigratedHook(&hooks, phase, hook)
+				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "script-hook", File: rel, Task: name, Message: "translated script-file task to hooks." + phase})
+				continue
+			}
 			if !allowed[name] {
 				report.Complete = false
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "unsupported-task", File: rel, Task: name, Message: "custom task requires a user-owned hook script or manual migration"})
@@ -228,11 +234,66 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	doc := manifest.NewDocument(project)
 	doc.Associations = associations
 	doc.Protocols = protocols
+	doc.Hooks = hooks
 	doc.Wake.Migration = &manifest.Migration{CompletedBy: version.String(), Complete: report.Complete, Sources: report.Sources}
 	if packageManager != "" {
 		doc.Frontend.PackageManager = packageManager
 	}
 	return report, doc, nil
+}
+
+func migrateScriptHook(root, taskfileDir, name string, task *wakeast.Task) (string, manifest.Hook, bool) {
+	phase := strings.ReplaceAll(strings.ToLower(name), "-", "_")
+	if !containsString([]string{"before_build", "after_build", "before_package", "after_package", "before_sign", "after_sign"}, phase) {
+		return "", manifest.Hook{}, false
+	}
+	if task == nil || len(task.Cmds) != 1 || len(task.Deps) != 0 || task.Cmds[0].Cmd == "" || task.Cmds[0].Task != "" {
+		return "", manifest.Hook{}, false
+	}
+	command := strings.TrimSpace(task.Cmds[0].Cmd)
+	if strings.ContainsAny(command, " \t\r\n;&|`$<>") || strings.Contains(command, "{{") {
+		return "", manifest.Hook{}, false
+	}
+	base := taskfileDir
+	if task.Dir != "" {
+		base = filepath.Join(base, filepath.FromSlash(task.Dir))
+	}
+	script := filepath.Clean(filepath.Join(base, filepath.FromSlash(strings.TrimPrefix(command, "./"))))
+	relative, err := filepath.Rel(root, script)
+	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return "", manifest.Hook{}, false
+	}
+	info, err := os.Stat(script)
+	if err != nil || info.IsDir() {
+		return "", manifest.Hook{}, false
+	}
+	return phase, manifest.Hook{Script: filepath.ToSlash(relative)}, true
+}
+
+func setMigratedHook(hooks *manifest.Hooks, phase string, hook manifest.Hook) {
+	switch phase {
+	case "before_build":
+		hooks.BeforeBuild = hook
+	case "after_build":
+		hooks.AfterBuild = hook
+	case "before_package":
+		hooks.BeforePackage = hook
+	case "after_package":
+		hooks.AfterPackage = hook
+	case "before_sign":
+		hooks.BeforeSign = hook
+	case "after_sign":
+		hooks.AfterSign = hook
+	}
+}
+
+func containsString(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
 }
 
 func legacyDevCommand(command string) bool {

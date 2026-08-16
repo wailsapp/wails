@@ -36,3 +36,11 @@ inline shell blocks are never silently converted into generated scripts.
 - `--remove-old-files` removes only files whose current digests match the
   recorded, fully represented sources. Any unsupported or subsequently
   modified file remains, and removal failure does not invalidate the Manifest.
+
+### 2026-08-16 — MVP implementation evidence
+
+The AST migration recognizes historical stock files, translates project
+metadata/package manager/associations/protocols, and now maps a conservatively
+recognized single project-relative script task (`before-build`, `after-build`,
+package/sign equivalents) to the corresponding typed hook. Commands with
+arguments, interpolation, or shell operators remain manual diagnostics.

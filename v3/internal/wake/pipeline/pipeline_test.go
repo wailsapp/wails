@@ -78,8 +78,9 @@ func TestPlanSharesFrontendAndCachesSecondRun(t *testing.T) {
 	assert.Len(t, plan.Nodes, 4)
 	h := &fakeHandler{root: root}
 	executor := Executor{Handler: h}
-	_, err = executor.Execute(context.Background(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
+	results, err := executor.Execute(context.Background(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
 	require.NoError(t, err)
+	assert.Empty(t, results["frontend:install"].Artifact, "a receipt is not an artifact")
 	first := len(h.runs)
 	assert.Equal(t, 4, first)
 	_, err = executor.Execute(context.Background(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
@@ -97,6 +98,20 @@ func TestWindowsBuildGeneratesAssetsBeforeCompile(t *testing.T) {
 	assert.Contains(t, compile.Dependencies, assets)
 }
 
+func TestPlannerBuildsOnePlanForMultipleTargets(t *testing.T) {
+	config := testConfig(t)
+	plan, err := PlanBuild(config, Request{Verb: "build", Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "linux", Arch: "arm64"}}})
+	require.NoError(t, err)
+	assert.Equal(t, "linux/amd64,linux/arm64", plan.Target)
+	assert.Contains(t, plan.Nodes, NodeKey("frontend:build"))
+	assert.Contains(t, plan.Nodes, NodeKey("target:linux/amd64:compile"))
+	assert.Contains(t, plan.Nodes, NodeKey("target:linux/arm64:compile"))
+	assert.Len(t, plan.Roots, 2)
+	amd64 := plan.Nodes["target:linux/amd64:compile"].Output
+	arm64 := plan.Nodes["target:linux/arm64:compile"].Output
+	assert.NotEqual(t, amd64, arm64)
+}
+
 func TestPlannerRejectsInvalidTargetAndFormatCombinations(t *testing.T) {
 	config := testConfig(t)
 	_, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "riscv64"})
@@ -108,6 +123,16 @@ func TestPlannerRejectsInvalidTargetAndFormatCombinations(t *testing.T) {
 	config.Package.Darwin.DMG.Template = "packaging/custom-dmg"
 	_, err = PlanBuild(config, Request{Verb: "package", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"dmg"}})
 	require.ErrorContains(t, err, "custom templates are not supported")
+}
+
+func TestPlannerDoesNotMutateRequestedOrConfiguredFormats(t *testing.T) {
+	config := testConfig(t)
+	config.Package.Linux.Formats = []string{"rpm", "deb"}
+	requested := []string{"rpm", "deb"}
+	_, err := PlanBuild(config, Request{Verb: "package", TargetOS: "linux", TargetArch: "amd64", Formats: requested})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"rpm", "deb"}, requested)
+	assert.Equal(t, []string{"rpm", "deb"}, config.Package.Linux.Formats)
 }
 
 func TestPlannerFindsParentGoModuleMetadata(t *testing.T) {
@@ -154,8 +179,26 @@ func TestMobilePackagePlansUseTargetVariants(t *testing.T) {
 			spec := node.Spec.(PackageSpec)
 			assert.Equal(t, tc.variant, spec.Variant)
 			assert.Contains(t, node.Dependencies, NodeKey("target:"+tc.os+"/arm64:assets"))
+			if tc.os == "ios" {
+				assert.Equal(t, CacheNever, node.Cache, "iOS assembly signs and must not be reusable")
+			}
 		})
 	}
+}
+
+func TestPlannerSnapshotsLocalModuleReplacements(t *testing.T) {
+	parent := t.TempDir()
+	root := filepath.Join(parent, "app")
+	dependency := filepath.Join(parent, "dependency")
+	require.NoError(t, os.MkdirAll(root, 0o755))
+	require.NoError(t, os.MkdirAll(dependency, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example/app\n\ngo 1.24\n\nreplace example/dependency => ../dependency\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dependency, "go.mod"), []byte("module example/dependency\n"), 0o644))
+
+	inputs, err := goLocalSourceInputs(root)
+	require.NoError(t, err)
+	require.Len(t, inputs, 1)
+	assert.Equal(t, dependency, inputs[0].Root)
 }
 
 func TestPackageAndSignHooksRemainBarriersForEveryFormat(t *testing.T) {

@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
 // runTaskFunc is a variable to allow mocking in tests
@@ -77,11 +78,11 @@ func Build(buildFlags *flags.Build, otherArgs []string) error {
 		if len(otherArgs) > 0 {
 			return fmt.Errorf("manifest builds do not accept Task variables (%s); use --target, --profile, or wails.toml", strings.Join(otherArgs, ", "))
 		}
-		goos, goarch, err := splitTarget(buildFlags.Target)
+		targets, err := splitTargets(buildFlags.Target)
 		if err != nil {
 			return err
 		}
-		return runManifestPipeline(manifestRunOptions{Verb: "build", Profile: buildFlags.Profile, TargetOS: goos, TargetArch: goarch, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags)})
+		return runManifestPipeline(manifestRunOptions{Verb: "build", Profile: buildFlags.Profile, Targets: targets, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags)})
 	}
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
@@ -104,11 +105,11 @@ func Package(options *flags.Package, otherArgs []string) error {
 		if len(otherArgs) > 0 {
 			return fmt.Errorf("manifest packages do not accept Task variables: %s", strings.Join(otherArgs, ", "))
 		}
-		goos, goarch, err := splitTarget(options.Target)
+		targets, err := splitTargets(options.Target)
 		if err != nil {
 			return err
 		}
-		return runManifestPipeline(manifestRunOptions{Verb: "package", Profile: options.Profile, TargetOS: goos, TargetArch: goarch, Formats: splitComma(options.Formats), Force: options.Force, Tags: envTags()})
+		return runManifestPipeline(manifestRunOptions{Verb: "package", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Force: options.Force, Tags: envTags()})
 	}
 	return wrapTask("package", otherArgs)
 }
@@ -122,11 +123,11 @@ func SignWrapper(options *flags.SignWrapper, otherArgs []string) error {
 		if len(otherArgs) > 0 {
 			return fmt.Errorf("manifest signing does not accept Task variables: %s", strings.Join(otherArgs, ", "))
 		}
-		goos, goarch, err := splitTarget(options.Target)
+		targets, err := splitTargets(options.Target)
 		if err != nil {
 			return err
 		}
-		return runManifestPipeline(manifestRunOptions{Verb: "sign", Profile: options.Profile, TargetOS: goos, TargetArch: goarch, Formats: splitComma(options.Formats), Tags: envTags()})
+		return runManifestPipeline(manifestRunOptions{Verb: "sign", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Tags: envTags()})
 	}
 	return wrapTask("sign", otherArgs)
 }
@@ -164,6 +165,22 @@ func splitTarget(target string) (string, string, error) {
 		return "", "", fmt.Errorf("universal target is only valid for darwin")
 	}
 	return parts[0], parts[1], nil
+}
+
+func splitTargets(value string) ([]pipeline.Target, error) {
+	if strings.TrimSpace(value) == "" {
+		return nil, nil
+	}
+	items := splitComma(value)
+	targets := make([]pipeline.Target, 0, len(items))
+	for _, item := range items {
+		goos, goarch, err := splitTarget(item)
+		if err != nil {
+			return nil, err
+		}
+		targets = append(targets, pipeline.Target{OS: goos, Arch: goarch})
+	}
+	return targets, nil
 }
 
 func splitComma(value string) []string {

@@ -59,3 +59,15 @@ func TestFindAndMovePackageIgnoresExistingDestination(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "new", string(data))
 }
+
+func TestManifestHandlerIdentityIncludesRelevantEnvironment(t *testing.T) {
+	handler := &manifestHandler{root: t.TempDir()}
+	node := pipeline.Node{Key: "assets", Kind: pipeline.GeneratePlatformAssets, Spec: pipeline.AssetsSpec{}}
+	t.Setenv("PATH", "/first")
+	first, err := handler.Identity(t.Context(), node)
+	require.NoError(t, err)
+	t.Setenv("PATH", "/second")
+	second, err := handler.Identity(t.Context(), node)
+	require.NoError(t, err)
+	assert.NotEqual(t, first, second)
+}

@@ -61,6 +61,24 @@ func TestAnalyseMigrationFindsLocalCustomTasks(t *testing.T) {
 	assert.Equal(t, "unsupported-task", report.Diagnostics[0].Code)
 }
 
+func TestAnalyseMigrationTranslatesScriptFileHook(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "scripts"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "scripts", "before.sh"), []byte("#!/bin/sh\n"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte(`version: '3'
+tasks:
+  before-build:
+    cmds:
+      - ./scripts/before.sh
+`), 0o644))
+
+	report, doc, err := analyseMigration(root)
+	require.NoError(t, err)
+	assert.True(t, report.Complete)
+	assert.Equal(t, "scripts/before.sh", doc.Hooks.BeforeBuild.Script)
+	assert.Contains(t, report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "script-hook", File: "Taskfile.yml", Task: "before-build", Message: "translated script-file task to hooks.before_build"})
+}
+
 func TestRemoveLegacySourcesRequiresMatchingDigest(t *testing.T) {
 	root := t.TempDir()
 	path := filepath.Join(root, "Taskfile.yml")

@@ -30,6 +30,9 @@ func Dev(options *DevOptions) error {
 	if active {
 		return runManifestDev(options)
 	}
+	if options.Profile != "" || options.Target != "" {
+		return fmt.Errorf("--profile and --target require an active %s", "wails.toml")
+	}
 	host := "localhost"
 
 	// flag takes precedence over environment variable

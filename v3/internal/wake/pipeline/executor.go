@@ -190,7 +190,9 @@ func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync
 	}
 	depArtifacts := make([]string, 0, len(node.Dependencies))
 	for _, key := range node.Dependencies {
-		depArtifacts = append(depArtifacts, deps[key].Artifact)
+		if artifact := deps[key].Artifact; artifact != "" {
+			depArtifacts = append(depArtifacts, artifact)
+		}
 	}
 	action, err := cache.ActionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, inputs, depArtifacts)
 	if err != nil {
@@ -204,7 +206,7 @@ func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync
 			goto execute
 		}
 		reporter.StepEnd(id, report.StatusCached, time.Since(started))
-		return Result{Key: node.Key, Status: cache.LookupHit, Artifact: action}, nil
+		return Result{Key: node.Key, Status: cache.LookupHit}, nil
 	}
 	if !force && node.Cache == CacheArtifact && node.Output != "" {
 		cacheMu.Lock()
@@ -250,7 +252,6 @@ execute:
 			return fail(err)
 		}
 		cacheMu.Unlock()
-		result.Artifact = action
 	case CacheArtifact:
 		cacheMu.Lock()
 		artifact, err := store.RecordAction(action, node.Output)
@@ -259,8 +260,6 @@ execute:
 			return fail(err)
 		}
 		result.Artifact = artifact
-	default:
-		result.Artifact = action
 	}
 	reporter.StepEnd(id, report.StatusOK, time.Since(started))
 	return result, nil

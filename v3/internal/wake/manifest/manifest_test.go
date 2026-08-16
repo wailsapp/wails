@@ -102,7 +102,13 @@ func TestEjectFreezesOnceAndPreservesResolvedValues(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "v3.0.0", loaded.Config.Wake.EjectedBy)
 	assert.Equal(t, 9245, loaded.Config.Dev.Port)
-	require.ErrorContains(t, Eject(root, "", "v3.0.1", false), "already ejected")
+	before, err := os.ReadFile(filepath.Join(root, Filename))
+	require.NoError(t, err)
+	err = Eject(root, "", "v3.0.1", false)
+	require.ErrorIs(t, err, ErrEjectionSuggestionsUnavailable)
+	after, readErr := os.ReadFile(filepath.Join(root, Filename))
+	require.NoError(t, readErr)
+	assert.Equal(t, before, after)
 }
 
 func TestEjectSpecificProfile(t *testing.T) {
@@ -126,7 +132,32 @@ production=false
 	require.NoError(t, err)
 	assert.False(t, loaded.Config.Build.Production)
 	assert.Equal(t, "v3.0.0", loaded.Config.Wake.EjectedProfiles["debug"])
-	require.ErrorContains(t, Eject(root, "debug", "v3.0.1", false), "already ejected")
+	require.ErrorIs(t, Eject(root, "debug", "v3.0.1", false), ErrEjectionSuggestionsUnavailable)
+}
+
+func TestEjectMissingProfileCopiesEffectiveBase(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, WriteMinimal(root, Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"}))
+	require.NoError(t, Eject(root, "release", "v3.0.0", false))
+	loaded, err := Load(root, "release")
+	require.NoError(t, err)
+	assert.True(t, loaded.Config.Build.Production)
+	assert.Equal(t, "v3.0.0", loaded.Config.Wake.EjectedProfiles["release"])
+}
+
+func TestProfileCannotOverrideTargetIdentity(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
+name="app"
+product_name="App"
+identifier="com.example.app"
+version="1.0.0"
+
+[profiles.release.targets.darwin.arm64]
+build_number=42
+`), 0o644))
+	_, err := Load(root, "release")
+	require.ErrorContains(t, err, "cannot override target identity field targets.darwin.arm64.build_number")
 }
 
 func TestEncodeDocumentPreservesFalseAgainstTrueDefault(t *testing.T) {
@@ -135,6 +166,14 @@ func TestEncodeDocumentPreservesFalseAgainstTrueDefault(t *testing.T) {
 	data, err := EncodeDocument(doc)
 	require.NoError(t, err)
 	assert.Contains(t, string(data), "production = false")
+}
+
+func TestEncodeDocumentPreservesZeroValuesInExtensionLists(t *testing.T) {
+	doc := NewDocument(Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"})
+	doc.Extensions = map[string]map[string]any{"example": {"values": []any{0, false, ""}}}
+	data, err := EncodeDocument(doc)
+	require.NoError(t, err)
+	assert.Contains(t, string(data), `values = [0, false, ""]`)
 }
 
 func TestHookFieldsRejectWrongTypes(t *testing.T) {

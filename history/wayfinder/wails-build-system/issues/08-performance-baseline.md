@@ -34,7 +34,7 @@ arbitrary percentage.
   no-op, all four Nodes cached.
 - Service method-body edit: 0.91s wall; only Go compile executed while binding
   generation and frontend work remained cached.
-- DEB package: 2.80–2.81s after rebuilding the CLI; 70–90ms warm no-op with all
+- DEB package: 2.76–2.84s after rebuilding the CLI; 70–90ms warm no-op with all
   six Nodes cached. The final run included the coarse-timestamp cache safety
   window and packaging over an existing output. Broader five-sample and
   native-platform measurements remain.

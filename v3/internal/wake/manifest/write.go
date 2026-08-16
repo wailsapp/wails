@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +12,11 @@ import (
 
 	"github.com/BurntSushi/toml"
 )
+
+// ErrEjectionSuggestionsUnavailable means the selected scope is already
+// frozen but this CLI does not retain the historical default snapshot needed
+// to produce safe three-way upgrade comments. The manifest is unchanged.
+var ErrEjectionSuggestionsUnavailable = errors.New("ejection upgrade suggestions unavailable")
 
 func Minimal(project Project) []byte {
 	return []byte(fmt.Sprintf(`[project]
@@ -115,8 +121,10 @@ func sparseValue(value, defaultValue reflect.Value, preserveZero bool) (any, boo
 		}
 		result := make([]any, 0, value.Len())
 		for i := 0; i < value.Len(); i++ {
-			child, _ := sparseValue(value.Index(i), reflect.Value{}, false)
-			result = append(result, child)
+			child, include := sparseValue(value.Index(i), reflect.Value{}, true)
+			if include {
+				result = append(result, child)
+			}
 		}
 		return result, true
 	default:
@@ -143,19 +151,35 @@ func WriteDocument(root string, doc Document) error {
 }
 
 func Eject(root, profile, cliVersion string, backup bool) error {
-	loaded, err := Load(root, profile)
+	base, err := Load(root, "")
 	if err != nil {
 		return err
 	}
-	if profile == "" && loaded.Document.Wake.EjectedBy != "" {
-		return fmt.Errorf("default configuration was already ejected by %s; edit %s directly", loaded.Document.Wake.EjectedBy, Filename)
+	loaded := base
+	if profile != "" {
+		if profile == "default" || !slugPattern.MatchString(profile) {
+			return fmt.Errorf("profile name must be a lowercase slug and cannot be default")
+		}
+		if _, exists := base.Document.Profiles[profile]; exists {
+			loaded, err = Load(root, profile)
+			if err != nil {
+				return err
+			}
+		} else {
+			config := base.Config
+			config.Profile = profile
+			loaded = &Loaded{Path: base.Path, Raw: base.Raw, Document: base.Document, Config: config}
+		}
 	}
-	if profile != "" && loaded.Document.Wake.EjectedProfiles[profile] != "" {
-		return fmt.Errorf("profile %q was already ejected by %s; edit %s directly", profile, loaded.Document.Wake.EjectedProfiles[profile], Filename)
+	if profile == "" && base.Document.Wake.EjectedBy != "" {
+		return fmt.Errorf("%w: default configuration was ejected by %s; %s was left unchanged", ErrEjectionSuggestionsUnavailable, base.Document.Wake.EjectedBy, Filename)
+	}
+	if profile != "" && base.Document.Wake.EjectedProfiles[profile] != "" {
+		return fmt.Errorf("%w: profile %q was ejected by %s; %s was left unchanged", ErrEjectionSuggestionsUnavailable, profile, base.Document.Wake.EjectedProfiles[profile], Filename)
 	}
 	if backup {
 		stamp := time.Now().Format("20060102-150405")
-		if err := os.WriteFile(loaded.Path+"."+stamp+".bak", loaded.Raw, 0o644); err != nil {
+		if err := os.WriteFile(base.Path+"."+stamp+".bak", base.Raw, 0o644); err != nil {
 			return fmt.Errorf("write backup: %w", err)
 		}
 	}
@@ -182,11 +206,8 @@ func Eject(root, profile, cliVersion string, backup bool) error {
 		return atomicWrite(loaded.Path, output.Bytes(), 0o644)
 	}
 
-	base, err := Load(root, "")
-	if err != nil {
-		return err
-	}
 	frozen := profileLayerFromConfig(loaded.Config)
+	clearProfileTargetIdentity(&frozen.Targets)
 	var encoded bytes.Buffer
 	if err := toml.NewEncoder(&encoded).Encode(frozen); err != nil {
 		return err
@@ -195,6 +216,7 @@ func Eject(root, profile, cliVersion string, backup bool) error {
 	if _, err := toml.Decode(encoded.String(), &profileMap); err != nil {
 		return err
 	}
+	removeProfileTargetIdentity(profileMap)
 	// Modify the raw sparse document so ejecting one profile does not also
 	// freeze every compiled base default.
 	var sparseBase map[string]any
@@ -211,6 +233,38 @@ func Eject(root, profile, cliVersion string, backup bool) error {
 		return err
 	}
 	return atomicWrite(base.Path, output.Bytes(), 0o644)
+}
+
+func removeProfileTargetIdentity(profile map[string]any) {
+	targets, ok := profile["targets"].(map[string]any)
+	if !ok {
+		return
+	}
+	var visit func(map[string]any)
+	visit = func(table map[string]any) {
+		for _, key := range []string{"identifier", "product_name", "version", "build_number"} {
+			delete(table, key)
+		}
+		for _, value := range table {
+			if child, ok := value.(map[string]any); ok {
+				visit(child)
+			}
+		}
+	}
+	visit(targets)
+}
+
+func clearProfileTargetIdentity(targets *Targets) {
+	for _, platform := range []*Platform{&targets.Windows, &targets.Darwin, &targets.Linux, &targets.IOS, &targets.Android} {
+		platform.ProductName = ""
+		platform.Identifier = ""
+		platform.BuildNumber = 0
+		platform.AMD64.BuildNumber = 0
+		platform.ARM64.BuildNumber = 0
+		platform.ARM.BuildNumber = 0
+		platform.X86.BuildNumber = 0
+		platform.Universal.BuildNumber = 0
+	}
 }
 
 func mapTable(parent map[string]any, key string) map[string]any {

@@ -54,12 +54,20 @@ architecture decisions.
 - Minimal config, base/profile ejection, migration/cutover, generated assets,
   hooks, target overlays, build/package/sign plans, and the manifest dev
   lifecycle are implemented behind the normal CLI commands.
+- Follow-up two-axis review closed cache identity for local Go sources and
+  relevant environment, separated Receipts from Artifacts, made signing
+  non-reusable, added missing-profile/re-eject semantics, combined multiple
+  Targets in one Plan, translated safe script-file hooks, and made Dev rebuilds
+  generation-cancelable with process/watch reconfiguration.
 - Badge no-op builds measure 70–80ms and DEB package no-ops measure 70–90ms
   wall time with all planned Nodes cached; a service method-body edit skips
   bindings and the frontend and executes only Go compilation.
 - The full Go suite reaches unrelated desktop-environment failures only;
   focused manifest/Wake/command tests, race detection, vet, and real Linux
   build/package runs pass.
+- A local draft WEP now records the public behavior and rollout proposal under
+  `v3/wep/proposals/manifest-build-system/`; no GitHub issue, PR, or push was
+  created.
 
 ## Not yet specified
 

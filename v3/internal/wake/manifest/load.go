@@ -93,8 +93,8 @@ func Load(root, profile string) (*Loaded, error) {
 		if !ok {
 			return nil, fmt.Errorf("profile %q is not defined", profile)
 		}
-		if _, exists := rawProfile["project"]; exists {
-			return nil, fmt.Errorf("profile %q cannot override project identity", profile)
+		if err := validateProfileIdentity(profile, rawProfile); err != nil {
+			return nil, err
 		}
 		layer := profileLayerFromConfig(config)
 		var encoded bytes.Buffer
@@ -120,6 +120,32 @@ func Load(root, profile string) (*Loaded, error) {
 		return nil, err
 	}
 	return &Loaded{Path: path, Raw: raw, Document: doc, Config: config}, nil
+}
+
+func validateProfileIdentity(profile string, raw map[string]any) error {
+	if _, exists := raw["project"]; exists {
+		return fmt.Errorf("profile %q cannot override project identity", profile)
+	}
+	targets, ok := raw["targets"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	forbidden := map[string]bool{"identifier": true, "product_name": true, "version": true, "build_number": true}
+	var visit func(string, map[string]any) error
+	visit = func(path string, table map[string]any) error {
+		for key, value := range table {
+			if forbidden[key] {
+				return fmt.Errorf("profile %q cannot override target identity field %s.%s", profile, path, key)
+			}
+			if child, ok := value.(map[string]any); ok {
+				if err := visit(path+"."+key, child); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	return visit("targets", targets)
 }
 
 func defaults(project Project) Document {

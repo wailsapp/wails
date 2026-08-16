@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -70,6 +71,10 @@ func Eject(options *EjectOptions, args []string) error {
 		return err
 	}
 	if err := manifest.Eject(root, profile, version.String(), options.Backup); err != nil {
+		if errors.Is(err, manifest.ErrEjectionSuggestionsUnavailable) {
+			fmt.Println(err)
+			return nil
+		}
 		return err
 	}
 	if profile == "" {
