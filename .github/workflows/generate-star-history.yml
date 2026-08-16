@@ -1,0 +1,44 @@
+name: Generate Star History Image
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 2 * * 0" # Sundays at 02:17 UTC
+
+jobs:
+  update-star-history:
+    name: Update Star History
+    if: github.repository == 'wailsapp/wails'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # WAILS_REPO_TOKEN is already used by the generated-image workflow
+          # and can push directly to the protected default branch.
+          token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/starhistory/go.mod
+
+      - name: Render star history
+        run: cd tools/starhistory && GOWORK=off go run .
+        env:
+          # The token must belong to a repository admin or collaborator so
+          # GitHub permits access to timestamped stargazers.
+          GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || secrets.STAR_HISTORY_TOKEN || github.token }}
+
+      - name: Commit updated image
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- website/static/img/star-history.svg; then
+            echo "No star-history changes."
+            exit 0
+          fi
+          git add website/static/img/star-history.svg
+          git commit -m "chore: update star history [skip ci]"
+          git push
