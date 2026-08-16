@@ -15,4 +15,6 @@ Run it locally from this directory:
 GOWORK=off GITHUB_TOKEN="$(gh auth token)" go run .
 ```
 
-The scheduled workflow runs weekly and commits only when the SVG changes.
+The scheduled workflow renders the SVG weekly and retains it as a workflow
+artifact. A manually dispatched run also publishes the changed SVG, keeping
+repository writes behind an explicit confirmation.

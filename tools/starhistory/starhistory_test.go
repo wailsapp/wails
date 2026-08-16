@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// TestBuildWeeklyHistoryAccumulatesStarsByWeek verifies weekly cumulative grouping.
 func TestBuildWeeklyHistoryAccumulatesStarsByWeek(t *testing.T) {
 	stars := []Star{
 		{StarredAt: time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)}, // Monday
@@ -30,6 +31,7 @@ func TestBuildWeeklyHistoryAccumulatesStarsByWeek(t *testing.T) {
 	}
 }
 
+// TestReconcileCurrentCountAddsAuthoritativeCurrentPoint verifies live-count reconciliation.
 func TestReconcileCurrentCountAddsAuthoritativeCurrentPoint(t *testing.T) {
 	now := time.Date(2024, 1, 9, 0, 0, 0, 0, time.UTC)
 	history := []WeeklyPoint{{Date: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), Count: 2}}
@@ -39,6 +41,7 @@ func TestReconcileCurrentCountAddsAuthoritativeCurrentPoint(t *testing.T) {
 	}
 }
 
+// TestFetchStarsPaginatesAndAuthenticates verifies API pagination and request headers.
 func TestFetchStarsPaginatesAndAuthenticates(t *testing.T) {
 	var requests int
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -76,6 +79,7 @@ func TestFetchStarsPaginatesAndAuthenticates(t *testing.T) {
 	}
 }
 
+// TestLastPageFromLink verifies parsing of GitHub's pagination metadata.
 func TestLastPageFromLink(t *testing.T) {
 	link := `<https://api.github.com/repositories/161951219/stargazers?per_page=100&page=2>; rel="next", <https://api.github.com/repositories/161951219/stargazers?per_page=100&page=359>; rel="last"`
 	if got, want := lastPageFromLink(link), 359; got != want {
@@ -83,6 +87,7 @@ func TestLastPageFromLink(t *testing.T) {
 	}
 }
 
+// TestRenderSVGIncludesFadedBackgroundAndRedChart verifies the chart's embedded assets and styling.
 func TestRenderSVGIncludesFadedBackgroundAndRedChart(t *testing.T) {
 	history := []WeeklyPoint{
 		{Date: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), Count: 2},
@@ -111,6 +116,7 @@ func TestRenderSVGIncludesFadedBackgroundAndRedChart(t *testing.T) {
 	}
 }
 
+// TestFormatAxisCountUsesCompactThousands verifies abbreviated y-axis labels.
 func TestFormatAxisCountUsesCompactThousands(t *testing.T) {
 	for value, want := range map[int]string{
 		0:     "0",

@@ -24,6 +24,7 @@ type Star struct {
 	StarredAt time.Time `json:"starred_at"`
 }
 
+// repositorySummary is the repository API subset used for reconciliation.
 type repositorySummary struct {
 	StargazersCount int `json:"stargazers_count"`
 }
@@ -71,7 +72,7 @@ func (c *GitHubClient) FetchStars(ctx context.Context, token, repo string) ([]St
 			return nil, "", fmt.Errorf("fetch GitHub stargazers page %d: %w", page, err)
 		}
 		body, readErr := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if readErr != nil {
 			return nil, "", fmt.Errorf("read GitHub stargazers page %d: %w", page, readErr)
 		}
@@ -191,7 +192,7 @@ func (c *GitHubClient) FetchStarCount(ctx context.Context, token, repo string) (
 	if err != nil {
 		return 0, fmt.Errorf("fetch GitHub repository: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
 		return 0, fmt.Errorf("GitHub repository returned %s", resp.Status)
 	}
@@ -202,6 +203,7 @@ func (c *GitHubClient) FetchStarCount(ctx context.Context, token, repo string) (
 	return summary.StargazersCount, nil
 }
 
+// lastPageFromLink extracts the final page number from GitHub's Link header.
 func lastPageFromLink(linkHeader string) int {
 	for _, link := range strings.Split(linkHeader, ",") {
 		if !strings.Contains(link, `rel="last"`) {

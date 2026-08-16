@@ -6,18 +6,16 @@ on:
     - cron: "17 2 * * 0" # Sundays at 02:17 UTC
 
 jobs:
-  update-star-history:
-    name: Update Star History
+  generate-star-history:
+    name: Generate Star History
     if: github.repository == 'wailsapp/wails'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
-          # WAILS_REPO_TOKEN is already used by the generated-image workflow
-          # and can push directly to the protected default branch.
-          token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+          persist-credentials: false
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -31,10 +29,35 @@ jobs:
           # GitHub permits access to timestamped stargazers.
           GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || secrets.STAR_HISTORY_TOKEN || github.token }}
 
+      - name: Upload generated image
+        uses: actions/upload-artifact@v4
+        with:
+          name: star-history
+          path: website/static/img/star-history.svg
+
+  publish-star-history:
+    name: Publish Star History
+    if: github.event_name == 'workflow_dispatch'
+    needs: generate-star-history
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Publishing is restricted to an explicitly dispatched run.
+          token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+
+      - name: Download generated image
+        uses: actions/download-artifact@v4
+        with:
+          name: star-history
+          path: website/static/img
+
       - name: Commit updated image
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "taliesin-ai"
+          git config user.email "bot@taliesin.ai"
           if git diff --quiet -- website/static/img/star-history.svg; then
             echo "No star-history changes."
             exit 0

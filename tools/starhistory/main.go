@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// main fetches current stargazer data and atomically replaces the chart SVG.
 func main() {
 	repo := flag.String("repo", "wailsapp/wails", "GitHub repository in owner/name form")
 	background := flag.String("background", "../../docs/public/digital_wales_master.webp", "background image to embed in the SVG")
@@ -66,7 +67,7 @@ func main() {
 		fatal("create temporary output: %v", err)
 	}
 	tmpName := tmp.Name()
-	defer os.Remove(tmpName)
+	defer func() { _ = os.Remove(tmpName) }()
 	if _, err := tmp.WriteString(output); err != nil {
 		_ = tmp.Close()
 		fatal("write output: %v", err)
@@ -84,6 +85,7 @@ func main() {
 	fmt.Printf("Generated %s from %d visible stargazers (%d weekly points)\n", *out, len(stars), len(history))
 }
 
+// fatal reports a command error and terminates with a non-zero status.
 func fatal(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, "starhistory: "+format+"\n", args...)
 	os.Exit(1)
