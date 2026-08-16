@@ -289,6 +289,12 @@ func (w *WebviewWindow) markAsDestroyed() {
 	if globalApplication != nil && globalApplication.eventPayloads != nil {
 		globalApplication.eventPayloads.dropWindow(w.id)
 	}
+
+	// Same reasoning for streams: nothing in this window will ever poll again,
+	// so close the connections now and let the handlers unblock.
+	if globalApplication != nil && globalApplication.streams != nil {
+		globalApplication.streams.dropWindow(w.id)
+	}
 }
 
 func (w *WebviewWindow) setupEventMapping() {

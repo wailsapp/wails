@@ -62,6 +62,10 @@ type Win32Menu struct {
 	// destroyed. DestroyMenu does not free bitmaps set via
 	// SetMenuItemBitmaps.
 	bitmaps []w32.HBITMAP
+
+	// detachedSubmenus owns submenu handles whose parent rows are hidden and
+	// therefore are not part of the menu tree destroyed by DestroyMenu.
+	detachedSubmenus detachedSubmenuSet
 }
 
 // releaseMenuBitmaps frees every HBITMAP in bitmaps and every runtime-
@@ -110,6 +114,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 
 		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
 		menuItemImpl.parent = inputMenu
+		menuItemImpl.detachedSubmenus = p.detachedSubmenus
 		item.impl = menuItemImpl
 
 		if item.Hidden() {
@@ -184,6 +189,7 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 
 		// If the item is hidden, don't append
 		if item.Hidden() {
+			p.detachedSubmenus.add(menuItemImpl.submenu)
 			continue
 		}
 
@@ -191,8 +197,18 @@ func (p *Win32Menu) buildMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 		if !ok {
 			return fmt.Errorf("AppendMenu failed for %q: %v", menuText, syscall.GetLastError())
 		}
+		if item.submenu != nil {
+			// The append above passed the submenu HMENU as uIDNewItem, so this
+			// item currently has no command ID. Restore it, otherwise runtime
+			// updates to the submenu item itself are silently dropped.
+			if err := assignCommandID(parentMenu, menuItemImpl.id); err != nil {
+				return fmt.Errorf("assigning a command ID failed for %q: %w", menuText, err)
+			}
+		}
 		if item.bitmap != nil {
-			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+			// Address the row by its command ID: itemID holds the child HMENU
+			// for submenu items, and SetMenuIcons looks up by MF_BYCOMMAND.
+			handles, err := w32.SetMenuIcons(parentMenu, menuItemImpl.id, item.bitmap, nil)
 			if err != nil {
 				return fmt.Errorf("SetMenuIcons failed for %q: %w", menuText, err)
 			}
@@ -224,6 +240,7 @@ func (p *Win32Menu) Update() {
 	oldCheckboxes := p.checkboxItems
 	oldRadios := p.radioGroups
 	oldBitmaps := p.bitmaps
+	oldDetachedSubmenus := p.detachedSubmenus
 
 	// Transfer runtime SetBitmap handles off the old impls now, before
 	// buildMenu reassigns item.impl and makes them unreachable via the
@@ -241,22 +258,26 @@ func (p *Win32Menu) Update() {
 	p.radioGroups = make(map[*MenuItem][]*RadioGroup)
 	p.currentMenuID = MenuItemMsgID
 	p.bitmaps = nil
+	p.detachedSubmenus = make(detachedSubmenuSet)
 
 	if err := p.buildMenu(newHMENU, p.menuData); err != nil {
 		globalApplication.error("menu rebuild failed, keeping previous menu: %v", err)
 		// Release bitmaps allocated during the partial build, destroy the
 		// partial HMENU, then restore the previous state.
 		p.freeBitmaps()
+		p.detachedSubmenus.destroyAll()
 		w32.DestroyMenu(newHMENU)
 		p.menu = oldHMENU
 		p.menuMapping = oldMapping
 		p.checkboxItems = oldCheckboxes
 		p.radioGroups = oldRadios
 		p.bitmaps = oldBitmaps
+		p.detachedSubmenus = oldDetachedSubmenus
 		return
 	}
 
 	// Success: release the previous menu's bitmaps and HMENU tree.
+	oldDetachedSubmenus.destroyAll()
 	if oldHMENU != 0 {
 		releaseMenuBitmaps(oldBitmaps, oldMapping)
 		w32.DestroyMenu(oldHMENU)
@@ -371,6 +392,7 @@ func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 
 func (p *Win32Menu) Destroy() {
 	p.freeBitmaps()
+	p.detachedSubmenus.destroyAll()
 	w32.DestroyMenu(p.menu)
 }
 

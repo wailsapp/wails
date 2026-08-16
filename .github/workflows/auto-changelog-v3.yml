@@ -65,6 +65,11 @@ jobs:
       with:
         go-version: '1.25'
 
+    - name: Test changelog URL generation
+      if: steps.check.outputs.skip == 'false'
+      working-directory: v3
+      run: go test scripts/auto-changelog.go scripts/auto-changelog_test.go
+
     - name: Auto-fill changelog entry
       if: steps.check.outputs.skip == 'false'
       env:

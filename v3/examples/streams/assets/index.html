@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Streams Demo</title>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 20px; }
+  #log { height: 200px; overflow-y: auto; border: 1px solid #ccc;
+         padding: 8px; margin-top: 10px; font-family: ui-monospace, monospace; font-size: 12px; }
+  input { width: 240px; padding: 4px; }
+</style>
+</head>
+<body>
+
+<h3>Streams Demo</h3>
+<p>Go sends the time every second. Anything you send is echoed back.</p>
+
+<input id="msg" placeholder="type something" autofocus>
+<button id="send">Send</button>
+
+<div id="log"></div>
+
+<script type="module">
+import { JSONStream } from "/wails/runtime.js";
+
+const log = (text) => {
+    const line = document.createElement("div");
+    line.textContent = text;
+    const output = document.getElementById("log");
+    output.insertBefore(line, output.firstChild);
+};
+
+// Connects in the background; returns immediately, like `new WebSocket(url)`.
+// JSONStream is Stream with the encoding done for you: send objects, receive
+// objects. Use Stream directly when you want the raw bytes.
+const stream = JSONStream("hello");
+
+stream.onopen = () => log("connected");
+stream.onclose = () => log("disconnected");
+
+// With JSONStream, ev.data is the parsed object. A plain Stream would give an
+// ArrayBuffer here, which must be decoded before use.
+stream.onmessage = (ev) => log(JSON.stringify(ev.data));
+
+const send = () => {
+    const input = document.getElementById("msg");
+    if (input.value && stream.readyState === stream.OPEN) {
+        stream.send({ text: input.value });   // stringified for you
+        input.value = "";
+    }
+};
+
+document.getElementById("send").addEventListener("click", send);
+document.getElementById("msg").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") send();
+});
+</script>
+
+</body>
+</html>
