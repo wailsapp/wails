@@ -275,11 +275,4 @@ func stringsFromAny(value any) ([]string, bool) {
 type Wake struct {
 	EjectedBy       string            `toml:"ejected_by,omitempty" json:"ejected_by,omitempty"`
 	EjectedProfiles map[string]string `toml:"ejected_profiles,omitempty" json:"ejected_profiles,omitempty"`
-	Migration       *Migration        `toml:"migration,omitempty" json:"migration,omitempty"`
-}
-
-type Migration struct {
-	CompletedBy string            `toml:"completed_by" json:"completed_by"`
-	Complete    bool              `toml:"complete" json:"complete"`
-	Sources     map[string]string `toml:"sources,omitempty" json:"sources,omitempty"`
 }

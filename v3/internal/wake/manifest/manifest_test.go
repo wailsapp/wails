@@ -194,26 +194,12 @@ script=42
 func TestEncodeDocumentStaysSparse(t *testing.T) {
 	doc := NewDocument(Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"})
 	doc.Frontend.PackageManager = "pnpm"
-	doc.Wake.Migration = &Migration{CompletedBy: "v3", Complete: true, Sources: map[string]string{"Taskfile.yml": "digest"}}
 	data, err := EncodeDocument(doc)
 	require.NoError(t, err)
 	text := string(data)
 	assert.Contains(t, text, `package_manager = "pnpm"`)
-	assert.NotContains(t, text, "[wake.migration]")
 	assert.NotContains(t, text, "[targets]")
 	assert.NotContains(t, text, "debounce_ms")
-}
-
-func TestEncodeDocumentKeepsOnlyIncompleteMigrationMarker(t *testing.T) {
-	doc := NewDocument(Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"})
-	doc.Wake.Migration = &Migration{CompletedBy: "v3", Complete: false, Sources: map[string]string{"Taskfile.yml": "digest"}}
-	data, err := EncodeDocument(doc)
-	require.NoError(t, err)
-	text := string(data)
-	assert.Contains(t, text, "[wake.migration]")
-	assert.Contains(t, text, "complete = false")
-	assert.NotContains(t, text, "completed_by")
-	assert.NotContains(t, text, "[wake.migration.sources]")
 }
 
 func TestCachedHookLongFormLoadsInputsAndOutputs(t *testing.T) {
@@ -251,7 +237,7 @@ output_directory="..\\outside"
 	require.ErrorContains(t, err, "build.output_directory must be a project-relative path")
 }
 
-func TestMigrationControlsActivation(t *testing.T) {
+func TestLegacyMigrationFieldsAreIgnoredAndNotReencoded(t *testing.T) {
 	root := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(`[project]
 name="app"
@@ -264,7 +250,9 @@ complete=false
 [wake.migration.sources]
 "Taskfile.yml"="digest"
 `), 0o644))
-	active, err := Active(root)
+	loaded, err := Load(root, "")
 	require.NoError(t, err)
-	assert.False(t, active)
+	data, err := EncodeDocument(loaded.Document)
+	require.NoError(t, err)
+	assert.NotContains(t, string(data), "migration")
 }

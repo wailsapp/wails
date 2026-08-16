@@ -23,7 +23,8 @@ The MVP now exercises the proposal as one product surface rather than as an
 isolated cache prototype:
 
 - `internal/wake/manifest` owns sparse loading, compiled defaults, strict
-  validation, named profiles, full/profile ejection, and migration cutover.
+  validation, named profiles, and full/profile ejection;
+  `internal/wake/migration` owns private report state and migration cutover.
 - `internal/wake/pipeline` resolves typed build/package/sign DAGs and executes
   them through a bounded critical-path scheduler with receipts and restorable
   content-addressed artifacts.
@@ -38,8 +39,8 @@ isolated cache prototype:
   use typed specs rather than Task variables.
 - `wails3 migrate` recognizes shipped historical Taskfiles, translates project
   metadata and safe script-file hook tasks, records source digests and
-  diagnostics, and only removes unchanged, fully represented sources when
-  explicitly requested.
+  diagnostics, and retires unchanged sources after automatic or explicitly
+  reviewed completion; `--backup` preserves the legacy tree when requested.
 - New templates contain a minimal `wails.toml` and no generated Taskfile or
   build directory. Older community templates are analysed and remain on legacy
   execution when their customizations are not completely represented.
@@ -358,6 +359,8 @@ The migration command is:
 ```bash
 wails3 migrate
 wails3 migrate --dry-run
+wails3 migrate --complete
+wails3 migrate --complete --backup
 ```
 
 Migration discovers the root Taskfile, included common/platform Taskfiles, and
@@ -377,15 +380,12 @@ They produce a migration warning and require the user to create a script. This
 avoids creating opaque generated files while keeping the new system's shell
 boundary clear.
 
-Migration writes `wails.toml` without deleting existing files. It should emit a
-machine-readable report and a human-readable summary. Removal is explicit:
-
-```bash
-wails3 migrate --remove-old-files
-```
-
-Migration must not cut over execution or remove files merely because it wrote a
-Manifest. The machine-readable completion state, explicit cutover marker,
+Migration writes `wails.toml` plus a private machine-readable report and emits
+a human-readable summary. Automatically complete migrations digest-check and
+retire represented sources. Incomplete migrations retain Taskfiles; after
+manually representing reported logic in config or scripts, the user confirms
+cutover with `--complete`, optionally preserving the source tree with
+`--backup`. The machine-readable completion state,
 behavior when `wails.toml` already exists, and provenance requirements for
 removing only fully represented legacy files are resolved by the
 [Taskfile migration decision](wayfinder/wails-build-system/issues/06-taskfile-migration.md).

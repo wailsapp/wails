@@ -48,6 +48,12 @@ architecture decisions.
   — the executable slice validated a 60–70ms no-op path, content-based
   Artifact propagation, and missing-output restoration; it now graduates into
   the complete production implementation.
+- [Taskfile migration and customization classification](issues/06-taskfile-migration.md)
+  — private migration reports classify current, historical, and customised
+  Taskfiles; complete migrations digest-check and retire represented sources.
+- [CLI migration cutover](issues/07-cli-compatibility.md)
+  — one routing seam selects native Manifest, deliberate legacy fallback, or
+  an actionable ambiguity error without storing workflow state in `wails.toml`.
 
 ## Implementation evidence
 
@@ -71,10 +77,6 @@ architecture decisions.
 
 ## Not yet specified
 
-- The migration report format and the set of recognizable modifications that
-  can be translated without preserving Taskfile semantics.
-- The compatibility and release policy for projects before and after
-  migration.
 - The acceptance matrix across desktop, server, iOS, Android, packaging,
   signing, cross-compilation, and development mode.
 

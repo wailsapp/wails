@@ -17,6 +17,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/templates"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+	"github.com/wailsapp/wails/v3/internal/wake/migration"
 )
 
 var DisableFooter bool
@@ -283,8 +284,19 @@ func Init(options *flags.Init) error {
 			doc.Project.Identifier = options.ProductIdentifier
 			doc.Project.Version = options.ProductVersion
 			err = manifest.WriteDocument(options.ProjectDir, doc)
+			if err == nil && report.Complete {
+				var diagnostics []MigrationDiagnostic
+				report.Removed, diagnostics = removeLegacySources(options.ProjectDir, report.Sources, true)
+				report.Diagnostics = append(report.Diagnostics, diagnostics...)
+				if len(diagnostics) > 0 {
+					report.Complete = false
+				}
+			}
+			if err == nil {
+				err = migration.Write(options.ProjectDir, report)
+			}
 			if err == nil && !report.Complete && !options.Quiet {
-				term.Warningf("The template contains Taskfile customisations; legacy Taskfile builds remain active. Review wails.toml and migration diagnostics, then set wake.migration.complete only when all custom logic is represented.\n")
+				term.Warningf("The template contains Taskfile customisations; legacy Taskfile builds remain active. Review %s for migration diagnostics.\n", migration.RelativeReportPath)
 			}
 		} else {
 			err = manifest.WriteMinimal(options.ProjectDir, manifest.Project{

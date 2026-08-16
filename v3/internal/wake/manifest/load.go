@@ -29,20 +29,6 @@ func Exists(root string) bool {
 	return err == nil
 }
 
-func Active(root string) (bool, error) {
-	if !Exists(root) {
-		return false, nil
-	}
-	loaded, err := Load(root, "")
-	if err != nil {
-		return false, err
-	}
-	if loaded.Config.Wake.Migration == nil {
-		return true, nil
-	}
-	return loaded.Config.Wake.Migration.Complete, nil
-}
-
 func Load(root, profile string) (*Loaded, error) {
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
@@ -73,7 +59,7 @@ func Load(root, profile string) (*Loaded, error) {
 			name := key.String()
 			// Profiles are validated when selected and extension payloads are
 			// deliberately opaque to core Wails.
-			if strings.HasPrefix(name, "profiles.") || strings.HasPrefix(name, "extensions.") {
+			if strings.HasPrefix(name, "profiles.") || strings.HasPrefix(name, "extensions.") || name == "wake.migration" || strings.HasPrefix(name, "wake.migration.") {
 				continue
 			}
 			items = append(items, name)
