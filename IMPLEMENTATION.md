@@ -40,6 +40,23 @@ This document tracks the implementation of WebKitGTK 6.0 (GTK4) support for Wail
 - Legacy GTK3 opt-in: `//go:build linux && cgo && gtk3 && !android && !server`
 - Server mode (`-tags server`) excludes both paths so no GTK/cgo code is linked.
 
+### Decision 1.2: Nil-Safe GTK3 Screen Discovery (2026-08-13)
+
+**Context**: Service-only applications can process the Linux startup event before
+GTK3 has an active, realised window. Deriving the display unconditionally through
+that window caused intermittent nil GTK/GDK dereferences in service lifecycle tests
+(#5966).
+
+**Decision**: GTK3 screen discovery prefers the active window's display when one
+exists, falls back to GDK's default display otherwise, and returns an explicit error
+without entering monitor APIs when neither display exists. GTK4 behaviour is
+unchanged.
+
+**Rationale**: The active window remains the most precise display source for normal
+windowed applications, while the default-display fallback supports service-only
+startup. Guarding the display at the Go/C boundary prevents GTK critical warnings
+from escalating into a fatal nil-pointer crash during startup or shutdown.
+
 ### Decision 2: pkg-config Libraries (2026-01-04)
 **GTK4/WebKitGTK 6.0**:
 ```
@@ -471,6 +488,14 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-08-13
+- Made legacy GTK3 screen discovery safe before an active window or display exists,
+  preserving active-window monitor discovery with a default-display fallback (#5966).
+- Added focused GTK3 regression coverage for service-only/no-display discovery.
+- Files: `v3/pkg/application/linux_cgo_gtk3.go`,
+  `v3/pkg/application/screen_linux_gtk3_test.go`,
+  `v3/UNRELEASED_CHANGELOG.md`, and `IMPLEMENTATION.md`.
 
 ### 2026-08-11
 - Corrected the Phase 6 build guidance to reflect GTK4 as the default and
