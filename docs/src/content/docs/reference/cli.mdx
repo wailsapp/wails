@@ -25,6 +25,7 @@ wails3 <command> --help
 | `wails3 build` | Build the project. Thin wrapper around the Taskfile `build` task. Flags: `--tags` (forwarded as `EXTRA_TAGS=`), `--obfuscated` (build with Garble; see [Obfuscated Builds](/guides/build/obfuscation)), `--garbleargs` (extra flags forwarded to `garble` before the `build` subcommand). |
 | `wails3 package` | Run the platform-specific `package` Taskfile task. |
 | `wails3 task [name]` | Run any Taskfile task; with no name, `--list` shows every registered task. |
+| `wails3 mcp` | Start the project MCP server. Automatically uses stdio for agent-launched processes or loopback Streamable HTTP for interactive terminal use. |
 | `wails3 doctor` | Print a diagnostic report of your environment. |
 | `wails3 doctor-ng` | Newer TUI variant of `doctor`. |
 | `wails3 version` | Print the CLI version. |

@@ -17,36 +17,31 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add Streams: bidirectional byte streams between Go and JavaScript with the WebSocket
-  programming model and no listening socket. Declare a stream in Go with
-  `app.HandleStream(name, handler)` and connect from the frontend with `Stream(name)`,
-  which returns a `WebSocket`-shaped object. Go→JS is carried by one held poll per
-  window over the asset server, JS→Go by a normal POST; nothing binds a TCP port and
-  nothing goes through `evaluateJavaScript`. In server builds (`-tags server`) the same
-  handler is served over a real WebSocket instead, so application code is identical
-  across builds. by @leaanthony
-- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
+- Add native weekly star-history chart generation and publication — see [documentation](https://v3.wails.io/credits) and [documentation](https://v3.wails.io/de/credits) and [documentation](https://v3.wails.io/fr/credits) and [documentation](https://v3.wails.io/id/credits) and [documentation](https://v3.wails.io/ja/credits) and [documentation](https://v3.wails.io/ko/credits) and [documentation](https://v3.wails.io/pt/credits) and [documentation](https://v3.wails.io/ru/credits) and [documentation](https://v3.wails.io/zh-cn/credits) and [documentation](https://v3.wails.io/zh-tw/credits) in [PR](https://github.com/wailsapp/wails/pull/5986) by @leaanthony
+- Add Darwin-only mac package for resolving application bundle resources — see [documentation](https://v3.wails.io/guides/build/macos) in [PR](https://github.com/wailsapp/wails/pull/5965) by @leaanthony
+- Add Condui showcase page and index entry — see [documentation](https://v3.wails.io/community/showcase/condui) and [documentation](https://v3.wails.io/community/showcase) in [PR](https://github.com/wailsapp/wails/pull/5962) by @mgueregath
+- Add Redis Viewer showcase page with screenshots and project link — see [documentation](https://v3.wails.io/community/showcase) and [documentation](https://v3.wails.io/community/showcase/redisviewer) in [PR](https://github.com/wailsapp/wails/pull/5984) by @redisviewer
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update docs sidebar autogeneration and blog author type derivation in [PR](https://github.com/wailsapp/wails/pull/5938) by @leaanthony
+- Update GTK application flags to G_APPLICATION_NON_UNIQUE for Linux in [PR](https://github.com/wailsapp/wails/pull/5971) by @overlordtm
+- Log missing window events at debug level instead of warning in [PR](https://github.com/wailsapp/wails/pull/5914) by @julianstorer
 
 ## Fixed
 <!-- Bug fixes -->
-- WebView2 initialization uses a deadline and message pump in [PR](https://github.com/wailsapp/wails/pull/5952) by @leaanthony
-- WebView2 cookie test skips in CI unless opt-in and locks execution to current OS thread in [PR](https://github.com/wailsapp/wails/pull/5951) by @leaanthony
-- Windows menu builders restore command IDs for submenu parent items in [PR](https://github.com/wailsapp/wails/pull/5944) by @gilad-ch
-- Align the official cross-compilation image with the GTK 4.14+ Linux support baseline (#5928)
-- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
-- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
-- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
+- Cancel macOS and iOS asset request contexts when WebKit aborts the matching custom-scheme task (#5963)
+- Handle WindowSetFullscreenButtonEnabled message in [PR](https://github.com/wailsapp/wails/pull/5976) by @archy-rock3t-cloud
+- Import Fragment in preact-ts template to resolve build failure in [PR](https://github.com/wailsapp/wails/pull/5979) by @haoku123
+- Prevent legacy GTK3 service-only applications from crashing when screen
+  discovery runs before an active window or display is available (#5966)
+- Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
+- Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove the desktop binary release pipeline: v3 releases are tag-only and the `wails3` CLI is installed with `go install`. Deletes `release-v3.yml` and the nightly step that dispatched it in [PR](https://github.com/wailsapp/wails/pull/5946) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
