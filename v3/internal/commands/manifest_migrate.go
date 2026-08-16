@@ -298,7 +298,10 @@ func containsString(values []string, want string) bool {
 
 func legacyDevCommand(command string) bool {
 	command = strings.TrimSpace(command)
-	return command == "go mod tidy" || strings.HasPrefix(command, "wails3 task common:install:frontend:deps") || strings.HasPrefix(command, "wails3 task common:dev:frontend") || strings.HasPrefix(command, "wails3 task build") || strings.HasPrefix(command, "wails3 task run")
+	if command == "go mod tidy" || command == "wails3 build DEV=true" {
+		return true
+	}
+	return strings.HasPrefix(command, "wails3 task common:install:frontend:deps") || strings.HasPrefix(command, "wails3 task common:dev:frontend") || strings.HasPrefix(command, "wails3 task build") || strings.HasPrefix(command, "wails3 task run")
 }
 
 func discoverTaskfiles(root string) ([]string, error) {
@@ -444,6 +447,7 @@ var legacyTaskNames = map[string]map[string]bool{
 // from user edits without weakening comparison against the current templates.
 var knownStockTaskfiles = map[string]map[string]bool{
 	"common": set(
+		"4ab65b0363866b550ef897db8f7aae12794789056dd4f2e82407a738a64f6819",
 		"64cef372c5d2ae21526043751993f57b6d5b469287da0adfc8a78dde0d7ad86a",
 		"9a85cde94f9c2562240676b4306b1176158f0df8956d010e7b9b0d15b08a76b9",
 		"371fafce90a2648d89e705e377ae06ade62292271a4baabf1806e838e5431a7d",
