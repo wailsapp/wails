@@ -3,6 +3,7 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -1029,6 +1030,8 @@ func menuRadioItemNew(group *GSList, label string) pointer {
 
 // screen related
 
+var errScreenDisplayUnavailable = errors.New("screen display unavailable")
+
 func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	monitor := C.gdk_display_get_monitor(display, C.int(index))
 
@@ -1101,16 +1104,37 @@ func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	}
 }
 
-func getScreens(app pointer) ([]*Screen, error) {
+func getScreensForDisplay(display pointer) ([]*Screen, error) {
+	if display == nil {
+		return nil, errScreenDisplayUnavailable
+	}
+
 	var screens []*Screen
-	window := C.gtk_application_get_active_window((*C.GtkApplication)(app))
-	gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(unsafe.Pointer(window)))
-	display := C.gdk_window_get_display(gdkWindow)
-	count := C.gdk_display_get_n_monitors(display)
+	gdkDisplay := (*C.GdkDisplay)(display)
+	count := C.gdk_display_get_n_monitors(gdkDisplay)
 	for i := 0; i < int(count); i++ {
-		screens = append(screens, getScreenByIndex(display, i))
+		screens = append(screens, getScreenByIndex(gdkDisplay, i))
 	}
 	return screens, nil
+}
+
+func getScreens(app pointer) ([]*Screen, error) {
+	// Service-only applications can reach screen discovery before GTK has an
+	// active (or realised) window. Prefer that window's display when available,
+	// but never pass a nil window/display through the GTK/GDK C API.
+	if app != nil {
+		window := C.gtk_application_get_active_window((*C.GtkApplication)(app))
+		if window != nil {
+			gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(unsafe.Pointer(window)))
+			if gdkWindow != nil {
+				if display := C.gdk_window_get_display(gdkWindow); display != nil {
+					return getScreensForDisplay(pointer(display))
+				}
+			}
+		}
+	}
+
+	return getScreensForDisplay(pointer(C.gdk_display_get_default()))
 }
 
 // widgets
