@@ -16,7 +16,6 @@ import (
 	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/pkg/updater"
@@ -77,6 +76,11 @@ func New(appOptions Options) *App {
 	// entries, so the store itself has to be shut down with the app.
 	result.OnShutdown(result.eventPayloads.close)
 
+	// Streams own session state and handler goroutines, so like the payload
+	// store they are shut down with the app rather than per window.
+	result.streams = newStreamManager(result)
+	result.OnShutdown(result.streams.close)
+
 	messageProc := NewMessageProcessor(result.Logger)
 	result.messageProcessor = messageProc
 
@@ -123,9 +127,20 @@ func New(appOptions Options) *App {
 					result.serveEventPayload(rw, req)
 					return
 				}
+				// GoStream: the poll is held here for as long as the frontend
+				// has nothing to collect. Safe because every webview request
+				// gets its own goroutine (see the dispatchWorkers note in
+				// assetserver_webview.go).
+				if strings.HasPrefix(path, streamPath) {
+					result.serveStream(rw, req)
+					return
+				}
 				switch path {
 				case "/wails/runtime.js":
-					err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
+					// The prelude, where there is one, picks the stream
+					// transport before any module body runs. It cannot be
+					// deferred to custom.js — see stream_prelude_server.go.
+					err := assetserver.ServeFile(rw, path, runtimeJSWithPrelude())
 					if err != nil {
 						result.fatal("unable to serve runtime.js: %w", err)
 					}
@@ -457,7 +472,12 @@ type App struct {
 	// eventPayloads holds oversized Go→JS event bodies awaiting a one-shot
 	// fetch from the webview, keeping them out of evaluateJavaScript source.
 	eventPayloads *eventPayloadStore
-	startURL      string
+
+	// streams holds registered stream handlers and the per-page sessions that
+	// carry their connections. See stream.go.
+	streams *streamManager
+
+	startURL string
 
 	// Hooks
 	windowCreatedCallbacks []func(window Window)
@@ -857,7 +877,15 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		a.warning("Window #%d not found", event.WindowID)
+		// Post-removal lifecycle notifications are expected: the default
+		// WindowClosing listener removes the window from the manager, then
+		// AppKit (or the equivalent on other platforms) keeps posting
+		// windowWillClose / windowDidResignKey / etc. for the same window.
+		// On darwin hasListeners always returns true today, so those
+		// notifications are queued unconditionally and would warn here on
+		// every window close. The same applies to App.cleanup nilling the
+		// map during shutdown. None of these are bugs — just log them.
+		a.debug("Window event for unknown window", "windowID", event.WindowID, "eventID", event.EventID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)

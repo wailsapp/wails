@@ -24,4 +24,9 @@ type Preferences struct {
 	// (e.g. YouTube embed) reject the default identifier. Leave empty to keep
 	// Wails' default behaviour.
 	ApplicationNameForUserAgent string
+	// EnableAutoplayWithoutUserAction allows media to start playing automatically
+	// without requiring a user gesture. When unset or false, WebKit's default
+	// behaviour is preserved (gesture required).
+	// Maps to WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback.
+	EnableAutoplayWithoutUserAction u.Bool
 }

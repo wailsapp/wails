@@ -95,6 +95,13 @@ Server: application.ServerOptions{
     // Graceful shutdown timeout. Default: 30s
     ShutdownTimeout: 30 * time.Second,
 
+    // Additional origins allowed to open WebSocket connections.
+    // Same-origin connections are always allowed.
+    WebSocketOriginPatterns: []string{"app.example.com"},
+
+    // Disable WebSocket origin checks. Unsafe; default: false.
+    WebSocketAllowAllOrigins: false,
+
     // TLS configuration (optional)
     TLS: &application.TLSOptions{
         CertFile: "/path/to/cert.pem",
@@ -306,7 +313,8 @@ When deploying server mode applications:
 1. **Bind to localhost by default** - Only use `0.0.0.0` when needed
 2. **Use TLS in production** - Configure `ServerOptions.TLS`
 3. **Place behind reverse proxy** - Use nginx/traefik for additional security
-4. **Validate all inputs** - Same security practices as any web application
+4. **Keep WebSockets same-origin** - Add only trusted origins with `WebSocketOriginPatterns`; avoid `WebSocketAllowAllOrigins`
+5. **Validate all inputs** - Same security practices as any web application
 
 ## Example
 

@@ -31,6 +31,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.8 - 2026-08-12
+
+## Added
+- Add documentation URL generation to automatic changelog entries in [PR](https://github.com/wailsapp/wails/pull/5957) by @taliesin-ai
+- Add Streams: bidirectional byte streams between Go and JavaScript with the WebSocket
+  programming model and no listening socket. Declare a stream in Go with
+  `app.HandleStream(name, handler)` and connect from the frontend with `Stream(name)`,
+  which returns a `WebSocket`-shaped object. Go→JS is carried by one held poll per
+  window over the asset server, JS→Go by a normal POST; nothing binds a TCP port and
+  nothing goes through `evaluateJavaScript`. In server builds (`-tags server`) the same
+  handler is served over a real WebSocket instead, so application code is identical
+  across builds. by @leaanthony
+- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
+
+## Changed
+- Update docs sidebar autogeneration and blog author type derivation in [PR](https://github.com/wailsapp/wails/pull/5938) by @leaanthony
+
+## Fixed
+- WebView2 initialization uses a deadline and message pump in [PR](https://github.com/wailsapp/wails/pull/5952) by @leaanthony
+- WebView2 cookie test skips in CI unless opt-in and locks execution to current OS thread in [PR](https://github.com/wailsapp/wails/pull/5951) by @leaanthony
+- Windows menu builders restore command IDs for submenu parent items in [PR](https://github.com/wailsapp/wails/pull/5944) by @gilad-ch
+- Align the official cross-compilation image with the GTK 4.14+ Linux support baseline (#5928)
+- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
+- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
+- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
+
+## Removed
+- Remove the desktop binary release pipeline: v3 releases are tag-only and the `wails3` CLI is installed with `go install`. Deletes `release-v3.yml` and the nightly step that dispatched it in [PR](https://github.com/wailsapp/wails/pull/5946) by @leaanthony
+
+## v3.0.0-beta.7 - 2026-08-11
+
+## Added
+- Add macOS autoplay preference to disable user action requirement for media playback in [PR](https://github.com/wailsapp/wails/pull/5512) by @Eyalm321
+- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
+
+## Changed
+- macOS zoom animation uses CADisplayLink or NSTimer for smoother performance in [PR](https://github.com/wailsapp/wails/pull/5945) by @savely-krasovsky
+
+## Fixed
+- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
+- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
+- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
+
+
+### Added
+
+- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky and @DevLumuz
 ## v3.0.0-beta.6 - 2026-08-09
 
 ## Added
@@ -87,7 +134,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v3.0.0-alpha2.122 - 2026-08-01
 
 ## Added
-- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky
 
 ## Changed
 - Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony

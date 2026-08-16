@@ -220,6 +220,10 @@ func (h *serverApp) createHandler() http.Handler {
 	// WebSocket endpoint for events
 	mux.Handle("/wails/events", h.broadcaster)
 
+	// Streams are real WebSockets here rather than the desktop build's held
+	// poll, since server mode already has a listener to upgrade on.
+	mux.HandleFunc("/wails/stream/ws", h.app.serveStreamWS)
+
 	// Serve all other requests through the asset server
 	mux.Handle("/", h.app.assets)
 
