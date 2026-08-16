@@ -604,6 +604,7 @@ function DepsMissingPage({
     const pacmanPkgs: string[] = [];
     const aptPkgs: string[] = [];
     const dnfPkgs: string[] = [];
+    const rpmOstreePkgs: string[] = [];
 
     for (const cmd of systemCommands) {
       if (cmd.includes('pacman -S')) {
@@ -615,12 +616,16 @@ function DepsMissingPage({
       } else if (cmd.includes('dnf install')) {
         const match = cmd.match(/dnf install\s+(.+)/);
         if (match) dnfPkgs.push(...match[1].split(/\s+/));
+      } else if (cmd.includes('rpm-ostree install')) {
+        const match = cmd.match(/rpm-ostree install\s+(.+)/);
+        if (match) rpmOstreePkgs.push(...match[1].split(/\s+/));
       }
     }
 
     if (pacmanPkgs.length > 0) return `sudo pacman -S ${pacmanPkgs.join(' ')}`;
     if (aptPkgs.length > 0) return `sudo apt install ${aptPkgs.join(' ')}`;
     if (dnfPkgs.length > 0) return `sudo dnf install ${dnfPkgs.join(' ')}`;
+    if (rpmOstreePkgs.length > 0) return `sudo rpm-ostree install ${rpmOstreePkgs.join(' ')}`;
     return null;
   })();
 
