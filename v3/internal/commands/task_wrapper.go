@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"slices"
@@ -67,6 +68,16 @@ func mergeTags(tags string, extra ...string) string {
 
 func Build(buildFlags *flags.Build, otherArgs []string) error {
 	buildFlags.Tags = mergeTags(buildFlags.Tags, envTags()...)
+	if os.Getenv("WAILS_WAKE_MVP") == "1" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		if !hasWakeMVPManifest(cwd) {
+			return fmt.Errorf("WAILS_WAKE_MVP=1 requires a wails.toml manifest in %s", cwd)
+		}
+		return runWakeMVP(buildFlags)
+	}
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
 	}
