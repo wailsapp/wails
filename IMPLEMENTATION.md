@@ -482,7 +482,7 @@ v3/internal/operatingsystem/
 > **Historical note:** The Phase tracker blocks earlier in this document (Phases 1–4) reference the pre-flip filenames (`*_linux_gtk4.go`, `webkit6.go`, etc.) as a record of work done at the time. Those references are historical and have not been retconned; new work should reference the post-flip layout above.
 
 ### Shared Linux Files
-```
+```text
 v3/pkg/application/
   application_linux_appid.go      # Shared GTK application-ID resolution and validation
   application_linux_appid_test.go # Shared GTK3/GTK4 identity parity tests
