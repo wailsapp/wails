@@ -125,7 +125,7 @@ func svgDefs() string {
 </defs>
 <style>
 text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #fff4f5; }
-.title { font-family: Haettenschweiler, 'Arial Narrow', 'Nimbus Sans Narrow', 'Liberation Sans Narrow', Impact, sans-serif; font-size: 42px; font-style: italic; font-weight: 600; letter-spacing: 0.4px; }
+.title { font-family: Haettenschweiler, 'Arial Narrow', 'Nimbus Sans Narrow', 'Liberation Sans Narrow', Impact, sans-serif; font-size: 42px; font-weight: 600; letter-spacing: 0.4px; }
 .grid line { stroke: #ffd9dd; stroke-opacity: 0.14; stroke-dasharray: 3 9; }
 .axis-label { font-size: 22px; fill: #eabdc2; }
 .callout { font-size: 20px; font-weight: 700; fill: #fff4f5; }
