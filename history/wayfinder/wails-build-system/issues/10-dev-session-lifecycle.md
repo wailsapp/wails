@@ -34,3 +34,12 @@ Nodes.
 - Readiness is explicit: frontend listening, backend built, backend started.
   Shutdown cancels work, terminates child process groups, flushes reporting,
   and leaves no detached children.
+
+### 2026-08-16 — MVP implementation evidence
+
+The manifest Dev Session coalesces watcher bursts and assigns each asynchronous
+rebuild a generation. A newer burst cancels the previous context; serialized
+execution prevents reporter/environment overlap. Successful manifest reloads
+replace the backend only after a new process starts, re-register watch policy,
+and restart the frontend when its manager, command, directory, or effective
+port changes. Failed builds leave the current backend running.

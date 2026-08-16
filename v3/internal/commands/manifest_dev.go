@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -22,6 +24,13 @@ import (
 type manifestProcess struct {
 	cmd  *exec.Cmd
 	done chan error
+}
+
+type manifestRebuild struct {
+	generation uint64
+	loaded     *manifest.Loaded
+	port       int
+	err        error
 }
 
 func runManifestDev(options *DevOptions) error {
@@ -78,7 +87,12 @@ func runManifestDev(options *DevOptions) error {
 	if err != nil {
 		return err
 	}
-	defer frontend.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
+	defer func() {
+		if frontend != nil {
+			frontend.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
+		}
+	}()
+	fmt.Printf("Frontend process started at %s\n", frontendURL)
 	app, err := startManifestApp(root, loaded.Config, goos)
 	if err != nil {
 		return err
@@ -88,24 +102,64 @@ func runManifestDev(options *DevOptions) error {
 			app.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
 		}
 	}()
+	fmt.Println("Backend built and started")
 
 	events := make(chan notify.EventInfo, 128)
 	if err := registerManifestWatches(root, loaded.Config, events); err != nil {
 		return fmt.Errorf("watch project: %w", err)
 	}
 	defer notify.Stop(events)
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-	defer signal.Stop(interrupt)
+	sessionCtx, stopSession := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopSession()
 	debounce := time.Duration(loaded.Config.Dev.DebounceMS) * time.Millisecond
 	if debounce <= 0 {
 		debounce = 250 * time.Millisecond
 	}
 	var timer *time.Timer
 	var timerC <-chan time.Time
+	results := make(chan manifestRebuild, 1)
+	var generation uint64
+	var cancelBuild context.CancelFunc
+	var buildMu sync.Mutex
+	startRebuild := func() {
+		if cancelBuild != nil {
+			cancelBuild()
+		}
+		generation++
+		current := generation
+		buildCtx, cancel := context.WithCancel(sessionCtx)
+		cancelBuild = cancel
+		go func() {
+			buildMu.Lock()
+			defer buildMu.Unlock()
+			if buildErr := buildCtx.Err(); buildErr != nil {
+				select {
+				case results <- manifestRebuild{generation: current, err: buildErr}:
+				case <-sessionCtx.Done():
+				}
+				return
+			}
+			nextLoaded, loadErr := manifest.Load(root, options.Profile)
+			nextPort := port
+			if loadErr == nil {
+				nextPort = resolvedDevPort(options, nextLoaded.Config)
+				nextURL := fmt.Sprintf("%s://%s:%d", scheme, host, nextPort)
+				_ = os.Setenv("FRONTEND_DEVSERVER_URL", nextURL)
+				loadErr = runManifestPipeline(manifestRunOptions{Context: buildCtx, Verb: "build", Profile: options.Profile, TargetOS: goos, TargetArch: goarch, Development: true, Tags: envTags()})
+			}
+			result := manifestRebuild{generation: current, loaded: nextLoaded, port: nextPort, err: loadErr}
+			select {
+			case results <- result:
+			case <-sessionCtx.Done():
+			}
+		}()
+	}
 	for {
 		select {
-		case <-interrupt:
+		case <-sessionCtx.Done():
+			if cancelBuild != nil {
+				cancelBuild()
+			}
 			return nil
 		case event := <-events:
 			if ignoreDevEvent(root, loaded.Config, event.Path()) {
@@ -125,26 +179,67 @@ func runManifestDev(options *DevOptions) error {
 			timerC = timer.C
 		case <-timerC:
 			timerC = nil
-			if err := runManifestPipeline(manifestRunOptions{Verb: "build", Profile: options.Profile, TargetOS: goos, TargetArch: goarch, Development: true, Tags: envTags()}); err != nil {
-				fmt.Fprintf(os.Stderr, "rebuild failed; keeping the current app running: %v\n", err)
+			startRebuild()
+		case result := <-results:
+			if result.generation != generation {
 				continue
 			}
-			nextLoaded, err := manifest.Load(root, options.Profile)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "reload config failed; keeping the current app running: %v\n", err)
+			cancelBuild = nil
+			if result.err != nil {
+				if !errors.Is(result.err, context.Canceled) {
+					fmt.Fprintf(os.Stderr, "rebuild failed; keeping the current app running: %v\n", result.err)
+				}
 				continue
 			}
+			nextLoaded := result.loaded
 			next, err := startManifestApp(root, nextLoaded.Config, goos)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "restart failed; keeping the current app running: %v\n", err)
 				continue
 			}
+			if frontendSessionChanged(loaded.Config, port, nextLoaded.Config, result.port) {
+				oldConfig, oldPort := loaded.Config, port
+				frontend.stop(time.Duration(oldConfig.Dev.GracePeriodMS) * time.Millisecond)
+				nextFrontend, startErr := startFrontendDev(root, nextLoaded.Config, result.port)
+				if startErr != nil {
+					next.stop(time.Duration(nextLoaded.Config.Dev.GracePeriodMS) * time.Millisecond)
+					fmt.Fprintf(os.Stderr, "frontend restart failed; restoring the previous frontend: %v\n", startErr)
+					frontend, startErr = startFrontendDev(root, oldConfig, oldPort)
+					if startErr != nil {
+						return fmt.Errorf("restore previous frontend: %w", startErr)
+					}
+					_ = os.Setenv("FRONTEND_DEVSERVER_URL", fmt.Sprintf("%s://%s:%d", scheme, host, oldPort))
+					continue
+				}
+				frontend = nextFrontend
+				port = result.port
+				fmt.Printf("Frontend process restarted at %s://%s:%d\n", scheme, host, port)
+			}
 			old := app
 			app = next
-			loaded = nextLoaded
 			old.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
+			notify.Stop(events)
+			if err := registerManifestWatches(root, nextLoaded.Config, events); err != nil {
+				fmt.Fprintf(os.Stderr, "watch reconfiguration failed: %v\n", err)
+			}
+			loaded = nextLoaded
+			fmt.Println("Backend rebuilt and restarted")
 		}
 	}
+}
+
+func resolvedDevPort(options *DevOptions, config manifest.Config) int {
+	if options.VitePort != 0 {
+		return options.VitePort
+	}
+	if config.Dev.Port != 0 {
+		return config.Dev.Port
+	}
+	return defaultVitePort
+}
+
+func frontendSessionChanged(current manifest.Config, currentPort int, next manifest.Config, nextPort int) bool {
+	return currentPort != nextPort || current.Frontend.Directory != next.Frontend.Directory || current.Frontend.PackageManager != next.Frontend.PackageManager || current.Frontend.DevCommand != next.Frontend.DevCommand
 }
 
 func startFrontendDev(root string, config manifest.Config, port int) (*manifestProcess, error) {
@@ -199,6 +294,7 @@ func startManifestProcess(dir, name string, args ...string) (*manifestProcess, e
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
+	configureManifestProcess(cmd)
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
@@ -210,7 +306,7 @@ func (p *manifestProcess) stop(grace time.Duration) {
 	if p == nil || p.cmd == nil || p.cmd.Process == nil {
 		return
 	}
-	_ = p.cmd.Process.Signal(os.Interrupt)
+	_ = signalManifestProcess(p.cmd.Process, os.Interrupt)
 	if grace <= 0 {
 		grace = 1500 * time.Millisecond
 	}
@@ -218,7 +314,7 @@ func (p *manifestProcess) stop(grace time.Duration) {
 	case <-p.done:
 		return
 	case <-time.After(grace):
-		_ = p.cmd.Process.Kill()
+		_ = killManifestProcess(p.cmd.Process)
 		<-p.done
 	}
 }

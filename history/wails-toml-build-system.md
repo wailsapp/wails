@@ -27,6 +27,9 @@ isolated cache prototype:
 - `internal/wake/pipeline` resolves typed build/package/sign DAGs and executes
   them through a bounded critical-path scheduler with receipts and restorable
   content-addressed artifacts.
+- One invocation may request comma-separated Targets. Equivalent project Nodes
+  are shared, Target outputs are isolated, and incompatible project-level
+  projections fail during planning instead of racing over an output.
 - `wails3 build`, `package`, `sign`, and `dev` select the manifest pipeline for
   native or completed-migration projects; incomplete migrations retain the
   legacy Taskfile path.
@@ -34,11 +37,21 @@ isolated cache prototype:
   packaging, signing, hooks, target overlays, and Darwin universal builds all
   use typed specs rather than Task variables.
 - `wails3 migrate` recognizes shipped historical Taskfiles, translates project
-  metadata, records source digests and diagnostics, and only removes unchanged,
-  fully represented sources when explicitly requested.
+  metadata and safe script-file hook tasks, records source digests and
+  diagnostics, and only removes unchanged, fully represented sources when
+  explicitly requested.
 - New templates contain a minimal `wails.toml` and no generated Taskfile or
   build directory. Older community templates are analysed and remain on legacy
   execution when their customizations are not completely represented.
+- Compile cache identity includes local module/workspace sources and relevant
+  execution environment. Receipts are state evidence rather than Artifacts,
+  and signing-bearing iOS assembly never enters the reusable Artifact Store.
+- The Dev Session cancels stale generations, preserves the healthy app through
+  failed builds, reloads watch policy, and restarts the frontend only when its
+  command, directory, manager, or port changes.
+- The repository-required draft WEP is recorded at
+  `v3/wep/proposals/manifest-build-system/proposal.md` for review without any
+  GitHub activity.
 
 Measured on the disposable badge fixture after the production integration:
 
@@ -47,7 +60,7 @@ Measured on the disposable badge fixture after the production integration:
 | cold desktop build with warm language/tool caches | 2.88 s |
 | warm no-op desktop build | 70–80 ms wall; 4/4 cached |
 | service method-body edit | 0.91 s; only Go compile ran |
-| first DEB package after CLI rebuild | 2.80–2.81 s |
+| first DEB package after CLI rebuild | 2.76–2.84 s |
 | warm no-op DEB package | 70–90 ms wall; 6/6 cached |
 
 Linux build and DEB packaging have been exercised end to end. Windows, macOS,

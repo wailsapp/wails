@@ -20,11 +20,9 @@ type NodeKind string
 const (
 	InstallFrontendDependencies NodeKind = "InstallFrontendDependencies"
 	GenerateBindings            NodeKind = "GenerateBindings"
-	GenerateIcons               NodeKind = "GenerateIcons"
 	BuildFrontend               NodeKind = "BuildFrontend"
 	CompileApplication          NodeKind = "CompileApplication"
 	GeneratePlatformAssets      NodeKind = "GeneratePlatformAssets"
-	AssembleBundle              NodeKind = "AssembleBundle"
 	PackageArtifact             NodeKind = "PackageArtifact"
 	SignArtifact                NodeKind = "SignArtifact"
 	RunHook                     NodeKind = "RunHook"
@@ -48,7 +46,6 @@ const (
 
 type ResourceClaims struct {
 	CPU       int
-	MemoryMB  int
 	Exclusive string
 }
 
@@ -69,7 +66,7 @@ type Node struct {
 	Label        string
 	Scope        Scope
 	Dependencies []NodeKey
-	Spec         any
+	Spec         NodeSpec
 	Inputs       []InputSpec
 	Output       string
 	Marker       string
@@ -109,15 +106,25 @@ type ExecuteOptions struct {
 	Reporter report.Reporter
 }
 
+type Target struct {
+	OS   string
+	Arch string
+}
+
 type Request struct {
 	Verb        string
 	TargetOS    string
 	TargetArch  string
+	Targets     []Target
 	Formats     []string
 	Development bool
 	ExtraTags   []string
 	Obfuscated  bool
 }
+
+// NodeSpec is a closed set of typed planner data. It deliberately contains no
+// execution method; handlers are selected by NodeKind.
+type NodeSpec interface{ nodeSpec() }
 
 type InstallSpec struct{ Manager, Directory, Command string }
 type BindingsSpec struct {
@@ -144,7 +151,6 @@ type AssetsSpec struct {
 	Associations                    []manifest.Association
 	Protocols                       []manifest.Protocol
 }
-type BundleSpec struct{ TargetOS, TargetArch, Binary, Assets, Output string }
 type PackageSpec struct {
 	TargetOS, TargetArch, Format, Binary, Assets, Output string
 	Variant                                              string
@@ -160,6 +166,15 @@ type HookSpec struct {
 	Phase, TargetOS, TargetArch, Profile, Output string
 	Hook                                         manifest.Hook
 }
+
+func (InstallSpec) nodeSpec()  {}
+func (BindingsSpec) nodeSpec() {}
+func (FrontendSpec) nodeSpec() {}
+func (CompileSpec) nodeSpec()  {}
+func (AssetsSpec) nodeSpec()   {}
+func (PackageSpec) nodeSpec()  {}
+func (SignSpec) nodeSpec()     {}
+func (HookSpec) nodeSpec()     {}
 
 func (p Plan) Validate(root string) error {
 	if len(p.Nodes) == 0 {

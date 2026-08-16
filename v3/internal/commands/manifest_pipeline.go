@@ -31,7 +31,9 @@ import (
 )
 
 type manifestRunOptions struct {
+	Context                             context.Context
 	Verb, Profile, TargetOS, TargetArch string
+	Targets                             []pipeline.Target
 	Formats                             []string
 	Development, Force, Obfuscated      bool
 	Tags                                []string
@@ -47,7 +49,7 @@ func runManifestPipeline(options manifestRunOptions) error {
 	if err != nil {
 		return err
 	}
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, Obfuscated: options.Obfuscated})
+	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, Obfuscated: options.Obfuscated})
 	if err != nil {
 		return err
 	}
@@ -56,8 +58,12 @@ func runManifestPipeline(options manifestRunOptions) error {
 	report.SetActive(reporter)
 	defer report.SetActive(nil)
 	reporter.BuildStart(options.Verb, plan.Target, len(plan.Nodes))
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer cancel()
+	ctx := options.Context
+	if ctx == nil {
+		var cancel context.CancelFunc
+		ctx, cancel = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer cancel()
+	}
 	results, err := (pipeline.Executor{Handler: &manifestHandler{root: root, config: loaded.Config}}).Execute(ctx, plan, pipeline.ExecuteOptions{Root: root, Force: options.Force, Reporter: reporter})
 	if err != nil {
 		reporter.BuildEnd(time.Since(started), false)
@@ -148,7 +154,31 @@ func (h *manifestHandler) Identity(_ context.Context, node pipeline.Node) (strin
 	if err != nil {
 		return "", err
 	}
-	return "wails-" + version.String() + ":" + string(node.Kind) + "|" + identity, nil
+	return "wails-" + version.String() + ":" + string(node.Kind) + "|" + identity + "|env:" + relevantEnvironment(node), nil
+}
+
+func relevantEnvironment(node pipeline.Node) string {
+	keys := []string{"PATH"}
+	switch node.Kind {
+	case pipeline.InstallFrontendDependencies, pipeline.BuildFrontend:
+		keys = append(keys, "CI", "NODE_ENV", "NPM_CONFIG_USERCONFIG", "NPM_CONFIG_REGISTRY", "PNPM_HOME", "YARN_CACHE_FOLDER")
+	case pipeline.GenerateBindings, pipeline.CompileApplication:
+		keys = append(keys, "GOENV", "GOFLAGS", "GOTOOLCHAIN", "GOWORK", "CGO_ENABLED", "CC", "CXX", "CGO_CFLAGS", "CGO_CPPFLAGS", "CGO_CXXFLAGS", "CGO_LDFLAGS")
+	case pipeline.RunHook:
+		if node.Cache == pipeline.CacheArtifact {
+			values := os.Environ()
+			sort.Strings(values)
+			return strings.Join(values, "\x00")
+		}
+	}
+	values := make([]string, 0, len(keys))
+	for _, key := range keys {
+		if value, ok := os.LookupEnv(key); ok {
+			values = append(values, key+"="+value)
+		}
+	}
+	sort.Strings(values)
+	return strings.Join(values, "\x00")
 }
 
 func (h *manifestHandler) Run(ctx context.Context, node pipeline.Node) (pipeline.RunResult, error) {
@@ -206,7 +236,7 @@ func (h *manifestHandler) Run(ctx context.Context, node pipeline.Node) (pipeline
 	}
 }
 
-func manifestNodeSpec[T any](node pipeline.Node) (T, error) {
+func manifestNodeSpec[T pipeline.NodeSpec](node pipeline.Node) (T, error) {
 	spec, ok := node.Spec.(T)
 	if !ok {
 		var zero T
