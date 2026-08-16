@@ -5,8 +5,10 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,13 +27,31 @@ type branchHandler struct {
 	runs []NodeKey
 }
 
+type cancelHandler struct{ started chan struct{} }
+
+func (*cancelHandler) Identity(context.Context, Node) (string, error) { return "cancel-v1", nil }
+func (h *cancelHandler) Run(ctx context.Context, _ Node) (RunResult, error) {
+	close(h.started)
+	<-ctx.Done()
+	return RunResult{}, ctx.Err()
+}
+
+type failureReporter struct {
+	report.Nop
+	failure report.Failure
+}
+
+func (r *failureReporter) StepFailed(_ report.StepID, failure report.Failure) {
+	r.failure = failure
+}
+
 func (*branchHandler) Identity(context.Context, Node) (string, error) { return "branch-v1", nil }
 func (h *branchHandler) Run(_ context.Context, node Node) (RunResult, error) {
 	h.mu.Lock()
 	h.runs = append(h.runs, node.Key)
 	h.mu.Unlock()
 	if node.Key == "fail" {
-		return RunResult{}, errors.New("expected failure")
+		return RunResult{Detail: "specific compiler output"}, errors.New("expected failure")
 	}
 	return RunResult{}, nil
 }
@@ -120,9 +140,97 @@ func TestPlannerRejectsInvalidTargetAndFormatCombinations(t *testing.T) {
 	require.ErrorContains(t, err, "not supported for linux")
 	_, err = PlanBuild(config, Request{Verb: "build", TargetOS: "darwin", TargetArch: "universal"})
 	require.NoError(t, err)
-	config.Package.Darwin.DMG.Template = "packaging/custom-dmg"
-	_, err = PlanBuild(config, Request{Verb: "package", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"dmg"}})
-	require.ErrorContains(t, err, "custom templates are not supported")
+}
+
+func TestPlannerCarriesPackageCustomizationForEveryFormat(t *testing.T) {
+	tests := []struct {
+		platform string
+		format   string
+	}{
+		{"windows", "nsis"}, {"windows", "msix"},
+		{"darwin", "app"}, {"darwin", "dmg"},
+		{"linux", "appimage"}, {"linux", "deb"}, {"linux", "rpm"}, {"linux", "archlinux"},
+		{"ios", "app"}, {"ios", "ipa"},
+		{"android", "apk"}, {"android", "aab"},
+	}
+	for _, test := range tests {
+		t.Run(test.platform+"/"+test.format, func(t *testing.T) {
+			config := testConfig(t)
+			if test.platform == "ios" && test.format == "ipa" {
+				config.Targets.IOS.ARM64.Variant = "device"
+			}
+			format := packageFormatPointer(&config.Package, test.platform, test.format)
+			format.Template = "packaging/" + test.platform + "/" + test.format + ".tmpl"
+			format.Options = map[string]any{"channel": "preview"}
+			config.Associations = []manifest.Association{{Extensions: []string{"example"}}}
+			config.Protocols = []manifest.Protocol{{Scheme: "example"}}
+			plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: test.platform, TargetArch: "arm64", Formats: []string{test.format}})
+			require.NoError(t, err)
+			node := plan.Nodes[NodeKey("package:"+test.platform+"/arm64:"+test.format)]
+			spec := node.Spec.(PackageSpec)
+			assert.Equal(t, format.Template, spec.Config.Template)
+			assert.Equal(t, "preview", spec.Config.Options["channel"])
+			assert.Equal(t, config.Root, spec.TemplateRoot)
+			assert.Equal(t, config.Associations, spec.Associations)
+			assert.Equal(t, config.Protocols, spec.Protocols)
+			require.Len(t, node.Inputs, 1)
+			assert.Equal(t, "package-template", node.Inputs[0].Label)
+		})
+	}
+}
+
+func TestPlannerSnapshotsBuiltInDMGResources(t *testing.T) {
+	config := testConfig(t)
+	config.Package.Darwin.DMG.Options = map[string]any{
+		"background": "packaging/background.png",
+		"files":      "Read Me=README.md,License=LICENSE",
+	}
+	plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"dmg"}})
+	require.NoError(t, err)
+	node := plan.Nodes[NodeKey("package:darwin/arm64:dmg")]
+	require.Len(t, node.Inputs, 1)
+	assert.Equal(t, "package-resources", node.Inputs[0].Label)
+	assert.ElementsMatch(t, []string{"packaging/background.png", "README.md", "LICENSE"}, node.Inputs[0].Files)
+}
+
+func packageFormatPointer(packages *manifest.Packages, platform, format string) *manifest.PackageFormat {
+	var selected *manifest.PackagePlatform
+	switch platform {
+	case "windows":
+		selected = &packages.Windows
+	case "darwin":
+		selected = &packages.Darwin
+	case "linux":
+		selected = &packages.Linux
+	case "ios":
+		selected = &packages.IOS
+	case "android":
+		selected = &packages.Android
+	}
+	switch format {
+	case "nsis":
+		return &selected.NSIS
+	case "msix":
+		return &selected.MSIX
+	case "app":
+		return &selected.App
+	case "dmg":
+		return &selected.DMG
+	case "appimage":
+		return &selected.AppImage
+	case "deb":
+		return &selected.Deb
+	case "rpm":
+		return &selected.RPM
+	case "archlinux":
+		return &selected.ArchLinux
+	case "ipa":
+		return &selected.IPA
+	case "apk":
+		return &selected.APK
+	default:
+		return &selected.AAB
+	}
 }
 
 func TestPlannerDoesNotMutateRequestedOrConfiguredFormats(t *testing.T) {
@@ -186,6 +294,72 @@ func TestMobilePackagePlansUseTargetVariants(t *testing.T) {
 	}
 }
 
+func TestPlannerAcceptanceMatrixCoversEverySupportedTargetAndFormat(t *testing.T) {
+	tests := []struct {
+		platform string
+		arch     string
+		formats  []string
+	}{
+		{"windows", "amd64", []string{"nsis", "msix"}},
+		{"windows", "arm64", []string{"nsis", "msix"}},
+		{"darwin", "amd64", []string{"app", "dmg"}},
+		{"darwin", "arm64", []string{"app", "dmg"}},
+		{"darwin", "universal", []string{"app", "dmg"}},
+		{"linux", "amd64", []string{"appimage", "deb", "rpm", "archlinux"}},
+		{"linux", "arm64", []string{"appimage", "deb", "rpm", "archlinux"}},
+		{"ios", "arm64", []string{"app", "ipa"}},
+		{"android", "arm64", []string{"apk", "aab"}},
+		{"android", "amd64", []string{"apk", "aab"}},
+	}
+	for _, test := range tests {
+		for _, format := range test.formats {
+			t.Run(test.platform+"/"+test.arch+"/"+format, func(t *testing.T) {
+				config := testConfig(t)
+				if test.platform == "ios" && format == "ipa" {
+					config.Targets.IOS.ARM64.Variant = "device"
+				}
+				plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: test.platform, TargetArch: test.arch, Formats: []string{format}})
+				require.NoError(t, err)
+				key := NodeKey("package:" + test.platform + "/" + test.arch + ":" + format)
+				assert.Contains(t, plan.Nodes, key)
+				assert.Contains(t, plan.Roots, key)
+			})
+		}
+	}
+}
+
+func TestPlannerFiltersRegistrationsForTargetAndCarriesCapabilities(t *testing.T) {
+	config := testConfig(t)
+	config.Targets.Windows.Capabilities = []string{"internetClient"}
+	config.Associations = []manifest.Association{
+		{Extensions: []string{"shared"}},
+		{Extensions: []string{"windows"}, Platforms: []string{"windows"}},
+		{Extensions: []string{"darwin"}, Platforms: []string{"darwin"}},
+	}
+	config.Protocols = []manifest.Protocol{
+		{Scheme: "shared"},
+		{Scheme: "windows", Platforms: []string{"windows"}},
+		{Scheme: "darwin", Platforms: []string{"darwin"}},
+	}
+
+	plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: "windows", TargetArch: "amd64", Formats: []string{"msix"}})
+	require.NoError(t, err)
+	assets := plan.Nodes["target:windows/amd64:assets"].Spec.(AssetsSpec)
+	packaging := plan.Nodes["package:windows/amd64:msix"].Spec.(PackageSpec)
+	assert.Equal(t, []string{"internetClient"}, assets.Capabilities)
+	assert.Equal(t, []string{"internetClient"}, packaging.Capabilities)
+	assert.Equal(t, []manifest.Association{config.Associations[0], config.Associations[1]}, assets.Associations)
+	assert.Equal(t, assets.Associations, packaging.Associations)
+	assert.Equal(t, []manifest.Protocol{config.Protocols[0], config.Protocols[1]}, assets.Protocols)
+	assert.Equal(t, assets.Protocols, packaging.Protocols)
+}
+
+func TestPlannerRejectsIPAPackagingForSimulator(t *testing.T) {
+	config := testConfig(t)
+	_, err := PlanBuild(config, Request{Verb: "package", TargetOS: "ios", TargetArch: "arm64", Formats: []string{"ipa"}})
+	require.ErrorContains(t, err, `variant = "device"`)
+}
+
 func TestPlannerSnapshotsLocalModuleReplacements(t *testing.T) {
 	parent := t.TempDir()
 	root := filepath.Join(parent, "app")
@@ -207,6 +381,7 @@ func TestPackageAndSignHooksRemainBarriersForEveryFormat(t *testing.T) {
 	config.Hooks.BeforePackage.Script = "scripts/before-package.sh"
 	config.Hooks.AfterPackage.Script = "scripts/after-package.sh"
 	config.Hooks.BeforeSign.Script = "scripts/before-sign.sh"
+	config.Hooks.AfterSign.Script = "scripts/after-sign.sh"
 	plan, err := PlanBuild(config, Request{Verb: "sign", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb", "rpm"}})
 	require.NoError(t, err)
 	for _, format := range []string{"deb", "rpm"} {
@@ -219,6 +394,68 @@ func TestPackageAndSignHooksRemainBarriersForEveryFormat(t *testing.T) {
 		assert.Contains(t, signNode.Dependencies, packageKey)
 		assert.Contains(t, signNode.Dependencies, NodeKey("hook:before_sign:linux/amd64"))
 	}
+	packageOutputs := []string{plan.Nodes["package:linux/amd64:deb"].Output, plan.Nodes["package:linux/amd64:rpm"].Output}
+	assert.Equal(t, commonOutput(packageOutputs), plan.Nodes["hook:before_package:linux/amd64"].Spec.(HookSpec).Artifact)
+	assert.Equal(t, TargetScope, plan.Nodes["hook:before_package:linux/amd64"].Scope)
+	assert.Equal(t, commonOutput(packageOutputs), plan.Nodes["hook:after_package:linux/amd64"].Spec.(HookSpec).Artifact)
+	assert.Equal(t, PackageScope, plan.Nodes["hook:after_package:linux/amd64"].Scope)
+	assert.Equal(t, commonOutput(packageOutputs), plan.Nodes["hook:before_sign:linux/amd64"].Spec.(HookSpec).Artifact)
+	signedOutputs := []string{packageOutputs[0] + ".signed", packageOutputs[1] + ".signed"}
+	assert.Equal(t, commonOutput(signedOutputs), plan.Nodes["hook:after_sign:linux/amd64"].Spec.(HookSpec).Artifact)
+	assert.Equal(t, []NodeKey{"hook:after_sign:linux/amd64"}, plan.Roots)
+}
+
+func TestHookSpecsExposeThePhaseArtifactSeparatelyFromCacheOutputs(t *testing.T) {
+	config := testConfig(t)
+	config.Hooks.BeforeBuild = manifest.Hook{Script: "scripts/before-build.sh", Cache: true, Inputs: []string{"version.txt"}, Outputs: []string{"generated/version.go"}}
+	config.Hooks.AfterBuild.Script = "scripts/after-build.sh"
+	config.Hooks.BeforePackage.Script = "scripts/before-package.sh"
+	config.Hooks.AfterPackage.Script = "scripts/after-package.sh"
+	plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb"}})
+	require.NoError(t, err)
+
+	binary := plan.Nodes["target:linux/amd64:compile"].Output
+	artifact := plan.Nodes["package:linux/amd64:deb"].Output
+	beforeBuild := plan.Nodes["hook:before_build:project"]
+	assert.Equal(t, "generated/version.go", beforeBuild.Output, "Node output belongs to hook caching")
+	beforeBuildSpec := beforeBuild.Spec.(HookSpec)
+	assert.Empty(t, beforeBuildSpec.Artifact, "project preparation has no phase Artifact yet")
+	assert.Empty(t, beforeBuildSpec.TargetOS)
+	assert.Empty(t, beforeBuildSpec.TargetArch)
+	assert.Equal(t, "default", beforeBuildSpec.Profile)
+	assert.Equal(t, binary, plan.Nodes["hook:after_build:linux/amd64"].Spec.(HookSpec).Artifact)
+	assert.Equal(t, artifact, plan.Nodes["hook:before_package:linux/amd64"].Spec.(HookSpec).Artifact)
+	assert.Equal(t, artifact, plan.Nodes["hook:after_package:linux/amd64"].Spec.(HookSpec).Artifact)
+}
+
+func TestPlannerRejectsInvalidCachedHookOutputsFromDirectConfig(t *testing.T) {
+	config := testConfig(t)
+	config.Hooks.BeforeBuild = manifest.Hook{Script: "scripts/build.sh", Cache: true, Inputs: []string{"main.go"}, Outputs: []string{"one.txt", "two.txt"}}
+	_, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.ErrorContains(t, err, "hook before_build outputs")
+}
+
+func TestProjectBeforeBuildHookIsSharedAcrossMultiTargetPlan(t *testing.T) {
+	config := testConfig(t)
+	config.Hooks.BeforeBuild.Script = "scripts/before-build.sh"
+	plan, err := PlanBuild(config, Request{Verb: "build", Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "windows", Arch: "amd64"}, {OS: "darwin", Arch: "arm64"}}})
+	require.NoError(t, err)
+
+	hook, ok := plan.Nodes["hook:before_build:project"]
+	require.True(t, ok)
+	assert.Equal(t, ProjectScope, hook.Scope)
+	spec := hook.Spec.(HookSpec)
+	assert.Empty(t, spec.TargetOS)
+	assert.Empty(t, spec.TargetArch)
+	assert.Empty(t, spec.Artifact)
+	for key, node := range plan.Nodes {
+		if strings.HasPrefix(string(key), "hook:before_build:") {
+			assert.Equal(t, NodeKey("hook:before_build:project"), key)
+		}
+		if key == "frontend:bindings" {
+			assert.Contains(t, node.Dependencies, NodeKey("hook:before_build:project"))
+		}
+	}
 }
 
 func TestExecutorContinuesIndependentBranchesAfterFailure(t *testing.T) {
@@ -229,11 +466,49 @@ func TestExecutorContinuesIndependentBranchesAfterFailure(t *testing.T) {
 		"independent-child": {Key: "independent-child", Kind: RunHook, Dependencies: []NodeKey{"independent"}, Cache: CacheNever},
 	}}
 	handler := &branchHandler{}
-	_, err := (Executor{Handler: handler}).Execute(context.Background(), plan, ExecuteOptions{Root: t.TempDir(), Workers: 2, Reporter: report.Nop{}})
+	reporter := &failureReporter{}
+	_, err := (Executor{Handler: handler}).Execute(context.Background(), plan, ExecuteOptions{Root: t.TempDir(), Workers: 2, Reporter: reporter})
 	require.ErrorContains(t, err, "fail: expected failure")
 	assert.Contains(t, handler.runs, NodeKey("independent"))
 	assert.Contains(t, handler.runs, NodeKey("independent-child"))
 	assert.NotContains(t, handler.runs, NodeKey("blocked"))
+	assert.Equal(t, "specific compiler output", reporter.failure.Output)
+}
+
+func TestExecutorPreservesCancellationWithoutReportingFailure(t *testing.T) {
+	plan := Plan{Name: "cancel", Roots: []NodeKey{"work"}, Nodes: map[NodeKey]Node{
+		"work": {Key: "work", Kind: RunHook, Cache: CacheNever},
+	}}
+	handler := &cancelHandler{started: make(chan struct{})}
+	reporter := &failureReporter{}
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() {
+		_, err := (Executor{Handler: handler}).Execute(ctx, plan, ExecuteOptions{Root: t.TempDir(), Reporter: reporter})
+		done <- err
+	}()
+	<-handler.started
+	cancel()
+	require.ErrorIs(t, <-done, context.Canceled)
+	assert.NoError(t, reporter.failure.Err)
+}
+
+func TestExecutorPreservesDeadlineWithoutReportingFailure(t *testing.T) {
+	plan := Plan{Name: "deadline", Roots: []NodeKey{"work"}, Nodes: map[NodeKey]Node{
+		"work": {Key: "work", Kind: RunHook, Cache: CacheNever},
+	}}
+	handler := &cancelHandler{started: make(chan struct{})}
+	reporter := &failureReporter{}
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	done := make(chan error, 1)
+	go func() {
+		_, err := (Executor{Handler: handler}).Execute(ctx, plan, ExecuteOptions{Root: t.TempDir(), Reporter: reporter})
+		done <- err
+	}()
+	<-handler.started
+	require.ErrorIs(t, <-done, context.DeadlineExceeded)
+	assert.NoError(t, reporter.failure.Err)
 }
 
 func testConfig(t *testing.T) manifest.Config {

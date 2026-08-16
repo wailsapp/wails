@@ -28,6 +28,9 @@ type MSIXOptions struct {
 		Copyright         string `json:"copyright"`
 		Comments          string `json:"comments"`
 	}
+	// Flattened template fields keep the shared build-assets template stable.
+	ProductIdentifier, ProductVersion, ProductName string
+	ProductCompany, ProductDescription, BinaryName string
 	// File associations
 	FileAssociations []struct {
 		Ext         string `json:"ext"`
@@ -37,6 +40,10 @@ type MSIXOptions struct {
 		Role        string `json:"role"`
 		MimeType    string `json:"mimeType,omitempty"`
 	} `json:"fileAssociations"`
+	Protocols []struct {
+		Scheme      string `json:"scheme"`
+		Description string `json:"description"`
+	} `json:"protocols"`
 	// MSIX specific options
 	Publisher             string `json:"publisher"`
 	CertificatePath       string `json:"certificatePath"`
@@ -45,6 +52,7 @@ type MSIXOptions struct {
 	ExecutableName        string `json:"executableName"`
 	ExecutablePath        string `json:"executablePath"`
 	OutputPath            string `json:"outputPath"`
+	AppxManifest          string `json:"appxManifest,omitempty"`
 	UseMsixPackagingTool  bool   `json:"useMsixPackagingTool"`
 	UseMakeAppx           bool   `json:"useMakeAppx"`
 }
@@ -78,6 +86,7 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 	var config struct {
 		Info             map[string]interface{}   `json:"info"`
 		FileAssociations []map[string]interface{} `json:"fileAssociations"`
+		Protocols        []map[string]interface{} `json:"protocols"`
 	}
 	if err := json.Unmarshal(configData, &config); err != nil {
 		return fmt.Errorf("error parsing config file: %w", err)
@@ -92,6 +101,7 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 		ExecutableName:        options.ExecutableName,
 		ExecutablePath:        options.ExecutablePath,
 		OutputPath:            options.OutputPath,
+		AppxManifest:          options.AppxManifest,
 		UseMsixPackagingTool:  options.UseMsixPackagingTool,
 		UseMakeAppx:           options.UseMakeAppx,
 	}
@@ -104,6 +114,12 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 	if err := json.Unmarshal(infoBytes, &msixOptions.Info); err != nil {
 		return fmt.Errorf("error unmarshaling info: %w", err)
 	}
+	msixOptions.ProductIdentifier = msixOptions.Info.ProductIdentifier
+	msixOptions.ProductVersion = msixOptions.Info.ProductVersion
+	msixOptions.ProductName = msixOptions.Info.ProductName
+	msixOptions.ProductCompany = msixOptions.Info.CompanyName
+	msixOptions.ProductDescription = msixOptions.Info.Description
+	msixOptions.BinaryName = msixOptions.ExecutableName
 
 	// Copy file associations from config
 	if len(config.FileAssociations) > 0 {
@@ -113,6 +129,15 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 		}
 		if err := json.Unmarshal(faBytes, &msixOptions.FileAssociations); err != nil {
 			return fmt.Errorf("error unmarshaling file associations: %w", err)
+		}
+	}
+	if len(config.Protocols) > 0 {
+		protocolBytes, err := json.Marshal(config.Protocols)
+		if err != nil {
+			return fmt.Errorf("error marshaling protocols: %w", err)
+		}
+		if err := json.Unmarshal(protocolBytes, &msixOptions.Protocols); err != nil {
+			return fmt.Errorf("error unmarshaling protocols: %w", err)
 		}
 	}
 
@@ -339,8 +364,14 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 
 	// Generate the AppxManifest.xml file
 	manifestPath := filepath.Join(outputDir, "AppxManifest.xml")
-	if err := generateAppxManifest(options, manifestPath); err != nil {
-		return fmt.Errorf("error generating AppxManifest.xml: %w", err)
+	if options.AppxManifest != "" {
+		if err := copyFile(options.AppxManifest, manifestPath); err != nil {
+			return fmt.Errorf("error copying AppxManifest.xml: %w", err)
+		}
+	} else {
+		if err := generateAppxManifest(options, manifestPath); err != nil {
+			return fmt.Errorf("error generating AppxManifest.xml: %w", err)
+		}
 	}
 
 	// Copy the executable

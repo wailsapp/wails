@@ -1,0 +1,89 @@
+# Wails manifest build-system acceptance matrix
+
+This is the permanent acceptance contract for the manifest-driven Wake build
+system. Speed is a product requirement, but correctness and semantic work are
+gated independently so a fast command cannot pass by skipping required work.
+
+## Measurement policy
+
+- Controlled wall-time runs use two unmeasured warmups and seven measured
+  samples. The median decides the budget.
+- Median absolute deviation (MAD) must be at most 15% of median wall time. A
+  noisier run is invalid evidence and is rerun once on a clean controlled
+  runner; it is not treated as either a pass or a regression.
+- Min/max values are diagnostic only. A single sample never moves the checked
+  baseline.
+- Every measured incremental sample must report the expected executed and
+  cached Node counts. Missing work telemetry fails the gate.
+- The checked baseline changes only after an intentional controlled run and a
+  review note explaining the hardware/toolchain or implementation change.
+
+The harness in `v3/scripts/benchmark-manifest-build.go` enforces sample count,
+absolute median, baseline regression, MAD, executed/cached work, and optional
+orchestration-overhead budgets.
+
+## Performance and invalidation matrix
+
+| Scenario | Fixture | Required work | Gate |
+| --- | --- | --- | --- |
+| Warm no-op build | small badge | 0 ran, 4 cached | median under 100ms; no more than 20% over checked median; MAD at most 15% |
+| Warm no-op build | larger dock | 0 ran, 4 cached | no more than 20% over its controlled-run median; diagnostic 150ms ceiling |
+| Missing binary restoration | badge | 0 ran, 4 cached; restored bytes equal original | same no-op budget |
+| Go method implementation edit | badge | compile only: 1 ran, 3 cached | semantic-work gate on every change; release median recorded |
+| Go binding-shape edit | badge | bindings and only downstream Nodes whose Artifact bytes change | deterministic Artifact/work assertions; release median recorded |
+| Frontend edit with identical bundle | badge | frontend only: 1 ran, 3 cached | semantic-work gate |
+| Frontend edit with changed bundle | badge | frontend and compile: 2 ran, 2 cached | semantic-work gate |
+| Cold action-cache build | dock, language/tool caches warm | 4 ran | complete-process overhead above reported graph duration under 5% |
+| Warm package | each native format | 0 ran, all planned Nodes cached | native verifier requires a zero-work rerun |
+| Package fan-out | Linux AppImage/DEB/RPM/Arch and equivalent safe adapters | independent package Nodes overlap; process-global legacy tools run in isolated subprocesses | deterministic scheduler test; native timing is diagnostic |
+| Multi-Target build | two independently compilable Targets | shared Project Nodes once; Target compiles overlap when CPU and memory claims fit | deterministic planner and scheduler tests |
+| Dev no-op | badge | no build and no backend restart | lifecycle integration test |
+| Dev Go method edit | badge | compile only; healthy backend replaced after readiness | lifecycle integration test |
+| Dev frontend edit | badge | persistent frontend server/HMR remains owned by the Session | lifecycle integration test |
+| Dev failed generation | badge | healthy app remains running; one framed failure | lifecycle integration test |
+
+“Server” in the original matrix means the persistent frontend development
+server and backend process; it is not a separate Wails build Target.
+
+Cold total duration is intentionally not a fixed cross-machine number because
+Go, npm, native compilers, networks, and package tools dominate it. The stable
+requirement is that Wails orchestration contributes less than 5% of the graph
+critical path on the controlled runner.
+
+## Platform and package matrix
+
+Ordinary CI constructs and validates every row without requiring foreign
+toolchains. Release verification runs the native rows on the matching host.
+
+| Platform | Targets | Native package formats | Release evidence |
+| --- | --- | --- | --- |
+| Linux | amd64, arm64 | AppImage, DEB, RPM, Arch | build, package, cache rerun; AppImage enabled on the networked packaging runner |
+| Windows | amd64, arm64 | NSIS, MSIX | build, package, cache rerun on Windows with required tools |
+| macOS | amd64, arm64, universal | app, DMG | build, package, cache rerun on macOS |
+| iOS simulator | arm64 | app | build and native package on macOS/Xcode; package is intentionally non-reusable because it invokes codesign |
+| iOS device | arm64 device profile | IPA | credentialed macOS build/package/sign run |
+| Android | arm64, amd64 | APK, AAB | build, package, cache rerun with SDK/NDK installed |
+
+Signing is credentialed release acceptance and always executes. Signing Nodes
+use `CacheNever`, so a signing rerun must not be accepted as a no-op cache hit.
+Cross-compilation is accepted only when the requested compiler/SDK is present;
+a structurally valid Plan is not a substitute for a native release run.
+
+The native runner is `v3/scripts/verify-manifest-build-system.go`. It accepts a
+comma-separated host Target matrix, verifies every cacheable command with a
+zero-work rerun by default, supports all Linux desktop formats, Android's two
+architectures, iOS simulator or device packaging, and optional signing.
+
+## Gate placement
+
+- Every change: manifest/planner/cache/executor/reporting tests, full
+  target-format structural matrix, semantic invalidation tests, deterministic
+  concurrency tests, Dev lifecycle tests, race detection, and vet.
+- Controlled release job: seven-sample warm/incremental benchmark matrix and
+  cold orchestration-overhead measurement.
+- Native release hosts: build/package/cache verification for every applicable
+  row above.
+- Credentialed release job: signing plus iOS device packaging.
+
+The current Linux/amd64 evidence and checked badge baseline are recorded in
+`performance-baseline.md`.

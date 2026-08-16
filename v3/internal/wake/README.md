@@ -1,213 +1,142 @@
 # Wake
 
-> ⚠️ **Experimental.** Wake is opt-in behind `WAILS_USE_WAKE=true` and is
-> not the default runtime. The default `wails3 build / package / sign /
-> task` path is unchanged and runs on the embedded Task runtime as
-> before. The API and feature coverage may change between releases. See
-> [Enabling Wake](#enabling-wake) for what the env var actually toggles
-> and what falls back automatically.
+Wake is the build engine inside Wails v3. It now contains two deliberately
+separate systems:
 
-Wake is an **experimental alternative build runner** for `wails3`. It reads
-the same `Taskfile.yml` your project already has — same task/dep/var/
-template/include/platform-namespace syntax — and runs it through a
-Wails-aware executor instead of the general-purpose Task runtime. The goal
-isn't to replace Task; it's to provide a runner that's purpose-built for
-the way Wails projects actually build, with semantics, output and defaults
-that match the rest of the wails3 CLI. If you only ever use Wake, your
-Taskfiles do not change.
+- the manifest-native build system used automatically by projects with an
+  active root `wails.toml`; and
+- the experimental Go-native Taskfile runner retained for legacy Taskfile
+  compatibility and migration.
 
-## How Wake differs from Task
+`WAILS_USE_WAKE` controls only the legacy Taskfile runner. It does not enable or
+disable the manifest-native pipeline.
 
-Both Wake and the Task runtime are compiled into `wails3` — neither
-requires a separate binary install. The differences are about what each
-one is *for*.
+## Manifest-native build system
 
-### 1. Tailored to the Wails build pipeline
+New and fully migrated projects keep one sparse `wails.toml` at the project
+root. Wails supplies versioned defaults from the installed CLI, so the file
+normally contains only project identity and intentional customizations.
 
-Wake knows the shape of a Wails build: the frontend bundle gets embedded
-into the binary, the binary gets packaged into platform-specific
-artefacts, icons and bindings are generated alongside. The executor
-surfaces those as first-class concepts — for example, the final binary
-shows up as a labelled artefact at the end of the run instead of being
-inferred from `generates:` globs that may also include intermediates.
-Task is a general-purpose tool; Wake is a build runner with opinions
-about what a Wails build looks like.
-
-### 2. Focused build semantics → faster incremental builds
-
-Task only skips a task when its Taskfile declares `sources:`/`generates:`.
-The Wails templates don't declare these for `go build` / `go mod tidy`,
-so Task re-runs the Go compiler and linker on *every* build. Wake derives
-those inputs itself from the Go module graph and skips the subprocess
-when nothing changed:
-
-| Command        | Inputs Wake tracks                                                                 |
-| -------------- | ---------------------------------------------------------------------------------- |
-| `go mod tidy`  | `go.mod`, `go.sum`                                                                 |
-| `go build`     | module `.go` files + `go.mod`/`go.sum` + the `generates` of the task's dep closure |
-
-The dep-closure tracking means a frontend change (which regenerates
-`frontend/dist`, embedded into the binary) still forces a re-link, while
-a no-op rebuild skips compilation entirely. The cache key includes the
-*expanded* command, so changing build flags (e.g. dev vs `-tags
-production`) invalidates correctly.
-
-On a no-op rebuild of the `badge` example this is roughly **~20 ms
-(wake) vs ~316 ms (task)**. Cold builds land at the same wall time —
-they're dominated by `npm install`, Vite, and the Go compiler.
-
-Cache lives in `.wake/cache.json` (Task uses `.task/`).
-
-### 3. Structured output controlled by wails3
-
-Wake renders through wails3's own **Pulse** reporter: a pre-painted
-skeleton of one row per planned step, live status, a colour-coded phase
-breakdown at the end, and clickable file:line links inside failure
-panels (via OSC 8 hyperlinks where the terminal supports them). Because
-output goes through one structured channel rather than raw subprocess
-stdout, NO_COLOR and non-TTY environments degrade cleanly (CI logs
-stay readable). The visual is the same identity as the rest of the
-wails3 CLI; nothing about it changes when the underlying task moves.
-
-### 4. Parallel execution by default
-
-A task's `deps:` are evaluated concurrently rather than sequentially.
-The verdict line shows the parallel speedup when one was earned — e.g.
-`✓ build succeeded 3.6s  11.6s cpu · 3.2× speedup`. Opt out with
-`WAKE_SERIAL=true` when stdout interleaving from sibling steps would
-muddle a specific investigation.
-
-### 5. Layered local overrides
-
-Wake supports a **base Taskfile plus local overrides**. Drop a file next
-to your `Taskfile.yml` and its definitions take precedence:
-
-| File                                          | Purpose                                  | Precedence  |
-| --------------------------------------------- | ---------------------------------------- | ----------- |
-| `Taskfile.yml`                                | base, committed                          | lowest      |
-| `Taskfile.override.yml` / `.yaml`             | committed team-wide overrides            | middle      |
-| `Taskfile.local.yml` / `.yaml`                | personal, usually git-ignored            | highest     |
-
-**Merge semantics (local wins):**
-
-- A task with the **same name** overrides the base task. List fields
-  (`cmds`, `deps`, `sources`, `generates`, `platforms`, `status`,
-  `preconditions`, `aliases`) **replace** the base when the override
-  provides them; fields the override omits are kept from the base.
-- `env` and `vars` **merge per key**, with the override winning on
-  collisions.
-- A task that exists **only** in an override file is **added**.
-- Top-level `vars` from an override layer over the base vars (override
-  wins per key).
-
-Example — base builds with dev flags, but your machine always builds
-production:
-
-```yaml
-# Taskfile.yml (committed)
-tasks:
-  build:
-    cmds:
-      - go build -o bin/app .
-```
-
-```yaml
-# Taskfile.local.yml (git-ignored, yours)
-tasks:
-  build:
-    cmds:
-      - go build -tags production -o bin/app .
-  smoke:
-    cmds:
-      - ./bin/app --selftest
-```
-
-Now `build` runs your production command and `smoke` is available with
-no changes to the committed Taskfile.
-
-#### Security & trust model
-
-Override files are auto-discovered and applied with no prompt, so it's
-worth being explicit about what that does and doesn't change:
-
-- **No new capability.** A Taskfile already runs arbitrary shell
-  commands, so an override can't do anything that editing
-  `Taskfile.yml` couldn't. The blast radius is the same: whoever can
-  write build files can run code at build time.
-- **Same review path.** `Taskfile.override.*` is committed, so it shows
-  up in `ls` and PR diffs. `Taskfile.local.*` is created by the
-  developer on their own machine (and usually git-ignored).
-- **Symlinks are followed** and **includes resolve relative to the
-  override file's directory** (including `../`), exactly like the base
-  Taskfile — the local layer is not sandboxed.
-- **Fail-closed.** A malformed override file (bad YAML, missing
-  non-optional include) aborts the run rather than being silently
-  skipped.
-- **Opt-out for CI / locked-down builds.** Set
-  `WAILS_NO_OVERRIDES=true` to skip override discovery entirely and
-  build only from the committed base Taskfile, for guaranteed-
-  deterministic behaviour.
-
-## Enabling Wake
-
-Wake is **gated entirely behind the `WAILS_USE_WAKE=true` environment
-variable**. With the variable unset (or set to anything other than
-`true`), every wails3 command — `wails3 build`, `wails3 package`,
-`wails3 sign`, `wails3 task <name>` — uses the embedded Task runtime
-exactly as before. The default user path is unchanged.
+The normal commands are built in:
 
 ```bash
-# default: Task runtime, no wake involvement
 wails3 build
-
-# opt in: wake drives build / package / sign / `task <name>`
-WAILS_USE_WAKE=true wails3 build
-WAILS_USE_WAKE=true wails3 package
-WAILS_USE_WAKE=true wails3 task <some-task-name>
+wails3 package
+wails3 sign
+wails3 dev
 ```
 
-What the gate covers:
+The planner turns each command into one immutable typed graph. Project work is
+shared across Targets, Target and package outputs have one owner, and the
+executor schedules the critical path with CPU, memory, and exclusive-tool
+claims. Safe package branches and independent Target compiles overlap. Legacy
+tools that mutate process state, such as AppImage generation, run in an
+isolated subprocess.
 
-- `commands.wrapTask` (used by `wails3 build / package / sign`) routes
-  through `wake.Execute` only when `useWake()` is true.
-- `commands.RunTask` (used by `wails3 task <name>`) does the same —
-  `wails3 task` is consistent with the other verbs.
-- `wails3 dev` is **not** affected by this flag yet; the dev watcher
-  still uses its own pipeline.
+### Caching
 
-## Falls back to Task automatically on unsupported features
+Inputs are discovered from typed Node semantics rather than user-maintained
+`sources` lists. Action identities include:
 
-If wake encounters a Taskfile feature it doesn't implement, it hands the
-whole run off to the embedded Task runtime. The Task runtime is
-compiled into `wails3` — there is no external `task` binary to install
-— so the fallback is in-process and instant. Enabling wake is
-therefore always safe: at worst you get the same behaviour you'd get
-without the flag.
+- direct content snapshots;
+- semantic Go binding API snapshots;
+- consumed Artifact digests;
+- resolved configuration;
+- tool and handler identity; and
+- relevant environment values.
 
-Features that trigger the fallback:
+Reproducible outputs are stored in a machine-local content-addressed Artifact
+store and restored if a generated output is missing. Dependency installation
+uses a Receipt rather than archiving `node_modules`. Signing and undeclared
+side-effect hooks are never reusable.
 
-- `dotenv` at the taskfile level
-- `output` modes other than `interleaved`
-- `requires` block
-- `interval` (taskfile or task level)
-- `run` modes other than `always`
-- `short` in a task
-- `defer` in a task
+### Customization
 
-## Environment variables
+Stable customization belongs in `wails.toml`. File-script hooks are available
+at six fixed barriers:
 
-| Variable             | Effect                                                                            |
-| -------------------- | --------------------------------------------------------------------------------- |
-| `WAILS_USE_WAKE`     | `true` enables wake-routable wails3 verbs; anything else uses the Task runtime    |
-| `WAILS_NO_OVERRIDES` | `true` skips `Taskfile.local.*` / `.override.*` discovery (deterministic builds)  |
-| `WAKE_VERBOSE`       | Stream subprocess stdout/stderr live instead of capturing it for failure-only display |
-| `WAKE_SILENT`        | Suppress task output entirely                                                     |
-| `WAKE_SERIAL`        | `true` disables the parallel `deps:` fanout (parallel is the default)             |
-| `WAKE_FORCE`         | `true` bypasses every cache (task + go-cache) for a true clean rebuild            |
-| `WAKE_DEBUG`         | Log resolver internals (DAG, deps, var refs, exec routing)                        |
-| `WAKE_NOTICE`        | `off` to silence the per-run "wake (experimental)" notice                         |
+- `before_build`, `after_build`;
+- `before_package`, `after_package`; and
+- `before_sign`, `after_sign`.
 
-## Internals
+Hooks call one project-owned script file and receive stable `WAILS_*`
+environment values. Package formats may use strict, versioned user-owned file
+or directory templates. Generated platform state lives under ignored
+`.wails/` directories and is not the primary customization API.
 
-See [`AGENTS.md`](./AGENTS.md) for the execution pipeline, cache design,
-and package-level architecture.
+`wails3 eject` freezes the complete resolved default configuration into the
+manifest. `wails3 eject <profile>` freezes only that named profile. Re-ejection
+never silently changes active values, and `--backup` creates a backup only when
+requested.
+
+### Dev Session
+
+The manifest Dev Session owns persistent frontend and backend processes plus a
+transactional watch set. File bursts request ordinary finite development Plans;
+new generations cancel stale work without reporting a failed build. A healthy
+application remains running until a changed replacement is built and ready.
+No-op and restored binaries do not restart the backend.
+
+## Migration and routing
+
+`wails3 migrate` parses legacy v3 Taskfiles with Wake's AST parser. It compares
+them with current embedded canonical templates and retained historical
+fingerprints, classifying each file as current default, historical default,
+customised, or custom.
+
+Known configuration and script-file hooks are translated. Unsupported inline
+shell receives a stable diagnostic and remains a manual migration. Migration
+state, source digests, classifications, and diagnostics live in
+`.wails/migration-report.json`, never in `wails.toml`.
+
+An incomplete migration keeps the Taskfiles and routes through the legacy
+system. A complete migration digest-checks and retires represented legacy
+files; `--backup` first preserves them under `.wails/migration-backup`. A
+project containing both systems without a migration report fails as ambiguous
+instead of choosing silently.
+
+## Legacy Taskfile runner
+
+For projects that still use Taskfiles, `WAILS_USE_WAKE=true` selects the
+experimental Go-native runner instead of the external `task` CLI:
+
+```bash
+WAILS_USE_WAKE=true wails3 build
+WAILS_USE_WAKE=true wails3 task <task-name>
+```
+
+It supports v3 Taskfile parsing, includes, platform namespaces, variables,
+local override layers, parallel dependencies, structured Wails reporting, and
+its original `.wake/cache.json` task cache. Unsupported Taskfile features fall
+back to the external Task CLI when available. This path is compatibility code,
+not a second long-term customization language for manifest projects.
+
+Legacy-runner environment variables:
+
+| Variable | Effect |
+| --- | --- |
+| `WAILS_USE_WAKE` | Select the Go-native runner for a Taskfile project |
+| `WAILS_NO_OVERRIDES` | Ignore `Taskfile.local.*` and `Taskfile.override.*` |
+| `WAKE_VERBOSE` | Stream commands and subprocess output |
+| `WAKE_SILENT` | Suppress task output |
+| `WAKE_SERIAL` | Disable legacy dependency fan-out |
+| `WAKE_FORCE` | Bypass legacy task cache entries |
+| `WAKE_DEBUG` | Show resolver and execution diagnostics |
+
+## Verification
+
+Run the focused suite from `v3/`:
+
+```bash
+go test ./internal/wake/... ./internal/commands ./cmd/wails3
+go test -race ./internal/wake/... ./internal/commands ./cmd/wails3
+go vet ./internal/wake/... ./internal/commands ./cmd/wails3
+```
+
+Complete-command performance and native-host verification live in
+`scripts/benchmark-manifest-build.go` and
+`scripts/verify-manifest-build-system.go`. The permanent matrix and measured
+baseline are recorded under `history/wayfinder/wails-build-system/`.
+
+See [`AGENTS.md`](./AGENTS.md) for package boundaries, invariants, and detailed
+execution flow.

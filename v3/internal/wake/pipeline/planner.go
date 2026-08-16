@@ -96,7 +96,25 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	}
 	target := request.TargetOS + "/" + request.TargetArch
 	project, targetSettings := effectiveTarget(config, request.TargetOS, request.TargetArch)
+	platformSettings := platformConfig(config.Targets, request.TargetOS)
+	associations := associationsForPlatform(config.Associations, request.TargetOS)
+	protocols := protocolsForPlatform(config.Protocols, request.TargetOS)
 	assetsOut := filepath.ToSlash(filepath.Join(".wails", "build", profileName, strings.ReplaceAll(target, "/", "-"), "assets"))
+	binaryName := config.Project.BinaryName
+	if request.TargetOS == "windows" {
+		binaryName += ".exe"
+	}
+	binaryDirectory := config.Build.OutputDirectory
+	if multiTarget {
+		binaryDirectory = filepath.Join(binaryDirectory, strings.ReplaceAll(target, "/", "-"))
+	}
+	binaryOut := filepath.ToSlash(filepath.Join(binaryDirectory, binaryName))
+	if request.TargetOS == "ios" {
+		binaryOut += ".a"
+	}
+	if request.TargetOS == "android" {
+		binaryOut = filepath.ToSlash(filepath.Join(".wails", "build", profileName, strings.ReplaceAll(target, "/", "-"), "libwails.so"))
+	}
 	plan := Plan{Name: request.Verb, Target: target, Nodes: map[NodeKey]Node{}}
 	add := func(node Node) NodeKey {
 		if _, exists := plan.Nodes[node.Key]; exists {
@@ -109,14 +127,19 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	var beforeBuild NodeKey
 	if hook := config.Hooks.BeforeBuild; hook.Script != "" {
 		hookRequest := request
-		if multiTarget {
-			hookRequest.TargetOS, hookRequest.TargetArch = "", ""
+		// before_build attaches to shared project preparation. It has no Target
+		// or phase Artifact, regardless of whether one or many Targets were
+		// requested, so the Node remains structurally shareable.
+		hookRequest.TargetOS, hookRequest.TargetArch = "", ""
+		node, hookErr := hookNode("before_build", hook, config, hookRequest, ProjectScope, "", nil)
+		if hookErr != nil {
+			return Plan{}, hookErr
 		}
-		beforeBuild = add(hookNode("before_build", hook, config, hookRequest, ProjectScope, nil))
+		beforeBuild = add(node)
 	}
 	install := add(Node{Key: "frontend:install", Kind: InstallFrontendDependencies, Label: "Install frontend dependencies", Scope: ProjectScope,
 		Spec:   InstallSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: config.Frontend.InstallCommand},
-		Inputs: []InputSpec{{Label: "frontend-install", Files: frontendInstallFiles(config)}}, Marker: filepath.ToSlash(filepath.Join(config.Frontend.Directory, "node_modules")), Cache: CacheReceipt, Claims: ResourceClaims{CPU: 1}, EstimateMS: 1800})
+		Inputs: []InputSpec{{Label: "frontend-install", Files: frontendInstallFiles(config)}}, Marker: filepath.ToSlash(filepath.Join(config.Frontend.Directory, "node_modules")), Cache: CacheReceipt, Claims: ResourceClaims{CPU: 1, MemoryMB: 512}, EstimateMS: 1800})
 	tags := append([]string(nil), config.Build.Go.Tags...)
 	tags = appendUnique(tags, targetSettings.Tags...)
 	if request.Development {
@@ -144,7 +167,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	bindings := add(Node{Key: "frontend:bindings", Kind: GenerateBindings, Label: "Generate bindings", Scope: ProjectScope, Dependencies: bindingsDeps,
 		Spec:   BindingsSpec{Config: config.Frontend.Bindings, Tags: tags, Obfuscated: request.Obfuscated || config.Build.Obfuscation},
 		Inputs: bindingInputs,
-		Output: bindingsOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, Exclusive: "legacy-command-adapter"}, EstimateMS: 1000})
+		Output: bindingsOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 512, Exclusive: "legacy-command-adapter"}, EstimateMS: 1000})
 	frontendDeps := []NodeKey{install, bindings}
 	if beforeBuild != "" {
 		frontendDeps = append(frontendDeps, beforeBuild)
@@ -153,27 +176,12 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	frontend := add(Node{Key: "frontend:build", Kind: BuildFrontend, Label: "Build frontend", Scope: ProjectScope, Dependencies: frontendDeps,
 		Spec:   FrontendSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: choose(request.Development, config.Frontend.BuildCommand+":dev", config.Frontend.BuildCommand), Output: config.Frontend.OutputDirectory, Production: !request.Development},
 		Inputs: []InputSpec{{Label: "frontend-source", Root: config.Frontend.Directory, IncludeAll: true, ExcludeDirs: []string{".git", ".wails", "node_modules", config.Frontend.Bindings.OutputDirectory, config.Frontend.OutputDirectory}}},
-		Output: frontendOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 2}, EstimateMS: 900})
+		Output: frontendOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 2, MemoryMB: 1024}, EstimateMS: 900})
 	var assets NodeKey
 	if request.TargetOS == "windows" || request.TargetOS == "ios" || request.TargetOS == "android" {
 		assets = add(platformAssetsNode(config, request, target, assetsOut, keys(beforeBuild)))
 	}
 
-	binaryName := config.Project.BinaryName
-	if request.TargetOS == "windows" {
-		binaryName += ".exe"
-	}
-	binaryDirectory := config.Build.OutputDirectory
-	if multiTarget {
-		binaryDirectory = filepath.Join(binaryDirectory, strings.ReplaceAll(target, "/", "-"))
-	}
-	binaryOut := filepath.ToSlash(filepath.Join(binaryDirectory, binaryName))
-	if request.TargetOS == "ios" {
-		binaryOut += ".a"
-	}
-	if request.TargetOS == "android" {
-		binaryOut = filepath.ToSlash(filepath.Join(".wails", "build", profileName, strings.ReplaceAll(target, "/", "-"), "libwails.so"))
-	}
 	compileDeps := []NodeKey{frontend}
 	if beforeBuild != "" {
 		compileDeps = append(compileDeps, beforeBuild)
@@ -189,10 +197,14 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	compile := add(Node{Key: NodeKey("target:" + target + ":compile"), Kind: CompileApplication, Label: "Compile " + target, Scope: TargetScope, Dependencies: compileDeps,
 		Spec:   CompileSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Output: binaryOut, Assets: assetsOut, Variant: targetSettings.Variant, MinimumVersion: targetSettings.MinimumVersion, Tags: tags, LinkerFlags: config.Build.Go.LinkerFlags, CompilerFlags: config.Build.Go.CompilerFlags, GarbleArgs: config.Build.Go.GarbleArgs, Production: !request.Development, Obfuscated: request.Obfuscated || config.Build.Obfuscation, TrimPath: config.Build.TrimPath, Strip: config.Build.Strip},
 		Inputs: compileInputs,
-		Output: binaryOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: max(1, runtime.GOMAXPROCS(0)-1), Exclusive: "go-build"}, EstimateMS: 1500, ArtifactKind: "binary"})
+		Output: binaryOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: max(1, runtime.GOMAXPROCS(0)/2), MemoryMB: 2048}, EstimateMS: 1500, ArtifactKind: "binary"})
 	lastBuild := compile
 	if hook := config.Hooks.AfterBuild; hook.Script != "" {
-		lastBuild = add(hookNode("after_build", hook, config, request, TargetScope, []NodeKey{compile}))
+		node, hookErr := hookNode("after_build", hook, config, request, TargetScope, binaryOut, []NodeKey{compile})
+		if hookErr != nil {
+			return Plan{}, hookErr
+		}
+		lastBuild = add(node)
 	}
 
 	if request.Verb == "build" {
@@ -203,12 +215,6 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		return Plan{}, fmt.Errorf("unsupported pipeline verb %q", request.Verb)
 	}
 	beforePackageDeps := []NodeKey{lastBuild}
-	if hook := config.Hooks.BeforePackage; hook.Script != "" {
-		beforePackageDeps = []NodeKey{add(hookNode("before_package", hook, config, request, TargetScope, beforePackageDeps))}
-	}
-	if assets == "" {
-		assets = add(platformAssetsNode(config, request, target, assetsOut, beforePackageDeps))
-	}
 	formats := append([]string(nil), request.Formats...)
 	if len(formats) == 0 {
 		formats = append([]string(nil), packagePlatform(config.Package, request.TargetOS).Formats...)
@@ -217,20 +223,32 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		return Plan{}, fmt.Errorf("no package formats configured for %s", request.TargetOS)
 	}
 	sort.Strings(formats)
-	var packageRoots []NodeKey
+	packageOutputs := make([]string, 0, len(formats))
 	for _, format := range formats {
 		if !platformSupportsFormat(request.TargetOS, format) {
 			return Plan{}, fmt.Errorf("package format %q is not supported for %s", format, request.TargetOS)
 		}
+		if request.TargetOS == "ios" && format == "ipa" && targetSettings.Variant != "device" {
+			return Plan{}, fmt.Errorf("IPA packaging requires [targets.ios.%s] variant = \"device\"", request.TargetArch)
+		}
+		packageOutputs = append(packageOutputs, packageOutput(config, request.TargetOS, request.TargetArch, format, multiTarget))
+	}
+	packageArtifact := commonOutput(packageOutputs)
+	if hook := config.Hooks.BeforePackage; hook.Script != "" {
+		node, hookErr := hookNode("before_package", hook, config, request, TargetScope, packageArtifact, beforePackageDeps)
+		if hookErr != nil {
+			return Plan{}, hookErr
+		}
+		beforePackageDeps = []NodeKey{add(node)}
+	}
+	if assets == "" {
+		assets = add(platformAssetsNode(config, request, target, assetsOut, beforePackageDeps))
+	}
+	var packageRoots []NodeKey
+	for _, format := range formats {
 		pkgConfig, err := packageFormat(packagePlatform(config.Package, request.TargetOS), format)
 		if err != nil {
 			return Plan{}, err
-		}
-		if pkgConfig.Template != "" && !supportsCustomTemplate(format) {
-			return Plan{}, fmt.Errorf("custom templates are not supported for package format %q", format)
-		}
-		if len(pkgConfig.Options) > 0 {
-			return Plan{}, fmt.Errorf("package options are not yet supported for format %q; use a supported user-owned template", format)
 		}
 		output := packageOutput(config, request.TargetOS, request.TargetArch, format, multiTarget)
 		key := NodeKey("package:" + target + ":" + format)
@@ -241,28 +259,46 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			// signing, so its result must never enter the reusable artifact cache.
 			packageCache = CacheNever
 		}
+		templateRoot := ""
+		if pkgConfig.Template != "" {
+			templateRoot = config.Root
+		}
 		pkg := add(Node{Key: key, Kind: PackageArtifact, Label: "Package " + format, Scope: PackageScope, Dependencies: packageDeps,
-			Spec:   PackageSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: binaryOut, Assets: assetsOut, Output: output, Variant: targetSettings.Variant, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project},
-			Inputs: templateInput(pkgConfig), Output: output, Cache: packageCache, Claims: ResourceClaims{CPU: 1, Exclusive: packageExclusive(format)}, EstimateMS: 1000, ArtifactKind: format})
+			Spec:   PackageSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: binaryOut, Assets: assetsOut, Output: output, Profile: profileName, Variant: targetSettings.Variant, MinimumVersion: targetSettings.MinimumVersion, TemplateRoot: templateRoot, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
+			Inputs: packageInputs(config.Root, request.TargetOS, format, pkgConfig), Output: output, Cache: packageCache, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, format)}, EstimateMS: 1000, ArtifactKind: format})
 		packageRoots = append(packageRoots, pkg)
 	}
 	packageArtifacts := append([]NodeKey(nil), packageRoots...)
 	if hook := config.Hooks.AfterPackage; hook.Script != "" {
-		packageRoots = []NodeKey{add(hookNode("after_package", hook, config, request, PackageScope, packageRoots))}
+		node, hookErr := hookNode("after_package", hook, config, request, PackageScope, packageArtifact, packageRoots)
+		if hookErr != nil {
+			return Plan{}, hookErr
+		}
+		packageRoots = []NodeKey{add(node)}
 	}
 	if request.Verb == "sign" {
 		if hook := config.Hooks.BeforeSign; hook.Script != "" {
-			packageRoots = []NodeKey{add(hookNode("before_sign", hook, config, request, PackageScope, packageRoots))}
+			node, hookErr := hookNode("before_sign", hook, config, request, PackageScope, packageArtifact, packageRoots)
+			if hookErr != nil {
+				return Plan{}, hookErr
+			}
+			packageRoots = []NodeKey{add(node)}
 		}
 		var signed []NodeKey
+		var signedOutputs []string
 		for _, artifact := range packageArtifacts {
 			input := plan.Nodes[artifact].Output
 			dependencies := appendUniqueKeys([]NodeKey{artifact}, packageRoots...)
-			signed = append(signed, add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{TargetOS: request.TargetOS, Format: plan.Nodes[artifact].ArtifactKind, Input: input, Config: signingPlatform(config.Signing, request.TargetOS)}, Output: input + ".signed", Cache: CacheNever, Claims: ResourceClaims{CPU: 1, Exclusive: "sign"}, EstimateMS: 1000, ArtifactKind: "signed"}))
+			signed = append(signed, add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{TargetOS: request.TargetOS, Format: plan.Nodes[artifact].ArtifactKind, Input: input, Config: signingPlatform(config.Signing, request.TargetOS)}, Output: input + ".signed", Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, ArtifactKind: "signed"}))
+			signedOutputs = append(signedOutputs, input+".signed")
 		}
 		packageRoots = signed
 		if hook := config.Hooks.AfterSign; hook.Script != "" {
-			packageRoots = []NodeKey{add(hookNode("after_sign", hook, config, request, PackageScope, packageRoots))}
+			node, hookErr := hookNode("after_sign", hook, config, request, PackageScope, commonOutput(signedOutputs), packageRoots)
+			if hookErr != nil {
+				return Plan{}, hookErr
+			}
+			packageRoots = []NodeKey{add(node)}
 		}
 	}
 	plan.Roots = packageRoots
@@ -271,24 +307,61 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 
 func platformAssetsNode(config manifest.Config, request Request, target, output string, dependencies []NodeKey) Node {
 	project, targetSettings := effectiveTarget(config, request.TargetOS, request.TargetArch)
+	platformSettings := platformConfig(config.Targets, request.TargetOS)
 	return Node{Key: NodeKey("target:" + target + ":assets"), Kind: GeneratePlatformAssets, Label: "Generate " + request.TargetOS + " assets", Scope: TargetScope, Dependencies: dependencies,
-		Spec:   AssetsSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Directory: output, MinimumVersion: targetSettings.MinimumVersion, Project: project, Associations: config.Associations, Protocols: config.Protocols},
-		Inputs: assetInputs(config), Output: output, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, Exclusive: "legacy-command-adapter"}, EstimateMS: 250}
+		Spec:   AssetsSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Directory: output, MinimumVersion: targetSettings.MinimumVersion, Capabilities: platformSettings.Capabilities, Project: project, Associations: associationsForPlatform(config.Associations, request.TargetOS), Protocols: protocolsForPlatform(config.Protocols, request.TargetOS)},
+		Inputs: assetInputs(config), Output: output, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "legacy-command-adapter"}, EstimateMS: 250}
 }
 
-func hookNode(phase string, hook manifest.Hook, config manifest.Config, request Request, scope Scope, deps []NodeKey) Node {
+func associationsForPlatform(values []manifest.Association, platform string) []manifest.Association {
+	result := make([]manifest.Association, 0, len(values))
+	for _, value := range values {
+		if len(value.Platforms) == 0 || contains(value.Platforms, platform) {
+			result = append(result, value)
+		}
+	}
+	return result
+}
+
+func protocolsForPlatform(values []manifest.Protocol, platform string) []manifest.Protocol {
+	result := make([]manifest.Protocol, 0, len(values))
+	for _, value := range values {
+		if len(value.Platforms) == 0 || contains(value.Platforms, platform) {
+			result = append(result, value)
+		}
+	}
+	return result
+}
+
+func contains(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
+}
+
+func hookNode(phase string, hook manifest.Hook, config manifest.Config, request Request, scope Scope, artifact string, deps []NodeKey) (Node, error) {
 	policy := CacheNever
 	output := ""
 	if hook.Cache {
-		policy = CacheArtifact
-		output = commonOutput(hook.Outputs)
+		root, err := manifest.HookOutputRoot(hook.Outputs)
+		if err != nil {
+			return Node{}, fmt.Errorf("hook %s outputs: %w", phase, err)
+		}
+		policy, output = CacheArtifact, root
 	}
 	inputs := []InputSpec{{Label: "hook-script", Files: append([]string{hook.Script}, hook.Inputs...)}}
 	scopeKey := request.TargetOS + "/" + request.TargetArch
 	if request.TargetOS == "" && request.TargetArch == "" {
 		scopeKey = "project"
 	}
-	return Node{Key: NodeKey("hook:" + phase + ":" + scopeKey), Kind: RunHook, Label: strings.ReplaceAll(phase, "_", " "), Scope: scope, Dependencies: deps, Spec: HookSpec{Phase: phase, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Profile: config.Profile, Output: output, Hook: hook}, Inputs: inputs, Output: output, Cache: policy, Claims: ResourceClaims{CPU: 1, Exclusive: "hook:" + phase}, EstimateMS: 100}
+	profile := config.Profile
+	if profile == "" {
+		profile = "default"
+	}
+	return Node{Key: NodeKey("hook:" + phase + ":" + scopeKey), Kind: RunHook, Label: strings.ReplaceAll(phase, "_", " "), Scope: scope, Dependencies: deps, Spec: HookSpec{Phase: phase, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Profile: profile, Artifact: artifact, Hook: hook}, Inputs: inputs, Output: output, Cache: policy, Claims: ResourceClaims{CPU: 1, MemoryMB: 512, Exclusive: "hook:" + phase}, EstimateMS: 100}, nil
 }
 
 func goLocalSourceInputs(root string) ([]InputSpec, error) {
@@ -407,11 +480,38 @@ func assetInputs(c manifest.Config) []InputSpec {
 	}
 	return []InputSpec{{Label: "platform-assets", Files: files}}
 }
-func templateInput(f manifest.PackageFormat) []InputSpec {
-	if f.Template == "" {
-		return nil
+func packageInputs(root, platform, format string, f manifest.PackageFormat) []InputSpec {
+	var result []InputSpec
+	if f.Template != "" {
+		path := f.Template
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(root, filepath.FromSlash(path))
+		}
+		if info, err := os.Stat(path); err == nil && info.IsDir() {
+			result = append(result, InputSpec{Label: "package-template", Root: f.Template, IncludeAll: true})
+		} else {
+			result = append(result, InputSpec{Label: "package-template", Files: []string{f.Template}})
+		}
 	}
-	return []InputSpec{{Label: "package-template", Files: []string{f.Template}}}
+	if platform == "darwin" && format == "dmg" && f.Template == "" {
+		var resources []string
+		for _, key := range []string{"background", "volume_icon", "file_icon"} {
+			if path, ok := f.Options[key].(string); ok && path != "" {
+				resources = append(resources, path)
+			}
+		}
+		if files, ok := f.Options["files"].(string); ok {
+			for _, item := range strings.Split(files, ",") {
+				if _, path, found := strings.Cut(item, "="); found && strings.TrimSpace(path) != "" {
+					resources = append(resources, strings.TrimSpace(path))
+				}
+			}
+		}
+		if len(resources) > 0 {
+			result = append(result, InputSpec{Label: "package-resources", Files: resources})
+		}
+	}
+	return result
 }
 func commonOutput(paths []string) string {
 	if len(paths) == 1 {
@@ -496,9 +596,6 @@ func platformSupportsFormat(platform, format string) bool {
 		}
 	}
 	return false
-}
-func supportsCustomTemplate(format string) bool {
-	return format == "nsis" || format == "deb" || format == "rpm" || format == "archlinux" || format == "apk" || format == "aab"
 }
 func packagePlatform(p manifest.Packages, os string) manifest.PackagePlatform {
 	switch os {
@@ -651,11 +748,15 @@ func packageOutput(c manifest.Config, os, arch, format string, multiTarget bool)
 	}
 	return filepath.ToSlash(base + "." + format)
 }
-func packageExclusive(_ string) string {
-	// Existing platform packagers share process-wide working-directory and
-	// output controls. Keep branches independent in the graph, but do not
-	// overlap these adapters until those legacy globals are removed.
-	return "legacy-command-adapter"
+func packageExclusive(platform, format string) string {
+	if platform == "darwin" && (format == "app" || format == "dmg") {
+		// DMG assembly materialises the same .app bundle as the app format.
+		return "darwin-app-bundle"
+	}
+	if platform == "ios" {
+		return "codesign"
+	}
+	return ""
 }
 func max(a, b int) int {
 	if a > b {

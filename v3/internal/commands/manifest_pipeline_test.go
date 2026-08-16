@@ -93,3 +93,33 @@ func TestManifestHandlerIdentityIncludesRelevantEnvironment(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEqual(t, first, second)
 }
+
+func TestDevelopmentFrontendIdentityIncludesSessionURLAndPort(t *testing.T) {
+	node := pipeline.Node{Kind: pipeline.BuildFrontend, Spec: pipeline.FrontendSpec{Production: false}}
+	t.Setenv("FRONTEND_DEVSERVER_URL", "http://localhost:9245")
+	t.Setenv(wailsVitePort, "9245")
+	first := relevantEnvironment(node, nil)
+	t.Setenv("FRONTEND_DEVSERVER_URL", "http://localhost:9246")
+	assert.NotEqual(t, first, relevantEnvironment(node, nil))
+	t.Setenv("FRONTEND_DEVSERVER_URL", "http://localhost:9245")
+	t.Setenv(wailsVitePort, "9246")
+	assert.NotEqual(t, first, relevantEnvironment(node, nil))
+
+	production := pipeline.Node{Kind: pipeline.BuildFrontend, Spec: pipeline.FrontendSpec{Production: true}}
+	first = relevantEnvironment(production, nil)
+	t.Setenv("FRONTEND_DEVSERVER_URL", "http://localhost:9247")
+	t.Setenv(wailsVitePort, "9247")
+	second := relevantEnvironment(production, nil)
+	assert.Equal(t, first, second)
+}
+
+func TestDevelopmentEnvironmentOverridesAreIsolatedFromProcessState(t *testing.T) {
+	node := pipeline.Node{Kind: pipeline.BuildFrontend, Spec: pipeline.FrontendSpec{Production: false}}
+	t.Setenv("FRONTEND_DEVSERVER_URL", "http://global:9245")
+	t.Setenv(wailsVitePort, "9245")
+	first := relevantEnvironment(node, []string{"FRONTEND_DEVSERVER_URL=http://generation-one:9246", wailsVitePort + "=9246"})
+	second := relevantEnvironment(node, []string{"FRONTEND_DEVSERVER_URL=http://generation-two:9247", wailsVitePort + "=9247"})
+	assert.NotEqual(t, first, second)
+	assert.Equal(t, "http://global:9245", os.Getenv("FRONTEND_DEVSERVER_URL"))
+	assert.Equal(t, "9245", os.Getenv(wailsVitePort))
+}

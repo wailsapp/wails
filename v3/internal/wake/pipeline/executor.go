@@ -63,6 +63,13 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 	var resultsMu sync.RWMutex
 	var cacheMu sync.Mutex
 	cpu := semaphore.NewWeighted(int64(workers))
+	memoryLimit := options.MemoryLimitMB
+	if memoryLimit <= 0 {
+		// One logical GiB per worker is a portable default capacity. Explicit
+		// callers and constrained runners can provide a tighter real budget.
+		memoryLimit = int64(workers) * 1024
+	}
+	memory := semaphore.NewWeighted(memoryLimit)
 	var exclusiveMu sync.Mutex
 	exclusive := map[string]*sync.Mutex{}
 	failed := map[NodeKey]error{}
@@ -87,6 +94,18 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 					outcomes <- nodeOutcome{key: key, err: err}
 					continue
 				}
+				memoryClaim := node.Claims.MemoryMB
+				if memoryClaim < 1 {
+					memoryClaim = 1
+				}
+				if memoryClaim > memoryLimit {
+					memoryClaim = memoryLimit
+				}
+				if err := memory.Acquire(ctx, memoryClaim); err != nil {
+					cpu.Release(int64(claim))
+					outcomes <- nodeOutcome{key: key, err: err}
+					continue
+				}
 				var exclusiveLock *sync.Mutex
 				if node.Claims.Exclusive != "" {
 					exclusiveMu.Lock()
@@ -108,6 +127,7 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 				if exclusiveLock != nil {
 					exclusiveLock.Unlock()
 				}
+				memory.Release(memoryClaim)
 				cpu.Release(int64(claim))
 				outcomes <- nodeOutcome{key: key, result: result, err: err}
 			}
@@ -157,6 +177,9 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 		return results, err
 	}
 	if len(failed) > 0 {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return results, ctxErr
+		}
 		keys := make([]string, 0, len(failed))
 		for key := range failed {
 			keys = append(keys, string(key))
@@ -174,19 +197,22 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync.Mutex, node Node, deps map[NodeKey]Result, force bool, reporter report.Reporter) (Result, error) {
 	id := reporter.StepStart(string(node.Key), node.Label)
 	started := time.Now()
-	fail := func(err error) (Result, error) {
-		reporter.StepFailed(id, report.Failure{Task: string(node.Key), Err: err, ExitCode: exitCode(err)})
+	fail := func(err error, output string) (Result, error) {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return Result{}, ctxErr
+		}
+		reporter.StepFailed(id, report.Failure{Task: string(node.Key), Err: err, ExitCode: exitCode(err), Output: output})
 		return Result{}, err
 	}
 	identity, err := e.Handler.Identity(ctx, node)
 	if err != nil {
-		return fail(err)
+		return fail(err, "")
 	}
 	cacheMu.Lock()
 	inputs, err := snapshotNodeInputs(store, node)
 	cacheMu.Unlock()
 	if err != nil {
-		return fail(err)
+		return fail(err, "")
 	}
 	depArtifacts := make([]string, 0, len(node.Dependencies))
 	for _, key := range node.Dependencies {
@@ -196,7 +222,7 @@ func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync
 	}
 	action, err := cache.ActionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, inputs, depArtifacts)
 	if err != nil {
-		return fail(err)
+		return fail(err, "")
 	}
 	if !force && node.Cache == CacheReceipt {
 		cacheMu.Lock()
@@ -213,7 +239,7 @@ func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync
 		status, artifact, lookupErr := store.Lookup(action, node.Output)
 		cacheMu.Unlock()
 		if lookupErr != nil {
-			return fail(lookupErr)
+			return fail(lookupErr, "")
 		}
 		if status == cache.LookupHit || status == cache.LookupRestored {
 			reporter.StepInfo(id, string(status))
@@ -227,11 +253,11 @@ func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync
 
 execute:
 	run, err := e.Handler.Run(ctx, node)
+	if err != nil {
+		return fail(err, run.Detail)
+	}
 	if run.Detail != "" {
 		reporter.StepInfo(id, run.Detail)
-	}
-	if err != nil {
-		return fail(err)
 	}
 	result := Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}
 	switch node.Cache {
@@ -245,11 +271,11 @@ execute:
 		}
 		if snapshotErr != nil {
 			cacheMu.Unlock()
-			return fail(snapshotErr)
+			return fail(snapshotErr, "")
 		}
 		if err := store.RecordReceipt(action); err != nil {
 			cacheMu.Unlock()
-			return fail(err)
+			return fail(err, "")
 		}
 		cacheMu.Unlock()
 	case CacheArtifact:
@@ -257,7 +283,7 @@ execute:
 		artifact, err := store.RecordAction(action, node.Output)
 		cacheMu.Unlock()
 		if err != nil {
-			return fail(err)
+			return fail(err, "")
 		}
 		result.Artifact = artifact
 	}

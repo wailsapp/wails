@@ -46,6 +46,7 @@ const (
 
 type ResourceClaims struct {
 	CPU       int
+	MemoryMB  int64
 	Exclusive string
 }
 
@@ -100,10 +101,11 @@ type Handler interface {
 }
 
 type ExecuteOptions struct {
-	Root     string
-	Workers  int
-	Force    bool
-	Reporter report.Reporter
+	Root          string
+	Workers       int
+	MemoryLimitMB int64
+	Force         bool
+	Reporter      report.Reporter
 }
 
 type Target struct {
@@ -147,24 +149,33 @@ type CompileSpec struct {
 type AssetsSpec struct {
 	TargetOS, TargetArch, Directory string
 	MinimumVersion                  string
+	Capabilities                    []string
 	Project                         manifest.Project
 	Associations                    []manifest.Association
 	Protocols                       []manifest.Protocol
 }
 type PackageSpec struct {
 	TargetOS, TargetArch, Format, Binary, Assets, Output string
+	Profile                                              string
 	Variant                                              string
 	MinimumVersion                                       string
-	Config                                               manifest.PackageFormat
-	Project                                              manifest.Project
+	// TemplateRoot participates in the Action Key when a user template can
+	// render absolute project paths. It prevents restoring a rendered package
+	// created in a different checkout into this one.
+	TemplateRoot string
+	Config       manifest.PackageFormat
+	Project      manifest.Project
+	Capabilities []string
+	Associations []manifest.Association
+	Protocols    []manifest.Protocol
 }
 type SignSpec struct {
 	TargetOS, Format, Input string
 	Config                  manifest.SigningPlatform
 }
 type HookSpec struct {
-	Phase, TargetOS, TargetArch, Profile, Output string
-	Hook                                         manifest.Hook
+	Phase, TargetOS, TargetArch, Profile, Artifact string
+	Hook                                           manifest.Hook
 }
 
 func (InstallSpec) nodeSpec()  {}

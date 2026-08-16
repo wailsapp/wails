@@ -27,6 +27,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/version"
 	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+	"github.com/wailsapp/wails/v3/internal/wake/packagetemplate"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 	"gopkg.in/yaml.v3"
 )
@@ -34,25 +35,40 @@ import (
 type manifestRunOptions struct {
 	Context                             context.Context
 	Verb, Profile, TargetOS, TargetArch string
+	Loaded                              *manifest.Loaded
 	Targets                             []pipeline.Target
 	Formats                             []string
+	Environment                         []string
 	Development, Force, Obfuscated      bool
 	Tags                                []string
 }
 
+type manifestPipelineRun struct {
+	Plan    pipeline.Plan
+	Results map[pipeline.NodeKey]pipeline.Result
+}
+
 func runManifestPipeline(options manifestRunOptions) error {
+	_, err := runManifestPipelineResult(options)
+	return err
+}
+
+func runManifestPipelineResult(options manifestRunOptions) (manifestPipelineRun, error) {
 	started := time.Now()
 	root, err := os.Getwd()
 	if err != nil {
-		return err
+		return manifestPipelineRun{}, err
 	}
-	loaded, err := manifest.Load(root, options.Profile)
-	if err != nil {
-		return err
+	loaded := options.Loaded
+	if loaded == nil {
+		loaded, err = manifest.Load(root, options.Profile)
+		if err != nil {
+			return manifestPipelineRun{}, err
+		}
 	}
 	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, Obfuscated: options.Obfuscated})
 	if err != nil {
-		return err
+		return manifestPipelineRun{}, err
 	}
 	reporter := pulse.New(os.Stdout, report.Normal)
 	term.Header(strings.ToUpper(options.Verb[:1]) + options.Verb[1:])
@@ -65,10 +81,14 @@ func runManifestPipeline(options manifestRunOptions) error {
 		ctx, cancel = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer cancel()
 	}
-	results, err := (pipeline.Executor{Handler: &manifestHandler{root: root, config: loaded.Config}}).Execute(ctx, plan, pipeline.ExecuteOptions{Root: root, Force: options.Force, Reporter: reporter})
+	results, err := (pipeline.Executor{Handler: &manifestHandler{root: root, config: loaded.Config, environment: options.Environment}}).Execute(ctx, plan, pipeline.ExecuteOptions{Root: root, Force: options.Force, Reporter: reporter})
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			reporter.BuildCanceled(time.Since(started))
+			return manifestPipelineRun{Plan: plan, Results: results}, err
+		}
 		reporter.BuildEnd(time.Since(started), false)
-		return wake.MarkReported(err)
+		return manifestPipelineRun{Plan: plan, Results: results}, wake.MarkReported(err)
 	}
 	resultKeys := make([]string, 0, len(results))
 	for key := range results {
@@ -84,12 +104,13 @@ func runManifestPipeline(options manifestRunOptions) error {
 		}
 	}
 	reporter.BuildEnd(time.Since(started), true)
-	return nil
+	return manifestPipelineRun{Plan: plan, Results: results}, nil
 }
 
 type manifestHandler struct {
-	root   string
-	config manifest.Config
+	root        string
+	config      manifest.Config
+	environment []string
 }
 
 func (h *manifestHandler) Identity(_ context.Context, node pipeline.Node) (string, error) {
@@ -147,7 +168,16 @@ func (h *manifestHandler) Identity(_ context.Context, node pipeline.Node) (strin
 		if err != nil {
 			return "", err
 		}
-		tools = append(tools, filepath.Join(h.root, filepath.FromSlash(spec.Hook.Script)))
+		script := filepath.Join(h.root, filepath.FromSlash(spec.Hook.Script))
+		tools = append(tools, script)
+		command, _ := hookCommand(runtime.GOOS, script)
+		if command != script {
+			path, err := exec.LookPath(command)
+			if err != nil {
+				return "", fmt.Errorf("hook interpreter %s not found: %w", command, err)
+			}
+			tools = append(tools, path)
+		}
 	default:
 		// Built-in handlers are identified by the running CLI below.
 	}
@@ -155,31 +185,50 @@ func (h *manifestHandler) Identity(_ context.Context, node pipeline.Node) (strin
 	if err != nil {
 		return "", err
 	}
-	return "wails-" + version.String() + ":" + string(node.Kind) + "|" + identity + "|env:" + relevantEnvironment(node), nil
+	return "wails-" + version.String() + ":" + string(node.Kind) + "|" + identity + "|env:" + relevantEnvironment(node, h.environment), nil
 }
 
-func relevantEnvironment(node pipeline.Node) string {
+func relevantEnvironment(node pipeline.Node, overrides []string) string {
 	keys := []string{"PATH"}
 	switch node.Kind {
-	case pipeline.InstallFrontendDependencies, pipeline.BuildFrontend:
+	case pipeline.InstallFrontendDependencies:
 		keys = append(keys, "CI", "NODE_ENV", "NPM_CONFIG_USERCONFIG", "NPM_CONFIG_REGISTRY", "PNPM_HOME", "YARN_CACHE_FOLDER")
+	case pipeline.BuildFrontend:
+		keys = append(keys, "CI", "NODE_ENV", "NPM_CONFIG_USERCONFIG", "NPM_CONFIG_REGISTRY", "PNPM_HOME", "YARN_CACHE_FOLDER")
+		if spec, ok := node.Spec.(pipeline.FrontendSpec); ok && !spec.Production {
+			keys = append(keys, "FRONTEND_DEVSERVER_URL", wailsVitePort)
+		}
 	case pipeline.GenerateBindings, pipeline.CompileApplication:
 		keys = append(keys, "GOENV", "GOFLAGS", "GOTOOLCHAIN", "GOWORK", "CGO_ENABLED", "CC", "CXX", "CGO_CFLAGS", "CGO_CPPFLAGS", "CGO_CXXFLAGS", "CGO_LDFLAGS")
+		if spec, ok := node.Spec.(pipeline.CompileSpec); ok && !spec.Production {
+			keys = append(keys, "FRONTEND_DEVSERVER_URL", wailsVitePort)
+		}
 	case pipeline.RunHook:
 		if node.Cache == pipeline.CacheArtifact {
-			values := os.Environ()
+			values := mergeEnvironment(os.Environ(), overrides)
 			sort.Strings(values)
 			return strings.Join(values, "\x00")
 		}
 	}
 	values := make([]string, 0, len(keys))
+	resolved := environmentValues(mergeEnvironment(os.Environ(), overrides))
 	for _, key := range keys {
-		if value, ok := os.LookupEnv(key); ok {
+		if value, ok := resolved[key]; ok {
 			values = append(values, key+"="+value)
 		}
 	}
 	sort.Strings(values)
 	return strings.Join(values, "\x00")
+}
+
+func environmentValues(environment []string) map[string]string {
+	result := make(map[string]string, len(environment))
+	for _, entry := range environment {
+		if key, value, ok := strings.Cut(entry, "="); ok {
+			result[key] = value
+		}
+	}
+	return result
 }
 
 func (h *manifestHandler) Run(ctx context.Context, node pipeline.Node) (pipeline.RunResult, error) {
@@ -279,7 +328,8 @@ func (h *manifestHandler) frontend(ctx context.Context, s pipeline.FrontendSpec)
 	if s.Manager == "npm" {
 		args = append(args, "--silent")
 	}
-	env := []string{"PRODUCTION=" + fmt.Sprint(s.Production)}
+	env := append([]string(nil), h.environment...)
+	env = append(env, "PRODUCTION="+fmt.Sprint(s.Production))
 	output, err := runPackageManager(ctx, filepath.Join(h.root, s.Directory), env, s.Manager, args...)
 	return pipeline.RunResult{Detail: output}, err
 }
@@ -307,7 +357,8 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 		args = append(args, "-overlay", overlay)
 	}
 	args = append(args, "-o", output, ".")
-	env := []string{"GOOS=" + s.TargetOS, "GOARCH=" + s.TargetArch}
+	env := append([]string(nil), h.environment...)
+	env = append(env, "GOOS="+s.TargetOS, "GOARCH="+s.TargetArch)
 	if s.TargetOS == "darwin" && s.MinimumVersion != "" {
 		minimumFlag := "-mmacosx-version-min=" + s.MinimumVersion
 		env = append(env, "MACOSX_DEPLOYMENT_TARGET="+s.MinimumVersion, "CGO_CFLAGS="+minimumFlag, "CGO_LDFLAGS="+minimumFlag)
@@ -665,6 +716,84 @@ func replaceGeneratedLiteral(path, old, replacement string) error {
 	return os.WriteFile(path, bytes.ReplaceAll(data, []byte(old), []byte(replacement)), 0o644)
 }
 
+func (h *manifestHandler) renderPackageTemplate(s pipeline.PackageSpec, destination, workspace string) error {
+	source, err := existingPathInsideProject(h.root, s.Config.Template)
+	if err != nil {
+		return fmt.Errorf("package template: %w", err)
+	}
+	icon := ""
+	if s.Project.Icon != "" {
+		icon = filepath.Join(h.root, filepath.FromSlash(s.Project.Icon))
+	}
+	model := packagetemplate.Model{
+		Version: 1,
+		Project: s.Project,
+		Target: packagetemplate.Target{
+			OS: s.TargetOS, Arch: s.TargetArch, Variant: s.Variant, MinimumVersion: s.MinimumVersion, Capabilities: s.Capabilities,
+		},
+		Package: packagetemplate.Package{Format: s.Format},
+		Paths: packagetemplate.Paths{
+			Project:   h.root,
+			Binary:    filepath.Join(h.root, filepath.FromSlash(s.Binary)),
+			Output:    filepath.Join(h.root, filepath.FromSlash(s.Output)),
+			Assets:    filepath.Join(h.root, filepath.FromSlash(s.Assets)),
+			Icon:      icon,
+			Workspace: workspace,
+		},
+		Associations: s.Associations,
+		Protocols:    s.Protocols,
+		Options:      s.Config.Options,
+	}
+	return packagetemplate.Render(source, destination, model)
+}
+
+func packageStringOption(options map[string]any, name, fallback string) string {
+	if value, ok := options[name].(string); ok && value != "" {
+		return value
+	}
+	return fallback
+}
+
+func packageIntOption(options map[string]any, name string, fallback int) int {
+	switch value := options[name].(type) {
+	case int:
+		return value
+	case int64:
+		return int(value)
+	case float64:
+		return int(value)
+	default:
+		return fallback
+	}
+}
+
+func resolveDMGFiles(root, value string) string {
+	var resolved []string
+	for _, item := range strings.Split(value, ",") {
+		name, path, ok := strings.Cut(item, "=")
+		if !ok || strings.TrimSpace(path) == "" {
+			resolved = append(resolved, item)
+			continue
+		}
+		path = strings.TrimSpace(path)
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(root, filepath.FromSlash(path))
+		}
+		resolved = append(resolved, strings.TrimSpace(name)+"="+path)
+	}
+	return strings.Join(resolved, ",")
+}
+
+func (h *manifestHandler) packageWorkspace(s pipeline.PackageSpec, elements ...string) string {
+	profile := s.Profile
+	if profile == "" {
+		profile = "default"
+	}
+	target := strings.ReplaceAll(s.TargetOS+"/"+s.TargetArch, "/", "-")
+	parts := []string{h.root, ".wails", "build", profile, target, "package", s.Format}
+	return filepath.Join(append(parts, elements...)...)
+}
+
 func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
 	switch s.Format {
 	case "app":
@@ -676,10 +805,14 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 		if _, err := h.packageApp(pipeline.PackageSpec{Project: s.Project, Binary: s.Binary, Assets: s.Assets, Output: strings.TrimSuffix(s.Output, ".dmg") + ".app", TargetOS: s.TargetOS, TargetArch: s.TargetArch, Format: "app"}); err != nil {
 			return pipeline.RunResult{}, err
 		}
-		err := ToolPackage(&flags.ToolPackage{Format: "dmg", ExecutableName: s.Project.BinaryName, Out: filepath.Dir(filepath.Join(h.root, s.Output))})
+		options, err := h.dmgOptions(s)
+		if err != nil {
+			return pipeline.RunResult{}, err
+		}
+		err = toolPackage(options)
 		return pipeline.RunResult{}, err
 	case "appimage":
-		return h.packageAppImage(s)
+		return h.packageAppImage(ctx, s)
 	case "deb", "rpm", "archlinux":
 		return h.packageLinux(s)
 	case "nsis":
@@ -693,6 +826,43 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 	default:
 		return pipeline.RunResult{}, fmt.Errorf("unsupported package format %q", s.Format)
 	}
+}
+
+func (h *manifestHandler) dmgOptions(s pipeline.PackageSpec) (*flags.ToolPackage, error) {
+	values := map[string]any{}
+	if s.Config.Template != "" {
+		workspace := h.packageWorkspace(s)
+		path := filepath.Join(workspace, "dmg.json")
+		if err := h.renderPackageTemplate(s, path, workspace); err != nil {
+			return nil, err
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(data, &values); err != nil {
+			return nil, fmt.Errorf("parse rendered DMG template: %w", err)
+		}
+	}
+	for key, value := range s.Config.Options {
+		values[key] = value
+	}
+	resolve := func(value string) string {
+		if value == "" || filepath.IsAbs(value) {
+			return value
+		}
+		return filepath.Join(h.root, filepath.FromSlash(value))
+	}
+	return &flags.ToolPackage{
+		Format: "dmg", ExecutableName: s.Project.BinaryName,
+		Out:             filepath.Dir(filepath.Join(h.root, s.Output)),
+		BackgroundImage: resolve(packageStringOption(values, "background", "")),
+		DmgVolumeIcon:   resolve(packageStringOption(values, "volume_icon", "")),
+		DmgFileIcon:     resolve(packageStringOption(values, "file_icon", "")),
+		DmgFiles:        resolveDMGFiles(h.root, packageStringOption(values, "files", "")),
+		DmgWindowWidth:  packageIntOption(values, "window_width", 540),
+		DmgWindowHeight: packageIntOption(values, "window_height", 380),
+	}, nil
 }
 
 func (h *manifestHandler) packageApp(s pipeline.PackageSpec) (pipeline.RunResult, error) {
@@ -724,26 +894,54 @@ func (h *manifestHandler) packageApp(s pipeline.PackageSpec) (pipeline.RunResult
 			}
 		}
 	}
+	if s.Config.Template != "" {
+		if err := h.renderPackageTemplate(s, filepath.Join(output, "Contents", "Info.plist"), output); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
 	return pipeline.RunResult{}, nil
 }
 
-func (h *manifestHandler) packageAppImage(s pipeline.PackageSpec) (pipeline.RunResult, error) {
-	workingDirectory, err := os.Getwd()
+func (h *manifestHandler) packageAppImage(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
+	desktop, icon, buildDir, err := h.prepareAppImageInputs(s)
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	defer func() { _ = os.Chdir(workingDirectory) }()
-	assets := filepath.Join(h.root, s.Assets)
-	desktop := filepath.Join(assets, s.Project.BinaryName+".desktop")
-	if err := GenerateDotDesktop(&DotDesktopOptions{OutputFile: desktop, Type: "Application", Name: s.Project.ProductName, Exec: s.Project.BinaryName, Icon: s.Project.BinaryName, Comment: s.Project.Description, Categories: "Utility;", Version: "1.0"}); err != nil {
+	outDir := filepath.Dir(filepath.Join(h.root, s.Output))
+	executable, err := os.Executable()
+	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	buildDir := filepath.Join(h.root, ".wails", "package", "appimage", s.TargetArch)
-	outDir := filepath.Dir(filepath.Join(h.root, s.Output))
-	if err := GenerateAppImage(&GenerateAppImageOptions{Binary: filepath.Join(h.root, s.Binary), Icon: filepath.Join(assets, "appicon.png"), DesktopFile: desktop, OutputDir: outDir, BuildDir: buildDir}); err != nil {
-		return pipeline.RunResult{}, err
+	detail, err := runManifestCommand(ctx, h.root, nil, executable,
+		"generate", "appimage",
+		"-binary", filepath.Join(h.root, s.Binary),
+		"-icon", icon,
+		"-desktopfile", desktop,
+		"-outputdir", outDir,
+		"-builddir", buildDir,
+	)
+	if err != nil {
+		return pipeline.RunResult{Detail: detail}, err
 	}
 	return pipeline.RunResult{}, ensureExpectedAppImage(outDir, filepath.Join(h.root, s.Output))
+}
+
+func (h *manifestHandler) prepareAppImageInputs(s pipeline.PackageSpec) (desktop, icon, buildDir string, err error) {
+	buildDir = h.packageWorkspace(s)
+	if err := os.MkdirAll(buildDir, 0o755); err != nil {
+		return "", "", "", err
+	}
+	icon = filepath.Join(buildDir, s.Project.BinaryName+".png")
+	if err := copyManifestPath(filepath.Join(h.root, s.Assets, "appicon.png"), icon); err != nil {
+		return "", "", "", err
+	}
+	desktop = filepath.Join(buildDir, s.Project.BinaryName+".desktop")
+	if s.Config.Template != "" {
+		return desktop, icon, buildDir, h.renderPackageTemplate(s, desktop, buildDir)
+	}
+	categories := packageStringOption(s.Config.Options, "categories", "Utility;")
+	err = generateDotDesktop(&DotDesktopOptions{OutputFile: desktop, Type: "Application", Name: s.Project.ProductName, Exec: s.Project.BinaryName, Icon: s.Project.BinaryName, Comment: s.Project.Description, Categories: categories, Version: "1.0"})
+	return desktop, icon, buildDir, err
 }
 
 func (h *manifestHandler) packageLinux(s pipeline.PackageSpec) (pipeline.RunResult, error) {
@@ -751,10 +949,7 @@ func (h *manifestHandler) packageLinux(s pipeline.PackageSpec) (pipeline.RunResu
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	if s.Config.Template != "" {
-		config = filepath.Join(h.root, filepath.FromSlash(s.Config.Template))
-	}
-	packageRoot := filepath.Join(h.root, ".wails", "package")
+	packageRoot := h.packageWorkspace(s)
 	if err := os.MkdirAll(packageRoot, 0o755); err != nil {
 		return pipeline.RunResult{}, err
 	}
@@ -763,7 +958,7 @@ func (h *manifestHandler) packageLinux(s pipeline.PackageSpec) (pipeline.RunResu
 		return pipeline.RunResult{}, err
 	}
 	defer os.RemoveAll(outDir)
-	if err := ToolPackage(&flags.ToolPackage{Format: s.Format, ExecutableName: s.Project.BinaryName, ConfigPath: config, Out: outDir}); err != nil {
+	if err := toolPackage(&flags.ToolPackage{Format: s.Format, ExecutableName: s.Project.BinaryName, ConfigPath: config, Out: outDir}); err != nil {
 		return pipeline.RunResult{}, err
 	}
 	return pipeline.RunResult{}, findAndMovePackage(outDir, s.Project.BinaryName, s.Format, filepath.Join(h.root, s.Output))
@@ -771,15 +966,17 @@ func (h *manifestHandler) packageLinux(s pipeline.PackageSpec) (pipeline.RunResu
 
 func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (string, error) {
 	if s.Config.Template != "" {
-		return filepath.Join(h.root, filepath.FromSlash(s.Config.Template)), nil
+		workspace := h.packageWorkspace(s)
+		config := filepath.Join(workspace, "nfpm.yaml")
+		return config, h.renderPackageTemplate(s, config, workspace)
 	}
 	assets := filepath.Join(h.root, s.Assets)
-	workspace := filepath.Join(h.root, ".wails", "package", "linux", s.TargetArch, s.Format)
+	workspace := h.packageWorkspace(s)
 	if err := os.MkdirAll(workspace, 0o755); err != nil {
 		return "", err
 	}
 	desktop := filepath.Join(workspace, s.Project.BinaryName+".desktop")
-	if err := GenerateDotDesktop(&DotDesktopOptions{OutputFile: desktop, Type: "Application", Name: s.Project.ProductName, Exec: s.Project.BinaryName, Icon: s.Project.BinaryName, Comment: s.Project.Description, Categories: "Utility;", Version: "1.0"}); err != nil {
+	if err := generateDotDesktop(&DotDesktopOptions{OutputFile: desktop, Type: "Application", Name: s.Project.ProductName, Exec: s.Project.BinaryName, Icon: s.Project.BinaryName, Comment: s.Project.Description, Categories: "Utility;", Version: "1.0"}); err != nil {
 		return "", err
 	}
 	source := filepath.Join(assets, "linux", "nfpm", "nfpm.yaml")
@@ -829,13 +1026,8 @@ func (h *manifestHandler) prepareLinuxPackageConfig(s pipeline.PackageSpec) (str
 }
 
 func (h *manifestHandler) packageNSIS(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
-	dir := filepath.Join(h.root, s.Assets, "windows", "nsis")
-	if s.Config.Template != "" {
-		if err := copyManifestPath(filepath.Join(h.root, filepath.FromSlash(s.Config.Template)), filepath.Join(dir, "project.nsi")); err != nil {
-			return pipeline.RunResult{}, err
-		}
-	}
-	if err := GenerateWebView2Bootstrapper(&GenerateWebView2Options{Directory: dir}); err != nil {
+	dir, packageRoot, err := h.prepareNSISWorkspace(s)
+	if err != nil {
 		return pipeline.RunResult{}, err
 	}
 	flag := "AMD64"
@@ -850,18 +1042,38 @@ func (h *manifestHandler) packageNSIS(ctx context.Context, s pipeline.PackageSpe
 	if err != nil {
 		return pipeline.RunResult{Detail: result}, err
 	}
-	generated := filepath.Join(h.root, filepath.Dir(s.Assets), "bin", s.Project.Name+"-"+s.TargetArch+"-installer.exe")
+	generated := filepath.Join(packageRoot, "bin", s.Project.Name+"-"+s.TargetArch+"-installer.exe")
 	if err := copyManifestPath(generated, filepath.Join(h.root, s.Output)); err != nil {
 		return pipeline.RunResult{}, err
 	}
 	return pipeline.RunResult{Detail: result}, nil
 }
 
+func (h *manifestHandler) prepareNSISWorkspace(s pipeline.PackageSpec) (dir, packageRoot string, err error) {
+	packageRoot = h.packageWorkspace(s)
+	if err := removeGenerated(packageRoot); err != nil {
+		return "", "", err
+	}
+	dir = filepath.Join(packageRoot, "assets", "windows", "nsis")
+	if err := copyManifestPath(filepath.Join(h.root, s.Assets, "windows", "nsis"), dir); err != nil {
+		return "", "", err
+	}
+	if s.Config.Template != "" {
+		if err := h.renderPackageTemplate(s, filepath.Join(dir, "project.nsi"), dir); err != nil {
+			return "", "", err
+		}
+	}
+	if err := GenerateWebView2Bootstrapper(&GenerateWebView2Options{Directory: dir}); err != nil {
+		return "", "", err
+	}
+	return dir, packageRoot, nil
+}
+
 func (h *manifestHandler) packageMSIX(s pipeline.PackageSpec) (pipeline.RunResult, error) {
 	if runtime.GOOS != "windows" {
 		return pipeline.RunResult{}, fmt.Errorf("MSIX packaging requires Windows")
 	}
-	workspace := filepath.Join(h.root, ".wails", "package", "msix", s.TargetArch)
+	workspace := h.packageWorkspace(s)
 	if err := removeGenerated(workspace); err != nil {
 		return pipeline.RunResult{}, err
 	}
@@ -869,12 +1081,16 @@ func (h *manifestHandler) packageMSIX(s pipeline.PackageSpec) (pipeline.RunResul
 		return pipeline.RunResult{}, err
 	}
 	var associations []map[string]any
-	for _, association := range h.config.Associations {
+	for _, association := range s.Associations {
 		for _, extension := range association.Extensions {
 			associations = append(associations, map[string]any{"ext": extension, "name": association.Name, "description": association.Description, "iconName": association.Icon, "role": association.Role, "mimeType": association.MIMEType})
 		}
 	}
-	config := map[string]any{"info": map[string]any{"companyName": s.Project.CompanyName, "productName": s.Project.ProductName, "productIdentifier": s.Project.Identifier, "description": s.Project.Description, "copyright": s.Project.Copyright, "comments": s.Project.Comments, "version": s.Project.Version}, "fileAssociations": associations}
+	var protocols []map[string]any
+	for _, protocol := range s.Protocols {
+		protocols = append(protocols, map[string]any{"scheme": protocol.Scheme, "description": protocol.Description})
+	}
+	config := map[string]any{"info": map[string]any{"companyName": s.Project.CompanyName, "productName": s.Project.ProductName, "productIdentifier": s.Project.Identifier, "description": s.Project.Description, "copyright": s.Project.Copyright, "comments": s.Project.Comments, "version": s.Project.Version}, "fileAssociations": associations, "protocols": protocols}
 	data, err := json.Marshal(config)
 	if err != nil {
 		return pipeline.RunResult{}, err
@@ -892,21 +1108,31 @@ func (h *manifestHandler) packageMSIX(s pipeline.PackageSpec) (pipeline.RunResul
 	if signing.Identity != "" {
 		publisher = signing.Identity
 	}
-	err = ToolMSIX(&flags.ToolMSIX{ConfigPath: configPath, Publisher: publisher, CertificatePath: signing.Certificate, Arch: arch, ExecutableName: s.Project.BinaryName + ".exe", ExecutablePath: filepath.Join(h.root, s.Binary), OutputPath: filepath.Join(h.root, s.Output), UseMakeAppx: true})
+	appxManifest := ""
+	if s.Config.Template != "" {
+		appxManifest = filepath.Join(workspace, "AppxManifest.xml")
+		if err := h.renderPackageTemplate(s, appxManifest, workspace); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
+	err = ToolMSIX(&flags.ToolMSIX{ConfigPath: configPath, Publisher: publisher, CertificatePath: signing.Certificate, Arch: arch, ExecutableName: s.Project.BinaryName + ".exe", ExecutablePath: filepath.Join(h.root, s.Binary), OutputPath: filepath.Join(h.root, s.Output), AppxManifest: appxManifest, UseMakeAppx: true})
 	return pipeline.RunResult{}, err
 }
 
 func (h *manifestHandler) packageAndroid(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
-	workspace := filepath.Join(h.root, ".wails", "package", "android", s.TargetArch, s.Format)
+	workspace := h.packageWorkspace(s)
 	if err := removeGenerated(workspace); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	source := filepath.Join(h.root, s.Assets, "android")
 	if s.Config.Template != "" {
-		source = filepath.Join(h.root, filepath.FromSlash(s.Config.Template))
-	}
-	if err := copyManifestPath(source, workspace); err != nil {
-		return pipeline.RunResult{}, err
+		if err := h.renderPackageTemplate(s, workspace, workspace); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	} else {
+		source := filepath.Join(h.root, s.Assets, "android")
+		if err := copyManifestPath(source, workspace); err != nil {
+			return pipeline.RunResult{}, err
+		}
 	}
 	abi := "arm64-v8a"
 	if s.TargetArch == "amd64" {
@@ -962,7 +1188,7 @@ func (h *manifestHandler) packageIOS(ctx context.Context, s pipeline.PackageSpec
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	workspace := filepath.Join(h.root, ".wails", "package", "ios", s.TargetArch)
+	workspace := h.packageWorkspace(s)
 	if err := removeGenerated(workspace); err != nil {
 		return pipeline.RunResult{}, err
 	}
@@ -995,8 +1221,14 @@ func (h *manifestHandler) packageIOS(ctx context.Context, s pipeline.PackageSpec
 		return pipeline.RunResult{}, err
 	}
 	info := filepath.Join(h.root, s.Assets, "ios", "xcode", "main", "Info.plist")
-	if err := copyManifestPath(info, filepath.Join(appOutput, "Info.plist")); err != nil {
-		return pipeline.RunResult{}, err
+	if s.Config.Template != "" {
+		if err := h.renderPackageTemplate(s, filepath.Join(appOutput, "Info.plist"), workspace); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	} else {
+		if err := copyManifestPath(info, filepath.Join(appOutput, "Info.plist")); err != nil {
+			return pipeline.RunResult{}, err
+		}
 	}
 	assetInput := filepath.Join(h.root, s.Assets, "ios", "xcode", "main", "Assets.xcassets")
 	assetTemp := filepath.Join(workspace, "compiled-assets")
@@ -1082,7 +1314,7 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 }
 
 func (h *manifestHandler) hook(ctx context.Context, s pipeline.HookSpec) (pipeline.RunResult, error) {
-	script, err := pathInsideProject(h.root, s.Hook.Script)
+	script, err := existingPathInsideProject(h.root, s.Hook.Script)
 	if err != nil {
 		return pipeline.RunResult{}, fmt.Errorf("hook script: %w", err)
 	}
@@ -1095,25 +1327,87 @@ func (h *manifestHandler) hook(ctx context.Context, s pipeline.HookSpec) (pipeli
 	}
 	dir := h.root
 	if s.Hook.Directory != "" {
-		dir, err = pathInsideProject(h.root, s.Hook.Directory)
+		dir, err = existingPathInsideProject(h.root, s.Hook.Directory)
 		if err != nil {
 			return pipeline.RunResult{}, fmt.Errorf("hook directory: %w", err)
 		}
 	}
-	env := []string{"WAILS_PROJECT_DIR=" + h.root, "WAILS_TARGET_OS=" + s.TargetOS, "WAILS_TARGET_ARCH=" + s.TargetArch, "WAILS_PROFILE=" + s.Profile, "WAILS_OUTPUT=" + s.Output, "WAILS_PIPELINE_VERSION=1"}
-	output, err := runManifestCommand(ctx, dir, env, script)
+	env := append([]string(nil), h.environment...)
+	env = append(env, "WAILS_PROJECT_DIR="+h.root, "WAILS_TARGET_OS="+s.TargetOS, "WAILS_TARGET_ARCH="+s.TargetArch, "WAILS_PROFILE="+s.Profile, "WAILS_OUTPUT="+s.Artifact, "WAILS_PIPELINE_VERSION=1")
+	command, args := hookCommand(runtime.GOOS, script)
+	output, err := runManifestCommand(ctx, dir, env, command, args...)
 	return pipeline.RunResult{Detail: output}, err
+}
+
+func hookCommand(goos, script string) (string, []string) {
+	if goos != "windows" {
+		return script, nil
+	}
+	switch strings.ToLower(filepath.Ext(script)) {
+	case ".cmd", ".bat":
+		command := os.Getenv("COMSPEC")
+		if command == "" {
+			command = "cmd.exe"
+		}
+		return command, []string{"/d", "/s", "/c", script}
+	case ".ps1":
+		return "powershell.exe", []string{"-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", script}
+	default:
+		return script, nil
+	}
 }
 
 func runManifestCommand(ctx context.Context, dir string, extraEnv []string, name string, args ...string) (string, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), extraEnv...)
+	cmd.Env = mergeEnvironment(os.Environ(), extraEnv)
+	configureManifestProcess(cmd)
+	cmd.Cancel = func() error {
+		if cmd.Process == nil {
+			return os.ErrProcessDone
+		}
+		return killManifestProcess(cmd.Process)
+	}
+	cmd.WaitDelay = 5 * time.Second
 	var output bytes.Buffer
 	cmd.Stdout = &output
 	cmd.Stderr = &output
 	err := cmd.Run()
 	return strings.TrimSpace(output.String()), err
+}
+
+func mergeEnvironment(inherited, overrides []string) []string {
+	type entry struct {
+		key, value string
+	}
+	values := make(map[string]entry, len(inherited)+len(overrides))
+	add := func(raw string) {
+		key, _, ok := strings.Cut(raw, "=")
+		if !ok || key == "" {
+			return
+		}
+		identity := key
+		if runtime.GOOS == "windows" {
+			identity = strings.ToUpper(key)
+		}
+		values[identity] = entry{key: key, value: raw}
+	}
+	for _, raw := range inherited {
+		add(raw)
+	}
+	for _, raw := range overrides {
+		add(raw)
+	}
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	result := make([]string, 0, len(keys))
+	for _, key := range keys {
+		result = append(result, values[key].value)
+	}
+	return result
 }
 
 func runPackageManager(ctx context.Context, dir string, extraEnv []string, manager string, args ...string) (string, error) {
@@ -1186,6 +1480,26 @@ func pathInsideProject(root, value string) (string, error) {
 		return "", fmt.Errorf("path escapes the project: %s", value)
 	}
 	return resolved, nil
+}
+
+func existingPathInsideProject(root, value string) (string, error) {
+	path, err := pathInsideProject(root, value)
+	if err != nil {
+		return "", err
+	}
+	resolvedRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return "", err
+	}
+	resolvedPath, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return "", err
+	}
+	relative, err := filepath.Rel(resolvedRoot, resolvedPath)
+	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("path resolves outside the project: %s", value)
+	}
+	return resolvedPath, nil
 }
 
 func writeGeneratedConfig(dir string, project manifest.Project, associations []manifest.Association, protocols []manifest.Protocol) (string, error) {
