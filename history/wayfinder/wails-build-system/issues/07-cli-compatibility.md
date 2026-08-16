@@ -1,7 +1,7 @@
 # CLI compatibility and migration cutover
 
 Type: grilling
-Status: open
+Status: resolved
 Blocked by: 01
 
 ## Question
@@ -20,10 +20,10 @@ generated Taskfiles stop being supported.
 
 - New projects contain `wails.toml` and no Taskfiles. Manifest-only projects
   use the built-in Pipeline for build, package, sign, and dev.
-- A project containing both systems uses the Manifest when there is no pending
-  migration marker. `[wake.migration].complete = false` leaves build verbs on
-  the legacy path and prints a concise migration status hint. Older preview
-  manifests with `complete = true` remain compatible.
+- A project containing both systems uses the hidden migration report as the
+  cutover decision. An incomplete report leaves build verbs on the legacy path
+  and prints a concise migration status hint; a complete report uses the
+  Manifest. Coexistence without a report is rejected as ambiguous.
 - `config check`, `config show`, `eject`, and `migrate` are Manifest-aware
   commands and never dispatch through Task. `eject` requires a Manifest;
   `migrate` requires legacy inputs.
@@ -33,3 +33,15 @@ generated Taskfiles stop being supported.
 - Unknown positional `KEY=value` build arguments are rejected in Manifest
   projects with a mapping hint; supported target/profile/options use explicit
   flags. Legacy projects retain their current passthrough behavior.
+
+## Answer
+
+Manifest activation is resolved in one command-routing seam. Manifest-only
+projects use the built-in pipeline; Taskfile-only projects use legacy
+execution; an incomplete private migration report deliberately falls back; and
+a complete report activates the Manifest even during cleanup. Both systems
+without a report fail with an actionable ambiguity error, while an incomplete
+report without a Taskfile fails as an invalid migration. Config/eject commands
+remain Manifest-native, and completed migrations normally remove the source of
+future ambiguity by retiring the Taskfiles. `migrate --complete` is the only
+existing-manifest migration path and never rewrites that manifest.

@@ -8,6 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	wakeast "github.com/wailsapp/wails/v3/internal/wake/ast"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+	"github.com/wailsapp/wails/v3/internal/wake/migration"
 )
 
 func TestAnalyseMigrationTranslatesLegacyConfig(t *testing.T) {
@@ -21,11 +24,9 @@ func TestAnalyseMigrationTranslatesLegacyConfig(t *testing.T) {
 	assert.Equal(t, "pnpm", doc.Frontend.PackageManager)
 	require.Len(t, doc.Associations, 1)
 	assert.Equal(t, []string{"demo"}, doc.Associations[0].Extensions)
-	require.NotNil(t, doc.Wake.Migration)
-	assert.False(t, doc.Wake.Migration.Complete)
 	assert.NotEmpty(t, report.CompletedBy)
 	assert.NotEmpty(t, report.Sources)
-	assert.Empty(t, doc.Wake.Migration.Sources, "source digests belong in .wails/migration-report.json, not wails.toml")
+	assert.Empty(t, doc.Wake, "migration state belongs in .wails/migration-report.json, not wails.toml")
 }
 
 func TestMigrationRecognizesHistoricalGeneratedDefaults(t *testing.T) {
@@ -38,7 +39,10 @@ func TestAnalyseMigrationRecognizesShippedDefault(t *testing.T) {
 	report, doc, err := analyseMigration(filepath.Join("..", "..", "examples", "badge"))
 	require.NoError(t, err)
 	assert.Truef(t, report.Complete, "diagnostics: %#v", report.Diagnostics)
-	assert.Nil(t, doc.Wake.Migration, "completed migrations must look like native manifests")
+	assert.Empty(t, doc.Wake, "completed migrations must look like native manifests")
+	for _, taskfile := range report.Taskfiles {
+		assert.Contains(t, []string{"current-default", "historical-default"}, taskfile.Classification, "%s", taskfile.File)
+	}
 }
 
 func TestAnalyseMigrationFindsModifiedKnownRootTask(t *testing.T) {
@@ -56,6 +60,28 @@ func TestAnalyseMigrationFindsModifiedKnownRootTask(t *testing.T) {
 	require.NoError(t, err)
 	assert.False(t, report.Complete)
 	assert.Contains(t, report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: "Taskfile.yml", Task: "build", Message: "root dispatch task was modified and requires a manifest field or user-owned hook script"})
+	for _, taskfile := range report.Taskfiles {
+		if taskfile.File == "Taskfile.yml" {
+			assert.Equal(t, "customised", taskfile.Classification)
+			assert.Contains(t, taskfile.ModifiedTasks, "build")
+		}
+	}
+}
+
+func TestCurrentCommonTaskfileDefaultsAreComparedStructurally(t *testing.T) {
+	variants := stockTaskVariants("common")
+	require.Len(t, variants, 4)
+	assert.True(t, closestCanonical(variants[0], variants).exact)
+
+	actual := make(map[string]*wakeast.Task, len(variants[0]))
+	for name, task := range variants[0] {
+		actual[name] = task.Clone()
+	}
+	require.NotEmpty(t, actual["build:frontend"].Cmds)
+	actual["build:frontend"].Cmds[0].Cmd = "echo customised"
+	diff := closestCanonical(actual, variants)
+	assert.False(t, diff.exact)
+	assert.Contains(t, diff.changed, "build:frontend")
 }
 
 func TestAnalyseMigrationFindsLocalCustomTasks(t *testing.T) {
@@ -65,10 +91,81 @@ func TestAnalyseMigrationFindsLocalCustomTasks(t *testing.T) {
 	report, doc, err := analyseMigration(root)
 	require.NoError(t, err)
 	assert.False(t, report.Complete)
-	assert.False(t, doc.Wake.Migration.Complete)
+	assert.Empty(t, doc.Wake)
 	assert.Contains(t, report.Sources, "Taskfile.local.yml")
 	require.NotEmpty(t, report.Diagnostics)
 	assert.Equal(t, "unsupported-task", report.Diagnostics[0].Code)
+}
+
+func TestBackupLegacySourcesPreservesTree(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, "build", "Taskfile.yml")
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	require.NoError(t, os.WriteFile(path, []byte("version: '3'\n"), 0o644))
+	digest, err := digestFile(path)
+	require.NoError(t, err)
+	backedUp, diagnostics := backupLegacySources(root, map[string]string{"build/Taskfile.yml": digest})
+	assert.Empty(t, diagnostics)
+	assert.Equal(t, []string{".wails/migration-backup/build/Taskfile.yml"}, backedUp)
+	data, err := os.ReadFile(filepath.Join(root, ".wails", "migration-backup", "build", "Taskfile.yml"))
+	require.NoError(t, err)
+	assert.Equal(t, "version: '3'\n", string(data))
+}
+
+func TestMigrateCompleteProjectRetiresLegacySourcesAndKeepsStatePrivate(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.CopyFS(root, os.DirFS(filepath.Join("..", "..", "examples", "badge"))))
+	require.NoError(t, os.Remove(filepath.Join(root, manifest.Filename)))
+	t.Chdir(root)
+
+	require.NoError(t, Migrate(&MigrateOptions{Backup: true}))
+	_, err := os.Stat(filepath.Join(root, "Taskfile.yml"))
+	assert.ErrorIs(t, err, os.ErrNotExist)
+	_, err = os.Stat(filepath.Join(root, ".wails", "migration-backup", "Taskfile.yml"))
+	require.NoError(t, err)
+	report, exists, err := migration.Read(root)
+	require.NoError(t, err)
+	assert.True(t, exists)
+	assert.True(t, report.Complete)
+	assert.Contains(t, report.Removed, "Taskfile.yml")
+
+	manifestData, err := os.ReadFile(filepath.Join(root, manifest.Filename))
+	require.NoError(t, err)
+	assert.NotContains(t, string(manifestData), "migration")
+}
+
+func TestCompleteReviewedMigrationUsesOriginalSourceDigests(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("version: '3'\ntasks:\n  publish:\n    cmds: [echo custom]\n"), 0o644))
+	t.Chdir(root)
+	require.NoError(t, Migrate(&MigrateOptions{}))
+
+	require.NoError(t, Migrate(&MigrateOptions{Complete: true, Backup: true}))
+	_, err := os.Stat(filepath.Join(root, "Taskfile.yml"))
+	assert.ErrorIs(t, err, os.ErrNotExist)
+	report, exists, err := migration.Read(root)
+	require.NoError(t, err)
+	assert.True(t, exists)
+	assert.True(t, report.Complete)
+	assert.Contains(t, report.BackedUp, ".wails/migration-backup/Taskfile.yml")
+}
+
+func TestCompleteReviewedMigrationRefusesChangedSource(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, "Taskfile.yml")
+	require.NoError(t, os.WriteFile(path, []byte("version: '3'\ntasks:\n  publish:\n    cmds: [echo custom]\n"), 0o644))
+	t.Chdir(root)
+	require.NoError(t, Migrate(&MigrateOptions{}))
+	require.NoError(t, os.WriteFile(path, []byte("version: '3'\ntasks:\n  publish:\n    cmds: [echo changed]\n"), 0o644))
+
+	err := Migrate(&MigrateOptions{Complete: true})
+	require.ErrorContains(t, err, "legacy sources changed after analysis")
+	_, statErr := os.Stat(path)
+	require.NoError(t, statErr)
+	report, exists, readErr := migration.Read(root)
+	require.NoError(t, readErr)
+	assert.True(t, exists)
+	assert.False(t, report.Complete)
 }
 
 func TestAnalyseMigrationTranslatesScriptFileHook(t *testing.T) {

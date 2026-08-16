@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -11,71 +12,68 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/version"
 	wakeast "github.com/wailsapp/wails/v3/internal/wake/ast"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+	"github.com/wailsapp/wails/v3/internal/wake/migration"
 	"github.com/wailsapp/wails/v3/internal/wake/parse"
 	"github.com/zeebo/blake3"
 	"gopkg.in/yaml.v3"
 )
 
 type MigrateOptions struct {
-	DryRun         bool `name:"dry-run" description:"Analyse without writing project files"`
-	JSON           bool `name:"json" description:"Print the machine-readable report"`
-	RemoveOldFiles bool `name:"remove-old-files" description:"Remove fully represented legacy files whose digests still match"`
+	DryRun   bool `name:"dry-run" description:"Analyse without writing project files"`
+	JSON     bool `name:"json" description:"Print the machine-readable report"`
+	Backup   bool `name:"backup" description:"Back up represented legacy files under .wails before retiring them"`
+	Complete bool `name:"complete" description:"Complete a reviewed migration and retire its unchanged legacy files"`
 }
 
-type MigrationDiagnostic struct {
-	Severity string `json:"severity"`
-	Code     string `json:"code"`
-	File     string `json:"file,omitempty"`
-	Task     string `json:"task,omitempty"`
-	Message  string `json:"message"`
-}
-
-type MigrationReport struct {
-	Version     int                   `json:"version"`
-	CompletedBy string                `json:"completed_by"`
-	Complete    bool                  `json:"complete"`
-	Wrote       []string              `json:"wrote,omitempty"`
-	Removed     []string              `json:"removed,omitempty"`
-	Sources     map[string]string     `json:"sources"`
-	Diagnostics []MigrationDiagnostic `json:"diagnostics,omitempty"`
-}
+type MigrationDiagnostic = migration.Diagnostic
+type MigrationReport = migration.Report
 
 func Migrate(options *MigrateOptions) error {
 	root, err := os.Getwd()
 	if err != nil {
 		return err
 	}
+	if manifest.Exists(root) {
+		if !options.Complete {
+			return fmt.Errorf("%s already exists; migration will not overwrite it (use --complete only after resolving an existing migration report)", manifest.Filename)
+		}
+		return completeMigration(root, options)
+	}
+	if options.Complete {
+		return fmt.Errorf("--complete requires an existing %s and %s", manifest.Filename, migration.RelativeReportPath)
+	}
 	report, doc, err := analyseMigration(root)
 	if err != nil {
 		return err
 	}
 	if !options.DryRun {
-		if manifest.Exists(root) {
-			return fmt.Errorf("%s already exists; migration will not overwrite it", manifest.Filename)
-		}
 		if err := manifest.WriteDocument(root, doc); err != nil {
 			return err
 		}
 		report.Wrote = append(report.Wrote, manifest.Filename)
-		if options.RemoveOldFiles {
-			removed, diagnostics := removeLegacySources(root, report.Sources, report.Complete)
+		if report.Complete && options.Backup {
+			backedUp, diagnostics := backupLegacySources(root, report.Sources)
+			report.BackedUp = append(report.BackedUp, backedUp...)
+			report.Diagnostics = append(report.Diagnostics, diagnostics...)
+			if len(diagnostics) > 0 {
+				report.Complete = false
+			}
+		}
+		if report.Complete {
+			removed, diagnostics := removeLegacySources(root, report.Sources, true)
 			report.Removed = append(report.Removed, removed...)
 			report.Diagnostics = append(report.Diagnostics, diagnostics...)
+			if len(diagnostics) > 0 {
+				report.Complete = false
+			}
 		}
-		reportPath := filepath.Join(root, ".wails", "migration-report.json")
-		if err := os.MkdirAll(filepath.Dir(reportPath), 0o755); err != nil {
-			return err
-		}
-		report.Wrote = append(report.Wrote, filepath.ToSlash(filepath.Join(".wails", "migration-report.json")))
-		data, err := json.MarshalIndent(report, "", "  ")
-		if err != nil {
-			return err
-		}
-		if err := os.WriteFile(reportPath, append(data, '\n'), 0o644); err != nil {
+		report.Wrote = append(report.Wrote, migration.RelativeReportPath)
+		if err := migration.Write(root, report); err != nil {
 			return err
 		}
 	}
@@ -99,8 +97,79 @@ func Migrate(options *MigrateOptions) error {
 	if options.DryRun {
 		fmt.Println("No files written (--dry-run)")
 	} else {
-		fmt.Printf("Wrote %s and .wails/migration-report.json\n", manifest.Filename)
+		fmt.Printf("Wrote %s and %s\n", manifest.Filename, migration.RelativeReportPath)
+		if len(report.Removed) > 0 {
+			fmt.Printf("Retired %d legacy source files", len(report.Removed))
+			if len(report.BackedUp) > 0 {
+				fmt.Printf(" (backed up under .wails/migration-backup)")
+			}
+			fmt.Println()
+		}
 	}
+	return nil
+}
+
+func completeMigration(root string, options *MigrateOptions) error {
+	report, exists, err := migration.Read(root)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("cannot complete migration: %s is missing", migration.RelativeReportPath)
+	}
+	if report.Complete {
+		return fmt.Errorf("migration is already complete")
+	}
+	diagnostics := verifyLegacySources(root, report.Sources)
+	if len(diagnostics) > 0 {
+		report.Diagnostics = append(report.Diagnostics, diagnostics...)
+		if !options.DryRun {
+			if err := migration.Write(root, report); err != nil {
+				return err
+			}
+		}
+		return fmt.Errorf("cannot complete migration: legacy sources changed after analysis; rerun migration from a clean legacy project")
+	}
+	if !options.DryRun && options.Backup {
+		backedUp, backupDiagnostics := backupLegacySources(root, report.Sources)
+		if len(backupDiagnostics) > 0 {
+			report.Diagnostics = append(report.Diagnostics, backupDiagnostics...)
+			_ = migration.Write(root, report)
+			return fmt.Errorf("cannot complete migration: backup failed")
+		}
+		report.BackedUp = append(report.BackedUp, backedUp...)
+	}
+	if !options.DryRun {
+		removed, removalDiagnostics := removeLegacySources(root, report.Sources, true)
+		if len(removalDiagnostics) > 0 {
+			report.Diagnostics = append(report.Diagnostics, removalDiagnostics...)
+			_ = migration.Write(root, report)
+			return fmt.Errorf("cannot complete migration: legacy source retirement failed")
+		}
+		report.Removed = append(report.Removed, removed...)
+	}
+	report.Complete = true
+	report.CompletedBy = version.String()
+	report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "manual-completion", Message: "migration completion was explicitly confirmed after manual review"})
+	if !options.DryRun {
+		if err := migration.Write(root, report); err != nil {
+			return err
+		}
+	}
+	if options.JSON {
+		data, _ := json.MarshalIndent(report, "", "  ")
+		fmt.Println(string(data))
+		return nil
+	}
+	if options.DryRun {
+		fmt.Printf("Migration can be completed (%d unchanged legacy source files); no files written (--dry-run)\n", len(report.Sources))
+		return nil
+	}
+	fmt.Printf("Migration complete; retired %d legacy source files", len(report.Removed))
+	if len(report.BackedUp) > 0 {
+		fmt.Printf(" (backed up under .wails/migration-backup)")
+	}
+	fmt.Println()
 	return nil
 }
 
@@ -143,38 +212,72 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		}
 		role := taskfileRole(rel)
 		allowed := legacyTaskNames[role]
-		stock := stockTasks(role)
 		knownStock := knownStockTaskfiles[role][digest]
-		if knownStock {
+		classification := migration.Taskfile{File: rel, Role: role}
+		var canonical canonicalDiff
+		switch {
+		case knownStock:
 			// Shipped defaults changed throughout the v3 previews. Exact
 			// fingerprints from generated projects are stock, even when their
 			// task AST differs from the defaults compiled into this CLI.
-			stock = nil
+			classification.Classification = "historical-default"
+		case role == "root":
+			classification.Classification = "current-default"
+		case role == "unknown":
+			classification.Classification = "custom"
+		default:
+			canonical = closestCanonical(tf.Tasks, stockTaskVariants(role))
+			if canonical.exact {
+				classification.Classification = "current-default"
+			} else {
+				classification.Classification = "customised"
+				classification.ModifiedTasks = append(classification.ModifiedTasks, canonical.changed...)
+				classification.ModifiedTasks = append(classification.ModifiedTasks, canonical.added...)
+				classification.MissingTasks = append(classification.MissingTasks, canonical.missing...)
+			}
 		}
+		taskNames := make([]string, 0, len(tf.Tasks))
 		for name := range tf.Tasks {
+			taskNames = append(taskNames, name)
+		}
+		sort.Strings(taskNames)
+		for _, name := range taskNames {
 			if phase, hook, ok := migrateScriptHook(root, filepath.Dir(path), name, tf.Tasks[name]); ok {
 				setMigratedHook(&hooks, phase, hook)
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "script-hook", File: rel, Task: name, Message: "translated script-file task to hooks." + phase})
+				if classification.Classification == "current-default" {
+					classification.Classification = "customised"
+				}
+				classification.ModifiedTasks = appendUnique(classification.ModifiedTasks, name)
 				continue
 			}
 			if !allowed[name] {
 				report.Complete = false
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "unsupported-task", File: rel, Task: name, Message: "custom task requires a user-owned hook script or manual migration"})
+				if classification.Classification == "current-default" {
+					classification.Classification = "customised"
+				}
+				classification.ModifiedTasks = appendUnique(classification.ModifiedTasks, name)
 				continue
 			}
-			if expected, ok := stock[name]; ok && !reflect.DeepEqual(tf.Tasks[name], expected) {
+			if containsString(canonical.changed, name) || containsString(canonical.added, name) {
 				report.Complete = false
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: rel, Task: name, Message: "generated task was modified and requires a manifest field or user-owned hook script"})
 			}
 			if role == "root" && !recognizedRootTask(name, tf.Tasks[name]) {
 				report.Complete = false
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: rel, Task: name, Message: "root dispatch task was modified and requires a manifest field or user-owned hook script"})
+				classification.Classification = "customised"
+				classification.ModifiedTasks = appendUnique(classification.ModifiedTasks, name)
 			}
 		}
-		if role == "common" && !knownStock {
+		if len(canonical.missing) > 0 {
 			report.Complete = false
-			report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "unrecognized-generated-file", File: rel, Message: "common Taskfile does not match a shipped default; review its commands and migrate custom logic manually"})
+			report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "missing-generated-tasks", File: rel, Message: fmt.Sprintf("%d generated tasks are missing; review this Taskfile as customised", len(canonical.missing))})
 		}
+		sort.Strings(classification.ModifiedTasks)
+		sort.Strings(classification.MissingTasks)
+		report.Taskfiles = append(report.Taskfiles, classification)
 		if role == "root" {
 			for key, value := range tf.Vars {
 				if key == "PACKAGE_MANAGER" && value.Static != "" && !strings.Contains(value.Static, "{{") {
@@ -236,9 +339,6 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	doc.Associations = associations
 	doc.Protocols = protocols
 	doc.Hooks = hooks
-	if !report.Complete {
-		doc.Wake.Migration = &manifest.Migration{Complete: false}
-	}
 	if packageManager != "" {
 		doc.Frontend.PackageManager = packageManager
 	}
@@ -379,14 +479,55 @@ func discoverTaskfiles(root string) ([]string, error) {
 	return result, nil
 }
 
-func stockTasks(role string) map[string]*wakeast.Task {
-	if role == "root" || role == "common" || role == "unknown" {
+type canonicalDiff struct {
+	exact   bool
+	changed []string
+	missing []string
+	added   []string
+}
+
+func stockTaskVariants(role string) []map[string]*wakeast.Task {
+	if role == "root" || role == "unknown" {
 		return nil
+	}
+	if role == "common" {
+		data, err := buildAssets.ReadFile("build_assets/Taskfile.tmpl.yml")
+		if err != nil {
+			return nil
+		}
+		var result []map[string]*wakeast.Task
+		for _, typescript := range []bool{false, true} {
+			for _, useInterfaces := range []bool{false, true} {
+				config := BuildConfig{
+					BuildAssetsOptions: BuildAssetsOptions{Typescript: typescript, UseInterfaces: useInterfaces},
+					TemplateEnrichment: TemplateEnrichment{Opn: "{{", Cls: "}}"},
+				}
+				tmpl, err := template.New("Taskfile.yml").Parse(string(data))
+				if err != nil {
+					return nil
+				}
+				var rendered bytes.Buffer
+				if err := tmpl.Execute(&rendered, config); err != nil {
+					return nil
+				}
+				if tasks := parseStockTasks(rendered.Bytes()); tasks != nil {
+					result = append(result, tasks)
+				}
+			}
+		}
+		return result
 	}
 	data, err := buildAssets.ReadFile(filepath.ToSlash(filepath.Join("build_assets", role, "Taskfile.yml")))
 	if err != nil {
 		return nil
 	}
+	if tasks := parseStockTasks(data); tasks != nil {
+		return []map[string]*wakeast.Task{tasks}
+	}
+	return nil
+}
+
+func parseStockTasks(data []byte) map[string]*wakeast.Task {
 	tmp, err := os.CreateTemp("", "wails-stock-taskfile-*.yml")
 	if err != nil {
 		return nil
@@ -405,6 +546,58 @@ func stockTasks(role string) map[string]*wakeast.Task {
 		return nil
 	}
 	return tf.Tasks
+}
+
+func closestCanonical(actual map[string]*wakeast.Task, variants []map[string]*wakeast.Task) canonicalDiff {
+	best := canonicalDiff{added: sortedTaskNames(actual)}
+	bestScore := len(best.added)
+	if len(variants) == 0 {
+		return best
+	}
+	bestScore = int(^uint(0) >> 1)
+	for _, expected := range variants {
+		var candidate canonicalDiff
+		for name, task := range actual {
+			expectedTask, ok := expected[name]
+			switch {
+			case !ok:
+				candidate.added = append(candidate.added, name)
+			case !reflect.DeepEqual(task, expectedTask):
+				candidate.changed = append(candidate.changed, name)
+			}
+		}
+		for name := range expected {
+			if _, ok := actual[name]; !ok {
+				candidate.missing = append(candidate.missing, name)
+			}
+		}
+		sort.Strings(candidate.changed)
+		sort.Strings(candidate.missing)
+		sort.Strings(candidate.added)
+		score := len(candidate.changed) + len(candidate.missing) + len(candidate.added)
+		candidate.exact = score == 0
+		if score < bestScore {
+			best = candidate
+			bestScore = score
+		}
+	}
+	return best
+}
+
+func sortedTaskNames(tasks map[string]*wakeast.Task) []string {
+	result := make([]string, 0, len(tasks))
+	for name := range tasks {
+		result = append(result, name)
+	}
+	sort.Strings(result)
+	return result
+}
+
+func appendUnique(values []string, value string) []string {
+	if containsString(values, value) {
+		return values
+	}
+	return append(values, value)
 }
 func findTaskfile(root string) (string, error) {
 	for _, name := range []string{"Taskfile.yml", "Taskfile.yaml"} {
@@ -551,6 +744,80 @@ func removeLegacySources(root string, sources map[string]string, complete bool) 
 	sort.Strings(removed)
 	return removed, diagnostics
 }
+
+func verifyLegacySources(root string, sources map[string]string) []MigrationDiagnostic {
+	var diagnostics []MigrationDiagnostic
+	paths := make([]string, 0, len(sources))
+	for path := range sources {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	for _, rel := range paths {
+		clean := filepath.ToSlash(filepath.Clean(filepath.FromSlash(rel)))
+		if filepath.IsAbs(rel) || clean == ".." || strings.HasPrefix(clean, "../") {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "source-outside-project", File: rel, Message: "source is outside the project"})
+			continue
+		}
+		digest, err := digestFile(filepath.Join(root, filepath.FromSlash(clean)))
+		if err != nil {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "source-unavailable", File: rel, Message: err.Error()})
+			continue
+		}
+		if digest != sources[rel] {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-source", File: rel, Message: "source changed after the original migration analysis"})
+		}
+	}
+	return diagnostics
+}
+
+func backupLegacySources(root string, sources map[string]string) ([]string, []MigrationDiagnostic) {
+	var backedUp []string
+	var diagnostics []MigrationDiagnostic
+	paths := make([]string, 0, len(sources))
+	for path := range sources {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	for _, rel := range paths {
+		clean := filepath.ToSlash(filepath.Clean(filepath.FromSlash(rel)))
+		if filepath.IsAbs(rel) || clean == ".." || strings.HasPrefix(clean, "../") {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-outside-project", File: rel, Message: "not backed up because the source is outside the project"})
+			continue
+		}
+		source := filepath.Join(root, filepath.FromSlash(clean))
+		digest, err := digestFile(source)
+		if err != nil {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
+			continue
+		}
+		if digest != sources[rel] {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-source", File: rel, Message: "not backed up because it changed after analysis"})
+			continue
+		}
+		data, err := os.ReadFile(source)
+		if err != nil {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
+			continue
+		}
+		info, err := os.Stat(source)
+		if err != nil {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
+			continue
+		}
+		destination := filepath.Join(root, ".wails", "migration-backup", filepath.FromSlash(clean))
+		if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
+			continue
+		}
+		if err := os.WriteFile(destination, data, info.Mode().Perm()); err != nil {
+			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
+			continue
+		}
+		backedUp = append(backedUp, filepath.ToSlash(filepath.Join(".wails", "migration-backup", clean)))
+	}
+	return backedUp, diagnostics
+}
+
 func digestFile(path string) (string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {

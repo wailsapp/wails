@@ -77,9 +77,10 @@ a timestamped sibling only when requested.
 `wails3 migrate` parses legacy Taskfiles with Wake's AST parser, translates
 known identity/configuration/script-hook patterns, records source digests and
 stable diagnostics, and marks whether cutover is complete. Unsupported inline
-shell remains manual. Legacy files are removed only on explicit request after
-complete translation and digest verification. Incomplete migrations continue
-using the legacy Taskfile path.
+shell remains manual. Automatically complete migrations retire digest-verified
+legacy files immediately; `--backup` preserves them first. Incomplete
+migrations continue using the legacy Taskfile path until the user resolves the
+diagnostics and explicitly confirms the reviewed cutover with `--complete`.
 
 The Dev Session owns persistent frontend/backend processes and watchers. File
 bursts request finite production Plans; a newer generation cancels stale work.
@@ -136,14 +137,20 @@ rejected in favor of typed first-party nodes plus stable script/template seams.
 ## Backwards Compatibility
 
 Existing projects without `wails.toml` continue through Taskfile execution.
-Migration writes an inactive manifest with `wake.migration.complete = false`
-when unsupported customizations remain. A completed migration has no migration
-section and activates the built-in pipeline like a native manifest. Stock
-historical templates migrate automatically. Modified sources are never deleted
-unless their digest still matches the analyzed source and migration is
-complete. Completion provenance, source digests, and detailed diagnostics live
-in the hidden `.wails/migration-report.json`, not the user-owned manifest.
-Taskfile is not retained after an explicit completed cutover.
+Migration state never appears in `wails.toml`: completion provenance, source
+digests, Taskfile classifications, and diagnostics live in the hidden
+`.wails/migration-report.json`. An incomplete report retains the Taskfiles and
+routes commands through the legacy path. A completed migration activates the
+built-in pipeline like a native manifest and retires every represented legacy
+source whose digest still matches the analysis; `--backup` first preserves the
+same tree under `.wails/migration-backup`. Current embedded defaults are
+compared structurally, and exact fingerprints identify historical generated
+defaults, so the report distinguishes current defaults, historical defaults,
+and customised Taskfiles. If both build systems coexist without a report, the
+CLI rejects the ambiguous project instead of choosing one silently.
+After resolving an incomplete report, `wails3 migrate --complete` acknowledges
+the manual translation and retires only sources that still match their
+original report digests.
 
 The public CLI verbs remain, with manifest-native profile, target, format,
 force, config, eject, and migration options. Arbitrary Task variables are

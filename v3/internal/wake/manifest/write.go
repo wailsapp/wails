@@ -45,29 +45,11 @@ func EncodeConfig(config Config) ([]byte, error) {
 }
 
 func EncodeDocument(doc Document) ([]byte, error) {
-	// Completed migration metadata and provenance are workflow state owned by
-	// .wails/migration-report.json, not user build intent. The manifest only
-	// retains an explicit false marker while unresolved legacy customisations
-	// must keep the old build path active.
-	migrationPending := doc.Wake.Migration != nil && !doc.Wake.Migration.Complete
-	doc.Wake.Migration = nil
 	defaultDoc := defaults(Project{})
 	defaultDoc.Project.BinaryName = deriveBinaryName(doc.Project.Name)
 	sparse, ok := sparseValue(reflect.ValueOf(doc), reflect.ValueOf(defaultDoc), false)
 	if !ok {
 		return nil, fmt.Errorf("manifest document is empty")
-	}
-	if migrationPending {
-		root, ok := sparse.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("manifest document has invalid sparse representation")
-		}
-		wake, _ := root["wake"].(map[string]any)
-		if wake == nil {
-			wake = map[string]any{}
-			root["wake"] = wake
-		}
-		wake["migration"] = map[string]any{"complete": false}
 	}
 	var output bytes.Buffer
 	if err := toml.NewEncoder(&output).Encode(sparse); err != nil {

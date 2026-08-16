@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
+	"github.com/wailsapp/wails/v3/internal/wake/migration"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
@@ -137,14 +138,33 @@ func activeManifestProject() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	active, err := manifest.Active(cwd)
+	return activeManifestProjectAt(cwd)
+}
+
+func activeManifestProjectAt(root string) (bool, error) {
+	if !manifest.Exists(root) {
+		return false, nil
+	}
+	report, hasReport, err := migration.Read(root)
 	if err != nil {
 		return false, err
 	}
-	if !active && manifest.Exists(cwd) {
+	_, taskfileErr := findTaskfile(root)
+	hasTaskfile := taskfileErr == nil
+	if hasReport {
+		if report.Complete {
+			return true, nil
+		}
+		if !hasTaskfile {
+			return false, fmt.Errorf("migration is incomplete but no legacy Taskfile remains; restore the Taskfiles or finish the migration")
+		}
 		term.Warningf("wails.toml migration is incomplete; falling back to the legacy Taskfile")
+		return false, nil
 	}
-	return active, nil
+	if hasTaskfile {
+		return false, fmt.Errorf("both %s and a legacy Taskfile exist but %s is missing; remove one build definition or rerun migration from the legacy project", manifest.Filename, migration.RelativeReportPath)
+	}
+	return true, nil
 }
 
 func splitTarget(target string) (string, string, error) {
