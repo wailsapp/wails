@@ -124,12 +124,8 @@ Dieses Projekt wird von diesen freundlichen Leuten und Firmen unterstützt:
 
 ## Sterne Überblick
 
-<a href="https://star-history.com/#wailsapp/wails&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-  </picture>
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Star History Chart" src="website/static/img/star-history.svg" width="800" />
 </a>
 
 ## Mitwirkende
