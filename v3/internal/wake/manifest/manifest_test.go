@@ -200,6 +200,7 @@ func TestEncodeDocumentStaysSparse(t *testing.T) {
 	text := string(data)
 	assert.Contains(t, text, `package_manager = "pnpm"`)
 	assert.Contains(t, text, "[wake.migration]")
+	assert.NotContains(t, text, "[wake.migration.sources]")
 	assert.NotContains(t, text, "[targets]")
 	assert.NotContains(t, text, "debounce_ms")
 }
@@ -249,6 +250,8 @@ version="1.0.0"
 [wake.migration]
 completed_by="v3"
 complete=false
+[wake.migration.sources]
+"Taskfile.yml"="digest"
 `), 0o644))
 	active, err := Active(root)
 	require.NoError(t, err)
