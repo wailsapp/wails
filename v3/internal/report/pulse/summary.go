@@ -448,7 +448,7 @@ func (r *Reporter) writeFailuresLocked() {
 // transformations preserve visible width, so the box math below is
 // unaffected.
 func (r *Reporter) writePanelLocked(name string, f report.Failure) {
-	const labelW = 9 // "command  ", "status   ", "error    "
+	const labelW = 9 // "command  "
 	cwd, _ := osGetwd()
 	var body strings.Builder
 	if f.Command != "" {
@@ -461,9 +461,8 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 	// the detail. ExitCode -1 means unknown, so startup errors must retain
 	// their actionable message instead of appearing as an empty panel.
 	if f.ExitCode <= 0 && f.Err != nil {
-		fmt.Fprintf(&body, "%s %s\n",
-			r.s.bold(r.s.fg(Failure, padRight("error", labelW))),
-			f.Err.Error())
+		body.WriteString(f.Err.Error())
+		body.WriteByte('\n')
 	}
 	out := strings.TrimRight(f.Output, "\n")
 	if out != "" {
@@ -515,24 +514,25 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 	// Visible: 5 + nameW + ruleLeft + 1 + badgeW + 2 = inner + 4
 	// So: ruleLeft = inner - nameW - badgeW - 4
 	var top string
+	border := func(text string) string { return r.s.fg(Failure, text) }
 	if badgeW > 0 {
 		ruleLeft := inner - visibleWidth(name) - badgeW - 4
 		if ruleLeft < 1 {
 			ruleLeft = 1
 		}
-		top = "╭─ " + r.s.bold(r.s.fg(Failure, name)) + " " +
-			strings.Repeat("─", ruleLeft) + " " + badge + " ─╮"
+		top = border("╭─ ") + r.s.bold(r.s.fg(Failure, name)) +
+			border(" "+strings.Repeat("─", ruleLeft)+" ") + badge + border(" ─╮")
 	} else {
 		rule := inner - 1 - visibleWidth(name)
 		if rule < 1 {
 			rule = 1
 		}
-		top = "╭─ " + r.s.bold(r.s.fg(Failure, name)) + " " +
-			strings.Repeat("─", rule) + "╮"
+		top = border("╭─ ") + r.s.bold(r.s.fg(Failure, name)) +
+			border(" "+strings.Repeat("─", rule)+"╮")
 	}
 	bot := "╰" + strings.Repeat("─", inner+2) + "╯"
 
-	fmt.Fprintf(r.w, "  %s\n", r.s.fg(Failure, top))
+	fmt.Fprintf(r.w, "  %s\n", top)
 	for _, ln := range bodyLines {
 		// Body lines past the available inner width get truncated with an
 		// ellipsis — wrapping a compile-error line at a panel boundary tends
