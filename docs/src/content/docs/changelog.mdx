@@ -31,6 +31,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.9 - 2026-08-16
+
+## Added
+- Add documentation for models in bindings — see [documentation](https://v3.wails.io/features/bindings/models) in [PR](https://github.com/wailsapp/wails/pull/5988) by @taliesin-ai
+- Support rpm-ostree installation for atomic Linux systems in [PR](https://github.com/wailsapp/wails/pull/5987) by @leaanthony
+- Add native weekly star-history chart generation and publication — see [documentation](https://v3.wails.io/credits) and [documentation](https://v3.wails.io/de/credits) and [documentation](https://v3.wails.io/fr/credits) and [documentation](https://v3.wails.io/id/credits) and [documentation](https://v3.wails.io/ja/credits) and [documentation](https://v3.wails.io/ko/credits) and [documentation](https://v3.wails.io/pt/credits) and [documentation](https://v3.wails.io/ru/credits) and [documentation](https://v3.wails.io/zh-cn/credits) and [documentation](https://v3.wails.io/zh-tw/credits) in [PR](https://github.com/wailsapp/wails/pull/5986) by @leaanthony
+- Add Darwin-only mac package for resolving application bundle resources — see [documentation](https://v3.wails.io/guides/build/macos) in [PR](https://github.com/wailsapp/wails/pull/5965) by @leaanthony
+- Add Condui showcase page and index entry — see [documentation](https://v3.wails.io/community/showcase/condui) and [documentation](https://v3.wails.io/community/showcase) in [PR](https://github.com/wailsapp/wails/pull/5962) by @mgueregath
+- Add Redis Viewer showcase page with screenshots and project link — see [documentation](https://v3.wails.io/community/showcase) and [documentation](https://v3.wails.io/community/showcase/redisviewer) in [PR](https://github.com/wailsapp/wails/pull/5984) by @redisviewer
+
+## Changed
+- Update GTK application flags to G_APPLICATION_NON_UNIQUE for Linux in [PR](https://github.com/wailsapp/wails/pull/5971) by @overlordtm
+- Log missing window events at debug level instead of warning in [PR](https://github.com/wailsapp/wails/pull/5914) by @julianstorer
+
+## Fixed
+- Cancel macOS and iOS asset request contexts when WebKit aborts the matching custom-scheme task (#5963)
+- Handle WindowSetFullscreenButtonEnabled message in [PR](https://github.com/wailsapp/wails/pull/5976) by @archy-rock3t-cloud
+- Import Fragment in preact-ts template to resolve build failure in [PR](https://github.com/wailsapp/wails/pull/5979) by @haoku123
+- Prevent legacy GTK3 service-only applications from crashing when screen
+  discovery runs before an active window or display is available (#5966)
+- Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
+- Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
+
 ## v3.0.0-beta.8 - 2026-08-12
 
 ## Added
