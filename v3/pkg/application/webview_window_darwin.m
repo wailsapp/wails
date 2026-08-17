@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !wails_native
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>

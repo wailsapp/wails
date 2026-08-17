@@ -4,8 +4,10 @@
 #define WebviewWindowSplitDarwin_h
 
 #import <Cocoa/Cocoa.h>
+#ifndef WAILS_NATIVE_ONLY
 #import <WebKit/WebKit.h>
 #import "webview_window_darwin.h"
+#endif
 
 extern void processMacSplitPaneLoaded(unsigned long long paneID);
 extern void processMacSplitPaneNavigationStarted(unsigned long long paneID);
@@ -14,10 +16,15 @@ extern void processMacSidebarItemSelected(unsigned long long itemID);
 extern void processMacInspectorTextChanged(unsigned long long controlID, char* value);
 extern void processMacInspectorToggleChanged(unsigned long long controlID, bool checked);
 extern void processMacInspectorSelectionChanged(unsigned long long controlID, int selectedIndex);
+extern void processMacTextEditorChanged(unsigned long long editorID);
 
 // splitPrimaryPaneIDForWebView returns the primary split-pane ID associated
 // with the window's preserved WebView, or 0 when no split is installed.
+#ifndef WAILS_NATIVE_ONLY
 unsigned long long splitPrimaryPaneIDForWebView(WKWebView* webView);
+#else
+unsigned long long splitPrimaryPaneIDForWebView(void* webView);
+#endif
 
 // Pane roles mirror macSplitPaneRole on the Go side.
 enum {
@@ -48,6 +55,19 @@ void splitViewAddPane(void* handlePtr, unsigned long long paneID, int role, bool
 // translucent, and Liquid Glass backdrops retain their configured behavior.
 // Must run on the application thread before any toolbar.
 bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop);
+
+// splitViewInstallNative installs the same native sidebar/inspector layout
+// into an ordinary NSWindow and uses the configured NSTextView pane as its
+// primary content. No WKWebView is created.
+bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop);
+
+void splitViewConfigureTextEditor(void* handlePtr, unsigned long long paneID,
+    unsigned long long editorID, const char* text, bool editable);
+void splitViewTextEditorSetText(void* handlePtr, unsigned long long paneID, const char* text);
+// The caller owns the returned UTF-8 string and must free it.
+char* splitViewTextEditorCopyText(void* handlePtr, unsigned long long paneID);
+void splitViewTextEditorSetEditable(void* handlePtr, unsigned long long paneID, bool editable);
+void splitViewTextEditorFocus(void* handlePtr, unsigned long long paneID);
 
 // splitViewTeardown removes observers and drops the owner's native references. It never
 // detaches the window's content view controller: the window keeps the view

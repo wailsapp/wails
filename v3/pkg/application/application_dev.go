@@ -1,4 +1,4 @@
-//go:build !production
+//go:build !production && !wails_native
 
 package application
 

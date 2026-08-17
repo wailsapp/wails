@@ -38,12 +38,44 @@
     input { font: inherit; }
 
     .page {
-      width: min(100%, 840px);
+      width: min(100%, 920px);
       min-height: 100vh;
       margin: 0 auto;
       padding: clamp(122px, 17vh, 156px) clamp(36px, 8vw, 86px) 180px;
       transition: width .25s ease, padding .25s ease;
     }
+
+    .photo-journal {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 10px;
+      height: clamp(172px, 24vw, 218px);
+      margin: 0 clamp(-34px, -3.5vw, -14px) clamp(54px, 8vh, 76px);
+    }
+
+    .photo-card {
+      position: relative;
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--ink) 9%, transparent);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--ink) 6%, transparent);
+      box-shadow: 0 1px 1px rgba(0, 0, 0, .08), 0 12px 32px rgba(0, 0, 0, .08);
+    }
+
+    .photo-card img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .photo-card:first-child img { object-position: 57% center; }
+    .photo-card:nth-child(2) img { object-position: 62% center; }
+    .photo-card:nth-child(3) img { object-position: 62% center; }
 
     .editor {
       position: relative;
@@ -250,6 +282,11 @@
     @media (max-width: 620px) {
       .page { padding-right: 30px; padding-left: 42px; }
       .editor::before { left: -18px; }
+      .photo-journal {
+        grid-template-columns: 1.45fr 1fr;
+        margin-inline: -18px;
+      }
+      .photo-card:nth-child(3) { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -270,6 +307,17 @@
 </head>
 <body>
   <main class="page" id="page" data-mode="write" data-content-layout="edge-to-edge">
+    <section class="photo-journal" aria-label="Saturday field notes">
+      <figure class="photo-card">
+        <img src="/photos/rainy-bakery.jpg" alt="A red bicycle outside a warmly lit bakery after rain" draggable="false">
+      </figure>
+      <figure class="photo-card">
+        <img src="/photos/market-peaches.jpg" alt="Peaches in a paper bag beside blue water" draggable="false">
+      </figure>
+      <figure class="photo-card">
+        <img src="/photos/tree-lined-dusk.jpg" alt="A quiet tree-lined street at dusk" draggable="false">
+      </figure>
+    </section>
     <article class="editor">
       <section class="compose" id="compose" aria-label="Write note">
         <input class="title" id="title" aria-label="Note title" placeholder="Untitled note" value="Saturday, slowly.">

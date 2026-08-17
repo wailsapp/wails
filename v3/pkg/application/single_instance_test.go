@@ -1,3 +1,5 @@
+//go:build !wails_native || wails_single_instance
+
 package application
 
 import (

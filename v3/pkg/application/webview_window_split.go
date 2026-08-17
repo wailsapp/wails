@@ -34,10 +34,19 @@ type MacSplitView struct {
 	lock         sync.RWMutex
 	autosaveName string
 	panes        []*MacSplitWebviewPane
-	owner        *WebviewWindow
+	owner        macSplitWindow
 	frozen       bool
 	installed    bool
 	native       unsafe.Pointer
+}
+
+// macSplitWindow is the temporary internal host boundary shared by
+// WebviewWindow and NativeWindow. Keeping it private lets v4 redesign the
+// public Window interface without exposing another compatibility surface.
+type macSplitWindow interface {
+	ID() uint
+	Error(string, ...any)
+	macSplitOptions() MacWindow
 }
 
 // NewMacSplitView creates an empty native split-view layout.
@@ -88,6 +97,31 @@ func (s *MacSplitView) AddSidebar(sidebar *MacSidebar) *MacSplitPane {
 // methods keep addressing it.
 func (s *MacSplitView) AddPrimaryContent() *MacSplitWebviewPane {
 	return s.addPane(macSplitPanePrimary, true)
+}
+
+// AddTextEditor adds a native NSTextView-backed primary content pane. A split
+// layout contains either this pane for NativeWindow or AddPrimaryContent for
+// WebviewWindow, never both.
+func (s *MacSplitView) AddTextEditor(editor *MacTextEditor) *MacSplitPane {
+	if editor == nil {
+		return nil
+	}
+	pane := s.addPane(macSplitPanePrimary, true)
+	if pane == nil {
+		return nil
+	}
+	editor.lock.Lock()
+	if editor.pane != nil {
+		editor.lock.Unlock()
+		s.lock.Lock()
+		s.panes = s.panes[:len(s.panes)-1]
+		s.lock.Unlock()
+		return nil
+	}
+	editor.pane = pane.MacSplitPane
+	editor.lock.Unlock()
+	pane.editor = editor
+	return pane.MacSplitPane
 }
 
 // AddInspector adds a native AppKit property inspector. It normally appears
@@ -192,13 +226,23 @@ func (s *MacSplitView) inspectorPane() *MacSplitPane {
 	return nil
 }
 
-func (s *MacSplitView) ownerWindow() *WebviewWindow {
+func (s *MacSplitView) ownerWindow() macSplitWindow {
 	if s == nil {
 		return nil
 	}
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	return s.owner
+}
+
+func (s *MacSplitView) ownerWebviewWindow() *WebviewWindow {
+	owner, _ := s.ownerWindow().(*WebviewWindow)
+	return owner
+}
+
+func (s *MacSplitView) ownerNativeWindow() *NativeWindow {
+	owner, _ := s.ownerWindow().(*NativeWindow)
+	return owner
 }
 
 func (s *MacSplitView) isInstalled() bool {
@@ -213,7 +257,7 @@ func (s *MacSplitView) isInstalled() bool {
 // reportMacSplitError logs through the owning window when one exists. It stays
 // silent otherwise so building a layout does not require a running
 // application.
-func reportMacSplitError(owner *WebviewWindow, format string, args ...any) {
+func reportMacSplitError(owner macSplitWindow, format string, args ...any) {
 	if owner != nil && globalApplication != nil {
 		owner.Error(format, args...)
 	}
@@ -250,7 +294,7 @@ func validateMacSplitView(s *MacSplitView) error {
 	return nil
 }
 
-func claimMacSplitView(split *MacSplitView, window *WebviewWindow) error {
+func claimMacSplitView(split *MacSplitView, window macSplitWindow) error {
 	split.lock.Lock()
 	defer split.lock.Unlock()
 	if split.owner != nil && split.owner != window {
@@ -261,7 +305,7 @@ func claimMacSplitView(split *MacSplitView, window *WebviewWindow) error {
 	return nil
 }
 
-func releaseMacSplitViewOwnership(split *MacSplitView, window *WebviewWindow) {
+func releaseMacSplitViewOwnership(split *MacSplitView, window macSplitWindow) {
 	if split == nil {
 		return
 	}
@@ -572,6 +616,9 @@ func (p *MacSplitWebviewPane) markDead() {
 	if inspector != nil {
 		inspector.markDead()
 	}
+	if p.editor != nil {
+		p.editor.markDead()
+	}
 }
 
 func (p *MacSplitPane) isDead() bool {
@@ -596,6 +643,7 @@ type MacSplitWebviewPane struct {
 	contentLayout MacContentLayout
 	sidebar       *MacSidebar
 	inspector     *MacInspector
+	editor        *MacTextEditor
 	loaded        bool
 	// navigationGeneration increments synchronously when WebKit starts a new
 	// navigation. Completion events capture it before leaving AppKit so a stale
@@ -627,7 +675,7 @@ func (p *MacSplitWebviewPane) SetContentLayout(layout MacContentLayout) *MacSpli
 	}
 	p.contentLayout = layout
 	p.lock.Unlock()
-	owner := p.split.ownerWindow()
+	owner := p.split.ownerWebviewWindow()
 	if owner != nil {
 		macSplitPaneApplyContentLayout(p.MacSplitPane, resolveMacContentLayout(owner.options.Mac, layout))
 	}
@@ -664,7 +712,7 @@ func (p *MacSplitWebviewPane) SetURL(url string) *MacSplitWebviewPane {
 	p.navigationGeneration++
 	p.loaded = false
 	p.lock.Unlock()
-	owner := p.split.ownerWindow()
+	owner := p.split.ownerWebviewWindow()
 	if owner != nil {
 		owner.SetURL(url)
 		return p
@@ -693,7 +741,7 @@ func (p *MacSplitWebviewPane) Reload() *MacSplitWebviewPane {
 	p.navigationGeneration++
 	p.loaded = false
 	p.lock.Unlock()
-	owner := p.split.ownerWindow()
+	owner := p.split.ownerWebviewWindow()
 	if owner != nil {
 		owner.Reload()
 	}
@@ -716,7 +764,7 @@ func (p *MacSplitWebviewPane) ExecJS(js string) *MacSplitWebviewPane {
 	if !p.primary {
 		return p
 	}
-	owner := p.split.ownerWindow()
+	owner := p.split.ownerWebviewWindow()
 	if owner != nil && owner.impl != nil {
 		owner.ExecJS(js)
 		return p
@@ -816,7 +864,7 @@ func handleMacSplitPaneLoaded(event splitPaneLoadEvent) {
 	callback := pane.onLoaded
 	pane.lock.Unlock()
 	for _, js := range pending {
-		if owner := pane.split.ownerWindow(); owner != nil && owner.impl != nil {
+		if owner := pane.split.ownerWebviewWindow(); owner != nil && owner.impl != nil {
 			owner.ExecJS(js)
 		}
 	}

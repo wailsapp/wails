@@ -1,3 +1,5 @@
+//go:build !wails_native || wails_single_instance
+
 package application
 
 import (
@@ -5,12 +7,11 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 	"sync"
-
-	"encoding/json"
 )
 
 var alreadyRunningError = errors.New("application is already running")

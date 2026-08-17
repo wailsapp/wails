@@ -365,7 +365,7 @@ func (t *MacToolbar) attachedInspectorPane() *MacSplitPane {
 		return nil
 	}
 	t.stateLock.RLock()
-	var window *WebviewWindow
+	var window macToolbarWindow
 	if t.state != nil {
 		window = t.state.window
 	}
@@ -373,13 +373,7 @@ func (t *MacToolbar) attachedInspectorPane() *MacSplitPane {
 	if window == nil {
 		return nil
 	}
-	window.splitViewLock.RLock()
-	split := window.splitView
-	window.splitViewLock.RUnlock()
-	if split == nil {
-		return nil
-	}
-	return split.inspectorPane()
+	return window.macInspectorPane()
 }
 
 // hasSidebarTrackingSeparator reports whether the toolbar contains a sidebar
@@ -710,12 +704,17 @@ func (i *MacToolbarItem) update(update func(unsafe.Pointer)) {
 
 // macToolbarState is protected exclusively by MacToolbar.stateLock.
 type macToolbarState struct {
-	window  *WebviewWindow
+	window  macToolbarWindow
 	native  unsafe.Pointer
 	itemIDs []uint
 }
 
-func claimMacToolbar(toolbar *MacToolbar, window *WebviewWindow) (bool, error) {
+type macToolbarWindow interface {
+	ID() uint
+	macInspectorPane() *MacSplitPane
+}
+
+func claimMacToolbar(toolbar *MacToolbar, window macToolbarWindow) (bool, error) {
 	toolbar.stateLock.Lock()
 	defer toolbar.stateLock.Unlock()
 	if toolbar.state == nil {
@@ -730,7 +729,7 @@ func claimMacToolbar(toolbar *MacToolbar, window *WebviewWindow) (bool, error) {
 	return claimed, nil
 }
 
-func releaseMacToolbarOwnership(toolbar *MacToolbar, window *WebviewWindow) {
+func releaseMacToolbarOwnership(toolbar *MacToolbar, window macToolbarWindow) {
 	if toolbar == nil {
 		return
 	}

@@ -1,0 +1,5 @@
+Performance experiment
+
+The important measurements are process resident memory, idle CPU, wakeups, and the absence of a WebKit content process.
+
+Use the commands in this example's README while the window is open and again while it is hidden.

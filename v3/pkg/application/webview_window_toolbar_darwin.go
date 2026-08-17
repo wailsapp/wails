@@ -5,7 +5,7 @@ package application
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa
-#include "webview_window_darwin.h"
+#include "mac_window_chrome_darwin.h"
 #include "webview_window_toolbar_darwin.h"
 #include <stdlib.h>
 */
@@ -63,32 +63,47 @@ func processToolbarShareProviderRelease(providerID C.uint) {
 }
 
 func (w *macosWebviewWindow) setToolbar(toolbar *MacToolbar) error {
+	attached, err := attachMacToolbar(
+		w.parent,
+		w.nsWindow,
+		w.activeToolbar,
+		toolbar,
+		w.hasSidebarSplitLayout(),
+		w.hasInspectorSplitLayout(),
+		w.parent.options.Mac.TitleBar,
+	)
+	if err == nil {
+		w.activeToolbar = attached
+	}
+	return err
+}
+
+func attachMacToolbar(owner macToolbarWindow, nsWindow unsafe.Pointer, previousToolbar, toolbar *MacToolbar,
+	hasSidebar, hasInspector bool, titleBar MacTitleBar) (*MacToolbar, error) {
 	if toolbar == nil {
-		previous := w.activeToolbar
-		C.toolbarDetach(w.nsWindow)
-		w.activeToolbar = nil
-		if previous != nil {
-			clearMacToolbarState(previous, w.parent, true)
+		C.toolbarDetach(nsWindow)
+		if previousToolbar != nil {
+			clearMacToolbarState(previousToolbar, owner, true)
 		}
-		return nil
+		return nil, nil
 	}
 
 	// A tracking separator is meaningful only above a native sidebar divider.
 	// Reject the attachment instead of installing a misplaced decorative
 	// item; the split view is installed before toolbars, so a pending layout
 	// is already in the window by the time a stashed toolbar attaches.
-	if toolbar.hasSidebarTrackingSeparator() && !w.hasSidebarSplitLayout() {
-		return fmt.Errorf("a sidebar tracking separator requires a split view with a sidebar; call SetSplitView before the window is shown")
+	if toolbar.hasSidebarTrackingSeparator() && !hasSidebar {
+		return previousToolbar, fmt.Errorf("a sidebar tracking separator requires a split view with a sidebar; call SetSplitView before the window is shown")
 	}
-	if toolbar.hasInspectorChrome() && !w.hasInspectorSplitLayout() {
-		return fmt.Errorf("inspector toolbar items require a split view with an inspector; call SetSplitView before the window is shown")
+	if toolbar.hasInspectorChrome() && !hasInspector {
+		return previousToolbar, fmt.Errorf("inspector toolbar items require a split view with an inspector; call SetSplitView before the window is shown")
 	}
 
 	identifier := C.CString(toolbar.identifier)
 	handle := C.toolbarCreate(identifier)
 	C.free(unsafe.Pointer(identifier))
 	if handle == nil {
-		return fmt.Errorf("failed to create native toolbar")
+		return previousToolbar, fmt.Errorf("failed to create native toolbar")
 	}
 
 	var itemIDs []uint
@@ -107,30 +122,27 @@ func (w *macosWebviewWindow) setToolbar(toolbar *MacToolbar) error {
 	toolbar.stateLock.RUnlock()
 	macToolbarSetDisplayMode(handle, displayMode)
 
-	titleBar := w.parent.options.Mac.TitleBar
 	toolbar.stateLock.Lock()
-	if toolbar.state == nil || toolbar.state.window != w.parent {
+	if toolbar.state == nil || toolbar.state.window != owner {
 		toolbar.stateLock.Unlock()
-		return fmt.Errorf("toolbar ownership changed while attaching")
+		return previousToolbar, fmt.Errorf("toolbar ownership changed while attaching")
 	}
 	previousNative := toolbar.state.native
 	previousItemIDs := toolbar.state.itemIDs
 	// Commit and attach while ownership is locked. Candidate construction is
 	// already complete, so every failure path above leaves the previous native
 	// toolbar untouched.
-	C.toolbarAttach(w.nsWindow, handle, C.int(titleBar.ToolbarStyle))
+	C.toolbarAttach(nsWindow, handle, C.int(titleBar.ToolbarStyle))
 	toolbar.state.native = handle
 	toolbar.state.itemIDs = itemIDs
 	toolbar.stateLock.Unlock()
 
-	previousToolbar := w.activeToolbar
-	w.activeToolbar = toolbar
 	committed = true
 
 	if previousToolbar == toolbar {
 		releaseMacToolbarResources(previousNative, previousItemIDs)
 	} else if previousToolbar != nil {
-		clearMacToolbarState(previousToolbar, w.parent, true)
+		clearMacToolbarState(previousToolbar, owner, true)
 	}
 
 	// An item may be changed concurrently while the detached candidate is
@@ -140,10 +152,10 @@ func (w *macosWebviewWindow) setToolbar(toolbar *MacToolbar) error {
 
 	// Apply each presentation preference explicitly after the real toolbar is
 	// attached; no titlebar UseToolbar preference is required.
-	C.windowSetToolbarStyle(w.nsWindow, C.int(titleBar.ToolbarStyle))
-	C.windowSetShowToolbarWhenFullscreen(w.nsWindow, C.bool(titleBar.ShowToolbarWhenFullscreen))
-	C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBar.HideToolbarSeparator))
-	return nil
+	C.windowSetToolbarStyle(nsWindow, C.int(titleBar.ToolbarStyle))
+	C.windowSetShowToolbarWhenFullscreen(nsWindow, C.bool(titleBar.ShowToolbarWhenFullscreen))
+	C.windowSetHideToolbarSeparator(nsWindow, C.bool(titleBar.HideToolbarSeparator))
+	return toolbar, nil
 }
 
 func (w *macosWebviewWindow) refreshToolbarAfterShow() {
@@ -422,7 +434,7 @@ func releaseMacToolbarResources(native unsafe.Pointer, itemIDs []uint) {
 	}
 }
 
-func clearMacToolbarState(toolbar *MacToolbar, window *WebviewWindow, releaseOwnership bool) {
+func clearMacToolbarState(toolbar *MacToolbar, window macToolbarWindow, releaseOwnership bool) {
 	if toolbar == nil {
 		return
 	}
