@@ -18,6 +18,13 @@ Wails v3 has a built-in [Model Context Protocol](https://modelcontextprotocol.io
 server that lets LLM agents — Claude Code, IDE assistants, or any MCP client — inspect,
 test, and drive a **running** Wails application.
 
+For project lifecycle automation, use the separate `wails3 mcp` CLI server. It lets
+agents inspect and initialize projects, run diagnostics, start builds and development
+jobs, generate bindings, run named Taskfile tasks, and retrieve bounded job output.
+The CLI server is confined to the current directory by default and does not expose
+arbitrary shell execution. See the [CLI MCP documentation](/guides/cli/#mcp) for transport,
+authentication, and tool details.
+
 When enabled, an agent connected to your app can:
 
 - **List and control windows** — size, position, focus, fullscreen, devtools, reload, …

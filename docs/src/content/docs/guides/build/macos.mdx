@@ -20,6 +20,62 @@ This creates `bin/<AppName>.app` containing:
 - App icon in `Contents/Resources/` (from `icons.icns` or, when present, from an asset catalog `Assets.car`)
 - `Info.plist` with app metadata
 
+## Bundle Resources
+
+`Contents/Resources/` is the standard place for read-only files that ship with a macOS app. Use it for larger templates, seed data, media, language packs, or other payloads that should be opened on demand rather than compiled into the Go executable with `embed`.
+
+Wails already places the application icon in this directory. To add your own files, place them in a source directory such as `build/resources/`, then add a copy step to the `create:app:bundle` task in `build/darwin/Taskfile.yml`:
+
+```yaml
+tasks:
+  create:app:bundle:
+    cmds:
+      # Existing bundle creation commands...
+      - |
+          if [ -d build/resources ]; then
+            cp -R build/resources/. "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources/"
+          fi
+```
+
+If you use the Taskfile's `darwin:run` task, add the equivalent command to its `run` task, targeting `{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Contents/Resources/`.
+
+### Reading Resources from Go
+
+Import the macOS platform package:
+
+```go
+import (
+	"io/fs"
+
+	"github.com/wailsapp/wails/v3/pkg/mac"
+)
+```
+
+For small files, use `LoadResource`:
+
+```go
+func loadSplash() ([]byte, error) {
+	return mac.LoadResource("images/splash.png")
+}
+```
+
+For larger files, use `ResourceFS`. It returns an `io/fs.FS` rooted at `Contents/Resources`, so callers can open and stream a resource without first loading it all into a Go byte slice:
+
+```go
+func openCatalogue() (fs.File, error) {
+	resources, err := mac.ResourceFS()
+	if err != nil {
+		return nil, err
+	}
+
+	return resources.Open("catalogue/defaults.json")
+}
+```
+
+Resource names are slash-separated paths relative to `Contents/Resources`. `ResourceFS` and `LoadResource` return `mac.ErrNotInAppBundle` unless the executable runs from `.app/Contents/MacOS`.
+
+Treat bundle resources as immutable. Changing files inside a signed application invalidates its code signature; store downloaded, generated, or user-editable data in the user's Application Support directory instead.
+
 ### Universal Binary
 
 Build for both Apple Silicon and Intel Macs:
