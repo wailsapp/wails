@@ -551,7 +551,7 @@ static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gin
     }
 
     processMessage(res);
-    return FALSE;
+    return TRUE;
 }
 
 // WebView
@@ -566,7 +566,7 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
     g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
 
-    if(disableWebViewDragAndDrop)
+    if(disableWebViewDragAndDrop && !enableDragAndDrop)
     {
         gtk_drag_dest_unset(webview);
     }
