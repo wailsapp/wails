@@ -116,7 +116,25 @@ func main() {
 	}
 }
 
-var pullRequestReference = regexp.MustCompile(`https://github\.com/wailsapp/wails/pull/[0-9]+`)
+var pullRequestReference = regexp.MustCompile(`^https://github\.com/wailsapp/wails/pull/[0-9]+$`)
+
+func pullRequestReferenceFromLine(line string) string {
+	const linkPrefix = "[PR]("
+	start := strings.Index(line, linkPrefix)
+	if start == -1 {
+		return ""
+	}
+	destination := line[start+len(linkPrefix):]
+	end := strings.IndexByte(destination, ')')
+	if end == -1 {
+		return ""
+	}
+	destination = destination[:end]
+	if !pullRequestReference.MatchString(destination) {
+		return ""
+	}
+	return destination
+}
 
 // isSameSourceCorrection distinguishes a historical correction from a new
 // entry added to a released section. Both lines must be changelog bullets and
@@ -127,7 +145,7 @@ func isSameSourceCorrection(addedLine string, deletedLines []string) bool {
 	if !strings.HasPrefix(addedLine, "- ") {
 		return false
 	}
-	reference := pullRequestReference.FindString(addedLine)
+	reference := pullRequestReferenceFromLine(addedLine)
 	if reference == "" {
 		return false
 	}
@@ -135,7 +153,7 @@ func isSameSourceCorrection(addedLine string, deletedLines []string) bool {
 		deletedLine = strings.TrimSpace(deletedLine)
 		if strings.HasPrefix(deletedLine, "- ") &&
 			deletedLine != addedLine &&
-			pullRequestReference.FindString(deletedLine) == reference {
+			pullRequestReferenceFromLine(deletedLine) == reference {
 			return true
 		}
 	}

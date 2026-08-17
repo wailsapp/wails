@@ -54,3 +54,16 @@ func TestIsSameSourceCorrectionRejectsNewOrSourceLessEntry(t *testing.T) {
 		})
 	}
 }
+
+func TestPullRequestReferenceFromLineRejectsEmbeddedTrustedURL(t *testing.T) {
+	tests := []string{
+		"- Entry in [PR](https://attacker.example/https://github.com/wailsapp/wails/pull/5985) by @contributor",
+		"- Entry in [PR](https://github.com/wailsapp/wails/pull/5985.attacker.example) by @contributor",
+		"- Entry in [PR](https://github.com/wailsapp/wails/pull/5985?redirect=https://attacker.example) by @contributor",
+	}
+	for _, line := range tests {
+		if got := pullRequestReferenceFromLine(line); got != "" {
+			t.Fatalf("pullRequestReferenceFromLine(%q) = %q, want rejection", line, got)
+		}
+	}
+}
