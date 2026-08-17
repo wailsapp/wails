@@ -12,9 +12,9 @@ Owners are blank on purpose. Fill them in before the go/no-go, not on the day.
 | # | Step | Owner |
 |---|---|---|
 | 1 | Confirm that the maintainer-approved policy is still tag-only and that no desktop binaries are expected. If policy changes, update this ledger before proceeding | |
-| 2 | Run the tag-only release task in dry-run mode against current `master`; verify the proposed version, tag, changelog and release notes without publishing | |
-| 3 | Verify the candidate commit through the Go module path on a clean machine, then record the commands and results in `plan.json` | |
-| 4 | Re-sync `releases/v3-beta` with master and re-run the audit. The branch drifts quickly; `relman audit` blocks on it | |
+| 2 | Re-sync `releases/v3-beta` with current `master` and re-run the audit. The ledger branch drifts quickly; `relman audit` blocks on it | |
+| 3 | Run the tag-only release task in dry-run mode against the audited `master` candidate; verify the proposed version, tag, changelog and release notes without publishing | |
+| 4 | Record the dry-run commands and results in `plan.json`, and prepare the post-publication clean-machine check for the exact tag. The install gate remains open until that check runs | |
 | 5 | Warn downstream: packagers, template and plugin authors, translators (see `packagers.md`) | |
 
 ## Release day
@@ -53,8 +53,10 @@ Agreed in advance, while nobody is under pressure:
 ## Rollback
 
 Deleting the GitHub release or tag does not retract a version already cached by
-the Go module proxy, and **npm cannot be unpublished after 72 hours**. In
-practice, the recovery for anything found after publishing is a fast patch
+the Go module proxy. An npm version may be unpublished only when the current
+[registry criteria](https://docs.npmjs.com/policies/unpublish/) permit it;
+otherwise deprecate it, and an unpublished name/version still cannot be reused.
+In practice, the recovery for anything found after publishing is a fast patch
 release, which is why the hotfix path has to be rehearsed rather than assumed.
 
 Write the exact commands here once step 2 has actually been executed, so this
