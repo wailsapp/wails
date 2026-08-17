@@ -31,11 +31,16 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN || github.token }}
         
-    - name: Get validation script from master
+    - name: Select validation script
       run: |
         echo "Fetching the validation script from master branch..."
         git fetch origin master
-        git checkout origin/master -- v3/scripts/validate-changelog.go
+
+        if git diff --quiet origin/master...HEAD -- v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go; then
+          git checkout origin/master -- v3/scripts/validate-changelog.go
+        else
+          echo "The PR updates the validator; retaining that version for focused tests."
+        fi
         
         echo "Validation script fetched successfully:"
         ls -la v3/scripts/
@@ -44,6 +49,12 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.25'
+
+    - name: Test validation script changes
+      run: |
+        if ! git diff --quiet origin/master...HEAD -- v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go; then
+          go test v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go
+        fi
         
     - name: Get PR information
       id: pr_info
@@ -76,10 +87,15 @@ jobs:
       run: |
         echo "Getting diff for changelog changes..."
         git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/src/content/docs/changelog.mdx | grep "^+" | grep -v "^+++" | sed 's/^+//' > /tmp/pr_added_lines.txt
+        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/src/content/docs/changelog.mdx | grep "^-" | grep -v "^---" | sed 's/^-//' > /tmp/pr_deleted_lines.txt
         
         echo "Lines added in this PR:"
         cat /tmp/pr_added_lines.txt
         echo "Total lines added: $(wc -l < /tmp/pr_added_lines.txt)"
+
+        echo "Lines deleted in this PR:"
+        cat /tmp/pr_deleted_lines.txt
+        echo "Total lines deleted: $(wc -l < /tmp/pr_deleted_lines.txt)"
         
     - name: Validate changelog
       id: validate
@@ -87,7 +103,7 @@ jobs:
       run: |
         echo "Running changelog validation..."
         cd v3/scripts
-        OUTPUT=$(go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/pr_added_lines.txt 2>&1)
+        OUTPUT=$(go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/pr_added_lines.txt /tmp/pr_deleted_lines.txt 2>&1)
         echo "$OUTPUT"
         
         RESULT=$(echo "$OUTPUT" | grep "VALIDATION_RESULT=" | cut -d'=' -f2)

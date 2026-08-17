@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: go run validate-changelog.go <changelog-file> <added-lines-file>")
+		fmt.Println("Usage: go run validate-changelog.go <changelog-file> <added-lines-file> [deleted-lines-file]")
 		os.Exit(1)
 	}
 
@@ -33,6 +34,16 @@ func main() {
 
 	addedLines := strings.Split(addedContent, "\n")
 	fmt.Printf("📝 Lines added in this PR: %d\n", len(addedLines))
+	var deletedLines []string
+	if len(os.Args) >= 4 {
+		deletedContent, err := readFile(os.Args[3])
+		if err != nil {
+			fmt.Printf("ERROR: Failed to read deleted changelog lines: %v\n", err)
+			os.Exit(1)
+		}
+		deletedLines = strings.Split(deletedContent, "\n")
+		fmt.Printf("📝 Lines deleted in this PR: %d\n", len(deletedLines))
+	}
 
 	// Parse changelog to find where added lines ended up
 	lines := strings.Split(content, "\n")
@@ -60,6 +71,10 @@ func main() {
 		if currentSection != "" && currentSection != "Unreleased" &&
 			strings.HasPrefix(strings.TrimSpace(line), "- ") &&
 			wasAddedInThisPR(line, addedLines) {
+			if isSameSourceCorrection(line, deletedLines) {
+				fmt.Printf("✅ CORRECTION: Same-source replacement in %s: %s\n", currentSection, strings.TrimSpace(line))
+				continue
+			}
 
 			issues = append(issues, Issue{
 				Line:     lineNum,
@@ -99,6 +114,32 @@ func main() {
 		fmt.Println("❌ Cannot automatically fix changelog issues")
 		os.Exit(1)
 	}
+}
+
+var pullRequestReference = regexp.MustCompile(`https://github\.com/wailsapp/wails/pull/[0-9]+`)
+
+// isSameSourceCorrection distinguishes a historical correction from a new
+// entry added to a released section. Both lines must be changelog bullets and
+// must cite the same immutable Wails pull request. New entries, source-less
+// rewrites, and replacements that cite a different PR remain blocked.
+func isSameSourceCorrection(addedLine string, deletedLines []string) bool {
+	addedLine = strings.TrimSpace(addedLine)
+	if !strings.HasPrefix(addedLine, "- ") {
+		return false
+	}
+	reference := pullRequestReference.FindString(addedLine)
+	if reference == "" {
+		return false
+	}
+	for _, deletedLine := range deletedLines {
+		deletedLine = strings.TrimSpace(deletedLine)
+		if strings.HasPrefix(deletedLine, "- ") &&
+			deletedLine != addedLine &&
+			pullRequestReference.FindString(deletedLine) == reference {
+			return true
+		}
+	}
+	return false
 }
 
 type Issue struct {
