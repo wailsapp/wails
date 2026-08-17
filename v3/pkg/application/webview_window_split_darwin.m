@@ -4,14 +4,22 @@
 #import <objc/runtime.h>
 #import <string.h>
 
+#ifndef WAILS_NATIVE_ONLY
 static const void* WailsSplitPrimaryPaneIDAssociationKey = &WailsSplitPrimaryPaneIDAssociationKey;
+#endif
 static void* WailsSplitPaneCollapsedKVOContext = &WailsSplitPaneCollapsedKVOContext;
 
+#ifndef WAILS_NATIVE_ONLY
 unsigned long long splitPrimaryPaneIDForWebView(WKWebView* webView) {
     if (webView == nil) return 0;
     NSNumber* value = objc_getAssociatedObject(webView, WailsSplitPrimaryPaneIDAssociationKey);
     return value == nil ? 0 : value.unsignedLongLongValue;
 }
+#else
+unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
+    return 0;
+}
+#endif
 
 @interface WailsSidebarNode : NSObject
 @property unsigned long long nodeID;
@@ -561,6 +569,63 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 
 @end
 
+@interface WailsTextEditorViewController : NSViewController <NSTextViewDelegate>
+@property unsigned long long editorID;
+@property (retain) NSScrollView* scrollView;
+@property (retain) NSTextView* textView;
+@property BOOL suppressChange;
+@end
+
+@implementation WailsTextEditorViewController
+- (void)loadView {
+    NSScrollView* scroll = [[NSScrollView alloc] initWithFrame:NSMakeRect(0, 0, 600, 600)];
+    scroll.hasVerticalScroller = YES;
+    scroll.hasHorizontalScroller = NO;
+    scroll.autohidesScrollers = YES;
+    scroll.borderType = NSNoBorder;
+    scroll.drawsBackground = YES;
+
+    NSTextView* text = [[NSTextView alloc] initWithFrame:scroll.contentView.bounds];
+    text.minSize = NSMakeSize(0, 0);
+    text.maxSize = NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX);
+    text.verticallyResizable = YES;
+    text.horizontallyResizable = NO;
+    text.autoresizingMask = NSViewWidthSizable;
+    text.textContainer.widthTracksTextView = YES;
+    text.textContainer.containerSize = NSMakeSize(scroll.contentSize.width, CGFLOAT_MAX);
+    text.textContainerInset = NSMakeSize(24, 22);
+    text.richText = NO;
+    text.importsGraphics = NO;
+    text.usesFindBar = YES;
+    text.allowsUndo = YES;
+    text.automaticQuoteSubstitutionEnabled = NO;
+    text.automaticDashSubstitutionEnabled = NO;
+    text.font = [NSFont userFixedPitchFontOfSize:14.0];
+    text.delegate = self;
+    scroll.documentView = text;
+
+    self.scrollView = scroll;
+    self.textView = text;
+    self.view = scroll;
+    [text release];
+    [scroll release];
+}
+- (void)textDidChange:(NSNotification*)notification {
+    if (!self.suppressChange) processMacTextEditorChanged(self.editorID);
+}
+- (void)setEditorText:(NSString*)value {
+    self.suppressChange = YES;
+    self.textView.string = value ?: @"";
+    self.suppressChange = NO;
+}
+- (void)dealloc {
+    _textView.delegate = nil;
+    [_scrollView release];
+    [_textView release];
+    [super dealloc];
+}
+@end
+
 @interface WailsSplitPaneRecord : NSObject
 @property unsigned long long paneID;
 @property int role;
@@ -585,7 +650,13 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 @property (retain) WailsInspectorViewController* inspectorController;
 @property (retain) NSViewController* viewController;
 @property (retain) NSSplitViewItem* item;
+#ifndef WAILS_NATIVE_ONLY
 @property (retain) WKWebView* webView;
+#endif
+@property unsigned long long textEditorID;
+@property (copy) NSString* initialText;
+@property BOOL textEditorEditable;
+@property (retain) WailsTextEditorViewController* textEditorController;
 @property BOOL observing;
 @property BOOL lastCollapsed;
 @end
@@ -599,9 +670,14 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     [_inspectorController release];
     [_viewController release];
     [_item release];
+#ifndef WAILS_NATIVE_ONLY
     [_webView release];
+#endif
+    [_initialText release];
+    [_textEditorController release];
     [super dealloc];
 }
+
 - (void)observeValueForKeyPath:(NSString*)keyPath ofObject:(id)object change:(NSDictionary*)change context:(void*)context {
     if (context != WailsSplitPaneCollapsedKVOContext) {
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
@@ -642,6 +718,17 @@ static WailsSplitPaneRecord* splitPaneRecord(void* handlePtr, unsigned long long
         if (record.paneID == paneID) return record;
     }
     return nil;
+}
+
+void splitViewConfigureTextEditor(void* handlePtr, unsigned long long paneID,
+    unsigned long long editorID, const char* text, bool editable) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    if (record == nil || record.role != WailsSplitPaneRolePrimary) return;
+    record.textEditorID = editorID;
+    NSString* value = text == NULL ? [[NSString alloc] init] : [[NSString alloc] initWithUTF8String:text];
+    record.initialText = value;
+    [value release];
+    record.textEditorEditable = editable;
 }
 
 static WailsSidebarNode* sidebarSection(WailsSplitPaneRecord* record, unsigned long long sectionID) {
@@ -734,6 +821,7 @@ void splitViewAddPane(void* handlePtr, unsigned long long paneID, int role, bool
     [record release];
 }
 
+#ifndef WAILS_NATIVE_ONLY
 bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
     WailsSplitViewOwner* owner = splitViewOwner(handlePtr);
     WebviewWindow* window = (WebviewWindow*)nsWindow;
@@ -944,6 +1032,166 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
     owner.installed = YES;
     return true;
 }
+#else
+bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
+    return false;
+}
+#endif
+
+bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop) {
+    WailsSplitViewOwner* owner = splitViewOwner(handlePtr);
+    NSWindow* window = (NSWindow*)nsWindow;
+    if (owner == nil || window == nil || owner.installed || owner.torndown || owner.records.count < 2) return false;
+
+    WailsSplitPaneRecord* primaryRecord = nil;
+    for (WailsSplitPaneRecord* record in owner.records) {
+        if (record.primary) primaryRecord = record;
+        if (!record.primary && record.role != WailsSplitPaneRoleSidebar &&
+            record.role != WailsSplitPaneRoleInspector) return false;
+    }
+    if (primaryRecord == nil || primaryRecord.textEditorID == 0) return false;
+
+    NSColor* primaryBackground = nil;
+    if (normalBackdrop) {
+        primaryBackground = window.backgroundColor;
+        if (primaryBackground == nil || primaryBackground.alphaComponent <= 0.0) {
+            primaryBackground = [NSColor windowBackgroundColor];
+        }
+        window.backgroundColor = primaryBackground;
+        window.opaque = YES;
+    }
+
+    for (WailsSplitPaneRecord* record in owner.records) {
+        if (record.primary) {
+            WailsTextEditorViewController* editor = [[WailsTextEditorViewController alloc] init];
+            editor.editorID = record.textEditorID;
+            (void)editor.view;
+            if (editor.view == nil) {
+                [editor release];
+                return false;
+            }
+            [editor setEditorText:record.initialText ?: @""];
+            // The NSTextView is authoritative after installation. Keeping the
+            // staging NSString here would retain a second complete document.
+            record.initialText = nil;
+            editor.textView.editable = record.textEditorEditable;
+            record.textEditorController = editor;
+            record.viewController = editor;
+            [editor release];
+        } else if (record.role == WailsSplitPaneRoleSidebar) {
+            WailsSidebarViewController* sidebar = [[WailsSidebarViewController alloc] init];
+            sidebar.roots = record.sidebarRoots;
+            sidebar.selectedItemID = record.selectedSidebarItemID;
+            sidebar.surfaceColor = primaryBackground;
+            (void)sidebar.view;
+            if (sidebar.view == nil) {
+                [sidebar release];
+                return false;
+            }
+            record.sidebarController = sidebar;
+            record.viewController = sidebar;
+            [sidebar release];
+        } else {
+            WailsInspectorViewController* inspector = [[WailsInspectorViewController alloc] init];
+            inspector.sections = record.inspectorSections;
+            inspector.modelsByID = record.inspectorModelsByID;
+            inspector.surfaceColor = primaryBackground;
+            (void)inspector.view;
+            if (inspector.view == nil) {
+                [inspector release];
+                return false;
+            }
+            record.inspectorController = inspector;
+            record.viewController = inspector;
+            [inspector release];
+        }
+    }
+
+    NSSplitViewController* controller = [[NSSplitViewController alloc] init];
+    if (controller == nil) return false;
+    controller.splitView.vertical = YES;
+    if (owner.autosaveName.length > 0) controller.splitView.autosaveName = owner.autosaveName;
+
+    for (WailsSplitPaneRecord* record in owner.records) {
+        NSSplitViewItem* item = nil;
+        if (record.role == WailsSplitPaneRoleSidebar) {
+            item = [NSSplitViewItem sidebarWithViewController:record.viewController];
+        } else if (record.role == WailsSplitPaneRoleInspector) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+            if (@available(macOS 11.0, *)) {
+                item = [NSSplitViewItem inspectorWithViewController:record.viewController];
+            }
+#endif
+            if (item == nil) item = [NSSplitViewItem splitViewItemWithViewController:record.viewController];
+        } else {
+            item = [NSSplitViewItem splitViewItemWithViewController:record.viewController];
+        }
+        if (item == nil) {
+            [controller release];
+            return false;
+        }
+        if (record.minThickness > 0) item.minimumThickness = record.minThickness;
+        if (record.maxThickness > 0) item.maximumThickness = record.maxThickness;
+        if (record.hasPreferredFraction) item.preferredThicknessFraction = record.preferredFraction;
+        if (record.hasHoldingPriority) item.holdingPriority = record.holdingPriority;
+        if (record.hasCollapsible) item.canCollapse = record.collapsible;
+        if (record.hasCanCollapseFromResize) splitViewItemApplyCanCollapseFromResize(item, record.canCollapseFromResize);
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+        if (@available(macOS 11.0, *)) {
+            if (record.role == WailsSplitPaneRoleSidebar) item.allowsFullHeightLayout = YES;
+        }
+#endif
+        [controller addSplitViewItem:item];
+        record.item = item;
+    }
+
+    for (WailsSplitPaneRecord* record in owner.records) {
+        if (record.startCollapsed) record.item.collapsed = YES;
+        record.lastCollapsed = record.item.collapsed;
+        [record.item addObserver:record forKeyPath:@"collapsed"
+            options:NSKeyValueObservingOptionNew context:WailsSplitPaneCollapsedKVOContext];
+        record.observing = YES;
+    }
+
+    window.styleMask |= NSWindowStyleMaskFullSizeContentView;
+    NSRect frame = window.frame;
+    window.contentViewController = controller;
+    [window setFrame:frame display:YES];
+    for (WailsSplitPaneRecord* record in owner.records) {
+        [record.sidebarController reloadContents];
+        [record.inspectorController reloadContents];
+    }
+    owner.controller = controller;
+    [controller release];
+    owner.installed = YES;
+    return true;
+}
+
+void splitViewTextEditorSetText(void* handlePtr, unsigned long long paneID, const char* text) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    if (record == nil || record.textEditorController == nil) return;
+    NSString* value = text == NULL ? [[NSString alloc] init] : [[NSString alloc] initWithUTF8String:text];
+    [record.textEditorController setEditorText:value];
+    [value release];
+}
+
+char* splitViewTextEditorCopyText(void* handlePtr, unsigned long long paneID) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    if (record == nil || record.textEditorController == nil) return NULL;
+    const char* value = record.textEditorController.textView.string.UTF8String;
+    return value == NULL ? strdup("") : strdup(value);
+}
+
+void splitViewTextEditorSetEditable(void* handlePtr, unsigned long long paneID, bool editable) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    if (record != nil) record.textEditorController.textView.editable = editable;
+}
+
+void splitViewTextEditorFocus(void* handlePtr, unsigned long long paneID) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    if (record == nil || record.textEditorController == nil) return;
+    [record.textEditorController.view.window makeFirstResponder:record.textEditorController.textView];
+}
 
 void splitViewTeardown(void* handlePtr) {
     WailsSplitViewOwner* owner = splitViewOwner(handlePtr);
@@ -954,14 +1202,17 @@ void splitViewTeardown(void* handlePtr) {
             [record.item removeObserver:record forKeyPath:@"collapsed" context:WailsSplitPaneCollapsedKVOContext];
             record.observing = NO;
         }
+#ifndef WAILS_NATIVE_ONLY
         if (record.primary && record.webView != nil) {
             objc_setAssociatedObject(record.webView, WailsSplitPrimaryPaneIDAssociationKey, nil, OBJC_ASSOCIATION_RETAIN);
         }
         record.webView = nil;
+#endif
         record.item = nil;
         record.viewController = nil;
         record.sidebarController = nil;
         record.inspectorController = nil;
+        record.textEditorController = nil;
         [record.sidebarRoots removeAllObjects];
         [record.inspectorSections removeAllObjects];
         [record.inspectorModelsByID removeAllObjects];
@@ -999,9 +1250,11 @@ void splitViewPaneSetCanCollapseFromWindowResize(void* handlePtr, unsigned long 
 }
 void splitViewPaneSetContentLayout(void* handlePtr, unsigned long long paneID, int layout) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
-    if (record == nil || !record.primary || record.webView == nil) return;
+    if (record == nil || !record.primary) return;
     record.contentLayout = layout;
-    windowApplyContentLayout(record.webView.window, layout);
+#ifndef WAILS_NATIVE_ONLY
+    if (record.webView != nil) windowApplyContentLayout(record.webView.window, layout);
+#endif
 }
 void splitViewPaneSetCollapsed(void* handlePtr, unsigned long long paneID, bool collapsed) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);

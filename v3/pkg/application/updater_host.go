@@ -1,8 +1,20 @@
+//go:build !wails_native
+
 package application
 
 import (
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
+
+type applicationUpdater = updater.Updater
+
+func prepareUpdaterApplicationProcess() {
+	updater.HandleHelperMode()
+}
+
+func newApplicationUpdater(app *App) *applicationUpdater {
+	return updater.New(newUpdaterHost(app))
+}
 
 // updaterHost adapts the application's EventManager and window factory to
 // the small interface the updater package needs. Defined here (and not in

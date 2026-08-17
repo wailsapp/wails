@@ -1,3 +1,5 @@
+//go:build !wails_native
+
 package application
 
 import (

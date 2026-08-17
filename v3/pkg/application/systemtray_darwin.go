@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -framework WebKit
+#cgo LDFLAGS: -framework Cocoa
 
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"

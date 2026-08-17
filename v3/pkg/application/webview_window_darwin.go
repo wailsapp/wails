@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !wails_native
 
 package application
 
@@ -8,6 +8,7 @@ package application
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
+#include "mac_window_chrome_darwin.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
@@ -591,39 +592,6 @@ void windowSetUseToolbar(void* nsWindow, bool useToolbar) {
 	} else {
 		[window setToolbar:nil];
 	}
-}
-
-// Set window toolbar style
-void windowSetToolbarStyle(void* nsWindow, int style) {
-	WebviewWindow* window = (WebviewWindow*)nsWindow;
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-	if (@available(macOS 11.0, *)) {
-		NSToolbar* toolbar = [window toolbar];
-		if ( toolbar == nil ) {
-			return;
-		}
-		[window setToolbarStyle:style];
-	}
-#endif
-
-}
-// Set Hide Toolbar Separator
-void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
-	NSToolbar* toolbar = [(WebviewWindow*)nsWindow toolbar];
-	if( toolbar == nil ) {
-		return;
-	}
-	[toolbar setShowsBaselineSeparator:!hideSeparator];
-}
-
-// Configure the toolbar auto-hide feature
-void windowSetShowToolbarWhenFullscreen(void* window, bool setting) {
-	WebviewWindow* nsWindow = (WebviewWindow*)window;
-	// Get delegate
-	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
-	// Set height
-	delegate.showToolbarWhenFullscreen = setting;
 }
 
 // Set Window appearance type

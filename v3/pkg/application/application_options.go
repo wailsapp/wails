@@ -1,16 +1,18 @@
 package application
 
 import (
-	"io/fs"
 	"log/slog"
-	"net/http"
 	"time"
-
-	"github.com/wailsapp/wails/v3/internal/assetserver"
 )
 
 // Options contains the options for the application
 type Options struct {
+	// NativeOnly skips the frontend transport and asset server for applications
+	// that create only NativeWindow instances. This experimental v3 option
+	// reduces background work in native tray utilities. WebviewWindow must not
+	// be created when NativeOnly is true.
+	NativeOnly bool
+
 	// Name is the name of the application (used in the default about box)
 	Name string
 
@@ -171,59 +173,6 @@ type TLSOptions struct {
 
 	// KeyFile is the path to the TLS private key file.
 	KeyFile string
-}
-
-// AssetOptions defines the configuration of the AssetServer.
-type AssetOptions struct {
-	// Handler which serves all the content to the WebView.
-	Handler http.Handler
-
-	// Middleware is a HTTP Middleware which allows to hook into the AssetServer request chain. It allows to skip the default
-	// request handler dynamically, e.g. implement specialized Routing etc.
-	// The Middleware is called to build a new `http.Handler` used by the AssetSever and it also receives the default
-	// handler used by the AssetServer as an argument.
-	//
-	// This middleware injects itself before any of Wails internal middlewares.
-	//
-	// If not defined, the default AssetServer request chain is executed.
-	//
-	// Multiple Middlewares can be chained together with:
-	//   ChainMiddleware(middleware ...Middleware) Middleware
-	Middleware Middleware
-
-	// DisableLogging disables logging of the AssetServer. By default, the AssetServer logs every request.
-	DisableLogging bool
-}
-
-// Middleware defines HTTP middleware that can be applied to the AssetServer.
-// The handler passed as next is the next handler in the chain. One can decide to call the next handler
-// or implement a specialized handling.
-type Middleware func(next http.Handler) http.Handler
-
-// ChainMiddleware allows chaining multiple middlewares to one middleware.
-func ChainMiddleware(middleware ...Middleware) Middleware {
-	return func(h http.Handler) http.Handler {
-		for i := len(middleware) - 1; i >= 0; i-- {
-			h = middleware[i](h)
-		}
-		return h
-	}
-}
-
-// AssetFileServerFS returns a http handler which serves the assets from the fs.FS.
-// If an external devserver has been provided 'FRONTEND_DEVSERVER_URL' the files are being served
-// from the external server, ignoring the `assets`.
-func AssetFileServerFS(assets fs.FS) http.Handler {
-	return assetserver.NewAssetFileServer(assets)
-}
-
-// BundledAssetFileServer returns a http handler which serves the assets from the fs.FS.
-// If an external devserver has been provided 'FRONTEND_DEVSERVER_URL' the files are being served
-// from the external server, ignoring the `assets`.
-// It also serves the compiled runtime.js file at `/wails/runtime.js`.
-// It will provide the production runtime.js file from the embedded assets if the `production` tag is used.
-func BundledAssetFileServer(assets fs.FS) http.Handler {
-	return assetserver.NewBundledAssetFileServer(assets)
 }
 
 /******** Mac Options ********/
