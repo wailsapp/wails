@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !wails_native
 
 package application
 
@@ -10,6 +10,7 @@ package application
 #include "webview_window_darwin.h"
 #include "webview_panel_darwin.h"
 #include "webview_notch_window_darwin.h"
+#include "mac_window_chrome_darwin.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>

@@ -2,7 +2,6 @@ package application
 
 import (
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 	"io"
@@ -15,21 +14,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
-	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
-//go:embed assets/*
-var alphaAssets embed.FS
-
 var globalApplication *App
-
-// AlphaAssets is the default assets for the alpha application
-var AlphaAssets = AssetOptions{
-	Handler: BundledAssetFileServer(alphaAssets),
-}
 
 type EventListener struct {
 	callback func(app *ApplicationEvent)
@@ -44,10 +32,16 @@ func New(appOptions Options) *App {
 	// swap and exit before any application machinery touches the disk. This
 	// is a no-op when the sentinel env vars are absent, so normal startup is
 	// unaffected.
-	updater.HandleHelperMode()
+	prepareUpdaterApplicationProcess()
 
 	if globalApplication != nil {
 		return globalApplication
+	}
+	if nativeBuild {
+		// A native build has no frontend transport or WebView backend. Make the
+		// matching runtime mode automatic so tagged applications cannot
+		// accidentally start infrastructure that was compiled out.
+		appOptions.NativeOnly = true
 	}
 
 	mergeApplicationDefaults(&appOptions)
@@ -81,117 +75,7 @@ func New(appOptions Options) *App {
 	result.streams = newStreamManager(result)
 	result.OnShutdown(result.streams.close)
 
-	messageProc := NewMessageProcessor(result.Logger)
-	result.messageProcessor = messageProc
-
-	// Initialize transport (default to HTTP if not specified)
-	transport := appOptions.Transport
-	if transport == nil {
-		transport = NewHTTPTransport(HTTPTransportWithLogger(result.Logger))
-	}
-
-	err := transport.Start(result.ctx, messageProc)
-	if err != nil {
-		result.fatal("failed to start custom transport: %w", err)
-	}
-	// Register shutdown task to stop transport
-	result.OnShutdown(func() {
-		if err := transport.Stop(); err != nil {
-			result.error("failed to stop custom transport: %w", err)
-		}
-	})
-
-	// Auto-wire events if transport supports event delivery
-	if eventTransport, ok := transport.(WailsEventListener); ok {
-		result.wailsEventListeners = append(result.wailsEventListeners, eventTransport)
-	} else {
-		// otherwise fallback to IPC
-		result.wailsEventListeners = append(result.wailsEventListeners, &EventIPCTransport{
-			app: result,
-		})
-	}
-
-	middlewares := []assetserver.Middleware{
-		func(next http.Handler) http.Handler {
-			if m := appOptions.Assets.Middleware; m != nil {
-				return m(next)
-			}
-			return next
-		},
-		func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				path := req.URL.Path
-				// Oversized events are parked host-side and fetched here rather
-				// than being spliced into an evaluateJavaScript source string.
-				if strings.HasPrefix(path, eventPayloadPath) {
-					result.serveEventPayload(rw, req)
-					return
-				}
-				// GoStream: the poll is held here for as long as the frontend
-				// has nothing to collect. Safe because every webview request
-				// gets its own goroutine (see the dispatchWorkers note in
-				// assetserver_webview.go).
-				if strings.HasPrefix(path, streamPath) {
-					result.serveStream(rw, req)
-					return
-				}
-				switch path {
-				case "/wails/runtime.js":
-					// The prelude, where there is one, picks the stream
-					// transport before any module body runs. It cannot be
-					// deferred to custom.js — see stream_prelude_server.go.
-					err := assetserver.ServeFile(rw, path, runtimeJSWithPrelude())
-					if err != nil {
-						result.fatal("unable to serve runtime.js: %w", err)
-					}
-				case "/wails/transport.js":
-					err := assetserver.ServeFile(rw, path, transport.JSClient())
-					if err != nil {
-						result.fatal("unable to serve transport.js: %w", err)
-					}
-				case "/wails/custom.js":
-					// custom.js is only served in server mode.
-					// Return 404 so the runtime's loadOptionalScript skips it.
-					http.NotFound(rw, req)
-				default:
-					next.ServeHTTP(rw, req)
-				}
-			})
-		},
-	}
-
-	if handler, ok := transport.(TransportHTTPHandler); ok {
-		middlewares = append(middlewares, handler.Handler())
-	}
-
-	opts := &assetserver.Options{
-		Handler:    appOptions.Assets.Handler,
-		Middleware: assetserver.ChainMiddleware(middlewares...),
-		Logger:     result.Logger,
-	}
-
-	if appOptions.Assets.DisableLogging {
-		opts.Logger = slog.New(slog.NewTextHandler(io.Discard, nil))
-	}
-
-	srv, err := assetserver.NewAssetServer(opts)
-	if err != nil {
-		result.fatal("application initialisation failed: %w", err)
-	}
-
-	result.assets = srv
-	result.assets.LogDetails()
-
-	// If transport implements AssetServerTransport, configure it to serve assets
-	if assetTransport, ok := transport.(AssetServerTransport); ok {
-		err := assetTransport.ServeAssets(srv)
-		if err != nil {
-			result.fatal("failed to configure transport for serving assets: %w", err)
-		}
-		result.debug("Transport configured to serve assets")
-	}
-
-	result.bindings = NewBindings(appOptions.MarshalError, appOptions.BindAliases)
+	configureFrontend(result, appOptions)
 	result.options.Services = slices.Clone(appOptions.Services)
 
 	// Process keybindings
@@ -304,8 +188,6 @@ func addDragAndDropMessage(windowId uint, filenames []string, dropTarget *DropTa
 	}
 }
 
-var _ webview.Request = &webViewAssetRequest{}
-
 // serveEventPayload delivers an oversized event body that was parked by
 // DispatchWailsEvent. Payloads are one-shot and bound to the window they were
 // dispatched to, so a stale or cross-window id simply 404s.
@@ -351,57 +233,12 @@ func (a *App) serveEventPayload(rw http.ResponseWriter, req *http.Request) {
 	_, _ = rw.Write(data)
 }
 
-const webViewRequestHeaderWindowId = "x-wails-window-id"
-const webViewRequestHeaderWindowName = "x-wails-window-name"
-
-type webViewAssetRequest struct {
-	Request    webview.Request
-	windowId   uint
-	windowName string
-}
-
 var windowKeyEvents = make(chan *windowKeyEvent, 5)
 
 type windowKeyEvent struct {
 	windowId          uint
 	acceleratorString string
 }
-
-func (r *webViewAssetRequest) URL() (string, error) {
-	return r.Request.URL()
-}
-
-func (r *webViewAssetRequest) Method() (string, error) {
-	return r.Request.Method()
-}
-
-func (r *webViewAssetRequest) Header() (http.Header, error) {
-	h, err := r.Request.Header()
-	if err != nil {
-		return nil, err
-	}
-
-	hh := h.Clone()
-	hh.Set(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(r.windowId), 10))
-	if r.windowName != "" {
-		hh.Set(webViewRequestHeaderWindowName, r.windowName)
-	}
-	return hh, nil
-}
-
-func (r *webViewAssetRequest) Body() (io.ReadCloser, error) {
-	return r.Request.Body()
-}
-
-func (r *webViewAssetRequest) Response() webview.ResponseWriter {
-	return r.Request.Response()
-}
-
-func (r *webViewAssetRequest) Close() error {
-	return r.Request.Close()
-}
-
-var webviewRequests = make(chan *webViewAssetRequest, 256)
 
 type eventHook struct {
 	callback func(event *ApplicationEvent)
@@ -417,7 +254,11 @@ type App struct {
 	applicationEventHooksLock     sync.RWMutex
 
 	// Manager pattern for organized API
-	Window         *WindowManager
+	Window *WindowManager
+	// NativeWindow creates windows whose content is composed entirely from
+	// platform-native views. This API is experimental in v3 and currently has
+	// an AppKit implementation on macOS.
+	NativeWindow   *NativeWindowManager
 	ContextMenu    *ContextMenuManager
 	KeyBinding     *KeyBindingManager
 	Browser        *BrowserManager
@@ -430,11 +271,16 @@ type App struct {
 	SystemTray     *SystemTrayManager
 	Autostart      *AutostartManager
 	GlobalShortcut *GlobalShortcutManager
-	Updater        *updater.Updater
+	Updater        *applicationUpdater
 
 	// Windows
 	windows     map[uint]Window
 	windowsLock sync.RWMutex
+
+	// Native windows deliberately live outside the legacy Window registry:
+	// Window currently includes WebView-only methods such as ExecJS and SetURL.
+	nativeWindows     map[uint]*NativeWindow
+	nativeWindowsLock sync.RWMutex
 
 	// System Trays
 	systemTrays      map[uint]*SystemTray
@@ -467,8 +313,6 @@ type App struct {
 	contextMenus     map[string]*ContextMenu
 	contextMenusLock sync.RWMutex
 
-	assets *assetserver.AssetServer
-
 	// eventPayloads holds oversized Go→JS event bodies awaiting a one-shot
 	// fetch from the webview, keeping them out of evaluateJavaScript source.
 	eventPayloads *eventPayloadStore
@@ -477,6 +321,7 @@ type App struct {
 	// carry their connections. See stream.go.
 	streams *streamManager
 
+	frontendState
 	startURL string
 
 	// Hooks
@@ -573,6 +418,7 @@ func (a *App) init() {
 	a.applicationEventHooks = make(map[uint][]*eventHook)
 	a.applicationEventListeners = make(map[uint][]*EventListener)
 	a.windows = make(map[uint]Window)
+	a.nativeWindows = make(map[uint]*NativeWindow)
 	a.systemTrays = make(map[uint]*SystemTray)
 	a.contextMenus = make(map[string]*ContextMenu)
 	a.keyBindings = make(map[string]func(window Window))
@@ -582,6 +428,7 @@ func (a *App) init() {
 
 	// Initialize managers
 	a.Window = newWindowManager(a)
+	a.NativeWindow = newNativeWindowManager(a)
 	a.ContextMenu = newContextMenuManager(a)
 	a.KeyBinding = newKeyBindingManager(a)
 	a.Browser = newBrowserManager(a)
@@ -594,7 +441,7 @@ func (a *App) init() {
 	a.SystemTray = newSystemTrayManager(a)
 	a.Autostart = newAutostartManager(a)
 	a.GlobalShortcut = newGlobalShortcutManager(a)
-	a.Updater = updater.New(newUpdaterHost(a))
+	a.Updater = newApplicationUpdater(a)
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
@@ -694,36 +541,7 @@ func (a *App) Run() error {
 				go a.Event.handleApplicationEvent(event)
 			}
 		}()
-		go func() {
-			for {
-				event := <-windowEvents
-				go a.handleWindowEvent(event)
-			}
-		}()
-		go func() {
-			for {
-				request := <-webviewRequests
-				go a.handleWebViewRequest(request)
-			}
-		}()
-		go func() {
-			for {
-				event := <-windowMessageBuffer
-				go a.handleWindowMessage(event)
-			}
-		}()
-		go func() {
-			for {
-				event := <-windowKeyEvents
-				go a.handleWindowKeyEvent(event)
-			}
-		}()
-		go func() {
-			for {
-				dragAndDropMessage := <-windowDragAndDropBuffer
-				go a.handleDragAndDropMessage(dragAndDropMessage)
-			}
-		}()
+		startFrontendEventLoops(a)
 
 		go func() {
 			for {
@@ -752,12 +570,6 @@ func (a *App) Run() error {
 		}()
 		go func() {
 			for {
-				event := <-splitPaneLoadedEvents
-				handleMacSplitPaneLoaded(event)
-			}
-		}()
-		go func() {
-			for {
 				event := <-splitPaneCollapseEvents
 				handleMacSplitPaneCollapsed(event.paneID, event.collapsed)
 			}
@@ -772,6 +584,20 @@ func (a *App) Run() error {
 			for {
 				event := <-macInspectorControlEvents
 				go handleMacInspectorControlEvent(event)
+			}
+		}()
+		go func() {
+			for {
+				editorID := <-macTextEditorChanged
+				go handleMacTextEditorChanged(editorID)
+			}
+		}()
+		go func() {
+			for {
+				windowID := <-nativeWindowClosed
+				if window, ok := a.NativeWindow.GetByID(windowID); ok {
+					go window.Close()
+				}
 			}
 		}()
 
@@ -810,26 +636,12 @@ func (a *App) Run() error {
 }
 
 func (a *App) startupService(service Service) error {
-	err := a.bindings.Add(service)
-	if err != nil {
+	if err := bindFrontendService(a, service); err != nil {
 		return fmt.Errorf("cannot bind service methods: %w", err)
 	}
 
-	if service.options.Route != "" {
-		handler, ok := service.Instance().(http.Handler)
-		if !ok {
-			handler = http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				http.Error(
-					rw,
-					fmt.Sprintf(
-						"Service '%s' does not handle HTTP requests",
-						getServiceName(service),
-					),
-					http.StatusServiceUnavailable,
-				)
-			})
-		}
-		a.assets.AttachServiceHandler(service.options.Route, handler)
+	if err := attachServiceRoute(a, service); err != nil {
+		return err
 	}
 
 	if s, ok := service.instance.(ServiceStartup); ok {
@@ -903,16 +715,6 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 }
 
-func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
-	defer handlePanic()
-	// Log that we're processing the request
-	url, _ := request.Request.URL()
-	a.debug("handleWebViewRequest: Processing request", "url", url)
-	// IMPORTANT: pass the wrapper request so our injected headers (x-wails-window-id/name) are used
-	a.assets.ServeWebViewRequest(request)
-	a.debug("handleWebViewRequest: Request processing complete", "url", url)
-}
-
 func (a *App) handleWindowEvent(event *windowEvent) {
 	defer handlePanic()
 	// Get window from window map
@@ -981,6 +783,16 @@ func (a *App) cleanup() {
 		}
 		a.windows = nil
 		a.windowsLock.Unlock()
+		a.nativeWindowsLock.Lock()
+		nativeWindows := make([]*NativeWindow, 0, len(a.nativeWindows))
+		for _, window := range a.nativeWindows {
+			nativeWindows = append(nativeWindows, window)
+		}
+		a.nativeWindows = nil
+		a.nativeWindowsLock.Unlock()
+		for _, window := range nativeWindows {
+			window.Close()
+		}
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.destroy()

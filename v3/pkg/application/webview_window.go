@@ -10,7 +10,6 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -548,7 +547,7 @@ func (w *WebviewWindow) Hide() Window {
 }
 
 func (w *WebviewWindow) SetURL(s string) Window {
-	url, _ := assetserver.GetStartURL(s)
+	url := webviewStartURL(s)
 	w.options.URL = url
 	if w.impl != nil {
 		InvokeSync(func() {
@@ -878,6 +877,18 @@ func (w *WebviewWindow) SetToolbar(toolbar *MacToolbar) Window {
 	}
 	return w
 }
+
+func (w *WebviewWindow) macInspectorPane() *MacSplitPane {
+	w.splitViewLock.RLock()
+	split := w.splitView
+	w.splitViewLock.RUnlock()
+	if split == nil {
+		return nil
+	}
+	return split.inspectorPane()
+}
+
+func (w *WebviewWindow) macSplitOptions() MacWindow { return w.options.Mac }
 
 // SetSplitView configures the native macOS split-view layout for this window.
 // It must be called before the native window is shown; a late call leaves any

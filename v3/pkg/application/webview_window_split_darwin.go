@@ -4,8 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -framework WebKit
-#include "webview_window_darwin.h"
+#cgo LDFLAGS: -framework Cocoa
 #include "webview_window_split_darwin.h"
 #include <stdlib.h>
 */
@@ -62,6 +61,11 @@ func processMacInspectorSelectionChanged(controlID C.ulonglong, selectedIndex C.
 		kind:      MacInspectorPopup,
 		selected:  int(selectedIndex),
 	}
+}
+
+//export processMacTextEditorChanged
+func processMacTextEditorChanged(editorID C.ulonglong) {
+	macTextEditorChanged <- uint64(editorID)
 }
 
 // installSplitView installs a pending native split layout. It runs on the
@@ -280,7 +284,7 @@ func applyMacSplitPaneLatestState(pane *MacSplitWebviewPane) {
 	layout := pane.contentLayout
 	pane.lock.RUnlock()
 	if owner := pane.split.ownerWindow(); owner != nil {
-		macSplitPaneApplyContentLayout(pane.MacSplitPane, resolveMacContentLayout(owner.options.Mac, layout))
+		macSplitPaneApplyContentLayout(pane.MacSplitPane, resolveMacContentLayout(owner.macSplitOptions(), layout))
 	}
 }
 

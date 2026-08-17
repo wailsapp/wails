@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit -framework AppKit
+#cgo LDFLAGS: -framework Foundation -framework Cocoa -framework AppKit
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <Cocoa/Cocoa.h>
