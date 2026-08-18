@@ -319,12 +319,6 @@ func Init(options *flags.Init) error {
 // info keys map 1:1 onto the Product* fields.
 func writeProjectConfigYML(options *flags.Init) error {
 	path := filepath.Join(options.ProjectDir, "build", "config.yml")
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	content := string(data)
-
 	values := map[string]string{
 		"companyName":       options.ProductCompany,
 		"productName":       options.ProductName,
@@ -334,6 +328,19 @@ func writeProjectConfigYML(options *flags.Init) error {
 		"comments":          options.ProductComments,
 		"version":           options.ProductVersion,
 	}
+	return updateConfigYMLInfo(path, values)
+}
+
+// updateConfigYMLInfo rewrites the quoted `info:` values in an existing
+// build/config.yml, preserving the file's comments. Empty values are left
+// untouched. Shared by `wails3 init` (UI mode) and `wails3 migrate`.
+func updateConfigYMLInfo(path string, values map[string]string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	content := string(data)
+
 	for key, val := range values {
 		if val == "" {
 			continue
