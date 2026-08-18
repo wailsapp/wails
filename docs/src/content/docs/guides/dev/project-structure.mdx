@@ -20,6 +20,7 @@ This page is a simple reference to the files created when you initiate a new pro
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # Generated hicolor PNG icon set
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ This page is a simple reference to the files created when you initiate a new pro
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
   ```
+
+Generated directories such as `frontend/dist`, `frontend/bindings`, and `build/linux/icons` appear after their corresponding build or generation task first runs.
 
 :::note[Frontend project files]
 If you choose to use a different starter template, contents of `frontend/src` will differ depending on your chosen framework

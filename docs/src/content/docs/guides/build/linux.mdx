@@ -59,6 +59,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### Desktop Icons
+
+`build/appicon.png` is the canonical icon source. The shared `generate:icons` task creates deterministic PNGs in `build/linux/icons/` at 16, 32, 48, 64, 128, 256, and 512 pixels. DEB, RPM, and Arch packages install each generated image into the matching `/usr/share/icons/hicolor/<size>x<size>/apps/` directory.
+
+The generated nFPM configuration expects that default size set. If you customize `-linuxsizes`, update the icon entries in `build/linux/nfpm/nfpm.yaml` to match.
+
+Projects created before Linux icon generation keep their compatible legacy package mapping when `update build-assets` runs, because Wails does not overwrite a project's Taskfile. To opt in, update the common `generate:icons` task from a current project so that it passes `-linuxoutputdir linux/icons`, declares every Linux PNG under `generates`, and then run:
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 AppImage configuration is in `build/linux/appimage/`. The app icon comes from `build/appicon.png`.
