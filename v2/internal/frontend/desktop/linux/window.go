@@ -127,12 +127,17 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 
 	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
-	result.SetResizable(!appoptions.DisableResize)
 	result.SetDefaultSize(appoptions.Width, appoptions.Height)
 	result.SetDecorated(!appoptions.Frameless)
 	result.SetTitle(appoptions.Title)
-	result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
-	result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
+	if appoptions.DisableResize {
+		result.SetMinSize(appoptions.Width, appoptions.Height)
+		result.SetMaxSize(appoptions.Width, appoptions.Height)
+	} else {
+		result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
+		result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
+	}
+	result.SetResizable(!appoptions.DisableResize)
 	if appoptions.Linux != nil {
 		if appoptions.Linux.Icon != nil {
 			result.SetWindowIcon(appoptions.Linux.Icon)
