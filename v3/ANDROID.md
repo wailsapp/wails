@@ -148,14 +148,14 @@ the `application.IOS*` surface, so one event-driven layer drives both platforms
 
 For the subset of capabilities whose signature is identical on both platforms,
 `application.Mobile` provides one build-guarded entry point: it dispatches to
-`Android` on Android, `IOS` on iOS, and a no-op stub on desktop — so
+`Android` on Android, `IOS` on iOS, and a desktop stub off-device — so
 cross-platform code can call e.g. `application.Mobile.StoragePath()` without its
 own `//go:build` split. Platform-specific calls stay on `Android` / `IOS`.
 
 | Capability | API | Notes |
 |---|---|---|
 | Share sheet | `Android.Share(json)` | `Intent.ACTION_SEND` |
-| Open URL externally | `Android.OpenURL(url)` | `Intent.ACTION_VIEW` |
+| Open URL externally | `Android.OpenURL(url) error` | Reports invalid URLs, unavailable handlers, and launch failures |
 | Keep screen awake | `Android.SetKeepAwake(bool)` | `FLAG_KEEP_SCREEN_ON` |
 | Torch / flashlight | `Android.SetTorch(bool)` | `CameraManager` → `common:torch` |
 | Safe-area insets | `Android.SafeAreaJSON()` | `{top,bottom,left,right}` |

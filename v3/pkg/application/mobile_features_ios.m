@@ -21,6 +21,17 @@ static int g_mfOrientationMode = 0;   // 0=auto, 1=portrait, 2=landscape
 static int g_mfStatusBarStyle = 0;    // 0=default, 1=light content, 2=dark content
 static BOOL g_mfStatusBarHidden = NO;
 
+// dupCString clones an NSString into a malloc'd C string (caller frees).
+static const char* mfDup(NSString *str) {
+    if (str == nil) return NULL;
+    const char* utf8 = [str UTF8String];
+    if (utf8 == NULL) return NULL;
+    size_t len = strlen(utf8) + 1;
+    char* out = (char*)malloc(len);
+    if (out) memcpy(out, utf8, len);
+    return out;
+}
+
 // Run a block on the main thread without deadlocking when already on it.
 static void mfRunOnMain(void (^block)(void)) {
     if ([NSThread isMainThread]) {
@@ -80,14 +91,33 @@ void ios_share(const char* json) {
 
 // MARK: - Open URL externally
 
-void ios_open_url(const char* curl) {
-    if (curl == NULL) return;
+const char* ios_open_url(const char* curl) {
+    if (curl == NULL) return mfDup(@"URL must not be null");
     NSString *str = [NSString stringWithUTF8String:curl];
+    if (str == nil) return mfDup(@"invalid URL encoding");
     NSURL *url = [NSURL URLWithString:str];
-    if (url == nil) return;
-    mfRunOnMain(^{
-        [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+    if (url == nil || url.scheme.length == 0) return mfDup(@"invalid URL");
+    if ([NSThread isMainThread]) {
+        return mfDup(@"OpenURL cannot wait for completion on the iOS main thread");
+    }
+
+    __block NSString *errorMessage = nil;
+    dispatch_semaphore_t completed = dispatch_semaphore_create(0);
+    dispatch_block_t launch = dispatch_block_create(0, ^{
+        UIApplication *application = [UIApplication sharedApplication];
+        [application openURL:url options:@{} completionHandler:^(BOOL success) {
+            if (!success) errorMessage = @"application rejected URL";
+            dispatch_semaphore_signal(completed);
+        }];
     });
+    dispatch_async(dispatch_get_main_queue(), launch);
+    long waitResult = dispatch_semaphore_wait(
+        completed, dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
+    if (waitResult != 0) {
+        dispatch_block_cancel(launch);
+        return mfDup(@"timed out waiting for application to open URL");
+    }
+    return mfDup(errorMessage);
 }
 
 // MARK: - Keep screen awake
@@ -137,17 +167,6 @@ void ios_set_torch(bool enabled) {
         iosEmitNativeEvent("common:torch", enabled ? "{\"on\":true,\"available\":true}"
                                                    : "{\"on\":false,\"available\":true}");
     });
-}
-
-// dupCString clones an NSString into a malloc'd C string (caller frees).
-static const char* mfDup(NSString *str) {
-    if (str == nil) return NULL;
-    const char* utf8 = [str UTF8String];
-    if (utf8 == NULL) return NULL;
-    size_t len = strlen(utf8) + 1;
-    char* out = (char*)malloc(len);
-    if (out) memcpy(out, utf8, len);
-    return out;
 }
 
 static void mfRunOnMainSync(void (^block)(void)) {

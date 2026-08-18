@@ -16,7 +16,9 @@ func registerNativeFeatures(app *application.App) {
 		application.IOS.Share(payloadJSON(e.Data))
 	})
 	app.Event.On("common:openURL", func(e *application.CustomEvent) {
-		application.IOS.OpenURL(eventString(e.Data, "url"))
+		if err := application.IOS.OpenURL(eventString(e.Data, "url")); err != nil {
+			app.Logger.Error("open URL", "error", err)
+		}
 	})
 	app.Event.On("common:keepAwake", func(e *application.CustomEvent) {
 		application.IOS.SetKeepAwake(eventBool(e.Data, "enabled", false))

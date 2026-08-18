@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 
-// Phase A — one-way actions
+// Phase A — actions
 void ios_share(const char* json);
-void ios_open_url(const char* url);
+const char* ios_open_url(const char* url);
 void ios_set_keep_awake(bool enabled);
 void ios_set_torch(bool enabled);
 

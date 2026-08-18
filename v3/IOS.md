@@ -109,14 +109,14 @@ both platforms (see the `mobile` example's `registerNativeFeatures`).
 
 For the subset of capabilities whose signature is identical on both platforms,
 `application.Mobile` provides one build-guarded entry point: it dispatches to
-`IOS` on iOS, `Android` on Android, and a no-op stub on desktop — so
+`IOS` on iOS, `Android` on Android, and a desktop stub off-device — so
 cross-platform code can call e.g. `application.Mobile.StoragePath()` without its
 own `//go:build` split. Platform-specific calls stay on `IOS` / `Android`.
 
 | Capability | API | Notes |
 |---|---|---|
 | Share sheet | `IOS.Share(json)` | `UIActivityViewController` |
-| Open URL externally | `IOS.OpenURL(url)` | Opens in Safari |
+| Open URL externally | `IOS.OpenURL(url) error` | Reports invalid URLs and rejected launches |
 | Keep screen awake | `IOS.SetKeepAwake(bool)` | Idle-timer toggle |
 | Torch / flashlight | `IOS.SetTorch(bool)` | → `common:torch` event |
 | Safe-area insets | `IOS.SafeAreaJSON()` | `{top,bottom,left,right}` |
