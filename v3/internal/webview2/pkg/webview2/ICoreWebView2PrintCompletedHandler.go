@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2PrintCompletedHandler struct {
 	impl ICoreWebView2PrintCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2PrintCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2PrintCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2PrintCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2PrintCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2PrintCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2PrintCompletedHandlerIUnknownQueryInterface(this *ICoreWebView
 }
 
 func ICoreWebView2PrintCompletedHandlerIUnknownAddRef(this *ICoreWebView2PrintCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2PrintCompletedHandlerIUnknownRelease(this *ICoreWebView2PrintCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2PrintCompletedHandlerInvoke(this *ICoreWebView2PrintCompletedHandler, errorCode uintptr, result COREWEBVIEW2_PRINT_STATUS) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2PrintCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2PrintCompletedHandlerFn = ICoreWebView2PrintCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2PrintCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2PrintCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2PrintCompletedHandlerIUnknownRelease),

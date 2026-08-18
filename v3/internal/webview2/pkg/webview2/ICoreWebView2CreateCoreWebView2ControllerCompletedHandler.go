@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2CreateCoreWebView2ControllerCompletedHandler struct {
 	impl ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownQueryInter
 }
 
 func ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownAddRef(this *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownRelease(this *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerInvoke(this *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler, errorCode uintptr, result *ICoreWebView2Controller) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerFn = ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownRelease),

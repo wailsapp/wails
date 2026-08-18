@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2EnvironmentOptions8Vtbl struct {
@@ -18,10 +17,16 @@ type ICoreWebView2EnvironmentOptions8 struct {
 	Vtbl *ICoreWebView2EnvironmentOptions8Vtbl
 }
 
-func (i *ICoreWebView2EnvironmentOptions8) AddRef() uintptr {
+func (i *ICoreWebView2EnvironmentOptions8) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2EnvironmentOptions8) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2EnvironmentOptions8) GetScrollBarStyle() (COREWEBVIEW2_SCROLLBAR_STYLE, error) {
 
@@ -38,6 +43,7 @@ func (i *ICoreWebView2EnvironmentOptions8) GetScrollBarStyle() (COREWEBVIEW2_SCR
 }
 
 func (i *ICoreWebView2EnvironmentOptions8) PutScrollBarStyle(value COREWEBVIEW2_SCROLLBAR_STYLE) error {
+
 
 	hr, _, _ := i.Vtbl.PutScrollBarStyle.Call(
 		uintptr(unsafe.Pointer(i)),

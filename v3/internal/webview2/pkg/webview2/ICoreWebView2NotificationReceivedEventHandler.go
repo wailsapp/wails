@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2NotificationReceivedEventHandler struct {
 	impl ICoreWebView2NotificationReceivedEventHandlerImpl
 }
 
-func (i *ICoreWebView2NotificationReceivedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2NotificationReceivedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2NotificationReceivedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2NotificationReceivedEventHandlerIUnknownQueryInterface(this *ICoreWebView2NotificationReceivedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2NotificationReceivedEventHandlerIUnknownQueryInterface(this *I
 }
 
 func ICoreWebView2NotificationReceivedEventHandlerIUnknownAddRef(this *ICoreWebView2NotificationReceivedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2NotificationReceivedEventHandlerIUnknownRelease(this *ICoreWebView2NotificationReceivedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2NotificationReceivedEventHandlerInvoke(this *ICoreWebView2NotificationReceivedEventHandler, sender *ICoreWebView2, args *ICoreWebView2NotificationReceivedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2NotificationReceivedEventHandlerImpl interface {
 }
 
 var ICoreWebView2NotificationReceivedEventHandlerFn = ICoreWebView2NotificationReceivedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2NotificationReceivedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2NotificationReceivedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2NotificationReceivedEventHandlerIUnknownRelease),

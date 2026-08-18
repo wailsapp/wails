@@ -15,7 +15,7 @@ var interfaceTestData = []byte(`
 library WebView2 {
 
 [uuid(A0D6DF20-3B92-416D-AA0C-437A9C727857), object, pointer_default(unique)]
-interface ICoreWebView2_3 : ICoreWebView2_2 {
+interface ICoreWebView2_3 : IUnknown {
 [propget] HRESULT IsSuspended([out, retval] BOOL* isSuspended);
 }
 }`)

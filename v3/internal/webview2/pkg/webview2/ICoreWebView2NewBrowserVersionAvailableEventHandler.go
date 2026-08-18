@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2NewBrowserVersionAvailableEventHandler struct {
 	impl ICoreWebView2NewBrowserVersionAvailableEventHandlerImpl
 }
 
-func (i *ICoreWebView2NewBrowserVersionAvailableEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2NewBrowserVersionAvailableEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2NewBrowserVersionAvailableEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2NewBrowserVersionAvailableEventHandlerIUnknownQueryInterface(this *ICoreWebView2NewBrowserVersionAvailableEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2NewBrowserVersionAvailableEventHandlerIUnknownQueryInterface(t
 }
 
 func ICoreWebView2NewBrowserVersionAvailableEventHandlerIUnknownAddRef(this *ICoreWebView2NewBrowserVersionAvailableEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2NewBrowserVersionAvailableEventHandlerIUnknownRelease(this *ICoreWebView2NewBrowserVersionAvailableEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2NewBrowserVersionAvailableEventHandlerInvoke(this *ICoreWebView2NewBrowserVersionAvailableEventHandler, sender *ICoreWebView2Environment, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2NewBrowserVersionAvailableEventHandlerImpl interface {
 }
 
 var ICoreWebView2NewBrowserVersionAvailableEventHandlerFn = ICoreWebView2NewBrowserVersionAvailableEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2NewBrowserVersionAvailableEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2NewBrowserVersionAvailableEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2NewBrowserVersionAvailableEventHandlerIUnknownRelease),

@@ -1,31 +1,36 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2AcceleratorKeyPressedEventArgsVtbl struct {
 	IUnknownVtbl
-	GetKeyEventKind      ComProc
-	GetVirtualKey        ComProc
-	GetKeyEventLParam    ComProc
+	GetKeyEventKind ComProc
+	GetVirtualKey ComProc
+	GetKeyEventLParam ComProc
 	GetPhysicalKeyStatus ComProc
-	GetHandled           ComProc
-	PutHandled           ComProc
+	GetHandled ComProc
+	PutHandled ComProc
 }
 
 type ICoreWebView2AcceleratorKeyPressedEventArgs struct {
 	Vtbl *ICoreWebView2AcceleratorKeyPressedEventArgsVtbl
 }
 
-func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetKeyEventKind() (COREWEBVIEW2_KEY_EVENT_KIND, error) {
 
@@ -95,21 +100,21 @@ func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetHandled() (bool, error)
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	handled := _handled != 0
+    handled := _handled != 0
 	return handled, nil
 }
 
 func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) PutHandled(handled bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _handledInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _handled int32
 	if handled {
-		_handledInt = 1
+		_handled = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutHandled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_handledInt),
+		uintptr(_handled),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
