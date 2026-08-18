@@ -998,10 +998,20 @@ func serveAssetForAndroid(app *App, method string, path string) ([]byte, error) 
 	}
 
 	// For runtime calls, return the body even for error responses so the
-	// JavaScript side can see the error message.
+	// JavaScript side can see the error message. Error responses from the
+	// asset handler are plain text (from the errs package), but the JS
+	// runtime JSON.parse()s every runtime response, so a non-200 body must be
+	// wrapped in the same {"ok":false,"error":"..."} envelope used by the
+	// JavascriptInterface bridge (handleRuntimeCallForAndroid); otherwise the
+	// frontend throws a SyntaxError instead of surfacing the error.
 	if isRuntimeCall {
 		if result.StatusCode != http.StatusOK {
 			androidDebugLogf("[serveAsset] runtime call returned status %d: %s", result.StatusCode, string(body))
+			envelope, err := json.Marshal(map[string]any{"ok": false, "error": strings.TrimSpace(string(body))})
+			if err != nil {
+				return body, nil
+			}
+			return envelope, nil
 		}
 		return body, nil
 	}
