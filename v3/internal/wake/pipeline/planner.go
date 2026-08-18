@@ -14,6 +14,9 @@ import (
 )
 
 func PlanBuild(config manifest.Config, request Request) (Plan, error) {
+	if config.Selected.Name != "" && len(request.Targets) == 0 && request.TargetOS == "" && request.TargetArch == "" {
+		return planSelectedProfile(config, request)
+	}
 	targets := append([]Target(nil), request.Targets...)
 	if len(targets) == 0 {
 		targets = []Target{{OS: request.TargetOS, Arch: request.TargetArch}}
@@ -68,6 +71,111 @@ func PlanBuild(config manifest.Config, request Request) (Plan, error) {
 		combined.Name = "build"
 	}
 	return combined, combined.Validate(config.Root)
+}
+
+// planSelectedProfile expands the complete profile request into one child plan
+// per concrete target. The fixed pipeline remains private to Wails; profiles
+// select artifacts, not stages or dependencies.
+func planSelectedProfile(config manifest.Config, request Request) (Plan, error) {
+	combined := Plan{Name: request.Verb, Nodes: map[NodeKey]Node{}}
+	for _, selected := range config.Selected.Targets {
+		goos, arch, err := splitProfileTarget(selected.Target)
+		if err != nil {
+			return Plan{}, err
+		}
+		childConfig := config
+		if selected.Destination != "" {
+			if err := setTargetVariant(&childConfig.Targets, goos, arch, selected.Destination); err != nil {
+				return Plan{}, err
+			}
+		}
+		if selected.Notarize && goos == "darwin" {
+			childConfig.Signing.Darwin.Notarize = true
+		}
+		childRequest := request
+		childRequest.TargetOS, childRequest.TargetArch = goos, arch
+		childRequest.Targets = nil
+		childRequest.Formats = append([]string(nil), selected.Formats...)
+		if childRequest.Verb == "build" {
+			switch {
+			case selected.Sign:
+				childRequest.Verb = "sign"
+			case len(selected.Formats) > 0:
+				childRequest.Verb = "package"
+			}
+		}
+		child, err := planTarget(childConfig, childRequest, true)
+		if err != nil {
+			return Plan{}, err
+		}
+		if err := addPlanNodes(&combined, child); err != nil {
+			return Plan{}, err
+		}
+	}
+	if combined.Name == "" {
+		combined.Name = "build"
+	}
+	return combined, combined.Validate(config.Root)
+}
+
+func addPlanNodes(combined *Plan, child Plan) error {
+	for key, node := range child.Nodes {
+		if existing, ok := combined.Nodes[key]; ok {
+			if !reflect.DeepEqual(existing, node) {
+				return fmt.Errorf("project node %s resolves differently across targets; use equivalent target settings or separate invocations", key)
+			}
+			continue
+		}
+		combined.Nodes[key] = node
+	}
+	combined.Roots = appendUniqueKeys(combined.Roots, child.Roots...)
+	if combined.Target == "" {
+		combined.Target = child.Target
+	} else {
+		combined.Target += "," + child.Target
+	}
+	return nil
+}
+
+func splitProfileTarget(value string) (string, string, error) {
+	parts := strings.Split(value, "/")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("invalid profile target %q", value)
+	}
+	return parts[0], parts[1], nil
+}
+
+func setTargetVariant(targets *manifest.Targets, platform, arch, variant string) error {
+	var configured *manifest.Platform
+	switch platform {
+	case "windows":
+		configured = &targets.Windows
+	case "darwin":
+		configured = &targets.Darwin
+	case "linux":
+		configured = &targets.Linux
+	case "ios":
+		configured = &targets.IOS
+	case "android":
+		configured = &targets.Android
+	default:
+		return fmt.Errorf("unsupported profile target platform %q", platform)
+	}
+	switch arch {
+	case "amd64":
+		configured.AMD64.Variant = variant
+	case "arm64":
+		configured.ARM64.Variant = variant
+	case "arm":
+		configured.ARM.Variant = variant
+	case "386":
+		configured.X86.Variant = variant
+	case "universal":
+		configured.Universal.Variant = variant
+	default:
+		return fmt.Errorf("unsupported profile target architecture %q", arch)
+	}
+	return nil
 }
 
 func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan, error) {
@@ -138,7 +246,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		beforeBuild = add(node)
 	}
 	install := add(Node{Key: "frontend:install", Kind: InstallFrontendDependencies, Label: "Install frontend dependencies", Scope: ProjectScope,
-		Spec:   InstallSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: config.Frontend.InstallCommand},
+		Spec:   InstallSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: config.Frontend.InstallCommand, Arguments: append([]string(nil), config.Frontend.Install...)},
 		Inputs: []InputSpec{{Label: "frontend-install", Files: frontendInstallFiles(config)}}, Marker: filepath.ToSlash(filepath.Join(config.Frontend.Directory, "node_modules")), Cache: CacheReceipt, Claims: ResourceClaims{CPU: 1, MemoryMB: 512}, EstimateMS: 1800})
 	tags := append([]string(nil), config.Build.Go.Tags...)
 	tags = appendUnique(tags, targetSettings.Tags...)
@@ -172,10 +280,14 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	if beforeBuild != "" {
 		frontendDeps = append(frontendDeps, beforeBuild)
 	}
-	frontendOut := filepath.ToSlash(filepath.Join(config.Frontend.Directory, config.Frontend.OutputDirectory))
+	frontendOut := frontendOutputPath(config.Frontend.Directory, config.Frontend.OutputDirectory)
+	frontendExclude := filepath.ToSlash(filepath.Clean(config.Frontend.OutputDirectory))
+	if frontendExclude == config.Frontend.Directory || strings.HasPrefix(frontendExclude, config.Frontend.Directory+"/") {
+		frontendExclude = strings.TrimPrefix(strings.TrimPrefix(frontendExclude, config.Frontend.Directory), "/")
+	}
 	frontend := add(Node{Key: "frontend:build", Kind: BuildFrontend, Label: "Build frontend", Scope: ProjectScope, Dependencies: frontendDeps,
-		Spec:   FrontendSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: choose(request.Development, config.Frontend.BuildCommand+":dev", config.Frontend.BuildCommand), Output: config.Frontend.OutputDirectory, Production: !request.Development},
-		Inputs: []InputSpec{{Label: "frontend-source", Root: config.Frontend.Directory, IncludeAll: true, ExcludeDirs: []string{".git", ".wails", "node_modules", config.Frontend.Bindings.OutputDirectory, config.Frontend.OutputDirectory}}},
+		Spec:   FrontendSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: choose(request.Development, config.Frontend.BuildCommand+":dev", config.Frontend.BuildCommand), Arguments: append([]string(nil), config.Frontend.Build...), Output: config.Frontend.OutputDirectory, Production: !request.Development},
+		Inputs: []InputSpec{{Label: "frontend-source", Root: config.Frontend.Directory, IncludeAll: true, ExcludeDirs: []string{".git", ".wails", "node_modules", config.Frontend.Bindings.OutputDirectory, frontendExclude}}},
 		Output: frontendOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 2, MemoryMB: 1024}, EstimateMS: 900})
 	var assets NodeKey
 	if request.TargetOS == "windows" || request.TargetOS == "ios" || request.TargetOS == "android" {
@@ -437,6 +549,19 @@ func pathWithin(path, root string) bool {
 	return err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))
 }
 
+// frontendOutputPath accepts both forms users naturally write in a single
+// project manifest: a path relative to the frontend directory ("dist") and a
+// project-relative path ("frontend/dist"). The planner stores one canonical
+// project-relative output so cache snapshots and artifact reporting agree.
+func frontendOutputPath(directory, output string) string {
+	directory = filepath.ToSlash(filepath.Clean(directory))
+	output = filepath.ToSlash(filepath.Clean(output))
+	if output == directory || strings.HasPrefix(output, directory+"/") {
+		return output
+	}
+	return filepath.ToSlash(filepath.Join(directory, output))
+}
+
 func frontendInstallFiles(c manifest.Config) []string {
 	root := c.Frontend.Directory
 	result := []string{filepath.Join(root, "package.json"), filepath.Join(root, "package-lock.json"), filepath.Join(root, "npm-shrinkwrap.json"), filepath.Join(root, "pnpm-lock.yaml"), filepath.Join(root, "yarn.lock"), filepath.Join(root, "bun.lock"), filepath.Join(root, "bun.lockb"), filepath.Join(root, ".npmrc")}
@@ -477,6 +602,20 @@ func assetInputs(c manifest.Config) []InputSpec {
 	files := []string{manifest.Filename}
 	if c.Project.Icon != "" {
 		files = append(files, c.Project.Icon)
+	}
+	for _, platform := range []manifest.Platform{c.Targets.Windows, c.Targets.Darwin, c.Targets.Linux, c.Targets.IOS, c.Targets.Android} {
+		for _, path := range []string{platform.Icon, platform.Manifest, platform.AssetsCar, platform.InfoPlist} {
+			if path != "" {
+				files = append(files, path)
+			}
+		}
+	}
+	for _, signing := range []manifest.SigningPlatform{c.Signing.Windows, c.Signing.Darwin, c.Signing.Linux, c.Signing.IOS, c.Signing.Android} {
+		for _, path := range []string{signing.Certificate, signing.Entitlements, signing.ProvisioningProfile} {
+			if path != "" {
+				files = append(files, path)
+			}
+		}
 	}
 	return []InputSpec{{Label: "platform-assets", Files: files}}
 }

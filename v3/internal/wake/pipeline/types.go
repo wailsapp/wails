@@ -128,7 +128,10 @@ type Request struct {
 // execution method; handlers are selected by NodeKind.
 type NodeSpec interface{ nodeSpec() }
 
-type InstallSpec struct{ Manager, Directory, Command string }
+type InstallSpec struct {
+	Manager, Directory, Command string
+	Arguments                   []string
+}
 type BindingsSpec struct {
 	Config     manifest.Bindings
 	Tags       []string
@@ -136,6 +139,7 @@ type BindingsSpec struct {
 }
 type FrontendSpec struct {
 	Manager, Directory, Command, Output string
+	Arguments                           []string
 	Production                          bool
 }
 type CompileSpec struct {

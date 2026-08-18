@@ -48,25 +48,18 @@ func main() {
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
 	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
 
-	configCmd := app.NewSubCommand("config", "Inspect wails.toml")
-	configCheck := configCmd.NewSubCommand("check", "Validate and resolve wails.toml")
-	var configCheckOptions commands.ConfigOptions
-	configCheck.AddFlags(&configCheckOptions)
-	configCheck.Action(func() error { return commands.ConfigCheck(&configCheckOptions) })
-	configShow := configCmd.NewSubCommand("show", "Show fully resolved configuration")
-	var configShowOptions commands.ConfigOptions
-	configShow.AddFlags(&configShowOptions)
-	configShow.Action(func() error { return commands.ConfigShow(&configShowOptions) })
-
-	eject := app.NewSubCommand("eject", "Freeze resolved build defaults into wails.toml")
+	eject := app.NewSubCommand("eject", "Write the complete resolved reference manifest to wails.ejected.hcl")
 	var ejectOptions commands.EjectOptions
 	eject.AddFlags(&ejectOptions)
 	eject.Action(func() error { return commands.Eject(&ejectOptions, eject.OtherArgs()) })
 
-	migrate := app.NewSubCommand("migrate", "Migrate Taskfiles and build/config.yml to wails.toml")
+	migrate := app.NewSubCommand("migrate", "Create or activate a reviewed wails.hcl migration draft")
 	var migrateOptions commands.MigrateOptions
 	migrate.AddFlags(&migrateOptions)
 	migrate.Action(func() error { return commands.Migrate(&migrateOptions) })
+
+	clean := app.NewSubCommand("clean", "Remove disposable Wails-generated build state")
+	clean.Action(func() error { return commands.Clean(clean.OtherArgs()) })
 
 	pkg := app.NewSubCommand("package", "Package application")
 	var pkgFlags flags.Package

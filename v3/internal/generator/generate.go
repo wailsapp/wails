@@ -124,13 +124,32 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		}
 	}()
 
-	systemPaths, err := ResolveSystemPaths(buildFlags)
-	if err != nil {
-		return
+	// Package identities are their canonical import paths even when modules are
+	// replaced or vendored. Start with those identities so the normal Wails
+	// project path avoids four preliminary go/packages driver calls.
+	systemPaths := &config.SystemPaths{
+		ContextPackage:     "context",
+		TimePackage:        "time",
+		ApplicationPackage: config.WailsAppPkgPath,
+		InternalPackage:    config.WailsInternalPkgPath,
 	}
 
 	// Load initial packages.
 	pkgs, err := LoadPackages(buildFlags, patterns...)
+	if err == nil {
+		hasApplicationPackage := false
+		for _, pkg := range pkgs {
+			if pkg.PkgPath == config.WailsAppPkgPath {
+				hasApplicationPackage = true
+				break
+			}
+		}
+		if !hasApplicationPackage {
+			// Preserve the previous diagnostics for non-Wails package patterns.
+			// This slow fallback is not used by normal application builds.
+			systemPaths, err = ResolveSystemPaths(buildFlags)
+		}
+	}
 
 	// Suppress package loading feedback.
 	lpkgMutex.Lock()

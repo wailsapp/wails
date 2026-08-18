@@ -1,16 +1,15 @@
 package manifest
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
-	"time"
 
-	"github.com/BurntSushi/toml"
+	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // ErrEjectionSuggestionsUnavailable means the selected scope is already
@@ -19,13 +18,33 @@ import (
 var ErrEjectionSuggestionsUnavailable = errors.New("ejection upgrade suggestions unavailable")
 
 func Minimal(project Project) []byte {
-	return []byte(fmt.Sprintf(`[project]
-name = %q
-product_name = %q
-identifier = %q
-version = %q
-# binary_name = %q
-`, project.Name, project.ProductName, project.Identifier, project.Version, deriveBinaryName(project.Name)))
+	file := hclwrite.NewEmptyFile()
+	body := file.Body()
+	body.SetAttributeValue("version", cty.NumberIntVal(3))
+	body.AppendNewline()
+	projectBlock := hclwrite.NewBlock("project", nil)
+	projectBody := projectBlock.Body()
+	projectBody.SetAttributeValue("name", cty.StringVal(project.Name))
+	projectBody.SetAttributeValue("product_name", cty.StringVal(project.ProductName))
+	projectBody.SetAttributeValue("identifier", cty.StringVal(project.Identifier))
+	projectBody.SetAttributeValue("version", cty.StringVal(project.Version))
+	projectBody.SetAttributeValue("binary_name", cty.StringVal(deriveBinaryName(project.Name)))
+	body.AppendBlock(projectBlock)
+	body.AppendNewline()
+	frontendBlock := hclwrite.NewBlock("frontend", nil)
+	frontendBody := frontendBlock.Body()
+	frontendBody.SetAttributeValue("directory", cty.StringVal("frontend"))
+	frontendBody.SetAttributeValue("install", cty.ListVal([]cty.Value{cty.StringVal("npm"), cty.StringVal("install")}))
+	frontendBody.SetAttributeValue("build", cty.ListVal([]cty.Value{cty.StringVal("npm"), cty.StringVal("run"), cty.StringVal("build")}))
+	frontendBody.SetAttributeValue("dev", cty.ListVal([]cty.Value{cty.StringVal("npm"), cty.StringVal("run"), cty.StringVal("dev")}))
+	frontendBody.SetAttributeValue("output", cty.StringVal("frontend/dist"))
+	body.AppendBlock(frontendBlock)
+	body.AppendNewline()
+	buildBlock := hclwrite.NewBlock("build", nil)
+	buildBlock.Body().SetAttributeValue("output", cty.StringVal("bin"))
+	body.AppendBlock(buildBlock)
+	body.AppendNewline()
+	return file.Bytes()
 }
 
 func WriteMinimal(root string, project Project) error {
@@ -36,26 +55,14 @@ func WriteMinimal(root string, project Project) error {
 }
 
 func EncodeConfig(config Config) ([]byte, error) {
-	doc := Document{Project: config.Project, Frontend: config.Frontend, Build: config.Build, Dev: config.Dev, Targets: config.Targets, Package: config.Package, Signing: config.Signing, Associations: config.Associations, Protocols: config.Protocols, Hooks: config.Hooks, Wake: config.Wake, Extensions: config.Extensions}
-	var output bytes.Buffer
-	if err := toml.NewEncoder(&output).Encode(doc); err != nil {
-		return nil, err
-	}
-	return output.Bytes(), nil
+	return encodeConfigHCL(config, "")
 }
 
 func EncodeDocument(doc Document) ([]byte, error) {
-	defaultDoc := defaults(Project{})
-	defaultDoc.Project.BinaryName = deriveBinaryName(doc.Project.Name)
-	sparse, ok := sparseValue(reflect.ValueOf(doc), reflect.ValueOf(defaultDoc), false)
-	if !ok {
-		return nil, fmt.Errorf("manifest document is empty")
-	}
-	var output bytes.Buffer
-	if err := toml.NewEncoder(&output).Encode(sparse); err != nil {
+	if err := validateProject(doc.Project); err != nil {
 		return nil, err
 	}
-	return output.Bytes(), nil
+	return EncodeConfig(configFromDocument(".", "", doc))
 }
 
 // sparseValue turns a programmatically assembled Document into the same sparse
@@ -150,89 +157,42 @@ func WriteDocument(root string, doc Document) error {
 	return atomicWrite(filepath.Join(root, Filename), data, 0o644)
 }
 
-func Eject(root, profile, cliVersion string, backup bool) error {
-	base, err := Load(root, "")
+// WriteMigrationDraft writes the inactive result of legacy analysis. Only
+// `wails3 migrate --activate` may rename this file into the opt-in manifest.
+func WriteMigrationDraft(root string, doc Document) error {
+	if err := validateProject(doc.Project); err != nil {
+		return err
+	}
+	data, err := EncodeDocument(doc)
 	if err != nil {
 		return err
 	}
-	loaded := base
+	return atomicWrite(filepath.Join(root, MigratedFilename), data, 0o644)
+}
+
+func Eject(root, profile, cliVersion string, backup bool) error {
 	if profile != "" {
-		if profile == "default" || !slugPattern.MatchString(profile) {
-			return fmt.Errorf("profile name must be a lowercase slug and cannot be default")
-		}
-		if _, exists := base.Document.Profiles[profile]; exists {
-			loaded, err = Load(root, profile)
-			if err != nil {
-				return err
-			}
-		} else {
-			config := base.Config
-			config.Profile = profile
-			loaded = &Loaded{Path: base.Path, Raw: base.Raw, Document: base.Document, Config: config}
-		}
-	}
-	if profile == "" && base.Document.Wake.EjectedBy != "" {
-		return fmt.Errorf("%w: default configuration was ejected by %s; %s was left unchanged", ErrEjectionSuggestionsUnavailable, base.Document.Wake.EjectedBy, Filename)
-	}
-	if profile != "" && base.Document.Wake.EjectedProfiles[profile] != "" {
-		return fmt.Errorf("%w: profile %q was ejected by %s; %s was left unchanged", ErrEjectionSuggestionsUnavailable, profile, base.Document.Wake.EjectedProfiles[profile], Filename)
+		return fmt.Errorf("wails3 eject does not accept profiles; it writes the complete resolved manifest")
 	}
 	if backup {
-		stamp := time.Now().Format("20060102-150405")
-		if err := os.WriteFile(base.Path+"."+stamp+".bak", base.Raw, 0o644); err != nil {
-			return fmt.Errorf("write backup: %w", err)
-		}
+		return fmt.Errorf("wails3 eject never overwrites a file, so --backup is not supported")
 	}
-	if profile == "" {
-		config := loaded.Config
-		config.Wake.EjectedBy = cliVersion
-		if config.Wake.EjectedProfiles == nil {
-			config.Wake.EjectedProfiles = loaded.Document.Wake.EjectedProfiles
-		}
-		data, err := EncodeConfig(config)
-		if err != nil {
-			return err
-		}
-		// Preserve sparse named Profiles independently of the frozen base.
-		var doc Document
-		if _, err := toml.Decode(string(data), &doc); err != nil {
-			return err
-		}
-		doc.Profiles = loaded.Document.Profiles
-		var output bytes.Buffer
-		if err := toml.NewEncoder(&output).Encode(doc); err != nil {
-			return err
-		}
-		return atomicWrite(loaded.Path, output.Bytes(), 0o644)
-	}
-
-	frozen := profileLayerFromConfig(loaded.Config)
-	clearProfileTargetIdentity(&frozen.Targets)
-	var encoded bytes.Buffer
-	if err := toml.NewEncoder(&encoded).Encode(frozen); err != nil {
+	loaded, err := Load(root, "")
+	if err != nil {
 		return err
 	}
-	var profileMap map[string]any
-	if _, err := toml.Decode(encoded.String(), &profileMap); err != nil {
+	output := filepath.Join(loaded.Config.Root, EjectedFilename)
+	data, err := EncodeEjectedHCL(loaded.Config, cliVersion)
+	if err != nil {
 		return err
 	}
-	removeProfileTargetIdentity(profileMap)
-	// Modify the raw sparse document so ejecting one profile does not also
-	// freeze every compiled base default.
-	var sparseBase map[string]any
-	if _, err := toml.Decode(string(base.Raw), &sparseBase); err != nil {
+	if err := exclusiveWrite(output, data, 0o644); err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return fmt.Errorf("%s already exists; refusing to overwrite it", EjectedFilename)
+		}
 		return err
 	}
-	profiles := mapTable(sparseBase, "profiles")
-	profiles[profile] = profileMap
-	wake := mapTable(sparseBase, "wake")
-	ejectedProfiles := mapTable(wake, "ejected_profiles")
-	ejectedProfiles[profile] = cliVersion
-	var output bytes.Buffer
-	if err := toml.NewEncoder(&output).Encode(sparseBase); err != nil {
-		return err
-	}
-	return atomicWrite(base.Path, output.Bytes(), 0o644)
+	return nil
 }
 
 func removeProfileTargetIdentity(profile map[string]any) {
@@ -303,4 +263,34 @@ func atomicWrite(path string, data []byte, mode os.FileMode) error {
 		return err
 	}
 	return os.Rename(name, path)
+}
+
+func exclusiveWrite(path string, data []byte, mode os.FileMode) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, mode)
+	if err != nil {
+		return err
+	}
+	complete := false
+	defer func() {
+		if !complete {
+			_ = os.Remove(path)
+		}
+	}()
+	if _, err := file.Write(data); err != nil {
+		_ = file.Close()
+		return err
+	}
+	if err := file.Sync(); err != nil {
+		_ = file.Close()
+		return err
+	}
+	if err := file.Close(); err != nil {
+		return err
+	}
+	complete = true
+	return nil
 }

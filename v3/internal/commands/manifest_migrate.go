@@ -26,8 +26,11 @@ import (
 type MigrateOptions struct {
 	DryRun   bool `name:"dry-run" description:"Analyse without writing project files"`
 	JSON     bool `name:"json" description:"Print the machine-readable report"`
-	Backup   bool `name:"backup" description:"Back up represented legacy files under .wails before retiring them"`
-	Complete bool `name:"complete" description:"Complete a reviewed migration and retire its unchanged legacy files"`
+	Activate bool `name:"activate" description:"Validate a reviewed migration draft and atomically activate it"`
+	Backup   bool `name:"backup" description:"Deprecated: migration never changes legacy files"`
+	// Complete is retained as an undocumented compatibility spelling for one
+	// transition. It has the same non-destructive semantics as --activate.
+	Complete bool `name:"complete" description:"Deprecated: use --activate"`
 }
 
 type MigrationDiagnostic = migration.Diagnostic
@@ -38,40 +41,27 @@ func Migrate(options *MigrateOptions) error {
 	if err != nil {
 		return err
 	}
-	if manifest.Exists(root) {
-		if !options.Complete {
-			return fmt.Errorf("%s already exists; migration will not overwrite it (use --complete only after resolving an existing migration report)", manifest.Filename)
-		}
-		return completeMigration(root, options)
+	if options.Activate || options.Complete {
+		return activateMigration(root, options)
 	}
-	if options.Complete {
-		return fmt.Errorf("--complete requires an existing %s and %s", manifest.Filename, migration.RelativeReportPath)
+	if manifest.Exists(root) {
+		return fmt.Errorf("%s already exists; migration will not overwrite the active manifest", manifest.Filename)
+	}
+	draft := filepath.Join(root, manifest.MigratedFilename)
+	if _, err := os.Stat(draft); err == nil {
+		return fmt.Errorf("%s already exists; review it or remove it before running migration again", manifest.MigratedFilename)
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return err
 	}
 	report, doc, err := analyseMigration(root)
 	if err != nil {
 		return err
 	}
 	if !options.DryRun {
-		if err := manifest.WriteDocument(root, doc); err != nil {
+		if err := manifest.WriteMigrationDraft(root, doc); err != nil {
 			return err
 		}
-		report.Wrote = append(report.Wrote, manifest.Filename)
-		if report.Complete && options.Backup {
-			backedUp, diagnostics := backupLegacySources(root, report.Sources)
-			report.BackedUp = append(report.BackedUp, backedUp...)
-			report.Diagnostics = append(report.Diagnostics, diagnostics...)
-			if len(diagnostics) > 0 {
-				report.Complete = false
-			}
-		}
-		if report.Complete {
-			removed, diagnostics := removeLegacySources(root, report.Sources, true)
-			report.Removed = append(report.Removed, removed...)
-			report.Diagnostics = append(report.Diagnostics, diagnostics...)
-			if len(diagnostics) > 0 {
-				report.Complete = false
-			}
-		}
+		report.Wrote = append(report.Wrote, manifest.MigratedFilename)
 		report.Wrote = append(report.Wrote, migration.RelativeReportPath)
 		if err := migration.Write(root, report); err != nil {
 			return err
@@ -97,79 +87,64 @@ func Migrate(options *MigrateOptions) error {
 	if options.DryRun {
 		fmt.Println("No files written (--dry-run)")
 	} else {
-		fmt.Printf("Wrote %s and %s\n", manifest.Filename, migration.RelativeReportPath)
-		if len(report.Removed) > 0 {
-			fmt.Printf("Retired %d legacy source files", len(report.Removed))
-			if len(report.BackedUp) > 0 {
-				fmt.Printf(" (backed up under .wails/migration-backup)")
-			}
-			fmt.Println()
-		}
+		fmt.Printf("Wrote inactive %s and %s\n", manifest.MigratedFilename, migration.RelativeReportPath)
 	}
 	return nil
 }
 
-func completeMigration(root string, options *MigrateOptions) error {
-	report, exists, err := migration.Read(root)
+func activateMigration(root string, options *MigrateOptions) error {
+	draft := filepath.Join(root, manifest.MigratedFilename)
+	if _, err := manifest.LoadFile(root, draft, ""); err != nil {
+		return fmt.Errorf("validate %s: %w", manifest.MigratedFilename, err)
+	}
+	report, _, err := analyseMigration(root)
 	if err != nil {
 		return err
 	}
-	if !exists {
-		return fmt.Errorf("cannot complete migration: %s is missing", migration.RelativeReportPath)
-	}
-	if report.Complete {
-		return fmt.Errorf("migration is already complete")
-	}
-	diagnostics := verifyLegacySources(root, report.Sources)
-	if len(diagnostics) > 0 {
-		report.Diagnostics = append(report.Diagnostics, diagnostics...)
-		if !options.DryRun {
-			if err := migration.Write(root, report); err != nil {
+	if !report.Complete {
+		if options.JSON {
+			if err := printMigrationJSON(report); err != nil {
 				return err
 			}
 		}
-		return fmt.Errorf("cannot complete migration: legacy sources changed after analysis; rerun migration from a clean legacy project")
-	}
-	if !options.DryRun && options.Backup {
-		backedUp, backupDiagnostics := backupLegacySources(root, report.Sources)
-		if len(backupDiagnostics) > 0 {
-			report.Diagnostics = append(report.Diagnostics, backupDiagnostics...)
-			_ = migration.Write(root, report)
-			return fmt.Errorf("cannot complete migration: backup failed")
-		}
-		report.BackedUp = append(report.BackedUp, backedUp...)
-	}
-	if !options.DryRun {
-		removed, removalDiagnostics := removeLegacySources(root, report.Sources, true)
-		if len(removalDiagnostics) > 0 {
-			report.Diagnostics = append(report.Diagnostics, removalDiagnostics...)
-			_ = migration.Write(root, report)
-			return fmt.Errorf("cannot complete migration: legacy source retirement failed")
-		}
-		report.Removed = append(report.Removed, removed...)
-	}
-	report.Complete = true
-	report.CompletedBy = version.String()
-	report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "manual-completion", Message: "migration completion was explicitly confirmed after manual review"})
-	if !options.DryRun {
-		if err := migration.Write(root, report); err != nil {
-			return err
-		}
-	}
-	if options.JSON {
-		data, _ := json.MarshalIndent(report, "", "  ")
-		fmt.Println(string(data))
-		return nil
+		return fmt.Errorf("migration has unresolved blockers; review %s and rerun after resolving them", migration.RelativeReportPath)
 	}
 	if options.DryRun {
-		fmt.Printf("Migration can be completed (%d unchanged legacy source files); no files written (--dry-run)\n", len(report.Sources))
+		if options.JSON {
+			return printMigrationJSON(report)
+		}
+		fmt.Printf("Migration can be activated; no files written (--dry-run)\n")
 		return nil
 	}
-	fmt.Printf("Migration complete; retired %d legacy source files", len(report.Removed))
-	if len(report.BackedUp) > 0 {
-		fmt.Printf(" (backed up under .wails/migration-backup)")
+	active := filepath.Join(root, manifest.Filename)
+	if err := os.Link(draft, active); err != nil {
+		if errors.Is(err, fs.ErrExist) {
+			return fmt.Errorf("%s already exists; refusing to overwrite it", manifest.Filename)
+		}
+		return fmt.Errorf("activate migration: %w", err)
 	}
-	fmt.Println()
+	if err := os.Remove(draft); err != nil {
+		_ = os.Remove(active)
+		return fmt.Errorf("activate migration: %w", err)
+	}
+	report.CompletedBy = version.String()
+	report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "activated", Message: "reviewed migration draft was activated; legacy Taskfiles remain untouched"})
+	if err := migration.Write(root, report); err != nil {
+		return err
+	}
+	if options.JSON {
+		return printMigrationJSON(report)
+	}
+	fmt.Printf("Activated %s; legacy Taskfiles are now ignored but were not changed\n", manifest.Filename)
+	return nil
+}
+
+func printMigrationJSON(report MigrationReport) error {
+	data, err := json.MarshalIndent(report, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
 	return nil
 }
 
@@ -189,7 +164,6 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	}
 	packageManager := ""
 	binaryName := ""
-	hooks := manifest.Hooks{}
 	for _, path := range files {
 		rel, err := filepath.Rel(root, path)
 		if err != nil {
@@ -242,9 +216,9 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		}
 		sort.Strings(taskNames)
 		for _, name := range taskNames {
-			if phase, hook, ok := migrateScriptHook(root, filepath.Dir(path), name, tf.Tasks[name]); ok {
-				setMigratedHook(&hooks, phase, hook)
-				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "script-hook", File: rel, Task: name, Message: "translated script-file task to hooks." + phase})
+			if phase, _, ok := migrateScriptHook(root, filepath.Dir(path), name, tf.Tasks[name]); ok {
+				report.Complete = false
+				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "deferred-hook", File: rel, Task: name, Message: "custom " + phase + " script is not representable in config-only HCL and blocks activation"})
 				if classification.Classification == "current-default" {
 					classification.Classification = "customised"
 				}
@@ -338,9 +312,11 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	doc := manifest.NewDocument(project)
 	doc.Associations = associations
 	doc.Protocols = protocols
-	doc.Hooks = hooks
 	if packageManager != "" {
 		doc.Frontend.PackageManager = packageManager
+		doc.Frontend.Install = []string{packageManager, "install"}
+		doc.Frontend.Build = []string{packageManager, "run", "build"}
+		doc.Frontend.Dev = []string{packageManager, "run", "dev"}
 	}
 	return report, doc, nil
 }

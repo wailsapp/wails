@@ -1,7 +1,6 @@
 package manifest
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -9,11 +8,8 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"unicode"
-
-	"github.com/BurntSushi/toml"
 )
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
@@ -26,113 +22,57 @@ type Loaded struct {
 }
 
 func Exists(root string) bool {
-	_, err := os.Stat(filepath.Join(root, Filename))
+	_, _, err := Discover(root)
 	return err == nil
 }
 
-func Load(root, profile string) (*Loaded, error) {
-	absRoot, err := filepath.Abs(root)
+// Discover searches upward for the nearest manifest. The directory containing
+// it is the project root; callers never need to infer a root independently.
+func Discover(start string) (root, path string, err error) {
+	current, err := filepath.Abs(start)
 	if err != nil {
+		return "", "", err
+	}
+	if info, statErr := os.Stat(current); statErr == nil && !info.IsDir() {
+		current = filepath.Dir(current)
+	}
+	for {
+		candidate := filepath.Join(current, Filename)
+		if info, statErr := os.Stat(candidate); statErr == nil {
+			if info.IsDir() {
+				return "", "", fmt.Errorf("%s is a directory", candidate)
+			}
+			return current, candidate, nil
+		} else if !errors.Is(statErr, fs.ErrNotExist) {
+			return "", "", statErr
+		}
+		module := filepath.Join(current, "go.mod")
+		if info, statErr := os.Stat(module); statErr == nil && !info.IsDir() {
+			return "", "", fs.ErrNotExist
+		} else if statErr != nil && !errors.Is(statErr, fs.ErrNotExist) {
+			return "", "", statErr
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			return "", "", fs.ErrNotExist
+		}
+		current = parent
+	}
+}
+
+func Load(start, profile string) (*Loaded, error) {
+	root, path, err := Discover(start)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, fmt.Errorf("could not find %s from %s", Filename, start)
+		}
 		return nil, err
 	}
-	path := filepath.Join(absRoot, Filename)
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read %s: %w", Filename, err)
 	}
-
-	var identity Document
-	if _, err := toml.Decode(string(raw), &identity); err != nil {
-		return nil, fmt.Errorf("parse %s: %w", Filename, err)
-	}
-	if err := validateProject(identity.Project); err != nil {
-		return nil, err
-	}
-
-	doc := defaults(identity.Project)
-	metadata, err := toml.Decode(string(raw), &doc)
-	if err != nil {
-		return nil, fmt.Errorf("parse %s: %w", Filename, err)
-	}
-	if undecoded := metadata.Undecoded(); len(undecoded) > 0 {
-		items := make([]string, 0, len(undecoded))
-		for _, key := range undecoded {
-			name := key.String()
-			// Profiles are validated when selected and extension payloads are
-			// deliberately opaque to core Wails.
-			if strings.HasPrefix(name, "profiles.") || strings.HasPrefix(name, "extensions.") || name == "wake.migration" || strings.HasPrefix(name, "wake.migration.") {
-				continue
-			}
-			items = append(items, name)
-		}
-		if len(items) > 0 {
-			sort.Strings(items)
-			return nil, fmt.Errorf("unknown %s field(s): %s", Filename, strings.Join(items, ", "))
-		}
-	}
-	resolveInferred(absRoot, &doc, metadata)
-	config := configFromDocument(absRoot, profile, doc)
-	if profile != "" {
-		if profile == "default" || !slugPattern.MatchString(profile) {
-			return nil, fmt.Errorf("profile name must be a lowercase slug and cannot be default")
-		}
-		rawProfile, ok := doc.Profiles[profile]
-		if !ok {
-			return nil, fmt.Errorf("profile %q is not defined", profile)
-		}
-		if err := validateProfileIdentity(profile, rawProfile); err != nil {
-			return nil, err
-		}
-		layer := profileLayerFromConfig(config)
-		var encoded bytes.Buffer
-		if err := toml.NewEncoder(&encoded).Encode(rawProfile); err != nil {
-			return nil, err
-		}
-		profileMetadata, err := toml.Decode(encoded.String(), &layer)
-		if err != nil {
-			return nil, fmt.Errorf("resolve profile %q: %w", profile, err)
-		}
-		if undecoded := profileMetadata.Undecoded(); len(undecoded) > 0 {
-			items := make([]string, 0, len(undecoded))
-			for _, key := range undecoded {
-				items = append(items, "profiles."+profile+"."+key.String())
-			}
-			sort.Strings(items)
-			return nil, fmt.Errorf("unknown %s field(s): %s", Filename, strings.Join(items, ", "))
-		}
-		applyProfileLayer(&config, layer)
-		config.Profile = profile
-	}
-	if err := validateConfig(config); err != nil {
-		return nil, err
-	}
-	return &Loaded{Path: path, Raw: raw, Document: doc, Config: config}, nil
-}
-
-func validateProfileIdentity(profile string, raw map[string]any) error {
-	if _, exists := raw["project"]; exists {
-		return fmt.Errorf("profile %q cannot override project identity", profile)
-	}
-	targets, ok := raw["targets"].(map[string]any)
-	if !ok {
-		return nil
-	}
-	forbidden := map[string]bool{"identifier": true, "product_name": true, "version": true, "build_number": true}
-	var visit func(string, map[string]any) error
-	visit = func(path string, table map[string]any) error {
-		for key, value := range table {
-			if forbidden[key] {
-				return fmt.Errorf("profile %q cannot override target identity field %s.%s", profile, path, key)
-			}
-			if child, ok := value.(map[string]any); ok {
-				if err := visit(path+"."+key, child); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	}
-	return visit("targets", targets)
+	return decodeHCL(root, path, raw, profile)
 }
 
 func defaults(project Project) Document {
@@ -143,8 +83,9 @@ func defaults(project Project) Document {
 		project.BuildNumber = 1
 	}
 	frontend := Frontend{
-		Directory: "frontend", PackageManager: "auto", InstallCommand: "install",
+		Directory: "frontend", PackageManager: "npm", InstallCommand: "install",
 		BuildCommand: "build", DevCommand: "dev", OutputDirectory: "dist",
+		Install: []string{"npm", "install"}, Build: []string{"npm", "run", "build"}, Dev: []string{"npm", "run", "dev"},
 		Bindings: Bindings{TypeScript: true, Interfaces: true, OutputDirectory: "bindings", ModelsFilename: "models", IndexFilename: "index", TimeType: "string"},
 	}
 	build := Build{OutputDirectory: "bin", Production: true, TrimPath: true, Strip: true}
@@ -161,7 +102,7 @@ func defaults(project Project) Document {
 		Linux: PackagePlatform{Formats: []string{"appimage"}}, IOS: PackagePlatform{Formats: []string{"app"}},
 		Android: PackagePlatform{Formats: []string{"apk"}},
 	}
-	return Document{Project: project, Frontend: frontend, Build: build, Dev: dev, Targets: targets, Package: packages, Profiles: map[string]map[string]any{}, Extensions: map[string]map[string]any{}}
+	return Document{Project: project, Frontend: frontend, Build: build, Dev: dev, Targets: targets, Package: packages, Profiles: map[string]Profile{}, Extensions: map[string]map[string]any{}}
 }
 
 // NewDocument returns a resolved document seeded with the compiled defaults.
@@ -186,64 +127,12 @@ func defaultPlatform(architectures ...string) Platform {
 	return result
 }
 
-func resolveInferred(root string, doc *Document, metadata toml.MetaData) {
-	frontendRoot := filepath.Join(root, doc.Frontend.Directory)
-	if doc.Frontend.PackageManager == "auto" {
-		for _, candidate := range []struct{ file, manager string }{{"bun.lock", "bun"}, {"bun.lockb", "bun"}, {"pnpm-lock.yaml", "pnpm"}, {"yarn.lock", "yarn"}, {"package-lock.json", "npm"}, {"npm-shrinkwrap.json", "npm"}} {
-			if _, err := os.Stat(filepath.Join(frontendRoot, candidate.file)); err == nil {
-				doc.Frontend.PackageManager = candidate.manager
-				break
-			}
-		}
-		if doc.Frontend.PackageManager == "auto" {
-			doc.Frontend.PackageManager = "npm"
-		}
-	}
-	if _, err := os.Stat(filepath.Join(frontendRoot, "tsconfig.json")); errors.Is(err, fs.ErrNotExist) {
-		if !metadata.IsDefined("frontend", "bindings", "typescript") {
-			doc.Frontend.Bindings.TypeScript = false
-		}
-		if !metadata.IsDefined("frontend", "bindings", "interfaces") {
-			doc.Frontend.Bindings.Interfaces = false
-		}
-		if !metadata.IsDefined("frontend", "bindings", "time_type") {
-			doc.Frontend.Bindings.TimeType = "Date"
-		}
-	}
-	if doc.Project.Icon == "" {
-		for _, path := range []string{"assets/appicon.png", "build/appicon.png"} {
-			if _, err := os.Stat(filepath.Join(root, path)); err == nil {
-				doc.Project.Icon = path
-				break
-			}
-		}
-	}
-}
-
 func configFromDocument(root, profile string, doc Document) Config {
-	return Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Hooks: doc.Hooks, Wake: doc.Wake, Extensions: doc.Extensions}
-}
-
-type profileLayer struct {
-	Frontend     Frontend                  `toml:"frontend"`
-	Build        Build                     `toml:"build"`
-	Dev          Dev                       `toml:"dev"`
-	Targets      Targets                   `toml:"targets"`
-	Package      Packages                  `toml:"package"`
-	Signing      Signing                   `toml:"signing"`
-	Associations []Association             `toml:"associations,omitempty"`
-	Protocols    []Protocol                `toml:"protocols,omitempty"`
-	Hooks        Hooks                     `toml:"hooks"`
-	Extensions   map[string]map[string]any `toml:"extensions,omitempty"`
-}
-
-func profileLayerFromConfig(config Config) profileLayer {
-	return profileLayer{Frontend: config.Frontend, Build: config.Build, Dev: config.Dev, Targets: config.Targets, Package: config.Package, Signing: config.Signing, Associations: config.Associations, Protocols: config.Protocols, Hooks: config.Hooks, Extensions: config.Extensions}
-}
-
-func applyProfileLayer(config *Config, layer profileLayer) {
-	config.Frontend, config.Build, config.Dev, config.Targets = layer.Frontend, layer.Build, layer.Dev, layer.Targets
-	config.Package, config.Signing, config.Associations, config.Protocols, config.Hooks, config.Extensions = layer.Package, layer.Signing, layer.Associations, layer.Protocols, layer.Hooks, layer.Extensions
+	config := Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Hooks: doc.Hooks, Wake: doc.Wake, Profiles: doc.Profiles, Extensions: doc.Extensions}
+	if profile != "" {
+		config.Selected = doc.Profiles[profile]
+	}
+	return config
 }
 
 func validateProject(project Project) error {
@@ -319,7 +208,7 @@ func validateConfig(config Config) error {
 		}
 	}
 	for name, signing := range signingMap(config.Signing) {
-		for field, value := range map[string]string{"certificate": signing.Certificate, "entitlements": signing.Entitlements} {
+		for field, value := range map[string]string{"certificate": signing.Certificate, "entitlements": signing.Entitlements, "provisioning_profile": signing.ProvisioningProfile} {
 			if value != "" && (manifestPathIsAbsolute(value) || pathEscapes(value)) {
 				return fmt.Errorf("signing.%s.%s must be project-relative", name, field)
 			}

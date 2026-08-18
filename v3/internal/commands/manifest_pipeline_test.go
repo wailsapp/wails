@@ -33,6 +33,22 @@ func TestRunManifestPipelineLeavesUnrenderedFailurePrintable(t *testing.T) {
 	assert.False(t, wake.IsReported(err), "errors raised before Pulse starts still need the CLI error printer")
 }
 
+func TestResolveManifestPlanUsesTheDiscoveredManifestRoot(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, manifest.WriteMinimal(root, manifest.Project{
+		Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0",
+	}))
+	nested := filepath.Join(root, "frontend", "src")
+	require.NoError(t, os.MkdirAll(nested, 0o755))
+	loaded, err := manifest.Load(nested, "")
+	require.NoError(t, err)
+	t.Chdir(nested)
+
+	resolved, _, _, err := resolveManifestPlan(manifestRunOptions{Verb: "build", Loaded: loaded})
+	require.NoError(t, err)
+	assert.Equal(t, root, resolved)
+}
+
 func TestApplyGeneratedTargetSettings(t *testing.T) {
 	root := t.TempDir()
 	write := func(relative, content string) {
@@ -50,6 +66,13 @@ func TestApplyGeneratedTargetSettings(t *testing.T) {
 	gradle, err := os.ReadFile(filepath.Join(root, "android/app/build.gradle"))
 	require.NoError(t, err)
 	assert.Contains(t, string(gradle), "versionCode 42")
+}
+
+func TestReplacePlistStringFillsSelfClosingValue(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "Info.plist")
+	require.NoError(t, os.WriteFile(path, []byte("<key>CFBundleVersion</key>\n<string/>\n"), 0o644))
+	require.NoError(t, replacePlistString(path, "CFBundleVersion", "13"))
+	assert.Equal(t, "<key>CFBundleVersion</key>\n<string>13</string>\n", readTestFile(t, path))
 }
 
 func TestCopyManifestPathPreservesSymlink(t *testing.T) {

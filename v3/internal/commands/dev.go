@@ -20,6 +20,7 @@ type DevOptions struct {
 	Secure   bool   `name:"s" description:"Enable HTTPS"`
 	Profile  string `name:"profile" description:"Manifest profile to apply"`
 	Target   string `name:"target" description:"Target platform and architecture"`
+	Plan     bool   `name:"plan" description:"Print the finite development startup plan without starting a session"`
 }
 
 func Dev(options *DevOptions) error {
@@ -30,8 +31,8 @@ func Dev(options *DevOptions) error {
 	if active {
 		return runManifestDev(options)
 	}
-	if options.Profile != "" || options.Target != "" {
-		return fmt.Errorf("--profile and --target require an active %s", "wails.toml")
+	if options.Profile != "" || options.Target != "" || options.Plan {
+		return fmt.Errorf("--profile, --target, and --plan require an active %s", "wails.hcl")
 	}
 	host := "localhost"
 

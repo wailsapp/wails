@@ -55,7 +55,7 @@ func ConfigShow(options *ConfigOptions) error {
 }
 
 type EjectOptions struct {
-	Backup bool `name:"backup" description:"Keep a timestamped backup of wails.toml"`
+	Backup bool `name:"backup" description:"Deprecated: ejection never overwrites a file"`
 }
 
 func Eject(options *EjectOptions, args []string) error {
@@ -77,10 +77,6 @@ func Eject(options *EjectOptions, args []string) error {
 		}
 		return err
 	}
-	if profile == "" {
-		fmt.Println("Ejected the complete default build configuration into wails.toml")
-	} else {
-		fmt.Printf("Ejected profile %q into wails.toml\n", profile)
-	}
+	fmt.Println("Wrote the complete resolved reference manifest to wails.ejected.hcl")
 	return nil
 }

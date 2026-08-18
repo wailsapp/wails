@@ -4,7 +4,6 @@ go 1.25.0
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
-	github.com/BurntSushi/toml v1.6.0
 	github.com/adrg/xdg v0.5.3
 	github.com/atotto/clipboard v0.1.4
 	github.com/atterpac/refresh v1.0.0
@@ -21,6 +20,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/goreleaser/nfpm/v2 v2.44.1
 	github.com/gorilla/websocket v1.5.3
+	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/jackmordaunt/icns/v2 v2.2.7
 	github.com/jaypipes/ghw v0.21.3
 	github.com/konoui/lipo v0.10.0
@@ -36,6 +36,7 @@ require (
 	github.com/tc-hib/winres v0.3.1
 	github.com/wailsapp/task/v3 v3.40.1-patched3
 	github.com/zalando/go-keyring v0.2.6
+	github.com/zclconf/go-cty v1.16.3
 	github.com/zeebo/blake3 v0.2.4
 	golang.org/x/sys v0.46.0
 	golang.org/x/term v0.44.0
@@ -47,6 +48,9 @@ require (
 require (
 	al.essio.dev/pkg/shellescape v1.6.0 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
+	github.com/BurntSushi/toml v1.6.0 // indirect
+	github.com/agext/levenshtein v1.2.1 // indirect
+	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/charmbracelet/colorprofile v0.4.1 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.14 // indirect
@@ -63,6 +67,7 @@ require (
 	github.com/konoui/go-qsort v0.1.0 // indirect
 	github.com/lmittmann/tint v1.1.3 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

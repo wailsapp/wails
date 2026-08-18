@@ -5,7 +5,14 @@ package manifest
 
 import "fmt"
 
-const Filename = "wails.toml"
+// Filename is the single opt-in marker for Wails' native build system. Its
+// presence deliberately disables legacy Taskfile routing.
+const Filename = "wails.hcl"
+
+const (
+	EjectedFilename  = "wails.ejected.hcl"
+	MigratedFilename = "wails.migrated.hcl"
+)
 
 type Document struct {
 	Project      Project                   `toml:"project"`
@@ -19,7 +26,7 @@ type Document struct {
 	Protocols    []Protocol                `toml:"protocols,omitempty"`
 	Hooks        Hooks                     `toml:"hooks,omitempty"`
 	Wake         Wake                      `toml:"wake,omitempty"`
-	Profiles     map[string]map[string]any `toml:"profiles,omitempty"`
+	Profiles     map[string]Profile        `toml:"profiles,omitempty"`
 	Extensions   map[string]map[string]any `toml:"extensions,omitempty"`
 }
 
@@ -37,6 +44,8 @@ type Config struct {
 	Protocols    []Protocol                `toml:"protocols,omitempty" json:"protocols,omitempty"`
 	Hooks        Hooks                     `toml:"hooks" json:"hooks"`
 	Wake         Wake                      `toml:"wake" json:"wake"`
+	Profiles     map[string]Profile        `toml:"-" json:"profiles,omitempty"`
+	Selected     Profile                   `toml:"-" json:"selected_profile,omitempty"`
 	Extensions   map[string]map[string]any `toml:"extensions,omitempty" json:"extensions,omitempty"`
 }
 
@@ -62,6 +71,27 @@ type Frontend struct {
 	DevCommand      string   `toml:"dev_command" json:"dev_command"`
 	OutputDirectory string   `toml:"output_directory" json:"output_directory"`
 	Bindings        Bindings `toml:"bindings" json:"bindings"`
+	// Commands are argument vectors, never shell strings. The string fields
+	// above are retained internally while the legacy Taskfile adapter exists.
+	Install []string `toml:"-" json:"install,omitempty"`
+	Build   []string `toml:"-" json:"build,omitempty"`
+	Dev     []string `toml:"-" json:"dev,omitempty"`
+}
+
+// Profile is a complete, named production request. It intentionally has no
+// generic overlay fields: a profile declares the exact targets and artifacts
+// Wails should produce.
+type Profile struct {
+	Name    string          `toml:"-" json:"name,omitempty"`
+	Targets []ProfileTarget `toml:"targets" json:"targets"`
+}
+
+type ProfileTarget struct {
+	Target      string   `toml:"target" json:"target"`
+	Formats     []string `toml:"formats,omitempty" json:"formats,omitempty"`
+	Sign        bool     `toml:"sign,omitempty" json:"sign,omitempty"`
+	Notarize    bool     `toml:"notarize,omitempty" json:"notarize,omitempty"`
+	Destination string   `toml:"destination,omitempty" json:"destination,omitempty"`
 }
 
 type Bindings struct {
@@ -113,6 +143,15 @@ type Platform struct {
 	MinimumVersion string   `toml:"minimum_version,omitempty" json:"minimum_version,omitempty"`
 	BuildNumber    int      `toml:"build_number,omitempty" json:"build_number,omitempty"`
 	Capabilities   []string `toml:"capabilities,omitempty" json:"capabilities,omitempty"`
+	Icon           string   `toml:"icon,omitempty" json:"icon,omitempty"`
+	Manifest       string   `toml:"manifest,omitempty" json:"manifest,omitempty"`
+	AssetsCar      string   `toml:"assets_car,omitempty" json:"assets_car,omitempty"`
+	InfoPlist      string   `toml:"info_plist,omitempty" json:"info_plist,omitempty"`
+	Publisher      string   `toml:"publisher,omitempty" json:"publisher,omitempty"`
+	VersionName    string   `toml:"version_name,omitempty" json:"version_name,omitempty"`
+	VersionCode    int      `toml:"version_code,omitempty" json:"version_code,omitempty"`
+	MinimumSDK     int      `toml:"minimum_sdk,omitempty" json:"minimum_sdk,omitempty"`
+	TargetSDK      int      `toml:"target_sdk,omitempty" json:"target_sdk,omitempty"`
 	AMD64          Target   `toml:"amd64,omitempty" json:"amd64,omitempty"`
 	ARM64          Target   `toml:"arm64,omitempty" json:"arm64,omitempty"`
 	ARM            Target   `toml:"arm,omitempty" json:"arm,omitempty"`
@@ -165,14 +204,16 @@ type Signing struct {
 }
 
 type SigningPlatform struct {
-	Enabled         bool   `toml:"enabled" json:"enabled"`
-	Identity        string `toml:"identity,omitempty" json:"identity,omitempty"`
-	Certificate     string `toml:"certificate,omitempty" json:"certificate,omitempty"`
-	Thumbprint      string `toml:"thumbprint,omitempty" json:"thumbprint,omitempty"`
-	TimestampServer string `toml:"timestamp_server,omitempty" json:"timestamp_server,omitempty"`
-	Entitlements    string `toml:"entitlements,omitempty" json:"entitlements,omitempty"`
-	Notarize        bool   `toml:"notarize" json:"notarize"`
-	Credential      string `toml:"credential,omitempty" json:"credential,omitempty"`
+	Enabled             bool   `toml:"enabled" json:"enabled"`
+	Identity            string `toml:"identity,omitempty" json:"identity,omitempty"`
+	Certificate         string `toml:"certificate,omitempty" json:"certificate,omitempty"`
+	Thumbprint          string `toml:"thumbprint,omitempty" json:"thumbprint,omitempty"`
+	TimestampServer     string `toml:"timestamp_server,omitempty" json:"timestamp_server,omitempty"`
+	Entitlements        string `toml:"entitlements,omitempty" json:"entitlements,omitempty"`
+	ProvisioningProfile string `toml:"provisioning_profile,omitempty" json:"provisioning_profile,omitempty"`
+	KeyAlias            string `toml:"key_alias,omitempty" json:"key_alias,omitempty"`
+	Notarize            bool   `toml:"notarize" json:"notarize"`
+	Credential          string `toml:"credential,omitempty" json:"credential,omitempty"`
 }
 
 type Association struct {

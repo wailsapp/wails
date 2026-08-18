@@ -67,6 +67,9 @@ func runManifestDev(options *DevOptions) error {
 	if goos != runtime.GOOS || goarch != runtime.GOARCH {
 		return fmt.Errorf("dev target must be the host %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
+	if options.Plan {
+		return printManifestPlan(manifestRunOptions{Verb: "build", Profile: options.Profile, Loaded: loaded, TargetOS: goos, TargetArch: goarch, Development: true, Tags: envTags()}, false)
+	}
 	sessionCtx, stopSession := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stopSession()
 	port := options.VitePort
@@ -543,10 +546,15 @@ func resolvedDevPort(options *DevOptions, config manifest.Config) int {
 }
 
 func frontendSessionChanged(current manifest.Config, currentPort int, next manifest.Config, nextPort int) bool {
-	return currentPort != nextPort || current.Frontend.Directory != next.Frontend.Directory || current.Frontend.PackageManager != next.Frontend.PackageManager || current.Frontend.DevCommand != next.Frontend.DevCommand
+	return currentPort != nextPort || current.Frontend.Directory != next.Frontend.Directory || current.Frontend.PackageManager != next.Frontend.PackageManager || current.Frontend.DevCommand != next.Frontend.DevCommand || !equalStrings(current.Frontend.Dev, next.Frontend.Dev)
 }
 
 func startFrontendDev(root string, config manifest.Config, host string, port int, frontendURL string) (*manifestProcess, error) {
+	if len(config.Frontend.Dev) > 0 {
+		args := append([]string(nil), config.Frontend.Dev...)
+		env := []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL}
+		return startManifestProcess(filepath.Join(root, config.Frontend.Directory), args[0], env, args[1:]...)
+	}
 	manager := config.Frontend.PackageManager
 	if config.Frontend.DevCommand == "" {
 		return nil, fmt.Errorf("frontend.dev_command is not set in %s", manifest.Filename)

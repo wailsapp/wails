@@ -61,7 +61,7 @@ type MSIXOptions struct {
 func ToolMSIX(options *flags.ToolMSIX) error {
 	DisableFooter = true
 
-	if runtime.GOOS != "windows" {
+	if manifestHostOS != "windows" {
 		return fmt.Errorf("MSIX packaging is only supported on Windows")
 	}
 

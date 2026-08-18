@@ -12,7 +12,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
-	"github.com/wailsapp/wails/v3/internal/wake/migration"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
@@ -70,20 +69,37 @@ func mergeTags(tags string, extra ...string) string {
 }
 
 func Build(buildFlags *flags.Build, otherArgs []string) error {
+	userTags := buildFlags.Tags
 	buildFlags.Tags = mergeTags(buildFlags.Tags, envTags()...)
+	if buildFlags.JSON && !buildFlags.Plan {
+		return fmt.Errorf("--json requires --plan")
+	}
 	active, err := activeManifestProject()
 	if err != nil {
 		return err
 	}
 	if active {
-		if len(otherArgs) > 0 {
-			return fmt.Errorf("manifest builds do not accept Task variables (%s); use --target, --profile, or wails.toml", strings.Join(otherArgs, ", "))
-		}
-		targets, err := splitTargets(buildFlags.Target)
+		profile, err := manifestProfile(buildFlags.Profile, otherArgs)
 		if err != nil {
 			return err
 		}
-		return runManifestPipeline(manifestRunOptions{Verb: "build", Profile: buildFlags.Profile, Targets: targets, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags)})
+		targets, err := splitTargets(buildFlags.Targets)
+		if err != nil {
+			return err
+		}
+		formats := splitComma(buildFlags.Formats)
+		if profile != "" && (len(targets) > 0 || len(formats) > 0 || userTags != "" || buildFlags.Obfuscated || buildFlags.GarbleArgs != "") {
+			return fmt.Errorf("named profile %q is a complete build request and does not accept artifact-affecting overrides", profile)
+		}
+		verb := "build"
+		if len(formats) > 0 {
+			verb = "package"
+		}
+		options := manifestRunOptions{Verb: verb, Profile: profile, Targets: targets, Formats: formats, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags)}
+		if buildFlags.Plan {
+			return printManifestPlan(options, buildFlags.JSON)
+		}
+		return runManifestPipeline(options)
 	}
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
@@ -106,7 +122,7 @@ func Package(options *flags.Package, otherArgs []string) error {
 		if len(otherArgs) > 0 {
 			return fmt.Errorf("manifest packages do not accept Task variables: %s", strings.Join(otherArgs, ", "))
 		}
-		targets, err := splitTargets(options.Target)
+		targets, err := splitTargets(options.Targets)
 		if err != nil {
 			return err
 		}
@@ -124,13 +140,26 @@ func SignWrapper(options *flags.SignWrapper, otherArgs []string) error {
 		if len(otherArgs) > 0 {
 			return fmt.Errorf("manifest signing does not accept Task variables: %s", strings.Join(otherArgs, ", "))
 		}
-		targets, err := splitTargets(options.Target)
+		targets, err := splitTargets(options.Targets)
 		if err != nil {
 			return err
 		}
 		return runManifestPipeline(manifestRunOptions{Verb: "sign", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Tags: envTags()})
 	}
 	return wrapTask("sign", otherArgs)
+}
+
+func manifestProfile(flagValue string, args []string) (string, error) {
+	if len(args) == 0 {
+		return flagValue, nil
+	}
+	if len(args) == 1 && !strings.Contains(args[0], "=") {
+		if flagValue != "" {
+			return "", fmt.Errorf("profile may be specified either positionally or with --profile, not both")
+		}
+		return args[0], nil
+	}
+	return "", fmt.Errorf("native builds do not accept Task variables (%s); use a profile name, --targets, or --formats", strings.Join(args, ", "))
 }
 
 func activeManifestProject() (bool, error) {
@@ -142,29 +171,10 @@ func activeManifestProject() (bool, error) {
 }
 
 func activeManifestProjectAt(root string) (bool, error) {
-	if !manifest.Exists(root) {
-		return false, nil
-	}
-	report, hasReport, err := migration.Read(root)
-	if err != nil {
-		return false, err
-	}
-	_, taskfileErr := findTaskfile(root)
-	hasTaskfile := taskfileErr == nil
-	if hasReport {
-		if report.Complete {
-			return true, nil
-		}
-		if !hasTaskfile {
-			return false, fmt.Errorf("migration is incomplete but no legacy Taskfile remains; restore the Taskfiles or finish the migration")
-		}
-		term.Warningf("wails.toml migration is incomplete; falling back to the legacy Taskfile")
-		return false, nil
-	}
-	if hasTaskfile {
-		return false, fmt.Errorf("both %s and a legacy Taskfile exist but %s is missing; remove one build definition or rerun migration from the legacy project", manifest.Filename, migration.RelativeReportPath)
-	}
-	return true, nil
+	// The native manifest is the explicit cutover marker. Once it exists,
+	// Taskfiles are completely ignored—even when the manifest is invalid—so a
+	// configuration error can never silently execute a different build path.
+	return manifest.Exists(root), nil
 }
 
 func splitTarget(target string) (string, string, error) {

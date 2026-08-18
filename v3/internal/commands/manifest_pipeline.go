@@ -48,6 +48,34 @@ type manifestPipelineRun struct {
 	Results map[pipeline.NodeKey]pipeline.Result
 }
 
+type manifestPlanOutput struct {
+	SchemaVersion int                     `json:"schema_version"`
+	Request       manifestPlanRequest     `json:"request"`
+	Operations    []manifestPlanOperation `json:"operations"`
+	Artifacts     []manifestPlanArtifact  `json:"artifacts"`
+}
+
+type manifestPlanRequest struct {
+	Command string   `json:"command"`
+	Profile string   `json:"profile,omitempty"`
+	Targets []string `json:"targets"`
+	Formats []string `json:"formats,omitempty"`
+}
+
+type manifestPlanOperation struct {
+	ID        string   `json:"id"`
+	Stage     string   `json:"stage"`
+	Scope     string   `json:"scope"`
+	Decision  string   `json:"decision"`
+	DependsOn []string `json:"depends_on,omitempty"`
+	Output    string   `json:"output,omitempty"`
+}
+
+type manifestPlanArtifact struct {
+	Kind string `json:"kind"`
+	Path string `json:"path"`
+}
+
 func runManifestPipeline(options manifestRunOptions) error {
 	_, err := runManifestPipelineResult(options)
 	return err
@@ -55,18 +83,7 @@ func runManifestPipeline(options manifestRunOptions) error {
 
 func runManifestPipelineResult(options manifestRunOptions) (manifestPipelineRun, error) {
 	started := time.Now()
-	root, err := os.Getwd()
-	if err != nil {
-		return manifestPipelineRun{}, err
-	}
-	loaded := options.Loaded
-	if loaded == nil {
-		loaded, err = manifest.Load(root, options.Profile)
-		if err != nil {
-			return manifestPipelineRun{}, err
-		}
-	}
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, Obfuscated: options.Obfuscated})
+	root, loaded, plan, err := resolveManifestPlan(options)
 	if err != nil {
 		return manifestPipelineRun{}, err
 	}
@@ -107,11 +124,114 @@ func runManifestPipelineResult(options manifestRunOptions) (manifestPipelineRun,
 	return manifestPipelineRun{Plan: plan, Results: results}, nil
 }
 
+func resolveManifestPlan(options manifestRunOptions) (string, *manifest.Loaded, pipeline.Plan, error) {
+	root, err := os.Getwd()
+	if err != nil {
+		return "", nil, pipeline.Plan{}, err
+	}
+	loaded := options.Loaded
+	if loaded == nil {
+		loaded, err = manifest.Load(root, options.Profile)
+		if err != nil {
+			return "", nil, pipeline.Plan{}, err
+		}
+	}
+	if loaded.Config.Root != "" {
+		root = loaded.Config.Root
+	}
+	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: options.Verb, TargetOS: options.TargetOS, TargetArch: options.TargetArch, Targets: options.Targets, Formats: options.Formats, Development: options.Development, ExtraTags: options.Tags, Obfuscated: options.Obfuscated})
+	if err != nil {
+		return "", nil, pipeline.Plan{}, err
+	}
+	return root, loaded, plan, nil
+}
+
+func printManifestPlan(options manifestRunOptions, asJSON bool) error {
+	_, loaded, plan, err := resolveManifestPlan(options)
+	if err != nil {
+		return err
+	}
+	if asJSON {
+		return json.NewEncoder(os.Stdout).Encode(planOutput(loaded, options, plan))
+	}
+	fmt.Printf("Plan: %s\n", chooseString(loaded.Config.Profile != "", loaded.Config.Profile, "anonymous"))
+	fmt.Printf("Manifest: %s\n", filepath.ToSlash(filepath.Join(".", manifest.Filename)))
+	fmt.Printf("Targets: %s\n", strings.ReplaceAll(plan.Target, ",", " · "))
+	if len(options.Formats) > 0 {
+		fmt.Printf("Formats: %s\n", strings.Join(options.Formats, " · "))
+	}
+	fmt.Println("STAGE\tSCOPE\tDECISION\tOUTPUT")
+	keys := make([]string, 0, len(plan.Nodes))
+	for key := range plan.Nodes {
+		keys = append(keys, string(key))
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		node := plan.Nodes[pipeline.NodeKey(key)]
+		output := node.Output
+		if output == "" {
+			output = node.Label
+		}
+		fmt.Printf("%s\t%s\tRUN\t%s\n", planStage(node.Kind), node.Scope, output)
+	}
+	fmt.Println("No files will be changed because --plan was used.")
+	return nil
+}
+
+func planOutput(loaded *manifest.Loaded, options manifestRunOptions, plan pipeline.Plan) manifestPlanOutput {
+	targets := strings.Split(plan.Target, ",")
+	result := manifestPlanOutput{SchemaVersion: 1, Request: manifestPlanRequest{Command: options.Verb, Profile: loaded.Config.Profile, Targets: targets, Formats: append([]string(nil), options.Formats...)}}
+	keys := make([]string, 0, len(plan.Nodes))
+	for key := range plan.Nodes {
+		keys = append(keys, string(key))
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		node := plan.Nodes[pipeline.NodeKey(key)]
+		dependencies := make([]string, len(node.Dependencies))
+		for index, dependency := range node.Dependencies {
+			dependencies[index] = string(dependency)
+		}
+		result.Operations = append(result.Operations, manifestPlanOperation{ID: key, Stage: planStage(node.Kind), Scope: string(node.Scope), Decision: "run", DependsOn: dependencies, Output: node.Output})
+		if node.ArtifactKind != "" && node.Output != "" {
+			result.Artifacts = append(result.Artifacts, manifestPlanArtifact{Kind: node.ArtifactKind, Path: node.Output})
+		}
+	}
+	return result
+}
+
+func planStage(kind pipeline.NodeKind) string {
+	switch kind {
+	case pipeline.InstallFrontendDependencies:
+		return "prepare"
+	case pipeline.GenerateBindings, pipeline.GeneratePlatformAssets:
+		return "generate"
+	case pipeline.BuildFrontend:
+		return "frontend"
+	case pipeline.CompileApplication:
+		return "compile"
+	case pipeline.PackageArtifact:
+		return "package"
+	case pipeline.SignArtifact:
+		return "sign"
+	default:
+		return "collect"
+	}
+}
+
 type manifestHandler struct {
 	root        string
 	config      manifest.Config
 	environment []string
 }
+
+// manifestExecutable is injectable so package adapters can be tested without
+// invoking the test binary as a second CLI process.
+var manifestExecutable = os.Executable
+var manifestHostOS = runtime.GOOS
+var manifestLipo = ToolLipo
+var manifestToolPackage = toolPackage
+var manifestSign = Sign
 
 func (h *manifestHandler) Identity(_ context.Context, node pipeline.Node) (string, error) {
 	var tools []string
@@ -296,6 +416,10 @@ func manifestNodeSpec[T pipeline.NodeSpec](node pipeline.Node) (T, error) {
 }
 
 func (h *manifestHandler) install(ctx context.Context, s pipeline.InstallSpec) (pipeline.RunResult, error) {
+	if len(s.Arguments) > 0 {
+		output, err := runManifestCommand(ctx, filepath.Join(h.root, s.Directory), nil, s.Arguments[0], s.Arguments[1:]...)
+		return pipeline.RunResult{Detail: output}, err
+	}
 	args := []string{s.Command}
 	if s.Manager == "npm" {
 		args = append(args, "--no-audit", "--no-fund")
@@ -318,6 +442,12 @@ func (h *manifestHandler) bindings(s pipeline.BindingsSpec, output string) (pipe
 }
 
 func (h *manifestHandler) frontend(ctx context.Context, s pipeline.FrontendSpec) (pipeline.RunResult, error) {
+	if len(s.Arguments) > 0 {
+		env := append([]string(nil), h.environment...)
+		env = append(env, "PRODUCTION="+fmt.Sprint(s.Production))
+		output, err := runManifestCommand(ctx, filepath.Join(h.root, s.Directory), env, s.Arguments[0], s.Arguments[1:]...)
+		return pipeline.RunResult{Detail: output}, err
+	}
 	var args []string
 	switch s.Manager {
 	case "npm", "pnpm", "bun":
@@ -397,7 +527,7 @@ func (h *manifestHandler) compileDarwinUniversal(ctx context.Context, s pipeline
 	}
 	previous := DisableFooter
 	defer func() { DisableFooter = previous }()
-	err := ToolLipo(&flags.Lipo{Inputs: inputs, Output: output})
+	err := manifestLipo(&flags.Lipo{Inputs: inputs, Output: output})
 	return pipeline.RunResult{Detail: strings.Join(details, "\n")}, err
 }
 
@@ -463,7 +593,7 @@ func (h *manifestHandler) compileAndroid(ctx context.Context, s pipeline.Compile
 		return pipeline.RunResult{}, fmt.Errorf("Android NDK not found; set ANDROID_NDK_HOME or install an NDK under ANDROID_HOME")
 	}
 	hostTag := "linux-x86_64"
-	switch runtime.GOOS {
+	switch manifestHostOS {
 	case "darwin":
 		hostTag = "darwin-x86_64"
 	case "windows":
@@ -485,7 +615,7 @@ func (h *manifestHandler) compileAndroid(ctx context.Context, s pipeline.Compile
 	toolchain := filepath.Join(ndk, "toolchains", "llvm", "prebuilt", hostTag, "bin")
 	cc := filepath.Join(toolchain, triple+minSDK+"-clang")
 	cxx := filepath.Join(toolchain, triple+minSDK+"-clang++")
-	if runtime.GOOS == "windows" {
+	if manifestHostOS == "windows" {
 		cc += ".cmd"
 		cxx += ".cmd"
 	}
@@ -505,7 +635,7 @@ func (h *manifestHandler) compileAndroid(ctx context.Context, s pipeline.Compile
 }
 
 func (h *manifestHandler) compileIOS(ctx context.Context, s pipeline.CompileSpec) (pipeline.RunResult, error) {
-	if runtime.GOOS != "darwin" {
+	if manifestHostOS != "darwin" {
 		return pipeline.RunResult{}, fmt.Errorf("iOS builds require macOS and Xcode")
 	}
 	variant := s.Variant
@@ -680,17 +810,26 @@ func replacePlistString(path, key, value string) error {
 	if start < 0 {
 		return nil
 	}
-	stringStart := bytes.Index(data[start+len(marker):], []byte("<string>"))
-	if stringStart < 0 {
+	afterMarker := data[start+len(marker):]
+	stringStart := bytes.Index(afterMarker, []byte("<string>"))
+	selfClosing := bytes.Index(afterMarker, []byte("<string/>"))
+	if stringStart >= 0 && (selfClosing < 0 || stringStart < selfClosing) {
+		stringStart += start + len(marker) + len("<string>")
+		stringEnd := bytes.Index(data[stringStart:], []byte("</string>"))
+		if stringEnd < 0 {
+			return nil
+		}
+		stringEnd += stringStart
+		result := append(append(append([]byte(nil), data[:stringStart]...), value...), data[stringEnd:]...)
+		return os.WriteFile(path, result, 0o644)
+	}
+	if selfClosing < 0 {
 		return nil
 	}
-	stringStart += start + len(marker) + len("<string>")
-	stringEnd := bytes.Index(data[stringStart:], []byte("</string>"))
-	if stringEnd < 0 {
-		return nil
-	}
-	stringEnd += stringStart
-	result := append(append(append([]byte(nil), data[:stringStart]...), value...), data[stringEnd:]...)
+	selfClosing += start + len(marker)
+	result := append(append(append([]byte(nil), data[:selfClosing]...), []byte("<string>")...), value...)
+	result = append(result, []byte("</string>")...)
+	result = append(result, data[selfClosing+len("<string/>"):]...)
 	return os.WriteFile(path, result, 0o644)
 }
 
@@ -809,7 +948,7 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 		if err != nil {
 			return pipeline.RunResult{}, err
 		}
-		err = toolPackage(options)
+		err = manifestToolPackage(options)
 		return pipeline.RunResult{}, err
 	case "appimage":
 		return h.packageAppImage(ctx, s)
@@ -908,7 +1047,7 @@ func (h *manifestHandler) packageAppImage(ctx context.Context, s pipeline.Packag
 		return pipeline.RunResult{}, err
 	}
 	outDir := filepath.Dir(filepath.Join(h.root, s.Output))
-	executable, err := os.Executable()
+	executable, err := manifestExecutable()
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
@@ -1070,7 +1209,7 @@ func (h *manifestHandler) prepareNSISWorkspace(s pipeline.PackageSpec) (dir, pac
 }
 
 func (h *manifestHandler) packageMSIX(s pipeline.PackageSpec) (pipeline.RunResult, error) {
-	if runtime.GOOS != "windows" {
+	if manifestHostOS != "windows" {
 		return pipeline.RunResult{}, fmt.Errorf("MSIX packaging requires Windows")
 	}
 	workspace := h.packageWorkspace(s)
@@ -1163,7 +1302,7 @@ func (h *manifestHandler) packageAndroid(ctx context.Context, s pipeline.Package
 }
 
 func (h *manifestHandler) packageIOS(ctx context.Context, s pipeline.PackageSpec, ipa bool) (pipeline.RunResult, error) {
-	if runtime.GOOS != "darwin" {
+	if manifestHostOS != "darwin" {
 		return pipeline.RunResult{}, fmt.Errorf("iOS packaging requires macOS and Xcode")
 	}
 	variant := s.Variant
@@ -1248,6 +1387,12 @@ func (h *manifestHandler) packageIOS(ctx context.Context, s pipeline.PackageSpec
 	}
 	identity := "-"
 	signing := h.config.Signing.IOS
+	if variant == "device" && signing.ProvisioningProfile != "" {
+		profile := projectOrAbsolutePath(h.root, signing.ProvisioningProfile)
+		if err := copyManifestPath(profile, filepath.Join(appOutput, "embedded.mobileprovision")); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
 	if signing.Enabled && signing.Identity != "" {
 		identity = signing.Identity
 	}
@@ -1290,7 +1435,8 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 		return pipeline.RunResult{}, copyManifestPath(input, output)
 	}
 	if s.TargetOS == "android" {
-		if s.Config.Certificate == "" || s.Config.Identity == "" || s.Config.Credential == "" {
+		keyAlias := chooseString(s.Config.KeyAlias != "", s.Config.KeyAlias, s.Config.Identity)
+		if s.Config.Certificate == "" || keyAlias == "" || s.Config.Credential == "" {
 			return pipeline.RunResult{}, fmt.Errorf("Android signing requires certificate (keystore), identity (key alias), and credential (password environment variable name)")
 		}
 		if os.Getenv(s.Config.Credential) == "" {
@@ -1300,13 +1446,13 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 		var detail string
 		var err error
 		if s.Format == "apk" {
-			detail, err = runManifestCommand(ctx, h.root, nil, "apksigner", "sign", "--ks", keystore, "--ks-key-alias", s.Config.Identity, "--ks-pass", "env:"+s.Config.Credential, "--out", output, input)
+			detail, err = runManifestCommand(ctx, h.root, nil, "apksigner", "sign", "--ks", keystore, "--ks-key-alias", keyAlias, "--ks-pass", "env:"+s.Config.Credential, "--out", output, input)
 		} else {
-			detail, err = runManifestCommand(ctx, h.root, nil, "jarsigner", "-keystore", keystore, "-storepass:env", s.Config.Credential, "-signedjar", output, input, s.Config.Identity)
+			detail, err = runManifestCommand(ctx, h.root, nil, "jarsigner", "-keystore", keystore, "-storepass:env", s.Config.Credential, "-signedjar", output, input, keyAlias)
 		}
 		return pipeline.RunResult{Detail: detail}, err
 	}
-	err := Sign(&flags.Sign{Input: input, Certificate: s.Config.Certificate, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: s.Config.Entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.Credential, PGPKey: chooseString(s.TargetOS == "linux", s.Config.Certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")})
+	err := manifestSign(&flags.Sign{Input: input, Certificate: s.Config.Certificate, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: s.Config.Entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.Credential, PGPKey: chooseString(s.TargetOS == "linux", s.Config.Certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")})
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}

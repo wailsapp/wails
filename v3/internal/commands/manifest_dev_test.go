@@ -19,7 +19,7 @@ import (
 func TestLegacyDevRejectsManifestOnlyFlags(t *testing.T) {
 	t.Chdir(t.TempDir())
 	err := Dev(&DevOptions{Profile: "release"})
-	assert.ErrorContains(t, err, "require an active wails.toml")
+	assert.ErrorContains(t, err, "require an active wails.hcl")
 }
 
 func TestDevPathExcludedAlwaysSkipsGeneratedAndDependencyTrees(t *testing.T) {
@@ -79,12 +79,15 @@ func TestNewDirectoryDetectionFindsOnlyWatchedInputs(t *testing.T) {
 }
 
 func TestFrontendSessionChanged(t *testing.T) {
-	base := manifest.Config{Frontend: manifest.Frontend{Directory: "frontend", PackageManager: "npm", DevCommand: "dev"}}
+	base := manifest.Config{Frontend: manifest.Frontend{Directory: "frontend", PackageManager: "npm", DevCommand: "dev", Dev: []string{"npm", "run", "dev"}}}
 	assert.False(t, frontendSessionChanged(base, 9245, base, 9245))
 	next := base
 	next.Frontend.DevCommand = "serve"
 	assert.True(t, frontendSessionChanged(base, 9245, next, 9245))
 	assert.True(t, frontendSessionChanged(base, 9245, base, 5173))
+	next = base
+	next.Frontend.Dev = []string{"pnpm", "run", "serve"}
+	assert.True(t, frontendSessionChanged(base, 9245, next, 9245))
 }
 
 func TestFrontendDevArgsPinTheLoopbackHost(t *testing.T) {
