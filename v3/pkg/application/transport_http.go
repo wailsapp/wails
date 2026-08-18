@@ -53,7 +53,9 @@ type HTTPTransport struct {
 	messageProcessor *MessageProcessor
 	logger           *slog.Logger
 	chunkStore       sync.Map
+	cleanupMu        sync.Mutex
 	stopCleanup      chan struct{}
+	cleanupDone      chan struct{}
 }
 
 func NewHTTPTransport(opts ...HTTPTransportOption) *HTTPTransport {
@@ -81,17 +83,29 @@ func HTTPTransportWithLogger(logger *slog.Logger) HTTPTransportOption {
 
 func (t *HTTPTransport) Start(ctx context.Context, processor *MessageProcessor) error {
 	t.messageProcessor = processor
-	t.stopCleanup = make(chan struct{})
-	go t.cleanupChunks()
+
+	t.cleanupMu.Lock()
+	if t.stopCleanup != nil {
+		t.cleanupMu.Unlock()
+		return nil
+	}
+	stop := make(chan struct{})
+	done := make(chan struct{})
+	t.stopCleanup = stop
+	t.cleanupDone = done
+	t.cleanupMu.Unlock()
+
+	go t.cleanupChunks(stop, done)
 	return nil
 }
 
-func (t *HTTPTransport) cleanupChunks() {
+func (t *HTTPTransport) cleanupChunks(stop <-chan struct{}, done chan<- struct{}) {
+	defer close(done)
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 	for {
 		select {
-		case <-t.stopCleanup:
+		case <-stop:
 			return
 		case <-ticker.C:
 			now := time.Now()
@@ -114,9 +128,18 @@ func (t *HTTPTransport) JSClient() []byte {
 }
 
 func (t *HTTPTransport) Stop() error {
-	if t.stopCleanup != nil {
-		close(t.stopCleanup)
+	t.cleanupMu.Lock()
+	stop := t.stopCleanup
+	done := t.cleanupDone
+	if stop != nil {
+		close(stop)
 		t.stopCleanup = nil
+		t.cleanupDone = nil
+	}
+	t.cleanupMu.Unlock()
+
+	if done != nil {
+		<-done
 	}
 	return nil
 }

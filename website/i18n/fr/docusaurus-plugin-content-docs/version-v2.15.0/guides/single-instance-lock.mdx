@@ -1,0 +1,81 @@
+# Verrouillage Instance unique
+
+Le verrouillage par instance unique est un mécanisme qui vous permet d'empêcher plusieurs instances de votre application de fonctionner en même temps.
+Il est utile pour les applications qui sont conçues pour ouvrir des fichiers depuis la ligne de commande ou depuis l'explorateur de fichiers du système d'exploitation.
+
+## Important
+
+Le verrouillage par instance unique n'implémente pas de protocole de communication sécurisé entre instances. Lorsque vous utilisez le verrouillage d'une instance unique,
+votre application devrait traiter toutes les données qui lui sont transmises à partir de la deuxième instance de callback comme étant des données non fiables.
+Vous devriez vérifier que les arguments que vous recevez sont valides et ne contiennent aucunes données malveillantes.
+
+## Comment ça fonctionne
+
+Windows: Le verrou de l'instance unique est implémenté en utilisant un mutex. Le nom du mutex est généré à partir de l'identifiant unique que vous fournissez. Les données sont passées à la première instance via une fenêtre partagée à l'aide de [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+macOS : Le verrou de l'instance unique est implémenté à l'aide d'un mutex. Le nom du mutex est généré à partir de l'identifiant unique que vous fournissez. Les données sont passées à la première instance via [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
+Linux : le verrou de l'instance unique est implémenté en utilisant [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Le nom de l'instance dbus est généré à partir de l'identifiant unique que vous fournissez. Les données sont passées à la première instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+
+## Utilisation
+
+Lors de la création de votre application, vous pouvez activer le verrouillage d'une instance unique en passant un struct `SingleInstanceLock` à la structure `App`.
+Utilisez le champ `UniqueId` pour spécifier un id unique pour votre application.
+Cet id est utilisé pour générer le nom de mutex sous Windows et macOS et le nom dbus sous Linux. Utilisez un UUID pour vous assurer que l'id est unique.
+Le champ `OnSecondInstanceLaunch` est utilisé pour spécifier un callback qui sera appelé quand une seconde instance de votre application est lancée.
+Le callback reçoit un struct `SecondInstanceData` qui contient les arguments de ligne de commande passés à la seconde instance et le chemin vers le répertoire de travail de la seconde instance.
+
+Notez que OnSecondInstanceLaunch ne déclenche pas le focus sur les fenêtres.
+Vous devez appeler `runtime.WindowUnminimise` et `runtime.Show` pour amener votre application au front.
+Notez que sur linux les gestionnaires de fenêtres peuvent empêcher votre application d'être mise au premier plan pour éviter de voler le focus.
+
+```go title="main.go"
+var wailsContext *context.Context
+
+// NewApp crées une nouvelle instance d'App
+func NewApp() *App {
+	return &App{}
+}
+
+// startup est appelé quand l'app démarre. Le context est sauvegardé,
+// donc on peut appeler les méthodes runtime
+func (a *App) startup(ctx context.Context) {
+	wailsContext = &ctx
+}
+
+func (a *App) onSecondInstanceLaunch(secondInstanceData options.SecondInstanceData) {
+	secondInstanceArgs = secondInstanceData.Args
+
+	println("user opened second instance", strings.Join(secondInstanceData.Args, ","))
+	println("user opened second from", secondInstanceData.WorkingDirectory)
+	runtime.WindowUnminimise(*wailsContext)
+	runtime.Show(*wailsContext)
+	go runtime.EventsEmit(*wailsContext, "launchArgs", secondInstanceArgs)
+}
+
+func main() {
+	// Créé l'instance de l'app
+	app := NewApp()
+
+	// Créé l'application avec les options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+```

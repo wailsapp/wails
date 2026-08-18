@@ -16,7 +16,6 @@ import (
 	"sync"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
-	"github.com/wailsapp/wails/v3/internal/assetserver/bundledassets"
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/capabilities"
 	"github.com/wailsapp/wails/v3/pkg/updater"
@@ -72,6 +71,15 @@ func New(appOptions Options) *App {
 	result.logPlatformInfo()
 
 	result.customEventProcessor = NewWailsEventProcessor(result.Event.dispatch)
+	result.eventPayloads = newEventPayloadStore()
+	// The store owns a reaper goroutine; window close only drops that window's
+	// entries, so the store itself has to be shut down with the app.
+	result.OnShutdown(result.eventPayloads.close)
+
+	// Streams own session state and handler goroutines, so like the payload
+	// store they are shut down with the app rather than per window.
+	result.streams = newStreamManager(result)
+	result.OnShutdown(result.streams.close)
 
 	messageProc := NewMessageProcessor(result.Logger)
 	result.messageProcessor = messageProc
@@ -113,9 +121,26 @@ func New(appOptions Options) *App {
 		func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				path := req.URL.Path
+				// Oversized events are parked host-side and fetched here rather
+				// than being spliced into an evaluateJavaScript source string.
+				if strings.HasPrefix(path, eventPayloadPath) {
+					result.serveEventPayload(rw, req)
+					return
+				}
+				// GoStream: the poll is held here for as long as the frontend
+				// has nothing to collect. Safe because every webview request
+				// gets its own goroutine (see the dispatchWorkers note in
+				// assetserver_webview.go).
+				if strings.HasPrefix(path, streamPath) {
+					result.serveStream(rw, req)
+					return
+				}
 				switch path {
 				case "/wails/runtime.js":
-					err := assetserver.ServeFile(rw, path, bundledassets.RuntimeJS)
+					// The prelude, where there is one, picks the stream
+					// transport before any module body runs. It cannot be
+					// deferred to custom.js — see stream_prelude_server.go.
+					err := assetserver.ServeFile(rw, path, runtimeJSWithPrelude())
 					if err != nil {
 						result.fatal("unable to serve runtime.js: %w", err)
 					}
@@ -281,6 +306,51 @@ func addDragAndDropMessage(windowId uint, filenames []string, dropTarget *DropTa
 
 var _ webview.Request = &webViewAssetRequest{}
 
+// serveEventPayload delivers an oversized event body that was parked by
+// DispatchWailsEvent. Payloads are one-shot and bound to the window they were
+// dispatched to, so a stale or cross-window id simply 404s.
+func (a *App) serveEventPayload(rw http.ResponseWriter, req *http.Request) {
+	if a.eventPayloads == nil {
+		http.NotFound(rw, req)
+		return
+	}
+
+	// Read-only endpoint; anything else is not something we serve.
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		rw.Header().Set("Allow", "GET, HEAD")
+		http.Error(rw, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Ids are always 32 hex chars. Checking the shape first keeps a stream of
+	// junk requests from doing map work on arbitrarily long keys.
+	id := strings.TrimPrefix(req.URL.Path, eventPayloadPath)
+	if len(id) != eventPayloadIDLen || !isHexString(id) {
+		http.NotFound(rw, req)
+		return
+	}
+
+	// Bind to the requesting window where the platform tags the request.
+	// Parsed at uint width so the conversion cannot truncate on 32-bit builds.
+	var windowID uint
+	if raw := req.Header.Get(webViewRequestHeaderWindowId); raw != "" {
+		if parsed, err := strconv.ParseUint(raw, 10, strconv.IntSize); err == nil {
+			windowID = uint(parsed)
+		}
+	}
+
+	data, ok := a.eventPayloads.take(id, windowID)
+	if !ok {
+		http.NotFound(rw, req)
+		return
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.Header().Set("Cache-Control", "no-store")
+	rw.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	_, _ = rw.Write(data)
+}
+
 const webViewRequestHeaderWindowId = "x-wails-window-id"
 const webViewRequestHeaderWindowName = "x-wails-window-name"
 
@@ -397,7 +467,16 @@ type App struct {
 	contextMenus     map[string]*ContextMenu
 	contextMenusLock sync.RWMutex
 
-	assets   *assetserver.AssetServer
+	assets *assetserver.AssetServer
+
+	// eventPayloads holds oversized Go→JS event bodies awaiting a one-shot
+	// fetch from the webview, keeping them out of evaluateJavaScript source.
+	eventPayloads *eventPayloadStore
+
+	// streams holds registered stream handlers and the per-page sessions that
+	// carry their connections. See stream.go.
+	streams *streamManager
+
 	startURL string
 
 	// Hooks
@@ -602,13 +681,12 @@ func (a *App) Run() error {
 			a.options.Services = services[:i+1]
 		}
 
-
-	// Start the MCP server when the application is built with -tags mcp.
-	// All configuration is read from environment variables (WAILS_MCP_HOST,
-	// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
-	if err := startMCPServer(a); err != nil {
-		return fmt.Errorf("mcp: %w", err)
-	}
+		// Start the MCP server when the application is built with -tags mcp.
+		// All configuration is read from environment variables (WAILS_MCP_HOST,
+		// WAILS_MCP_PORT, WAILS_MCP_TIMEOUT, WAILS_MCP_HIDE_CURSOR).
+		if err := startMCPServer(a); err != nil {
+			return fmt.Errorf("mcp: %w", err)
+		}
 
 		go func() {
 			for {
@@ -799,7 +877,15 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		a.warning("Window #%d not found", event.WindowID)
+		// Post-removal lifecycle notifications are expected: the default
+		// WindowClosing listener removes the window from the manager, then
+		// AppKit (or the equivalent on other platforms) keeps posting
+		// windowWillClose / windowDidResignKey / etc. for the same window.
+		// On darwin hasListeners always returns true today, so those
+		// notifications are queued unconditionally and would warn here on
+		// every window close. The same applies to App.cleanup nilling the
+		// map during shutdown. None of these are bugs — just log them.
+		a.debug("Window event for unknown window", "windowID", event.WindowID, "eventID", event.EventID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)

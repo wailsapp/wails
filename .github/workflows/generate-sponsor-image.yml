@@ -15,9 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Use the bypass-capable token so the auto-commit can push directly
-          # to the protected master branch (same pattern as publish-npm.yml).
-          token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+          persist-credentials: false
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -37,13 +35,21 @@ jobs:
           GOWORK: "off"
 
       - name: Commit updated images
+        id: commit-images
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if git diff --quiet -- website/static/img/sponsors.svg website/static/img/contributors.svg; then
             echo "No sponsor or contributor changes to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git add website/static/img/sponsors.svg website/static/img/contributors.svg
           git commit -m "chore: update sponsors.svg and contributors.svg [skip ci]"
-          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push updated images
+        if: steps.commit-images.outputs.changed == 'true'
+        env:
+          WAILS_PUSH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        run: git push "https://x-access-token:${WAILS_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"

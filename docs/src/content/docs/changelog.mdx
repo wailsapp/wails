@@ -31,6 +31,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.9 - 2026-08-16
+
+## Added
+- Add documentation for models in bindings — see [documentation](https://v3.wails.io/features/bindings/models) in [PR](https://github.com/wailsapp/wails/pull/5988) by @taliesin-ai
+- Support rpm-ostree installation for atomic Linux systems in [PR](https://github.com/wailsapp/wails/pull/5987) by @leaanthony
+- Add native weekly star-history chart generation and publication — see [documentation](https://v3.wails.io/credits) and [documentation](https://v3.wails.io/de/credits) and [documentation](https://v3.wails.io/fr/credits) and [documentation](https://v3.wails.io/id/credits) and [documentation](https://v3.wails.io/ja/credits) and [documentation](https://v3.wails.io/ko/credits) and [documentation](https://v3.wails.io/pt/credits) and [documentation](https://v3.wails.io/ru/credits) and [documentation](https://v3.wails.io/zh-cn/credits) and [documentation](https://v3.wails.io/zh-tw/credits) in [PR](https://github.com/wailsapp/wails/pull/5986) by @leaanthony
+- Add Darwin-only mac package for resolving application bundle resources — see [documentation](https://v3.wails.io/guides/build/macos) in [PR](https://github.com/wailsapp/wails/pull/5965) by @leaanthony
+- Add Condui showcase page and index entry — see [documentation](https://v3.wails.io/community/showcase/condui) and [documentation](https://v3.wails.io/community/showcase) in [PR](https://github.com/wailsapp/wails/pull/5962) by @mgueregath
+- Add Redis Viewer showcase page with screenshots and project link — see [documentation](https://v3.wails.io/community/showcase) and [documentation](https://v3.wails.io/community/showcase/redisviewer) in [PR](https://github.com/wailsapp/wails/pull/5984) by @redisviewer
+
+## Changed
+- Update GTK application flags to G_APPLICATION_NON_UNIQUE for Linux in [PR](https://github.com/wailsapp/wails/pull/5971) by @overlordtm
+- Log missing window events at debug level instead of warning in [PR](https://github.com/wailsapp/wails/pull/5914) by @julianstorer
+
+## Fixed
+- Cancel macOS and iOS asset request contexts when WebKit aborts the matching custom-scheme task (#5963)
+- Handle WindowSetFullscreenButtonEnabled message in [PR](https://github.com/wailsapp/wails/pull/5976) by @archy-rock3t-cloud
+- Import Fragment in preact-ts template to resolve build failure in [PR](https://github.com/wailsapp/wails/pull/5979) by @haoku123
+- Prevent legacy GTK3 service-only applications from crashing when screen
+  discovery runs before an active window or display is available (#5966)
+- Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
+- Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
+
+## v3.0.0-beta.8 - 2026-08-12
+
+## Added
+- Add documentation URL generation to automatic changelog entries in [PR](https://github.com/wailsapp/wails/pull/5957) by @taliesin-ai
+- Add Streams: bidirectional byte streams between Go and JavaScript with the WebSocket
+  programming model and no listening socket. Declare a stream in Go with
+  `app.HandleStream(name, handler)` and connect from the frontend with `Stream(name)`,
+  which returns a `WebSocket`-shaped object. Go→JS is carried by one held poll per
+  window over the asset server, JS→Go by a normal POST; nothing binds a TCP port and
+  nothing goes through `evaluateJavaScript`. In server builds (`-tags server`) the same
+  handler is served over a real WebSocket instead, so application code is identical
+  across builds. by @leaanthony
+- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
+
+## Changed
+- Update docs sidebar autogeneration and blog author type derivation in [PR](https://github.com/wailsapp/wails/pull/5938) by @leaanthony
+
+## Fixed
+- WebView2 initialization uses a deadline and message pump in [PR](https://github.com/wailsapp/wails/pull/5952) by @leaanthony
+- WebView2 cookie test skips in CI unless opt-in and locks execution to current OS thread in [PR](https://github.com/wailsapp/wails/pull/5951) by @leaanthony
+- Windows menu builders restore command IDs for submenu parent items in [PR](https://github.com/wailsapp/wails/pull/5944) by @gilad-ch
+- Align the official cross-compilation image with the GTK 4.14+ Linux support baseline (#5928)
+- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
+- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
+- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
+
+## Removed
+- Remove the desktop binary release pipeline: v3 releases are tag-only and the `wails3` CLI is installed with `go install`. Deletes `release-v3.yml` and the nightly step that dispatched it in [PR](https://github.com/wailsapp/wails/pull/5946) by @leaanthony
+
+## v3.0.0-beta.7 - 2026-08-11
+
+## Added
+- Add macOS autoplay preference to disable user action requirement for media playback in [PR](https://github.com/wailsapp/wails/pull/5512) by @Eyalm321
+- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
+
+## Changed
+- macOS zoom animation uses CADisplayLink or NSTimer for smoother performance in [PR](https://github.com/wailsapp/wails/pull/5945) by @savely-krasovsky
+
+## Fixed
+- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
+- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
+- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
+
+
+### Added
+
+- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky and @DevLumuz
+## v3.0.0-beta.6 - 2026-08-09
+
+## Added
+- Implement bounded host-side storage for oversized events and ordered JavaScript delivery in [PR](https://github.com/wailsapp/wails/pull/5930) by @leaanthony
+- Implement macOS Dock bounce for window flashing in [PR](https://github.com/wailsapp/wails/pull/5921) by @julianstorer
+
+## Fixed
+- Asset server preserves content-type sniffer errors and unwritten prefixes during flushing in [PR](https://github.com/wailsapp/wails/pull/5931) by @leaanthony
+- Prevent macOS applications from crashing when replacing the application menu from a Wails callback
+- Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
+- Fix `w32.GetStockObject` calling `GetDeviceCaps` instead of `GetStockObject`, which made it return 0 for every stock object.
+- Improve WebView2 bootstrapper download error handling and reporting in [PR](https://github.com/wailsapp/wails/pull/5924) by @jannskiee
+
+## v3.0.0-beta.5 - 2026-08-07
+
+## Fixed
+- macOS app activation now respects activation policy for regular apps only in [PR](https://github.com/wailsapp/wails/pull/5897) by @julianstorer
+- Guard uninitialized GTK windows in Linux builds in [PR](https://github.com/wailsapp/wails/pull/5898) by @julianstorer
+- Set explicit opaque background color for Linux WebKit windows before URL load in [PR](https://github.com/wailsapp/wails/pull/5899) by @julianstorer
+
 ## v3.0.0-beta.4 - 2026-08-05
 
 ## Changed
@@ -67,7 +157,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v3.0.0-alpha2.122 - 2026-08-01
 
 ## Added
-- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky
 
 ## Changed
 - Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
