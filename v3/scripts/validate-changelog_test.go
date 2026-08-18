@@ -5,22 +5,36 @@ package main
 import "testing"
 
 func TestIsSameSourceCorrection(t *testing.T) {
-	deleted := []string{
-		"- Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai",
+	deleted := []changelogEntry{
+		{
+			Line:    "- Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai",
+			Section: "v3.0.0-beta.9",
+		},
 	}
 	added := "- Update website nanoid lockfiles to patched 3.3.18 in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai"
-	if !isSameSourceCorrection(added, deleted) {
+	if !isSameSourceCorrection(added, "v3.0.0-beta.9", deleted) {
 		t.Fatal("isSameSourceCorrection() rejected a replacement citing the same PR")
 	}
 }
 
 func TestIsSameSourceCorrectionRejectsDifferentSource(t *testing.T) {
-	deleted := []string{
-		"- Old description in [PR](https://github.com/wailsapp/wails/pull/5984) by @contributor",
+	deleted := []changelogEntry{
+		{Line: "- Old description in [PR](https://github.com/wailsapp/wails/pull/5984) by @contributor", Section: "v3.0.0-beta.9"},
 	}
 	added := "- New description in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor"
-	if isSameSourceCorrection(added, deleted) {
+	if isSameSourceCorrection(added, "v3.0.0-beta.9", deleted) {
 		t.Fatal("isSameSourceCorrection() accepted a replacement citing a different PR")
+	}
+}
+
+func TestIsSameSourceCorrectionRejectsDifferentSection(t *testing.T) {
+	deleted := []changelogEntry{
+		{Line: "- Old description in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor", Section: "Unreleased"},
+		{Line: "- Older description in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor", Section: "v3.0.0-beta.8"},
+	}
+	added := "- New description in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor"
+	if isSameSourceCorrection(added, "v3.0.0-beta.9", deleted) {
+		t.Fatal("isSameSourceCorrection() accepted a replacement from another section")
 	}
 }
 
@@ -28,7 +42,7 @@ func TestIsSameSourceCorrectionRejectsNewOrSourceLessEntry(t *testing.T) {
 	tests := []struct {
 		name    string
 		added   string
-		deleted []string
+		deleted []changelogEntry
 	}{
 		{
 			name:  "new entry",
@@ -37,21 +51,33 @@ func TestIsSameSourceCorrectionRejectsNewOrSourceLessEntry(t *testing.T) {
 		{
 			name:    "source-less replacement",
 			added:   "- Correct an old release note",
-			deleted: []string{"- Incorrect old release note"},
+			deleted: []changelogEntry{{Line: "- Incorrect old release note", Section: "v3.0.0-beta.9"}},
 		},
 		{
 			name:    "unchanged line",
 			added:   "- Existing entry in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor",
-			deleted: []string{"- Existing entry in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor"},
+			deleted: []changelogEntry{{Line: "- Existing entry in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor", Section: "v3.0.0-beta.9"}},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if isSameSourceCorrection(test.added, test.deleted) {
+			if isSameSourceCorrection(test.added, "v3.0.0-beta.9", test.deleted) {
 				t.Fatal("isSameSourceCorrection() accepted a non-correction")
 			}
 		})
+	}
+}
+
+func TestDeletedChangelogEntriesPreserveSection(t *testing.T) {
+	oldLine := "- Old description in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor"
+	base := "## [Unreleased]\n\n" + oldLine + "\n\n## v3.0.0-beta.9 - 2026-08-16\n\n" + oldLine + "\n"
+	current := "## [Unreleased]\n\n" + oldLine + "\n\n## v3.0.0-beta.9 - 2026-08-16\n\n- New description in [PR](https://github.com/wailsapp/wails/pull/5985) by @contributor\n"
+
+	got := deletedChangelogEntries(base, current, []string{oldLine})
+	want := []changelogEntry{{Line: oldLine, Section: "v3.0.0-beta.9"}}
+	if len(got) != len(want) || got[0] != want[0] {
+		t.Fatalf("deletedChangelogEntries() = %#v, want %#v", got, want)
 	}
 }
 

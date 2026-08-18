@@ -104,29 +104,34 @@ func main() {
 }
 
 func fetchCodeRabbitWalkthrough(repo, prNumber, token string) (string, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/issues/%s/comments?per_page=100", repo, prNumber)
-	body, err := githubGet(url, token)
-	if err != nil {
-		return "", err
-	}
-
-	var comments []struct {
-		User struct {
-			Login string `json:"login"`
-		} `json:"user"`
-		Body string `json:"body"`
-	}
-	if err := json.Unmarshal(body, &comments); err != nil {
-		return "", fmt.Errorf("parse comments: %w", err)
-	}
-
-	for _, c := range comments {
-		if c.User.Login != "coderabbitai[bot]" {
-			continue
+	for page := 1; page <= 30; page++ {
+		apiURL := fmt.Sprintf("%s/repos/%s/issues/%s/comments?per_page=100&page=%d", githubAPIBaseURL, repo, prNumber, page)
+		body, err := githubGet(apiURL, token)
+		if err != nil {
+			return "", err
 		}
-		if walkthrough, ok := extractCodeRabbitWalkthrough(c.Body); ok {
-			fmt.Println("✅ Found CodeRabbit walkthrough")
-			return walkthrough, nil
+
+		var comments []struct {
+			User struct {
+				Login string `json:"login"`
+			} `json:"user"`
+			Body string `json:"body"`
+		}
+		if err := json.Unmarshal(body, &comments); err != nil {
+			return "", fmt.Errorf("parse comments page %d: %w", page, err)
+		}
+
+		for _, c := range comments {
+			if c.User.Login != "coderabbitai[bot]" {
+				continue
+			}
+			if walkthrough, ok := extractCodeRabbitWalkthrough(c.Body); ok {
+				fmt.Println("✅ Found CodeRabbit walkthrough")
+				return walkthrough, nil
+			}
+		}
+		if len(comments) < 100 {
+			break
 		}
 	}
 	return "", fmt.Errorf("no CodeRabbit walkthrough found")
@@ -330,6 +335,8 @@ func isFeatureChange(title string) bool {
 	m := internalTitleRe.FindStringSubmatch(strings.TrimSpace(title))
 	return m != nil && strings.EqualFold(m[1], "feat")
 }
+
+var githubAPIBaseURL = "https://api.github.com"
 
 func githubGet(url, token string) ([]byte, error) {
 	req, _ := http.NewRequest("GET", url, nil)

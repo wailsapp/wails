@@ -2,7 +2,13 @@
 
 package main
 
-import "testing"
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
 func TestExtractCodeRabbitWalkthrough(t *testing.T) {
 	body := `<!-- This is an auto-generated comment: summarize by coderabbit.ai -->
@@ -54,6 +60,55 @@ func TestChangelogContextAlwaysIncludesPRTitle(t *testing.T) {
 	want := "PR Title: " + title + "\n\nCodeRabbit Walkthrough:\nThe lockfiles update nanoid."
 	if got != want {
 		t.Fatalf("changelogContext() = %q, want %q", got, want)
+	}
+}
+
+func TestFetchCodeRabbitWalkthroughPaginatesComments(t *testing.T) {
+	type comment struct {
+		User struct {
+			Login string `json:"login"`
+		} `json:"user"`
+		Body string `json:"body"`
+	}
+
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		page := r.URL.Query().Get("page")
+		var comments []comment
+		switch page {
+		case "1":
+			comments = make([]comment, 100)
+			for i := range comments {
+				comments[i].User.Login = "contributor"
+				comments[i].Body = fmt.Sprintf("comment %d", i)
+			}
+		case "2":
+			comments = make([]comment, 1)
+			comments[0].User.Login = "coderabbitai[bot]"
+			comments[0].Body = "<!-- walkthrough_start -->\nSecond-page walkthrough\n<!-- walkthrough_end -->"
+		default:
+			t.Fatalf("unexpected comments page %q", page)
+		}
+		if err := json.NewEncoder(w).Encode(comments); err != nil {
+			t.Fatal(err)
+		}
+	}))
+	defer server.Close()
+
+	oldBaseURL := githubAPIBaseURL
+	githubAPIBaseURL = server.URL
+	defer func() { githubAPIBaseURL = oldBaseURL }()
+
+	got, err := fetchCodeRabbitWalkthrough("wailsapp/wails", "5993", "token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "Second-page walkthrough" {
+		t.Fatalf("fetchCodeRabbitWalkthrough() = %q, want second-page walkthrough", got)
+	}
+	if requests != 2 {
+		t.Fatalf("fetchCodeRabbitWalkthrough() made %d requests, want 2", requests)
 	}
 }
 
