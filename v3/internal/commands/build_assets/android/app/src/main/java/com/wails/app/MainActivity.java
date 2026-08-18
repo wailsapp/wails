@@ -812,6 +812,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        // Emit the cross-platform common:BackButtonPressed event to Go. If a Go
+        // listener calls event.Cancel(), the back action is suppressed (the
+        // listener handles navigation itself). Otherwise fall through to the
+        // default: WebView goBack if history exists, else exit.
+        if (bridge != null && bridge.onBackPressed()) {
+            return;
+        }
         if (webView != null && webView.canGoBack()) {
             webView.goBack();
         } else {
