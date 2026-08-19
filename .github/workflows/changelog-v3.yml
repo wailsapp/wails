@@ -16,12 +16,13 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
+    outputs:
+      pr_number: ${{ steps.pr_info.outputs.pr_number }}
+      result: ${{ steps.validate.outputs.result }}
     env:
       GOWORK: "off"
     permissions:
-      contents: write
-      pull-requests: write
-      actions: write
+      contents: read
     
     steps:
     - name: Checkout PR code
@@ -29,13 +30,18 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.inputs.pr_number) }}
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN || github.token }}
+        persist-credentials: false
         
-    - name: Get validation script from master
+    - name: Select validation script
       run: |
         echo "Fetching the validation script from master branch..."
         git fetch origin master
-        git checkout origin/master -- v3/scripts/validate-changelog.go
+
+        if git diff --quiet origin/master...HEAD -- v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go; then
+          git checkout origin/master -- v3/scripts/validate-changelog.go
+        else
+          echo "The PR updates the validator; retaining that version for focused tests."
+        fi
         
         echo "Validation script fetched successfully:"
         ls -la v3/scripts/
@@ -44,6 +50,12 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.25'
+
+    - name: Test validation script changes
+      run: |
+        if ! git diff --quiet origin/master...HEAD -- v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go; then
+          go test v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go
+        fi
         
     - name: Get PR information
       id: pr_info
@@ -75,11 +87,18 @@ jobs:
       if: steps.changelog_check.outputs.changelog_modified == 'true'
       run: |
         echo "Getting diff for changelog changes..."
-        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/src/content/docs/changelog.mdx | grep "^+" | grep -v "^+++" | sed 's/^+//' > /tmp/pr_added_lines.txt
+        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/src/content/docs/changelog.mdx > /tmp/pr_changelog.diff
+        awk '/^\+\+\+/ { next } /^\+/ { sub(/^\+/, ""); print }' /tmp/pr_changelog.diff > /tmp/pr_added_lines.txt
+        awk '/^---/ { next } /^-/ { sub(/^-/, ""); print }' /tmp/pr_changelog.diff > /tmp/pr_deleted_lines.txt
+        git show origin/${{ steps.pr_info.outputs.base_ref }}:docs/src/content/docs/changelog.mdx > /tmp/base_changelog.mdx
         
         echo "Lines added in this PR:"
         cat /tmp/pr_added_lines.txt
         echo "Total lines added: $(wc -l < /tmp/pr_added_lines.txt)"
+
+        echo "Lines deleted in this PR:"
+        cat /tmp/pr_deleted_lines.txt
+        echo "Total lines deleted: $(wc -l < /tmp/pr_deleted_lines.txt)"
         
     - name: Validate changelog
       id: validate
@@ -87,133 +106,55 @@ jobs:
       run: |
         echo "Running changelog validation..."
         cd v3/scripts
-        OUTPUT=$(go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/pr_added_lines.txt 2>&1)
+        if ! OUTPUT=$(go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/pr_added_lines.txt /tmp/pr_deleted_lines.txt /tmp/base_changelog.mdx 2>&1); then
+          echo "$OUTPUT"
+          exit 1
+        fi
         echo "$OUTPUT"
         
         RESULT=$(echo "$OUTPUT" | grep "VALIDATION_RESULT=" | cut -d'=' -f2)
         echo "result=$RESULT" >> $GITHUB_OUTPUT
         
-    - name: Commit fixes
-      id: commit_fixes
-      if: steps.validate.outputs.result == 'fixed'
-      run: |
-        echo "Committing automatic fixes..."
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        # Check only the changelog file for changes
-        if git diff --quiet docs/src/content/docs/changelog.mdx; then
-          echo "No changes to commit"
-          echo "committed=false" >> $GITHUB_OUTPUT
-        else
-          # Ensure validation script doesn't get committed
-          echo "v3/scripts/validate-changelog.go" >> .git/info/exclude
-          # Get the correct branch name to push to
-          REPO_OWNER="wailsapp"  # Always wailsapp for this repo
-          
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          else
-            # For manual workflow dispatch, get PR info
-            PR_INFO=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json headRefName,headRepository)
-            BRANCH_NAME=$(echo "$PR_INFO" | jq -r '.headRefName')
-            HEAD_REPO=$(echo "$PR_INFO" | jq -r '.headRepository.name')
-            
-            echo "🔍 PR source branch: $BRANCH_NAME"
-            echo "🔍 Head repository: $HEAD_REPO"
-            
-            # Don't push if this is from a fork or if branch is master (main branch)
-            if [ "$HEAD_REPO" != "wails" ] || [ "$BRANCH_NAME" = "master" ]; then
-              echo "⚠️ Cannot push - either fork or master branch. Manual fix required."
-              echo "committed=false" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-          fi
-          
-          echo "Pushing to branch: $BRANCH_NAME in repo: $REPO_OWNER"
-          
-          # Only commit the changelog changes, not the validation script
-          git add docs/src/content/docs/changelog.mdx
-          git commit -m "🤖 Fix changelog: move entries to Unreleased section"
-          
-          # Only push if running on the main wailsapp repository
-          if [ "${{ github.repository }}" = "wailsapp/wails" ]; then
-            # Pull latest changes and rebase our commit
-            git fetch origin $BRANCH_NAME
-            git rebase origin/$BRANCH_NAME
-            git push origin HEAD:$BRANCH_NAME
-          else
-            echo "⚠️ Running on fork (${{ github.repository }}). Skipping push - manual fix required."
-            echo "committed=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          echo "committed=true" >> $GITHUB_OUTPUT
-          echo "✅ Changes committed and pushed"
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Get PR author for tagging
-      id: pr_author
-      if: steps.validate.outputs.result && github.event.inputs.pr_number
-      run: |
-        PR_AUTHOR=$(gh pr view ${{ steps.pr_info.outputs.pr_number }} --json author --jq '.author.login')
-        echo "author=$PR_AUTHOR" >> $GITHUB_OUTPUT
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Comment on PR
-      if: steps.validate.outputs.result && github.event.inputs.pr_number
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const result = '${{ steps.validate.outputs.result }}';
-          const committed = '${{ steps.commit_fixes.outputs.committed }}';
-          const author = '${{ steps.pr_author.outputs.author }}';
-          
-          let message;
-          if (result === 'success') {
-            message = '## ✅ Changelog Validation Passed\n\nNo misplaced changelog entries detected.';
-          } else if (result === 'fixed' && committed === 'true') {
-            message = '## 🔧 Changelog Updated\n\nMisplaced entries were automatically moved to the `[Unreleased]` section. The changes have been committed to this PR.';
-          } else if (result === 'fixed' || result === 'cannot_fix' || result === 'error') {
-            // Read the fixed changelog content
-            const fs = require('fs');
-            let fixedContent = '';
-            try {
-              fixedContent = fs.readFileSync('docs/src/content/docs/changelog.mdx', 'utf8');
-            } catch (error) {
-              fixedContent = 'Error reading fixed changelog content';
-            }
-            
-            message = '## ⚠️ Changelog Validation Issue\\n\\n' +
-              '@' + author + ' Your PR contains changelog entries that were added to already-released versions. These need to be moved to the `[Unreleased]` section.\\n\\n' +
-              (committed === 'true' ? 
-                '✅ **Auto-fix applied**: The changes have been automatically committed to this PR.' :
-                '❌ **Manual fix required**: Please apply the changes shown below manually.') + '\\n\\n' +
-              '<details>\\n' +
-              '<summary>📝 Click to see the corrected changelog content</summary>\\n\\n' +
-              '```mdx\\n' +
-              fixedContent +
-              '\\n```\\n\\n' +
-              '</details>\\n\\n' +
-              '**What happened?** \\n' +
-              'The validation script detected that you added changelog entries to a version section that has already been released (like `v3.0.0-alpha.10`). All new entries should go in the `[Unreleased]` section under the appropriate category (`### Added`, `### Fixed`, etc.).\\n\\n' +
-              (committed !== 'true' ? '**Action needed:** Please copy the corrected content from above and replace your changelog file.' : '');
-          }
-          
-          if (message) {
-            await github.rest.issues.createComment({
-              issue_number: ${{ steps.pr_info.outputs.pr_number }},
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
-          }
-          
     - name: Fail if validation failed
-      if: steps.validate.outputs.result == 'cannot_fix' || steps.validate.outputs.result == 'error'
+      if: steps.validate.outputs.result && steps.validate.outputs.result != 'success'
       run: |
         echo "❌ Changelog validation failed"
         exit 1
+
+  report:
+    needs: validate
+    if: always() && github.event.inputs.pr_number && needs.validate.outputs.result
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+
+    steps:
+    - name: Comment on PR
+      uses: actions/github-script@v7
+      env:
+        PR_NUMBER: ${{ needs.validate.outputs.pr_number }}
+        VALIDATION_RESULT: ${{ needs.validate.outputs.result }}
+      with:
+        script: |
+          const prNumber = Number(process.env.PR_NUMBER);
+          const result = process.env.VALIDATION_RESULT;
+          const { data: pr } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+          });
+
+          const message = result === 'success'
+            ? '## ✅ Changelog Validation Passed\n\nNo misplaced changelog entries detected.'
+            : '## ⚠️ Changelog Validation Issue\n\n@' + pr.user.login +
+              ' your PR contains changelog entries outside `[Unreleased]`. ' +
+              'The validation job is read-only; apply the correction manually and rerun it.';
+
+          await github.rest.issues.createComment({
+            issue_number: prNumber,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: message,
+          });
