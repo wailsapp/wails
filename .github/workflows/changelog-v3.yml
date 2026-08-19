@@ -133,10 +133,13 @@ jobs:
     steps:
     - name: Comment on PR
       uses: actions/github-script@v7
+      env:
+        PR_NUMBER: ${{ needs.validate.outputs.pr_number }}
+        VALIDATION_RESULT: ${{ needs.validate.outputs.result }}
       with:
         script: |
-          const prNumber = Number('${{ needs.validate.outputs.pr_number }}');
-          const result = '${{ needs.validate.outputs.result }}';
+          const prNumber = Number(process.env.PR_NUMBER);
+          const result = process.env.VALIDATION_RESULT;
           const { data: pr } = await github.rest.pulls.get({
             owner: context.repo.owner,
             repo: context.repo.repo,
