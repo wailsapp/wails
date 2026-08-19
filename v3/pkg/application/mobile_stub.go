@@ -22,6 +22,7 @@ func (mobileStub) StorageJSON() string          { return "" }
 func (mobileStub) StoragePath() string          { return "" }
 func (mobileStub) PowerJSON() string            { return "" }
 func (mobileStub) NetworkJSON() string          { return "" }
+func (mobileStub) SystemLocale() string         { return SystemLocale() }
 func (mobileStub) BiometricAuthenticate(string) {}
 func (mobileStub) SecureGet(string) string      { return "" }
 func (mobileStub) SecureDelete(string)          {}

@@ -1093,6 +1093,14 @@ public class WailsBridge {
     }
 
     /**
+     * Returns the device's configured locale as a BCP-47 language tag
+     * (e.g. "nb-NO", "en-US").
+     */
+    public String getLocale() {
+        return java.util.Locale.getDefault().toLanguageTag();
+    }
+
+    /**
      * Watch (1) / unwatch (0) the soft keyboard, emitting "common:keyboard"
      * {visible,height} (height in px) via an inset listener on the content view.
      */
