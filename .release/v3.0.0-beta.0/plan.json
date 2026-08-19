@@ -102,7 +102,7 @@
     },
     {
       "id": "dry-run",
-      "title": "Full release dry run: build, sign, publish to a staging channel, install from it",
+      "title": "Tag-only release dry run: sync the ledger, preview the version, tag, changelog and release notes, then record the evidence",
       "phase": "assure",
       "offset": -3,
       "date": "2026-09-12"
@@ -175,8 +175,8 @@
       "track": "software",
       "blocking": true,
       "status": "open",
-      "note": "v3.0.0-beta.0, beta.1, and beta.2 were published from master on 2026-08-02. Beta.3, beta.4, and beta.5 were subsequently published from master, but all three immutable releases have zero assets after their Release v3 upload jobs failed. This evidence ledger remains at its beta.0 path, and release-stage/version approval is not recorded, so this gate remains open.",
-      "updated": "2026-08-08T17:05:00+10:00"
+      "note": "v3.0.0-beta.0 through beta.9 were published from master. Beta.8 exposed a tag/runtime metadata mismatch; merged PR #5959 added lockstep synchronization. Successful Nightly Release v3 run 31954639309 published beta.9 at 2026-08-16T15:06:42Z, and its tag records both the CLI version and runtime package/lockfile as 3.0.0-beta.9; publish-npm run 31954674432 then published the matching runtime package. Maintainer direction recorded in #5876 and implemented by merged PR #5946 defines the current v3 release as a source tag/GitHub prerelease with CLI installation through go install, without attached desktop binaries. This evidence ledger remains at its beta.0 path, and release-stage/version approval is not recorded, so this gate remains open.",
+      "updated": "2026-08-17T17:15:00+10:00"
     },
     {
     "id": "sw-compat",
@@ -220,8 +220,8 @@
       "blocking": true,
       "owner": "lea",
       "status": "open",
-      "note": "Release v3 workflow runs 30747695287 (beta.0) and 30748402783 (beta.1) published Linux amd64/arm64, Windows amd64, macOS amd64/arm64/universal, and SHA256SUMS. Published beta.2 has zero assets and no matching Release v3 run. Beta.3 Release v3 run 30829708574 built all six desktop binaries, generated SHA256SUMS, and created provenance attestation 38606755, but Publish Release failed with HTTP 422 because the nightly workflow had already published an immutable release. Scheduled Nightly Release v3 run 30926135808 then reached artifact dispatch with an empty tag after the release task skipped for an empty changelog; GitHub rejected the dispatch because required input `tag` was not provided. Published beta.4 and beta.5 are also immutable with zero assets: Release v3 runs 31022027159 and 31192135957 each built the same six binaries, generated SHA256SUMS, and created provenance attestations 39071317 and 39449314 respectively before their uploads failed with HTTP 422 `Cannot upload assets to an immutable release.` The workflow ordering and missing current assets are tracked in #5876; this gate remains open.",
-      "updated": "2026-08-08T17:05:00+10:00"
+      "note": "Historical Release v3 runs 30747695287 (beta.0) and 30748402783 (beta.1) published six desktop binaries plus SHA256SUMS. Beta.2 through beta.9 have zero attached assets. Before the tag-only decision was implemented, beta.3 through beta.7 Release v3 runs built the desktop set and failed to attach it to immutable releases; beta.6 run 31320435426 and beta.7 run 31506762359 are the latest examples, with beta.7 generating six binaries, SHA256SUMS, and provenance before HTTP 422. Maintainer direction in #5876 made zero-asset tag-only releases intentional, merged PR #5946 removed release-v3.yml plus its nightly dispatch, and successful runs 31577849776 and 31954639309 published beta.8 and beta.9 by the tag-only path. The artifact gate has not been explicitly redefined, passed, or waived for this policy, so it remains open.",
+      "updated": "2026-08-17T17:15:00+10:00"
     },
     {
       "id": "sw-signing",
@@ -230,8 +230,8 @@
       "track": "software",
       "blocking": true,
       "status": "open",
-      "note": "The beta.1 tag-triggered run 30748399250 failed because Apple signing credentials were absent. Commit 6603cde8e then removed signing/notarization steps and run 30748402783 published unsigned macOS binaries. Beta.3 run 30829708574, beta.4 run 31022027159, and beta.5 run 31192135957 created Sigstore build-provenance attestations 38606755, 39071317, and 39449314 respectively, for six binaries each; provenance is not platform code signing, and all three immutable releases rejected asset uploads. No explicit evidenced macOS signing/notarization waiver is recorded; tracked in #5876.",
-      "updated": "2026-08-08T17:05:00+10:00"
+      "note": "The beta.1 tag-triggered run 30748399250 failed because Apple signing credentials were absent; run 30748402783 then published unsigned macOS binaries after signing/notarization was removed. Maintainer direction in #5876 now makes v3 releases tag-only, and merged PR #5946 removed the desktop-binary workflow, so platform binary signing is not part of the current publication path. No explicit evidence redefines, passes, or waives this signing gate for source-tag distribution, so it remains open.",
+      "updated": "2026-08-13T17:30:00+10:00"
     },
     {
       "id": "sw-install",
@@ -240,8 +240,8 @@
       "track": "software",
       "blocking": true,
       "status": "open",
-      "note": "No published-channel installation evidence is recorded. Published beta.2, beta.3, beta.4, and beta.5 have zero downloadable assets. Beta.3 run 30829708574, beta.4 run 31022027159, and beta.5 run 31192135957 built the expected binaries but could not attach them to their immutable releases; the latest failed with HTTP 422 after generating SHA256SUMS and provenance attestation 39449314. Installation cannot be verified from the current Beta channel until #5876 is resolved.",
-      "updated": "2026-08-08T17:05:00+10:00"
+      "note": "Maintainer direction in #5876 identifies `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` as the current published CLI channel, and merged PR #5946 removes the unused desktop-binary publication path. Beta.9 was published at 2026-08-16T15:06:42Z, and on 2026-08-17 the public Go proxy resolved `github.com/wailsapp/wails/v3@v3.0.0-beta.9` to tagged commit 9b3cd781fefc265813d3ca1cc12fa30010ef8ac6. No clean-machine installation and `wails3 version` check from beta.9 or `@latest` is recorded in this ledger, so this gate remains open.",
+      "updated": "2026-08-17T17:15:00+10:00"
     },
     {
       "id": "sw-perf",
@@ -454,8 +454,8 @@
       "track": "ops",
       "blocking": true,
       "status": "open",
-      "note": "Beta.0 and beta.1 were published with assets, while beta.2, beta.3, beta.4, and beta.5 have none. Beta.3 run 30829708574, beta.4 run 31022027159, and beta.5 run 31192135957 each built six binaries and provenance, then failed to attach the outputs because the release was already immutable. Scheduled runs 30926135808 and 31263736047 separately attempted Release v3 dispatches with no tag after release generation skipped for an empty changelog; GitHub rejected both with HTTP 422 because required input `tag` was absent. Scheduled run 31117548329 failed earlier during runner setup after GitHub returned Service Unavailable while resolving action downloads through two retries. No approved launch runbook or abort criteria are recorded, and the workflow did not stop before invalid artifact dispatch or immutable release publication. No signing waiver evidence is recorded. #5876 tracks the release-health blocker.",
-      "updated": "2026-08-09T17:10:31+10:00"
+      "note": "Beta.7 published as a zero-asset prerelease at 2026-08-11T15:23:34Z. The still-present desktop workflow then ran as 31506762359, built six binaries plus SHA256SUMS and provenance, and failed HTTP 422 against the immutable release. Maintainer direction in #5876 made that workflow obsolete, and merged PR #5946 removed release-v3.yml and its nightly dispatch. Successful Nightly Release v3 runs 31577849776 and 31954639309 published beta.8 and beta.9 through the intended tag-only path; beta.9's matching runtime package was published by successful run 31954674432. README.md and comms/launch-sequence.md now describe the tag-only/go-install path, but named owners, a completed rehearsal, and final approval are not recorded, so this gate remains open.",
+      "updated": "2026-08-17T17:15:00+10:00"
     },
     {
       "id": "ops-support",
@@ -472,8 +472,8 @@
       "track": "ops",
       "blocking": true,
       "status": "open",
-      "note": "The beta.3, beta.4, and beta.5 immutable releases cannot accept the artifacts produced by failed runs 30829708574, 31022027159, and 31192135957. Scheduled recovery runs 30926135808 and 31263736047 did not identify a releasable tag after the release task skipped for an empty changelog; both empty-tag Release v3 dispatches failed with HTTP 422. Scheduled run 31117548329 provided no recovery evidence because GitHub's action-download service stayed unavailable through runner retries and the job stopped during setup. No successful recovery or replacement path has been rehearsed, and remediation still requires a maintainer decision because automation is not authorised to replace tags or releases. #5876 remains open.",
-      "updated": "2026-08-09T17:10:31+10:00"
+      "note": "The current tag-only policy removes binary-asset recovery from the hotfix path. GitHub releases and Go module versions remain immutable once consumed, so recovery should use a new semver tag rather than replace a published version. Merged PR #5946 removed the obsolete asset workflow, but no end-to-end tag-only hotfix rehearsal or timed evidence is recorded. This gate remains open.",
+      "updated": "2026-08-13T17:30:00+10:00"
     },
     {
       "id": "ops-monitoring",
@@ -517,7 +517,6 @@
       "command": "go test ./..."
     },
     "workflows": [
-      "release-v3.yml",
       "nightly-release-v3.yml",
       "publish-npm.yml",
       "verify-runtime-assets.yml"

@@ -46,11 +46,14 @@ Against this branch: 17 checks passing, 0 warnings, 2 blockers.
 
 ## Known preconditions before tagging
 
-1. The six `APPLE_*` signing secrets do not exist on the repository. Without them
-   the macOS job stops in preflight with the names listed, or continues unsigned
-   if `allow_unsigned_macos` is set deliberately.
-2. `release-v3.yml` has never run. Rehearse it with `draft: true` on a throwaway
-   tag in the `alpha2.` series before using it for real.
+1. The current v3 publication policy is tag-only. The supported CLI channel is
+   `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`; desktop release
+   binaries, checksums and platform signing are not part of this path. PR #5946
+   removed the obsolete asset workflow and its nightly dispatch.
+2. Rehearse the tag-only path in dry-run mode and record the proposed version,
+   tag, changelog and release notes in `plan.json`. After publication, verify
+   the exact tag from the Go module channel on a clean machine and record that
+   result separately. The policy decision alone does not pass or waive a gate.
 3. This branch drifts behind master quickly. Re-sync and re-audit immediately
    before tagging; `relman audit` now blocks on it.
 
