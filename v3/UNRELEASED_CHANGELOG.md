@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix GTK4 Linux host dropping custom-protocol and file-association launch arguments in [PR](https://github.com/wailsapp/wails/pull/6000) by @midagedev
 - Correctly handle deleted lines and same-source corrections in changelog validation in [PR](https://github.com/wailsapp/wails/pull/5993) by @taliesin-ai
 
 ## Deprecated
