@@ -727,6 +727,9 @@ func (e *Chromium) WebResourceRequested(sender *ICoreWebView2, args *ICoreWebVie
 		// COM can fail here under load without setting the out pointer
 		// (#1103). Dropping one request is recoverable (the WebView falls
 		// back to default handling for it); killing the process is not.
+		if err == nil {
+			err = errors.New("no error, but the request out pointer was not set (#1103)")
+		}
 		log.Printf("[WebView2] WebResourceRequested failed to get request: %v", err)
 		return 0
 	}
