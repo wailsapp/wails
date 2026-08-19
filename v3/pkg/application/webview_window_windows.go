@@ -2696,9 +2696,17 @@ func (w *windowsWebviewWindow) navigationCompleted(
 	sender *edge.ICoreWebView2,
 	args *edge.ICoreWebView2NavigationCompletedEventArgs,
 ) {
-	// The webview loaded something, so any process-failure recovery that led
-	// here worked.
-	w.resetWebviewRecoveryBudget()
+	// Only a *successful* load means recovery worked. A dead render process
+	// leaves WebView2 on an error page, and that error page fires this callback
+	// too — resetting on it would hand a crash-looping renderer a fresh budget
+	// on every cycle and the attempt bound would never trip, which is the
+	// runaway it exists to stop. Treat an unreadable IsSuccess as unsuccessful
+	// for the same reason.
+	if ok, err := args.GetIsSuccess(); err != nil {
+		globalApplication.error("webview2: reading navigation success: %v", err)
+	} else if ok {
+		w.resetWebviewRecoveryBudget()
+	}
 
 	// Inject runtime core and window-specific flags together so side-effect
 	// runtime modules see a consistent _wails configuration at startup.
@@ -3181,6 +3189,12 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 			return
 		}
 		restore = func() {
+			// Same teardown race as rebuildWebView: shutting the app down kills
+			// the WebView2 processes, so this can land on a window that is
+			// already going away.
+			if w.parent.isDestroyed() || w.hwnd == 0 {
+				return
+			}
 			w.chromium.Navigate(url)
 		}
 	}
