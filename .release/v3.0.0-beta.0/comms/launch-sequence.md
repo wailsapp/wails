@@ -1,9 +1,9 @@
 # Launch sequence: Wails v3 beta
 
 Publish in this order. The rule behind it: nothing is announced before it is
-installable, and nothing is installable before the docs describing it are live.
-Every step needs one named owner, because a step owned by everyone is owned by
-nobody at 3am.
+installable, and published-channel installation checks do not begin before the
+docs describing the release are live. Every step needs one named owner, because
+a step owned by everyone is owned by nobody at 3am.
 
 Owners are blank on purpose. Fill them in before the go/no-go, not on the day.
 
@@ -15,7 +15,8 @@ Owners are blank on purpose. Fill them in before the go/no-go, not on the day.
 | 2 | Re-sync `releases/v3-beta` with current `master` and re-run the audit. The ledger branch drifts quickly; `relman audit` blocks on it | |
 | 3 | Run the tag-only release task in dry-run mode against the audited `master` candidate; verify the proposed version, tag, changelog and release notes without publishing | |
 | 4 | Record the dry-run commands and results in `plan.json`, and prepare the post-publication clean-machine check for the exact tag. The install gate remains open until that check runs | |
-| 5 | Warn downstream: packagers, template and plugin authors, translators (see `packagers.md`) | |
+| 5 | Build the documentation from the audited candidate and verify a staged preview, including the version switcher, changelog, migration content and translated locales. Record the preview evidence; do not publish if it fails | |
+| 6 | Warn downstream: packagers, template and plugin authors, translators (see `packagers.md`) | |
 
 ## Release day
 
