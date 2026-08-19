@@ -17,7 +17,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/templates"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
-	"github.com/wailsapp/wails/v3/internal/wake/migration"
 )
 
 var DisableFooter bool
@@ -268,45 +267,14 @@ func Init(options *flags.Init) error {
 		_ = os.Rename(npmrcSrc, filepath.Join(options.ProjectDir, "frontend", ".npmrc"))
 	}
 
-	// Built-in templates already include the minimal manifest. An older
-	// community template may still ship a customised Taskfile: analyse it and
-	// retain legacy execution until migration is complete instead of silently
-	// switching the project to the built-in pipeline. Templates with neither
-	// file receive the new minimal manifest.
-	if !manifest.Exists(options.ProjectDir) {
-		if _, taskfileErr := findTaskfile(options.ProjectDir); taskfileErr == nil {
-			report, doc, migrationErr := analyseMigration(options.ProjectDir)
-			if migrationErr != nil {
-				return fmt.Errorf("analyse community template Taskfile: %w", migrationErr)
-			}
-			doc.Project.Name = options.ProjectName
-			doc.Project.ProductName = options.ProductName
-			doc.Project.Identifier = options.ProductIdentifier
-			doc.Project.Version = options.ProductVersion
-			err = manifest.WriteDocument(options.ProjectDir, doc)
-			if err == nil && report.Complete {
-				var diagnostics []MigrationDiagnostic
-				report.Removed, diagnostics = removeLegacySources(options.ProjectDir, report.Sources, true)
-				report.Diagnostics = append(report.Diagnostics, diagnostics...)
-				if len(diagnostics) > 0 {
-					report.Complete = false
-				}
-			}
-			if err == nil {
-				err = migration.Write(options.ProjectDir, report)
-			}
-			if err == nil && !report.Complete && !options.Quiet {
-				term.Warningf("The template contains Taskfile customisations; legacy Taskfile builds remain active. Review %s for migration diagnostics.\n", migration.RelativeReportPath)
-			}
-		} else {
-			err = manifest.WriteMinimal(options.ProjectDir, manifest.Project{
-				Name: options.ProjectName, ProductName: options.ProductName,
-				Identifier: options.ProductIdentifier, Version: options.ProductVersion,
-			})
-		}
-		if err != nil {
-			return err
-		}
+	// Built-in templates deliberately omit build configuration so the manifest
+	// schema writer remains the single source of the generated HCL shape. An
+	// older community template may still ship a customised Taskfile: analyse it
+	// and retain legacy execution until migration is complete instead of
+	// silently switching the project to the built-in pipeline. Templates with
+	// neither file receive the new minimal manifest.
+	if err := initialiseTemplateBuildManifest(options); err != nil {
+		return err
 	}
 
 	// Initialize git repository if URL is provided
@@ -320,6 +288,36 @@ func Init(options *flags.Init) error {
 		}
 	}
 	return nil
+}
+
+func initialiseTemplateBuildManifest(options *flags.Init) error {
+	if manifest.Exists(options.ProjectDir) {
+		return nil
+	}
+	if _, taskfileErr := findTaskfile(options.ProjectDir); taskfileErr == nil {
+		report, doc, err := analyseMigration(options.ProjectDir)
+		if err != nil {
+			return fmt.Errorf("analyse community template Taskfile: %w", err)
+		}
+		doc.Project.Name = options.ProjectName
+		doc.Project.ProductName = options.ProductName
+		doc.Project.Identifier = options.ProductIdentifier
+		doc.Project.Version = options.ProductVersion
+		if report.Complete {
+			return manifest.WriteDocument(options.ProjectDir, doc)
+		}
+		if err := manifest.WriteMigrationDraftAt(options.ProjectDir, manifest.MigratedFilename, doc, migrationBlockerComments(report)); err != nil {
+			return err
+		}
+		if !options.Quiet {
+			term.Warningf("The template contains Taskfile customisations, so legacy builds remain active. Review %s and rerun `wails3 migrate` for current diagnostics.\n", manifest.MigratedFilename)
+		}
+		return nil
+	}
+	return manifest.WriteMinimal(options.ProjectDir, manifest.Project{
+		Name: options.ProjectName, ProductName: options.ProductName,
+		Identifier: options.ProductIdentifier, Version: options.ProductVersion,
+	})
 }
 
 // writeProjectConfigYML rewrites the `info:` values in the freshly scaffolded

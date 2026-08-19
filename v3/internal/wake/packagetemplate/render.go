@@ -1,6 +1,6 @@
-// Package packagetemplate renders user-owned package inputs from a stable,
-// format-neutral model. It deliberately exposes manifest intent and resolved
-// paths, never Pipeline Nodes or process environment.
+// Package packagetemplate copies user-owned package replacements into a
+// disposable workspace. Replacement contents and names are opaque: Wails does
+// not parse, interpolate, merge, sanitise, or normalise them.
 package packagetemplate
 
 import (
@@ -9,72 +9,81 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
-	"text/template"
-
-	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
-type Model struct {
-	Version      int
-	Project      manifest.Project
-	Target       Target
-	Package      Package
-	Paths        Paths
-	Associations []manifest.Association
-	Protocols    []manifest.Protocol
-	Options      map[string]any
+type stagedFile interface {
+	io.Writer
+	Name() string
+	Chmod(os.FileMode) error
+	Close() error
 }
 
-type Target struct {
-	OS, Arch, Variant, MinimumVersion string
-	Capabilities                      []string
+type copyOperations struct {
+	stat       func(string) (fs.FileInfo, error)
+	open       func(string) (io.ReadCloser, error)
+	mkdirAll   func(string, os.FileMode) error
+	mkdir      func(string, os.FileMode) error
+	mkdirTemp  func(string, string) (string, error)
+	createTemp func(string, string) (stagedFile, error)
+	openFile   func(string, int, os.FileMode) (io.WriteCloser, error)
+	walkDir    func(string, fs.WalkDirFunc) error
+	rel        func(string, string) (string, error)
+	chmod      func(string, os.FileMode) error
+	rename     func(string, string) error
+	remove     func(string) error
+	removeAll  func(string) error
 }
 
-type Package struct {
-	Format string
+func osCopyOperations() copyOperations {
+	return copyOperations{
+		stat: os.Stat, open: func(path string) (io.ReadCloser, error) { return os.Open(path) },
+		mkdirAll: os.MkdirAll, mkdir: os.Mkdir, mkdirTemp: os.MkdirTemp,
+		createTemp: func(directory, pattern string) (stagedFile, error) { return os.CreateTemp(directory, pattern) },
+		openFile: func(path string, flag int, mode os.FileMode) (io.WriteCloser, error) {
+			return os.OpenFile(path, flag, mode)
+		},
+		walkDir: filepath.WalkDir, rel: filepath.Rel, chmod: os.Chmod, rename: os.Rename, remove: os.Remove, removeAll: os.RemoveAll,
+	}
 }
 
-type Paths struct {
-	Project, Binary, Output, Assets, Icon, Workspace string
+func Copy(source, destination string) error {
+	return copyWithOperations(source, destination, osCopyOperations())
 }
 
-func Render(source, destination string, model Model) error {
-	info, err := os.Stat(source)
+func copyWithOperations(source, destination string, ops copyOperations) error {
+	info, err := ops.stat(source)
 	if err != nil {
 		return fmt.Errorf("package template: %w", err)
 	}
 	if info.IsDir() {
-		return renderDirectory(source, destination, model)
+		return renderDirectory(source, destination, info, ops)
 	}
-	return renderFile(source, destination, model)
+	return renderFile(source, destination, info, ops)
 }
 
-func renderFile(source, destination string, model Model) error {
-	info, err := os.Stat(source)
-	if err != nil {
-		return fmt.Errorf("package template: %w", err)
-	}
-	contents, err := os.ReadFile(source)
-	if err != nil {
-		return fmt.Errorf("package template: %w", err)
-	}
-	tmpl, err := template.New(filepath.Base(source)).Option("missingkey=error").Parse(string(contents))
-	if err != nil {
-		return fmt.Errorf("parse package template %s: %w", source, err)
-	}
-	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
+func renderFile(source, destination string, info fs.FileInfo, ops copyOperations) error {
+	if err := ops.mkdirAll(filepath.Dir(destination), 0o755); err != nil {
 		return err
 	}
-	temporary, err := os.CreateTemp(filepath.Dir(destination), ".package-template-*")
+	temporary, err := ops.createTemp(filepath.Dir(destination), ".package-template-*")
 	if err != nil {
 		return err
 	}
 	temporaryPath := temporary.Name()
-	defer os.Remove(temporaryPath)
-	if err := tmpl.Execute(temporary, model); err != nil {
+	defer ops.remove(temporaryPath)
+	input, err := ops.open(source)
+	if err != nil {
 		_ = temporary.Close()
-		return fmt.Errorf("render package template %s: %w", source, err)
+		return fmt.Errorf("package template: %w", err)
+	}
+	if _, err := io.Copy(temporary, input); err != nil {
+		_ = input.Close()
+		_ = temporary.Close()
+		return err
+	}
+	if err := input.Close(); err != nil {
+		_ = temporary.Close()
+		return err
 	}
 	if err := temporary.Chmod(info.Mode().Perm()); err != nil {
 		_ = temporary.Close()
@@ -83,27 +92,30 @@ func renderFile(source, destination string, model Model) error {
 	if err := temporary.Close(); err != nil {
 		return err
 	}
-	if err := replacePath(temporaryPath, destination); err != nil {
+	if err := replacePath(temporaryPath, destination, ops); err != nil {
 		return err
 	}
 	return nil
 }
 
-func renderDirectory(source, destination string, model Model) error {
+func renderDirectory(source, destination string, sourceInfo fs.FileInfo, ops copyOperations) error {
 	parent := filepath.Dir(destination)
-	if err := os.MkdirAll(parent, 0o755); err != nil {
+	if err := ops.mkdirAll(parent, 0o755); err != nil {
 		return err
 	}
-	temporary, err := os.MkdirTemp(parent, ".package-template-*")
+	temporary, err := ops.mkdirTemp(parent, ".package-template-*")
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(temporary)
-	err = filepath.WalkDir(source, func(path string, entry fs.DirEntry, walkErr error) error {
+	defer ops.removeAll(temporary)
+	if err := ops.chmod(temporary, sourceInfo.Mode().Perm()); err != nil {
+		return err
+	}
+	err = ops.walkDir(source, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}
-		relative, err := filepath.Rel(source, path)
+		relative, err := ops.rel(source, path)
 		if err != nil || relative == "." {
 			return err
 		}
@@ -112,34 +124,37 @@ func renderDirectory(source, destination string, model Model) error {
 		}
 		target := filepath.Join(temporary, relative)
 		if entry.IsDir() {
-			return os.MkdirAll(target, 0o755)
+			info, err := entry.Info()
+			if err != nil {
+				return err
+			}
+			if err := ops.mkdir(target, info.Mode().Perm()); err != nil {
+				return err
+			}
+			return ops.chmod(target, info.Mode().Perm())
 		}
-		if strings.HasSuffix(target, ".tmpl") {
-			target = strings.TrimSuffix(target, ".tmpl")
-			return renderFile(path, target, model)
-		}
-		return copyFile(path, target)
+		return copyFile(path, target, ops)
 	})
 	if err != nil {
 		return err
 	}
-	return replacePath(temporary, destination)
+	return replacePath(temporary, destination, ops)
 }
 
-func copyFile(source, destination string) error {
-	info, err := os.Stat(source)
+func copyFile(source, destination string, ops copyOperations) error {
+	info, err := ops.stat(source)
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
+	if err := ops.mkdirAll(filepath.Dir(destination), 0o755); err != nil {
 		return err
 	}
-	in, err := os.Open(source)
+	in, err := ops.open(source)
 	if err != nil {
 		return err
 	}
 	defer in.Close()
-	out, err := os.OpenFile(destination, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode().Perm())
+	out, err := ops.openFile(destination, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode().Perm())
 	if err != nil {
 		return err
 	}
@@ -147,28 +162,31 @@ func copyFile(source, destination string) error {
 		_ = out.Close()
 		return err
 	}
-	return out.Close()
+	if err := out.Close(); err != nil {
+		return err
+	}
+	return ops.chmod(destination, info.Mode().Perm())
 }
 
-func replacePath(source, destination string) error {
-	backupDirectory, err := os.MkdirTemp(filepath.Dir(destination), ".package-template-previous-*")
+func replacePath(source, destination string, ops copyOperations) error {
+	backupDirectory, err := ops.mkdirTemp(filepath.Dir(destination), ".package-template-previous-*")
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(backupDirectory)
+	defer ops.removeAll(backupDirectory)
 	backup := filepath.Join(backupDirectory, "previous")
 	hadDestination := false
-	if _, err := os.Stat(destination); err == nil {
-		if err := os.Rename(destination, backup); err != nil {
+	if _, err := ops.stat(destination); err == nil {
+		if err := ops.rename(destination, backup); err != nil {
 			return err
 		}
 		hadDestination = true
 	} else if !os.IsNotExist(err) {
 		return err
 	}
-	if err := os.Rename(source, destination); err != nil {
+	if err := ops.rename(source, destination); err != nil {
 		if hadDestination {
-			_ = os.Rename(backup, destination)
+			_ = ops.rename(backup, destination)
 		}
 		return err
 	}

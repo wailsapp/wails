@@ -3,19 +3,14 @@ package manifest
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
-
-// ErrEjectionSuggestionsUnavailable means the selected scope is already
-// frozen but this CLI does not retain the historical default snapshot needed
-// to produce safe three-way upgrade comments. The manifest is unchanged.
-var ErrEjectionSuggestionsUnavailable = errors.New("ejection upgrade suggestions unavailable")
 
 func Minimal(project Project) []byte {
 	file := hclwrite.NewEmptyFile()
@@ -65,91 +60,7 @@ func EncodeDocument(doc Document) ([]byte, error) {
 	return EncodeConfig(configFromDocument(".", "", doc))
 }
 
-// sparseValue turns a programmatically assembled Document into the same sparse
-// shape a user would write. Struct zero values inherit compiled defaults;
-// explicit values inside profile and extension maps are preserved verbatim.
-func sparseValue(value, defaultValue reflect.Value, preserveZero bool) (any, bool) {
-	for value.IsValid() && (value.Kind() == reflect.Interface || value.Kind() == reflect.Pointer) {
-		if value.IsNil() {
-			return nil, false
-		}
-		value = value.Elem()
-	}
-	for defaultValue.IsValid() && (defaultValue.Kind() == reflect.Interface || defaultValue.Kind() == reflect.Pointer) {
-		if defaultValue.IsNil() {
-			defaultValue = reflect.Value{}
-			break
-		}
-		defaultValue = defaultValue.Elem()
-	}
-	if !value.IsValid() {
-		return nil, false
-	}
-	switch value.Kind() {
-	case reflect.Struct:
-		result := map[string]any{}
-		typeInfo := value.Type()
-		for i := 0; i < value.NumField(); i++ {
-			field := typeInfo.Field(i)
-			name := strings.Split(field.Tag.Get("toml"), ",")[0]
-			if name == "" {
-				name = field.Name
-			}
-			if name == "-" {
-				continue
-			}
-			childPreservesZero := preserveZero || field.Name == "Profiles" || field.Name == "Extensions"
-			var childDefault reflect.Value
-			if defaultValue.IsValid() && defaultValue.Kind() == reflect.Struct && i < defaultValue.NumField() {
-				childDefault = defaultValue.Field(i)
-			}
-			child, include := sparseValue(value.Field(i), childDefault, childPreservesZero)
-			if include {
-				result[name] = child
-			}
-		}
-		return result, preserveZero || len(result) > 0
-	case reflect.Map:
-		if value.IsNil() || value.Len() == 0 {
-			return nil, false
-		}
-		result := map[string]any{}
-		iterator := value.MapRange()
-		for iterator.Next() {
-			child, include := sparseValue(iterator.Value(), reflect.Value{}, true)
-			if include {
-				result[fmt.Sprint(iterator.Key().Interface())] = child
-			}
-		}
-		return result, true
-	case reflect.Slice, reflect.Array:
-		if value.Len() == 0 {
-			return []any{}, preserveZero || !valuesEqual(value, defaultValue)
-		}
-		result := make([]any, 0, value.Len())
-		for i := 0; i < value.Len(); i++ {
-			child, include := sparseValue(value.Index(i), reflect.Value{}, true)
-			if include {
-				result = append(result, child)
-			}
-		}
-		return result, true
-	default:
-		if !preserveZero && valuesEqual(value, defaultValue) {
-			return nil, false
-		}
-		return value.Interface(), true
-	}
-}
-
-func valuesEqual(value, defaultValue reflect.Value) bool {
-	return defaultValue.IsValid() && value.Type() == defaultValue.Type() && reflect.DeepEqual(value.Interface(), defaultValue.Interface())
-}
-
 func WriteDocument(root string, doc Document) error {
-	if err := validateProject(doc.Project); err != nil {
-		return err
-	}
 	data, err := EncodeDocument(doc)
 	if err != nil {
 		return err
@@ -160,137 +71,164 @@ func WriteDocument(root string, doc Document) error {
 // WriteMigrationDraft writes the inactive result of legacy analysis. Only
 // `wails3 migrate --activate` may rename this file into the opt-in manifest.
 func WriteMigrationDraft(root string, doc Document) error {
-	if err := validateProject(doc.Project); err != nil {
-		return err
-	}
+	return WriteMigrationDraftAt(root, MigratedFilename, doc, nil)
+}
+
+// WriteMigrationDraftAt exclusively creates an inactive, project-owned HCL
+// proposal. Migration analysis may be rerun safely without replacing a draft
+// the user has already reviewed or edited.
+func WriteMigrationDraftAt(root, output string, doc Document, comments []string) error {
 	data, err := EncodeDocument(doc)
 	if err != nil {
 		return err
 	}
-	return atomicWrite(filepath.Join(root, MigratedFilename), data, 0o644)
+	clean := filepath.ToSlash(filepath.Clean(output))
+	if strings.EqualFold(clean, Filename) || strings.EqualFold(clean, EjectedFilename) || clean == "." || strings.HasPrefix(strings.ToLower(clean), ".wails/") {
+		return fmt.Errorf("migration output %q must be an inactive project-owned HCL file", output)
+	}
+	path, err := ResolveProjectPath(root, "migration output", clean, false)
+	if err != nil {
+		return err
+	}
+	if !strings.EqualFold(filepath.Ext(path), ".hcl") {
+		return fmt.Errorf("migration output %q must use the .hcl extension", output)
+	}
+	if len(comments) > 0 {
+		var header strings.Builder
+		for _, comment := range comments {
+			for _, line := range strings.Split(comment, "\n") {
+				header.WriteString("# ")
+				header.WriteString(line)
+				header.WriteByte('\n')
+			}
+		}
+		header.WriteByte('\n')
+		data = append([]byte(header.String()), data...)
+	}
+	if err := exclusiveWrite(path, data, 0o644); err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return fmt.Errorf("migration output %s already exists; refusing to overwrite it: %w", clean, err)
+		}
+		return err
+	}
+	return nil
 }
 
-func Eject(root, profile, cliVersion string, backup bool) error {
+func Eject(root, profile, cliVersion string, force bool) error {
+	return ejectWithWriters(root, profile, cliVersion, force, EncodeEjectedHCL, exclusiveWrite, atomicWrite)
+}
+
+func ejectWithWriters(root, profile, cliVersion string, force bool, encode func(Config, string) ([]byte, error), exclusive, replace func(string, []byte, os.FileMode) error) error {
 	if profile != "" {
 		return fmt.Errorf("wails3 eject does not accept profiles; it writes the complete resolved manifest")
-	}
-	if backup {
-		return fmt.Errorf("wails3 eject never overwrites a file, so --backup is not supported")
 	}
 	loaded, err := Load(root, "")
 	if err != nil {
 		return err
 	}
 	output := filepath.Join(loaded.Config.Root, EjectedFilename)
-	data, err := EncodeEjectedHCL(loaded.Config, cliVersion)
+	data, err := encode(loaded.Config, cliVersion)
 	if err != nil {
 		return err
 	}
-	if err := exclusiveWrite(output, data, 0o644); err != nil {
+	write := exclusive
+	if force {
+		write = replace
+	}
+	if err := write(output, data, 0o644); err != nil {
 		if errors.Is(err, os.ErrExist) {
-			return fmt.Errorf("%s already exists; refusing to overwrite it", EjectedFilename)
+			return fmt.Errorf("%s already exists; use --force to replace it", EjectedFilename)
 		}
 		return err
 	}
 	return nil
 }
 
-func removeProfileTargetIdentity(profile map[string]any) {
-	targets, ok := profile["targets"].(map[string]any)
-	if !ok {
-		return
-	}
-	var visit func(map[string]any)
-	visit = func(table map[string]any) {
-		for _, key := range []string{"identifier", "product_name", "version", "build_number"} {
-			delete(table, key)
-		}
-		for _, value := range table {
-			if child, ok := value.(map[string]any); ok {
-				visit(child)
-			}
-		}
-	}
-	visit(targets)
+type temporaryFile interface {
+	io.Writer
+	Name() string
+	Chmod(os.FileMode) error
+	Sync() error
+	Close() error
 }
 
-func clearProfileTargetIdentity(targets *Targets) {
-	for _, platform := range []*Platform{&targets.Windows, &targets.Darwin, &targets.Linux, &targets.IOS, &targets.Android} {
-		platform.ProductName = ""
-		platform.Identifier = ""
-		platform.BuildNumber = 0
-		platform.AMD64.BuildNumber = 0
-		platform.ARM64.BuildNumber = 0
-		platform.ARM.BuildNumber = 0
-		platform.X86.BuildNumber = 0
-		platform.Universal.BuildNumber = 0
-	}
+type writeOperations struct {
+	mkdirAll   func(string, os.FileMode) error
+	createTemp func(string, string) (temporaryFile, error)
+	remove     func(string) error
+	replace    func(string, string) error
+	link       func(string, string) error
 }
 
-func mapTable(parent map[string]any, key string) map[string]any {
-	if table, ok := parent[key].(map[string]any); ok {
-		return table
+func osWriteOperations() writeOperations {
+	return writeOperations{
+		mkdirAll:   os.MkdirAll,
+		createTemp: func(directory, pattern string) (temporaryFile, error) { return os.CreateTemp(directory, pattern) },
+		remove:     os.Remove, replace: replaceFile, link: os.Link,
 	}
-	table := map[string]any{}
-	parent[key] = table
-	return table
 }
 
 func atomicWrite(path string, data []byte, mode os.FileMode) error {
+	return atomicWriteWithOperations(path, data, mode, osWriteOperations())
+}
+
+func atomicWriteWithOperations(path string, data []byte, mode os.FileMode, ops writeOperations) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := ops.mkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(dir, ".wails-toml-*")
+	name, err := writeTemporary(dir, data, mode, ops)
 	if err != nil {
 		return err
 	}
-	name := tmp.Name()
-	defer os.Remove(name)
-	if err := tmp.Chmod(mode); err != nil {
-		tmp.Close()
-		return err
-	}
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(name, path)
+	defer ops.remove(name)
+	return ops.replace(name, path)
 }
 
 func exclusiveWrite(path string, data []byte, mode os.FileMode) error {
+	return exclusiveWriteWithOperations(path, data, mode, osWriteOperations())
+}
+
+func exclusiveWriteWithOperations(path string, data []byte, mode os.FileMode, ops writeOperations) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := ops.mkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, mode)
+	name, err := writeTemporary(dir, data, mode, ops)
 	if err != nil {
 		return err
 	}
+	defer ops.remove(name)
+	// Linking a complete same-directory temporary file publishes the initial
+	// ejection atomically while retaining O_EXCL semantics on every platform.
+	return ops.link(name, path)
+}
+
+func writeTemporary(dir string, data []byte, mode os.FileMode, ops writeOperations) (string, error) {
+	tmp, err := ops.createTemp(dir, ".wails-hcl-*")
+	if err != nil {
+		return "", err
+	}
+	name := tmp.Name()
 	complete := false
 	defer func() {
 		if !complete {
-			_ = os.Remove(path)
+			_ = tmp.Close()
+			_ = ops.remove(name)
 		}
 	}()
-	if _, err := file.Write(data); err != nil {
-		_ = file.Close()
-		return err
+	if err := tmp.Chmod(mode); err != nil {
+		return "", err
 	}
-	if err := file.Sync(); err != nil {
-		_ = file.Close()
-		return err
+	if _, err := tmp.Write(data); err != nil {
+		return "", err
 	}
-	if err := file.Close(); err != nil {
-		return err
+	if err := tmp.Sync(); err != nil {
+		return "", err
+	}
+	if err := tmp.Close(); err != nil {
+		return "", err
 	}
 	complete = true
-	return nil
+	return name, nil
 }

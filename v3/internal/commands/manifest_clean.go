@@ -12,15 +12,27 @@ import (
 // build output and every user-owned path untouched; final artifacts require a
 // future recorded-digest cleanup pass rather than a directory-wide delete.
 func Clean(args []string) error {
+	return cleanWithOperations(args, cleanOperations{
+		discover:  manifest.Discover,
+		removeAll: os.RemoveAll,
+	})
+}
+
+type cleanOperations struct {
+	discover  func(string) (string, string, error)
+	removeAll func(string) error
+}
+
+func cleanWithOperations(args []string, operations cleanOperations) error {
 	if len(args) != 0 {
 		return fmt.Errorf("usage: wails3 clean")
 	}
-	root, _, err := manifest.Discover(".")
+	root, _, err := operations.discover(".")
 	if err != nil {
 		return err
 	}
 	workspace := filepath.Join(root, ".wails")
-	if err := os.RemoveAll(workspace); err != nil {
+	if err := operations.removeAll(workspace); err != nil {
 		return fmt.Errorf("clean Wails workspace: %w", err)
 	}
 	fmt.Println("Removed .wails/ generated workspace; user-owned files and final artifacts were preserved")

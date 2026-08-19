@@ -10,6 +10,7 @@ import (
 	"sort"
 
 	"github.com/wailsapp/wails/v3/internal/report"
+	"github.com/wailsapp/wails/v3/internal/wake/buildinfo"
 	"github.com/wailsapp/wails/v3/internal/wake/cache"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
@@ -22,18 +23,22 @@ const (
 	GenerateBindings            NodeKind = "GenerateBindings"
 	BuildFrontend               NodeKind = "BuildFrontend"
 	CompileApplication          NodeKind = "CompileApplication"
+	MergeUniversalBinaries      NodeKind = "MergeUniversalBinaries"
 	GeneratePlatformAssets      NodeKind = "GeneratePlatformAssets"
+	AssembleApplication         NodeKind = "AssembleApplication"
 	PackageArtifact             NodeKind = "PackageArtifact"
 	SignArtifact                NodeKind = "SignArtifact"
-	RunHook                     NodeKind = "RunHook"
+	PublishArtifact             NodeKind = "PublishArtifact"
+	CollectArtifacts            NodeKind = "CollectArtifacts"
 )
 
 type Scope string
 
 const (
-	ProjectScope Scope = "project"
-	TargetScope  Scope = "target"
-	PackageScope Scope = "package"
+	ProjectScope    Scope = "project"
+	TargetScope     Scope = "target"
+	PackageScope    Scope = "package"
+	InvocationScope Scope = "invocation"
 )
 
 type CachePolicy string
@@ -43,6 +48,33 @@ const (
 	CacheReceipt  CachePolicy = "receipt"
 	CacheNever    CachePolicy = "never"
 )
+
+type ArtifactKind string
+
+const (
+	ArtifactBinary   ArtifactKind = "binary"
+	ArtifactBundle   ArtifactKind = "bundle"
+	ArtifactPackage  ArtifactKind = "package"
+	ArtifactSymbols  ArtifactKind = "symbols"
+	ArtifactMetadata ArtifactKind = "metadata"
+)
+
+type ArtifactIdentity struct {
+	Kind      ArtifactKind
+	Target    Target
+	Format    string
+	Signed    bool
+	Notarized bool
+}
+
+func (a ArtifactIdentity) DisplayKind() string {
+	if a.Format != "" {
+		return a.Format
+	}
+	return string(a.Kind)
+}
+
+func (a ArtifactIdentity) Empty() bool { return a.Kind == "" }
 
 type ResourceClaims struct {
 	CPU       int
@@ -58,6 +90,8 @@ type InputSpec struct {
 	IncludeNames      []string
 	IncludeExtensions []string
 	ExcludeDirs       []string
+	ExcludeSuffixes   []string
+	UseGitIgnore      bool
 	SemanticGo        bool
 }
 
@@ -74,20 +108,57 @@ type Node struct {
 	Cache        CachePolicy
 	Claims       ResourceClaims
 	EstimateMS   int64
-	ArtifactKind string
+	Artifact     ArtifactIdentity
+	Origins      []OriginReference
+}
+
+type OriginReference struct {
+	Field  string
+	Origin manifest.Origin
 }
 
 type Plan struct {
-	Name   string
-	Target string
-	Roots  []NodeKey
-	Nodes  map[NodeKey]Node
+	Name      string
+	Target    string
+	Intent    BuildIntent
+	Roots     []NodeKey
+	Artifacts []NodeKey
+	Nodes     map[NodeKey]Node
+}
+
+type BuildIntent struct {
+	Command string
+	Profile string
+	Targets []TargetIntent
+}
+
+type TargetIntent struct {
+	Target      Target
+	Formats     []string
+	Sign        bool
+	Notarize    bool
+	Destination string
 }
 
 type Result struct {
 	Key              NodeKey
 	Status           cache.LookupStatus
 	Artifact, Output string
+}
+
+type Inspection struct {
+	Operations map[NodeKey]OperationInspection
+}
+
+type OperationInspection struct {
+	Decision string
+	Status   cache.LookupStatus
+	Inputs   []InputSnapshot
+}
+
+type InputSnapshot struct {
+	Label  string
+	Digest string
 }
 
 type RunResult struct {
@@ -108,10 +179,7 @@ type ExecuteOptions struct {
 	Reporter      report.Reporter
 }
 
-type Target struct {
-	OS   string
-	Arch string
-}
+type Target = buildinfo.Target
 
 type Request struct {
 	Verb        string
@@ -121,7 +189,12 @@ type Request struct {
 	Formats     []string
 	Development bool
 	ExtraTags   []string
+	GarbleArgs  []string
 	Obfuscated  bool
+	resolved    bool
+	sign        bool
+	notarize    bool
+	destination string
 }
 
 // NodeSpec is a closed set of typed planner data. It deliberately contains no
@@ -131,6 +204,7 @@ type NodeSpec interface{ nodeSpec() }
 type InstallSpec struct {
 	Manager, Directory, Command string
 	Arguments                   []string
+	Environment                 map[string]string
 }
 type BindingsSpec struct {
 	Config     manifest.Bindings
@@ -141,14 +215,27 @@ type FrontendSpec struct {
 	Manager, Directory, Command, Output string
 	Arguments                           []string
 	Production                          bool
+	Environment                         map[string]string
 }
 type CompileSpec struct {
 	TargetOS, TargetArch, Output                 string
 	Assets                                       string
-	Variant                                      string
+	Destination                                  string
 	MinimumVersion                               string
 	Tags, LinkerFlags, CompilerFlags, GarbleArgs []string
+	LocalRoots                                   []string
 	Production, Obfuscated, TrimPath, Strip      bool
+	VCSInfo                                      bool
+	Toolchain                                    string
+	Environment                                  map[string]string
+}
+type MergeSpec struct {
+	Inputs []string
+	Output string
+}
+type ComponentBinary struct {
+	Arch string
+	Path string
 }
 type AssetsSpec struct {
 	TargetOS, TargetArch, Directory string
@@ -160,45 +247,86 @@ type AssetsSpec struct {
 }
 type PackageSpec struct {
 	TargetOS, TargetArch, Format, Binary, Assets, Output string
+	Binaries                                             []ComponentBinary
 	Profile                                              string
-	Variant                                              string
+	Destination                                          string
 	MinimumVersion                                       string
-	// TemplateRoot participates in the Action Key when a user template can
-	// render absolute project paths. It prevents restoring a rendered package
-	// created in a different checkout into this one.
-	TemplateRoot string
-	Config       manifest.PackageFormat
-	Project      manifest.Project
-	Capabilities []string
-	Associations []manifest.Association
-	Protocols    []manifest.Protocol
+	Config                                               manifest.PackageFormat
+	Project                                              manifest.Project
+	Capabilities                                         []string
+	Associations                                         []manifest.Association
+	Protocols                                            []manifest.Protocol
 }
 type SignSpec struct {
-	TargetOS, Format, Input string
-	Config                  manifest.SigningPlatform
+	TargetOS, TargetArch, Format, Input string
+	Config                              manifest.SigningPlatform
 }
-type HookSpec struct {
-	Phase, TargetOS, TargetArch, Profile, Artifact string
-	Hook                                           manifest.Hook
+type PublishSpec struct {
+	Source      string
+	Destination string
+}
+type ArtifactReference struct {
+	Key      NodeKey
+	Path     string
+	Identity ArtifactIdentity
+}
+type CollectSpec struct {
+	Artifacts []ArtifactReference
+	Receipt   string
 }
 
 func (InstallSpec) nodeSpec()  {}
 func (BindingsSpec) nodeSpec() {}
 func (FrontendSpec) nodeSpec() {}
 func (CompileSpec) nodeSpec()  {}
+func (MergeSpec) nodeSpec()    {}
 func (AssetsSpec) nodeSpec()   {}
 func (PackageSpec) nodeSpec()  {}
 func (SignSpec) nodeSpec()     {}
-func (HookSpec) nodeSpec()     {}
+func (PublishSpec) nodeSpec()  {}
+func (CollectSpec) nodeSpec()  {}
 
 func (p Plan) Validate(root string) error {
 	if len(p.Nodes) == 0 {
 		return fmt.Errorf("wake: plan has no nodes")
 	}
+	if len(p.Roots) == 0 {
+		return fmt.Errorf("wake: plan has no roots")
+	}
+	rootSet := make(map[NodeKey]bool, len(p.Roots))
+	for _, key := range p.Roots {
+		if _, ok := p.Nodes[key]; !ok {
+			return fmt.Errorf("wake: plan root %s is missing", key)
+		}
+		if rootSet[key] {
+			return fmt.Errorf("wake: duplicate plan root %s", key)
+		}
+		rootSet[key] = true
+	}
+	artifactSet := make(map[NodeKey]bool, len(p.Artifacts))
+	for _, key := range p.Artifacts {
+		node, ok := p.Nodes[key]
+		if !ok {
+			return fmt.Errorf("wake: plan artifact %s is missing", key)
+		}
+		if artifactSet[key] {
+			return fmt.Errorf("wake: duplicate plan artifact %s", key)
+		}
+		if node.Output == "" || node.Artifact.Empty() {
+			return fmt.Errorf("wake: plan artifact %s has no typed output identity", key)
+		}
+		artifactSet[key] = true
+	}
 	owners := map[string]NodeKey{}
 	for key, node := range p.Nodes {
 		if key == "" || node.Key != key {
 			return fmt.Errorf("wake: invalid node key %q", key)
+		}
+		if !validNodeSpec(node) {
+			return fmt.Errorf("wake: node %s kind %s carries invalid spec %T", key, node.Kind, node.Spec)
+		}
+		if node.Cache != CacheArtifact && node.Cache != CacheReceipt && node.Cache != CacheNever {
+			return fmt.Errorf("wake: node %s has invalid cache policy %q", key, node.Cache)
 		}
 		if node.Output != "" {
 			clean := filepath.Clean(node.Output)
@@ -210,10 +338,15 @@ func (p Plan) Validate(root string) error {
 			}
 			owners[clean] = key
 		}
+		dependencies := make(map[NodeKey]bool, len(node.Dependencies))
 		for _, dep := range node.Dependencies {
 			if _, ok := p.Nodes[dep]; !ok {
 				return fmt.Errorf("wake: node %s depends on missing %s", key, dep)
 			}
+			if dependencies[dep] {
+				return fmt.Errorf("wake: node %s contains duplicate dependency %s", key, dep)
+			}
+			dependencies[dep] = true
 		}
 	}
 	state := map[NodeKey]uint8{}
@@ -244,5 +377,61 @@ func (p Plan) Validate(root string) error {
 			return err
 		}
 	}
+	reachable := make(map[NodeKey]bool, len(p.Nodes))
+	var markReachable func(NodeKey)
+	markReachable = func(key NodeKey) {
+		if reachable[key] {
+			return
+		}
+		reachable[key] = true
+		for _, dependency := range p.Nodes[key].Dependencies {
+			markReachable(dependency)
+		}
+	}
+	for _, key := range p.Roots {
+		markReachable(key)
+	}
+	for _, key := range keys {
+		if !reachable[NodeKey(key)] {
+			return fmt.Errorf("wake: node %s is unreachable from plan roots", key)
+		}
+	}
 	return nil
+}
+
+func validNodeSpec(node Node) bool {
+	switch node.Kind {
+	case InstallFrontendDependencies:
+		_, ok := node.Spec.(InstallSpec)
+		return ok
+	case GenerateBindings:
+		_, ok := node.Spec.(BindingsSpec)
+		return ok
+	case BuildFrontend:
+		_, ok := node.Spec.(FrontendSpec)
+		return ok
+	case CompileApplication:
+		_, ok := node.Spec.(CompileSpec)
+		return ok
+	case MergeUniversalBinaries:
+		_, ok := node.Spec.(MergeSpec)
+		return ok
+	case GeneratePlatformAssets:
+		_, ok := node.Spec.(AssetsSpec)
+		return ok
+	case AssembleApplication, PackageArtifact:
+		_, ok := node.Spec.(PackageSpec)
+		return ok
+	case SignArtifact:
+		_, ok := node.Spec.(SignSpec)
+		return ok
+	case PublishArtifact:
+		_, ok := node.Spec.(PublishSpec)
+		return ok
+	case CollectArtifacts:
+		_, ok := node.Spec.(CollectSpec)
+		return ok
+	default:
+		return false
+	}
 }

@@ -1,131 +1,103 @@
-# Wake
+# Wails build engine
 
-Wake is the build engine inside Wails v3. It now contains two deliberately
-separate systems:
+`internal/wake` contains two separate systems:
 
-- the manifest-native build system used automatically by projects with an
-  active root `wails.toml`; and
-- the experimental Go-native Taskfile runner retained for legacy Taskfile
-  compatibility and migration.
+- the native HCL build engine selected by an active project-root `wails.hcl`;
+- the temporary Go-native Taskfile runner for legacy compatibility.
 
-`WAILS_USE_WAKE` controls only the legacy Taskfile runner. It does not enable or
-disable the manifest-native pipeline.
+`WAILS_USE_WAKE` selects only the legacy Taskfile runner. It never enables or
+disables the HCL engine.
 
-## Manifest-native build system
+## Native HCL projects
 
-New and fully migrated projects keep one sparse `wails.toml` at the project
-root. Wails supplies versioned defaults from the installed CLI, so the file
-normally contains only project identity and intentional customizations.
+The presence of `wails.hcl` is the explicit cutover flag. Wails then ignores
+all Taskfiles, including local overrides, and an invalid manifest fails without
+falling back to legacy execution.
 
-The normal commands are built in:
+The canonical workflows are:
 
 ```bash
 wails3 build
-wails3 package
-wails3 sign
+wails3 build release
+wails3 build --plan
+wails3 build --plan --json
 wails3 dev
 ```
 
-The planner turns each command into one immutable typed graph. Project work is
-shared across Targets, Target and package outputs have one owner, and the
-executor schedules the critical path with CPU, memory, and exclusive-tool
-claims. Safe package branches and independent Target compiles overlap. Legacy
-tools that mutate process state, such as AppImage generation, run in an
-isolated subprocess.
+`wails3 package` and `wails3 sign` are deprecated compatibility aliases over
+the same planner. New project documentation should use `wails3 build` with a
+profile or anonymous `--targets` and `--formats` options.
 
-### Caching
+The manifest is literal configuration. The first release has no expressions,
+includes, inheritance, hooks, user-defined stages, or custom graph edges. The
+planner turns resolved configuration into an immutable typed Plan; the
+executor schedules its dependency and resource constraints. Independent
+targets and safe package branches may run concurrently.
 
-Inputs are discovered from typed Node semantics rather than user-maintained
-`sources` lists. Action identities include:
+### Ownership and caching
 
-- direct content snapshots;
-- semantic Go binding API snapshots;
-- consumed Artifact digests;
-- resolved configuration;
-- tool and handler identity; and
-- relevant environment values.
+Referenced assets and package templates are user-owned and read-only. Wails
+stages them into disposable `.wails/` workspaces before generation. A failed
+compile, signing, assembly, or packaging operation preserves the last complete
+generated workspace and final artifact.
 
-Reproducible outputs are stored in a machine-local content-addressed Artifact
-store and restored if a generated output is missing. Dependency installation
-uses a Receipt rather than archiving `node_modules`. Signing and undeclared
-side-effect hooks are never reusable.
+Action identities include direct content, semantic Go binding inputs,
+consumed-artifact digests, resolved configuration, tool identity, and relevant
+environment values. Reproducible outputs use the machine-local content store;
+stateful dependency installation uses receipts. Credentials are direct
+read-only inputs and are never staged or cached.
 
-### Customization
+### Development sessions
 
-Stable customization belongs in `wails.toml`. File-script hooks are available
-at six fixed barriers:
+The dev session owns persistent frontend and backend processes plus a
+transactional watch set. File bursts request finite development Plans and
+cancel stale generations. A failed candidate does not replace the last healthy
+application. Development builds ignore production packaging, stripping,
+obfuscation, signing, and notarisation policy.
 
-- `before_build`, `after_build`;
-- `before_package`, `after_package`; and
-- `before_sign`, `after_sign`.
+## Migration and ejection
 
-Hooks call one project-owned script file and receive stable `WAILS_*`
-environment values. Package formats may use strict, versioned user-owned file
-or directory templates. Generated platform state lives under ignored
-`.wails/` directories and is not the primary customization API.
+`wails3 migrate` analyses root and included Taskfiles, conventional overrides,
+`build/config.yml`, frontend metadata, lockfiles, TypeScript configuration, and
+conventional assets. It prints current diagnostics and exclusively creates an
+inactive `wails.migrated.hcl` when that path does not exist.
 
-`wails3 eject` freezes the complete resolved default configuration into the
-manifest. `wails3 eject <profile>` freezes only that named profile. Re-ejection
-never silently changes active values, and `--backup` creates a backup only when
-requested.
+- `--dry-run` writes nothing.
+- `--json` prints the versioned analysis to stdout.
+- `--output <path>` selects a new inactive project-relative `.hcl` path.
+- `--activate` reruns analysis, validates the selected draft, and atomically
+  activates it as `wails.hcl` only when no blockers remain.
 
-### Dev Session
+Migration never overwrites a reviewed draft and never changes Taskfiles,
+scripts, assets, or `build/config.yml`. It has no persistent report, backup,
+retirement, rollback, or force-activation state. Reachable unrepresented build
+behaviour blocks cutover; unrelated utility tasks are reported without
+blocking.
 
-The manifest Dev Session owns persistent frontend and backend processes plus a
-transactional watch set. File bursts request ordinary finite development Plans;
-new generations cancel stale work without reporting a failed build. A healthy
-application remains running until a changed replacement is built and ready.
-No-op and restored binaries do not restart the backend.
+`wails3 eject` exclusively writes the complete resolved reference manifest to
+inactive `wails.ejected.hcl`. `--force` atomically replaces only that inactive
+file.
 
-## Migration and routing
+## Legacy Taskfile projects
 
-`wails3 migrate` parses legacy v3 Taskfiles with Wake's AST parser. It compares
-them with current embedded canonical templates and retained historical
-fingerprints, classifying each file as current default, historical default,
-customised, or custom.
-
-Known configuration and script-file hooks are translated. Unsupported inline
-shell receives a stable diagnostic and remains a manual migration. Migration
-state, source digests, classifications, and diagnostics live in
-`.wails/migration-report.json`, never in `wails.toml`.
-
-An incomplete migration keeps the Taskfiles and routes through the legacy
-system. A complete migration digest-checks and retires represented legacy
-files; `--backup` first preserves them under `.wails/migration-backup`. A
-project containing both systems without a migration report fails as ambiguous
-instead of choosing silently.
-
-## Legacy Taskfile runner
-
-For projects that still use Taskfiles, `WAILS_USE_WAKE=true` selects the
-experimental Go-native runner instead of the external `task` CLI:
+Without active `wails.hcl`, existing projects continue through the legacy
+Taskfile path. `WAILS_USE_WAKE=true` selects the experimental Go-native runner
+instead of the external `task` CLI:
 
 ```bash
 WAILS_USE_WAKE=true wails3 build
 WAILS_USE_WAKE=true wails3 task <task-name>
 ```
 
-It supports v3 Taskfile parsing, includes, platform namespaces, variables,
-local override layers, parallel dependencies, structured Wails reporting, and
-its original `.wake/cache.json` task cache. Unsupported Taskfile features fall
-back to the external Task CLI when available. This path is compatibility code,
-not a second long-term customization language for manifest projects.
-
-Legacy-runner environment variables:
-
-| Variable | Effect |
-| --- | --- |
-| `WAILS_USE_WAKE` | Select the Go-native runner for a Taskfile project |
-| `WAILS_NO_OVERRIDES` | Ignore `Taskfile.local.*` and `Taskfile.override.*` |
-| `WAKE_VERBOSE` | Stream commands and subprocess output |
-| `WAKE_SILENT` | Suppress task output |
-| `WAKE_SERIAL` | Disable legacy dependency fan-out |
-| `WAKE_FORCE` | Bypass legacy task cache entries |
-| `WAKE_DEBUG` | Show resolver and execution diagnostics |
+The runner supports v3 parsing, static includes, namespaces, variables, local
+override layers, parallel dependencies, reporting, and `.wake/cache.json`.
+Unsupported Taskfile features fall back to the external Task CLI when
+available. This path is compatibility code, not a customisation language for
+HCL projects.
 
 ## Verification
 
-Run the focused suite from `v3/`:
+Run from `v3/`:
 
 ```bash
 go test ./internal/wake/... ./internal/commands ./cmd/wails3
@@ -133,10 +105,10 @@ go test -race ./internal/wake/... ./internal/commands ./cmd/wails3
 go vet ./internal/wake/... ./internal/commands ./cmd/wails3
 ```
 
-Complete-command performance and native-host verification live in
+Build and dev performance harnesses are
 `scripts/benchmark-manifest-build.go` and
-`scripts/verify-manifest-build-system.go`. The permanent matrix and measured
-baseline are recorded under `history/wayfinder/wails-build-system/`.
+`scripts/benchmark-manifest-dev.go`. Native acceptance is driven by
+`scripts/verify-manifest-build-system.go`.
 
-See [`AGENTS.md`](./AGENTS.md) for package boundaries, invariants, and detailed
-execution flow.
+See [`AGENTS.md`](./AGENTS.md) for package boundaries and implementation
+invariants.

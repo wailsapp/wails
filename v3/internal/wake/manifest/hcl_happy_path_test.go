@@ -49,6 +49,7 @@ build {
 }
 
 dev {
+  tags = ["debug", "devtools"]
   debounce_ms = 125
   log_level = "debug"
   watch = ["**/*.go", "wails.hcl"]
@@ -108,7 +109,7 @@ linux {
 }
 
 ios {
-  product_name = "Inventory Mobile"
+  display_name = "Inventory Mobile"
   bundle_id = "com.example.inventory.ios"
   minimum_version = "16.0"
   build_number = 15
@@ -125,7 +126,7 @@ ios {
 
 android {
   display_name = "Inventory Mobile"
-  bundle_id = "com.example.inventory.android"
+  application_id = "com.example.inventory.android"
   version_name = "2.4.1"
   version_code = 241
   minimum_sdk = 26
@@ -159,15 +160,11 @@ target "linux/arm64" {
 
 target "ios/arm64" {
   minimum_version = "17.0"
-  variant = "device"
 }
 
 target "android/arm64" {
   tags = ["mobile"]
 }
-
-target "linux/arm" {}
-target "linux/386" {}
 
 package "dmg" {
   background = "packaging/background.png"
@@ -175,19 +172,14 @@ package "dmg" {
   window_height = 620
 }
 
-package "nsis" {}
+package "nsis" {
+  install_scope = "user"
+}
 package "msix" {}
-package "app" {}
 package "appimage" {}
 package "deb" {}
 package "rpm" {}
 package "archlinux" {}
-package "ipa" {}
-package "apk" {
-  template = "packaging/android.tmpl"
-  install_scope = "user"
-}
-package "aab" {}
 
 file_association "inventory" {
   extensions = ["inventory", ".inv"]
@@ -210,10 +202,9 @@ profile "release" {
     sign = true
   }
   target "darwin/universal" {
-    formats = ["app", "dmg"]
+    formats = ["dmg"]
     sign = true
     notarize = true
-    destination = "dist/macos"
   }
   target "linux/arm64" {
     formats = ["appimage", "deb"]
@@ -238,6 +229,7 @@ func TestLoadFullHCLHappyPath(t *testing.T) {
 	assert.Equal(t, []string{"-X example/build.version=2.4.1"}, loaded.Config.Build.Go.LinkerFlags)
 	assert.Equal(t, []string{"all=-l"}, loaded.Config.Build.Go.CompilerFlags)
 	assert.Equal(t, 125, loaded.Config.Dev.DebounceMS)
+	assert.Equal(t, []string{"debug", "devtools"}, loaded.Config.Dev.Tags)
 	assert.False(t, loaded.Config.Dev.UseGitIgnore)
 
 	assert.Equal(t, "11.0", loaded.Config.Targets.Windows.ARM64.MinimumVersion)
@@ -245,10 +237,10 @@ func TestLoadFullHCLHappyPath(t *testing.T) {
 	assert.Equal(t, "14.0", loaded.Config.Targets.Darwin.ARM64.MinimumVersion)
 	assert.Equal(t, []string{"universal"}, loaded.Config.Targets.Darwin.Universal.Tags)
 	assert.Equal(t, "17.0", loaded.Config.Targets.IOS.ARM64.MinimumVersion)
-	assert.Equal(t, "device", loaded.Config.Targets.IOS.ARM64.Variant)
 	assert.Equal(t, "build/windows.pfx", loaded.Config.Signing.Windows.Certificate)
 	assert.True(t, loaded.Config.Signing.Windows.Enabled)
-	assert.Equal(t, "NOTARY_PROFILE", loaded.Config.Signing.Darwin.Credential)
+	assert.Equal(t, "MACOS_KEYCHAIN_PROFILE", loaded.Config.Signing.Darwin.Credential)
+	assert.Equal(t, "NOTARY_PROFILE", loaded.Config.Signing.Darwin.NotarizationCredential)
 	assert.True(t, loaded.Config.Signing.Darwin.Enabled)
 	assert.True(t, loaded.Config.Signing.Darwin.Notarize)
 	assert.Equal(t, "ios/profile.mobileprovision", loaded.Config.Signing.IOS.ProvisioningProfile)
@@ -261,14 +253,35 @@ func TestLoadFullHCLHappyPath(t *testing.T) {
 	assert.Equal(t, []string{"darwin", "windows"}, loaded.Config.Associations[0].Platforms)
 	require.Len(t, loaded.Config.Protocols, 1)
 	assert.Equal(t, "Open an Inventory document", loaded.Config.Protocols[0].Description)
-	assert.Equal(t, "packaging/background.png", loaded.Config.Package.Darwin.DMG.Options["background"])
-	assert.Equal(t, 900, loaded.Config.Package.Darwin.DMG.Options["window_width"])
-	assert.Equal(t, "user", loaded.Config.Package.Android.APK.Options["install_scope"])
+	assert.Equal(t, "packaging/background.png", loaded.Config.Package.Darwin.DMG.Background)
+	assert.Equal(t, 900, loaded.Config.Package.Darwin.DMG.WindowWidth)
+	assert.Equal(t, "user", loaded.Config.Package.Windows.NSIS.InstallScope)
 
 	require.Equal(t, "release", loaded.Config.Selected.Name)
 	require.Len(t, loaded.Config.Selected.Targets, 3)
-	assert.Equal(t, "dist/macos", loaded.Config.Selected.Targets[1].Destination)
+	assert.Empty(t, loaded.Config.Selected.Targets[1].Destination)
 	assert.True(t, loaded.Config.Selected.Targets[1].Notarize)
+}
+
+func TestHCLDevTagsRoundTripThroughEjection(t *testing.T) {
+	root := t.TempDir()
+	writeManifest(t, root, `version = 3
+project {
+  name = "dev-tags"
+  product_name = "Dev Tags"
+  identifier = "com.example.devtags"
+  version = "1.0.0"
+}
+dev {
+  tags = ["debug", "sqlite"]
+}
+`)
+	loaded, err := Load(root, "")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"debug", "sqlite"}, loaded.Config.Dev.Tags)
+	encoded, err := EncodeEjectedHCL(loaded.Config, "test")
+	require.NoError(t, err)
+	assert.Contains(t, string(encoded), `tags = ["debug", "sqlite"]`)
 }
 
 func TestHCLTypedPackageOptionsRoundTripThroughTheClosedSchema(t *testing.T) {
@@ -288,25 +301,25 @@ package "dmg" {
   background = "packaging/background.png"
   volume_icon = "packaging/volume.icns"
   file_icon = "packaging/file.icns"
-  files = "Read Me=packaging/README.md"
+  files = { "Read Me" = "packaging/README.md" }
   window_width = 900
   window_height = 620
 }
 package "appimage" {
-  categories = "Development;IDE;"
+  categories = ["Development", "IDE"]
 }`)
 	loaded, err := Load(root, "")
 	require.NoError(t, err)
-	dmg := loaded.Config.Package.Darwin.DMG.Options
-	assert.Equal(t, "packaging/volume.icns", dmg["volume_icon"])
-	assert.Equal(t, "packaging/file.icns", dmg["file_icon"])
-	assert.Equal(t, "Read Me=packaging/README.md", dmg["files"])
-	assert.Equal(t, "Development;IDE;", loaded.Config.Package.Linux.AppImage.Options["categories"])
+	dmg := loaded.Config.Package.Darwin.DMG
+	assert.Equal(t, "packaging/volume.icns", dmg.VolumeIcon)
+	assert.Equal(t, "packaging/file.icns", dmg.FileIcon)
+	assert.Equal(t, map[string]string{"Read Me": "packaging/README.md"}, dmg.Files)
+	assert.Equal(t, []string{"Development", "IDE"}, loaded.Config.Package.Linux.AppImage.Categories)
 
 	encoded, err := EncodeConfig(loaded.Config)
 	require.NoError(t, err)
 	assert.Contains(t, string(encoded), `volume_icon = "packaging/volume.icns"`)
-	assert.Contains(t, string(encoded), `categories = "Development;IDE;"`)
+	assert.Contains(t, string(encoded), `categories = ["Development", "IDE"]`)
 }
 
 func TestEjectedHCLRoundTripsCompleteBuildIntent(t *testing.T) {
@@ -329,7 +342,6 @@ func TestEjectedHCLRoundTripsCompleteBuildIntent(t *testing.T) {
 	assert.Equal(t, loaded.Config.Dev, reloaded.Config.Dev)
 	assert.Equal(t, loaded.Config.Targets.Windows.BuildNumber, reloaded.Config.Targets.Windows.BuildNumber)
 	assert.Equal(t, loaded.Config.Targets.Linux.ARM64.BuildNumber, reloaded.Config.Targets.Linux.ARM64.BuildNumber)
-	assert.Equal(t, loaded.Config.Targets.IOS.ARM64.Variant, reloaded.Config.Targets.IOS.ARM64.Variant)
 	assert.Equal(t, loaded.Config.Associations, reloaded.Config.Associations)
 	assert.Equal(t, loaded.Config.Protocols, reloaded.Config.Protocols)
 	assert.Equal(t, loaded.Config.Package.Darwin.DMG, reloaded.Config.Package.Darwin.DMG)
@@ -525,17 +537,17 @@ project {
 }
 `)
 	_, err = Load(root, "")
-	assert.ErrorContains(t, err, "requires name, product_name, identifier, and version")
+	assert.ErrorContains(t, err, "project.product_name: required field is missing")
 }
 
 func TestHCLTargetAndPackageNameParsersRejectMalformedNames(t *testing.T) {
-	for _, value := range []string{"linux", "/amd64", "linux/", "linux/amd64/extra", "windows/universal", "plan9/amd64"} {
+	for _, value := range []string{"linux", "/amd64", "linux/", "linux/amd64/extra", "windows/universal", "linux/arm", "linux/386", "ios/amd64", "android/386", "plan9/amd64"} {
 		_, _, err := parseTargetName(value)
 		assert.Error(t, err, value)
 	}
 
 	for _, value := range []string{"unknown"} {
-		_, err := packageFormatPointer(&PackagePlatform{}, value)
+		_, err := ResolvePackageFormat(Packages{}, "linux", value)
 		assert.Error(t, err, value)
 	}
 }
@@ -554,7 +566,7 @@ func TestHCLDocumentValidationBranches(t *testing.T) {
 		raw  hclDocument
 	}{
 		{name: "duplicate target", raw: hclDocument{Project: project, Targets: []hclTarget{target, target}}},
-		{name: "duplicate package", raw: hclDocument{Project: project, Packages: []hclPackage{{Format: "deb"}, {Format: "deb"}}}},
+		{name: "duplicate package", raw: hclDocument{Project: project, Packages: []PackageFormat{{Format: "deb"}, {Format: "deb"}}}},
 		{name: "association needs extensions", raw: hclDocument{Project: project, Associations: []hclAssociation{{Label: "app"}}}},
 		{name: "invalid profile name", raw: hclDocument{Project: project, Profiles: []hclProfile{profile("Release", profileTarget("linux/amd64"))}}},
 		{name: "duplicate profile", raw: hclDocument{Project: project, Profiles: []hclProfile{profile("release", profileTarget("linux/amd64")), profile("release", profileTarget("darwin/amd64"))}}},

@@ -1,6 +1,0 @@
-[project]
-name = "{{.ProjectName}}"
-product_name = "{{.ProductName}}"
-identifier = "{{.ProductIdentifier}}"
-version = "{{.ProductVersion}}"
-# binary_name = "{{.BinaryName}}"

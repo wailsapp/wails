@@ -18,6 +18,7 @@ type DevOptions struct {
 	Config   string `description:"The config file including path" default:"./build/config.yml"`
 	VitePort int    `name:"port" description:"Specify the vite dev server port"`
 	Secure   bool   `name:"s" description:"Enable HTTPS"`
+	Tags     string `name:"tags" description:"Additional development build tags to pass to the Go compiler (comma-separated)"`
 	Profile  string `name:"profile" description:"Manifest profile to apply"`
 	Target   string `name:"target" description:"Target platform and architecture"`
 	Plan     bool   `name:"plan" description:"Print the finite development startup plan without starting a session"`
@@ -67,7 +68,7 @@ func Dev(options *DevOptions) error {
 
 	// Environment variables such as WAILS_MCP imply extra build tags. Export them
 	// via EXTRA_TAGS so the project Taskfile includes them in dev builds.
-	if tags := envTags(); len(tags) > 0 {
+	if tags := appendUniqueStrings(splitComma(options.Tags), envTags()...); len(tags) > 0 {
 		os.Setenv("EXTRA_TAGS", mergeTags(os.Getenv("EXTRA_TAGS"), tags...))
 	}
 

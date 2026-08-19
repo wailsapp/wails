@@ -79,6 +79,9 @@ func Sign(options *flags.Sign) error {
 	if info.IsDir() && strings.HasSuffix(options.Input, ".app") {
 		return signMacOSApp(options)
 	}
+	if ext == ".dmg" {
+		return signMacOSDiskImage(options)
+	}
 
 	// macOS binary or Windows executable
 	if ext == ".exe" || ext == ".msi" || ext == ".msix" || ext == ".appx" {
@@ -99,6 +102,41 @@ func Sign(options *flags.Sign) error {
 	}
 
 	return fmt.Errorf("unsupported file type: %s", ext)
+}
+
+func signMacOSDiskImage(options *flags.Sign) error {
+	resolveSigningDefaults(options)
+	if options.Identity == "" {
+		return fmt.Errorf("--identity is required for macOS disk image signing (set via `wails3 setup` or --identity flag)")
+	}
+	args := []string{"--force", "--sign", options.Identity, options.Input}
+	cmd := exec.Command("codesign", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("codesign disk image failed: %w", err)
+	}
+	pterm.Success.Printfln("Signed: %s", options.Input)
+	if !options.Notarize {
+		return nil
+	}
+	if options.KeychainProfile == "" {
+		return fmt.Errorf("--keychain-profile is required for notarization (set via `wails3 setup` or --keychain-profile flag)")
+	}
+	submit := exec.Command("xcrun", "notarytool", "submit", options.Input, "--keychain-profile", options.KeychainProfile, "--wait")
+	submit.Stdout = os.Stdout
+	submit.Stderr = os.Stderr
+	if err := submit.Run(); err != nil {
+		return fmt.Errorf("disk image notarization failed: %w", err)
+	}
+	staple := exec.Command("xcrun", "stapler", "staple", options.Input)
+	staple.Stdout = os.Stdout
+	staple.Stderr = os.Stderr
+	if err := staple.Run(); err != nil {
+		return fmt.Errorf("disk image stapling failed: %w", err)
+	}
+	pterm.Success.Println("Notarization complete and ticket stapled")
+	return nil
 }
 
 func signMacOSApp(options *flags.Sign) error {

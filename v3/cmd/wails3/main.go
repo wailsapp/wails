@@ -61,7 +61,7 @@ func main() {
 	clean := app.NewSubCommand("clean", "Remove disposable Wails-generated build state")
 	clean.Action(func() error { return commands.Clean(clean.OtherArgs()) })
 
-	pkg := app.NewSubCommand("package", "Package application")
+	pkg := app.NewSubCommand("package", "Deprecated: use build with a profile or --formats")
 	var pkgFlags flags.Package
 	pkg.AddFlags(&pkgFlags)
 	pkg.Action(func() error {
@@ -148,7 +148,7 @@ func main() {
 	})
 
 	// Sign command (wrapper that calls platform-specific tasks)
-	sign := app.NewSubCommand("sign", "Sign binaries and packages for current or specified platform")
+	sign := app.NewSubCommand("sign", "Deprecated: select signing in a profile and use build")
 	var signWrapperFlags flags.SignWrapper
 	sign.AddFlags(&signWrapperFlags)
 	sign.Action(func() error {

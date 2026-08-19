@@ -11,7 +11,9 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -20,17 +22,13 @@ import (
 	"github.com/wailsapp/wails/v3/internal/wake/migration"
 	"github.com/wailsapp/wails/v3/internal/wake/parse"
 	"github.com/zeebo/blake3"
-	"gopkg.in/yaml.v3"
 )
 
 type MigrateOptions struct {
-	DryRun   bool `name:"dry-run" description:"Analyse without writing project files"`
-	JSON     bool `name:"json" description:"Print the machine-readable report"`
-	Activate bool `name:"activate" description:"Validate a reviewed migration draft and atomically activate it"`
-	Backup   bool `name:"backup" description:"Deprecated: migration never changes legacy files"`
-	// Complete is retained as an undocumented compatibility spelling for one
-	// transition. It has the same non-destructive semantics as --activate.
-	Complete bool `name:"complete" description:"Deprecated: use --activate"`
+	DryRun   bool   `name:"dry-run" description:"Analyse without writing project files"`
+	JSON     bool   `name:"json" description:"Print the machine-readable report"`
+	Activate bool   `name:"activate" description:"Validate a reviewed migration draft and atomically activate it"`
+	Output   string `name:"output" description:"Write or activate an inactive proposal at this project-relative path"`
 }
 
 type MigrationDiagnostic = migration.Diagnostic
@@ -41,15 +39,19 @@ func Migrate(options *MigrateOptions) error {
 	if err != nil {
 		return err
 	}
-	if options.Activate || options.Complete {
+	if options.Activate {
 		return activateMigration(root, options)
 	}
 	if manifest.Exists(root) {
 		return fmt.Errorf("%s already exists; migration will not overwrite the active manifest", manifest.Filename)
 	}
-	draft := filepath.Join(root, manifest.MigratedFilename)
+	draft, relativeDraft, err := migrationDraftPath(root, options.Output)
+	if err != nil {
+		return err
+	}
+	draftExists := false
 	if _, err := os.Stat(draft); err == nil {
-		return fmt.Errorf("%s already exists; review it or remove it before running migration again", manifest.MigratedFilename)
+		draftExists = true
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
@@ -57,15 +59,11 @@ func Migrate(options *MigrateOptions) error {
 	if err != nil {
 		return err
 	}
-	if !options.DryRun {
-		if err := manifest.WriteMigrationDraft(root, doc); err != nil {
+	if !options.DryRun && !draftExists {
+		if err := manifest.WriteMigrationDraftAt(root, relativeDraft, doc, migrationBlockerComments(report)); err != nil {
 			return err
 		}
-		report.Wrote = append(report.Wrote, manifest.MigratedFilename)
-		report.Wrote = append(report.Wrote, migration.RelativeReportPath)
-		if err := migration.Write(root, report); err != nil {
-			return err
-		}
+		report.Wrote = append(report.Wrote, relativeDraft)
 	}
 	if options.JSON {
 		data, _ := json.MarshalIndent(report, "", "  ")
@@ -86,16 +84,21 @@ func Migrate(options *MigrateOptions) error {
 	}
 	if options.DryRun {
 		fmt.Println("No files written (--dry-run)")
+	} else if draftExists {
+		fmt.Printf("Left existing inactive %s unchanged; analysis only\n", relativeDraft)
 	} else {
-		fmt.Printf("Wrote inactive %s and %s\n", manifest.MigratedFilename, migration.RelativeReportPath)
+		fmt.Printf("Wrote inactive %s\n", relativeDraft)
 	}
 	return nil
 }
 
 func activateMigration(root string, options *MigrateOptions) error {
-	draft := filepath.Join(root, manifest.MigratedFilename)
+	draft, relativeDraft, err := migrationDraftPath(root, options.Output)
+	if err != nil {
+		return err
+	}
 	if _, err := manifest.LoadFile(root, draft, ""); err != nil {
-		return fmt.Errorf("validate %s: %w", manifest.MigratedFilename, err)
+		return fmt.Errorf("validate %s: %w", relativeDraft, err)
 	}
 	report, _, err := analyseMigration(root)
 	if err != nil {
@@ -107,7 +110,7 @@ func activateMigration(root string, options *MigrateOptions) error {
 				return err
 			}
 		}
-		return fmt.Errorf("migration has unresolved blockers; review %s and rerun after resolving them", migration.RelativeReportPath)
+		return fmt.Errorf("migration has unresolved blockers; rerun `wails3 migrate` for current diagnostics")
 	}
 	if options.DryRun {
 		if options.JSON {
@@ -117,26 +120,75 @@ func activateMigration(root string, options *MigrateOptions) error {
 		return nil
 	}
 	active := filepath.Join(root, manifest.Filename)
-	if err := os.Link(draft, active); err != nil {
-		if errors.Is(err, fs.ErrExist) {
-			return fmt.Errorf("%s already exists; refusing to overwrite it", manifest.Filename)
-		}
-		return fmt.Errorf("activate migration: %w", err)
-	}
-	if err := os.Remove(draft); err != nil {
-		_ = os.Remove(active)
-		return fmt.Errorf("activate migration: %w", err)
+	if err := activateMigrationDraft(draft, active, migrationActivationOperations{link: os.Link, remove: os.Remove}); err != nil {
+		return err
 	}
 	report.CompletedBy = version.String()
 	report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "activated", Message: "reviewed migration draft was activated; legacy Taskfiles remain untouched"})
-	if err := migration.Write(root, report); err != nil {
-		return err
-	}
 	if options.JSON {
 		return printMigrationJSON(report)
 	}
 	fmt.Printf("Activated %s; legacy Taskfiles are now ignored but were not changed\n", manifest.Filename)
 	return nil
+}
+
+type migrationActivationOperations struct {
+	link   func(string, string) error
+	remove func(string) error
+}
+
+func activateMigrationDraft(draft, active string, operations migrationActivationOperations) error {
+	if err := operations.link(draft, active); err != nil {
+		if errors.Is(err, fs.ErrExist) {
+			return fmt.Errorf("%s already exists; refusing to overwrite it", manifest.Filename)
+		}
+		return fmt.Errorf("activate migration: %w", err)
+	}
+	if err := operations.remove(draft); err != nil {
+		activationErr := fmt.Errorf("activate migration: remove inactive draft: %w", err)
+		if rollbackErr := operations.remove(active); rollbackErr != nil {
+			return errors.Join(activationErr, fmt.Errorf("activate migration: roll back active manifest: %w", rollbackErr))
+		}
+		return activationErr
+	}
+	return nil
+}
+
+func migrationDraftPath(root, configured string) (string, string, error) {
+	if configured == "" {
+		configured = manifest.MigratedFilename
+	}
+	clean := filepath.ToSlash(filepath.Clean(configured))
+	if strings.EqualFold(clean, manifest.Filename) || strings.EqualFold(clean, manifest.EjectedFilename) || clean == "." || strings.HasPrefix(strings.ToLower(clean), ".wails/") {
+		return "", "", fmt.Errorf("migration output %q must be an inactive project-owned HCL file", configured)
+	}
+	path, err := manifest.ResolveProjectPath(root, "migration output", clean, false)
+	if err != nil {
+		return "", "", err
+	}
+	if !strings.EqualFold(filepath.Ext(path), ".hcl") {
+		return "", "", fmt.Errorf("migration output %q must use the .hcl extension", configured)
+	}
+	relative, err := filepath.Rel(root, path)
+	if err != nil {
+		return "", "", err
+	}
+	return path, filepath.ToSlash(relative), nil
+}
+
+func migrationBlockerComments(report MigrationReport) []string {
+	comments := []string{"Generated by wails3 migrate; this file is inactive until explicitly activated."}
+	for _, diagnostic := range report.Diagnostics {
+		if diagnostic.Severity != "warning" {
+			continue
+		}
+		location := diagnostic.File
+		if diagnostic.Task != "" {
+			location += " [" + diagnostic.Task + "]"
+		}
+		comments = append(comments, "BLOCKED: "+location+": "+diagnostic.Message)
+	}
+	return comments
 }
 
 func printMigrationJSON(report MigrationReport) error {
@@ -146,6 +198,211 @@ func printMigrationJSON(report MigrationReport) error {
 	}
 	fmt.Println(string(data))
 	return nil
+}
+
+type migrationTaskNode struct {
+	key, prefix, path, name string
+	task                    *wakeast.Task
+}
+
+type migrationReachability struct {
+	reachable map[string]map[string]bool
+	issues    []MigrationDiagnostic
+}
+
+func (r migrationReachability) contains(path, task string) bool {
+	return r.reachable[filepath.Clean(path)][task]
+}
+
+func analyseTaskReachability(rootTask string, files []string) (migrationReachability, error) {
+	nodes := map[string][]migrationTaskNode{}
+	loadedPaths := map[string]bool{}
+	visited := map[string]bool{}
+	ancestors := map[string]bool{}
+	var includeIssues []MigrationDiagnostic
+	var load func(string, string) error
+	load = func(path, prefix string) error {
+		path = filepath.Clean(path)
+		if ancestors[path] {
+			includeIssues = append(includeIssues, MigrationDiagnostic{Severity: "warning", Code: "cyclic-include", File: path, Message: "Taskfile include cycle cannot be proven equivalent"})
+			return nil
+		}
+		visitKey := path + "\x00" + prefix
+		if visited[visitKey] {
+			return nil
+		}
+		visited[visitKey] = true
+		ancestors[path] = true
+		defer delete(ancestors, path)
+		loadedPaths[path] = true
+		tf, err := parse.Parse(path)
+		if err != nil {
+			return err
+		}
+		for name, task := range tf.Tasks {
+			key := prefix + name
+			nodes[key] = append(nodes[key], migrationTaskNode{key: key, prefix: prefix, path: path, name: name, task: task})
+		}
+		includeNames := make([]string, 0, len(tf.Includes))
+		for name := range tf.Includes {
+			includeNames = append(includeNames, name)
+		}
+		sort.Strings(includeNames)
+		for _, name := range includeNames {
+			if tf.Includes[name].Taskfile == "" || strings.Contains(tf.Includes[name].Taskfile, "{{") {
+				includeIssues = append(includeIssues, MigrationDiagnostic{Severity: "warning", Code: "dynamic-include", File: path, Message: "templated include " + name + " cannot be proven equivalent"})
+				continue
+			}
+			included, err := resolveMigrationInclude(path, tf.Includes[name])
+			if errors.Is(err, fs.ErrNotExist) && tf.Includes[name].Optional {
+				continue
+			}
+			if errors.Is(err, fs.ErrNotExist) {
+				includeIssues = append(includeIssues, MigrationDiagnostic{Severity: "warning", Code: "missing-include", File: path, Message: "required include " + name + " is missing"})
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			if err := load(included, prefix+name+":"); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	if err := load(rootTask, ""); err != nil {
+		return migrationReachability{}, err
+	}
+	// Conventional local/override files are merged at the root namespace even
+	// though they are not reached through an explicit include.
+	for _, path := range files {
+		path = filepath.Clean(path)
+		if !loadedPaths[path] {
+			if err := load(path, ""); err != nil {
+				return migrationReachability{}, err
+			}
+		}
+	}
+
+	result := migrationReachability{reachable: map[string]map[string]bool{}, issues: includeIssues}
+	queue := make([]string, 0, 30)
+	for _, root := range []string{"build", "package", "sign", "dev", "run"} {
+		if len(nodes[root]) > 0 {
+			queue = append(queue, root)
+		}
+		for _, platform := range []string{"windows", "darwin", "linux", "ios", "android"} {
+			candidate := platform + ":" + root
+			if len(nodes[candidate]) > 0 {
+				queue = append(queue, candidate)
+			}
+		}
+	}
+	seen := map[string]bool{}
+	issueSeen := map[string]bool{}
+	addIssue := func(node migrationTaskNode, code, message string) {
+		key := node.path + "\x00" + node.name + "\x00" + code + "\x00" + message
+		if issueSeen[key] {
+			return
+		}
+		issueSeen[key] = true
+		result.issues = append(result.issues, MigrationDiagnostic{Severity: "warning", Code: code, File: node.path, Task: node.name, Message: message})
+	}
+	for len(queue) > 0 {
+		key := queue[0]
+		queue = queue[1:]
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		for _, node := range nodes[key] {
+			if result.reachable[node.path] == nil {
+				result.reachable[node.path] = map[string]bool{}
+			}
+			result.reachable[node.path][node.name] = true
+			for _, reference := range migrationTaskReferences(node.task) {
+				if strings.Contains(reference, "{{") {
+					if node.prefix == "" && recognizedRootTask(node.name, node.task) {
+						suffix := ":" + node.name
+						for candidate := range nodes {
+							if strings.HasSuffix(candidate, suffix) {
+								queue = append(queue, candidate)
+							}
+						}
+						continue
+					}
+					addIssue(node, "dynamic-task-reference", "reachable task selects another task dynamically and cannot be proven equivalent")
+					continue
+				}
+				candidate := reference
+				if len(nodes[candidate]) == 0 && node.prefix != "" {
+					candidate = node.prefix + reference
+				}
+				if len(nodes[candidate]) == 0 {
+					addIssue(node, "unresolved-task-reference", "reachable task refers to missing task "+reference)
+					continue
+				}
+				queue = append(queue, candidate)
+			}
+		}
+	}
+	sort.Slice(result.issues, func(i, j int) bool {
+		if result.issues[i].File != result.issues[j].File {
+			return result.issues[i].File < result.issues[j].File
+		}
+		if result.issues[i].Task != result.issues[j].Task {
+			return result.issues[i].Task < result.issues[j].Task
+		}
+		return result.issues[i].Code < result.issues[j].Code
+	})
+	return result, nil
+}
+
+func resolveMigrationInclude(taskfile string, include *wakeast.Include) (string, error) {
+	path := include.Taskfile
+	if path == "" || strings.Contains(path, "{{") {
+		return "", fmt.Errorf("dynamic include %q in %s cannot be analysed", path, taskfile)
+	}
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(filepath.Dir(taskfile), filepath.FromSlash(path))
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return "", err
+	}
+	if !info.IsDir() {
+		return filepath.Clean(path), nil
+	}
+	for _, name := range []string{"Taskfile.yml", "Taskfile.yaml"} {
+		candidate := filepath.Join(path, name)
+		if info, err := os.Stat(candidate); err == nil && !info.IsDir() {
+			return candidate, nil
+		}
+	}
+	return "", fs.ErrNotExist
+}
+
+func migrationTaskReferences(task *wakeast.Task) []string {
+	if task == nil {
+		return nil
+	}
+	result := make([]string, 0, len(task.Deps)+len(task.Cmds))
+	for _, dep := range task.Deps {
+		if dep != nil && dep.Task != "" {
+			result = append(result, dep.Task)
+		}
+	}
+	for _, command := range task.Cmds {
+		if command == nil {
+			continue
+		}
+		if command.Task != "" {
+			result = append(result, command.Task)
+		}
+		if command.For != nil && command.For.Task != "" {
+			result = append(result, command.For.Task)
+		}
+	}
+	return result
 }
 
 func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
@@ -162,8 +419,23 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	if err != nil {
 		return report, manifest.Document{}, err
 	}
+	reachability, err := analyseTaskReachability(rootTask, files)
+	if err != nil {
+		return report, manifest.Document{}, err
+	}
+	for _, diagnostic := range reachability.issues {
+		if relative, relErr := filepath.Rel(root, diagnostic.File); relErr == nil {
+			diagnostic.File = filepath.ToSlash(relative)
+		}
+		report.Complete = false
+		report.Diagnostics = append(report.Diagnostics, diagnostic)
+	}
 	packageManager := ""
 	binaryName := ""
+	buildOutput := ""
+	devPort := 0
+	typescriptBindings := false
+	interfaceBindings := false
 	for _, path := range files {
 		rel, err := filepath.Rel(root, path)
 		if err != nil {
@@ -171,8 +443,12 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		}
 		rel = filepath.ToSlash(rel)
 		if rel == ".." || strings.HasPrefix(rel, "../") {
-			report.Complete = false
-			report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "external-taskfile", File: rel, Message: "included Taskfile is outside the project and must be migrated manually"})
+			if len(reachability.reachable[filepath.Clean(path)]) > 0 {
+				report.Complete = false
+				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "external-taskfile", File: rel, Message: "reachable included Taskfile is outside the project and must be migrated manually"})
+			} else {
+				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "unrelated-taskfile", File: rel, Message: "unreachable included Taskfile remains user-owned and does not block migration"})
+			}
 			continue
 		}
 		digest, err := digestFile(path)
@@ -216,9 +492,20 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		}
 		sort.Strings(taskNames)
 		for _, name := range taskNames {
-			if phase, _, ok := migrateScriptHook(root, filepath.Dir(path), name, tf.Tasks[name]); ok {
-				report.Complete = false
-				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "deferred-hook", File: rel, Task: name, Message: "custom " + phase + " script is not representable in config-only HCL and blocks activation"})
+			typescript, interfaces := legacyBindingOptions(tf.Tasks[name])
+			typescriptBindings = typescriptBindings || typescript
+			interfaceBindings = interfaceBindings || interfaces
+			reachable := reachability.contains(path, name)
+			if phase, ok := legacyLifecycleScript(root, filepath.Dir(path), name, tf.Tasks[name]); ok {
+				severity := "info"
+				code := "unrelated-task"
+				message := "unreachable custom " + phase + " script remains user-owned"
+				if reachable {
+					report.Complete = false
+					severity, code = "warning", "deferred-hook"
+					message = "custom " + phase + " script is not representable in config-only HCL and blocks activation"
+				}
+				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: severity, Code: code, File: rel, Task: name, Message: message})
 				if classification.Classification == "current-default" {
 					classification.Classification = "customised"
 				}
@@ -226,19 +513,26 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 				continue
 			}
 			if !allowed[name] {
-				report.Complete = false
-				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "unsupported-task", File: rel, Task: name, Message: "custom task requires a user-owned hook script or manual migration"})
+				severity := "info"
+				code := "unrelated-task"
+				message := "custom utility task is outside Wails build, package, sign, and dev paths"
+				if reachable {
+					report.Complete = false
+					severity, code = "warning", "unsupported-task"
+					message = "reachable custom task requires a user-owned hook script or manual migration"
+				}
+				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: severity, Code: code, File: rel, Task: name, Message: message})
 				if classification.Classification == "current-default" {
 					classification.Classification = "customised"
 				}
 				classification.ModifiedTasks = appendUnique(classification.ModifiedTasks, name)
 				continue
 			}
-			if containsString(canonical.changed, name) || containsString(canonical.added, name) {
+			if reachable && (containsString(canonical.changed, name) || containsString(canonical.added, name)) {
 				report.Complete = false
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: rel, Task: name, Message: "generated task was modified and requires a manifest field or user-owned hook script"})
 			}
-			if role == "root" && !recognizedRootTask(name, tf.Tasks[name]) {
+			if reachable && role == "root" && !recognizedRootTask(name, tf.Tasks[name]) {
 				report.Complete = false
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: rel, Task: name, Message: "root dispatch task was modified and requires a manifest field or user-owned hook script"})
 				classification.Classification = "customised"
@@ -261,6 +555,24 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 				if key == "APP_NAME" && value.Static != "" && !strings.Contains(value.Static, "{{") {
 					binaryName = normalizeLegacyAppName(value.Static)
 				}
+				if key == "BIN_DIR" && value.Static != "" && !strings.Contains(value.Static, "{{") {
+					candidate := filepath.ToSlash(filepath.Clean(value.Static))
+					if _, pathErr := manifest.ResolveProjectPath(root, "BIN_DIR", candidate, false); pathErr != nil {
+						report.Complete = false
+						report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "external-output", File: rel, Message: "BIN_DIR points outside the project and must be migrated manually"})
+					} else {
+						buildOutput = candidate
+					}
+				}
+				if key == "VITE_PORT" && value.Static != "" && !strings.Contains(value.Static, "{{") {
+					port, convErr := strconv.Atoi(strings.TrimSpace(value.Static))
+					if convErr != nil || port < 1 || port > 65535 {
+						devPort = 0
+						report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "invalid-port", File: rel, Message: "VITE_PORT=" + value.Static + " is not a valid port and was not migrated"})
+					} else {
+						devPort = port
+					}
+				}
 			}
 		}
 	}
@@ -269,56 +581,49 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	if binaryName != "" {
 		project.Name = binaryName
 	}
-	var associations []manifest.Association
-	var protocols []manifest.Protocol
-	configPath := filepath.Join(root, "build", "config.yml")
-	if data, err := os.ReadFile(configPath); err == nil {
-		var legacy struct {
-			WailsConfig `yaml:",inline"`
-			DevMode     struct {
-				Executes []struct {
-					Cmd  string `yaml:"cmd"`
-					Type string `yaml:"type"`
-				} `yaml:"executes"`
-			} `yaml:"dev_mode"`
-		}
-		if err := yaml.Unmarshal(data, &legacy); err != nil {
-			return report, manifest.Document{}, fmt.Errorf("parse build/config.yml: %w", err)
-		}
-		project.ProductName = first(legacy.Info.ProductName, project.ProductName)
-		project.Identifier = first(legacy.Info.ProductIdentifier, project.Identifier)
-		project.Version = first(legacy.Info.Version, project.Version)
-		project.CompanyName = legacy.Info.CompanyName
-		project.Description = legacy.Info.Description
-		project.Copyright = legacy.Info.Copyright
-		project.Comments = legacy.Info.Comments
-		for _, file := range legacy.FileAssociations {
-			associations = append(associations, manifest.Association{Extensions: []string{file.Ext}, Name: file.Name, Description: file.Description, Icon: file.IconName, Role: file.Role, MIMEType: file.MimeType})
-		}
-		for _, protocol := range legacy.Protocols {
-			protocols = append(protocols, manifest.Protocol{Scheme: protocol.Scheme, Description: protocol.Description})
-		}
-		for _, execute := range legacy.DevMode.Executes {
-			if !legacyDevCommand(execute.Cmd) {
-				report.Complete = false
-				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "unsupported-dev-command", File: "build/config.yml", Message: "dev command requires a user-owned hook or manual migration: " + execute.Cmd})
-			}
-		}
-		digest, _ := digestFile(configPath)
-		report.Sources["build/config.yml"] = digest
-	} else if !errors.Is(err, fs.ErrNotExist) {
+	doc := manifest.NewDocument(project)
+	if buildOutput != "" {
+		doc.Build.OutputDirectory = buildOutput
+	}
+	if devPort != 0 {
+		doc.Dev.Port = devPort
+	}
+	doc.Frontend.Bindings.TypeScript = typescriptBindings
+	doc.Frontend.Bindings.Interfaces = interfaceBindings
+	if err := applyLegacyBuildConfiguration(root, &report, &doc); err != nil {
 		return report, manifest.Document{}, err
 	}
-	doc := manifest.NewDocument(project)
-	doc.Associations = associations
-	doc.Protocols = protocols
-	if packageManager != "" {
-		doc.Frontend.PackageManager = packageManager
-		doc.Frontend.Install = []string{packageManager, "install"}
-		doc.Frontend.Build = []string{packageManager, "run", "build"}
-		doc.Frontend.Dev = []string{packageManager, "run", "dev"}
+	if err := applyLegacyFrontendConfiguration(root, packageManager, &report, &doc); err != nil {
+		return report, manifest.Document{}, err
+	}
+	if err := applyConventionalLegacyAssets(root, &report, &doc); err != nil {
+		return report, manifest.Document{}, err
 	}
 	return report, doc, nil
+}
+
+func legacyBindingOptions(task *wakeast.Task) (typescript, interfaces bool) {
+	if task == nil {
+		return false, false
+	}
+	for _, command := range task.Cmds {
+		if command == nil || !strings.Contains(command.Cmd, "generate bindings") {
+			continue
+		}
+		for _, argument := range strings.Fields(command.Cmd) {
+			name, value, hasValue := strings.Cut(strings.TrimSpace(argument), "=")
+			if hasValue && value != "true" {
+				continue
+			}
+			switch name {
+			case "-ts", "--ts", "-typescript", "--typescript":
+				typescript = true
+			case "-interfaces", "--interfaces":
+				interfaces = true
+			}
+		}
+	}
+	return typescript, interfaces
 }
 
 func normalizeLegacyAppName(value string) string {
@@ -328,17 +633,17 @@ func normalizeLegacyAppName(value string) string {
 	return strings.ReplaceAll(value, `\ `, " ")
 }
 
-func migrateScriptHook(root, taskfileDir, name string, task *wakeast.Task) (string, manifest.Hook, bool) {
+func legacyLifecycleScript(root, taskfileDir, name string, task *wakeast.Task) (string, bool) {
 	phase := strings.ReplaceAll(strings.ToLower(name), "-", "_")
 	if !containsString([]string{"before_build", "after_build", "before_package", "after_package", "before_sign", "after_sign"}, phase) {
-		return "", manifest.Hook{}, false
+		return "", false
 	}
 	if task == nil || len(task.Cmds) != 1 || len(task.Deps) != 0 || task.Cmds[0].Cmd == "" || task.Cmds[0].Task != "" {
-		return "", manifest.Hook{}, false
+		return "", false
 	}
 	command := strings.TrimSpace(task.Cmds[0].Cmd)
 	if strings.ContainsAny(command, " \t\r\n;&|`$<>") || strings.Contains(command, "{{") {
-		return "", manifest.Hook{}, false
+		return "", false
 	}
 	base := taskfileDir
 	if task.Dir != "" {
@@ -347,30 +652,13 @@ func migrateScriptHook(root, taskfileDir, name string, task *wakeast.Task) (stri
 	script := filepath.Clean(filepath.Join(base, filepath.FromSlash(strings.TrimPrefix(command, "./"))))
 	relative, err := filepath.Rel(root, script)
 	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return "", manifest.Hook{}, false
+		return "", false
 	}
 	info, err := os.Stat(script)
 	if err != nil || info.IsDir() {
-		return "", manifest.Hook{}, false
+		return "", false
 	}
-	return phase, manifest.Hook{Script: filepath.ToSlash(relative)}, true
-}
-
-func setMigratedHook(hooks *manifest.Hooks, phase string, hook manifest.Hook) {
-	switch phase {
-	case "before_build":
-		hooks.BeforeBuild = hook
-	case "after_build":
-		hooks.AfterBuild = hook
-	case "before_package":
-		hooks.BeforePackage = hook
-	case "after_package":
-		hooks.AfterPackage = hook
-	case "before_sign":
-		hooks.BeforeSign = hook
-	case "after_sign":
-		hooks.AfterSign = hook
-	}
+	return phase, true
 }
 
 func containsString(values []string, want string) bool {
@@ -417,6 +705,9 @@ func discoverTaskfiles(root string) ([]string, error) {
 		for _, name := range names {
 			inc := tf.Includes[name]
 			path := inc.Taskfile
+			if strings.Contains(path, "{{") {
+				continue
+			}
 			if !filepath.IsAbs(path) {
 				path = filepath.Join(base, path)
 			}
@@ -435,7 +726,7 @@ func discoverTaskfiles(root string) ([]string, error) {
 				if inc.Optional {
 					continue
 				}
-				return fmt.Errorf("include %q points at a missing Taskfile: %s", name, path)
+				continue
 			}
 			if err != nil {
 				return err
@@ -469,7 +760,30 @@ type canonicalDiff struct {
 	added   []string
 }
 
+var stockVariantCache = struct {
+	sync.Mutex
+	values map[string][]map[string]*wakeast.Task
+}{values: make(map[string][]map[string]*wakeast.Task, 6)}
+
 func stockTaskVariants(role string) []map[string]*wakeast.Task {
+	stockVariantCache.Lock()
+	variants, ok := stockVariantCache.values[role]
+	stockVariantCache.Unlock()
+	if ok {
+		return variants
+	}
+	variants = loadStockTaskVariants(role)
+	stockVariantCache.Lock()
+	if existing, loaded := stockVariantCache.values[role]; loaded {
+		variants = existing
+	} else {
+		stockVariantCache.values[role] = variants
+	}
+	stockVariantCache.Unlock()
+	return variants
+}
+
+func loadStockTaskVariants(role string) []map[string]*wakeast.Task {
 	if role == "root" || role == "unknown" {
 		return nil
 	}
@@ -691,116 +1005,6 @@ func set(values ...string) map[string]bool {
 		result[v] = true
 	}
 	return result
-}
-
-func removeLegacySources(root string, sources map[string]string, complete bool) ([]string, []MigrationDiagnostic) {
-	if !complete {
-		return nil, []MigrationDiagnostic{{Severity: "warning", Code: "remove-blocked", Message: "legacy files were retained because migration is incomplete"}}
-	}
-	var removed []string
-	var diagnostics []MigrationDiagnostic
-	paths := make([]string, 0, len(sources))
-	for path := range sources {
-		paths = append(paths, path)
-	}
-	sort.Sort(sort.Reverse(sort.StringSlice(paths)))
-	for _, rel := range paths {
-		clean := filepath.ToSlash(filepath.Clean(filepath.FromSlash(rel)))
-		if filepath.IsAbs(rel) || clean == ".." || strings.HasPrefix(clean, "../") {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "remove-outside-project", File: rel, Message: "retained because the source is outside the project"})
-			continue
-		}
-		path := filepath.Join(root, filepath.FromSlash(rel))
-		digest, err := digestFile(path)
-		if err != nil {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "remove-failed", File: rel, Message: err.Error()})
-			continue
-		}
-		if digest != sources[rel] {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-source", File: rel, Message: "retained because it changed after analysis"})
-			continue
-		}
-		if err := os.Remove(path); err != nil {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "remove-failed", File: rel, Message: err.Error()})
-			continue
-		}
-		removed = append(removed, rel)
-	}
-	sort.Strings(removed)
-	return removed, diagnostics
-}
-
-func verifyLegacySources(root string, sources map[string]string) []MigrationDiagnostic {
-	var diagnostics []MigrationDiagnostic
-	paths := make([]string, 0, len(sources))
-	for path := range sources {
-		paths = append(paths, path)
-	}
-	sort.Strings(paths)
-	for _, rel := range paths {
-		clean := filepath.ToSlash(filepath.Clean(filepath.FromSlash(rel)))
-		if filepath.IsAbs(rel) || clean == ".." || strings.HasPrefix(clean, "../") {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "source-outside-project", File: rel, Message: "source is outside the project"})
-			continue
-		}
-		digest, err := digestFile(filepath.Join(root, filepath.FromSlash(clean)))
-		if err != nil {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "source-unavailable", File: rel, Message: err.Error()})
-			continue
-		}
-		if digest != sources[rel] {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-source", File: rel, Message: "source changed after the original migration analysis"})
-		}
-	}
-	return diagnostics
-}
-
-func backupLegacySources(root string, sources map[string]string) ([]string, []MigrationDiagnostic) {
-	var backedUp []string
-	var diagnostics []MigrationDiagnostic
-	paths := make([]string, 0, len(sources))
-	for path := range sources {
-		paths = append(paths, path)
-	}
-	sort.Strings(paths)
-	for _, rel := range paths {
-		clean := filepath.ToSlash(filepath.Clean(filepath.FromSlash(rel)))
-		if filepath.IsAbs(rel) || clean == ".." || strings.HasPrefix(clean, "../") {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-outside-project", File: rel, Message: "not backed up because the source is outside the project"})
-			continue
-		}
-		source := filepath.Join(root, filepath.FromSlash(clean))
-		digest, err := digestFile(source)
-		if err != nil {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
-			continue
-		}
-		if digest != sources[rel] {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-source", File: rel, Message: "not backed up because it changed after analysis"})
-			continue
-		}
-		data, err := os.ReadFile(source)
-		if err != nil {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
-			continue
-		}
-		info, err := os.Stat(source)
-		if err != nil {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
-			continue
-		}
-		destination := filepath.Join(root, ".wails", "migration-backup", filepath.FromSlash(clean))
-		if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
-			continue
-		}
-		if err := os.WriteFile(destination, data, info.Mode().Perm()); err != nil {
-			diagnostics = append(diagnostics, MigrationDiagnostic{Severity: "warning", Code: "backup-failed", File: rel, Message: err.Error()})
-			continue
-		}
-		backedUp = append(backedUp, filepath.ToSlash(filepath.Join(".wails", "migration-backup", clean)))
-	}
-	return backedUp, diagnostics
 }
 
 func digestFile(path string) (string, error) {

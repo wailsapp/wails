@@ -15,12 +15,153 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-type Executor struct{ Handler Handler }
+type Executor struct {
+	Handler    Handler
+	operations *executorOperations
+}
+
+type executorCache interface {
+	BeginObservationSession()
+	InvalidateObservations()
+	Snapshot(cache.SnapshotOptions) (string, error)
+	SnapshotFiles(string, ...string) (string, error)
+	SnapshotGoAPI(cache.SnapshotOptions) (string, error)
+	HasReceipt(string, string) bool
+	RecordReceipt(string) error
+	Lookup(string, string) (cache.LookupStatus, string, error)
+	Peek(string, string) (cache.LookupStatus, string, error)
+	RecordAction(string, string) (string, error)
+	Save() error
+}
+
+type executorOperations struct {
+	openReadOnly func(string) (executorCache, error)
+	open         func(string) (executorCache, error)
+	actionKey    func(string, any, []string, []string) (string, error)
+}
+
+func (e Executor) cacheOperations() executorOperations {
+	if e.operations != nil {
+		return *e.operations
+	}
+	return executorOperations{
+		openReadOnly: func(root string) (executorCache, error) { return cache.OpenCacheReadOnly(root) },
+		open:         func(root string) (executorCache, error) { return cache.OpenCache(root) },
+		actionKey:    cache.ActionKey,
+	}
+}
 
 type nodeOutcome struct {
 	key    NodeKey
 	result Result
 	err    error
+}
+
+func (e Executor) Inspect(ctx context.Context, plan Plan, root string) (Inspection, error) {
+	if e.Handler == nil {
+		return Inspection{}, fmt.Errorf("wake: inspector requires a handler")
+	}
+	if err := plan.Validate(root); err != nil {
+		return Inspection{}, err
+	}
+	operations := e.cacheOperations()
+	store, err := operations.openReadOnly(root)
+	if err != nil {
+		return Inspection{}, err
+	}
+	store.BeginObservationSession()
+	indegree := make(map[NodeKey]int, len(plan.Nodes))
+	dependents := make(map[NodeKey][]NodeKey, len(plan.Nodes))
+	for key, node := range plan.Nodes {
+		indegree[key] = len(node.Dependencies)
+		for _, dependency := range node.Dependencies {
+			dependents[dependency] = append(dependents[dependency], key)
+		}
+	}
+	ready := make([]NodeKey, 0, len(plan.Nodes))
+	for key, degree := range indegree {
+		if degree == 0 {
+			ready = append(ready, key)
+		}
+	}
+	sort.Slice(ready, func(i, j int) bool { return ready[i] < ready[j] })
+	inspection := Inspection{Operations: make(map[NodeKey]OperationInspection, len(plan.Nodes))}
+	results := make(map[NodeKey]Result, len(plan.Nodes))
+	for len(ready) != 0 {
+		key := ready[0]
+		ready = ready[1:]
+		node := plan.Nodes[key]
+		operation, result, inspectErr := e.inspectNode(ctx, store, node, inspection.Operations, results, operations.actionKey)
+		if inspectErr != nil {
+			return Inspection{}, fmt.Errorf("%s: %w", key, inspectErr)
+		}
+		inspection.Operations[key], results[key] = operation, result
+		for _, dependent := range dependents[key] {
+			indegree[dependent]--
+			if indegree[dependent] == 0 {
+				ready = append(ready, dependent)
+				sort.Slice(ready, func(i, j int) bool { return ready[i] < ready[j] })
+			}
+		}
+	}
+	if len(inspection.Operations) != len(plan.Nodes) {
+		return Inspection{}, fmt.Errorf("wake: inspection could not traverse the complete plan")
+	}
+	return inspection, nil
+}
+
+func (e Executor) inspectNode(ctx context.Context, store executorCache, node Node, operations map[NodeKey]OperationInspection, results map[NodeKey]Result, actionKey func(string, any, []string, []string) (string, error)) (OperationInspection, Result, error) {
+	inputs, err := snapshotNodeInputs(store, node)
+	if err != nil {
+		return OperationInspection{}, Result{}, err
+	}
+	operation := OperationInspection{Decision: "run", Status: cache.LookupMiss, Inputs: make([]InputSnapshot, len(inputs))}
+	for index, digest := range inputs {
+		operation.Inputs[index] = InputSnapshot{Label: node.Inputs[index].Label, Digest: digest}
+	}
+	if node.Cache == CacheNever {
+		return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
+	}
+	for _, dependency := range node.Dependencies {
+		if operations[dependency].Decision == "run" {
+			return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
+		}
+	}
+	identity, err := e.Handler.Identity(ctx, node)
+	if err != nil {
+		return OperationInspection{}, Result{}, err
+	}
+	dependencyArtifacts := make([]string, 0, len(node.Dependencies))
+	for _, dependency := range node.Dependencies {
+		if artifact := results[dependency].Artifact; artifact != "" {
+			dependencyArtifacts = append(dependencyArtifacts, artifact)
+		}
+	}
+	action, err := actionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, inputs, dependencyArtifacts)
+	if err != nil {
+		return OperationInspection{}, Result{}, err
+	}
+	if node.Cache == CacheReceipt {
+		if store.HasReceipt(action, node.Marker) {
+			operation.Decision, operation.Status = "cached", cache.LookupHit
+		}
+		return operation, Result{Key: node.Key, Status: operation.Status}, nil
+	}
+	if node.Cache == CacheArtifact && node.Output != "" {
+		status, artifact, err := store.Peek(action, node.Output)
+		if err != nil {
+			return OperationInspection{}, Result{}, err
+		}
+		operation.Status = status
+		switch status {
+		case cache.LookupHit:
+			operation.Decision = "cached"
+		case cache.LookupRestored:
+			operation.Decision = "restore"
+		}
+		return operation, Result{Key: node.Key, Status: status, Artifact: artifact, Output: node.Output}, nil
+	}
+	return operation, Result{Key: node.Key, Status: cache.LookupMiss, Output: node.Output}, nil
 }
 
 func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions) (map[NodeKey]Result, error) {
@@ -38,10 +179,12 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 	if reporter == nil {
 		reporter = report.Nop{}
 	}
-	cacheStore, err := cache.OpenCache(options.Root)
+	operations := e.cacheOperations()
+	cacheStore, err := operations.open(options.Root)
 	if err != nil {
 		return nil, err
 	}
+	cacheStore.BeginObservationSession()
 
 	indegree := map[NodeKey]int{}
 	dependents := map[NodeKey][]NodeKey{}
@@ -123,7 +266,7 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 					dependencyResults[dependency] = results[dependency]
 				}
 				resultsMu.RUnlock()
-				result, err := e.runNode(ctx, cacheStore, &cacheMu, node, dependencyResults, options.Force, reporter)
+				result, err := e.runNode(ctx, cacheStore, &cacheMu, node, dependencyResults, options.Force, reporter, operations.actionKey)
 				if exclusiveLock != nil {
 					exclusiveLock.Unlock()
 				}
@@ -194,7 +337,7 @@ func (e Executor) Execute(ctx context.Context, plan Plan, options ExecuteOptions
 	return results, nil
 }
 
-func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync.Mutex, node Node, deps map[NodeKey]Result, force bool, reporter report.Reporter) (Result, error) {
+func (e Executor) runNode(ctx context.Context, store executorCache, cacheMu *sync.Mutex, node Node, deps map[NodeKey]Result, force bool, reporter report.Reporter, actionKey func(string, any, []string, []string) (string, error)) (Result, error) {
 	id := reporter.StepStart(string(node.Key), node.Label)
 	started := time.Now()
 	fail := func(err error, output string) (Result, error) {
@@ -204,25 +347,30 @@ func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync
 		reporter.StepFailed(id, report.Failure{Task: string(node.Key), Err: err, ExitCode: exitCode(err), Output: output})
 		return Result{}, err
 	}
-	identity, err := e.Handler.Identity(ctx, node)
-	if err != nil {
-		return fail(err, "")
-	}
-	cacheMu.Lock()
-	inputs, err := snapshotNodeInputs(store, node)
-	cacheMu.Unlock()
-	if err != nil {
-		return fail(err, "")
-	}
-	depArtifacts := make([]string, 0, len(node.Dependencies))
-	for _, key := range node.Dependencies {
-		if artifact := deps[key].Artifact; artifact != "" {
-			depArtifacts = append(depArtifacts, artifact)
+	var identity, action string
+	var depArtifacts []string
+	if node.Cache != CacheNever {
+		var err error
+		identity, err = e.Handler.Identity(ctx, node)
+		if err != nil {
+			return fail(err, "")
 		}
-	}
-	action, err := cache.ActionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, inputs, depArtifacts)
-	if err != nil {
-		return fail(err, "")
+		cacheMu.Lock()
+		inputs, snapshotErr := snapshotNodeInputs(store, node)
+		cacheMu.Unlock()
+		if snapshotErr != nil {
+			return fail(snapshotErr, "")
+		}
+		depArtifacts = make([]string, 0, len(node.Dependencies))
+		for _, key := range node.Dependencies {
+			if artifact := deps[key].Artifact; artifact != "" {
+				depArtifacts = append(depArtifacts, artifact)
+			}
+		}
+		action, err = actionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, inputs, depArtifacts)
+		if err != nil {
+			return fail(err, "")
+		}
 	}
 	if !force && node.Cache == CacheReceipt {
 		cacheMu.Lock()
@@ -252,6 +400,9 @@ func (e Executor) runNode(ctx context.Context, store *cache.Cache, cacheMu *sync
 	}
 
 execute:
+	cacheMu.Lock()
+	store.InvalidateObservations()
+	cacheMu.Unlock()
 	run, err := e.Handler.Run(ctx, node)
 	if err != nil {
 		return fail(err, run.Detail)
@@ -267,7 +418,7 @@ execute:
 		// the post-run identity so the immediately following build is a hit.
 		postInputs, snapshotErr := snapshotNodeInputs(store, node)
 		if snapshotErr == nil {
-			action, snapshotErr = cache.ActionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, postInputs, depArtifacts)
+			action, snapshotErr = actionKey(string(node.Kind), map[string]any{"spec": node.Spec, "tool": identity}, postInputs, depArtifacts)
 		}
 		if snapshotErr != nil {
 			cacheMu.Unlock()
@@ -291,7 +442,7 @@ execute:
 	return result, nil
 }
 
-func snapshotNodeInputs(store *cache.Cache, node Node) ([]string, error) {
+func snapshotNodeInputs(store executorCache, node Node) ([]string, error) {
 	inputs := make([]string, 0, len(node.Inputs))
 	for _, input := range node.Inputs {
 		var (
@@ -299,11 +450,11 @@ func snapshotNodeInputs(store *cache.Cache, node Node) ([]string, error) {
 			err    error
 		)
 		if input.SemanticGo {
-			digest, err = store.SnapshotGoAPI(input.Label, input.Root, input.ExcludeDirs)
+			digest, err = store.SnapshotGoAPI(cache.SnapshotOptions{Label: input.Label, Root: input.Root, ExcludeDirs: input.ExcludeDirs, UseGitIgnore: input.UseGitIgnore})
 		} else if len(input.Files) > 0 {
 			digest, err = store.SnapshotFiles(input.Label, input.Files...)
 		} else {
-			digest, err = store.Snapshot(cache.SnapshotOptions{Label: input.Label, Root: input.Root, IncludeAll: input.IncludeAll, IncludeNames: input.IncludeNames, IncludeExtensions: input.IncludeExtensions, ExcludeDirs: input.ExcludeDirs})
+			digest, err = store.Snapshot(cache.SnapshotOptions{Label: input.Label, Root: input.Root, IncludeAll: input.IncludeAll, IncludeNames: input.IncludeNames, IncludeExtensions: input.IncludeExtensions, ExcludeDirs: input.ExcludeDirs, ExcludeSuffixes: input.ExcludeSuffixes, UseGitIgnore: input.UseGitIgnore})
 		}
 		if err != nil {
 			return nil, err

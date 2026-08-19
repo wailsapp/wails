@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -17,11 +18,96 @@ import (
 func BenchmarkPlanMultiTarget(b *testing.B) {
 	config := performanceConfig(b)
 	request := Request{Verb: "build", Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "windows", Arch: "amd64"}, {OS: "darwin", Arch: "arm64"}}}
+	b.ReportAllocs()
 	b.ResetTimer()
 	for range b.N {
 		if _, err := PlanBuild(config, request); err != nil {
 			b.Fatal(err)
 		}
+	}
+}
+
+func BenchmarkPlanSingleTarget(b *testing.B) {
+	config := performanceConfig(b)
+	request := Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		if _, err := PlanBuild(config, request); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkPlanValidation1000Nodes(b *testing.B) {
+	plan := syntheticPlan(1000)
+	require.NoError(b, plan.Validate("."))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		if err := plan.Validate("."); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkInspectColdPlan(b *testing.B) {
+	config := performanceConfig(b)
+	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(b, err)
+	executor := Executor{Handler: &fakeHandler{root: config.Root}}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for range b.N {
+		if _, err := executor.Inspect(context.Background(), plan, config.Root); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func syntheticPlan(count int) Plan {
+	plan := Plan{Nodes: make(map[NodeKey]Node, count)}
+	for index := range count {
+		key := NodeKey(fmt.Sprintf("node-%04d", index))
+		dependencies := []NodeKey(nil)
+		if index > 0 {
+			dependencies = []NodeKey{NodeKey(fmt.Sprintf("node-%04d", index-1))}
+		}
+		plan.Nodes[key] = Node{Key: key, Kind: CompileApplication, Spec: CompileSpec{}, Dependencies: dependencies, Cache: CacheArtifact}
+	}
+	plan.Roots = []NodeKey{NodeKey(fmt.Sprintf("node-%04d", count-1))}
+	return plan
+}
+
+func TestConcurrentPlanConstructionIsDeterministic(t *testing.T) {
+	config := performanceConfig(t)
+	request := Request{Verb: "build", Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "linux", Arch: "arm64"}}}
+	want, err := PlanBuild(config, request)
+	require.NoError(t, err)
+	const workers = 64
+	results := make(chan Plan, workers)
+	errors := make(chan error, workers)
+	var group sync.WaitGroup
+	for range workers {
+		group.Add(1)
+		go func() {
+			defer group.Done()
+			plan, err := PlanBuild(config, request)
+			if err != nil {
+				errors <- err
+				return
+			}
+			results <- plan
+		}()
+	}
+	group.Wait()
+	close(results)
+	close(errors)
+	for err := range errors {
+		require.NoError(t, err)
+	}
+	for result := range results {
+		assert.Equal(t, want, result)
 	}
 }
 
@@ -71,9 +157,13 @@ func TestWarmNoopExecutorRunsNoHandlers(t *testing.T) {
 	runs := len(handler.runs)
 	results, err := executor.Execute(context.Background(), plan, options)
 	require.NoError(t, err)
-	assert.Equal(t, runs, len(handler.runs))
-	for _, result := range results {
-		assert.NotEqual(t, "miss", string(result.Status))
+	assert.Equal(t, runs+1, len(handler.runs), "only terminal collection should run again")
+	for key, result := range results {
+		if key == "collect:artifacts" {
+			assert.Equal(t, "miss", string(result.Status))
+			continue
+		}
+		assert.NotEqual(t, "miss", string(result.Status), key)
 	}
 }
 
@@ -98,11 +188,11 @@ func TestAppImageIsProcessIsolatedAndDarwinBundleAdaptersRemainExclusive(t *test
 	assert.Empty(t, linuxPlan.Nodes["package:linux/amd64:deb"].Claims.Exclusive)
 
 	darwin := performanceConfig(t)
-	darwinPlan, err := PlanBuild(darwin, Request{Verb: "package", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"app", "dmg"}})
+	darwinPlan, err := PlanBuild(darwin, Request{Verb: "package", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"dmg"}})
 	require.NoError(t, err)
-	appClaim := darwinPlan.Nodes["package:darwin/arm64:app"].Claims.Exclusive
+	appClaim := darwinPlan.Nodes["assemble:darwin/arm64"].Claims.Exclusive
 	assert.NotEmpty(t, appClaim)
-	assert.Equal(t, appClaim, darwinPlan.Nodes["package:darwin/arm64:dmg"].Claims.Exclusive, "app and DMG share the same bundle workspace")
+	assert.Equal(t, appClaim, darwinPlan.Nodes["package:darwin/arm64:dmg"].Claims.Exclusive, "app assembly and DMG packaging share the same bundle workspace")
 }
 
 func TestIndependentMultiTargetCompilesRunConcurrently(t *testing.T) {
@@ -123,10 +213,10 @@ func TestIndependentMultiTargetCompilesRunConcurrently(t *testing.T) {
 func TestMemoryClaimsBoundOtherwiseIndependentWork(t *testing.T) {
 	root := t.TempDir()
 	plan := Plan{Name: "memory", Roots: []NodeKey{"one", "two"}, Nodes: map[NodeKey]Node{
-		"one": {Key: "one", Kind: RunHook, Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024}},
-		"two": {Key: "two", Kind: RunHook, Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024}},
+		"one": {Key: "one", Kind: CompileApplication, Spec: CompileSpec{}, Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024}},
+		"two": {Key: "two", Kind: CompileApplication, Spec: CompileSpec{}, Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024}},
 	}}
-	handler := newOverlapHandler(&fakeHandler{root: root}, RunHook, 2)
+	handler := newOverlapHandler(&fakeHandler{root: root}, CompileApplication, 2)
 	_, err := (Executor{Handler: handler}).Execute(context.Background(), plan, ExecuteOptions{Root: root, Workers: 2, MemoryLimitMB: 1024, Force: true, Reporter: report.Nop{}})
 	require.NoError(t, err)
 	assert.Equal(t, 1, handler.maximum(), "memory capacity should serialize Nodes whose claims do not fit together")

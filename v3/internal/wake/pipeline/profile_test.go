@@ -74,21 +74,21 @@ profile "release" {
     sign = true
   }
 	  target "darwin/universal" {
-	    formats = ["app", "dmg"]
+	    formats = ["dmg"]
 	    sign = true
 	    notarize = true
-	    destination = "dist/macos"
 	  }
 	  target "linux/arm64" {
 	    formats = ["appimage", "deb", "rpm", "archlinux"]
 	    sign = true
 	  }
 	  target "ios/arm64" {
-	    formats = ["app"]
+	    destination = "device"
+	    formats = ["ipa"]
 	    sign = true
 	  }
 	  target "android/amd64" {
-	    formats = ["apk", "aab"]
+	    formats = ["aab"]
 	    sign = true
   }
 }
@@ -101,22 +101,22 @@ profile "release" {
 
 	for _, artifact := range []string{
 		"package:windows/amd64:nsis", "package:windows/amd64:msix",
-		"package:darwin/universal:app", "package:darwin/universal:dmg",
+		"assemble:darwin/universal", "package:darwin/universal:dmg",
 		"package:linux/arm64:appimage", "package:linux/arm64:deb", "package:linux/arm64:rpm", "package:linux/arm64:archlinux",
-		"package:ios/arm64:app", "package:android/amd64:apk", "package:android/amd64:aab",
+		"assemble:ios/arm64", "package:ios/arm64:ipa", "package:android/amd64:aab",
 	} {
 		assert.Contains(t, plan.Nodes, NodeKey(artifact))
 	}
 	assert.Contains(t, plan.Nodes, NodeKey("package:windows/amd64:nsis:sign"))
 	assert.Contains(t, plan.Nodes, NodeKey("package:windows/amd64:msix:sign"))
-	assert.Contains(t, plan.Nodes, NodeKey("package:darwin/universal:app:sign"))
+	assert.Contains(t, plan.Nodes, NodeKey("package:darwin/universal:dmg:sign"))
 	assert.Contains(t, plan.Nodes, NodeKey("package:linux/arm64:deb:sign"))
-	assert.Contains(t, plan.Nodes, NodeKey("package:ios/arm64:app:sign"))
-	assert.Contains(t, plan.Nodes, NodeKey("package:android/amd64:apk:sign"))
+	assert.Contains(t, plan.Nodes, NodeKey("package:ios/arm64:ipa:sign"))
+	assert.Contains(t, plan.Nodes, NodeKey("package:android/amd64:aab:sign"))
 	assert.Contains(t, plan.Nodes, NodeKey("frontend:bindings"))
 	assert.Contains(t, plan.Nodes, NodeKey("frontend:build"))
 	assert.Equal(t, "windows/amd64,darwin/universal,linux/arm64,ios/arm64,android/amd64", plan.Target)
-	assert.Equal(t, "dist/macos", plan.Nodes[NodeKey("package:darwin/universal:app")].Spec.(PackageSpec).Variant)
+	assert.Equal(t, "device", plan.Nodes[NodeKey("package:ios/arm64:ipa")].Spec.(PackageSpec).Destination)
 }
 
 func TestHCLTargetOverridesReachTheResolvedPipelineSpecs(t *testing.T) {
@@ -160,7 +160,9 @@ target "linux/arm64" {
 	compile := plan.Nodes[NodeKey("target:linux/arm64:compile")].Spec.(CompileSpec)
 	assert.Equal(t, "24.04", compile.MinimumVersion)
 	assert.ElementsMatch(t, []string{"release", "enterprise", "production"}, compile.Tags)
-	assert.Equal(t, "bin/custom", compile.Output)
+	assert.Equal(t, ".wails/build/default/linux-arm64/artifacts/custom", compile.Output)
+	publish := plan.Nodes[NodeKey("publish:target:linux/arm64:compile")].Spec.(PublishSpec)
+	assert.Equal(t, "bin/custom", publish.Destination)
 	frontend := plan.Nodes[NodeKey("frontend:build")]
 	assert.Equal(t, "frontend/dist", frontend.Output)
 	packaged, err := PlanBuild(loaded.Config, Request{Verb: "package", TargetOS: "linux", TargetArch: "arm64", Formats: []string{"deb"}})
@@ -170,7 +172,7 @@ target "linux/arm64" {
 	assert.Equal(t, []string{"network"}, packageSpec.Capabilities)
 }
 
-func TestHCLProfileDestinationsReachEverySupportedTarget(t *testing.T) {
+func TestHCLProfileDestinationSelectsIOSDeviceOrSimulator(t *testing.T) {
 	root := t.TempDir()
 	contents := `version = 3
 project {
@@ -180,11 +182,7 @@ project {
   version = "1.0.0"
 }
 profile "release" {
-  target "windows/amd64" { destination = "windows-output" }
-  target "darwin/amd64" { destination = "darwin-output" }
-  target "linux/amd64" { destination = "linux-output" }
-  target "ios/arm64" { destination = "ios-device" }
-  target "android/arm64" { destination = "android-output" }
+  target "ios/arm64" { destination = "simulator" }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(contents), 0o644))
@@ -192,24 +190,12 @@ profile "release" {
 	require.NoError(t, err)
 	plan, err := PlanBuild(loaded.Config, Request{Verb: "build"})
 	require.NoError(t, err)
-	for _, target := range []struct {
-		name, variant string
-	}{
-		{"windows/amd64", "windows-output"},
-		{"darwin/amd64", "darwin-output"},
-		{"linux/amd64", "linux-output"},
-		{"ios/arm64", "ios-device"},
-		{"android/arm64", "android-output"},
-	} {
-		node, ok := plan.Nodes[NodeKey("target:"+target.name+":compile")]
-		require.True(t, ok, target.name)
-		spec, ok := node.Spec.(CompileSpec)
-		require.True(t, ok, target.name)
-		assert.Equal(t, target.variant, spec.Variant, target.name)
-	}
+	node, ok := plan.Nodes[NodeKey("target:ios/arm64:compile")]
+	require.True(t, ok)
+	assert.Equal(t, "simulator", node.Spec.(CompileSpec).Destination)
 }
 
-func TestHCLProfileSigningWithoutFormatsUsesPlatformDefaults(t *testing.T) {
+func TestHCLProfileSigningWithoutFormatsSignsTheRunnable(t *testing.T) {
 	root := t.TempDir()
 	contents := `version = 3
 project {
@@ -227,11 +213,11 @@ profile "release" {
 	require.NoError(t, err)
 	plan, err := PlanBuild(loaded.Config, Request{Verb: "build"})
 	require.NoError(t, err)
-	assert.Contains(t, plan.Nodes, NodeKey("package:linux/amd64:appimage"))
-	assert.Contains(t, plan.Nodes, NodeKey("package:linux/amd64:appimage:sign"))
+	assert.NotContains(t, plan.Nodes, NodeKey("package:linux/amd64:appimage"))
+	assert.Contains(t, plan.Nodes, NodeKey("target:linux/amd64:compile:sign"))
 }
 
-func TestHCLProfileDestinationsReachArmAnd386Targets(t *testing.T) {
+func TestHCLProfileRejectsTargetsOutsideTheClosedV3Registry(t *testing.T) {
 	root := t.TempDir()
 	contents := `version = 3
 project {
@@ -241,17 +227,13 @@ project {
   version = "1.0.0"
 }
 profile "release" {
-  target "linux/arm" { destination = "arm-output" }
-  target "windows/386" { destination = "x86-output" }
+  target "linux/arm" {}
+  target "windows/386" {}
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(contents), 0o644))
-	loaded, err := manifest.Load(root, "release")
-	require.NoError(t, err)
-	plan, err := PlanBuild(loaded.Config, Request{Verb: "build"})
-	require.NoError(t, err)
-	assert.Equal(t, "arm-output", plan.Nodes[NodeKey("target:linux/arm:compile")].Spec.(CompileSpec).Variant)
-	assert.Equal(t, "x86-output", plan.Nodes[NodeKey("target:windows/386:compile")].Spec.(CompileSpec).Variant)
+	_, err := manifest.Load(root, "release")
+	require.ErrorContains(t, err, `unsupported target "linux/arm"`)
 }
 
 func TestHCLPlanTracksLocalGoModuleReplacements(t *testing.T) {

@@ -47,6 +47,7 @@ build {
 
 func TestBuildPlanUsesHCLProfileAndDoesNotInvokeTaskfile(t *testing.T) {
 	root := t.TempDir()
+	prepareHCLPlanInputs(t, root)
 	hcl := hclBuildFixture + `
 profile "release" {
   target "linux/amd64" {
@@ -54,12 +55,12 @@ profile "release" {
   }
   target "windows/amd64" {
     formats = ["nsis"]
-    sign = true
   }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("this is ignored\n"), 0o644))
+	prependFakePlanTools(t, "zig", "makensis")
 	t.Chdir(root)
 
 	previous := runTaskFunc
@@ -82,6 +83,7 @@ profile "release" {
 
 func TestBuildJSONPlanIsDeterministicAndDescribesArtifacts(t *testing.T) {
 	root := t.TempDir()
+	prepareHCLPlanInputs(t, root)
 	hcl := hclBuildFixture + `
 profile "release" {
   target "linux/amd64" {
@@ -108,6 +110,14 @@ profile "release" {
 		Operations []struct {
 			Stage    string `json:"stage"`
 			Decision string `json:"decision"`
+			Origins  []struct {
+				Field  string `json:"field"`
+				Source string `json:"source"`
+			} `json:"origins"`
+			Inputs []struct {
+				Label    string `json:"label"`
+				Snapshot string `json:"snapshot"`
+			} `json:"inputs"`
 		} `json:"operations"`
 		Artifacts []struct {
 			Kind string `json:"kind"`
@@ -119,21 +129,39 @@ profile "release" {
 	assert.Equal(t, "build", plan.Request.Command)
 	assert.Equal(t, "release", plan.Request.Profile)
 	assert.NotEmpty(t, plan.Operations)
-	assert.Contains(t, mapStrings(plan.Operations, func(v struct {
-		Stage    string `json:"stage"`
-		Decision string `json:"decision"`
-	}) string {
-		return v.Stage
-	}), "package")
+	stages := make([]string, 0, len(plan.Operations))
+	for _, operation := range plan.Operations {
+		stages = append(stages, operation.Stage)
+	}
+	assert.Contains(t, stages, "package")
 	for _, operation := range plan.Operations {
 		assert.Equal(t, "run", operation.Decision)
+		if operation.Stage == "compile" {
+			require.NotEmpty(t, operation.Origins)
+			assert.Contains(t, mapStrings(operation.Origins, func(value struct {
+				Field  string `json:"field"`
+				Source string `json:"source"`
+			}) string {
+				return value.Field
+			}), "build.tags")
+			hasManifestSource := false
+			for _, origin := range operation.Origins {
+				hasManifestSource = hasManifestSource || strings.Contains(origin.Source, manifest.Filename+":")
+			}
+			assert.True(t, hasManifestSource)
+			require.NotEmpty(t, operation.Inputs)
+			assert.NotEmpty(t, operation.Inputs[0].Snapshot)
+		}
 	}
 	assert.Contains(t, mapArtifacts(plan.Artifacts), "deb")
+	assert.NoDirExists(t, filepath.Join(root, ".wails"))
 }
 
 func TestBuildPlanAcceptsCommaSeparatedTargets(t *testing.T) {
 	root := t.TempDir()
+	prepareHCLPlanInputs(t, root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
+	prependFakePlanTools(t, "zig")
 	t.Chdir(root)
 	output := captureHCLStdout(t, func() {
 		require.NoError(t, Build(&flags.Build{Plan: true, Targets: "windows/amd64,linux/arm64"}, nil))
@@ -143,6 +171,7 @@ func TestBuildPlanAcceptsCommaSeparatedTargets(t *testing.T) {
 
 func TestBuildPlanPrintsRequestedFormats(t *testing.T) {
 	root := t.TempDir()
+	prepareHCLPlanInputs(t, root)
 	t.Chdir(root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
 	output := captureHCLStdout(t, func() {
@@ -151,8 +180,77 @@ func TestBuildPlanPrintsRequestedFormats(t *testing.T) {
 	assert.Contains(t, output, "Formats: deb")
 }
 
+func TestBuildPlanShowsResolvedAnonymousCompilerOverrides(t *testing.T) {
+	root := t.TempDir()
+	prepareHCLPlanInputs(t, root)
+	prependFakePlanTools(t, "garble")
+	t.Chdir(root)
+	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
+	options := flags.Build{Plan: true, Targets: "linux/amd64", Tags: "sqlite", Obfuscated: true, GarbleArgs: "-tiny -seed=random"}
+	output := captureHCLStdout(t, func() { require.NoError(t, Build(&options, nil)) })
+	assert.Contains(t, output, "Compiler linux/amd64: toolchain=native; tags=production, sqlite, wails_obfuscated")
+	assert.Contains(t, output, "obfuscated=yes")
+	assert.Contains(t, output, "garble args=-tiny -seed=random")
+
+	options.JSON = true
+	jsonOutput := captureHCLStdout(t, func() { require.NoError(t, Build(&options, nil)) })
+	var decoded struct {
+		Request struct {
+			Compilers []struct {
+				Tags       []string `json:"tags"`
+				Obfuscated bool     `json:"obfuscated"`
+				GarbleArgs []string `json:"garble_args"`
+			} `json:"compilers"`
+		} `json:"request"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(jsonOutput), &decoded))
+	require.Len(t, decoded.Request.Compilers, 1)
+	assert.Equal(t, []string{"production", "sqlite", "wails_obfuscated"}, decoded.Request.Compilers[0].Tags)
+	assert.True(t, decoded.Request.Compilers[0].Obfuscated)
+	assert.Equal(t, []string{"-tiny", "-seed=random"}, decoded.Request.Compilers[0].GarbleArgs)
+}
+
+func prependFakePlanTools(t *testing.T, names ...string) {
+	t.Helper()
+	directory := t.TempDir()
+	for _, name := range names {
+		require.NoError(t, os.WriteFile(filepath.Join(directory, name), []byte("#!/bin/sh\nexit 0\n"), 0o755))
+	}
+	t.Setenv("PATH", directory+string(os.PathListSeparator)+os.Getenv("PATH"))
+}
+
+func prepareHCLPlanInputs(t *testing.T, root string) {
+	t.Helper()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "frontend", "node_modules"), 0o755))
+	for name, contents := range map[string]string{
+		"go.mod":                     "module example.com/plan\n\ngo 1.24\n",
+		"main.go":                    "package main\nfunc main() {}\n",
+		"frontend/package.json":      `{}`,
+		"frontend/package-lock.json": `{}`,
+		"frontend/index.js":          "export {}\n",
+	} {
+		require.NoError(t, os.WriteFile(filepath.Join(root, filepath.FromSlash(name)), []byte(contents), 0o644))
+	}
+}
+
+func TestBuildGarbleArgumentsPreserveQuotedTokensAndRejectMalformedInput(t *testing.T) {
+	root := t.TempDir()
+	prepareHCLPlanInputs(t, root)
+	prependFakePlanTools(t, "garble")
+	t.Chdir(root)
+	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
+	options := flags.Build{Plan: true, Targets: "linux/amd64", Obfuscated: true, GarbleArgs: `-tiny -seed "value with spaces"`}
+	output := captureHCLStdout(t, func() { require.NoError(t, Build(&options, nil)) })
+	assert.Contains(t, output, "garble args=-tiny -seed value with spaces")
+
+	options.GarbleArgs = `-seed "unterminated`
+	err := Build(&options, nil)
+	require.ErrorContains(t, err, "--garble-args")
+}
+
 func TestDevPlanUsesTheHCLBuildPipeline(t *testing.T) {
 	root := t.TempDir()
+	prepareHCLPlanInputs(t, root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
 	t.Chdir(root)
 	output := captureHCLStdout(t, func() {
@@ -169,7 +267,7 @@ func TestBuildRejectsJSONWithoutPlanBeforeLoadingProject(t *testing.T) {
 	assert.ErrorContains(t, err, "--json requires --plan")
 }
 
-func TestHCLConfigCommandsUseTheResolvedManifest(t *testing.T) {
+func TestHCLEjectWritesAnInactiveResolvedManifestAndRequiresForce(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	hcl := `version = 3
@@ -179,39 +277,14 @@ project {
   identifier = "com.example.config"
   version = "1.0.0"
 }
-profile "release" {
-  target "linux/amd64" {}
-}
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
-
-	check := captureHCLStdout(t, func() {
-		require.NoError(t, ConfigCheck(&ConfigOptions{Profile: "release"}))
-	})
-	assert.Contains(t, check, "wails.hcl is valid (com.example.config)")
-
-	textConfig := captureHCLStdout(t, func() {
-		require.NoError(t, ConfigShow(&ConfigOptions{Profile: "release"}))
-	})
-	assert.Contains(t, textConfig, "name = \"config\"")
-	assert.Contains(t, textConfig, "output = \"bin\"")
-
-	jsonConfig := captureHCLStdout(t, func() {
-		require.NoError(t, ConfigShow(&ConfigOptions{Profile: "release", JSON: true}))
-	})
-	var decoded struct {
-		Profile string `json:"profile"`
-		Project struct {
-			Identifier string `json:"identifier"`
-		} `json:"project"`
-	}
-	require.NoError(t, json.Unmarshal([]byte(jsonConfig), &decoded))
-	assert.Equal(t, "release", decoded.Profile)
-	assert.Equal(t, "com.example.config", decoded.Project.Identifier)
 
 	require.NoError(t, Eject(&EjectOptions{}, nil))
 	ejected := readTestFile(t, filepath.Join(root, manifest.EjectedFilename))
 	assert.Contains(t, ejected, "Generated by Wails CLI")
+	require.ErrorContains(t, Eject(&EjectOptions{}, nil), "--force")
+	require.NoError(t, Eject(&EjectOptions{Force: true}, nil))
 }
 
 func TestHCLSignCommandRunsTheCompleteProfilePipeline(t *testing.T) {
@@ -258,7 +331,7 @@ if [ "$1" = "run" ]; then mkdir -p dist; printf bundle > dist/index.html; fi
 	t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
 
 	require.NoError(t, SignWrapper(&flags.SignWrapper{Profile: "release"}, nil))
-	assert.FileExists(t, filepath.Join(root, "bin", "linux-amd64", "command_1.0.0_amd64.deb.signed"))
+	assert.FileExists(t, filepath.Join(root, "bin", "command_1.0.0_amd64.deb.signed"))
 	assert.FileExists(t, filepath.Join(root, "frontend", "dist", "index.html"))
 }
 
@@ -285,7 +358,7 @@ func TestHCLLinuxPackageTemplateReachesTheOwnedPackageWorkspace(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "nfpm.yaml.tmpl"), []byte("name: {{.Project.BinaryName}}\nsource: {{.Paths.Binary}}\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "nfpm.yaml.tmpl"), []byte("name: packages\nsource: bin/packages\n"), 0o644))
 	hcl := `version = 3
 project {
   name = "linux-template"
@@ -310,8 +383,7 @@ profile "release" {
 	require.NoError(t, err)
 	assert.Equal(t, filepath.Join(root, ".wails", "build", "release", "linux-amd64", "package", "deb", "nfpm.yaml"), configPath)
 	data := readTestFile(t, configPath)
-	assert.Contains(t, data, "name: linux-template")
-	assert.Contains(t, data, filepath.Join(root, "bin", "linux-amd64", "linux-template"))
+	assert.Equal(t, "name: packages\nsource: bin/packages\n", data)
 }
 
 func TestHCLBuildExecutesFrontendAndRealGoCompile(t *testing.T) {
@@ -354,11 +426,22 @@ func TestHCLBuildExecutesFrontendAndRealGoCompile(t *testing.T) {
 	assert.False(t, taskCalled, "the HCL-first pipeline must not invoke Taskfile execution")
 	assert.Equal(t, "export const userOwned = true;\n", readTestFile(t, userAsset))
 	assert.DirExists(t, filepath.Join(root, ".wails"))
+	var receipt pipeline.ArtifactReceipt
+	require.NoError(t, json.Unmarshal([]byte(readTestFile(t, filepath.Join(root, ".wails", "artifacts", "receipt.json"))), &receipt))
+	require.Len(t, receipt.Artifacts, 1)
+	assert.Equal(t, "bin/hello", receipt.Artifacts[0].Path)
+	assert.Equal(t, runtime.GOOS+"/"+runtime.GOARCH, receipt.Artifacts[0].Target)
+	assert.Equal(t, pipeline.ArtifactBinary, receipt.Artifacts[0].Kind)
+	assert.Regexp(t, `^sha256:[0-9a-f]{64}$`, receipt.Artifacts[0].Digest)
 
 	second, err := runManifestPipelineResult(manifestRunOptions{Verb: "build", TargetOS: runtime.GOOS, TargetArch: runtime.GOARCH})
 	require.NoError(t, err)
 	assert.Equal(t, "install\nrun bundle\n", readTestFile(t, invocationLog), "a warm HCL build should use the cache")
 	for key, result := range second.Results {
+		if key == "collect:artifacts" {
+			assert.Equal(t, cache.LookupMiss, result.Status)
+			continue
+		}
 		assert.NotEqual(t, cache.LookupMiss, result.Status, key)
 	}
 	assert.NotEmpty(t, first.Results)
@@ -397,10 +480,14 @@ func TestHCLDevBuildExecutesTheDevelopmentPipeline(t *testing.T) {
 	t.Setenv("NPM_LOG", log)
 	loaded, err := manifest.Load(root, "")
 	require.NoError(t, err)
-	_, err = runManifestDevBuild(t.Context(), &DevOptions{}, loaded, runtime.GOOS, runtime.GOARCH, "http://127.0.0.1:9999", 9999)
+	loaded.Config.Dev.Tags = []string{"manifest-dev"}
+	run, err := runManifestDevBuild(t.Context(), &DevOptions{Tags: "cli-dev,manifest-dev"}, loaded, runtime.GOOS, runtime.GOARCH, "http://127.0.0.1:9999", 9999)
 	require.NoError(t, err)
+	compile := run.Plan.Nodes[pipelineCompileKey(runtime.GOOS, runtime.GOARCH)].Spec.(pipeline.CompileSpec)
+	assert.Equal(t, []string{"manifest-dev", "cli-dev"}, compile.Tags)
 	assert.Equal(t, "install:\nrun bundle:false\n", readTestFile(t, log))
-	assert.FileExists(t, filepath.Join(root, "bin", "hello"))
+	assert.FileExists(t, filepath.Join(root, ".wails", "dev", runtime.GOOS+"-"+runtime.GOARCH, "hello"))
+	assert.NoFileExists(t, filepath.Join(root, "bin", "hello"), "Dev must not publish into the production output directory")
 	assert.FileExists(t, filepath.Join(root, "frontend", "dist", "index.html"))
 }
 
@@ -432,14 +519,19 @@ file_association "assets" {
 	require.Equal(t, pipeline.GeneratePlatformAssets, node.Kind)
 	_, err = (&manifestHandler{root: root, config: loaded.Config}).Run(t.Context(), node)
 	require.NoError(t, err)
-	require.NoError(t, os.MkdirAll(filepath.Join(root, "bin"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "bin", "assets"), []byte("binary"), 0o755))
 	packageNode := plan.Nodes[pipeline.NodeKey("package:linux/amd64:deb")]
+	packageSpec := packageNode.Spec.(pipeline.PackageSpec)
+	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, packageSpec.Binary)), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, packageSpec.Binary), []byte("binary"), 0o755))
 	_, err = (&manifestHandler{root: root, config: loaded.Config}).Run(t.Context(), packageNode)
+	require.NoError(t, err)
+	_, err = (&manifestHandler{root: root, config: loaded.Config}).Run(t.Context(), plan.Nodes[pipeline.NodeKey("publish:linux/amd64:deb")])
 	require.NoError(t, err)
 	for _, format := range []string{"rpm", "archlinux"} {
 		packageNode = plan.Nodes[pipeline.NodeKey("package:linux/amd64:"+format)]
 		_, err = (&manifestHandler{root: root, config: loaded.Config}).Run(t.Context(), packageNode)
+		require.NoError(t, err, format)
+		_, err = (&manifestHandler{root: root, config: loaded.Config}).Run(t.Context(), plan.Nodes[pipeline.NodeKey("publish:linux/amd64:"+format)])
 		require.NoError(t, err, format)
 	}
 
@@ -457,7 +549,7 @@ func TestHCLDarwinAppPackageUsesGeneratedPlatformAssets(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "Info.plist.tmpl"), []byte("{{.Project.Identifier}}|{{.Target.OS}}|{{.Package.Format}}"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "Info.plist"), []byte("com.example.macapp|darwin|app"), 0o644))
 	_, sourceFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
 	iconData, err := os.ReadFile(filepath.Join(filepath.Dir(sourceFile), "build_assets", "appicon.png"))
@@ -472,20 +564,20 @@ project {
   version = "1.0.0"
   icon = "build/icon.png"
 }
-package "app" {
-  template = "packaging/Info.plist.tmpl"
+darwin {
+  info_plist = "packaging/Info.plist"
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
 	loaded, err := manifest.Load(root, "")
 	require.NoError(t, err)
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "package", TargetOS: "darwin", TargetArch: "amd64", Formats: []string{"app"}})
+	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build", TargetOS: "darwin", TargetArch: "amd64"})
 	require.NoError(t, err)
 	handler := &manifestHandler{root: root, config: loaded.Config}
 	assetsNode := plan.Nodes[pipeline.NodeKey("target:darwin/amd64:assets")]
 	_, err = handler.Run(t.Context(), assetsNode)
 	require.NoError(t, err)
-	packageNode := plan.Nodes[pipeline.NodeKey("package:darwin/amd64:app")]
+	packageNode := plan.Nodes[pipeline.NodeKey("assemble:darwin/amd64")]
 	spec := packageNode.Spec.(pipeline.PackageSpec)
 	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("binary"), 0o755))
@@ -504,14 +596,12 @@ func TestHCLDMGPackagingBuildsTheAppAndResolvesOptions(t *testing.T) {
 	for _, name := range []string{"background.png", "volume.icns", "file.icns", "README.md"} {
 		require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", name), []byte(name), 0o644))
 	}
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "dmg.json.tmpl"), []byte(`{"background":"packaging/background.png","window_width":700,"window_height":500}`), 0o644))
 	hcl := hclBuildFixture + `
 package "dmg" {
-  template = "packaging/dmg.json.tmpl"
   background = "packaging/background.png"
   volume_icon = "packaging/volume.icns"
   file_icon = "packaging/file.icns"
-  files = "Read Me=packaging/README.md"
+  files = { "Read Me" = "packaging/README.md" }
   window_width = 900
   window_height = 620
 }
@@ -528,6 +618,12 @@ profile "release" {
 	assetsNode := plan.Nodes[pipeline.NodeKey("target:darwin/arm64:assets")]
 	_, err = handler.Run(t.Context(), assetsNode)
 	require.NoError(t, err)
+	assemblyNode := plan.Nodes[pipeline.NodeKey("assemble:darwin/arm64")]
+	assemblySpec := assemblyNode.Spec.(pipeline.PackageSpec)
+	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, assemblySpec.Binary)), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, assemblySpec.Binary), []byte("darwin binary"), 0o755))
+	_, err = handler.Run(t.Context(), assemblyNode)
+	require.NoError(t, err)
 	packageNode := plan.Nodes[pipeline.NodeKey("package:darwin/arm64:dmg")]
 	spec := packageNode.Spec.(pipeline.PackageSpec)
 	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
@@ -543,11 +639,14 @@ profile "release" {
 	_, err = handler.Run(t.Context(), packageNode)
 	require.NoError(t, err)
 	require.NotNil(t, received)
+	resolvedRoot, err := filepath.EvalSymlinks(root)
+	require.NoError(t, err)
 	assert.Equal(t, "dmg", received.Format)
-	assert.Equal(t, filepath.Join(root, "packaging", "background.png"), received.BackgroundImage)
-	assert.Equal(t, filepath.Join(root, "packaging", "volume.icns"), received.DmgVolumeIcon)
-	assert.Equal(t, filepath.Join(root, "packaging", "file.icns"), received.DmgFileIcon)
-	assert.Equal(t, "Read Me="+filepath.Join(root, "packaging", "README.md"), received.DmgFiles)
+	workspace := filepath.Join(resolvedRoot, ".wails", "build", "release", "darwin-arm64", "package", "dmg", "resources")
+	assert.Equal(t, filepath.Join(workspace, "background.png"), received.BackgroundImage)
+	assert.Equal(t, filepath.Join(workspace, "volume-icon.icns"), received.DmgVolumeIcon)
+	assert.Equal(t, filepath.Join(workspace, "file-icon.icns"), received.DmgFileIcon)
+	assert.Equal(t, "Read Me="+filepath.Join(workspace, "file-000.md"), received.DmgFiles)
 	assert.Equal(t, 900, received.DmgWindowWidth)
 	assert.Equal(t, 620, received.DmgWindowHeight)
 	assert.FileExists(t, filepath.Join(root, spec.Output))
@@ -566,10 +665,10 @@ project {
 }
 profile "release" {
   target "windows/amd64" { formats = ["nsis"] }
-  target "darwin/amd64" { formats = ["app"] }
+  target "darwin/amd64" {}
   target "linux/amd64" { formats = ["deb"] }
-  target "ios/arm64" { formats = ["app"] }
-  target "android/arm64" { formats = ["apk", "aab"] }
+  target "ios/arm64" { destination = "simulator" }
+  target "android/arm64" { formats = ["aab"] }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
@@ -608,7 +707,7 @@ profile "release" {
 
 	androidAssets := filepath.Join(root, ".wails", "build", "release", "android-arm64", "assets", "android")
 	require.NoError(t, os.WriteFile(filepath.Join(androidAssets, "gradlew"), []byte("#!/bin/sh\nif [ \"$1\" = bundleRelease ]; then mkdir -p app/build/outputs/bundle/release; printf aab > app/build/outputs/bundle/release/app-release.aab; else mkdir -p app/build/outputs/apk/release; printf apk > app/build/outputs/apk/release/app-release.apk; fi\n"), 0o755))
-	for _, format := range []string{"apk", "aab"} {
+	for _, format := range []string{"aab"} {
 		androidPackage := plan.Nodes[pipeline.NodeKey("package:android/arm64:"+format)]
 		androidSpec := androidPackage.Spec.(pipeline.PackageSpec)
 		require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, androidSpec.Binary)), 0o755))
@@ -645,28 +744,22 @@ target "android/arm64" {
   build_number = 17
 }
 profile "release" {
-  target "windows/amd64" {}
+  target "windows/amd64" { formats = ["nsis"] }
   target "darwin/amd64" {}
-  target "ios/arm64" {}
-  target "android/arm64" {}
+  target "ios/arm64" { destination = "simulator" }
+  target "android/arm64" { formats = ["aab"] }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
 	loaded, err := manifest.Load(root, "release")
 	require.NoError(t, err)
 	handler := &manifestHandler{root: root, config: loaded.Config}
-	for _, target := range []struct{ name, format string }{
-		{name: "windows/amd64", format: "nsis"},
-		{name: "darwin/amd64", format: "app"},
-		{name: "ios/arm64", format: "app"},
-		{name: "android/arm64", format: "apk"},
-	} {
-		parts := strings.Split(target.name, "/")
-		plan, planErr := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "package", TargetOS: parts[0], TargetArch: parts[1], Formats: []string{target.format}})
-		require.NoError(t, planErr, target.name)
-		node := plan.Nodes[pipeline.NodeKey("target:"+target.name+":assets")]
+	plan, planErr := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
+	require.NoError(t, planErr)
+	for _, target := range []string{"windows/amd64", "darwin/amd64", "ios/arm64", "android/arm64"} {
+		node := plan.Nodes[pipeline.NodeKey("target:"+target+":assets")]
 		_, err = handler.Run(t.Context(), node)
-		require.NoError(t, err, target.name)
+		require.NoError(t, err, target)
 	}
 	base := filepath.Join(root, ".wails", "build", "release")
 	assert.Contains(t, readTestFile(t, filepath.Join(base, "windows-amd64", "assets", "windows", "nsis", "project.nsi")), `${INFO_PRODUCTVERSION}.11`)
@@ -788,7 +881,6 @@ darwin {
 }
 profile "release" {
   target "darwin/arm64" {
-    formats = ["app"]
     sign = true
     notarize = true
   }
@@ -808,7 +900,11 @@ profile "release" {
 			require.NoError(t, err)
 			plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
 			require.NoError(t, err)
-			signNode := plan.Nodes[pipeline.NodeKey("package:"+test.platform+map[string]string{"windows": "/amd64", "darwin": "/arm64"}[test.platform]+":"+test.format+":sign")]
+			signKey := pipeline.NodeKey("package:windows/amd64:msix:sign")
+			if test.platform == "darwin" {
+				signKey = "assemble:darwin/arm64:sign"
+			}
+			signNode := plan.Nodes[signKey]
 			spec := signNode.Spec.(pipeline.SignSpec)
 			input := filepath.Join(root, spec.Input)
 			if test.platform == "darwin" {
@@ -827,15 +923,33 @@ profile "release" {
 			}
 			t.Cleanup(func() { manifestSign = previousSign })
 			handler := &manifestHandler{root: root, config: loaded.Config}
+			if spec.Config.Entitlements != "" {
+				assetsRoot := filepath.Dir(filepath.Dir(filepath.Join(root, spec.Config.Entitlements)))
+				relativeAssets, relativeErr := filepath.Rel(root, assetsRoot)
+				require.NoError(t, relativeErr)
+				require.NoError(t, handler.applyUserSigningInputs(filepath.Join(root, relativeAssets), test.platform))
+				require.NoError(t, os.WriteFile(filepath.Join(root, "release.entitlements"), []byte("mutated"), 0o644))
+			}
 			_, err = handler.Run(t.Context(), signNode)
 			require.NoError(t, err)
 			assert.True(t, spec.Config.Enabled)
-			assert.Equal(t, input, received.Input)
+			assert.NotEqual(t, input, received.Input, "signing must operate on a private staged copy")
+			assert.Contains(t, received.Input, string(filepath.Separator)+".sign-output-")
 			assert.Equal(t, spec.Config.Identity, received.Identity)
-			assert.Equal(t, spec.Config.Certificate, received.Certificate)
+			expectedCertificate := spec.Config.Certificate
+			if expectedCertificate != "" {
+				expectedCertificate, err = filepath.EvalSymlinks(filepath.Join(root, expectedCertificate))
+				require.NoError(t, err)
+			}
+			assert.Equal(t, expectedCertificate, received.Certificate)
 			assert.Equal(t, spec.Config.Thumbprint, received.Thumbprint)
 			assert.Equal(t, spec.Config.TimestampServer, received.Timestamp)
-			assert.Equal(t, spec.Config.Entitlements, received.Entitlements)
+			expectedEntitlements := spec.Config.Entitlements
+			if expectedEntitlements != "" {
+				expectedEntitlements, err = filepath.EvalSymlinks(filepath.Join(root, expectedEntitlements))
+				require.NoError(t, err)
+			}
+			assert.Equal(t, expectedEntitlements, received.Entitlements)
 			if test.platform == "darwin" {
 				assert.True(t, received.Notarize)
 				assert.Equal(t, spec.Config.Credential, received.KeychainProfile)
@@ -851,7 +965,7 @@ func TestHCLAppImagePackagingUsesTheConfiguredOutput(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "app.desktop.tmpl"), []byte("Name={{.Project.ProductName}}\nExec={{.Project.BinaryName}}\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "app.desktop.tmpl"), []byte("Name=Image\nExec=image\n"), 0o644))
 	hcl := `version = 3
 project {
   name = "image"
@@ -860,7 +974,7 @@ project {
   version = "1.0.0"
 }
 package "appimage" {
-  template = "packaging/app.desktop.tmpl"
+  desktop_entry = "packaging/app.desktop.tmpl"
 }
 profile "release" {
   target "linux/amd64" { formats = ["appimage"] }
@@ -904,7 +1018,7 @@ project {
   description = "Default image package"
 }
 package "appimage" {
-  categories = "Development;IDE;"
+  categories = ["Development", "IDE"]
 }
 profile "release" {
   target "linux/amd64" { formats = ["appimage"] }
@@ -957,9 +1071,9 @@ project {
 }
 profile "release" {
   target "windows/amd64" { formats = ["nsis", "msix"] }
-  target "darwin/amd64" { formats = ["app", "dmg"] }
+  target "darwin/amd64" { formats = ["dmg"] }
   target "linux/amd64" { formats = ["appimage", "deb"] }
-  target "android/arm64" { formats = ["apk", "aab"] }
+  target "android/arm64" { formats = ["aab"] }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
@@ -984,9 +1098,9 @@ func TestHCLIOSSignedAppAndIPAUseDeclaredTargetSettings(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "app-Info.plist.tmpl"), []byte("app {{.Project.Identifier}}"), 0o644))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "ipa-Info.plist.tmpl"), []byte("ipa {{.Project.Identifier}}"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "Info.plist"), []byte("ios com.example.mobile"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "ios.entitlements"), []byte("entitlements"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "distribution.mobileprovision"), []byte("provisioning"), 0o644))
 	hcl := `version = 3
 project {
   name = "mobile"
@@ -994,25 +1108,21 @@ project {
   identifier = "com.example.mobile"
   version = "1.0.0"
 }
-package "app" {
-  template = "packaging/app-Info.plist.tmpl"
-}
-package "ipa" {
-  template = "packaging/ipa-Info.plist.tmpl"
-}
 ios {
+  info_plist = "packaging/Info.plist"
   signing {
     identity = "Apple Distribution: Example"
     entitlements = "ios.entitlements"
+    provisioning_profile = "distribution.mobileprovision"
   }
 }
 target "ios/arm64" {
-  variant = "device"
   minimum_version = "17.0"
 }
 profile "release" {
   target "ios/arm64" {
-    formats = ["app", "ipa"]
+	destination = "device"
+	formats = ["ipa"]
     sign = true
   }
 }
@@ -1026,46 +1136,51 @@ profile "release" {
 	manifestHostOS = "darwin"
 	t.Cleanup(func() { manifestHostOS = previousHost })
 	fakeTools := t.TempDir()
+	codesignRecord := filepath.Join(root, "codesign-args.txt")
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "xcrun"), []byte("#!/bin/sh\nfor arg in \"$@\"; do if [ \"$arg\" = \"--show-sdk-path\" ]; then printf /fake/sdk; exit 0; fi; if [ \"$arg\" = \"--find\" ]; then printf /fake/clang; exit 0; fi; if [ \"$arg\" = \"actool\" ]; then compile=; plist=; while [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"--compile\" ]; then compile=$2; shift; fi; if [ \"$1\" = \"--output-partial-info-plist\" ]; then plist=$2; shift; fi; shift; done; mkdir -p \"$compile\" \"$(dirname \"$plist\")\"; printf car > \"$compile/Assets.car\"; printf plist > \"$plist\"; exit 0; fi; done\noutput=\nwhile [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"-o\" ]; then output=$2; shift; fi; shift; done\nmkdir -p \"$(dirname \"$output\")\"\nprintf binary > \"$output\"\n"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "go"), []byte("#!/bin/sh\noutput=\nwhile [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"-o\" ]; then output=$2; shift; fi; shift; done\nmkdir -p \"$(dirname \"$output\")\"\nprintf archive > \"$output\"\n"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "codesign"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "codesign"), []byte("#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$CODESIGN_RECORD\"\n"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "zip"), []byte("#!/bin/sh\noutput=$2\nprintf ipa > \"$output\"\n"), 0o755))
 	t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("CODESIGN_RECORD", codesignRecord)
 	handler := &manifestHandler{root: root, config: loaded.Config}
 	assetsNode := plan.Nodes[pipeline.NodeKey("target:ios/arm64:assets")]
 	_, err = handler.Run(t.Context(), assetsNode)
 	require.NoError(t, err)
+	assetsSpec := assetsNode.Spec.(pipeline.AssetsSpec)
+	stagedSigning := filepath.Join(root, assetsSpec.Directory, "signing")
+	assert.Equal(t, "entitlements", readTestFile(t, filepath.Join(stagedSigning, "entitlements.entitlements")))
+	assert.Equal(t, "provisioning", readTestFile(t, filepath.Join(stagedSigning, "provisioning-profile.mobileprovision")))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "ios.entitlements"), []byte("mutated entitlements"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "distribution.mobileprovision"), []byte("mutated provisioning"), 0o644))
 	compileNode := plan.Nodes[pipeline.NodeKey("target:ios/arm64:compile")]
 	_, err = handler.Run(t.Context(), compileNode)
 	require.NoError(t, err)
 
-	for _, format := range []string{"app", "ipa"} {
-		packageKey := pipeline.NodeKey("package:ios/arm64:" + format)
-		packageNode := plan.Nodes[packageKey]
-		spec := packageNode.Spec.(pipeline.PackageSpec)
-		packageResult, packageErr := handler.Run(t.Context(), packageNode)
-		err = packageErr
-		if err != nil {
-			t.Logf("%s package failed: %v (%s)", format, err, packageResult.Detail)
-		}
-		require.NoError(t, err, format)
-		if format == "app" {
-			assert.DirExists(t, filepath.Join(root, spec.Output))
-			assert.Equal(t, "app com.example.mobile", readTestFile(t, filepath.Join(root, spec.Output, "Info.plist")))
-		} else {
-			assert.FileExists(t, filepath.Join(root, spec.Output))
-			workspace := filepath.Join(root, ".wails", "build", "release", "ios-arm64", "package", "ipa")
-			assert.Equal(t, "ipa com.example.mobile", readTestFile(t, filepath.Join(workspace, "mobile.app", "Info.plist")))
-		}
-		signNode := plan.Nodes[pipeline.NodeKey(string(packageKey)+":sign")]
-		_, err = handler.Run(t.Context(), signNode)
-		require.NoError(t, err, format)
-		if format == "app" {
-			assert.DirExists(t, filepath.Join(root, spec.Output+".signed"))
-		} else {
-			assert.FileExists(t, filepath.Join(root, spec.Output+".signed"))
-		}
-	}
+	assemblyNode := plan.Nodes[pipeline.NodeKey("assemble:ios/arm64")]
+	assemblySpec := assemblyNode.Spec.(pipeline.PackageSpec)
+	_, err = handler.Run(t.Context(), assemblyNode)
+	require.NoError(t, err)
+	assert.DirExists(t, filepath.Join(root, assemblySpec.Output))
+	assert.Equal(t, "ios com.example.mobile", readTestFile(t, filepath.Join(root, assemblySpec.Output, "Info.plist")))
+	assert.Equal(t, "provisioning", readTestFile(t, filepath.Join(root, assemblySpec.Output, "embedded.mobileprovision")))
+	codesignArgs := readTestFile(t, codesignRecord)
+	assert.Contains(t, codesignArgs, filepath.Join(stagedSigning, "entitlements.entitlements"))
+	assert.NotContains(t, codesignArgs, filepath.Join(root, "ios.entitlements"))
+
+	packageKey := pipeline.NodeKey("package:ios/arm64:ipa")
+	packageNode := plan.Nodes[packageKey]
+	spec := packageNode.Spec.(pipeline.PackageSpec)
+	assert.Equal(t, assemblySpec.Output, spec.Binary, "IPA packaging must consume the assembled app rather than relinking it")
+	packageResult, packageErr := handler.Run(t.Context(), packageNode)
+	require.NoError(t, packageErr, packageResult.Detail)
+	assert.FileExists(t, filepath.Join(root, spec.Output))
+	workspace := filepath.Join(root, ".wails", "build", "release", "ios-arm64", "package", "ipa")
+	assert.Equal(t, "ios com.example.mobile", readTestFile(t, filepath.Join(workspace, "Payload", "mobile.app", "Info.plist")))
+	signNode := plan.Nodes[pipeline.NodeKey(string(packageKey)+":sign")]
+	_, err = handler.Run(t.Context(), signNode)
+	require.NoError(t, err)
+	assert.FileExists(t, filepath.Join(root, spec.Output+".signed"))
 }
 
 func TestHCLIOSSignedDefaultSimulatorAppUsesGeneratedInfoPlist(t *testing.T) {
@@ -1079,7 +1194,7 @@ project {
   version = "1.0.0"
 }
 profile "release" {
-  target "ios/arm64" { formats = ["app"] }
+  target "ios/arm64" { destination = "simulator" }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
@@ -1122,7 +1237,7 @@ printf executable > "$output"
 	assetsNode := plan.Nodes[pipeline.NodeKey("target:ios/arm64:assets")]
 	_, err = handler.Run(t.Context(), assetsNode)
 	require.NoError(t, err)
-	packageNode := plan.Nodes[pipeline.NodeKey("package:ios/arm64:app")]
+	packageNode := plan.Nodes[pipeline.NodeKey("assemble:ios/arm64")]
 	spec := packageNode.Spec.(pipeline.PackageSpec)
 	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("archive"), 0o755))
@@ -1167,13 +1282,18 @@ printf darwin > "$output"
 	t.Cleanup(func() { manifestLipo = previousLipo })
 
 	handler := &manifestHandler{root: root, config: loaded.Config}
-	compileNode := plan.Nodes[pipeline.NodeKey("target:darwin/universal:compile")]
-	_, err = handler.Run(t.Context(), compileNode)
+	for _, arch := range []string{"amd64", "arm64"} {
+		compileNode := plan.Nodes[pipeline.NodeKey("target:darwin/"+arch+":compile")]
+		_, err = handler.Run(t.Context(), compileNode)
+		require.NoError(t, err)
+	}
+	mergeNode := plan.Nodes[pipeline.NodeKey("assemble:darwin/universal:binary")]
+	_, err = handler.Run(t.Context(), mergeNode)
 	require.NoError(t, err)
 	assert.Len(t, lipoInputs, 2)
-	assert.Contains(t, lipoInputs[0], "darwin-universal/binaries/hello-")
-	assert.Contains(t, lipoInputs[1], "darwin-universal/binaries/hello-")
-	assert.FileExists(t, filepath.Join(root, compileNode.Output))
+	assert.Contains(t, lipoInputs[0], "darwin-amd64/hello")
+	assert.Contains(t, lipoInputs[1], "darwin-arm64/hello")
+	assert.FileExists(t, filepath.Join(root, mergeNode.Output))
 }
 
 func TestHCLCompileUsesConfiguredGoFlagsAndTargetMinimum(t *testing.T) {
@@ -1273,7 +1393,7 @@ project {
   version = "1.0.0"
 }
 profile "release" {
-  target "android/arm64" {}
+  target "android/arm64" { formats = ["aab"] }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
@@ -1337,7 +1457,7 @@ project {
   version = "1.0.0"
 }
 profile "release" {
-  target "ios/arm64" {}
+  target "ios/arm64" { destination = "simulator" }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
@@ -1418,13 +1538,70 @@ profile "release" {
 	assert.FileExists(t, filepath.Join(assets, "windows", "icon.ico"))
 }
 
+func TestHCLFileAssociationIconsAreStagedAndPackagedWithoutMutatingTheSource(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	_, sourceFile, _, ok := runtime.Caller(0)
+	require.True(t, ok)
+	iconData, err := os.ReadFile(filepath.Join(filepath.Dir(sourceFile), "build_assets", "appicon.png"))
+	require.NoError(t, err)
+	iconPath := filepath.Join(root, "association.png")
+	require.NoError(t, os.WriteFile(iconPath, iconData, 0o640))
+	hcl := `version = 3
+project {
+  name = "associations"
+  product_name = "Associations"
+  identifier = "com.example.associations"
+  version = "1.0.0"
+}
+file_association "document" {
+  extensions = ["assoc"]
+  icon = "association.png"
+  platforms = ["windows", "darwin"]
+}
+profile "release" {
+  target "windows/amd64" {}
+  target "darwin/arm64" {}
+}
+`
+	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
+	loaded, err := manifest.Load(root, "release")
+	require.NoError(t, err)
+	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
+	require.NoError(t, err)
+	handler := &manifestHandler{root: root, config: loaded.Config}
+	for _, target := range []string{"windows/amd64", "darwin/arm64"} {
+		_, err = handler.Run(t.Context(), plan.Nodes[pipeline.NodeKey("target:"+target+":assets")])
+		require.NoError(t, err, target)
+	}
+	base := filepath.Join(root, ".wails", "build", "release")
+	assert.FileExists(t, filepath.Join(base, "windows-amd64", "assets", "windows", "association-000.ico"))
+	assert.FileExists(t, filepath.Join(base, "darwin-arm64", "assets", "darwin", "association-000.icns"))
+	assert.Contains(t, readTestFile(t, filepath.Join(base, "windows-amd64", "assets", "config.yml")), "iconName: association-000")
+	assert.Contains(t, readTestFile(t, filepath.Join(base, "darwin-arm64", "assets", "config.yml")), "iconName: association-000")
+	currentData, err := os.ReadFile(iconPath)
+	require.NoError(t, err)
+	assert.Equal(t, iconData, currentData)
+	info, err := os.Stat(iconPath)
+	require.NoError(t, err)
+	assert.Equal(t, os.FileMode(0o640), info.Mode().Perm())
+
+	appNode := plan.Nodes[pipeline.NodeKey("assemble:darwin/arm64")]
+	appSpec := appNode.Spec.(pipeline.PackageSpec)
+	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, appSpec.Binary)), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, appSpec.Binary), []byte("binary"), 0o755))
+	_, err = handler.Run(t.Context(), appNode)
+	require.NoError(t, err)
+	assert.FileExists(t, filepath.Join(root, appSpec.Output, "Contents", "Resources", "association-000.icns"))
+}
+
 func TestHCLAndroidCompileUsesConfiguredNDKForBothArchitectures(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	hcl := hclBuildFixture + `
 profile "release" {
-  target "android/arm64" {}
-  target "android/amd64" {}
+  target "android/arm64" { formats = ["aab"] }
+  target "android/amd64" { formats = ["aab"] }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
@@ -1532,13 +1709,13 @@ profile "release" {
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
 	loaded, err := manifest.Load(root, "release")
 	require.NoError(t, err)
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
+	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build", GarbleArgs: []string{"-seed=random"}})
 	require.NoError(t, err)
 	compileNode := plan.Nodes[pipeline.NodeKey("target:linux/amd64:compile")]
 	compile := compileNode.Spec.(pipeline.CompileSpec)
 	assert.True(t, compile.Obfuscated)
 	assert.Contains(t, compile.Tags, "wails_obfuscated")
-	assert.Equal(t, []string{"-tiny", "-literals"}, compile.GarbleArgs)
+	assert.Equal(t, []string{"-tiny", "-literals", "-seed=random"}, compile.GarbleArgs)
 
 	fakeTools := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "garble"), []byte(`#!/bin/sh
@@ -1558,10 +1735,10 @@ printf obfuscated > "$output"
 	_, err = handler.Run(t.Context(), compileNode)
 	require.NoError(t, err)
 	assert.FileExists(t, filepath.Join(root, compileNode.Output))
-	assert.Contains(t, readTestFile(t, garbleLog), "-tiny -literals build -tags enterprise,production,wails_obfuscated")
+	assert.Contains(t, readTestFile(t, garbleLog), "-tiny -literals -seed=random build -tags enterprise,production,wails_obfuscated")
 }
 
-func TestHCLLinuxCompileSupportsArmAnd386Targets(t *testing.T) {
+func TestHCLLinuxCompileRejectsArchitecturesOutsideTheClosedV3Registry(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	hcl := hclBuildFixture + `
@@ -1571,35 +1748,15 @@ profile "release" {
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
-	loaded, err := manifest.Load(root, "release")
-	require.NoError(t, err)
-	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
-	require.NoError(t, err)
-	fakeTools := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "go"), []byte(`#!/bin/sh
-output=
-while [ "$#" -gt 0 ]; do
-  if [ "$1" = "-o" ]; then output=$2; shift; fi
-  shift
-done
-mkdir -p "$(dirname "$output")"
-printf linux > "$output"
-`), 0o755))
-	t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
-	handler := &manifestHandler{root: root, config: loaded.Config}
-	for _, arch := range []string{"arm", "386"} {
-		node := plan.Nodes[pipeline.NodeKey("target:linux/"+arch+":compile")]
-		_, err = handler.Run(t.Context(), node)
-		require.NoError(t, err, arch)
-		assert.FileExists(t, filepath.Join(root, node.Output))
-	}
+	_, err := manifest.Load(root, "release")
+	require.ErrorContains(t, err, `unsupported target "linux/arm"`)
 }
 
 func TestHCLMSIXPackagingUsesMakeAppxOnTheWindowsTarget(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "AppxManifest.xml.tmpl"), []byte("<Package Identity=\"{{.Project.Identifier}}\" />"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "AppxManifest.xml.tmpl"), []byte("<Package Identity=\"com.example.hello\" />"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "release.pfx"), []byte("certificate"), 0o644))
 	hcl := hclBuildFixture + `
 windows {
@@ -1609,7 +1766,7 @@ windows {
   }
 }
 package "msix" {
-  template = "packaging/AppxManifest.xml.tmpl"
+  manifest = "packaging/AppxManifest.xml.tmpl"
 }
 file_association "document" {
   extensions = ["docx"]
@@ -1668,7 +1825,7 @@ func TestHCLNSISPackagingUsesTheARM64InstallerDefinition(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "project.nsi.tmpl"), []byte("# custom {{.Target.Arch}}"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "project.nsi.tmpl"), []byte("# custom arm64"), 0o644))
 	hcl := hclBuildFixture + `
 package "nsis" {
   template = "packaging/project.nsi.tmpl"
@@ -1702,20 +1859,20 @@ printf installer > ../../../bin/hello-arm64-installer.exe
 	assert.Equal(t, "# custom arm64", readTestFile(t, filepath.Join(root, ".wails", "build", "release", "windows-arm64", "package", "nsis", "assets", "windows", "nsis", "project.nsi")))
 }
 
-func TestHCLAndroidSigningProducesAPKAndAABArtifacts(t *testing.T) {
+func TestHCLAndroidSigningProducesTheProductionAABArtifact(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	hcl := hclBuildFixture + `
 android {
   signing {
     certificate = "debug.keystore"
-    identity = "release"
+	key_alias = "release"
     credential = "ANDROID_PASSWORD"
   }
 }
 profile "release" {
   target "android/arm64" {
-    formats = ["apk", "aab"]
+	formats = ["aab"]
     sign = true
   }
 }
@@ -1729,15 +1886,6 @@ profile "release" {
 	t.Setenv("ANDROID_PASSWORD", "secret")
 
 	fakeTools := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "apksigner"), []byte(`#!/bin/sh
-output=
-while [ "$#" -gt 0 ]; do
-  if [ "$1" = "--out" ]; then output=$2; shift; fi
-  shift
-done
-mkdir -p "$(dirname "$output")"
-printf signed-apk > "$output"
-`), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "jarsigner"), []byte(`#!/bin/sh
 output=
 while [ "$#" -gt 0 ]; do
@@ -1764,7 +1912,7 @@ else
 fi
 `), 0o755))
 
-	for _, format := range []string{"apk", "aab"} {
+	for _, format := range []string{"aab"} {
 		packageNode := plan.Nodes[pipeline.NodeKey("package:android/arm64:"+format)]
 		spec := packageNode.Spec.(pipeline.PackageSpec)
 		require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
@@ -1783,7 +1931,7 @@ func TestHCLAndroidAMD64PackagingUsesTheX86ABI(t *testing.T) {
 	t.Chdir(root)
 	hcl := hclBuildFixture + `
 profile "release" {
-  target "android/amd64" { formats = ["apk"] }
+  target "android/amd64" { formats = ["aab"] }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
@@ -1797,36 +1945,36 @@ profile "release" {
 	require.NoError(t, err)
 	assetsRoot := filepath.Join(root, ".wails", "build", "release", "android-amd64", "assets", "android")
 	require.NoError(t, os.WriteFile(filepath.Join(assetsRoot, "gradlew"), []byte(`#!/bin/sh
-mkdir -p app/build/outputs/apk/release
-printf apk > app/build/outputs/apk/release/app-release.apk
+	mkdir -p app/build/outputs/bundle/release
+	printf aab > app/build/outputs/bundle/release/app-release.aab
 `), 0o755))
-	packageNode := plan.Nodes[pipeline.NodeKey("package:android/amd64:apk")]
+	packageNode := plan.Nodes[pipeline.NodeKey("package:android/amd64:aab")]
 	spec := packageNode.Spec.(pipeline.PackageSpec)
 	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("shared library"), 0o755))
 	_, err = handler.Run(t.Context(), packageNode)
 	require.NoError(t, err)
 	assert.FileExists(t, filepath.Join(root, spec.Output))
-	workspace := filepath.Join(root, ".wails", "build", "release", "android-amd64", "package", "apk")
+	workspace := filepath.Join(root, ".wails", "build", "release", "android-amd64", "package", "aab")
 	assert.FileExists(t, filepath.Join(workspace, "app", "src", "main", "jniLibs", "x86_64", "libwails.so"))
 }
 
-func TestHCLAndroidPackagingRendersAUserTemplateDirectory(t *testing.T) {
+func TestHCLAndroidPackagingUsesAUserOwnedManifest(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	templateRoot := filepath.Join(root, "packaging", "android")
 	require.NoError(t, os.MkdirAll(filepath.Join(templateRoot, "app", "src", "main"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, "gradlew"), []byte(`#!/bin/sh
-mkdir -p app/build/outputs/apk/release
-printf template-apk > app/build/outputs/apk/release/app-release.apk
+mkdir -p app/build/outputs/bundle/release
+printf template-aab > app/build/outputs/bundle/release/app-release.aab
 `), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, "app", "src", "main", "AndroidManifest.xml.tmpl"), []byte("<manifest package=\"{{.Project.Identifier}}\" />"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, "app", "src", "main", "AndroidManifest.xml"), []byte("<manifest package=\"com.example.hello\" />"), 0o644))
 	hcl := hclBuildFixture + `
-package "apk" {
-  template = "packaging/android"
+android {
+  manifest = "packaging/android/app/src/main/AndroidManifest.xml"
 }
 profile "release" {
-  target "android/arm64" { formats = ["apk"] }
+  target "android/arm64" { formats = ["aab"] }
 }
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
@@ -1835,14 +1983,22 @@ profile "release" {
 	plan, err := pipeline.PlanBuild(loaded.Config, pipeline.Request{Verb: "build"})
 	require.NoError(t, err)
 	handler := &manifestHandler{root: root, config: loaded.Config}
-	packageNode := plan.Nodes[pipeline.NodeKey("package:android/arm64:apk")]
+	assetsNode := plan.Nodes[pipeline.NodeKey("target:android/arm64:assets")]
+	_, err = handler.Run(t.Context(), assetsNode)
+	require.NoError(t, err)
+	generatedGradle := filepath.Join(root, ".wails", "build", "release", "android-arm64", "assets", "android", "gradlew")
+	require.NoError(t, os.WriteFile(generatedGradle, []byte(`#!/bin/sh
+mkdir -p app/build/outputs/bundle/release
+printf template-aab > app/build/outputs/bundle/release/app-release.aab
+`), 0o755))
+	packageNode := plan.Nodes[pipeline.NodeKey("package:android/arm64:aab")]
 	spec := packageNode.Spec.(pipeline.PackageSpec)
 	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("shared library"), 0o755))
 	_, err = handler.Run(t.Context(), packageNode)
 	require.NoError(t, err)
 	assert.FileExists(t, filepath.Join(root, spec.Output))
-	workspace := filepath.Join(root, ".wails", "build", "release", "android-arm64", "package", "apk")
+	workspace := filepath.Join(root, ".wails", "build", "release", "android-arm64", "package", "aab")
 	assert.Equal(t, "<manifest package=\"com.example.hello\" />", readTestFile(t, filepath.Join(workspace, "app", "src", "main", "AndroidManifest.xml")))
 	assert.FileExists(t, filepath.Join(workspace, "app", "src", "main", "jniLibs", "arm64-v8a", "libwails.so"))
 }
@@ -1866,13 +2022,6 @@ func captureHCLStdout(t *testing.T, fn func()) string {
 	fn()
 	require.NoError(t, writer.Close())
 	return <-done
-}
-
-func readTestFile(t *testing.T, path string) string {
-	t.Helper()
-	data, err := os.ReadFile(path)
-	require.NoError(t, err)
-	return string(data)
 }
 
 func mapStrings[T any](items []T, selectValue func(T) string) []string {

@@ -37,8 +37,6 @@ type manifestProcess struct {
 type manifestRebuild struct {
 	generation uint64
 	loaded     *manifest.Loaded
-	port       int
-	url        string
 	run        manifestPipelineRun
 	err        error
 }
@@ -46,14 +44,86 @@ type manifestRebuild struct {
 type manifestWatchSet struct {
 	events  chan notify.EventInfo
 	ignored gitignore.Matcher
+	matcher devWatchMatcher
+	root    string
+}
+
+type devWatchMatcher struct {
+	matchAll bool
+	patterns [][]devWatchSegment
+}
+
+type devWatchSegment struct {
+	value      string
+	glob       bool
+	doubleStar bool
+}
+
+// manifestDevOps is the private adapter seam between the Dev session state
+// machine and local operating-system effects. The production adapter below is
+// used by every caller; tests substitute only effects the host cannot produce
+// deterministically, such as a watcher failing during reconfiguration.
+type manifestDevOps struct {
+	getwd           func() (string, error)
+	load            func(string, string) (*manifest.Loaded, error)
+	checkPort       func(string, int) error
+	build           func(context.Context, *DevOptions, *manifest.Loaded, string, string, string, int) (manifestPipelineRun, error)
+	startFrontend   func(string, manifest.Config, string, int, string) (*manifestProcess, error)
+	waitTCP         func(context.Context, *manifestProcess, string, time.Duration) error
+	binaryPath      func(string, manifestPipelineRun, string, string) (string, error)
+	startApp        func(string, string, string, int) (*manifestProcess, error)
+	waitStable      func(context.Context, *manifestProcess, time.Duration) error
+	startWatches    func(string, manifest.Config) (*manifestWatchSet, error)
+	restartWatches  func(string, manifest.Config, *manifestWatchSet) (*manifestWatchSet, error)
+	restoreFrontend func(context.Context, string, manifest.Config, int, string, string) (*manifestProcess, error)
+}
+
+func productionManifestDevOps() manifestDevOps {
+	return manifestDevOps{
+		getwd:           os.Getwd,
+		load:            manifest.Load,
+		checkPort:       checkManifestDevPort,
+		build:           runManifestDevBuild,
+		startFrontend:   startFrontendDev,
+		waitTCP:         waitForProcessTCP,
+		binaryPath:      manifestDevBinaryPath,
+		startApp:        startManifestApp,
+		waitStable:      waitForProcessStable,
+		startWatches:    startManifestWatches,
+		restartWatches:  restartManifestWatches,
+		restoreFrontend: restoreManifestFrontend,
+	}
+}
+
+func checkManifestDevPort(host string, port int) error {
+	listener, err := net.Listen("tcp", net.JoinHostPort(host, strconv.Itoa(port)))
+	if err != nil {
+		return fmt.Errorf("frontend port %d is unavailable: %w", port, err)
+	}
+	return listener.Close()
 }
 
 func runManifestDev(options *DevOptions) error {
-	root, err := os.Getwd()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return runManifestDevContext(ctx, options)
+}
+
+func runManifestDevContext(ctx context.Context, options *DevOptions) error {
+	return runManifestDevContextWithOps(ctx, options, productionManifestDevOps())
+}
+
+func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops manifestDevOps) error {
+	if options.Profile != "" {
+		return fmt.Errorf("dev does not accept production profiles; configure development policy in the dev block")
+	}
+	sessionCtx, stopSession := context.WithCancel(ctx)
+	defer stopSession()
+	root, err := ops.getwd()
 	if err != nil {
 		return err
 	}
-	loaded, err := manifest.Load(root, options.Profile)
+	loaded, err := ops.load(root, "")
 	if err != nil {
 		return err
 	}
@@ -68,40 +138,34 @@ func runManifestDev(options *DevOptions) error {
 		return fmt.Errorf("dev target must be the host %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
 	if options.Plan {
-		return printManifestPlan(manifestRunOptions{Verb: "build", Profile: options.Profile, Loaded: loaded, TargetOS: goos, TargetArch: goarch, Development: true, Tags: envTags()}, false)
+		return printManifestPlan(manifestRunOptions{Verb: "build", Loaded: loaded, TargetOS: goos, TargetArch: goarch, Development: true, Tags: manifestDevTags(options)}, false)
 	}
-	sessionCtx, stopSession := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stopSession()
 	port := options.VitePort
-	if port == 0 {
-		port = loaded.Config.Dev.Port
-	}
 	if port == 0 {
 		port = defaultVitePort
 	}
 	host := "127.0.0.1"
-	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
-	if err != nil {
-		return fmt.Errorf("frontend port %d is unavailable: %w", port, err)
+	if err := ops.checkPort(host, port); err != nil {
+		return err
 	}
-	_ = listener.Close()
 	scheme := "http"
 	if options.Secure {
 		scheme = "https"
 	}
 	frontendURL := fmt.Sprintf("%s://%s:%d", scheme, host, port)
 
-	if _, err := runManifestDevBuild(sessionCtx, options, loaded, goos, goarch, frontendURL, port); err != nil {
+	initialRun, err := ops.build(sessionCtx, options, loaded, goos, goarch, frontendURL, port)
+	if err != nil {
 		if errors.Is(err, context.Canceled) && sessionCtx.Err() != nil {
 			return nil
 		}
 		return err
 	}
-	frontend, err := startFrontendDev(root, loaded.Config, host, port, frontendURL)
+	frontend, err := ops.startFrontend(root, loaded.Config, host, port, frontendURL)
 	if err != nil {
 		return err
 	}
-	if err := waitForProcessTCP(sessionCtx, frontend, net.JoinHostPort(host, strconv.Itoa(port)), 30*time.Second); err != nil {
+	if err := ops.waitTCP(sessionCtx, frontend, net.JoinHostPort(host, strconv.Itoa(port)), 30*time.Second); err != nil {
 		frontend.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
 		if errors.Is(err, context.Canceled) && sessionCtx.Err() != nil {
 			return nil
@@ -114,11 +178,15 @@ func runManifestDev(options *DevOptions) error {
 		}
 	}()
 	fmt.Printf("Frontend process started at %s\n", frontendURL)
-	app, err := startManifestApp(root, loaded.Config, goos, frontendURL, port)
+	binaryPath, err := ops.binaryPath(root, initialRun, goos, goarch)
 	if err != nil {
 		return err
 	}
-	if err := waitForProcessStable(sessionCtx, app, 150*time.Millisecond); err != nil {
+	app, err := ops.startApp(root, binaryPath, frontendURL, port)
+	if err != nil {
+		return err
+	}
+	if err := ops.waitStable(sessionCtx, app, 150*time.Millisecond); err != nil {
 		app.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
 		if errors.Is(err, context.Canceled) && sessionCtx.Err() != nil {
 			return nil
@@ -130,13 +198,12 @@ func runManifestDev(options *DevOptions) error {
 			app.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
 		}
 	}()
-	fmt.Println("Backend built and started")
-
-	watches, err := startManifestWatches(root, loaded.Config)
+	watches, err := ops.startWatches(root, loaded.Config)
 	if err != nil {
 		return err
 	}
 	defer func() { watches.stop() }()
+	fmt.Println("Backend built and started")
 	debounce := time.Duration(loaded.Config.Dev.DebounceMS) * time.Millisecond
 	if debounce <= 0 {
 		debounce = 250 * time.Millisecond
@@ -161,8 +228,6 @@ func runManifestDev(options *DevOptions) error {
 		}
 		generation++
 		current := generation
-		currentPort := port
-		currentURL := frontendURL
 		buildCtx, cancel := context.WithCancel(sessionCtx)
 		cancelBuild = cancel
 		buildWG.Add(1)
@@ -177,16 +242,12 @@ func runManifestDev(options *DevOptions) error {
 				}
 				return
 			}
-			nextLoaded, loadErr := manifest.Load(root, options.Profile)
-			nextPort := currentPort
-			nextURL := currentURL
+			nextLoaded, loadErr := ops.load(root, "")
 			var run manifestPipelineRun
 			if loadErr == nil {
-				nextPort = resolvedDevPort(options, nextLoaded.Config)
-				nextURL = fmt.Sprintf("%s://%s:%d", scheme, host, nextPort)
-				run, loadErr = runManifestDevBuild(buildCtx, options, nextLoaded, goos, goarch, nextURL, nextPort)
+				run, loadErr = ops.build(buildCtx, options, nextLoaded, goos, goarch, frontendURL, port)
 			}
-			result := manifestRebuild{generation: current, loaded: nextLoaded, port: nextPort, url: nextURL, run: run, err: loadErr}
+			result := manifestRebuild{generation: current, loaded: nextLoaded, run: run, err: loadErr}
 			select {
 			case results <- result:
 			case <-sessionCtx.Done():
@@ -201,58 +262,46 @@ func runManifestDev(options *DevOptions) error {
 			}
 			return nil
 		case <-frontend.done:
-			if sessionCtx.Err() != nil {
-				return nil
-			}
-			return manifestProcessExitError("frontend", frontend)
+			return manifestSessionProcessExit(sessionCtx, "frontend", frontend)
 		case <-app.done:
-			if sessionCtx.Err() != nil {
-				return nil
-			}
-			return manifestProcessExitError("backend", app)
+			return manifestSessionProcessExit(sessionCtx, "backend", app)
 		case event, ok := <-watches.events:
 			if !ok {
 				return fmt.Errorf("project watcher stopped unexpectedly")
 			}
 			createdDirectory := isCreatedDevDirectory(event)
-			if createdDirectory && !shouldRefreshDevWatchesForDirectory(root, loaded.Config, watches.ignored, event.Path()) {
+			if createdDirectory && !shouldRefreshDevWatchesForDirectory(watches.root, loaded.Config, watches.ignored, event.Path()) {
 				continue
 			}
 			if createdDirectory {
-				nextWatches, watchErr := startManifestWatches(root, loaded.Config)
+				nextWatches, watchErr := ops.restartWatches(root, loaded.Config, watches)
+				if nextWatches != nil {
+					watches = nextWatches
+				}
 				if watchErr != nil {
-					fmt.Fprintf(os.Stderr, "new directory watch failed; retaining the previous watch policy: %v\n", watchErr)
+					fmt.Fprintf(os.Stderr, "new directory watch failed; restored the previous watch policy: %v\n", watchErr)
 					continue
 				}
-				oldWatches := watches
-				watches = nextWatches
-				oldWatches.stop()
-				if !directoryContainsDevInput(root, loaded.Config, watches.ignored, event.Path()) {
+				if !directoryContainsDevInputMatched(watches.root, loaded.Config, watches.ignored, watches.matcher, event.Path()) {
 					continue
 				}
-			} else if isDevGitIgnoreEvent(root, loaded.Config, event.Path()) {
-				nextWatches, watchErr := startManifestWatches(root, loaded.Config)
+			} else if isDevGitIgnoreEvent(watches.root, loaded.Config, event.Path()) {
+				nextWatches, watchErr := ops.restartWatches(root, loaded.Config, watches)
+				if nextWatches != nil {
+					watches = nextWatches
+				}
 				if watchErr != nil {
-					fmt.Fprintf(os.Stderr, "gitignore reload failed; retaining the previous watch policy: %v\n", watchErr)
+					fmt.Fprintf(os.Stderr, "gitignore reload failed; restored the previous watch policy: %v\n", watchErr)
 					continue
 				}
-				oldWatches := watches
-				watches = nextWatches
-				oldWatches.stop()
 				fmt.Println("Watch policy reloaded")
 				continue
-			} else if ignoreDevEvent(root, loaded.Config, watches.ignored, event.Path()) {
+			} else if ignoreDevEventMatched(watches.root, loaded.Config, watches.ignored, watches.matcher, event.Path()) {
 				continue
 			}
 			if timer == nil {
 				timer = time.NewTimer(debounce)
 			} else {
-				if !timer.Stop() {
-					select {
-					case <-timer.C:
-					default:
-					}
-				}
 				timer.Reset(debounce)
 			}
 			timerC = timer.C
@@ -274,26 +323,22 @@ func runManifestDev(options *DevOptions) error {
 			nextLoaded := result.loaded
 			var nextWatches *manifestWatchSet
 			if devWatchSessionChanged(loaded.Config, nextLoaded.Config) {
-				nextWatches, err = startManifestWatches(root, nextLoaded.Config)
+				nextWatches, err = ops.startWatches(root, nextLoaded.Config)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "watch reconfiguration failed; keeping the current session: %v\n", err)
 					continue
 				}
 			}
 
-			frontendChanged := frontendSessionChanged(loaded.Config, port, nextLoaded.Config, result.port)
-			backendChanged := manifestBackendChanged(result.run, goos, goarch, frontendURL, result.url)
+			frontendChanged := frontendSessionChanged(loaded.Config, nextLoaded.Config)
+			backendChanged := manifestBackendChanged(result.run, goos, goarch)
 			oldFrontend := frontend
 			var nextFrontend *manifestProcess
-			oldFrontendStopped := false
 			if frontendChanged {
-				if result.port == port {
-					oldFrontend.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
-					oldFrontendStopped = true
-				}
-				nextFrontend, err = startFrontendDev(root, nextLoaded.Config, host, result.port, result.url)
+				oldFrontend.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
+				nextFrontend, err = ops.startFrontend(root, nextLoaded.Config, host, port, frontendURL)
 				if err == nil {
-					err = waitForProcessTCP(sessionCtx, nextFrontend, net.JoinHostPort(host, strconv.Itoa(result.port)), 30*time.Second)
+					err = ops.waitTCP(sessionCtx, nextFrontend, net.JoinHostPort(host, strconv.Itoa(port)), 30*time.Second)
 				}
 				if err != nil {
 					transitionErr := err
@@ -306,11 +351,9 @@ func runManifestDev(options *DevOptions) error {
 					if errors.Is(transitionErr, context.Canceled) && sessionCtx.Err() != nil {
 						return nil
 					}
-					if oldFrontendStopped {
-						frontend, err = restoreManifestFrontend(sessionCtx, root, loaded.Config, port, frontendURL, host)
-						if err != nil {
-							return err
-						}
+					frontend, err = ops.restoreFrontend(sessionCtx, root, loaded.Config, port, frontendURL, host)
+					if err != nil {
+						return err
 					}
 					fmt.Fprintf(os.Stderr, "frontend restart failed; keeping the current session: %v\n", transitionErr)
 					continue
@@ -319,9 +362,14 @@ func runManifestDev(options *DevOptions) error {
 
 			var nextApp *manifestProcess
 			if backendChanged {
-				nextApp, err = startManifestApp(root, nextLoaded.Config, goos, result.url, result.port)
+				binaryPath, pathErr := ops.binaryPath(root, result.run, goos, goarch)
+				if pathErr != nil {
+					err = pathErr
+				} else {
+					nextApp, err = ops.startApp(root, binaryPath, frontendURL, port)
+				}
 				if err == nil {
-					err = waitForProcessStable(sessionCtx, nextApp, 150*time.Millisecond)
+					err = ops.waitStable(sessionCtx, nextApp, 150*time.Millisecond)
 				}
 				if err != nil {
 					transitionErr := err
@@ -333,11 +381,9 @@ func runManifestDev(options *DevOptions) error {
 					}
 					if nextFrontend != nil {
 						nextFrontend.stop(time.Duration(nextLoaded.Config.Dev.GracePeriodMS) * time.Millisecond)
-						if oldFrontendStopped {
-							frontend, err = restoreManifestFrontend(sessionCtx, root, loaded.Config, port, frontendURL, host)
-							if err != nil {
-								return err
-							}
+						frontend, err = ops.restoreFrontend(sessionCtx, root, loaded.Config, port, frontendURL, host)
+						if err != nil {
+							return err
 						}
 					}
 					if errors.Is(transitionErr, context.Canceled) && sessionCtx.Err() != nil {
@@ -354,11 +400,8 @@ func runManifestDev(options *DevOptions) error {
 				oldApp.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
 			}
 			if frontendChanged {
-				if !oldFrontendStopped {
-					oldFrontend.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
-				}
 				frontend = nextFrontend
-				fmt.Printf("Frontend process restarted at %s\n", result.url)
+				fmt.Printf("Frontend process restarted at %s\n", frontendURL)
 			}
 			if nextWatches != nil {
 				oldWatches := watches
@@ -366,8 +409,6 @@ func runManifestDev(options *DevOptions) error {
 				oldWatches.stop()
 			}
 			loaded = nextLoaded
-			port = result.port
-			frontendURL = result.url
 			debounce = time.Duration(loaded.Config.Dev.DebounceMS) * time.Millisecond
 			if debounce <= 0 {
 				debounce = 250 * time.Millisecond
@@ -389,31 +430,16 @@ func runManifestDevBuild(ctx context.Context, options *DevOptions, loaded *manif
 		"FRONTEND_DEVSERVER_URL=" + frontendURL,
 		wailsVitePort + "=" + strconv.Itoa(port),
 	}
-	return runManifestPipelineResult(manifestRunOptions{Context: ctx, Verb: "build", Profile: options.Profile, Loaded: loaded, TargetOS: goos, TargetArch: goarch, Environment: environment, Development: true, Tags: envTags()})
+	return runManifestPipelineResult(manifestRunOptions{Context: ctx, Verb: "build", Loaded: loaded, TargetOS: goos, TargetArch: goarch, Environment: environment, Development: true, Tags: manifestDevTags(options)})
 }
 
-func manifestBackendChanged(run manifestPipelineRun, goos, goarch, currentURL, nextURL string) bool {
-	if currentURL != nextURL {
-		return true
-	}
+func manifestDevTags(options *DevOptions) []string {
+	return appendUniqueStrings(splitComma(options.Tags), envTags()...)
+}
+
+func manifestBackendChanged(run manifestPipelineRun, goos, goarch string) bool {
 	result, exists := run.Results[pipelineCompileKey(goos, goarch)]
-	if !exists || result.Status == cache.LookupMiss {
-		return true
-	}
-	for key, node := range run.Plan.Nodes {
-		if node.Kind != pipeline.RunHook {
-			continue
-		}
-		spec, ok := node.Spec.(pipeline.HookSpec)
-		if !ok || spec.Phase != "after_build" {
-			continue
-		}
-		hookResult, ok := run.Results[key]
-		if !ok || hookResult.Status == cache.LookupMiss {
-			return true
-		}
-	}
-	return false
+	return !exists || result.Status == cache.LookupMiss
 }
 
 func pipelineCompileKey(goos, goarch string) pipeline.NodeKey {
@@ -422,7 +448,6 @@ func pipelineCompileKey(goos, goarch string) pipeline.NodeKey {
 
 func devWatchSessionChanged(current, next manifest.Config) bool {
 	return current.Dev.UseGitIgnore != next.Dev.UseGitIgnore ||
-		current.Build.OutputDirectory != next.Build.OutputDirectory ||
 		current.Frontend.Directory != next.Frontend.Directory ||
 		!equalStrings(current.Dev.Watch, next.Dev.Watch) ||
 		!equalStrings(current.Dev.Exclude, next.Dev.Exclude)
@@ -461,9 +486,13 @@ func isCreatedDevDirectory(event notify.EventInfo) bool {
 }
 
 func directoryContainsDevInput(root string, config manifest.Config, ignored gitignore.Matcher, directory string) bool {
+	return directoryContainsDevInputMatched(root, config, ignored, newDevWatchMatcher(config.Dev.Watch), directory)
+}
+
+func directoryContainsDevInputMatched(root string, config manifest.Config, ignored gitignore.Matcher, matcher devWatchMatcher, directory string) bool {
 	found := false
 	_ = filepath.WalkDir(directory, func(current string, entry os.DirEntry, walkErr error) error {
-		if walkErr != nil || found {
+		if walkErr != nil {
 			return filepath.SkipAll
 		}
 		if entry.IsDir() {
@@ -480,7 +509,7 @@ func directoryContainsDevInput(root string, config manifest.Config, ignored giti
 		if filepath.Base(current) == ".gitignore" {
 			return nil
 		}
-		if !ignoreDevEvent(root, config, ignored, current) {
+		if !ignoreDevEventMatched(root, config, ignored, matcher, current) {
 			found = true
 			return filepath.SkipAll
 		}
@@ -490,6 +519,10 @@ func directoryContainsDevInput(root string, config manifest.Config, ignored giti
 }
 
 func startManifestWatches(root string, config manifest.Config) (*manifestWatchSet, error) {
+	canonicalRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		return nil, fmt.Errorf("resolve project root: %w", err)
+	}
 	ignored, err := loadDevGitIgnore(root, config.Dev.UseGitIgnore)
 	if err != nil {
 		return nil, fmt.Errorf("load .gitignore: %w", err)
@@ -499,13 +532,22 @@ func startManifestWatches(root string, config manifest.Config) (*manifestWatchSe
 		notify.Stop(events)
 		return nil, fmt.Errorf("watch project: %w", err)
 	}
-	return &manifestWatchSet{events: events, ignored: ignored}, nil
+	return &manifestWatchSet{events: events, ignored: ignored, matcher: newDevWatchMatcher(config.Dev.Watch), root: canonicalRoot}, nil
 }
 
 func (w *manifestWatchSet) stop() {
 	if w != nil && w.events != nil {
 		notify.Stop(w.events)
 	}
+}
+
+func restartManifestWatches(root string, config manifest.Config, current *manifestWatchSet) (*manifestWatchSet, error) {
+	next, err := startManifestWatches(root, config)
+	if err != nil {
+		return current, err
+	}
+	current.stop()
+	return next, nil
 }
 
 func restoreManifestFrontend(ctx context.Context, root string, config manifest.Config, port int, frontendURL, host string) (*manifestProcess, error) {
@@ -527,6 +569,13 @@ func manifestProcessExitError(name string, process *manifestProcess) error {
 	return fmt.Errorf("%s process exited unexpectedly", name)
 }
 
+func manifestSessionProcessExit(ctx context.Context, name string, process *manifestProcess) error {
+	if ctx.Err() != nil {
+		return nil
+	}
+	return manifestProcessExitError(name, process)
+}
+
 func reportManifestRebuildFailure(err error) {
 	if wake.IsReported(err) {
 		fmt.Fprintln(os.Stderr, "Current app is still running.")
@@ -535,18 +584,8 @@ func reportManifestRebuildFailure(err error) {
 	fmt.Fprintf(os.Stderr, "Rebuild failed; current app is still running: %v\n", err)
 }
 
-func resolvedDevPort(options *DevOptions, config manifest.Config) int {
-	if options.VitePort != 0 {
-		return options.VitePort
-	}
-	if config.Dev.Port != 0 {
-		return config.Dev.Port
-	}
-	return defaultVitePort
-}
-
-func frontendSessionChanged(current manifest.Config, currentPort int, next manifest.Config, nextPort int) bool {
-	return currentPort != nextPort || current.Frontend.Directory != next.Frontend.Directory || current.Frontend.PackageManager != next.Frontend.PackageManager || current.Frontend.DevCommand != next.Frontend.DevCommand || !equalStrings(current.Frontend.Dev, next.Frontend.Dev)
+func frontendSessionChanged(current, next manifest.Config) bool {
+	return current.Frontend.Directory != next.Frontend.Directory || current.Frontend.PackageManager != next.Frontend.PackageManager || current.Frontend.DevCommand != next.Frontend.DevCommand || !equalStrings(current.Frontend.Dev, next.Frontend.Dev)
 }
 
 func startFrontendDev(root string, config manifest.Config, host string, port int, frontendURL string) (*manifestProcess, error) {
@@ -612,32 +651,52 @@ func frontendDevCommandUsesVite(root string, config manifest.Config) bool {
 	return false
 }
 func startPackageManagerProcess(dir, manager string, env []string, args ...string) (*manifestProcess, error) {
+	name, resolvedArgs, err := resolvePackageManagerProcess(manager, args, exec.LookPath, filepath.EvalSymlinks)
+	if err != nil {
+		return nil, err
+	}
+	return startManifestProcess(dir, name, env, resolvedArgs...)
+}
+
+func resolvePackageManagerProcess(manager string, args []string, lookPath func(string) (string, error), evalSymlinks func(string) (string, error)) (string, []string, error) {
 	name := manager
 	if manager == "npm" {
-		npm, err := exec.LookPath("npm")
+		npm, err := lookPath("npm")
 		if err != nil {
-			return nil, err
+			return "", nil, err
 		}
-		script, err := filepath.EvalSymlinks(npm)
+		switch strings.ToLower(filepath.Ext(npm)) {
+		case ".cmd", ".bat":
+			commandInterpreter, err := lookPath("cmd")
+			if err != nil {
+				return "", nil, err
+			}
+			return commandInterpreter, append([]string{"/d", "/s", "/c", npm}, args...), nil
+		}
+		script, err := evalSymlinks(npm)
 		if err != nil {
 			script = npm
 		}
-		node, err := exec.LookPath("node")
+		node, err := lookPath("node")
 		if err != nil {
-			return nil, err
+			return "", nil, err
 		}
 		name = node
 		args = append([]string{script}, args...)
 	}
-	return startManifestProcess(dir, name, env, args...)
+	return name, args, nil
 }
-func startManifestApp(root string, config manifest.Config, goos, frontendURL string, port int) (*manifestProcess, error) {
-	name := config.Project.BinaryName
-	if goos == "windows" {
-		name += ".exe"
+func manifestDevBinaryPath(root string, run manifestPipelineRun, goos, goarch string) (string, error) {
+	node, exists := run.Plan.Nodes[pipelineCompileKey(goos, goarch)]
+	if !exists || node.Output == "" {
+		return "", fmt.Errorf("development Plan for %s/%s has no compile output", goos, goarch)
 	}
+	return filepath.Join(root, filepath.FromSlash(node.Output)), nil
+}
+
+func startManifestApp(root, binaryPath, frontendURL string, port int) (*manifestProcess, error) {
 	env := []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL}
-	return startManifestProcess(root, filepath.Join(root, config.Build.OutputDirectory, name), env)
+	return startManifestProcess(root, binaryPath, env)
 }
 func startManifestProcess(dir, name string, env []string, args ...string) (*manifestProcess, error) {
 	cmd := exec.CommandContext(context.Background(), name, args...)
@@ -742,6 +801,10 @@ func waitForProcessStable(ctx context.Context, process *manifestProcess, duratio
 	}
 }
 func ignoreDevEvent(root string, config manifest.Config, ignored gitignore.Matcher, path string) bool {
+	return ignoreDevEventMatched(root, config, ignored, newDevWatchMatcher(config.Dev.Watch), path)
+}
+
+func ignoreDevEventMatched(root string, config manifest.Config, ignored gitignore.Matcher, matcher devWatchMatcher, path string) bool {
 	rel, err := filepath.Rel(root, path)
 	if err != nil {
 		return true
@@ -756,7 +819,7 @@ func ignoreDevEvent(root string, config manifest.Config, ignored gitignore.Match
 	if ignored != nil && ignored.Match(strings.Split(rel, "/"), false) {
 		return true
 	}
-	return strings.HasSuffix(rel, "_test.go") || !matchesDevWatch(config.Dev.Watch, rel)
+	return strings.HasSuffix(rel, "_test.go") || !matcher.Match(rel)
 }
 
 func registerManifestWatches(root string, config manifest.Config, ignored gitignore.Matcher, events chan<- notify.EventInfo) error {
@@ -800,7 +863,7 @@ func devPathExcluded(config manifest.Config, rel string) bool {
 			return true
 		}
 	}
-	paths := []string{config.Build.OutputDirectory, config.Frontend.Directory}
+	paths := []string{config.Frontend.Directory}
 	paths = append(paths, config.Dev.Exclude...)
 	for _, excluded := range paths {
 		clean := strings.Trim(filepath.ToSlash(excluded), "/")
@@ -827,50 +890,65 @@ func shouldRefreshDevWatchesForDirectory(root string, config manifest.Config, ig
 }
 
 func matchesDevWatch(patterns []string, rel string) bool {
-	if len(patterns) == 0 {
+	return newDevWatchMatcher(patterns).Match(rel)
+}
+
+func matchDevPathPattern(pattern, value string) bool {
+	return newDevWatchMatcher([]string{pattern}).Match(value)
+}
+
+func newDevWatchMatcher(patterns []string) devWatchMatcher {
+	matcher := devWatchMatcher{matchAll: len(patterns) == 0, patterns: make([][]devWatchSegment, 0, len(patterns))}
+	for _, pattern := range patterns {
+		pattern = strings.Trim(strings.TrimPrefix(filepath.ToSlash(pattern), "./"), "/")
+		parts := strings.Split(pattern, "/")
+		segments := make([]devWatchSegment, len(parts))
+		for index, part := range parts {
+			segments[index] = devWatchSegment{value: part, glob: strings.ContainsAny(part, `*?[\`), doubleStar: part == "**"}
+		}
+		matcher.patterns = append(matcher.patterns, segments)
+	}
+	return matcher
+}
+
+func (m devWatchMatcher) Match(value string) bool {
+	if m.matchAll {
 		return true
 	}
-	rel = filepath.ToSlash(rel)
-	for _, pattern := range patterns {
-		if matchDevPathPattern(filepath.ToSlash(pattern), rel) {
+	value = strings.Trim(strings.TrimPrefix(filepath.ToSlash(value), "./"), "/")
+	valueParts := strings.Split(value, "/")
+	first := make([]bool, len(valueParts)+1)
+	second := make([]bool, len(valueParts)+1)
+	for _, patternParts := range m.patterns {
+		next, current := first, second
+		clear(next)
+		next[len(valueParts)] = true
+		for patternIndex := len(patternParts) - 1; patternIndex >= 0; patternIndex-- {
+			clear(current)
+			part := patternParts[patternIndex]
+			if part.doubleStar {
+				current[len(valueParts)] = next[len(valueParts)]
+				for valueIndex := len(valueParts) - 1; valueIndex >= 0; valueIndex-- {
+					current[valueIndex] = next[valueIndex] || current[valueIndex+1]
+				}
+			} else {
+				for valueIndex := 0; valueIndex < len(valueParts); valueIndex++ {
+					if !next[valueIndex+1] {
+						continue
+					}
+					if !part.glob {
+						current[valueIndex] = part.value == valueParts[valueIndex]
+						continue
+					}
+					segmentMatch, err := path.Match(part.value, valueParts[valueIndex])
+					current[valueIndex] = err == nil && segmentMatch
+				}
+			}
+			next, current = current, next
+		}
+		if next[0] {
 			return true
 		}
 	}
 	return false
-}
-
-func matchDevPathPattern(pattern, value string) bool {
-	pattern = strings.Trim(strings.TrimPrefix(pattern, "./"), "/")
-	value = strings.Trim(strings.TrimPrefix(value, "./"), "/")
-	patternParts := strings.Split(pattern, "/")
-	valueParts := strings.Split(value, "/")
-	type state struct{ pattern, value int }
-	memo := map[state]bool{}
-	visited := map[state]bool{}
-	var match func(int, int) bool
-	match = func(patternIndex, valueIndex int) bool {
-		key := state{patternIndex, valueIndex}
-		if visited[key] {
-			return memo[key]
-		}
-		visited[key] = true
-		if patternIndex == len(patternParts) {
-			memo[key] = valueIndex == len(valueParts)
-			return memo[key]
-		}
-		if patternParts[patternIndex] == "**" {
-			memo[key] = match(patternIndex+1, valueIndex) || (valueIndex < len(valueParts) && match(patternIndex, valueIndex+1))
-			return memo[key]
-		}
-		if valueIndex == len(valueParts) {
-			return false
-		}
-		segmentMatch, err := path.Match(patternParts[patternIndex], valueParts[valueIndex])
-		if err != nil || !segmentMatch {
-			return false
-		}
-		memo[key] = match(patternIndex+1, valueIndex+1)
-		return memo[key]
-	}
-	return match(0, 0)
 }

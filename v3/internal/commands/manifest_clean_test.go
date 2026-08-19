@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -24,4 +25,22 @@ func TestCleanRemovesOnlyGeneratedWorkspace(t *testing.T) {
 	require.NoError(t, Clean(nil))
 	assert.NoDirExists(t, filepath.Join(root, ".wails"))
 	assert.FileExists(t, filepath.Join(root, "bin", "user-artifact"))
+}
+
+func TestCleanRejectsArgumentsAndPropagatesDiscoveryAndRemovalFailures(t *testing.T) {
+	want := errors.New("injected clean failure")
+	base := cleanOperations{
+		discover:  func(string) (string, string, error) { return "/project", "/project/wails.hcl", nil },
+		removeAll: func(string) error { return nil },
+	}
+	require.ErrorContains(t, cleanWithOperations([]string{"unexpected"}, base), "usage")
+	operations := base
+	operations.discover = func(string) (string, string, error) { return "", "", want }
+	require.ErrorIs(t, cleanWithOperations(nil, operations), want)
+	operations = base
+	removed := ""
+	operations.removeAll = func(path string) error { removed = path; return want }
+	require.ErrorIs(t, cleanWithOperations(nil, operations), want)
+	assert.Equal(t, filepath.Join("/project", ".wails"), removed)
+	require.NoError(t, cleanWithOperations(nil, base))
 }

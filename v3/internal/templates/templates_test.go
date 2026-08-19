@@ -204,7 +204,6 @@ func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
 		"main.go.tmpl",
 		"go.mod.tmpl",
 		"greetservice.go",
-		"wails.tmpl.toml",
 		"gitignore.tmpl",
 		filepath.Join("frontend", "index.html"),
 	}
@@ -212,6 +211,11 @@ func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
 		path := filepath.Join(outDir, f)
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("expected file %s to exist: %v", f, err)
+		}
+	}
+	for _, filename := range []string{"wails.tmpl.toml", "wails.tmpl.hcl", "Taskfile.tmpl.yml"} {
+		if _, err := os.Stat(filepath.Join(outDir, filename)); !os.IsNotExist(err) {
+			t.Errorf("generated reusable template must not contain %s", filename)
 		}
 	}
 }

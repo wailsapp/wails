@@ -5,9 +5,10 @@
 Wake contains two deliberately separated paths:
 
 - The manifest-native Wails pipeline (`manifest/`, `pipeline/`, and `cache/`)
-  is selected automatically when an active root `wails.toml` exists. It is the
-  default build/package/sign/dev implementation for new and fully migrated
-  projects and does not interpret Taskfiles.
+  is selected automatically when an active root `wails.hcl` exists. It is the
+  build/dev implementation for new and fully migrated projects and does not
+  discover or interpret Taskfiles. Package and sign are deprecated aliases
+  over the same build planner.
 - The Go-native Taskfile executor is the legacy compatibility and migration
   path. `WAILS_USE_WAKE=true` selects it instead of the external `task` CLI for
   Taskfile projects; unsupported Taskfile features still fall back to `task`.
@@ -18,8 +19,8 @@ The Taskfile environment flag does not gate the manifest pipeline.
 
 ```
 wake.go              Entry point: Parse -> Resolve -> DAG -> Execute (serial or parallel)
-manifest/             Sparse wails.toml defaults, validation, profiles, eject
-migration/            Private migration report, provenance, and cutover state
+manifest/             Sparse wails.hcl defaults, validation, profiles, eject
+migration/            Ephemeral migration analysis DTOs
 pipeline/             Typed manifest Planner, Plan, scheduler and handlers seam
 cache/                BLAKE3 Snapshots, Receipts, Action Index, Artifact Store
 packagetemplate/      Atomic rendering of user-owned package files/directories
@@ -40,7 +41,7 @@ Build output is rendered through `internal/report` (a leaf contract) and
 
 ### Manifest pipeline
 
-1. Load and strictly validate sparse `wails.toml`; resolve defaults and Profile.
+1. Load and strictly validate sparse `wails.hcl`; resolve defaults and Profile.
 2. Plan one immutable typed graph for every requested Target and package format.
 3. Snapshot direct inputs and calculate tool/environment-aware Action Keys.
 4. Prune or restore reusable Artifacts; validate stateful Receipts.
@@ -57,15 +58,10 @@ replaces its generated destination. Package adapters render only into their
 own `.wails/package/` workspace or final Artifact; they must never mutate the
 platform-assets Artifact they consume.
 
-`RunHook` Nodes invoke one project-owned script file without interpolated
-shell. `before_build` is one shared Project Node; `after_build` is Target scoped;
-package/sign phases are Target barriers around the requested package set.
-Hooks are non-reusable unless `cache = true` and complete inputs and outputs
-are declared. Their Action Key includes script bytes/mode, phase, environment
-contract version, and resolved scope. Resolve scripts and working directories
-through symlinks inside the Project, keep cached output roots disjoint from
-scripts/inputs, make stable `WAILS_*` values override inherited environment,
-and terminate the process group on cancellation.
+The configuration-first Plan has no hook or user-authored graph Nodes. Keep
+future hooks, typed tool calls, and arbitrary process execution outside the
+public schema until their lifecycle, ownership, cache, and cancellation
+contracts are designed explicitly.
 
 The Dev Session is outside the Plan: it owns persistent frontend/backend
 processes and replaceable watch sets while requesting ordinary finite
@@ -94,16 +90,15 @@ exit path.
 
 ### Migration cutover
 
-`wails.toml` contains build intent only. `wails3 migrate` classifies each
-Taskfile against current embedded ASTs and known historical generated-file
-fingerprints, then records provenance and diagnostics in
-`.wails/migration-report.json`. Incomplete reports retain the legacy files and
-select Taskfile execution. Complete migrations digest-check and retire the
-represented files by default; `--backup` first copies them under
-`.wails/migration-backup`. After manually resolving an incomplete report,
-`migrate --complete` verifies the original source digests and confirms cutover
-without rewriting the Manifest. A project containing both systems without a
-report is rejected as ambiguous.
+`wails3 migrate` classifies Taskfiles against current embedded ASTs and known
+historical fingerprints, computes reachability from Wails entry points, and
+prints an ephemeral analysis. It exclusively creates inactive
+`wails.migrated.hcl`; reruns never replace a reviewed draft. `--activate`
+reruns current analysis, validates the selected draft, and atomically creates
+active `wails.hcl` only when no reachable unrepresented behaviour remains.
+Migration never modifies, retires, renames, or backs up legacy sources. There
+is no persistent migration report. Active `wails.hcl` is the sole cutover and
+routing signal; invalid HCL never falls back to Taskfiles.
 
 ## Parallel Execution
 
@@ -226,8 +221,8 @@ Current results (badge example, no-op cached build): wake **~20ms** vs task CLI 
 | File | Purpose |
 |------|---------|
 | `wake.go` | Entry point, orchestration, parallel execution, platform filtering |
-| `manifest/` | Root manifest defaults, strict decoding, Profiles and ejection |
-| `migration/` | Private migration report, Taskfile classifications, and cutover state |
+| `manifest/` | Root HCL defaults, strict decoding, Profiles and ejection |
+| `migration/` | Ephemeral migration diagnostics and Taskfile classifications |
 | `pipeline/` | Typed multi-Target planning and critical-path execution |
 | `cache/` | Content Snapshots, Action Index, Receipts and Artifact Store |
 | `packagetemplate/` | Stable package template model and atomic renderer |

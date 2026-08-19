@@ -3,9 +3,9 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/wailsapp/wails/v3/internal/report"
+	"github.com/wailsapp/wails/v3/internal/wake/cache"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
@@ -29,10 +30,36 @@ type branchHandler struct {
 
 type cancelHandler struct{ started chan struct{} }
 
+type parallelCancelHandler struct {
+	want    int
+	started chan struct{}
+	once    sync.Once
+	mu      sync.Mutex
+	running int
+}
+
 func (*cancelHandler) Identity(context.Context, Node) (string, error) { return "cancel-v1", nil }
 func (h *cancelHandler) Run(ctx context.Context, _ Node) (RunResult, error) {
 	close(h.started)
 	<-ctx.Done()
+	return RunResult{}, ctx.Err()
+}
+
+func (*parallelCancelHandler) Identity(context.Context, Node) (string, error) {
+	return "parallel-cancel-v1", nil
+}
+
+func (h *parallelCancelHandler) Run(ctx context.Context, _ Node) (RunResult, error) {
+	h.mu.Lock()
+	h.running++
+	if h.running == h.want {
+		h.once.Do(func() { close(h.started) })
+	}
+	h.mu.Unlock()
+	<-ctx.Done()
+	h.mu.Lock()
+	h.running--
+	h.mu.Unlock()
 	return RunResult{}, ctx.Err()
 }
 
@@ -95,17 +122,52 @@ func TestPlanSharesFrontendAndCachesSecondRun(t *testing.T) {
 	require.NoError(t, err)
 	plan, err := PlanBuild(loaded.Config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
 	require.NoError(t, err)
-	assert.Len(t, plan.Nodes, 4)
+	assert.Len(t, plan.Nodes, 6)
 	h := &fakeHandler{root: root}
 	executor := Executor{Handler: h}
 	results, err := executor.Execute(context.Background(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
 	require.NoError(t, err)
 	assert.Empty(t, results["frontend:install"].Artifact, "a receipt is not an artifact")
 	first := len(h.runs)
-	assert.Equal(t, 4, first)
+	assert.Equal(t, 6, first)
 	_, err = executor.Execute(context.Background(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
 	require.NoError(t, err)
-	assert.Equal(t, first, len(h.runs))
+	assert.Equal(t, first+1, len(h.runs), "only terminal collection should run again")
+}
+
+func TestPlanInspectionReportsActualCacheDecisionsWithoutChangingFiles(t *testing.T) {
+	config := performanceConfig(t)
+	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(t, err)
+	handler := &fakeHandler{root: config.Root}
+	executor := Executor{Handler: handler}
+
+	cold, err := executor.Inspect(t.Context(), plan, config.Root)
+	require.NoError(t, err)
+	assert.NoDirExists(t, filepath.Join(config.Root, ".wails"))
+	for key, operation := range cold.Operations {
+		assert.Equal(t, "run", operation.Decision, key)
+	}
+	assert.NotEmpty(t, cold.Operations["target:linux/amd64:compile"].Inputs)
+
+	_, err = executor.Execute(t.Context(), plan, ExecuteOptions{Root: config.Root, Reporter: report.Nop{}})
+	require.NoError(t, err)
+	warm, err := executor.Inspect(t.Context(), plan, config.Root)
+	require.NoError(t, err)
+	for key, operation := range warm.Operations {
+		if key == "collect:artifacts" {
+			assert.Equal(t, "run", operation.Decision)
+		} else {
+			assert.Equal(t, "cached", operation.Decision, key)
+		}
+	}
+
+	output := filepath.Join(config.Root, filepath.FromSlash(plan.Nodes["target:linux/amd64:compile"].Output))
+	require.NoError(t, os.Remove(output))
+	restore, err := executor.Inspect(t.Context(), plan, config.Root)
+	require.NoError(t, err)
+	assert.Equal(t, "restore", restore.Operations["target:linux/amd64:compile"].Decision)
+	assert.NoFileExists(t, output, "inspection must not restore a cached output")
 }
 
 func TestWindowsBuildGeneratesAssetsBeforeCompile(t *testing.T) {
@@ -118,6 +180,146 @@ func TestWindowsBuildGeneratesAssetsBeforeCompile(t *testing.T) {
 	assert.Contains(t, compile.Dependencies, assets)
 }
 
+func TestDevelopmentPlanDoesNotInheritFiniteBuildPolicy(t *testing.T) {
+	config := testConfig(t)
+	config.Build.OutputDirectory = "release-output"
+	config.Build.Go.Tags = []string{"release"}
+	config.Build.Go.LinkerFlags = []string{"-X", "release=true"}
+	config.Build.Go.CompilerFlags = []string{"all=-l"}
+	config.Build.Go.GarbleArgs = []string{"-tiny"}
+	config.Build.Obfuscation = true
+	config.Build.TrimPath = true
+	config.Build.Strip = true
+	config.Dev.Tags = []string{"debug", "devtools"}
+	config.Targets.Linux.AMD64.Tags = []string{"target-release"}
+
+	request := Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64", Development: true, ExtraTags: []string{"cli-debug"}}
+	plan, err := PlanBuild(config, request)
+	require.NoError(t, err)
+	compile := plan.Nodes["target:linux/amd64:compile"]
+	assert.Equal(t, ".wails/dev/linux-amd64/app", compile.Output)
+	spec := compile.Spec.(CompileSpec)
+	assert.Equal(t, compile.Output, spec.Output)
+	assert.Equal(t, []string{"debug", "devtools", "cli-debug"}, spec.Tags)
+	assert.Empty(t, spec.LinkerFlags)
+	assert.Empty(t, spec.CompilerFlags)
+	assert.Empty(t, spec.GarbleArgs)
+	assert.False(t, spec.Production)
+	assert.False(t, spec.Obfuscated)
+	assert.False(t, spec.TrimPath)
+	assert.False(t, spec.Strip)
+	bindings := plan.Nodes["frontend:bindings"].Spec.(BindingsSpec)
+	assert.Equal(t, spec.Tags, bindings.Tags)
+	assert.False(t, bindings.Obfuscated)
+	frontend := plan.Nodes["frontend:build"]
+	require.Len(t, frontend.Inputs, 1)
+	assert.Equal(t, "frontend-dev-bootstrap", frontend.Inputs[0].Label)
+	assert.False(t, frontend.Inputs[0].IncludeAll, "the persistent Dev server owns frontend source changes")
+	assert.Contains(t, frontend.Inputs[0].Files, filepath.Join(config.Frontend.Directory, "package.json"))
+	assert.True(t, plan.Nodes["frontend:bindings"].Inputs[0].UseGitIgnore)
+	assert.True(t, compile.Inputs[0].UseGitIgnore)
+
+	changedBuildPolicy := config
+	changedBuildPolicy.Build.OutputDirectory = "somewhere-else"
+	changedBuildPolicy.Build.Go.Tags = []string{"different-release"}
+	changedBuildPolicy.Build.Go.LinkerFlags = []string{"different"}
+	changedBuildPolicy.Build.Go.CompilerFlags = []string{"different"}
+	changedBuildPolicy.Build.Go.GarbleArgs = []string{"different"}
+	changedBuildPolicy.Build.Obfuscation = false
+	changedBuildPolicy.Build.TrimPath = false
+	changedBuildPolicy.Build.Strip = false
+	changedPlan, err := PlanBuild(changedBuildPolicy, request)
+	require.NoError(t, err)
+	assert.Equal(t, plan, changedPlan, "finite build policy must not change the Dev Plan or its future action keys")
+}
+
+func TestProductionPlanCarriesDeclaredEnvironmentAndCompilerPolicy(t *testing.T) {
+	config := testConfig(t)
+	config.Frontend.Environment = map[string]string{"PUBLIC_RELEASE": "true"}
+	config.Build.Environment = map[string]string{"CGO_ENABLED": "0", "SHARED": "build"}
+	config.Build.VCSInfo = true
+	config.Targets.Linux.AMD64.Environment = map[string]string{"CC": "zig cc", "SHARED": "target"}
+	config.Targets.Linux.AMD64.Toolchain = "zig"
+	config.Targets.Linux.AMD64.LinkerFlags = []string{"-X target=value"}
+	config.Targets.Linux.AMD64.CompilerFlags = []string{"all=-l"}
+	config.Targets.Linux.AMD64.GarbleArgs = []string{"-literals"}
+	config.Targets.Linux.AMD64.Obfuscated = true
+	config.Targets.Linux.AMD64.ObfuscatedSet = true
+
+	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(t, err)
+	assert.Equal(t, config.Frontend.Environment, plan.Nodes["frontend:install"].Spec.(InstallSpec).Environment)
+	assert.Equal(t, config.Frontend.Environment, plan.Nodes["frontend:build"].Spec.(FrontendSpec).Environment)
+	compile := plan.Nodes["target:linux/amd64:compile"].Spec.(CompileSpec)
+	assert.Equal(t, map[string]string{"CC": "zig cc", "SHARED": "target"}, compile.Environment)
+	assert.Equal(t, "zig", compile.Toolchain)
+	assert.Equal(t, []string{"-X target=value"}, compile.LinkerFlags)
+	assert.Equal(t, []string{"all=-l"}, compile.CompilerFlags)
+	assert.Equal(t, []string{"-literals"}, compile.GarbleArgs)
+	assert.True(t, compile.Obfuscated)
+	assert.True(t, compile.VCSInfo)
+}
+
+func TestExplicitTargetFalseClearsInheritedObfuscation(t *testing.T) {
+	config := testConfig(t)
+	config.Build.Obfuscation = true
+	config.Targets.Linux.AMD64.ObfuscatedSet = true
+	config.Targets.Linux.AMD64.Obfuscated = false
+
+	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(t, err)
+	compile := plan.Nodes["target:linux/amd64:compile"].Spec.(CompileSpec)
+	assert.False(t, compile.Obfuscated)
+	assert.False(t, plan.Nodes["frontend:bindings"].Spec.(BindingsSpec).Obfuscated)
+}
+
+func TestAnonymousGarbleArgumentsAreAppliedOnceAndAffectActionIdentity(t *testing.T) {
+	config := testConfig(t)
+	config.Build.Obfuscation = true
+	config.Build.Go.GarbleArgs = []string{"-tiny"}
+
+	base, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(t, err)
+	overridden, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64", GarbleArgs: []string{"-literals"}})
+	require.NoError(t, err)
+
+	baseCompile := base.Nodes["target:linux/amd64:compile"]
+	overriddenCompile := overridden.Nodes["target:linux/amd64:compile"]
+	assert.Equal(t, []string{"-tiny", "-literals"}, overriddenCompile.Spec.(CompileSpec).GarbleArgs)
+	baseKey, err := cache.ActionKey(string(baseCompile.Kind), baseCompile.Spec, nil, nil)
+	require.NoError(t, err)
+	overriddenKey, err := cache.ActionKey(string(overriddenCompile.Kind), overriddenCompile.Spec, nil, nil)
+	require.NoError(t, err)
+	assert.NotEqual(t, baseKey, overriddenKey)
+}
+
+func TestBindingAndCompileSnapshotsShareTreeSelectors(t *testing.T) {
+	config := performanceConfig(t)
+	local := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(local, "go.mod"), []byte("module example.com/local\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(config.Root, "go.mod"), []byte("module example.com/app\n\nreplace example.com/local => "+filepath.ToSlash(local)+"\n"), 0o644))
+	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(t, err)
+	binding := plan.Nodes["frontend:bindings"]
+	compile := plan.Nodes["target:linux/amd64:compile"]
+	compileByRoot := map[string]InputSpec{}
+	for _, input := range compile.Inputs {
+		compileByRoot[input.Root] = input
+	}
+	for _, input := range binding.Inputs {
+		if !input.SemanticGo {
+			continue
+		}
+		matching, ok := compileByRoot[input.Root]
+		require.True(t, ok, input.Root)
+		assert.Equal(t, matching.IncludeNames, input.IncludeNames)
+		assert.Equal(t, matching.IncludeExtensions, input.IncludeExtensions)
+		assert.Equal(t, matching.ExcludeDirs, input.ExcludeDirs)
+		assert.Equal(t, matching.ExcludeSuffixes, input.ExcludeSuffixes)
+		assert.Equal(t, matching.UseGitIgnore, input.UseGitIgnore)
+	}
+}
+
 func TestPlannerBuildsOnePlanForMultipleTargets(t *testing.T) {
 	config := testConfig(t)
 	plan, err := PlanBuild(config, Request{Verb: "build", Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "linux", Arch: "arm64"}}})
@@ -126,7 +328,11 @@ func TestPlannerBuildsOnePlanForMultipleTargets(t *testing.T) {
 	assert.Contains(t, plan.Nodes, NodeKey("frontend:build"))
 	assert.Contains(t, plan.Nodes, NodeKey("target:linux/amd64:compile"))
 	assert.Contains(t, plan.Nodes, NodeKey("target:linux/arm64:compile"))
-	assert.Len(t, plan.Roots, 2)
+	require.Equal(t, []NodeKey{"collect:artifacts"}, plan.Roots)
+	assert.ElementsMatch(t, []NodeKey{"publish:target:linux/amd64:compile", "publish:target:linux/arm64:compile"}, plan.Artifacts)
+	collect := plan.Nodes["collect:artifacts"]
+	assert.Equal(t, CollectArtifacts, collect.Kind)
+	assert.ElementsMatch(t, plan.Artifacts, collect.Dependencies)
 	amd64 := plan.Nodes["target:linux/amd64:compile"].Output
 	arm64 := plan.Nodes["target:linux/arm64:compile"].Output
 	assert.NotEqual(t, amd64, arm64)
@@ -135,56 +341,60 @@ func TestPlannerBuildsOnePlanForMultipleTargets(t *testing.T) {
 func TestPlannerRejectsInvalidTargetAndFormatCombinations(t *testing.T) {
 	config := testConfig(t)
 	_, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "riscv64"})
-	require.ErrorContains(t, err, "unsupported target architecture")
+	require.ErrorContains(t, err, `unsupported target "linux/riscv64"`)
 	_, err = PlanBuild(config, Request{Verb: "package", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"nsis"}})
-	require.ErrorContains(t, err, "not supported for linux")
+	require.ErrorContains(t, err, `format "nsis" is not supported for any selected target`)
 	_, err = PlanBuild(config, Request{Verb: "build", TargetOS: "darwin", TargetArch: "universal"})
 	require.NoError(t, err)
+}
+
+func TestPlannerRejectsDuplicateCommaSeparatedTargetsAndFormats(t *testing.T) {
+	config := testConfig(t)
+	_, err := PlanBuild(config, Request{Verb: "build", Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "linux", Arch: "amd64"}}})
+	require.ErrorContains(t, err, "duplicate target linux/amd64")
+	_, err = PlanBuild(config, Request{Verb: "package", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb", "deb"}})
+	require.ErrorContains(t, err, "duplicate package format deb")
 }
 
 func TestPlannerCarriesPackageCustomizationForEveryFormat(t *testing.T) {
 	tests := []struct {
 		platform string
 		format   string
+		config   manifest.PackageFormat
 	}{
-		{"windows", "nsis"}, {"windows", "msix"},
-		{"darwin", "app"}, {"darwin", "dmg"},
-		{"linux", "appimage"}, {"linux", "deb"}, {"linux", "rpm"}, {"linux", "archlinux"},
-		{"ios", "app"}, {"ios", "ipa"},
-		{"android", "apk"}, {"android", "aab"},
+		{"windows", "nsis", manifest.PackageFormat{Template: "packaging/windows/installer.nsi"}},
+		{"windows", "msix", manifest.PackageFormat{Publisher: "CN=Example"}},
+		{"darwin", "dmg", manifest.PackageFormat{Background: "packaging/darwin/background.png"}},
+		{"linux", "appimage", manifest.PackageFormat{Categories: []string{"Development", "IDE"}}},
+		{"linux", "deb", manifest.PackageFormat{Maintainer: "Example"}},
+		{"linux", "rpm", manifest.PackageFormat{Maintainer: "Example"}},
+		{"linux", "archlinux", manifest.PackageFormat{Maintainer: "Example"}},
 	}
 	for _, test := range tests {
 		t.Run(test.platform+"/"+test.format, func(t *testing.T) {
 			config := testConfig(t)
-			if test.platform == "ios" && test.format == "ipa" {
-				config.Targets.IOS.ARM64.Variant = "device"
-			}
-			format := packageFormatPointer(&config.Package, test.platform, test.format)
-			format.Template = "packaging/" + test.platform + "/" + test.format + ".tmpl"
-			format.Options = map[string]any{"channel": "preview"}
+			setTestPackageFormat(&config.Package, test.platform, test.format, test.config)
 			config.Associations = []manifest.Association{{Extensions: []string{"example"}}}
 			config.Protocols = []manifest.Protocol{{Scheme: "example"}}
 			plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: test.platform, TargetArch: "arm64", Formats: []string{test.format}})
 			require.NoError(t, err)
 			node := plan.Nodes[NodeKey("package:"+test.platform+"/arm64:"+test.format)]
 			spec := node.Spec.(PackageSpec)
-			assert.Equal(t, format.Template, spec.Config.Template)
-			assert.Equal(t, "preview", spec.Config.Options["channel"])
-			assert.Equal(t, config.Root, spec.TemplateRoot)
+			assert.Equal(t, test.config, spec.Config)
 			assert.Equal(t, config.Associations, spec.Associations)
 			assert.Equal(t, config.Protocols, spec.Protocols)
-			require.Len(t, node.Inputs, 1)
-			assert.Equal(t, "package-template", node.Inputs[0].Label)
+			if test.config.Template != "" {
+				require.Len(t, node.Inputs, 1)
+				assert.Equal(t, "package-template", node.Inputs[0].Label)
+			}
 		})
 	}
 }
 
 func TestPlannerSnapshotsBuiltInDMGResources(t *testing.T) {
 	config := testConfig(t)
-	config.Package.Darwin.DMG.Options = map[string]any{
-		"background": "packaging/background.png",
-		"files":      "Read Me=README.md,License=LICENSE",
-	}
+	config.Package.Darwin.DMG.Background = "packaging/background.png"
+	config.Package.Darwin.DMG.Files = map[string]string{"Read Me": "README.md", "License": "LICENSE"}
 	plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"dmg"}})
 	require.NoError(t, err)
 	node := plan.Nodes[NodeKey("package:darwin/arm64:dmg")]
@@ -193,43 +403,22 @@ func TestPlannerSnapshotsBuiltInDMGResources(t *testing.T) {
 	assert.ElementsMatch(t, []string{"packaging/background.png", "README.md", "LICENSE"}, node.Inputs[0].Files)
 }
 
-func packageFormatPointer(packages *manifest.Packages, platform, format string) *manifest.PackageFormat {
-	var selected *manifest.PackagePlatform
-	switch platform {
-	case "windows":
-		selected = &packages.Windows
-	case "darwin":
-		selected = &packages.Darwin
-	case "linux":
-		selected = &packages.Linux
-	case "ios":
-		selected = &packages.IOS
-	case "android":
-		selected = &packages.Android
-	}
-	switch format {
-	case "nsis":
-		return &selected.NSIS
-	case "msix":
-		return &selected.MSIX
-	case "app":
-		return &selected.App
-	case "dmg":
-		return &selected.DMG
-	case "appimage":
-		return &selected.AppImage
-	case "deb":
-		return &selected.Deb
-	case "rpm":
-		return &selected.RPM
-	case "archlinux":
-		return &selected.ArchLinux
-	case "ipa":
-		return &selected.IPA
-	case "apk":
-		return &selected.APK
-	default:
-		return &selected.AAB
+func setTestPackageFormat(packages *manifest.Packages, platform, format string, value manifest.PackageFormat) {
+	switch platform + "/" + format {
+	case "windows/nsis":
+		packages.Windows.NSIS = manifest.NSISPackage{Template: value.Template, InstallScope: value.InstallScope}
+	case "windows/msix":
+		packages.Windows.MSIX = manifest.MSIXPackage{Publisher: value.Publisher, Manifest: value.Manifest}
+	case "darwin/dmg":
+		packages.Darwin.DMG = manifest.DMGPackage{Template: value.Template, Background: value.Background, VolumeIcon: value.VolumeIcon, FileIcon: value.FileIcon, Files: value.Files, WindowWidth: value.WindowWidth, WindowHeight: value.WindowHeight}
+	case "linux/appimage":
+		packages.Linux.AppImage = manifest.AppImagePackage{Icon: value.Icon, DesktopEntry: value.DesktopEntry, Categories: value.Categories}
+	case "linux/deb":
+		packages.Linux.Deb = manifest.LinuxPackage{Template: value.Template, Maintainer: value.Maintainer}
+	case "linux/rpm":
+		packages.Linux.RPM = manifest.LinuxPackage{Template: value.Template, Maintainer: value.Maintainer}
+	case "linux/archlinux":
+		packages.Linux.ArchLinux = manifest.LinuxPackage{Template: value.Template, Maintainer: value.Maintainer}
 	}
 }
 
@@ -262,30 +451,29 @@ func TestTargetCommonAndArchitectureOverridesReachSpecs(t *testing.T) {
 	config.Targets.Darwin.ARM64.MinimumVersion = "13.0"
 	config.Targets.Darwin.ARM64.BuildNumber = 8
 	config.Targets.Darwin.ARM64.Tags = []string{"metal"}
-	plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"app"}})
+	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "darwin", TargetArch: "arm64"})
 	require.NoError(t, err)
 	compile := plan.Nodes["target:darwin/arm64:compile"].Spec.(CompileSpec)
 	assert.Equal(t, "13.0", compile.MinimumVersion)
 	assert.Contains(t, compile.Tags, "metal")
-	pkg := plan.Nodes["package:darwin/arm64:app"].Spec.(PackageSpec)
+	pkg := plan.Nodes["assemble:darwin/arm64"].Spec.(PackageSpec)
 	assert.Equal(t, "Mac App", pkg.Project.ProductName)
 	assert.Equal(t, "com.example.mac", pkg.Project.Identifier)
 	assert.Equal(t, 8, pkg.Project.BuildNumber)
 }
 
-func TestMobilePackagePlansUseTargetVariants(t *testing.T) {
+func TestMobilePackagePlansUseResolvedDestinations(t *testing.T) {
 	config := testConfig(t)
 	for _, tc := range []struct {
-		os, format, variant string
-	}{{"ios", "app", "simulator"}, {"android", "apk", ""}} {
+		os, format, variant, key string
+	}{{"ios", "", "simulator", "assemble:ios/arm64"}, {"android", "aab", "", "package:android/arm64:aab"}} {
 		t.Run(tc.os, func(t *testing.T) {
-			plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: tc.os, TargetArch: "arm64", Formats: []string{tc.format}})
+			plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: tc.os, TargetArch: "arm64", Formats: nonemptyStrings(tc.format)})
 			require.NoError(t, err)
-			key := NodeKey("package:" + tc.os + "/arm64:" + tc.format)
-			node, ok := plan.Nodes[key]
+			node, ok := plan.Nodes[NodeKey(tc.key)]
 			require.True(t, ok)
 			spec := node.Spec.(PackageSpec)
-			assert.Equal(t, tc.variant, spec.Variant)
+			assert.Equal(t, tc.variant, spec.Destination)
 			assert.Contains(t, node.Dependencies, NodeKey("target:"+tc.os+"/arm64:assets"))
 			if tc.os == "ios" {
 				assert.Equal(t, CacheNever, node.Cache, "iOS assembly signs and must not be reusable")
@@ -302,30 +490,42 @@ func TestPlannerAcceptanceMatrixCoversEverySupportedTargetAndFormat(t *testing.T
 	}{
 		{"windows", "amd64", []string{"nsis", "msix"}},
 		{"windows", "arm64", []string{"nsis", "msix"}},
-		{"darwin", "amd64", []string{"app", "dmg"}},
-		{"darwin", "arm64", []string{"app", "dmg"}},
-		{"darwin", "universal", []string{"app", "dmg"}},
+		{"darwin", "amd64", []string{"dmg"}},
+		{"darwin", "arm64", []string{"dmg"}},
+		{"darwin", "universal", []string{"dmg"}},
 		{"linux", "amd64", []string{"appimage", "deb", "rpm", "archlinux"}},
 		{"linux", "arm64", []string{"appimage", "deb", "rpm", "archlinux"}},
-		{"ios", "arm64", []string{"app", "ipa"}},
-		{"android", "arm64", []string{"apk", "aab"}},
-		{"android", "amd64", []string{"apk", "aab"}},
+		{"ios", "arm64", []string{"ipa"}},
+		{"android", "arm64", []string{"aab"}},
+		{"android", "amd64", []string{"aab"}},
+		{"android", "universal", []string{"aab"}},
 	}
 	for _, test := range tests {
 		for _, format := range test.formats {
 			t.Run(test.platform+"/"+test.arch+"/"+format, func(t *testing.T) {
 				config := testConfig(t)
+				request := Request{Verb: "package", TargetOS: test.platform, TargetArch: test.arch, Formats: []string{format}}
 				if test.platform == "ios" && format == "ipa" {
-					config.Targets.IOS.ARM64.Variant = "device"
+					config.Selected = manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "ios/arm64", Destination: "device", Formats: []string{"ipa"}}}}
+					request = Request{Verb: "build"}
 				}
-				plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: test.platform, TargetArch: test.arch, Formats: []string{format}})
+				plan, err := PlanBuild(config, request)
 				require.NoError(t, err)
 				key := NodeKey("package:" + test.platform + "/" + test.arch + ":" + format)
 				assert.Contains(t, plan.Nodes, key)
-				assert.Contains(t, plan.Roots, key)
+				publishKey := NodeKey("publish:" + test.platform + "/" + test.arch + ":" + format)
+				assert.Contains(t, plan.Artifacts, publishKey)
+				assert.Equal(t, []NodeKey{key}, plan.Nodes[publishKey].Dependencies)
 			})
 		}
 	}
+}
+
+func nonemptyStrings(value string) []string {
+	if value == "" {
+		return nil
+	}
+	return []string{value}
 }
 
 func TestPlannerFiltersRegistrationsForTargetAndCarriesCapabilities(t *testing.T) {
@@ -357,7 +557,7 @@ func TestPlannerFiltersRegistrationsForTargetAndCarriesCapabilities(t *testing.T
 func TestPlannerRejectsIPAPackagingForSimulator(t *testing.T) {
 	config := testConfig(t)
 	_, err := PlanBuild(config, Request{Verb: "package", TargetOS: "ios", TargetArch: "arm64", Formats: []string{"ipa"}})
-	require.ErrorContains(t, err, `variant = "device"`)
+	require.ErrorContains(t, err, `profile destination = "device"`)
 }
 
 func TestPlannerSnapshotsLocalModuleReplacements(t *testing.T) {
@@ -375,95 +575,93 @@ func TestPlannerSnapshotsLocalModuleReplacements(t *testing.T) {
 	assert.Equal(t, dependency, inputs[0].Root)
 }
 
-func TestPackageAndSignHooksRemainBarriersForEveryFormat(t *testing.T) {
-	config := testConfig(t)
-	config.Hooks.AfterBuild.Script = "scripts/after-build.sh"
-	config.Hooks.BeforePackage.Script = "scripts/before-package.sh"
-	config.Hooks.AfterPackage.Script = "scripts/after-package.sh"
-	config.Hooks.BeforeSign.Script = "scripts/before-sign.sh"
-	config.Hooks.AfterSign.Script = "scripts/after-sign.sh"
-	plan, err := PlanBuild(config, Request{Verb: "sign", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb", "rpm"}})
+func TestPlannerSnapshotsLocalWorkspaceReplacements(t *testing.T) {
+	workspace := t.TempDir()
+	root := filepath.Join(workspace, "app")
+	dependency := filepath.Join(workspace, "dependency")
+	require.NoError(t, os.MkdirAll(root, 0o755))
+	require.NoError(t, os.MkdirAll(dependency, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example/app\n\ngo 1.24\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(workspace, "go.work"), []byte("go 1.24\n\nuse ./app\nreplace example/dependency => ./dependency\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dependency, "go.mod"), []byte("module example/dependency\n"), 0o644))
+
+	inputs, err := goLocalSourceInputs(root)
 	require.NoError(t, err)
-	for _, format := range []string{"deb", "rpm"} {
-		packageKey := NodeKey("package:linux/amd64:" + format)
-		packageNode := plan.Nodes[packageKey]
-		assert.Contains(t, packageNode.Dependencies, NodeKey("hook:before_package:linux/amd64"))
-		signNode, ok := plan.Nodes[NodeKey(string(packageKey)+":sign")]
-		require.True(t, ok)
-		assert.Equal(t, plan.Nodes[packageKey].Output, signNode.Spec.(SignSpec).Input)
-		assert.Contains(t, signNode.Dependencies, packageKey)
-		assert.Contains(t, signNode.Dependencies, NodeKey("hook:before_sign:linux/amd64"))
+	require.Len(t, inputs, 1)
+	assert.Equal(t, dependency, inputs[0].Root)
+}
+
+func TestPlannerPrivateHelpersCoverDefensiveAndFormatSpecificPaths(t *testing.T) {
+	plan := Plan{Nodes: map[NodeKey]Node{}}
+	node := Node{Key: "one", Kind: CompileApplication, Spec: CompileSpec{}, Cache: CacheNever}
+	assert.Equal(t, NodeKey("one"), addNode(&plan, node, []OriginReference{{Field: "build"}}))
+	assert.PanicsWithValue(t, "duplicate planner key: one", func() { addNode(&plan, node, nil) })
+
+	root := t.TempDir()
+	templateDirectory := filepath.Join(root, "template")
+	require.NoError(t, os.MkdirAll(templateDirectory, 0o755))
+	tests := []struct {
+		platform string
+		format   string
+		config   manifest.PackageFormat
+		want     []InputSpec
+	}{
+		{"windows", "msix", manifest.PackageFormat{Manifest: "Package.appxmanifest"}, []InputSpec{{Label: "package-resources", Files: []string{"Package.appxmanifest"}}}},
+		{"darwin", "dmg", manifest.PackageFormat{Background: "background.png", VolumeIcon: "volume.icns", FileIcon: "file.icns", Files: map[string]string{"z": "z.txt", "a": "a.txt"}}, []InputSpec{{Label: "package-resources", Files: []string{"background.png", "volume.icns", "file.icns", "a.txt", "z.txt"}}}},
+		{"linux", "appimage", manifest.PackageFormat{Icon: "icon.png", DesktopEntry: "app.desktop"}, []InputSpec{{Label: "package-resources", Files: []string{"icon.png", "app.desktop"}}}},
+		{"linux", "deb", manifest.PackageFormat{PreInstall: "pre", PostInstall: "post", PreRemove: "prerm", PostRemove: "postrm"}, []InputSpec{{Label: "package-resources", Files: []string{"pre", "post", "prerm", "postrm"}}}},
+		{"linux", "rpm", manifest.PackageFormat{Template: "template"}, []InputSpec{{Label: "package-template", Root: "template", IncludeAll: true}}},
+		{"linux", "archlinux", manifest.PackageFormat{Template: "template.file"}, []InputSpec{{Label: "package-template", Files: []string{"template.file"}}}},
 	}
-	packageOutputs := []string{plan.Nodes["package:linux/amd64:deb"].Output, plan.Nodes["package:linux/amd64:rpm"].Output}
-	assert.Equal(t, commonOutput(packageOutputs), plan.Nodes["hook:before_package:linux/amd64"].Spec.(HookSpec).Artifact)
-	assert.Equal(t, TargetScope, plan.Nodes["hook:before_package:linux/amd64"].Scope)
-	assert.Equal(t, commonOutput(packageOutputs), plan.Nodes["hook:after_package:linux/amd64"].Spec.(HookSpec).Artifact)
-	assert.Equal(t, PackageScope, plan.Nodes["hook:after_package:linux/amd64"].Scope)
-	assert.Equal(t, commonOutput(packageOutputs), plan.Nodes["hook:before_sign:linux/amd64"].Spec.(HookSpec).Artifact)
-	signedOutputs := []string{packageOutputs[0] + ".signed", packageOutputs[1] + ".signed"}
-	assert.Equal(t, commonOutput(signedOutputs), plan.Nodes["hook:after_sign:linux/amd64"].Spec.(HookSpec).Artifact)
-	assert.Equal(t, []NodeKey{"hook:after_sign:linux/amd64"}, plan.Roots)
-}
-
-func TestHookSpecsExposeThePhaseArtifactSeparatelyFromCacheOutputs(t *testing.T) {
-	config := testConfig(t)
-	config.Hooks.BeforeBuild = manifest.Hook{Script: "scripts/before-build.sh", Cache: true, Inputs: []string{"version.txt"}, Outputs: []string{"generated/version.go"}}
-	config.Hooks.AfterBuild.Script = "scripts/after-build.sh"
-	config.Hooks.BeforePackage.Script = "scripts/before-package.sh"
-	config.Hooks.AfterPackage.Script = "scripts/after-package.sh"
-	plan, err := PlanBuild(config, Request{Verb: "package", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb"}})
-	require.NoError(t, err)
-
-	binary := plan.Nodes["target:linux/amd64:compile"].Output
-	artifact := plan.Nodes["package:linux/amd64:deb"].Output
-	beforeBuild := plan.Nodes["hook:before_build:project"]
-	assert.Equal(t, "generated/version.go", beforeBuild.Output, "Node output belongs to hook caching")
-	beforeBuildSpec := beforeBuild.Spec.(HookSpec)
-	assert.Empty(t, beforeBuildSpec.Artifact, "project preparation has no phase Artifact yet")
-	assert.Empty(t, beforeBuildSpec.TargetOS)
-	assert.Empty(t, beforeBuildSpec.TargetArch)
-	assert.Equal(t, "default", beforeBuildSpec.Profile)
-	assert.Equal(t, binary, plan.Nodes["hook:after_build:linux/amd64"].Spec.(HookSpec).Artifact)
-	assert.Equal(t, artifact, plan.Nodes["hook:before_package:linux/amd64"].Spec.(HookSpec).Artifact)
-	assert.Equal(t, artifact, plan.Nodes["hook:after_package:linux/amd64"].Spec.(HookSpec).Artifact)
-}
-
-func TestPlannerRejectsInvalidCachedHookOutputsFromDirectConfig(t *testing.T) {
-	config := testConfig(t)
-	config.Hooks.BeforeBuild = manifest.Hook{Script: "scripts/build.sh", Cache: true, Inputs: []string{"main.go"}, Outputs: []string{"one.txt", "two.txt"}}
-	_, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
-	require.ErrorContains(t, err, "hook before_build outputs")
-}
-
-func TestProjectBeforeBuildHookIsSharedAcrossMultiTargetPlan(t *testing.T) {
-	config := testConfig(t)
-	config.Hooks.BeforeBuild.Script = "scripts/before-build.sh"
-	plan, err := PlanBuild(config, Request{Verb: "build", Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "windows", Arch: "amd64"}, {OS: "darwin", Arch: "arm64"}}})
-	require.NoError(t, err)
-
-	hook, ok := plan.Nodes["hook:before_build:project"]
-	require.True(t, ok)
-	assert.Equal(t, ProjectScope, hook.Scope)
-	spec := hook.Spec.(HookSpec)
-	assert.Empty(t, spec.TargetOS)
-	assert.Empty(t, spec.TargetArch)
-	assert.Empty(t, spec.Artifact)
-	for key, node := range plan.Nodes {
-		if strings.HasPrefix(string(key), "hook:before_build:") {
-			assert.Equal(t, NodeKey("hook:before_build:project"), key)
-		}
-		if key == "frontend:bindings" {
-			assert.Contains(t, node.Dependencies, NodeKey("hook:before_build:project"))
-		}
+	for _, test := range tests {
+		t.Run(test.platform+"/"+test.format, func(t *testing.T) {
+			assert.Equal(t, test.want, packageInputs(root, test.platform, test.format, test.config))
+		})
 	}
+	assetConfig := manifest.Config{
+		Project:      manifest.Project{Icon: "project.png"},
+		Associations: []manifest.Association{{Icon: "association.png"}},
+		Signing: manifest.Signing{
+			Windows: manifest.SigningPlatform{Certificate: "private.pfx", Entitlements: "app.entitlements", ProvisioningProfile: "profile.mobileprovision"},
+		},
+	}
+	assert.Equal(t, []InputSpec{{Label: "platform-assets", Files: []string{manifest.Filename, "project.png", "app.entitlements", "profile.mobileprovision", "association.png"}}}, assetInputs(assetConfig))
+
+	config := manifest.Config{Build: manifest.Build{OutputDirectory: "bin"}, Project: manifest.Project{BinaryName: "app"}}
+	assert.Equal(t, "bin/app.unknown", packageOutput(config, "linux", "amd64", "unknown", false))
+}
+
+func TestNonReproducibleArtifactsAndTheirPublishOperationsAreNeverCached(t *testing.T) {
+	config := testConfig(t)
+	config.Signing.Linux.Enabled = true
+	config.Signing.Linux.Certificate = "release@example.com"
+	plan, err := PlanBuild(config, Request{Verb: "sign", TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb"}})
+	require.NoError(t, err)
+	sign := plan.Nodes["package:linux/amd64:deb:sign"]
+	publish := plan.Nodes["publish:linux/amd64:deb:sign"]
+	assert.Equal(t, CacheNever, sign.Cache)
+	assert.Equal(t, CacheNever, publish.Cache)
+	assert.Empty(t, publish.Marker)
+	assert.True(t, publish.Artifact.Signed)
+}
+
+func TestSigningInputsAreRewrittenToFrozenStagedCopies(t *testing.T) {
+	signing := manifest.Signing{Darwin: manifest.SigningPlatform{
+		Entitlements:        "user-assets/release.entitlements",
+		ProvisioningProfile: "user-assets/distribution.mobileprovision",
+	}}
+	resolved := signingPlatformForPlan(signing, "darwin", ".wails/generated/darwin/assets")
+	assert.Equal(t, ".wails/generated/darwin/assets/signing/entitlements.entitlements", resolved.Entitlements)
+	assert.Equal(t, ".wails/generated/darwin/assets/signing/provisioning-profile.mobileprovision", resolved.ProvisioningProfile)
+	assert.Equal(t, "user-assets/release.entitlements", signing.Darwin.Entitlements, "planning must not mutate user configuration")
 }
 
 func TestExecutorContinuesIndependentBranchesAfterFailure(t *testing.T) {
 	plan := Plan{Name: "branches", Roots: []NodeKey{"blocked", "independent-child"}, Nodes: map[NodeKey]Node{
-		"fail":              {Key: "fail", Kind: RunHook, Cache: CacheNever},
-		"blocked":           {Key: "blocked", Kind: RunHook, Dependencies: []NodeKey{"fail"}, Cache: CacheNever},
-		"independent":       {Key: "independent", Kind: RunHook, Cache: CacheNever},
-		"independent-child": {Key: "independent-child", Kind: RunHook, Dependencies: []NodeKey{"independent"}, Cache: CacheNever},
+		"fail":              {Key: "fail", Kind: CompileApplication, Spec: CompileSpec{}, Cache: CacheNever},
+		"blocked":           {Key: "blocked", Kind: CompileApplication, Spec: CompileSpec{}, Dependencies: []NodeKey{"fail"}, Cache: CacheNever},
+		"independent":       {Key: "independent", Kind: CompileApplication, Spec: CompileSpec{}, Cache: CacheNever},
+		"independent-child": {Key: "independent-child", Kind: CompileApplication, Spec: CompileSpec{}, Dependencies: []NodeKey{"independent"}, Cache: CacheNever},
 	}}
 	handler := &branchHandler{}
 	reporter := &failureReporter{}
@@ -477,7 +675,7 @@ func TestExecutorContinuesIndependentBranchesAfterFailure(t *testing.T) {
 
 func TestExecutorPreservesCancellationWithoutReportingFailure(t *testing.T) {
 	plan := Plan{Name: "cancel", Roots: []NodeKey{"work"}, Nodes: map[NodeKey]Node{
-		"work": {Key: "work", Kind: RunHook, Cache: CacheNever},
+		"work": {Key: "work", Kind: CompileApplication, Spec: CompileSpec{}, Cache: CacheNever},
 	}}
 	handler := &cancelHandler{started: make(chan struct{})}
 	reporter := &failureReporter{}
@@ -495,7 +693,7 @@ func TestExecutorPreservesCancellationWithoutReportingFailure(t *testing.T) {
 
 func TestExecutorPreservesDeadlineWithoutReportingFailure(t *testing.T) {
 	plan := Plan{Name: "deadline", Roots: []NodeKey{"work"}, Nodes: map[NodeKey]Node{
-		"work": {Key: "work", Kind: RunHook, Cache: CacheNever},
+		"work": {Key: "work", Kind: CompileApplication, Spec: CompileSpec{}, Cache: CacheNever},
 	}}
 	handler := &cancelHandler{started: make(chan struct{})}
 	reporter := &failureReporter{}
@@ -509,6 +707,38 @@ func TestExecutorPreservesDeadlineWithoutReportingFailure(t *testing.T) {
 	<-handler.started
 	require.ErrorIs(t, <-done, context.DeadlineExceeded)
 	assert.NoError(t, reporter.failure.Err)
+}
+
+func TestExecutorCancelsAtMaximumParallelismWithoutLeakingWorkers(t *testing.T) {
+	const workers = 32
+	plan := Plan{Name: "parallel-cancel", Roots: make([]NodeKey, workers), Nodes: make(map[NodeKey]Node, workers)}
+	for index := range workers {
+		key := NodeKey(fmt.Sprintf("work-%02d", index))
+		plan.Roots[index] = key
+		plan.Nodes[key] = Node{Key: key, Kind: CompileApplication, Spec: CompileSpec{}, Cache: CacheNever}
+	}
+	handler := &parallelCancelHandler{want: workers, started: make(chan struct{})}
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() {
+		_, err := (Executor{Handler: handler}).Execute(ctx, plan, ExecuteOptions{Root: t.TempDir(), Workers: workers, MemoryLimitMB: workers})
+		done <- err
+	}()
+	select {
+	case <-handler.started:
+	case <-time.After(5 * time.Second):
+		t.Fatal("workers did not reach maximum parallelism")
+	}
+	cancel()
+	select {
+	case err := <-done:
+		require.ErrorIs(t, err, context.Canceled)
+	case <-time.After(5 * time.Second):
+		t.Fatal("executor did not release all workers after cancellation")
+	}
+	handler.mu.Lock()
+	defer handler.mu.Unlock()
+	assert.Zero(t, handler.running)
 }
 
 func testConfig(t *testing.T) manifest.Config {

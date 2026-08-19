@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/google/shlex"
 	"github.com/wailsapp/wails/v3/internal/buildwarnings"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
@@ -69,16 +70,36 @@ func mergeTags(tags string, extra ...string) string {
 }
 
 func Build(buildFlags *flags.Build, otherArgs []string) error {
+	return buildWithOperations(buildFlags, otherArgs, manifestCommandOperations{
+		active: activeManifestProject,
+		plan:   printManifestPlan,
+		run:    runManifestPipeline,
+		task:   wrapTask,
+	})
+}
+
+type manifestCommandOperations struct {
+	active func() (bool, error)
+	plan   func(manifestRunOptions, bool) error
+	run    func(manifestRunOptions) error
+	task   func(string, []string) error
+}
+
+func buildWithOperations(buildFlags *flags.Build, otherArgs []string, operations manifestCommandOperations) error {
 	userTags := buildFlags.Tags
 	buildFlags.Tags = mergeTags(buildFlags.Tags, envTags()...)
 	if buildFlags.JSON && !buildFlags.Plan {
 		return fmt.Errorf("--json requires --plan")
 	}
-	active, err := activeManifestProject()
+	active, err := operations.active()
 	if err != nil {
 		return err
 	}
 	if active {
+		garbleArgs, err := shlex.Split(buildFlags.GarbleArgs)
+		if err != nil {
+			return fmt.Errorf("--garble-args: %w", err)
+		}
 		profile, err := manifestProfile(buildFlags.Profile, otherArgs)
 		if err != nil {
 			return err
@@ -95,11 +116,11 @@ func Build(buildFlags *flags.Build, otherArgs []string) error {
 		if len(formats) > 0 {
 			verb = "package"
 		}
-		options := manifestRunOptions{Verb: verb, Profile: profile, Targets: targets, Formats: formats, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags)}
+		options := manifestRunOptions{Verb: verb, Profile: profile, Targets: targets, Formats: formats, Force: buildFlags.Force, Obfuscated: buildFlags.Obfuscated, Tags: splitComma(buildFlags.Tags), GarbleArgs: garbleArgs}
 		if buildFlags.Plan {
-			return printManifestPlan(options, buildFlags.JSON)
+			return operations.plan(options, buildFlags.JSON)
 		}
-		return runManifestPipeline(options)
+		return operations.run(options)
 	}
 	if buildFlags.Tags != "" {
 		otherArgs = append(otherArgs, "EXTRA_TAGS="+buildFlags.Tags)
@@ -110,11 +131,20 @@ func Build(buildFlags *flags.Build, otherArgs []string) error {
 	if buildFlags.GarbleArgs != "" {
 		otherArgs = append(otherArgs, "GARBLE_ARGS="+buildFlags.GarbleArgs)
 	}
-	return wrapTask("build", otherArgs)
+	return operations.task("build", otherArgs)
 }
 
 func Package(options *flags.Package, otherArgs []string) error {
-	active, err := activeManifestProject()
+	return packageWithOperations(options, otherArgs, manifestCommandOperations{
+		active: activeManifestProject,
+		run:    runManifestPipeline,
+		task:   wrapTask,
+	})
+}
+
+func packageWithOperations(options *flags.Package, otherArgs []string, operations manifestCommandOperations) error {
+	term.Warning("wails3 package is deprecated; use wails3 build with a profile or --formats")
+	active, err := operations.active()
 	if err != nil {
 		return err
 	}
@@ -126,13 +156,22 @@ func Package(options *flags.Package, otherArgs []string) error {
 		if err != nil {
 			return err
 		}
-		return runManifestPipeline(manifestRunOptions{Verb: "package", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Force: options.Force, Tags: envTags()})
+		return operations.run(manifestRunOptions{Verb: "package", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Force: options.Force, Tags: envTags()})
 	}
-	return wrapTask("package", otherArgs)
+	return operations.task("package", otherArgs)
 }
 
 func SignWrapper(options *flags.SignWrapper, otherArgs []string) error {
-	active, err := activeManifestProject()
+	return signWithOperations(options, otherArgs, manifestCommandOperations{
+		active: activeManifestProject,
+		run:    runManifestPipeline,
+		task:   wrapTask,
+	})
+}
+
+func signWithOperations(options *flags.SignWrapper, otherArgs []string, operations manifestCommandOperations) error {
+	term.Warning("wails3 sign is deprecated; select signing in a profile and use wails3 build")
+	active, err := operations.active()
 	if err != nil {
 		return err
 	}
@@ -144,14 +183,17 @@ func SignWrapper(options *flags.SignWrapper, otherArgs []string) error {
 		if err != nil {
 			return err
 		}
-		return runManifestPipeline(manifestRunOptions{Verb: "sign", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Tags: envTags()})
+		return operations.run(manifestRunOptions{Verb: "sign", Profile: options.Profile, Targets: targets, Formats: splitComma(options.Formats), Tags: envTags()})
 	}
-	return wrapTask("sign", otherArgs)
+	return operations.task("sign", otherArgs)
 }
 
 func manifestProfile(flagValue string, args []string) (string, error) {
 	if len(args) == 0 {
 		return flagValue, nil
+	}
+	if len(args) > 1 {
+		return "", fmt.Errorf("native builds accept at most one profile")
 	}
 	if len(args) == 1 && !strings.Contains(args[0], "=") {
 		if flagValue != "" {
@@ -159,7 +201,7 @@ func manifestProfile(flagValue string, args []string) (string, error) {
 		}
 		return args[0], nil
 	}
-	return "", fmt.Errorf("native builds do not accept Task variables (%s); use a profile name, --targets, or --formats", strings.Join(args, ", "))
+	return "", fmt.Errorf("native builds do not accept Task variables (%s); use a profile name, --targets, or --formats", args[0])
 }
 
 func activeManifestProject() (bool, error) {

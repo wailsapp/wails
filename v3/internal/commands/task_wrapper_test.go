@@ -1,13 +1,114 @@
 package commands
 
 import (
+	"bytes"
+	"errors"
 	"os"
 	"runtime"
 	"testing"
 
+	"github.com/pterm/pterm"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/wailsapp/wails/v3/internal/flags"
 )
+
+func TestBuildManifestRoutingContractAndFailures(t *testing.T) {
+	want := errors.New("injected failure")
+	operations := manifestCommandOperations{
+		active: func() (bool, error) { return true, nil },
+		plan:   func(manifestRunOptions, bool) error { return nil },
+		run:    func(manifestRunOptions) error { return nil },
+		task:   func(string, []string) error { return nil },
+	}
+
+	activeFailure := operations
+	activeFailure.active = func() (bool, error) { return false, want }
+	require.ErrorIs(t, buildWithOperations(&flags.Build{}, nil, activeFailure), want)
+
+	require.Error(t, buildWithOperations(&flags.Build{Targets: "invalid"}, nil, operations))
+	require.Error(t, buildWithOperations(&flags.Build{Profile: "release"}, []string{"debug"}, operations))
+	require.Error(t, buildWithOperations(&flags.Build{Profile: "release", Targets: "linux/amd64"}, nil, operations))
+
+	var planned manifestRunOptions
+	planFailure := operations
+	planFailure.plan = func(options manifestRunOptions, asJSON bool) error {
+		planned = options
+		assert.True(t, asJSON)
+		return want
+	}
+	require.ErrorIs(t, buildWithOperations(&flags.Build{Plan: true, JSON: true, Formats: "deb", Targets: "linux/amd64"}, nil, planFailure), want)
+	assert.Equal(t, "package", planned.Verb)
+
+	var ran manifestRunOptions
+	runFailure := operations
+	runFailure.run = func(options manifestRunOptions) error {
+		ran = options
+		return want
+	}
+	require.ErrorIs(t, buildWithOperations(&flags.Build{Targets: "linux/amd64", Force: true}, nil, runFailure), want)
+	assert.Equal(t, "build", ran.Verb)
+	assert.True(t, ran.Force)
+
+	var taskArgs []string
+	taskFailure := operations
+	taskFailure.active = func() (bool, error) { return false, nil }
+	taskFailure.task = func(command string, args []string) error {
+		assert.Equal(t, "build", command)
+		taskArgs = append([]string(nil), args...)
+		return want
+	}
+	require.ErrorIs(t, buildWithOperations(&flags.Build{Tags: "sqlite", Obfuscated: true, GarbleArgs: "-tiny"}, nil, taskFailure), want)
+	assert.Equal(t, []string{"EXTRA_TAGS=sqlite", "OBFUSCATED=true", "GARBLE_ARGS=-tiny"}, taskArgs)
+}
+
+func TestManifestProfileRejectsTaskVariablesAndMultiplePositionals(t *testing.T) {
+	_, err := manifestProfile("", []string{"CONFIG=release"})
+	require.ErrorContains(t, err, "do not accept Task variables")
+	_, err = manifestProfile("", []string{"release", "debug"})
+	require.ErrorContains(t, err, "accept at most one profile")
+}
+
+func TestDeprecatedPackageAndSignManifestRoutingContracts(t *testing.T) {
+	want := errors.New("injected failure")
+	base := manifestCommandOperations{
+		active: func() (bool, error) { return true, nil },
+		run:    func(manifestRunOptions) error { return nil },
+		task:   func(string, []string) error { return nil },
+	}
+
+	activeFailure := base
+	activeFailure.active = func() (bool, error) { return false, want }
+	require.ErrorIs(t, packageWithOperations(&flags.Package{}, nil, activeFailure), want)
+	require.ErrorIs(t, signWithOperations(&flags.SignWrapper{}, nil, activeFailure), want)
+
+	require.Error(t, packageWithOperations(&flags.Package{}, []string{"CONFIG=release"}, base))
+	require.Error(t, signWithOperations(&flags.SignWrapper{}, []string{"CONFIG=release"}, base))
+	require.Error(t, packageWithOperations(&flags.Package{Targets: "invalid"}, nil, base))
+	require.Error(t, signWithOperations(&flags.SignWrapper{Targets: "invalid"}, nil, base))
+
+	var requests []manifestRunOptions
+	runFailure := base
+	runFailure.run = func(options manifestRunOptions) error {
+		requests = append(requests, options)
+		return want
+	}
+	require.ErrorIs(t, packageWithOperations(&flags.Package{Profile: "release", Targets: "linux/amd64", Formats: "deb", Force: true}, nil, runFailure), want)
+	require.ErrorIs(t, signWithOperations(&flags.SignWrapper{Profile: "release", Targets: "darwin/arm64", Formats: "app"}, nil, runFailure), want)
+	require.Len(t, requests, 2)
+	assert.Equal(t, "package", requests[0].Verb)
+	assert.True(t, requests[0].Force)
+	assert.Equal(t, "sign", requests[1].Verb)
+
+	inactive := base
+	inactive.active = func() (bool, error) { return false, nil }
+	inactive.task = func(command string, args []string) error {
+		assert.Empty(t, args)
+		return want
+	}
+	require.ErrorIs(t, packageWithOperations(&flags.Package{}, nil, inactive), want)
+	require.ErrorIs(t, signWithOperations(&flags.SignWrapper{}, nil, inactive), want)
+}
 
 func TestWrapTask(t *testing.T) {
 	// Get current platform info for expected values
@@ -418,6 +519,12 @@ func TestBuildCommandWithoutTags(t *testing.T) {
 	assert.Equal(t, []string{"GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
+func TestManifestProfileRejectsDuplicateFlagAndPositionalValue(t *testing.T) {
+	profile, err := manifestProfile("release", []string{"debug"})
+	assert.Empty(t, profile)
+	assert.ErrorContains(t, err, "either positionally or with --profile")
+}
+
 func TestPackageCommand(t *testing.T) {
 	currentOS := runtime.GOOS
 	currentArch := runtime.GOARCH
@@ -460,8 +567,17 @@ func TestPackageCommand(t *testing.T) {
 	packageFlags := &flags.Package{}
 	otherArgs := []string{"VERSION=2.0.0", "OUTPUT=myapp.dmg"}
 
+	var output bytes.Buffer
+	previousWarningOutput := pterm.Warning.Writer
+	pterm.Warning.Writer = &output
+	pterm.SetDefaultOutput(&output)
+	t.Cleanup(func() {
+		pterm.Warning.Writer = previousWarningOutput
+		pterm.SetDefaultOutput(os.Stdout)
+	})
 	err := Package(packageFlags, otherArgs)
 	assert.NoError(t, err)
+	assert.Contains(t, output.String(), "wails3 package is deprecated")
 	assert.Equal(t, "package", capturedOptions.Name)
 	assert.Equal(t, []string{"VERSION=2.0.0", "OUTPUT=myapp.dmg", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
@@ -508,8 +624,17 @@ func TestSignWrapperCommand(t *testing.T) {
 	signFlags := &flags.SignWrapper{}
 	otherArgs := []string{"IDENTITY=Developer ID"}
 
+	var output bytes.Buffer
+	previousWarningOutput := pterm.Warning.Writer
+	pterm.Warning.Writer = &output
+	pterm.SetDefaultOutput(&output)
+	t.Cleanup(func() {
+		pterm.Warning.Writer = previousWarningOutput
+		pterm.SetDefaultOutput(os.Stdout)
+	})
 	err := SignWrapper(signFlags, otherArgs)
 	assert.NoError(t, err)
+	assert.Contains(t, output.String(), "wails3 sign is deprecated")
 	assert.Equal(t, currentOS+":sign", capturedOptions.Name)
 	assert.Equal(t, []string{"IDENTITY=Developer ID", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }

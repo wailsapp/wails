@@ -5,8 +5,11 @@ package benchmark
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -20,30 +23,40 @@ import (
 type Config struct {
 	Scenario         string
 	Command          []string
+	BeforeEach       []string
 	WorkingDirectory string
 	Environment      []string
+	Artifacts        []string
 	Warmups          int
 	Samples          int
 }
 
+type Artifact struct {
+	Digest    string `json:"digest"`
+	SizeBytes int64  `json:"size_bytes"`
+}
+
 type Sample struct {
-	WallMS          float64 `json:"wall_ms"`
-	CPUMS           float64 `json:"cpu_ms"`
-	ReportedBuildMS float64 `json:"reported_build_ms,omitempty"`
-	ExecutedSteps   int     `json:"executed_steps,omitempty"`
-	CachedSteps     int     `json:"cached_steps,omitempty"`
-	StepsReported   bool    `json:"steps_reported,omitempty"`
+	WallMS          float64             `json:"wall_ms"`
+	CPUMS           float64             `json:"cpu_ms"`
+	PeakRSSBytes    int64               `json:"peak_rss_bytes,omitempty"`
+	ReportedBuildMS float64             `json:"reported_build_ms,omitempty"`
+	ExecutedSteps   int                 `json:"executed_steps,omitempty"`
+	CachedSteps     int                 `json:"cached_steps,omitempty"`
+	StepsReported   bool                `json:"steps_reported,omitempty"`
+	Artifacts       map[string]Artifact `json:"artifacts,omitempty"`
 }
 
 type Result struct {
-	Version      int      `json:"version"`
-	Scenario     string   `json:"scenario"`
-	Command      []string `json:"command"`
-	Samples      []Sample `json:"samples"`
-	MedianWallMS float64  `json:"median_wall_ms"`
-	MinWallMS    float64  `json:"min_wall_ms"`
-	MaxWallMS    float64  `json:"max_wall_ms"`
-	MedianCPUMS  float64  `json:"median_cpu_ms"`
+	Version            int      `json:"version"`
+	Scenario           string   `json:"scenario"`
+	Command            []string `json:"command"`
+	Samples            []Sample `json:"samples"`
+	MedianWallMS       float64  `json:"median_wall_ms"`
+	MinWallMS          float64  `json:"min_wall_ms"`
+	MaxWallMS          float64  `json:"max_wall_ms"`
+	MedianCPUMS        float64  `json:"median_cpu_ms"`
+	MedianPeakRSSBytes int64    `json:"median_peak_rss_bytes,omitempty"`
 	// MedianReportedBuildMS is the CLI's own graph duration. WallMS includes
 	// process startup and reporting, so keeping both separates orchestration
 	// critical-path work from complete command latency.
@@ -65,6 +78,37 @@ type Budget struct {
 	MinSamples                      int
 	ExpectedExecutedSteps           *int
 	ExpectedCachedSteps             *int
+	RequireStableArtifacts          bool
+}
+
+type namedWriteCloser interface {
+	io.Writer
+	io.Closer
+	Name() string
+}
+
+type benchmarkFilesystem struct {
+	mkdirAll   func(string, fs.FileMode) error
+	createTemp func(string, string) (namedWriteCloser, error)
+	remove     func(string) error
+	rename     func(string, string) error
+	lstat      func(string) (fs.FileInfo, error)
+	open       func(string) (io.ReadCloser, error)
+	walkDir    func(string, fs.WalkDirFunc) error
+}
+
+var operatingSystem = benchmarkFilesystem{
+	mkdirAll: os.MkdirAll,
+	createTemp: func(directory, pattern string) (namedWriteCloser, error) {
+		return os.CreateTemp(directory, pattern)
+	},
+	remove: os.Remove,
+	rename: os.Rename,
+	lstat:  os.Lstat,
+	open: func(path string) (io.ReadCloser, error) {
+		return os.Open(path)
+	},
+	walkDir: filepath.WalkDir,
 }
 
 func Run(ctx context.Context, config Config) (Result, error) {
@@ -75,12 +119,18 @@ func Run(ctx context.Context, config Config) (Result, error) {
 		return Result{}, fmt.Errorf("samples must be positive")
 	}
 	for index := 0; index < config.Warmups; index++ {
+		if err := prepare(ctx, config); err != nil {
+			return Result{}, fmt.Errorf("prepare warmup %d: %w", index+1, err)
+		}
 		if _, _, err := runOnce(ctx, config); err != nil {
 			return Result{}, fmt.Errorf("warmup %d: %w", index+1, err)
 		}
 	}
-	result := Result{Version: 2, Scenario: config.Scenario, Command: append([]string(nil), config.Command...)}
+	result := Result{Version: 3, Scenario: config.Scenario, Command: append([]string(nil), config.Command...)}
 	for index := 0; index < config.Samples; index++ {
+		if err := prepare(ctx, config); err != nil {
+			return Result{}, fmt.Errorf("prepare sample %d: %w", index+1, err)
+		}
 		sample, output, err := runOnce(ctx, config)
 		if err != nil {
 			return Result{}, fmt.Errorf("sample %d: %w\n%s", index+1, err, strings.TrimSpace(output))
@@ -89,6 +139,7 @@ func Run(ctx context.Context, config Config) (Result, error) {
 	}
 	result.MedianWallMS = median(sampleValues(result.Samples, func(sample Sample) float64 { return sample.WallMS }))
 	result.MedianCPUMS = median(sampleValues(result.Samples, func(sample Sample) float64 { return sample.CPUMS }))
+	result.MedianPeakRSSBytes = int64(median(sampleValues(result.Samples, func(sample Sample) float64 { return float64(sample.PeakRSSBytes) })))
 	result.MedianReportedBuildMS = median(nonzeroSampleValues(result.Samples, func(sample Sample) float64 { return sample.ReportedBuildMS }))
 	deviations := sampleValues(result.Samples, func(sample Sample) float64 {
 		return absolute(sample.WallMS - result.MedianWallMS)
@@ -148,6 +199,17 @@ func CheckBudget(result Result, baseline *Result, budget Budget) error {
 			return fmt.Errorf("%s sample %d cached %d steps; expected %d", result.Scenario, index+1, sample.CachedSteps, *budget.ExpectedCachedSteps)
 		}
 	}
+	if budget.RequireStableArtifacts && len(result.Samples) > 0 {
+		reference := result.Samples[0].Artifacts
+		if baseline != nil && len(baseline.Samples) > 0 {
+			reference = baseline.Samples[0].Artifacts
+		}
+		for index, sample := range result.Samples {
+			if err := compareArtifacts(reference, sample.Artifacts); err != nil {
+				return fmt.Errorf("%s sample %d: %w", result.Scenario, index+1, err)
+			}
+		}
+	}
 	if budget.MaxRegressionPercent > 0 {
 		if baseline == nil {
 			return fmt.Errorf("%s regression budget requires a baseline", result.Scenario)
@@ -179,21 +241,22 @@ func Read(path string) (*Result, error) {
 }
 
 func Write(path string, result Result) error {
-	data, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		return err
-	}
+	return writeResult(operatingSystem, path, result)
+}
+
+func writeResult(filesystem benchmarkFilesystem, path string, result Result) error {
+	data, _ := json.MarshalIndent(result, "", "  ")
 	data = append(data, '\n')
 	directory := filepath.Dir(path)
-	if err := os.MkdirAll(directory, 0o755); err != nil {
+	if err := filesystem.mkdirAll(directory, 0o755); err != nil {
 		return err
 	}
-	temporary, err := os.CreateTemp(directory, ".benchmark-*")
+	temporary, err := filesystem.createTemp(directory, ".benchmark-*")
 	if err != nil {
 		return err
 	}
 	temporaryPath := temporary.Name()
-	defer os.Remove(temporaryPath)
+	defer filesystem.remove(temporaryPath)
 	if _, err := temporary.Write(data); err != nil {
 		_ = temporary.Close()
 		return err
@@ -201,7 +264,7 @@ func Write(path string, result Result) error {
 	if err := temporary.Close(); err != nil {
 		return err
 	}
-	return os.Rename(temporaryPath, path)
+	return filesystem.rename(temporaryPath, path)
 }
 
 func runOnce(ctx context.Context, config Config) (Sample, string, error) {
@@ -218,9 +281,138 @@ func runOnce(ctx context.Context, config Config) (Sample, string, error) {
 	sample := Sample{WallMS: durationMS(time.Since(started))}
 	if cmd.ProcessState != nil {
 		sample.CPUMS = durationMS(cmd.ProcessState.UserTime() + cmd.ProcessState.SystemTime())
+		sample.PeakRSSBytes = peakRSSBytes(cmd.ProcessState)
 	}
 	parseBuildOutput(output.String(), &sample)
+	if err == nil {
+		sample.Artifacts, err = snapshotArtifacts(config)
+	}
 	return sample, output.String(), err
+}
+
+func prepare(ctx context.Context, config Config) error {
+	if len(config.BeforeEach) == 0 {
+		return nil
+	}
+	cmd := exec.CommandContext(ctx, config.BeforeEach[0], config.BeforeEach[1:]...)
+	cmd.Dir = config.WorkingDirectory
+	if config.Environment != nil {
+		cmd.Env = config.Environment
+	}
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%w\n%s", err, strings.TrimSpace(string(output)))
+	}
+	return nil
+}
+
+func snapshotArtifacts(config Config) (map[string]Artifact, error) {
+	if len(config.Artifacts) == 0 {
+		return nil, nil
+	}
+	result := make(map[string]Artifact, len(config.Artifacts))
+	for _, configuredPath := range config.Artifacts {
+		path := configuredPath
+		if !filepath.IsAbs(path) && config.WorkingDirectory != "" {
+			path = filepath.Join(config.WorkingDirectory, path)
+		}
+		artifact, err := snapshotArtifact(path)
+		if err != nil {
+			return nil, fmt.Errorf("snapshot artifact %s: %w", configuredPath, err)
+		}
+		result[configuredPath] = artifact
+	}
+	return result, nil
+}
+
+func snapshotArtifact(path string) (Artifact, error) {
+	return snapshotArtifactWithFilesystem(operatingSystem, path)
+}
+
+func snapshotArtifactWithFilesystem(filesystem benchmarkFilesystem, path string) (Artifact, error) {
+	info, err := filesystem.lstat(path)
+	if err != nil {
+		return Artifact{}, err
+	}
+	hash := sha256.New()
+	var size int64
+	if !info.IsDir() {
+		if !info.Mode().IsRegular() {
+			return Artifact{}, fmt.Errorf("not a regular file or directory")
+		}
+		file, err := filesystem.open(path)
+		if err != nil {
+			return Artifact{}, err
+		}
+		written, copyErr := io.Copy(hash, file)
+		closeErr := file.Close()
+		if copyErr != nil {
+			return Artifact{}, copyErr
+		}
+		if closeErr != nil {
+			return Artifact{}, closeErr
+		}
+		size = written
+		return Artifact{Digest: fmt.Sprintf("sha256:%x", hash.Sum(nil)), SizeBytes: size}, nil
+	}
+	root := filepath.Clean(path)
+	err = filesystem.walkDir(root, func(current string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		relative, _ := filepath.Rel(root, current)
+		if relative == "." {
+			return nil
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("artifact contains symlink %s", relative)
+		}
+		_, _ = fmt.Fprintf(hash, "%s\x00%o\x00", filepath.ToSlash(relative), info.Mode().Perm())
+		if entry.IsDir() {
+			return nil
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("artifact contains non-regular file %s", relative)
+		}
+		file, err := filesystem.open(current)
+		if err != nil {
+			return err
+		}
+		written, copyErr := io.Copy(hash, file)
+		closeErr := file.Close()
+		if copyErr != nil {
+			return copyErr
+		}
+		if closeErr != nil {
+			return closeErr
+		}
+		size += written
+		return nil
+	})
+	if err != nil {
+		return Artifact{}, err
+	}
+	return Artifact{Digest: fmt.Sprintf("sha256:%x", hash.Sum(nil)), SizeBytes: size}, nil
+}
+
+func compareArtifacts(expected, actual map[string]Artifact) error {
+	if len(expected) != len(actual) {
+		return fmt.Errorf("artifact set changed: expected %d artifacts, got %d", len(expected), len(actual))
+	}
+	for path, expectedArtifact := range expected {
+		actualArtifact, exists := actual[path]
+		if !exists {
+			return fmt.Errorf("artifact %s disappeared", path)
+		}
+		if actualArtifact != expectedArtifact {
+			return fmt.Errorf("artifact %s changed: expected %s/%d bytes, got %s/%d bytes", path, expectedArtifact.Digest, expectedArtifact.SizeBytes, actualArtifact.Digest, actualArtifact.SizeBytes)
+		}
+	}
+	return nil
 }
 
 var (

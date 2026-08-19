@@ -1,82 +1,45 @@
 package commands
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"os"
-	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/version"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
-type ConfigOptions struct {
-	Profile string `name:"profile" description:"Manifest profile to resolve"`
-	JSON    bool   `name:"json" description:"Print resolved configuration as JSON"`
-}
-
-func ConfigCheck(options *ConfigOptions) error {
-	root, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	loaded, err := manifest.Load(root, options.Profile)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("%s is valid (%s)\n", manifest.Filename, loaded.Config.Project.Identifier)
-	return nil
-}
-
-func ConfigShow(options *ConfigOptions) error {
-	root, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	loaded, err := manifest.Load(root, options.Profile)
-	if err != nil {
-		return err
-	}
-	if options.JSON {
-		data, err := json.MarshalIndent(loaded.Config, "", "  ")
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(data))
-		return nil
-	}
-	data, err := manifest.EncodeConfig(loaded.Config)
-	if err != nil {
-		return err
-	}
-	fmt.Print(string(data))
-	return nil
-}
-
 type EjectOptions struct {
-	Backup bool `name:"backup" description:"Deprecated: ejection never overwrites a file"`
+	Force bool `name:"force" description:"Replace an existing wails.ejected.hcl atomically"`
 }
 
 func Eject(options *EjectOptions, args []string) error {
-	if len(args) > 1 {
-		return fmt.Errorf("usage: wails3 eject [profile] [--backup]")
+	return ejectWithOperations(options, args, ejectOperations{
+		getwd:   os.Getwd,
+		write:   manifest.Eject,
+		version: version.String(),
+		output:  os.Stdout,
+	})
+}
+
+type ejectOperations struct {
+	getwd   func() (string, error)
+	write   func(string, string, string, bool) error
+	version string
+	output  io.Writer
+}
+
+func ejectWithOperations(options *EjectOptions, args []string, operations ejectOperations) error {
+	if len(args) != 0 {
+		return fmt.Errorf("usage: wails3 eject [--force]")
 	}
-	profile := ""
-	if len(args) == 1 {
-		profile = strings.TrimSpace(args[0])
-	}
-	root, err := os.Getwd()
+	root, err := operations.getwd()
 	if err != nil {
 		return err
 	}
-	if err := manifest.Eject(root, profile, version.String(), options.Backup); err != nil {
-		if errors.Is(err, manifest.ErrEjectionSuggestionsUnavailable) {
-			fmt.Println(err)
-			return nil
-		}
+	if err := operations.write(root, "", operations.version, options.Force); err != nil {
 		return err
 	}
-	fmt.Println("Wrote the complete resolved reference manifest to wails.ejected.hcl")
-	return nil
+	_, err = fmt.Fprintln(operations.output, "Wrote the complete resolved reference manifest to wails.ejected.hcl")
+	return err
 }

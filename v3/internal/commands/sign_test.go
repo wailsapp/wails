@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
@@ -62,6 +63,41 @@ func TestResolveSigningDefaults(t *testing.T) {
 	}
 	if explicit.Certificate != "/explicit/cert.pfx" {
 		t.Errorf("flag Certificate overridden by config: %q", explicit.Certificate)
+	}
+}
+
+func TestSignMacOSDiskImageSignsNotarizesAndStaples(t *testing.T) {
+	root := t.TempDir()
+	input := filepath.Join(root, "App.dmg")
+	if err := os.WriteFile(input, []byte("disk image"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	tools := t.TempDir()
+	record := filepath.Join(root, "commands.txt")
+	script := "#!/bin/sh\nprintf '%s %s\\n' \"${0##*/}\" \"$*\" >> \"$SIGN_RECORD\"\n"
+	for _, tool := range []string{"codesign", "xcrun"} {
+		if err := os.WriteFile(filepath.Join(tools, tool), []byte(script), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("PATH", tools)
+	t.Setenv("SIGN_RECORD", record)
+	if err := Sign(&flags.Sign{Input: input, Identity: "Developer ID Application: Example", Notarize: true, KeychainProfile: "release"}); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(record)
+	if err != nil {
+		t.Fatal(err)
+	}
+	commands := string(data)
+	for _, expected := range []string{
+		"codesign --force --sign Developer ID Application: Example " + input,
+		"xcrun notarytool submit " + input + " --keychain-profile release --wait",
+		"xcrun stapler staple " + input,
+	} {
+		if !strings.Contains(commands, expected) {
+			t.Errorf("commands %q do not contain %q", commands, expected)
+		}
 	}
 }
 

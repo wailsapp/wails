@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/wake/benchmark"
@@ -18,6 +19,9 @@ func main() {
 	samples := flag.Int("samples", 7, "number of measured samples")
 	warmups := flag.Int("warmups", 2, "number of unmeasured warmups")
 	output := flag.String("output", "", "optional JSON output path")
+	directory := flag.String("dir", "", "working directory for the measured and preparation commands")
+	beforeJSON := flag.String("before-json", "", "optional JSON command array run before every warmup and sample outside measurement")
+	artifactsCSV := flag.String("artifacts", "", "comma-separated artifact paths to hash and size after every sample")
 	baselinePath := flag.String("baseline", "", "optional baseline JSON")
 	maxMS := flag.Float64("max-ms", 0, "absolute median wall-time budget")
 	maxRegression := flag.Float64("max-regression", 0, "allowed median regression percentage")
@@ -26,6 +30,7 @@ func main() {
 	minSamples := flag.Int("min-samples", 5, "minimum sample count required for acceptance")
 	expectedRan := flag.Int("expect-ran", -1, "expected executed step count in every sample; negative disables")
 	expectedCached := flag.Int("expect-cached", -1, "expected cached step count in every sample; negative disables")
+	requireStableArtifacts := flag.Bool("require-stable-artifacts", false, "require measured artifact digests and sizes to remain identical")
 	timeout := flag.Duration("timeout", 10*time.Minute, "timeout for the complete sample set")
 	flag.Parse()
 	if flag.NArg() == 0 {
@@ -34,7 +39,28 @@ func main() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 	defer cancel()
-	result, err := benchmark.Run(ctx, benchmark.Config{Scenario: *name, Command: flag.Args(), Warmups: *warmups, Samples: *samples})
+	var beforeEach []string
+	if *beforeJSON != "" {
+		if err := json.Unmarshal([]byte(*beforeJSON), &beforeEach); err != nil {
+			fmt.Fprintln(os.Stderr, "invalid -before-json command:", err)
+			os.Exit(2)
+		}
+		if len(beforeEach) == 0 {
+			fmt.Fprintln(os.Stderr, "-before-json command must not be empty")
+			os.Exit(2)
+		}
+	}
+	var artifacts []string
+	for _, path := range strings.Split(*artifactsCSV, ",") {
+		if path = strings.TrimSpace(path); path != "" {
+			artifacts = append(artifacts, path)
+		}
+	}
+	if *requireStableArtifacts && len(artifacts) == 0 {
+		fmt.Fprintln(os.Stderr, "-require-stable-artifacts requires -artifacts")
+		os.Exit(2)
+	}
+	result, err := benchmark.Run(ctx, benchmark.Config{Scenario: *name, Command: flag.Args(), BeforeEach: beforeEach, WorkingDirectory: *directory, Artifacts: artifacts, Warmups: *warmups, Samples: *samples})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -55,7 +81,7 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	budget := benchmark.Budget{MaxMedianWallMS: *maxMS, MaxRegressionPercent: *maxRegression, MaxMADPercent: *maxMAD, MaxOrchestrationOverheadPercent: *maxOverhead, MinSamples: *minSamples}
+	budget := benchmark.Budget{MaxMedianWallMS: *maxMS, MaxRegressionPercent: *maxRegression, MaxMADPercent: *maxMAD, MaxOrchestrationOverheadPercent: *maxOverhead, MinSamples: *minSamples, RequireStableArtifacts: *requireStableArtifacts}
 	if *expectedRan >= 0 {
 		budget.ExpectedExecutedSteps = expectedRan
 	}
