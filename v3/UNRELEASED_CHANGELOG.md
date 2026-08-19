@@ -17,16 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add `Options.Linux.ApplicationID` to override the GTK application id, which sandboxed (flatpak) builds have to set to the id their manifest declares (#5972)
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Default `Options.Linux.ProgramName` to `ApplicationID` when only the latter is set, so windows keep matching their `.desktop` file on Wayland, where GTK takes the surface `app_id` from the program name (#5972)
 
 ## Fixed
 <!-- Bug fixes -->
-- Report a Linux `ApplicationID` that GTK would reject and fall back to the derived id, instead of letting `gtk_application_new()` assert and take the process down during startup (#5972)
-- Fix Linux application ids derived from an application `Name` that starts with a digit, such as `1example`, producing `org.wails.1example`, which GTK rejects (#5972)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
