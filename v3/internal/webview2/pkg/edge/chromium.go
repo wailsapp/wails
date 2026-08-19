@@ -723,8 +723,12 @@ func (e *Chromium) PermissionRequested(_ *ICoreWebView2, args *iCoreWebView2Perm
 
 func (e *Chromium) WebResourceRequested(sender *ICoreWebView2, args *ICoreWebView2WebResourceRequestedEventArgs) uintptr {
 	req, err := args.GetRequest()
-	if err != nil {
-		log.Fatal(err)
+	if err != nil || req == nil {
+		// COM can fail here under load without setting the out pointer
+		// (#1103). Dropping one request is recoverable (the WebView falls
+		// back to default handling for it); killing the process is not.
+		log.Printf("[WebView2] WebResourceRequested failed to get request: %v", err)
+		return 0
 	}
 	defer req.Release()
 
