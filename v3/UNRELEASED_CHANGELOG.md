@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Windows: a failed or nil `GetRequest` in the WebResourceRequested handler no longer kills the process (`log.Fatal` / nil-dereference panic) — the request is dropped and logged instead in [PR](https://github.com/wailsapp/wails/pull/6006) by @midagedev
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
