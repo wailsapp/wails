@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 
@@ -87,6 +88,46 @@ func (a *linuxApp) name() string {
 }
 
 func (a *linuxApp) run() error {
+	// Inspect argv the same way the GTK3 host and the Windows host do.
+	// g_application_run is invoked with argc=0, so GApplication never sees
+	// the launch argument; custom-protocol URLs and file associations are
+	// delivered only through this check.
+	if len(os.Args) == 2 { // Case: program + 1 argument
+		arg1 := os.Args[1]
+		// Check if the argument is likely a URL from a custom protocol invocation
+		if strings.Contains(arg1, "://") {
+			a.parent.debug("Application launched with argument, potentially a URL from custom protocol", "url", arg1)
+			eventContext := newApplicationEventContext()
+			eventContext.setURL(arg1)
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
+				ctx: eventContext,
+			}
+		} else {
+			// Check if the argument matches any file associations
+			matched := false
+			if a.parent.options.FileAssociations != nil {
+				ext := filepath.Ext(arg1)
+				if slices.Contains(a.parent.options.FileAssociations, ext) {
+					a.parent.debug("File opened via file association", "file", arg1, "extension", ext)
+					eventContext := newApplicationEventContext()
+					eventContext.setOpenedWithFile(arg1)
+					applicationEvents <- &ApplicationEvent{
+						Id:  uint(events.Common.ApplicationOpenedWithFile),
+						ctx: eventContext,
+					}
+					matched = true
+				}
+			}
+			if !matched {
+				a.parent.debug("Application launched with single argument (not a URL), potential file open?", "arg", arg1)
+			}
+		}
+	} else if len(os.Args) > 2 {
+		// Log if multiple arguments are passed
+		a.parent.debug("Application launched with multiple arguments", "args", os.Args[1:])
+	}
+
 	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		if err := a.processAndCacheScreens(); err != nil {
 			a.parent.handleError(err)
