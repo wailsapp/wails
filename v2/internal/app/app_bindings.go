@@ -32,6 +32,7 @@ func (a *App) Run() error {
 	var tsPrefixFlag *string
 	var tsPostfixFlag *string
 	var tsOutputTypeFlag *string
+	var useNullableSlicesFlag *bool
 
 	tsPrefix := os.Getenv("tsprefix")
 	if tsPrefix == "" {
@@ -48,6 +49,12 @@ func (a *App) Run() error {
 		tsOutputTypeFlag = bindingFlags.String("tsoutputtype", "", "Output type for generated typescript entities (classes|interfaces)")
 	}
 
+	useNullableSlicesEnv := os.Getenv("usenullableslices")
+	useNullableSlices := useNullableSlicesEnv == "true"
+	if useNullableSlicesEnv == "" {
+		useNullableSlicesFlag = bindingFlags.Bool("usenullableslices", false, "Generate nullable slice types (Type[] | null)")
+	}
+
 	_ = bindingFlags.Parse(os.Args[1:])
 	if tsPrefixFlag != nil {
 		tsPrefix = *tsPrefixFlag
@@ -58,12 +65,16 @@ func (a *App) Run() error {
 	if tsOutputTypeFlag != nil {
 		tsOutputType = *tsOutputTypeFlag
 	}
+	if useNullableSlicesFlag != nil {
+		useNullableSlices = *useNullableSlicesFlag
+	}
 
 	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated(), a.options.EnumBind)
 
 	appBindings.SetTsPrefix(tsPrefix)
 	appBindings.SetTsSuffix(tsSuffix)
 	appBindings.SetOutputType(tsOutputType)
+	appBindings.SetUseNullableSlices(useNullableSlices)
 
 	err := generateBindings(appBindings)
 	if err != nil {
