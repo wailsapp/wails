@@ -193,7 +193,11 @@ func TestBuildPlanShowsResolvedAnonymousCompilerOverrides(t *testing.T) {
 	assert.Contains(t, output, "garble args=-tiny -seed=random")
 
 	options.JSON = true
+	previousFooter := DisableFooter
+	DisableFooter = false
+	t.Cleanup(func() { DisableFooter = previousFooter })
 	jsonOutput := captureHCLStdout(t, func() { require.NoError(t, Build(&options, nil)) })
+	assert.True(t, DisableFooter, "machine-readable Plan output must suppress the CLI footer")
 	var decoded struct {
 		Request struct {
 			Compilers []struct {

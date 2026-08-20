@@ -35,6 +35,11 @@ type MigrationDiagnostic = migration.Diagnostic
 type MigrationReport = migration.Report
 
 func Migrate(options *MigrateOptions) error {
+	if options.JSON {
+		// Keep stdout as one machine-readable document when the CLI's deferred
+		// footer runs after this command returns.
+		DisableFooter = true
+	}
 	root, err := os.Getwd()
 	if err != nil {
 		return err
@@ -847,11 +852,10 @@ func parseStockTasks(data []byte) map[string]*wakeast.Task {
 
 func closestCanonical(actual map[string]*wakeast.Task, variants []map[string]*wakeast.Task) canonicalDiff {
 	best := canonicalDiff{added: sortedTaskNames(actual)}
-	bestScore := len(best.added)
 	if len(variants) == 0 {
 		return best
 	}
-	bestScore = int(^uint(0) >> 1)
+	bestScore := int(^uint(0) >> 1)
 	for _, expected := range variants {
 		var candidate canonicalDiff
 		for name, task := range actual {

@@ -369,15 +369,15 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 			return fmt.Errorf("%s requires a windows host", operation)
 		}
 		if spec.Config.Certificate == "" && spec.Config.Thumbprint == "" {
-			return fmt.Errorf("Windows signing requires certificate or thumbprint")
+			return fmt.Errorf("windows signing requires certificate or thumbprint")
 		}
 		return requireHostTools(host, operation, "signtool.exe")
 	case "android":
 		if spec.Config.Certificate == "" || spec.Config.KeyAlias == "" || spec.Config.Credential == "" {
-			return fmt.Errorf("Android signing requires certificate, key_alias, and credential")
+			return fmt.Errorf("android signing requires certificate, key_alias, and credential")
 		}
 		if !host.hasCredential(spec.Config.Credential) {
-			return fmt.Errorf("Android signing credential %q is unavailable", spec.Config.Credential)
+			return fmt.Errorf("android signing credential %q is unavailable", spec.Config.Credential)
 		}
 		tool := "jarsigner"
 		if spec.Format == "apk" {
@@ -386,7 +386,7 @@ func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 		return requireHostTools(host, operation, tool)
 	case "linux":
 		if spec.Config.Certificate == "" {
-			return fmt.Errorf("Linux signing requires signing.linux.certificate as the PGP key identifier")
+			return fmt.Errorf("linux signing requires signing.linux.certificate as the PGP key identifier")
 		}
 		switch spec.Format {
 		case "deb":

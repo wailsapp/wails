@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -41,6 +42,23 @@ func TestMigrateRerunsAnalysisWithoutReplacingAnExistingDraftOrWritingState(t *t
 	require.NoError(t, err)
 	assert.Equal(t, draft, actual)
 	assert.NoFileExists(t, filepath.Join(root, ".wails", "migration-report.json"))
+}
+
+func TestMigrateJSONIsMachineReadableAndSuppressesFooter(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("version: '3'\ntasks: {}\n"), 0o644))
+	withMigrationWorkingDirectory(t, root)
+	previousFooter := DisableFooter
+	DisableFooter = false
+	t.Cleanup(func() { DisableFooter = previousFooter })
+
+	output := captureMigrationStdout(t, func() {
+		require.NoError(t, Migrate(&MigrateOptions{DryRun: true, JSON: true}))
+	})
+	var report MigrationReport
+	require.NoError(t, json.Unmarshal([]byte(output), &report))
+	assert.Equal(t, 1, report.Version)
+	assert.True(t, DisableFooter, "machine-readable migration output must suppress the CLI footer")
 }
 
 func TestMigrateCustomOutputIsExclusiveAndDryRunWritesNothing(t *testing.T) {
@@ -418,6 +436,16 @@ func TestMigrationCanonicalAndClassificationHelpersCoverEveryProjectShape(t *tes
 	assert.Equal(t, []string{"build"}, changed.changed)
 	assert.Equal(t, []string{"missing"}, changed.missing)
 	assert.Equal(t, []string{"extra"}, changed.added)
+	closest := closestCanonical(
+		map[string]*wakeast.Task{"build": build, "test": test},
+		[]map[string]*wakeast.Task{
+			{"build": test, "lint": test, "package": build},
+			{"build": build, "test": test, "package": build},
+		},
+	)
+	assert.Equal(t, []string{"package"}, closest.missing, "the closest variant must win even when it is not first")
+	assert.Empty(t, closest.changed)
+	assert.Empty(t, closest.added)
 	withoutVariant := closestCanonical(map[string]*wakeast.Task{"z": build, "a": test}, nil)
 	assert.Equal(t, []string{"a", "z"}, withoutVariant.added)
 	assert.Equal(t, []string{"a", "z"}, sortedTaskNames(map[string]*wakeast.Task{"z": build, "a": test}))

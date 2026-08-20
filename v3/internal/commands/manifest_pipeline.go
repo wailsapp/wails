@@ -761,7 +761,7 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 		return runErr
 	})
 	if err != nil && strings.Contains(result, "updates to go.mod needed") {
-		return pipeline.RunResult{}, fmt.Errorf("Go module files need maintenance; run `go mod tidy` manually: %w", err)
+		return pipeline.RunResult{}, fmt.Errorf("go module files need maintenance; run `go mod tidy` manually: %w", err)
 	}
 	return pipeline.RunResult{Detail: result}, err
 }
@@ -781,7 +781,7 @@ func zigTarget(targetOS, targetArch string) (string, error) {
 
 func (h *manifestHandler) compileDocker(ctx context.Context, s pipeline.CompileSpec) (pipeline.RunResult, error) {
 	if manifestHostOS == "windows" {
-		return pipeline.RunResult{}, fmt.Errorf("Docker cross-compilation from Windows is not yet supported by the generated-workspace mount adapter")
+		return pipeline.RunResult{}, fmt.Errorf("docker cross-compilation from Windows is not yet supported by the generated-workspace mount adapter")
 	}
 	output := filepath.Join(h.root, filepath.FromSlash(s.Output))
 	tool, buildArgs := compileGoArgs(s)
@@ -825,14 +825,14 @@ func (h *manifestHandler) compileDocker(ctx context.Context, s pipeline.CompileS
 		return runErr
 	})
 	if err != nil && strings.Contains(result, "updates to go.mod needed") {
-		return pipeline.RunResult{}, fmt.Errorf("Go module files need maintenance; run `go mod tidy` manually: %w", err)
+		return pipeline.RunResult{}, fmt.Errorf("go module files need maintenance; run `go mod tidy` manually: %w", err)
 	}
 	return pipeline.RunResult{Detail: result}, err
 }
 
 func dockerCompilers(targetOS, targetArch string) (string, string, error) {
 	if targetArch != "amd64" && targetArch != "arm64" {
-		return "", "", fmt.Errorf("Docker toolchain does not support %s/%s", targetOS, targetArch)
+		return "", "", fmt.Errorf("docker toolchain does not support %s/%s", targetOS, targetArch)
 	}
 	if targetOS == "linux" {
 		arch := map[string]string{"amd64": "x86_64", "arm64": "aarch64"}[targetArch]
@@ -842,7 +842,7 @@ func dockerCompilers(targetOS, targetArch string) (string, string, error) {
 		compiler := "zcc-" + targetOS + "-" + targetArch
 		return compiler, compiler, nil
 	}
-	return "", "", fmt.Errorf("Docker toolchain does not support %s/%s", targetOS, targetArch)
+	return "", "", fmt.Errorf("docker toolchain does not support %s/%s", targetOS, targetArch)
 }
 
 func (h *manifestHandler) mergeUniversal(s pipeline.MergeSpec) (pipeline.RunResult, error) {
@@ -920,7 +920,7 @@ func (h *manifestHandler) compileAndroid(ctx context.Context, s pipeline.Compile
 		}
 	}
 	if ndk == "" {
-		return pipeline.RunResult{}, fmt.Errorf("Android NDK not found; set ANDROID_NDK_HOME or install an NDK under ANDROID_HOME")
+		return pipeline.RunResult{}, fmt.Errorf("android NDK not found; set ANDROID_NDK_HOME or install an NDK under ANDROID_HOME")
 	}
 	hostTag := "linux-x86_64"
 	switch manifestHostOS {
@@ -950,7 +950,7 @@ func (h *manifestHandler) compileAndroid(ctx context.Context, s pipeline.Compile
 		cxx += ".cmd"
 	}
 	if _, err := os.Stat(cc); err != nil {
-		return pipeline.RunResult{}, fmt.Errorf("Android compiler not found: %s", cc)
+		return pipeline.RunResult{}, fmt.Errorf("android compiler not found: %s", cc)
 	}
 	output := filepath.Join(h.root, s.Output)
 	s.Tags = appendUniqueStrings(s.Tags, "android")
@@ -2264,10 +2264,10 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 	if s.TargetOS == "android" {
 		keyAlias := chooseString(s.Config.KeyAlias != "", s.Config.KeyAlias, s.Config.Identity)
 		if s.Config.Certificate == "" || keyAlias == "" || s.Config.Credential == "" {
-			return pipeline.RunResult{}, fmt.Errorf("Android signing requires certificate (keystore), identity (key alias), and credential (password environment variable name)")
+			return pipeline.RunResult{}, fmt.Errorf("android signing requires certificate (keystore), identity (key alias), and credential (password environment variable name)")
 		}
 		if os.Getenv(s.Config.Credential) == "" {
-			return pipeline.RunResult{}, fmt.Errorf("Android signing password environment variable %s is empty", s.Config.Credential)
+			return pipeline.RunResult{}, fmt.Errorf("android signing password environment variable %s is empty", s.Config.Credential)
 		}
 		keystore, err := existingPathInsideProject(h.root, s.Config.Certificate)
 		if err != nil {

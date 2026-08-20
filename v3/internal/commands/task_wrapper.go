@@ -70,6 +70,11 @@ func mergeTags(tags string, extra ...string) string {
 }
 
 func Build(buildFlags *flags.Build, otherArgs []string) error {
+	if buildFlags.Plan && buildFlags.JSON {
+		// The CLI footer would make otherwise valid Plan JSON impossible to
+		// consume as a single machine-readable document.
+		DisableFooter = true
+	}
 	return buildWithOperations(buildFlags, otherArgs, manifestCommandOperations{
 		active: activeManifestProject,
 		plan:   printManifestPlan,
