@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Apply the window title to frameless windows on Linux, so taskbars and window switchers can tell an application's windows apart in [PR](https://github.com/wailsapp/wails/pull/5960) by @julianstorer
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
