@@ -3,11 +3,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
+	"sync/atomic"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 func main() {
@@ -30,14 +33,28 @@ func main() {
 
 	var panelMu sync.RWMutex
 	var panel *application.WebviewWindow
+	var actionCount atomic.Uint64
+	var escapeCount atomic.Uint64
+	var hideEventCount atomic.Uint64
+	var mainEventCount atomic.Uint64
+
+	publishCounters := func(window application.Window) {
+		window.ExecJS(fmt.Sprintf(
+			"window.updatePanelCounters?.(%d, %d, %d, %d)",
+			actionCount.Load(),
+			escapeCount.Load(),
+			hideEventCount.Load(),
+			mainEventCount.Load(),
+		))
+	}
 
 	newPanel := func() *application.WebviewWindow {
-		return app.Window.NewWithOptions(application.WebviewWindowOptions{
+		result := app.Window.NewWithOptions(application.WebviewWindowOptions{
 			Name:          "non-activating-panel",
 			Title:         "Non-activating panel",
 			URL:           "/panel",
 			Width:         560,
-			Height:        180,
+			Height:        240,
 			X:             480,
 			Y:             90,
 			Frameless:     true,
@@ -47,6 +64,8 @@ func main() {
 			Hidden: true,
 			KeyBindings: map[string]func(application.Window){
 				"escape": func(window application.Window) {
+					escapeCount.Add(1)
+					publishCounters(window)
 					window.Hide()
 				},
 			},
@@ -62,6 +81,19 @@ func main() {
 					application.MacWindowCollectionBehaviorStationary,
 			},
 		})
+		result.OnWindowEvent(events.Common.WindowHide, func(*application.WindowEvent) {
+			hideEventCount.Add(1)
+			publishCounters(result)
+		})
+		result.OnWindowEvent(events.Mac.WindowWillBecomeMain, func(*application.WindowEvent) {
+			mainEventCount.Add(1)
+			publishCounters(result)
+		})
+		result.OnWindowEvent(events.Mac.WindowDidBecomeMain, func(*application.WindowEvent) {
+			mainEventCount.Add(1)
+			publishCounters(result)
+		})
+		return result
 	}
 
 	panel = newPanel()
@@ -72,6 +104,16 @@ func main() {
 		panelMu.RUnlock()
 		if current != nil {
 			current.Show()
+			publishCounters(current)
+		}
+	})
+	app.Event.On("panel-action", func(*application.CustomEvent) {
+		actionCount.Add(1)
+		panelMu.RLock()
+		current := panel
+		panelMu.RUnlock()
+		if current != nil {
+			publishCounters(current)
 		}
 	})
 	app.Event.On("panel-show", func(*application.CustomEvent) {
@@ -142,6 +184,9 @@ button, input { border: 1px solid #454957; border-radius: 7px; color: #fff; back
 button:hover { background: #383c47; }
 input { width: 100%; background: #111216; }
 #status { color: #7dd3fc; }
+.metrics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.metric { border: 1px solid #383c47; border-radius: 6px; padding: 5px 8px; color: #aeb3be; }
+.metric strong { color: #f5f5f5; }
 </style>`
 
 const controlHTML = `<!doctype html><html><head><meta charset="utf-8"><title>NSWindow control</title>` + sharedStyle + `</head>
@@ -163,10 +208,23 @@ const panelHTML = `<!doctype html><html><head><meta charset="utf-8"><title>NSPan
 <input autofocus placeholder="Type here; the other app should remain active">
 <div class="actions"><button id="action">Run panel action</button><button onclick="wails.Events.Emit('panel-hide')">Dismiss</button></div>
 <span id="status">No action yet</span>
+<div class="metrics">
+<span class="metric">Actions <strong id="action-count">0</strong></span>
+<span class="metric">Escape callbacks <strong id="escape-count">0</strong></span>
+<span class="metric">Hide events <strong id="hide-count">0</strong></span>
+<span class="metric">Main events <strong id="main-count">0</strong></span>
+</div>
 <script type="module">
 import * as wails from "/wails/runtime.js"; window.wails = wails;
+window.updatePanelCounters = (actions, escapes, hides, mainEvents) => {
+  document.querySelector('#action-count').textContent = actions;
+  document.querySelector('#escape-count').textContent = escapes;
+  document.querySelector('#hide-count').textContent = hides;
+  document.querySelector('#main-count').textContent = mainEvents;
+};
 wails.Events.Emit('panel-ready');
 document.querySelector('#action').addEventListener('click', () => {
+  wails.Events.Emit('panel-action');
   document.querySelector('#status').textContent = 'Action handled at ' + new Date().toLocaleTimeString();
 });
 </script></body></html>`
