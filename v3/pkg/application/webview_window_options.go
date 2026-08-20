@@ -647,6 +647,53 @@ type MacWindow struct {
 	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
 	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
 	DisableEscapeExitsFullscreen bool
+
+	// WindowClass selects the native AppKit window class.
+	// The zero value creates the standard NSWindow-backed Wails window.
+	WindowClass MacWindowClass
+
+	// PanelPreferences configures NSPanel-specific behaviour when WindowClass is
+	// MacWindowClassPanel. It is ignored for standard windows.
+	PanelPreferences MacPanelPreferences
+}
+
+// MacWindowClass selects the native AppKit class used for a webview window.
+type MacWindowClass int
+
+const (
+	// MacWindowClassWindow creates the standard NSWindow-backed Wails window.
+	MacWindowClassWindow MacWindowClass = iota
+	// MacWindowClassPanel creates an NSPanel-backed auxiliary window.
+	MacWindowClassPanel
+)
+
+// MacPanelPreferences contains options that apply only to MacWindowClassPanel.
+type MacPanelPreferences struct {
+	// FloatingPanel gives the NSPanel AppKit's floating-panel behaviour. An
+	// explicit MacWindow.WindowLevel still takes precedence over its level.
+	FloatingPanel bool
+	// BecomesKeyOnlyIfNeeded makes a non-activating panel take key status only
+	// when the clicked view needs keyboard input.
+	BecomesKeyOnlyIfNeeded bool
+	// NonActivating applies NSWindowStyleMaskNonactivatingPanel. Showing or
+	// focusing the panel then leaves the currently active application active.
+	NonActivating bool
+	// UtilityWindow applies NSWindowStyleMaskUtilityWindow.
+	UtilityWindow bool
+}
+
+// effectiveMacWindowLevel resolves the initial native window level once.
+// A caller-selected level is more specific than the AlwaysOnTop convenience
+// option, while FloatingPanel supplies the natural default for floating panels.
+func effectiveMacWindowLevel(options WebviewWindowOptions) MacWindowLevel {
+	if options.Mac.WindowLevel != "" {
+		return options.Mac.WindowLevel
+	}
+	if options.AlwaysOnTop ||
+		(options.Mac.WindowClass == MacWindowClassPanel && options.Mac.PanelPreferences.FloatingPanel) {
+		return MacWindowLevelFloating
+	}
+	return MacWindowLevelNormal
 }
 
 type MacWindowLevel string

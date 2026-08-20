@@ -14,7 +14,8 @@ import (
 // - Window appears on all Spaces (virtual desktops)
 // - Can overlay fullscreen applications
 // - Floating window level keeps it above other windows
-// - Accessory activation policy hides from Dock
+// - A non-activating NSPanel leaves the current application active
+// - Accessory activation policy independently hides this demo from the Dock
 // - Frameless design with translucent backdrop
 
 func main() {
@@ -45,6 +46,12 @@ func main() {
 		// Prevent resizing
 		DisableResize: true,
 		Mac: application.MacWindow{
+			// Use a dedicated NSPanel so showing or clicking the launcher does not
+			// activate this application or replace the current app's menu bar.
+			WindowClass: application.MacWindowClassPanel,
+			PanelPreferences: application.MacPanelPreferences{
+				NonActivating: true,
+			},
 			// Combine multiple behaviors using bitwise OR:
 			// - CanJoinAllSpaces: window appears on ALL Spaces (virtual desktops)
 			// - FullScreenAuxiliary: window can overlay fullscreen applications
