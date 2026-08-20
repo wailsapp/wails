@@ -3,10 +3,12 @@ package commands
 import (
 	"bytes"
 	"errors"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 func TestEjectCommandContractAndFailures(t *testing.T) {
@@ -50,3 +52,35 @@ func TestEjectCommandContractAndFailures(t *testing.T) {
 type failingWriter struct{ err error }
 
 func (w failingWriter) Write([]byte) (int, error) { return 0, w.err }
+
+func BenchmarkNativeManifestRouting(b *testing.B) {
+	root := b.TempDir()
+	require.NoError(b, manifest.WriteMinimal(root, manifest.Project{Name: "bench", ProductName: "Bench", Identifier: "com.example.bench", Version: "1.0.0"}))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		active, err := activeManifestProjectAt(root)
+		if err != nil || !active {
+			b.Fatalf("route active manifest: active=%v err=%v", active, err)
+		}
+	}
+}
+
+func BenchmarkEjectCommand(b *testing.B) {
+	root := b.TempDir()
+	require.NoError(b, manifest.WriteMinimal(root, manifest.Project{Name: "bench", ProductName: "Bench", Identifier: "com.example.bench", Version: "1.0.0"}))
+	operations := ejectOperations{
+		getwd:   func() (string, error) { return root, nil },
+		write:   manifest.Eject,
+		version: "3.0.0",
+		output:  io.Discard,
+	}
+	require.NoError(b, ejectWithOperations(&EjectOptions{Force: true}, nil, operations))
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		if err := ejectWithOperations(&EjectOptions{Force: true}, nil, operations); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

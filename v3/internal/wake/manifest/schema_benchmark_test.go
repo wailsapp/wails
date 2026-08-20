@@ -143,6 +143,15 @@ func BenchmarkManifestStages(b *testing.B) {
 	}
 }
 
+func BenchmarkSchemaReferenceMarkdown(b *testing.B) {
+	b.ReportAllocs()
+	for b.Loop() {
+		if len(SchemaReferenceMarkdown()) == 0 {
+			b.Fatal("empty schema reference")
+		}
+	}
+}
+
 type manifestBenchmarkFixture struct {
 	name   string
 	source []byte

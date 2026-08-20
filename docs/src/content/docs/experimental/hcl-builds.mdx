@@ -1,0 +1,133 @@
+---
+title: HCL builds
+description: Configure and run the experimental Wails v3 native build system with one wails.hcl file.
+sidebar:
+  order: 2
+  badge:
+    text: Experimental
+    variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Configuration-first preview">
+The first release supports literal configuration only. Hooks, custom stages,
+HCL expressions and typed Wails tool calls are deferred. Existing projects keep
+using Taskfiles until you explicitly activate a reviewed migration.
+</Aside>
+
+## Configure a project
+
+Add `wails.hcl` at the project root. Its presence selects the native build
+system and makes Wails ignore every Taskfile in that project.
+
+```hcl
+version = 3
+
+project {
+  name         = "notes"
+  product_name = "Notes"
+  identifier   = "com.example.notes"
+  version      = "1.0.0"
+}
+
+frontend {
+  directory = "frontend"
+  install   = ["pnpm", "install", "--frozen-lockfile"]
+  build     = ["pnpm", "run", "build"]
+  dev       = ["pnpm", "run", "dev"]
+  output    = "frontend/dist"
+}
+
+build {
+  output    = "bin"
+  trim_path = true
+  strip     = true
+}
+
+profile "release" {
+  target "linux/amd64" {
+    formats = ["deb", "rpm", "appimage"]
+  }
+}
+```
+
+Run the default host build or the complete named release request:
+
+```bash
+wails3 build
+wails3 build release
+```
+
+For a one-off build, select comma-separated targets and formats without adding
+a profile:
+
+```bash
+wails3 build --targets linux/amd64 --formats deb,rpm
+```
+
+## Inspect work before running it
+
+Plan inspection resolves the same immutable graph used by execution. Text is
+for people; JSON is a versioned machine-readable contract.
+
+```bash
+wails3 build release --plan
+wails3 build release --plan --json
+```
+
+## Use project-owned assets
+
+Manifest paths refer to files you own, such as icons, platform manifests,
+package templates and maintainer scripts. Wails never edits those sources. It
+copies them into a disposable `.wails/` workspace before a tool consumes them.
+Final artifacts go under `build.output` and a verified receipt is written to
+`.wails/artifacts/receipt.json`.
+
+Use an external script only for behaviour outside the first configuration-only
+schema. It is not part of the build graph yet, so invoke it separately in CI or
+before `wails3 build`.
+
+## Migrate an existing project
+
+Create and review an inactive draft:
+
+```bash
+wails3 migrate
+wails3 migrate --dry-run
+wails3 migrate --json
+```
+
+Reachable custom Taskfile behaviour is reported as a blocker. After reviewing
+`wails.migrated.hcl`, activate it explicitly:
+
+```bash
+wails3 migrate --activate
+```
+
+Activation creates `wails.hcl` atomically. It does not delete, rename or edit
+Taskfiles, `build/config.yml`, scripts or assets. Invalid HCL fails as HCL; it
+never falls back to the legacy route.
+
+## Materialise all defaults
+
+To inspect or copy the complete resolved configuration, write an inactive
+snapshot:
+
+```bash
+wails3 eject
+```
+
+This creates `wails.ejected.hcl`. It never rewrites active configuration.
+
+## Compatibility window
+
+`wails3 package` and `wails3 sign` are deprecated aliases for the same planner;
+new automation should use `wails3 build` with a profile or formats. Rollout is
+release-gated: the first release makes HCL the new-project path, the following
+release warns on legacy Taskfile routing, and the next removes Taskfile
+execution together with the aliases. Each transition requires the native-host
+acceptance matrix for that release to be green.
+
+See the generated [`wails.hcl` field reference](/reference/wails-hcl-fields)
+for every field, type, default and applicability rule.

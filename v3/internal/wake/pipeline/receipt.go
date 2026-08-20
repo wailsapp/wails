@@ -40,6 +40,44 @@ func WriteArtifactReceipt(root, output string, artifacts []ArtifactReference) (A
 	})
 }
 
+// VerifyArtifactReceipt reads an existing receipt and verifies every recorded
+// artifact against its current content and permission mode without modifying
+// either the receipt or the artifacts.
+func VerifyArtifactReceipt(root, output string) (ArtifactReceipt, error) {
+	destination, err := artifactPath(root, output)
+	if err != nil {
+		return ArtifactReceipt{}, fmt.Errorf("artifact receipt: %w", err)
+	}
+	data, err := os.ReadFile(destination)
+	if err != nil {
+		return ArtifactReceipt{}, fmt.Errorf("artifact receipt: %w", err)
+	}
+	var receipt ArtifactReceipt
+	if err := json.Unmarshal(data, &receipt); err != nil {
+		return ArtifactReceipt{}, fmt.Errorf("artifact receipt: %w", err)
+	}
+	if receipt.Version != ArtifactReceiptVersion {
+		return ArtifactReceipt{}, fmt.Errorf("artifact receipt: unsupported version %d", receipt.Version)
+	}
+	for _, artifact := range receipt.Artifacts {
+		path, err := artifactPath(root, artifact.Path)
+		if err != nil {
+			return ArtifactReceipt{}, fmt.Errorf("artifact %s: %w", artifact.Producer, err)
+		}
+		digest, size, err := digestArtifact(path)
+		if err != nil {
+			return ArtifactReceipt{}, fmt.Errorf("artifact %s: %w", artifact.Producer, err)
+		}
+		if size != artifact.Size {
+			return ArtifactReceipt{}, fmt.Errorf("artifact %s size mismatch: got %d, want %d", artifact.Producer, size, artifact.Size)
+		}
+		if digest != artifact.Digest {
+			return ArtifactReceipt{}, fmt.Errorf("artifact %s digest mismatch: got %s, want %s", artifact.Producer, digest, artifact.Digest)
+		}
+	}
+	return receipt, nil
+}
+
 type artifactReceiptOperations struct {
 	digest  func(string) (string, int64, error)
 	marshal func(any, string, string) ([]byte, error)

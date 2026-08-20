@@ -4,7 +4,7 @@
 
 ### Manifest
 
-The project's `wails.toml`. It records project identity and user build intent,
+The project's `wails.hcl`. It records project identity and user build intent,
 not the implementation steps of the build. Every Wails project has a manifest
 with its required project identity.
 

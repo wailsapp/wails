@@ -233,8 +233,8 @@ func splitTarget(target string) (string, string, error) {
 	if !slices.Contains([]string{"amd64", "arm64", "386", "arm", "universal"}, parts[1]) {
 		return "", "", fmt.Errorf("unsupported target architecture %q", parts[1])
 	}
-	if parts[1] == "universal" && parts[0] != "darwin" {
-		return "", "", fmt.Errorf("universal target is only valid for darwin")
+	if parts[1] == "universal" && !slices.Contains([]string{"darwin", "android"}, parts[0]) {
+		return "", "", fmt.Errorf("universal target is only valid for darwin or android")
 	}
 	return parts[0], parts[1], nil
 }

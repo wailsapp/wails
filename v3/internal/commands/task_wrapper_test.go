@@ -62,6 +62,23 @@ func TestBuildManifestRoutingContractAndFailures(t *testing.T) {
 	assert.Equal(t, []string{"EXTRA_TAGS=sqlite", "OBFUSCATED=true", "GARBLE_ARGS=-tiny"}, taskArgs)
 }
 
+func TestBuildAcceptsAndroidUniversalTarget(t *testing.T) {
+	var ran manifestRunOptions
+	operations := manifestCommandOperations{
+		active: func() (bool, error) { return true, nil },
+		run: func(options manifestRunOptions) error {
+			ran = options
+			return nil
+		},
+	}
+
+	require.NoError(t, buildWithOperations(&flags.Build{Targets: "android/universal", Formats: "aab"}, nil, operations))
+	require.Len(t, ran.Targets, 1)
+	assert.Equal(t, "android", ran.Targets[0].OS)
+	assert.Equal(t, "universal", ran.Targets[0].Arch)
+	assert.Equal(t, []string{"aab"}, ran.Formats)
+}
+
 func TestManifestProfileRejectsTaskVariablesAndMultiplePositionals(t *testing.T) {
 	_, err := manifestProfile("", []string{"CONFIG=release"})
 	require.ErrorContains(t, err, "do not accept Task variables")

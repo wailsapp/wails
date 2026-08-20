@@ -54,6 +54,69 @@ func TestArtifactReceiptIsTypedDeterministicAndVerifiable(t *testing.T) {
 	assert.Equal(t, first, decoded)
 }
 
+func TestVerifyArtifactReceiptDetectsContentAndModeDrift(t *testing.T) {
+	root := t.TempDir()
+	relative := "bin/app"
+	path := filepath.Join(root, relative)
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	require.NoError(t, os.WriteFile(path, []byte("first!"), 0o755))
+	artifacts := []ArtifactReference{{Key: "binary", Path: relative, Identity: ArtifactIdentity{Kind: ArtifactBinary, Target: Target{OS: "linux", Arch: "amd64"}}}}
+	_, err := WriteArtifactReceipt(root, ".wails/artifacts/receipt.json", artifacts)
+	require.NoError(t, err)
+
+	receipt, err := VerifyArtifactReceipt(root, ".wails/artifacts/receipt.json")
+	require.NoError(t, err)
+	require.Len(t, receipt.Artifacts, 1)
+
+	require.NoError(t, os.WriteFile(path, []byte("second"), 0o755))
+	_, err = VerifyArtifactReceipt(root, ".wails/artifacts/receipt.json")
+	require.ErrorContains(t, err, "digest mismatch")
+
+	if runtime.GOOS == "windows" {
+		return
+	}
+	require.NoError(t, os.WriteFile(path, []byte("first!"), 0o644))
+	require.NoError(t, os.Chmod(path, 0o644))
+	_, err = VerifyArtifactReceipt(root, ".wails/artifacts/receipt.json")
+	require.ErrorContains(t, err, "digest mismatch")
+}
+
+func TestVerifyArtifactReceiptRejectsInvalidReceiptAndMissingArtifacts(t *testing.T) {
+	root := t.TempDir()
+	receiptPath := filepath.Join(root, ".wails", "artifacts", "receipt.json")
+	require.NoError(t, os.MkdirAll(filepath.Dir(receiptPath), 0o755))
+
+	_, err := VerifyArtifactReceipt(root, "../receipt.json")
+	require.ErrorContains(t, err, "escapes the project")
+	_, err = VerifyArtifactReceipt(root, ".wails/artifacts/missing.json")
+	require.ErrorContains(t, err, "artifact receipt")
+
+	require.NoError(t, os.WriteFile(receiptPath, []byte("{"), 0o644))
+	_, err = VerifyArtifactReceipt(root, ".wails/artifacts/receipt.json")
+	require.ErrorContains(t, err, "unexpected end")
+
+	require.NoError(t, os.WriteFile(receiptPath, []byte(`{"version":2,"artifacts":[]}`), 0o644))
+	_, err = VerifyArtifactReceipt(root, ".wails/artifacts/receipt.json")
+	require.ErrorContains(t, err, "unsupported version 2")
+
+	require.NoError(t, os.WriteFile(receiptPath, []byte(`{"version":1,"artifacts":[{"producer":"escape","path":"../app"}]}`), 0o644))
+	_, err = VerifyArtifactReceipt(root, ".wails/artifacts/receipt.json")
+	require.ErrorContains(t, err, "escapes the project")
+
+	relative := "bin/app"
+	path := filepath.Join(root, relative)
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	require.NoError(t, os.WriteFile(path, []byte("first"), 0o644))
+	_, err = WriteArtifactReceipt(root, ".wails/artifacts/receipt.json", []ArtifactReference{{Key: "binary", Path: relative}})
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(path, []byte("longer"), 0o644))
+	_, err = VerifyArtifactReceipt(root, ".wails/artifacts/receipt.json")
+	require.ErrorContains(t, err, "size mismatch")
+	require.NoError(t, os.Remove(path))
+	_, err = VerifyArtifactReceipt(root, ".wails/artifacts/receipt.json")
+	require.ErrorContains(t, err, "artifact binary")
+}
+
 func TestArtifactReceiptRejectsEscapesMissingInputsAndUnsupportedTypes(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("symlink creation requires elevated rights on Windows")

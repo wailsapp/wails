@@ -118,7 +118,7 @@ func defaults(project Project) Document {
 		Linux: PackagePlatform{Formats: []string{"appimage"}}, IOS: PackagePlatform{Formats: []string{"ipa"}},
 		Android: PackagePlatform{Formats: []string{"aab"}},
 	}
-	return Document{Project: project, Frontend: frontend, Build: build, Dev: dev, Targets: targets, Package: packages, Profiles: map[string]Profile{}, Extensions: map[string]map[string]any{}}
+	return Document{Project: project, Frontend: frontend, Build: build, Dev: dev, Targets: targets, Package: packages, Profiles: map[string]Profile{}}
 }
 
 // NewDocument returns a resolved document seeded with the compiled defaults.
@@ -144,7 +144,7 @@ func defaultPlatform(architectures ...string) Platform {
 }
 
 func configFromDocument(root, profile string, doc Document) Config {
-	config := Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Wake: doc.Wake, Profiles: doc.Profiles, Extensions: doc.Extensions, Origins: defaultOrigins()}
+	config := Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Profiles: doc.Profiles, Origins: defaultOrigins()}
 	if profile != "" {
 		config.Selected = doc.Profiles[profile]
 	}

@@ -135,6 +135,38 @@ func TestPlanSharesFrontendAndCachesSecondRun(t *testing.T) {
 	assert.Equal(t, first+1, len(h.runs), "only terminal collection should run again")
 }
 
+// Regression test for https://github.com/wailsapp/wails/issues/1031.
+// A backend implementation edit may require bindings to be reconsidered, but
+// unchanged generated bindings must stop invalidation before frontend:build.
+func TestDevelopmentBackendChangeDoesNotRebuildFrontend(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "frontend", "node_modules"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "main.go"), []byte("package main\nfunc generation() int { return 1 }\nfunc main() {}\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "frontend", "package.json"), []byte("{}"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "frontend", "package-lock.json"), []byte("{}"), 0o644))
+	require.NoError(t, manifest.WriteMinimal(root, manifest.Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"}))
+	loaded, err := manifest.Load(root, "")
+	require.NoError(t, err)
+	plan, err := PlanBuild(loaded.Config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64", Development: true})
+	require.NoError(t, err)
+
+	handler := &fakeHandler{root: root}
+	executor := Executor{Handler: handler}
+	_, err = executor.Execute(t.Context(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
+	require.NoError(t, err)
+	assert.Equal(t, 1, countNodeRuns(handler.runs, NodeKey("frontend:build")))
+	assert.Equal(t, 1, countNodeRuns(handler.runs, NodeKey("target:linux/amd64:compile")))
+
+	require.NoError(t, os.WriteFile(filepath.Join(root, "main.go"), []byte("package main\nfunc generation() int { return 2 }\nfunc main() {}\n"), 0o644))
+	_, err = executor.Execute(t.Context(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
+	require.NoError(t, err)
+
+	assert.Equal(t, 2, countNodeRuns(handler.runs, NodeKey("frontend:bindings")), "backend changes must reconsider generated bindings")
+	assert.Equal(t, 1, countNodeRuns(handler.runs, NodeKey("frontend:build")), "unchanged binding output must not rebuild the frontend")
+	assert.Equal(t, 2, countNodeRuns(handler.runs, NodeKey("target:linux/amd64:compile")), "backend changes must rebuild the application")
+}
+
 func TestPlanInspectionReportsActualCacheDecisionsWithoutChangingFiles(t *testing.T) {
 	config := performanceConfig(t)
 	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
