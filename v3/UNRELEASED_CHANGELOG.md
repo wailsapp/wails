@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent SQLite Prepare from hanging under concurrent calls in [PR](https://github.com/wailsapp/wails/pull/5998) by @archy-rock3t-cloud
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
