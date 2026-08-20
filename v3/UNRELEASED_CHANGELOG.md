@@ -29,7 +29,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove obsolete implementation tracker from docs in [PR](https://github.com/wailsapp/wails/pull/6005) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
