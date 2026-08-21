@@ -10,56 +10,47 @@
   <body>
     <main class="notch-window" aria-label="System monitor">
       <header class="window-toolbar">
-        <div class="status-lockup">
-          <span class="status-dot" aria-hidden="true"></span>
-          <span>System healthy</span>
-        </div>
         <div class="toolbar-actions">
-          <button id="hide" class="toolbar-button" type="button" aria-label="Hide notification" title="Hide notification"><span aria-hidden="true">⌃</span></button>
-          <button id="quit" class="toolbar-button toolbar-button-danger" type="button" aria-label="Quit application" title="Quit application"><span aria-hidden="true">×</span></button>
+          <button id="hide" class="toolbar-button" type="button" aria-label="Hide notification" title="Hide notification">
+            <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m3.5 9.5 4.5-4 4.5 4"/></svg>
+          </button>
+          <button id="quit" class="toolbar-button toolbar-button-danger" type="button" aria-label="Quit application" title="Quit application">
+            <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>
+          </button>
         </div>
       </header>
 
-      <section class="cpu-hero" aria-labelledby="cpu-title">
-        <div class="cpu-badge" aria-hidden="true">CPU</div>
-        <div class="cpu-copy">
-          <p class="eyebrow">Processor</p>
+      <div class="dashboard">
+        <section class="metric-panel cpu-panel" aria-labelledby="cpu-title">
           <h1 id="cpu-title">CPU load</h1>
-          <p class="cpu-subtitle"><span id="core-count">8</span> cores <span>·</span> Apple silicon</p>
-        </div>
-        <div class="cpu-reading"><strong id="cpu-value">17</strong><span>%</span><small>active</small></div>
-      </section>
+          <div class="metric-reading"><strong id="cpu-value">—</strong><span>%</span></div>
+          <canvas class="cpu-chart" id="cpu-chart" aria-label="Live CPU activity graph"></canvas>
+          <small><span id="peak-value">— peak</span></small>
+        </section>
 
-      <section class="activity-card" aria-label="CPU activity over time">
-        <div class="activity-heading"><span>Activity</span><span>Last 60 seconds</span></div>
-        <canvas class="chart" id="cpu-chart" aria-label="Live CPU activity graph"></canvas>
-      </section>
+        <section class="metric-panel memory-panel" aria-labelledby="memory-title">
+          <h1 id="memory-title">Memory</h1>
+          <div class="metric-reading"><strong id="memory-value">—</strong><span>GB</span></div>
+          <progress id="memory-progress" max="100" value="0" aria-label="Memory used"></progress>
+          <small><span id="memory-percent">— used</span><span id="memory-free">— free</span></small>
+        </section>
 
-      <section class="stats-grid" aria-label="Memory and disk usage">
-        <article class="stat-card memory-card">
-          <div class="card-header"><span class="card-badge">MEM</span><span class="card-label">Memory</span></div>
-          <div class="usage-row"><strong id="memory-value">10.7</strong><span>GB</span></div>
-          <p>of 16 GB in use</p>
-          <div class="stat-bottom">
-            <canvas class="mini-chart" id="memory-chart" aria-label="Live memory activity graph"></canvas>
-            <small><span id="memory-percent">67% used</span><span id="memory-free">5.3 GB free</span></small>
+        <section class="metric-panel disk-panel" aria-labelledby="disk-title">
+          <h1 id="disk-title">Disk</h1>
+          <div class="metric-reading"><strong id="disk-value">—</strong><span>GB</span></div>
+          <progress id="disk-progress" max="100" value="0" aria-label="Disk used"></progress>
+          <small><span id="disk-percent">— used</span><span id="disk-free">— free</span></small>
+        </section>
+
+        <section class="machine-panel" aria-labelledby="machine-title">
+          <h1 id="machine-title">Machine</h1>
+          <strong id="machine-name">Apple silicon</strong>
+          <div class="machine-details">
+            <span><b id="core-count">—</b> CPU cores</span>
+            <span><b id="memory-total">—</b> GB unified memory</span>
           </div>
-        </article>
-        <article class="stat-card disk-card">
-          <div class="card-header"><span class="card-badge">SSD</span><span class="card-label">Disk</span></div>
-          <div class="usage-row"><strong id="disk-value">312</strong><span>GB</span></div>
-          <p>of 512 GB in use</p>
-          <div class="stat-bottom">
-            <canvas class="mini-chart" id="disk-chart" aria-label="Live disk activity graph"></canvas>
-            <small><span id="disk-percent">61% used</span><span id="disk-free">200 GB free</span></small>
-          </div>
-        </article>
-      </section>
-
-      <footer class="monitor-footer">
-        <span><span class="live-dot" aria-hidden="true"></span><span id="updated-at">Updated just now</span></span>
-        <kbd title="Show from any application">⌘ ⇧ N</kbd>
-      </footer>
+        </section>
+      </div>
     </main>
     <script type="module" src="/main.js"></script>
   </body>

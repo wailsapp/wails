@@ -3,30 +3,27 @@ if (window.location.protocol === "wails:" || window.location.hostname === "wails
 }
 
 const cpuValue = document.getElementById("cpu-value");
+const coreCount = document.getElementById("core-count");
+const machineName = document.getElementById("machine-name");
+const memoryTotal = document.getElementById("memory-total");
 const memoryValue = document.getElementById("memory-value");
 const diskValue = document.getElementById("disk-value");
 const memoryPercentLabel = document.getElementById("memory-percent");
 const memoryFreeLabel = document.getElementById("memory-free");
 const diskPercentLabel = document.getElementById("disk-percent");
 const diskFreeLabel = document.getElementById("disk-free");
-const updatedAt = document.getElementById("updated-at");
+const peakValue = document.getElementById("peak-value");
 const cpuCanvas = document.getElementById("cpu-chart");
-const memoryCanvas = document.getElementById("memory-chart");
-const diskCanvas = document.getElementById("disk-chart");
+const memoryProgress = document.getElementById("memory-progress");
+const diskProgress = document.getElementById("disk-progress");
 
-let cpu = 17;
-let memory = 10.7;
-let disk = 312;
-
-const histories = [
-  { values: Array.from({ length: 42 }, () => 18 + Math.random() * 25), canvas: cpuCanvas, color: "#bca8ff", fill: ["rgba(151,116,255,.24)", "rgba(151,116,255,0)"] },
-  { values: Array.from({ length: 32 }, () => 58 + Math.random() * 10), canvas: memoryCanvas, color: "#b98dff", fill: ["rgba(185,141,255,.20)", "rgba(185,141,255,0)"] },
-  { values: Array.from({ length: 32 }, () => 55 + Math.random() * 8), canvas: diskCanvas, color: "#8ba1ff", fill: ["rgba(109,140,255,.20)", "rgba(109,140,255,0)"] },
-];
-
-function nudge(value, min, max, amount) {
-  return Math.max(min, Math.min(max, value + (Math.random() - .47) * amount));
-}
+const history = {
+  values: Array(52).fill(0),
+  canvas: cpuCanvas,
+  color: "#38a8ff",
+  fill: ["rgba(56,168,255,.24)", "rgba(56,168,255,0)"],
+};
+let hasSample = false;
 
 function drawGraph({ values, canvas, color, fill }) {
   const bounds = canvas.getBoundingClientRect();
@@ -75,30 +72,41 @@ function drawGraph({ values, canvas, color, fill }) {
   context.stroke();
 }
 
-function render() {
-  const memoryPercent = Math.round((memory / 16) * 100);
-  const diskPercent = Math.round((disk / 512) * 100);
-  cpuValue.textContent = String(Math.round(cpu));
-  memoryValue.textContent = memory.toFixed(1);
-  diskValue.textContent = String(Math.round(disk));
+function render(stats) {
+  const memoryPercent = Math.round(stats.memoryPercent);
+  const diskPercent = Math.round(stats.diskPercent);
+  cpuValue.textContent = String(Math.round(stats.cpuPercent));
+  coreCount.textContent = String(stats.coreCount);
+  machineName.textContent = stats.machineName || "Apple silicon";
+  memoryTotal.textContent = String(Math.round(stats.memoryUsedGB + stats.memoryFreeGB));
+  memoryValue.textContent = stats.memoryUsedGB.toFixed(1);
+  diskValue.textContent = String(Math.round(stats.diskUsedGB));
   memoryPercentLabel.textContent = `${memoryPercent}% used`;
-  memoryFreeLabel.textContent = `${(16 - memory).toFixed(1)} GB free`;
+  memoryFreeLabel.textContent = `${stats.memoryFreeGB.toFixed(1)} GB free`;
   diskPercentLabel.textContent = `${diskPercent}% used`;
-  diskFreeLabel.textContent = `${Math.round(512 - disk)} GB free`;
-  histories.forEach(drawGraph);
+  diskFreeLabel.textContent = `${Math.round(stats.diskFreeGB)} GB free`;
+  memoryProgress.value = memoryPercent;
+  diskProgress.value = diskPercent;
+  peakValue.textContent = `${Math.round(Math.max(...history.values))}% peak`;
+  drawGraph(history);
 }
 
-function sample() {
-  cpu = nudge(cpu, 8, 68, 21);
-  memory = nudge(memory, 9.1, 12.3, .55);
-  disk = nudge(disk, 308, 318, 1.2);
-  const nextValues = [cpu, (memory / 16) * 100, (disk / 512) * 100];
-  histories.forEach((history, index) => {
-    history.values.shift();
-    history.values.push(nextValues[index]);
-  });
-  updatedAt.textContent = "Updated just now";
-  render();
+async function sample() {
+  if (!globalThis.wails?.Call?.ByName) return;
+  try {
+    const stats = await globalThis.wails.Call.ByName("main.NotificationController.Stats");
+    if (!stats?.available) return;
+    if (!hasSample) {
+      history.values.fill(stats.cpuPercent);
+      hasSample = true;
+    } else {
+      history.values.shift();
+      history.values.push(stats.cpuPercent);
+    }
+    render(stats);
+  } catch (error) {
+    console.error("reading system telemetry", error);
+  }
 }
 
 async function hideWindow() {
@@ -116,6 +124,6 @@ async function quitApplication() {
 document.getElementById("hide").addEventListener("click", hideWindow);
 document.getElementById("quit").addEventListener("click", quitApplication);
 
-window.addEventListener("resize", render);
+window.addEventListener("resize", () => drawGraph(history));
 window.setInterval(sample, 1100);
-render();
+sample();

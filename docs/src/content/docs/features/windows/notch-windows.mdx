@@ -12,6 +12,20 @@ hide animations. Your web content occupies only the requested inner rectangle.
 Moving the pointer into the window makes its webview key immediately without
 activating the application.
 
+<figure>
+  <img
+    src="/images/notch-notification.gif"
+    alt="A Wails notch notification sliding down from the MacBook camera housing, displaying live system metrics, and hiding back beneath the notch"
+    loading="lazy"
+    decoding="async"
+    style={{ width: '100%', borderRadius: '0.75rem' }}
+  />
+  <figcaption>
+    An animated notch notification using a persistent webview with native show
+    and hide transitions.
+  </figcaption>
+</figure>
+
 ```go
 alert := app.Window.NewNotchWindow(application.NotchWindowOptions{
     Width:    660,

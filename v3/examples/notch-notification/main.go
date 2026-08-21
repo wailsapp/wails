@@ -16,9 +16,12 @@ var assets embed.FS
 const showShortcut = "CmdOrCtrl+Shift+N"
 
 type NotificationController struct {
-	mu     sync.RWMutex
-	app    *application.App
-	window *application.NotchWindow
+	mu             sync.RWMutex
+	app            *application.App
+	window         *application.NotchWindow
+	lastCPUActive  uint64
+	lastCPUTotal   uint64
+	lastCPUPercent float64
 }
 
 func (controller *NotificationController) configure(app *application.App, window *application.NotchWindow) {
@@ -53,8 +56,14 @@ func (controller *NotificationController) Quit() {
 	}
 }
 
+// Stats returns a current sample from public macOS host and filesystem APIs.
+func (controller *NotificationController) Stats() SystemStats {
+	return controller.systemStats()
+}
+
 func main() {
 	controller := &NotificationController{}
+	controller.systemStats()
 	app := application.New(application.Options{
 		Name:        "Notch Notification Example",
 		Description: "Demonstrates a rich, stateful NewNotchWindow notification",
@@ -70,8 +79,8 @@ func main() {
 	})
 
 	notification := app.Window.NewNotchWindow(application.NotchWindowOptions{
-		Width:    424,
-		Height:   300,
+		Width:    680,
+		Height:   169,
 		Animated: true,
 		WindowOptions: application.WebviewWindowOptions{
 			Name:         "system-monitor-notification",
