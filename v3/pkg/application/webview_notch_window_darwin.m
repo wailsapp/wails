@@ -7,8 +7,8 @@
 
 static const CGFloat NotchHorizontalInset = 30.0;
 static const CGFloat NotchBottomInset = 12.0;
-static const CGFloat NotchWingInset = 12.0;
-static const CGFloat NotchBottomCornerRadius = 20.0;
+static const CGFloat NotchWingInset = 20.0;
+static const CGFloat NotchBottomCornerRadius = 28.0;
 
 @interface WailsNotchBackgroundView : NSView
 @end
@@ -32,20 +32,20 @@ static const CGFloat NotchBottomCornerRadius = 20.0;
     [path moveToPoint:NSMakePoint(0.0, height)];
     [path lineToPoint:NSMakePoint(width, height)];
     [path curveToPoint:NSMakePoint(width - NotchWingInset, height - NotchWingInset)
-          controlPoint1:NSMakePoint(width - 7.0, height)
-          controlPoint2:NSMakePoint(width - NotchWingInset, height - 5.0)];
+          controlPoint1:NSMakePoint(width - NotchWingInset * 0.58, height)
+          controlPoint2:NSMakePoint(width - NotchWingInset, height - NotchWingInset * 0.42)];
     [path lineToPoint:NSMakePoint(width - NotchWingInset, bodyBottom)];
     [path curveToPoint:NSMakePoint(width - NotchWingInset - NotchBottomCornerRadius, 0.0)
-          controlPoint1:NSMakePoint(width - NotchWingInset, 9.0)
-          controlPoint2:NSMakePoint(width - 21.0, 0.0)];
+          controlPoint1:NSMakePoint(width - NotchWingInset, NotchBottomCornerRadius * 0.45)
+          controlPoint2:NSMakePoint(width - NotchWingInset - NotchBottomCornerRadius * 0.45, 0.0)];
     [path lineToPoint:NSMakePoint(NotchWingInset + NotchBottomCornerRadius, 0.0)];
     [path curveToPoint:NSMakePoint(NotchWingInset, bodyBottom)
-          controlPoint1:NSMakePoint(21.0, 0.0)
-          controlPoint2:NSMakePoint(NotchWingInset, 9.0)];
+          controlPoint1:NSMakePoint(NotchWingInset + NotchBottomCornerRadius * 0.45, 0.0)
+          controlPoint2:NSMakePoint(NotchWingInset, NotchBottomCornerRadius * 0.45)];
     [path lineToPoint:NSMakePoint(NotchWingInset, height - NotchWingInset)];
     [path curveToPoint:NSMakePoint(0.0, height)
-          controlPoint1:NSMakePoint(NotchWingInset, height - 5.0)
-          controlPoint2:NSMakePoint(7.0, height)];
+          controlPoint1:NSMakePoint(NotchWingInset, height - NotchWingInset * 0.42)
+          controlPoint2:NSMakePoint(NotchWingInset * 0.58, height)];
     [path closePath];
 
     [[NSColor blackColor] setFill];
@@ -138,6 +138,9 @@ static const CGFloat NotchBottomCornerRadius = 20.0;
     [root addSubview:background positioned:NSWindowBelow relativeTo:webView];
     [background release];
 
+    // Let web content reach the display's top edge. The camera housing masks
+    // the centre naturally, while controls can occupy the usable areas on
+    // either side instead of sitting below a native-only top inset.
     webView.frame = NSMakeRect(NotchHorizontalInset, NotchBottomInset, contentWidth, contentHeight);
     webView.autoresizingMask = NSViewNotSizable;
     // WKWebView still has no public background toggle. Wails already uses this

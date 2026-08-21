@@ -71,7 +71,7 @@ func main() {
 
 	notification := app.Window.NewNotchWindow(application.NotchWindowOptions{
 		Width:    424,
-		Height:   344,
+		Height:   300,
 		Animated: true,
 		WindowOptions: application.WebviewWindowOptions{
 			Name:         "system-monitor-notification",

@@ -7,7 +7,6 @@ const (
 	defaultNotchWindowHeight         = 92
 	defaultNotchWindowAnimationSpeed = 420 * time.Millisecond
 	notchWindowHorizontalInset       = 30
-	notchWindowTopInset              = 34
 	notchWindowBottomInset           = 12
 )
 
@@ -63,7 +62,7 @@ func normaliseNotchWindowOptions(options NotchWindowOptions) NotchWindowOptions 
 func webviewOptionsForNotchWindow(options NotchWindowOptions) WebviewWindowOptions {
 	result := options.WindowOptions
 	result.Width = options.Width + 2*notchWindowHorizontalInset
-	result.Height = options.Height + notchWindowTopInset + notchWindowBottomInset
+	result.Height = options.Height + notchWindowBottomInset
 	result.Frameless = true
 	result.DisableResize = true
 	result.MinWidth = 0

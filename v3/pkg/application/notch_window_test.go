@@ -84,8 +84,8 @@ func TestWebviewOptionsForNotchWindow(t *testing.T) {
 	}
 
 	got := webviewOptionsForNotchWindow(input)
-	if got.Width != 760 || got.Height != 146 {
-		t.Fatalf("outer size = %dx%d, want 760x146", got.Width, got.Height)
+	if got.Width != 760 || got.Height != 112 {
+		t.Fatalf("outer size = %dx%d, want 760x112", got.Width, got.Height)
 	}
 	if got.Name != "second-alert" || !got.Hidden || got.URL != "/second" {
 		t.Fatalf("content options were not preserved: %+v", got)
