@@ -1,13 +1,204 @@
-# Wails v3 Documentation
+# Wails
 
-> Build desktop applications with Go and modern web technologies.
+> Build beautiful desktop applications using Go and modern web technologies.
 
 ## Documentation
 
-- [Quick Start](https://v3.wails.io/quick-start/installation/): Install Wails and create your first application.
-- [Tutorials](https://v3.wails.io/tutorials/overview/): Build complete applications step by step.
-- [Core Concepts](https://v3.wails.io/concepts/architecture/): Understand the Wails runtime and application model.
-- [Features](https://v3.wails.io/features/): Use windows, menus, bindings, events, dialogs, and platform integrations.
-- [Guides](https://v3.wails.io/guides/): Configure, build, package, sign, and distribute applications.
-- [API Reference](https://v3.wails.io/reference/overview/): Browse the Wails API reference.
-- [Migration](https://v3.wails.io/migration/v2-to-v3/): Upgrade an application from Wails v2 to v3.
+- [Alpha 10 Released - A New Chapter for Wails](https://v3.wails.io/blog/2024-12-03-alpha10-and-new-release-strategy/): Announcing Wails v3 Alpha 10 and our new daily release strategy
+- [Blog](https://v3.wails.io/blog/): News, releases, and project updates.
+- [The Road to Wails v3](https://v3.wails.io/blog/the-road-to-wails-v3/): Release notes and announcements for Wails
+- [Wails v2 Beta for Linux](https://v3.wails.io/blog/wails-v2-beta-for-linux/): Release notes and announcements for Wails
+- [Wails v2 Beta for MacOS](https://v3.wails.io/blog/wails-v2-beta-for-mac/): Release notes and announcements for Wails
+- [Wails v2 Beta for Windows](https://v3.wails.io/blog/wails-v2-beta-for-windows/): Release notes and announcements for Wails
+- [Wails v2 Released](https://v3.wails.io/blog/wails-v2-released/): Release notes and announcements for Wails
+- [Wails v3 Beta: a new foundation for Go desktop applications](https://v3.wails.io/blog/wails-v3-beta/): Wails v3 Beta introduces a more direct application model, richer bindings, and a clearer foundation for Go desktop applications.
+- [Changelog](https://v3.wails.io/changelog/): Version history and release notes for Wails v3
+- [Community](https://v3.wails.io/community/)
+- [Links](https://v3.wails.io/community/links/): Community-curated links and resources for Wails
+- [BulletinBoard](https://v3.wails.io/community/showcase/bulletinboard/): A desktop application built with Wails
+- [CFN Tracker](https://v3.wails.io/community/showcase/cfntracker/): A desktop application built with Wails
+- [Clave](https://v3.wails.io/community/showcase/clave/): A desktop application built with Wails
+- [Condui](https://v3.wails.io/community/showcase/condui/): A desktop application built with Wails
+- [EmailIt](https://v3.wails.io/community/showcase/emailit/): A desktop application built with Wails
+- [EncryptEasy](https://v3.wails.io/community/showcase/encrypteasy/): A desktop application built with Wails
+- [ESP Studio](https://v3.wails.io/community/showcase/espstudio/): A desktop application built with Wails
+- [FileHound Export Utility](https://v3.wails.io/community/showcase/filehound/): A desktop application built with Wails
+- [HappyTools](https://v3.wails.io/community/showcase/happytools/)
+- [hiposter](https://v3.wails.io/community/showcase/hiposter/): A desktop application built with Wails
+- [Overview](https://v3.wails.io/community/showcase/): Discover applications built with Wails
+- [Kira](https://v3.wails.io/community/showcase/kira/): A native macOS desktop client that brings AWS — ECS, RDS, S3, DynamoDB and more — into one keyboard-driven interface
+- [lemontea](https://v3.wails.io/community/showcase/lemontea/): A cross-platform AI desktop client built with Wails v3.
+- [LTools](https://v3.wails.io/community/showcase/ltools/): A plugin-based cross-platform desktop toolbox built with Wails v3
+- [Mchat](https://v3.wails.io/community/showcase/mchat/): A desktop application built with Wails
+- [Minecraft Updater](https://v3.wails.io/community/showcase/minecraftupdater/): A desktop application built with Wails
+- [Minesweeper XP](https://v3.wails.io/community/showcase/minesweeper-xp/): A desktop application built with Wails
+- [Modal File Manager](https://v3.wails.io/community/showcase/modalfilemanager/): A desktop application built with Wails
+- [Molley Wallet](https://v3.wails.io/community/showcase/mollywallet/): A desktop application built with Wails
+- [October](https://v3.wails.io/community/showcase/october/): A desktop application built with Wails
+- [Optimus](https://v3.wails.io/community/showcase/optimus/): A desktop application built with Wails
+- [Packsmith](https://v3.wails.io/community/showcase/packsmith/): A desktop application built with Wails
+- [Peirato's Piano Keyboard](https://v3.wails.io/community/showcase/peirato-s-piano-keyboard/): A lightweight desktop piano keyboard for real-time performance, MIDI playback, follow-along practice, and SoundFont customization.
+- [Portfall](https://v3.wails.io/community/showcase/portfall/): A desktop application built with Wails
+- [Redis Viewer](https://v3.wails.io/community/showcase/redisviewer/): A desktop Redis GUI built with Wails
+- [Resizem](https://v3.wails.io/community/showcase/resizem/): A desktop application built with Wails
+- [Restic Browser](https://v3.wails.io/community/showcase/restic-browser/): A desktop application built with Wails
+- [RiftShare](https://v3.wails.io/community/showcase/riftshare/): A desktop application built with Wails
+- [ScriptBar](https://v3.wails.io/community/showcase/scriptbar/): A desktop application built with Wails
+- [Snippet Expander](https://v3.wails.io/community/showcase/snippetexpander/): A desktop application built with Wails
+- [Surge](https://v3.wails.io/community/showcase/surge/): A desktop application built with Wails
+- [Tiny RDM](https://v3.wails.io/community/showcase/tinyrdm/): A desktop application built with Wails
+- [WailsTerm](https://v3.wails.io/community/showcase/wailsterm/): A desktop application built with Wails
+- [Wally](https://v3.wails.io/community/showcase/wally/): A desktop application built with Wails
+- [Minecraft launcher for WarMine](https://v3.wails.io/community/showcase/warmine/): A desktop application built with Wails
+- [Wombat](https://v3.wails.io/community/showcase/wombat/): A desktop application built with Wails
+- [XenSQL](https://v3.wails.io/community/showcase/xensql/): Local-first SQL workbench with multi-database support and advanced query tooling
+- [Ytd](https://v3.wails.io/community/showcase/ytd/): A desktop application built with Wails
+- [Templates](https://v3.wails.io/community/templates/): Project templates and starter kits for Wails
+- [How Wails Works](https://v3.wails.io/concepts/architecture/): Understanding the Wails architecture and how it achieves native performance
+- [Go-Frontend Bridge](https://v3.wails.io/concepts/bridge/): Deep dive into how Wails enables direct communication between Go and JavaScript
+- [Build System](https://v3.wails.io/concepts/build-system/): Understanding how Wails builds and packages your application
+- [Concepts](https://v3.wails.io/concepts/)
+- [Application Lifecycle](https://v3.wails.io/concepts/lifecycle/): Understanding the Wails application lifecycle from startup to shutdown
+- [Manager API](https://v3.wails.io/concepts/manager-api/): Organized API structure with focused manager interfaces
+- [Contributing](https://v3.wails.io/contributing-migrated/): Contribute to Wails
+- [Wails v3 Architecture](https://v3.wails.io/contributing/architecture/): Deep-dive diagrams and explanations of every moving part inside Wails v3
+- [Binding System](https://v3.wails.io/contributing/architecture/bindings/): How the binding system collects, processes, and generates JavaScript/TypeScript code
+- [Asset Server](https://v3.wails.io/contributing/asset-server/): How Wails v3 serves and embeds your web assets in development and production
+- [Binding System](https://v3.wails.io/contributing/binding-system/): How Wails v3 lets Go and JavaScript call each other with zero boilerplate
+- [Build & Packaging Pipeline](https://v3.wails.io/contributing/build-packaging/): What happens under the hood when you run `wails3 build`, how cross-platform binaries are produced, and how installers are generated for each OS.
+- [Codebase Layout](https://v3.wails.io/contributing/codebase-layout/): How the Wails v3 repository is organised and how the pieces fit together
+- [Extending Wails](https://v3.wails.io/contributing/extending-wails/): Practical guide to adding new features and platforms to Wails v3
+- [Getting Started](https://v3.wails.io/contributing/getting-started/): How to start contributing to Wails v3
+- [Technical Overview](https://v3.wails.io/contributing/): High-level architecture and roadmap to the Wails v3 codebase
+- [Maintainer Triage](https://v3.wails.io/contributing/maintainer-triage/): Triage bugs, documentation reports, and WEPs consistently
+- [Runtime Internals](https://v3.wails.io/contributing/runtime-internals/): Deep-dive into how Wails v3 boots, runs, and talks to the OS
+- [Development Setup](https://v3.wails.io/contributing/setup/): Set up your development environment for Wails v3 development
+- [Coding Standards](https://v3.wails.io/contributing/standards/): Code style, conventions, and best practices for Wails v3
+- [Template System](https://v3.wails.io/contributing/template-system/): How Wails v3 scaffolds new projects, how templates are organised, and how to build your own.
+- [Testing & Continuous Integration](https://v3.wails.io/contributing/testing-ci/): How Wails v3 ensures quality with unit tests, integration suites, race detection, and GitHub Actions CI.
+- [Credits](https://v3.wails.io/credits/): Acknowledge the contributors and projects behind Wails
+- [Experimental Features](https://v3.wails.io/experimental/): A home for in-progress experiments in Wails v3 — what they are, why they exist, and how to give feedback.
+- [Wake](https://v3.wails.io/experimental/wake/): An experimental, Wails-aware build runner that runs your existing Taskfiles with faster incremental builds, structured output and parallel execution by default.
+- [Frequently Asked Questions](https://v3.wails.io/faq/): Answers to the most common questions about building applications with Wails v3
+- [Autostart](https://v3.wails.io/features/autostart/basics/): Register your application to launch at user login on macOS, Windows, and Linux
+- [Advanced Binding](https://v3.wails.io/features/bindings/advanced/): Advanced binding techniques including directives, code injection, and custom IDs
+- [Bindings Best Practices](https://v3.wails.io/features/bindings/best-practices/): Design patterns and best practices for Go-JavaScript bindings
+- [Enums](https://v3.wails.io/features/bindings/enums/): Automatic enum generation from Go constants
+- [Method Bindings](https://v3.wails.io/features/bindings/methods/): Call Go methods from JavaScript with type safety
+- [Data Models](https://v3.wails.io/features/bindings/models/): Bind complex data structures between Go and JavaScript
+- [Services](https://v3.wails.io/features/bindings/services/): Build modular, reusable application components with services
+- [Browser Integration](https://v3.wails.io/features/browser/integration/): Open URLs and files in the user's default web browser
+- [Clipboard Operations](https://v3.wails.io/features/clipboard/basics/): Copy and paste text with the system clipboard
+- [Custom dialogs](https://v3.wails.io/features/dialogs/custom/): Create custom dialogs in your Wails applications
+- [File dialogs](https://v3.wails.io/features/dialogs/file/): Open, save, and folder selection dialogs
+- [Message dialogs](https://v3.wails.io/features/dialogs/message/): Display information, warnings, errors, and questions
+- [dialogs Overview](https://v3.wails.io/features/dialogs/overview/): Display native system dialogs in your application
+- [File Drop](https://v3.wails.io/features/drag-and-drop/files/): Accept files dragged from the operating system into your application
+- [HTML Drag & Drop](https://v3.wails.io/features/drag-and-drop/html/): Drag and drop elements within your application
+- [Environment](https://v3.wails.io/features/environment/info/): Access system environment information in your Wails application
+- [Application Events](https://v3.wails.io/features/events/application/): Application-level events emitted by Wails v3
+- [Custom Events](https://v3.wails.io/features/events/custom/): Emitting and listening to your own events in Wails v3
+- [Event System](https://v3.wails.io/features/events/system/): Communicate between components with the event system
+- [Window Events](https://v3.wails.io/features/events/window/): Window-level events emitted by Wails v3
+- [Features](https://v3.wails.io/features/)
+- [Global Shortcuts](https://v3.wails.io/features/keyboard/global-shortcuts/): Register system-wide keyboard shortcuts that fire even when your application is not focused
+- [Keyboard Shortcuts](https://v3.wails.io/features/keyboard/shortcuts/): Register global keyboard shortcuts for quick access to functionality
+- [Application Menus](https://v3.wails.io/features/menus/application/): Create native menu bars for your desktop application
+- [Context Menus](https://v3.wails.io/features/menus/context/): Create right-click context menus for your application
+- [Menu Reference](https://v3.wails.io/features/menus/reference/): Complete reference for menu item types, properties, and methods
+- [System Tray Menus](https://v3.wails.io/features/menus/systray/): Add system tray (notification area) integration to your application
+- [Notifications](https://v3.wails.io/features/notifications/overview/): Display native system notifications with action buttons and text input
+- [Dock & Taskbar](https://v3.wails.io/features/platform/dock/): Manage dock icon visibility and display badges on macOS and Windows
+- [Screen Information](https://v3.wails.io/features/screens/info/): Get information about displays and monitors
+- [Window Basics](https://v3.wails.io/features/windows/basics/): Creating and managing application windows in Wails
+- [Window Events](https://v3.wails.io/features/windows/events/): Handle window lifecycle and state change events
+- [Frameless Windows](https://v3.wails.io/features/windows/frameless/): Create custom window chrome with frameless windows
+- [Multiple Windows](https://v3.wails.io/features/windows/multiple/): Patterns and best practices for multi-window applications
+- [Notch Windows](https://v3.wails.io/features/windows/notch-windows/): Create native macOS windows attached to the camera housing.
+- [Window Options](https://v3.wails.io/features/windows/options/): Complete reference for WebviewWindowOptions
+- [Permissions](https://v3.wails.io/features/windows/permissions/): Control camera, microphone, geolocation and other capability requests from web content
+- [Feedback](https://v3.wails.io/feedback/): How to provide feedback and report issues for Wails v3
+- [Getting Started](https://v3.wails.io/getting-started/)
+- [Installation](https://v3.wails.io/getting-started/installation/): Install Wails and set up your development environment
+- [Setup](https://v3.wails.io/getting-started/setup/)
+- [Your First Application](https://v3.wails.io/getting-started/your-first-app/): Create your first Wails desktop application step by step
+- [Creating Custom Templates](https://v3.wails.io/guides/advanced/custom-templates/): How to generate, customise, and host your own Wails v3 project templates
+- [Streams — internals](https://v3.wails.io/guides/advanced/streams-internals/): How the stream transport works, why it is built this way, what the buffer constants mean, and what is not finished
+- [WML (Wails Markup)](https://v3.wails.io/guides/advanced/wml/): A markup language for describing Wails v3 user interfaces
+- [Architecture Patterns](https://v3.wails.io/guides/architecture/): Design patterns for Wails applications
+- [Building Applications](https://v3.wails.io/guides/build/building/): Build and package your Wails application
+- [Cross-Platform Building](https://v3.wails.io/guides/build/cross-platform/): Build for multiple platforms from a single machine
+- [Build Customization](https://v3.wails.io/guides/build/customization/): Customize your build process using Task and Taskfile.yml
+- [Linux Packaging](https://v3.wails.io/guides/build/linux/): Package your Wails application for Linux distribution
+- [macOS Packaging](https://v3.wails.io/guides/build/macos/): Package your Wails application for macOS distribution
+- [MSIX Packaging](https://v3.wails.io/guides/build/msix/): Packaging your Wails v3 application as an MSIX package
+- [Obfuscated Builds](https://v3.wails.io/guides/build/obfuscation/): Build your Wails application with Garble to protect your source code from reverse engineering
+- [Code Signing](https://v3.wails.io/guides/build/signing/): Guide for signing your Wails applications on all platforms
+- [Windows Packaging](https://v3.wails.io/guides/build/windows/): Package your Wails application for Windows distribution
+- [CLI Reference](https://v3.wails.io/guides/cli/): Complete reference for the Wails CLI commands
+- [Creating Custom Transport Layer](https://v3.wails.io/guides/custom-transport/): Learn how to create and customize your own Wails v3 custom IPC transport layer
+- [Customising Windows in Wails](https://v3.wails.io/guides/customising-windows/): Customize window appearance and behavior in your Wails applications
+- [Debugging](https://v3.wails.io/guides/dev/debugging/): Investigating issues and profiling app performance
+- [Using Other Frontend Frameworks](https://v3.wails.io/guides/dev/frontend-frameworks/): How to use a framework that doesn't have a built-in template by dropping your own Vite project into the frontend directory
+- [Project Structure](https://v3.wails.io/guides/dev/project-structure/): Understand the file layout for a typical Wails project
+- [Development Workflow](https://v3.wails.io/guides/dev/workflow/): A recommended workflow for developing Wails v3 applications
+- [Custom URL Protocols](https://v3.wails.io/guides/distribution/custom-protocols/): Register custom URL schemes to launch your application from links
+- [End-to-End Testing](https://v3.wails.io/guides/e2e-testing/): Test complete user workflows
+- [Events Guide](https://v3.wails.io/guides/events-reference/): A practical guide to using events in Wails v3 for application communication and lifecycle management
+- [File Associations](https://v3.wails.io/guides/file-associations/): Configure file associations for your Wails application
+- [Using Gin for Routing](https://v3.wails.io/guides/gin-routing/): A comprehensive guide to integrating Gin web framework with Wails v3 applications
+- [Using Gin for Services](https://v3.wails.io/guides/gin-services/): A guide to integrating the Gin web framework with Wails v3 Services
+- [Guides](https://v3.wails.io/guides/)
+- [Creating Installers](https://v3.wails.io/guides/installers/): Package your application for distribution
+- [LLM Control (MCP)](https://v3.wails.io/guides/mcp-service/): Let LLM agents test and control your app via the Model Context Protocol
+- [Menus](https://v3.wails.io/guides/menus/): A guide to creating and customising menus in Wails v3
+- [Android](https://v3.wails.io/guides/mobile/android/): Build and run Wails applications on Android — toolchain setup, emulator, APK signing, Play Store packaging, and API reference
+- [Your First Mobile App](https://v3.wails.io/guides/mobile/first-mobile-app/): Run your Wails app on iOS Simulator or Android Emulator in minutes
+- [Mobile Overview](https://v3.wails.io/guides/mobile/): Build iOS and Android apps from the same Go codebase as your desktop app
+- [iOS](https://v3.wails.io/guides/mobile/ios/): Build and run Wails applications on iOS — setup, simulator, device builds, configuration, and native features
+- [Mobile API](https://v3.wails.io/guides/mobile/mobile-api/): The cross-platform application.Mobile manager — one build-guarded entry point for the native mobile capabilities shared by iOS and Android
+- [Handling Panics](https://v3.wails.io/guides/panic-handling/): How to handle panics in your Wails application
+- [Database Integration](https://v3.wails.io/guides/patterns/database/): Integrating SQLite, PostgreSQL, and other databases with Wails v3
+- [REST APIs](https://v3.wails.io/guides/patterns/rest-api/): Exposing RESTful APIs from your Wails v3 application
+- [Performance Optimisation](https://v3.wails.io/guides/performance/): Optimise your Wails application for maximum performance
+- [Raw Messages](https://v3.wails.io/guides/raw-messages/): Implement custom frontend-to-backend communication for performance-critical applications
+- [Frontend Routing](https://v3.wails.io/guides/routing/): Using frontend routing in your Wails application
+- [Security Best Practices](https://v3.wails.io/guides/security/): Secure your Wails application
+- [Server Build](https://v3.wails.io/guides/server-build/): Run Wails applications as HTTP servers without a native GUI window
+- [Single Instance](https://v3.wails.io/guides/single-instance/): Limiting your app to a single running instance
+- [Migrating a WebSocket to Streams](https://v3.wails.io/guides/streams-from-websockets/): Step-by-step conversion of an existing WebSocket implementation to Wails streams, including the differences that break silently
+- [Streams](https://v3.wails.io/guides/streams/): Bidirectional byte streams between Go and JavaScript, with the WebSocket programming model and no listening socket
+- [Testing](https://v3.wails.io/guides/testing/): Test your Wails application
+- [GitHub Release Assets for the Updater](https://v3.wails.io/guides/updater-github-release-assets/): How the Wails updater selects application artifacts from GitHub Releases and avoids installer packages.
+- [Updater](https://v3.wails.io/guides/updater/): In-app self-updates for Wails v3 — pluggable providers, cryptographic verification, atomic swap, and a default UI you can theme or replace.
+- [Windows UAC Configuration](https://v3.wails.io/guides/windows-uac/): Configure User Account Control (UAC) for your Windows Wails application
+- [Build Desktop Apps with Go](https://v3.wails.io/): Native desktop applications using Go and web technologies
+- [From Electron](https://v3.wails.io/migration/from-electron/): Migrating an Electron application to Wails v3
+- [Migration](https://v3.wails.io/migration/)
+- [Migrating from v2 to v3](https://v3.wails.io/migration/v2-to-v3/): Complete guide to migrating your Wails v2 application to v3
+- [Your First App](https://v3.wails.io/quick-start/first-app/): Build a working Wails application in 10 minutes
+- [Quick Start](https://v3.wails.io/quick-start/)
+- [Installation](https://v3.wails.io/quick-start/installation/): Get Wails installed and ready to build applications
+- [Next Steps](https://v3.wails.io/quick-start/next-steps/): Where to go after building your first app
+- [Why Wails?](https://v3.wails.io/quick-start/why-wails/): Understand why Wails is the right choice for your desktop application
+- [Application API](https://v3.wails.io/reference/application/): Complete reference for the Application API
+- [CLI Reference](https://v3.wails.io/reference/cli/): Complete reference for the Wails CLI commands
+- [Dialogs API](https://v3.wails.io/reference/dialogs/): Complete reference for native dialog APIs
+- [Events API](https://v3.wails.io/reference/events/): Complete reference for the Events API
+- [Frontend Runtime](https://v3.wails.io/reference/frontend-runtime/): The Wails JavaScript runtime package for frontend integration
+- [Reference](https://v3.wails.io/reference/)
+- [Menu API](https://v3.wails.io/reference/menu/): Complete reference for the Menu API
+- [API Reference](https://v3.wails.io/reference/overview/): Complete API documentation for Wails v3
+- [Update Manifest Protocol](https://v3.wails.io/reference/update-manifest/): The open JSON protocol Wails apps use to discover and verify self-updates, servable from any static file host or dynamic update server.
+- [Window API](https://v3.wails.io/reference/window/): Complete reference for the Window API
+- [Roadmap](https://v3.wails.io/status/): Wails v3 project status, planned features, and how to contribute
+- [Troubleshooting](https://v3.wails.io/troubleshooting/)
+- [Syso files on macOS](https://v3.wails.io/troubleshooting/mac-syso/): Troubleshoot Syso file build errors on macOS
+- [WebView2 hangs over Remote Desktop (RDP)](https://v3.wails.io/troubleshooting/windows/rdp/): Fix multi-second WebView2 UI stalls when a Wails app runs over an RDP session that changes the monitor DPI mid-session.
+- [QR Code Service](https://v3.wails.io/tutorials/01-creating-a-service/): Create a QR code service to learn about Wails services
+- [TODO List](https://v3.wails.io/tutorials/02-todo-vanilla/): Build a complete TODO list application with CRUD operations
+- [Notes](https://v3.wails.io/tutorials/03-notes-vanilla/): Build a notes application with file operations and native dialogs
+- [Self-Updating Wails App](https://v3.wails.io/tutorials/04-self-update-a-wails-app/): Build a Wails v3 application that updates itself from GitHub Releases — from `wails3 init` through signed release verification and the helper-mode swap.
+- [Tutorials](https://v3.wails.io/tutorials/)
+- [Tutorials](https://v3.wails.io/tutorials/overview/): Learn Wails by building applications
+- [What's New in Wails v3](https://v3.wails.io/whats-new/): Discover the major improvements and new features in Wails v3

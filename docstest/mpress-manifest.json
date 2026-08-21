@@ -2,2507 +2,2627 @@
   "pages": [
     {
       "Language": "en",
-      "Source": "blog/2024-12-03-alpha10-and-new-release-strategy.md",
+      "Source": "blog/2024-12-03-alpha10-and-new-release-strategy.mpd",
       "URL": "blog/2024-12-03-alpha10-and-new-release-strategy"
     },
     {
       "Language": "en",
-      "Source": "blog/index.md",
+      "Source": "blog/index.mpd",
       "URL": "blog"
     },
     {
       "Language": "en",
-      "Source": "blog/the-road-to-wails-v3.md",
+      "Source": "blog/the-road-to-wails-v3.mpd",
       "URL": "blog/the-road-to-wails-v3"
     },
     {
       "Language": "en",
-      "Source": "blog/wails-v2-beta-for-linux.md",
+      "Source": "blog/wails-v2-beta-for-linux.mpd",
       "URL": "blog/wails-v2-beta-for-linux"
     },
     {
       "Language": "en",
-      "Source": "blog/wails-v2-beta-for-mac.md",
+      "Source": "blog/wails-v2-beta-for-mac.mpd",
       "URL": "blog/wails-v2-beta-for-mac"
     },
     {
       "Language": "en",
-      "Source": "blog/wails-v2-beta-for-windows.md",
+      "Source": "blog/wails-v2-beta-for-windows.mpd",
       "URL": "blog/wails-v2-beta-for-windows"
     },
     {
       "Language": "en",
-      "Source": "blog/wails-v2-released.md",
+      "Source": "blog/wails-v2-released.mpd",
       "URL": "blog/wails-v2-released"
     },
     {
       "Language": "en",
-      "Source": "blog/wails-v3-beta.md",
+      "Source": "blog/wails-v3-beta.mpd",
       "URL": "blog/wails-v3-beta"
     },
     {
       "Language": "en",
-      "Source": "changelog.md",
+      "Source": "changelog.mpd",
       "URL": "changelog"
     },
     {
       "Language": "en",
-      "Source": "community/links.md",
+      "Source": "community/index.mpd",
+      "URL": "community"
+    },
+    {
+      "Language": "en",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/bulletinboard.md",
+      "Source": "community/showcase/bulletinboard.mpd",
       "URL": "community/showcase/bulletinboard"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/cfntracker.md",
+      "Source": "community/showcase/cfntracker.mpd",
       "URL": "community/showcase/cfntracker"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/clave.md",
+      "Source": "community/showcase/clave.mpd",
       "URL": "community/showcase/clave"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/emailit.md",
+      "Source": "community/showcase/condui.mpd",
+      "URL": "community/showcase/condui"
+    },
+    {
+      "Language": "en",
+      "Source": "community/showcase/emailit.mpd",
       "URL": "community/showcase/emailit"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/encrypteasy.md",
+      "Source": "community/showcase/encrypteasy.mpd",
       "URL": "community/showcase/encrypteasy"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/espstudio.md",
+      "Source": "community/showcase/espstudio.mpd",
       "URL": "community/showcase/espstudio"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/filehound.md",
+      "Source": "community/showcase/filehound.mpd",
       "URL": "community/showcase/filehound"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/happytools.md",
+      "Source": "community/showcase/happytools.mpd",
       "URL": "community/showcase/happytools"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/hiposter.md",
+      "Source": "community/showcase/hiposter.mpd",
       "URL": "community/showcase/hiposter"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/index.md",
+      "Source": "community/showcase/index.mpd",
       "URL": "community/showcase"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/kira.md",
+      "Source": "community/showcase/kira.mpd",
       "URL": "community/showcase/kira"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/lemontea.md",
+      "Source": "community/showcase/lemontea.mpd",
       "URL": "community/showcase/lemontea"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/ltools.md",
+      "Source": "community/showcase/ltools.mpd",
       "URL": "community/showcase/ltools"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/mchat.md",
+      "Source": "community/showcase/mchat.mpd",
       "URL": "community/showcase/mchat"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/minecraftupdater.md",
+      "Source": "community/showcase/minecraftupdater.mpd",
       "URL": "community/showcase/minecraftupdater"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/minesweeper-xp.md",
+      "Source": "community/showcase/minesweeper-xp.mpd",
       "URL": "community/showcase/minesweeper-xp"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/modalfilemanager.md",
+      "Source": "community/showcase/modalfilemanager.mpd",
       "URL": "community/showcase/modalfilemanager"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/mollywallet.md",
+      "Source": "community/showcase/mollywallet.mpd",
       "URL": "community/showcase/mollywallet"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/october.md",
+      "Source": "community/showcase/october.mpd",
       "URL": "community/showcase/october"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/optimus.md",
+      "Source": "community/showcase/optimus.mpd",
       "URL": "community/showcase/optimus"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/packsmith.md",
+      "Source": "community/showcase/packsmith.mpd",
       "URL": "community/showcase/packsmith"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/peirato-s-piano-keyboard.md",
+      "Source": "community/showcase/peirato-s-piano-keyboard.mpd",
       "URL": "community/showcase/peirato-s-piano-keyboard"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/portfall.md",
+      "Source": "community/showcase/portfall.mpd",
       "URL": "community/showcase/portfall"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/redisviewer.md",
+      "Source": "community/showcase/redisviewer.mpd",
       "URL": "community/showcase/redisviewer"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/resizem.md",
+      "Source": "community/showcase/resizem.mpd",
       "URL": "community/showcase/resizem"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/restic-browser.md",
+      "Source": "community/showcase/restic-browser.mpd",
       "URL": "community/showcase/restic-browser"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/riftshare.md",
+      "Source": "community/showcase/riftshare.mpd",
       "URL": "community/showcase/riftshare"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/scriptbar.md",
+      "Source": "community/showcase/scriptbar.mpd",
       "URL": "community/showcase/scriptbar"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/snippetexpander.md",
+      "Source": "community/showcase/snippetexpander.mpd",
       "URL": "community/showcase/snippetexpander"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/surge.md",
+      "Source": "community/showcase/surge.mpd",
       "URL": "community/showcase/surge"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/tinyrdm.md",
+      "Source": "community/showcase/tinyrdm.mpd",
       "URL": "community/showcase/tinyrdm"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/wailsterm.md",
+      "Source": "community/showcase/wailsterm.mpd",
       "URL": "community/showcase/wailsterm"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/wally.md",
+      "Source": "community/showcase/wally.mpd",
       "URL": "community/showcase/wally"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/warmine.md",
+      "Source": "community/showcase/warmine.mpd",
       "URL": "community/showcase/warmine"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/wombat.md",
+      "Source": "community/showcase/wombat.mpd",
       "URL": "community/showcase/wombat"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/xensql.md",
+      "Source": "community/showcase/xensql.mpd",
       "URL": "community/showcase/xensql"
     },
     {
       "Language": "en",
-      "Source": "community/showcase/ytd.md",
+      "Source": "community/showcase/ytd.mpd",
       "URL": "community/showcase/ytd"
     },
     {
       "Language": "en",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "en",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "en",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "en",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "en",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/index.mpd",
+      "URL": "concepts"
+    },
+    {
+      "Language": "en",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "en",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "en",
-      "Source": "contributing-migrated.md",
+      "Source": "contributing-migrated.mpd",
       "URL": "contributing-migrated"
     },
     {
       "Language": "en",
-      "Source": "contributing/architecture.md",
+      "Source": "contributing/architecture.mpd",
       "URL": "contributing/architecture"
     },
     {
       "Language": "en",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "en",
-      "Source": "contributing/asset-server.md",
+      "Source": "contributing/asset-server.mpd",
       "URL": "contributing/asset-server"
     },
     {
       "Language": "en",
-      "Source": "contributing/binding-system.md",
+      "Source": "contributing/binding-system.mpd",
       "URL": "contributing/binding-system"
     },
     {
       "Language": "en",
-      "Source": "contributing/build-packaging.md",
+      "Source": "contributing/build-packaging.mpd",
       "URL": "contributing/build-packaging"
     },
     {
       "Language": "en",
-      "Source": "contributing/codebase-layout.md",
+      "Source": "contributing/codebase-layout.mpd",
       "URL": "contributing/codebase-layout"
     },
     {
       "Language": "en",
-      "Source": "contributing/extending-wails.md",
+      "Source": "contributing/extending-wails.mpd",
       "URL": "contributing/extending-wails"
     },
     {
       "Language": "en",
-      "Source": "contributing/getting-started.md",
+      "Source": "contributing/getting-started.mpd",
       "URL": "contributing/getting-started"
     },
     {
       "Language": "en",
-      "Source": "contributing/index.md",
+      "Source": "contributing/index.mpd",
       "URL": "contributing"
     },
     {
       "Language": "en",
-      "Source": "contributing/maintainer-triage.md",
+      "Source": "contributing/maintainer-triage.mpd",
       "URL": "contributing/maintainer-triage"
     },
     {
       "Language": "en",
-      "Source": "contributing/runtime-internals.md",
+      "Source": "contributing/runtime-internals.mpd",
       "URL": "contributing/runtime-internals"
     },
     {
       "Language": "en",
-      "Source": "contributing/setup.md",
+      "Source": "contributing/setup.mpd",
       "URL": "contributing/setup"
     },
     {
       "Language": "en",
-      "Source": "contributing/standards.md",
+      "Source": "contributing/standards.mpd",
       "URL": "contributing/standards"
     },
     {
       "Language": "en",
-      "Source": "contributing/template-system.md",
+      "Source": "contributing/template-system.mpd",
       "URL": "contributing/template-system"
     },
     {
       "Language": "en",
-      "Source": "contributing/testing-ci.md",
+      "Source": "contributing/testing-ci.mpd",
       "URL": "contributing/testing-ci"
     },
     {
       "Language": "en",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "en",
-      "Source": "experimental/index.md",
+      "Source": "experimental/index.mpd",
       "URL": "experimental"
     },
     {
       "Language": "en",
-      "Source": "experimental/wake.md",
+      "Source": "experimental/wake.mpd",
       "URL": "experimental/wake"
     },
     {
       "Language": "en",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "en",
-      "Source": "features/autostart/basics.md",
+      "Source": "features/autostart/basics.mpd",
       "URL": "features/autostart/basics"
     },
     {
       "Language": "en",
-      "Source": "features/bindings/advanced.md",
+      "Source": "features/bindings/advanced.mpd",
       "URL": "features/bindings/advanced"
     },
     {
       "Language": "en",
-      "Source": "features/bindings/best-practices.md",
+      "Source": "features/bindings/best-practices.mpd",
       "URL": "features/bindings/best-practices"
     },
     {
       "Language": "en",
-      "Source": "features/bindings/enums.md",
+      "Source": "features/bindings/enums.mpd",
       "URL": "features/bindings/enums"
     },
     {
       "Language": "en",
-      "Source": "features/bindings/methods.md",
+      "Source": "features/bindings/methods.mpd",
       "URL": "features/bindings/methods"
     },
     {
       "Language": "en",
-      "Source": "features/bindings/models.md",
+      "Source": "features/bindings/models.mpd",
       "URL": "features/bindings/models"
     },
     {
       "Language": "en",
-      "Source": "features/bindings/services.md",
+      "Source": "features/bindings/services.mpd",
       "URL": "features/bindings/services"
     },
     {
       "Language": "en",
-      "Source": "features/browser/integration.md",
+      "Source": "features/browser/integration.mpd",
       "URL": "features/browser/integration"
     },
     {
       "Language": "en",
-      "Source": "features/clipboard/basics.md",
+      "Source": "features/clipboard/basics.mpd",
       "URL": "features/clipboard/basics"
     },
     {
       "Language": "en",
-      "Source": "features/dialogs/custom.md",
+      "Source": "features/dialogs/custom.mpd",
       "URL": "features/dialogs/custom"
     },
     {
       "Language": "en",
-      "Source": "features/dialogs/file.md",
+      "Source": "features/dialogs/file.mpd",
       "URL": "features/dialogs/file"
     },
     {
       "Language": "en",
-      "Source": "features/dialogs/message.md",
+      "Source": "features/dialogs/message.mpd",
       "URL": "features/dialogs/message"
     },
     {
       "Language": "en",
-      "Source": "features/dialogs/overview.md",
+      "Source": "features/dialogs/overview.mpd",
       "URL": "features/dialogs/overview"
     },
     {
       "Language": "en",
-      "Source": "features/drag-and-drop/files.md",
+      "Source": "features/drag-and-drop/files.mpd",
       "URL": "features/drag-and-drop/files"
     },
     {
       "Language": "en",
-      "Source": "features/drag-and-drop/html.md",
+      "Source": "features/drag-and-drop/html.mpd",
       "URL": "features/drag-and-drop/html"
     },
     {
       "Language": "en",
-      "Source": "features/environment/info.md",
+      "Source": "features/environment/info.mpd",
       "URL": "features/environment/info"
     },
     {
       "Language": "en",
-      "Source": "features/events/system.md",
+      "Source": "features/events/application.mpd",
+      "URL": "features/events/application"
+    },
+    {
+      "Language": "en",
+      "Source": "features/events/custom.mpd",
+      "URL": "features/events/custom"
+    },
+    {
+      "Language": "en",
+      "Source": "features/events/system.mpd",
       "URL": "features/events/system"
     },
     {
       "Language": "en",
-      "Source": "features/keyboard/global-shortcuts.md",
+      "Source": "features/events/window.mpd",
+      "URL": "features/events/window"
+    },
+    {
+      "Language": "en",
+      "Source": "features/index.mpd",
+      "URL": "features"
+    },
+    {
+      "Language": "en",
+      "Source": "features/keyboard/global-shortcuts.mpd",
       "URL": "features/keyboard/global-shortcuts"
     },
     {
       "Language": "en",
-      "Source": "features/keyboard/shortcuts.md",
+      "Source": "features/keyboard/shortcuts.mpd",
       "URL": "features/keyboard/shortcuts"
     },
     {
       "Language": "en",
-      "Source": "features/menus/application.md",
+      "Source": "features/menus/application.mpd",
       "URL": "features/menus/application"
     },
     {
       "Language": "en",
-      "Source": "features/menus/context.md",
+      "Source": "features/menus/context.mpd",
       "URL": "features/menus/context"
     },
     {
       "Language": "en",
-      "Source": "features/menus/reference.md",
+      "Source": "features/menus/reference.mpd",
       "URL": "features/menus/reference"
     },
     {
       "Language": "en",
-      "Source": "features/menus/systray.md",
+      "Source": "features/menus/systray.mpd",
       "URL": "features/menus/systray"
     },
     {
       "Language": "en",
-      "Source": "features/notifications/overview.md",
+      "Source": "features/notifications/overview.mpd",
       "URL": "features/notifications/overview"
     },
     {
       "Language": "en",
-      "Source": "features/platform/dock.md",
+      "Source": "features/platform/dock.mpd",
       "URL": "features/platform/dock"
     },
     {
       "Language": "en",
-      "Source": "features/screens/info.md",
+      "Source": "features/screens/info.mpd",
       "URL": "features/screens/info"
     },
     {
       "Language": "en",
-      "Source": "features/windows/basics.md",
+      "Source": "features/windows/basics.mpd",
       "URL": "features/windows/basics"
     },
     {
       "Language": "en",
-      "Source": "features/windows/events.md",
+      "Source": "features/windows/events.mpd",
       "URL": "features/windows/events"
     },
     {
       "Language": "en",
-      "Source": "features/windows/frameless.md",
+      "Source": "features/windows/frameless.mpd",
       "URL": "features/windows/frameless"
     },
     {
       "Language": "en",
-      "Source": "features/windows/multiple.md",
+      "Source": "features/windows/multiple.mpd",
       "URL": "features/windows/multiple"
     },
     {
       "Language": "en",
-      "Source": "features/windows/options.md",
+      "Source": "features/windows/notch-windows.mpd",
+      "URL": "features/windows/notch-windows"
+    },
+    {
+      "Language": "en",
+      "Source": "features/windows/options.mpd",
       "URL": "features/windows/options"
     },
     {
       "Language": "en",
-      "Source": "features/windows/permissions.md",
+      "Source": "features/windows/permissions.mpd",
       "URL": "features/windows/permissions"
     },
     {
       "Language": "en",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "en",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/index.mpd",
+      "URL": "getting-started"
+    },
+    {
+      "Language": "en",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "en",
-      "Source": "getting-started/setup.md",
+      "Source": "getting-started/setup.mpd",
       "URL": "getting-started/setup"
     },
     {
       "Language": "en",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "en",
-      "Source": "guides/advanced/custom-templates.md",
+      "Source": "guides/advanced/custom-templates.mpd",
       "URL": "guides/advanced/custom-templates"
     },
     {
       "Language": "en",
-      "Source": "guides/architecture.md",
+      "Source": "guides/advanced/streams-internals.mpd",
+      "URL": "guides/advanced/streams-internals"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/advanced/wml.mpd",
+      "URL": "guides/advanced/wml"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/architecture.mpd",
       "URL": "guides/architecture"
     },
     {
       "Language": "en",
-      "Source": "guides/build/building.md",
+      "Source": "guides/build/building.mpd",
       "URL": "guides/build/building"
     },
     {
       "Language": "en",
-      "Source": "guides/build/cross-platform.md",
+      "Source": "guides/build/cross-platform.mpd",
       "URL": "guides/build/cross-platform"
     },
     {
       "Language": "en",
-      "Source": "guides/build/customization.md",
+      "Source": "guides/build/customization.mpd",
       "URL": "guides/build/customization"
     },
     {
       "Language": "en",
-      "Source": "guides/build/linux.md",
+      "Source": "guides/build/linux.mpd",
       "URL": "guides/build/linux"
     },
     {
       "Language": "en",
-      "Source": "guides/build/macos.md",
+      "Source": "guides/build/macos.mpd",
       "URL": "guides/build/macos"
     },
     {
       "Language": "en",
-      "Source": "guides/build/obfuscation.md",
+      "Source": "guides/build/msix.mpd",
+      "URL": "guides/build/msix"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/build/obfuscation.mpd",
       "URL": "guides/build/obfuscation"
     },
     {
       "Language": "en",
-      "Source": "guides/build/signing.md",
+      "Source": "guides/build/signing.mpd",
       "URL": "guides/build/signing"
     },
     {
       "Language": "en",
-      "Source": "guides/build/windows.md",
+      "Source": "guides/build/windows.mpd",
       "URL": "guides/build/windows"
     },
     {
       "Language": "en",
-      "Source": "guides/cli.md",
+      "Source": "guides/cli.mpd",
       "URL": "guides/cli"
     },
     {
       "Language": "en",
-      "Source": "guides/custom-transport.md",
+      "Source": "guides/custom-transport.mpd",
       "URL": "guides/custom-transport"
     },
     {
       "Language": "en",
-      "Source": "guides/customising-windows.md",
+      "Source": "guides/customising-windows.mpd",
       "URL": "guides/customising-windows"
     },
     {
       "Language": "en",
-      "Source": "guides/dev/debugging.md",
+      "Source": "guides/dev/debugging.mpd",
       "URL": "guides/dev/debugging"
     },
     {
       "Language": "en",
-      "Source": "guides/dev/frontend-frameworks.md",
+      "Source": "guides/dev/frontend-frameworks.mpd",
       "URL": "guides/dev/frontend-frameworks"
     },
     {
       "Language": "en",
-      "Source": "guides/dev/project-structure.md",
+      "Source": "guides/dev/project-structure.mpd",
       "URL": "guides/dev/project-structure"
     },
     {
       "Language": "en",
-      "Source": "guides/distribution/custom-protocols.md",
+      "Source": "guides/dev/workflow.mpd",
+      "URL": "guides/dev/workflow"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/distribution/custom-protocols.mpd",
       "URL": "guides/distribution/custom-protocols"
     },
     {
       "Language": "en",
-      "Source": "guides/e2e-testing.md",
+      "Source": "guides/e2e-testing.mpd",
       "URL": "guides/e2e-testing"
     },
     {
       "Language": "en",
-      "Source": "guides/events-reference.md",
+      "Source": "guides/events-reference.mpd",
       "URL": "guides/events-reference"
     },
     {
       "Language": "en",
-      "Source": "guides/file-associations.md",
+      "Source": "guides/file-associations.mpd",
       "URL": "guides/file-associations"
     },
     {
       "Language": "en",
-      "Source": "guides/gin-routing.md",
+      "Source": "guides/gin-routing.mpd",
       "URL": "guides/gin-routing"
     },
     {
       "Language": "en",
-      "Source": "guides/gin-services.md",
+      "Source": "guides/gin-services.mpd",
       "URL": "guides/gin-services"
     },
     {
       "Language": "en",
-      "Source": "guides/installers.md",
+      "Source": "guides/index.mpd",
+      "URL": "guides"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/installers.mpd",
       "URL": "guides/installers"
     },
     {
       "Language": "en",
-      "Source": "guides/mcp-service.md",
+      "Source": "guides/mcp-service.mpd",
       "URL": "guides/mcp-service"
     },
     {
       "Language": "en",
-      "Source": "guides/menus.md",
+      "Source": "guides/menus.mpd",
       "URL": "guides/menus"
     },
     {
       "Language": "en",
-      "Source": "guides/mobile/android.md",
+      "Source": "guides/mobile/android.mpd",
       "URL": "guides/mobile/android"
     },
     {
       "Language": "en",
-      "Source": "guides/mobile/first-mobile-app.md",
+      "Source": "guides/mobile/first-mobile-app.mpd",
       "URL": "guides/mobile/first-mobile-app"
     },
     {
       "Language": "en",
-      "Source": "guides/mobile/index.md",
+      "Source": "guides/mobile/index.mpd",
       "URL": "guides/mobile"
     },
     {
       "Language": "en",
-      "Source": "guides/mobile/ios.md",
+      "Source": "guides/mobile/ios.mpd",
       "URL": "guides/mobile/ios"
     },
     {
       "Language": "en",
-      "Source": "guides/mobile/mobile-api.md",
+      "Source": "guides/mobile/mobile-api.mpd",
       "URL": "guides/mobile/mobile-api"
     },
     {
       "Language": "en",
-      "Source": "guides/panic-handling.md",
+      "Source": "guides/panic-handling.mpd",
       "URL": "guides/panic-handling"
     },
     {
       "Language": "en",
-      "Source": "guides/performance.md",
+      "Source": "guides/patterns/database.mpd",
+      "URL": "guides/patterns/database"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/patterns/rest-api.mpd",
+      "URL": "guides/patterns/rest-api"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/performance.mpd",
       "URL": "guides/performance"
     },
     {
       "Language": "en",
-      "Source": "guides/raw-messages.md",
+      "Source": "guides/raw-messages.mpd",
       "URL": "guides/raw-messages"
     },
     {
       "Language": "en",
-      "Source": "guides/routing.md",
+      "Source": "guides/routing.mpd",
       "URL": "guides/routing"
     },
     {
       "Language": "en",
-      "Source": "guides/security.md",
+      "Source": "guides/security.mpd",
       "URL": "guides/security"
     },
     {
       "Language": "en",
-      "Source": "guides/server-build.md",
+      "Source": "guides/server-build.mpd",
       "URL": "guides/server-build"
     },
     {
       "Language": "en",
-      "Source": "guides/single-instance.md",
+      "Source": "guides/single-instance.mpd",
       "URL": "guides/single-instance"
     },
     {
       "Language": "en",
-      "Source": "guides/testing.md",
+      "Source": "guides/streams-from-websockets.mpd",
+      "URL": "guides/streams-from-websockets"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/streams.mpd",
+      "URL": "guides/streams"
+    },
+    {
+      "Language": "en",
+      "Source": "guides/testing.mpd",
       "URL": "guides/testing"
     },
     {
       "Language": "en",
-      "Source": "guides/updater-github-release-assets.md",
+      "Source": "guides/updater-github-release-assets.mpd",
       "URL": "guides/updater-github-release-assets"
     },
     {
       "Language": "en",
-      "Source": "guides/updater.md",
+      "Source": "guides/updater.mpd",
       "URL": "guides/updater"
     },
     {
       "Language": "en",
-      "Source": "guides/windows-uac.md",
+      "Source": "guides/windows-uac.mpd",
       "URL": "guides/windows-uac"
     },
     {
       "Language": "en",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "en",
-      "Source": "migration/v2-to-v3.md",
+      "Source": "migration/from-electron.mpd",
+      "URL": "migration/from-electron"
+    },
+    {
+      "Language": "en",
+      "Source": "migration/index.mpd",
+      "URL": "migration"
+    },
+    {
+      "Language": "en",
+      "Source": "migration/v2-to-v3.mpd",
       "URL": "migration/v2-to-v3"
     },
     {
       "Language": "en",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "en",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/index.mpd",
+      "URL": "quick-start"
+    },
+    {
+      "Language": "en",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "en",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "en",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "en",
-      "Source": "reference/application.md",
+      "Source": "reference/application.mpd",
       "URL": "reference/application"
     },
     {
       "Language": "en",
-      "Source": "reference/cli.md",
+      "Source": "reference/cli.mpd",
       "URL": "reference/cli"
     },
     {
       "Language": "en",
-      "Source": "reference/dialogs.md",
+      "Source": "reference/dialogs.mpd",
       "URL": "reference/dialogs"
     },
     {
       "Language": "en",
-      "Source": "reference/events.md",
+      "Source": "reference/events.mpd",
       "URL": "reference/events"
     },
     {
       "Language": "en",
-      "Source": "reference/frontend-runtime.md",
+      "Source": "reference/frontend-runtime.mpd",
       "URL": "reference/frontend-runtime"
     },
     {
       "Language": "en",
-      "Source": "reference/menu.md",
+      "Source": "reference/index.mpd",
+      "URL": "reference"
+    },
+    {
+      "Language": "en",
+      "Source": "reference/menu.mpd",
       "URL": "reference/menu"
     },
     {
       "Language": "en",
-      "Source": "reference/overview.md",
+      "Source": "reference/overview.mpd",
       "URL": "reference/overview"
     },
     {
       "Language": "en",
-      "Source": "reference/update-manifest.md",
+      "Source": "reference/update-manifest.mpd",
       "URL": "reference/update-manifest"
     },
     {
       "Language": "en",
-      "Source": "reference/window.md",
+      "Source": "reference/window.mpd",
       "URL": "reference/window"
     },
     {
       "Language": "en",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "en",
-      "Source": "troubleshooting/mac-syso.md",
+      "Source": "troubleshooting/index.mpd",
+      "URL": "troubleshooting"
+    },
+    {
+      "Language": "en",
+      "Source": "troubleshooting/mac-syso.mpd",
       "URL": "troubleshooting/mac-syso"
     },
     {
       "Language": "en",
-      "Source": "troubleshooting/windows/rdp.md",
+      "Source": "troubleshooting/windows/rdp.mpd",
       "URL": "troubleshooting/windows/rdp"
     },
     {
       "Language": "en",
-      "Source": "tutorials/01-creating-a-service.md",
+      "Source": "tutorials/01-creating-a-service.mpd",
       "URL": "tutorials/01-creating-a-service"
     },
     {
       "Language": "en",
-      "Source": "tutorials/02-todo-vanilla.md",
+      "Source": "tutorials/02-todo-vanilla.mpd",
       "URL": "tutorials/02-todo-vanilla"
     },
     {
       "Language": "en",
-      "Source": "tutorials/03-notes-vanilla.md",
+      "Source": "tutorials/03-notes-vanilla.mpd",
       "URL": "tutorials/03-notes-vanilla"
     },
     {
       "Language": "en",
-      "Source": "tutorials/04-self-update-a-wails-app.md",
+      "Source": "tutorials/04-self-update-a-wails-app.mpd",
       "URL": "tutorials/04-self-update-a-wails-app"
     },
     {
       "Language": "en",
-      "Source": "tutorials/overview.md",
+      "Source": "tutorials/index.mpd",
+      "URL": "tutorials"
+    },
+    {
+      "Language": "en",
+      "Source": "tutorials/overview.mpd",
       "URL": "tutorials/overview"
     },
     {
       "Language": "en",
-      "Source": "whats-new.md",
+      "Source": "whats-new.mpd",
       "URL": "whats-new"
     },
     {
       "Language": "zh-cn",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "zh-cn",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "zh-cn",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "zh-cn",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "zh-cn",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "zh-cn",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "zh-cn",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "zh-cn",
-      "Source": "contributing.md",
+      "Source": "contributing.mpd",
       "URL": "contributing"
     },
     {
       "Language": "zh-cn",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "zh-cn",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "zh-cn",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "zh-cn",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "zh-cn",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "zh-cn",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "zh-cn",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "zh-cn",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "zh-cn",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "zh-cn",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "zh-cn",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "zh-cn",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "zh-tw",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "zh-tw",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "zh-tw",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "zh-tw",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "zh-tw",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "zh-tw",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "zh-tw",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "zh-tw",
-      "Source": "contributing.md",
+      "Source": "contributing.mpd",
       "URL": "contributing"
     },
     {
       "Language": "zh-tw",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "zh-tw",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "zh-tw",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "zh-tw",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "zh-tw",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "zh-tw",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "zh-tw",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "zh-tw",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "zh-tw",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "zh-tw",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "zh-tw",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "zh-tw",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "ja",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "ja",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "ja",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "ja",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "ja",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "ja",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "ja",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "ja",
-      "Source": "contributing.md",
+      "Source": "contributing.mpd",
       "URL": "contributing"
     },
     {
       "Language": "ja",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "ja",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "ja",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "ja",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "ja",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "ja",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "ja",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "ja",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "ja",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "ja",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "ja",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "ja",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "ko",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "ko",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "ko",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "ko",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "ko",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "ko",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "ko",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "ko",
-      "Source": "contributing.md",
+      "Source": "contributing.mpd",
       "URL": "contributing"
     },
     {
       "Language": "ko",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "ko",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "ko",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "ko",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "ko",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "ko",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "ko",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "ko",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "ko",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "ko",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "ko",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "ko",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "ru",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "ru",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "ru",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "ru",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "ru",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "ru",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "ru",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "ru",
-      "Source": "contributing.md",
+      "Source": "contributing.mpd",
       "URL": "contributing"
     },
     {
       "Language": "ru",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "ru",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "ru",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "ru",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "ru",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "ru",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "ru",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "ru",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "ru",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "ru",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "ru",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "ru",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "fr",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "fr",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "fr",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "fr",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "fr",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "fr",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "fr",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "fr",
-      "Source": "contributing.md",
+      "Source": "contributing.mpd",
       "URL": "contributing"
     },
     {
       "Language": "fr",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "fr",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "fr",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "fr",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "fr",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "fr",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "fr",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "fr",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "fr",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "fr",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "fr",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "fr",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "pt",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "pt",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "pt",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "pt",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "pt",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "pt",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "pt",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "pt",
-      "Source": "contributing.md",
+      "Source": "contributing.mpd",
       "URL": "contributing"
     },
     {
       "Language": "pt",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "pt",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "pt",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "pt",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "pt",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "pt",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "pt",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "pt",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "pt",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "pt",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "pt",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "pt",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "de",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "de",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "de",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "de",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "de",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "de",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "de",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "de",
-      "Source": "contributing.md",
+      "Source": "contributing.mpd",
       "URL": "contributing"
     },
     {
       "Language": "de",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "de",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "de",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "de",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "de",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "de",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "de",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "de",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "de",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "de",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "de",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "de",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "id",
-      "Source": "blog/2024-12-03-alpha10-and-new-release-strategy.md",
+      "Source": "blog/2024-12-03-alpha10-and-new-release-strategy.mpd",
       "URL": "blog/2024-12-03-alpha10-and-new-release-strategy"
     },
     {
       "Language": "id",
-      "Source": "blog/index.md",
+      "Source": "blog/index.mpd",
       "URL": "blog"
     },
     {
       "Language": "id",
-      "Source": "blog/the-road-to-wails-v3.md",
+      "Source": "blog/the-road-to-wails-v3.mpd",
       "URL": "blog/the-road-to-wails-v3"
     },
     {
       "Language": "id",
-      "Source": "blog/wails-v2-beta-for-linux.md",
+      "Source": "blog/wails-v2-beta-for-linux.mpd",
       "URL": "blog/wails-v2-beta-for-linux"
     },
     {
       "Language": "id",
-      "Source": "blog/wails-v2-beta-for-mac.md",
+      "Source": "blog/wails-v2-beta-for-mac.mpd",
       "URL": "blog/wails-v2-beta-for-mac"
     },
     {
       "Language": "id",
-      "Source": "blog/wails-v2-beta-for-windows.md",
+      "Source": "blog/wails-v2-beta-for-windows.mpd",
       "URL": "blog/wails-v2-beta-for-windows"
     },
     {
       "Language": "id",
-      "Source": "blog/wails-v2-released.md",
+      "Source": "blog/wails-v2-released.mpd",
       "URL": "blog/wails-v2-released"
     },
     {
       "Language": "id",
-      "Source": "changelog.md",
+      "Source": "changelog.mpd",
       "URL": "changelog"
     },
     {
       "Language": "id",
-      "Source": "community/links.md",
+      "Source": "community/links.mpd",
       "URL": "community/links"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/bulletinboard.md",
+      "Source": "community/showcase/bulletinboard.mpd",
       "URL": "community/showcase/bulletinboard"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/cfntracker.md",
+      "Source": "community/showcase/cfntracker.mpd",
       "URL": "community/showcase/cfntracker"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/clave.md",
+      "Source": "community/showcase/clave.mpd",
       "URL": "community/showcase/clave"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/emailit.md",
+      "Source": "community/showcase/emailit.mpd",
       "URL": "community/showcase/emailit"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/encrypteasy.md",
+      "Source": "community/showcase/encrypteasy.mpd",
       "URL": "community/showcase/encrypteasy"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/espstudio.md",
+      "Source": "community/showcase/espstudio.mpd",
       "URL": "community/showcase/espstudio"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/filehound.md",
+      "Source": "community/showcase/filehound.mpd",
       "URL": "community/showcase/filehound"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/hiposter.md",
+      "Source": "community/showcase/hiposter.mpd",
       "URL": "community/showcase/hiposter"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/index.md",
+      "Source": "community/showcase/index.mpd",
       "URL": "community/showcase"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/lemontea.md",
+      "Source": "community/showcase/lemontea.mpd",
       "URL": "community/showcase/lemontea"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/ltools.md",
+      "Source": "community/showcase/ltools.mpd",
       "URL": "community/showcase/ltools"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/mchat.md",
+      "Source": "community/showcase/mchat.mpd",
       "URL": "community/showcase/mchat"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/minecraftupdater.md",
+      "Source": "community/showcase/minecraftupdater.mpd",
       "URL": "community/showcase/minecraftupdater"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/minesweeper-xp.md",
+      "Source": "community/showcase/minesweeper-xp.mpd",
       "URL": "community/showcase/minesweeper-xp"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/modalfilemanager.md",
+      "Source": "community/showcase/modalfilemanager.mpd",
       "URL": "community/showcase/modalfilemanager"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/mollywallet.md",
+      "Source": "community/showcase/mollywallet.mpd",
       "URL": "community/showcase/mollywallet"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/october.md",
+      "Source": "community/showcase/october.mpd",
       "URL": "community/showcase/october"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/optimus.md",
+      "Source": "community/showcase/optimus.mpd",
       "URL": "community/showcase/optimus"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/packsmith.md",
+      "Source": "community/showcase/packsmith.mpd",
       "URL": "community/showcase/packsmith"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/peirato-s-piano-keyboard.md",
+      "Source": "community/showcase/peirato-s-piano-keyboard.mpd",
       "URL": "community/showcase/peirato-s-piano-keyboard"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/portfall.md",
+      "Source": "community/showcase/portfall.mpd",
       "URL": "community/showcase/portfall"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/redisviewer.md",
+      "Source": "community/showcase/redisviewer.mpd",
       "URL": "community/showcase/redisviewer"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/resizem.md",
+      "Source": "community/showcase/resizem.mpd",
       "URL": "community/showcase/resizem"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/restic-browser.md",
+      "Source": "community/showcase/restic-browser.mpd",
       "URL": "community/showcase/restic-browser"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/riftshare.md",
+      "Source": "community/showcase/riftshare.mpd",
       "URL": "community/showcase/riftshare"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/scriptbar.md",
+      "Source": "community/showcase/scriptbar.mpd",
       "URL": "community/showcase/scriptbar"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/snippetexpander.md",
+      "Source": "community/showcase/snippetexpander.mpd",
       "URL": "community/showcase/snippetexpander"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/surge.md",
+      "Source": "community/showcase/surge.mpd",
       "URL": "community/showcase/surge"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/tinyrdm.md",
+      "Source": "community/showcase/tinyrdm.mpd",
       "URL": "community/showcase/tinyrdm"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/wailsterm.md",
+      "Source": "community/showcase/wailsterm.mpd",
       "URL": "community/showcase/wailsterm"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/wally.md",
+      "Source": "community/showcase/wally.mpd",
       "URL": "community/showcase/wally"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/warmine.md",
+      "Source": "community/showcase/warmine.mpd",
       "URL": "community/showcase/warmine"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/wombat.md",
+      "Source": "community/showcase/wombat.mpd",
       "URL": "community/showcase/wombat"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/xensql.md",
+      "Source": "community/showcase/xensql.mpd",
       "URL": "community/showcase/xensql"
     },
     {
       "Language": "id",
-      "Source": "community/showcase/ytd.md",
+      "Source": "community/showcase/ytd.mpd",
       "URL": "community/showcase/ytd"
     },
     {
       "Language": "id",
-      "Source": "community/templates.md",
+      "Source": "community/templates.mpd",
       "URL": "community/templates"
     },
     {
       "Language": "id",
-      "Source": "concepts/architecture.md",
+      "Source": "concepts/architecture.mpd",
       "URL": "concepts/architecture"
     },
     {
       "Language": "id",
-      "Source": "concepts/bridge.md",
+      "Source": "concepts/bridge.mpd",
       "URL": "concepts/bridge"
     },
     {
       "Language": "id",
-      "Source": "concepts/build-system.md",
+      "Source": "concepts/build-system.mpd",
       "URL": "concepts/build-system"
     },
     {
       "Language": "id",
-      "Source": "concepts/lifecycle.md",
+      "Source": "concepts/lifecycle.mpd",
       "URL": "concepts/lifecycle"
     },
     {
       "Language": "id",
-      "Source": "concepts/manager-api.md",
+      "Source": "concepts/manager-api.mpd",
       "URL": "concepts/manager-api"
     },
     {
       "Language": "id",
-      "Source": "contributing-migrated.md",
+      "Source": "contributing-migrated.mpd",
       "URL": "contributing-migrated"
     },
     {
       "Language": "id",
-      "Source": "contributing/architecture.md",
+      "Source": "contributing/architecture.mpd",
       "URL": "contributing/architecture"
     },
     {
       "Language": "id",
-      "Source": "contributing/architecture/bindings.md",
+      "Source": "contributing/architecture/bindings.mpd",
       "URL": "contributing/architecture/bindings"
     },
     {
       "Language": "id",
-      "Source": "contributing/asset-server.md",
+      "Source": "contributing/asset-server.mpd",
       "URL": "contributing/asset-server"
     },
     {
       "Language": "id",
-      "Source": "contributing/binding-system.md",
+      "Source": "contributing/binding-system.mpd",
       "URL": "contributing/binding-system"
     },
     {
       "Language": "id",
-      "Source": "contributing/build-packaging.md",
+      "Source": "contributing/build-packaging.mpd",
       "URL": "contributing/build-packaging"
     },
     {
       "Language": "id",
-      "Source": "contributing/codebase-layout.md",
+      "Source": "contributing/codebase-layout.mpd",
       "URL": "contributing/codebase-layout"
     },
     {
       "Language": "id",
-      "Source": "contributing/extending-wails.md",
+      "Source": "contributing/extending-wails.mpd",
       "URL": "contributing/extending-wails"
     },
     {
       "Language": "id",
-      "Source": "contributing/getting-started.md",
+      "Source": "contributing/getting-started.mpd",
       "URL": "contributing/getting-started"
     },
     {
       "Language": "id",
-      "Source": "contributing/index.md",
+      "Source": "contributing/index.mpd",
       "URL": "contributing"
     },
     {
       "Language": "id",
-      "Source": "contributing/runtime-internals.md",
+      "Source": "contributing/runtime-internals.mpd",
       "URL": "contributing/runtime-internals"
     },
     {
       "Language": "id",
-      "Source": "contributing/setup.md",
+      "Source": "contributing/setup.mpd",
       "URL": "contributing/setup"
     },
     {
       "Language": "id",
-      "Source": "contributing/standards.md",
+      "Source": "contributing/standards.mpd",
       "URL": "contributing/standards"
     },
     {
       "Language": "id",
-      "Source": "contributing/template-system.md",
+      "Source": "contributing/template-system.mpd",
       "URL": "contributing/template-system"
     },
     {
       "Language": "id",
-      "Source": "contributing/testing-ci.md",
+      "Source": "contributing/testing-ci.mpd",
       "URL": "contributing/testing-ci"
     },
     {
       "Language": "id",
-      "Source": "credits.md",
+      "Source": "credits.mpd",
       "URL": "credits"
     },
     {
       "Language": "id",
-      "Source": "experimental/index.md",
+      "Source": "experimental/index.mpd",
       "URL": "experimental"
     },
     {
       "Language": "id",
-      "Source": "experimental/wake.md",
+      "Source": "experimental/wake.mpd",
       "URL": "experimental/wake"
     },
     {
       "Language": "id",
-      "Source": "faq.md",
+      "Source": "faq.mpd",
       "URL": "faq"
     },
     {
       "Language": "id",
-      "Source": "features/autostart/basics.md",
+      "Source": "features/autostart/basics.mpd",
       "URL": "features/autostart/basics"
     },
     {
       "Language": "id",
-      "Source": "features/bindings/advanced.md",
+      "Source": "features/bindings/advanced.mpd",
       "URL": "features/bindings/advanced"
     },
     {
       "Language": "id",
-      "Source": "features/bindings/best-practices.md",
+      "Source": "features/bindings/best-practices.mpd",
       "URL": "features/bindings/best-practices"
     },
     {
       "Language": "id",
-      "Source": "features/bindings/enums.md",
+      "Source": "features/bindings/enums.mpd",
       "URL": "features/bindings/enums"
     },
     {
       "Language": "id",
-      "Source": "features/bindings/methods.md",
+      "Source": "features/bindings/methods.mpd",
       "URL": "features/bindings/methods"
     },
     {
       "Language": "id",
-      "Source": "features/bindings/models.md",
+      "Source": "features/bindings/models.mpd",
       "URL": "features/bindings/models"
     },
     {
       "Language": "id",
-      "Source": "features/bindings/services.md",
+      "Source": "features/bindings/services.mpd",
       "URL": "features/bindings/services"
     },
     {
       "Language": "id",
-      "Source": "features/browser/integration.md",
+      "Source": "features/browser/integration.mpd",
       "URL": "features/browser/integration"
     },
     {
       "Language": "id",
-      "Source": "features/clipboard/basics.md",
+      "Source": "features/clipboard/basics.mpd",
       "URL": "features/clipboard/basics"
     },
     {
       "Language": "id",
-      "Source": "features/dialogs/custom.md",
+      "Source": "features/dialogs/custom.mpd",
       "URL": "features/dialogs/custom"
     },
     {
       "Language": "id",
-      "Source": "features/dialogs/file.md",
+      "Source": "features/dialogs/file.mpd",
       "URL": "features/dialogs/file"
     },
     {
       "Language": "id",
-      "Source": "features/dialogs/message.md",
+      "Source": "features/dialogs/message.mpd",
       "URL": "features/dialogs/message"
     },
     {
       "Language": "id",
-      "Source": "features/dialogs/overview.md",
+      "Source": "features/dialogs/overview.mpd",
       "URL": "features/dialogs/overview"
     },
     {
       "Language": "id",
-      "Source": "features/drag-and-drop/files.md",
+      "Source": "features/drag-and-drop/files.mpd",
       "URL": "features/drag-and-drop/files"
     },
     {
       "Language": "id",
-      "Source": "features/drag-and-drop/html.md",
+      "Source": "features/drag-and-drop/html.mpd",
       "URL": "features/drag-and-drop/html"
     },
     {
       "Language": "id",
-      "Source": "features/environment/info.md",
+      "Source": "features/environment/info.mpd",
       "URL": "features/environment/info"
     },
     {
       "Language": "id",
-      "Source": "features/events/system.md",
+      "Source": "features/events/system.mpd",
       "URL": "features/events/system"
     },
     {
       "Language": "id",
-      "Source": "features/keyboard/global-shortcuts.md",
+      "Source": "features/keyboard/global-shortcuts.mpd",
       "URL": "features/keyboard/global-shortcuts"
     },
     {
       "Language": "id",
-      "Source": "features/keyboard/shortcuts.md",
+      "Source": "features/keyboard/shortcuts.mpd",
       "URL": "features/keyboard/shortcuts"
     },
     {
       "Language": "id",
-      "Source": "features/menus/application.md",
+      "Source": "features/menus/application.mpd",
       "URL": "features/menus/application"
     },
     {
       "Language": "id",
-      "Source": "features/menus/context.md",
+      "Source": "features/menus/context.mpd",
       "URL": "features/menus/context"
     },
     {
       "Language": "id",
-      "Source": "features/menus/reference.md",
+      "Source": "features/menus/reference.mpd",
       "URL": "features/menus/reference"
     },
     {
       "Language": "id",
-      "Source": "features/menus/systray.md",
+      "Source": "features/menus/systray.mpd",
       "URL": "features/menus/systray"
     },
     {
       "Language": "id",
-      "Source": "features/notifications/overview.md",
+      "Source": "features/notifications/overview.mpd",
       "URL": "features/notifications/overview"
     },
     {
       "Language": "id",
-      "Source": "features/platform/dock.md",
+      "Source": "features/platform/dock.mpd",
       "URL": "features/platform/dock"
     },
     {
       "Language": "id",
-      "Source": "features/screens/info.md",
+      "Source": "features/screens/info.mpd",
       "URL": "features/screens/info"
     },
     {
       "Language": "id",
-      "Source": "features/windows/basics.md",
+      "Source": "features/windows/basics.mpd",
       "URL": "features/windows/basics"
     },
     {
       "Language": "id",
-      "Source": "features/windows/events.md",
+      "Source": "features/windows/events.mpd",
       "URL": "features/windows/events"
     },
     {
       "Language": "id",
-      "Source": "features/windows/frameless.md",
+      "Source": "features/windows/frameless.mpd",
       "URL": "features/windows/frameless"
     },
     {
       "Language": "id",
-      "Source": "features/windows/multiple.md",
+      "Source": "features/windows/multiple.mpd",
       "URL": "features/windows/multiple"
     },
     {
       "Language": "id",
-      "Source": "features/windows/options.md",
+      "Source": "features/windows/options.mpd",
       "URL": "features/windows/options"
     },
     {
       "Language": "id",
-      "Source": "features/windows/permissions.md",
+      "Source": "features/windows/permissions.mpd",
       "URL": "features/windows/permissions"
     },
     {
       "Language": "id",
-      "Source": "feedback.md",
+      "Source": "feedback.mpd",
       "URL": "feedback"
     },
     {
       "Language": "id",
-      "Source": "getting-started/installation.md",
+      "Source": "getting-started/installation.mpd",
       "URL": "getting-started/installation"
     },
     {
       "Language": "id",
-      "Source": "getting-started/setup.md",
+      "Source": "getting-started/setup.mpd",
       "URL": "getting-started/setup"
     },
     {
       "Language": "id",
-      "Source": "getting-started/your-first-app.md",
+      "Source": "getting-started/your-first-app.mpd",
       "URL": "getting-started/your-first-app"
     },
     {
       "Language": "id",
-      "Source": "guides/advanced/custom-templates.md",
+      "Source": "guides/advanced/custom-templates.mpd",
       "URL": "guides/advanced/custom-templates"
     },
     {
       "Language": "id",
-      "Source": "guides/architecture.md",
+      "Source": "guides/architecture.mpd",
       "URL": "guides/architecture"
     },
     {
       "Language": "id",
-      "Source": "guides/build/building.md",
+      "Source": "guides/build/building.mpd",
       "URL": "guides/build/building"
     },
     {
       "Language": "id",
-      "Source": "guides/build/cross-platform.md",
+      "Source": "guides/build/cross-platform.mpd",
       "URL": "guides/build/cross-platform"
     },
     {
       "Language": "id",
-      "Source": "guides/build/customization.md",
+      "Source": "guides/build/customization.mpd",
       "URL": "guides/build/customization"
     },
     {
       "Language": "id",
-      "Source": "guides/build/linux.md",
+      "Source": "guides/build/linux.mpd",
       "URL": "guides/build/linux"
     },
     {
       "Language": "id",
-      "Source": "guides/build/macos.md",
+      "Source": "guides/build/macos.mpd",
       "URL": "guides/build/macos"
     },
     {
       "Language": "id",
-      "Source": "guides/build/obfuscation.md",
+      "Source": "guides/build/obfuscation.mpd",
       "URL": "guides/build/obfuscation"
     },
     {
       "Language": "id",
-      "Source": "guides/build/signing.md",
+      "Source": "guides/build/signing.mpd",
       "URL": "guides/build/signing"
     },
     {
       "Language": "id",
-      "Source": "guides/build/windows.md",
+      "Source": "guides/build/windows.mpd",
       "URL": "guides/build/windows"
     },
     {
       "Language": "id",
-      "Source": "guides/cli.md",
+      "Source": "guides/cli.mpd",
       "URL": "guides/cli"
     },
     {
       "Language": "id",
-      "Source": "guides/custom-transport.md",
+      "Source": "guides/custom-transport.mpd",
       "URL": "guides/custom-transport"
     },
     {
       "Language": "id",
-      "Source": "guides/customising-windows.md",
+      "Source": "guides/customising-windows.mpd",
       "URL": "guides/customising-windows"
     },
     {
       "Language": "id",
-      "Source": "guides/dev/debugging.md",
+      "Source": "guides/dev/debugging.mpd",
       "URL": "guides/dev/debugging"
     },
     {
       "Language": "id",
-      "Source": "guides/dev/frontend-frameworks.md",
+      "Source": "guides/dev/frontend-frameworks.mpd",
       "URL": "guides/dev/frontend-frameworks"
     },
     {
       "Language": "id",
-      "Source": "guides/dev/project-structure.md",
+      "Source": "guides/dev/project-structure.mpd",
       "URL": "guides/dev/project-structure"
     },
     {
       "Language": "id",
-      "Source": "guides/distribution/custom-protocols.md",
+      "Source": "guides/distribution/custom-protocols.mpd",
       "URL": "guides/distribution/custom-protocols"
     },
     {
       "Language": "id",
-      "Source": "guides/e2e-testing.md",
+      "Source": "guides/e2e-testing.mpd",
       "URL": "guides/e2e-testing"
     },
     {
       "Language": "id",
-      "Source": "guides/events-reference.md",
+      "Source": "guides/events-reference.mpd",
       "URL": "guides/events-reference"
     },
     {
       "Language": "id",
-      "Source": "guides/file-associations.md",
+      "Source": "guides/file-associations.mpd",
       "URL": "guides/file-associations"
     },
     {
       "Language": "id",
-      "Source": "guides/gin-routing.md",
+      "Source": "guides/gin-routing.mpd",
       "URL": "guides/gin-routing"
     },
     {
       "Language": "id",
-      "Source": "guides/gin-services.md",
+      "Source": "guides/gin-services.mpd",
       "URL": "guides/gin-services"
     },
     {
       "Language": "id",
-      "Source": "guides/installers.md",
+      "Source": "guides/installers.mpd",
       "URL": "guides/installers"
     },
     {
       "Language": "id",
-      "Source": "guides/mcp-service.md",
+      "Source": "guides/mcp-service.mpd",
       "URL": "guides/mcp-service"
     },
     {
       "Language": "id",
-      "Source": "guides/menus.md",
+      "Source": "guides/menus.mpd",
       "URL": "guides/menus"
     },
     {
       "Language": "id",
-      "Source": "guides/mobile/android.md",
+      "Source": "guides/mobile/android.mpd",
       "URL": "guides/mobile/android"
     },
     {
       "Language": "id",
-      "Source": "guides/mobile/first-mobile-app.md",
+      "Source": "guides/mobile/first-mobile-app.mpd",
       "URL": "guides/mobile/first-mobile-app"
     },
     {
       "Language": "id",
-      "Source": "guides/mobile/index.md",
+      "Source": "guides/mobile/index.mpd",
       "URL": "guides/mobile"
     },
     {
       "Language": "id",
-      "Source": "guides/mobile/ios.md",
+      "Source": "guides/mobile/ios.mpd",
       "URL": "guides/mobile/ios"
     },
     {
       "Language": "id",
-      "Source": "guides/mobile/mobile-api.md",
+      "Source": "guides/mobile/mobile-api.mpd",
       "URL": "guides/mobile/mobile-api"
     },
     {
       "Language": "id",
-      "Source": "guides/panic-handling.md",
+      "Source": "guides/panic-handling.mpd",
       "URL": "guides/panic-handling"
     },
     {
       "Language": "id",
-      "Source": "guides/performance.md",
+      "Source": "guides/performance.mpd",
       "URL": "guides/performance"
     },
     {
       "Language": "id",
-      "Source": "guides/raw-messages.md",
+      "Source": "guides/raw-messages.mpd",
       "URL": "guides/raw-messages"
     },
     {
       "Language": "id",
-      "Source": "guides/routing.md",
+      "Source": "guides/routing.mpd",
       "URL": "guides/routing"
     },
     {
       "Language": "id",
-      "Source": "guides/security.md",
+      "Source": "guides/security.mpd",
       "URL": "guides/security"
     },
     {
       "Language": "id",
-      "Source": "guides/server-build.md",
+      "Source": "guides/server-build.mpd",
       "URL": "guides/server-build"
     },
     {
       "Language": "id",
-      "Source": "guides/single-instance.md",
+      "Source": "guides/single-instance.mpd",
       "URL": "guides/single-instance"
     },
     {
       "Language": "id",
-      "Source": "guides/testing.md",
+      "Source": "guides/testing.mpd",
       "URL": "guides/testing"
     },
     {
       "Language": "id",
-      "Source": "guides/updater.md",
+      "Source": "guides/updater.mpd",
       "URL": "guides/updater"
     },
     {
       "Language": "id",
-      "Source": "guides/windows-uac.md",
+      "Source": "guides/windows-uac.mpd",
       "URL": "guides/windows-uac"
     },
     {
       "Language": "id",
-      "Source": "index.md",
+      "Source": "index.mpd",
       "URL": ""
     },
     {
       "Language": "id",
-      "Source": "migration/v2-to-v3.md",
+      "Source": "migration/v2-to-v3.mpd",
       "URL": "migration/v2-to-v3"
     },
     {
       "Language": "id",
-      "Source": "quick-start/first-app.md",
+      "Source": "quick-start/first-app.mpd",
       "URL": "quick-start/first-app"
     },
     {
       "Language": "id",
-      "Source": "quick-start/installation.md",
+      "Source": "quick-start/installation.mpd",
       "URL": "quick-start/installation"
     },
     {
       "Language": "id",
-      "Source": "quick-start/next-steps.md",
+      "Source": "quick-start/next-steps.mpd",
       "URL": "quick-start/next-steps"
     },
     {
       "Language": "id",
-      "Source": "quick-start/why-wails.md",
+      "Source": "quick-start/why-wails.mpd",
       "URL": "quick-start/why-wails"
     },
     {
       "Language": "id",
-      "Source": "reference/application.md",
+      "Source": "reference/application.mpd",
       "URL": "reference/application"
     },
     {
       "Language": "id",
-      "Source": "reference/cli.md",
+      "Source": "reference/cli.mpd",
       "URL": "reference/cli"
     },
     {
       "Language": "id",
-      "Source": "reference/dialogs.md",
+      "Source": "reference/dialogs.mpd",
       "URL": "reference/dialogs"
     },
     {
       "Language": "id",
-      "Source": "reference/events.md",
+      "Source": "reference/events.mpd",
       "URL": "reference/events"
     },
     {
       "Language": "id",
-      "Source": "reference/frontend-runtime.md",
+      "Source": "reference/frontend-runtime.mpd",
       "URL": "reference/frontend-runtime"
     },
     {
       "Language": "id",
-      "Source": "reference/menu.md",
+      "Source": "reference/menu.mpd",
       "URL": "reference/menu"
     },
     {
       "Language": "id",
-      "Source": "reference/overview.md",
+      "Source": "reference/overview.mpd",
       "URL": "reference/overview"
     },
     {
       "Language": "id",
-      "Source": "reference/window.md",
+      "Source": "reference/window.mpd",
       "URL": "reference/window"
     },
     {
       "Language": "id",
-      "Source": "status.md",
+      "Source": "status.mpd",
       "URL": "status"
     },
     {
       "Language": "id",
-      "Source": "troubleshooting/mac-syso.md",
+      "Source": "troubleshooting/mac-syso.mpd",
       "URL": "troubleshooting/mac-syso"
     },
     {
       "Language": "id",
-      "Source": "tutorials/01-creating-a-service.md",
+      "Source": "tutorials/01-creating-a-service.mpd",
       "URL": "tutorials/01-creating-a-service"
     },
     {
       "Language": "id",
-      "Source": "tutorials/02-todo-vanilla.md",
+      "Source": "tutorials/02-todo-vanilla.mpd",
       "URL": "tutorials/02-todo-vanilla"
     },
     {
       "Language": "id",
-      "Source": "tutorials/03-notes-vanilla.md",
+      "Source": "tutorials/03-notes-vanilla.mpd",
       "URL": "tutorials/03-notes-vanilla"
     },
     {
       "Language": "id",
-      "Source": "tutorials/04-self-update-a-wails-app.md",
+      "Source": "tutorials/04-self-update-a-wails-app.mpd",
       "URL": "tutorials/04-self-update-a-wails-app"
     },
     {
       "Language": "id",
-      "Source": "tutorials/overview.md",
+      "Source": "tutorials/overview.mpd",
       "URL": "tutorials/overview"
     },
     {
       "Language": "id",
-      "Source": "whats-new.md",
+      "Source": "whats-new.mpd",
       "URL": "whats-new"
     }
   ],
