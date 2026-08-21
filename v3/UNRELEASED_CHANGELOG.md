@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add macOS NSPanel window support with new options and native integration — see [documentation](https://v3.wails.io/features/windows/options) in [PR](https://github.com/wailsapp/wails/pull/6008) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
