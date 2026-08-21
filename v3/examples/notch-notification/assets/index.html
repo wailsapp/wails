@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>System Monitor</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main class="notch-window" aria-label="System monitor">
+      <header class="window-toolbar">
+        <div class="status-lockup">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>System healthy</span>
+        </div>
+        <div class="toolbar-actions">
+          <button id="hide" class="toolbar-button" type="button">Hide</button>
+          <button id="quit" class="toolbar-button toolbar-button-danger" type="button">Quit</button>
+        </div>
+      </header>
+
+      <section class="cpu-hero" aria-labelledby="cpu-title">
+        <div class="cpu-badge" aria-hidden="true">CPU</div>
+        <div class="cpu-copy">
+          <p class="eyebrow">Processor</p>
+          <h1 id="cpu-title">CPU load</h1>
+          <p class="cpu-subtitle"><span id="core-count">8</span> cores <span>·</span> Apple silicon</p>
+        </div>
+        <div class="cpu-reading"><strong id="cpu-value">17</strong><span>%</span><small>active</small></div>
+      </section>
+
+      <section class="activity-card" aria-label="CPU activity over time">
+        <div class="activity-heading"><span>Activity</span><span>Last 60 seconds</span></div>
+        <canvas class="chart" id="cpu-chart" aria-label="Live CPU activity graph"></canvas>
+      </section>
+
+      <section class="stats-grid" aria-label="Memory and disk usage">
+        <article class="stat-card memory-card">
+          <div class="card-header"><span class="card-badge">MEM</span><span class="card-label">Memory</span></div>
+          <div class="usage-row"><strong id="memory-value">10.7</strong><span>GB</span></div>
+          <p>of 16 GB in use</p>
+          <div class="stat-bottom">
+            <canvas class="mini-chart" id="memory-chart" aria-label="Live memory activity graph"></canvas>
+            <small><span id="memory-percent">67% used</span><span id="memory-free">5.3 GB free</span></small>
+          </div>
+        </article>
+        <article class="stat-card disk-card">
+          <div class="card-header"><span class="card-badge">SSD</span><span class="card-label">Disk</span></div>
+          <div class="usage-row"><strong id="disk-value">312</strong><span>GB</span></div>
+          <p>of 512 GB in use</p>
+          <div class="stat-bottom">
+            <canvas class="mini-chart" id="disk-chart" aria-label="Live disk activity graph"></canvas>
+            <small><span id="disk-percent">61% used</span><span id="disk-free">200 GB free</span></small>
+          </div>
+        </article>
+      </section>
+
+      <footer class="monitor-footer">
+        <span><span class="live-dot" aria-hidden="true"></span><span id="updated-at">Updated just now</span></span>
+        <kbd title="Show from any application">⌘ ⇧ N</kbd>
+      </footer>
+    </main>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
