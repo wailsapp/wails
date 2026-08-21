@@ -44,19 +44,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 
 @end
 
-@implementation WebviewWindow
-- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
-{
-    self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
-    [self setAlphaValue:1.0];
-    [self setBackgroundColor:[NSColor clearColor]];
-    [self setOpaque:NO];
-    [self setMovableByWindowBackground:YES];
-    return self;
+NSString* keyStringFromKeyEvent(NSEvent* event) {
+    return [WebviewWindow keyStringFromEvent:event];
 }
-- (NSString *)acceleratorStringFromEvent:(NSEvent *)event {
+
+NSString* acceleratorStringFromKeyEvent(NSEvent* event) {
     NSUInteger modifierFlags = event.modifierFlags;
-    NSMutableArray *modifierStrings = [NSMutableArray array];
+    NSMutableArray* modifierStrings = [NSMutableArray array];
     if (modifierFlags & NSEventModifierFlagShift) {
         [modifierStrings addObject:@"shift"];
     }
@@ -69,14 +63,35 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     if (modifierFlags & NSEventModifierFlagCommand) {
         [modifierStrings addObject:@"cmd"];
     }
-    NSString *keyString = [self keyStringFromEvent:event];
+    NSString* keyString = keyStringFromKeyEvent(event);
     if (keyString.length > 0) {
         [modifierStrings addObject:keyString];
     }
     return [modifierStrings componentsJoinedByString:@"+"];
 }
+
+BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)window.delegate;
+    if (delegate == nil) {
+        return NO;
+    }
+    NSString* accelerator = acceleratorStringFromKeyEvent(event);
+    return accelerator.length > 0 &&
+        processWindowKeyEquivalent(delegate.windowId, accelerator.UTF8String);
+}
+
+@implementation WebviewWindow
+- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+{
+    self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+    [self setAlphaValue:1.0];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self setOpaque:NO];
+    [self setMovableByWindowBackground:YES];
+    return self;
+}
 - (void)keyDown:(NSEvent *)event {
-    NSString *keyEventString = [self acceleratorStringFromEvent:event];
+    NSString *keyEventString = acceleratorStringFromKeyEvent(event);
     WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
     processWindowKeyDownEvent(delegate.windowId, [keyEventString UTF8String]);
 }
@@ -87,17 +102,12 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 // otherwise falls through to super so normal Cocoa handling — including
 // main-menu key equivalents — continues unchanged.
 - (BOOL)performKeyEquivalent:(NSEvent *)event {
-    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
-    if (delegate != nil) {
-        NSString *keyEventString = [self acceleratorStringFromEvent:event];
-        if (keyEventString.length > 0 &&
-            processWindowKeyEquivalent(delegate.windowId, [keyEventString UTF8String])) {
-            return YES;
-        }
+    if (dispatchKeyEquivalent(event, self)) {
+        return YES;
     }
     return [super performKeyEquivalent:event];
 }
-- (NSString *)keyStringFromEvent:(NSEvent *)event {
++ (NSString *)keyStringFromEvent:(NSEvent *)event {
     // Get the pressed key
     // Check for special keys like escape and tab
     NSString *characters = [event characters];
@@ -574,8 +584,8 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
             NSString* str = files[i];
             cArray[i] = (char*)[str UTF8String];
         }
-        // Get the WebviewWindow instance, which is the dragging destination
-        WebviewWindow *window = (WebviewWindow *)[sender draggingDestinationWindow];
+        NSWindow<WailsWebviewWindow>* window =
+            (NSWindow<WailsWebviewWindow>*)[sender draggingDestinationWindow];
         WKWebView *webView = window.webView; // Get the webView from the window
         NSPoint dropPointInWindow = [sender draggingLocation];
         NSPoint dropPointInView = [webView convertPoint:dropPointInWindow fromView:nil]; // Convert to webView's coordinate system
@@ -611,7 +621,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     self.leftMouseEvent = nil;
     [super dealloc];
 }
-- (void) startDrag:(WebviewWindow*)window {
+- (void) startDrag:(NSWindow*)window {
     [window performWindowDragWithEvent:self.leftMouseEvent];
 }
 // Handle script messages from the external bridge
@@ -1116,7 +1126,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 @end
 void windowSetScreen(void* window, void* screen, int yOffset) {
-    WebviewWindow* nsWindow = (WebviewWindow*)window;
+    NSWindow* nsWindow = (NSWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;
     // Get current frame
     NSRect frame = [nsWindow frame];
@@ -1144,7 +1154,7 @@ bool isLiquidGlassSupported() {
 }
 // Remove any existing visual effects from the window
 void windowRemoveVisualEffects(void* nsWindow) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow* window = (NSWindow*)nsWindow;
     NSView* contentView = [window contentView];
     // Get NSGlassEffectView class if available (avoid hard reference)
     Class glassEffectViewClass = nil;
@@ -1162,7 +1172,7 @@ void windowRemoveVisualEffects(void* nsWindow) {
 }
 // Configure WebView for liquid glass effect
 void configureWebViewForLiquidGlass(void* nsWindow) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)nsWindow;
     WKWebView* webView = window.webView;
     // Make WebView background transparent
     [webView setValue:@NO forKey:@"drawsBackground"];
@@ -1180,7 +1190,7 @@ void configureWebViewForLiquidGlass(void* nsWindow) {
 void windowSetLiquidGlass(void* nsWindow, int style, int material, double cornerRadius,
                           int r, int g, int b, int a,
                           const char* groupID, double groupSpacing) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)nsWindow;
     // Ensure we're on the main thread for UI operations
     if (![NSThread isMainThread]) {
         dispatch_sync(dispatch_get_main_queue(), ^{
