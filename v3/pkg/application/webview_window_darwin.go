@@ -791,7 +791,7 @@ void windowCenterOnScreen(void* nsWindow, const char* screenID) {
 		NSDictionary* desc = [s deviceDescription];
 		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
 		CGDirectDisplayID displayID = [num unsignedIntValue];
-		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		NSString* sid = [NSString stringWithFormat:@"%u", displayID];
 		if ([sid isEqualToString:targetID]) {
 			targetScreen = s;
 			break;
@@ -816,7 +816,7 @@ void windowSetPositionOnScreen(void* nsWindow, int x, int y, const char* screenI
 		NSDictionary* desc = [s deviceDescription];
 		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
 		CGDirectDisplayID displayID = [num unsignedIntValue];
-		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		NSString* sid = [NSString stringWithFormat:@"%u", displayID];
 		if ([sid isEqualToString:targetID]) {
 			targetScreen = s;
 			break;
@@ -1734,21 +1734,20 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if w.parent.notchWindow != nil {
-			// The native notch panel selects the camera-housing display and
-			// computes its target frame in AppKit coordinates.
-		} else if options.Screen != nil {
-			cID := C.CString(options.Screen.ID)
-			if w.parent.options.InitialPosition == WindowCentered {
-				C.windowCenterOnScreen(w.nsWindow, cID)
+		if w.parent.notchWindow == nil {
+			if options.Screen != nil {
+				cID := C.CString(options.Screen.ID)
+				if w.parent.options.InitialPosition == WindowCentered {
+					C.windowCenterOnScreen(w.nsWindow, cID)
+				} else {
+					C.windowSetPositionOnScreen(w.nsWindow, C.int(options.X), C.int(options.Y), cID)
+				}
+				C.free(unsafe.Pointer(cID))
+			} else if w.parent.options.InitialPosition == WindowCentered {
+				C.windowCenter(w.nsWindow)
 			} else {
-				C.windowSetPositionOnScreen(w.nsWindow, C.int(options.X), C.int(options.Y), cID)
+				w.setPosition(options.X, options.Y)
 			}
-			C.free(unsafe.Pointer(cID))
-		} else if w.parent.options.InitialPosition == WindowCentered {
-			C.windowCenter(w.nsWindow)
-		} else {
-			w.setPosition(options.X, options.Y)
 		}
 
 		startURL, err := assetserver.GetStartURL(options.URL)

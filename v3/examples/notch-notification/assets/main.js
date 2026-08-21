@@ -91,11 +91,33 @@ function render(stats) {
   drawGraph(history);
 }
 
+function renderUnavailable() {
+  history.values.fill(0);
+  hasSample = false;
+  cpuValue.textContent = "—";
+  coreCount.textContent = "—";
+  machineName.textContent = "Telemetry unavailable";
+  memoryTotal.textContent = "—";
+  memoryValue.textContent = "—";
+  diskValue.textContent = "—";
+  memoryPercentLabel.textContent = "Unavailable";
+  memoryFreeLabel.textContent = "—";
+  diskPercentLabel.textContent = "Unavailable";
+  diskFreeLabel.textContent = "—";
+  peakValue.textContent = "Unavailable";
+  memoryProgress.value = 0;
+  diskProgress.value = 0;
+  drawGraph(history);
+}
+
 async function sample() {
   if (!globalThis.wails?.Call?.ByName) return;
   try {
     const stats = await globalThis.wails.Call.ByName("main.NotificationController.Stats");
-    if (!stats?.available) return;
+    if (!stats?.available) {
+      renderUnavailable();
+      return;
+    }
     if (!hasSample) {
       history.values.fill(stats.cpuPercent);
       hasSample = true;
@@ -105,6 +127,7 @@ async function sample() {
     }
     render(stats);
   } catch (error) {
+    renderUnavailable();
     console.error("reading system telemetry", error);
   }
 }

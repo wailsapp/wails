@@ -6,8 +6,10 @@ const (
 	defaultNotchWindowWidth          = 660
 	defaultNotchWindowHeight         = 92
 	defaultNotchWindowAnimationSpeed = 420 * time.Millisecond
-	notchWindowHorizontalInset       = 30
-	notchWindowBottomInset           = 12
+	// Keep these native-frame insets synchronized with NotchHorizontalInset and
+	// NotchBottomInset in webview_notch_window_darwin.m.
+	notchWindowHorizontalInset = 30
+	notchWindowBottomInset     = 12
 )
 
 // NotchWindowOptions configures a window attached to the camera housing at the

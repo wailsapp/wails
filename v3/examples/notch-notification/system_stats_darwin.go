@@ -89,14 +89,19 @@ static int wails_read_system_sample(WailsSystemSample* sample) {
 import "C"
 
 import (
+	"context"
 	"encoding/json"
 	"os/exec"
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 )
 
-const bytesPerGiB = 1024 * 1024 * 1024
+const (
+	bytesPerGiB           = 1024 * 1024 * 1024
+	machineProfileTimeout = 2 * time.Second
+)
 
 // SystemStats is the current machine telemetry returned to the webview.
 type SystemStats struct {
@@ -160,7 +165,10 @@ var (
 
 func machineName() string {
 	machineNameOnce.Do(func() {
-		output, err := exec.Command(
+		ctx, cancel := context.WithTimeout(context.Background(), machineProfileTimeout)
+		defer cancel()
+		output, err := exec.CommandContext(
+			ctx,
 			"/usr/sbin/system_profiler",
 			"SPHardwareDataType",
 			"-json",

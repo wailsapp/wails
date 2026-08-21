@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 #ifndef WebviewNotchWindow_h
 #define WebviewNotchWindow_h

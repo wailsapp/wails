@@ -5,6 +5,8 @@
 #include <math.h>
 #import "webview_notch_window_darwin.h"
 
+// Keep these webview insets synchronized with notchWindowHorizontalInset and
+// notchWindowBottomInset in notch_window.go.
 static const CGFloat NotchHorizontalInset = 30.0;
 static const CGFloat NotchBottomInset = 12.0;
 static const CGFloat NotchWingInset = 20.0;

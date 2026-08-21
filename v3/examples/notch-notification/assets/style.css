@@ -16,7 +16,7 @@ button { border: 0; font: inherit; cursor: pointer; }
 .window-toolbar { display: flex; min-height: 25px; align-items: center; justify-content: flex-end; }
 .toolbar-actions { display: flex; gap: 1px; padding: 2px; transform: translateY(2px); border: .5px solid rgba(255,255,255,.09); border-radius: 9px; background: rgba(255,255,255,.055); box-shadow: inset 0 1px rgba(255,255,255,.035); }
 .toolbar-button { display: grid; width: 25px; height: 21px; place-items: center; padding: 0; color: #d9d9dc; border-radius: 6px; background: transparent; transition: color .14s ease, background .14s ease; }
-.toolbar-button svg { width: 12px; height: 12px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.toolbar-button svg { width: 12px; height: 12px; overflow: visible; fill: none; stroke: currentcolor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .toolbar-button:hover { color: #fff; background: rgba(255,255,255,.1); }
 .toolbar-button:active { background: rgba(255,255,255,.16); }
 .toolbar-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
