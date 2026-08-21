@@ -31,8 +31,7 @@ type NotchWindowOptions struct {
 	AnimationSpeed time.Duration
 
 	// Screen selects the display whose camera housing receives the window. When
-	// nil, Wails prefers the main display when it has a camera housing, then the
-	// first notched display, and finally the main display.
+	// nil, Wails targets the primary display.
 	Screen *Screen
 
 	// WindowOptions supplies the web content and optional standard Wails window

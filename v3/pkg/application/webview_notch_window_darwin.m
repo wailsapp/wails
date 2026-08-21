@@ -60,7 +60,6 @@ static const CGFloat NotchBottomCornerRadius = 20.0;
 @property (retain) NSTrackingArea* notchTrackingArea;
 @property (copy) NSString* notchTargetScreenID;
 - (NSScreen*)notchTargetScreen;
-- (BOOL)screenHasCameraHousing:(NSScreen*)screen;
 - (CGFloat)cameraHousingCentreForScreen:(NSScreen*)screen found:(BOOL*)found;
 - (NSRect)notchTargetFrame;
 - (NSRect)notchHiddenFrameForTarget:(NSRect)target;
@@ -69,9 +68,9 @@ static const CGFloat NotchBottomCornerRadius = 20.0;
 @implementation WebviewNotchWindow
 
 - (NSScreen*)notchTargetScreen {
-    NSScreen* mainScreen = [NSScreen mainScreen];
+    NSArray<NSScreen*>* screens = [NSScreen screens];
     if (self.notchTargetScreenID.length > 0) {
-        for (NSScreen* screen in [NSScreen screens]) {
+        for (NSScreen* screen in screens) {
             NSNumber* screenNumber = [screen.deviceDescription objectForKey:@"NSScreenNumber"];
             NSString* screenID = [NSString stringWithFormat:@"%u", [screenNumber unsignedIntValue]];
             if ([screenID isEqualToString:self.notchTargetScreenID]) {
@@ -79,33 +78,8 @@ static const CGFloat NotchBottomCornerRadius = 20.0;
             }
         }
     }
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
-    if (@available(macOS 12.0, *)) {
-        NSArray<NSScreen*>* screens = [NSScreen screens];
-        if (mainScreen != nil && [self screenHasCameraHousing:mainScreen]) {
-            return mainScreen;
-        }
-        for (NSScreen* screen in screens) {
-            if ([self screenHasCameraHousing:screen]) {
-                return screen;
-            }
-        }
-    }
-#endif
-    return mainScreen != nil ? mainScreen : [[NSScreen screens] firstObject];
-}
-
-- (BOOL)screenHasCameraHousing:(NSScreen*)screen {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
-    if (@available(macOS 12.0, *)) {
-        NSRect leftArea = screen.auxiliaryTopLeftArea;
-        NSRect rightArea = screen.auxiliaryTopRightArea;
-        return screen.safeAreaInsets.top > 0.0 &&
-            !NSIsEmptyRect(leftArea) && !NSIsEmptyRect(rightArea) &&
-            NSMinX(rightArea) > NSMaxX(leftArea);
-    }
-#endif
-    return NO;
+    NSScreen* primaryScreen = [screens firstObject];
+    return primaryScreen != nil ? primaryScreen : [NSScreen mainScreen];
 }
 
 - (CGFloat)cameraHousingCentreForScreen:(NSScreen*)screen found:(BOOL*)found {

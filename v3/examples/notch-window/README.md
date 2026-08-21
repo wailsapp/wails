@@ -8,7 +8,7 @@ The example creates two independent windows. The second appears over the first
 with a different size and animation duration, demonstrating that
 multiple notch windows may coexist and be shown or hidden independently.
 Set `NotchWindowOptions.Screen` to place an instance on a particular display;
-without it, Wails automatically chooses a camera-housing display.
+without it, Wails uses the primary display.
 
 From this directory, run:
 

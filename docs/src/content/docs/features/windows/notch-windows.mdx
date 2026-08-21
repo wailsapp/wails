@@ -37,7 +37,7 @@ alert.Close()
 | `Height` | `int` | `92` | Usable webview height inside the native shaped edges. |
 | `Animated` | `bool` | `false` | Slides the window down on `Show` and up on `Hide`. |
 | `AnimationSpeed` | `time.Duration` | `420ms` | Show duration. Hide uses two thirds of this value, `280ms` by default. |
-| `Screen` | `*Screen` | automatic | Targets a specific display. Wails otherwise prefers the main notched display, then another notched display, then the main display. |
+| `Screen` | `*Screen` | primary display | Targets a specific display. Wails otherwise uses the primary display. |
 | `WindowOptions` | `WebviewWindowOptions` | defaults | Supplies the name, URL or HTML, CSS, JavaScript, key bindings, and other webview behaviour. |
 
 `NewNotchWindow` owns the outer size, position, frame, transparency, resize
