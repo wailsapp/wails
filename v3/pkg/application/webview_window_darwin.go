@@ -9,6 +9,7 @@ package application
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
 #include "webview_panel_darwin.h"
+#include "webview_notch_window_darwin.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
@@ -61,7 +62,8 @@ static NSWindowStyleMask windowStyleMask(bool frameless, bool squareCorners, dou
 }
 
 static NSWindow<WailsWebviewWindow>* createNativeWindow(int width, int height, bool frameless,
-		bool squareCorners, double cornerRadius, bool isPanel, struct PanelPreferences panelPreferences) {
+		bool squareCorners, double cornerRadius, bool isPanel, struct PanelPreferences panelPreferences,
+		bool isNotchWindow) {
 	NSWindowStyleMask styleMask = windowStyleMask(frameless, squareCorners, cornerRadius);
 	NSRect contentRect = NSMakeRect(0, 0, width-1, height-1);
 	if (!isPanel) {
@@ -77,10 +79,18 @@ static NSWindow<WailsWebviewWindow>* createNativeWindow(int width, int height, b
 	if (panelPreferences.UtilityWindow) {
 		styleMask |= NSWindowStyleMaskUtilityWindow;
 	}
-	WebviewPanel* panel = [[WebviewPanel alloc] initWithContentRect:contentRect
-		styleMask:styleMask
-		backing:NSBackingStoreBuffered
-		defer:NO];
+	WebviewPanel* panel;
+	if (isNotchWindow) {
+		panel = [[WebviewNotchWindow alloc] initWithContentRect:contentRect
+			styleMask:styleMask
+			backing:NSBackingStoreBuffered
+			defer:NO];
+	} else {
+		panel = [[WebviewPanel alloc] initWithContentRect:contentRect
+			styleMask:styleMask
+			backing:NSBackingStoreBuffered
+			defer:NO];
+	}
 	panel.floatingPanel = panelPreferences.FloatingPanel;
 	panel.becomesKeyOnlyIfNeeded = panelPreferences.BecomesKeyOnlyIfNeeded;
 	return panel;
@@ -91,9 +101,10 @@ static NSWindow<WailsWebviewWindow>* createNativeWindow(int width, int height, b
 void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled,
 		bool frameless, bool squareCorners, double cornerRadius, bool enableDragAndDrop,
 		struct WebviewPreferences preferences, const char* applicationNameForUserAgent,
-		bool isPanel, struct PanelPreferences panelPreferences) {
+		bool isPanel, struct PanelPreferences panelPreferences, bool isNotchWindow,
+		int notchContentWidth, int notchContentHeight, const char* notchScreenID) {
 	NSWindow<WailsWebviewWindow>* window = createNativeWindow(width, height, frameless,
-		squareCorners, cornerRadius, isPanel, panelPreferences);
+		squareCorners, cornerRadius, isPanel, panelPreferences, isNotchWindow);
 
 	// Note: collectionBehavior is set later via windowSetCollectionBehavior()
 	// to allow user configuration of Space and fullscreen behavior
@@ -214,6 +225,16 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	}
 
 	window.webView = webView;
+	if (isNotchWindow) {
+		NSString* targetScreenID = nil;
+		if (notchScreenID != NULL && notchScreenID[0] != '\0') {
+			targetScreenID = [NSString stringWithUTF8String:notchScreenID];
+		}
+		[(WebviewNotchWindow*)window configureWebView:webView
+			contentWidth:notchContentWidth
+			contentHeight:notchContentHeight
+			targetScreenID:targetScreenID];
+	}
 	return window;
 }
 
@@ -770,7 +791,7 @@ void windowCenterOnScreen(void* nsWindow, const char* screenID) {
 		NSDictionary* desc = [s deviceDescription];
 		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
 		CGDirectDisplayID displayID = [num unsignedIntValue];
-		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		NSString* sid = [NSString stringWithFormat:@"%u", displayID];
 		if ([sid isEqualToString:targetID]) {
 			targetScreen = s;
 			break;
@@ -795,7 +816,7 @@ void windowSetPositionOnScreen(void* nsWindow, int x, int y, const char* screenI
 		NSDictionary* desc = [s deviceDescription];
 		NSNumber* num = [desc objectForKey:@"NSScreenNumber"];
 		CGDirectDisplayID displayID = [num unsignedIntValue];
-		NSString* sid = [NSString stringWithFormat:@"%d", displayID];
+		NSString* sid = [NSString stringWithFormat:@"%u", displayID];
 		if ([sid isEqualToString:targetID]) {
 			targetScreen = s;
 			break;
@@ -919,8 +940,12 @@ static bool isNonActivatingPanel(void *window) {
 		([nsWindow styleMask] & NSWindowStyleMaskNonactivatingPanel) != 0;
 }
 
-static void windowShow(void *window) {
+static void windowShow(void *window, bool animated, double animationDuration) {
 	NSWindow* nsWindow = nativeWindow(window);
+	if ([nsWindow isKindOfClass:[WebviewNotchWindow class]]) {
+		[(WebviewNotchWindow*)nsWindow showAnimated:animated duration:animationDuration];
+		return;
+	}
 	if (isNonActivatingPanel(window)) {
 		[nsWindow orderFrontRegardless];
 		return;
@@ -928,8 +953,13 @@ static void windowShow(void *window) {
 	[nsWindow makeKeyAndOrderFront:nil];
 }
 
-static void windowHide(void *window) {
-	[nativeWindow(window) orderOut:nil];
+static void windowHide(void *window, bool animated, double animationDuration) {
+	NSWindow* nsWindow = nativeWindow(window);
+	if ([nsWindow isKindOfClass:[WebviewNotchWindow class]]) {
+		[(WebviewNotchWindow*)nsWindow hideAnimated:animated duration:animationDuration];
+		return;
+	}
+	[nsWindow orderOut:nil];
 }
 
 // setButtonState sets the state of the given button
@@ -1009,6 +1039,9 @@ static void windowSetFrameless(void *window, bool frameless, bool squareCorners,
 
 static void startDrag(void *window) {
 	NSWindow* nsWindow = nativeWindow(window);
+	if ([nsWindow isKindOfClass:[WebviewNotchWindow class]]) {
+		return;
+	}
 
 	// Get delegate
 	WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
@@ -1108,6 +1141,7 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
@@ -1214,13 +1248,32 @@ func (w *macosWebviewWindow) getScreen() (*Screen, error) {
 }
 
 func (w *macosWebviewWindow) show() {
-	C.windowShow(w.nsWindow)
+	animated, duration := w.notchAnimation()
+	C.windowShow(w.nsWindow, C.bool(animated), C.double(duration))
 	w.setHasShadow(!w.parent.options.Mac.DisableShadow)
 }
 
 func (w *macosWebviewWindow) hide() {
 	globalApplication.debug("Window hiding", "windowId", w.parent.id, "title", w.parent.options.Title)
-	C.windowHide(w.nsWindow)
+	animated, duration := w.notchAnimation()
+	C.windowHide(w.nsWindow, C.bool(animated), C.double(duration))
+}
+
+func (w *macosWebviewWindow) notchAnimation() (bool, float64) {
+	if w.parent.notchWindow == nil {
+		return false, 0
+	}
+	return w.parent.notchWindow.animated,
+		float64(w.parent.notchWindow.animationSpeed) / float64(time.Second)
+}
+
+func (w *macosWebviewWindow) notchConfiguration() (int, int, string) {
+	if w.parent.notchWindow == nil {
+		return 0, 0, ""
+	}
+	return w.parent.notchWindow.contentWidth,
+		w.parent.notchWindow.contentHeight,
+		w.parent.notchWindow.screenID
 }
 
 func (w *macosWebviewWindow) setFullscreenButtonState(state ButtonState) {
@@ -1579,6 +1632,9 @@ func (w *macosWebviewWindow) run() {
 			appName = C.CString(s)
 			defer C.free(unsafe.Pointer(appName))
 		}
+		notchContentWidth, notchContentHeight, notchScreenID := w.notchConfiguration()
+		cNotchScreenID := C.CString(notchScreenID)
+		defer C.free(unsafe.Pointer(cNotchScreenID))
 		w.nsWindow = C.windowNew(C.uint(w.parent.id),
 			C.int(options.Width),
 			C.int(options.Height),
@@ -1591,6 +1647,10 @@ func (w *macosWebviewWindow) run() {
 			appName,
 			C.bool(macOptions.WindowClass == MacWindowClassPanel),
 			w.getPanelPreferences(),
+			C.bool(w.parent.notchWindow != nil),
+			C.int(notchContentWidth),
+			C.int(notchContentHeight),
+			cNotchScreenID,
 		)
 		if macOptions.DisableEscapeExitsFullscreen {
 			C.windowSetDisableEscapeExitsFullscreen(w.nsWindow, C.bool(true))
@@ -1674,18 +1734,20 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if options.Screen != nil {
-			cID := C.CString(options.Screen.ID)
-			if w.parent.options.InitialPosition == WindowCentered {
-				C.windowCenterOnScreen(w.nsWindow, cID)
+		if w.parent.notchWindow == nil {
+			if options.Screen != nil {
+				cID := C.CString(options.Screen.ID)
+				if w.parent.options.InitialPosition == WindowCentered {
+					C.windowCenterOnScreen(w.nsWindow, cID)
+				} else {
+					C.windowSetPositionOnScreen(w.nsWindow, C.int(options.X), C.int(options.Y), cID)
+				}
+				C.free(unsafe.Pointer(cID))
+			} else if w.parent.options.InitialPosition == WindowCentered {
+				C.windowCenter(w.nsWindow)
 			} else {
-				C.windowSetPositionOnScreen(w.nsWindow, C.int(options.X), C.int(options.Y), cID)
+				w.setPosition(options.X, options.Y)
 			}
-			C.free(unsafe.Pointer(cID))
-		} else if w.parent.options.InitialPosition == WindowCentered {
-			C.windowCenter(w.nsWindow)
-		} else {
-			w.setPosition(options.X, options.Y)
 		}
 
 		startURL, err := assetserver.GetStartURL(options.URL)
