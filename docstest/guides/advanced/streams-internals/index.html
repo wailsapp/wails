@@ -1,0 +1,467 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Streams — internals · Wails</title><meta name="description" content="How the stream transport works, why it is built this way, what the buffer constants mean, and what is not finished"><meta property="og:title" content="Streams — internals · Wails"><meta property="og:description" content="How the stream transport works, why it is built this way, what the buffer constants mean, and what is not finished"><meta property="og:site_name" content="Wails"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Streams — internals · Wails"><meta name="twitter:description" content="How the stream transport works, why it is built this way, what the buffer constants mean, and what is not finished"><meta property="og:url" content="https://v3.wails.io/guides/advanced/streams-internals/"><link rel="canonical" href="https://v3.wails.io/guides/advanced/streams-internals/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/advanced/streams-internals/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/advanced/streams-internals/"><script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('mpress-theme');if(t==='system'||t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();(function(){try{var p=JSON.parse(localStorage.getItem('mpress-accessibility')||'{}');var d=document.documentElement;var values={text:p.text||'default',spacing:p.spacing?'relaxed':'default',font:p.readable?'readable':'default',contrast:p.contrast?'high':'default',links:p.links?'underlined':'default',focus:p.focus?'true':'false',guide:p.guide?'true':'false',motion:p.motion?'reduced':'default',colour:p.colour||'default',bionic:p.bionic?'true':'false'};Object.keys(values).forEach(function(k){d.setAttribute('data-a11y-'+k,values[k]);});}catch(_){}})();</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../search-index.json" data-shortcut-search="Mod+K" data-shortcut-accessibility="Mod+A"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../"><span class="theme-logo" style="--mpress-logo-width:160px"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../blog/">Blog</a></nav><div class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><button id="search" type="button" role="combobox" aria-label="Search" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog">Search documentation</button><kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></div><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><span class="header-utility-cluster" role="group" aria-label="Site preferences"><div class="header-group utility-select accessibility-select"><button id="accessibility" class="utility-menu-trigger" type="button" popovertarget="mpress-accessibility-panel" aria-label="Accessibility settings" aria-haspopup="dialog" aria-expanded="false" title="Accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 512 512" class="mpress-accessibility-icon" aria-hidden="true"><defs><mask id="mpress-accessibility-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512" mask-type="luminance"><rect width="512" height="512" fill="white"/><g transform="translate(0 -14)">
+  <circle cx="256" cy="139" r="35" fill="black"/>
+
+  <path
+    fill="black"
+    d="M144 184
+       C166 191 193 199 219 203
+       C243 207 269 207 293 203
+       C319 199 346 191 368 184
+       C381 180 393 188 397 201
+       C401 214 393 227 380 232
+       L311 256
+       C303 259 299 266 300 275
+       C304 314 313 359 322 407
+       C325 424 315 437 300 439
+       C285 441 274 432 271 417
+       L259 354
+       C258 348 257 344 256 344
+       C255 344 254 348 253 354
+       L241 417
+       C238 432 227 441 212 439
+       C197 437 187 424 190 407
+       C199 359 208 314 212 275
+       C213 266 209 259 201 256
+       L132 232
+       C119 227 111 214 115 201
+       C119 188 131 180 144 184 Z"/>
+  </g></mask></defs><circle cx="256" cy="256" r="220" fill="currentColor" mask="url(#mpress-accessibility-cutout)"/></svg></button></div><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/advanced/streams-internals/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/guides/advanced/streams-internals/" role="menuitem"><span>Bahasa Indonesia</span><small>English fallback</small></a></li></menu></div><!--mpress-version-menu:start--><!--mpress-version-menu:end--><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></span></nav></header><section id="mpress-accessibility-panel" class="utility-menu-panel mpress-accessibility-panel" popover role="dialog" aria-labelledby="mpress-accessibility-title" data-utility-panel><header class="mpress-accessibility-header"><div><h2 id="mpress-accessibility-title">Accessibility</h2><p>Adjust the site to make it easier to read and navigate.</p></div><button class="mpress-accessibility-close" type="button" data-a11y-close aria-label="Close accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><div class="mpress-accessibility-tabs" role="tablist" aria-label="Accessibility categories"><button id="mpress-a11y-tab-reading" type="button" role="tab" aria-selected="true" aria-controls="mpress-a11y-panel-reading" data-a11y-tab="reading">Reading</button><button id="mpress-a11y-tab-focus" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-focus" data-a11y-tab="focus" tabindex="-1">Focus</button><button id="mpress-a11y-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-vision" data-a11y-tab="vision" tabindex="-1">Vision</button></div><div class="mpress-accessibility-body"><section id="mpress-a11y-panel-reading" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-reading" data-a11y-tabpanel="reading"><h3>Reading</h3><p>Change how text is shown in the main content.</p><div class="mpress-a11y-choice" role="radiogroup" aria-label="Text size"><button type="button" role="radio" data-a11y-choice="text" data-value="default">Default</button><button type="button" role="radio" data-a11y-choice="text" data-value="large">Large</button><button type="button" role="radio" data-a11y-choice="text" data-value="larger">Larger</button></div><label class="mpress-a11y-toggle"><span><strong>Readable font</strong><small>Use a simple, widely spaced font stack.</small></span><input type="checkbox" data-a11y-toggle="readable"></label><label class="mpress-a11y-toggle"><span><strong>Relaxed spacing</strong><small>Add more line, word, and letter space.</small></span><input type="checkbox" data-a11y-toggle="spacing"></label><label class="mpress-a11y-toggle"><span><strong>Bionic reading</strong><small>Emphasise the start of longer words.</small></span><input type="checkbox" data-a11y-toggle="bionic"></label></section><section id="mpress-a11y-panel-focus" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-focus" data-a11y-tabpanel="focus" hidden><h3>Focus and attention</h3><p>Reduce distraction and keep your place while reading.</p><label class="mpress-a11y-toggle"><span><strong>Focus mode</strong><small>Dim navigation until you point to it.</small></span><input type="checkbox" data-a11y-toggle="focus"></label><label class="mpress-a11y-toggle"><span><strong>Reading guide</strong><small>Follow the pointer with a horizontal guide.</small></span><input type="checkbox" data-a11y-toggle="guide"></label><label class="mpress-a11y-toggle"><span><strong>Reduce motion</strong><small>Stop non-essential animation and smooth scrolling.</small></span><input type="checkbox" data-a11y-toggle="motion"></label></section><section id="mpress-a11y-panel-vision" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-vision" data-a11y-tabpanel="vision" hidden><h3>Vision and colour</h3><p>Increase contrast or use a more distinct colour palette.</p><div class="mpress-a11y-field"><span id="mpress-a11y-colour-label">Colour profile</span><div class="mpress-a11y-select" data-a11y-select="colour"><button class="mpress-a11y-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mpress-a11y-colour-label mpress-a11y-colour-value"><span id="mpress-a11y-colour-value" data-a11y-select-value>Site colours</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="mpress-a11y-options" role="listbox" aria-labelledby="mpress-a11y-colour-label" hidden><button class="mpress-a11y-option" type="button" role="option" aria-selected="true" data-value="default">Site colours</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="red-green" tabindex="-1">Red and green distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="blue-yellow" tabindex="-1">Blue and yellow distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="low" tabindex="-1">Low saturation</button></div></div></div><label class="mpress-a11y-toggle"><span><strong>High contrast</strong><small>Increase text and border contrast.</small></span><input type="checkbox" data-a11y-toggle="contrast"></label><label class="mpress-a11y-toggle"><span><strong>Underline links</strong><small>Show links with more than colour.</small></span><input type="checkbox" data-a11y-toggle="links"></label></section></div><footer class="mpress-accessibility-footer"><small>Saved only in this browser.</small><button class="mpress-accessibility-reset" type="button" data-a11y-reset>Reset settings</button></footer></section><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../">Home</a><a class="" href="../../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../quick-start/installation/">Installation</a><a class="" href="../../../quick-start/first-app/">Your First App</a><a class="" href="../../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../../tutorials/overview/">Tutorials</a></div></details></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../concepts/architecture/">How Wails Works</a><a class="" href="../../../concepts/manager-api/">Manager API</a><a class="" href="../../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/windows/basics/">Window Basics</a><a class="" href="../../../features/windows/options/">Window Options</a><a class="" href="../../../features/windows/notch-windows/">Notch Windows</a><a class="" href="../../../features/windows/permissions/">Permissions</a><a class="" href="../../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/menus/application/">Application Menus</a><a class="" href="../../../features/menus/context/">Context Menus</a><a class="" href="../../../features/menus/systray/">System Tray Menus</a><a class="" href="../../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/bindings/methods/">Method Binding</a><a class="" href="../../../features/bindings/services/">Services</a><a class="" href="../../../features/bindings/models/">Data Models</a><a class="" href="../../../features/bindings/enums/">Enums</a><a class="" href="../../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/events/system/">Event System</a><a class="" href="../../../features/events/application/">Application Events</a><a class="" href="../../../features/events/window/">Window Events</a><a class="" href="../../../features/events/custom/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/dialogs/file/">File Dialogs</a><a class="" href="../../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/autostart/basics/">Autostart</a></div></details></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/clipboard/basics/">Clipboard Operations</a></div></details></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/browser/integration/">Browser Integration</a></div></details></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/notifications/overview/">Notifications</a></div></details></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/screens/info/">Screen Information</a></div></details></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/environment/info/">Environment</a></div></details></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/mobile/">Overview</a><a class="" href="../../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../guides/mobile/ios/">iOS</a><a class="" href="../../../guides/mobile/android/">Android</a><a class="" href="../../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../experimental/">Overview</a><a class="" href="../../../experimental/wake/">Wake</a><a class="" href="../../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../../guides/dev/workflow/">Development Workflow</a><a class="" href="../../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../guides/dev/debugging/">Debugging</a><a class="" href="../../../guides/testing/">Testing</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/build/building/">Building Applications</a><a class="" href="../../../guides/build/customization/">Build Customization</a><a class="" href="../../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../guides/build/signing/">Code Signing</a><a class="" href="../../../guides/build/windows/">Windows Packaging</a><a class="" href="../../../guides/build/macos/">macOS Packaging</a><a class="" href="../../../guides/build/linux/">Linux Packaging</a><a class="" href="../../../guides/build/msix/">MSIX Packaging</a><a class="" href="../../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/updater/">In-App Updater</a><a class="" href="../../../guides/file-associations/">File Associations</a><a class="" href="../../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/routing/">Frontend Routing</a><a class="" href="../../../guides/gin-routing/">Using Gin Router</a><a class="" href="../../../guides/gin-services/">Gin Services</a><a class="" href="../../../guides/patterns/database/">Database Integration</a><a class="" href="../../../guides/patterns/rest-api/">REST APIs</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../guides/server-build/">Server Build</a><a class="" href="../../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../guides/advanced/wml/">WML (Wails Markup)</a><a class="" href="../../../guides/panic-handling/">Panic Handling</a><a class="" href="../../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../reference/overview/">Overview</a><a class="" href="../../../reference/application/">Application</a><a class="" href="../../../reference/window/">Window</a><a class="" href="../../../reference/menu/">Menu</a><a class="" href="../../../reference/events/">Events</a><a class="" href="../../../reference/dialogs/">Dialogs</a><a class="" href="../../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../contributing/getting-started/">Getting Started</a><a class="" href="../../../contributing/setup/">Development Setup</a><a class="" href="../../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../migration/v2-to-v3/">From v2 to v3</a><a class="" href="../../../migration/from-electron/">From Electron</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/links/">Links</a><a class="" href="../../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/showcase/">Overview</a><details open><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../community/showcase/clave/">Clave</a><a class="" href="../../../community/showcase/condui/">Condui</a><a class="" href="../../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../community/showcase/emailit/">EmailIt</a><a class="" href="../../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../community/showcase/happytools/">HappyTools</a><a class="" href="../../../community/showcase/kira/">Kira</a><a class="" href="../../../community/showcase/ltools/">LTools</a><a class="" href="../../../community/showcase/mchat/">Mchat</a><a class="" href="../../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../../community/showcase/october/">October</a><a class="" href="../../../community/showcase/optimus/">Optimus</a><a class="" href="../../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../community/showcase/portfall/">Portfall</a><a class="" href="../../../community/showcase/redisviewer/">Redis Viewer</a><a class="" href="../../../community/showcase/resizem/">Resizem</a><a class="" href="../../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../community/showcase/surge/">Surge</a><a class="" href="../../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../community/showcase/wally/">Wally</a><a class="" href="../../../community/showcase/wombat/">Wombat</a><a class="" href="../../../community/showcase/xensql/">XenSQL</a><a class="" href="../../../community/showcase/ytd/">Ytd</a><a class="" href="../../../community/showcase/hiposter/">hiposter</a><a class="" href="../../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details></div></details><a class="" href="../../../whats-new/">What&#39;s New</a><a class="" href="../../../status/">Status</a><a class="" href="../../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../credits/">Credits</a></nav></aside><div class="docs-stage"><main id="content"><article><h1>Streams — internals</h1><p class="page-lead">How the stream transport works, why it is built this way, what the buffer constants mean, and what is not finished</p><p>Reference for anyone — human or agent — changing the stream transport. The user-facing API<br>
+is in <a href="/guides/streams/">Streams</a>; this page is about the machinery underneath and the<br>
+reasoning behind it, because several decisions look arbitrary until you know what they are<br>
+avoiding.</p>
+<h2 id="files">Files</h2>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>v3/pkg/application/stream.go</code></td>
+<td>public API, <code>StreamConn</code>, <code>streamSink</code>, the manager and its registry</td>
+</tr>
+<tr>
+<td><code>v3/pkg/application/stream_session.go</code></td>
+<td>one page load in one window: the outbound queue, frame kinds, connection table</td>
+</tr>
+<tr>
+<td><code>v3/pkg/application/stream_transport.go</code></td>
+<td>the two HTTP endpoints, binary framing, chunk reassembly, runtime prelude</td>
+</tr>
+<tr>
+<td><code>v3/pkg/application/stream_server.go</code></td>
+<td><code>-tags server</code> only: real WebSocket sink</td>
+</tr>
+<tr>
+<td><code>v3/pkg/application/stream_prelude_{server,desktop}.go</code></td>
+<td>picks the client transport at bundle-serve time</td>
+</tr>
+<tr>
+<td><code>v3/internal/runtime/desktop/@wailsio/runtime/src/stream.ts</code></td>
+<td>the <code>WebSocket</code>-shaped client</td>
+</tr>
+<tr>
+<td><code>v3/tests/stream-performance/</code></td>
+<td>load harness (<code>-upload</code>, <code>-reloads</code>, scenario sweeps)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-shape">The shape</h2>
+<p>Go→JS and JS→Go use different mechanisms, and that asymmetry is the whole design.</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="Go                                  webview&#10;──                                  ───────&#10;Send() ─► per-window queue ─────────► GET  /wails/stream/poll   (held open)&#10;                                      └─ one held request per window,&#10;                                         carrying frames for every connection&#10;&#10;Receive() ◄─ per-conn inbox ◄──────── POST /wails/stream/send   (one or more frames)"><code class="language-text"><span class="mpress-code-line">Go                                  webview
+</span><span class="mpress-code-line">──                                  ───────
+</span><span class="mpress-code-line">Send() ─► per-window queue ─────────► GET  /wails/stream/poll   (held open)
+</span><span class="mpress-code-line">                                      └─ one held request per window,
+</span><span class="mpress-code-line">                                         carrying frames for every connection
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">Receive() ◄─ per-conn inbox ◄──────── POST /wails/stream/send   (one or more frames)</span></code></pre></div>
+<p><strong>Go→JS is a held poll.</strong> The request parks until there is something to deliver. There is<br>
+no polling interval and nothing adaptive, deliberately: the server holds until a frame<br>
+exists, so delivery latency is already ~0, and any client-side interval could only add to<br>
+it. Frames that arrive while a response is in flight accumulate and ride the next one,<br>
+which makes the round trip itself the batching window — it widens as load rises without<br>
+anything measuring it. Measured: 1.0 frames per response at 100/s, still 1.0 at 5,000/s,<br>
+3.4 at 20,000/s, and p99 latency <em>falls</em> as the rate climbs.</p>
+<p><strong>JS→Go uses ordinary POSTs.</strong> Sends are serialised per connection with a promise chain,<br>
+because concurrent <code>fetch</code> calls do not preserve order and Go relies on send order being<br>
+the order it observes. Frames accumulated behind an in-flight request are batched into the<br>
+next POST. Go appends the accepted frame or batch prefix to the connection&rsquo;s inbox <em>before</em><br>
+responding, so the client cannot advance past bytes Go has not queued.</p>
+<p><strong>One poll in flight per window, multiplexing every connection.</strong> This is what makes<br>
+ordering correct by construction — one queue, one drainer, no second delivery path that<br>
+could overtake the first. It also sidesteps the HTTP/1.1 six-connections-per-host limit on<br>
+Windows, where these are real Chromium network requests against <code>http://wails.localhost</code>.</p>
+<h2 id="why-these-specific-decisions">Why these specific decisions</h2>
+<p>Each of these is a scar from the event-transport work. Removing one re-opens a measured bug.</p>
+<p><strong>Nothing in the Go→JS path touches the main thread.</strong> <code>Send</code> appends under a mutex and<br>
+returns. Events used to run their eval inline when emitted from the main thread while an<br>
+earlier goroutine emit was still queued — 4.4% of events inverted, on all three platforms.<br>
+A single queue with a single drainer cannot do that.</p>
+<p><strong>Nothing touches <code>evaluateJavaScript</code>, at any size.</strong> Splicing payload into eval source<br>
+retains host memory above a platform-specific knee: 11.6 GB on macOS and 6.2 GB on<br>
+WebKitGTK at 100 × 1 MB/sec. Streams never go near it, which is why the constant-byte-rate<br>
+sweep is flat at every frame size.</p>
+<p><strong>Control data travels in headers, never the body or query string.</strong> WebKitGTK 6.0 can<br>
+deliver POST bodies as query params for custom URI schemes (<code>transport_http.go</code> carries a<br>
+fallback for exactly that), and WebView2 caps body delivery around 2 MB.</p>
+<p><strong>The poll response is binary, not JSON.</strong> Frames are <code>[]byte</code>; base64 inside a JSON<br>
+envelope would cost 33% on every frame plus a parse on the UI thread.</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="magic &#34;WS1\0&#34; | flags u8 | count u32 | count × ( connID u32 | kind u8 | len u32 | payload )"><code class="language-text"><span class="mpress-code-line">magic &#34;WS1\0&#34; | flags u8 | count u32 | count × ( connID u32 | kind u8 | len u32 | payload )</span></code></pre></div>
+<p><code>kind</code> is data / open / close / error. There is no sequence number and no ack: a WebSocket<br>
+does not replay, and a connection that drops loses what was in flight. Emulating that is<br>
+simpler and more honest than a cursor the bounded buffer could not always satisfy.</p>
+<p><strong>Holding a request is safe</strong> because every webview request already gets its own goroutine.<br>
+<code>dispatchWorkers</code> in <code>assetserver_webview.go</code> is pinned at 0 with a comment naming exactly<br>
+this case; turning that pool on would need a request-lifetime bound first.</p>
+<h2 id="buffer-constants">Buffer constants</h2>
+<p>All in <code>stream.go</code>. <strong>They are compile-time constants, not options</strong> — there is no<br>
+<code>Options.Streams</code> and no per-stream setting. Changing them means editing the file.</p>
+<table>
+<thead>
+<tr>
+<th>constant</th>
+<th>value</th>
+<th>what it bounds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>streamOutQueueBytes</code></td>
+<td>8 MB</td>
+<td>bytes buffered per window awaiting collection</td>
+</tr>
+<tr>
+<td><code>streamOutQueueDepth</code></td>
+<td>256</td>
+<td>frames buffered per window</td>
+</tr>
+<tr>
+<td><code>streamOutQueueBytesGlobal</code> / <code>streamOutQueueDepthGlobal</code></td>
+<td>256 MB / 8,192</td>
+<td>outbound data buffered across the application</td>
+</tr>
+<tr>
+<td><code>streamInQueueBytesGlobal</code> / <code>streamInQueueDepthGlobal</code></td>
+<td>256 MB / 8,192</td>
+<td>inbound data awaiting <code>Receive</code> across the application</td>
+</tr>
+<tr>
+<td><code>streamMaxConnections</code></td>
+<td>256</td>
+<td>live connections plus queued closes in one session</td>
+</tr>
+<tr>
+<td><code>streamMaxConnectionsGlobal</code></td>
+<td>4,096</td>
+<td>live connections across the application</td>
+</tr>
+<tr>
+<td><code>streamOutCloseDepthGlobal</code></td>
+<td>4,096</td>
+<td>undelivered close notifications across the application</td>
+</tr>
+<tr>
+<td><code>streamMaxSessionsPerWindow</code></td>
+<td>16</td>
+<td>sessions one window may hold before a newer generation must supersede an older one</td>
+</tr>
+<tr>
+<td><code>streamMaxSessions</code></td>
+<td>1,024</td>
+<td>sessions across the application</td>
+</tr>
+<tr>
+<td><code>streamOutControlDepth</code> / <code>streamOutControlDepthGlobal</code></td>
+<td>256 / 4,096</td>
+<td>queued non-close control frames, per session and across the application</td>
+</tr>
+<tr>
+<td><code>streamMaxChunkSets</code> / <code>streamMaxChunkTotal</code></td>
+<td>256 / 4,096</td>
+<td>incomplete uploads per session, and parts in one upload</td>
+</tr>
+<tr>
+<td><code>streamMaxChunkBytesGlobal</code> / <code>streamMaxChunkPartsGlobal</code></td>
+<td>128 MB / 4,096</td>
+<td>chunk payload and part metadata across the application</td>
+</tr>
+<tr>
+<td><code>streamMaxChunkIDLen</code></td>
+<td>64 bytes</td>
+<td>one client-supplied chunk-set identifier</td>
+</tr>
+<tr>
+<td><code>streamMaxResponseBytes</code></td>
+<td>1 MB</td>
+<td>one poll response</td>
+</tr>
+<tr>
+<td><code>streamHoldTimeout</code></td>
+<td>20 s</td>
+<td>how long an empty poll parks</td>
+</tr>
+<tr>
+<td><code>streamSessionTTL</code></td>
+<td>60 s</td>
+<td>no poll for this long and no live connections ⇒ session is dead</td>
+</tr>
+<tr>
+<td><code>streamSessionGrace</code></td>
+<td>10 min</td>
+<td>no poll for this long with live connections ⇒ session is dead</td>
+</tr>
+<tr>
+<td><code>streamSessionSweep</code></td>
+<td>20 s</td>
+<td>how often the janitor looks for dead sessions</td>
+</tr>
+<tr>
+<td><code>streamMaxFrameBytes</code></td>
+<td>64 MB</td>
+<td>one frame in either direction</td>
+</tr>
+<tr>
+<td><code>streamMaxNameLen</code></td>
+<td>256 bytes</td>
+<td>one registered or requested stream name</td>
+</tr>
+<tr>
+<td><code>streamInQueueDepth</code> / <code>streamInQueueBytes</code></td>
+<td>256 / 8 MB</td>
+<td>frames received and not yet taken by <code>Receive</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-to-pick-them">How to pick them</h3>
+<p><strong><code>streamOutQueueDepth</code> is deliberately not <code>eventQueueCapacity</code> (64).</strong> That constant was<br>
+measured for a queue drained one eval at a time, where depth bought nothing but tail<br>
+latency. A poll drains in batches, so depth here has to cover one round trip of<br>
+production — at 5,000 frames/s and a 5 ms round trip, ~25 frames. 256 leaves room for a<br>
+burst without stalling the producer.</p>
+<p><strong><code>streamOutQueueBytes</code> is the bound that actually matters</strong>, because 256 frames of 1 MB is<br>
+256 MB. It is the backstop on host memory when a frontend stops collecting.</p>
+<p>Two rules interact here, and the second is easy to break by accident:</p>
+<ul>
+<li>
+<p>The depth and byte caps bound <em>accumulation</em>.</p>
+</li>
+<li>
+<p><strong>An empty queue always accepts one frame, however large.</strong> Enforcing the byte cap
+unconditionally made a frame larger than the cap impossible to send at all — the wait</p>
+<p>condition could never become true, so <code>Send</code> blocked forever and <code>TrySend</code> reported full</p>
+<p>permanently. Frame size is not always the caller&rsquo;s choice; a struct with a <code>[]byte</code> field</p>
+<p>marshals to whatever it marshals to.</p>
+</li>
+</ul>
+<p><strong><code>streamMaxResponseBytes</code> exists because of Windows.</strong> The WebView2 response writer<br>
+accumulates the entire body in memory and only hands it over in <code>Finish</code>, so an unbounded<br>
+response is an unbounded allocation there. Raising it does <em>not</em> buy Windows throughput —<br>
+measured, the Windows bottleneck is per-byte, not per-response: responses/s varies 4×<br>
+across the frame sweep while MB/s stays flat at ~90.</p>
+<p><strong>The inbound bound is what makes the frontend wait.</strong> On the desktop, <code>deliver</code> reports<br>
+fullness, the endpoint responds <code>429</code>, and the client retries the same frame or unaccepted<br>
+batch suffix with bounded backoff. This avoids occupying a webview request slot while the<br>
+handler catches up. In server mode the socket read pump waits and lets TCP apply<br>
+backpressure. Without the bound, a handler slow to call <code>Receive</code> could grow host memory<br>
+without limit.</p>
+<p><strong>Control frames bypass the data caps, but have independent lifecycle bounds.</strong> Losing a<br>
+data frame under backpressure is a slow-down; losing an open ack leaves the frontend in<br>
+<code>CONNECTING</code> forever, and losing a close leaves it believing a dead connection is live.<br>
+Non-close controls therefore have their own bounded queue, separate from the one closes<br>
+draw on, so a burst of refused opens cannot consume the capacity an accepted connection<br>
+needs to report that it ended. Each session also reserves one close slot per accepted<br>
+connection. When that capacity is occupied, a new open receives retryable backpressure<br>
+before it is registered.</p>
+<p><strong>Per-session bounds also have application-wide counterparts.</strong> Without them, every<br>
+admitted session or connection could retain its full local allowance at once. Outbound<br>
+and inbound data therefore share separate 256 MiB / 8,192-frame budgets across desktop<br>
+and server transports. Live connections have a 4,096-entry budget, and undelivered close<br>
+notifications have a second one of the same size. Reaching a shared allowance applies the<br>
+same blocking <code>Send</code> or non-blocking <code>TrySend</code> behaviour as reaching a local allowance,<br>
+and every drain, receive, close, failed write, and shutdown path returns its reservation.</p>
+<p>Those two budgets are deliberately separate rather than one allowance a connection hands<br>
+to its own close frame. Each reservation is released by exactly one owner: a connection&rsquo;s<br>
+slot by <code>shutdown</code>, which runs once, and a close frame&rsquo;s slot by whatever disposes of the<br>
+frame — a drain, or its session being torn down. Ownership that migrates between two<br>
+parties has to be transferred atomically, and an earlier revision that let a close inherit<br>
+the connection&rsquo;s slot leaked one permanently whenever teardown ran between a close being<br>
+attempted and that attempt failing.</p>
+<p><strong>Go frames transfer ownership; JavaScript frames are snapshotted.</strong> Go <code>Send</code> retains the<br>
+caller&rsquo;s slice until the transport writes it, so callers must not mutate or reuse that<br>
+storage after a successful call. JavaScript <code>send()</code> copies mutable binary inputs before it<br>
+returns, matching native WebSocket ownership semantics. The asymmetric rule avoids a<br>
+second full-frame copy inside Go while keeping the browser-facing API unsurprising.</p>
+<p><strong>JavaScript sending follows the WebSocket buffering contract.</strong> <code>send()</code> cannot block, so<br>
+an application can queue data faster than the desktop request channel accepts it, just as<br>
+it can outrun a native WebSocket. <code>bufferedAmount</code> includes every byte retained by that<br>
+socket and is the caller&rsquo;s backpressure signal; the host-side queues remain independently<br>
+bounded by the limits above. A terminal failure, peer close, or local <code>close()</code> releases<br>
+the retained payloads. Local close also cancels an open or data request waiting on <code>429</code><br>
+before it posts the reserved close control, so admission or receiver backpressure cannot<br>
+leave the socket stuck in <code>CLOSING</code>.</p>
+<p><strong>Chunk reassembly has a shared host-memory allowance.</strong> Each session may assemble a<br>
+single frame up to 64 MiB, but that allowance must not be multiplied by every admitted<br>
+session. Incomplete and retryable chunk sets therefore share a 128 MiB admitted-payload<br>
+budget. Completing a set briefly retains both its parts and its contiguous assembled<br>
+frame, so doubling that logical allowance still stays within the 256 MiB effective memory<br>
+ceiling. Retained parts also share a 4,096-entry metadata allowance, so tiny or empty<br>
+chunks cannot grow maps and slice bookkeeping without approaching the byte limit. A<br>
+request that would cross either allowance receives retryable backpressure; delivery,<br>
+rejection, expiry, or session shutdown returns both bytes and part entries to the shared<br>
+budgets.</p>
+<p><strong>Polling retries only recoverable failures.</strong> Network errors, request-timeout responses<br>
+(<code>408</code>), early-data responses (<code>425</code>), backpressure (<code>429</code>), and server errors (<code>5xx</code>)<br>
+use exponential backoff from 250 ms up to 5 seconds. Other <code>4xx</code> responses are protocol<br>
+or ownership failures and close the page&rsquo;s Streams immediately; <code>410</code> is the clean<br>
+terminal signal for a retired session. Closing the last connection aborts an in-flight<br>
+poll or backoff timer, while a connection opened during that wind-down starts one<br>
+replacement poll loop.</p>
+<p><strong><code>streamSessionTTL</code> must stay comfortably above <code>streamHoldTimeout</code></strong>, or a session would<br>
+be reaped while its own poll is legitimately parked.</p>
+<p>If you are tuning for a workload of many small messages, the depth cap binds first; for<br>
+large payloads, the byte cap does. Neither needs changing for a typical app — on macOS the<br>
+defaults sustain 634,000 frames/s and 2.1 GB/s.</p>
+<h2 id="connection-and-session-lifecycle">Connection and session lifecycle</h2>
+<p>A <strong>session</strong> is one page load in one window, keyed by a client-generated id (like the<br>
+runtime&rsquo;s <code>clientId</code>). Sessions are created lazily by whichever request arrives first.<br>
+When a platform cannot identify the requesting window (<code>windowID == 0</code>), session ids are<br>
+still globally bounded but their generations are deliberately not compared: they may<br>
+belong to independent browser clients with unrelated generation counters. Those sessions<br>
+expire through close or TTL rather than superseding one another.</p>
+<p>Three mechanisms close things, in order of how quickly they notice:</p>
+<ol>
+<li><strong>A newer session poll for a window supersedes older generations.</strong> A reload gives the
+page a new session id and increments a generation stored in that window&rsquo;s</li>
+</ol>
+<p><code>sessionStorage</code>. The same value is mirrored in <code>window.name</code>, which survives reloads</p>
+<p>when storage is disabled, and is anchored to <code>performance.timeOrigin</code> (or <code>Date.now()</code></p>
+<p>on older engines) so clearing both stores does not restart at one. Every request carries</p>
+<p>the session id and generation. A poll retires only lower page generations, so server</p>
+<p>scheduling cannot make a delayed request from the previous page look newer than its</p>
+<p>replacement. If policy blocks both storage and <code>window.name</code>, ordering falls back to the</p>
+<p>page clock and therefore depends on later pages receiving a later time origin. The manager</p>
+<p>retains a per-window retired-generation watermark so an already in-flight request cannot</p>
+<p>recreate the old page without retaining every historical session id. The previous</p>
+<p>session&rsquo;s connections close immediately.</p>
+<ol start="2">
+<li><strong>Window destroy</strong> drops every session for that window, like <code>eventPayloadStore.dropWindow</code>.</li>
+<li><strong>TTL reaping</strong> catches anything else — a crashed renderer, a machine asleep.</li>
+</ol>
+<p>Only the first two mechanisms retire the page generation. TTL cleanup removes the idle<br>
+session without advancing the retired-generation watermark: a page stops polling whenever<br>
+its last connection closes, but that same still-loaded page must be able to open another<br>
+stream later. A genuinely superseded generation remains blocked because the newer page&rsquo;s<br>
+poll advances the watermark before the old session is removed.</p>
+<p><strong>Apple WebViews report cancelled requests.</strong> On macOS and iOS, WebKit&rsquo;s<br>
+<code>stopURLSchemeTask</code> callback cancels the matching request context, so a poll belonging to a<br>
+page that has navigated away unblocks immediately. The registry is keyed by the retained<br>
+native task identity and removes entries when request processing closes them. Linux and<br>
+Windows still expose no equivalent early-abort callback in the current bridge; there a<br>
+parked request remains until the hold expires. Rule 1 means the <em>connection</em> closes promptly<br>
+regardless. Cancellation otherwise surfaces as <code>EPIPE</code> on Linux and only at <code>Finish</code> on<br>
+Windows.</p>
+<h2 id="transport-selection">Transport selection</h2>
+<p><code>Stream(name)</code> consults <code>window._wails.streamFactory</code>. Server builds install one that<br>
+returns a real <code>WebSocket</code>; webview builds leave it unset and get the poll client.</p>
+<p>The factory <strong>must</strong> be installed before any module body runs, because generated bindings<br>
+will create streams at module scope. <code>custom.js</code> cannot do it — <code>loadOptionalScript</code> does a<br>
+HEAD request and then appends a <code>&lt;script&gt;</code> tag, so it lands far too late. Instead the<br>
+factory is prepended to the runtime bundle as it is served (<code>stream_prelude_server.go</code>),<br>
+which is synchronous by construction: ES module dependencies evaluate before their<br>
+importers.</p>
+<p>If you add a third transport, put it in the prelude too. Do not be tempted back to<br>
+<code>custom.js</code>.</p>
+<h2 id="what-is-not-finished">What is not finished</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Request cancellation from the platform layer</td>
+<td><strong>Apple done; Linux/Windows pending</strong> — see above</td>
+</tr>
+<tr>
+<td>Buffer constants as options</td>
+<td>not done; compile-time only</td>
+</tr>
+<tr>
+<td>Typed streams</td>
+<td>not done, deliberately — frames are <code>[]byte</code> by decision</td>
+</tr>
+<tr>
+<td>Pipelining (a second poll in flight)</td>
+<td>not done; would need ordered reassembly in JS</td>
+</tr>
+<tr>
+<td>Per-connection fairness</td>
+<td>not done — connections in a window share one queue, so a flooding connection slows its neighbours</td>
+</tr>
+<tr>
+<td>JS→Go frame coalescing</td>
+<td><strong>done</strong> — frames accumulated behind an in-flight request are sent in bounded batches; lightly loaded connections still send one frame per POST</td>
+</tr>
+<tr>
+<td>Windows throughput</td>
+<td>~100 MB/s, bounded by <code>WebResourceRequested</code> marshalling. Shared buffers (<code>PostSharedBufferToScript</code>) are the candidate fix; bindings exist under <code>internal/webview2/pkg/webview2/</code> but are not wired into <code>pkg/edge</code></td>
+</tr>
+<tr>
+<td><code>wails3 dev</code> / Vite</td>
+<td><strong>works</strong> — verified with a generated <code>vanilla-js</code> project: the Vite dev server proxies at <code>/</code>, and <code>/wails/stream/*</code> is matched by the asset server middleware before the proxy, so streams are unaffected</td>
+</tr>
+<tr>
+<td>Multi-window</td>
+<td>untested under load, though sessions are window-scoped by construction</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-frontend-package-in-dev-mode">The frontend package in dev mode</h2>
+<p>A generated project imports <code>@wailsio/runtime</code> from <strong>npm</strong>, not from the bundled<br>
+<code>/wails/runtime.js</code> that the asset server serves. Under <code>wails3 dev</code>, Vite resolves it from<br>
+<code>node_modules</code>, so an app built against a published runtime will not see client-side<br>
+additions made on a branch.</p>
+<p>While streams are unreleased, point a test app at this checkout&rsquo;s package:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="task v3:install-runtime -- ./path/to/your-app/frontend"><code><span class="mpress-cmd">task v3:install-runtime -- ./path/to/your-app/frontend</span>
+</code></pre>
+</div>
+<p>That rebuilds <code>dist/</code> first, so it always installs current sources. Undo it with<br>
+<code>npm install @wailsio/runtime@latest</code> in the same directory.</p>
+<p>Note there are <strong>two</strong> client build outputs and it is easy to rebuild one and not the<br>
+other: <code>task v3:runtime:build:package</code> produces the npm package&rsquo;s <code>dist/</code> (what an app&rsquo;s<br>
+frontend imports), while <code>task v3:runtime:build:assets</code> produces<br>
+<code>bundledassets/runtime.js</code> (what the webview loads from the asset server). A change to<br>
+<code>stream.ts</code> needs both.</p>
+<h2 id="testing">Testing</h2>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go test ./pkg/application/ -run TestStream -race        # protocol, ordering, backpressure
+go test -tags server ./pkg/application/ -run TestServerMode
+pnpm --dir v3/internal/runtime/desktop/@wailsio/runtime test"><code><span class="mpress-cmd">go test ./pkg/application/ -run TestStream -race        # protocol, ordering, backpressure</span>
+<span class="mpress-cmd">go test -tags server ./pkg/application/ -run TestServerMode</span>
+<span class="mpress-cmd">pnpm --dir v3/internal/runtime/desktop/@wailsio/runtime test</span>
+</code></pre>
+</div>
+<p>The ordering test is the one that matters: eight goroutines send concurrently against a<br>
+counter handed out under the queue lock, and the drained order must match the accepted<br>
+order exactly. If it ever fails, the single-drainer invariant has been broken.</p>
+<p>Load harness:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go run ./tests/stream-performance -duration 20s              # full sweep
+go run ./tests/stream-performance -upload -duration 10s      # JS→Go matrix
+go run ./tests/stream-performance -reloads 6                 # connection lifecycle"><code><span class="mpress-cmd">go run ./tests/stream-performance -duration 20s              # full sweep</span>
+<span class="mpress-cmd">go run ./tests/stream-performance -upload -duration 10s      # JS→Go matrix</span>
+<span class="mpress-cmd">go run ./tests/stream-performance -reloads 6                 # connection lifecycle</span>
+</code></pre>
+</div>
+<p>On Windows it must run in the interactive console session — a plain SSH invocation dies in<br>
+session 0 with zero-length output — and the binary must be staged somewhere both the SSH<br>
+account and the console account can read, since <code>C:\Users\&lt;user&gt;</code> is ACL&rsquo;d to its owner.</p>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/guides/advanced/streams-internals.mdx"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-21T13:36:57Z">Aug 21, 2026</time></p></div><nav class="pager"><span></span></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#files">Files</a><a class="toc-level-2" href="#the-shape">The shape</a><a class="toc-level-2" href="#why-these-specific-decisions">Why these specific decisions</a><a class="toc-level-2" href="#buffer-constants">Buffer constants</a><a class="toc-level-3" href="#how-to-pick-them">How to pick them</a><a class="toc-level-2" href="#connection-and-session-lifecycle">Connection and session lifecycle</a><a class="toc-level-2" href="#transport-selection">Transport selection</a><a class="toc-level-2" href="#what-is-not-finished">What is not finished</a><a class="toc-level-2" href="#the-frontend-package-in-dev-mode">The frontend package in dev mode</a><a class="toc-level-2" href="#testing">Testing</a></aside></div></div><footer><a class="mpress-footer-credit" href="https://m-press.me">Built with <strong>M-Press</strong></a><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>

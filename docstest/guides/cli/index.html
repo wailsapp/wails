@@ -1,0 +1,1427 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CLI Reference · Wails</title><meta name="description" content="Complete reference for the Wails CLI commands"><meta property="og:title" content="CLI Reference · Wails"><meta property="og:description" content="Complete reference for the Wails CLI commands"><meta property="og:site_name" content="Wails"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="CLI Reference · Wails"><meta name="twitter:description" content="Complete reference for the Wails CLI commands"><meta property="og:url" content="https://v3.wails.io/guides/cli/"><link rel="canonical" href="https://v3.wails.io/guides/cli/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/cli/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/guides/cli/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/cli/"><script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('mpress-theme');if(t==='system'||t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();(function(){try{var p=JSON.parse(localStorage.getItem('mpress-accessibility')||'{}');var d=document.documentElement;var values={text:p.text||'default',spacing:p.spacing?'relaxed':'default',font:p.readable?'readable':'default',contrast:p.contrast?'high':'default',links:p.links?'underlined':'default',focus:p.focus?'true':'false',guide:p.guide?'true':'false',motion:p.motion?'reduced':'default',colour:p.colour||'default',bionic:p.bionic?'true':'false'};Object.keys(values).forEach(function(k){d.setAttribute('data-a11y-'+k,values[k]);});}catch(_){}})();</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../search-index.json" data-shortcut-search="Mod+K" data-shortcut-accessibility="Mod+A"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo" style="--mpress-logo-width:160px"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><div class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><button id="search" type="button" role="combobox" aria-label="Search" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog">Search documentation</button><kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></div><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><span class="header-utility-cluster" role="group" aria-label="Site preferences"><div class="header-group utility-select accessibility-select"><button id="accessibility" class="utility-menu-trigger" type="button" popovertarget="mpress-accessibility-panel" aria-label="Accessibility settings" aria-haspopup="dialog" aria-expanded="false" title="Accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 512 512" class="mpress-accessibility-icon" aria-hidden="true"><defs><mask id="mpress-accessibility-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512" mask-type="luminance"><rect width="512" height="512" fill="white"/><g transform="translate(0 -14)">
+  <circle cx="256" cy="139" r="35" fill="black"/>
+
+  <path
+    fill="black"
+    d="M144 184
+       C166 191 193 199 219 203
+       C243 207 269 207 293 203
+       C319 199 346 191 368 184
+       C381 180 393 188 397 201
+       C401 214 393 227 380 232
+       L311 256
+       C303 259 299 266 300 275
+       C304 314 313 359 322 407
+       C325 424 315 437 300 439
+       C285 441 274 432 271 417
+       L259 354
+       C258 348 257 344 256 344
+       C255 344 254 348 253 354
+       L241 417
+       C238 432 227 441 212 439
+       C197 437 187 424 190 407
+       C199 359 208 314 212 275
+       C213 266 209 259 201 256
+       L132 232
+       C119 227 111 214 115 201
+       C119 188 131 180 144 184 Z"/>
+  </g></mask></defs><circle cx="256" cy="256" r="220" fill="currentColor" mask="url(#mpress-accessibility-cutout)"/></svg></button></div><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/cli/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/guides/cli/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/cli/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/guides/cli/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><!--mpress-version-menu:start--><!--mpress-version-menu:end--><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></span></nav></header><section id="mpress-accessibility-panel" class="utility-menu-panel mpress-accessibility-panel" popover role="dialog" aria-labelledby="mpress-accessibility-title" data-utility-panel><header class="mpress-accessibility-header"><div><h2 id="mpress-accessibility-title">Accessibility</h2><p>Adjust the site to make it easier to read and navigate.</p></div><button class="mpress-accessibility-close" type="button" data-a11y-close aria-label="Close accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><div class="mpress-accessibility-tabs" role="tablist" aria-label="Accessibility categories"><button id="mpress-a11y-tab-reading" type="button" role="tab" aria-selected="true" aria-controls="mpress-a11y-panel-reading" data-a11y-tab="reading">Reading</button><button id="mpress-a11y-tab-focus" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-focus" data-a11y-tab="focus" tabindex="-1">Focus</button><button id="mpress-a11y-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-vision" data-a11y-tab="vision" tabindex="-1">Vision</button></div><div class="mpress-accessibility-body"><section id="mpress-a11y-panel-reading" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-reading" data-a11y-tabpanel="reading"><h3>Reading</h3><p>Change how text is shown in the main content.</p><div class="mpress-a11y-choice" role="radiogroup" aria-label="Text size"><button type="button" role="radio" data-a11y-choice="text" data-value="default">Default</button><button type="button" role="radio" data-a11y-choice="text" data-value="large">Large</button><button type="button" role="radio" data-a11y-choice="text" data-value="larger">Larger</button></div><label class="mpress-a11y-toggle"><span><strong>Readable font</strong><small>Use a simple, widely spaced font stack.</small></span><input type="checkbox" data-a11y-toggle="readable"></label><label class="mpress-a11y-toggle"><span><strong>Relaxed spacing</strong><small>Add more line, word, and letter space.</small></span><input type="checkbox" data-a11y-toggle="spacing"></label><label class="mpress-a11y-toggle"><span><strong>Bionic reading</strong><small>Emphasise the start of longer words.</small></span><input type="checkbox" data-a11y-toggle="bionic"></label></section><section id="mpress-a11y-panel-focus" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-focus" data-a11y-tabpanel="focus" hidden><h3>Focus and attention</h3><p>Reduce distraction and keep your place while reading.</p><label class="mpress-a11y-toggle"><span><strong>Focus mode</strong><small>Dim navigation until you point to it.</small></span><input type="checkbox" data-a11y-toggle="focus"></label><label class="mpress-a11y-toggle"><span><strong>Reading guide</strong><small>Follow the pointer with a horizontal guide.</small></span><input type="checkbox" data-a11y-toggle="guide"></label><label class="mpress-a11y-toggle"><span><strong>Reduce motion</strong><small>Stop non-essential animation and smooth scrolling.</small></span><input type="checkbox" data-a11y-toggle="motion"></label></section><section id="mpress-a11y-panel-vision" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-vision" data-a11y-tabpanel="vision" hidden><h3>Vision and colour</h3><p>Increase contrast or use a more distinct colour palette.</p><div class="mpress-a11y-field"><span id="mpress-a11y-colour-label">Colour profile</span><div class="mpress-a11y-select" data-a11y-select="colour"><button class="mpress-a11y-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mpress-a11y-colour-label mpress-a11y-colour-value"><span id="mpress-a11y-colour-value" data-a11y-select-value>Site colours</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="mpress-a11y-options" role="listbox" aria-labelledby="mpress-a11y-colour-label" hidden><button class="mpress-a11y-option" type="button" role="option" aria-selected="true" data-value="default">Site colours</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="red-green" tabindex="-1">Red and green distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="blue-yellow" tabindex="-1">Blue and yellow distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="low" tabindex="-1">Low saturation</button></div></div></div><label class="mpress-a11y-toggle"><span><strong>High contrast</strong><small>Increase text and border contrast.</small></span><input type="checkbox" data-a11y-toggle="contrast"></label><label class="mpress-a11y-toggle"><span><strong>Underline links</strong><small>Show links with more than colour.</small></span><input type="checkbox" data-a11y-toggle="links"></label></section></div><footer class="mpress-accessibility-footer"><small>Saved only in this browser.</small><button class="mpress-accessibility-reset" type="button" data-a11y-reset>Reset settings</button></footer></section><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../">Home</a><a class="" href="../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../quick-start/installation/">Installation</a><a class="" href="../../quick-start/first-app/">Your First App</a><a class="" href="../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../tutorials/overview/">Tutorials</a></div></details></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../concepts/architecture/">How Wails Works</a><a class="" href="../../concepts/manager-api/">Manager API</a><a class="" href="../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/notch-windows/">Notch Windows</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/application/">Application Events</a><a class="" href="../../features/events/window/">Window Events</a><a class="" href="../../features/events/custom/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/autostart/basics/">Autostart</a></div></details></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/clipboard/basics/">Clipboard Operations</a></div></details></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/browser/integration/">Browser Integration</a></div></details></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/notifications/overview/">Notifications</a></div></details></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/screens/info/">Screen Information</a></div></details></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/environment/info/">Environment</a></div></details></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/workflow/">Development Workflow</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a><a class="" href="../../guides/testing/">Testing</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/msix/">MSIX Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../guides/gin-routing/">Using Gin Router</a><a class="" href="../../guides/gin-services/">Gin Services</a><a class="" href="../../guides/patterns/database/">Database Integration</a><a class="" href="../../guides/patterns/rest-api/">REST APIs</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/advanced/wml/">WML (Wails Markup)</a><a class="" href="../../guides/panic-handling/">Panic Handling</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../migration/v2-to-v3/">From v2 to v3</a><a class="" href="../../migration/from-electron/">From Electron</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/links/">Links</a><a class="" href="../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><details open><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../community/showcase/clave/">Clave</a><a class="" href="../../community/showcase/condui/">Condui</a><a class="" href="../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../community/showcase/emailit/">EmailIt</a><a class="" href="../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../community/showcase/happytools/">HappyTools</a><a class="" href="../../community/showcase/kira/">Kira</a><a class="" href="../../community/showcase/ltools/">LTools</a><a class="" href="../../community/showcase/mchat/">Mchat</a><a class="" href="../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../community/showcase/october/">October</a><a class="" href="../../community/showcase/optimus/">Optimus</a><a class="" href="../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../community/showcase/portfall/">Portfall</a><a class="" href="../../community/showcase/redisviewer/">Redis Viewer</a><a class="" href="../../community/showcase/resizem/">Resizem</a><a class="" href="../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../community/showcase/surge/">Surge</a><a class="" href="../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../community/showcase/wally/">Wally</a><a class="" href="../../community/showcase/wombat/">Wombat</a><a class="" href="../../community/showcase/xensql/">XenSQL</a><a class="" href="../../community/showcase/ytd/">Ytd</a><a class="" href="../../community/showcase/hiposter/">hiposter</a><a class="" href="../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../credits/">Credits</a></nav></aside><div class="docs-stage"><main id="content"><article><h1>CLI Reference</h1><p class="page-lead">Complete reference for the Wails CLI commands</p><p>The Wails CLI provides a comprehensive set of commands to help you develop, build, and maintain your Wails applications.</p>
+<h2 id="core-commands">Core Commands</h2>
+<p>Core commands are the primary commands used for project creation, development, and building.</p>
+<p>All CLI commands are of the following format: <code>wails3 &lt;command&gt;</code>.</p>
+<h3 id="init"><code>init</code></h3>
+<p>Initializes a new Wails project. During this initialization, the <code>go mod tidy</code> command is run to bring the project packages up to date. This can be bypassed by using the <code>-skipgomodtidy</code> flag with the <code>init</code> command.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 init [flags]"><code><span class="mpress-cmd">wails3 init [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-p</code></td>
+<td>Go package name</td>
+<td><code>main</code></td>
+</tr>
+<tr>
+<td><code>-t</code></td>
+<td>Template name or URL</td>
+<td><code>vanilla</code></td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>Project name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-d</code></td>
+<td>Project directory</td>
+<td><code>.</code></td>
+</tr>
+<tr>
+<td><code>-q</code></td>
+<td>Suppress output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-l</code></td>
+<td>List templates</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-mod</code></td>
+<td>Go module path (computed from <code>-git</code> if omitted)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-git</code></td>
+<td>Git repository URL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-s</code></td>
+<td>Skip the warning when using a remote template</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-productname</code></td>
+<td>Product name</td>
+<td><code>My Product</code></td>
+</tr>
+<tr>
+<td><code>-productdescription</code></td>
+<td>Product description</td>
+<td><code>My Product Description</code></td>
+</tr>
+<tr>
+<td><code>-productversion</code></td>
+<td>Product version</td>
+<td><code>0.1.0</code></td>
+</tr>
+<tr>
+<td><code>-productcompany</code></td>
+<td>Company name</td>
+<td><code>My Company</code></td>
+</tr>
+<tr>
+<td><code>-productcopyright</code></td>
+<td>Copyright notice</td>
+<td><code>© now, My Company</code></td>
+</tr>
+<tr>
+<td><code>-productcomments</code></td>
+<td>File comments</td>
+<td><code>This is a comment</code></td>
+</tr>
+<tr>
+<td><code>-productidentifier</code></td>
+<td>Product identifier</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-skipgomodtidy</code></td>
+<td>Skip go mod tidy</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <code>-git</code> flag accepts various Git URL formats:</p>
+<ul>
+<li>HTTPS: <code>https://github.com/username/project</code></li>
+<li>SSH: <code>git@github.com:username/project</code> or <code>ssh://git@github.com/username/project</code></li>
+<li>Git protocol: <code>git://github.com/username/project</code></li>
+<li>Filesystem: <code>file:///path/to/project.git</code></li>
+</ul>
+<p>When provided, this flag will:</p>
+<ol>
+<li>Initialize a git repository in the project directory</li>
+<li>Set the specified URL as the remote origin</li>
+<li>Update the module name in <code>go.mod</code> to match the repository URL</li>
+<li>Add all files</li>
+</ol>
+<h3 id="dev"><code>dev</code></h3>
+<p>Runs the application in development mode. This will give you a live view of your frontend code, and you can make changes and see them reflected<br>
+in the running application without having to rebuild the entire application. Changes to your Go code will also be detected and the application<br>
+will automatically rebuild and relaunch.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 dev [flags]"><code><span class="mpress-cmd">wails3 dev [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-1">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-config</code></td>
+<td>Config file path</td>
+<td><code>./build/config.yml</code></td>
+</tr>
+<tr>
+<td><code>-port</code></td>
+<td>Vite dev server port</td>
+<td><code>9245</code></td>
+</tr>
+<tr>
+<td><code>-s</code></td>
+<td>Enable HTTPS</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>This is equivalent to running <code>wails3 task dev</code> and runs the <code>dev</code> task in the project&rsquo;s main Taskfile. You can customise this by editing the <code>Taskfile.yml</code> file.</p>
+</div>
+</aside>
+<h3 id="build"><code>build</code></h3>
+<p>Builds a debug version of your application. It defaults to building for the current platform and architecture.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build [flags] [CLI variables...]"><code><span class="mpress-cmd">wails3 build [flags] [CLI variables...]</span>
+</code></pre>
+</div>
+<h4 id="flags-2">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-tags</code></td>
+<td>Additional Go build tags (comma-separated)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>You can pass CLI variables to customize the build:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build PLATFORM=linux CONFIG=production"><code><span class="mpress-cmd">wails3 build PLATFORM=linux CONFIG=production</span>
+</code></pre>
+</div>
+<p>Use the <code>-tags</code> flag to pass custom Go build tags:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 build -tags gtk3
+wails3 build -tags server
+wails3 build -tags gtk3,customtag"><code><span class="mpress-comment"># Build with legacy GTK3 + WebKit2GTK 4.1 on Linux (default is GTK4 + WebKitGTK 6.0)</span>
+<span class="mpress-cmd">wails3 build -tags gtk3</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># Build in server mode (no GUI)</span>
+<span class="mpress-cmd">wails3 build -tags server</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># Multiple tags</span>
+<span class="mpress-cmd">wails3 build -tags gtk3,customtag</span>
+</code></pre>
+</div>
+<p>Tags are forwarded as <code>EXTRA_TAGS</code> to the underlying Taskfile.</p>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>This is equivalent to running <code>wails3 task build</code> which runs the <code>build</code> task in the project&rsquo;s main Taskfile. Any CLI variables passed to <code>build</code> are forwarded to the underlying task. You can customise the build process by editing the <code>Taskfile.yml</code> file.</p>
+</div>
+</aside>
+<h3 id="package"><code>package</code></h3>
+<p>Creates platform-specific packages for distribution.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 package [CLI variables...]"><code><span class="mpress-cmd">wails3 package [CLI variables...]</span>
+</code></pre>
+</div>
+<p>You can pass CLI variables to customize the packaging:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg"><code><span class="mpress-cmd">wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg</span>
+</code></pre>
+</div>
+<h4 id="package-types">Package Types</h4>
+<p>The following package types are available for each platform:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Package Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows</td>
+<td><code>.exe</code></td>
+</tr>
+<tr>
+<td>macOS</td>
+<td><code>.app</code>,</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td><code>.AppImage</code>, <code>.deb</code>, <code>.rpm</code>, <code>.archlinux</code></td>
+</tr>
+</tbody>
+</table>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>This is equivalent to <code>wails3 task package</code> which runs the <code>package</code> task in the project&rsquo;s main Taskfile. Any CLI variables passed to <code>package</code> are forwarded to the underlying task. You can customise the packaging process by editing the <code>Taskfile.yml</code> file.</p>
+</div>
+</aside>
+<h3 id="task"><code>task</code></h3>
+<p>Runs tasks defined in your project&rsquo;s Taskfile.yml. This is an embedded version of <a href="https://taskfile.dev">Taskfile</a> that allows you to define and run custom build, test, and deployment tasks.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task [taskname] [CLI variables...] [flags]"><code><span class="mpress-cmd">wails3 task [taskname] [CLI variables...] [flags]</span>
+</code></pre>
+</div>
+<h4 id="cli-variables">CLI Variables</h4>
+<p>You can pass variables to tasks in the format <code>KEY=VALUE</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task build PLATFORM=linux CONFIG=production
+wails3 task deploy ENV=staging VERSION=1.2.3"><code><span class="mpress-cmd">wails3 task build PLATFORM=linux CONFIG=production</span>
+<span class="mpress-cmd">wails3 task deploy ENV=staging VERSION=1.2.3</span>
+</code></pre>
+</div>
+<p>These variables can be accessed in your Taskfile.yml using Go template syntax:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">yaml</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="tasks:&#10;  build:&#10;    cmds:&#10;      - echo &#34;Building for {{.PLATFORM | default &#34;darwin&#34;}}&#34;&#10;      - echo &#34;Config: {{.CONFIG | default &#34;debug&#34;}}&#34;"><code class="language-yaml"><span class="mpress-code-line">tasks<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  build<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    cmds<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> echo <span class="mpress-token-string">&#34;Building for {{.PLATFORM | default &#34;</span>darwin<span class="mpress-token-string">&#34;}}&#34;</span>
+</span><span class="mpress-code-line">      <span class="mpress-token-operator">-</span> echo <span class="mpress-token-string">&#34;Config: {{.CONFIG | default &#34;</span>debug<span class="mpress-token-string">&#34;}}&#34;</span></span></code></pre></div>
+<h4 id="flags-3">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-h</code></td>
+<td>Shows Task usage</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-i</code></td>
+<td>Creates a new Taskfile.yml</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-list</code></td>
+<td>Lists tasks with descriptions</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-list-all</code></td>
+<td>Lists all tasks (with or without descriptions)</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-json</code></td>
+<td>Formats task list as JSON</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-status</code></td>
+<td>Exits with non-zero if task is not up-to-date</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-f</code></td>
+<td>Forces execution even when task is up-to-date</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-w</code></td>
+<td>Enables watch mode for the given task</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>Enables verbose mode</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Prints Task version</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-s</code></td>
+<td>Disables echoing</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td>Executes tasks in parallel</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-dry</code></td>
+<td>Compiles and prints tasks without executing</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-summary</code></td>
+<td>Shows summary about a task</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-x</code></td>
+<td>Pass-through the exit code of the task</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-dir</code></td>
+<td>Sets directory of execution</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-taskfile</code></td>
+<td>Choose which Taskfile to run</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-output</code></td>
+<td>Sets output style: [interleaved</td>
+<td>group</td>
+</tr>
+<tr>
+<td><code>-c</code></td>
+<td>Colored output (enabled by default)</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>-C</code></td>
+<td>Limit number of tasks to run concurrently</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-interval</code></td>
+<td>Interval to watch for changes (in seconds)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="examples">Examples</h4>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 task
+wails3 task test
+wails3 task build PLATFORM=windows ARCH=amd64
+wails3 task --list
+wails3 task -p task1 task2 task3
+wails3 task -w dev"><code><span class="mpress-comment"># Run the default task</span>
+<span class="mpress-cmd">wails3 task</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># Run a specific task</span>
+<span class="mpress-cmd">wails3 task test</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># Run a task with variables</span>
+<span class="mpress-cmd">wails3 task build PLATFORM=windows ARCH=amd64</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># List all available tasks</span>
+<span class="mpress-cmd">wails3 task --list</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># Run multiple tasks in parallel</span>
+<span class="mpress-cmd">wails3 task -p task1 task2 task3</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># Watch for changes and re-run task</span>
+<span class="mpress-cmd">wails3 task -w dev</span>
+</code></pre>
+</div>
+<h3 id="mcp"><code>mcp</code></h3>
+<p>Starts the Wails project MCP server for agent-assisted project management. This is<br>
+separate from the MCP server compiled into a running application: <code>wails3 mcp</code><br>
+manages project files and lifecycle commands, while the application MCP server<br>
+controls the running WebView.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 mcp [flags]"><code><span class="mpress-cmd">wails3 mcp [flags]</span>
+</code></pre>
+</div>
+<p>Transport is selected automatically:</p>
+<ul>
+<li>When an MCP host launches Wails with piped stdin/stdout, the server uses <strong>stdio</strong>.</li>
+<li>When run interactively in a terminal, the server uses <strong>Streamable HTTP</strong> on
+<code>127.0.0.1</code> and asks the operating system for a free port.</li>
+</ul>
+<p>Use <code>--stdio</code> or <code>--http</code> to select a transport explicitly. Use <code>--port 0</code> to choose a<br>
+free loopback port in HTTP mode.</p>
+<h4 id="mcp-flags">MCP flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--root</code></td>
+<td>Allowed project root. Paths and symlinks outside it are rejected.</td>
+<td>Current directory</td>
+</tr>
+<tr>
+<td><code>--token</code></td>
+<td>Session/bearer token for mutating and process-control tools. Falls back to <code>WAILS_MCP_TOKEN</code>.</td>
+<td>Generated securely</td>
+</tr>
+<tr>
+<td><code>--stdio</code></td>
+<td>Force stdio transport.</td>
+<td>Automatic</td>
+</tr>
+<tr>
+<td><code>--http</code></td>
+<td>Force Streamable HTTP transport.</td>
+<td>Automatic</td>
+</tr>
+<tr>
+<td><code>--port</code></td>
+<td>HTTP port; <code>0</code> selects a free loopback port.</td>
+<td><code>0</code></td>
+</tr>
+</tbody>
+</table>
+<p>In HTTP mode, Wails prints the endpoint and bearer token to stderr. In stdio mode,<br>
+the token is included in the MCP initialization instructions. The server does not<br>
+expose arbitrary shell execution. Remote templates and Git remotes require explicit<br>
+approval through the tool&rsquo;s <code>allowExternal</code> input.</p>
+<h3 id="doctor"><code>doctor</code></h3>
+<p>Performs a system check and displays a status report.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 doctor"><code><span class="mpress-cmd">wails3 doctor</span>
+</code></pre>
+</div>
+<h2 id="generate-commands">Generate Commands</h2>
+<p>Generate commands help create various project assets like bindings, icons, and build files. All generate commands use the base command: <code>wails3 generate &lt;command&gt;</code>.</p>
+<h3 id="generate-bindings"><code>generate bindings</code></h3>
+<p>Generates bindings and models for your Go code.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate bindings [flags] [patterns...]"><code><span class="mpress-cmd">wails3 generate bindings [flags] [patterns...]</span>
+</code></pre>
+</div>
+<h4 id="flags-4">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-f</code></td>
+<td>Additional Go build flags</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-d</code></td>
+<td>Output directory</td>
+<td><code>frontend/bindings</code></td>
+</tr>
+<tr>
+<td><code>-models</code></td>
+<td>Models filename</td>
+<td><code>models</code></td>
+</tr>
+<tr>
+<td><code>-index</code></td>
+<td>Index filename</td>
+<td><code>index</code></td>
+</tr>
+<tr>
+<td><code>-ts</code></td>
+<td>Generate TypeScript</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-i</code></td>
+<td>Use TS interfaces</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-b</code></td>
+<td>Use bundled runtime</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-names</code></td>
+<td>Use names instead of IDs</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-noindex</code></td>
+<td>Skip index files</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-noevents</code></td>
+<td>Skip generating event-related bindings</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-dry</code></td>
+<td>Dry run</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-silent</code></td>
+<td>Silent mode</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>Debug output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-clean</code></td>
+<td>Clean output directory before generating</td>
+<td><code>true</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="generate-build-assets"><code>generate build-assets</code></h3>
+<p>Generates build assets for your application.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate build-assets [flags]"><code><span class="mpress-cmd">wails3 generate build-assets [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-5">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-name</code></td>
+<td>Project name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-dir</code></td>
+<td>Output directory</td>
+<td><code>build</code></td>
+</tr>
+<tr>
+<td><code>-silent</code></td>
+<td>Suppress output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-company</code></td>
+<td>Company name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-productname</code></td>
+<td>Product name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-description</code></td>
+<td>Product description</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Product version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-identifier</code></td>
+<td>Product identifier</td>
+<td><code>com.wails.[name]</code></td>
+</tr>
+<tr>
+<td><code>-copyright</code></td>
+<td>Copyright notice</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-comments</code></td>
+<td>File comments</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="generate-icons"><code>generate icons</code></h3>
+<p>Generates application icons.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate icons [flags]"><code><span class="mpress-cmd">wails3 generate icons [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-6">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-input</code></td>
+<td>Input PNG file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-windowsfilename</code></td>
+<td>Windows output filename</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-macfilename</code></td>
+<td>macOS output filename</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-sizes</code></td>
+<td>Icon sizes (comma-separated)</td>
+<td><code>256,128,64,48,32,16</code></td>
+</tr>
+<tr>
+<td><code>-example</code></td>
+<td>Generate example icon</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-iconcomposerinput</code></td>
+<td>Input Icon Composer file (<code>.icon</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-macassetdir</code></td>
+<td>Output directory for Mac assets (Assets.car + icns)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="icon-composer-macos">Icon Composer (macOS)</h4>
+<p>On macOS 26+, you can use Icon Composer <code>.icon</code> files to generate <code>Assets.car</code> and <code>icons.icns</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build"><code><span class="mpress-cmd">wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build</span>
+</code></pre>
+</div>
+<p>This compiles the <code>.icon</code> file using Apple&rsquo;s <code>actool</code> command. Requires Xcode with <code>actool</code> version 26 or later.</p>
+<p>When using Icon Composer, set <code>cfBundleIconName</code> in your <code>build/config.yml</code> to match the <code>.icon</code> filename (without extension):</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">yaml</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="info:&#10;  cfBundleIconName: &#34;appicon&#34;"><code class="language-yaml"><span class="mpress-code-line">info<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  cfBundleIconName<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;appicon&#34;</span></span></code></pre></div>
+<p>If not set and <code>Assets.car</code> exists, this defaults to <code>&quot;appicon&quot;</code>.</p>
+<h3 id="generate-syso"><code>generate syso</code></h3>
+<p>Generates Windows .syso file.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate syso [flags]"><code><span class="mpress-cmd">wails3 generate syso [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-7">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-manifest</code></td>
+<td>Path to manifest file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-icon</code></td>
+<td>Path to icon file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-info</code></td>
+<td>Path to version info file</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-arch</code></td>
+<td>Target architecture</td>
+<td>Current GOARCH</td>
+</tr>
+<tr>
+<td><code>-out</code></td>
+<td>Output filename</td>
+<td><code>rsrc_windows_[arch].syso</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="generate-desktop"><code>generate .desktop</code></h3>
+<p>Generates a Linux .desktop file.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate .desktop [flags]"><code><span class="mpress-cmd">wails3 generate .desktop [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-8">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-name</code></td>
+<td>Application name</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-exec</code></td>
+<td>Executable path</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-icon</code></td>
+<td>Icon path</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-categories</code></td>
+<td>Application categories</td>
+<td><code>Utility</code></td>
+</tr>
+<tr>
+<td><code>-comment</code></td>
+<td>Application comment</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-terminal</code></td>
+<td>Run in terminal</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-keywords</code></td>
+<td>Search keywords</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Application version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-genericname</code></td>
+<td>Generic name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-startupnotify</code></td>
+<td>Show startup notification</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-mimetype</code></td>
+<td>Supported MIME types</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-output</code></td>
+<td>Output filename</td>
+<td><code>[name].desktop</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="generate-runtime"><code>generate runtime</code></h3>
+<p>Generates the pre-built version of the runtime.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate runtime"><code><span class="mpress-cmd">wails3 generate runtime</span>
+</code></pre>
+</div>
+<h3 id="generate-constants"><code>generate constants</code></h3>
+<p>Generates JavaScript constants from Go code.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate constants"><code><span class="mpress-cmd">wails3 generate constants</span>
+</code></pre>
+</div>
+<h3 id="generate-webview2bootstrapper"><code>generate webview2bootstrapper</code></h3>
+<p>Generates a Windows WebView2 bootstrap installer for distribution.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate webview2bootstrapper [flags]"><code><span class="mpress-cmd">wails3 generate webview2bootstrapper [flags]</span>
+</code></pre>
+</div>
+<h3 id="generate-template"><code>generate template</code></h3>
+<p>Scaffolds a new project template directory.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate template [flags]"><code><span class="mpress-cmd">wails3 generate template [flags]</span>
+</code></pre>
+</div>
+<h3 id="generate-appimage"><code>generate appimage</code></h3>
+<p>Generates a Linux AppImage.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 generate appimage [flags]"><code><span class="mpress-cmd">wails3 generate appimage [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-9">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-binary</code></td>
+<td>Path to binary</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-icon</code></td>
+<td>Path to icon file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-desktop</code></td>
+<td>Path to .desktop file</td>
+<td>Required</td>
+</tr>
+<tr>
+<td><code>-builddir</code></td>
+<td>Build directory</td>
+<td>Temp directory</td>
+</tr>
+<tr>
+<td><code>-output</code></td>
+<td>Output directory</td>
+<td><code>.</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="service-commands">Service Commands</h2>
+<p>Service commands help manage Wails services. All service commands use the base command: <code>wails3 service &lt;command&gt;</code>.</p>
+<h3 id="service-init"><code>service init</code></h3>
+<p>Initializes a new service.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 service init [flags]"><code><span class="mpress-cmd">wails3 service init [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-10">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-n</code></td>
+<td>Service name</td>
+<td><code>example_service</code></td>
+</tr>
+<tr>
+<td><code>-d</code></td>
+<td>Service description</td>
+<td><code>Example service</code></td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td>Package name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-o</code></td>
+<td>Output directory</td>
+<td><code>.</code></td>
+</tr>
+<tr>
+<td><code>-q</code></td>
+<td>Suppress output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-a</code></td>
+<td>Author name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>Version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-w</code></td>
+<td>Website URL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-r</code></td>
+<td>Repository URL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-l</code></td>
+<td>License</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="tool-commands">Tool Commands</h2>
+<p>Tool commands provide utilities for development and debugging. All tool commands use the base command: <code>wails3 tool &lt;command&gt;</code>.</p>
+<h3 id="tool-checkport"><code>tool checkport</code></h3>
+<p>Checks if a port is open. Useful for testing if vite is running.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool checkport [flags]"><code><span class="mpress-cmd">wails3 tool checkport [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-11">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-port</code></td>
+<td>Port to check</td>
+<td><code>9245</code></td>
+</tr>
+<tr>
+<td><code>-host</code></td>
+<td>Host to check</td>
+<td><code>localhost</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-watcher"><code>tool watcher</code></h3>
+<p>Watches files and runs a command when they change.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool watcher [flags]"><code><span class="mpress-cmd">wails3 tool watcher [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-12">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-config</code></td>
+<td>Config file path</td>
+<td><code>./build/config.yml</code></td>
+</tr>
+<tr>
+<td><code>-ignore</code></td>
+<td>Patterns to ignore</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-include</code></td>
+<td>Patterns to include</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-cp"><code>tool cp</code></h3>
+<p>Copies files.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool cp"><code><span class="mpress-cmd">wails3 tool cp</span>
+</code></pre>
+</div>
+<h3 id="tool-buildinfo"><code>tool buildinfo</code></h3>
+<p>Shows build information about the application.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool buildinfo"><code><span class="mpress-cmd">wails3 tool buildinfo</span>
+</code></pre>
+</div>
+<h3 id="tool-version"><code>tool version</code></h3>
+<p>Bumps a semantic version based on the provided flags.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool version [flags]"><code><span class="mpress-cmd">wails3 tool version [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-13">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-v</code></td>
+<td>Current version to bump</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-major</code></td>
+<td>Bump major version</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-minor</code></td>
+<td>Bump minor version</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-patch</code></td>
+<td>Bump patch version</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-prerelease</code></td>
+<td>Bump prerelease version (e.g., alpha.5 to alpha.6)</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>The command follows the precedence order: major &gt; minor &gt; patch &gt; prerelease. It preserves the &ldquo;v&rdquo; prefix if present in the input version, as well as any prerelease and metadata components.</p>
+<p>Example usage:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool version -v 1.2.3 -major      # Output: 2.0.0
+wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0
+wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha
+wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6"><code><span class="mpress-cmd">wails3 tool version -v 1.2.3 -major      # Output: 2.0.0</span>
+<span class="mpress-cmd">wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0</span>
+<span class="mpress-cmd">wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha</span>
+<span class="mpress-cmd">wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6</span>
+</code></pre>
+</div>
+<h3 id="tool-package"><code>tool package</code></h3>
+<p>Generates Linux packages (deb, rpm, archlinux).</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool package [flags]"><code><span class="mpress-cmd">wails3 tool package [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-14">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-format</code></td>
+<td>Package format (deb, rpm, archlinux)</td>
+<td><code>deb</code></td>
+</tr>
+<tr>
+<td><code>-name</code></td>
+<td>Executable name</td>
+<td><code>myapp</code></td>
+</tr>
+<tr>
+<td><code>-config</code></td>
+<td>Config file path</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-out</code></td>
+<td>Output directory</td>
+<td><code>.</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-lipo"><code>tool lipo</code></h3>
+<p>Creates a macOS universal binary by combining architecture-specific binaries.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool lipo [flags]"><code><span class="mpress-cmd">wails3 tool lipo [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-15">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-output</code></td>
+<td>Output binary path</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-capabilities"><code>tool capabilities</code></h3>
+<p>Checks system build capabilities (GTK4/GTK3 availability on Linux).</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool capabilities"><code><span class="mpress-cmd">wails3 tool capabilities</span>
+</code></pre>
+</div>
+<h3 id="tool-docker-mounts"><code>tool docker-mounts</code></h3>
+<p>Generates Docker volume mount flags for cross-compilation. Outputs <code>-v</code> flags for the Go module cache and any local <code>replace</code> directives in <code>go.mod</code>, for use in Taskfile <code>docker run</code> commands.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool docker-mounts"><code><span class="mpress-cmd">wails3 tool docker-mounts</span>
+</code></pre>
+</div>
+<h3 id="tool-has"><code>tool has</code></h3>
+<p>Checks whether a tool or capability is available, printing <code>true</code> or <code>false</code> to stdout. Designed for use in Taskfile <code>sh:</code> variables as a cross-platform alternative to <code>command -v</code>.</p>
+<p>Use <code>|</code> to check for any one of several alternatives.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool has &lt;tool&gt;"><code><span class="mpress-cmd">wails3 tool has &lt;tool&gt;</span>
+</code></pre>
+</div>
+<h4 id="examples-1">Examples</h4>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool has gcc|clang
+wails3 tool has git
+wails3 tool has node"><code><span class="mpress-comment"># Check for a C compiler (gcc or clang)</span>
+<span class="mpress-cmd">wails3 tool has gcc|clang</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># Check for a specific tool</span>
+<span class="mpress-cmd">wails3 tool has git</span>
+<span class="mpress-cmd">wails3 tool has node</span>
+</code></pre>
+</div>
+<h4 id="usage-in-a-taskfile">Usage in a Taskfile</h4>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">yaml</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="vars:&#10;  HAS_CC:&#10;    sh: &#39;wails3 tool has gcc|clang&#39;"><code class="language-yaml"><span class="mpress-code-line">vars<span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-type">HAS_CC</span><span class="mpress-token-operator">:</span>
+</span><span class="mpress-code-line">    sh<span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#39;wails3 tool has gcc|clang&#39;</span></span></code></pre></div>
+<h3 id="tool-has-cc"><code>tool has-cc</code></h3>
+<aside aria-label="Deprecated" class="mpress-admonition mpress-admonition-warning" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> <span>Deprecated</span></p>
+<div class="mpress-admonition-body">
+<p><code>wails3 tool has-cc</code> is deprecated. Update your Taskfile to use <code>wails3 tool has gcc|clang</code> instead.</p>
+</div>
+</aside>
+<p>A backward-compatible alias for <code>wails3 tool has gcc|clang</code>. Checks whether <code>gcc</code> or <code>clang</code> is available in PATH and prints <code>true</code> or <code>false</code>.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 tool has-cc"><code><span class="mpress-cmd">wails3 tool has-cc</span>
+</code></pre>
+</div>
+<h2 id="update-commands">Update Commands</h2>
+<p>Update commands help manage and update project assets. All update commands use the base command: <code>wails3 update &lt;command&gt;</code>.</p>
+<h3 id="update-cli"><code>update cli</code></h3>
+<p>Updates the Wails CLI to a new version.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 update cli [flags]"><code><span class="mpress-cmd">wails3 update cli [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-16">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-pre</code></td>
+<td>Update to latest pre-release</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Update to specific version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-nocolour</code></td>
+<td>Disable colored output</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>The update cli command allows you to update your Wails CLI installation. By default, it updates to the latest stable release.<br>
+You can use the <code>-pre</code> flag to update to the latest pre-release version, or specify a particular version using the <code>-version</code> flag.</p>
+<p>After updating, remember to update your project&rsquo;s go.mod file to use the same version:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="require github.com/wailsapp/wails/v3 v3.x.x"><code><span class="mpress-cmd">require github.com/wailsapp/wails/v3 v3.x.x</span>
+</code></pre>
+</div>
+<h3 id="update-build-assets"><code>update build-assets</code></h3>
+<p>Updates the build assets using the given config file.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 update build-assets [flags]"><code><span class="mpress-cmd">wails3 update build-assets [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-17">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-config</code></td>
+<td>Config file path</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-dir</code></td>
+<td>Output directory</td>
+<td><code>build</code></td>
+</tr>
+<tr>
+<td><code>-silent</code></td>
+<td>Suppress output</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>-company</code></td>
+<td>Company name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-productname</code></td>
+<td>Product name</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-description</code></td>
+<td>Product description</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-version</code></td>
+<td>Product version</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-identifier</code></td>
+<td>Product identifier</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-copyright</code></td>
+<td>Copyright notice</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-comments</code></td>
+<td>File comments</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="utility-commands">Utility Commands</h2>
+<p>Utility commands provide helpful shortcuts for common tasks. Use these commands directly with the base command: <code>wails3 &lt;command&gt;</code>.</p>
+<h3 id="docs"><code>docs</code></h3>
+<p>Opens the Wails documentation in your default browser.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 docs"><code><span class="mpress-cmd">wails3 docs</span>
+</code></pre>
+</div>
+<h3 id="releasenotes"><code>releasenotes</code></h3>
+<p>Shows the release notes for the current or specified version.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 releasenotes [flags]"><code><span class="mpress-cmd">wails3 releasenotes [flags]</span>
+</code></pre>
+</div>
+<h4 id="flags-18">Flags</h4>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-v</code></td>
+<td>Version to show release notes for</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>Disable colour output</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="version"><code>version</code></h3>
+<p>Prints the current version of Wails.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 version"><code><span class="mpress-cmd">wails3 version</span>
+</code></pre>
+</div>
+<h3 id="sponsor"><code>sponsor</code></h3>
+<p>Opens the Wails sponsorship page in your default browser.</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 sponsor"><code><span class="mpress-cmd">wails3 sponsor</span>
+</code></pre>
+</div>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/guides/cli.mdx"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-21T13:36:57Z">Aug 21, 2026</time></p></div><nav class="pager"><span></span></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#core-commands">Core Commands</a><a class="toc-level-3" href="#init">init</a><a class="toc-level-3" href="#dev">dev</a><a class="toc-level-3" href="#build">build</a><a class="toc-level-3" href="#package">package</a><a class="toc-level-3" href="#task">task</a><a class="toc-level-3" href="#mcp">mcp</a><a class="toc-level-3" href="#doctor">doctor</a><a class="toc-level-2" href="#generate-commands">Generate Commands</a><a class="toc-level-3" href="#generate-bindings">generate bindings</a><a class="toc-level-3" href="#generate-build-assets">generate build-assets</a><a class="toc-level-3" href="#generate-icons">generate icons</a><a class="toc-level-3" href="#generate-syso">generate syso</a><a class="toc-level-3" href="#generate-desktop">generate .desktop</a><a class="toc-level-3" href="#generate-runtime">generate runtime</a><a class="toc-level-3" href="#generate-constants">generate constants</a><a class="toc-level-3" href="#generate-webview2bootstrapper">generate webview2bootstrapper</a><a class="toc-level-3" href="#generate-template">generate template</a><a class="toc-level-3" href="#generate-appimage">generate appimage</a><a class="toc-level-2" href="#service-commands">Service Commands</a><a class="toc-level-3" href="#service-init">service init</a><a class="toc-level-2" href="#tool-commands">Tool Commands</a><a class="toc-level-3" href="#tool-checkport">tool checkport</a><a class="toc-level-3" href="#tool-watcher">tool watcher</a><a class="toc-level-3" href="#tool-cp">tool cp</a><a class="toc-level-3" href="#tool-buildinfo">tool buildinfo</a><a class="toc-level-3" href="#tool-version">tool version</a><a class="toc-level-3" href="#tool-package">tool package</a><a class="toc-level-3" href="#tool-lipo">tool lipo</a><a class="toc-level-3" href="#tool-capabilities">tool capabilities</a><a class="toc-level-3" href="#tool-docker-mounts">tool docker-mounts</a><a class="toc-level-3" href="#tool-has">tool has</a><a class="toc-level-3" href="#tool-has-cc">tool has-cc</a><a class="toc-level-2" href="#update-commands">Update Commands</a><a class="toc-level-3" href="#update-cli">update cli</a><a class="toc-level-3" href="#update-build-assets">update build-assets</a><a class="toc-level-2" href="#utility-commands">Utility Commands</a><a class="toc-level-3" href="#docs">docs</a><a class="toc-level-3" href="#releasenotes">releasenotes</a><a class="toc-level-3" href="#version">version</a><a class="toc-level-3" href="#sponsor">sponsor</a></aside></div></div><footer><a class="mpress-footer-credit" href="https://m-press.me">Built with <strong>M-Press</strong></a><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>

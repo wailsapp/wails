@@ -1,0 +1,597 @@
+<!doctype html><html lang="id" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu · Wails</title><meta name="description" content="Panduan membuat dan menyesuaikan menu di Wails v3"><meta property="og:title" content="Menu · Wails"><meta property="og:description" content="Panduan membuat dan menyesuaikan menu di Wails v3"><meta property="og:site_name" content="Wails"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Menu · Wails"><meta name="twitter:description" content="Panduan membuat dan menyesuaikan menu di Wails v3"><meta property="og:url" content="https://v3.wails.io/id/guides/menus/"><link rel="canonical" href="https://v3.wails.io/id/guides/menus/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/menus/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/guides/menus/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/menus/"><script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('mpress-theme');if(t==='system'||t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();(function(){try{var p=JSON.parse(localStorage.getItem('mpress-accessibility')||'{}');var d=document.documentElement;var values={text:p.text||'default',spacing:p.spacing?'relaxed':'default',font:p.readable?'readable':'default',contrast:p.contrast?'high':'default',links:p.links?'underlined':'default',focus:p.focus?'true':'false',guide:p.guide?'true':'false',motion:p.motion?'reduced':'default',colour:p.colour||'default',bionic:p.bionic?'true':'false'};Object.keys(values).forEach(function(k){d.setAttribute('data-a11y-'+k,values[k]);});}catch(_){}})();</script><link rel="stylesheet" href="../../../assets/mpress.css"><link rel="icon" href="../../../favicon.svg"></head><body class="docs-page" data-search="../../../id/search-index.json" data-shortcut-search="Mod+K" data-shortcut-accessibility="Mod+A"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../../id/"><span class="theme-logo" style="--mpress-logo-width:160px"><img class="theme-logo-light" src="../../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../../id/blog/">Blog</a></nav><div class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><button id="search" type="button" role="combobox" aria-label="Search" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog">Search documentation</button><kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></div><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><span class="header-utility-cluster" role="group" aria-label="Site preferences"><div class="header-group utility-select accessibility-select"><button id="accessibility" class="utility-menu-trigger" type="button" popovertarget="mpress-accessibility-panel" aria-label="Accessibility settings" aria-haspopup="dialog" aria-expanded="false" title="Accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 512 512" class="mpress-accessibility-icon" aria-hidden="true"><defs><mask id="mpress-accessibility-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512" mask-type="luminance"><rect width="512" height="512" fill="white"/><g transform="translate(0 -14)">
+  <circle cx="256" cy="139" r="35" fill="black"/>
+
+  <path
+    fill="black"
+    d="M144 184
+       C166 191 193 199 219 203
+       C243 207 269 207 293 203
+       C319 199 346 191 368 184
+       C381 180 393 188 397 201
+       C401 214 393 227 380 232
+       L311 256
+       C303 259 299 266 300 275
+       C304 314 313 359 322 407
+       C325 424 315 437 300 439
+       C285 441 274 432 271 417
+       L259 354
+       C258 348 257 344 256 344
+       C255 344 254 348 253 354
+       L241 417
+       C238 432 227 441 212 439
+       C197 437 187 424 190 407
+       C199 359 208 314 212 275
+       C213 266 209 259 201 256
+       L132 232
+       C119 227 111 214 115 201
+       C119 188 131 180 144 184 Z"/>
+  </g></mask></defs><circle cx="256" cy="256" r="220" fill="currentColor" mask="url(#mpress-accessibility-cutout)"/></svg></button></div><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: Bahasa Indonesia" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/menus/" role="menuitem"><span>English</span></a></li><li><a href="/guides/menus/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/menus/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/menus/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/menus/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/menus/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/menus/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/menus/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/menus/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/guides/menus/" role="menuitem" aria-current="true"><span>Bahasa Indonesia</span></a></li></menu></div><!--mpress-version-menu:start--><!--mpress-version-menu:end--><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></span></nav></header><section id="mpress-accessibility-panel" class="utility-menu-panel mpress-accessibility-panel" popover role="dialog" aria-labelledby="mpress-accessibility-title" data-utility-panel><header class="mpress-accessibility-header"><div><h2 id="mpress-accessibility-title">Accessibility</h2><p>Adjust the site to make it easier to read and navigate.</p></div><button class="mpress-accessibility-close" type="button" data-a11y-close aria-label="Close accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><div class="mpress-accessibility-tabs" role="tablist" aria-label="Accessibility categories"><button id="mpress-a11y-tab-reading" type="button" role="tab" aria-selected="true" aria-controls="mpress-a11y-panel-reading" data-a11y-tab="reading">Reading</button><button id="mpress-a11y-tab-focus" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-focus" data-a11y-tab="focus" tabindex="-1">Focus</button><button id="mpress-a11y-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-vision" data-a11y-tab="vision" tabindex="-1">Vision</button></div><div class="mpress-accessibility-body"><section id="mpress-a11y-panel-reading" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-reading" data-a11y-tabpanel="reading"><h3>Reading</h3><p>Change how text is shown in the main content.</p><div class="mpress-a11y-choice" role="radiogroup" aria-label="Text size"><button type="button" role="radio" data-a11y-choice="text" data-value="default">Default</button><button type="button" role="radio" data-a11y-choice="text" data-value="large">Large</button><button type="button" role="radio" data-a11y-choice="text" data-value="larger">Larger</button></div><label class="mpress-a11y-toggle"><span><strong>Readable font</strong><small>Use a simple, widely spaced font stack.</small></span><input type="checkbox" data-a11y-toggle="readable"></label><label class="mpress-a11y-toggle"><span><strong>Relaxed spacing</strong><small>Add more line, word, and letter space.</small></span><input type="checkbox" data-a11y-toggle="spacing"></label><label class="mpress-a11y-toggle"><span><strong>Bionic reading</strong><small>Emphasise the start of longer words.</small></span><input type="checkbox" data-a11y-toggle="bionic"></label></section><section id="mpress-a11y-panel-focus" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-focus" data-a11y-tabpanel="focus" hidden><h3>Focus and attention</h3><p>Reduce distraction and keep your place while reading.</p><label class="mpress-a11y-toggle"><span><strong>Focus mode</strong><small>Dim navigation until you point to it.</small></span><input type="checkbox" data-a11y-toggle="focus"></label><label class="mpress-a11y-toggle"><span><strong>Reading guide</strong><small>Follow the pointer with a horizontal guide.</small></span><input type="checkbox" data-a11y-toggle="guide"></label><label class="mpress-a11y-toggle"><span><strong>Reduce motion</strong><small>Stop non-essential animation and smooth scrolling.</small></span><input type="checkbox" data-a11y-toggle="motion"></label></section><section id="mpress-a11y-panel-vision" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-vision" data-a11y-tabpanel="vision" hidden><h3>Vision and colour</h3><p>Increase contrast or use a more distinct colour palette.</p><div class="mpress-a11y-field"><span id="mpress-a11y-colour-label">Colour profile</span><div class="mpress-a11y-select" data-a11y-select="colour"><button class="mpress-a11y-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mpress-a11y-colour-label mpress-a11y-colour-value"><span id="mpress-a11y-colour-value" data-a11y-select-value>Site colours</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="mpress-a11y-options" role="listbox" aria-labelledby="mpress-a11y-colour-label" hidden><button class="mpress-a11y-option" type="button" role="option" aria-selected="true" data-value="default">Site colours</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="red-green" tabindex="-1">Red and green distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="blue-yellow" tabindex="-1">Blue and yellow distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="low" tabindex="-1">Low saturation</button></div></div></div><label class="mpress-a11y-toggle"><span><strong>High contrast</strong><small>Increase text and border contrast.</small></span><input type="checkbox" data-a11y-toggle="contrast"></label><label class="mpress-a11y-toggle"><span><strong>Underline links</strong><small>Show links with more than colour.</small></span><input type="checkbox" data-a11y-toggle="links"></label></section></div><footer class="mpress-accessibility-footer"><small>Saved only in this browser.</small><button class="mpress-accessibility-reset" type="button" data-a11y-reset>Reset settings</button></footer></section><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../../id/">Home</a><a class="" href="../../../id/quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/quick-start/installation/">Installation</a><a class="" href="../../../id/quick-start/first-app/">Your First App</a><a class="" href="../../../id/quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/tutorials/04-self-update-a-wails-app/">Aplikasi Wails dengan Self-Update</a><a class="" href="../../../id/tutorials/03-notes-vanilla/">Catatan</a><a class="" href="../../../id/tutorials/02-todo-vanilla/">Daftar TODO</a><a class="" href="../../../id/tutorials/01-creating-a-service/">Layanan QR Code</a><a class="" href="../../../id/tutorials/overview/">Tutorial</a></div></details></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/concepts/architecture/">How Wails Works</a><a class="" href="../../../id/concepts/manager-api/">Manager API</a><a class="" href="../../../id/concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../../id/concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../../id/concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/windows/basics/">Window Basics</a><a class="" href="../../../id/features/windows/options/">Window Options</a><a class="" href="../../../features/windows/notch-windows/">Notch Windows</a><a class="" href="../../../id/features/windows/permissions/">Permissions</a><a class="" href="../../../id/features/windows/multiple/">Multiple Windows</a><a class="" href="../../../id/features/windows/frameless/">Frameless Windows</a><a class="" href="../../../id/features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/menus/application/">Application Menus</a><a class="" href="../../../id/features/menus/context/">Context Menus</a><a class="" href="../../../id/features/menus/systray/">System Tray Menus</a><a class="" href="../../../id/features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/bindings/methods/">Method Binding</a><a class="" href="../../../id/features/bindings/services/">Services</a><a class="" href="../../../id/features/bindings/models/">Data Models</a><a class="" href="../../../id/features/bindings/enums/">Enums</a><a class="" href="../../../id/features/bindings/advanced/">Advanced Binding</a><a class="" href="../../../id/features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/events/system/">Event System</a><a class="" href="../../../features/events/application/">Application Events</a><a class="" href="../../../features/events/window/">Window Events</a><a class="" href="../../../features/events/custom/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/dialogs/file/">File Dialogs</a><a class="" href="../../../id/features/dialogs/message/">Message Dialogs</a><a class="" href="../../../id/features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/autostart/basics/">Autostart</a></div></details></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/clipboard/basics/">Operasi Clipboard</a></div></details></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/browser/integration/">Integrasi Browser</a></div></details></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/drag-and-drop/files/">Drop File</a><a class="" href="../../../id/features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/keyboard/global-shortcuts/">Pintasan Global</a><a class="" href="../../../id/features/keyboard/shortcuts/">Pintasan Keyboard</a></div></details></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/notifications/overview/">Notifikasi</a></div></details></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/screens/info/">Informasi Layar</a></div></details></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/environment/info/">Environment</a></div></details></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/mobile/">Overview</a><a class="" href="../../../id/guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../../id/guides/mobile/ios/">iOS</a><a class="" href="../../../id/guides/mobile/android/">Android</a><a class="" href="../../../id/guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/experimental/">Overview</a><a class="" href="../../../id/experimental/wake/">Wake</a><a class="" href="../../../id/guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/dev/project-structure/">Project Structure</a><a class="" href="../../../guides/dev/workflow/">Development Workflow</a><a class="" href="../../../id/guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../../id/guides/dev/debugging/">Debugging</a><a class="" href="../../../id/guides/testing/">Testing</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/build/building/">Building Applications</a><a class="" href="../../../id/guides/build/customization/">Build Customization</a><a class="" href="../../../id/guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../../id/guides/build/signing/">Code Signing</a><a class="" href="../../../id/guides/build/windows/">Windows Packaging</a><a class="" href="../../../id/guides/build/macos/">macOS Packaging</a><a class="" href="../../../id/guides/build/linux/">Linux Packaging</a><a class="" href="../../../guides/build/msix/">MSIX Packaging</a><a class="" href="../../../id/guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/updater/">In-App Updater</a><a class="" href="../../../id/guides/file-associations/">File Associations</a><a class="" href="../../../id/guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../../id/guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/routing/">Frontend Routing</a><a class="" href="../../../id/guides/gin-routing/">Using Gin Router</a><a class="" href="../../../id/guides/gin-services/">Gin Services</a><a class="" href="../../../guides/patterns/database/">Database Integration</a><a class="" href="../../../guides/patterns/rest-api/">REST APIs</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/guides/server-build/">Server Build</a><a class="" href="../../../id/guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../../guides/advanced/wml/">WML (Wails Markup)</a><a class="" href="../../../id/guides/panic-handling/">Panic Handling</a><a class="" href="../../../id/guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/reference/overview/">Overview</a><a class="" href="../../../id/reference/application/">Application</a><a class="" href="../../../id/reference/window/">Window</a><a class="" href="../../../id/reference/menu/">Menu</a><a class="" href="../../../id/reference/events/">Events</a><a class="" href="../../../id/reference/dialogs/">Dialogs</a><a class="" href="../../../id/reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../../id/reference/cli/">CLI</a><a class="" href="../../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/contributing/getting-started/">Getting Started</a><a class="" href="../../../id/contributing/setup/">Development Setup</a><a class="" href="../../../id/contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/migration/v2-to-v3/">From v2 to v3</a><a class="" href="../../../migration/from-electron/">From Electron</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/links/">Links</a><a class="" href="../../../id/community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/">Overview</a><details open><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../../id/community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../../id/community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../../id/community/showcase/clave/">Clave</a><a class="" href="../../../id/community/showcase/espstudio/">ESP Studio</a><a class="" href="../../../id/community/showcase/emailit/">EmailIt</a><a class="" href="../../../id/community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../../id/community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../../id/community/showcase/ltools/">LTools</a><a class="" href="../../../id/community/showcase/mchat/">Mchat</a><a class="" href="../../../id/community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../../id/community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../../id/community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../../id/community/showcase/mollywallet/">Molly Wallet</a><a class="" href="../../../id/community/showcase/october/">October</a><a class="" href="../../../id/community/showcase/optimus/">Optimus</a><a class="" href="../../../id/community/showcase/packsmith/">Packsmith</a><a class="" href="../../../id/community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../../id/community/showcase/warmine/">Peluncur Minecraft untuk WarMine</a><a class="" href="../../../id/community/showcase/portfall/">Portfall</a><a class="" href="../../../id/community/showcase/redisviewer/">RedisViewer</a><a class="" href="../../../id/community/showcase/resizem/">Resizem</a><a class="" href="../../../id/community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../../id/community/showcase/riftshare/">RiftShare</a><a class="" href="../../../id/community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../../id/community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../../id/community/showcase/surge/">Surge</a><a class="" href="../../../id/community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../../id/community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../../id/community/showcase/wally/">Wally</a><a class="" href="../../../id/community/showcase/wombat/">Wombat</a><a class="" href="../../../id/community/showcase/xensql/">XenSQL</a><a class="" href="../../../id/community/showcase/ytd/">Ytd</a><a class="" href="../../../id/community/showcase/hiposter/">hiposter</a><a class="" href="../../../id/community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details></div></details><a class="" href="../../../id/whats-new/">What&#39;s New</a><a class="" href="../../../id/status/">Status</a><a class="" href="../../../id/changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../../id/credits/">Credits</a></nav></aside><div class="docs-stage"><main id="content"><article><h1>Menu</h1><p class="page-lead">Panduan membuat dan menyesuaikan menu di Wails v3</p><p>Wails v3 menyediakan sistem menu yang powerful yang memungkinkan Anda membuat menu aplikasi dan menu konteks. Panduan ini akan memandu Anda melalui berbagai fitur dan kemampuan sistem menu.</p>
+<h3 id="membuat-menu">Membuat Menu</h3>
+<p>Untuk membuat menu baru, gunakan method <code>New()</code> dari manager Menus:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menu := app.Menu.New()"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()</span></code></pre></div>
+<h3 id="menambahkan-item-menu">Menambahkan Item Menu</h3>
+<p>Wails mendukung beberapa tipe item menu, masing-masing dengan tujuan spesifik:</p>
+<h4 id="item-menu-reguler">Item Menu Reguler</h4>
+<p>Item menu reguler adalah blok dasar menu. Item ini menampilkan teks dan dapat memicu aksi saat diklik:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menuItem := menu.Add(&#34;Click Me&#34;)"><code class="language-go"><span class="mpress-code-line">menuItem <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Click Me&#34;</span>)</span></code></pre></div>
+<h4 id="checkbox">Checkbox</h4>
+<p>Item menu checkbox menyediakan state yang dapat di-toggle, berguna untuk mengaktifkan/menonaktifkan fitur atau pengaturan:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="checkbox := menu.AddCheckbox(&#34;My checkbox&#34;, true)  // true = initially checked"><code class="language-go"><span class="mpress-code-line">checkbox <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">AddCheckbox</span>(<span class="mpress-token-string">&#34;My checkbox&#34;</span>, <span class="mpress-token-keyword">true</span>)  <span class="mpress-token-comment">// true = initially checked</span></span></code></pre></div>
+<h4 id="grup-radio">Grup Radio</h4>
+<p>Grup radio memungkinkan pengguna memilih satu opsi dari sekumpulan pilihan yang saling eksklusif. Grup dibuat otomatis saat item radio ditempatkan berdampingan:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menu.AddRadio(&#34;Option 1&#34;, true)   // true = initially selected&#10;menu.AddRadio(&#34;Option 2&#34;, false)&#10;menu.AddRadio(&#34;Option 3&#34;, false)"><code class="language-go"><span class="mpress-code-line">menu.<span class="mpress-token-function">AddRadio</span>(<span class="mpress-token-string">&#34;Option 1&#34;</span>, <span class="mpress-token-keyword">true</span>)   <span class="mpress-token-comment">// true = initially selected</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">AddRadio</span>(<span class="mpress-token-string">&#34;Option 2&#34;</span>, <span class="mpress-token-keyword">false</span>)
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">AddRadio</span>(<span class="mpress-token-string">&#34;Option 3&#34;</span>, <span class="mpress-token-keyword">false</span>)</span></code></pre></div>
+<h4 id="separator">Separator</h4>
+<p>Separator adalah garis horizontal yang membantu mengorganisir item menu ke dalam grup logis:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menu.AddSeparator()"><code class="language-go"><span class="mpress-code-line">menu.<span class="mpress-token-function">AddSeparator</span>()</span></code></pre></div>
+<h4 id="submenu">Submenu</h4>
+<p>Submenu adalah menu bersarang yang muncul saat hover atau klik item menu. Berguna untuk mengorganisir struktur menu yang kompleks:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="submenu := menu.AddSubmenu(&#34;File&#34;)&#10;submenu.Add(&#34;Open&#34;)&#10;submenu.Add(&#34;Save&#34;)"><code class="language-go"><span class="mpress-code-line">submenu <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">AddSubmenu</span>(<span class="mpress-token-string">&#34;File&#34;</span>)
+</span><span class="mpress-code-line">submenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Open&#34;</span>)
+</span><span class="mpress-code-line">submenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Save&#34;</span>)</span></code></pre></div>
+<h4 id="menggabungkan-menu">Menggabungkan menu</h4>
+<p>Menu dapat ditambahkan ke menu lain dengan append atau prepend.</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menu := app.Menu.New()&#10;menu.Add(&#34;First Menu&#34;)&#10;&#10;secondaryMenu := app.Menu.New()&#10;secondaryMenu.Add(&#34;Second Menu&#34;)&#10;&#10;// insert &#39;secondaryMenu&#39; after &#39;menu&#39;&#10;menu.Append(secondaryMenu)&#10;&#10;// insert &#39;secondaryMenu&#39; before &#39;menu&#39;&#10;menu.Prepend(secondaryMenu)&#10;&#10;// update the menu&#10;menu.Update()"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;First Menu&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">secondaryMenu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">secondaryMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Second Menu&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// insert &#39;secondaryMenu&#39; after &#39;menu&#39;</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Append</span>(secondaryMenu)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// insert &#39;secondaryMenu&#39; before &#39;menu&#39;</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Prepend</span>(secondaryMenu)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// update the menu</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Update</span>()</span></code></pre></div>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>Secara default, <code>prepend</code> dan <code>append</code> akan berbagi state dengan menu asli. Jika Anda ingin membuat menu baru dengan state sendiri,<br>
+Anda dapat memanggil <code>.Clone()</code> pada menu.</p>
+<p>Contoh: <code>menu.Append(secondaryMenu.Clone())</code></p>
+</div>
+</aside>
+<h4 id="membersihkan-menu">Membersihkan menu</h4>
+<p>Dalam beberapa kasus, lebih baik membangun menu baru jika Anda bekerja dengan jumlah item menu yang bervariasi.</p>
+<p>Ini akan membersihkan semua item pada menu yang ada dan memungkinkan Anda menambahkan item lagi.</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menu := app.Menu.New()&#10;menu.Add(&#34;Waiting for update...&#34;)&#10;&#10;// after certain logic, the menu has to be updated&#10;menu.Clear()&#10;menu.Add(&#34;Update complete!&#34;)&#10;menu.Update()"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Waiting for update...&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// after certain logic, the menu has to be updated</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Clear</span>()
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Update complete!&#34;</span>)
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Update</span>()</span></code></pre></div>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>Membersihkan menu hanya menghapus item menu di level teratas. Submenu tidak akan terlihat, tetapi masih menempati memori<br>
+jadi pastikan mengelola menu dengan hati-hati.</p>
+</div>
+</aside>
+<h4 id="menghancurkan-menu">Menghancurkan menu</h4>
+<p>Jika Anda ingin membersihkan dan melepaskan menu, gunakan method <code>Destroy()</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menu := app.Menu.New()&#10;menu.Add(&#34;Waiting for update...&#34;)&#10;&#10;// after certain logic, the menu has to be destroyed&#10;menu.Destroy()"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Waiting for update...&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// after certain logic, the menu has to be destroyed</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">Destroy</span>()</span></code></pre></div>
+<h3 id="properti-item-menu">Properti Item Menu</h3>
+<p>Item menu memiliki beberapa properti yang dapat dikonfigurasi:</p>
+<table>
+<thead>
+<tr>
+<th>Properti</th>
+<th>Method</th>
+<th>Deskripsi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Label</td>
+<td><code>SetLabel(string)</code></td>
+<td>Mengatur teks tampilan</td>
+</tr>
+<tr>
+<td>Enabled</td>
+<td><code>SetEnabled(bool)</code></td>
+<td>Mengaktifkan/menonaktifkan item</td>
+</tr>
+<tr>
+<td>Checked</td>
+<td><code>SetChecked(bool)</code></td>
+<td>Mengatur state checked (untuk checkbox/radio)</td>
+</tr>
+<tr>
+<td>Tooltip</td>
+<td><code>SetTooltip(string)</code></td>
+<td>Mengatur teks tooltip</td>
+</tr>
+<tr>
+<td>Hidden</td>
+<td><code>SetHidden(bool)</code></td>
+<td>Menampilkan/menyembunyikan item</td>
+</tr>
+<tr>
+<td>Accelerator</td>
+<td><code>SetAccelerator(string)</code></td>
+<td>Mengatur keyboard shortcut</td>
+</tr>
+</tbody>
+</table>
+<h3 id="state-item-menu">State Item Menu</h3>
+<p>Item menu dapat berada dalam state berbeda yang mengontrol visibilitas dan interaktivitas:</p>
+<h4 id="visibilitas">Visibilitas</h4>
+<p>Item menu dapat ditampilkan atau disembunyikan secara dinamis menggunakan method <code>SetHidden()</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menuItem := menu.Add(&#34;Dynamic Item&#34;)&#10;&#10;// Hide the menu item&#10;menuItem.SetHidden(true)&#10;&#10;// Show the menu item&#10;menuItem.SetHidden(false)&#10;&#10;// Check current visibility&#10;isHidden := menuItem.Hidden()"><code class="language-go"><span class="mpress-code-line">menuItem <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Dynamic Item&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Hide the menu item</span>
+</span><span class="mpress-code-line">menuItem.<span class="mpress-token-function">SetHidden</span>(<span class="mpress-token-keyword">true</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Show the menu item</span>
+</span><span class="mpress-code-line">menuItem.<span class="mpress-token-function">SetHidden</span>(<span class="mpress-token-keyword">false</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Check current visibility</span>
+</span><span class="mpress-code-line">isHidden <span class="mpress-token-operator">:=</span> menuItem.<span class="mpress-token-function">Hidden</span>()</span></code></pre></div>
+<p>Item menu yang disembunyikan sepenuhnya dihapus dari menu hingga ditampilkan kembali. Berguna untuk item menu kontekstual yang hanya muncul dalam state aplikasi tertentu.</p>
+<h4 id="state-enabled">State Enabled</h4>
+<p>Item menu dapat diaktifkan atau dinonaktifkan menggunakan method <code>SetEnabled()</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menuItem := menu.Add(&#34;Save&#34;)&#10;&#10;// Disable the menu item&#10;menuItem.SetEnabled(false)  // Item appears grayed out and cannot be clicked&#10;&#10;// Enable the menu item&#10;menuItem.SetEnabled(true)   // Item becomes clickable again&#10;&#10;// Check current enabled state&#10;isEnabled := menuItem.Enabled()"><code class="language-go"><span class="mpress-code-line">menuItem <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Save&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Disable the menu item</span>
+</span><span class="mpress-code-line">menuItem.<span class="mpress-token-function">SetEnabled</span>(<span class="mpress-token-keyword">false</span>)  <span class="mpress-token-comment">// Item appears grayed out and cannot be clicked</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Enable the menu item</span>
+</span><span class="mpress-code-line">menuItem.<span class="mpress-token-function">SetEnabled</span>(<span class="mpress-token-keyword">true</span>)   <span class="mpress-token-comment">// Item becomes clickable again</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Check current enabled state</span>
+</span><span class="mpress-code-line">isEnabled <span class="mpress-token-operator">:=</span> menuItem.<span class="mpress-token-function">Enabled</span>()</span></code></pre></div>
+<p>Item menu yang dinonaktifkan tetap terlihat tetapi tampak abu-abu dan tidak dapat diklik. Umum digunakan untuk menandakan aksi saat ini tidak tersedia, seperti:</p>
+<ul>
+<li>Menonaktifkan &ldquo;Save&rdquo; saat tidak ada perubahan untuk disimpan</li>
+<li>Menonaktifkan &ldquo;Copy&rdquo; saat tidak ada yang dipilih</li>
+<li>Menonaktifkan &ldquo;Undo&rdquo; saat tidak ada aksi untuk di-undo</li>
+</ul>
+<h4 id="manajemen-state-dinamis">Manajemen State Dinamis</h4>
+<p>Anda dapat menggabungkan state ini dengan event handler untuk membuat menu dinamis:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="saveMenuItem := menu.Add(&#34;Save&#34;)&#10;&#10;// Initially disable the Save menu item&#10;saveMenuItem.SetEnabled(false)&#10;&#10;// Enable Save only when there are unsaved changes&#10;documentChanged := func() {&#10;    saveMenuItem.SetEnabled(true)&#10;    menu.Update()  // Remember to update the menu after changing states&#10;}&#10;&#10;// Disable Save after saving&#10;documentSaved := func() {&#10;    saveMenuItem.SetEnabled(false)&#10;    menu.Update()&#10;}"><code class="language-go"><span class="mpress-code-line">saveMenuItem <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Save&#34;</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Initially disable the Save menu item</span>
+</span><span class="mpress-code-line">saveMenuItem.<span class="mpress-token-function">SetEnabled</span>(<span class="mpress-token-keyword">false</span>)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Enable Save only when there are unsaved changes</span>
+</span><span class="mpress-code-line">documentChanged <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">    saveMenuItem.<span class="mpress-token-function">SetEnabled</span>(<span class="mpress-token-keyword">true</span>)
+</span><span class="mpress-code-line">    menu.<span class="mpress-token-function">Update</span>()  <span class="mpress-token-comment">// Remember to update the menu after changing states</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Disable Save after saving</span>
+</span><span class="mpress-code-line">documentSaved <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">func</span>() {
+</span><span class="mpress-code-line">    saveMenuItem.<span class="mpress-token-function">SetEnabled</span>(<span class="mpress-token-keyword">false</span>)
+</span><span class="mpress-code-line">    menu.<span class="mpress-token-function">Update</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="penanganan-event">Penanganan Event</h3>
+<p>Item menu dapat merespons event klik menggunakan method <code>OnClick</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menuItem.OnClick(func(ctx *application.Context) {&#10;    // Handle the click event&#10;    println(&#34;Menu item clicked!&#34;)&#10;})"><code class="language-go"><span class="mpress-code-line">menuItem.<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(ctx <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Handle the click event</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-function">println</span>(<span class="mpress-token-string">&#34;Menu item clicked!&#34;</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Context menyediakan informasi tentang item menu yang diklik:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menuItem.OnClick(func(ctx *application.Context) {&#10;    // Get the clicked menu item&#10;    clickedItem := ctx.ClickedMenuItem()&#10;    // Get its current state&#10;    isChecked := clickedItem.Checked()&#10;})"><code class="language-go"><span class="mpress-code-line">menuItem.<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(ctx <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Get the clicked menu item</span>
+</span><span class="mpress-code-line">    clickedItem <span class="mpress-token-operator">:=</span> ctx.<span class="mpress-token-function">ClickedMenuItem</span>()
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Get its current state</span>
+</span><span class="mpress-code-line">    isChecked <span class="mpress-token-operator">:=</span> clickedItem.<span class="mpress-token-function">Checked</span>()
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="item-menu-berbasis-role">Item Menu Berbasis Role</h3>
+<p>Wails menyediakan sekumpulan role menu yang telah didefinisikan yang secara otomatis membuat item menu dengan fungsionalitas standar. Berikut role menu yang didukung:</p>
+<h4 id="struktur-menu-lengkap">Struktur Menu Lengkap</h4>
+<p>Role ini membuat struktur menu lengkap dengan fungsionalitas umum:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Deskripsi</th>
+<th>Catatan Platform</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AppMenu</code></td>
+<td>Menu aplikasi dengan About, Services, Hide/Show, dan Quit</td>
+<td>macOS saja</td>
+</tr>
+<tr>
+<td><code>EditMenu</code></td>
+<td>Menu Edit standar dengan Undo, Redo, Cut, Copy, Paste, dll.</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>ViewMenu</code></td>
+<td>Menu View dengan kontrol Reload, Zoom, dan Fullscreen</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>WindowMenu</code></td>
+<td>Kontrol window (Minimise, Zoom, dll.)</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>HelpMenu</code></td>
+<td>Menu Help dengan tautan &ldquo;Learn More&rdquo; ke situs Wails</td>
+<td>Semua platform</td>
+</tr>
+</tbody>
+</table>
+<h4 id="item-menu-individual">Item Menu Individual</h4>
+<p>Role ini dapat digunakan untuk menambahkan item menu individual:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Deskripsi</th>
+<th>Catatan Platform</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>About</code></td>
+<td>Menampilkan dialog About aplikasi</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Hide</code></td>
+<td>Menyembunyikan aplikasi</td>
+<td>macOS saja</td>
+</tr>
+<tr>
+<td><code>HideOthers</code></td>
+<td>Menyembunyikan aplikasi lain</td>
+<td>macOS saja</td>
+</tr>
+<tr>
+<td><code>UnHide</code></td>
+<td>Menampilkan aplikasi yang disembunyikan</td>
+<td>macOS saja</td>
+</tr>
+<tr>
+<td><code>CloseWindow</code></td>
+<td>Menutup window saat ini</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Minimise</code></td>
+<td>Meminimalkan window</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Zoom</code></td>
+<td>Zoom window</td>
+<td>macOS saja</td>
+</tr>
+<tr>
+<td><code>Front</code></td>
+<td>Membawa window ke depan</td>
+<td>macOS saja</td>
+</tr>
+<tr>
+<td><code>Quit</code></td>
+<td>Keluar dari aplikasi</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Undo</code></td>
+<td>Undo aksi terakhir</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Redo</code></td>
+<td>Redo aksi terakhir</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Cut</code></td>
+<td>Cut seleksi</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Copy</code></td>
+<td>Copy seleksi</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Paste</code></td>
+<td>Paste dari clipboard</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>PasteAndMatchStyle</code></td>
+<td>Paste dan cocokkan style</td>
+<td>macOS saja</td>
+</tr>
+<tr>
+<td><code>SelectAll</code></td>
+<td>Pilih semua</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Delete</code></td>
+<td>Hapus seleksi</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>Reload</code></td>
+<td>Reload halaman saat ini</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>ForceReload</code></td>
+<td>Force reload halaman saat ini</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>ToggleFullscreen</code></td>
+<td>Toggle mode fullscreen</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>ResetZoom</code></td>
+<td>Reset level zoom</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>ZoomIn</code></td>
+<td>Perbesar zoom</td>
+<td>Semua platform</td>
+</tr>
+<tr>
+<td><code>ZoomOut</code></td>
+<td>Perkecil zoom</td>
+<td>Semua platform</td>
+</tr>
+</tbody>
+</table>
+<p>Berikut contoh penggunaan menu lengkap dan role individual:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="menu := app.Menu.New()&#10;&#10;// Add complete menu structures&#10;menu.AddRole(application.AppMenu)    // macOS only&#10;menu.AddRole(application.EditMenu)   // Common edit operations&#10;menu.AddRole(application.ViewMenu)   // View controls&#10;menu.AddRole(application.WindowMenu) // Window controls&#10;&#10;// Add individual role-based items to a custom menu&#10;fileMenu := menu.AddSubmenu(&#34;File&#34;)&#10;fileMenu.AddRole(application.CloseWindow)&#10;fileMenu.AddSeparator()&#10;fileMenu.AddRole(application.Quit)"><code class="language-go"><span class="mpress-code-line">menu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Add complete menu structures</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">AddRole</span>(application.<span class="mpress-token-type">AppMenu</span>)    <span class="mpress-token-comment">// macOS only</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">AddRole</span>(application.<span class="mpress-token-type">EditMenu</span>)   <span class="mpress-token-comment">// Common edit operations</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">AddRole</span>(application.<span class="mpress-token-type">ViewMenu</span>)   <span class="mpress-token-comment">// View controls</span>
+</span><span class="mpress-code-line">menu.<span class="mpress-token-function">AddRole</span>(application.<span class="mpress-token-type">WindowMenu</span>) <span class="mpress-token-comment">// Window controls</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Add individual role-based items to a custom menu</span>
+</span><span class="mpress-code-line">fileMenu <span class="mpress-token-operator">:=</span> menu.<span class="mpress-token-function">AddSubmenu</span>(<span class="mpress-token-string">&#34;File&#34;</span>)
+</span><span class="mpress-code-line">fileMenu.<span class="mpress-token-function">AddRole</span>(application.<span class="mpress-token-type">CloseWindow</span>)
+</span><span class="mpress-code-line">fileMenu.<span class="mpress-token-function">AddSeparator</span>()
+</span><span class="mpress-code-line">fileMenu.<span class="mpress-token-function">AddRole</span>(application.<span class="mpress-token-type">Quit</span>)</span></code></pre></div>
+<h2 id="menu-aplikasi">Menu Aplikasi</h2>
+<p>Menu aplikasi adalah menu yang muncul di bagian atas window aplikasi (Windows/Linux) atau di bagian atas layar (macOS).</p>
+<h3 id="perilaku-menu-aplikasi">Perilaku Menu Aplikasi</h3>
+<p>Saat Anda mengatur menu aplikasi menggunakan <code>app.Menu.Set()</code>, menu tersebut menjadi menu utama di macOS.<br>
+Menu diatur per window untuk Windows/Linux.</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title: &#34;Custom Menu Window&#34;,&#10;    Windows: application.WindowsWindow{&#10;        Menu: customMenu,  // Override application menu for this window&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Custom Menu Window&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Windows</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">WindowsWindow</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Menu</span><span class="mpress-token-operator">:</span> customMenu,  <span class="mpress-token-comment">// Override application menu for this window</span>
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Berikut contoh lengkap yang menunjukkan perilaku menu berbeda:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="func main() {&#10;    app := application.New(application.Options{})&#10;&#10;    // Create application menu&#10;    appMenu := app.Menu.New()&#10;    fileMenu := appMenu.AddSubmenu(&#34;File&#34;)&#10;    fileMenu.Add(&#34;New&#34;).OnClick(func(ctx *application.Context) {&#10;        // This will be available in all windows unless overridden&#10;        window := app.Window.Current()&#10;        window.SetTitle(&#34;New Window&#34;)&#10;    })&#10;    &#10;    // Set as application menu - this is for macOS&#10;    app.Menu.Set(appMenu)&#10;&#10;    // Window with custom menu on Windows&#10;    customMenu := app.Menu.New()&#10;    customMenu.Add(&#34;Custom Action&#34;)&#10;    app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;        Title: &#34;Custom Menu&#34;,&#10;        Windows: application.WindowsWindow{&#10;            Menu: customMenu,&#10;        },&#10;    })&#10;&#10;    app.Run()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Create application menu</span>
+</span><span class="mpress-code-line">    appMenu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">    fileMenu <span class="mpress-token-operator">:=</span> appMenu.<span class="mpress-token-function">AddSubmenu</span>(<span class="mpress-token-string">&#34;File&#34;</span>)
+</span><span class="mpress-code-line">    fileMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;New&#34;</span>).<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(ctx <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// This will be available in all windows unless overridden</span>
+</span><span class="mpress-code-line">        window <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">Current</span>()
+</span><span class="mpress-code-line">        window.<span class="mpress-token-function">SetTitle</span>(<span class="mpress-token-string">&#34;New Window&#34;</span>)
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Set as application menu - this is for macOS</span>
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">Set</span>(appMenu)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Window with custom menu on Windows</span>
+</span><span class="mpress-code-line">    customMenu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Menu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">    customMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Custom Action&#34;</span>)
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Custom Menu&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Windows</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">WindowsWindow</span>{
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Menu</span><span class="mpress-token-operator">:</span> customMenu,
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h2 id="menu-konteks">Menu Konteks</h2>
+<p>Menu konteks adalah menu popup yang muncul saat klik kanan elemen di aplikasi Anda. Menu ini memberikan akses cepat ke aksi yang relevan untuk elemen yang diklik.</p>
+<h3 id="menu-konteks-default">Menu Konteks Default</h3>
+<p>Menu konteks default adalah menu konteks bawaan webview yang menyediakan operasi level sistem seperti:</p>
+<ul>
+<li>Copy, Cut, dan Paste untuk manipulasi teks</li>
+<li>Kontrol seleksi teks</li>
+<li>Opsi spell checking</li>
+</ul>
+<h4 id="mengontrol-menu-konteks-default">Mengontrol Menu Konteks Default</h4>
+<p>Anda dapat mengontrol kapan menu konteks default muncul menggunakan properti CSS <code>--default-contextmenu</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">html</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="&lt;!-- Always show default context menu --&gt;&#10;&lt;div style=&#34;--default-contextmenu: show&#34;&gt;&#10;    &lt;input type=&#34;text&#34; placeholder=&#34;Right-click for text operations&#34;/&gt;&#10;    &lt;textarea&gt;Standard text operations available here&lt;/textarea&gt;&#10;&lt;/div&gt;&#10;&#10;&lt;!-- Hide default context menu --&gt;&#10;&lt;div style=&#34;--default-contextmenu: hide&#34;&gt;&#10;    &lt;div class=&#34;custom-component&#34;&gt;Custom context menu only&lt;/div&gt;&#10;&lt;/div&gt;&#10;&#10;&lt;!-- Smart context menu behaviour (default) --&gt;&#10;&lt;div style=&#34;--default-contextmenu: auto&#34;&gt;&#10;    &lt;!-- Shows default menu when text is selected or in input fields --&gt;&#10;    &lt;p&gt;Select this text to see the default menu&lt;/p&gt;&#10;    &lt;input type=&#34;text&#34; placeholder=&#34;Default menu for input operations&#34;/&gt;&#10;&lt;/div&gt;"><code class="language-html"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">Always</span> show <span class="mpress-token-keyword">default</span> context menu <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>div style<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;--default-contextmenu: show&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>input <span class="mpress-token-keyword">type</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;text&#34;</span> placeholder<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;Right-click for text operations&#34;</span>/<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>textarea<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Standard</span> text operations available here<span class="mpress-token-operator">&lt;</span>/textarea<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">Hide</span> <span class="mpress-token-keyword">default</span> context menu <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>div style<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;--default-contextmenu: hide&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>div <span class="mpress-token-keyword">class</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;custom-component&#34;</span><span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Custom</span> context menu only<span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">Smart</span> context menu <span class="mpress-token-function">behaviour</span> (<span class="mpress-token-keyword">default</span>) <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>div style<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;--default-contextmenu: auto&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">Shows</span> <span class="mpress-token-keyword">default</span> menu when text is selected or <span class="mpress-token-keyword">in</span> input fields <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>p<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Select</span> this text to see the <span class="mpress-token-keyword">default</span> menu<span class="mpress-token-operator">&lt;</span>/p<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>input <span class="mpress-token-keyword">type</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;text&#34;</span> placeholder<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;Default menu for input operations&#34;</span>/<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>Fitur ini hanya bekerja seperti yang diharapkan setelah runtime <a href="/reference/frontend-runtime/#initialisation">telah diinisialisasi</a>.</p>
+</div>
+</aside>
+<h4 id="perilaku-menu-konteks-bersarang">Perilaku Menu Konteks Bersarang</h4>
+<p>Saat menggunakan properti <code>--default-contextmenu</code> pada elemen bersarang, aturan berikut berlaku:</p>
+<ol>
+<li>Elemen anak mewarisi pengaturan menu konteks induk kecuali secara eksplisit di-override</li>
+<li>Pengaturan paling spesifik (terdekat) yang diutamakan</li>
+<li>Nilai <code>auto</code> dapat digunakan untuk reset ke perilaku default</li>
+</ol>
+<p>Contoh perilaku menu konteks bersarang:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">html</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="&lt;!-- Parent sets hide --&gt;&#10;&lt;div style=&#34;--default-contextmenu: hide&#34;&gt;&#10;    &lt;!-- This inherits hide --&gt;&#10;    &lt;p&gt;No context menu here&lt;/p&gt;&#10;    &#10;    &lt;!-- This overrides to show --&gt;&#10;    &lt;div style=&#34;--default-contextmenu: show&#34;&gt;&#10;        &lt;p&gt;Context menu shown here&lt;/p&gt;&#10;        &#10;        &lt;!-- This inherits show --&gt;&#10;        &lt;span&gt;Also has context menu&lt;/span&gt;&#10;        &#10;        &lt;!-- This resets to automatic behaviour --&gt;&#10;        &lt;div style=&#34;--default-contextmenu: auto&#34;&gt;&#10;            &lt;p&gt;Shows menu only when text is selected&lt;/p&gt;&#10;        &lt;/div&gt;&#10;    &lt;/div&gt;&#10;&lt;/div&gt;"><code class="language-html"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">Parent</span> sets hide <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>div style<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;--default-contextmenu: hide&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">This</span> inherits hide <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>p<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">No</span> context menu here<span class="mpress-token-operator">&lt;</span>/p<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">This</span> overrides to show <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>div style<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;--default-contextmenu: show&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>p<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Context</span> menu shown here<span class="mpress-token-operator">&lt;</span>/p<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">This</span> inherits show <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>span<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Also</span> has context menu<span class="mpress-token-operator">&lt;</span>/span<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">This</span> resets to automatic behaviour <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>div style<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;--default-contextmenu: auto&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">&lt;</span>p<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Shows</span> menu only when text is selected<span class="mpress-token-operator">&lt;</span>/p<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<h3 id="menu-konteks-kustom">Menu Konteks Kustom</h3>
+<p>Menu konteks kustom memungkinkan Anda menyediakan aksi spesifik aplikasi yang relevan dengan elemen yang diklik. Sangat berguna untuk:</p>
+<ul>
+<li>Operasi file di document manager</li>
+<li>Alat manipulasi gambar</li>
+<li>Aksi kustom di data grid</li>
+<li>Operasi spesifik komponen</li>
+</ul>
+<h4 id="membuat-menu-konteks-kustom">Membuat Menu Konteks Kustom</h4>
+<p>Saat membuat menu konteks kustom, Anda menyediakan identifier unik (nama) yang menghubungkan menu ke elemen HTML:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="// Create a context menu with identifier &#34;imageMenu&#34;&#10;contextMenu := app.ContextMenu.New()&#10;app.ContextMenu.Add(&#34;imageMenu&#34;, contextMenu)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Create a context menu with identifier &#34;imageMenu&#34;</span>
+</span><span class="mpress-code-line">contextMenu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">ContextMenu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">ContextMenu</span>.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;imageMenu&#34;</span>, contextMenu)</span></code></pre></div>
+<p>Parameter name (&ldquo;imageMenu&rdquo; dalam contoh ini) berfungsi sebagai identifier unik yang akan digunakan untuk:</p>
+<ol>
+<li>Menghubungkan elemen HTML ke menu konteks spesifik ini</li>
+<li>Mengidentifikasi menu mana yang ditampilkan saat klik kanan</li>
+<li>Memungkinkan pembaruan dan pembersihan menu</li>
+</ol>
+<h4 id="data-konteks">Data Konteks</h4>
+<p>Saat menangani event menu konteks, Anda dapat mengakses item menu yang diklik dan data konteks terkait:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="contextMenu.Add(&#34;Process&#34;).OnClick(func(ctx *application.Context) {&#10;    // Get the clicked menu item&#10;    menuItem := ctx.ClickedMenuItem()&#10;    &#10;    // Get the context data as a string&#10;    contextData := ctx.ContextMenuData()&#10;    &#10;    // Check if the menu item is checked (for checkbox/radio items)&#10;    isChecked := ctx.IsChecked()&#10;    &#10;    // Use the data&#10;    if contextData != &#34;&#34; {&#10;        processItem(contextData)&#10;    }&#10;})"><code class="language-go"><span class="mpress-code-line">contextMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Process&#34;</span>).<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(ctx <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Get the clicked menu item</span>
+</span><span class="mpress-code-line">    menuItem <span class="mpress-token-operator">:=</span> ctx.<span class="mpress-token-function">ClickedMenuItem</span>()
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Get the context data as a string</span>
+</span><span class="mpress-code-line">    contextData <span class="mpress-token-operator">:=</span> ctx.<span class="mpress-token-function">ContextMenuData</span>()
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Check if the menu item is checked (for checkbox/radio items)</span>
+</span><span class="mpress-code-line">    isChecked <span class="mpress-token-operator">:=</span> ctx.<span class="mpress-token-function">IsChecked</span>()
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Use the data</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> contextData <span class="mpress-token-operator">!=</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-function">processItem</span>(contextData)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Data konteks diteruskan dari properti <code>--custom-contextmenu-data</code> elemen HTML dan tersedia di click handler melalui <code>ctx.ContextMenuData()</code>. Sangat berguna saat:</p>
+<ul>
+<li>Bekerja dengan list atau grid di mana setiap item membutuhkan identifikasi unik</li>
+<li>Menangani operasi pada komponen atau elemen spesifik</li>
+<li>Meneruskan state atau metadata dari frontend ke backend</li>
+</ul>
+<h4 id="manajemen-menu-konteks">Manajemen Menu Konteks</h4>
+<p>Setelah melakukan perubahan pada menu konteks, panggil method <code>Update()</code> untuk menerapkan perubahan:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="contextMenu.Update()"><code class="language-go"><span class="mpress-code-line">contextMenu.<span class="mpress-token-function">Update</span>()</span></code></pre></div>
+<p>Saat menu konteks tidak lagi diperlukan, Anda dapat menghancurkannya:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="contextMenu.Destroy()"><code class="language-go"><span class="mpress-code-line">contextMenu.<span class="mpress-token-function">Destroy</span>()</span></code></pre></div>
+<aside aria-label="Peringatan" class="mpress-admonition mpress-admonition-danger" data-variant="danger">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-x" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg> <span>Peringatan</span></p>
+<div class="mpress-admonition-body">
+<p>Setelah memanggil <code>Destroy()</code>, menggunakan referensi menu konteks lagi akan menyebabkan panic.</p>
+</div>
+</aside>
+<h3 id="contoh-dunia-nyata-galeri-gambar">Contoh Dunia Nyata: Galeri Gambar</h3>
+<p>Berikut contoh lengkap implementasi menu konteks kustom untuk galeri gambar:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="// Backend: Create the context menu&#10;imageMenu := app.ContextMenu.New()&#10;app.ContextMenu.Add(&#34;imageMenu&#34;, imageMenu)&#10;&#10;// Add relevant operations&#10;imageMenu.Add(&#34;View Full Size&#34;).OnClick(func(ctx *application.Context) {&#10;    // Get the image ID from context data&#10;    if imageID := ctx.ContextMenuData(); imageID != &#34;&#34; {&#10;        openFullSizeImage(imageID)&#10;    }&#10;})&#10;&#10;imageMenu.Add(&#34;Download&#34;).OnClick(func(ctx *application.Context) {&#10;    if imageID := ctx.ContextMenuData(); imageID != &#34;&#34; {&#10;        downloadImage(imageID)&#10;    }&#10;})&#10;&#10;imageMenu.Add(&#34;Share&#34;).OnClick(func(ctx *application.Context) {&#10;    if imageID := ctx.ContextMenuData(); imageID != &#34;&#34; {&#10;        showShareDialog(imageID)&#10;    }&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Backend: Create the context menu</span>
+</span><span class="mpress-code-line">imageMenu <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">ContextMenu</span>.<span class="mpress-token-function">New</span>()
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">ContextMenu</span>.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;imageMenu&#34;</span>, imageMenu)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Add relevant operations</span>
+</span><span class="mpress-code-line">imageMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;View Full Size&#34;</span>).<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(ctx <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Get the image ID from context data</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> imageID <span class="mpress-token-operator">:=</span> ctx.<span class="mpress-token-function">ContextMenuData</span>(); imageID <span class="mpress-token-operator">!=</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-function">openFullSizeImage</span>(imageID)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">imageMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Download&#34;</span>).<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(ctx <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> imageID <span class="mpress-token-operator">:=</span> ctx.<span class="mpress-token-function">ContextMenuData</span>(); imageID <span class="mpress-token-operator">!=</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-function">downloadImage</span>(imageID)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">imageMenu.<span class="mpress-token-function">Add</span>(<span class="mpress-token-string">&#34;Share&#34;</span>).<span class="mpress-token-function">OnClick</span>(<span class="mpress-token-keyword">func</span>(ctx <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">Context</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> imageID <span class="mpress-token-operator">:=</span> ctx.<span class="mpress-token-function">ContextMenuData</span>(); imageID <span class="mpress-token-operator">!=</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-function">showShareDialog</span>(imageID)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">html</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="&lt;!-- Frontend: Image gallery implementation --&gt;&#10;&lt;div class=&#34;gallery&#34;&gt;&#10;    &lt;!-- Each image container with context menu --&gt;&#10;    &lt;div class=&#34;image-container&#34; &#10;         style=&#34;--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123&#34;&gt;&#10;        &lt;img src=&#34;/images/img_123.jpg&#34; alt=&#34;Gallery Image&#34;/&gt;&#10;        &lt;span class=&#34;caption&#34;&gt;Nature Photo&lt;/span&gt;&#10;    &lt;/div&gt;&#10;    &#10;    &lt;div class=&#34;image-container&#34;&#10;         style=&#34;--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124&#34;&gt;&#10;        &lt;img src=&#34;/images/img_124.jpg&#34; alt=&#34;Gallery Image&#34;/&gt;&#10;        &lt;span class=&#34;caption&#34;&gt;City Photo&lt;/span&gt;&#10;    &lt;/div&gt;&#10;&lt;/div&gt;"><code class="language-html"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">Frontend</span><span class="mpress-token-operator">:</span> <span class="mpress-token-type">Image</span> gallery implementation <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>div <span class="mpress-token-keyword">class</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;gallery&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;!--</span> <span class="mpress-token-type">Each</span> image container with context menu <span class="mpress-token-operator">--&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>div <span class="mpress-token-keyword">class</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;image-container&#34;</span> 
+</span><span class="mpress-code-line">         style<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>img src<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;/images/img_123.jpg&#34;</span> alt<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;Gallery Image&#34;</span>/<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>span <span class="mpress-token-keyword">class</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;caption&#34;</span><span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Nature</span> <span class="mpress-token-type">Photo</span><span class="mpress-token-operator">&lt;</span>/span<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>div <span class="mpress-token-keyword">class</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;image-container&#34;</span>
+</span><span class="mpress-code-line">         style<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>img src<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;/images/img_124.jpg&#34;</span> alt<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;Gallery Image&#34;</span>/<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>span <span class="mpress-token-keyword">class</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;caption&#34;</span><span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">City</span> <span class="mpress-token-type">Photo</span><span class="mpress-token-operator">&lt;</span>/span<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<p>Dalam contoh ini:</p>
+<ol>
+<li>Menu konteks dibuat dengan identifier &ldquo;imageMenu&rdquo;</li>
+<li>Setiap container gambar dihubungkan ke menu menggunakan <code>--custom-contextmenu: imageMenu</code></li>
+<li>Setiap container menyediakan ID gambar sebagai data konteks menggunakan <code>--custom-contextmenu-data</code></li>
+<li>Backend menerima ID gambar di click handler dan dapat melakukan operasi spesifik</li>
+<li>Menu yang sama digunakan ulang untuk semua gambar, tetapi data konteks memberi tahu gambar mana yang dioperasikan</li>
+</ol>
+<p>Pola ini sangat powerful untuk:</p>
+<ul>
+<li>Data grid di mana baris membutuhkan operasi spesifik</li>
+<li>File manager di mana file membutuhkan aksi spesifik konteks</li>
+<li>Alat desain di mana elemen berbeda membutuhkan operasi berbeda</li>
+<li>Komponen apa pun di mana operasi yang sama berlaku untuk banyak instance</li>
+</ul>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/id/guides/menus.mdx"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-21T13:36:57Z">Aug 21, 2026</time></p></div><nav class="pager"><span></span></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-3" href="#membuat-menu">Membuat Menu</a><a class="toc-level-3" href="#menambahkan-item-menu">Menambahkan Item Menu</a><a class="toc-level-3" href="#properti-item-menu">Properti Item Menu</a><a class="toc-level-3" href="#state-item-menu">State Item Menu</a><a class="toc-level-3" href="#penanganan-event">Penanganan Event</a><a class="toc-level-3" href="#item-menu-berbasis-role">Item Menu Berbasis Role</a><a class="toc-level-2" href="#menu-aplikasi">Menu Aplikasi</a><a class="toc-level-3" href="#perilaku-menu-aplikasi">Perilaku Menu Aplikasi</a><a class="toc-level-2" href="#menu-konteks">Menu Konteks</a><a class="toc-level-3" href="#menu-konteks-default">Menu Konteks Default</a><a class="toc-level-3" href="#menu-konteks-kustom">Menu Konteks Kustom</a><a class="toc-level-3" href="#contoh-dunia-nyata-galeri-gambar">Contoh Dunia Nyata: Galeri Gambar</a></aside></div></div><footer><a class="mpress-footer-credit" href="https://m-press.me">Built with <strong>M-Press</strong></a><span>Markdown in. Beautiful docs out.</span></footer><script src="../../../assets/mpress.js" defer></script></body></html>

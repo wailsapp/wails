@@ -1,0 +1,455 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Runtime Internals · Wails</title><meta name="description" content="Deep-dive into how Wails v3 boots, runs, and talks to the OS"><meta property="og:title" content="Runtime Internals · Wails"><meta property="og:description" content="Deep-dive into how Wails v3 boots, runs, and talks to the OS"><meta property="og:site_name" content="Wails"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Runtime Internals · Wails"><meta name="twitter:description" content="Deep-dive into how Wails v3 boots, runs, and talks to the OS"><meta property="og:url" content="https://v3.wails.io/contributing/runtime-internals/"><link rel="canonical" href="https://v3.wails.io/contributing/runtime-internals/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/contributing/runtime-internals/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/contributing/runtime-internals/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/contributing/runtime-internals/"><script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('mpress-theme');if(t==='system'||t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();(function(){try{var p=JSON.parse(localStorage.getItem('mpress-accessibility')||'{}');var d=document.documentElement;var values={text:p.text||'default',spacing:p.spacing?'relaxed':'default',font:p.readable?'readable':'default',contrast:p.contrast?'high':'default',links:p.links?'underlined':'default',focus:p.focus?'true':'false',guide:p.guide?'true':'false',motion:p.motion?'reduced':'default',colour:p.colour||'default',bionic:p.bionic?'true':'false'};Object.keys(values).forEach(function(k){d.setAttribute('data-a11y-'+k,values[k]);});}catch(_){}})();</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../search-index.json" data-shortcut-search="Mod+K" data-shortcut-accessibility="Mod+A"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo" style="--mpress-logo-width:160px"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><div class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><button id="search" type="button" role="combobox" aria-label="Search" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog">Search documentation</button><kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></div><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><span class="header-utility-cluster" role="group" aria-label="Site preferences"><div class="header-group utility-select accessibility-select"><button id="accessibility" class="utility-menu-trigger" type="button" popovertarget="mpress-accessibility-panel" aria-label="Accessibility settings" aria-haspopup="dialog" aria-expanded="false" title="Accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 512 512" class="mpress-accessibility-icon" aria-hidden="true"><defs><mask id="mpress-accessibility-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512" mask-type="luminance"><rect width="512" height="512" fill="white"/><g transform="translate(0 -14)">
+  <circle cx="256" cy="139" r="35" fill="black"/>
+
+  <path
+    fill="black"
+    d="M144 184
+       C166 191 193 199 219 203
+       C243 207 269 207 293 203
+       C319 199 346 191 368 184
+       C381 180 393 188 397 201
+       C401 214 393 227 380 232
+       L311 256
+       C303 259 299 266 300 275
+       C304 314 313 359 322 407
+       C325 424 315 437 300 439
+       C285 441 274 432 271 417
+       L259 354
+       C258 348 257 344 256 344
+       C255 344 254 348 253 354
+       L241 417
+       C238 432 227 441 212 439
+       C197 437 187 424 190 407
+       C199 359 208 314 212 275
+       C213 266 209 259 201 256
+       L132 232
+       C119 227 111 214 115 201
+       C119 188 131 180 144 184 Z"/>
+  </g></mask></defs><circle cx="256" cy="256" r="220" fill="currentColor" mask="url(#mpress-accessibility-cutout)"/></svg></button></div><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/contributing/runtime-internals/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/contributing/runtime-internals/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/contributing/runtime-internals/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/contributing/runtime-internals/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/contributing/runtime-internals/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/contributing/runtime-internals/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/contributing/runtime-internals/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/contributing/runtime-internals/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/contributing/runtime-internals/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/contributing/runtime-internals/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><!--mpress-version-menu:start--><!--mpress-version-menu:end--><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></span></nav></header><section id="mpress-accessibility-panel" class="utility-menu-panel mpress-accessibility-panel" popover role="dialog" aria-labelledby="mpress-accessibility-title" data-utility-panel><header class="mpress-accessibility-header"><div><h2 id="mpress-accessibility-title">Accessibility</h2><p>Adjust the site to make it easier to read and navigate.</p></div><button class="mpress-accessibility-close" type="button" data-a11y-close aria-label="Close accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><div class="mpress-accessibility-tabs" role="tablist" aria-label="Accessibility categories"><button id="mpress-a11y-tab-reading" type="button" role="tab" aria-selected="true" aria-controls="mpress-a11y-panel-reading" data-a11y-tab="reading">Reading</button><button id="mpress-a11y-tab-focus" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-focus" data-a11y-tab="focus" tabindex="-1">Focus</button><button id="mpress-a11y-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-vision" data-a11y-tab="vision" tabindex="-1">Vision</button></div><div class="mpress-accessibility-body"><section id="mpress-a11y-panel-reading" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-reading" data-a11y-tabpanel="reading"><h3>Reading</h3><p>Change how text is shown in the main content.</p><div class="mpress-a11y-choice" role="radiogroup" aria-label="Text size"><button type="button" role="radio" data-a11y-choice="text" data-value="default">Default</button><button type="button" role="radio" data-a11y-choice="text" data-value="large">Large</button><button type="button" role="radio" data-a11y-choice="text" data-value="larger">Larger</button></div><label class="mpress-a11y-toggle"><span><strong>Readable font</strong><small>Use a simple, widely spaced font stack.</small></span><input type="checkbox" data-a11y-toggle="readable"></label><label class="mpress-a11y-toggle"><span><strong>Relaxed spacing</strong><small>Add more line, word, and letter space.</small></span><input type="checkbox" data-a11y-toggle="spacing"></label><label class="mpress-a11y-toggle"><span><strong>Bionic reading</strong><small>Emphasise the start of longer words.</small></span><input type="checkbox" data-a11y-toggle="bionic"></label></section><section id="mpress-a11y-panel-focus" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-focus" data-a11y-tabpanel="focus" hidden><h3>Focus and attention</h3><p>Reduce distraction and keep your place while reading.</p><label class="mpress-a11y-toggle"><span><strong>Focus mode</strong><small>Dim navigation until you point to it.</small></span><input type="checkbox" data-a11y-toggle="focus"></label><label class="mpress-a11y-toggle"><span><strong>Reading guide</strong><small>Follow the pointer with a horizontal guide.</small></span><input type="checkbox" data-a11y-toggle="guide"></label><label class="mpress-a11y-toggle"><span><strong>Reduce motion</strong><small>Stop non-essential animation and smooth scrolling.</small></span><input type="checkbox" data-a11y-toggle="motion"></label></section><section id="mpress-a11y-panel-vision" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-vision" data-a11y-tabpanel="vision" hidden><h3>Vision and colour</h3><p>Increase contrast or use a more distinct colour palette.</p><div class="mpress-a11y-field"><span id="mpress-a11y-colour-label">Colour profile</span><div class="mpress-a11y-select" data-a11y-select="colour"><button class="mpress-a11y-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mpress-a11y-colour-label mpress-a11y-colour-value"><span id="mpress-a11y-colour-value" data-a11y-select-value>Site colours</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="mpress-a11y-options" role="listbox" aria-labelledby="mpress-a11y-colour-label" hidden><button class="mpress-a11y-option" type="button" role="option" aria-selected="true" data-value="default">Site colours</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="red-green" tabindex="-1">Red and green distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="blue-yellow" tabindex="-1">Blue and yellow distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="low" tabindex="-1">Low saturation</button></div></div></div><label class="mpress-a11y-toggle"><span><strong>High contrast</strong><small>Increase text and border contrast.</small></span><input type="checkbox" data-a11y-toggle="contrast"></label><label class="mpress-a11y-toggle"><span><strong>Underline links</strong><small>Show links with more than colour.</small></span><input type="checkbox" data-a11y-toggle="links"></label></section></div><footer class="mpress-accessibility-footer"><small>Saved only in this browser.</small><button class="mpress-accessibility-reset" type="button" data-a11y-reset>Reset settings</button></footer></section><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../">Home</a><a class="" href="../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../quick-start/installation/">Installation</a><a class="" href="../../quick-start/first-app/">Your First App</a><a class="" href="../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../tutorials/overview/">Tutorials</a></div></details></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../concepts/architecture/">How Wails Works</a><a class="" href="../../concepts/manager-api/">Manager API</a><a class="" href="../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/notch-windows/">Notch Windows</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/application/">Application Events</a><a class="" href="../../features/events/window/">Window Events</a><a class="" href="../../features/events/custom/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/autostart/basics/">Autostart</a></div></details></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/clipboard/basics/">Clipboard Operations</a></div></details></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/browser/integration/">Browser Integration</a></div></details></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/notifications/overview/">Notifications</a></div></details></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/screens/info/">Screen Information</a></div></details></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/environment/info/">Environment</a></div></details></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/workflow/">Development Workflow</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a><a class="" href="../../guides/testing/">Testing</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/msix/">MSIX Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../guides/gin-routing/">Using Gin Router</a><a class="" href="../../guides/gin-services/">Gin Services</a><a class="" href="../../guides/patterns/database/">Database Integration</a><a class="" href="../../guides/patterns/rest-api/">REST APIs</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/advanced/wml/">WML (Wails Markup)</a><a class="" href="../../guides/panic-handling/">Panic Handling</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../migration/v2-to-v3/">From v2 to v3</a><a class="" href="../../migration/from-electron/">From Electron</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/links/">Links</a><a class="" href="../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><details open><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../community/showcase/clave/">Clave</a><a class="" href="../../community/showcase/condui/">Condui</a><a class="" href="../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../community/showcase/emailit/">EmailIt</a><a class="" href="../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../community/showcase/happytools/">HappyTools</a><a class="" href="../../community/showcase/kira/">Kira</a><a class="" href="../../community/showcase/ltools/">LTools</a><a class="" href="../../community/showcase/mchat/">Mchat</a><a class="" href="../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../community/showcase/october/">October</a><a class="" href="../../community/showcase/optimus/">Optimus</a><a class="" href="../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../community/showcase/portfall/">Portfall</a><a class="" href="../../community/showcase/redisviewer/">Redis Viewer</a><a class="" href="../../community/showcase/resizem/">Resizem</a><a class="" href="../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../community/showcase/surge/">Surge</a><a class="" href="../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../community/showcase/wally/">Wally</a><a class="" href="../../community/showcase/wombat/">Wombat</a><a class="" href="../../community/showcase/xensql/">XenSQL</a><a class="" href="../../community/showcase/ytd/">Ytd</a><a class="" href="../../community/showcase/hiposter/">hiposter</a><a class="" href="../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../credits/">Credits</a></nav></aside><div class="docs-stage"><main id="content"><article><h1>Runtime Internals</h1><p class="page-lead">Deep-dive into how Wails v3 boots, runs, and talks to the OS</p><p>The <strong>runtime</strong> is the layer that transforms ordinary Go functions into a<br>
+cross-platform desktop application. <br>
+This document explains the moving parts you will meet when tracing through the<br>
+source code.</p>
+<hr>
+<h2 id="1-application-lifecycle">1. Application Lifecycle</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Code Path</th>
+<th>What Happens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bootstrap</strong></td>
+<td><code>pkg/application/application.go:init()</code></td>
+<td>Registers build-time data, creates a global <code>application</code> singleton.</td>
+</tr>
+<tr>
+<td><strong>New()</strong></td>
+<td><code>application.New(...)</code></td>
+<td>Validates <code>Options</code>, spins up the <strong>AssetServer</strong>, initialises logging.</td>
+</tr>
+<tr>
+<td><strong>Run()</strong></td>
+<td><code>application.(*App).Run()</code></td>
+<td>1. Calls platform <code>mainthread.X()</code> to enter the OS UI thread.<br />2. Boots the <strong>runtime</strong> (<code>internal/runtime</code>).<br />3. Blocks until the last window closes or <code>Quit()</code> is called.</td>
+</tr>
+<tr>
+<td><strong>Shutdown</strong></td>
+<td><code>application.(*App).Quit()</code></td>
+<td>Broadcasts <code>application:shutdown</code> event, flushes log, tears down windows &amp; services.</td>
+</tr>
+</tbody>
+</table>
+<p>The lifecycle is strictly <strong>single-entry</strong>: you may create many windows, but the<br>
+application object itself is initialised once.</p>
+<hr>
+<h2 id="2-window-management">2. Window Management</h2>
+<h3 id="public-api">Public API</h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="win := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:  &#34;Dashboard&#34;,&#10;    Width:  1280,&#10;    Height: 720,&#10;})&#10;win.Show()"><code class="language-go"><span class="mpress-code-line">win <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;Dashboard&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">1280</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">720</span>,
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">win.<span class="mpress-token-function">Show</span>()</span></code></pre></div>
+<blockquote>
+<p><code>app.Window.New()</code> takes <strong>no arguments</strong>; use <code>NewWithOptions(...)</code> when you</p>
+<p>need to pass an <code>application.WebviewWindowOptions</code> struct (by value).</p>
+</blockquote>
+<p><code>app.Window.New[WithOptions]()</code> delegates to <code>pkg/application/webview_window_*.go</code> where<br>
+the platform-specific implementations live:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="pkg/application/&#10;├── webview_window_darwin.go    // WKWebView&#10;├── webview_window_linux.go     // GTK + WebKitGTK (plus linux_cgo*.go)&#10;└── webview_window_windows.go   // WebView2"><code class="language-text"><span class="mpress-code-line">pkg/application/
+</span><span class="mpress-code-line">├── webview_window_darwin.go    // WKWebView
+</span><span class="mpress-code-line">├── webview_window_linux.go     // GTK + WebKitGTK (plus linux_cgo*.go)
+</span><span class="mpress-code-line">└── webview_window_windows.go   // WebView2</span></code></pre></div>
+<p>Each file:</p>
+<ol>
+<li>Creates a native webview (WKWebView, WebKitGTK, WebView2).</li>
+<li>Registers a <strong>Message Processor</strong> callback (<code>pkg/application/messageprocessor*.go</code>).</li>
+<li>Maps Wails events (<code>WindowDidResize</code>, <code>WindowFocus</code>, <code>WindowFilesDropped</code>, …)
+to the constants in <code>pkg/events</code>.</li>
+</ol>
+<p><code>internal/runtime/</code> is reserved for the small build-tag glue<br>
+(<code>runtime{,_darwin,_linux,_windows,_android,_dev,_prod}.go</code>) and the embedded<br>
+JS runtime under <code>internal/runtime/desktop/</code>.</p>
+<p>Active windows are tracked by <code>pkg/application/window_manager.go</code> /<br>
+<code>webview_window.go</code>. <code>pkg/application/screenmanager.go</code> is for <strong>display</strong><br>
+metadata (resolution, scale, work area) — it does not manage windows.</p>
+<hr>
+<h2 id="3-message-processing-pipeline">3. Message Processing Pipeline</h2>
+<p>The bridge between JavaScript and Go is implemented by the <strong>Message<br>
+Processor</strong> family in <code>pkg/application/messageprocessor_*.go</code>.</p>
+<p>Flow:</p>
+<ol>
+<li><strong>JavaScript</strong> calls <code>Call.ByID(&lt;fnv-id&gt;, ...args)</code> from <code>/wails/runtime.js</code>
+(implemented in <code>internal/runtime/desktop/@wailsio/runtime/src/calls.ts</code>)</li>
+</ol>
+<p>— or <code>Call.ByName(&quot;pkg.Struct.Method&quot;, ...args)</code> for name-mode builds.</p>
+<ol start="2">
+<li>
+<p>The runtime helper packages the call and dispatches it through the
+per-platform native bridge into Go.</p>
+</li>
+<li>
+<p><strong>Go</strong> receives the message in <code>pkg/application/messageprocessor_call.go</code>.</p>
+</li>
+<li>
+<p>The processor looks up the bound method in <code>pkg/application/bindings.go</code>
+(hand-written, <code>reflect</code>-based) and invokes it.</p>
+</li>
+<li>
+<p>The result or error is marshalled back to JS where a <code>Promise</code> resolves
+or rejects.</p>
+</li>
+</ol>
+<blockquote>
+<p>The exact JSON envelope is defined by the runtime helper on the JS side and</p>
+<p>by <code>messageprocessor_call.go</code> on the Go side — older drafts of this page</p>
+<p>quoted a <code>{&quot;t&quot;:&quot;c&quot;,&quot;id&quot;:&quot;123&quot;,&quot;m&quot;:&quot;Greet&quot;,&quot;p&quot;:[…]}</code> shape, but that doesn&rsquo;t</p>
+<p>match the current implementation. Read both files together when chasing a</p>
+<p>wire-format bug.</p>
+</blockquote>
+<p>Specialised processors:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>messageprocessor_window.go</code></td>
+<td>Window actions (hide, maximize, …)</td>
+</tr>
+<tr>
+<td><code>messageprocessor_dialog.go</code></td>
+<td>Native dialogs (<code>OpenFile</code>, <code>MessageBox</code>, …)</td>
+</tr>
+<tr>
+<td><code>messageprocessor_clipboard.go</code></td>
+<td>Clipboard read/write</td>
+</tr>
+<tr>
+<td><code>messageprocessor_events.go</code></td>
+<td>Event subscribe / emit</td>
+</tr>
+<tr>
+<td><code>messageprocessor_browser.go</code></td>
+<td>Browser navigation, devtools</td>
+</tr>
+</tbody>
+</table>
+<p>Processors are <strong>stateless</strong> – they pull everything they need from the<br>
+<code>ApplicationContext</code> passed with each message.</p>
+<hr>
+<h2 id="4-events-system">4. Events System</h2>
+<p>Events are namespaced strings dispatched across three layers:</p>
+<ol>
+<li>
+<p><strong>Application events</strong>: global lifecycle (<code>application:ready</code>,
+<code>application:shutdown</code>).</p>
+</li>
+<li>
+<p><strong>Window events</strong>: per-window (<code>window:focus</code>, <code>window:resize</code>).</p>
+</li>
+<li>
+<p><strong>Custom events</strong>: user-defined (<code>chat:new-message</code>).</p>
+</li>
+</ol>
+<p>Implementation details:</p>
+<ul>
+<li>
+<p>Event constants live in <code>pkg/events/</code> (<code>defaults.go</code>, <code>known_events.go</code>,
+<code>events.txt</code>). They are generated by <code>v3/tasks/events/generate.go</code> and exposed</p>
+<p>as <code>events.Common.*</code>, <code>events.Mac.*</code>, <code>events.Windows.*</code>, <code>events.Linux.*</code>.</p>
+<p>You can rebuild them with <code>wails3 generate constants</code>.</p>
+</li>
+<li>
+<p>Go side (application events):</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">OnApplicationEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">ApplicationStarted</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">ApplicationEvent</span>) {})</span></code></pre></div>
+</li>
+<li>
+<p>Go side (window events):</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {})"><code class="language-go"><span class="mpress-code-line">window.<span class="mpress-token-function">OnWindowEvent</span>(events.<span class="mpress-token-type">Common</span>.<span class="mpress-token-type">WindowFocus</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">WindowEvent</span>) {})</span></code></pre></div>
+</li>
+<li>
+<p>Go side (custom events):</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="app.Event.On(&#34;chat:new-message&#34;, func(e *application.CustomEvent) {})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;chat:new-message&#34;</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {})</span></code></pre></div>
+</li>
+<li>
+<p>JS side:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">js</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="import { Events } from &#34;/wails/runtime.js&#34;;&#10;Events.On(&#34;chat:new-message&#34;, (e) =&gt; { /* … */ });"><code class="language-js"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;/wails/runtime.js&#34;</span>;
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;chat:new-message&#34;</span>, (e) <span class="mpress-token-operator">=&gt;</span> { /<span class="mpress-token-operator">*</span> … <span class="mpress-token-operator">*</span>/ });</span></code></pre></div>
+</li>
+</ul>
+<p>Application/window/custom events all flow through<br>
+<code>pkg/application/event_manager.go</code>. Window-event subscriptions are scoped to<br>
+their window, so closing the window unregisters its handlers automatically.</p>
+<hr>
+<h2 id="5-platform-specific-implementations">5. Platform-Specific Implementations</h2>
+<p>Conditional compilation keeps the public API identical while hiding OS wrinkles.</p>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Darwin</th>
+<th>Linux</th>
+<th>Windows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main Thread</td>
+<td><code>mainthread_darwin.go</code> (Cgo to Foundation)</td>
+<td><code>mainthread_linux.go</code> (GTK)</td>
+<td><code>mainthread_windows.go</code> (Win32 <code>AttachThreadInput</code>)</td>
+</tr>
+<tr>
+<td>Dialogs</td>
+<td><code>dialogs_darwin.*</code> (NSAlert)</td>
+<td><code>dialogs_linux.go</code> (GtkFileChooser)</td>
+<td><code>dialogs_windows.go</code> (IFileOpenDialog)</td>
+</tr>
+<tr>
+<td>Clipboard</td>
+<td><code>clipboard_darwin.go</code></td>
+<td><code>clipboard_linux.go</code></td>
+<td><code>clipboard_windows.go</code></td>
+</tr>
+<tr>
+<td>Tray Icons</td>
+<td><code>systemtray_darwin.*</code></td>
+<td><code>systemtray_linux.go</code> (DBus)</td>
+<td><code>systemtray_windows.go</code> (Shell_NotifyIcon)</td>
+</tr>
+</tbody>
+</table>
+<p>Key principles:</p>
+<ul>
+<li>
+<p><strong>macOS and Windows</strong> use Cgo sparingly (mostly through <code>pkg/mac/</code> and the
+<code>w32</code> Win32 wrappers in <code>pkg/w32</code>).</p>
+</li>
+<li>
+<p><strong>Linux is heavily Cgo</strong> by necessity — <code>pkg/application/linux_cgo.go</code>
+(~69 KB) plus <code>linux_cgo_gtk4.{c,go,h}</code> (~50 KB+) drive GTK/WebKitGTK</p>
+<p>directly.</p>
+</li>
+<li>
+<p>Use <strong>build tags</strong> (<code>//go:build darwin</code>, <code>//go:build linux</code>, …) to keep
+per-OS files readable.</p>
+</li>
+<li>
+<p><code>internal/capabilities/</code> exists for per-platform capability flags, but the
+framework does <strong>not</strong> export an <code>ErrCapability</code> sentinel — feature gating is</p>
+<p>done by platform-specific stub returns.</p>
+</li>
+</ul>
+<hr>
+<h2 id="6-file-guide">6. File Guide</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Why You&rsquo;d Touch It</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>internal/runtime/runtime_*.go</code></td>
+<td>Change the small build-tag stub layer (dev vs prod, OS-specific glue).</td>
+</tr>
+<tr>
+<td><code>pkg/application/webview_window_*.go</code></td>
+<td>Implement a new window hint or behaviour.</td>
+</tr>
+<tr>
+<td><code>pkg/application/messageprocessor*.go</code></td>
+<td>Add a new bridge command callable from JS.</td>
+</tr>
+<tr>
+<td><code>pkg/events/*.go</code></td>
+<td>Extend built-in event definitions (then re-run <code>wails3 generate constants</code>).</td>
+</tr>
+<tr>
+<td><code>internal/assetserver/*</code></td>
+<td>Tweak dev/production asset handling.</td>
+</tr>
+<tr>
+<td><code>internal/runtime/desktop/@wailsio/runtime/src/*</code></td>
+<td>Edit the embedded JS runtime (call/event dispatch, dialogs, drag, …).</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-debugging-tips">7. Debugging Tips</h2>
+<ul>
+<li>
+<p>Configure <code>Options.LogLevel</code> (e.g. <code>slog.LevelDebug</code>) and inspect <code>Options.Logger</code>
+output — there is no <code>WAILS_LOG_LEVEL</code> environment variable.</p>
+</li>
+<li>
+<p><code>wails3 dev</code> flags are <code>--config</code>, <code>--port</code>, <code>-s</code> (enable HTTPS) and the
+global <code>--no-colour</code>. There is no <code>-verbose</code> flag.</p>
+</li>
+<li>
+<p>On macOS run under <code>lldb --</code> to catch Objective-C exceptions early.</p>
+</li>
+<li>
+<p>For Windows Chromium issues, enable WebView2 debug logs:<br>
+<code>set WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222</code></p>
+</li>
+</ul>
+<hr>
+<h2 id="8-extending-the-runtime">8. Extending the Runtime</h2>
+<ol>
+<li>
+<p>Optional: declare any new capability flag in <code>internal/capabilities/</code>.</p>
+</li>
+<li>
+<p>Implement the feature in each <code>pkg/application/*_{darwin,linux,windows}.go</code>
+variant using build tags. Provide a stub on platforms that don&rsquo;t support it.</p>
+</li>
+<li>
+<p>Add the public API in <code>pkg/application</code> (interface + concrete <code>WebviewWindow</code>
+methods, options struct, etc.).</p>
+</li>
+<li>
+<p>Register a new message-processor method (<code>pkg/application/messageprocessor*.go</code>)
+and a matching helper in the JS runtime if JS needs to call it.</p>
+</li>
+<li>
+<p>If you add an event, declare its constant in <code>pkg/events/</code> and run
+<code>wails3 generate constants</code> to refresh the generated files.</p>
+</li>
+</ol>
+<p>Follow this checklist and you&rsquo;ll keep the cross-platform contract intact.</p>
+<hr>
+<h2 id="9-drag-and-drop">9. Drag-and-Drop</h2>
+<p>File drag-and-drop uses a <strong>JavaScript-first approach</strong> on all platforms. The native layer intercepts OS drag events, but the actual drop handling and DOM interaction happens in JavaScript.</p>
+<h3 id="flow">Flow</h3>
+<ol>
+<li>User drags files from OS over the Wails window</li>
+<li>Native layer detects the drag and notifies JavaScript for hover effects</li>
+<li>User drops files</li>
+<li>Native layer sends file paths + coordinates to JavaScript</li>
+<li>JavaScript finds the drop target element (<code>data-file-drop-target</code>)</li>
+<li>JavaScript sends file paths + element details to Go backend</li>
+<li>Go emits <code>WindowFilesDropped</code> event with full context</li>
+</ol>
+<h3 id="platform-implementations">Platform Implementations</h3>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Native Layer</th>
+<th>Key Challenge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Windows</strong></td>
+<td>WebView2&rsquo;s built-in drag support</td>
+<td>Coordinates in CSS pixels, no conversion needed</td>
+</tr>
+<tr>
+<td><strong>macOS</strong></td>
+<td>NSWindow drag delegates</td>
+<td>Convert window-relative to webview-relative coords</td>
+</tr>
+<tr>
+<td><strong>Linux</strong></td>
+<td>GTK3 drag signals</td>
+<td>Must distinguish file drags from internal HTML5 drags</td>
+</tr>
+</tbody>
+</table>
+<h3 id="linux-distinguishing-drag-types">Linux: Distinguishing Drag Types</h3>
+<p>GTK and WebKit both want to handle drag events. The key is checking the drag target type:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">c</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="static gboolean is_file_drag(GdkDragContext *context) {&#10;    GList *targets = gdk_drag_context_list_targets(context);&#10;    for (GList *l = targets; l != NULL; l = l-&gt;next) {&#10;        GdkAtom atom = GDK_POINTER_TO_ATOM(l-&gt;data);&#10;        gchar *name = gdk_atom_name(atom);&#10;        if (name &amp;&amp; g_strcmp0(name, &#34;text/uri-list&#34;) == 0) {&#10;            g_free(name);&#10;            return TRUE;  // External file drag&#10;        }&#10;        g_free(name);&#10;    }&#10;    return FALSE;  // Internal HTML5 drag&#10;}"><code class="language-c"><span class="mpress-code-line">static gboolean <span class="mpress-token-function">is_file_drag</span>(<span class="mpress-token-type">GdkDragContext</span> <span class="mpress-token-operator">*</span>context) {
+</span><span class="mpress-code-line">    <span class="mpress-token-type">GList</span> <span class="mpress-token-operator">*</span>targets <span class="mpress-token-operator">=</span> <span class="mpress-token-function">gdk_drag_context_list_targets</span>(context);
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">for</span> (<span class="mpress-token-type">GList</span> <span class="mpress-token-operator">*</span>l <span class="mpress-token-operator">=</span> targets; l <span class="mpress-token-operator">!=</span> <span class="mpress-token-type">NULL</span>; l <span class="mpress-token-operator">=</span> l<span class="mpress-token-operator">-&gt;</span>next) {
+</span><span class="mpress-code-line">        <span class="mpress-token-type">GdkAtom</span> atom <span class="mpress-token-operator">=</span> <span class="mpress-token-function">GDK_POINTER_TO_ATOM</span>(l<span class="mpress-token-operator">-&gt;</span>data);
+</span><span class="mpress-code-line">        gchar <span class="mpress-token-operator">*</span>name <span class="mpress-token-operator">=</span> <span class="mpress-token-function">gdk_atom_name</span>(atom);
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">if</span> (name <span class="mpress-token-operator">&amp;&amp;</span> <span class="mpress-token-function">g_strcmp0</span>(name, <span class="mpress-token-string">&#34;text/uri-list&#34;</span>) <span class="mpress-token-operator">==</span> <span class="mpress-token-number">0</span>) {
+</span><span class="mpress-code-line">            <span class="mpress-token-function">g_free</span>(name);
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">return</span> <span class="mpress-token-type">TRUE</span>;  <span class="mpress-token-comment">// External file drag</span>
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">        <span class="mpress-token-function">g_free</span>(name);
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-type">FALSE</span>;  <span class="mpress-token-comment">// Internal HTML5 drag</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Signal handlers return <code>FALSE</code> for internal drags (letting WebKit handle them) and <code>TRUE</code> for file drags (handling them ourselves).</p>
+<h3 id="blocking-file-drops">Blocking File Drops</h3>
+<p>When <code>EnableFileDrop</code> is <code>false</code>, we still need to prevent the browser from navigating to dropped files. Each platform handles this differently:</p>
+<ul>
+<li><strong>Windows</strong>: JavaScript calls <code>preventDefault()</code> on drag events</li>
+<li><strong>macOS</strong>: JavaScript calls <code>preventDefault()</code> on drag events</li>
+<li><strong>Linux</strong>: GTK signal handlers intercept and reject file drags at the native level</li>
+</ul>
+<h3 id="key-files">Key Files</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pkg/application/linux_cgo.go</code></td>
+<td>GTK drag signal handlers (C code in cgo preamble)</td>
+</tr>
+<tr>
+<td><code>pkg/application/webview_window_darwin.go</code></td>
+<td>macOS drag delegates</td>
+</tr>
+<tr>
+<td><code>pkg/application/webview_window_windows.go</code></td>
+<td>WebView2 message handling</td>
+</tr>
+<tr>
+<td><code>internal/runtime/desktop/@wailsio/runtime/src/window.ts</code></td>
+<td>JavaScript drop handling</td>
+</tr>
+</tbody>
+</table>
+<h3 id="debugging">Debugging</h3>
+<ul>
+<li><strong>Linux</strong>: Add <code>printf</code> in C code (remember <code>fflush(stdout)</code>)</li>
+<li><strong>Windows</strong>: Use <code>globalApplication.debug()</code></li>
+<li><strong>JavaScript</strong>: Check browser console, enable debug mode</li>
+</ul>
+<p>Common issues:</p>
+<ol>
+<li><strong>Internal HTML5 drag not working</strong>: Native handler intercepting it (return <code>FALSE</code> for non-file drags)</li>
+<li><strong>Hover effects not showing</strong>: JavaScript handlers not being called</li>
+<li><strong>Wrong coordinates</strong>: Check coordinate space conversions</li>
+</ol>
+<hr>
+<p>You now have a guided tour of the runtime internals. Combine this knowledge with<br>
+the <strong>Codebase Layout</strong> map and the <strong>Asset Server</strong> docs to navigate confidently<br>
+and make impactful contributions. Happy coding!</p>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/contributing/runtime-internals.mdx"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-21T13:36:57Z">Aug 21, 2026</time></p></div><nav class="pager"><span></span></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#1-application-lifecycle">1. Application Lifecycle</a><a class="toc-level-2" href="#2-window-management">2. Window Management</a><a class="toc-level-3" href="#public-api">Public API</a><a class="toc-level-2" href="#3-message-processing-pipeline">3. Message Processing Pipeline</a><a class="toc-level-2" href="#4-events-system">4. Events System</a><a class="toc-level-2" href="#5-platform-specific-implementations">5. Platform-Specific Implementations</a><a class="toc-level-2" href="#6-file-guide">6. File Guide</a><a class="toc-level-2" href="#7-debugging-tips">7. Debugging Tips</a><a class="toc-level-2" href="#8-extending-the-runtime">8. Extending the Runtime</a><a class="toc-level-2" href="#9-drag-and-drop">9. Drag-and-Drop</a><a class="toc-level-3" href="#flow">Flow</a><a class="toc-level-3" href="#platform-implementations">Platform Implementations</a><a class="toc-level-3" href="#linux-distinguishing-drag-types">Linux: Distinguishing Drag Types</a><a class="toc-level-3" href="#blocking-file-drops">Blocking File Drops</a><a class="toc-level-3" href="#key-files">Key Files</a><a class="toc-level-3" href="#debugging">Debugging</a></aside></div></div><footer><a class="mpress-footer-credit" href="https://m-press.me">Built with <strong>M-Press</strong></a><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://v3.wails.io/sitemap.xml

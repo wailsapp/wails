@@ -1,0 +1,374 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LLM Control (MCP) · Wails</title><meta name="description" content="Let LLM agents test and control your app via the Model Context Protocol"><meta property="og:title" content="LLM Control (MCP) · Wails"><meta property="og:description" content="Let LLM agents test and control your app via the Model Context Protocol"><meta property="og:site_name" content="Wails"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="LLM Control (MCP) · Wails"><meta name="twitter:description" content="Let LLM agents test and control your app via the Model Context Protocol"><meta property="og:url" content="https://v3.wails.io/guides/mcp-service/"><link rel="canonical" href="https://v3.wails.io/guides/mcp-service/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/mcp-service/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/guides/mcp-service/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/mcp-service/"><script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('mpress-theme');if(t==='system'||t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();(function(){try{var p=JSON.parse(localStorage.getItem('mpress-accessibility')||'{}');var d=document.documentElement;var values={text:p.text||'default',spacing:p.spacing?'relaxed':'default',font:p.readable?'readable':'default',contrast:p.contrast?'high':'default',links:p.links?'underlined':'default',focus:p.focus?'true':'false',guide:p.guide?'true':'false',motion:p.motion?'reduced':'default',colour:p.colour||'default',bionic:p.bionic?'true':'false'};Object.keys(values).forEach(function(k){d.setAttribute('data-a11y-'+k,values[k]);});}catch(_){}})();</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../search-index.json" data-shortcut-search="Mod+K" data-shortcut-accessibility="Mod+A"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo" style="--mpress-logo-width:160px"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><div class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><button id="search" type="button" role="combobox" aria-label="Search" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog">Search documentation</button><kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></div><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><span class="header-utility-cluster" role="group" aria-label="Site preferences"><div class="header-group utility-select accessibility-select"><button id="accessibility" class="utility-menu-trigger" type="button" popovertarget="mpress-accessibility-panel" aria-label="Accessibility settings" aria-haspopup="dialog" aria-expanded="false" title="Accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 512 512" class="mpress-accessibility-icon" aria-hidden="true"><defs><mask id="mpress-accessibility-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512" mask-type="luminance"><rect width="512" height="512" fill="white"/><g transform="translate(0 -14)">
+  <circle cx="256" cy="139" r="35" fill="black"/>
+
+  <path
+    fill="black"
+    d="M144 184
+       C166 191 193 199 219 203
+       C243 207 269 207 293 203
+       C319 199 346 191 368 184
+       C381 180 393 188 397 201
+       C401 214 393 227 380 232
+       L311 256
+       C303 259 299 266 300 275
+       C304 314 313 359 322 407
+       C325 424 315 437 300 439
+       C285 441 274 432 271 417
+       L259 354
+       C258 348 257 344 256 344
+       C255 344 254 348 253 354
+       L241 417
+       C238 432 227 441 212 439
+       C197 437 187 424 190 407
+       C199 359 208 314 212 275
+       C213 266 209 259 201 256
+       L132 232
+       C119 227 111 214 115 201
+       C119 188 131 180 144 184 Z"/>
+  </g></mask></defs><circle cx="256" cy="256" r="220" fill="currentColor" mask="url(#mpress-accessibility-cutout)"/></svg></button></div><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/mcp-service/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/guides/mcp-service/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/mcp-service/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/mcp-service/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/mcp-service/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/mcp-service/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/mcp-service/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/mcp-service/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/mcp-service/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/guides/mcp-service/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><!--mpress-version-menu:start--><!--mpress-version-menu:end--><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></span></nav></header><section id="mpress-accessibility-panel" class="utility-menu-panel mpress-accessibility-panel" popover role="dialog" aria-labelledby="mpress-accessibility-title" data-utility-panel><header class="mpress-accessibility-header"><div><h2 id="mpress-accessibility-title">Accessibility</h2><p>Adjust the site to make it easier to read and navigate.</p></div><button class="mpress-accessibility-close" type="button" data-a11y-close aria-label="Close accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><div class="mpress-accessibility-tabs" role="tablist" aria-label="Accessibility categories"><button id="mpress-a11y-tab-reading" type="button" role="tab" aria-selected="true" aria-controls="mpress-a11y-panel-reading" data-a11y-tab="reading">Reading</button><button id="mpress-a11y-tab-focus" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-focus" data-a11y-tab="focus" tabindex="-1">Focus</button><button id="mpress-a11y-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-vision" data-a11y-tab="vision" tabindex="-1">Vision</button></div><div class="mpress-accessibility-body"><section id="mpress-a11y-panel-reading" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-reading" data-a11y-tabpanel="reading"><h3>Reading</h3><p>Change how text is shown in the main content.</p><div class="mpress-a11y-choice" role="radiogroup" aria-label="Text size"><button type="button" role="radio" data-a11y-choice="text" data-value="default">Default</button><button type="button" role="radio" data-a11y-choice="text" data-value="large">Large</button><button type="button" role="radio" data-a11y-choice="text" data-value="larger">Larger</button></div><label class="mpress-a11y-toggle"><span><strong>Readable font</strong><small>Use a simple, widely spaced font stack.</small></span><input type="checkbox" data-a11y-toggle="readable"></label><label class="mpress-a11y-toggle"><span><strong>Relaxed spacing</strong><small>Add more line, word, and letter space.</small></span><input type="checkbox" data-a11y-toggle="spacing"></label><label class="mpress-a11y-toggle"><span><strong>Bionic reading</strong><small>Emphasise the start of longer words.</small></span><input type="checkbox" data-a11y-toggle="bionic"></label></section><section id="mpress-a11y-panel-focus" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-focus" data-a11y-tabpanel="focus" hidden><h3>Focus and attention</h3><p>Reduce distraction and keep your place while reading.</p><label class="mpress-a11y-toggle"><span><strong>Focus mode</strong><small>Dim navigation until you point to it.</small></span><input type="checkbox" data-a11y-toggle="focus"></label><label class="mpress-a11y-toggle"><span><strong>Reading guide</strong><small>Follow the pointer with a horizontal guide.</small></span><input type="checkbox" data-a11y-toggle="guide"></label><label class="mpress-a11y-toggle"><span><strong>Reduce motion</strong><small>Stop non-essential animation and smooth scrolling.</small></span><input type="checkbox" data-a11y-toggle="motion"></label></section><section id="mpress-a11y-panel-vision" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-vision" data-a11y-tabpanel="vision" hidden><h3>Vision and colour</h3><p>Increase contrast or use a more distinct colour palette.</p><div class="mpress-a11y-field"><span id="mpress-a11y-colour-label">Colour profile</span><div class="mpress-a11y-select" data-a11y-select="colour"><button class="mpress-a11y-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mpress-a11y-colour-label mpress-a11y-colour-value"><span id="mpress-a11y-colour-value" data-a11y-select-value>Site colours</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="mpress-a11y-options" role="listbox" aria-labelledby="mpress-a11y-colour-label" hidden><button class="mpress-a11y-option" type="button" role="option" aria-selected="true" data-value="default">Site colours</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="red-green" tabindex="-1">Red and green distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="blue-yellow" tabindex="-1">Blue and yellow distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="low" tabindex="-1">Low saturation</button></div></div></div><label class="mpress-a11y-toggle"><span><strong>High contrast</strong><small>Increase text and border contrast.</small></span><input type="checkbox" data-a11y-toggle="contrast"></label><label class="mpress-a11y-toggle"><span><strong>Underline links</strong><small>Show links with more than colour.</small></span><input type="checkbox" data-a11y-toggle="links"></label></section></div><footer class="mpress-accessibility-footer"><small>Saved only in this browser.</small><button class="mpress-accessibility-reset" type="button" data-a11y-reset>Reset settings</button></footer></section><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../">Home</a><a class="" href="../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../quick-start/installation/">Installation</a><a class="" href="../../quick-start/first-app/">Your First App</a><a class="" href="../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../tutorials/overview/">Tutorials</a></div></details></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../concepts/architecture/">How Wails Works</a><a class="" href="../../concepts/manager-api/">Manager API</a><a class="" href="../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/notch-windows/">Notch Windows</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/application/">Application Events</a><a class="" href="../../features/events/window/">Window Events</a><a class="" href="../../features/events/custom/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/autostart/basics/">Autostart</a></div></details></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/clipboard/basics/">Clipboard Operations</a></div></details></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/browser/integration/">Browser Integration</a></div></details></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/notifications/overview/">Notifications</a></div></details></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/screens/info/">Screen Information</a></div></details></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/environment/info/">Environment</a></div></details></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details open><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="active" aria-current="page" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/workflow/">Development Workflow</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a><a class="" href="../../guides/testing/">Testing</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/msix/">MSIX Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../guides/gin-routing/">Using Gin Router</a><a class="" href="../../guides/gin-services/">Gin Services</a><a class="" href="../../guides/patterns/database/">Database Integration</a><a class="" href="../../guides/patterns/rest-api/">REST APIs</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/advanced/wml/">WML (Wails Markup)</a><a class="" href="../../guides/panic-handling/">Panic Handling</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../migration/v2-to-v3/">From v2 to v3</a><a class="" href="../../migration/from-electron/">From Electron</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/links/">Links</a><a class="" href="../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><details open><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../community/showcase/clave/">Clave</a><a class="" href="../../community/showcase/condui/">Condui</a><a class="" href="../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../community/showcase/emailit/">EmailIt</a><a class="" href="../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../community/showcase/happytools/">HappyTools</a><a class="" href="../../community/showcase/kira/">Kira</a><a class="" href="../../community/showcase/ltools/">LTools</a><a class="" href="../../community/showcase/mchat/">Mchat</a><a class="" href="../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../community/showcase/october/">October</a><a class="" href="../../community/showcase/optimus/">Optimus</a><a class="" href="../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../community/showcase/portfall/">Portfall</a><a class="" href="../../community/showcase/redisviewer/">Redis Viewer</a><a class="" href="../../community/showcase/resizem/">Resizem</a><a class="" href="../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../community/showcase/surge/">Surge</a><a class="" href="../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../community/showcase/wally/">Wally</a><a class="" href="../../community/showcase/wombat/">Wombat</a><a class="" href="../../community/showcase/xensql/">XenSQL</a><a class="" href="../../community/showcase/ytd/">Ytd</a><a class="" href="../../community/showcase/hiposter/">hiposter</a><a class="" href="../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../credits/">Credits</a></nav></aside><div class="docs-stage"><main id="content"><article><h1>LLM Control (MCP)</h1><p class="page-lead">Let LLM agents test and control your app via the Model Context Protocol</p><aside aria-label="Experimental Feature" class="mpress-admonition mpress-admonition-warning" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> <span>Experimental Feature</span></p>
+<div class="mpress-admonition-body">
+<p>The built-in MCP server is experimental and the API may change in future releases.</p>
+</div>
+</aside>
+<p>Wails v3 has a built-in <a href="https://modelcontextprotocol.io">Model Context Protocol</a> (MCP)<br>
+server that lets LLM agents — Claude Code, IDE assistants, or any MCP client — inspect,<br>
+test, and drive a <strong>running</strong> Wails application.</p>
+<p>For project lifecycle automation, use the separate <code>wails3 mcp</code> CLI server. It lets<br>
+agents inspect and initialize projects, run diagnostics, start builds and development<br>
+jobs, generate bindings, run named Taskfile tasks, and retrieve bounded job output.<br>
+The CLI server is confined to the current directory by default and does not expose<br>
+arbitrary shell execution. See the <a href="/guides/cli/#mcp">CLI MCP documentation</a> for transport,<br>
+authentication, and tool details.</p>
+<p>When enabled, an agent connected to your app can:</p>
+<ul>
+<li>
+<p><strong>List and control windows</strong> — size, position, focus, fullscreen, devtools, reload, …</p>
+</li>
+<li>
+<p><strong>Inspect the DOM</strong> — query elements, get HTML, take a structural snapshot</p>
+</li>
+<li>
+<p><strong>Evaluate JavaScript</strong> — run arbitrary code inside any window and get the result</p>
+</li>
+<li>
+<p><strong>Simulate user input</strong> — mouse moves, clicks, drags and scrolls rendered with an
+<strong>animated on-screen cursor</strong> so you can watch the agent work</p>
+</li>
+<li>
+<p><strong>Type and press keys</strong> — realistic per-character events that work with React controlled inputs</p>
+</li>
+<li>
+<p><strong>Call bound Go methods</strong> and emit/await application events</p>
+</li>
+</ul>
+<h2 id="how-it-works">How it works</h2>
+<p>The MCP server is compiled into your application only when the <strong><code>mcp</code> build tag</strong> is<br>
+present. Without the tag the server code is completely absent from the binary — no<br>
+runtime overhead, no open ports, no attack surface.</p>
+<p>When the tag is present the server starts automatically inside <code>App.Run()</code>,<br>
+binds to <code>127.0.0.1:9099</code> by default, and logs its endpoint. No user code is required.</p>
+<h2 id="tutorial">Tutorial</h2>
+<h3 id="step-1--write-a-normal-wails-application">Step 1 — write a normal Wails application</h3>
+<p>MCP requires no imports and no registration. Create your app as you normally would:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">main.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="package main&#10;&#10;import (&#10;    &#34;embed&#34;&#10;    &#34;log&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;)&#10;&#10;//go:embed assets&#10;var assets embed.FS&#10;&#10;func main() {&#10;    app := application.New(application.Options{&#10;        Name: &#34;My App&#34;,&#10;        Assets: application.AssetOptions{&#10;            Handler: application.BundledAssetFileServer(assets),&#10;        },&#10;    })&#10;&#10;    app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;        Title: &#34;My App&#34;,&#10;        Width: 1024, Height: 768,&#10;    })&#10;&#10;    if err := app.Run(); err != nil {&#10;        log.Fatal(err)&#10;    }&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;embed&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;log&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed assets</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> assets embed.<span class="mpress-token-type">FS</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Assets</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">AssetOptions</span>{
+</span><span class="mpress-code-line">            <span class="mpress-token-type">Handler</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-function">BundledAssetFileServer</span>(assets),
+</span><span class="mpress-code-line">        },
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;My App&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">1024</span>, <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">768</span>,
+</span><span class="mpress-code-line">    })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-function">Run</span>(); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        log.<span class="mpress-token-function">Fatal</span>(err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<h3 id="step-2--build-or-run-with-the-mcp-tag">Step 2 — build or run with the <code>mcp</code> tag</h3>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-dc3a5547">
+<div role="tablist">
+<button id="mpress-tabs-dc3a5547-tab-1" role="tab" type="button" aria-selected="true" aria-controls="mpress-tabs-dc3a5547-panel-1">Wails CLI (recommended)</button>
+<button id="mpress-tabs-dc3a5547-tab-2" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-dc3a5547-panel-2" tabindex="-1">Direct Go</button>
+<button id="mpress-tabs-dc3a5547-tab-3" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-dc3a5547-panel-3" tabindex="-1">Windows (PowerShell)</button>
+</div>
+<div id="mpress-tabs-dc3a5547-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-dc3a5547-tab-1">
+<p>Set <code>WAILS_MCP=1</code> and the Wails CLI adds the <code>mcp</code> tag for you:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>shell</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="WAILS_MCP=1 wails3 dev
+WAILS_MCP=1 wails3 build"><code><span class="mpress-comment"># Development</span>
+<span class="mpress-cmd">WAILS_MCP=1 wails3 dev</span>
+<span class="mpress-output"></span>
+<span class="mpress-comment"># Production build</span>
+<span class="mpress-cmd">WAILS_MCP=1 wails3 build</span>
+</code></pre>
+</div>
+</div>
+<div id="mpress-tabs-dc3a5547-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-dc3a5547-tab-2" hidden>
+<p>Pass the tag to <code>go run</code> or <code>go build</code> directly:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>shell</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go run -tags mcp .
+go build -tags mcp -o myapp ."><code><span class="mpress-cmd">go run -tags mcp .</span>
+<span class="mpress-cmd">go build -tags mcp -o myapp .</span>
+</code></pre>
+</div>
+</div>
+<div id="mpress-tabs-dc3a5547-panel-3" role="tabpanel" aria-labelledby="mpress-tabs-dc3a5547-tab-3" hidden>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>PowerShell</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="$env:WAILS_MCP = &#34;1&#34;
+wails3 dev
+wails3 build"><code><span class="mpress-cmd">$env:WAILS_MCP = &#34;1&#34;</span>
+<span class="mpress-cmd">wails3 dev</span>
+<span class="mpress-comment"># or</span>
+<span class="mpress-cmd">wails3 build</span>
+</code></pre>
+</div>
+</div>
+</ot-tabs>
+<p>On startup the application logs the MCP endpoint:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="INFO MCP server started. Connect MCP clients using the streamable HTTP transport.&#10;     url=http://127.0.0.1:9099/mcp"><code class="language-text"><span class="mpress-code-line">INFO MCP server started. Connect MCP clients using the streamable HTTP transport.
+</span><span class="mpress-code-line">     url=http://127.0.0.1:9099/mcp</span></code></pre></div>
+<h3 id="step-3--connect-a-client">Step 3 — connect a client</h3>
+<p>The server speaks the <strong>MCP streamable HTTP transport</strong>. Connect with any MCP-compatible client.</p>
+<ot-tabs class="mpress-tabs" id="mpress-tabs-d64aaff1">
+<div role="tablist">
+<button id="mpress-tabs-d64aaff1-tab-1" role="tab" type="button" aria-selected="true" aria-controls="mpress-tabs-d64aaff1-panel-1">Claude Code</button>
+<button id="mpress-tabs-d64aaff1-tab-2" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-d64aaff1-panel-2" tabindex="-1">VS Code (GitHub Copilot)</button>
+<button id="mpress-tabs-d64aaff1-tab-3" role="tab" type="button" aria-selected="false" aria-controls="mpress-tabs-d64aaff1-panel-3" tabindex="-1">Other clients</button>
+</div>
+<div id="mpress-tabs-d64aaff1-panel-1" role="tabpanel" aria-labelledby="mpress-tabs-d64aaff1-tab-1">
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>shell</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="claude mcp add --transport http my-app http://127.0.0.1:9099/mcp"><code><span class="mpress-cmd">claude mcp add --transport http my-app http://127.0.0.1:9099/mcp</span>
+</code></pre>
+</div>
+<p>Then ask Claude to interact with your app:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="Click the &#34;Submit&#34; button, then verify a success toast appears."><code class="language-text"><span class="mpress-code-line">Click the &#34;Submit&#34; button, then verify a success toast appears.</span></code></pre></div>
+</div>
+<div id="mpress-tabs-d64aaff1-panel-2" role="tabpanel" aria-labelledby="mpress-tabs-d64aaff1-tab-2" hidden>
+<p>Add to <code>.vscode/settings.json</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">json</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="{&#10;  &#34;github.copilot.chat.mcp.enabled&#34;: true,&#10;  &#34;mcp&#34;: {&#10;    &#34;servers&#34;: {&#10;      &#34;my-wails-app&#34;: {&#10;        &#34;type&#34;: &#34;http&#34;,&#10;        &#34;url&#34;: &#34;http://127.0.0.1:9099/mcp&#34;&#10;      }&#10;    }&#10;  }&#10;}"><code class="language-json"><span class="mpress-code-line">{
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;github.copilot.chat.mcp.enabled&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">  <span class="mpress-token-string">&#34;mcp&#34;</span><span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;servers&#34;</span><span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">      <span class="mpress-token-string">&#34;my-wails-app&#34;</span><span class="mpress-token-operator">:</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;type&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;http&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-string">&#34;url&#34;</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;http://127.0.0.1:9099/mcp&#34;</span>
+</span><span class="mpress-code-line">      }
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">  }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+</div>
+<div id="mpress-tabs-d64aaff1-panel-3" role="tabpanel" aria-labelledby="mpress-tabs-d64aaff1-tab-3" hidden>
+<p>Point any MCP client that supports the streamable HTTP transport at:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="http://127.0.0.1:9099/mcp"><code class="language-text"><span class="mpress-code-line">http://127.0.0.1:9099/mcp</span></code></pre></div>
+</div>
+</ot-tabs>
+<h3 id="step-4--run-a-test-session">Step 4 — run a test session</h3>
+<p>Ask the agent to exercise your application. Here are some example prompts:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="Take a DOM snapshot of the main window."><code class="language-text"><span class="mpress-code-line">Take a DOM snapshot of the main window.</span></code></pre></div>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="Click the &#34;Add item&#34; button, type &#34;Hello world&#34; in the input field,&#10;then press Enter and verify the item appears in the list."><code class="language-text"><span class="mpress-code-line">Click the &#34;Add item&#34; button, type &#34;Hello world&#34; in the input field,
+</span><span class="mpress-code-line">then press Enter and verify the item appears in the list.</span></code></pre></div>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="Call the bound method main.GreetService.Greet with argument [&#34;World&#34;]&#10;and return the result."><code class="language-text"><span class="mpress-code-line">Call the bound method main.GreetService.Greet with argument [&#34;World&#34;]
+</span><span class="mpress-code-line">and return the result.</span></code></pre></div>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="Wait for the event &#34;save:complete&#34; while clicking the Save button."><code class="language-text"><span class="mpress-code-line">Wait for the event &#34;save:complete&#34; while clicking the Save button.</span></code></pre></div>
+<h2 id="configuration">Configuration</h2>
+<p>All configuration is via environment variables — no code changes required.</p>
+<table>
+<thead>
+<tr>
+<th>Environment variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WAILS_MCP</code></td>
+<td>(unset)</td>
+<td>Set to <code>1</code>, <code>true</code>, <code>on</code> or <code>yes</code> to add the <code>mcp</code> build tag automatically when using the Wails CLI.</td>
+</tr>
+<tr>
+<td><code>WAILS_MCP_HOST</code></td>
+<td><code>127.0.0.1</code></td>
+<td>Interface to bind to. Change only in trusted, isolated networks.</td>
+</tr>
+<tr>
+<td><code>WAILS_MCP_PORT</code></td>
+<td><code>9099</code></td>
+<td>Port to listen on. Set to <code>0</code> for a randomly assigned free port (printed in the log).</td>
+</tr>
+<tr>
+<td><code>WAILS_MCP_TIMEOUT</code></td>
+<td><code>30000</code></td>
+<td>Default JS evaluation timeout in <strong>milliseconds</strong>.</td>
+</tr>
+<tr>
+<td><code>WAILS_MCP_HIDE_CURSOR</code></td>
+<td>(unset)</td>
+<td>Set to <code>1</code> or <code>true</code> to disable the animated cursor overlay.</td>
+</tr>
+</tbody>
+</table>
+<p>Example — custom port and a 60-second timeout:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>shell</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="WAILS_MCP=1 WAILS_MCP_PORT=9200 WAILS_MCP_TIMEOUT=60000 wails3 dev"><code><span class="mpress-cmd">WAILS_MCP=1 WAILS_MCP_PORT=9200 WAILS_MCP_TIMEOUT=60000 wails3 dev</span>
+</code></pre>
+</div>
+<h2 id="available-tools">Available tools</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_info</code></td>
+<td>Application information: platform, architecture, all windows, MCP endpoint</td>
+</tr>
+<tr>
+<td><code>windows_list</code></td>
+<td>List all windows with geometry and state</td>
+</tr>
+<tr>
+<td><code>window_control</code></td>
+<td>Focus, resize, move, fullscreen, devtools, reload, set URL, … (22 actions)</td>
+</tr>
+<tr>
+<td><code>js_eval</code></td>
+<td>Evaluate JavaScript in a window (async body, <code>return</code> for value)</td>
+</tr>
+<tr>
+<td><code>dom_html</code></td>
+<td>Get the HTML of the page or a specific element</td>
+</tr>
+<tr>
+<td><code>dom_query</code></td>
+<td>Find elements by CSS selector — tag, text, bounds, visibility</td>
+</tr>
+<tr>
+<td><code>screenshot_dom</code></td>
+<td>Structural snapshot of the visible page (DOM-based, no pixels)</td>
+</tr>
+<tr>
+<td><code>mouse_move</code></td>
+<td>Animate the cursor to a point or CSS selector</td>
+</tr>
+<tr>
+<td><code>mouse_click</code></td>
+<td>Click with the animated cursor (left/right/middle, double-click, modifiers)</td>
+</tr>
+<tr>
+<td><code>mouse_drag</code></td>
+<td>Drag with the animated cursor (supports HTML5 drag-and-drop elements)</td>
+</tr>
+<tr>
+<td><code>mouse_scroll</code></td>
+<td>Scroll at a point or element</td>
+</tr>
+<tr>
+<td><code>keyboard_type</code></td>
+<td>Type text character by character with realistic events</td>
+</tr>
+<tr>
+<td><code>keyboard_press</code></td>
+<td>Press a single key (Enter, Tab, Escape, ArrowDown, …) with optional modifiers</td>
+</tr>
+<tr>
+<td><code>call_bound_method</code></td>
+<td>Call a bound Go service method, e.g. <code>main.GreetService.Greet</code></td>
+</tr>
+<tr>
+<td><code>emit_event</code></td>
+<td>Emit a Wails application event</td>
+</tr>
+<tr>
+<td><code>wait_for_event</code></td>
+<td>Wait for a Wails application event and return its data</td>
+</tr>
+</tbody>
+</table>
+<h3 id="multi-window-support">Multi-window support</h3>
+<p>All tools that act on a window accept an optional <code>window</code> argument containing the<br>
+window&rsquo;s <strong>name</strong> (set via <code>WebviewWindowOptions.Name</code>). When omitted, the tool targets<br>
+the currently focused window, or the first window if none is focused.</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="List all windows, then click the &#34;New&#34; button in the window named &#34;editor&#34;."><code class="language-text"><span class="mpress-code-line">List all windows, then click the &#34;New&#34; button in the window named &#34;editor&#34;.</span></code></pre></div>
+<h3 id="selecting-elements">Selecting elements</h3>
+<p>Mouse and keyboard tools accept either:</p>
+<ul>
+<li><strong>CSS selector</strong> — <code>selector: &quot;#submit-btn&quot;</code> (element is scrolled into view automatically)</li>
+<li><strong>Coordinates</strong> — <code>x: 400, y: 300</code> (CSS pixels relative to the viewport)</li>
+</ul>
+<p>For drag operations, prefix with <code>from_</code> and <code>to_</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">text</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="Drag from selector: &#34;.card&#34; to selector: &#34;.dropzone&#34;"><code class="language-text"><span class="mpress-code-line">Drag from selector: &#34;.card&#34; to selector: &#34;.dropzone&#34;</span></code></pre></div>
+<h2 id="security">Security</h2>
+<aside aria-label="Warning" class="mpress-admonition mpress-admonition-warning" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> <span>Warning</span></p>
+<div class="mpress-admonition-body">
+<p>The MCP server gives full programmatic control over your application. Anyone who can<br>
+reach the port can read the DOM, evaluate JavaScript, click buttons, and call Go methods.</p>
+</div>
+</aside>
+<ul>
+<li>
+<p>The server binds to <code>127.0.0.1</code> by default and rejects non-local browser origins
+(DNS-rebinding protection per the MCP spec).</p>
+</li>
+<li>
+<p>Production builds should <strong>not</strong> include the <code>mcp</code> tag. The Wails CLI only adds it when
+<code>WAILS_MCP=1</code> is explicitly set, and the default <code>wails3 build</code> has none of the server code.</p>
+</li>
+<li>
+<p>If you need to expose the server on a non-loopback interface (e.g. LAN testing), set
+<code>WAILS_MCP_HOST=0.0.0.0</code> and ensure your network is trusted.</p>
+</li>
+</ul>
+<h2 id="example-application">Example application</h2>
+<p>A complete playground application demonstrating all tools is available at<br>
+<a href="https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp"><code>v3/examples/mcp</code></a>.<br>
+It includes:</p>
+<ul>
+<li>Counter with increment/reset buttons</li>
+<li>Name input with Greet, Add, Shout bound methods</li>
+<li>HTML5 drag-and-drop source and target</li>
+<li>Scrollable list (50 items)</li>
+<li>Event log</li>
+</ul>
+<p>Run it with:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>shell</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="cd v3/examples/mcp
+go run -tags mcp ."><code><span class="mpress-cmd">cd v3/examples/mcp</span>
+<span class="mpress-cmd">go run -tags mcp .</span>
+</code></pre>
+</div>
+<p>Then connect Claude Code or any MCP client to <code>http://127.0.0.1:9099/mcp</code> and ask it to<br>
+exercise the UI.</p>
+<h2 id="feedback">Feedback</h2>
+<p>The built-in MCP server is an experiment, and your feedback decides where it goes.<br>
+If you try it, we&rsquo;d love to hear which client and tools you used, what you expected<br>
+and what actually happened, and whether letting an agent drive your app was useful —<br>
+the most useful reports say exactly what you ran. Tell us in the<br>
+<a href="https://github.com/wailsapp/wails/discussions/5692">MCP Server feedback discussion</a>.</p>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/guides/mcp-service.mdx"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-21T13:36:57Z">Aug 21, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../experimental/wake/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Wake</strong></a><a rel="next" href="../../guides/dev/project-structure/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Project Structure</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#how-it-works">How it works</a><a class="toc-level-2" href="#tutorial">Tutorial</a><a class="toc-level-3" href="#step-1--write-a-normal-wails-application">Step 1 — write a normal Wails application</a><a class="toc-level-3" href="#step-2--build-or-run-with-the-mcp-tag">Step 2 — build or run with the mcp tag</a><a class="toc-level-3" href="#step-3--connect-a-client">Step 3 — connect a client</a><a class="toc-level-3" href="#step-4--run-a-test-session">Step 4 — run a test session</a><a class="toc-level-2" href="#configuration">Configuration</a><a class="toc-level-2" href="#available-tools">Available tools</a><a class="toc-level-3" href="#multi-window-support">Multi-window support</a><a class="toc-level-3" href="#selecting-elements">Selecting elements</a><a class="toc-level-2" href="#security">Security</a><a class="toc-level-2" href="#example-application">Example application</a><a class="toc-level-2" href="#feedback">Feedback</a></aside></div></div><footer><a class="mpress-footer-credit" href="https://m-press.me">Built with <strong>M-Press</strong></a><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>

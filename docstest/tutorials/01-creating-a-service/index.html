@@ -1,0 +1,727 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QR Code Service · Wails</title><meta name="description" content="Create a QR code service to learn about Wails services"><meta property="og:title" content="QR Code Service · Wails"><meta property="og:description" content="Create a QR code service to learn about Wails services"><meta property="og:site_name" content="Wails"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="QR Code Service · Wails"><meta name="twitter:description" content="Create a QR code service to learn about Wails services"><meta property="og:url" content="https://v3.wails.io/tutorials/01-creating-a-service/"><link rel="canonical" href="https://v3.wails.io/tutorials/01-creating-a-service/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/tutorials/01-creating-a-service/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/tutorials/01-creating-a-service/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/tutorials/01-creating-a-service/"><script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('mpress-theme');if(t==='system'||t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();(function(){try{var p=JSON.parse(localStorage.getItem('mpress-accessibility')||'{}');var d=document.documentElement;var values={text:p.text||'default',spacing:p.spacing?'relaxed':'default',font:p.readable?'readable':'default',contrast:p.contrast?'high':'default',links:p.links?'underlined':'default',focus:p.focus?'true':'false',guide:p.guide?'true':'false',motion:p.motion?'reduced':'default',colour:p.colour||'default',bionic:p.bionic?'true':'false'};Object.keys(values).forEach(function(k){d.setAttribute('data-a11y-'+k,values[k]);});}catch(_){}})();</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../search-index.json" data-shortcut-search="Mod+K" data-shortcut-accessibility="Mod+A"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo" style="--mpress-logo-width:160px"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><div class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><button id="search" type="button" role="combobox" aria-label="Search" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog">Search documentation</button><kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></div><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><span class="header-utility-cluster" role="group" aria-label="Site preferences"><div class="header-group utility-select accessibility-select"><button id="accessibility" class="utility-menu-trigger" type="button" popovertarget="mpress-accessibility-panel" aria-label="Accessibility settings" aria-haspopup="dialog" aria-expanded="false" title="Accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 512 512" class="mpress-accessibility-icon" aria-hidden="true"><defs><mask id="mpress-accessibility-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512" mask-type="luminance"><rect width="512" height="512" fill="white"/><g transform="translate(0 -14)">
+  <circle cx="256" cy="139" r="35" fill="black"/>
+
+  <path
+    fill="black"
+    d="M144 184
+       C166 191 193 199 219 203
+       C243 207 269 207 293 203
+       C319 199 346 191 368 184
+       C381 180 393 188 397 201
+       C401 214 393 227 380 232
+       L311 256
+       C303 259 299 266 300 275
+       C304 314 313 359 322 407
+       C325 424 315 437 300 439
+       C285 441 274 432 271 417
+       L259 354
+       C258 348 257 344 256 344
+       C255 344 254 348 253 354
+       L241 417
+       C238 432 227 441 212 439
+       C197 437 187 424 190 407
+       C199 359 208 314 212 275
+       C213 266 209 259 201 256
+       L132 232
+       C119 227 111 214 115 201
+       C119 188 131 180 144 184 Z"/>
+  </g></mask></defs><circle cx="256" cy="256" r="220" fill="currentColor" mask="url(#mpress-accessibility-cutout)"/></svg></button></div><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/tutorials/01-creating-a-service/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/tutorials/01-creating-a-service/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/tutorials/01-creating-a-service/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/tutorials/01-creating-a-service/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/tutorials/01-creating-a-service/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/tutorials/01-creating-a-service/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/tutorials/01-creating-a-service/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/tutorials/01-creating-a-service/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/tutorials/01-creating-a-service/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/tutorials/01-creating-a-service/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><!--mpress-version-menu:start--><!--mpress-version-menu:end--><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></span></nav></header><section id="mpress-accessibility-panel" class="utility-menu-panel mpress-accessibility-panel" popover role="dialog" aria-labelledby="mpress-accessibility-title" data-utility-panel><header class="mpress-accessibility-header"><div><h2 id="mpress-accessibility-title">Accessibility</h2><p>Adjust the site to make it easier to read and navigate.</p></div><button class="mpress-accessibility-close" type="button" data-a11y-close aria-label="Close accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><div class="mpress-accessibility-tabs" role="tablist" aria-label="Accessibility categories"><button id="mpress-a11y-tab-reading" type="button" role="tab" aria-selected="true" aria-controls="mpress-a11y-panel-reading" data-a11y-tab="reading">Reading</button><button id="mpress-a11y-tab-focus" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-focus" data-a11y-tab="focus" tabindex="-1">Focus</button><button id="mpress-a11y-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-vision" data-a11y-tab="vision" tabindex="-1">Vision</button></div><div class="mpress-accessibility-body"><section id="mpress-a11y-panel-reading" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-reading" data-a11y-tabpanel="reading"><h3>Reading</h3><p>Change how text is shown in the main content.</p><div class="mpress-a11y-choice" role="radiogroup" aria-label="Text size"><button type="button" role="radio" data-a11y-choice="text" data-value="default">Default</button><button type="button" role="radio" data-a11y-choice="text" data-value="large">Large</button><button type="button" role="radio" data-a11y-choice="text" data-value="larger">Larger</button></div><label class="mpress-a11y-toggle"><span><strong>Readable font</strong><small>Use a simple, widely spaced font stack.</small></span><input type="checkbox" data-a11y-toggle="readable"></label><label class="mpress-a11y-toggle"><span><strong>Relaxed spacing</strong><small>Add more line, word, and letter space.</small></span><input type="checkbox" data-a11y-toggle="spacing"></label><label class="mpress-a11y-toggle"><span><strong>Bionic reading</strong><small>Emphasise the start of longer words.</small></span><input type="checkbox" data-a11y-toggle="bionic"></label></section><section id="mpress-a11y-panel-focus" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-focus" data-a11y-tabpanel="focus" hidden><h3>Focus and attention</h3><p>Reduce distraction and keep your place while reading.</p><label class="mpress-a11y-toggle"><span><strong>Focus mode</strong><small>Dim navigation until you point to it.</small></span><input type="checkbox" data-a11y-toggle="focus"></label><label class="mpress-a11y-toggle"><span><strong>Reading guide</strong><small>Follow the pointer with a horizontal guide.</small></span><input type="checkbox" data-a11y-toggle="guide"></label><label class="mpress-a11y-toggle"><span><strong>Reduce motion</strong><small>Stop non-essential animation and smooth scrolling.</small></span><input type="checkbox" data-a11y-toggle="motion"></label></section><section id="mpress-a11y-panel-vision" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-vision" data-a11y-tabpanel="vision" hidden><h3>Vision and colour</h3><p>Increase contrast or use a more distinct colour palette.</p><div class="mpress-a11y-field"><span id="mpress-a11y-colour-label">Colour profile</span><div class="mpress-a11y-select" data-a11y-select="colour"><button class="mpress-a11y-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mpress-a11y-colour-label mpress-a11y-colour-value"><span id="mpress-a11y-colour-value" data-a11y-select-value>Site colours</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="mpress-a11y-options" role="listbox" aria-labelledby="mpress-a11y-colour-label" hidden><button class="mpress-a11y-option" type="button" role="option" aria-selected="true" data-value="default">Site colours</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="red-green" tabindex="-1">Red and green distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="blue-yellow" tabindex="-1">Blue and yellow distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="low" tabindex="-1">Low saturation</button></div></div></div><label class="mpress-a11y-toggle"><span><strong>High contrast</strong><small>Increase text and border contrast.</small></span><input type="checkbox" data-a11y-toggle="contrast"></label><label class="mpress-a11y-toggle"><span><strong>Underline links</strong><small>Show links with more than colour.</small></span><input type="checkbox" data-a11y-toggle="links"></label></section></div><footer class="mpress-accessibility-footer"><small>Saved only in this browser.</small><button class="mpress-accessibility-reset" type="button" data-a11y-reset>Reset settings</button></footer></section><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../">Home</a><a class="" href="../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../quick-start/installation/">Installation</a><a class="" href="../../quick-start/first-app/">Your First App</a><a class="" href="../../quick-start/next-steps/">Next Steps</a></div></details><details open><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../tutorials/03-notes-vanilla/">Notes</a><a class="active" aria-current="page" href="../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../tutorials/overview/">Tutorials</a></div></details></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../concepts/architecture/">How Wails Works</a><a class="" href="../../concepts/manager-api/">Manager API</a><a class="" href="../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/notch-windows/">Notch Windows</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/application/">Application Events</a><a class="" href="../../features/events/window/">Window Events</a><a class="" href="../../features/events/custom/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/autostart/basics/">Autostart</a></div></details></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/clipboard/basics/">Clipboard Operations</a></div></details></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/browser/integration/">Browser Integration</a></div></details></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/notifications/overview/">Notifications</a></div></details></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/screens/info/">Screen Information</a></div></details></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/environment/info/">Environment</a></div></details></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/workflow/">Development Workflow</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a><a class="" href="../../guides/testing/">Testing</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/msix/">MSIX Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../guides/gin-routing/">Using Gin Router</a><a class="" href="../../guides/gin-services/">Gin Services</a><a class="" href="../../guides/patterns/database/">Database Integration</a><a class="" href="../../guides/patterns/rest-api/">REST APIs</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/advanced/wml/">WML (Wails Markup)</a><a class="" href="../../guides/panic-handling/">Panic Handling</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../migration/v2-to-v3/">From v2 to v3</a><a class="" href="../../migration/from-electron/">From Electron</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/links/">Links</a><a class="" href="../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><details open><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../community/showcase/clave/">Clave</a><a class="" href="../../community/showcase/condui/">Condui</a><a class="" href="../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../community/showcase/emailit/">EmailIt</a><a class="" href="../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../community/showcase/happytools/">HappyTools</a><a class="" href="../../community/showcase/kira/">Kira</a><a class="" href="../../community/showcase/ltools/">LTools</a><a class="" href="../../community/showcase/mchat/">Mchat</a><a class="" href="../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../community/showcase/october/">October</a><a class="" href="../../community/showcase/optimus/">Optimus</a><a class="" href="../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../community/showcase/portfall/">Portfall</a><a class="" href="../../community/showcase/redisviewer/">Redis Viewer</a><a class="" href="../../community/showcase/resizem/">Resizem</a><a class="" href="../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../community/showcase/surge/">Surge</a><a class="" href="../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../community/showcase/wally/">Wally</a><a class="" href="../../community/showcase/wombat/">Wombat</a><a class="" href="../../community/showcase/xensql/">XenSQL</a><a class="" href="../../community/showcase/ytd/">Ytd</a><a class="" href="../../community/showcase/hiposter/">hiposter</a><a class="" href="../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../credits/">Credits</a></nav></aside><div class="docs-stage"><main id="content"><article><h1>QR Code Service</h1><p class="page-lead">Create a QR code service to learn about Wails services</p><p>A <strong>service</strong> in Wails is a Go struct that contains business logic you want to make available to your frontend. Services keep your code organized by grouping related functionality together.</p>
+<p>Think of a service as a collection of methods that your JavaScript code can call. Each public method on the service becomes callable from the frontend after generating bindings.</p>
+<p>In this tutorial, we&rsquo;ll create a QR code generator service to demonstrate these concepts. By the end, you&rsquo;ll understand how to create services, manage dependencies, and connect your Go code to the frontend.</p>
+<br/>
+<div class="mpress-steps">
+  <div class="mpress-step">
+    <div class="mpress-step-number">1</div>
+    <div class="mpress-step-body">
+      <h3 class="mpress-step-title">Create the QR Service file</h3>
+<div class="mpress-step-content">
+<p>Create a new file called <code>qrservice.go</code> in your application directory:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">qrservice.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="package main&#10;&#10;import (&#10;    &#34;github.com/skip2/go-qrcode&#34;&#10;)&#10;&#10;// QRService handles QR code generation&#10;type QRService struct {&#10;    // We can add state here if needed&#10;}&#10;&#10;// NewQRService creates a new QR service&#10;func NewQRService() *QRService {&#10;    return &amp;QRService{}&#10;}&#10;&#10;// Generate creates a QR code from the given text&#10;func (s *QRService) Generate(text string, size int) ([]byte, error) {&#10;    // Generate the QR code&#10;    qr, err := qrcode.New(text, qrcode.Medium)&#10;    if err != nil {&#10;        return nil, err&#10;    }&#10;&#10;    // Convert to PNG&#10;    png, err := qr.PNG(size)&#10;    if err != nil {&#10;        return nil, err&#10;    }&#10;&#10;    return png, nil&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/skip2/go-qrcode&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// QRService handles QR code generation</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">QRService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// We can add state here if needed</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// NewQRService creates a new QR service</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">NewQRService</span>() <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">QRService</span>{}
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Generate creates a QR code from the given text</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span>) <span class="mpress-token-function">Generate</span>(text string, size int) ([]byte, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Generate the QR code</span>
+</span><span class="mpress-code-line">    qr, err <span class="mpress-token-operator">:=</span> qrcode.<span class="mpress-token-function">New</span>(text, qrcode.<span class="mpress-token-type">Medium</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>, err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Convert to PNG</span>
+</span><span class="mpress-code-line">    png, err <span class="mpress-token-operator">:=</span> qr.<span class="mpress-token-function">PNG</span>(size)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>, err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> png, <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li><code>QRService</code> is an empty struct that will hold our QR code generation methods</li>
+<li><code>NewQRService()</code> is a constructor function that creates a new instance of our service</li>
+<li><code>Generate()</code> is a method that takes text and a size, then returns the QR code as a PNG byte array</li>
+<li>The method returns <code>([]byte, error)</code> following Go&rsquo;s convention of returning errors as the last value</li>
+<li>We use the <code>github.com/skip2/go-qrcode</code> package to handle the actual QR code generation</li>
+</ul>
+ <br/>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">2</div>
+    <div class="mpress-step-body">
+      <h3 class="mpress-step-title">Register the Service</h3>
+<div class="mpress-step-content">
+<p>Creating a service isn&rsquo;t enough - we need to <strong>register</strong> it with the Wails application so it knows the service exists and can generate bindings for it.</p>
+<p>Registration happens in <code>main.go</code> when you create your application. You pass your service instances to the <code>Services</code> option:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">main.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code=" func main() {&#10;&#10;     app := application.New(application.Options{&#10;         Name:        &#34;myproject&#34;,&#10;         Description: &#34;A demo of using raw HTML &amp; CSS&#34;,&#10;         LogLevel:    slog.LevelDebug,&#10;         Services: []application.Service{&#10;             application.NewService(NewQRService()),&#10;         },&#10;         Assets: application.AssetOptions{&#10;             Handler: application.AssetFileServerFS(assets),&#10;         },&#10;         Mac: application.MacOptions{&#10;             ApplicationShouldTerminateAfterLastWindowClosed: true,&#10;         },&#10;     })&#10;&#10;     app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;         Title:  &#34;myproject&#34;,&#10;         Width:  600,&#10;         Height: 400,&#10;     })&#10;&#10;     // Run the application. This blocks until the application has been exited.&#10;     err := app.Run()&#10;&#10;     // If an error occurred while running the application, log it and exit.&#10;     if err != nil {&#10;         log.Fatal(err)&#10;     }&#10; }"><code class="language-go"><span class="mpress-code-line"> <span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span>        <span class="mpress-token-string">&#34;myproject&#34;</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Description</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;A demo of using raw HTML &amp; CSS&#34;</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">LogLevel</span><span class="mpress-token-operator">:</span>    slog.<span class="mpress-token-type">LevelDebug</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">             application.<span class="mpress-token-function">NewService</span>(<span class="mpress-token-function">NewQRService</span>()),
+</span><span class="mpress-code-line">         },
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Assets</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">AssetOptions</span>{
+</span><span class="mpress-code-line">             <span class="mpress-token-type">Handler</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-function">AssetFileServerFS</span>(assets),
+</span><span class="mpress-code-line">         },
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Mac</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">MacOptions</span>{
+</span><span class="mpress-code-line">             <span class="mpress-token-type">ApplicationShouldTerminateAfterLastWindowClosed</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">         },
+</span><span class="mpress-code-line">     })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;myproject&#34;</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">600</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">400</span>,
+</span><span class="mpress-code-line">     })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     <span class="mpress-token-comment">// Run the application. This blocks until the application has been exited.</span>
+</span><span class="mpress-code-line">     err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     <span class="mpress-token-comment">// If an error occurred while running the application, log it and exit.</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">         log.<span class="mpress-token-function">Fatal</span>(err)
+</span><span class="mpress-code-line">     }
+</span><span class="mpress-code-line"> }</span></code></pre></div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li><code>application.NewService()</code> wraps your service so Wails can manage it</li>
+<li>We call <code>NewQRService()</code> to create an instance of our service</li>
+<li>The service is added to the <code>Services</code> slice in application options</li>
+<li>Wails will now scan this service for public methods to make available to the frontend</li>
+</ul>
+ <br/>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">3</div>
+    <div class="mpress-step-body">
+      <h3 class="mpress-step-title">Install Dependencies</h3>
+<div class="mpress-step-content">
+<p>We referenced the <code>github.com/skip2/go-qrcode</code> package in our code, but we haven&rsquo;t actually downloaded it yet. Go needs to know about this dependency and download it to your project.</p>
+<p>Run this command in your terminal from your project directory:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="go mod tidy"><code><span class="mpress-cmd">go mod tidy</span>
+</code></pre>
+</div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li><code>go mod tidy</code> scans your Go files for import statements</li>
+<li>It downloads any missing packages (like <code>go-qrcode</code>) and adds them to <code>go.mod</code></li>
+<li>It also removes any dependencies that are no longer used</li>
+<li>This ensures your project has all the code it needs to compile successfully</li>
+</ul>
+<p>You should see output indicating that the QR code package has been downloaded and added to your project.</p>
+ <br/>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">4</div>
+    <div class="mpress-step-body">
+      <h3 class="mpress-step-title">Generate the Bindings</h3>
+<div class="mpress-step-content">
+<p>To call these methods from your frontend, we need to generate bindings.<br>
+You can do this by running <code>wails generate bindings</code> in your project root directory.</p>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>The very first time you ever run this in a project, the bindings generator does a thorough analysis of your code and dependencies. This can sometimes take a little longer than expected, however subsequent runs will be much faster.</p>
+</div>
+</aside>
+<p>Once you&rsquo;ve run this, you should see something similar to the following in your terminal:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands=" % wails3 generate bindings
+ INFO  Processed: 337 Packages, 1 Service, 1 Method, 0 Enums, 0 Models in 740.196125ms.
+ INFO  Output directory: /Users/leaanthony/myproject/frontend/bindings"><code><span class="mpress-cmd"> % wails3 generate bindings</span>
+<span class="mpress-cmd"> INFO  Processed: 337 Packages, 1 Service, 1 Method, 0 Enums, 0 Models in 740.196125ms.</span>
+<span class="mpress-cmd"> INFO  Output directory: /Users/leaanthony/myproject/frontend/bindings</span>
+</code></pre>
+</div>
+<p>You should notice that in the frontend directory, there is a new directory called <code>bindings</code>:</p>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="frontend/
+└── bindings
+    └── changeme
+        ├── index.js
+        └── qrservice.js"><code><span class="mpress-cmd">frontend/</span>
+<span class="mpress-cmd">└── bindings</span>
+<span class="mpress-cmd">    └── changeme</span>
+<span class="mpress-cmd">        ├── index.js</span>
+<span class="mpress-cmd">        └── qrservice.js</span>
+</code></pre>
+</div>
+<aside aria-label="Pro Tip" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.87 12.87 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Pro Tip</span></p>
+<div class="mpress-admonition-body">
+<p>When you build your application using <code>wails3 build</code>, it will automatically generate bindings for you and keep them up to date.</p>
+</div>
+</aside>
+ <br/>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">5</div>
+    <div class="mpress-step-body">
+      <h3 class="mpress-step-title">Understanding the Bindings</h3>
+<div class="mpress-step-content">
+<p>Let&rsquo;s look at the generated bindings in <code>bindings/changeme/qrservice.js</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">bindings/changeme/qrservice.js</div><span class="mpress-codeframe-language">js</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code=" // @ts-check&#10; // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL&#10; // This file is automatically generated. DO NOT EDIT&#10;&#10; /**&#10;  * QRService handles QR code generation&#10;  * @module&#10;  */&#10;&#10; // eslint-disable-next-line @typescript-eslint/ban-ts-comment&#10; // @ts-ignore: Unused imports&#10; import {Call as $Call, Create as $Create} from &#34;@wailsio/runtime&#34;;&#10;&#10; /**&#10;  * Generate creates a QR code from the given text&#10;  * @param {string} text&#10;  * @param {number} size&#10;  * @returns {Promise&lt;string&gt; &amp; { cancel(): void }}&#10;  */&#10; export function Generate(text, size) {&#10;     let $resultPromise = /** @type {any} */($Call.ByID(3576998831, text, size));&#10;     let $typingPromise = /** @type {any} */($resultPromise.then(($result) =&gt; {&#10;         return $Create.ByteSlice($result);&#10;     }));&#10;     $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);&#10;     return $typingPromise;&#10; }"><code class="language-js"><span class="mpress-code-line"> <span class="mpress-token-comment">// @ts-check</span>
+</span><span class="mpress-code-line"> <span class="mpress-token-comment">// Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL</span>
+</span><span class="mpress-code-line"> <span class="mpress-token-comment">// This file is automatically generated. DO NOT EDIT</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"> /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">*</span> <span class="mpress-token-type">QRService</span> handles <span class="mpress-token-type">QR</span> code generation
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">*</span> @module
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"> <span class="mpress-token-comment">// eslint-disable-next-line @typescript-eslint/ban-ts-comment</span>
+</span><span class="mpress-code-line"> <span class="mpress-token-comment">// @ts-ignore: Unused imports</span>
+</span><span class="mpress-code-line"> <span class="mpress-token-keyword">import</span> {<span class="mpress-token-type">Call</span> <span class="mpress-token-keyword">as</span> $Call, <span class="mpress-token-type">Create</span> <span class="mpress-token-keyword">as</span> $Create} <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;@wailsio/runtime&#34;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"> /<span class="mpress-token-operator">**</span>
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">*</span> <span class="mpress-token-type">Generate</span> creates a <span class="mpress-token-type">QR</span> code <span class="mpress-token-keyword">from</span> the given text
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">*</span> @param {string} text
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">*</span> @param {number} size
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">*</span> @returns {<span class="mpress-token-type">Promise</span><span class="mpress-token-operator">&lt;</span>string<span class="mpress-token-operator">&gt;</span> <span class="mpress-token-operator">&amp;</span> { <span class="mpress-token-function">cancel</span>()<span class="mpress-token-operator">:</span> void }}
+</span><span class="mpress-code-line">  <span class="mpress-token-operator">*</span>/
+</span><span class="mpress-code-line"> <span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">Generate</span>(text, size) {
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">let</span> $resultPromise <span class="mpress-token-operator">=</span> /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {any} <span class="mpress-token-operator">*</span>/($Call.<span class="mpress-token-function">ByID</span>(<span class="mpress-token-number">3576998831</span>, text, size));
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">let</span> $typingPromise <span class="mpress-token-operator">=</span> /<span class="mpress-token-operator">**</span> @<span class="mpress-token-keyword">type</span> {any} <span class="mpress-token-operator">*</span>/($resultPromise.<span class="mpress-token-function">then</span>(($result) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">         <span class="mpress-token-keyword">return</span> $Create.<span class="mpress-token-function">ByteSlice</span>($result);
+</span><span class="mpress-code-line">     }));
+</span><span class="mpress-code-line">     $typingPromise.cancel <span class="mpress-token-operator">=</span> $resultPromise.cancel.<span class="mpress-token-function">bind</span>($resultPromise);
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">return</span> $typingPromise;
+</span><span class="mpress-code-line"> }</span></code></pre></div>
+<p>We can see that the bindings are generated for the <code>Generate</code> method. The parameter names have been preserved,<br>
+as well as the comments. JSDoc has also been generated for the method to provide type information to your IDE.</p>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>It&rsquo;s not necessary to fully understand the generated bindings, but it&rsquo;s important to understand how they work.</p>
+</div>
+</aside>
+<p>The bindings provide:</p>
+<ul>
+<li>Functions that are equivalent to your Go methods</li>
+<li>Automatic conversion between Go and JavaScript types</li>
+<li>Promise-based async operations</li>
+<li>Type information as JSDoc comments</li>
+</ul>
+<aside aria-label="Typescript" class="mpress-admonition mpress-admonition-tip" data-variant="tip">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.87 12.87 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg> <span>Typescript</span></p>
+<div class="mpress-admonition-body">
+<p>The bindings generator also supports generating Typescript bindings. You can do this by running <code>wails3 generate bindings -ts</code>.</p>
+</div>
+</aside>
+<p>The generated service is re-exported by an <code>index.js</code> file:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">bindings/changeme/index.js</div><span class="mpress-codeframe-language">js</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code=" // @ts-check&#10; // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL&#10; // This file is automatically generated. DO NOT EDIT&#10;&#10; import * as QRService from &#34;./qrservice.js&#34;;&#10; export {&#10;     QRService&#10; };"><code class="language-js"><span class="mpress-code-line"> <span class="mpress-token-comment">// @ts-check</span>
+</span><span class="mpress-code-line"> <span class="mpress-token-comment">// Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL</span>
+</span><span class="mpress-code-line"> <span class="mpress-token-comment">// This file is automatically generated. DO NOT EDIT</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"> <span class="mpress-token-keyword">import</span> <span class="mpress-token-operator">*</span> <span class="mpress-token-keyword">as</span> <span class="mpress-token-type">QRService</span> <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;./qrservice.js&#34;</span>;
+</span><span class="mpress-code-line"> <span class="mpress-token-keyword">export</span> {
+</span><span class="mpress-code-line">     <span class="mpress-token-type">QRService</span>
+</span><span class="mpress-code-line"> };</span></code></pre></div>
+<p>You may then access it through the simplified import path<br>
+<code>./bindings/changeme</code> consisting just of your Go package path,<br>
+without specifying any file name.</p>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>Simplified import paths are only available when using frontend bundlers.<br>
+If you prefer a vanilla frontend that does not employ a bundler,<br>
+you will have to import either <code>index.js</code> or <code>qrservice.js</code> manually.</p>
+</div>
+</aside>
+ <br/>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">6</div>
+    <div class="mpress-step-body">
+      <h3 class="mpress-step-title">Use Bindings in Frontend</h3>
+<div class="mpress-step-content">
+<p>Now we can call our Go service from JavaScript! The generated bindings make this easy and type-safe.</p>
+<p>Update <code>frontend/src/main.js</code> to use the new bindings:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">frontend/src/main.js</div><span class="mpress-codeframe-language">js</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code=" import { QRService } from &#39;./bindings/changeme&#39;;&#10;&#10; async function generateQR() {&#10;     const text = document.getElementById(&#39;text&#39;).value;&#10;     if (!text) {&#10;         alert(&#39;Please enter some text&#39;);&#10;         return;&#10;     }&#10;&#10;     try {&#10;         // Generate QR code as base64&#10;         const qrCodeBase64 = await QRService.Generate(text, 256);&#10;&#10;         // Display the QR code&#10;         const qrDiv = document.getElementById(&#39;qrcode&#39;);&#10;         qrDiv.src = `data:image/png;base64,${qrCodeBase64}`;&#10;&#10;     } catch (err) {&#10;         console.error(&#39;Failed to generate QR code:&#39;, err);&#10;         alert(&#39;Failed to generate QR code: &#39; + err);&#10;     }&#10; }&#10;&#10; export function initializeQRGenerator() {&#10;     const button = document.getElementById(&#39;generateButton&#39;);&#10;     button.addEventListener(&#39;click&#39;, generateQR);&#10; }"><code class="language-js"><span class="mpress-code-line"> <span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">QRService</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./bindings/changeme&#39;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"> <span class="mpress-token-keyword">async</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">generateQR</span>() {
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">const</span> text <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;text&#39;</span>).value;
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">if</span> (<span class="mpress-token-operator">!</span>text) {
+</span><span class="mpress-code-line">         <span class="mpress-token-function">alert</span>(<span class="mpress-token-string">&#39;Please enter some text&#39;</span>);
+</span><span class="mpress-code-line">         <span class="mpress-token-keyword">return</span>;
+</span><span class="mpress-code-line">     }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">try</span> {
+</span><span class="mpress-code-line">         <span class="mpress-token-comment">// Generate QR code as base64</span>
+</span><span class="mpress-code-line">         <span class="mpress-token-keyword">const</span> qrCodeBase64 <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-type">QRService</span>.<span class="mpress-token-function">Generate</span>(text, <span class="mpress-token-number">256</span>);
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">         <span class="mpress-token-comment">// Display the QR code</span>
+</span><span class="mpress-code-line">         <span class="mpress-token-keyword">const</span> qrDiv <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;qrcode&#39;</span>);
+</span><span class="mpress-code-line">         qrDiv.src <span class="mpress-token-operator">=</span> <span class="mpress-token-string">`data:image/png;base64,${qrCodeBase64}`</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     } <span class="mpress-token-keyword">catch</span> (err) {
+</span><span class="mpress-code-line">         console.<span class="mpress-token-function">error</span>(<span class="mpress-token-string">&#39;Failed to generate QR code:&#39;</span>, err);
+</span><span class="mpress-code-line">         <span class="mpress-token-function">alert</span>(<span class="mpress-token-string">&#39;Failed to generate QR code: &#39;</span> <span class="mpress-token-operator">+</span> err);
+</span><span class="mpress-code-line">     }
+</span><span class="mpress-code-line"> }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"> <span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">initializeQRGenerator</span>() {
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">const</span> button <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;generateButton&#39;</span>);
+</span><span class="mpress-code-line">     button.<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#39;click&#39;</span>, generateQR);
+</span><span class="mpress-code-line"> }</span></code></pre></div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li>We import <code>QRService</code> from the generated bindings</li>
+<li><code>QRService.Generate()</code> calls our Go method - it returns a Promise, so we use <code>await</code></li>
+<li>The Go method returns <code>[]byte</code>, which Wails automatically converts to a base64 string for JavaScript</li>
+<li>We create a data URL with the base64 string to display the PNG image</li>
+<li>The <code>try/catch</code> block handles any errors from the Go side (like invalid input)</li>
+<li>If our Go code returns an error, the Promise rejects and we catch it here</li>
+</ul>
+<p>Now update <code>index.html</code> to use the new bindings in the <code>initializeQRGenerator</code> function:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">frontend/src/index.html</div><span class="mpress-codeframe-language">html</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="&lt;!DOCTYPE html&gt;&#10;&lt;html lang=&#34;en&#34;&gt;&#10;&lt;head&gt;&#10;    &lt;meta charset=&#34;UTF-8&#34;&gt;&#10;        &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1.0&#34;&gt;&#10;            &lt;title&gt;QR Code Generator&lt;/title&gt;&#10;            &lt;style&gt;&#10;                body {&#10;                font-family: Arial, sans-serif;&#10;                display: flex;&#10;                flex-direction: column;&#10;                align-items: center;&#10;                justify-content: center;&#10;                height: 100vh;&#10;                margin: 0;&#10;            }&#10;                #qrcode {&#10;                margin-bottom: 20px;&#10;                width: 256px;&#10;                height: 256px;&#10;                display: flex;&#10;                align-items: center;&#10;                justify-content: center;&#10;            }&#10;                #controls {&#10;                display: flex;&#10;                gap: 10px;&#10;            }&#10;                #text {&#10;                padding: 5px;&#10;            }&#10;                #generateButton {&#10;                padding: 5px 10px;&#10;                cursor: pointer;&#10;            }&#10;            &lt;/style&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;&lt;img id=&#34;qrcode&#34;/&gt;&#10;&lt;div id=&#34;controls&#34;&gt;&#10;    &lt;input type=&#34;text&#34; id=&#34;text&#34; placeholder=&#34;Enter text&#34;&gt;&#10;        &lt;button id=&#34;generateButton&#34;&gt;Generate QR Code&lt;/button&gt;&#10;&lt;/div&gt;&#10;&#10;&lt;script type=&#34;module&#34;&gt;&#10;    import { initializeQRGenerator } from &#39;./main.js&#39;;&#10;    document.addEventListener(&#39;DOMContentLoaded&#39;, initializeQRGenerator);&#10;&lt;/script&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"><code class="language-html"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;!</span><span class="mpress-token-type">DOCTYPE</span> html<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>html lang<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;en&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>head<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>meta charset<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;UTF-8&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>meta name<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;viewport&#34;</span> content<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;width=device-width, initial-scale=1.0&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">&lt;</span>title<span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">QR</span> <span class="mpress-token-type">Code</span> <span class="mpress-token-type">Generator</span><span class="mpress-token-operator">&lt;</span>/title<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">&lt;</span>style<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">                body {
+</span><span class="mpress-code-line">                font<span class="mpress-token-operator">-</span>family<span class="mpress-token-operator">:</span> <span class="mpress-token-type">Arial</span>, sans<span class="mpress-token-operator">-</span>serif;
+</span><span class="mpress-code-line">                display<span class="mpress-token-operator">:</span> flex;
+</span><span class="mpress-code-line">                flex<span class="mpress-token-operator">-</span>direction<span class="mpress-token-operator">:</span> column;
+</span><span class="mpress-code-line">                align<span class="mpress-token-operator">-</span>items<span class="mpress-token-operator">:</span> center;
+</span><span class="mpress-code-line">                justify<span class="mpress-token-operator">-</span>content<span class="mpress-token-operator">:</span> center;
+</span><span class="mpress-code-line">                height<span class="mpress-token-operator">:</span> <span class="mpress-token-number">100</span>vh;
+</span><span class="mpress-code-line">                margin<span class="mpress-token-operator">:</span> <span class="mpress-token-number">0</span>;
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">                #qrcode {
+</span><span class="mpress-code-line">                margin<span class="mpress-token-operator">-</span>bottom<span class="mpress-token-operator">:</span> <span class="mpress-token-number">20</span>px;
+</span><span class="mpress-code-line">                width<span class="mpress-token-operator">:</span> <span class="mpress-token-number">256</span>px;
+</span><span class="mpress-code-line">                height<span class="mpress-token-operator">:</span> <span class="mpress-token-number">256</span>px;
+</span><span class="mpress-code-line">                display<span class="mpress-token-operator">:</span> flex;
+</span><span class="mpress-code-line">                align<span class="mpress-token-operator">-</span>items<span class="mpress-token-operator">:</span> center;
+</span><span class="mpress-code-line">                justify<span class="mpress-token-operator">-</span>content<span class="mpress-token-operator">:</span> center;
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">                #controls {
+</span><span class="mpress-code-line">                display<span class="mpress-token-operator">:</span> flex;
+</span><span class="mpress-code-line">                gap<span class="mpress-token-operator">:</span> <span class="mpress-token-number">10</span>px;
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">                #text {
+</span><span class="mpress-code-line">                padding<span class="mpress-token-operator">:</span> <span class="mpress-token-number">5</span>px;
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">                #generateButton {
+</span><span class="mpress-code-line">                padding<span class="mpress-token-operator">:</span> <span class="mpress-token-number">5</span>px <span class="mpress-token-number">10</span>px;
+</span><span class="mpress-code-line">                cursor<span class="mpress-token-operator">:</span> pointer;
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">            <span class="mpress-token-operator">&lt;</span>/style<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/head<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>body<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>img id<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;qrcode&#34;</span>/<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>div id<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;controls&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-operator">&lt;</span>input <span class="mpress-token-keyword">type</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;text&#34;</span> id<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;text&#34;</span> placeholder<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;Enter text&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">        <span class="mpress-token-operator">&lt;</span>button id<span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;generateButton&#34;</span><span class="mpress-token-operator">&gt;</span><span class="mpress-token-type">Generate</span> <span class="mpress-token-type">QR</span> <span class="mpress-token-type">Code</span><span class="mpress-token-operator">&lt;</span>/button<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/div<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>script <span class="mpress-token-keyword">type</span><span class="mpress-token-operator">=</span><span class="mpress-token-string">&#34;module&#34;</span><span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">import</span> { initializeQRGenerator } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#39;./main.js&#39;</span>;
+</span><span class="mpress-code-line">    document.<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#39;DOMContentLoaded&#39;</span>, initializeQRGenerator);
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/script<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/body<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/html<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<p>Run <code>wails3 dev</code> to start the dev server. After a few seconds, the application should open.</p>
+<p>Type in some text and click the &ldquo;Generate QR Code&rdquo; button. You should see a QR code in the center of the page:</p>
+<p><img src="/assets/qr1.png" alt="QR Code"></p>
+ <br/>
+ <br/>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">7</div>
+    <div class="mpress-step-body">
+      <h3 class="mpress-step-title">Alternative Approach: HTTP Handler</h3>
+<div class="mpress-step-content">
+<p>So far, we have covered the following areas:</p>
+<ul>
+<li>Creating a new Service</li>
+<li>Generating Bindings</li>
+<li>Using the Bindings in our Frontend code</li>
+</ul>
+<p><strong>Why use an HTTP handler?</strong></p>
+<p>Method bindings work great for data operations, but there&rsquo;s an alternative approach for serving files, images, or other media. Instead of converting everything to base64 and sending it through bindings, you can make your service act like a mini web server.</p>
+<p>This is useful when:</p>
+<ul>
+<li>You&rsquo;re serving images, videos, or large files</li>
+<li>You want to use standard HTML <code>&lt;img&gt;</code> or <code>&lt;video&gt;</code> tags with <code>src</code> attributes</li>
+<li>You need direct URL access to resources</li>
+</ul>
+<p>If your service implements Go&rsquo;s standard <code>ServeHTTP(w http.ResponseWriter, r *http.Request)</code> method, Wails can make it accessible as an HTTP endpoint. Let&rsquo;s extend our QR code service to support this:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">qrservice.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="package main&#10;&#10;import (&#10;    &#34;net/http&#34;&#10;    &#34;strconv&#34;&#10;&#10;    &#34;github.com/skip2/go-qrcode&#34;&#10;)&#10;&#10;// QRService handles QR code generation&#10;type QRService struct {&#10;    // We can add state here if needed&#10;}&#10;&#10;// NewQRService creates a new QR service&#10;func NewQRService() *QRService {&#10;    return &amp;QRService{}&#10;}&#10;&#10;// Generate creates a QR code from the given text&#10;func (s *QRService) Generate(text string, size int) ([]byte, error) {&#10;    // Generate the QR code&#10;    qr, err := qrcode.New(text, qrcode.Medium)&#10;    if err != nil {&#10;        return nil, err&#10;    }&#10;&#10;    // Convert to PNG&#10;    png, err := qr.PNG(size)&#10;    if err != nil {&#10;        return nil, err&#10;    }&#10;&#10;    return png, nil&#10;}&#10;&#10;func (s *QRService) ServeHTTP(w http.ResponseWriter, r *http.Request) {&#10;    // Extract the text parameter from the request&#10;    text := r.URL.Query().Get(&#34;text&#34;)&#10;    if text == &#34;&#34; {&#10;        http.Error(w, &#34;Missing &#39;text&#39; parameter&#34;, http.StatusBadRequest)&#10;        return&#10;    }&#10;    // Extract Size parameter from the request&#10;    sizeText := r.URL.Query().Get(&#34;size&#34;)&#10;    if sizeText == &#34;&#34; {&#10;        sizeText = &#34;256&#34;&#10;    }&#10;    size, err := strconv.Atoi(sizeText)&#10;    if err != nil {&#10;        http.Error(w, &#34;Invalid &#39;size&#39; parameter&#34;, http.StatusBadRequest)&#10;        return&#10;    }&#10;&#10;    // Generate the QR code&#10;    qrCodeData, err := s.Generate(text, size)&#10;    if err != nil {&#10;        http.Error(w, err.Error(), http.StatusInternalServerError)&#10;        return&#10;    }&#10;&#10;    // Write the QR code data to the response&#10;    w.Header().Set(&#34;Content-Type&#34;, &#34;image/png&#34;)&#10;    w.Write(qrCodeData)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;net/http&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;strconv&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/skip2/go-qrcode&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// QRService handles QR code generation</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">QRService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// We can add state here if needed</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// NewQRService creates a new QR service</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">NewQRService</span>() <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">QRService</span>{}
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Generate creates a QR code from the given text</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span>) <span class="mpress-token-function">Generate</span>(text string, size int) ([]byte, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Generate the QR code</span>
+</span><span class="mpress-code-line">    qr, err <span class="mpress-token-operator">:=</span> qrcode.<span class="mpress-token-function">New</span>(text, qrcode.<span class="mpress-token-type">Medium</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>, err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Convert to PNG</span>
+</span><span class="mpress-code-line">    png, err <span class="mpress-token-operator">:=</span> qr.<span class="mpress-token-function">PNG</span>(size)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>, err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> png, <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span>) <span class="mpress-token-function">ServeHTTP</span>(w http.<span class="mpress-token-type">ResponseWriter</span>, r <span class="mpress-token-operator">*</span>http.<span class="mpress-token-type">Request</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Extract the text parameter from the request</span>
+</span><span class="mpress-code-line">    text <span class="mpress-token-operator">:=</span> r.<span class="mpress-token-type">URL</span>.<span class="mpress-token-function">Query</span>().<span class="mpress-token-function">Get</span>(<span class="mpress-token-string">&#34;text&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> text <span class="mpress-token-operator">==</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        http.<span class="mpress-token-function">Error</span>(w, <span class="mpress-token-string">&#34;Missing &#39;text&#39; parameter&#34;</span>, http.<span class="mpress-token-type">StatusBadRequest</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Extract Size parameter from the request</span>
+</span><span class="mpress-code-line">    sizeText <span class="mpress-token-operator">:=</span> r.<span class="mpress-token-type">URL</span>.<span class="mpress-token-function">Query</span>().<span class="mpress-token-function">Get</span>(<span class="mpress-token-string">&#34;size&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> sizeText <span class="mpress-token-operator">==</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        sizeText <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;256&#34;</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    size, err <span class="mpress-token-operator">:=</span> strconv.<span class="mpress-token-function">Atoi</span>(sizeText)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        http.<span class="mpress-token-function">Error</span>(w, <span class="mpress-token-string">&#34;Invalid &#39;size&#39; parameter&#34;</span>, http.<span class="mpress-token-type">StatusBadRequest</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Generate the QR code</span>
+</span><span class="mpress-code-line">    qrCodeData, err <span class="mpress-token-operator">:=</span> s.<span class="mpress-token-function">Generate</span>(text, size)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        http.<span class="mpress-token-function">Error</span>(w, err.<span class="mpress-token-function">Error</span>(), http.<span class="mpress-token-type">StatusInternalServerError</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Write the QR code data to the response</span>
+</span><span class="mpress-code-line">    w.<span class="mpress-token-function">Header</span>().<span class="mpress-token-function">Set</span>(<span class="mpress-token-string">&#34;Content-Type&#34;</span>, <span class="mpress-token-string">&#34;image/png&#34;</span>)
+</span><span class="mpress-code-line">    w.<span class="mpress-token-function">Write</span>(qrCodeData)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li><code>ServeHTTP</code> is Go&rsquo;s standard interface for handling HTTP requests</li>
+<li>We parse query parameters from the URL (<code>?text=hello&amp;size=256</code>)</li>
+<li>We call our existing <code>Generate()</code> method to create the QR code</li>
+<li>We set the content type to <code>image/png</code> so browsers know it&rsquo;s an image</li>
+<li>We write the raw PNG bytes directly to the response - no base64 needed!</li>
+</ul>
+<p>Now update <code>main.go</code> to specify the route that the QR code service should be accessible on:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">main.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code=" func main() {&#10;&#10;     app := application.New(application.Options{&#10;         Name:        &#34;myproject&#34;,&#10;         Description: &#34;A demo of using raw HTML &amp; CSS&#34;,&#10;         LogLevel:    slog.LevelDebug,&#10;         Services: []application.Service{&#10;             application.NewServiceWithOptions(NewQRService(), application.ServiceOptions{&#10;                 Route: &#34;/qrservice&#34;,&#10;             }),&#10;         },&#10;         Assets: application.AssetOptions{&#10;             Handler: application.AssetFileServerFS(assets),&#10;         },&#10;         Mac: application.MacOptions{&#10;             ApplicationShouldTerminateAfterLastWindowClosed: true,&#10;         },&#10;     })&#10;&#10;     app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;         Title:  &#34;myproject&#34;,&#10;         Width:  600,&#10;         Height: 400,&#10;     })&#10;&#10;     // Run the application. This blocks until the application has been exited.&#10;     err := app.Run()&#10;&#10;     // If an error occurred while running the application, log it and exit.&#10;     if err != nil {&#10;         log.Fatal(err)&#10;     }&#10; }"><code class="language-go"><span class="mpress-code-line"> <span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span>        <span class="mpress-token-string">&#34;myproject&#34;</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Description</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;A demo of using raw HTML &amp; CSS&#34;</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">LogLevel</span><span class="mpress-token-operator">:</span>    slog.<span class="mpress-token-type">LevelDebug</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Services</span><span class="mpress-token-operator">:</span> []application.<span class="mpress-token-type">Service</span>{
+</span><span class="mpress-code-line">             application.<span class="mpress-token-function">NewServiceWithOptions</span>(<span class="mpress-token-function">NewQRService</span>(), application.<span class="mpress-token-type">ServiceOptions</span>{
+</span><span class="mpress-code-line">                 <span class="mpress-token-type">Route</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;/qrservice&#34;</span>,
+</span><span class="mpress-code-line">             }),
+</span><span class="mpress-code-line">         },
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Assets</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">AssetOptions</span>{
+</span><span class="mpress-code-line">             <span class="mpress-token-type">Handler</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-function">AssetFileServerFS</span>(assets),
+</span><span class="mpress-code-line">         },
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Mac</span><span class="mpress-token-operator">:</span> application.<span class="mpress-token-type">MacOptions</span>{
+</span><span class="mpress-code-line">             <span class="mpress-token-type">ApplicationShouldTerminateAfterLastWindowClosed</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">         },
+</span><span class="mpress-code-line">     })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-string">&#34;myproject&#34;</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-number">600</span>,
+</span><span class="mpress-code-line">         <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">400</span>,
+</span><span class="mpress-code-line">     })
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     <span class="mpress-token-comment">// Run the application. This blocks until the application has been exited.</span>
+</span><span class="mpress-code-line">     err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">     <span class="mpress-token-comment">// If an error occurred while running the application, log it and exit.</span>
+</span><span class="mpress-code-line">     <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">         log.<span class="mpress-token-function">Fatal</span>(err)
+</span><span class="mpress-code-line">     }
+</span><span class="mpress-code-line"> }</span></code></pre></div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li>We add <code>application.ServiceOptions</code> to configure how the service is exposed</li>
+<li><code>Route: &quot;/qrservice&quot;</code> makes the HTTP handler accessible at <code>/qrservice</code></li>
+<li>Now any request to <code>/qrservice?text=hello</code> will call our <code>ServeHTTP</code> method</li>
+<li>Without setting <code>Route</code>, the HTTP handler functionality is disabled</li>
+</ul>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>If you do not set the <code>Route</code> option explicitly,<br>
+the HTTP handler won&rsquo;t be accessible from the frontend.</p>
+</div>
+</aside>
+<p>Finally, update <code>main.js</code> to use a simple image <code>src</code> instead of base64 encoding:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">frontend/src/main.js</div><span class="mpress-codeframe-language">js</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="async function generateQR() {&#10;    const text = document.getElementById(&#39;text&#39;).value;&#10;    if (!text) {&#10;        alert(&#39;Please enter some text&#39;);&#10;        return;&#10;    }&#10;&#10;    const img = document.getElementById(&#39;qrcode&#39;);&#10;    // Make the image source the path to the QR code service, passing the text&#10;    img.src = `/qrservice?text=${encodeURIComponent(text)}`&#10;}&#10;&#10;export function initializeQRGenerator() {&#10;    const button = document.getElementById(&#39;generateButton&#39;);&#10;    if (button) {&#10;        button.addEventListener(&#39;click&#39;, generateQR);&#10;    } else {&#10;        console.error(&#39;Generate button not found&#39;);&#10;    }&#10;}"><code class="language-js"><span class="mpress-code-line"><span class="mpress-token-keyword">async</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">generateQR</span>() {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> text <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;text&#39;</span>).value;
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> (<span class="mpress-token-operator">!</span>text) {
+</span><span class="mpress-code-line">        <span class="mpress-token-function">alert</span>(<span class="mpress-token-string">&#39;Please enter some text&#39;</span>);
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>;
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> img <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;qrcode&#39;</span>);
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Make the image source the path to the QR code service, passing the text</span>
+</span><span class="mpress-code-line">    img.src <span class="mpress-token-operator">=</span> <span class="mpress-token-string">`/qrservice?text=${encodeURIComponent(text)}`</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">initializeQRGenerator</span>() {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> button <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;generateButton&#39;</span>);
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> (button) {
+</span><span class="mpress-code-line">        button.<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#39;click&#39;</span>, generateQR);
+</span><span class="mpress-code-line">    } <span class="mpress-token-keyword">else</span> {
+</span><span class="mpress-code-line">        console.<span class="mpress-token-function">error</span>(<span class="mpress-token-string">&#39;Generate button not found&#39;</span>);
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li>We removed the import and the <code>await QRService.Generate()</code> call</li>
+<li>Instead, we simply set <code>img.src</code> to point to our HTTP endpoint</li>
+<li><code>encodeURIComponent()</code> safely escapes special characters in the URL</li>
+<li>The browser automatically makes an HTTP GET request when we set the <code>src</code></li>
+<li>This is simpler and more efficient for images - no base64 conversion needed!</li>
+</ul>
+<p>Running the application again should result in the same QR code:</p>
+<p><img src="/assets/qr1.png" alt="QR Code"></p>
+ <br/>
+ <br/>
+</div>
+    </div>
+  </div>
+  <div class="mpress-step">
+    <div class="mpress-step-number">8</div>
+    <div class="mpress-step-body">
+      <h3 class="mpress-step-title">Supporting Dynamic Configurations</h3>
+<div class="mpress-step-content">
+<p><strong>The problem with hardcoded routes:</strong></p>
+<p>In the example above we used a hardcoded route <code>/qrservice</code> in our JavaScript code.<br>
+This creates a tight coupling between your Go configuration and your frontend code.</p>
+<p>If you edit <code>main.go</code> and change the <code>Route</code> option without updating <code>main.js</code>,<br>
+the application will break:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">main.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="        // ...&#10;            application.NewServiceWithOptions(NewQRService(), application.ServiceOptions{&#10;                Route: &#34;/services/qr&#34;,&#10;            }),&#10;        // ..."><code class="language-go"><span class="mpress-code-line">        <span class="mpress-token-comment">// ...</span>
+</span><span class="mpress-code-line">            application.<span class="mpress-token-function">NewServiceWithOptions</span>(<span class="mpress-token-function">NewQRService</span>(), application.<span class="mpress-token-type">ServiceOptions</span>{
+</span><span class="mpress-code-line">                <span class="mpress-token-type">Route</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;/services/qr&#34;</span>,
+</span><span class="mpress-code-line">            }),
+</span><span class="mpress-code-line">        <span class="mpress-token-comment">// ...</span></span></code></pre></div>
+<p>Hardcoded routes work for simple applications, but they make your code brittle and harder to maintain.</p>
+<p><strong>The solution: Dynamic configuration</strong></p>
+<p>Method bindings and HTTP handlers can work together! We can use bindings to tell the frontend what route to use, making the configuration dynamic and eliminating the hardcoded path.</p>
+<p>Here&rsquo;s how it works:</p>
+<ol>
+<li>The <code>ServiceStartup</code> lifecycle method runs when your app starts</li>
+<li>We save the configured route from the options</li>
+<li>We add a <code>URL()</code> method that the frontend can call to get the correct route</li>
+<li>Now the frontend asks the Go service for its route instead of guessing</li>
+</ol>
+<p>First, implement the <code>ServiceStartup</code> interface and add a new <code>URL</code> method:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">qrservice.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="package main&#10;&#10;import (&#10;    &#34;context&#34;&#10;    &#34;net/http&#34;&#10;    &#34;net/url&#34;&#10;    &#34;strconv&#34;&#10;&#10;    &#34;github.com/skip2/go-qrcode&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;)&#10;&#10;// QRService handles QR code generation&#10;type QRService struct {&#10;    route string&#10;}&#10;&#10;// NewQRService creates a new QR service&#10;func NewQRService() *QRService {&#10;    return &amp;QRService{}&#10;}&#10;&#10;// ServiceStartup runs at application startup.&#10;func (s *QRService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {&#10;    s.route = options.Route&#10;    return nil&#10;}&#10;&#10;// Generate creates a QR code from the given text&#10;func (s *QRService) Generate(text string, size int) ([]byte, error) {&#10;    // Generate the QR code&#10;    qr, err := qrcode.New(text, qrcode.Medium)&#10;    if err != nil {&#10;        return nil, err&#10;    }&#10;&#10;    // Convert to PNG&#10;    png, err := qr.PNG(size)&#10;    if err != nil {&#10;        return nil, err&#10;    }&#10;&#10;    return png, nil&#10;}&#10;&#10;// URL returns an URL that may be used to fetch&#10;// a QR code with the given text and size.&#10;// It returns an error if the HTTP handler is not available.&#10;func (s *QRService) URL(text string, size int) (string, error) {&#10;    if s.route == &#34;&#34; {&#10;        return &#34;&#34;, errors.New(&#34;http handler unavailable&#34;)&#10;    }&#10;&#10;    return fmt.Sprintf(&#34;%s?text=%s&amp;size=%d&#34;, s.route, url.QueryEscape(text), size), nil&#10;}&#10;&#10;func (s *QRService) ServeHTTP(w http.ResponseWriter, r *http.Request) {&#10;    // Extract the text parameter from the request&#10;    text := r.URL.Query().Get(&#34;text&#34;)&#10;    if text == &#34;&#34; {&#10;        http.Error(w, &#34;Missing &#39;text&#39; parameter&#34;, http.StatusBadRequest)&#10;        return&#10;    }&#10;    // Extract Size parameter from the request&#10;    sizeText := r.URL.Query().Get(&#34;size&#34;)&#10;    if sizeText == &#34;&#34; {&#10;        sizeText = &#34;256&#34;&#10;    }&#10;    size, err := strconv.Atoi(sizeText)&#10;    if err != nil {&#10;        http.Error(w, &#34;Invalid &#39;size&#39; parameter&#34;, http.StatusBadRequest)&#10;        return&#10;    }&#10;&#10;    // Generate the QR code&#10;    qrCodeData, err := s.Generate(text, size)&#10;    if err != nil {&#10;        http.Error(w, err.Error(), http.StatusInternalServerError)&#10;        return&#10;    }&#10;&#10;    // Write the QR code data to the response&#10;    w.Header().Set(&#34;Content-Type&#34;, &#34;image/png&#34;)&#10;    w.Write(qrCodeData)&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;context&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;net/http&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;net/url&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;strconv&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/skip2/go-qrcode&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// QRService handles QR code generation</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">QRService</span> <span class="mpress-token-keyword">struct</span> {
+</span><span class="mpress-code-line">    route string
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// NewQRService creates a new QR service</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">NewQRService</span>() <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">&amp;</span><span class="mpress-token-type">QRService</span>{}
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// ServiceStartup runs at application startup.</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span>) <span class="mpress-token-function">ServiceStartup</span>(ctx context.<span class="mpress-token-type">Context</span>, options application.<span class="mpress-token-type">ServiceOptions</span>) error {
+</span><span class="mpress-code-line">    s.route <span class="mpress-token-operator">=</span> options.<span class="mpress-token-type">Route</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Generate creates a QR code from the given text</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span>) <span class="mpress-token-function">Generate</span>(text string, size int) ([]byte, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Generate the QR code</span>
+</span><span class="mpress-code-line">    qr, err <span class="mpress-token-operator">:=</span> qrcode.<span class="mpress-token-function">New</span>(text, qrcode.<span class="mpress-token-type">Medium</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>, err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Convert to PNG</span>
+</span><span class="mpress-code-line">    png, err <span class="mpress-token-operator">:=</span> qr.<span class="mpress-token-function">PNG</span>(size)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-keyword">nil</span>, err
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> png, <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// URL returns an URL that may be used to fetch</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// a QR code with the given text and size.</span>
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// It returns an error if the HTTP handler is not available.</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span>) <span class="mpress-token-function">URL</span>(text string, size int) (string, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> s.route <span class="mpress-token-operator">==</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#34;&#34;</span>, errors.<span class="mpress-token-function">New</span>(<span class="mpress-token-string">&#34;http handler unavailable&#34;</span>)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">return</span> fmt.<span class="mpress-token-function">Sprintf</span>(<span class="mpress-token-string">&#34;%s?text=%s&amp;size=%d&#34;</span>, s.route, url.<span class="mpress-token-function">QueryEscape</span>(text), size), <span class="mpress-token-keyword">nil</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (s <span class="mpress-token-operator">*</span><span class="mpress-token-type">QRService</span>) <span class="mpress-token-function">ServeHTTP</span>(w http.<span class="mpress-token-type">ResponseWriter</span>, r <span class="mpress-token-operator">*</span>http.<span class="mpress-token-type">Request</span>) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Extract the text parameter from the request</span>
+</span><span class="mpress-code-line">    text <span class="mpress-token-operator">:=</span> r.<span class="mpress-token-type">URL</span>.<span class="mpress-token-function">Query</span>().<span class="mpress-token-function">Get</span>(<span class="mpress-token-string">&#34;text&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> text <span class="mpress-token-operator">==</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        http.<span class="mpress-token-function">Error</span>(w, <span class="mpress-token-string">&#34;Missing &#39;text&#39; parameter&#34;</span>, http.<span class="mpress-token-type">StatusBadRequest</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Extract Size parameter from the request</span>
+</span><span class="mpress-code-line">    sizeText <span class="mpress-token-operator">:=</span> r.<span class="mpress-token-type">URL</span>.<span class="mpress-token-function">Query</span>().<span class="mpress-token-function">Get</span>(<span class="mpress-token-string">&#34;size&#34;</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> sizeText <span class="mpress-token-operator">==</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">        sizeText <span class="mpress-token-operator">=</span> <span class="mpress-token-string">&#34;256&#34;</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">    size, err <span class="mpress-token-operator">:=</span> strconv.<span class="mpress-token-function">Atoi</span>(sizeText)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        http.<span class="mpress-token-function">Error</span>(w, <span class="mpress-token-string">&#34;Invalid &#39;size&#39; parameter&#34;</span>, http.<span class="mpress-token-type">StatusBadRequest</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Generate the QR code</span>
+</span><span class="mpress-code-line">    qrCodeData, err <span class="mpress-token-operator">:=</span> s.<span class="mpress-token-function">Generate</span>(text, size)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        http.<span class="mpress-token-function">Error</span>(w, err.<span class="mpress-token-function">Error</span>(), http.<span class="mpress-token-type">StatusInternalServerError</span>)
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Write the QR code data to the response</span>
+</span><span class="mpress-code-line">    w.<span class="mpress-token-function">Header</span>().<span class="mpress-token-function">Set</span>(<span class="mpress-token-string">&#34;Content-Type&#34;</span>, <span class="mpress-token-string">&#34;image/png&#34;</span>)
+</span><span class="mpress-code-line">    w.<span class="mpress-token-function">Write</span>(qrCodeData)
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li>We added a <code>route</code> field to store the configured route from <code>ServiceStartup</code></li>
+<li><code>ServiceStartup(ctx, options)</code> is called when the app starts - we save the route here</li>
+<li>The <code>URL()</code> method builds the full URL with query parameters</li>
+<li>If no route is configured (route is empty), we return an error</li>
+<li><code>url.QueryEscape()</code> safely encodes the text for use in a URL</li>
+<li>This method will be available to the frontend through bindings</li>
+</ul>
+<p>Now update <code>main.js</code> to use the <code>URL</code> method in place of a hardcoded path:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">frontend/src/main.js</div><span class="mpress-codeframe-language">js</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="import { QRService } from &#34;./bindings/changeme&#34;;&#10;&#10;async function generateQR() {&#10;    const text = document.getElementById(&#39;text&#39;).value;&#10;    if (!text) {&#10;        alert(&#39;Please enter some text&#39;);&#10;        return;&#10;    }&#10;&#10;    const img = document.getElementById(&#39;qrcode&#39;);&#10;    // Invoke the URL method to obtain an URL for the given text.&#10;    img.src = await QRService.URL(text, 256);&#10;}&#10;&#10;export function initializeQRGenerator() {&#10;    const button = document.getElementById(&#39;generateButton&#39;);&#10;    if (button) {&#10;        button.addEventListener(&#39;click&#39;, generateQR);&#10;    } else {&#10;        console.error(&#39;Generate button not found&#39;);&#10;    }&#10;}"><code class="language-js"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">QRService</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;./bindings/changeme&#34;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">async</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">generateQR</span>() {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> text <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;text&#39;</span>).value;
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> (<span class="mpress-token-operator">!</span>text) {
+</span><span class="mpress-code-line">        <span class="mpress-token-function">alert</span>(<span class="mpress-token-string">&#39;Please enter some text&#39;</span>);
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span>;
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> img <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;qrcode&#39;</span>);
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Invoke the URL method to obtain an URL for the given text.</span>
+</span><span class="mpress-code-line">    img.src <span class="mpress-token-operator">=</span> <span class="mpress-token-keyword">await</span> <span class="mpress-token-type">QRService</span>.<span class="mpress-token-function">URL</span>(text, <span class="mpress-token-number">256</span>);
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">export</span> <span class="mpress-token-keyword">function</span> <span class="mpress-token-function">initializeQRGenerator</span>() {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> button <span class="mpress-token-operator">=</span> document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#39;generateButton&#39;</span>);
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> (button) {
+</span><span class="mpress-code-line">        button.<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#39;click&#39;</span>, generateQR);
+</span><span class="mpress-code-line">    } <span class="mpress-token-keyword">else</span> {
+</span><span class="mpress-code-line">        console.<span class="mpress-token-function">error</span>(<span class="mpress-token-string">&#39;Generate button not found&#39;</span>);
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p><strong>What&rsquo;s happening here:</strong></p>
+<ul>
+<li>We import <code>QRService</code> to use the bindings again</li>
+<li>Instead of hardcoding <code>/qrservice</code>, we call <code>await QRService.URL(text, 256)</code></li>
+<li>The Go service builds the URL with the correct route and parameters</li>
+<li>Now if you change the route in <code>main.go</code>, the frontend automatically uses the new route</li>
+<li>No more manual synchronization between Go configuration and frontend code!</li>
+</ul>
+<p>It should work just like the previous example,<br>
+but changing the service route in <code>main.go</code><br>
+will not break the frontend anymore.</p>
+<aside aria-label="Info" class="mpress-admonition mpress-admonition-info">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-info" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> <span>Info</span></p>
+<div class="mpress-admonition-body">
+<p>If a Go method returns a non-nil error,<br>
+the promise on the JS side will reject<br>
+and await statements will throw an exception.</p>
+</div>
+</aside>
+ <br/>
+</div>
+    </div>
+  </div>
+</div>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/tutorials/01-creating-a-service.mdx"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-21T13:36:57Z">Aug 21, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../tutorials/03-notes-vanilla/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Notes</strong></a><a rel="next" href="../../tutorials/04-self-update-a-wails-app/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>Self-Updating Wails App</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a></aside></div></div><footer><a class="mpress-footer-credit" href="https://m-press.me">Built with <strong>M-Press</strong></a><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>

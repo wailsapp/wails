@@ -1,0 +1,9 @@
+# M-Press cache defaults
+/assets/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/versions/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.html
+  Cache-Control: public, max-age=300, must-revalidate

@@ -1,0 +1,893 @@
+<!doctype html><html lang="en" data-theme="system"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Updater · Wails</title><meta name="description" content="In-app self-updates for Wails v3 — pluggable providers, cryptographic verification, atomic swap, and a default UI you can theme or replace."><meta property="og:title" content="Updater · Wails"><meta property="og:description" content="In-app self-updates for Wails v3 — pluggable providers, cryptographic verification, atomic swap, and a default UI you can theme or replace."><meta property="og:site_name" content="Wails"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Updater · Wails"><meta name="twitter:description" content="In-app self-updates for Wails v3 — pluggable providers, cryptographic verification, atomic swap, and a default UI you can theme or replace."><meta property="og:url" content="https://v3.wails.io/guides/updater/"><link rel="canonical" href="https://v3.wails.io/guides/updater/"><link rel="alternate" hreflang="en" href="https://v3.wails.io/guides/updater/"><link rel="alternate" hreflang="id" href="https://v3.wails.io/id/guides/updater/"><link rel="alternate" hreflang="x-default" href="https://v3.wails.io/guides/updater/"><script>document.documentElement.classList.add('js');(function(){try{var t=localStorage.getItem('mpress-theme');if(t==='system'||t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();(function(){try{var p=JSON.parse(localStorage.getItem('mpress-accessibility')||'{}');var d=document.documentElement;var values={text:p.text||'default',spacing:p.spacing?'relaxed':'default',font:p.readable?'readable':'default',contrast:p.contrast?'high':'default',links:p.links?'underlined':'default',focus:p.focus?'true':'false',guide:p.guide?'true':'false',motion:p.motion?'reduced':'default',colour:p.colour||'default',bionic:p.bionic?'true':'false'};Object.keys(values).forEach(function(k){d.setAttribute('data-a11y-'+k,values[k]);});}catch(_){}})();</script><link rel="stylesheet" href="../../assets/mpress.css"><link rel="icon" href="../../favicon.svg"></head><body class="docs-page" data-search="../../search-index.json" data-shortcut-search="Mod+K" data-shortcut-accessibility="Mod+A"><a class="skip" href="#content">Skip to content</a><header><button id="menu" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mpress-sidebar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button><a class="brand" href="../../"><span class="theme-logo" style="--mpress-logo-width:160px"><img class="theme-logo-light" src="../../assets/wails-logo-horizontal-light.svg" alt="Wails"><img class="theme-logo-dark" src="../../assets/wails-logo-horizontal-dark.svg" alt="Wails"></span></a><nav class="primary-links" aria-label="Primary navigation"><a href="../../blog/">Blog</a></nav><div class="search"><span>Search</span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><button id="search" type="button" role="combobox" aria-label="Search" aria-autocomplete="list" aria-haspopup="dialog" aria-expanded="false" aria-controls="mpress-search-dialog">Search documentation</button><kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></div><nav class="header-links" aria-label="Documentation controls"><span class="header-group social-links"><a class="social-link" href="https://github.com/wailsapp/wails" aria-label="GitHub" title="GitHub"><svg aria-hidden="true" class="starlight-icon starlight-icon-github" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.08 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3Z"/></svg></a><a class="social-link" href="https://discord.gg/JDdSxwjhGf" aria-label="Discord" title="Discord"><svg aria-hidden="true" class="starlight-icon starlight-icon-discord" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.78 13.78 0 0 0-.64 1.28 18.27 18.27 0 0 0-5.5 0 12.64 12.64 0 0 0-.64-1.28h-.05A19.74 19.74 0 0 0 3.64 4.4 20.26 20.26 0 0 0 .11 18.09l.02.02a19.9 19.9 0 0 0 6.04 3.03l.04-.02a14.24 14.24 0 0 0 1.23-2.03.08.08 0 0 0-.05-.07 13.1 13.1 0 0 1-1.9-.92.08.08 0 0 1 .02-.1 10.2 10.2 0 0 0 .41-.31h.04a14.2 14.2 0 0 0 12.1 0l.04.01a9.63 9.63 0 0 0 .4.32.08.08 0 0 1-.03.1 12.29 12.29 0 0 1-1.9.91.08.08 0 0 0-.02.1 15.97 15.97 0 0 0 1.27 2.01h.04a19.84 19.84 0 0 0 6.03-3.05v-.03a20.12 20.12 0 0 0-3.57-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.22 0 2.18 1.1 2.16 2.42 0 1.34-.94 2.42-2.16 2.42Z"/></svg></a><a class="social-link" href="https://www.reddit.com/r/wails/" aria-label="Reddit" title="Reddit"><svg aria-hidden="true" class="starlight-icon starlight-icon-reddit" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14.41 16.87a3.38 3.38 0 0 1-2.37.63 3.37 3.37 0 0 1-2.36-.63 1 1 0 0 0-1.42 1.41 5.11 5.11 0 0 0 3.78 1.22 5.12 5.12 0 0 0 3.78-1.22 1 1 0 1 0-1.41-1.41ZM9.2 15a1 1 0 1 0-1-1 1 1 0 0 0 1 1Zm6-2a1 1 0 1 0 1 1 1 1 0 0 0-1-1Zm7.8-1.22a3.77 3.77 0 0 0-6.8-2.26 16.5 16.5 0 0 0-3.04-.48l.85-5.7 2.09.7a3 3 0 0 0 6-.06v-.02a3.03 3.03 0 0 0-3-2.96 2.98 2.98 0 0 0-2.34 1.16l-3.24-1.1a1 1 0 0 0-1.3.8l-1.09 7.17a16.66 16.66 0 0 0-3.34.49 3.77 3.77 0 0 0-6.22 4.23A4.86 4.86 0 0 0 1 16c0 3.92 4.83 7 11 7s11-3.08 11-7a4.86 4.86 0 0 0-.57-2.25 3.78 3.78 0 0 0 .57-1.97ZM19.1 3a1 1 0 1 1-1 1 1.02 1.02 0 0 1 1-1ZM4.77 10a1.76 1.76 0 0 1 .88.25A9.98 9.98 0 0 0 3 11.92v-.14A1.78 1.78 0 0 1 4.78 10ZM12 21c-4.88 0-9-2.29-9-5s4.12-5 9-5 9 2.29 9 5-4.12 5-9 5Zm8.99-9.08a9.98 9.98 0 0 0-2.65-1.67 1.76 1.76 0 0 1 .88-.25A1.78 1.78 0 0 1 21 11.78l-.01.14Z"/></svg></a><a class="social-link" href="https://x.com/wailsapp" aria-label="X" title="X"><svg aria-hidden="true" class="starlight-icon starlight-icon-x-com" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M 18.242188 2.25 L 21.554688 2.25 L 14.324219 10.507812 L 22.828125 21.75 L 16.171875 21.75 L 10.953125 14.933594 L 4.992188 21.75 L 1.679688 21.75 L 9.40625 12.914062 L 1.257812 2.25 L 8.082031 2.25 L 12.792969 8.480469 Z M 17.082031 19.773438 L 18.914062 19.773438 L 7.082031 4.125 L 5.113281 4.125 Z M 17.082031 19.773438 "/></svg></a><a class="social-link" href="/blog/rss.xml" aria-label="RSS" title="RSS"><svg aria-hidden="true" class="starlight-icon starlight-icon-rss" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.88 16.88a3 3 0 0 0 0 4.24 3 3 0 0 0 4.24 0 3 3 0 0 0-4.24-4.24Zm2.83 2.83a1 1 0 0 1-1.42-1.42 1 1 0 0 1 1.42 0 1 1 0 0 1 0 1.42ZM5 12a1 1 0 0 0 0 2 5 5 0 0 1 5 5 1 1 0 0 0 2 0 7 7 0 0 0-7-7Zm0-4a1 1 0 0 0 0 2 9 9 0 0 1 9 9 1 1 0 0 0 2 0 11.08 11.08 0 0 0-3.22-7.78A11.08 11.08 0 0 0 5 8Zm10.61.39A15.11 15.11 0 0 0 5 4a1 1 0 0 0 0 2 13 13 0 0 1 13 13 1 1 0 0 0 2 0 15.11 15.11 0 0 0-4.39-10.61Z"/></svg></a><a class="social-link" href="https://github.com/sponsors/leaanthony" aria-label="Sponsor" title="Sponsor"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></a></span><span class="header-utility-cluster" role="group" aria-label="Site preferences"><div class="header-group utility-select accessibility-select"><button id="accessibility" class="utility-menu-trigger" type="button" popovertarget="mpress-accessibility-panel" aria-label="Accessibility settings" aria-haspopup="dialog" aria-expanded="false" title="Accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 512 512" class="mpress-accessibility-icon" aria-hidden="true"><defs><mask id="mpress-accessibility-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512" mask-type="luminance"><rect width="512" height="512" fill="white"/><g transform="translate(0 -14)">
+  <circle cx="256" cy="139" r="35" fill="black"/>
+
+  <path
+    fill="black"
+    d="M144 184
+       C166 191 193 199 219 203
+       C243 207 269 207 293 203
+       C319 199 346 191 368 184
+       C381 180 393 188 397 201
+       C401 214 393 227 380 232
+       L311 256
+       C303 259 299 266 300 275
+       C304 314 313 359 322 407
+       C325 424 315 437 300 439
+       C285 441 274 432 271 417
+       L259 354
+       C258 348 257 344 256 344
+       C255 344 254 348 253 354
+       L241 417
+       C238 432 227 441 212 439
+       C197 437 187 424 190 407
+       C199 359 208 314 212 275
+       C213 266 209 259 201 256
+       L132 232
+       C119 227 111 214 115 201
+       C119 188 131 180 144 184 Z"/>
+  </g></mask></defs><circle cx="256" cy="256" r="220" fill="currentColor" mask="url(#mpress-accessibility-cutout)"/></svg></button></div><div class="header-group utility-select utility-menu language-select"><button class="utility-menu-trigger" type="button" popovertarget="mpress-language-menu" aria-label="Select language: English" aria-haspopup="menu" aria-expanded="false" title="Change language"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages" aria-hidden="true"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><menu id="mpress-language-menu" class="utility-menu-panel utility-language-menu" popover data-utility-menu><li><a href="/guides/updater/" role="menuitem" aria-current="true"><span>English</span></a></li><li><a href="/guides/updater/" role="menuitem"><span>简体中文</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>繁體中文</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>日本語</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>한국어</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>Русский</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>Français</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>Português (Brasil)</span><small>English fallback</small></a></li><li><a href="/guides/updater/" role="menuitem"><span>Deutsch</span><small>English fallback</small></a></li><li><a href="/id/guides/updater/" role="menuitem"><span>Bahasa Indonesia</span></a></li></menu></div><!--mpress-version-menu:start--><!--mpress-version-menu:end--><button id="theme" class="header-group theme-toggle" type="button" data-theme-mode="system" aria-label="Theme: System. Switch to Dark" title="Theme: System"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button></span></nav></header><section id="mpress-accessibility-panel" class="utility-menu-panel mpress-accessibility-panel" popover role="dialog" aria-labelledby="mpress-accessibility-title" data-utility-panel><header class="mpress-accessibility-header"><div><h2 id="mpress-accessibility-title">Accessibility</h2><p>Adjust the site to make it easier to read and navigate.</p></div><button class="mpress-accessibility-close" type="button" data-a11y-close aria-label="Close accessibility settings"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></header><div class="mpress-accessibility-tabs" role="tablist" aria-label="Accessibility categories"><button id="mpress-a11y-tab-reading" type="button" role="tab" aria-selected="true" aria-controls="mpress-a11y-panel-reading" data-a11y-tab="reading">Reading</button><button id="mpress-a11y-tab-focus" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-focus" data-a11y-tab="focus" tabindex="-1">Focus</button><button id="mpress-a11y-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="mpress-a11y-panel-vision" data-a11y-tab="vision" tabindex="-1">Vision</button></div><div class="mpress-accessibility-body"><section id="mpress-a11y-panel-reading" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-reading" data-a11y-tabpanel="reading"><h3>Reading</h3><p>Change how text is shown in the main content.</p><div class="mpress-a11y-choice" role="radiogroup" aria-label="Text size"><button type="button" role="radio" data-a11y-choice="text" data-value="default">Default</button><button type="button" role="radio" data-a11y-choice="text" data-value="large">Large</button><button type="button" role="radio" data-a11y-choice="text" data-value="larger">Larger</button></div><label class="mpress-a11y-toggle"><span><strong>Readable font</strong><small>Use a simple, widely spaced font stack.</small></span><input type="checkbox" data-a11y-toggle="readable"></label><label class="mpress-a11y-toggle"><span><strong>Relaxed spacing</strong><small>Add more line, word, and letter space.</small></span><input type="checkbox" data-a11y-toggle="spacing"></label><label class="mpress-a11y-toggle"><span><strong>Bionic reading</strong><small>Emphasise the start of longer words.</small></span><input type="checkbox" data-a11y-toggle="bionic"></label></section><section id="mpress-a11y-panel-focus" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-focus" data-a11y-tabpanel="focus" hidden><h3>Focus and attention</h3><p>Reduce distraction and keep your place while reading.</p><label class="mpress-a11y-toggle"><span><strong>Focus mode</strong><small>Dim navigation until you point to it.</small></span><input type="checkbox" data-a11y-toggle="focus"></label><label class="mpress-a11y-toggle"><span><strong>Reading guide</strong><small>Follow the pointer with a horizontal guide.</small></span><input type="checkbox" data-a11y-toggle="guide"></label><label class="mpress-a11y-toggle"><span><strong>Reduce motion</strong><small>Stop non-essential animation and smooth scrolling.</small></span><input type="checkbox" data-a11y-toggle="motion"></label></section><section id="mpress-a11y-panel-vision" class="mpress-accessibility-section" role="tabpanel" aria-labelledby="mpress-a11y-tab-vision" data-a11y-tabpanel="vision" hidden><h3>Vision and colour</h3><p>Increase contrast or use a more distinct colour palette.</p><div class="mpress-a11y-field"><span id="mpress-a11y-colour-label">Colour profile</span><div class="mpress-a11y-select" data-a11y-select="colour"><button class="mpress-a11y-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="mpress-a11y-colour-label mpress-a11y-colour-value"><span id="mpress-a11y-colour-value" data-a11y-select-value>Site colours</span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="mpress-a11y-options" role="listbox" aria-labelledby="mpress-a11y-colour-label" hidden><button class="mpress-a11y-option" type="button" role="option" aria-selected="true" data-value="default">Site colours</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="red-green" tabindex="-1">Red and green distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="blue-yellow" tabindex="-1">Blue and yellow distinction</button><button class="mpress-a11y-option" type="button" role="option" aria-selected="false" data-value="low" tabindex="-1">Low saturation</button></div></div></div><label class="mpress-a11y-toggle"><span><strong>High contrast</strong><small>Increase text and border contrast.</small></span><input type="checkbox" data-a11y-toggle="contrast"></label><label class="mpress-a11y-toggle"><span><strong>Underline links</strong><small>Show links with more than colour.</small></span><input type="checkbox" data-a11y-toggle="links"></label></section></div><footer class="mpress-accessibility-footer"><small>Saved only in this browser.</small><button class="mpress-accessibility-reset" type="button" data-a11y-reset>Reset settings</button></footer></section><div class="layout"><aside class="sidebar" id="mpress-sidebar" tabindex="-1"><nav><a class="" href="../../">Home</a><a class="" href="../../quick-start/why-wails/">Why Wails?</a><details open><summary><span>Quick Start</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../quick-start/installation/">Installation</a><a class="" href="../../quick-start/first-app/">Your First App</a><a class="" href="../../quick-start/next-steps/">Next Steps</a></div></details><details><summary><span>Tutorials</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../tutorials/03-notes-vanilla/">Notes</a><a class="" href="../../tutorials/01-creating-a-service/">QR Code Service</a><a class="" href="../../tutorials/04-self-update-a-wails-app/">Self-Updating Wails App</a><a class="" href="../../tutorials/02-todo-vanilla/">TODO List</a><a class="" href="../../tutorials/overview/">Tutorials</a></div></details></div></details><details><summary><span>Core Concepts</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../concepts/architecture/">How Wails Works</a><a class="" href="../../concepts/manager-api/">Manager API</a><a class="" href="../../concepts/lifecycle/">Application Lifecycle</a><a class="" href="../../concepts/bridge/">Go-Frontend Bridge</a><a class="" href="../../concepts/build-system/">Build System</a></div></details><details><summary><span>Features</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/windows/basics/">Window Basics</a><a class="" href="../../features/windows/options/">Window Options</a><a class="" href="../../features/windows/notch-windows/">Notch Windows</a><a class="" href="../../features/windows/permissions/">Permissions</a><a class="" href="../../features/windows/multiple/">Multiple Windows</a><a class="" href="../../features/windows/frameless/">Frameless Windows</a><a class="" href="../../features/windows/events/">Window Events</a></div></details><details><summary><span>Menus</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/menus/application/">Application Menus</a><a class="" href="../../features/menus/context/">Context Menus</a><a class="" href="../../features/menus/systray/">System Tray Menus</a><a class="" href="../../features/menus/reference/">Menu Reference</a></div></details><details><summary><span>Bindings &amp; Services</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/bindings/methods/">Method Binding</a><a class="" href="../../features/bindings/services/">Services</a><a class="" href="../../features/bindings/models/">Data Models</a><a class="" href="../../features/bindings/enums/">Enums</a><a class="" href="../../features/bindings/advanced/">Advanced Binding</a><a class="" href="../../features/bindings/best-practices/">Best Practices</a></div></details><details><summary><span>Events</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/events/system/">Event System</a><a class="" href="../../features/events/application/">Application Events</a><a class="" href="../../features/events/window/">Window Events</a><a class="" href="../../features/events/custom/">Custom Events</a></div></details><details><summary><span>Dialogs</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/dialogs/file/">File Dialogs</a><a class="" href="../../features/dialogs/message/">Message Dialogs</a><a class="" href="../../features/dialogs/custom/">Custom Dialogs</a></div></details><details><summary><span>Autostart</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/autostart/basics/">Autostart</a></div></details></div></details><details><summary><span>Clipboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/clipboard/basics/">Clipboard Operations</a></div></details></div></details><details><summary><span>Browser</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/browser/integration/">Browser Integration</a></div></details></div></details><details><summary><span>Drag &amp; Drop</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/drag-and-drop/files/">File Drop</a><a class="" href="../../features/drag-and-drop/html/">HTML Drag &amp; Drop</a></div></details></div></details><details><summary><span>Keyboard</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/keyboard/global-shortcuts/">Global Shortcuts</a><a class="" href="../../features/keyboard/shortcuts/">Keyboard Shortcuts</a></div></details></div></details><details><summary><span>Notifications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/notifications/overview/">Notifications</a></div></details></div></details><details><summary><span>Screens</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/screens/info/">Screen Information</a></div></details></div></details><details><summary><span>Environment</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/environment/info/">Environment</a></div></details></div></details><details><summary><span>Platform-Specific</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details open><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../features/platform/dock/">Dock &amp; Taskbar</a></div></details></div></details></div></details><details><summary><span>Mobile</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/mobile/">Overview</a><a class="" href="../../guides/mobile/first-mobile-app/">Your First Mobile App</a><a class="" href="../../guides/mobile/ios/">iOS</a><a class="" href="../../guides/mobile/android/">Android</a><a class="" href="../../guides/mobile/mobile-api/">Mobile API</a></div></details><details><summary><span>Experimental</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../experimental/">Overview</a><a class="" href="../../experimental/wake/">Wake</a><a class="" href="../../guides/mcp-service/">LLM Control (MCP)</a></div></details><details open><summary><span>Guides</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span>Development</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/dev/project-structure/">Project Structure</a><a class="" href="../../guides/dev/workflow/">Development Workflow</a><a class="" href="../../guides/dev/frontend-frameworks/">Other Frameworks</a><a class="" href="../../guides/dev/debugging/">Debugging</a><a class="" href="../../guides/testing/">Testing</a></div></details><details><summary><span>Building &amp; Packaging</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/build/building/">Building Applications</a><a class="" href="../../guides/build/customization/">Build Customization</a><a class="" href="../../guides/build/cross-platform/">Cross-Platform Builds</a><a class="" href="../../guides/build/signing/">Code Signing</a><a class="" href="../../guides/build/windows/">Windows Packaging</a><a class="" href="../../guides/build/macos/">macOS Packaging</a><a class="" href="../../guides/build/linux/">Linux Packaging</a><a class="" href="../../guides/build/msix/">MSIX Packaging</a><a class="" href="../../guides/build/obfuscation/">Obfuscated Builds</a></div></details><details open><summary><span>Distribution</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="active" aria-current="page" href="../../guides/updater/">In-App Updater</a><a class="" href="../../guides/file-associations/">File Associations</a><a class="" href="../../guides/distribution/custom-protocols/">Custom Protocols</a><a class="" href="../../guides/single-instance/">Single Instance</a></div></details><details><summary><span>Integration Patterns</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/routing/">Frontend Routing</a><a class="" href="../../guides/gin-routing/">Using Gin Router</a><a class="" href="../../guides/gin-services/">Gin Services</a><a class="" href="../../guides/patterns/database/">Database Integration</a><a class="" href="../../guides/patterns/rest-api/">REST APIs</a></div></details><details><summary><span>Advanced Topics</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../guides/server-build/">Server Build</a><a class="" href="../../guides/advanced/custom-templates/">Custom Templates</a><a class="" href="../../guides/advanced/wml/">WML (Wails Markup)</a><a class="" href="../../guides/panic-handling/">Panic Handling</a><a class="" href="../../guides/security/">Security Best Practices</a></div></details></div></details><details><summary><span>API Reference</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../reference/overview/">Overview</a><a class="" href="../../reference/application/">Application</a><a class="" href="../../reference/window/">Window</a><a class="" href="../../reference/menu/">Menu</a><a class="" href="../../reference/events/">Events</a><a class="" href="../../reference/dialogs/">Dialogs</a><a class="" href="../../reference/frontend-runtime/">Frontend Runtime</a><a class="" href="../../reference/cli/">CLI</a><a class="" href="../../reference/update-manifest/">Update Manifest Protocol</a></div></details><details><summary><span>Contributing</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../contributing/getting-started/">Getting Started</a><a class="" href="../../contributing/setup/">Development Setup</a><a class="" href="../../contributing/standards/">Coding Standards</a></div></details><details><summary><span>Migration</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../migration/v2-to-v3/">From v2 to v3</a><a class="" href="../../migration/from-electron/">From Electron</a></div></details><details><summary><span>Troubleshooting</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/mac-syso/">Syso files on macOS</a><details><summary><span>Windows</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../troubleshooting/windows/rdp/">RDP Issues</a></div></details></div></details><details><summary><span>Community</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/links/">Links</a><a class="" href="../../community/templates/">Templates</a><details><summary><span>Showcase</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/">Overview</a><details open><summary><span>Applications</span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><details><summary><span></span><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary><div><a class="" href="../../community/showcase/bulletinboard/">BulletinBoard</a><a class="" href="../../community/showcase/cfntracker/">CFN Tracker</a><a class="" href="../../community/showcase/clave/">Clave</a><a class="" href="../../community/showcase/condui/">Condui</a><a class="" href="../../community/showcase/espstudio/">ESP Studio</a><a class="" href="../../community/showcase/emailit/">EmailIt</a><a class="" href="../../community/showcase/encrypteasy/">EncryptEasy</a><a class="" href="../../community/showcase/filehound/">FileHound Export Utility</a><a class="" href="../../community/showcase/happytools/">HappyTools</a><a class="" href="../../community/showcase/kira/">Kira</a><a class="" href="../../community/showcase/ltools/">LTools</a><a class="" href="../../community/showcase/mchat/">Mchat</a><a class="" href="../../community/showcase/minecraftupdater/">Minecraft Updater</a><a class="" href="../../community/showcase/warmine/">Minecraft launcher for WarMine</a><a class="" href="../../community/showcase/minesweeper-xp/">Minesweeper XP</a><a class="" href="../../community/showcase/modalfilemanager/">Modal File Manager</a><a class="" href="../../community/showcase/mollywallet/">Molley Wallet</a><a class="" href="../../community/showcase/october/">October</a><a class="" href="../../community/showcase/optimus/">Optimus</a><a class="" href="../../community/showcase/packsmith/">Packsmith</a><a class="" href="../../community/showcase/peirato-s-piano-keyboard/">Peirato&#39;s Piano Keyboard</a><a class="" href="../../community/showcase/portfall/">Portfall</a><a class="" href="../../community/showcase/redisviewer/">Redis Viewer</a><a class="" href="../../community/showcase/resizem/">Resizem</a><a class="" href="../../community/showcase/restic-browser/">Restic Browser</a><a class="" href="../../community/showcase/riftshare/">RiftShare</a><a class="" href="../../community/showcase/scriptbar/">ScriptBar</a><a class="" href="../../community/showcase/snippetexpander/">Snippet Expander</a><a class="" href="../../community/showcase/surge/">Surge</a><a class="" href="../../community/showcase/tinyrdm/">Tiny RDM</a><a class="" href="../../community/showcase/wailsterm/">WailsTerm</a><a class="" href="../../community/showcase/wally/">Wally</a><a class="" href="../../community/showcase/wombat/">Wombat</a><a class="" href="../../community/showcase/xensql/">XenSQL</a><a class="" href="../../community/showcase/ytd/">Ytd</a><a class="" href="../../community/showcase/hiposter/">hiposter</a><a class="" href="../../community/showcase/lemontea/">lemontea</a></div></details></div></details></div></details></div></details><a class="" href="../../whats-new/">What&#39;s New</a><a class="" href="../../status/">Status</a><a class="" href="../../changelog/">Changelog</a><a class="" href="https://github.com/sponsors/leaanthony">Sponsor</a><a class="" href="../../credits/">Credits</a></nav></aside><div class="docs-stage"><main id="content"><article><h1>Updater</h1><p class="page-lead">In-app self-updates for Wails v3 — pluggable providers, cryptographic verification, atomic swap, and a default UI you can theme or replace.</p><p>The updater ships in-app software updates without forcing you to build your own download / verify / swap pipeline. It sits on <code>app.Updater</code>, accepts one or more pluggable <code>Provider</code>s (GitHub Releases, keygen.sh, Sparkle AppCast, the open Wails Update Manifest protocol, or your own), authenticates downloads against a configured public key, swaps the running binary safely, and surfaces every transition through the standard Wails event bus.</p>
+<p><img src="/assets/updater/default-window-ready.png" alt="The default updater window in the Update Ready state — state-aware icon, version pill (v1.0.0 → v2.0.1 · 8.8 MB), Markdown-rendered release notes including a GFM table, and a single primary action."></p>
+<h2 id="quick-start">Quick start</h2>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">main.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="package main&#10;&#10;import (&#10;    &#34;context&#34;&#10;    &#34;log&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater/providers/github&#34;&#10;)&#10;&#10;func main() {&#10;    app := application.New(application.Options{Name: &#34;Demo&#34;})&#10;&#10;    gh, _ := github.New(github.Config{Repository: &#34;myorg/myapp&#34;})&#10;    if err := app.Updater.Init(updater.Config{&#10;        CurrentVersion: &#34;1.0.0&#34;,&#10;        Providers:      []updater.Provider{gh},&#10;    }); err != nil {&#10;        log.Fatal(err)&#10;    }&#10;&#10;    if err := app.Updater.CheckAndInstall(context.Background()); err != nil {&#10;        log.Printf(&#34;update: %v&#34;, err)&#10;    }&#10;&#10;    _ = app.Run()&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">package</span> main
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;context&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;log&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/updater&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/updater/providers/github&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> <span class="mpress-token-function">main</span>() {
+</span><span class="mpress-code-line">    app <span class="mpress-token-operator">:=</span> application.<span class="mpress-token-function">New</span>(application.<span class="mpress-token-type">Options</span>{<span class="mpress-token-type">Name</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;Demo&#34;</span>})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    gh, _ <span class="mpress-token-operator">:=</span> github.<span class="mpress-token-function">New</span>(github.<span class="mpress-token-type">Config</span>{<span class="mpress-token-type">Repository</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;myorg/myapp&#34;</span>})
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span>      []updater.<span class="mpress-token-type">Provider</span>{gh},
+</span><span class="mpress-code-line">    }); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        log.<span class="mpress-token-function">Fatal</span>(err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> err <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">CheckAndInstall</span>(context.<span class="mpress-token-function">Background</span>()); err <span class="mpress-token-operator">!=</span> <span class="mpress-token-keyword">nil</span> {
+</span><span class="mpress-code-line">        log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;update: %v&#34;</span>, err)
+</span><span class="mpress-code-line">    }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    _ <span class="mpress-token-operator">=</span> app.<span class="mpress-token-function">Run</span>()
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>That opens the framework&rsquo;s update window, checks GitHub, downloads the platform asset, verifies it, swaps the binary, and waits for the user to restart.</p>
+<h2 id="the-lifecycle">The lifecycle</h2>
+<p><code>app.Updater</code> is a state machine with these states (<code>updater.State</code>):</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>unconfigured</code></td>
+<td>Before <code>Init</code> is called</td>
+</tr>
+<tr>
+<td><code>idle</code></td>
+<td>After <code>Init</code>, before any check</td>
+</tr>
+<tr>
+<td><code>checking</code></td>
+<td>A <code>Check</code> is in flight</td>
+</tr>
+<tr>
+<td><code>up-to-date</code></td>
+<td>The latest provider response said the caller is current</td>
+</tr>
+<tr>
+<td><code>available</code></td>
+<td>A new release was found; not yet downloading</td>
+</tr>
+<tr>
+<td><code>downloading</code></td>
+<td>Bytes are streaming from the provider</td>
+</tr>
+<tr>
+<td><code>verifying</code></td>
+<td>Download complete, signature/digest being checked</td>
+</tr>
+<tr>
+<td><code>installing</code></td>
+<td>Verified bytes being unpacked and renamed into the staging dir</td>
+</tr>
+<tr>
+<td><code>ready</code></td>
+<td>Update staged; call <code>Restart</code> to apply</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Any prior step failed</td>
+</tr>
+</tbody>
+</table>
+<p>You can read the current state with <code>app.Updater.State()</code> at any time. Every transition also emits a Wails event (see <a href="#events">Events</a>).</p>
+<p>The default window reflects the current state automatically — for example, when <code>Check</code> returns no upgrade the user sees this and dismisses with <strong>Close</strong>:</p>
+<p><img src="/assets/updater/default-window-up-to-date.png" alt="The default updater window in the Up-to-Date state — green checkmark, &lsquo;You&rsquo;re Up to Date&rsquo; heading, single Close button."></p>
+<h2 id="providers">Providers</h2>
+<p>A <code>Provider</code> is anything that satisfies this interface:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="type Provider interface {&#10;    Name() string&#10;    Check(ctx context.Context, req CheckRequest) (*Release, error)&#10;    Download(ctx context.Context, r *Release, dst io.Writer, onProgress func(written, total int64)) error&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">Provider</span> <span class="mpress-token-keyword">interface</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-function">Name</span>() string
+</span><span class="mpress-code-line">    <span class="mpress-token-function">Check</span>(ctx context.<span class="mpress-token-type">Context</span>, req <span class="mpress-token-type">CheckRequest</span>) (<span class="mpress-token-operator">*</span><span class="mpress-token-type">Release</span>, error)
+</span><span class="mpress-code-line">    <span class="mpress-token-function">Download</span>(ctx context.<span class="mpress-token-type">Context</span>, r <span class="mpress-token-operator">*</span><span class="mpress-token-type">Release</span>, dst io.<span class="mpress-token-type">Writer</span>, onProgress <span class="mpress-token-keyword">func</span>(written, total int64)) error
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Four implementations ship in-tree.</p>
+<h3 id="github-releases--updaterprovidersgithub">GitHub Releases — <code>updater/providers/github</code></h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">github provider</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="gh, err := github.New(github.Config{&#10;    Repository:    &#34;myorg/myapp&#34;,     // your owner/repo (required)&#10;    Token:         &#34;ghp_…&#34;,           // optional; raises rate limit + private repos&#10;    Prerelease:    false,             // include pre-releases in latest lookup&#10;    ChecksumAsset: &#34;SHA256SUMS&#34;,      // optional sibling asset for digest verification&#10;    BaseURL:       &#34;&#34;,                // optional override (e.g. GitHub Enterprise)&#10;    AssetMatcher:  nil,               // optional custom asset-picker; nil uses DefaultAssetMatcher&#10;    HTTPClient:    nil,               // optional client override&#10;})"><code class="language-go"><span class="mpress-code-line">gh, err <span class="mpress-token-operator">:=</span> github.<span class="mpress-token-function">New</span>(github.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Repository</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;myorg/myapp&#34;</span>,     <span class="mpress-token-comment">// your owner/repo (required)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Token</span><span class="mpress-token-operator">:</span>         <span class="mpress-token-string">&#34;ghp_…&#34;</span>,           <span class="mpress-token-comment">// optional; raises rate limit + private repos</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Prerelease</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-keyword">false</span>,             <span class="mpress-token-comment">// include pre-releases in latest lookup</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">ChecksumAsset</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;SHA256SUMS&#34;</span>,      <span class="mpress-token-comment">// optional sibling asset for digest verification</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">BaseURL</span><span class="mpress-token-operator">:</span>       <span class="mpress-token-string">&#34;&#34;</span>,                <span class="mpress-token-comment">// optional override (e.g. GitHub Enterprise)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AssetMatcher</span><span class="mpress-token-operator">:</span>  <span class="mpress-token-keyword">nil</span>,               <span class="mpress-token-comment">// optional custom asset-picker; nil uses DefaultAssetMatcher</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTTPClient</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-keyword">nil</span>,               <span class="mpress-token-comment">// optional client override</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>The default asset matcher picks by <code>GOOS</code> + <code>GOARCH</code> substring on the filename, recognising common aliases (<code>amd64</code> / <code>x86_64</code> / <code>x64</code>, <code>arm64</code> / <code>aarch64</code>, <code>386</code> / <code>i386</code> / <code>x86</code> / <code>ia32</code>). For custom naming schemes:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="gh, _ := github.New(github.Config{&#10;    Repository: &#34;myorg/myapp&#34;,&#10;    AssetMatcher: func(req updater.CheckRequest, assets []github.ReleaseAsset) int {&#10;        for i, a := range assets {&#10;            if strings.Contains(a.Name, &#34;my-naming-convention&#34;) &amp;&amp;&#10;               strings.Contains(a.Name, req.Platform) {&#10;                return i&#10;            }&#10;        }&#10;        return -1 // no match&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">gh, _ <span class="mpress-token-operator">:=</span> github.<span class="mpress-token-function">New</span>(github.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Repository</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;myorg/myapp&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AssetMatcher</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">func</span>(req updater.<span class="mpress-token-type">CheckRequest</span>, assets []github.<span class="mpress-token-type">ReleaseAsset</span>) int {
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">for</span> i, a <span class="mpress-token-operator">:=</span> <span class="mpress-token-keyword">range</span> assets {
+</span><span class="mpress-code-line">            <span class="mpress-token-keyword">if</span> strings.<span class="mpress-token-function">Contains</span>(a.<span class="mpress-token-type">Name</span>, <span class="mpress-token-string">&#34;my-naming-convention&#34;</span>) <span class="mpress-token-operator">&amp;&amp;</span>
+</span><span class="mpress-code-line">               strings.<span class="mpress-token-function">Contains</span>(a.<span class="mpress-token-type">Name</span>, req.<span class="mpress-token-type">Platform</span>) {
+</span><span class="mpress-code-line">                <span class="mpress-token-keyword">return</span> i
+</span><span class="mpress-code-line">            }
+</span><span class="mpress-code-line">        }
+</span><span class="mpress-code-line">        <span class="mpress-token-keyword">return</span> <span class="mpress-token-operator">-</span><span class="mpress-token-number">1</span> <span class="mpress-token-comment">// no match</span>
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p><code>ChecksumAsset</code> is the name of a sibling release asset whose content is <code>&lt;sha256&gt;  &lt;filename&gt;</code> lines (the format <code>sha256sum</code> and <code>shasum -a 256</code> produce). The provider fetches it during <code>Check</code>, finds the line that matches the picked artifact, and populates <code>Release.Verification.Digest</code> so the framework verifies the download.</p>
+<h3 id="keygensh--updaterproviderskeygen">keygen.sh — <code>updater/providers/keygen</code></h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">keygen provider</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="kg, err := keygen.New(keygen.Config{&#10;    Account:    &#34;your-account-slug&#34;, // required&#10;    Product:    &#34;product-uuid&#34;,      // optional but recommended when account has multiple products&#10;    Package:    &#34;&#34;,                  // optional further narrowing&#10;    Channel:    &#34;stable&#34;,            // &#34;stable&#34; / &#34;rc&#34; / &#34;beta&#34; / &#34;alpha&#34; / &#34;dev&#34;&#10;    Filetype:   &#34;&#34;,                  // optional artifact filetype filter (&#34;dmg&#34;, &#34;exe&#34;, …)&#10;    Token:      &#34;prod-…&#34;,            // product / environment / user / admin token; wins over LicenseKey&#10;    LicenseKey: &#34;&#34;,                  // license key auth (used only when Token is empty)&#10;    BaseURL:    &#34;&#34;,                  // optional API base override&#10;    HTTPClient: nil,                 // optional client override; redirect-strip wrapper still applied&#10;})"><code class="language-go"><span class="mpress-code-line">kg, err <span class="mpress-token-operator">:=</span> keygen.<span class="mpress-token-function">New</span>(keygen.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Account</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;your-account-slug&#34;</span>, <span class="mpress-token-comment">// required</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Product</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;product-uuid&#34;</span>,      <span class="mpress-token-comment">// optional but recommended when account has multiple products</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Package</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;&#34;</span>,                  <span class="mpress-token-comment">// optional further narrowing</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Channel</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;stable&#34;</span>,            <span class="mpress-token-comment">// &#34;stable&#34; / &#34;rc&#34; / &#34;beta&#34; / &#34;alpha&#34; / &#34;dev&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Filetype</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-string">&#34;&#34;</span>,                  <span class="mpress-token-comment">// optional artifact filetype filter (&#34;dmg&#34;, &#34;exe&#34;, …)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Token</span><span class="mpress-token-operator">:</span>      <span class="mpress-token-string">&#34;prod-…&#34;</span>,            <span class="mpress-token-comment">// product / environment / user / admin token; wins over LicenseKey</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">LicenseKey</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;&#34;</span>,                  <span class="mpress-token-comment">// license key auth (used only when Token is empty)</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">BaseURL</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;&#34;</span>,                  <span class="mpress-token-comment">// optional API base override</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTTPClient</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">nil</span>,                 <span class="mpress-token-comment">// optional client override; redirect-strip wrapper still applied</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>The provider automatically maps keygen.sh&rsquo;s per-artifact SHA-512 checksum and Ed25519ph signature into the framework&rsquo;s <code>Release.Verification</code> block — no extra wiring required.</p>
+<p><strong>Token formats:</strong> keygen.sh tokens carry a role prefix (<code>admi-</code> / <code>prod-</code> / <code>envi-</code> / <code>user-</code>). The raw UUID you see in the dashboard is the token&rsquo;s <em>identifier</em>, not its secret value — the secret is only visible at token-create time. See keygen.sh&rsquo;s <a href="https://keygen.sh/docs/api/authentication/">auth docs</a> for details.</p>
+<h3 id="sparkle-appcast--updaterprovidersappcast">Sparkle AppCast — <code>updater/providers/appcast</code></h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">appcast provider</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="ac, err := appcast.New(appcast.Config{&#10;    URL:        &#34;https://your.app/appcast.xml&#34;, // required&#10;    Channel:    &#34;stable&#34;,                       // optional sparkle:channel filter&#10;    HTTPClient: nil,                            // optional client override&#10;})"><code class="language-go"><span class="mpress-code-line">ac, err <span class="mpress-token-operator">:=</span> appcast.<span class="mpress-token-function">New</span>(appcast.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">URL</span><span class="mpress-token-operator">:</span>        <span class="mpress-token-string">&#34;https://your.app/appcast.xml&#34;</span>, <span class="mpress-token-comment">// required</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Channel</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;stable&#34;</span>,                       <span class="mpress-token-comment">// optional sparkle:channel filter</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTTPClient</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">nil</span>,                            <span class="mpress-token-comment">// optional client override</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Drops in to existing Sparkle / WinSparkle infrastructure unchanged. Reads <code>sparkle:shortVersionString</code>, <code>&lt;enclosure url type length sparkle:os sparkle:edSignature&gt;</code>, and <code>sparkle:channel</code> from the feed.</p>
+<p>Sparkle 1&rsquo;s DSA signatures (<code>sparkle:dsaSignature</code>) are not supported — projects on that signing scheme should rotate to EdDSA (Sparkle 2).</p>
+<h3 id="wails-update-manifest--updaterprovidersendpoint">Wails Update Manifest — <code>updater/providers/endpoint</code></h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">endpoint provider</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="ep, err := endpoint.New(endpoint.Config{&#10;    URL:        &#34;https://updates.example.com/check&#34;, // required; supports {{platform}} / {{arch}} / {{version}} / {{channel}} placeholders&#10;    Channel:    &#34;stable&#34;,                            // optional channel filter&#10;    Headers:    nil,                                 // optional headers, e.g. {&#34;Authorization&#34;: &#34;License &lt;key&gt;&#34;}&#10;    HTTPClient: nil,                                 // optional client override; redirect-strip wrapper still applied&#10;})"><code class="language-go"><span class="mpress-code-line">ep, err <span class="mpress-token-operator">:=</span> endpoint.<span class="mpress-token-function">New</span>(endpoint.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">URL</span><span class="mpress-token-operator">:</span>        <span class="mpress-token-string">&#34;https://updates.example.com/check&#34;</span>, <span class="mpress-token-comment">// required; supports {{platform}} / {{arch}} / {{version}} / {{channel}} placeholders</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Channel</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-string">&#34;stable&#34;</span>,                            <span class="mpress-token-comment">// optional channel filter</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Headers</span><span class="mpress-token-operator">:</span>    <span class="mpress-token-keyword">nil</span>,                                 <span class="mpress-token-comment">// optional headers, e.g. {&#34;Authorization&#34;: &#34;License &lt;key&gt;&#34;}</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTTPClient</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">nil</span>,                                 <span class="mpress-token-comment">// optional client override; redirect-strip wrapper still applied</span>
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Speaks the open <a href="/reference/update-manifest/">Wails Update Manifest protocol</a>: one JSON document describing the latest release and its per-platform artifacts, with checksums and signatures inline. The same document works from a static file host (S3, GitHub Pages, any CDN — publish one manifest per channel listing all platforms) or from a dynamic update server (the provider sends <code>platform</code>, <code>arch</code>, <code>version</code> and <code>channel</code> with every check, so the server can return exactly one artifact or gate on a license).</p>
+<p>URL placeholders make static layouts one line of config:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="ep, _ := endpoint.New(endpoint.Config{&#10;    URL: &#34;https://cdn.example.com/updates/{{platform}}/{{arch}}/stable.json&#34;,&#10;})"><code class="language-go"><span class="mpress-code-line">ep, _ <span class="mpress-token-operator">:=</span> endpoint.<span class="mpress-token-function">New</span>(endpoint.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">URL</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;https://cdn.example.com/updates/{{platform}}/{{arch}}/stable.json&#34;</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Configured headers are sent on every manifest request; artifact downloads reuse them only on the manifest&rsquo;s own host with no <code>https</code> to <code>http</code> downgrade, and the <code>Authorization</code> header is stripped on any cross-origin or downgrading redirect.</p>
+<p>The CLI owns the publishing side: <code>wails3 updater manifest</code> digests, signs and describes your release files in one command, and <code>wails3 updater verify</code> re-checks the result before you upload. See <a href="/reference/update-manifest/#publishing-with-the-wails3-cli">Publishing with the wails3 CLI</a>.</p>
+<h3 id="fallback-chain">Fallback chain</h3>
+<p><code>Config.Providers</code> is ordered. The updater walks it sequentially: the first provider that returns a release wins, the first that reports &ldquo;up to date&rdquo; short-circuits the chain (fallback is for &ldquo;primary unreachable&rdquo;, not &ldquo;providers disagree&rdquo;). An error advances to the next provider.</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="app.Updater.Init(updater.Config{&#10;    CurrentVersion: &#34;1.0.0&#34;,&#10;    Providers: []updater.Provider{&#10;        kg, // primary: licensed customers&#10;        gh, // fallback: public mirror&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span> []updater.<span class="mpress-token-type">Provider</span>{
+</span><span class="mpress-code-line">        kg, <span class="mpress-token-comment">// primary: licensed customers</span>
+</span><span class="mpress-code-line">        gh, <span class="mpress-token-comment">// fallback: public mirror</span>
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<h3 id="writing-your-own-provider">Writing your own provider</h3>
+<p>Three methods, ~150 lines for a typical implementation. The Updater owns verification, atomic staging, swap, and the window — provider code resolves the next release and streams the bytes:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="type CustomProvider struct { /* config */ }&#10;&#10;func (p *CustomProvider) Name() string { return &#34;custom&#34; }&#10;&#10;func (p *CustomProvider) Check(ctx context.Context, req updater.CheckRequest) (*updater.Release, error) {&#10;    // Hit your update endpoint, decide whether req.CurrentVersion is current,&#10;    // and return either nil (no upgrade) or a *Release with Artifact + optional&#10;    // Verification populated.&#10;    // Errors here drop through to the next provider in Config.Providers.&#10;}&#10;&#10;func (p *CustomProvider) Download(ctx context.Context, r *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {&#10;    // Stream the artifact&#39;s bytes to dst. Call onProgress(written, total) as&#10;    // bytes flow past; the Updater debounces emits to ~10 Hz on the event bus.&#10;}"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">type</span> <span class="mpress-token-type">CustomProvider</span> <span class="mpress-token-keyword">struct</span> { /<span class="mpress-token-operator">*</span> config <span class="mpress-token-operator">*</span>/ }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (p <span class="mpress-token-operator">*</span><span class="mpress-token-type">CustomProvider</span>) <span class="mpress-token-function">Name</span>() string { <span class="mpress-token-keyword">return</span> <span class="mpress-token-string">&#34;custom&#34;</span> }
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (p <span class="mpress-token-operator">*</span><span class="mpress-token-type">CustomProvider</span>) <span class="mpress-token-function">Check</span>(ctx context.<span class="mpress-token-type">Context</span>, req updater.<span class="mpress-token-type">CheckRequest</span>) (<span class="mpress-token-operator">*</span>updater.<span class="mpress-token-type">Release</span>, error) {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Hit your update endpoint, decide whether req.CurrentVersion is current,</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// and return either nil (no upgrade) or a *Release with Artifact + optional</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Verification populated.</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Errors here drop through to the next provider in Config.Providers.</span>
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">func</span> (p <span class="mpress-token-operator">*</span><span class="mpress-token-type">CustomProvider</span>) <span class="mpress-token-function">Download</span>(ctx context.<span class="mpress-token-type">Context</span>, r <span class="mpress-token-operator">*</span>updater.<span class="mpress-token-type">Release</span>, dst io.<span class="mpress-token-type">Writer</span>, onProgress <span class="mpress-token-keyword">func</span>(int64, int64)) error {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// Stream the artifact&#39;s bytes to dst. Call onProgress(written, total) as</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// bytes flow past; the Updater debounces emits to ~10 Hz on the event bus.</span>
+</span><span class="mpress-code-line">}</span></code></pre></div>
+<p>Use the in-tree providers as references — they&rsquo;re each one Go file.</p>
+<h2 id="cryptographic-verification">Cryptographic verification</h2>
+<p>Releases are authenticated by the framework&rsquo;s verifier using <code>Config.PublicKey</code> as the trust root:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="//go:embed publickey.pem&#10;var publicKey []byte&#10;&#10;app.Updater.Init(updater.Config{&#10;    CurrentVersion: &#34;1.0.0&#34;,&#10;    Providers:      []updater.Provider{...},&#10;    PublicKey:      publicKey,&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">//go:embed publickey.pem</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">var</span> publicKey []byte
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CurrentVersion</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">&#34;1.0.0&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Providers</span><span class="mpress-token-operator">:</span>      []updater.<span class="mpress-token-type">Provider</span>{...},
+</span><span class="mpress-code-line">    <span class="mpress-token-type">PublicKey</span><span class="mpress-token-operator">:</span>      publicKey,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Supported algorithms (<code>Release.Verification.SignatureAlgo</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>What&rsquo;s signed</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ed25519</code></td>
+<td>The SHA-256 digest of the artifact</td>
+<td>Used by Sparkle EdDSA</td>
+</tr>
+<tr>
+<td><code>ed25519ph</code></td>
+<td>The full artifact via Ed25519ph&rsquo;s pre-hash (SHA-512 internally)</td>
+<td>Used by keygen.sh</td>
+</tr>
+<tr>
+<td><code>ecdsa-p256</code></td>
+<td>The SHA-256 digest of the artifact</td>
+<td>Both raw <code>r∥s</code> and DER signatures accepted</td>
+</tr>
+</tbody>
+</table>
+<p>Plus digest-only (<code>DigestAlgo</code>: <code>sha256</code> / <code>sha512</code>) when a release ships a hash but no signature.</p>
+<p><code>Config.PublicKey</code> is the ONLY trust anchor for signature verification — the release source has no way to substitute its own key. Releases that carry a <code>Signature</code> without a configured <code>Config.PublicKey</code> fail closed. The verifier computes the digest in a streaming pass during download, so even on multi-GB updates verification adds no extra disk pass.</p>
+<aside aria-label="Digest-only ≠ cryptographic verification" class="mpress-admonition mpress-admonition-warning" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> <span>Digest-only ≠ cryptographic verification</span></p>
+<div class="mpress-admonition-body">
+<p>A release with only <code>Digest</code> is authenticated against the registry&rsquo;s TLS plus whatever integrity guarantee the registry itself provides — not against a cryptographic root you control. Use digest-only for bit-rot detection; use signatures for tamper resistance against a compromised release pipeline.</p>
+</div>
+</aside>
+<h3 id="generating-a-signing-key">Generating a signing key</h3>
+<div class="mpress-terminal mpress-terminal-macos" data-prompt="" data-comment="#">
+  <div class="mpress-terminal-title"><span>bash</span><button type="button" class="mpress-copy" aria-label="Copy commands" title="Copy commands">Copy</button></div>
+  <pre data-commands="wails3 updater genkey"><code><span class="mpress-cmd">wails3 updater genkey</span>
+<span class="mpress-comment"># updater.key       — keep secret, use to sign releases</span>
+<span class="mpress-comment"># updater.key.pub   — bundle in your app via go:embed</span>
+</code></pre>
+</div>
+<p>The private key is PKCS#8 PEM, the public key PKIX PEM; <code>Config.PublicKey</code> accepts the <code>.pub</code> file as-is (it also accepts the raw 32-byte key or its base64, which <code>genkey</code> prints for inlining). Sign releases with <code>wails3 updater manifest -key updater.key ...</code> or <code>wails3 updater sign</code>; see <a href="/reference/update-manifest/#publishing-with-the-wails3-cli">Publishing with the wails3 CLI</a>.</p>
+<p>Or in Go:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="import &#34;crypto/ed25519&#34;&#10;import &#34;crypto/rand&#34;&#10;&#10;pub, priv, _ := ed25519.GenerateKey(rand.Reader)&#10;// Persist `priv` securely (HSM, signing CI, etc.); embed `pub` in your binary."><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;crypto/ed25519&#34;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> <span class="mpress-token-string">&#34;crypto/rand&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">pub, priv, _ <span class="mpress-token-operator">:=</span> ed25519.<span class="mpress-token-function">GenerateKey</span>(rand.<span class="mpress-token-type">Reader</span>)
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Persist `priv` securely (HSM, signing CI, etc.); embed `pub` in your binary.</span></span></code></pre></div>
+<h2 id="artifact-formats">Artifact formats</h2>
+<p>Providers stream the bytes for whichever file you publish; the framework then unpacks it before the swap:</p>
+<ul>
+<li><strong>Single binary</strong> (e.g. <code>myapp-linux-amd64</code>) — used as-is. Common on Linux.</li>
+<li><strong><code>.zip</code></strong> — extracted in place. The archive must contain exactly one top-level entry (typically a macOS <code>.app</code> bundle or a single binary). Recommended packaging for macOS.</li>
+<li><strong><code>.tar.gz</code></strong> / <strong><code>.tgz</code></strong> — extracted in place under the same single-top-level-entry rule. Useful for Linux distributions that ship a runtime tree alongside the binary.</li>
+</ul>
+<p>Archives carrying more than one top-level entry are rejected: the framework swaps a single on-disk target, so &ldquo;swap this archive into place&rdquo; is ambiguous when the archive contains multiple things. <code>.dmg</code> and <code>.pkg</code> (macOS) and <code>.msi</code> (Windows) are not supported in v1 — distribute a <code>.zip</code> of the bundle instead. Extraction enforces zip-slip protection, rejects symlinks that escape the archive root, and caps total uncompressed size (2 GiB) and entry count (50 000).</p>
+<h2 id="the-default-window">The default window</h2>
+<p><code>app.Updater.CheckAndInstall(ctx)</code> opens a 520×540 framework-owned window with:</p>
+<ul>
+<li>A state-driven hero icon (blue ↓ for available/downloading, green ✓ for ready/up-to-date, red ! for error)</li>
+<li>A version pill: <code>v1.0.0 → v2.0.1 · 8.8 MB</code></li>
+<li>A scrollable release-notes panel with <strong>rendered Markdown</strong> (paragraphs, bold/italic, lists, GFM tables, inline code, fenced code blocks, h1–h3, links)</li>
+<li>A single primary action per state (Install / Restart &amp; Apply / Try Again)</li>
+<li>Ghost-styled secondary actions (Skip This Version / Remind Me Later)</li>
+<li>Dark/light mode via <code>prefers-color-scheme</code></li>
+<li>Indeterminate progress shimmer when total size is unknown</li>
+</ul>
+<p>It listens to <code>updater:*</code> events on the Wails event bus and emits <code>updater:user:*</code> actions back to Go.</p>
+<h3 id="theme-via-css-variables">Theme via CSS variables</h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: &amp;updater.BuiltinWindow{&#10;        CSS: `:root { --accent: #ff6f00; --bg: #1a1a1a; --fg: #fafafa; }`,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>updater.<span class="mpress-token-type">BuiltinWindow</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">CSS</span><span class="mpress-token-operator">:</span> <span class="mpress-token-string">`:root { --accent: #ff6f00; --bg: #1a1a1a; --fg: #fafafa; }`</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>The default stylesheet exposes these variables — override any of them:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default (light)</th>
+<th>Default (dark)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--bg</code></td>
+<td><code>#f8f8fa</code></td>
+<td><code>#1a1a1c</code></td>
+</tr>
+<tr>
+<td><code>--surface</code></td>
+<td><code>#ffffff</code></td>
+<td><code>#232326</code></td>
+</tr>
+<tr>
+<td><code>--surface-2</code></td>
+<td><code>#f0f0f3</code></td>
+<td><code>#2c2c30</code></td>
+</tr>
+<tr>
+<td><code>--fg</code></td>
+<td><code>#1d1d1f</code></td>
+<td><code>#f5f5f7</code></td>
+</tr>
+<tr>
+<td><code>--fg-dim</code></td>
+<td><code>#6b6b73</code></td>
+<td><code>#b0b0b8</code></td>
+</tr>
+<tr>
+<td><code>--fg-faint</code></td>
+<td><code>#99999f</code></td>
+<td><code>#7a7a82</code></td>
+</tr>
+<tr>
+<td><code>--border</code></td>
+<td><code>#d6d6dc</code></td>
+<td><code>#3a3a3e</code></td>
+</tr>
+<tr>
+<td><code>--accent</code></td>
+<td><code>#0a84ff</code></td>
+<td><code>#0a84ff</code></td>
+</tr>
+<tr>
+<td><code>--accent-fg</code></td>
+<td><code>#ffffff</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--success</code></td>
+<td><code>#34c759</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--error</code></td>
+<td><code>#ff3b30</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--radius</code></td>
+<td><code>10px</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>--font</code></td>
+<td>system stack</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="replace-the-template">Replace the template</h3>
+<p>Provide your own HTML; it just needs to listen to <code>wails:updater:*</code> events and emit <code>wails:updater:user:*</code> actions:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: &amp;updater.BuiltinWindow{&#10;        HTML: myCustomTemplate,&#10;    },&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>updater.<span class="mpress-token-type">BuiltinWindow</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">HTML</span><span class="mpress-token-operator">:</span> myCustomTemplate,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>InitialHTML windows are loaded with no asset-server origin, so they can&rsquo;t dynamically fetch <code>/wails/runtime.js</code>. You have two ways to talk to the host from one:</p>
+<ol>
+<li><strong>Just write HTML.</strong> The framework auto-injects a minimal <code>window.wails.Events</code> shim into any window opened with <code>WebviewWindowOptions.AllowSimpleEventEmit = true</code> and <code>HTML</code> set — which is exactly what the updater&rsquo;s builtin and BYO paths do. No build step required. This is the path the example below uses.</li>
+<li><strong>Bundle <code>@wailsio/runtime</code> with your preferred bundler</strong> (Vite, esbuild, Rollup) and import it into your custom HTML at build time. <code>Events.On</code> works out of the box because it&rsquo;s purely client-side; <code>Events.Emit</code> goes through the runtime&rsquo;s fetch transport, which the null origin breaks — so install a tiny postMessage transport via the runtime&rsquo;s <a href="https://wails.io/wails/runtime.js"><code>setTransport</code></a> hook that routes through <code>window._wails.invoke(&quot;wails:event:emit:&lt;name&gt;&quot;)</code>. The framework injection no-ops if <code>window.wails.Events</code> is already in scope, so the two approaches don&rsquo;t fight.</li>
+</ol>
+<p>Either way, the JS you write in your custom HTML calls the same <code>Events.On</code> / <code>Events.Emit</code> API:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">html</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="&lt;script&gt;&#10;const { On, Emit } = window.wails.Events;&#10;&#10;On(&#34;wails:updater:update-available&#34;, (e) =&gt; {&#10;    const rel = e.data ?? e;&#10;    document.getElementById(&#34;ver&#34;).textContent = rel.version;&#10;});&#10;&#10;document.getElementById(&#34;install&#34;).addEventListener(&#34;click&#34;,&#10;    () =&gt; Emit(&#34;wails:updater:user:install&#34;));&#10;&#10;// Ask the host to replay the current state so we paint correctly on (re)open.&#10;Emit(&#34;wails:updater:window:ready&#34;);&#10;&lt;/script&gt;"><code class="language-html"><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>script<span class="mpress-token-operator">&gt;</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">const</span> { <span class="mpress-token-type">On</span>, <span class="mpress-token-type">Emit</span> } <span class="mpress-token-operator">=</span> window.wails.<span class="mpress-token-type">Events</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-function">On</span>(<span class="mpress-token-string">&#34;wails:updater:update-available&#34;</span>, (e) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> rel <span class="mpress-token-operator">=</span> e.data ?? e;
+</span><span class="mpress-code-line">    document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#34;ver&#34;</span>).textContent <span class="mpress-token-operator">=</span> rel.version;
+</span><span class="mpress-code-line">});
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#34;install&#34;</span>).<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#34;click&#34;</span>,
+</span><span class="mpress-code-line">    () <span class="mpress-token-operator">=&gt;</span> <span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;wails:updater:user:install&#34;</span>));
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Ask the host to replay the current state so we paint correctly on (re)open.</span>
+</span><span class="mpress-code-line"><span class="mpress-token-function">Emit</span>(<span class="mpress-token-string">&#34;wails:updater:window:ready&#34;</span>);
+</span><span class="mpress-code-line"><span class="mpress-token-operator">&lt;</span>/script<span class="mpress-token-operator">&gt;</span></span></code></pre></div>
+<p>The shim exposes the subset of the modern runtime that bare-name events need: <code>Events.On(name, cb)</code> returns an unsubscribe function, and <code>Events.Emit(nameOrEventObject)</code> routes to the host via the gated <code>wails:event:emit:</code> postMessage path. It&rsquo;s installed once at page-load time before any of your inline scripts run.</p>
+<p>If you <em>want</em> to override the shim (or you&rsquo;re loading the full runtime some other way), set <code>window.wails.Events</code> before the page&rsquo;s first <code>&lt;script&gt;</code> tag executes and the injection skips itself.</p>
+<h3 id="window-chrome">Window chrome</h3>
+<p>Override window options (size, frameless, always-on-top) without touching the HTML:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="Window: &amp;updater.BuiltinWindow{&#10;    Options: updater.WindowOptions{&#10;        Title:         &#34;My App Updater&#34;,&#10;        Width:         640,&#10;        Height:        480,&#10;        Frameless:     true,&#10;        AlwaysOnTop:   true,&#10;        DisableResize: false,&#10;    },&#10;},"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> <span class="mpress-token-operator">&amp;</span>updater.<span class="mpress-token-type">BuiltinWindow</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Options</span><span class="mpress-token-operator">:</span> updater.<span class="mpress-token-type">WindowOptions</span>{
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>         <span class="mpress-token-string">&#34;My App Updater&#34;</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>         <span class="mpress-token-number">640</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span>        <span class="mpress-token-number">480</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">Frameless</span><span class="mpress-token-operator">:</span>     <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">AlwaysOnTop</span><span class="mpress-token-operator">:</span>   <span class="mpress-token-keyword">true</span>,
+</span><span class="mpress-code-line">        <span class="mpress-token-type">DisableResize</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">false</span>,
+</span><span class="mpress-code-line">    },
+</span><span class="mpress-code-line">},</span></code></pre></div>
+<h3 id="bring-your-own-window">Bring your own window</h3>
+<p>Drive the update flow against an <code>*application.WebviewWindow</code> you create yourself. The updater calls <code>Show()</code> / <code>Close()</code> / <code>EmitEvent()</code> on your window — your HTML decides what to render:</p>
+<p><img src="/assets/updater/byo-custom-window.png" alt="A &lsquo;Bring your own&rsquo; updater window with a pink-orange gradient background, a single white rounded card, custom typography, and the same updater events driving the visible state. Demonstrates how completely the default UI can be replaced."></p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{&#10;    Title:                &#34;My Updater&#34;,&#10;    Width:                520, Height: 460,&#10;    HTML:                 myCustomHTML,&#10;    AllowSimpleEventEmit: true,           // see security note below&#10;})&#10;app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: updater.BYOWindow(myWin.AsUpdaterWindow()),&#10;})"><code class="language-go"><span class="mpress-code-line">myWin <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Window</span>.<span class="mpress-token-function">NewWithOptions</span>(application.<span class="mpress-token-type">WebviewWindowOptions</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Title</span><span class="mpress-token-operator">:</span>                <span class="mpress-token-string">&#34;My Updater&#34;</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Width</span><span class="mpress-token-operator">:</span>                <span class="mpress-token-number">520</span>, <span class="mpress-token-type">Height</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">460</span>,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">HTML</span><span class="mpress-token-operator">:</span>                 myCustomHTML,
+</span><span class="mpress-code-line">    <span class="mpress-token-type">AllowSimpleEventEmit</span><span class="mpress-token-operator">:</span> <span class="mpress-token-keyword">true</span>,           <span class="mpress-token-comment">// see security note below</span>
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> updater.<span class="mpress-token-function">BYOWindow</span>(myWin.<span class="mpress-token-function">AsUpdaterWindow</span>()),
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>Your HTML uses <code>window.wails.Events.On</code> / <code>Events.Emit</code> just like the builtin template — the framework&rsquo;s auto-injected shim ships into any window with <code>AllowSimpleEventEmit: true</code> regardless of whether the window is framework-owned or yours. See <a href="#replace-the-template">Replace the template</a> for the API.</p>
+<aside aria-label="`AllowSimpleEventEmit` is required for BYO updater windows" class="mpress-admonition mpress-admonition-warning" data-variant="warning">
+  <p class="mpress-admonition-titlebar" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> <span>`AllowSimpleEventEmit` is required for BYO updater windows</span></p>
+<div class="mpress-admonition-body">
+<p>The framework gates the <code>wails:event:emit:</code> postMessage shortcut on this field for security: a window without it set can&rsquo;t synthesise host-side custom events. The updater&rsquo;s custom-HTML shim emits <code>updater:user:*</code> events via that shortcut, so a BYO window that forgets the field silently swallows every button click — the user clicks Install and nothing happens.</p>
+<p>Keep <code>AllowSimpleEventEmit</code> <strong>off</strong> for any window that loads HTML you don&rsquo;t fully control (remote URLs, user-supplied content). When on, any JavaScript in the page — including XSS sinks — can fire any <code>app.Event.On(name, …)</code> handler. The shortcut conveys bare names only (no payload) and cannot reach the binding/Call path, but it can still trigger privileged custom-event handlers in your Go code if those handlers act on the event name alone.</p>
+<p>The framework&rsquo;s <em>builtin</em> updater window has this set internally — only BYO callers need to remember it.</p>
+</div>
+</aside>
+<h3 id="headless">Headless</h3>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    Window: updater.WindowNone,&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">Window</span><span class="mpress-token-operator">:</span> updater.<span class="mpress-token-type">WindowNone</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>No window is ever opened. Subscribe to <code>updater:*</code> events from your own UI (or your existing main window) and call <code>app.Updater.CheckAndInstall(ctx)</code> from a button handler. Useful for periodic background checks that should only surface when something is found, or for apps that integrate the update flow into a custom settings panel.</p>
+<h2 id="events">Events</h2>
+<p>Both Go and JavaScript subscribe through the standard Wails event bus. <strong>Don&rsquo;t type the wire strings by hand</strong> — use the constants exported from the updater package (Go) or the runtime package (JS). Both layers share the same set of names, kept in sync by a regression test.</p>
+<h3 id="from-go">From Go</h3>
+<p>The constants live in <code>github.com/wailsapp/wails/v3/pkg/updater</code>. Subscribe via <code>app.Event.On(name, fn)</code>; the callback receives a <code>*application.CustomEvent</code> whose <code>Data</code> field is the typed payload listed in the <a href="#event-reference">event reference</a> — type-assert, don&rsquo;t JSON-decode:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><div class="mpress-codeframe-title">main.go</div><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="import (&#10;    &#34;log&#34;&#10;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/application&#34;&#10;    &#34;github.com/wailsapp/wails/v3/pkg/updater&#34;&#10;)&#10;&#10;// …&#10;&#10;app.Event.On(updater.EventUpdateAvailable, func(e *application.CustomEvent) {&#10;    rel, ok := e.Data.(*updater.Release)&#10;    if !ok { return }&#10;    log.Printf(&#34;update found: %s&#34;, rel.Version)&#10;})&#10;&#10;app.Event.On(updater.EventDownloadProgress, func(e *application.CustomEvent) {&#10;    p, ok := e.Data.(updater.Progress)&#10;    if !ok { return }&#10;    log.Printf(&#34;%d / %d bytes (%.0f KB/s)&#34;, p.Written, p.Total, p.Rate/1024)&#10;})&#10;&#10;app.Event.On(updater.EventError, func(e *application.CustomEvent) {&#10;    info, ok := e.Data.(updater.ErrorInfo)&#10;    if !ok { return }&#10;    log.Printf(&#34;update failed during %s: %s&#34;, info.Stage, info.Message)&#10;})"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> (
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;log&#34;</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/application&#34;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-string">&#34;github.com/wailsapp/wails/v3/pkg/updater&#34;</span>
+</span><span class="mpress-code-line">)
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(updater.<span class="mpress-token-type">EventUpdateAvailable</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    rel, ok <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>.(<span class="mpress-token-operator">*</span>updater.<span class="mpress-token-type">Release</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-operator">!</span>ok { <span class="mpress-token-keyword">return</span> }
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;update found: %s&#34;</span>, rel.<span class="mpress-token-type">Version</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(updater.<span class="mpress-token-type">EventDownloadProgress</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    p, ok <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>.(updater.<span class="mpress-token-type">Progress</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-operator">!</span>ok { <span class="mpress-token-keyword">return</span> }
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;%d / %d bytes (%.0f KB/s)&#34;</span>, p.<span class="mpress-token-type">Written</span>, p.<span class="mpress-token-type">Total</span>, p.<span class="mpress-token-type">Rate</span>/<span class="mpress-token-number">1024</span>)
+</span><span class="mpress-code-line">})
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Event</span>.<span class="mpress-token-function">On</span>(updater.<span class="mpress-token-type">EventError</span>, <span class="mpress-token-keyword">func</span>(e <span class="mpress-token-operator">*</span>application.<span class="mpress-token-type">CustomEvent</span>) {
+</span><span class="mpress-code-line">    info, ok <span class="mpress-token-operator">:=</span> e.<span class="mpress-token-type">Data</span>.(updater.<span class="mpress-token-type">ErrorInfo</span>)
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">if</span> <span class="mpress-token-operator">!</span>ok { <span class="mpress-token-keyword">return</span> }
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;update failed during %s: %s&#34;</span>, info.<span class="mpress-token-type">Stage</span>, info.<span class="mpress-token-type">Message</span>)
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>All available Go constants:</p>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Wire string</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updater.EventCheckStarted</code></td>
+<td><code>wails:updater:check-started</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUpdateAvailable</code></td>
+<td><code>wails:updater:update-available</code></td>
+</tr>
+<tr>
+<td><code>updater.EventNoUpdate</code></td>
+<td><code>wails:updater:no-update</code></td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadStarted</code></td>
+<td><code>wails:updater:download-started</code></td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadProgress</code></td>
+<td><code>wails:updater:download-progress</code></td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadComplete</code></td>
+<td><code>wails:updater:download-complete</code></td>
+</tr>
+<tr>
+<td><code>updater.EventVerifying</code></td>
+<td><code>wails:updater:verifying</code></td>
+</tr>
+<tr>
+<td><code>updater.EventInstalling</code></td>
+<td><code>wails:updater:installing</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUpdateReady</code></td>
+<td><code>wails:updater:update-ready</code></td>
+</tr>
+<tr>
+<td><code>updater.EventError</code></td>
+<td><code>wails:updater:error</code></td>
+</tr>
+<tr>
+<td><code>updater.EventMeta</code></td>
+<td><code>wails:updater:meta</code></td>
+</tr>
+<tr>
+<td><code>updater.EventWindowReady</code></td>
+<td><code>wails:updater:window:ready</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserInstall</code></td>
+<td><code>wails:updater:user:install</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserSkip</code></td>
+<td><code>wails:updater:user:skip</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserRemind</code></td>
+<td><code>wails:updater:user:remind</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserCancel</code></td>
+<td><code>wails:updater:user:cancel</code></td>
+</tr>
+<tr>
+<td><code>updater.EventUserRestart</code></td>
+<td><code>wails:updater:user:restart</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="from-javascript">From JavaScript</h3>
+<p>The constants live under <code>Updater.Events</code> in <code>@wailsio/runtime</code>. Same names as Go, organised by sub-namespace (<code>User.*</code>, <code>Window.*</code>) for autocomplete discoverability:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">js</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="import { Events, Updater } from &#34;@wailsio/runtime&#34;;&#10;&#10;Events.On(Updater.Events.UpdateAvailable, (e) =&gt; {&#10;    console.log(&#34;update found:&#34;, e.data.version);&#10;});&#10;&#10;Events.On(Updater.Events.DownloadProgress, (e) =&gt; {&#10;    const p = e.data;&#10;    console.log(`${p.written} / ${p.total} bytes (${(p.rate/1024).toFixed(1)} KB/s)`);&#10;});&#10;&#10;Events.On(Updater.Events.Error, (e) =&gt; {&#10;    const info = e.data;&#10;    console.error(`update failed during ${info.stage}: ${info.message}`);&#10;});"><code class="language-js"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Events</span>, <span class="mpress-token-type">Updater</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;@wailsio/runtime&#34;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-type">Updater</span>.<span class="mpress-token-type">Events</span>.<span class="mpress-token-type">UpdateAvailable</span>, (e) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">&#34;update found:&#34;</span>, e.data.version);
+</span><span class="mpress-code-line">});
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-type">Updater</span>.<span class="mpress-token-type">Events</span>.<span class="mpress-token-type">DownloadProgress</span>, (e) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> p <span class="mpress-token-operator">=</span> e.data;
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">log</span>(<span class="mpress-token-string">`${p.written} / ${p.total} bytes (${(p.rate/1024).toFixed(1)} KB/s)`</span>);
+</span><span class="mpress-code-line">});
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-type">Events</span>.<span class="mpress-token-function">On</span>(<span class="mpress-token-type">Updater</span>.<span class="mpress-token-type">Events</span>.<span class="mpress-token-type">Error</span>, (e) <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-keyword">const</span> info <span class="mpress-token-operator">=</span> e.data;
+</span><span class="mpress-code-line">    console.<span class="mpress-token-function">error</span>(<span class="mpress-token-string">`update failed during ${info.stage}: ${info.message}`</span>);
+</span><span class="mpress-code-line">});</span></code></pre></div>
+<p>User-action events your custom HTML emits <em>back</em> to the host live under <code>Updater.Events.User</code>:</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">js</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="import { Updater } from &#34;@wailsio/runtime&#34;;&#10;&#10;document.getElementById(&#34;install-btn&#34;).addEventListener(&#34;click&#34;, () =&gt; {&#10;    // The framework window does this internally via the postMessage shim;&#10;    // shown here for BYO templates that need to drive the flow themselves.&#10;    window._wails.invoke(&#34;wails:event:emit:&#34; + Updater.Events.User.Install);&#10;});"><code class="language-js"><span class="mpress-code-line"><span class="mpress-token-keyword">import</span> { <span class="mpress-token-type">Updater</span> } <span class="mpress-token-keyword">from</span> <span class="mpress-token-string">&#34;@wailsio/runtime&#34;</span>;
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line">document.<span class="mpress-token-function">getElementById</span>(<span class="mpress-token-string">&#34;install-btn&#34;</span>).<span class="mpress-token-function">addEventListener</span>(<span class="mpress-token-string">&#34;click&#34;</span>, () <span class="mpress-token-operator">=&gt;</span> {
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// The framework window does this internally via the postMessage shim;</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// shown here for BYO templates that need to drive the flow themselves.</span>
+</span><span class="mpress-code-line">    window._wails.<span class="mpress-token-function">invoke</span>(<span class="mpress-token-string">&#34;wails:event:emit:&#34;</span> <span class="mpress-token-operator">+</span> <span class="mpress-token-type">Updater</span>.<span class="mpress-token-type">Events</span>.<span class="mpress-token-type">User</span>.<span class="mpress-token-type">Install</span>);
+</span><span class="mpress-code-line">});</span></code></pre></div>
+<h3 id="event-reference">Event reference</h3>
+<p>Subscribe-side (host → page):</p>
+<table>
+<thead>
+<tr>
+<th>Constant (Go)</th>
+<th>Constant (JS)</th>
+<th>Payload</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updater.EventCheckStarted</code></td>
+<td><code>Updater.Events.CheckStarted</code></td>
+<td>none</td>
+<td>Before each <code>Check</code> round-trip</td>
+</tr>
+<tr>
+<td><code>updater.EventUpdateAvailable</code></td>
+<td><code>Updater.Events.UpdateAvailable</code></td>
+<td><code>*Release</code></td>
+<td><code>Check</code> found a newer release</td>
+</tr>
+<tr>
+<td><code>updater.EventNoUpdate</code></td>
+<td><code>Updater.Events.NoUpdate</code></td>
+<td>none</td>
+<td><code>Check</code> confirmed up-to-date</td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadStarted</code></td>
+<td><code>Updater.Events.DownloadStarted</code></td>
+<td><code>*Release</code></td>
+<td>Bytes start streaming</td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadProgress</code></td>
+<td><code>Updater.Events.DownloadProgress</code></td>
+<td><code>Progress</code></td>
+<td>~10 Hz during download</td>
+</tr>
+<tr>
+<td><code>updater.EventDownloadComplete</code></td>
+<td><code>Updater.Events.DownloadComplete</code></td>
+<td><code>*Release</code></td>
+<td>All bytes written, before verify</td>
+</tr>
+<tr>
+<td><code>updater.EventVerifying</code></td>
+<td><code>Updater.Events.Verifying</code></td>
+<td><code>*Release</code></td>
+<td>Signature/digest check begins</td>
+</tr>
+<tr>
+<td><code>updater.EventInstalling</code></td>
+<td><code>Updater.Events.Installing</code></td>
+<td><code>*Release</code></td>
+<td>Unpack + staging begins</td>
+</tr>
+<tr>
+<td><code>updater.EventUpdateReady</code></td>
+<td><code>Updater.Events.UpdateReady</code></td>
+<td><code>*Release</code></td>
+<td>Restart pending</td>
+</tr>
+<tr>
+<td><code>updater.EventError</code></td>
+<td><code>Updater.Events.Error</code></td>
+<td><code>ErrorInfo</code></td>
+<td>Any stage failed</td>
+</tr>
+<tr>
+<td><code>updater.EventMeta</code></td>
+<td><code>Updater.Events.Meta</code></td>
+<td><code>Meta</code></td>
+<td>Once per session before snapshot replay</td>
+</tr>
+</tbody>
+</table>
+<p>Page-side (page → host) — your code subscribes if you write a custom template:</p>
+<table>
+<thead>
+<tr>
+<th>Constant (Go)</th>
+<th>Constant (JS)</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updater.EventWindowReady</code></td>
+<td><code>Updater.Events.Window.Ready</code></td>
+<td>Window finished loading; host replays current state</td>
+</tr>
+<tr>
+<td><code>updater.EventUserInstall</code></td>
+<td><code>Updater.Events.User.Install</code></td>
+<td>Primary action in <code>available</code> state</td>
+</tr>
+<tr>
+<td><code>updater.EventUserRestart</code></td>
+<td><code>Updater.Events.User.Restart</code></td>
+<td>Primary action in <code>ready</code> state</td>
+</tr>
+<tr>
+<td><code>updater.EventUserSkip</code></td>
+<td><code>Updater.Events.User.Skip</code></td>
+<td>&ldquo;Skip This Version&rdquo;</td>
+</tr>
+<tr>
+<td><code>updater.EventUserRemind</code></td>
+<td><code>Updater.Events.User.Remind</code></td>
+<td>&ldquo;Remind Me Later&rdquo;</td>
+</tr>
+<tr>
+<td><code>updater.EventUserCancel</code></td>
+<td><code>Updater.Events.User.Cancel</code></td>
+<td>Close button</td>
+</tr>
+</tbody>
+</table>
+<h2 id="api-reference">API reference</h2>
+<h3 id="updaterconfig"><code>updater.Config</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CurrentVersion</code></td>
+<td><code>string</code></td>
+<td><strong>Required.</strong> Same string you tag releases with (no <code>v</code> prefix)</td>
+</tr>
+<tr>
+<td><code>Providers</code></td>
+<td><code>[]updater.Provider</code></td>
+<td><strong>Required.</strong> Ordered fallback chain</td>
+</tr>
+<tr>
+<td><code>PublicKey</code></td>
+<td><code>[]byte</code></td>
+<td>PEM or raw bytes. Optional but signed releases fail closed without it</td>
+</tr>
+<tr>
+<td><code>CheckInterval</code></td>
+<td><code>time.Duration</code></td>
+<td>Non-zero starts a background poll loop calling <code>CheckAndInstall</code></td>
+</tr>
+<tr>
+<td><code>Platform</code></td>
+<td><code>string</code></td>
+<td>Override <code>runtime.GOOS</code> for asset selection</td>
+</tr>
+<tr>
+<td><code>Arch</code></td>
+<td><code>string</code></td>
+<td>Override <code>runtime.GOARCH</code> for asset selection</td>
+</tr>
+<tr>
+<td><code>Channel</code></td>
+<td><code>string</code></td>
+<td>Currently informational; provider-specific channel filtering</td>
+</tr>
+<tr>
+<td><code>Window</code></td>
+<td><code>updater.WindowOption</code></td>
+<td><code>nil</code> (builtin defaults), <code>&amp;BuiltinWindow{…}</code>, <code>BYOWindow(handle)</code>, or <code>WindowNone</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods-on-updaterupdater">Methods on <code>*updater.Updater</code></h3>
+<table>
+<thead>
+<tr>
+<th>Signature</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Init(cfg Config) error</code></td>
+<td>Configure. Returns <code>ErrAlreadyConfigured</code> on second call</td>
+</tr>
+<tr>
+<td><code>State() State</code></td>
+<td>Current lifecycle phase</td>
+</tr>
+<tr>
+<td><code>CurrentVersion() string</code></td>
+<td>The version passed to <code>Init</code></td>
+</tr>
+<tr>
+<td><code>Check(ctx) (*Release, error)</code></td>
+<td>Walk the provider chain. <code>(rel, nil)</code> = found, <code>(nil, nil)</code> = up-to-date, <code>(nil, err)</code> = all failed</td>
+</tr>
+<tr>
+<td><code>DownloadAndInstall(ctx) error</code></td>
+<td>Stream, verify, extract (if archive), stage. Requires prior <code>Check</code></td>
+</tr>
+<tr>
+<td><code>CheckAndInstall(ctx) error</code></td>
+<td>Convenience: open window, <code>Check</code>, then <code>DownloadAndInstall</code> if found</td>
+</tr>
+<tr>
+<td><code>Restart(ctx) error</code></td>
+<td>Spawn the helper, call <code>Host.Quit</code>, leave; helper swaps + relaunches</td>
+</tr>
+<tr>
+<td><code>DownloadedPath() string</code></td>
+<td>Where the staged update lives on disk, or <code>&quot;&quot;</code> if none</td>
+</tr>
+<tr>
+<td><code>SkipVersion(v string)</code></td>
+<td>Record <code>v</code> as skipped; subsequent <code>Check</code>s treat it as up-to-date</td>
+</tr>
+<tr>
+<td><code>SkippedVersion() string</code></td>
+<td>Read the currently-skipped version</td>
+</tr>
+<tr>
+<td><code>StopPeriodicCheck()</code></td>
+<td>Cancel the timer started by <code>Config.CheckInterval</code> and wait for the loop to return</td>
+</tr>
+</tbody>
+</table>
+<h3 id="errors">Errors</h3>
+<table>
+<thead>
+<tr>
+<th>Sentinel</th>
+<th>Returned by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ErrAlreadyConfigured</code></td>
+<td><code>Init</code> after first success</td>
+</tr>
+<tr>
+<td><code>ErrNotConfigured</code></td>
+<td>Any operation before <code>Init</code></td>
+</tr>
+<tr>
+<td><code>ErrNoPendingRelease</code></td>
+<td><code>DownloadAndInstall</code> without prior <code>Check</code></td>
+</tr>
+<tr>
+<td><code>ErrDownloadInProgress</code></td>
+<td><code>DownloadAndInstall</code> called while another is running</td>
+</tr>
+<tr>
+<td><code>ErrNotReady</code></td>
+<td><code>Restart</code> with no staged update</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-the-swap-works">How the swap works</h2>
+<p><code>Restart</code> re-execs the current binary with sentinel environment variables set. <code>application.New</code> detects them at startup and diverts to helper-mode:</p>
+<ol>
+<li>Helper waits up to 30 s for the parent PID to exit (<code>platformIsAlive</code> polls via <code>syscall.OpenProcess</code> + <code>GetExitCodeProcess</code> on Windows, <code>os.FindProcess</code> + <code>proc.Signal(syscall.Signal(0))</code> on Unix).</li>
+<li>Helper backs up the target (copy for files, recursive copy for macOS <code>.app</code> bundle directories).</li>
+<li>Helper replaces the target with the staged artifact, retrying up to 20 times with a 500 ms backoff between attempts:</li>
+</ol>
+<ul>
+<li><strong>Unix</strong> — <code>os.RemoveAll(target)</code> + <code>os.Rename(newPath, target)</code>. Open file descriptors against the old inode remain valid.</li>
+<li><strong>Windows</strong> — <code>os.Rename(target, target.old.&lt;nanos&gt;)</code> + <code>os.Rename(newPath, target)</code>. Windows allows renaming files whose image is still mapped, but not deleting them; on the next update the helper sweeps any leftover <code>.old.*</code> siblings whose owning kernel mapping has been released.</li>
+</ul>
+<ol start="4">
+<li>Helper restores the original executable mode on the new binary (the downloaded file was created with the default umask, which drops <code>+x</code> on Unix; on Windows this is a no-op).</li>
+<li>Helper scrubs the helper-mode env vars and re-launches the (now-replaced) binary.</li>
+<li>Helper exits.</li>
+</ol>
+<p>If the launch fails, the helper restores the backup. If the parent never exits within 30 s, the helper aborts before touching the target (so the user keeps a working app even if a shutdown dialog blocks <code>Quit</code>).</p>
+<p>For macOS <code>.app</code> bundles distributed as <code>.zip</code> (the recommended packaging), the archive is unpacked between verify and ready so the helper has a real directory to swap into place.</p>
+<h2 id="periodic-checking">Periodic checking</h2>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="app.Updater.Init(updater.Config{&#10;    // …&#10;    CheckInterval: 6 * time.Hour,&#10;})"><code class="language-go"><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">Init</span>(updater.<span class="mpress-token-type">Config</span>{
+</span><span class="mpress-code-line">    <span class="mpress-token-comment">// …</span>
+</span><span class="mpress-code-line">    <span class="mpress-token-type">CheckInterval</span><span class="mpress-token-operator">:</span> <span class="mpress-token-number">6</span> <span class="mpress-token-operator">*</span> time.<span class="mpress-token-type">Hour</span>,
+</span><span class="mpress-code-line">})</span></code></pre></div>
+<p>When <code>CheckInterval &gt; 0</code>, a background goroutine calls <code>CheckAndInstall</code> on the configured interval. Ticks that arrive while another flow is already in progress (checking / downloading / verifying / installing) are dropped — concurrent state machines aren&rsquo;t supported.</p>
+<p>For silent background polling that only surfaces when something is found, set <code>Window: updater.WindowNone</code> and react to <code>EventUpdateAvailable</code> from your own UI.</p>
+<h2 id="skip--remind">Skip &amp; remind</h2>
+<p>The default window&rsquo;s &ldquo;Skip This Version&rdquo; button records the available version via <code>SkipVersion(rel.Version)</code>. Subsequent <code>Check</code>s find the same version and treat it as up-to-date (until the user updates <code>CurrentVersion</code>, which happens automatically after a successful <code>Restart</code>). &ldquo;Remind Me Later&rdquo; just closes the window without recording anything.</p>
+<div class="mpress-codeframe"><div class="mpress-codeframe-header"><span class="mpress-codeframe-language">go</span><button type="button" class="mpress-copy mpress-code-copy" aria-label="Copy code" title="Copy code">Copy</button></div><pre data-code="// Reading what the user skipped (e.g. to surface in app settings)&#10;if v := app.Updater.SkippedVersion(); v != &#34;&#34; {&#10;    log.Printf(&#34;user skipped %s&#34;, v)&#10;}&#10;&#10;// Programmatically clearing the skip:&#10;app.Updater.SkipVersion(&#34;&#34;)"><code class="language-go"><span class="mpress-code-line"><span class="mpress-token-comment">// Reading what the user skipped (e.g. to surface in app settings)</span>
+</span><span class="mpress-code-line"><span class="mpress-token-keyword">if</span> v <span class="mpress-token-operator">:=</span> app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">SkippedVersion</span>(); v <span class="mpress-token-operator">!=</span> <span class="mpress-token-string">&#34;&#34;</span> {
+</span><span class="mpress-code-line">    log.<span class="mpress-token-function">Printf</span>(<span class="mpress-token-string">&#34;user skipped %s&#34;</span>, v)
+</span><span class="mpress-code-line">}
+</span><span class="mpress-code-line">
+</span><span class="mpress-code-line"><span class="mpress-token-comment">// Programmatically clearing the skip:</span>
+</span><span class="mpress-code-line">app.<span class="mpress-token-type">Updater</span>.<span class="mpress-token-function">SkipVersion</span>(<span class="mpress-token-string">&#34;&#34;</span>)</span></code></pre></div>
+<h2 id="distribution-checklist">Distribution checklist</h2>
+<p>Before you publish a release that the updater will install:</p>
+<ol>
+<li><strong>Pick the right archive format.</strong> macOS: <code>.zip</code> of the <code>.app</code> bundle. Linux: single binary or <code>.tar.gz</code>. Windows: single <code>.exe</code> or <code>.zip</code>. <code>.dmg</code> / <code>.msi</code> / <code>.pkg</code> are not supported.</li>
+<li><strong>Sign the artifact</strong> with the private key matching <code>Config.PublicKey</code>. For provider-published feeds (keygen.sh, AppCast), follow each provider&rsquo;s signing workflow. For GitHub Releases with <code>ChecksumAsset</code>, generate a <code>SHA256SUMS</code> file with <code>sha256sum</code> / <code>shasum -a 256</code>.</li>
+<li><strong>Match the version string.</strong> <code>Config.CurrentVersion</code> and the release&rsquo;s version tag must match exactly (e.g. <code>1.0.0</code> ↔ tag <code>v1.0.0</code>; the leading <code>v</code> is stripped on the provider side).</li>
+<li><strong>Test the swap on the target platform</strong> at least once before shipping — codesigning, notarization, and Gatekeeper handling are platform-specific and not covered by the updater itself.</li>
+</ol>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong>&ldquo;signature requires a public key but none configured&rdquo;</strong> — the release has a <code>Signature</code> field but <code>Config.PublicKey</code> is empty. Set the public key or change your release pipeline to not include a signature.</p>
+<p><strong>&ldquo;digest mismatch&rdquo;</strong> — the downloaded bytes don&rsquo;t match what the provider promised. Usually a partial download (network hiccup) or a corrupted artifact. Re-running often fixes it.</p>
+<p><strong>Window opens but immediately disappears, no markdown, no progress</strong> — your custom HTML didn&rsquo;t invoke <code>wails:runtime:ready</code>. See the <a href="#replace-the-template">Replace the template</a> shim.</p>
+<p><strong>Windows update never completes; helper log says &ldquo;remove old (attempt N): Access is denied&rdquo;</strong> — only happens on pre-<code>de764fb</code> versions of this PR; the current implementation uses rename-aside which doesn&rsquo;t suffer this. Upgrade.</p>
+<p><strong>macOS Gatekeeper blocks the swapped binary</strong> — code-signing has to be preserved end-to-end. Sign the original <code>.app</code> <em>and</em> re-sign the relaunched binary if your build pipeline modifies entitlements at update time.</p>
+<h2 id="see-also">See also</h2>
+<ul>
+<li>Runnable example: <a href="https://github.com/wailsapp/wails/tree/master/v3/examples/updater"><code>v3/examples/updater</code></a></li>
+<li>Test demo repo: <a href="https://github.com/wailsapp/updater-demo"><code>wailsapp/updater-demo</code></a></li>
+<li>Tutorial: <a href="/tutorials/04-self-update-a-wails-app/">Adding self-updates to a Wails app</a></li>
+</ul>
+</article><div class="page-meta"><a href="https://github.com/wailsapp/wails/edit/master/docs/src/content/docs/guides/updater.mdx"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg><span>Edit page</span></a><p>Last updated: <time datetime="2026-08-21T13:36:57Z">Aug 21, 2026</time></p></div><nav class="pager"><a rel="prev" href="../../guides/build/obfuscation/"><span class="pager-direction"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Previous</span></span><strong>Obfuscated Builds</strong></a><a rel="next" href="../../guides/file-associations/"><span class="pager-direction"><span>Next</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span><strong>File Associations</strong></a></nav></main><aside class="toc"><strong><span>On this page</span><span class="toc-mobile-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></strong><a class="toc-level-1" href="#content">Overview</a><a class="toc-level-2" href="#quick-start">Quick start</a><a class="toc-level-2" href="#the-lifecycle">The lifecycle</a><a class="toc-level-2" href="#providers">Providers</a><a class="toc-level-3" href="#github-releases--updaterprovidersgithub">GitHub Releases — updater/providers/github</a><a class="toc-level-3" href="#keygensh--updaterproviderskeygen">keygen.sh — updater/providers/keygen</a><a class="toc-level-3" href="#sparkle-appcast--updaterprovidersappcast">Sparkle AppCast — updater/providers/appcast</a><a class="toc-level-3" href="#wails-update-manifest--updaterprovidersendpoint">Wails Update Manifest — updater/providers/endpoint</a><a class="toc-level-3" href="#fallback-chain">Fallback chain</a><a class="toc-level-3" href="#writing-your-own-provider">Writing your own provider</a><a class="toc-level-2" href="#cryptographic-verification">Cryptographic verification</a><a class="toc-level-3" href="#generating-a-signing-key">Generating a signing key</a><a class="toc-level-2" href="#artifact-formats">Artifact formats</a><a class="toc-level-2" href="#the-default-window">The default window</a><a class="toc-level-3" href="#theme-via-css-variables">Theme via CSS variables</a><a class="toc-level-3" href="#replace-the-template">Replace the template</a><a class="toc-level-3" href="#window-chrome">Window chrome</a><a class="toc-level-3" href="#bring-your-own-window">Bring your own window</a><a class="toc-level-3" href="#headless">Headless</a><a class="toc-level-2" href="#events">Events</a><a class="toc-level-3" href="#from-go">From Go</a><a class="toc-level-3" href="#from-javascript">From JavaScript</a><a class="toc-level-3" href="#event-reference">Event reference</a><a class="toc-level-2" href="#api-reference">API reference</a><a class="toc-level-3" href="#updaterconfig">updater.Config</a><a class="toc-level-3" href="#methods-on-updaterupdater">Methods on *updater.Updater</a><a class="toc-level-3" href="#errors">Errors</a><a class="toc-level-2" href="#how-the-swap-works">How the swap works</a><a class="toc-level-2" href="#periodic-checking">Periodic checking</a><a class="toc-level-2" href="#skip--remind">Skip &amp; remind</a><a class="toc-level-2" href="#distribution-checklist">Distribution checklist</a><a class="toc-level-2" href="#troubleshooting">Troubleshooting</a><a class="toc-level-2" href="#see-also">See also</a></aside></div></div><footer><a class="mpress-footer-credit" href="https://m-press.me">Built with <strong>M-Press</strong></a><span>Markdown in. Beautiful docs out.</span></footer><script src="../../assets/mpress.js" defer></script></body></html>
