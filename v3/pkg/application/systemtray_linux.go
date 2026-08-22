@@ -449,8 +449,24 @@ func (s *linuxSystemTray) run() {
 	s.setMenu(s.menu)
 }
 
-func (s *linuxSystemTray) setTooltip(_ string) {
-	// TBD
+func (s *linuxSystemTray) setTooltip(text string) {
+	s.tooltip = text
+	s.updateToolTip()
+}
+
+// updateToolTip republishes the ToolTip property. Its title is the item's name
+// and its description is what SetTooltip was given, which is the line a desktop
+// shows under the name on hover. The property is declared with prop.EmitTrue,
+// so setting it is what tells the host to re-read it.
+func (s *linuxSystemTray) updateToolTip() {
+	if s.props == nil {
+		return
+	}
+
+	if err := s.props.Set("org.kde.StatusNotifierItem", "ToolTip",
+		dbus.MakeVariant(tooltip{V2: s.label, V3: s.tooltip})); err != nil {
+		globalApplication.error("systray error: failed to set ToolTip prop: %w", err)
+	}
 }
 
 func (s *linuxSystemTray) setIcon(icon []byte) {
@@ -533,6 +549,8 @@ func (s *linuxSystemTray) setLabel(label string) {
 		return
 	}
 
+	// The tooltip repeats the name as its title, so it follows the label.
+	s.updateToolTip()
 }
 
 func (s *linuxSystemTray) destroy() {
