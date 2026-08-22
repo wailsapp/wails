@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "completed_by": "CLI_VERSION",
+  "complete": true,
+  "wrote": ["wails.migrated.hcl"],
+  "sources": {
+    "Taskfile.yml": "d16161c58359e207f7f744f7b7d53344ec5f21a791d82233a4b72e50c1cf4ae9",
+    "build/Taskfile.yml": "64cef372c5d2ae21526043751993f57b6d5b469287da0adfc8a78dde0d7ad86a",
+    "build/appicon.png": "790b4defad58a001ab4c856ac1ab395f79a616c99c388a042ddcbec5dfa7e7f7",
+    "build/config.yml": "8f7266d6258bdee002c0f3d0d9046f0477e49c3dc79a8e23a178245eed90a317",
+    "build/darwin/Info.plist": "499f64d3ec95a5009f1f0f02945b8cd81233cd8c7787c17086e9e78f0e4a2d37",
+    "build/darwin/Taskfile.yml": "ed7dd8950f9422105e7d4349c223e0aeda1eca364186a621b4083052c9e4ca68",
+    "build/darwin/icons.icns": "f554498364a414dc62ec7bda89356d3bf5a67eff5ad5afcbfa2cd452920e667b",
+    "build/linux/Taskfile.yml": "5fed27274feb32c231426a77edd1f66fdf8fb77a0f074ab7db862dc0d3f31d6e",
+    "build/windows/Taskfile.yml": "2036534db056f76202df0ade442e697a4572643b985ed5bc3c0042f97de773ea",
+    "build/windows/icon.ico": "bd81c64fa7e8793d6c03097f81182b97fa8822561d70622869d21c236d010fd8",
+    "build/windows/nsis/project.nsi": "25f8b323727df7cdf0e8279122efbed045a8b5dffefffb97707b86521a124962",
+    "build/windows/wails.exe.manifest": "68349a423f5d5b7f3ca2c700a7120380ef6c24516bde8d913fa80a3bc71d7aab",
+    "frontend/package.json": "dd43f4dc4f447efabd664a08dbe9bdbd3817e8b98dffc39549517b6cb72df4e8",
+    "frontend/tsconfig.json": "dab7e219b2402b96482ed34dceef4d89a5c6ed16f124b2939552e5ff0df54b59"
+  },
+  "taskfiles": [
+    {"file": "Taskfile.yml", "role": "root", "classification": "current-default"},
+    {"file": "build/Taskfile.yml", "role": "common", "classification": "historical-default"},
+    {"file": "build/darwin/Taskfile.yml", "role": "darwin", "classification": "historical-default"},
+    {"file": "build/linux/Taskfile.yml", "role": "linux", "classification": "historical-default"},
+    {"file": "build/windows/Taskfile.yml", "role": "windows", "classification": "historical-default"}
+  ]
+}

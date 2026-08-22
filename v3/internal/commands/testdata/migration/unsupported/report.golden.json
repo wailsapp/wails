@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "completed_by": "CLI_VERSION",
+  "complete": false,
+  "wrote": ["wails.migrated.hcl"],
+  "sources": {
+    "Taskfile.yml": "80231e3684ca0a58f1a7af793df8a79db18e8821f7048442a6a1ebcfe20aa924"
+  },
+  "taskfiles": [
+    {"file": "Taskfile.yml", "role": "root", "classification": "current-default"}
+  ],
+  "diagnostics": [
+    {"severity": "warning", "code": "dynamic-include", "file": "Taskfile.yml", "message": "templated include generated cannot be proven equivalent"},
+    {"severity": "info", "code": "frontend-missing", "file": "frontend", "message": "no conventional frontend directory was found; manifest defaults were retained"}
+  ]
+}

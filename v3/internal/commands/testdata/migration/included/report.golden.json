@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "completed_by": "CLI_VERSION",
+  "complete": false,
+  "wrote": ["wails.migrated.hcl"],
+  "sources": {
+    "Taskfile.yml": "ae9481e8665257def3b8b159f982cabea8ae4ac6aed7f0dedc336220acd7e414",
+    "tools/Taskfile.yml": "22283d38d66573088d816ef4c4fff4fe9b30a478c73c9aee8d2574f472b3542d"
+  },
+  "taskfiles": [
+    {"file": "Taskfile.yml", "role": "root", "classification": "customised", "modified_tasks": ["build"]},
+    {"file": "tools/Taskfile.yml", "role": "unknown", "classification": "custom", "modified_tasks": ["prepare"]}
+  ],
+  "diagnostics": [
+    {"severity": "warning", "code": "modified-task", "file": "Taskfile.yml", "task": "build", "message": "root dispatch task was modified and requires a manifest field or user-owned hook script"},
+    {"severity": "warning", "code": "unsupported-task", "file": "tools/Taskfile.yml", "task": "prepare", "message": "reachable custom task requires a user-owned hook script or manual migration"},
+    {"severity": "info", "code": "frontend-missing", "file": "frontend", "message": "no conventional frontend directory was found; manifest defaults were retained"}
+  ]
+}

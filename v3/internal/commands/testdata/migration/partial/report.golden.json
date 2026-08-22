@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "completed_by": "CLI_VERSION",
+  "complete": false,
+  "wrote": ["wails.migrated.hcl"],
+  "sources": {
+    "Taskfile.yml": "7b8b62f6b76c0c547a862830cddeacd597e6918739f11f0dddeadd6a3bf98f37",
+    "build/config.yml": "c3ab542c0a2bcdc0ce6c8da3e8fbfd1a96707e66e34b595ba00ca94a1326f9ab"
+  },
+  "taskfiles": [
+    {"file": "Taskfile.yml", "role": "root", "classification": "current-default"}
+  ],
+  "diagnostics": [
+    {"severity": "warning", "code": "unknown-config-field", "file": "build/config.yml", "message": "line 11: field unknownProductionSetting not found in type commands.legacyBuildConfiguration"},
+    {"severity": "warning", "code": "platform-version", "file": "build/config.yml", "message": "iOS version \"2.0.0\" differs from project version \"1.2.3\" and has no independent manifest field"},
+    {"severity": "info", "code": "frontend-missing", "file": "frontend", "message": "no conventional frontend directory was found; manifest defaults were retained"}
+  ]
+}

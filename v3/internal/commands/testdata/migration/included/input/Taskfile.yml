@@ -1,0 +1,12 @@
+version: "3"
+
+vars:
+  APP_NAME: Included
+
+includes:
+  tools: ./tools/Taskfile.yml
+
+tasks:
+  build:
+    cmds:
+      - task: tools:prepare

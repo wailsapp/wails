@@ -1,0 +1,6 @@
+version: "3"
+
+tasks:
+  prepare:
+    cmds:
+      - echo preparing

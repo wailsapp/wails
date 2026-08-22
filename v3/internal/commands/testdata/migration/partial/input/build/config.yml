@@ -1,0 +1,11 @@
+version: "3"
+
+info:
+  productName: Partially Migrated
+  productIdentifier: com.example.partial
+  version: 1.2.3
+
+ios:
+  version: 2.0.0
+
+unknownProductionSetting: enabled
