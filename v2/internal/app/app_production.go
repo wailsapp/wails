@@ -37,6 +37,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	devtoolsEnabled := IsDevtoolsEnabled()
 	ctx = context.WithValue(ctx, "debug", debug)
 	ctx = context.WithValue(ctx, "devtoolsEnabled", devtoolsEnabled)
+	ctx = injectProductInfo(ctx)
 
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)

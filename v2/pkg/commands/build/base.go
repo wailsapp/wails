@@ -258,6 +258,18 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		}
 	}
 
+	// Inject the product info variable values
+	productInfo := options.ProjectData.Info
+	ldflags.Add("-X", fmt.Sprintf("'internal.app.ProductName=%s'", productInfo.ProductName))
+	ldflags.Add("-X", fmt.Sprintf("'internal.app.ProductVersion=%s'", productInfo.ProductVersion))
+	ldflags.Add("-X", fmt.Sprintf("'internal.app.CompanyName=%s'", productInfo.CompanyName))
+	if productInfo.Copyright != nil {
+		ldflags.Add("-X", fmt.Sprintf("'internal.app.Copyright=%s'", *productInfo.Copyright))
+	}
+	if productInfo.Comments != nil {
+		ldflags.Add("-X", fmt.Sprintf("'internal.app.Comments=%s'", *productInfo.Comments))
+	}
+
 	ldflags.Deduplicate()
 
 	if ldflags.Length() > 0 {
