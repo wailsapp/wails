@@ -1,47 +1,75 @@
 {
-  "version": 1,
+  "version": 3,
   "scenario": "badge-noop-linux-amd64",
   "command": [
     "wails3",
-    "build",
-    "--target",
-    "linux/amd64"
+    "build"
   ],
   "samples": [
     {
-      "wall_ms": 83.332,
-      "cpu_ms": 95.113,
-      "reported_build_ms": 7,
-      "cached_steps": 4
+      "wall_ms": 104.094,
+      "cpu_ms": 208.015,
+      "peak_rss_bytes": 84824064,
+      "reported_build_ms": 31,
+      "cached_steps": 6,
+      "steps_reported": true
     },
     {
-      "wall_ms": 75.552,
-      "cpu_ms": 87.516,
-      "reported_build_ms": 8,
-      "cached_steps": 4
+      "wall_ms": 104.358,
+      "cpu_ms": 204.552,
+      "peak_rss_bytes": 85630976,
+      "reported_build_ms": 24,
+      "cached_steps": 6,
+      "steps_reported": true
     },
     {
-      "wall_ms": 88.037,
-      "cpu_ms": 99.107,
-      "reported_build_ms": 10,
-      "cached_steps": 4
+      "wall_ms": 104.604,
+      "cpu_ms": 210.883,
+      "peak_rss_bytes": 82583552,
+      "reported_build_ms": 27,
+      "cached_steps": 6,
+      "steps_reported": true
     },
     {
-      "wall_ms": 87.756,
-      "cpu_ms": 101.405,
-      "reported_build_ms": 8,
-      "cached_steps": 4
+      "wall_ms": 97.889,
+      "cpu_ms": 191.045,
+      "peak_rss_bytes": 84221952,
+      "reported_build_ms": 26,
+      "cached_steps": 6,
+      "steps_reported": true
     },
     {
-      "wall_ms": 81.314,
-      "cpu_ms": 92.552,
-      "reported_build_ms": 10,
-      "cached_steps": 4
+      "wall_ms": 91.749,
+      "cpu_ms": 179.33,
+      "peak_rss_bytes": 84750336,
+      "reported_build_ms": 22,
+      "cached_steps": 6,
+      "steps_reported": true
+    },
+    {
+      "wall_ms": 97.308,
+      "cpu_ms": 196.898,
+      "peak_rss_bytes": 84025344,
+      "reported_build_ms": 24,
+      "cached_steps": 6,
+      "steps_reported": true
+    },
+    {
+      "wall_ms": 99.092,
+      "cpu_ms": 204.036,
+      "peak_rss_bytes": 84234240,
+      "reported_build_ms": 27,
+      "cached_steps": 6,
+      "steps_reported": true
     }
   ],
-  "median_wall_ms": 83.332,
-  "min_wall_ms": 75.552,
-  "max_wall_ms": 88.037,
-  "median_cpu_ms": 95.113,
-  "median_reported_build_ms": 8
+  "median_wall_ms": 99.092,
+  "min_wall_ms": 91.749,
+  "max_wall_ms": 104.604,
+  "median_cpu_ms": 204.036,
+  "median_peak_rss_bytes": 84234240,
+  "median_reported_build_ms": 26,
+  "median_absolute_deviation_ms": 5.002,
+  "mad_percent": 5.047834335768775,
+  "orchestration_overhead_percent": 281.1230769230769
 }

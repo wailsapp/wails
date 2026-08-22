@@ -494,9 +494,8 @@ func applyTarget(targets *Targets, raw hclTarget) error {
 		return err
 	}
 	target := targetByName(platformByName(targets, platform), arch)
-	if target == nil {
-		return fmt.Errorf("unsupported target %q", raw.Name)
-	}
+	// parseTargetName accepts only registry targets, and every registry
+	// architecture has a concrete slot in Platform.
 	setStrings(&target.Tags, raw.Tags)
 	setString(&target.MinimumVersion, raw.MinimumVersion)
 	setInt(&target.BuildNumber, raw.BuildNumber)

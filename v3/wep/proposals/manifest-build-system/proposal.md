@@ -1,10 +1,8 @@
 # Wails Enhancement Proposal (WEP)
 
-## Title
+## HCL manifest build system for Wails v3
 
-**Manifest-Driven Wails v3 Build System**
-
-**WEP Number**: (leave blank, assigned on acceptance)
+**WEP Number**: (assigned on acceptance)
 
 **Status**: Draft
 
@@ -12,255 +10,384 @@
 
 **Created**: 2026-08-16
 
-**Discussion**: Local design and decision tickets under `history/wayfinder/wails-build-system/`
-
-**Implementor**: Wails maintainers
-
 **Target**: Wails v3
 
 ## Summary
 
-Replace generated project Taskfiles and `build/config.yml` orchestration with
-one sparse root `wails.toml` and a built-in Wails-aware Wake pipeline. Wails
-owns versioned defaults, planning, caching, generated platform inputs, and
-normal build/package/sign/dev execution. Users customize declarative fields or
-user-owned script hooks and may eject the full base or one named profile when
-they need a source-level frozen snapshot.
+New Wails v3 projects use one root `wails.hcl` to describe project identity,
+frontend commands, build and development policy, targets, packages, signing
+references, file associations, protocols, and user-owned platform inputs.
+
+Users request outcomes with `wails3 build`, a complete named build profile, or
+bounded anonymous `--targets` and `--formats` options. Wails expands that intent
+into an immutable multi-target Plan and executes a fixed Wails-owned pipeline.
+Wake provides typed planning, ownership validation, caching, concurrency,
+cancellation, and reporting without exposing a task graph as project
+configuration.
+
+The presence of `wails.hcl` is the explicit opt-in and cutover flag. Once the
+file exists, Wails completely ignores Taskfiles. Migration is explicit,
+reviewable, non-destructive, and inactive until the user activates it.
 
 ## Motivation
 
-The generated v3 Taskfile system was intended to explain the build but became
-the practical customization API. Users must understand several generated
-files and internal task names, and Wails cannot safely update generated logic
-without overwriting user changes. Projects that customize generated files also
-stop receiving build-system improvements.
+Generated Taskfiles became Wails' practical customization API. Users must
+understand generated files and internal task names, while Wails cannot improve
+generated orchestration without risking user edits. Production configuration is
+also split across Taskfiles, variables, `build/config.yml`, and platform files.
 
-The build implementation should evolve with the pinned Wails CLI while the
-project records only identity and deviations from defaults. The normal path
-must also be substantially faster than repeatedly interpreting and invoking a
-general-purpose task graph.
+Most projects need light customization, not a programmable build graph. The
+project should record its identity and deviations from versioned Wails defaults;
+the CLI should own the implementation that evolves with each Wails v3 release.
 
-## Detailed Design
+## Goals
 
-Every new project contains a minimal `wails.toml` with required project
-identity. The manifest has no speculative schema field. It declares frontend,
-build, dev, target, package, signing, association, protocol, hook, profile, and
-extension intent; unknown core fields are errors. Defaults are compiled into
-the exact CLI version and package-manager/icon/binding conventions may be
-inferred where user values are absent.
+- Centralize production and development intent in one readable file.
+- Cover everything required for currently supported production binaries and
+  packages on Windows, macOS, Linux, iOS, and Android.
+- Preserve user-owned assets and templates byte-for-byte.
+- Provide one documented build workflow with deterministic text and JSON Plans.
+- Make generated state disposable, final artifacts exact, and cache behavior
+  safe and inspectable.
+- Keep existing projects on their Taskfile path until they explicitly cut over.
 
-`wails3 build`, `package`, `sign`, and `dev` resolve the manifest through a
-read-only Planner. The Planner emits one immutable typed Plan for all requested
-targets. Project nodes are shared only when their specs are equivalent;
-target/package outputs have one owner. The executor schedules the critical
-path with bounded CPU, memory, and exclusive-tool claims, continues independent
-branches after failure, and reports each node through the existing Wake UI.
+## Non-goals for the first release
 
-Direct inputs are content-snapshotted with BLAKE3. Action keys include typed
-intent, direct snapshots, consumed artifact digests, tool/handler identity, and
-relevant environment. Successful reproducible outputs enter a machine-local
-content-addressed artifact store and may be restored when missing. Dependency
-installation uses a Receipt rather than storing dependency directories.
-Signing and undeclared-side-effect hooks never create reusable cache entries.
+- Hooks, arbitrary commands, custom stages, stage replacement, graph
+  dependencies, or user-defined pipelines.
+- HCL expressions, functions, includes, interpolation, inheritance, or HCL-JSON.
+- Automatic translation of arbitrary shell logic or reachable customized
+  Taskfile behavior without a typed equivalent.
+- Device deployment, emulator management, IDE launch, or a generic `other`
+  configuration bucket.
+- Remote artifact caching.
 
-Generated platform resources live under ignored `.wails/` state. Stable
-customization is expressed through structured manifest fields or optional
-user-owned templates. Hooks call one project-relative user-owned script;
-cacheable hooks must declare inputs and outputs.
+Hooks and typed tool invocations may be designed later. This proposal reserves
+no current stage name, command shape, or HCL syntax for that work.
 
-Hooks are invoked as files, never as inline shell. Executable/shebang scripts
-run directly on Unix; Windows `.cmd`/`.bat` and `.ps1` files are passed as a
-single script path to the platform command or PowerShell interpreter. The
-stable environment is `WAILS_PROJECT_DIR`, `WAILS_TARGET_OS`,
-`WAILS_TARGET_ARCH`, `WAILS_PROFILE`, `WAILS_OUTPUT`, and
-`WAILS_PIPELINE_VERSION`. `WAILS_OUTPUT` names the phase Artifact rather than
-the hook's own cache output. Cacheable hooks fingerprint the script bytes and
-executable mode and must declare complete inputs and outputs. Multiple outputs
-must share a non-root directory so Wails can store one bounded Artifact.
-Declaring inputs or outputs without `cache = true` is an error, and a cached
-output root cannot contain its script or an input. Script and working-directory
-symlinks must resolve inside the Project. Cancellation terminates the hook's
-whole process group.
+## Manifest contract
 
-`before_build` runs once at Project scope with empty target and output values.
-`after_build` runs once per Target with the binary as output. Package and sign
-hooks are barriers around each Target's complete requested format set:
-`before_package`, `after_package`, `before_sign`, and `after_sign` each run once
-at the corresponding boundary. A single-format invocation receives that
-package path; a multi-format invocation receives their common parent. Package
-Nodes within a barrier remain independent and may execute concurrently.
+The native manifest is exactly `wails.hcl`. Wails searches upward from the
+working directory; the directory containing the nearest manifest is the project
+root.
 
-A package template is either one file or one directory. File templates render
-directly to the format-owned input. In directory templates, files ending in
-`.tmpl` are rendered with that suffix removed and all other files are copied;
-symlinks are rejected. Rendering is strict (`missingkey=error`) and atomically
-replaces only the package Node's workspace. Wails never edits the source.
+The first attribute is `version = 3`. It identifies the Wails major contract,
+not an exact CLI version. The schema uses shallow semantic blocks, singular
+labelled blocks for repeated concepts, and `snake_case` names.
 
-The template model is versioned independently through `.Version` (initially
-`1`) and exposes only stable build intent:
+The first release accepts only literal strings and heredocs, booleans, numbers,
+tuples, and closed objects. References, interpolation, calls, operators,
+conditions, comprehensions, and `null` are errors. Unknown or duplicate fields,
+duplicate blocks, duplicate logical labels, and wrong primitive types are errors
+with source ranges.
 
-- `.Project`: resolved project and target metadata;
-- `.Target`: `OS`, `Arch`, `Variant`, and `MinimumVersion`;
-- `.Package.Format`;
-- `.Paths`: absolute `Project`, `Binary`, `Output`, `Assets`, `Icon`, and
-  package `Workspace` paths;
-- `.Associations`, `.Protocols`, and the format's opaque `.Options` map.
+All manifest paths are project-relative. Absolute paths and references into
+Wails-owned `.wails/` state are rejected. Normal commands never rewrite the
+active manifest.
 
-The template destination is format-specific: NSIS `project.nsi`, MSIX
-`AppxManifest.xml`, macOS/iOS `Info.plist`, AppImage desktop entry, Linux nfpm
-configuration, DMG JSON options, or a complete Android Gradle directory.
-Structured DMG options override values rendered by its JSON template. Built-in
-DMG resource paths are project-relative and are content-snapshotted. A custom
-template's project root participates in its Action Key because the stable
-model deliberately exposes absolute paths.
+One typed schema and its default metadata drive decoding, exact type checking,
+semantic validation, reference documentation, examples, Plan resolution, and
+ejected output.
 
-`wails3 eject` materializes and freezes the resolved base. `wails3 eject
-<profile>` freezes an existing sparse profile or creates one from the effective
-base. Provenance records the complete CLI version. Re-ejection never changes
-active values without a safe historical-default comparison. `--backup` creates
-a timestamped sibling only when requested.
+## Resolution
 
-`wails3 migrate` parses legacy Taskfiles with Wake's AST parser, translates
-known identity/configuration/script-hook patterns, records source digests and
-stable diagnostics, and marks whether cutover is complete. Unsupported inline
-shell remains manual. Automatically complete migrations retire digest-verified
-legacy files immediately; `--backup` preserves them first. Incomplete
-migrations continue using the legacy Taskfile path until the user resolves the
-diagnostics and explicitly confirms the reviewed cutover with `--complete`.
+Wails resolves a request in this order:
 
-The Dev Session owns persistent frontend/backend processes and watchers. File
-bursts request finite production Plans; a newer generation cancels stale work.
-Canceled generations leave no failed-build verdict. The healthy app remains
-alive until a replacement builds and starts; a cache-hit/restored binary does
-not cause a restart. Manifest changes transactionally reload watch policy and
-restart only affected persistent processes.
-Frontend readiness means the configured TCP port is listening; backend
-readiness requires the process to survive startup stabilization. Shutdown
-cancels and waits for in-flight builds, then terminates each owned process
-group. With `dev.use_gitignore = true`, root and nested ignore files bound the
-watch tree and changes to an ignore file reload that policy without rebuilding.
-New directories are registered and checked for inputs already created inside
-them. Frontend and backend processes receive isolated session environment and
-share one explicit IPv4 loopback URL. A port change starts the new frontend and
-then its backend before retiring the old pair.
+1. Discover and parse the nearest manifest.
+2. Validate literal shapes and exact primitive types.
+3. Seed safe Wails-owned implementation defaults.
+4. Apply explicit project, platform, and target values through typed rules.
+5. Apply one complete build profile, or allowlisted anonymous CLI options.
+6. Validate paths, ownership, formats, credentials, and host/tool capabilities.
+7. Create a Plan only when no error remains.
 
-## Non-Goals
+Omitted fields inherit. Explicit collections replace inherited collections; an
+explicit empty collection clears them. `tags` is additive: project, target, and
+CLI tags are concatenated and deduplicated in order.
 
-- Preserve Taskfile as a second long-term user-facing build language.
-- Add arbitrary inline shell or user-defined graph nodes to `wails.toml`.
-- Store remote cache artifacts in the first release.
-- Treat generated platform files as the primary customization surface.
-- Automatically translate arbitrary or inline legacy shell logic.
+Normal builds do not infer package managers, lockfiles, binding shape, asset
+paths, or production outputs from mutable project contents. Initialization and
+migration may inspect conventional files, but write the selected values into
+the manifest.
 
-## Platform Considerations
+## Profiles and command line
 
-Windows, macOS, Linux, iOS, and Android use the same manifest and Plan model.
-Target overlays supply platform and architecture policy. Platform assets are
-generated into `.wails/`, and package/sign adapters continue to call native
-toolchains such as NSIS, Xcode/codesign, Android SDK tools, nfpm, and AppImage
-tools. Legacy adapters that mutate process state, including AppImage
-generation, run behind an isolated CLI subprocess boundary. Unsupported
-target/format combinations fail during planning.
+A profile is a complete named production request, not a sparse overlay. It
+selects concrete targets, formats, signing or notarization intent, and bounded
+compiler policy.
 
-Linux build plus AppImage, DEB, RPM, and Arch packaging are exercised end to
-end by the reference implementation. Every supported Target/format pair is
-tested structurally, and the permanent acceptance matrix requires Windows,
-macOS, iOS, Android, cross-architecture, and signing runs on matching native or
-credentialed release hosts before rollout.
+The documented interface is:
 
-## Pros/Cons
+| Command | Meaning |
+| --- | --- |
+| `wails3 build` | Anonymous host application build using finite build policy. |
+| `wails3 build release` | Execute the complete `release` profile. |
+| `wails3 build --targets … --formats …` | Bounded anonymous multi-target request; each option accepts one comma-separated list. |
+| `wails3 build … --plan` | Validate and print the resolved Plan as text without changing files. |
+| `wails3 build … --plan --json` | Emit the same versioned Plan as JSON. |
+| `wails3 dev` | Start the long-lived development session. |
+| `wails3 dev --plan` | Print the finite startup Plan and exit. |
+| `wails3 eject` | Write a complete inactive reference manifest. |
+| `wails3 migrate` | Analyze legacy inputs and write or report an inactive draft. |
+| `wails3 migrate --activate` | Validate and atomically activate a reviewed, complete draft. |
 
-Pros:
+Canonical native selection options are plural `--targets` and `--formats`.
+Anonymous compiler overrides include `--tags`, `--obfuscated`, and
+`--garble-args`; they appear in the Plan and action keys. A named profile rejects
+artifact-affecting overrides and accepts only operational options such as Plan
+inspection, force/cache bypass, and verbosity.
 
-- New projects expose one short, stable file instead of generated build logic.
-- Build-system updates ship with Wails without overwriting user files.
-- Typed planning and content caching provide fast no-op and incremental builds.
-- Ejection supports users who require explicit, frozen configuration.
-- Migration is conservative, inspectable, and provenance-aware.
+`package` and `sign` are temporary compatibility aliases. New documentation
+teaches `build`. There is no `config show`, `config check`, config export, or
+graph-navigation interface: ordinary commands validate and `--plan` is the
+inspection surface. Legacy-only tool commands and Taskfile flags remain on the
+legacy route and are not part of the native HCL interface.
 
-Cons:
+## Fixed pipeline and Plan
 
-- Arbitrary Taskfile customizations require a manifest field, script hook, or
-  manual migration.
-- Wails owns more cross-platform build implementation and native-tool testing.
-- Fully frozen manifests require explicit user review to adopt later defaults.
-- The first release has no remote cache and needs native-host acceptance runs.
+Wails owns one fixed pipeline. The planner expands requested final artifacts
+into prerequisites, shares target-independent work, checks cycles and output
+ownership, and schedules independent work concurrently. Deterministic work may
+be restored from a content-addressed cache. Signing, notarization, credentials,
+and externally stateful operations are never reusable cache entries.
 
-## Alternatives Considered
+Stable reporting stages are `resolve`, `prepare`, `generate`, `frontend`,
+`compile`, `assemble`, `package`, `sign`, and `collect`. Stages are reporting
+categories, not execution APIs. Users cannot select, replace, reorder, or attach
+hooks to them.
 
-Keeping generated Taskfiles preserves flexibility but cannot reconcile user
-edits with Wails updates and retains the current verbosity. Generating one
-larger Taskfile reduces file count but leaves the same ownership problem.
-Treating Taskfile as an override layer creates two supported build languages
-and forces users to understand internal task names. A general plugin graph was
-rejected in favor of typed first-party nodes plus stable script/template seams.
+The default Plan is a compact text table. `--plan --json` emits the same Plan as
+a versioned machine-readable document. Plans include selected profile and
+targets, nodes and dependencies, inputs, outputs, cache decisions, provenance,
+and exact final artifacts. Plan inspection performs no writes.
 
-## Backwards Compatibility
+## Assets, generated state, and artifacts
 
-Existing projects without `wails.toml` continue through Taskfile execution.
-Migration state never appears in `wails.toml`: completion provenance, source
-digests, Taskfile classifications, and diagnostics live in the hidden
-`.wails/migration-report.json`. An incomplete report retains the Taskfiles and
-routes commands through the legacy path. A completed migration activates the
-built-in pipeline like a native manifest and retires every represented legacy
-source whose digest still matches the analysis; `--backup` first preserves the
-same tree under `.wails/migration-backup`. Current embedded defaults are
-compared structurally, and exact fingerprints identify historical generated
-defaults, so the report distinguishes current defaults, historical defaults,
-and customised Taskfiles. If both build systems coexist without a report, the
-CLI rejects the ambiguous project instead of choosing one silently.
-After resolving an incomplete report, `wails3 migrate --complete` acknowledges
-the manual translation and retires only sources that still match their
-original report digests.
+Ownership has three zones:
 
-The public CLI verbs remain, with manifest-native profile, target, format,
-force, config, eject, and migration options. Arbitrary Task variables are
-rejected on the manifest path with guidance to declarative fields or hooks.
+| Zone | Contract |
+| --- | --- |
+| User-owned inputs | `wails.hcl`, source, referenced assets/templates, existing `build/` content, and otherwise unclassified files. Wails may read, hash, and copy them, but never edit or delete them. |
+| Generated inputs | Disposable Wails-owned workspaces, indexes, reports, and platform/package inputs beneath `.wails/`. |
+| Final artifacts | Exact Plan-declared binaries and packages under `build.output`. Wails may atomically replace only those exact paths. |
 
-## Security and Privacy
+An exact final-artifact path is the sole exception to otherwise user-owned,
+unclassified content: once selected by a validated Plan, final-artifact
+ownership takes precedence and Wails may replace a pre-existing file or
+directory at that exact path. Siblings and ancestors remain user-owned. The
+Plan must reject two Nodes claiming the same final path.
 
-Manifest paths and hook paths must remain inside the project. Migration cannot
-delete external includes or changed files. Secrets are not interpolated into
-the manifest; signing stores environment-variable or keychain references.
-Signing and default hooks are not reusable cache actions. Cache state is local,
-disposable, and stores content digests/artifacts rather than credentials.
+A custom file or directory completely replaces its corresponding generated
+input. Wails copies it byte-for-byte into `.wails/`, preserving executable
+permissions, with no interpolation, merge, sanitization, or line-ending change.
+Structured settings that conflict with a complete replacement are errors.
 
-## Test Plan
+`wails3 clean` may always remove `.wails/`. It removes a recorded final artifact
+only when the current digest still matches the Wails-produced digest. Modified
+and unknown files are preserved and reported.
 
-- Strict manifest/default/profile/eject/path validation tests.
-- Deterministic graph, target overlay, hook barrier, failure isolation, and
-  multi-target tests.
-- Snapshot, semantic Go API, local replacement, Receipt, artifact restoration,
-  corruption, and coarse-timestamp cache tests.
-- Stock/modified/external Taskfile migration and digest-guarded removal tests.
-- Dev watch, exclusion, process-reconfiguration, and cancellation tests.
-- Race detection, vet, and focused command/Wake suites on every change.
-- Native build/package/sign acceptance on every supported release host.
-- Controlled warm/cold/incremental benchmarks with a sub-100ms badge no-op
-  target and explicit regression budget.
+## Targets, packaging, and signing
 
-## Reference Implementation
+Supported targets and formats need no empty enablement blocks. Platform and
+package blocks exist only for customization; profiles or anonymous flags select
+outputs.
 
-The local reference implementation is on branch `codex/wake-cache-mvp`, from
-commit `1cce9e558` onward. The detailed design and measured evidence are in
-`history/wails-toml-build-system.md` and its local Wayfinder tickets. It has not
-been pushed or submitted for external review.
+| Platform | Targets | Production formats |
+| --- | --- | --- |
+| Windows | `amd64`, `arm64` | binary, NSIS, MSIX |
+| macOS | `amd64`, `arm64`, synthetic `universal` | app, DMG |
+| Linux | `amd64`, `arm64` | binary, AppImage, DEB, RPM, Arch Linux |
+| iOS | `arm64` with simulator/device destination | app, IPA |
+| Android | `amd64`, `arm64`, synthetic `universal` | AAB only |
 
-## Maintenance Plan
+Platform blocks expose native identity, assets, SDK policy, and named signing
+references. Target blocks are limited to architecture-sensitive compiler,
+environment, minimum-version, and bounded toolchain policy. Toolchain strategies
+are `auto`, `native`, `zig`, and `docker`.
 
-The manifest package owns defaulting, validation, overlays, and ejection; the
-pipeline package owns typed planning/execution; the cache package owns content
-identity and storage; command adapters own native tools. Released default
-snapshots should be retained when upgrade suggestions are introduced. New
-public fields or node behavior require manifest, planner, migration,
-documentation, and platform acceptance coverage. Performance regressions are
-tracked against controlled benchmark medians.
+Android Dev may assemble an APK internally for installation on an emulator or
+device. APK is not a selectable production format in `wails.hcl`; profiles and
+production `wails3 build` requests accept AAB only.
 
-The legacy Taskfile parser remains only for migration/compatibility during the
-announced transition and can be removed after that policy expires.
+Package blocks are closed typed schemas. Credentials, passwords, and private
+keys never appear in HCL; the manifest contains named references. Android
+production never silently uses a debug keystore. A signed AAB requires a valid
+credential, while unsigned release output must be deliberate.
 
-## Conclusion
+File associations and protocols use explicit labelled blocks. Optional platform
+filters default only to platforms where Wails supports the feature. Unsupported
+combinations fail validation.
 
-A sparse manifest plus a built-in typed Wake pipeline makes the normal Wails
-build simple to understand, safe to update, and fast, while retaining explicit
-escape hatches and a conservative path from existing v3 projects.
+## Development
+
+`wails3 dev` owns watchers and persistent frontend/application processes. It
+requests a finite Plan for startup and each rebuild while retaining the same
+ownership, cache, cancellation, and reporting rules as production.
+
+The `dev` block contains log level, debounce, watch and exclusion patterns,
+Git-ignore handling, shutdown grace period, and development tags. Legacy
+`root_path` is unnecessary because the manifest directory is the project root.
+Legacy `executes` is not migrated because arbitrary process orchestration is not
+configuration.
+
+Finite production policy such as `build.output`, `trim_path`, `strip`, and
+obfuscation does not leak into development. Dev retains debug information, uses
+the frontend dev command, and stores transient binaries beneath `.wails/dev/`.
+
+Manifest reload is transactional: a failed replacement watcher, frontend,
+backend, or build leaves the last healthy generation running. A newer file-event
+generation cancels stale finite work; cancellation is not reported as a failed
+build.
+
+## Migration and cutover
+
+Routing is determined only by project state:
+
+| State | Behavior |
+| --- | --- |
+| No `wails.hcl` | Commands stay on the legacy Taskfile compatibility path. |
+| `wails.migrated.hcl` | Inactive migration draft; normal commands ignore it. |
+| `wails.hcl` | Native cutover; Taskfiles are completely ignored and invalid HCL never falls back. |
+
+`wails3 migrate` analyzes root and included Taskfiles, conventional overrides,
+`build/config.yml`, project metadata, lockfiles, TypeScript configuration, and
+conventional assets. It extracts only behavior representable by typed HCL and
+writes a fresh inactive draft. It never overwrites a draft, modifies an asset,
+or deletes a Taskfile.
+
+Reachable custom behavior that cannot be proved equivalent is a blocker. Stock
+generated orchestration is replaced by the fixed pipeline. Utility tasks outside
+Wails build/package/sign/dev reachability are reported but do not block.
+
+`wails3 migrate --activate` reruns analysis, validates the reviewed draft,
+refuses unresolved blockers, and atomically renames it to `wails.hcl`.
+Activation changes no other project file. There is no automatic backup,
+deletion, rollback, or stale-Taskfile fallback.
+
+## Ejection
+
+`wails3 eject` writes one complete canonical inactive sibling,
+`wails.ejected.hcl`. It includes current Wails defaults and records the exact
+generating CLI version in a comment. It excludes invocation overrides, host
+facts, credentials, and tool versions, and never overwrites without explicit
+force. Ejection does not create another way to build; the file is inert until a
+user deliberately makes it the active `wails.hcl`.
+
+## Security and correctness
+
+- Manifest paths are contained within the project and cannot target `.wails/`.
+- Exact output ownership is validated before execution.
+- Action keys include typed intent, direct input snapshots, dependency artifact
+  digests, tool/handler identity, and relevant explicit environment.
+- Cache restore verifies content and publishes atomically; corrupt entries are
+  discarded as misses.
+- Secrets are referenced by name, redacted, and never serialized into Plans or
+  receipts.
+- Signing and other non-reproducible operations are not cached.
+- Independent Plan branches continue after unrelated failures while descendants
+  of a failed node are blocked.
+
+## Examples
+
+Minimal project:
+
+```hcl
+version = 3
+
+project {
+  name         = "hello"
+  product_name = "Hello"
+  identifier   = "com.example.hello"
+  version      = "0.1.0"
+  binary_name  = "hello"
+  icon         = "assets/appicon.png"
+}
+
+frontend {
+  directory = "frontend"
+  install   = ["npm", "install"]
+  build     = ["npm", "run", "build"]
+  dev       = ["npm", "run", "dev"]
+  output    = "frontend/dist"
+}
+
+build {
+  output = "bin"
+}
+```
+
+Light customization with one complete release profile:
+
+```hcl
+build {
+  output = "dist"
+  tags   = ["sqlite_fts5"]
+}
+
+dev {
+  debounce_ms    = 500
+  watch          = ["**/*.go", "frontend/src/**"]
+  exclude        = ["dist/**", "frontend/node_modules/**"]
+  use_git_ignore = true
+}
+
+target "windows/amd64" {
+  toolchain = "zig"
+  tags      = ["enterprise"]
+}
+
+package "nsis" {
+  install_scope = "user"
+}
+
+profile "release" {
+  target "windows/amd64" {
+    formats = ["nsis"]
+  }
+}
+```
+
+User-owned inputs:
+
+```hcl
+windows {
+  icon     = "assets/windows/app.ico"
+  manifest = "assets/windows/app.manifest"
+}
+
+darwin {
+  icon       = "assets/macos/app.icns"
+  assets_car = "assets/macos/Assets.car"
+  info_plist = "assets/macos/Info.plist"
+
+  signing {
+    entitlements = "assets/macos/entitlements.plist"
+  }
+}
+
+package "nsis" {
+  template = "packaging/windows/installer.nsi"
+}
+
+file_association "studio_project" {
+  extensions  = ["studio"]
+  name        = "Studio Project"
+  description = "Studio project file"
+  icon        = "assets/filetypes/studio-project.png"
+  role        = "editor"
+  platforms   = ["windows", "darwin", "linux"]
+}
+
+protocol "studio" {
+  description = "Open Studio links"
+  platforms   = ["windows", "darwin", "linux", "ios", "android"]
+}
+```
+
+## Deferred extension work
+
+A later proposal may define hooks, typed Wails tool invocations such as
+`wails.generate.icons`, or other pipeline customization. That work must specify
+lifecycle semantics, declared inputs and outputs, environment, caching,
+cancellation, failures, and external process containment. It must not infer an
+API from current stage names or legacy `wails3 tool` commands.

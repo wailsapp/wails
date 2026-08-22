@@ -145,7 +145,7 @@ func applyLegacyBuildConfiguration(root string, report *MigrationReport, doc *ma
 	}
 	for _, execute := range legacy.DevMode.Executes {
 		if !legacyDevCommand(execute.Command) {
-			blockMigration(report, "unsupported-dev-command", "build/config.yml", "", "dev command requires a user-owned hook or manual migration: "+execute.Command)
+			blockMigration(report, "unsupported-dev-command", "build/config.yml", "", "dev command is not representable in config-only HCL; keep using Taskfiles: "+execute.Command)
 		}
 	}
 	for _, association := range legacy.FileAssociations {

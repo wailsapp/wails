@@ -1,0 +1,177 @@
+[
+  {
+    "scenario": "task-graph",
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "code": "cyclic-include",
+        "file": "Taskfile.yml",
+        "message": "Taskfile include cycle cannot be proven equivalent"
+      },
+      {
+        "severity": "warning",
+        "code": "dynamic-include",
+        "file": "Taskfile.yml",
+        "message": "templated include dynamic cannot be proven equivalent"
+      },
+      {
+        "severity": "warning",
+        "code": "missing-include",
+        "file": "Taskfile.yml",
+        "message": "required include missing is missing"
+      },
+      {
+        "severity": "warning",
+        "code": "dynamic-task-reference",
+        "file": "Taskfile.yml",
+        "task": "dynamic-ref",
+        "message": "reachable task selects another task dynamically and cannot be proven equivalent"
+      },
+      {
+        "severity": "warning",
+        "code": "unresolved-task-reference",
+        "file": "Taskfile.yml",
+        "task": "missing-ref",
+        "message": "reachable task refers to missing task does-not-exist"
+      },
+      {
+        "severity": "warning",
+        "code": "external-taskfile",
+        "file": "../external.yml",
+        "message": "reachable included Taskfile is outside the project and must be migrated manually"
+      },
+      {
+        "severity": "warning",
+        "code": "deferred-hook",
+        "file": "Taskfile.yml",
+        "task": "before-build",
+        "message": "custom before_build script is not representable in config-only HCL and blocks activation"
+      },
+      {
+        "severity": "warning",
+        "code": "modified-task",
+        "file": "Taskfile.yml",
+        "task": "build",
+        "message": "root dispatch task was modified and is not proven representable in config-only HCL; keep using Taskfiles"
+      },
+      {
+        "severity": "warning",
+        "code": "unsupported-task",
+        "file": "Taskfile.yml",
+        "task": "dynamic-ref",
+        "message": "reachable custom task is not representable in config-only HCL; keep using Taskfiles"
+      },
+      {
+        "severity": "warning",
+        "code": "unsupported-task",
+        "file": "Taskfile.yml",
+        "task": "missing-ref",
+        "message": "reachable custom task is not representable in config-only HCL; keep using Taskfiles"
+      },
+      {
+        "severity": "warning",
+        "code": "external-output",
+        "file": "Taskfile.yml",
+        "message": "BIN_DIR points outside the project and must be migrated manually"
+      },
+      {
+        "severity": "warning",
+        "code": "missing-generated-tasks",
+        "file": "build/Taskfile.yml",
+        "message": "28 generated tasks are missing; review this Taskfile as customised"
+      }
+    ]
+  },
+  {
+    "scenario": "legacy-config",
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "code": "unknown-config-field",
+        "file": "build/config.yml",
+        "message": "line 11: field unknownProductionSetting not found in type commands.legacyBuildConfiguration"
+      },
+      {
+        "severity": "warning",
+        "code": "config-version",
+        "file": "build/config.yml",
+        "message": "unsupported legacy configuration version 2"
+      },
+      {
+        "severity": "warning",
+        "code": "platform-version",
+        "file": "build/config.yml",
+        "message": "iOS version \"2.0.0\" differs from project version \"1.0.0\" and has no independent manifest field"
+      },
+      {
+        "severity": "warning",
+        "code": "dev-root",
+        "file": "build/config.yml",
+        "message": "dev_mode.root_path is not representable unless it is the project root"
+      },
+      {
+        "severity": "warning",
+        "code": "unsupported-dev-command",
+        "file": "build/config.yml",
+        "message": "dev command is not representable in config-only HCL; keep using Taskfiles: ./scripts/custom-dev-step"
+      }
+    ]
+  },
+  {
+    "scenario": "frontend-path",
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "code": "frontend-invalid",
+        "file": "frontend",
+        "message": "frontend path is not a directory"
+      }
+    ]
+  },
+  {
+    "scenario": "frontend-metadata",
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "code": "frontend-output",
+        "file": "frontend/dist",
+        "message": "frontend output path is not a directory"
+      },
+      {
+        "severity": "warning",
+        "code": "frontend-package-json",
+        "file": "frontend/package.json",
+        "message": "cannot parse package metadata: invalid character 'i' looking for beginning of object key string"
+      }
+    ]
+  },
+  {
+    "scenario": "frontend-manager",
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "code": "frontend-output",
+        "file": "frontend",
+        "message": "frontend/dist was not found; confirm the frontend build output directory"
+      },
+      {
+        "severity": "warning",
+        "code": "frontend-script",
+        "file": "frontend/package.json",
+        "message": "required dev script is missing"
+      },
+      {
+        "severity": "warning",
+        "code": "package-manager-conflict",
+        "file": "frontend",
+        "message": "package manager signals disagree: cargo, npm"
+      },
+      {
+        "severity": "warning",
+        "code": "package-manager",
+        "file": "frontend",
+        "message": "unsupported package manager cargo"
+      }
+    ]
+  }
+]

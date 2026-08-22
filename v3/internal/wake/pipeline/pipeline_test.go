@@ -128,11 +128,22 @@ func TestPlanSharesFrontendAndCachesSecondRun(t *testing.T) {
 	results, err := executor.Execute(context.Background(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
 	require.NoError(t, err)
 	assert.Empty(t, results["frontend:install"].Artifact, "a receipt is not an artifact")
+	assert.NotEmpty(t, results["publish:target:linux/amd64:compile"].Artifact, "publication must preserve the source artifact identity")
 	first := len(h.runs)
 	assert.Equal(t, 6, first)
 	_, err = executor.Execute(context.Background(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
 	require.NoError(t, err)
-	assert.Equal(t, first+1, len(h.runs), "only terminal collection should run again")
+	assert.Equal(t, first, len(h.runs), "a warm build should run no handlers")
+	publishKey := NodeKey("publish:target:linux/amd64:compile")
+	assert.Equal(t, CacheArtifact, plan.Nodes[publishKey].Cache)
+	publishedResult := filepath.Join(root, "bin", "app", "result")
+	require.NoError(t, os.WriteFile(publishedResult, []byte("user-modified"), 0o644))
+	_, err = executor.Execute(context.Background(), plan, ExecuteOptions{Root: root, Reporter: report.Nop{}})
+	require.NoError(t, err)
+	assert.Equal(t, 2, countNodeRuns(h.runs, publishKey), "modified published output must be regenerated")
+	published, err := os.ReadFile(publishedResult)
+	require.NoError(t, err)
+	assert.Equal(t, []byte(publishKey), published)
 }
 
 // Regression test for https://github.com/wailsapp/wails/issues/1031.
@@ -187,11 +198,7 @@ func TestPlanInspectionReportsActualCacheDecisionsWithoutChangingFiles(t *testin
 	warm, err := executor.Inspect(t.Context(), plan, config.Root)
 	require.NoError(t, err)
 	for key, operation := range warm.Operations {
-		if key == "collect:artifacts" {
-			assert.Equal(t, "run", operation.Decision)
-		} else {
-			assert.Equal(t, "cached", operation.Decision, key)
-		}
+		assert.Equal(t, "cached", operation.Decision, key)
 	}
 
 	output := filepath.Join(config.Root, filepath.FromSlash(plan.Nodes["target:linux/amd64:compile"].Output))
@@ -364,6 +371,7 @@ func TestPlannerBuildsOnePlanForMultipleTargets(t *testing.T) {
 	assert.ElementsMatch(t, []NodeKey{"publish:target:linux/amd64:compile", "publish:target:linux/arm64:compile"}, plan.Artifacts)
 	collect := plan.Nodes["collect:artifacts"]
 	assert.Equal(t, CollectArtifacts, collect.Kind)
+	assert.Equal(t, CacheArtifact, collect.Cache)
 	assert.ElementsMatch(t, plan.Artifacts, collect.Dependencies)
 	amd64 := plan.Nodes["target:linux/amd64:compile"].Output
 	arm64 := plan.Nodes["target:linux/arm64:compile"].Output
@@ -675,6 +683,7 @@ func TestNonReproducibleArtifactsAndTheirPublishOperationsAreNeverCached(t *test
 	assert.Equal(t, CacheNever, publish.Cache)
 	assert.Empty(t, publish.Marker)
 	assert.True(t, publish.Artifact.Signed)
+	assert.Equal(t, CacheNever, plan.Nodes["collect:artifacts"].Cache, "a receipt over non-reproducible outputs must be regenerated")
 }
 
 func TestSigningInputsAreRewrittenToFrozenStagedCopies(t *testing.T) {

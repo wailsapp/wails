@@ -40,14 +40,21 @@ func PlanBuild(config manifest.Config, request Request) (Plan, error) {
 			return Plan{}, err
 		}
 	}
-	if combined.Name == "" {
-		combined.Name = "build"
-	}
 	combined.Artifacts = append([]NodeKey(nil), combined.Roots...)
 	references := make([]ArtifactReference, 0, len(combined.Artifacts))
 	for _, key := range combined.Artifacts {
 		node := combined.Nodes[key]
 		references = append(references, ArtifactReference{Key: key, Path: node.Output, Identity: node.Artifact})
+	}
+	collectCache := CacheArtifact
+	for _, key := range combined.Artifacts {
+		if combined.Nodes[key].Cache == CacheNever {
+			// A dependency that always runs can produce different bytes with the
+			// same Plan identity (signing is the important case). Rebuild the
+			// receipt so it always describes those non-reproducible outputs.
+			collectCache = CacheNever
+			break
+		}
 	}
 	const collectKey NodeKey = "collect:artifacts"
 	combined.Nodes[collectKey] = Node{
@@ -58,7 +65,7 @@ func PlanBuild(config manifest.Config, request Request) (Plan, error) {
 		Dependencies: append([]NodeKey(nil), combined.Artifacts...),
 		Spec:         CollectSpec{Artifacts: references, Receipt: ".wails/artifacts/receipt.json"},
 		Output:       ".wails/artifacts/receipt.json",
-		Cache:        CacheNever,
+		Cache:        collectCache,
 		Claims:       ResourceClaims{CPU: 1, MemoryMB: 64},
 		EstimateMS:   10,
 	}
@@ -167,12 +174,12 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	}
 	publish := func(source NodeKey, destination string) NodeKey {
 		node := plan.Nodes[source]
-		cachePolicy, marker := CacheReceipt, destination
+		cachePolicy := CacheArtifact
 		if node.Cache == CacheNever {
-			cachePolicy, marker = CacheNever, ""
+			cachePolicy = CacheNever
 		}
 		return add(Node{Key: NodeKey("publish:" + strings.TrimPrefix(string(source), "package:")), Kind: PublishArtifact, Label: "Publish " + filepath.Base(destination), Scope: node.Scope, Dependencies: []NodeKey{source},
-			Spec: PublishSpec{Source: node.Output, Destination: destination}, Output: destination, Marker: marker,
+			Spec: PublishSpec{Source: node.Output, Destination: destination}, Output: destination,
 			Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 128}, EstimateMS: 25, Artifact: node.Artifact})
 	}
 
@@ -332,10 +339,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		if request.Development {
 			output = finalOutput
 		}
-		packageConfig, err := manifest.ResolvePackageFormat(config.Package, request.TargetOS, "app")
-		if err != nil {
-			return Plan{}, err
-		}
+		packageConfig := registeredPackageFormat(config.Package, request.TargetOS, "app")
 		cachePolicy := CacheArtifact
 		if request.TargetOS == "ios" {
 			cachePolicy = CacheNever
@@ -399,10 +403,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	var packageRoots []NodeKey
 	finalOutputs := make(map[NodeKey]string, len(formats))
 	for _, format := range formats {
-		pkgConfig, err := manifest.ResolvePackageFormat(config.Package, request.TargetOS, format)
-		if err != nil {
-			return Plan{}, err
-		}
+		pkgConfig := registeredPackageFormat(config.Package, request.TargetOS, format)
 		finalOutput := packageOutput(config, request.TargetOS, request.TargetArch, format, multiTarget)
 		output := filepath.ToSlash(filepath.Join(generatedRoot, "artifacts", filepath.Base(finalOutput)))
 		if request.Development {
@@ -459,6 +460,17 @@ func addNode(plan *Plan, node Node, origins []OriginReference) NodeKey {
 	node.Origins = origins
 	plan.Nodes[node.Key] = node
 	return node.Key
+}
+
+func registeredPackageFormat(packages manifest.Packages, platform, format string) manifest.PackageFormat {
+	result, err := manifest.ResolvePackageFormat(packages, platform, format)
+	if err != nil {
+		// Selection has already accepted this pair from the closed capability
+		// registry. A mismatch here is an internal registry defect, not a user
+		// configuration error.
+		panic(fmt.Sprintf("pipeline package registry mismatch for %s/%s: %v", platform, format, err))
+	}
+	return result
 }
 
 func originsForNode(config manifest.Config, node Node, target string) []OriginReference {
@@ -556,19 +568,20 @@ func contains(values []string, want string) bool {
 }
 
 func goLocalSourceInputs(root string) ([]InputSpec, error) {
-	root, err := filepath.Abs(root)
+	return goLocalSourceInputsWithAbs(root, filepath.Abs)
+}
+
+func goLocalSourceInputsWithAbs(root string, abs func(string) (string, error)) ([]InputSpec, error) {
+	root, err := abs(root)
 	if err != nil {
 		return nil, err
 	}
 	local := map[string]bool{}
 	add := func(base, value string) {
-		if value == "" {
-			return
-		}
 		if !filepath.IsAbs(value) {
 			value = filepath.Join(base, value)
 		}
-		value, err = filepath.Abs(value)
+		value, err = abs(value)
 		if err != nil || pathWithin(value, root) {
 			return
 		}
@@ -647,7 +660,11 @@ func frontendInstallFiles(c manifest.Config) []string {
 	return result
 }
 func goMetadataFiles(root string) []string {
-	root, err := filepath.Abs(root)
+	return goMetadataFilesWithAbs(root, filepath.Abs)
+}
+
+func goMetadataFilesWithAbs(root string, abs func(string) (string, error)) []string {
+	root, err := abs(root)
 	if err != nil {
 		return []string{"go.mod", "go.sum", "go.work", "go.work.sum"}
 	}

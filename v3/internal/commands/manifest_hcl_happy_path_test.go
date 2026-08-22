@@ -442,10 +442,6 @@ func TestHCLBuildExecutesFrontendAndRealGoCompile(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "install\nrun bundle\n", readTestFile(t, invocationLog), "a warm HCL build should use the cache")
 	for key, result := range second.Results {
-		if key == "collect:artifacts" {
-			assert.Equal(t, cache.LookupMiss, result.Status)
-			continue
-		}
 		assert.NotEqual(t, cache.LookupMiss, result.Status, key)
 	}
 	assert.NotEmpty(t, first.Results)

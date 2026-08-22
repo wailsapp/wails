@@ -35,19 +35,49 @@ type MigrationDiagnostic = migration.Diagnostic
 type MigrationReport = migration.Report
 
 func Migrate(options *MigrateOptions) error {
+	return migrateWithOperations(options, productionMigrationCommandOperations())
+}
+
+type migrationCommandOperations struct {
+	getwd                func() (string, error)
+	activeManifestExists func(string) bool
+	stat                 func(string) (fs.FileInfo, error)
+	analyse              func(string) (MigrationReport, manifest.Document, error)
+	writeDraft           func(string, string, manifest.Document, []string) error
+	loadDraft            func(string, string, string) (*manifest.Loaded, error)
+	publishDraft         func(string, string) error
+	version              func() string
+}
+
+func productionMigrationCommandOperations() migrationCommandOperations {
+	return migrationCommandOperations{
+		getwd:                os.Getwd,
+		activeManifestExists: manifest.Exists,
+		stat:                 os.Stat,
+		analyse:              analyseMigration,
+		writeDraft:           manifest.WriteMigrationDraftAt,
+		loadDraft:            manifest.LoadFile,
+		publishDraft: func(draft, active string) error {
+			return activateMigrationDraft(draft, active, migrationActivationOperations{link: os.Link, remove: os.Remove})
+		},
+		version: version.String,
+	}
+}
+
+func migrateWithOperations(options *MigrateOptions, operations migrationCommandOperations) error {
 	if options.JSON {
 		// Keep stdout as one machine-readable document when the CLI's deferred
 		// footer runs after this command returns.
 		DisableFooter = true
 	}
-	root, err := os.Getwd()
+	root, err := operations.getwd()
 	if err != nil {
 		return err
 	}
 	if options.Activate {
-		return activateMigration(root, options)
+		return activateMigrationWithOperations(root, options, operations)
 	}
-	if manifest.Exists(root) {
+	if operations.activeManifestExists(root) {
 		return fmt.Errorf("%s already exists; migration will not overwrite the active manifest", manifest.Filename)
 	}
 	draft, relativeDraft, err := migrationDraftPath(root, options.Output)
@@ -55,17 +85,17 @@ func Migrate(options *MigrateOptions) error {
 		return err
 	}
 	draftExists := false
-	if _, err := os.Stat(draft); err == nil {
+	if _, err := operations.stat(draft); err == nil {
 		draftExists = true
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
-	report, doc, err := analyseMigration(root)
+	report, doc, err := operations.analyse(root)
 	if err != nil {
 		return err
 	}
 	if !options.DryRun && !draftExists {
-		if err := manifest.WriteMigrationDraftAt(root, relativeDraft, doc, migrationBlockerComments(report)); err != nil {
+		if err := operations.writeDraft(root, relativeDraft, doc, migrationBlockerComments(report)); err != nil {
 			return err
 		}
 		report.Wrote = append(report.Wrote, relativeDraft)
@@ -98,40 +128,44 @@ func Migrate(options *MigrateOptions) error {
 }
 
 func activateMigration(root string, options *MigrateOptions) error {
+	return activateMigrationWithOperations(root, options, productionMigrationCommandOperations())
+}
+
+func activateMigrationWithOperations(root string, options *MigrateOptions, operations migrationCommandOperations) error {
 	draft, relativeDraft, err := migrationDraftPath(root, options.Output)
 	if err != nil {
 		return err
 	}
-	if _, err := manifest.LoadFile(root, draft, ""); err != nil {
+	if _, err := operations.loadDraft(root, draft, ""); err != nil {
 		return fmt.Errorf("validate %s: %w", relativeDraft, err)
 	}
-	report, _, err := analyseMigration(root)
+	report, _, err := operations.analyse(root)
 	if err != nil {
 		return err
 	}
 	if !report.Complete {
 		if options.JSON {
-			if err := printMigrationJSON(report); err != nil {
-				return err
-			}
+			printMigrationJSON(report)
 		}
 		return fmt.Errorf("migration has unresolved blockers; rerun `wails3 migrate` for current diagnostics")
 	}
 	if options.DryRun {
 		if options.JSON {
-			return printMigrationJSON(report)
+			printMigrationJSON(report)
+			return nil
 		}
 		fmt.Printf("Migration can be activated; no files written (--dry-run)\n")
 		return nil
 	}
 	active := filepath.Join(root, manifest.Filename)
-	if err := activateMigrationDraft(draft, active, migrationActivationOperations{link: os.Link, remove: os.Remove}); err != nil {
+	if err := operations.publishDraft(draft, active); err != nil {
 		return err
 	}
-	report.CompletedBy = version.String()
+	report.CompletedBy = operations.version()
 	report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "activated", Message: "reviewed migration draft was activated; legacy Taskfiles remain untouched"})
 	if options.JSON {
-		return printMigrationJSON(report)
+		printMigrationJSON(report)
+		return nil
 	}
 	fmt.Printf("Activated %s; legacy Taskfiles are now ignored but were not changed\n", manifest.Filename)
 	return nil
@@ -182,7 +216,7 @@ func migrationDraftPath(root, configured string) (string, string, error) {
 }
 
 func migrationBlockerComments(report MigrationReport) []string {
-	comments := []string{"Generated by wails3 migrate; this file is inactive until explicitly activated."}
+	comments := []string{"Generated by wails3 migrate."}
 	for _, diagnostic := range report.Diagnostics {
 		if diagnostic.Severity != "warning" {
 			continue
@@ -196,13 +230,12 @@ func migrationBlockerComments(report MigrationReport) []string {
 	return comments
 }
 
-func printMigrationJSON(report MigrationReport) error {
-	data, err := json.MarshalIndent(report, "", "  ")
-	if err != nil {
-		return err
-	}
+func printMigrationJSON(report MigrationReport) {
+	// MigrationReport contains only JSON-safe scalar, slice, and struct fields,
+	// so encoding cannot fail. Keep this helper infallible instead of carrying
+	// an unreachable error branch through every activation outcome.
+	data, _ := json.MarshalIndent(report, "", "  ")
 	fmt.Println(string(data))
-	return nil
 }
 
 type migrationTaskNode struct {
@@ -470,25 +503,27 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		knownStock := knownStockTaskfiles[role][digest]
 		classification := migration.Taskfile{File: rel, Role: role}
 		var canonical canonicalDiff
-		switch {
-		case knownStock:
+		if knownStock {
 			// Shipped defaults changed throughout the v3 previews. Exact
 			// fingerprints from generated projects are stock, even when their
 			// task AST differs from the defaults compiled into this CLI.
 			classification.Classification = "historical-default"
-		case role == "root":
-			classification.Classification = "current-default"
-		case role == "unknown":
-			classification.Classification = "custom"
-		default:
-			canonical = closestCanonical(tf.Tasks, stockTaskVariants(role))
-			if canonical.exact {
+		} else {
+			switch role {
+			case "root":
 				classification.Classification = "current-default"
-			} else {
-				classification.Classification = "customised"
-				classification.ModifiedTasks = append(classification.ModifiedTasks, canonical.changed...)
-				classification.ModifiedTasks = append(classification.ModifiedTasks, canonical.added...)
-				classification.MissingTasks = append(classification.MissingTasks, canonical.missing...)
+			case "unknown":
+				classification.Classification = "custom"
+			default:
+				canonical = closestCanonical(tf.Tasks, stockTaskVariants(role))
+				if canonical.exact {
+					classification.Classification = "current-default"
+				} else {
+					classification.Classification = "customised"
+					classification.ModifiedTasks = append(classification.ModifiedTasks, canonical.changed...)
+					classification.ModifiedTasks = append(classification.ModifiedTasks, canonical.added...)
+					classification.MissingTasks = append(classification.MissingTasks, canonical.missing...)
+				}
 			}
 		}
 		taskNames := make([]string, 0, len(tf.Tasks))
@@ -524,7 +559,7 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 				if reachable {
 					report.Complete = false
 					severity, code = "warning", "unsupported-task"
-					message = "reachable custom task requires a user-owned hook script or manual migration"
+					message = "reachable custom task is not representable in config-only HCL; keep using Taskfiles"
 				}
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: severity, Code: code, File: rel, Task: name, Message: message})
 				if classification.Classification == "current-default" {
@@ -535,11 +570,11 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 			}
 			if reachable && (containsString(canonical.changed, name) || containsString(canonical.added, name)) {
 				report.Complete = false
-				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: rel, Task: name, Message: "generated task was modified and requires a manifest field or user-owned hook script"})
+				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: rel, Task: name, Message: "generated task was modified and is not proven representable in config-only HCL; keep using Taskfiles"})
 			}
 			if reachable && role == "root" && !recognizedRootTask(name, tf.Tasks[name]) {
 				report.Complete = false
-				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: rel, Task: name, Message: "root dispatch task was modified and requires a manifest field or user-owned hook script"})
+				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "modified-task", File: rel, Task: name, Message: "root dispatch task was modified and is not proven representable in config-only HCL; keep using Taskfiles"})
 				classification.Classification = "customised"
 				classification.ModifiedTasks = appendUnique(classification.ModifiedTasks, name)
 			}
@@ -911,11 +946,13 @@ func findTaskfile(root string) (string, error) {
 }
 func taskfileRole(rel string) string {
 	rel = filepath.ToSlash(rel)
-	switch {
-	case rel == "Taskfile.yml" || rel == "Taskfile.yaml":
+	switch rel {
+	case "Taskfile.yml", "Taskfile.yaml":
 		return "root"
-	case rel == "build/Taskfile.yml" || rel == "build/Taskfile.yaml":
+	case "build/Taskfile.yml", "build/Taskfile.yaml":
 		return "common"
+	}
+	switch {
 	case strings.Contains(rel, "/windows/"):
 		return "windows"
 	case strings.Contains(rel, "/darwin/"):

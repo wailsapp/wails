@@ -143,10 +143,10 @@ func verifyWarmCache(ctx context.Context, root, wails string, args []string) {
 	if err != nil {
 		fatal(err)
 	}
-	// The terminal collection node always verifies final artifacts and rewrites
-	// the receipt. Every reproducible producer before it must be a cache hit.
-	one := 1
-	if err := benchmark.CheckBudget(result, nil, benchmark.Budget{MinSamples: 1, ExpectedExecutedSteps: &one}); err != nil {
+	// Reproducible final outputs and their receipt are content-addressed. A warm
+	// native command must therefore execute no handlers at all.
+	zero := 0
+	if err := benchmark.CheckBudget(result, nil, benchmark.Budget{MinSamples: 1, ExpectedExecutedSteps: &zero}); err != nil {
 		fatal(err)
 	}
 	sample := result.Samples[0]

@@ -157,12 +157,8 @@ func TestWarmNoopExecutorRunsNoHandlers(t *testing.T) {
 	runs := len(handler.runs)
 	results, err := executor.Execute(context.Background(), plan, options)
 	require.NoError(t, err)
-	assert.Equal(t, runs+1, len(handler.runs), "only terminal collection should run again")
+	assert.Equal(t, runs, len(handler.runs), "a warm build should run no handlers")
 	for key, result := range results {
-		if key == "collect:artifacts" {
-			assert.Equal(t, "miss", string(result.Status))
-			continue
-		}
 		assert.NotEqual(t, "miss", string(result.Status), key)
 	}
 }

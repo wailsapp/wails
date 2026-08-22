@@ -83,3 +83,64 @@ func TestIOSProfileRequiresDestinationAndIPARequiresDevice(t *testing.T) {
 	_, err = resolveBuildOutcomes(config, Request{Verb: "build"})
 	assert.ErrorContains(t, err, "destination is only valid for ios/arm64")
 }
+
+func TestBuildOutcomeSelectionRejectsEveryInvalidRequestShape(t *testing.T) {
+	tests := []struct {
+		name    string
+		config  manifest.Config
+		request Request
+		message string
+	}{
+		{name: "empty profile", config: manifest.Config{Selected: manifest.Profile{Name: "release"}}, message: "requires at least one target"},
+		{name: "invalid profile target", config: manifest.Config{Selected: manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "linux"}}}}, message: "invalid target"},
+		{name: "duplicate profile target", config: manifest.Config{Selected: manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "linux/amd64"}, {Target: "linux/amd64"}}}}, message: "duplicate target"},
+		{name: "unsupported profile target", config: manifest.Config{Selected: manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "plan9/amd64"}}}}, message: "supported targets"},
+		{name: "android profile without AAB", config: manifest.Config{Selected: manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "android/arm64"}}}}, message: "must select the aab"},
+		{name: "notarize non-darwin", config: manifest.Config{Selected: manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "linux/amd64", Notarize: true, Sign: true}}}}, message: "cannot be notarized"},
+		{name: "notarize unsigned", config: manifest.Config{Selected: manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "darwin/arm64", Notarize: true}}}}, message: "must be signed"},
+		{name: "duplicate anonymous target", request: Request{Targets: []Target{{OS: "linux", Arch: "amd64"}, {OS: "linux", Arch: "amd64"}}}, message: "duplicate target"},
+		{name: "unsupported anonymous target", request: Request{TargetOS: "plan9", TargetArch: "amd64"}, message: "supported targets"},
+		{name: "unsupported verb", request: Request{Verb: "deploy", TargetOS: "linux", TargetArch: "amd64"}, message: "unsupported pipeline verb"},
+		{name: "empty format", request: Request{TargetOS: "linux", TargetArch: "amd64", Formats: []string{" "}}, message: "format cannot be empty"},
+		{name: "duplicate format", request: Request{TargetOS: "linux", TargetArch: "amd64", Formats: []string{"deb", "deb"}}, message: "duplicate package format"},
+		{name: "unknown format", request: Request{TargetOS: "linux", TargetArch: "amd64", Formats: []string{"unknown"}}, message: "unknown package format"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := resolveBuildOutcomes(test.config, test.request)
+			require.ErrorContains(t, err, test.message)
+		})
+	}
+}
+
+func TestFormatAndTargetParsersCoverProductionAndDevelopmentFailures(t *testing.T) {
+	linux, ok := lookupTarget("linux", "amd64")
+	require.True(t, ok)
+	_, err := resolveFormatsForTarget(linux, []string{"unknown"}, false)
+	assert.ErrorContains(t, err, "unknown package format")
+	_, err = resolveFormatsForTarget(linux, []string{"apk"}, false)
+	assert.ErrorContains(t, err, "production APK")
+	_, err = resolveFormatsForTarget(linux, []string{"apk"}, true)
+	assert.ErrorContains(t, err, "in development")
+	_, err = resolveFormatsForTarget(linux, []string{"deb", "deb"}, false)
+	assert.ErrorContains(t, err, "duplicate package format")
+
+	for _, value := range []string{"", "linux", "/amd64", "linux/", "linux/amd64/extra"} {
+		_, err := parseTargetName(value)
+		assert.Error(t, err, value)
+	}
+}
+
+func TestAnonymousSelectionDefaultsEachPartialTargetAndUsesConfiguredFormats(t *testing.T) {
+	outcomes, err := resolveAnonymousOutcomes(manifest.Config{}, Request{Targets: []Target{{}}})
+	require.NoError(t, err)
+	require.Len(t, outcomes, 1)
+	assert.NotEmpty(t, outcomes[0].target.OS)
+	assert.NotEmpty(t, outcomes[0].target.Arch)
+
+	config := manifest.Config{}
+	config.Package.Linux.Formats = []string{"deb"}
+	outcomes, err = resolveAnonymousOutcomes(config, Request{Verb: "package", TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"deb"}, outcomes[0].formats)
+}

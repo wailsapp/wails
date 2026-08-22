@@ -191,34 +191,6 @@ func writeEntitlementsFile(path string, entitlements []string) error {
 	return nil
 }
 
-func parseExistingEntitlements(path string) (map[string]bool, error) {
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]bool)
-	lines := strings.Split(string(content), "\n")
-
-	for i, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "<key>") && strings.HasSuffix(line, "</key>") {
-			key := strings.TrimPrefix(line, "<key>")
-			key = strings.TrimSuffix(key, "</key>")
-
-			// Check if next line is <true/>
-			if i+1 < len(lines) {
-				nextLine := strings.TrimSpace(lines[i+1])
-				if nextLine == "<true/>" {
-					result[key] = true
-				}
-			}
-		}
-	}
-
-	return result, nil
-}
-
 func generateEntitlementsPlist(entitlements []string) string {
 	var sb strings.Builder
 

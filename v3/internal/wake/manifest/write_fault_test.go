@@ -123,3 +123,11 @@ func TestEjectWriterSelectionAndPublicationErrors(t *testing.T) {
 	err = ejectWithWriters(root, "", "v3", false, func(Config, string) ([]byte, error) { return nil, errInjectedWrite }, exclusive, replace)
 	require.ErrorIs(t, err, errInjectedWrite)
 }
+
+func TestMigrationDraftWriterPreservesPublicationErrors(t *testing.T) {
+	document := NewDocument(Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"})
+	err := writeMigrationDraftAt(t.TempDir(), MigratedFilename, document, nil, func(string, []byte, os.FileMode) error {
+		return errInjectedWrite
+	})
+	require.ErrorIs(t, err, errInjectedWrite)
+}

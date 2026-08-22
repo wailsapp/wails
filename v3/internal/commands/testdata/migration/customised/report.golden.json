@@ -25,14 +25,14 @@
       "code": "modified-task",
       "file": "Taskfile.yml",
       "task": "build",
-      "message": "root dispatch task was modified and requires a manifest field or user-owned hook script"
+      "message": "root dispatch task was modified and is not proven representable in config-only HCL; keep using Taskfiles"
     },
     {
       "severity": "warning",
       "code": "unsupported-task",
       "file": "Taskfile.yml",
       "task": "preflight",
-      "message": "reachable custom task requires a user-owned hook script or manual migration"
+      "message": "reachable custom task is not representable in config-only HCL; keep using Taskfiles"
     },
     {
       "severity": "info",

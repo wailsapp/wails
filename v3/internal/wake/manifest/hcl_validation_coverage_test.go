@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/wake/buildinfo"
 )
 
 func validHCLValidationConfig(root string) Config {
@@ -67,6 +68,65 @@ func TestHCLValidationRejectsInvalidCoreConfiguration(t *testing.T) {
 func TestHCLValidationRejectsAnUnresolvableProjectRoot(t *testing.T) {
 	config := validHCLValidationConfig(filepath.Join(t.TempDir(), "missing"))
 	require.Error(t, validateConfig(config))
+}
+
+func TestProfileTargetValidationCoversEveryProductionConstraint(t *testing.T) {
+	capability := func(target string) buildinfo.TargetCapability {
+		t.Helper()
+		platform, arch, err := parseTargetName(target)
+		require.NoError(t, err)
+		result, ok := buildinfo.LookupTarget(platform, arch)
+		require.True(t, ok)
+		return result
+	}
+	tests := []struct {
+		name    string
+		target  ProfileTarget
+		message string
+	}{
+		{name: "duplicate format", target: ProfileTarget{Target: "linux/amd64", Formats: []string{"deb", "deb"}}, message: "duplicate format"},
+		{name: "development-only format", target: ProfileTarget{Target: "android/arm64", Formats: []string{"apk"}}, message: "not a production format"},
+		{name: "destination on desktop", target: ProfileTarget{Target: "linux/amd64", Destination: "device"}, message: "only valid for iOS"},
+		{name: "invalid iOS destination", target: ProfileTarget{Target: "ios/arm64", Destination: "phone"}, message: "simulator or device"},
+		{name: "missing iOS destination", target: ProfileTarget{Target: "ios/arm64"}, message: "requires destination"},
+		{name: "IPA simulator", target: ProfileTarget{Target: "ios/arm64", Destination: "simulator", Formats: []string{"ipa"}}, message: "IPA requires"},
+		{name: "notarize non-darwin", target: ProfileTarget{Target: "linux/amd64", Notarize: true, Sign: true}, message: "only valid for darwin"},
+		{name: "notarize unsigned", target: ProfileTarget{Target: "darwin/arm64", Notarize: true}, message: "signed before notarization"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validateProfileTarget("release", test.target, capability(test.target.Target))
+			require.ErrorContains(t, err, test.message)
+		})
+	}
+	assert.NoError(t, validateProfileTarget("release", ProfileTarget{Target: "darwin/arm64", Formats: []string{"dmg"}, Sign: true, Notarize: true}, capability("darwin/arm64")))
+}
+
+func TestProfileDecodeReturnsSemanticTargetErrors(t *testing.T) {
+	root := t.TempDir()
+	source := []byte(`version = 3
+project {
+  name         = "app"
+  product_name = "App"
+  identifier   = "com.example.app"
+  version      = "1.0.0"
+}
+profile "release" {
+  target "linux/amd64" {
+    formats = ["deb", "deb"]
+  }
+}
+`)
+	_, err := decodeHCL(root, filepath.Join(root, Filename), source, "")
+	require.ErrorContains(t, err, "duplicate format")
+}
+
+func TestTargetArchitectureSlotsAreClosed(t *testing.T) {
+	platform := Platform{}
+	assert.Same(t, &platform.ARM, targetByName(&platform, "arm"))
+	assert.Same(t, &platform.X86, targetByName(&platform, "386"))
+	assert.Same(t, &platform.Universal, targetByName(&platform, "universal"))
+	assert.Nil(t, targetByName(&platform, "riscv64"))
 }
 
 func TestHCLValidationCoversPackageTemplatesAndOptions(t *testing.T) {

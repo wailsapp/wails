@@ -61,6 +61,156 @@ func TestMigrateJSONIsMachineReadableAndSuppressesFooter(t *testing.T) {
 	assert.True(t, DisableFooter, "machine-readable migration output must suppress the CLI footer")
 }
 
+func TestMigrateCommandBoundaryFailuresAreObservable(t *testing.T) {
+	injected := errors.New("injected migration command failure")
+	root := t.TempDir()
+	document := manifest.NewDocument(manifest.Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"})
+	complete := MigrationReport{Version: 1, Complete: true}
+	base := migrationCommandOperations{
+		getwd:                func() (string, error) { return root, nil },
+		activeManifestExists: func(string) bool { return false },
+		stat:                 func(string) (fs.FileInfo, error) { return nil, fs.ErrNotExist },
+		analyse:              func(string) (MigrationReport, manifest.Document, error) { return complete, document, nil },
+		writeDraft:           func(string, string, manifest.Document, []string) error { return nil },
+		loadDraft:            func(string, string, string) (*manifest.Loaded, error) { return &manifest.Loaded{}, nil },
+		publishDraft:         func(string, string) error { return nil },
+		version:              func() string { return "v3.test" },
+	}
+
+	for _, test := range []struct {
+		name    string
+		options MigrateOptions
+		mutate  func(*migrationCommandOperations)
+	}{
+		{name: "working directory", mutate: func(ops *migrationCommandOperations) {
+			ops.getwd = func() (string, error) { return "", injected }
+		}},
+		{name: "active manifest", mutate: func(ops *migrationCommandOperations) {
+			ops.activeManifestExists = func(string) bool { return true }
+		}},
+		{name: "draft stat", mutate: func(ops *migrationCommandOperations) {
+			ops.stat = func(string) (fs.FileInfo, error) { return nil, injected }
+		}},
+		{name: "analysis", mutate: func(ops *migrationCommandOperations) {
+			ops.analyse = func(string) (MigrationReport, manifest.Document, error) {
+				return MigrationReport{}, manifest.Document{}, injected
+			}
+		}},
+		{name: "draft write", mutate: func(ops *migrationCommandOperations) {
+			ops.writeDraft = func(string, string, manifest.Document, []string) error { return injected }
+		}},
+		{name: "activation draft load", options: MigrateOptions{Activate: true}, mutate: func(ops *migrationCommandOperations) {
+			ops.loadDraft = func(string, string, string) (*manifest.Loaded, error) { return nil, injected }
+		}},
+		{name: "activation analysis", options: MigrateOptions{Activate: true}, mutate: func(ops *migrationCommandOperations) {
+			ops.analyse = func(string) (MigrationReport, manifest.Document, error) {
+				return MigrationReport{}, manifest.Document{}, injected
+			}
+		}},
+		{name: "activation publication", options: MigrateOptions{Activate: true}, mutate: func(ops *migrationCommandOperations) {
+			ops.publishDraft = func(string, string) error { return injected }
+		}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			operations := base
+			test.mutate(&operations)
+			err := migrateWithOperations(&test.options, operations)
+			require.Error(t, err)
+			if test.name != "active manifest" {
+				assert.ErrorIs(t, err, injected)
+			}
+		})
+	}
+}
+
+func TestMigrateCommandOutcomeBranchesAreObservable(t *testing.T) {
+	root := t.TempDir()
+	document := manifest.NewDocument(manifest.Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"})
+	complete := MigrationReport{Version: 1, Complete: true}
+	base := migrationCommandOperations{
+		getwd:                func() (string, error) { return root, nil },
+		activeManifestExists: func(string) bool { return false },
+		stat:                 func(string) (fs.FileInfo, error) { return nil, fs.ErrNotExist },
+		analyse:              func(string) (MigrationReport, manifest.Document, error) { return complete, document, nil },
+		writeDraft:           func(string, string, manifest.Document, []string) error { return nil },
+		loadDraft:            func(string, string, string) (*manifest.Loaded, error) { return &manifest.Loaded{}, nil },
+		publishDraft:         func(string, string) error { return nil },
+		version:              func() string { return "v3.test" },
+	}
+
+	t.Run("invalid migration output", func(t *testing.T) {
+		err := migrateWithOperations(&MigrateOptions{Output: manifest.Filename}, base)
+		require.ErrorContains(t, err, "inactive project-owned HCL file")
+	})
+
+	t.Run("incomplete dry run text", func(t *testing.T) {
+		operations := base
+		operations.analyse = func(string) (MigrationReport, manifest.Document, error) {
+			return MigrationReport{
+				Version: 1,
+				Sources: map[string]string{"Taskfile.yml": "digest"},
+				Diagnostics: []MigrationDiagnostic{{
+					Severity: "warning",
+					File:     "Taskfile.yml",
+					Task:     "custom",
+					Message:  "manual change required",
+				}},
+			}, document, nil
+		}
+		output := captureMigrationStdout(t, func() {
+			require.NoError(t, migrateWithOperations(&MigrateOptions{DryRun: true}, operations))
+		})
+		assert.Contains(t, output, "needs manual changes")
+		assert.Contains(t, output, "Taskfile.yml [custom]")
+		assert.Contains(t, output, "No files written (--dry-run)")
+	})
+
+	t.Run("invalid activation output", func(t *testing.T) {
+		err := migrateWithOperations(&MigrateOptions{Activate: true, Output: manifest.Filename}, base)
+		require.ErrorContains(t, err, "inactive project-owned HCL file")
+	})
+
+	t.Run("incomplete activation JSON", func(t *testing.T) {
+		operations := base
+		operations.analyse = func(string) (MigrationReport, manifest.Document, error) {
+			return MigrationReport{Version: 1, Complete: false}, document, nil
+		}
+		var activationErr error
+		output := captureMigrationStdout(t, func() {
+			activationErr = migrateWithOperations(&MigrateOptions{Activate: true, JSON: true}, operations)
+		})
+		require.ErrorContains(t, activationErr, "unresolved blockers")
+		var report MigrationReport
+		require.NoError(t, json.Unmarshal([]byte(output), &report))
+		assert.False(t, report.Complete)
+	})
+
+	t.Run("complete activation dry run text", func(t *testing.T) {
+		published := false
+		operations := base
+		operations.publishDraft = func(string, string) error {
+			published = true
+			return nil
+		}
+		output := captureMigrationStdout(t, func() {
+			require.NoError(t, migrateWithOperations(&MigrateOptions{Activate: true, DryRun: true}, operations))
+		})
+		assert.Contains(t, output, "Migration can be activated")
+		assert.False(t, published)
+	})
+
+	t.Run("complete activation JSON", func(t *testing.T) {
+		output := captureMigrationStdout(t, func() {
+			require.NoError(t, migrateWithOperations(&MigrateOptions{Activate: true, JSON: true}, base))
+		})
+		var report MigrationReport
+		require.NoError(t, json.Unmarshal([]byte(output), &report))
+		assert.Equal(t, "v3.test", report.CompletedBy)
+		require.Len(t, report.Diagnostics, 1)
+		assert.Equal(t, "activated", report.Diagnostics[0].Code)
+	})
+}
+
 func TestMigrateCustomOutputIsExclusiveAndDryRunWritesNothing(t *testing.T) {
 	root := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("version: '3'\ntasks: {}\n"), 0o644))
@@ -87,7 +237,10 @@ func TestMigrateDraftRecordsCurrentBlockersAsComments(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(root, manifest.MigratedFilename))
 	require.NoError(t, err)
 	assert.True(t, strings.HasPrefix(string(data), "# Generated by wails3 migrate"))
+	assert.NotContains(t, string(data), "inactive", "the same reviewed bytes become active wails.hcl during activation")
 	assert.Contains(t, string(data), "# BLOCKED: Taskfile.yml [bespoke]")
+	assert.Contains(t, string(data), "not representable in config-only HCL; keep using Taskfiles")
+	assert.NotContains(t, string(data), "hook", "config-only migration guidance must not recommend deferred hooks")
 }
 
 func TestMigrateGoldenFixtures(t *testing.T) {
@@ -149,6 +302,131 @@ func TestMigrateGoldenFixtures(t *testing.T) {
 			assert.Equal(t, legacy, after, "migration must preserve every user-owned input byte and mode")
 		})
 	}
+}
+
+func TestMigrationUnsupportedDiagnosticsGolden(t *testing.T) {
+	type catalogEntry struct {
+		Scenario    string                `json:"scenario"`
+		Diagnostics []MigrationDiagnostic `json:"diagnostics"`
+	}
+	var actual []catalogEntry
+	run := func(name string, setup func(root string)) {
+		t.Helper()
+		root := filepath.Join(t.TempDir(), "project")
+		require.NoError(t, os.MkdirAll(root, 0o755))
+		setup(root)
+		report, _, err := analyseMigration(root)
+		require.NoError(t, err)
+		warnings := make([]MigrationDiagnostic, 0, len(report.Diagnostics))
+		for _, diagnostic := range report.Diagnostics {
+			if diagnostic.Severity == "warning" {
+				warnings = append(warnings, diagnostic)
+			}
+		}
+		actual = append(actual, catalogEntry{Scenario: name, Diagnostics: warnings})
+	}
+	write := func(root, name, contents string) {
+		t.Helper()
+		path := filepath.Join(root, filepath.FromSlash(name))
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		require.NoError(t, os.WriteFile(path, []byte(contents), 0o755))
+	}
+	baseTaskfile := "version: '3'\ntasks: {}\n"
+
+	run("task-graph", func(root string) {
+		external := filepath.Join(filepath.Dir(root), "external.yml")
+		require.NoError(t, os.WriteFile(external, []byte("version: '3'\ntasks:\n  custom:\n    cmds: ['echo external']\n"), 0o644))
+		write(root, "scripts/preflight", "#!/bin/sh\n")
+		write(root, "cycle.yml", "version: '3'\nincludes:\n  back: Taskfile.yml\ntasks: {}\n")
+		write(root, "build/Taskfile.yml", "version: '3'\ntasks: {}\n")
+		write(root, "Taskfile.yml", fmt.Sprintf(`version: '3'
+vars:
+  BIN_DIR: ../outside
+  VITE_PORT: invalid
+includes:
+  common: build/Taskfile.yml
+  cycle: cycle.yml
+  dynamic:
+    taskfile: '{{.DYNAMIC}}'
+  external: %s
+  missing: missing.yml
+tasks:
+  build:
+    cmds:
+      - task: before-build
+      - task: dynamic-ref
+      - task: external:custom
+      - task: missing-ref
+  before-build:
+    cmds: ['./scripts/preflight']
+  dynamic-ref:
+    cmds:
+      - task: '{{.SELECTED}}'
+  missing-ref:
+    cmds:
+      - task: does-not-exist
+`, filepath.ToSlash(external)))
+	})
+
+	run("legacy-config", func(root string) {
+		write(root, "Taskfile.yml", baseTaskfile)
+		write(root, "build/config.yml", `version: "2"
+info:
+  version: 1.0.0
+ios:
+  version: 2.0.0
+dev_mode:
+  root_path: backend
+  executes:
+    - cmd: ./scripts/custom-dev-step
+      type: blocking
+unknownProductionSetting: enabled
+`)
+	})
+
+	run("frontend-path", func(root string) {
+		write(root, "Taskfile.yml", baseTaskfile)
+		write(root, "frontend", "not a directory\n")
+	})
+
+	run("frontend-metadata", func(root string) {
+		write(root, "Taskfile.yml", baseTaskfile)
+		write(root, "frontend/dist", "not a directory\n")
+		write(root, "frontend/package.json", "{invalid json\n")
+	})
+
+	run("frontend-manager", func(root string) {
+		write(root, "Taskfile.yml", baseTaskfile)
+		write(root, "frontend/package.json", `{"packageManager":"cargo@1","scripts":{"build":"vite build"}}`)
+		write(root, "frontend/package-lock.json", "{}\n")
+	})
+
+	encoded, err := json.MarshalIndent(actual, "", "  ")
+	require.NoError(t, err)
+	encoded = append(encoded, '\n')
+	golden := filepath.Join("testdata", "migration", "unsupported-diagnostics.golden.json")
+	expected, err := os.ReadFile(golden)
+	if err != nil {
+		t.Fatalf("read unsupported diagnostic golden: %v\nactual:\n%s", err, encoded)
+	}
+	assert.Equal(t, string(expected), string(encoded))
+
+	wantCodes := map[string]bool{
+		"config-version": true, "cyclic-include": true, "deferred-hook": true,
+		"dev-root": true, "dynamic-include": true, "dynamic-task-reference": true,
+		"external-output": true, "external-taskfile": true, "frontend-invalid": true,
+		"frontend-output": true, "frontend-package-json": true, "frontend-script": true,
+		"missing-generated-tasks": true, "missing-include": true, "modified-task": true,
+		"package-manager": true, "package-manager-conflict": true, "platform-version": true,
+		"unknown-config-field": true, "unresolved-task-reference": true,
+		"unsupported-dev-command": true, "unsupported-task": true,
+	}
+	for _, entry := range actual {
+		for _, diagnostic := range entry.Diagnostics {
+			delete(wantCodes, diagnostic.Code)
+		}
+	}
+	assert.Empty(t, wantCodes, "every unsupported-feature diagnostic needs a golden entry")
 }
 
 type migrationInputSnapshot struct {
@@ -320,6 +598,74 @@ func TestMigrationReachabilityReportsDynamicAndUnresolvedTaskReferences(t *testi
 	}
 }
 
+func TestMigrationReachabilitySortsIssuesAcrossFilesAndPropagatesExtraFileErrors(t *testing.T) {
+	root := t.TempDir()
+	rootTask := filepath.Join(root, "Taskfile.yml")
+	child := filepath.Join(root, "child.yml")
+	require.NoError(t, os.WriteFile(rootTask, []byte("version: '3'\nincludes:\n  child: child.yml\ntasks:\n  build:\n    cmds:\n      - task: missing-root\n      - task: child:run\n"), 0o644))
+	require.NoError(t, os.WriteFile(child, []byte("version: '3'\ntasks:\n  run:\n    cmds:\n      - task: missing-child\n"), 0o644))
+
+	reachability, err := analyseTaskReachability(rootTask, []string{rootTask, child})
+	require.NoError(t, err)
+	require.Len(t, reachability.issues, 2)
+	assert.Less(t, reachability.issues[0].File, reachability.issues[1].File)
+
+	invalid := filepath.Join(root, "invalid.yml")
+	require.NoError(t, os.WriteFile(invalid, []byte("not: [valid"), 0o644))
+	_, err = analyseTaskReachability(rootTask, []string{rootTask, invalid})
+	require.Error(t, err)
+}
+
+func TestMigrationDiscoversDirectoryIncludesAndPropagatesOverrideErrors(t *testing.T) {
+	root := t.TempDir()
+	child := filepath.Join(root, "child")
+	require.NoError(t, os.Mkdir(child, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(child, "Taskfile.yml"), []byte("version: '3'\ntasks: {}\n"), 0o644))
+	rootTask := filepath.Join(root, "Taskfile.yml")
+	require.NoError(t, os.WriteFile(rootTask, []byte("version: '3'\nincludes:\n  child: child\ntasks: {}\n"), 0o644))
+	files, err := discoverTaskfiles(rootTask)
+	require.NoError(t, err)
+	assert.Contains(t, files, filepath.Clean(filepath.Join(child, "Taskfile.yml")))
+
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.local.yml"), []byte("not: [valid"), 0o644))
+	_, err = discoverTaskfiles(rootTask)
+	require.Error(t, err)
+}
+
+func TestMigrationClassifiesRootAndUnknownTaskfilesAndRecordsPackageManager(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(root, "tools"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("version: '3'\nvars:\n  PACKAGE_MANAGER: pnpm\nincludes:\n  custom: tools/custom.yml\ntasks:\n  build:\n    cmds:\n      - task: '{{.PLATFORM}}:build'\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "tools", "custom.yml"), []byte("version: '3'\ntasks:\n  utility:\n    cmds: ['echo utility']\n"), 0o644))
+
+	report, _, err := analyseMigration(root)
+	require.NoError(t, err)
+	classifications := map[string]string{}
+	for _, taskfile := range report.Taskfiles {
+		classifications[taskfile.File] = taskfile.Classification
+	}
+	assert.Equal(t, "current-default", classifications["Taskfile.yml"])
+	assert.Equal(t, "custom", classifications["tools/custom.yml"])
+	assert.Contains(t, report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "package-manager", File: "Taskfile.yml", Message: "translated PACKAGE_MANAGER=pnpm"})
+}
+
+func TestTaskfileRoleRecognisesBothCanonicalExtensions(t *testing.T) {
+	for _, test := range []struct {
+		path string
+		role string
+	}{
+		{path: "Taskfile.yml", role: "root"},
+		{path: "Taskfile.yaml", role: "root"},
+		{path: "build/Taskfile.yml", role: "common"},
+		{path: "build/Taskfile.yaml", role: "common"},
+		{path: "tools/tasks.yml", role: "unknown"},
+	} {
+		t.Run(test.path, func(t *testing.T) {
+			assert.Equal(t, test.role, taskfileRole(test.path))
+		})
+	}
+}
+
 func TestMigrationClassifiesExternalIncludedTaskfilesByReachability(t *testing.T) {
 	for _, test := range []struct {
 		name     string
@@ -465,6 +811,9 @@ ios:
   version: 2.0.0
 dev_mode:
   root_path: backend
+  executes:
+    - cmd: ./scripts/custom-dev-step
+      type: blocking
 unknownProductionSetting: enabled
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, "build", "config.yml"), []byte(config), 0o644))
@@ -476,6 +825,14 @@ unknownProductionSetting: enabled
 	assert.Contains(t, migrationDiagnosticCodes(report), "platform-version")
 	assert.Contains(t, migrationDiagnosticCodes(report), "dev-root")
 	assert.Contains(t, migrationDiagnosticCodes(report), "unknown-config-field")
+	assert.Contains(t, migrationDiagnosticCodes(report), "unsupported-dev-command")
+	for _, diagnostic := range report.Diagnostics {
+		if diagnostic.Code != "unsupported-dev-command" {
+			continue
+		}
+		assert.Contains(t, diagnostic.Message, "not representable in config-only HCL; keep using Taskfiles")
+		assert.NotContains(t, diagnostic.Message, "hook")
+	}
 }
 
 func TestMigrationBlocksConflictingPackageManagerSignals(t *testing.T) {

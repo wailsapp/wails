@@ -24,6 +24,19 @@ func TestPlanValidationRejectsEveryStructuralGraphInvariant(t *testing.T) {
 		"invalid spec":   func(plan *Plan) { node := plan.Nodes["root"]; node.Spec = FrontendSpec{}; plan.Nodes["root"] = node },
 		"unknown kind":   func(plan *Plan) { node := plan.Nodes["root"]; node.Kind = "Unknown"; plan.Nodes["root"] = node },
 		"invalid cache":  func(plan *Plan) { node := plan.Nodes["root"]; node.Cache = "sometimes"; plan.Nodes["root"] = node },
+		"escaping output": func(plan *Plan) {
+			node := plan.Nodes["root"]
+			node.Output = t.TempDir()
+			plan.Nodes["root"] = node
+		},
+		"duplicate output owner": func(plan *Plan) {
+			dependency := plan.Nodes["dependency"]
+			dependency.Output = "bin/shared"
+			plan.Nodes["dependency"] = dependency
+			root := plan.Nodes["root"]
+			root.Output = "bin/shared"
+			plan.Nodes["root"] = root
+		},
 		"missing artifact": func(plan *Plan) {
 			plan.Artifacts = []NodeKey{"missing"}
 		},

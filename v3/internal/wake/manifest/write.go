@@ -78,6 +78,10 @@ func WriteMigrationDraft(root string, doc Document) error {
 // proposal. Migration analysis may be rerun safely without replacing a draft
 // the user has already reviewed or edited.
 func WriteMigrationDraftAt(root, output string, doc Document, comments []string) error {
+	return writeMigrationDraftAt(root, output, doc, comments, exclusiveWrite)
+}
+
+func writeMigrationDraftAt(root, output string, doc Document, comments []string, write func(string, []byte, os.FileMode) error) error {
 	data, err := EncodeDocument(doc)
 	if err != nil {
 		return err
@@ -105,7 +109,7 @@ func WriteMigrationDraftAt(root, output string, doc Document, comments []string)
 		header.WriteByte('\n')
 		data = append([]byte(header.String()), data...)
 	}
-	if err := exclusiveWrite(path, data, 0o644); err != nil {
+	if err := write(path, data, 0o644); err != nil {
 		if errors.Is(err, os.ErrExist) {
 			return fmt.Errorf("migration output %s already exists; refusing to overwrite it: %w", clean, err)
 		}

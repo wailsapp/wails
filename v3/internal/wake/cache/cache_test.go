@@ -373,9 +373,11 @@ func TestPeekFaultsAndStateTransitionsAreExact(t *testing.T) {
 func TestRecordActionPropagatesDigestStoreAndSaveFailures(t *testing.T) {
 	want := errors.New("injected record failure")
 	newStore := func() *Cache { return &Cache{root: "/project", index: indexData{Actions: map[string]ActionResult{}}} }
+	info := cacheStaticFileInfo{size: 7, mode: 0o755, modTime: time.Unix(1, 2)}
 	base := cacheRecordOperations{
 		digest: func(string) (string, error) { return "digest", nil },
 		store:  func(string, string) error { return nil },
+		lstat:  func(string) (fs.FileInfo, error) { return info, nil },
 		save:   func() error { return nil },
 	}
 	operations := base
@@ -387,15 +389,145 @@ func TestRecordActionPropagatesDigestStoreAndSaveFailures(t *testing.T) {
 	_, err = newStore().recordActionWithOperations("action", "bin/app", operations)
 	require.ErrorIs(t, err, want)
 	operations = base
+	operations.lstat = func(string) (fs.FileInfo, error) { return nil, want }
+	_, err = newStore().recordActionWithOperations("action", "bin/app", operations)
+	require.ErrorIs(t, err, want)
+	operations = base
+	lstatCalls := 0
+	operations.lstat = func(string) (fs.FileInfo, error) {
+		lstatCalls++
+		if lstatCalls == 2 {
+			return nil, want
+		}
+		return info, nil
+	}
+	_, err = newStore().recordActionWithOperations("action", "bin/app", operations)
+	require.ErrorIs(t, err, want)
+	operations = base
 	operations.save = func() error { return want }
 	store := newStore()
 	_, err = store.recordActionWithOperations("action", "bin/app", operations)
 	require.ErrorIs(t, err, want)
-	assert.Equal(t, ActionResult{Artifact: "digest", Output: "bin/app"}, store.index.Actions["action"])
+	assert.Equal(t, ActionResult{Artifact: "digest", Output: "bin/app", OutputMetadata: fileRecord(info, "digest")}, store.index.Actions["action"])
 	assert.True(t, store.dirty)
 	digest, err := newStore().recordActionWithOperations("action", "bin/app", base)
 	require.NoError(t, err)
 	assert.Equal(t, "digest", digest)
+}
+
+func TestActionOutputMetadataFastPathRequiresChangeTrackingIdentity(t *testing.T) {
+	t.Run("fallback metadata never replaces content verification", func(t *testing.T) {
+		info := cacheStaticFileInfo{size: 7, mode: 0o755, modTime: time.Unix(1, 2)}
+		result := ActionResult{Artifact: "original", Output: "bin/app", OutputMetadata: fileRecord(info, "original")}
+		store := &Cache{root: "/project", index: indexData{Actions: map[string]ActionResult{"action": result}}}
+		digests := 0
+		lookup := cacheLookupOperations{
+			lstat:     func(string) (fs.FileInfo, error) { return info, nil },
+			restore:   func(string, string) error { return nil },
+			removeAll: func(string) error { return nil },
+			save:      func() error { return nil },
+			digest: func(string) (string, error) {
+				digests++
+				return "changed", nil
+			},
+		}
+		status, _, err := store.lookupWithOperations("action", "bin/app", lookup)
+		require.NoError(t, err)
+		assert.Equal(t, LookupDirty, status)
+		assert.Equal(t, 1, digests)
+		peek := cachePeekOperations{lstat: lookup.lstat, stat: lookup.lstat, digest: func(string) (string, error) {
+			digests++
+			return "original", nil
+		}}
+		status, _, err = store.peekWithOperations("action", "bin/app", peek)
+		require.NoError(t, err)
+		assert.Equal(t, LookupHit, status)
+		assert.Equal(t, 2, digests)
+	})
+
+	t.Run("same size and mtime byte edit is invalidated", func(t *testing.T) {
+		root := t.TempDir()
+		t.Setenv("XDG_CACHE_HOME", t.TempDir())
+		require.NoError(t, os.MkdirAll(filepath.Join(root, "bin"), 0o755))
+		output := filepath.Join(root, "bin", "app")
+		require.NoError(t, os.WriteFile(output, []byte("trusted"), 0o755))
+		originalInfo, err := os.Stat(output)
+		require.NoError(t, err)
+		store, err := OpenCache(root)
+		require.NoError(t, err)
+		_, err = store.RecordAction("action", "bin/app")
+		require.NoError(t, err)
+
+		digests := 0
+		lookup := cacheLookupOperations{
+			lstat:     os.Lstat,
+			restore:   func(string, string) error { return nil },
+			removeAll: func(string) error { return nil },
+			save:      func() error { return nil },
+			digest: func(path string) (string, error) {
+				digests++
+				return artifactDigest(path)
+			},
+		}
+		status, _, err := store.lookupWithOperations("action", "bin/app", lookup)
+		require.NoError(t, err)
+		assert.Equal(t, LookupHit, status)
+		if platformIdentityTracksChanges() {
+			assert.Zero(t, digests, "change-tracking identity should enable the fast path")
+		} else {
+			assert.Equal(t, 1, digests, "fallback platforms must verify content")
+		}
+		beforePeekDigests := digests
+		peek := cachePeekOperations{lstat: os.Lstat, stat: os.Stat, digest: lookup.digest}
+		status, _, err = store.peekWithOperations("action", "bin/app", peek)
+		require.NoError(t, err)
+		assert.Equal(t, LookupHit, status)
+		if platformIdentityTracksChanges() {
+			assert.Equal(t, beforePeekDigests, digests)
+		} else {
+			assert.Equal(t, beforePeekDigests+1, digests)
+		}
+
+		require.NoError(t, os.WriteFile(output, []byte("changed"), 0o755))
+		require.NoError(t, os.Chtimes(output, originalInfo.ModTime(), originalInfo.ModTime()))
+		status, _, err = store.lookupWithOperations("action", "bin/app", lookup)
+		require.NoError(t, err)
+		assert.Equal(t, LookupDirty, status)
+		assert.Greater(t, digests, 0, "same-size bytes with restored mtime must be hashed when identity changed")
+	})
+}
+
+func TestRecordActionNeverPairsADigestWithChangedOutputMetadata(t *testing.T) {
+	before := cacheStaticFileInfo{size: 7, mode: 0o755, modTime: time.Unix(1, 2)}
+	after := before
+	after.size++
+	stats := []fs.FileInfo{before, after}
+	operations := cacheRecordOperations{
+		digest: func(string) (string, error) { return "original-digest", nil },
+		store:  func(string, string) error { return nil },
+		lstat: func(string) (fs.FileInfo, error) {
+			result := stats[0]
+			stats = stats[1:]
+			return result, nil
+		},
+		save: func() error { return nil },
+	}
+	store := &Cache{root: "/project", index: indexData{Actions: map[string]ActionResult{}}}
+	_, err := store.recordActionWithOperations("action", "bin/app", operations)
+	require.NoError(t, err)
+	result := store.index.Actions["action"]
+	assert.Empty(t, result.OutputMetadata, "metadata from a different output snapshot must not enable the fast path")
+
+	lookup := cacheLookupOperations{
+		lstat:     func(string) (fs.FileInfo, error) { return after, nil },
+		restore:   func(string, string) error { return nil },
+		removeAll: func(string) error { return nil },
+		save:      func() error { return nil },
+		digest:    func(string) (string, error) { return "changed-digest", nil },
+	}
+	status, _, err := store.lookupWithOperations("action", "bin/app", lookup)
+	require.NoError(t, err)
+	assert.Equal(t, LookupDirty, status)
 }
 
 func TestStoreArtifactHandlesEveryPublicationOutcome(t *testing.T) {

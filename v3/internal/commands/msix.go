@@ -163,7 +163,7 @@ func checkMSIXTools(options *flags.ToolMSIX) error {
 	if options.UseMsixPackagingTool {
 		cmd := exec.Command("powershell", "-Command", "Get-AppxPackage -Name Microsoft.MsixPackagingTool")
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("Microsoft MSIX Packaging Tool is not installed. Please install it from the Microsoft Store")
+			return fmt.Errorf("required Microsoft MSIX Packaging Tool is not installed; install it from the Microsoft Store")
 		}
 	}
 
@@ -171,7 +171,7 @@ func checkMSIXTools(options *flags.ToolMSIX) error {
 	if options.UseMakeAppx {
 		cmd := exec.Command("where", "MakeAppx.exe")
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("MakeAppx.exe is not found in PATH. Please install the Windows SDK")
+			return fmt.Errorf("MakeAppx.exe is not found in PATH; install the Windows SDK")
 		}
 	}
 

@@ -44,8 +44,9 @@ type FileRecord struct {
 }
 
 type ActionResult struct {
-	Artifact string `json:"artifact"`
-	Output   string `json:"output"`
+	Artifact       string     `json:"artifact"`
+	Output         string     `json:"output"`
+	OutputMetadata FileRecord `json:"output_metadata,omitempty"`
 }
 
 type indexData struct {
@@ -672,7 +673,7 @@ func (c *Cache) lookupWithOperations(actionKey, output string, operations cacheL
 		return LookupMiss, "", nil
 	}
 	absOutput := filepath.Join(c.root, filepath.FromSlash(output))
-	_, err := operations.lstat(absOutput)
+	info, err := operations.lstat(absOutput)
 	if errors.Is(err, fs.ErrNotExist) {
 		if err := operations.restore(result.Artifact, absOutput); err != nil {
 			if errors.Is(err, errCorruptArtifact) {
@@ -691,6 +692,9 @@ func (c *Cache) lookupWithOperations(actionKey, output string, operations cacheL
 	}
 	if err != nil {
 		return LookupMiss, "", err
+	}
+	if actionOutputMetadataMatches(result, info) {
+		return LookupHit, result.Artifact, nil
 	}
 	digest, err := operations.digest(absOutput)
 	if err != nil {
@@ -723,7 +727,7 @@ func (c *Cache) peekWithOperations(actionKey, output string, operations cachePee
 		return LookupMiss, "", nil
 	}
 	absOutput := filepath.Join(c.root, filepath.FromSlash(output))
-	_, err := operations.lstat(absOutput)
+	info, err := operations.lstat(absOutput)
 	if errors.Is(err, fs.ErrNotExist) {
 		payload := filepath.Join(c.artifactRoot, result.Artifact, "payload")
 		if _, artifactErr := operations.stat(payload); artifactErr == nil {
@@ -740,6 +744,9 @@ func (c *Cache) peekWithOperations(actionKey, output string, operations cachePee
 	if err != nil {
 		return LookupMiss, "", err
 	}
+	if actionOutputMetadataMatches(result, info) {
+		return LookupHit, result.Artifact, nil
+	}
 	digest, err := operations.digest(absOutput)
 	if err != nil {
 		return LookupMiss, "", err
@@ -754,6 +761,7 @@ func (c *Cache) RecordAction(actionKey, output string) (string, error) {
 	return c.recordActionWithOperations(actionKey, output, cacheRecordOperations{
 		digest: artifactDigest,
 		store:  c.storeArtifact,
+		lstat:  os.Lstat,
 		save:   c.Save,
 	})
 }
@@ -761,11 +769,16 @@ func (c *Cache) RecordAction(actionKey, output string) (string, error) {
 type cacheRecordOperations struct {
 	digest func(string) (string, error)
 	store  func(string, string) error
+	lstat  func(string) (fs.FileInfo, error)
 	save   func() error
 }
 
 func (c *Cache) recordActionWithOperations(actionKey, output string, operations cacheRecordOperations) (string, error) {
 	absOutput := filepath.Join(c.root, filepath.FromSlash(output))
+	before, err := operations.lstat(absOutput)
+	if err != nil {
+		return "", err
+	}
 	digest, err := operations.digest(absOutput)
 	if err != nil {
 		return "", err
@@ -773,12 +786,46 @@ func (c *Cache) recordActionWithOperations(actionKey, output string, operations 
 	if err := operations.store(digest, absOutput); err != nil {
 		return "", err
 	}
-	c.index.Actions[actionKey] = ActionResult{Artifact: digest, Output: filepath.ToSlash(output)}
+	after, err := operations.lstat(absOutput)
+	if err != nil {
+		return "", err
+	}
+	result := ActionResult{Artifact: digest, Output: filepath.ToSlash(output)}
+	if after.Mode().IsRegular() && sameFileMetadata(before, after) {
+		result.OutputMetadata = fileRecord(after, digest)
+	}
+	c.index.Actions[actionKey] = result
 	c.dirty = true
 	if err := operations.save(); err != nil {
 		return "", err
 	}
 	return digest, nil
+}
+
+func sameFileMetadata(left, right fs.FileInfo) bool {
+	return left.Size() == right.Size() && left.ModTime().UnixNano() == right.ModTime().UnixNano() &&
+		left.Mode() == right.Mode() && fileIdentity(left) == fileIdentity(right)
+}
+
+func actionOutputMetadataMatches(result ActionResult, info fs.FileInfo) bool {
+	record := result.OutputMetadata
+	if !info.Mode().IsRegular() || record.Digest == "" || record.Digest != result.Artifact {
+		return false
+	}
+	identity := fileIdentity(info)
+	// Final artifacts are user-visible outputs. Trust metadata without hashing
+	// only when the platform identity includes an OS-maintained content-change
+	// counter (ctime on Linux and macOS). Age-based mtime reuse is adequate for
+	// source snapshots, but is not a strong enough integrity check here.
+	return identity != "" && platformIdentityTracksChanges() && record.Size == info.Size() && record.ModTimeNS == info.ModTime().UnixNano() &&
+		record.Mode == uint32(info.Mode()) && record.Identity == identity
+}
+
+func fileRecord(info fs.FileInfo, digest string) FileRecord {
+	return FileRecord{
+		Size: info.Size(), ModTimeNS: info.ModTime().UnixNano(), Mode: uint32(info.Mode()),
+		Identity: fileIdentity(info), Digest: digest,
+	}
 }
 
 func (c *Cache) HasReceipt(actionKey, marker string) bool {

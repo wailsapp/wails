@@ -5,38 +5,34 @@ Type: map
 
 ## Destination
 
-An implementation-ready specification for replacing generated v3 Taskfiles and
-`build/config.yml` with a single manifest-driven Wails build system, using Wake
-for graph execution, caching, parallelism, and reporting. The specification is
-complete when the implementation can begin without unresolved product or
-architecture decisions.
+An implemented first release for replacing generated v3 Taskfiles and
+`build/config.yml` with one config-only `wails.hcl`, using a fixed Wake pipeline
+for graph execution, caching, parallelism, and reporting. Pipeline extension,
+hooks, and typed `wails3 tool` calls are deliberately deferred.
 
 ## Notes
 
 - Domain: Wails v3 build tooling and migration.
-- Tracker: local Markdown files in this directory, following
-  `docs/agents/issue-tracker.md`.
-- Standing decisions from the conversation: one extendable `wails.toml`; no
-  long-term `wails3 task`; profiles are opt-in; `wails3 eject` fully freezes
-  resolved defaults; shell customization calls user-owned scripts; platform
-  configuration is generated at build time; inline Taskfile shell migration is
-  manual; default and modified Taskfiles should be migrated where possible.
+- The issue files in this directory preserve the design exploration. References
+  there to TOML or first-release hooks are superseded by the accepted WEP.
+- Standing decisions from the conversation: one `wails.hcl`; version `3` stays
+  in lockstep with CLI releases; profiles select targets, formats, signing, and
+  destinations; `wails3 eject` writes `wails.ejected.hcl`; the presence of
+  `wails.hcl` opts in and makes Taskfiles completely ignored; migration never
+  silently translates arbitrary commands or removes Taskfiles.
 - The narrow cache slice has now been expanded into a complete implementation
   surface for hands-on backwards review. Matching-host release verification
   remains a release operation governed by the acceptance contract, not an
   unresolved build-system decision.
-- Consult the existing proposal at
-  [`history/wails-toml-build-system.md`](../../wails-toml-build-system.md).
-- Use the `wayfinder`, `grilling`, and `domain-modeling` skills while resolving
-  decision tickets.
+- The authoritative public proposal is
+  [`v3/wep/proposals/manifest-build-system/proposal.md`](../../../v3/wep/proposals/manifest-build-system/proposal.md).
 
 ## Decisions so far
 
 - [Manifest vocabulary and fully frozen eject semantics](issues/01-manifest-and-eject.md)
-  — `wails.toml` stays minimal until customized, then resolves through typed
+  — `wails.hcl` stays minimal until customized, then resolves through typed
   Platform/Target/Profile overlays; `wails3 eject [profile]` creates an
-  independently frozen, host-neutral snapshot with safe three-way upgrade
-  suggestions.
+  independently frozen, host-neutral `wails.ejected.hcl` snapshot.
 - [Wake's typed build graph and execution boundary](issues/02-wake-domain-graph.md)
   — Wake produces one immutable multi-Target Plan of typed Nodes, deduplicates
   shared work, runs in-process handlers through a critical-path scheduler, and
@@ -57,14 +53,14 @@ architecture decisions.
   incremental, packaging, restoration, Dev, Task, and larger-app timings.
 - [Taskfile migration and customization classification](issues/06-taskfile-migration.md)
   — private migration reports classify current, historical, and customised
-  Taskfiles; complete migrations digest-check and retire represented sources.
+  Taskfiles; activation revalidates the reviewed draft and leaves all legacy
+  sources untouched.
 - [CLI migration cutover](issues/07-cli-compatibility.md)
   — one routing seam selects native Manifest, deliberate legacy fallback, or
-  an actionable ambiguity error without storing workflow state in `wails.toml`.
+  an actionable ambiguity error; `wails.hcl` itself is the opt-in flag.
 - [Script hook contract and safe extension boundary](issues/05-script-hook-contract.md)
-  — six typed file-script phases have fixed Project/Target/package barriers,
-  stable environment and failure semantics, safe cancellation, and explicit
-  bounded cache opt-in.
+  — preserved as extension research only. Hooks and arbitrary calls are not in
+  the config-only first release and require a later pipeline proposal.
 - [Dev Session invalidation and process lifecycle](issues/10-dev-session-lifecycle.md)
   — finite generations drive a transactional, readiness-gated frontend,
   backend, and watch lifecycle with no-op preservation and clean cancellation.
@@ -74,20 +70,20 @@ architecture decisions.
 
 ## Implementation evidence
 
-- Minimal config, base/profile ejection, migration/cutover, generated assets,
-  hooks, target overlays, build/package/sign plans, and the manifest dev
-  lifecycle are implemented behind the normal CLI commands.
+- Minimal config, profile ejection, migration/cutover, generated assets, target
+  overlays, build/package/sign plans, and the manifest dev lifecycle are
+  implemented behind the normal CLI commands.
 - Follow-up two-axis review closed cache identity for local Go sources and
   relevant environment, separated Receipts from Artifacts, made signing
   non-reusable, added missing-profile/re-eject semantics, combined multiple
-  Targets in one Plan, translated safe script-file hooks, and made Dev rebuilds
+  Targets in one Plan, rejected deferred script migration, and made Dev rebuilds
   generation-cancelable with process/watch reconfiguration.
-- Badge no-op builds measure 70–80ms and DEB package no-ops measure 70–90ms
-  wall time with all planned Nodes cached; a service method-body edit skips
-  bindings and the frontend and executes only Go compilation.
-- The final controlled run measured a 93.503ms badge median with 8.19% MAD,
-  3.22% cold orchestration overhead, concurrent native Linux package adapters,
-  and a 0/9 cached rerun after AppImage packaging.
+- The final local audit measured a 99.092ms badge median with 5.05% MAD and all
+  six Nodes cached. Dirty published binaries are regenerated byte-identically;
+  missing binaries are restored byte-identically without executing a handler.
+- Native Linux build, DEB/RPM/Arch/AppImage packaging, all nine built-in web
+  templates, and the real Dev lifecycle pass locally. Foreign native packaging,
+  signing, and SDK-backed mobile acceptance remain matching-host release work.
 - The full Go suite reaches unrelated desktop-environment failures only;
   focused manifest/Wake/command tests, race detection, vet, and real Linux
   build/package runs pass.

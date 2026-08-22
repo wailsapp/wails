@@ -12,8 +12,8 @@
     {"file": "tools/Taskfile.yml", "role": "unknown", "classification": "custom", "modified_tasks": ["prepare"]}
   ],
   "diagnostics": [
-    {"severity": "warning", "code": "modified-task", "file": "Taskfile.yml", "task": "build", "message": "root dispatch task was modified and requires a manifest field or user-owned hook script"},
-    {"severity": "warning", "code": "unsupported-task", "file": "tools/Taskfile.yml", "task": "prepare", "message": "reachable custom task requires a user-owned hook script or manual migration"},
+    {"severity": "warning", "code": "modified-task", "file": "Taskfile.yml", "task": "build", "message": "root dispatch task was modified and is not proven representable in config-only HCL; keep using Taskfiles"},
+    {"severity": "warning", "code": "unsupported-task", "file": "tools/Taskfile.yml", "task": "prepare", "message": "reachable custom task is not representable in config-only HCL; keep using Taskfiles"},
     {"severity": "info", "code": "frontend-missing", "file": "frontend", "message": "no conventional frontend directory was found; manifest defaults were retained"}
   ]
 }

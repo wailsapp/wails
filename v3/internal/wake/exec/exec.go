@@ -21,16 +21,16 @@ import (
 )
 
 type Executor struct {
-	Taskfile        *ast.Taskfile
-	Dir             string
-	Level           report.Verbosity
-	Reporter        report.Reporter
-	MaxWorkers      int
-	Cache           *TaskCache
+	Taskfile   *ast.Taskfile
+	Dir        string
+	Level      report.Verbosity
+	Reporter   report.Reporter
+	MaxWorkers int
+	Cache      *TaskCache
 	// Parallel toggles the in-task dep-fanout. When true, each task's
 	// `deps:` are executed concurrently (matching Taskfile semantics);
 	// when false, sequentially.
-	Parallel        bool
+	Parallel bool
 	// Force, when true, makes every task re-run regardless of cache state.
 	// Wired up from WAKE_FORCE=true (or a `wails3 build --clean` flag) at
 	// the wake.Execute boundary. Bypasses both the Taskfile-declared cache
@@ -704,10 +704,8 @@ func (e *Executor) mergeVars(task *ast.Task, depVars map[string]*ast.Var) map[st
 		merged[k] = v
 	}
 
-	if depVars != nil {
-		for k, v := range depVars {
-			merged[k] = v
-		}
+	for k, v := range depVars {
+		merged[k] = v
 	}
 
 	// Task-local vars layer on top of depVars, but with a twist: if a task

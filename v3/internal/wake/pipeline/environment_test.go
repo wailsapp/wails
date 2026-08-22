@@ -59,7 +59,9 @@ func TestCurrentHostCapabilitiesUsesTheRealProbeAdapterWithoutRequiringInstalled
 		t.Skip("PATH probing uses PATHEXT resolution on Windows")
 	}
 	tools := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(tools, "go"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
+	for _, tool := range []string{"go", "docker", "xcrun"} {
+		require.NoError(t, os.WriteFile(filepath.Join(tools, tool), []byte("#!/bin/sh\nexit 0\n"), 0o755))
+	}
 	t.Setenv("PATH", tools)
 	t.Setenv("ANDROID_HOME", "")
 	t.Setenv("ANDROID_SDK_ROOT", "")
@@ -70,6 +72,8 @@ func TestCurrentHostCapabilitiesUsesTheRealProbeAdapterWithoutRequiringInstalled
 	assert.NotEmpty(t, host.arch)
 	assert.True(t, host.hasTool("go"))
 	assert.True(t, host.hasCredential("PIPELINE_TEST_CREDENTIAL"))
+	assert.True(t, host.hasDockerImage("wails-cross"))
+	assert.True(t, host.hasAppleSDK("iphonesimulator"))
 }
 
 func testHost(hostOS, hostArch string, extraTools ...string) HostCapabilities {
@@ -199,6 +203,87 @@ func TestHostResolutionRejectsUnavailableAppleSDK(t *testing.T) {
 	host := NewHostCapabilitiesWithFacts("darwin", "arm64", []string{"go", "npm", "xcrun", "codesign"}, nil, HostFacts{AppleSDKs: []string{"iphoneos"}})
 	_, err := PlanBuildForHost(config, Request{Verb: "build"}, host)
 	assert.ErrorContains(t, err, `requires Apple SDK "iphonesimulator"`)
+}
+
+func TestHostAndToolchainValidationCoversEveryFailureContract(t *testing.T) {
+	config := testConfig(t)
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}, NewHostCapabilities("plan9", "amd64", []string{"go", "npm", "cc"}, nil))
+	assert.ErrorContains(t, err, "unsupported build host")
+	_, err = PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}, NewHostCapabilities("linux", "", []string{"go", "npm", "cc"}, nil))
+	assert.ErrorContains(t, err, "unsupported build host")
+
+	assert.NoError(t, requireCommandTool(HostCapabilities{}, "custom command", "./tools/frontend"))
+	assert.NoError(t, requireCommandTool(HostCapabilities{}, "empty command", ""))
+	assert.Equal(t, "npm", firstCommand(nil, "npm"))
+	assert.Equal(t, "pnpm", firstCommand([]string{"pnpm", "run", "build"}, "npm"))
+
+	nativeLinux := CompileSpec{TargetOS: "linux", TargetArch: "amd64", Toolchain: "native"}
+	err = validateCompileEnvironment(nativeLinux, NewHostCapabilities("linux", "amd64", []string{"go"}, nil))
+	assert.ErrorContains(t, err, "requires a C compiler")
+	assert.NoError(t, validateCompileEnvironment(nativeLinux, NewHostCapabilities("linux", "amd64", []string{"go", "gcc"}, nil)))
+
+	docker := CompileSpec{TargetOS: "windows", TargetArch: "amd64", Toolchain: "docker"}
+	err = validateCompileEnvironment(docker, NewHostCapabilities("linux", "amd64", []string{"go", "docker"}, nil))
+	assert.ErrorContains(t, err, "Docker image")
+	hostWithImage := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "docker"}, nil, HostFacts{DockerImages: []string{"wails-cross"}})
+	assert.NoError(t, validateCompileEnvironment(docker, hostWithImage))
+
+	_, err = resolveToolchain(CompileSpec{TargetOS: "windows", TargetArch: "amd64", Toolchain: "docker"}, NewHostCapabilities("linux", "amd64", []string{"go"}, nil))
+	assert.ErrorContains(t, err, `requires tool "docker"`)
+	_, err = resolveToolchain(CompileSpec{TargetOS: "plan9", TargetArch: "amd64", Toolchain: "docker"}, NewHostCapabilities("linux", "amd64", []string{"go", "docker"}, nil))
+	assert.ErrorContains(t, err, "cannot build")
+	assert.False(t, dockerToolchainSupports(CompileSpec{TargetOS: "plan9", TargetArch: "amd64"}, testHost("linux", "amd64", "docker")))
+	assert.False(t, nativeToolchainSupports(CompileSpec{TargetOS: "android", TargetArch: "arm64"}, HostCapabilities{os: "plan9", arch: "amd64"}))
+	androidCompile := CompileSpec{TargetOS: "android", TargetArch: "arm64", Toolchain: "native"}
+	err = validateCompileEnvironment(androidCompile, NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go"}, nil, HostFacts{}))
+	assert.ErrorContains(t, err, "Android SDK")
+}
+
+func TestHostPlanningReportsInstallAndIOSAssemblyToolFailures(t *testing.T) {
+	config := testConfig(t)
+	config.Frontend.Install = []string{"pnpm", "install"}
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}, testHost("linux", "amd64"))
+	assert.ErrorContains(t, err, `frontend dependency installation requires tool "pnpm"`)
+
+	config = testConfig(t)
+	config.Selected = manifest.Profile{Name: "simulator", Targets: []manifest.ProfileTarget{{Target: "ios/arm64", Destination: "simulator"}}}
+	host := NewHostCapabilitiesWithFacts("darwin", "arm64", []string{"go", "npm", "xcrun"}, nil, HostFacts{AppleSDKs: []string{"iphonesimulator"}})
+	_, err = PlanBuildForHost(config, Request{Verb: "build"}, host)
+	assert.ErrorContains(t, err, `iOS application assembly for ios/arm64 requires tool "codesign"`)
+}
+
+func TestSigningHostValidationCoversEveryPlatformContract(t *testing.T) {
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID"}}, testHost("linux", "amd64", "codesign")), "requires a darwin host")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true}}, testHost("darwin", "arm64", "codesign")), "identity")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID"}}, testHost("darwin", "arm64")), "codesign")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "dmg", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign")), "xcrun")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "darwin", Format: "app", Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true, NotarizationCredential: "NOTARY"}}, testHost("darwin", "arm64", "codesign", "xcrun")), "ditto")
+
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}}, testHost("linux", "amd64", "codesign")), "requires a darwin host")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true}}, testHost("darwin", "arm64", "codesign")), "identity")
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "ios", Format: "ipa", Config: manifest.SigningPlatform{Enabled: true, Identity: "Apple Distribution"}}, testHost("darwin", "arm64", "codesign")))
+
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "windows", Format: "msix", Config: manifest.SigningPlatform{Enabled: true, Certificate: "app.pfx"}}, testHost("linux", "amd64", "signtool.exe")), "requires a windows host")
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "windows", Format: "msix", Config: manifest.SigningPlatform{Enabled: true, Thumbprint: "abc"}}, testHost("windows", "amd64", "signtool.exe")))
+
+	android := manifest.SigningPlatform{Enabled: true, Certificate: "upload.jks", KeyAlias: "upload", Credential: "ANDROID_PASSWORD"}
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "android", Format: "aab", Config: manifest.SigningPlatform{Enabled: true}}, testHost("linux", "amd64", "jarsigner")), "certificate, key_alias, and credential")
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "android", Format: "aab", Config: android}, testHost("linux", "amd64", "jarsigner")), "credential")
+	androidHost := NewHostCapabilities("linux", "amd64", []string{"jarsigner", "apksigner"}, []string{"ANDROID_PASSWORD"})
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "android", Format: "aab", Config: android}, androidHost))
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "android", Format: "apk", Config: android}, androidHost))
+
+	linux := manifest.SigningPlatform{Enabled: true, Certificate: "release@example.com"}
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "linux", Format: "rpm", Config: linux}, testHost("linux", "amd64", "rpmsign")))
+	assert.ErrorContains(t, validateSigningHost(SignSpec{TargetOS: "linux", Format: "appimage", Config: linux}, testHost("linux", "amd64")), "not supported")
+	assert.NoError(t, validateSigningHost(SignSpec{TargetOS: "unknown", Config: manifest.SigningPlatform{Enabled: true}}, HostCapabilities{}))
+}
+
+func TestHostCapabilityCollectionHelpersAreDeterministic(t *testing.T) {
+	assert.Empty(t, uniqueSorted(nil))
+	assert.Equal(t, []string{"a", "b"}, uniqueSorted([]string{"b", "a", "b"}))
+	assert.False(t, containsSorted(nil, "a"))
+	assert.Empty(t, firstNonemptyEnvironment(func(string) string { return "" }, "first", "second"))
 }
 
 func configForAndroid(t *testing.T) manifest.Config {

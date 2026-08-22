@@ -72,16 +72,15 @@ processes while requesting finite incremental Plans for rebuilds.
 
 ### Profile
 
-A named set of build-policy overrides, such as debug or release. Profiles are
-sparse overlays over the manifest's effective top-level configuration until
-explicitly ejected as a complete frozen snapshot. A Profile controls build
-policy and cannot change project identity.
+A complete named production build request. A Profile selects concrete Targets,
+formats, signing or notarisation intent, and bounded compiler policy. It is not
+an inherited or sparse configuration overlay and cannot change project identity.
 
 ### Ejection
 
-Materialization of an effective base or named Profile into a complete frozen
-snapshot, including every Target reachable by that Profile. The snapshot
-records which Wails version ejected it and does not inherit later defaults.
+Materialization of the complete resolved reference Manifest, including current
+Wails defaults, as the inactive `wails.ejected.hcl`. The snapshot records the
+exact Wails version that generated it and never changes the active Manifest.
 
 ### Target
 

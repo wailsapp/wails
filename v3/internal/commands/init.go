@@ -61,9 +61,7 @@ func gitURLToModulePath(gitURL string) string {
 		path = gitURL
 	}
 
-	if strings.HasSuffix(path, ".git") {
-		path = path[:len(path)-4]
-	}
+	path = strings.TrimSuffix(path, ".git")
 
 	// Remove leading forward slash for file system paths
 	return strings.TrimPrefix(path, "/")
@@ -318,49 +316,6 @@ func initialiseTemplateBuildManifest(options *flags.Init) error {
 		Name: options.ProjectName, ProductName: options.ProductName,
 		Identifier: options.ProductIdentifier, Version: options.ProductVersion,
 	})
-}
-
-// writeProjectConfigYML rewrites the `info:` values in the freshly scaffolded
-// build/config.yml from the chosen options, preserving the file's comments. The
-// info keys map 1:1 onto the Product* fields.
-func writeProjectConfigYML(options *flags.Init) error {
-	path := filepath.Join(options.ProjectDir, "build", "config.yml")
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	content := string(data)
-
-	values := map[string]string{
-		"companyName":       options.ProductCompany,
-		"productName":       options.ProductName,
-		"productIdentifier": options.ProductIdentifier,
-		"description":       options.ProductDescription,
-		"copyright":         options.ProductCopyright,
-		"comments":          options.ProductComments,
-		"version":           options.ProductVersion,
-	}
-	for key, val := range values {
-		if val == "" {
-			continue
-		}
-		// Replace only the quoted value on the `  key: "..."` line, keeping any
-		// trailing comment. Anchored to start-of-line so it won't touch the
-		// commented ios: overrides.
-		re := regexp.MustCompile(`(?m)^(\s*` + regexp.QuoteMeta(key) + `:\s*")[^"]*(")`)
-		// Escape for a YAML double-quoted scalar — backslash first (so the escapes
-		// added next aren't doubled), then quotes; collapse newlines to keep it a
-		// single-line value; finally escape `$` for the regexp replacement template.
-		repl := val
-		repl = strings.ReplaceAll(repl, `\`, `\\`)
-		repl = strings.ReplaceAll(repl, `"`, `\"`)
-		repl = strings.ReplaceAll(repl, "\r", "")
-		repl = strings.ReplaceAll(repl, "\n", " ")
-		repl = strings.ReplaceAll(repl, `$`, `$$`)
-		content = re.ReplaceAllString(content, `${1}`+repl+`${2}`)
-	}
-
-	return os.WriteFile(path, []byte(content), 0o644)
 }
 
 func printTemplates() error {
