@@ -398,11 +398,15 @@ func treeObservationKey(root string, options SnapshotOptions) string {
 }
 
 func observeDirectoryTree(root string, excluded map[string]bool, ignored gitignore.Matcher, eagerInfo func(string) bool) ([]*observedFile, error) {
-	workers := fastwalk.DefaultNumWorkers()
-	if runtime.GOOS != "windows" {
-		workers = min(workers, 8)
-	}
+	workers := directoryTreeWorkers(fastwalk.DefaultNumWorkers(), runtime.GOOS)
 	return observeDirectoryTreeWithWorkers(root, excluded, ignored, eagerInfo, workers)
+}
+
+func directoryTreeWorkers(defaultWorkers int, goos string) int {
+	if goos == "windows" {
+		return defaultWorkers
+	}
+	return min(defaultWorkers, 16)
 }
 
 func observeDirectoryTreeWithWorkers(root string, excluded map[string]bool, ignored gitignore.Matcher, eagerInfo func(string) bool, workers int) ([]*observedFile, error) {

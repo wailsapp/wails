@@ -1256,6 +1256,14 @@ func TestObserveDirectoryTreeCallbackContracts(t *testing.T) {
 	require.ErrorIs(t, err, want)
 }
 
+func TestDirectoryTreeWorkers(t *testing.T) {
+	t.Parallel()
+	assert.Equal(t, 16, directoryTreeWorkers(64, "linux"))
+	assert.Equal(t, 8, directoryTreeWorkers(8, "darwin"))
+	assert.Equal(t, 10, directoryTreeWorkers(10, "darwin"))
+	assert.Equal(t, 64, directoryTreeWorkers(64, "windows"))
+}
+
 type cacheDirEntry struct {
 	name    string
 	dir     bool

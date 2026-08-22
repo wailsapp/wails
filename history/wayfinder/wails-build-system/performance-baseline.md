@@ -165,3 +165,26 @@ final receipt only when every final output is reproducible, artifact-caches the
 published output itself, and uses stable file identity metadata to avoid
 rehashing unchanged regular-file artifacts on Linux and macOS. Signing and its
 downstream publication/receipt path remain deliberately non-reusable.
+
+### Post-rebase traversal audit
+
+Rebasing onto the current master increased the unstripped development CLI's
+21-sample median to 111.284ms even though all six Nodes remained cached. CPU
+profiling located the variable work in filesystem observation of the local Go
+module used by the fixture's `replace` directive, not in HCL decoding or cache
+lookup. Raising the non-Windows fast-walk cap from 8 to 16 reduced a subsequent
+21-sample median to 103.367ms (7.1% faster), with 4.40% MAD, a 26ms median graph,
+and stable output bytes. A separate 15-sample run measured 97.157ms with 3.08%
+MAD. A 32-worker experiment was rejected: its 1.2% wall-time advantage was
+smaller than measurement variance while aggregate CPU rose by 8.9%.
+
+These frequency-sensitive local command runs straddle or narrowly miss the
+absolute 100ms gate but remain within the checked baseline's 20% relative
+budget. The final contract-shaped two-warmup/seven-sample run measured 100.998ms
+with 3.77% MAD, missing the absolute gate by 0.998ms. The checked 99.092ms
+baseline is therefore not replaced by this uncontrolled desktop-host
+observation; the permanent gate must be rerun on its controlled runner.
+Correctness remained invariant: every reusable warm operation in these
+unsigned scenarios was cached, and every artifact receipt and digest was
+verified. The final native verifier's warm binary and four-format package
+reruns measured 96.8ms and 106.8ms respectively.
