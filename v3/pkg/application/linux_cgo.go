@@ -144,6 +144,13 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
+	// A GApplication ID is capped at 255 characters and the prefix takes ten,
+	// so a long enough app name would otherwise build an ID GTK refuses,
+	// leaving no application at all.
+	const maxNameLength = 245
+	if len(name) > maxNameLength {
+		name = name[:maxNameLength]
+	}
 	return appNewWithID(fmt.Sprintf("org.wails.%s", name))
 }
 
