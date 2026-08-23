@@ -100,7 +100,18 @@
   const init = () => {
     const title = document.querySelector('.mpress-frontmatter-hero-title');
     if (!title || title.querySelector('.morph-word-title')) return;
-    title.innerHTML = title.textContent.replace('Build Desktop Apps with Go', '<span class="morph-title-line"><span>Build</span><span class="morph-word-title"><span>Desktop</span></span></span><br>Apps with Go');
+    if (title.textContent.trim() !== 'Build Desktop Apps with Go') return;
+    const titleLine = document.createElement('span');
+    titleLine.className = 'morph-title-line';
+    const prefix = document.createElement('span');
+    prefix.textContent = 'Build';
+    const wordWrap = document.createElement('span');
+    wordWrap.className = 'morph-word-title';
+    const activeWord = document.createElement('span');
+    activeWord.textContent = words[0];
+    wordWrap.append(activeWord);
+    titleLine.append(prefix, wordWrap);
+    title.replaceChildren(titleLine, document.createElement('br'), document.createTextNode('Apps with Go'));
     const tagline = document.querySelector('.mpress-frontmatter-hero-tagline');
     if (tagline && !tagline.querySelector('.browser-footnote')) {
       const note = document.createElement('span');
