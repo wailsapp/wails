@@ -35,7 +35,10 @@ of the implemented contract, not additional first-release design work.
 Use `v3/scripts/verify-manifest-build-system.go` as the primary runner and the
 matrix in `performance-acceptance.md` as the authoritative contract. Any host
 failure becomes a narrowly scoped implementation ticket with the captured
-evidence attached here.
+evidence attached here. Follow
+[`../multi-platform-testing-handoff.md`](../multi-platform-testing-handoff.md)
+for host preparation, commands, evidence requirements, and the definition of
+done.
 
 ## Comments
 
