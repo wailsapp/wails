@@ -278,6 +278,20 @@ func IsCurrentlyDarkMode() bool {
 	return AppsUseLightTheme == 0
 }
 
+func IsSystemCurrentlyDarkMode() bool {
+	key, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize`, registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer key.Close()
+
+	systemUsesLightTheme, _, err := key.GetIntegerValue("SystemUsesLightTheme")
+	if err != nil {
+		return false
+	}
+	return systemUsesLightTheme == 0
+}
+
 type highContrast struct {
 	CbSize            uint32
 	DwFlags           uint32
