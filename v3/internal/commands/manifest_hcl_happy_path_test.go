@@ -60,7 +60,7 @@ profile "release" {
 `
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("this is ignored\n"), 0o644))
-	prependFakePlanTools(t, "zig", "makensis")
+	prependFakePlanTools(t, "npm", "zig", "makensis")
 	t.Chdir(root)
 
 	previous := runTaskFunc
@@ -82,6 +82,7 @@ profile "release" {
 }
 
 func TestBuildJSONPlanIsDeterministicAndDescribesArtifacts(t *testing.T) {
+	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
 	hcl := hclBuildFixture + `
@@ -161,7 +162,7 @@ func TestBuildPlanAcceptsCommaSeparatedTargets(t *testing.T) {
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
-	prependFakePlanTools(t, "zig")
+	prependFakePlanTools(t, "npm", "zig")
 	t.Chdir(root)
 	output := captureHCLStdout(t, func() {
 		require.NoError(t, Build(&flags.Build{Plan: true, Targets: "windows/amd64,linux/arm64"}, nil))
@@ -170,6 +171,7 @@ func TestBuildPlanAcceptsCommaSeparatedTargets(t *testing.T) {
 }
 
 func TestBuildPlanPrintsRequestedFormats(t *testing.T) {
+	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
 	t.Chdir(root)
@@ -183,7 +185,7 @@ func TestBuildPlanPrintsRequestedFormats(t *testing.T) {
 func TestBuildPlanShowsResolvedAnonymousCompilerOverrides(t *testing.T) {
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
-	prependFakePlanTools(t, "garble")
+	prependFakePlanTools(t, "npm", "garble")
 	t.Chdir(root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
 	options := flags.Build{Plan: true, Targets: "linux/amd64", Tags: "sqlite", Obfuscated: true, GarbleArgs: "-tiny -seed=random"}
@@ -240,7 +242,7 @@ func prepareHCLPlanInputs(t *testing.T, root string) {
 func TestBuildGarbleArgumentsPreserveQuotedTokensAndRejectMalformedInput(t *testing.T) {
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
-	prependFakePlanTools(t, "garble")
+	prependFakePlanTools(t, "npm", "garble")
 	t.Chdir(root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
 	options := flags.Build{Plan: true, Targets: "linux/amd64", Obfuscated: true, GarbleArgs: `-tiny -seed "value with spaces"`}
@@ -253,6 +255,7 @@ func TestBuildGarbleArgumentsPreserveQuotedTokensAndRejectMalformedInput(t *test
 }
 
 func TestDevPlanUsesTheHCLBuildPipeline(t *testing.T) {
+	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))

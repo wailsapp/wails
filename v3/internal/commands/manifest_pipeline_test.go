@@ -42,6 +42,7 @@ func TestRunManifestPipelineLeavesUnrenderedFailurePrintable(t *testing.T) {
 }
 
 func TestResolveManifestPlanUsesTheDiscoveredManifestRoot(t *testing.T) {
+	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	require.NoError(t, manifest.WriteMinimal(root, manifest.Project{
 		Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0",

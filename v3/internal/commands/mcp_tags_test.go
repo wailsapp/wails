@@ -81,6 +81,7 @@ func TestBuildCommandWithMCPEnvVar(t *testing.T) {
 }
 
 func TestMCPEnvTagDoesNotOverrideANamedManifestProfile(t *testing.T) {
+	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "frontend"), 0o755))

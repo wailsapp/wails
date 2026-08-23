@@ -188,3 +188,31 @@ Correctness remained invariant: every reusable warm operation in these
 unsigned scenarios was cached, and every artifact receipt and digest was
 verified. The final native verifier's warm binary and four-format package
 reruns measured 96.8ms and 106.8ms respectively.
+
+## 2026-08-23 local handoff gate
+
+The pre-handoff audit rebuilt the CLI and migrated a disposable copy of the
+badge example. The disposable frontend used Node 24.19.0 and npm 11.6.0 from
+an isolated temporary tool directory. The cold build completed all six Nodes
+before measurement.
+
+Three independent contract-shaped runs each used two warmups and seven
+measured processes. Their medians were 97.506ms, 100.941ms, and 103.913ms.
+Within-run MAD was 2.69%, 1.14%, and 1.66% respectively. Every one of the 21
+samples reported zero executed and six cached Nodes. Artifact-enabled runs
+also produced the same 9,733,056-byte binary with SHA-256
+`73579fcfbe32088e34fa3bf1bd1f4757649e1e41304d6f9ff51224ba783fc826` in
+every sample.
+
+The final combined run checked latency, baseline regression, variance, work
+counts, and artifact stability together. It passed every gate except the
+absolute 100ms median ceiling, which it missed by 3.913ms. It remained below
+the checked baseline's 20% regression ceiling. This desktop-host evidence is
+recorded as a failed absolute gate; the passing first distribution is not
+selected as release evidence. The controlled runner must make the release
+decision.
+
+This run also found and fixed an acceptance-harness compatibility gap:
+`RequireStableArtifacts` now uses the first measured sample when a historical
+latency baseline contains no artifact metadata. Baselines that do contain
+artifact evidence still enforce cross-run artifact identity.

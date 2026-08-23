@@ -46,3 +46,19 @@ including receipt/digest checks and zero-work warm reruns. Structural planning
 and cross-compilation passed for Windows, macOS, Linux arm64, and Android, but
 those checks are not substitutes for matching-host native packaging, SDK, and
 credentialed signing runs.
+
+### 2026-08-23 — Local handoff preparation
+
+The affected command and Wake suites pass normally and under the race
+detector, and scoped vet is clean. Ten Plan/Dev tests were made independent of
+a host-installed npm executable after the current Codex runtime exposed the
+hidden dependency. The whole v3 sweep reaches only pre-existing
+desktop-environment failures in X11 shortcut synthesis under Wayland and
+file-manager launching in the test context.
+
+The final combined seven-sample badge run measured 103.913ms median with 1.66%
+MAD, zero executed and six cached Nodes in every sample, and byte-identical
+artifacts. It passes semantic, artifact, variance, and relative-baseline gates
+but fails the 100ms absolute ceiling by 3.913ms. Matching-host work must begin
+with the controlled Linux performance rerun before proceeding through the
+native platform matrix.

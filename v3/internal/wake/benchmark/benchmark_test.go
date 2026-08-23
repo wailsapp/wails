@@ -161,6 +161,17 @@ func TestCheckBudgetRejectsArtifactDrift(t *testing.T) {
 	assert.ErrorContains(t, CheckBudget(result, nil, Budget{RequireStableArtifacts: true}), "artifact app changed")
 }
 
+func TestCheckBudgetUsesMeasuredArtifactsWhenBaselineHasNoArtifactEvidence(t *testing.T) {
+	artifacts := map[string]Artifact{"app": {Digest: "sha256:stable", SizeBytes: 12}}
+	result := Result{Scenario: "stable", Samples: []Sample{
+		{Artifacts: artifacts},
+		{Artifacts: artifacts},
+	}}
+	baseline := &Result{Scenario: "stable", Samples: []Sample{{}}}
+
+	require.NoError(t, CheckBudget(result, baseline, Budget{RequireStableArtifacts: true}))
+}
+
 func TestRunRejectsInvalidConfigurationAndFailedCommands(t *testing.T) {
 	_, err := Run(context.Background(), Config{Samples: 1})
 	assert.ErrorContains(t, err, "command is required")

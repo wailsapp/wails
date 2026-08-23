@@ -201,7 +201,7 @@ func CheckBudget(result Result, baseline *Result, budget Budget) error {
 	}
 	if budget.RequireStableArtifacts && len(result.Samples) > 0 {
 		reference := result.Samples[0].Artifacts
-		if baseline != nil && len(baseline.Samples) > 0 {
+		if baseline != nil && len(baseline.Samples) > 0 && len(baseline.Samples[0].Artifacts) > 0 {
 			reference = baseline.Samples[0].Artifacts
 		}
 		for index, sample := range result.Samples {

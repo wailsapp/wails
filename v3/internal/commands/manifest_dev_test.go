@@ -90,6 +90,7 @@ func TestManifestDevRejectsProductionProfiles(t *testing.T) {
 }
 
 func TestManifestDevValidatesBeforeStartingProcesses(t *testing.T) {
+	prependFakePlanTools(t, "npm")
 	t.Run("malformed manifest", func(t *testing.T) {
 		root := t.TempDir()
 		t.Chdir(root)
