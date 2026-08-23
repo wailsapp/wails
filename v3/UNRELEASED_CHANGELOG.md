@@ -23,7 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Fix `SystemTray.SetTooltip()` doing nothing on Linux: the StatusNotifierItem tooltip description is now set
+- Fix `SystemTray.SetTooltip()` doing nothing on Linux: the StatusNotifierItem tooltip description is now set (#6017)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

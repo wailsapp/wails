@@ -537,6 +537,9 @@ func (s *linuxSystemTray) setLabel(label string) {
 		return
 	}
 
+	// The tooltip repeats the name as its title, so it follows the label.
+	s.updateToolTip()
+
 	if s.conn == nil {
 		return
 	}
@@ -548,9 +551,6 @@ func (s *linuxSystemTray) setLabel(label string) {
 		globalApplication.error("systray error: failed to emit new title signal: %w", err)
 		return
 	}
-
-	// The tooltip repeats the name as its title, so it follows the label.
-	s.updateToolTip()
 }
 
 func (s *linuxSystemTray) destroy() {
