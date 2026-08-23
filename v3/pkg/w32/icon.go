@@ -138,6 +138,7 @@ func selectICOImage(fileData []byte, desiredWidth, desiredHeight, displayBitDept
 	return bytes.Clone(fileData[int(best.offset):int(bestEnd)]), nil
 }
 
+// effectiveBitDepth returns the entry's colour depth, falling back to the display depth when unspecified.
 func (entry icoImageEntry) effectiveBitDepth(displayBitDepth int) int {
 	if entry.bitCount != 0 {
 		return int(entry.bitCount)
@@ -152,6 +153,7 @@ func (entry icoImageEntry) effectiveBitDepth(displayBitDepth int) int {
 	return displayBitDepth
 }
 
+// betterBitDepth reports whether candidate is a better match for the display than best.
 func betterBitDepth(candidate, best, display int) bool {
 	if candidate == display {
 		return best != display
@@ -178,6 +180,7 @@ func abs(value int) int {
 	return value
 }
 
+// iconResourceData returns the image-resource payload to pass to CreateIconFromResourceEx.
 func iconResourceData(fileData []byte, desiredWidth, desiredHeight int) ([]byte, error) {
 	if len(fileData) < 8 {
 		return nil, fmt.Errorf("invalid file format")
@@ -191,6 +194,7 @@ func iconResourceData(fileData []byte, desiredWidth, desiredHeight int) ([]byte,
 	return nil, fmt.Errorf("unsupported file format")
 }
 
+// currentDisplayBitDepth returns the primary display's colour depth, defaulting to 32 bits.
 func currentDisplayBitDepth() int {
 	hdc := GetDC(0)
 	if hdc == 0 {

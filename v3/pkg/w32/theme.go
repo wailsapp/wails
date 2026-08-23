@@ -278,6 +278,7 @@ func IsCurrentlyDarkMode() bool {
 	return AppsUseLightTheme == 0
 }
 
+// IsSystemCurrentlyDarkMode reports whether Windows system surfaces use dark mode.
 func IsSystemCurrentlyDarkMode() bool {
 	key, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize`, registry.QUERY_VALUE)
 	if err != nil {
