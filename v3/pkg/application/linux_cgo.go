@@ -1336,6 +1336,16 @@ func (w *linuxWebviewWindow) setResizable(resizable bool) {
 	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.setResizable)window._wails.setResizable(%v);", resizable))
 }
 
+// screenWorkArea returns the area panels and docks leave free, and whether it
+// could be determined at all.
+func screenWorkArea() (x, y, width, height int, ok bool) {
+	var cx, cy, cw, ch C.int
+	if C.screen_work_area(&cx, &cy, &cw, &ch) == 0 {
+		return 0, 0, 0, 0, false
+	}
+	return int(cx), int(cy), int(cw), int(ch), true
+}
+
 func (w *linuxWebviewWindow) move(x, y int) {
 	// C-side GDK_IS_X11_DISPLAY check handles X11 vs Wayland correctly,
 	// including XWayland and GDK_BACKEND=x11 scenarios.

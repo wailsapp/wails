@@ -254,10 +254,17 @@ func (s *linuxSystemTray) positionWindow(window Window, offset int) error {
 		return fmt.Errorf("unable to get screen information")
 	}
 
+	// The area panels and docks leave free, so the window is not laid over the
+	// taskbar. currentScreen.WorkArea is the whole monitor on this backend —
+	// GTK4 dropped the API it came from — so it is asked for separately.
 	screenX := currentScreen.X
 	screenY := currentScreen.Y
 	screenWidth := currentScreen.Size.Width
 	screenHeight := currentScreen.Size.Height
+	if x, y, width, height, ok := screenWorkArea(); ok {
+		screenX, screenY, screenWidth, screenHeight = x, y, width, height
+	}
+
 	windowWidth := window.Width()
 	windowHeight := window.Height()
 
