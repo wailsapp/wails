@@ -144,12 +144,22 @@ func appName() string {
 }
 
 func appNew(name string) pointer {
+	return appNewWithID(fmt.Sprintf("org.wails.%s", name))
+}
+
+// appNewWithID creates the GtkApplication under an explicit ID. GTK refuses an
+// invalid one, so it is checked first and the caller's default used instead —
+// an application that fails to construct has no window to report the problem
+// in.
+func appNewWithID(appID string) pointer {
 	C.install_signal_handlers()
 
-	appId := fmt.Sprintf("org.wails.%s", name)
-	nameC := C.CString(appId)
-	defer C.free(unsafe.Pointer(nameC))
-	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
+	idC := C.CString(appID)
+	defer C.free(unsafe.Pointer(idC))
+	if C.g_application_id_is_valid(idC) == 0 {
+		return nil
+	}
+	return pointer(C.gtk_application_new(idC, C.APPLICATION_DEFAULT_FLAGS))
 }
 
 func setProgramName(prgName string) {
