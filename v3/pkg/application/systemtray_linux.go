@@ -257,12 +257,24 @@ func (s *linuxSystemTray) positionWindow(window Window, offset int) error {
 	// The area panels and docks leave free, so the window is not laid over the
 	// taskbar. currentScreen.WorkArea is the whole monitor on this backend —
 	// GTK4 dropped the API it came from — so it is asked for separately.
+	//
+	// What comes back describes the whole desktop rather than one monitor, so
+	// it is intersected with the screen the window is opening on: taking it
+	// as-is would let a window near a shared edge be placed on the neighbouring
+	// monitor. An empty intersection means the two disagree, and the monitor
+	// wins.
 	screenX := currentScreen.X
 	screenY := currentScreen.Y
 	screenWidth := currentScreen.Size.Width
 	screenHeight := currentScreen.Size.Height
 	if x, y, width, height, ok := screenWorkArea(); ok {
-		screenX, screenY, screenWidth, screenHeight = x, y, width, height
+		left := max(screenX, x)
+		top := max(screenY, y)
+		right := min(screenX+screenWidth, x+width)
+		bottom := min(screenY+screenHeight, y+height)
+		if right > left && bottom > top {
+			screenX, screenY, screenWidth, screenHeight = left, top, right-left, bottom-top
+		}
 	}
 
 	windowWidth := window.Width()
