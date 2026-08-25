@@ -8,6 +8,7 @@ type Package struct {
 	SystemPackage  bool
 	Library        bool
 	Optional       bool
+	BuildTags      string
 }
 
 type packagemap = map[string][]*Package
@@ -30,6 +31,7 @@ type Dependency struct {
 	Version        string
 	Optional       bool
 	External       bool
+	BuildTags      string
 }
 
 // DependencyList is a list of Dependency instances

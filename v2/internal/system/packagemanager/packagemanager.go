@@ -76,6 +76,7 @@ func Dependencies(p PackageManager) (DependencyList, error) {
 			if packageavailable {
 				dependency.Version = pkg.Version
 				dependency.PackageName = pkg.Name
+				dependency.BuildTags = pkg.BuildTags
 				installed, err := p.PackageInstalled(pkg)
 				if err != nil {
 					return nil, err
