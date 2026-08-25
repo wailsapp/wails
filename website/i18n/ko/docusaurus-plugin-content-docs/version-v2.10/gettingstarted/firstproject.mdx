@@ -1,0 +1,130 @@
+---
+sidebar_position: 2
+---
+
+# 프로젝트 생성하기
+
+## 프로젝트 생성
+
+이제 CLI가 설치되었습니다, `wails init` 명령을 사용하여 새로운 프로젝트를 생성할 수 있습니다.
+
+원하는 프레임워크를 선택하세요:
+
+```mdx-code-block
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs
+    defaultValue="Svelte"
+    values={[
+        {label: "Svelte", value: "Svelte"},
+        {label: "React", value: "React"},
+        {label: "Vue", value: "Vue"},
+        {label: "Preact", value: "Preact"},
+        {label: "Lit", value: "Lit"},
+        {label: "Vanilla", value: "Vanilla"},
+    ]}
+>
+<TabItem value="Svelte">
+    Generate a <a href={"https://svelte.dev/"}>Svelte</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t svelte
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t svelte-ts
+
+</TabItem>
+<TabItem value="React">
+    Generate a <a href={"https://reactjs.org/"}>React</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t react
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t react-ts
+
+</TabItem>
+<TabItem value="Vue">
+    Generate a <a href={"https://vuejs.org/"}>Vue</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t vue
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t vue-ts
+
+</TabItem>
+<TabItem value="Preact">
+    Generate a <a href={"https://preactjs.com/"}>Preact</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t preact
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t preact-ts
+
+</TabItem>
+<TabItem value="Lit">
+    Generate a <a href={"https://lit.dev/"}>Lit</a> project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t lit
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t lit-ts
+
+</TabItem>
+<TabItem value="Vanilla">
+    Generate a Vanilla project using JavaScript with:<br/><br/>
+
+    wails init -n myproject -t vanilla
+
+If you would rather use TypeScript:<br/>
+
+    wails init -n myproject -t vanilla-ts
+
+</TabItem>
+</Tabs>
+```
+
+<hr />
+
+다양한 기능과 프레임워크를 제공하는 [커뮤니티 템플릿](../community/templates.mdx)도 있습니다.
+
+사용 가능한 다른 옵션을 보려면 `wails init -help` 명령을 실행할 수 있습니다. 자세한 내용은 [CLI Reference](../reference/cli.mdx#init)에서 찾을 수 있습니다.
+
+## 프로젝트 레이아웃
+
+Wails 프로젝트는 다음 레이아웃을 따릅니다:
+
+```
+.
+├── build/
+│   ├── appicon.png
+│   ├── darwin/
+│   └── windows/
+├── frontend/
+├── go.mod
+├── go.sum
+├── main.go
+└── wails.json
+```
+
+### 프로젝트 구조 개요
+
+- `/main.go` - 메인 애플리케이션
+- `/frontend/` - Frontend 프로젝트 파일들
+- `/build/` - 프로젝트 빌드 디렉토리
+- `/build/appicon.png` - 애플리케이션 아이콘
+- `/build/darwin/` - Mac 특정 프로젝트 파일
+- `/build/windows/` - Windows 특정 프로젝트 파일
+- `/wails.json` - 프로젝트 구성 파일
+- `/go.mod` - Go 모듈 파일
+- `/go.sum` - Go 모듈 체크섬 파일
+
+`frontend` 프론트엔드 디렉토리에는 Wails와 관련된 것이 없으며 선택한 모든 프론트엔드 프로젝트가 될 수 있습니다.
+
+`build` 디렉토리는 빌드가 진행되는 동안 사용됩니다. 이 파일들을 업데이트 하여 빌드를 커스텀마이징할 수 있습니다. 만약 빌드 디렉토리에서 파일이 제거되면 기본 버전이 재생성됩니다.
+
+`go.mod`의 기본 모듈 이름은 "changeme" 입니다. 이것을 더 적절한 것으로 변경해야 합니다.

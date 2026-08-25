@@ -1,0 +1,260 @@
+---
+title: Perguntas Frequentes
+description: Perguntas comuns sobre o Wails
+sidebar:
+  order: 99
+---
+
+## Geral
+
+### O que é o Wails?
+
+O Wails é um framework para construir aplicativos de desktop usando Go e tecnologias web. Ele oferece integração nativa com o sistema operacional, permitindo que você construa sua interface do usuário com HTML, CSS e JavaScript.
+
+### Como o Wails se compara ao Electron?
+
+**Wails:**
+- Uso de memória de ~10MB
+- Tamanho do binário de ~15MB
+- Desempenho nativo
+- Backend em Go
+
+**Electron:**
+- Uso de memória de ~100MB+
+- Tamanho do binário de ~150MB+
+- Sobrecarga do Chromium
+- Backend em Node.js
+
+### O Wails está pronto para produção?
+
+Sim! O Wails v3 é adequado para aplicativos de produção. Muitas empresas usam o Wails para seus aplicativos de desktop.
+
+### Quais plataformas o Wails suporta?
+
+- Windows (7+)
+- macOS (10.13+)
+- Linux (GTK3)
+
+## Desenvolvimento
+
+### Preciso saber Go?
+
+Conhecimento básico de Go é útil, mas não obrigatório. Você pode começar com serviços simples e aprender conforme avança.
+
+### Posso usar meu framework frontend favorito?
+
+Sim! O Wails funciona com:
+- JavaScript puro
+- React
+- Vue
+- Svelte
+- Qualquer framework que gere HTML/CSS/JS
+
+### Como chamo funções Go do JavaScript?
+
+Use os bindings:
+
+```go
+// Go
+func (s *Service) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+```javascript
+// JavaScript
+import { Greet } from './bindings/myapp/service'
+const message = await Greet("World")
+```
+
+### Posso usar TypeScript?
+
+Sim! O Wails gera definições de TypeScript automaticamente.
+
+### Como depuro meu aplicativo?
+
+Use as ferramentas de desenvolvedor do seu navegador:
+- Clique com o botão direito → Inspecionar Elemento
+- Ou ative as ferramentas de desenvolvedor nas opções da janela
+
+## Compilação e Distribuição
+
+### Como compilo para produção?
+
+```bash
+wails3 build
+```
+
+Seu aplicativo estará em `build/bin/`.
+
+### Posso compilar para outras plataformas?
+
+Sim! Compile para outras plataformas:
+
+```bash
+wails3 build -platform windows/amd64
+wails3 build -platform darwin/universal
+wails3 build -platform linux/amd64
+```
+
+### Como crio um instalador?
+
+Use ferramentas específicas da plataforma:
+- Windows: NSIS ou WiX
+- macOS: Crie um DMG
+- Linux: Pacotes DEB/RPM
+
+Veja o [Guia de Instaladores](/guides/installers).
+
+### Como assino digitalmente meu aplicativo?
+
+**macOS:**
+```bash
+codesign --deep --force --sign "Developer ID" MyApp.app
+```
+
+**Windows:**
+Use o SignTool com seu certificado.
+
+## Recursos
+
+### Posso criar múltiplas janelas?
+
+Sim! O Wails v3 tem suporte nativo para múltiplas janelas:
+
+```go
+window1 := app.Window.New()
+window2 := app.Window.New()
+```
+
+### O Wails suporta bandeja do sistema?
+
+Sim! Crie aplicativos para a bandeja do sistema:
+
+```go
+tray := app.SystemTray.New()
+tray.SetIcon(iconBytes)
+tray.SetMenu(menu)
+```
+
+### Posso usar diálogos nativos?
+
+Sim! O Wails fornece diálogos nativos:
+
+```go
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    PromptForSingleSelection()
+```
+
+### O Wails suporta atualizações automáticas?
+
+O Wails não inclui funcionalidade de atualização automática, mas você pode implementá-la você mesmo ou usar bibliotecas de terceiros.
+
+## Desempenho
+
+### Por que meu binário é grande?
+
+Os binários Go incluem o tempo de execução. Reduza o tamanho:
+
+```bash
+wails3 build -ldflags "-s -w"
+```
+
+### Como melhoro o desempenho?
+
+- Use paginação para grandes conjuntos de dados
+- Armazene em cache operações custosas
+- Use eventos para atualizações
+- Otimize o bundle do frontend
+- Faça profiling do seu código
+
+Veja o [Guia de Desempenho](/guides/performance).
+
+### O Wails suporta hot reload?
+
+Sim! Use o modo de desenvolvimento:
+
+```bash
+wails3 dev
+```
+
+## Solução de Problemas
+
+### Meus bindings não estão funcionando
+
+Regere os bindings:
+
+```bash
+wails3 generate bindings
+```
+
+### A janela não aparece
+
+Verifique se você chamou `Show()`:
+
+```go
+window := app.Window.New()
+window.Show()  // Não se esqueça disso!
+```
+
+### Eventos não estão disparando
+
+Certifique-se de que os nomes dos eventos correspondam exatamente:
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // Deve corresponder
+```
+
+### A compilação falha
+
+Soluções comuns:
+- Execute `go mod tidy`
+- Verifique a configuração do `wails.json`
+- Verifique se o frontend foi compilado: `cd frontend && npm run build`
+- Atualize o Wails: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+
+## Migração
+
+### Devo migrar da v2 para a v3?
+
+A v3 oferece:
+- Melhor desempenho
+- Suporte a múltiplas janelas
+- API aprimorada
+- Melhor experiência de desenvolvimento
+
+Veja o [Guia de Migração](/migration/v2-to-v3).
+
+### A v2 será mantida?
+
+Sim, a v2 receberá atualizações críticas.
+
+### Posso executar a v2 e a v3 lado a lado?
+
+Sim, elas usam caminhos de importação diferentes.
+
+## Comunidade
+
+### Como obtenho ajuda?
+
+- [Comunidade no Discord](https://discord.gg/JDdSxwjhGf)
+- [Discussões no GitHub](https://github.com/wailsapp/wails/discussions)
+- [Issues no GitHub](https://github.com/wailsapp/wails/issues)
+
+### Como contribuo?
+
+Veja o [Guia de Contribuição](/contributing).
+
+### Onde encontro exemplos?
+
+- [Exemplos Oficiais](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [Exemplos da Comunidade](https://github.com/topics/wails)
+
+## Ainda Tem Perguntas?
+
+Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou [abra uma discussão](https://github.com/wailsapp/wails/discussions).

@@ -1,0 +1,97 @@
+# Mac App Store Anleitung
+
+Diese Seite gibt einen kurzen Überblick darüber, wie du deine Wails App im Mac App Store einreichen kannst.
+
+## Voraussetzungen
+
+- Ein Apple-Entwickler-Konto. Weitere Informationen findest du auf der [Apple Developer Program](https://developer.apple.com/support/compare-memberships/) Seite
+- Du musst deine Zertifikate, Identifikatoren und App auf dem Entwicklerportal erstellen. Mehr dazu unten
+- Xcode Kommandozeilenwerkzeuge müssen auf deinem lokalen Rechner installiert sein
+
+#### Zertifikate und Identifikatoren erstellen
+
+1. Gehe zu deinem [Apple Entwicklerkonto](https://developer.apple.com/account/)
+2. Klicken Sie unter `Zertifikate, Identifikatoren & Profile` auf ` Identifikatoren` und registriere eine neue App-ID. Benutze das Format com.example.app
+3. Klicke auf der gleichen Seite auf ` Zertifikate` und erzeuge neue Zertifikate für die Mac App Store Distribution.  Lade das Zertifikat herunter und importiere die Zertifikate in die Keychain auf deinem lokalen Rechner.
+
+#### Eine App Einreichung erstellen
+
+1. Gehe zur [App Store Connect Site](https://appstoreconnect.apple.com/apps)
+2. Registriere eine neue Anwendung und verknüpfe die Bundle-ID, die du im vorherigen Schritt erstellt hast
+3. Statte deine App mit den richtigen Bildschirmaufnahmen, Beschreibungen etc. aus, so wie es Apple voraussetzt
+4. Erstelle eine neue Version deiner App
+
+#### Bereitstellungsprofil erstellen
+1. Gehe zur [Apple Developer Profile](https://developer.apple.com/account/resources/profiles/list) Seite
+2. Füge ein neues Bereitstellungsprofil für Mac App Store Distribution hinzu
+3. Wähle den Profiltyp als Mac und wähle die App-ID für die oben erstellte Anwendung
+4. Wähle das Mac App Distribution Zertifikat
+5. Benenne das Bereitstellungsprofil eingebettet und lade das erstellte Profil herunter.
+
+## Mac App Store Prozess
+
+#### Apple's App Sandbox aktivieren
+
+Für den Mac App Store eingereichte Apps müssen unter Apples [App Sandbox](https://developer.apple.com/app-sandboxing/) ausgeführt werden. Du musst eine `entitlements.plist` Datei erstellen, damit dies funktioniert. Es wird empfohlen, diese Datei unter dem Pfad `{PROJECT_DIR}/build/darwin/entitlements.plist` zu erstellen.
+
+**Beispiel Berechtigungsdatei**
+
+Das ist eine Beispiel Berechtigungsdatei von der [RiftShare](https://github.com/achhabra2/riftshare)-App. Bitte gebe die Berechtigungen an, die deine App letzendlich benötigt. Weitere Informationen findest du auf [dieser Seite](https://developer.apple.com/documentation/bundleresources/entitlements). Du musst die Team-ID und den Bewerbungsnamen durch die oben eingetragenen ersetzen.
+
+```xml title="entitlements.plist"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <key>com.apple.security.files.downloads.read-write</key>
+    <true/>
+    <key>com.apple.application-identifier</key>
+    <string>TEAM_ID.APP_NAME</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>TEAM_ID</string>
+</dict>
+</plist>
+```
+
+Das oben erstellte Bereitstellungsprofil muss dem Stammverzeichnis der Anwendung hinzugefügt werden. Außerdem muss diese embedded.provisionprofile heißen.
+
+#### Builde und signiere das App-Paket
+
+Das folgende ist ein Beispielskript zum Erstellen und Signieren deiner App für Mac App Store Einreichung. Das Skript geht davon aus, dass es aus dem Root-Projektverzeichnis ausgeführt wird.
+
+Beachte, dass die Zertifikate, die die App signieren und den Installer signieren, unterschiedlich sind. Bitte stelle sicher, dass beide in die Keychain importiert werden. Finde die Zeichenketten in Keychain und füge sie unten ein. Fülle deinen Zertifikatsnamen und den App-Namen unten ein. Das Ausführen des folgenden Skripts generiert eine signierte `app.pkg` Datei im Stammverzeichnis deiner App.
+
+```bash title="macappstore-build.sh"
+#!/bin/bash
+
+APP_CERTIFICATE="3rd Party Mac Developer Application: YOUR NAME (CODE)"
+PKG_CERTIFICATE="3rd Party Mac Developer Installer: YOUR NAME (CODE)"
+APP_NAME="YourApp"
+
+wails build -platform darwin/universal -clean
+
+cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
+
+codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist "./build/bin/$APP_NAME.app"
+
+productbuild --sign "$PKG_CERTIFICATE" --component "./build/bin/$APP_NAME.app" /Applications "./$APP_NAME.pkg"
+```
+
+#### App-Paket hochladen
+
+Die generierte Paketdatei muss nun hochgeladen werden, um diese deiner Anwendung zuzuordnen, bevor du sie zur Überprüfung einreichen kannst.
+
+1. Lade die [Transporter App](https://apps.apple.com/us/app/transporter/id1450874784) aus dem Mac App Store herunter
+2. Öffne diese und melde dich mit deiner Apple-ID an
+3. Klicke auf das + Zeichen und wähle die `APP_NAME.pkg` Datei, die du im vorherigen Schritt erstellt hast. Dann lade diese hoch
+4. Gehe zurück zur [App Store Connect](https://appstoreconnect.apple.com/apps) Seite und navigiere zurück zu deiner App-Einreichung. Wähle die Version, die im App Store zur Verfügung gestellt werden soll. Unter `Build` wähle das Paket, das über die Transporter App hochgeladen wurde.
+
+Das wars! Du kannst nun die Website nutzen, um deine App zur Überprüfung einzureichen. Nach ein paar Werktagen, wenn alles gut geht, sollte deine App live im Mac App Store zu sehen sein. 

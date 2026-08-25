@@ -19,12 +19,11 @@
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>MinimumOSVersion</key>
-    <string>15.0</string>
+    <string>{{if .MinIOSVersion}}{{.MinIOSVersion}}{{else}}15.0{{end}}</string>
     <key>UILaunchStoryboardName</key>
     <string>LaunchScreen</string>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
-        <string>armv7</string>
         <string>arm64</string>
     </array>
     <key>UISupportedInterfaceOrientations</key>
@@ -47,6 +46,13 @@
         <key>NSAllowsLocalNetworking</key>
         <true/>
     </dict>
+    {{if .BackgroundModes}}
+    <key>UIBackgroundModes</key>
+    <array>
+        {{range .BackgroundModes}}<string>{{.}}</string>
+        {{end}}
+    </array>
+    {{end}}
     {{if .ProductCopyright}}
     <key>NSHumanReadableCopyright</key>
     <string>{{.ProductCopyright}}</string>

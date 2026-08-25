@@ -1,0 +1,67 @@
+# Windows
+
+Diese Seite enthält verschiedene Anleitungen zur Entwicklung von Wails Anwendungen für Windows.
+
+## Umgang mit der Laufzeitabhängigkeit von WebView2
+
+Für builds auf Windows von Wails Anwendungen gibt es eine Laufzeitvoraussetzung von Microsoft für die [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). Windows 11 wird diese standardmäßig installiert haben, dennoch gibt es einige Maschinen, die das nicht haben. Wails bietet einen einfachen Ansatz, um mit dieser Abhängigkeit umzugehen.
+
+Durch Verwendung der `-webview2` flag beim builden kann entschieden werden, was die Anwendung tun soll, wenn eine geeignete Laufzeit nicht erkannt wird (einschließlich, wenn die installierte Laufzeit zu alt ist). Die vier Optionen sind:
+
+1. Herunterladen
+2. Einbetten
+3. Browser
+4. Fehler
+
+### Herunterladen
+
+Diese Option weist den Benutzer darauf hin, dass keine passende Laufzeitumgebung gefunden wurde, und bietet anschließend den Download und die Ausführung des offiziellen Bootstrappers von der Microsoft WebView2-Website an. Wenn der Benutzer fortfährt, wird der offizielle Bootstrapper heruntergeladen und ausgeführt.
+
+### Einbetten
+
+Diese Option fügt den offiziellen Bootstrapper in die Anwendung ein. Wenn keine passende Laufzeit gefunden wurde, bietet die Anwendung an, den Bootstrapper auszuführen. Damit wird die Binärgröße um ~150k erhöht.
+
+### Browser
+
+Diese Option weist den Benutzer darauf hin, dass keine passende Laufzeitumgebung gefunden wurde, und bietet anschließend an, einen Browser zur offiziellen WebView2-Seite zu öffnen, auf der das Bootstrapper-Programm heruntergeladen und installiert werden kann. Die Anwendung wird anschließend beendet und die Installation wird dem Benutzer überlassen.
+
+### Fehler
+
+Wenn keine passende Laufzeit gefunden wird, wird dem Benutzer ein Fehler gemeldet und es wird keine weitere Aktion durchgeführt.
+
+## Feste Version der Laufzeit
+
+Eine andere Möglichkeit, mit Webview2-Abhängigkeiten umzugehen, besteht darin, diese mit der Anwendung mit zu verschicken. [Feste Laufzeit Versionen](https://developer.microsoft.com/microsoft-edge/webview2/#download-section) können heruntergeladen und gebündelt, oder mit deiner Anwendung heruntergeladen werden.
+
+Außerdem sollte der Pfad zur festen Version von der webview2 Laufzeit im `windows.Optionen` struct beim Starten von Wails angegeben werden.
+
+```go
+    wails.Run(&options.App{
+        Windows: &windows.Options{
+            WebviewBrowserPath:  "",
+        },
+    })
+```
+
+Hinweis: Wenn `WebviewBrowserPath` angegeben ist, wird die `Fehler` Strategie erzwungen, um im Falle eines Fehlers mit der minimal benötigten Version oder eines ungültigen Pfades zu der Laufzeit reagieren zu können.
+
+Die heruntergeladene Datei ist komprimiert (Erweiterung `.cab`). Daher muss diese entpackt werden, bevor diese verwendet werden kann. Den Anweisungen auf der [offiziellen Seite](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode) zufolge soll folgender Befehl in einem Terminalfenster ausgeführt werden, um die Datei zu entpacken:
+
+```
+expand {path to the package} -F:* {path to the destination folder}
+```
+
+## Andere Programme ausführen
+
+Wenn andere Programme wie z. B. Skripte aufgerufen werden, erscheint das Fenster auf dem Bildschirm. Um das Fenster zu verstecken, kann folgender Code verwendet werden:
+
+```go
+cmd := exec.Command("your_script.exe")
+cmd.SysProcAttr = &syscall.SysProcAttr{
+    HideWindow:    true,
+    CreationFlags: 0x08000000,
+}
+cmd.Start()
+```
+
+Lösung von [sithembiso](https://github.com/sithembiso) aus dem [Diskussionsforum](https://github.com/wailsapp/wails/discussions/1734#discussioncomment-3386172).

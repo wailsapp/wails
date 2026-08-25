@@ -1,0 +1,55 @@
+---
+title: Setup
+sidebar:
+  order: 15
+  badge:
+    text: Eksperimental
+    variant: caution
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+<Aside type="caution" title="Eksperimental">
+  Wizard setup masih baru dan terutama diuji di Linux. Jika Anda mengalami masalah, harap [laporkan](https://github.com/wailsapp/wails/issues/4904) dan ikuti [langkah instalasi manual](/id/getting-started/installation#platform-specific-dependencies).
+</Aside>
+
+## Mulai Cepat
+
+```bash
+# 1. Instal CLI Wails
+go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+# 2. Jalankan wizard setup
+wails3 setup
+```
+
+Wizard terbuka di browser Anda dan memandu Anda melalui pemeriksaan dependensi, default proyek, dan setup build lintas platform opsional.
+
+Kemudian Anda siap untuk proyek pertama:
+
+```bash
+wails3 init -n myapp -t vanilla
+cd myapp && wails3 dev
+```
+
+## Apa yang Dilakukannya
+
+- **Memeriksa dependensi** - Memverifikasi Go, npm, dan tooling platform
+- **Mengonfigurasi default** - Info penulis, prefix bundle ID, template pilihan
+- **Build lintas platform** - Setup Docker opsional untuk build dari host mana pun
+- **Code signing** - Setup opsional untuk macOS, Windows, dan Linux
+
+Konfigurasi disimpan ke `~/.config/wails/config.yaml` dan digunakan oleh `wails3 init`.
+
+## Sub-Command
+
+```bash
+wails3 setup signing      # Konfigurasi code signing
+wails3 setup entitlements # Konfigurasi entitlements macOS
+```
+
+## Mengalami Masalah?
+
+1. Jalankan `wails3 doctor` untuk mendiagnosis masalah
+2. Ikuti [langkah instalasi manual](/id/getting-started/installation#platform-specific-dependencies)
+3. [Laporkan issue](https://github.com/wailsapp/wails/issues/4904) beserta output `wails3 doctor` Anda

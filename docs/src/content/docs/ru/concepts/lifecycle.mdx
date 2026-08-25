@@ -1,0 +1,368 @@
+---
+title: Жизненный цикл приложения
+description: Понимание жизненного цикла приложения Wails от запуска до завершения
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Понимание жизненного цикла приложения
+
+Настольные приложения имеют жизненный цикл от запуска до завершения. Wails v3 предоставляет **сервисы**, **события** и **хуки** для эффективного управления этим жизненным циклом.
+
+## Этапы жизненного цикла
+
+```d2
+direction: down
+
+Start: "Application Start" {
+  shape: oval
+  style.fill: "#10B981"
+}
+
+Init: "Initialisation" {
+  Parse: "Parse Options" {
+    shape: rectangle
+  }
+  Register: "Register Services" {
+    shape: rectangle
+  }
+  Setup: "Setup Runtime" {
+    shape: rectangle
+  }
+}
+
+AppRun: "app.Run()" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+ServiceStartup: "Service Startup" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+EventLoop: "Event Loop" {
+  Process: "Process Events" {
+    shape: rectangle
+  }
+  Handle: "Handle Messages" {
+    shape: rectangle
+  }
+  Update: "Update UI" {
+    shape: rectangle
+  }
+}
+
+QuitSignal: "Quit Signal" {
+  shape: diamond
+  style.fill: "#F59E0B"
+}
+
+ShouldQuit: "ShouldQuit Check" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+OnShutdown: "OnShutdown Callbacks" {
+  shape: rectangle
+  style.fill: "#3B82F6"
+}
+
+ServiceShutdown: "Service Shutdown" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Cleanup: "Cleanup" {
+  Close: "Close Windows" {
+    shape: rectangle
+  }
+  Release: "Release Resources" {
+    shape: rectangle
+  }
+}
+
+End: "Application End" {
+  shape: oval
+  style.fill: "#EF4444"
+}
+
+Start -> Init.Parse
+Init.Parse -> Init.Register
+Init.Register -> Init.Setup
+Init.Setup -> AppRun
+AppRun -> ServiceStartup
+ServiceStartup -> EventLoop.Process
+EventLoop.Process -> EventLoop.Handle
+EventLoop.Handle -> EventLoop.Update
+EventLoop.Update -> EventLoop.Process: "Loop"
+EventLoop.Process -> QuitSignal: "User quits"
+QuitSignal -> ShouldQuit: "Check allowed?"
+ShouldQuit -> EventLoop.Process: "Denied"
+ShouldQuit -> OnShutdown: "Allowed"
+OnShutdown -> ServiceShutdown
+ServiceShutdown -> Cleanup.Close
+Cleanup.Close -> Cleanup.Release
+Cleanup.Release -> End
+```
+
+### 1. Создание приложения
+
+Создайте свое приложение с помощью `application.New()`:
+
+```go
+app := application.New(application.Options{
+    Name:        "My App",
+    Description: "An application built with Wails",
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+    },
+    Assets: application.AssetOptions{
+        Handler: application.BundledAssetFileServer(assets),
+    },
+})
+```
+
+**Что происходит:**
+1. Опции анализируются и проверяются на валидность
+2. Сервисы регистрируются (но еще не запускаются)
+3. Настраивается сервер активов
+4. Настраивается среда выполнения (Runtime)
+
+### 2. Запуск приложения
+
+Вызовите `app.Run()` для запуска приложения:
+
+```go
+err := app.Run()  // Blocks until quit
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+**Что происходит:**
+1. Сервисы запускаются в порядке регистрации
+2. Активируются слушатели событий
+3. Можно создавать окна
+4. Начинается цикл обработки событий
+
+### 3. Цикл обработки событий
+
+Приложение входит в цикл обработки событий, где оно проводит большую часть времени:
+
+- Обрабатываются события ОС (мышь, клавиатура, события окон)
+- Обрабатываются сообщения от Go к JS
+- Выполняются вызовы от JS к Go
+- Отображаются обновления пользовательского интерфейса
+
+### 4. Завершение работы
+
+Когда приложение завершает работу:
+
+1. Проверяется колбэк `ShouldQuit` (если установлен)
+2. Выполняются колбэки `OnShutdown`
+3. Сервисы останавливаются в порядке, обратном порядку регистрации
+4. Закрываются окна
+5. Освобождаются ресурсы
+
+## Жизненный цикл сервисов
+
+Сервисы являются основным способом управления жизненным циклом в Wails v3. Они предоставляют хуки запуска и завершения через интерфейсы. Полную документацию по сервисам см. в [руководстве по сервисам](/features/bindings/services).
+
+### Создание сервиса
+
+```go
+type MyService struct {
+    db *sql.DB
+}
+
+// ServiceStartup is called when the application starts
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return err  // Startup aborts if error returned
+    }
+
+    // Run migrations
+    if err := s.runMigrations(); err != nil {
+        return err
+    }
+
+    return nil
+}
+
+// ServiceShutdown is called when the application shuts down
+func (s *MyService) ServiceShutdown() error {
+    if s.db != nil {
+        return s.db.Close()
+    }
+    return nil
+}
+```
+
+### Регистрация сервисов
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&MyService{}),
+        application.NewService(&AnotherService{}),
+    },
+})
+```
+
+**Ключевые моменты:**
+- Сервисы запускаются в порядке регистрации
+- Сервисы останавливаются в порядке, **обратном** порядку регистрации
+- Если `ServiceStartup` сервиса возвращает ошибку, приложение прерывает запуск
+- Контекст `ctx`, переданный в `ServiceStartup`, отменяется при начале завершения работы
+
+### Использование контекста приложения
+
+Контекст, переданный в `ServiceStartup`, действителен на протяжении всего времени жизни приложения:
+
+```go
+func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    // Start a background task that respects shutdown
+    go func() {
+        ticker := time.NewTicker(5 * time.Minute)
+        defer ticker.Stop()
+
+        for {
+            select {
+            case <-ticker.C:
+                s.performBackgroundSync()
+            case <-ctx.Done():
+                // Application is shutting down
+                return
+            }
+        }
+    }()
+
+    return nil
+}
+```
+
+Вы также можете получить доступ к контексту из экземпляра приложения:
+
+```go
+app := application.Get()
+ctx := app.Context()
+```
+
+## Хуки уровня приложения
+
+Это удобные колбэки в `application.Options`, которые позволяют подключаться к жизненному циклу приложения без создания полноценного сервиса. Они полезны для простых задач очистки, подтверждения выхода или когда вам нужно выполнить код в определенных точках последовательности завершения работы.
+
+Для более сложного управления жизненным циклом с логикой запуска, внедрением зависимостей или управляемыми ресурсами используйте [Сервисы](#services-lifecycle).
+
+### ShouldQuit
+
+Колбэк `ShouldQuit` вызывается всякий раз, когда запрашивается выход — будь то пользователь, закрывший последнее окно, нажавший Cmd+Q (macOS) / Alt+F4 (Windows), или программный вызов `app.Quit()`.
+
+**Возвращаемое значение:**
+- Верните `true`, чтобы разрешить выход (приложение завершит работу)
+- Верните `false`, чтобы отменить выход (приложение продолжит работу)
+
+Это ваш шанс перехватить запросы на выход и, при необходимости, предотвратить их, например, чтобы запросить у пользователя сохранение несохраненных изменений:
+
+```go
+app := application.New(application.Options{
+    ShouldQuit: func() bool {
+        if !hasUnsavedChanges() {
+            return true  // No unsaved changes, allow quit
+        }
+
+        // Prompt the user
+        result, _ := application.QuestionDialog().
+            SetTitle("Unsaved Changes").
+            SetMessage("You have unsaved changes. Quit anyway?").
+            AddButton("Quit", "quit").
+            AddButton("Cancel", "cancel").
+            Show()
+
+        // Only quit if user clicked "Quit"
+        return result == "quit"
+    },
+})
+```
+
+Если `ShouldQuit` не установлен, приложение завершит работу немедленно при запросе.
+
+**Когда вызывается ShouldQuit:**
+- Пользователь закрывает последнее окно (если не установлен `DisableQuitOnLastWindowClosed`)
+- Пользователь нажимает Cmd+Q на macOS
+- Пользователь нажимает Alt+F4 на Windows (когда фокус находится на последнем окне)
+- Код вызывает `app.Quit()`
+
+**Когда ShouldQuit НЕ вызывается:**
+- Процесс убит (SIGKILL, принудительное завершение через Диспетчер задач)
+- Вызван `os.Exit()` напрямую
+
+### OnShutdown
+
+Колбэк `OnShutdown` вызывается, когда выход из приложения подтвержден (после того, как `ShouldQuit` вернул `true`, если он был установлен). Используйте его для задач очистки, таких как сохранение состояния, закрытие соединений с базой данных или освобождение ресурсов.
+
+```go
+app := application.New(application.Options{
+    OnShutdown: func() {
+        // Save application state
+        saveState()
+
+        // Close connections----------|--------------------------------|
+| macOS | Приложение продолжает работать (меню остается видимым) |
+| Windows | Приложение завершает работу |
+| Linux | Приложение завершает работу |
+
+macOS следует родным платформенным соглашениям, согласно которым приложения обычно остаются активными в строке меню даже при отсутствии открытых окон. Windows и Linux по умолчанию завершают работу.
+
+**Заставить все платформы завершать работу при закрытии последнего окна:**
+
+```go
+app := application.New(application.Options{
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+})
+```
+
+**Заставить все платформы продолжать работу при закрытии последнего окна:**
+
+Это полезно для приложений в системном трее или приложений, которые должны оставаться активными в фоновом режиме.
+
+```go
+app := application.New(application.Options{
+    Windows: application.WindowsOptions{
+        DisableQuitOnLastWindowClosed: true,
+    },
+    Linux: application.LinuxOptions{
+        DisableQuitOnLastWindowClosed: true,
+    },
+})
+```
+
+## Распространённые паттерны
+
+### Паттерн 1: Сервис базы данных
+
+```go
+type DatabaseService struct {
+    db *sql.DB
+}
+
+func (s *DatabaseService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
+    var err error
+    s.db, err = sql.Open("sqlite3", "app.db")
+    if err != nil {
+        return fmt.Errorf("failed to open database: %w", err)
+    }
+
+    if err := s.db.PingContext(ctx); err != nil {
+        return fmt.Errorf("failed to connect to database: %w", err)
+    }
+
+    return nil
+}**Вопросы о жизненном цикле?** Задавайте их в [Discord](https://discord.gg/JDdSxwjhGf) или смотрите [примеры](https://github.com/wailsapp/wails/tree/master/v3/examples).

@@ -1,0 +1,275 @@
+---
+title: 贡献指南
+description: 为 Wails 做出贡献
+sidebar:
+  order: 100
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 欢迎贡献者！
+
+我们欢迎对 Wails 的贡献！无论你是修复 bug、添加新功能还是改进文档，你的帮助都备受感激。
+
+## 贡献方式
+
+### 1. 报告问题
+
+发现了 bug？[提交一个 issue](https://github.com/wailsapp/wails/issues/new)，并包含以下内容：
+- 清晰的描述
+- 复现步骤
+- 预期行为与实际行为对比
+- 系统信息
+- 代码示例
+
+### 2. 改进文档
+
+我们非常欢迎对文档的改进：
+- 修复拼写和错误
+- 添加示例
+- 澄清解释
+- 翻译内容
+
+### 3. 提交代码
+
+通过拉取请求（Pull Request）提交代码：
+- Bug 修复
+- 新功能
+- 性能改进
+- 测试
+
+## 入门指南
+
+### Fork 并克隆
+
+```bash
+# 在 GitHub 上 Fork 仓库
+# 然后克隆你的 Fork
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# 添加上游远程仓库
+git remote add upstream https://github.com/wailsapp/wails.git
+```
+
+### 从源码构建
+
+```bash
+# 安装依赖
+go mod download
+
+# 构建 Wails CLI
+cd v3/cmd/wails3
+go build
+
+# 测试你的构建
+./wails3 version
+```
+
+### 运行测试
+
+```bash
+# 运行所有测试
+go test ./...
+
+# 运行特定包的测试
+go test ./v3/pkg/application
+
+# 运行带覆盖率报告的测试
+go test -cover ./...
+```
+
+## 进行修改
+
+### 创建分支
+
+```bash
+# 更新 main 分支
+git checkout main
+git pull upstream main
+
+# 创建功能分支
+git checkout -b feature/my-feature
+```
+
+### 进行修改
+
+1. **编写代码**，遵循 Go 语言规范
+2. **添加测试**，覆盖新功能
+3. **更新文档**（如有需要）
+4. **运行测试**，确保没有破坏现有功能
+5. **提交更改**，使用清晰的提交信息
+
+### 提交规范
+
+```bash
+# 良好的提交信息示例
+git commit -m "fix: resolve window focus issue on macOS"
+git commit -m "feat: add support for custom window chrome"
+git commit -m "docs: improve bindings documentation"
+
+# 使用约定式提交（Conventional Commits）：
+# - feat: 新功能
+# - fix: Bug 修复
+# - docs: 文档
+# - test: 测试
+# - refactor: 代码重构
+# - chore: 维护工作
+```
+
+### 提交拉取请求
+
+```bash
+# 推送到你的 Fork
+git push origin feature/my-feature
+
+# 在 GitHub 上打开拉取请求
+# 提供清晰的描述
+# 引用相关问题
+```
+
+## 拉取请求规范
+
+### 良好的 PR 描述
+
+```markdown
+## 描述
+简要描述所做的更改
+
+## 更改内容
+- 添加了功能 X
+- 修复了 Bug Y
+- 更新了文档
+
+## 测试
+- 在 macOS 14 上测试
+- 在 Windows 11 上测试
+- 所有测试通过
+
+## 相关问题
+修复 #123
+```
+
+### PR 检查清单
+
+- [ ] 代码遵循 Go 语言规范
+- [ ] 已添加/更新测试
+- [ ] 文档已更新
+- [ ] 所有测试通过
+- [ ] 无破坏性更改（或有文档说明）
+- [ ] 提交信息清晰
+
+## 代码规范
+
+### Go 代码风格
+
+```go
+// ✅ 良好：清晰、有文档、有测试
+// ProcessData 处理输入数据并返回结果。
+// 如果数据无效，则返回错误。
+func ProcessData(data string) (string, error) {
+    if data == "" {
+        return "", errors.New("data cannot be empty")
+    }
+    
+    result := process(data)
+    return result, nil
+}
+
+// ❌ 糟糕：无文档、无错误处理
+func ProcessData(data string) string {
+    return process(data)
+}
+```
+
+### 测试
+
+```go
+func TestProcessData(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        want    string
+        wantErr bool
+    }{
+        {"valid input", "test", "processed", false},
+        {"empty input", "", "", true},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := ProcessData(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("ProcessData() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if got != tt.want {
+                t.Errorf("ProcessData() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+## 文档
+
+### 编写文档
+
+文档使用 Starlight (Astro) 构建：
+
+```bash
+cd docs
+npm install
+npm run dev
+```
+
+### 文档风格
+
+- 使用国际英语拼写
+- 从问题入手
+- 提供可运行的示例
+- 包含故障排除
+- 交叉引用相关内容
+
+## 社区
+
+### 获取帮助
+
+- **Discord:** [加入我们的社区](https://discord.gg/JDdSxwjhGf)
+- **GitHub Discussions:** 提问
+- **GitHub Issues:** 报告 Bug
+
+### 行为准则
+
+请保持尊重、包容和专业。我们都是为了共同构建优秀的软件而聚在这里。
+
+## 认可
+
+贡献者将在以下地方得到认可：
+- 发布说明
+- 贡献者列表
+- GitHub 洞察数据
+
+感谢你对 Wails 的贡献！🎉
+
+## 下一步
+
+<CardGrid>
+  <Card title="GitHub 仓库" icon="github">
+    访问 Wails 仓库。
+    
+    [在 GitHub 上查看 →](https://github.com/wailsapp/wails)
+  </Card>
+
+  <Card title="Discord 社区" icon="discord">
+    加入社区。
+    
+    [加入 Discord →](https://discord.gg/JDdSxwjhGf)
+  </Card>
+
+  <Card title="文档" icon="open-book">
+    阅读文档。
+    
+    [浏览文档 →](/zh-cn/quick-start/why-wails)
+  </Card>
+</CardGrid>

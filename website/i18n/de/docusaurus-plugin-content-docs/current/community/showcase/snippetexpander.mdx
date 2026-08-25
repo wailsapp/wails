@@ -1,0 +1,27 @@
+# Snippet Expander
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/snippetexpandergui-select-snippet.png").default} />
+  <br />
+  Screenshot of Snippet Expander's Select Snippet window
+</p>
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/snippetexpandergui-add-snippet.png").default} />
+  <br />
+  Screenshot of Snippet Expander's Add Snippet screen
+</p>
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/snippetexpandergui-search-and-paste.png").default} />
+  <br />
+  Screenshot of Snippet Expander's Search & Paste window
+</p>
+```
+
+[Snippet Expander](https://snippetexpander.org) ist "Dein kleiner erweiterbarer Text-Snippets Helfer", für Linux.
+
+Snippet Expander besteht aus einer GUI-Anwendung, die mit Wails erstellt wurde, um Snippets und Einstellungen zu verwalten, mit einem Such- & Einfügen-Fenstermodus, um ein Snippet schnell auszuwählen und einzufügen.
+
+Der Wails basierende GUI, Go-lang CLI und vala-lang auto expander Daemon kommunizieren mit einem Go-lang Daemon über D-Bus. Der Daemon erledigt den Großteil der Arbeit, die Verwaltung der Datenbank von Snippets und gemeinsamen Einstellungen, die Bereitstellung von Diensten zum Aus- und Einfügen von Snippets usw.
+
+Schauen dir den [source code](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38) an, um zu sehen, wie die Wails-App Nachrichten von der Benutzeroberfläche an das Backend sendet, die dann an den Daemon gesendet werden, und wie sie ein D-Bus-Ereignis abonniert, um Änderungen an Snippets über eine andere Instanz der App oder CLI zu überwachen und diese sofort über ein Wails-Ereignis in der Benutzeroberfläche anzuzeigen.

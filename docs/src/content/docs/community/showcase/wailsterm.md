@@ -1,5 +1,6 @@
 ---
 title: WailsTerm
+description: "A desktop application built with Wails"
 ---
 
 ![WailsTerm Screenshot](../../../../assets/showcase-images/wailsterm.webp)

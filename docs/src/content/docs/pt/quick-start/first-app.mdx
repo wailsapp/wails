@@ -1,0 +1,270 @@
+---
+title: Seu Primeiro App
+description: Crie um aplicativo Wails funcional em 10 minutos
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+Vamos construir um simples aplicativo de saudação que demonstra os conceitos principais do Wails:
+- Backend em Go gerenciando a lógica
+- Frontend chamando funções do Go
+- Bindings com tipagem segura
+- Hot reload durante o desenvolvimento
+
+**Tempo para concluir:** 10 minutos
+
+:::tip[Dica de Performance para Usuários do Windows 11]
+Considere usar o [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) para armazenar seus projetos. Os Dev Drives são otimizados para cargas de trabalho de desenvolvedores e podem melhorar significativamente os tempos de compilação e a velocidade de acesso ao disco em até 30% em comparação com drives NTFS comuns.
+:::
+
+## Crie Seu Projeto
+
+<Steps>
+
+1. **Gere o projeto**
+
+   ```bash
+   wails3 init -n myapp
+   cd myapp
+   ```
+
+   Isso cria um novo projeto com o modelo padrão Vanilla + Vite (HTML/CSS/JS puro com o bundler Vite).
+
+   :::tip[Outros Modelos]
+   Experimente `-t react`, `-t vue` ou `-t svelte` para seu framework preferido.
+   Execute `wails3 init -l` para ver todos os modelos disponíveis.
+   :::
+
+2. **Entenda a estrutura do projeto**
+
+   ```
+   myapp/
+   ├── main.go              # Ponto de entrada da aplicação
+   ├── greetservice.go      # Serviço de saudação
+   ├── frontend/            # Seu código de UI
+   │   ├── index.html       # Ponto de entrada HTML
+   │   ├── src/
+   │   │   └── main.js      # JavaScript do frontend
+   │   ├── public/
+   │   │   └── style.css    # Estilos
+   │   ├── package.json     # Dependências do frontend
+   │   └── vite.config.js   # Configuração do bundler Vite
+   ├── build/               # Configuração de build
+   └── Taskfile.yml         # Tarefas de build
+   ```
+
+3. **Execute o app**
+
+   ```bash
+   wails3 dev
+   ```
+
+   :::note[Primeira Execução]
+   A primeira execução pode demorar mais do que o esperado, pois instala dependências do frontend, gera bindings, etc. As execuções subsequentes são muito mais rápidas.
+   :::
+
+   O app abre mostrando uma interface de saudação. Digite seu nome e clique em "Greet" - o backend Go processa sua entrada e retorna uma saudação.
+
+</Steps>
+
+## Como Funciona
+
+Vamos entender o código que faz isso funcionar.
+
+### O Backend Go
+
+Abra `greetservice.go`:
+
+```go title="greetservice.go"
+package main
+
+import (
+	"fmt"
+)
+
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+```
+
+**Conceitos principais:**
+
+1. **Service** - Uma struct Go com métodos exportados
+2. **Método exportado** - `Greet` está em maiúsculas, tornando-o disponível para o frontend
+3. **Lógica simples** - Recebe um nome e retorna uma saudação
+4. **Tipagem segura** - Os tipos de entrada e saída são definidos
+
+:::tip[Entendendo Services e Bindings]
+**Services** são módulos Go autônomos que expõem funcionalidade para o seu frontend. Eles são apenas structs Go comuns com métodos exportados que você registra no campo `Services` da configuração da sua aplicação.
+
+**Bindings** são o SDK TypeScript/JavaScript gerado automaticamente que permite ao seu frontend chamar esses services. Quando você executa `wails3 dev` ou `wails3 build`, o Wails analisa seus services registrados e gera bindings com tipagem segura em `frontend/bindings/`.
+
+Pense em services como sua API backend e bindings como a biblioteca cliente que se comunica com ela.
+:::
+
+### Registrando o Service
+
+Abra `main.go` e encontre o registro do service:
+
+```go title="main.go" {4-6}
+err := application.New(application.Options{
+    Name: "myapp",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+    // ... outras opções
+})
+```
+
+Isso registra seu `GreetService` com o Wails, tornando todos os seus métodos exportados disponíveis para o frontend.
+
+### O Frontend
+
+Abra `frontend/src/main.js`:
+
+```javascript title="frontend/src/main.js"
+import {GreetService} from "../bindings/changeme";
+
+window.greet = async () => {
+    const nameElement = document.getElementById('name');
+    const resultElement = document.getElementById('result');
+
+    const name = nameElement.value;
+    if (!name) {
+        return;
+    }
+
+    try {
+        const result = await GreetService.Greet(name);
+        resultElement.innerText = result;
+    } catch (err) {
+        console.error(err);
+    }
+};
+```
+
+**Conceitos principais:**
+
+1. **Bindings gerados automaticamente** - `GreetService` é importado do código gerado
+2. **Chamadas com tipagem segura** - Os nomes dos métodos e suas assinaturas correspondem ao seu código Go
+3. **Assíncrono por padrão** - Todas as chamadas Go retornam Promises
+4. **Tratamento de erros** - Erros do Go são capturados em try/catch
+
+:::note[Onde estão os bindings?]
+Os bindings gerados estão em `frontend/bindings/`. Eles são criados automaticamente quando você executa `wails3 dev` ou `wails3 build`.
+
+**Nunca edite esses arquivos manualmente**—eles são regenerados a cada build.
+:::
+
+## Personalize Seu App
+
+Vamos adicionar um novo recurso para entender o fluxo de trabalho.
+
+### Adicione um Recurso "Greet Many"
+
+<Steps>
+
+1. **Adicione o método ao GreetService**
+
+   Adicione isto ao `greetservice.go`:
+
+   ```go title="greetservice.go"
+   func (g *GreetService) GreetMany(names []string) []string {
+       greetings := make([]string, len(names))
+       for i, name := range names {
+           greetings[i] = fmt.Sprintf("Hello %s!", name)
+       }
+       return greetings
+   }
+   ```
+
+2. **O app será reconstruído automaticamente**
+
+   Salve o arquivo e o `wails3 dev` reconstruirá automaticamente seu código Go e reiniciará o app.
+
+   :::note[Reconstrução Automática]
+   Alterações no código Go acionam uma reconstrução automática e reinício. Alterações no frontend têm hot reload sem reinício.
+   :::
+
+3. **Use-o no frontend**
+
+   Adicione isto ao `frontend/src/main.js`:
+
+   ```javascript title="frontend/src/main.js"
+   window.greetMany = async () => {
+       const names = ['Alice', 'Bob', 'Charlie'];
+       const greetings = await GreetService.GreetMany(names);
+       console.log(greetings);
+   };
+   ```
+
+   Abra o console do navegador e chame `greetMany()` - você verá o array de saudações.
+
+</Steps>
+
+## Compile para Produção
+
+Quando estiver pronto para distribuir seu app:
+
+```bash
+wails3 build
+```
+
+**O que isso faz:**
+- Compila o código Go com otimizações
+- Compila o frontend para produção (minificado)
+- Cria um executável nativo em `build/bin/`
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    **Saída:** `build/bin/myapp.exe`
+
+    Clique duas vezes para executar. Nenhuma dependência necessária (WebView2 faz parte do Windows).
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Saída:** `build/bin/myapp.app`
+
+    Arraste para a pasta Applications ou clique duas vezes para executar.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Saída:** `build/bin/myapp`
+
+    Execute com `./build/bin/myapp` ou crie um arquivo `.desktop` para seu lançador.
+  </TabItem>
+</Tabs>
+
+:::tip[Builds Multiplataforma]
+Quer compilar para outras plataformas? Veja [Builds Multiplataforma →](/guides/build/cross-platform)
+:::
+
+## O que aprendemos
+
+**Estrutura do Projeto**
+- `main.go` para o backend Go
+- `frontend/` para o código da UI
+- `Taskfile.yml` para tarefas de build
+
+**Services**
+- Crie structs Go com métodos exportados
+- Registre com `application.NewService()`
+- Métodos automaticamente disponíveis no frontend
+
+**Bindings**
+- Definições TypeScript geradas automaticamente
+- Chamadas de função com tipagem segura
+- Assíncrono por padrão (Promises)
+
+**Fluxo de Trabalho de Desenvolvimento**
+- `wails3 dev` para hot reload
+- Alterações no Go reconstruem e reiniciam automaticamente
+- Alterações no frontend têm hot reload instantâneo
+
+---
+
+**Perguntas?** Junte-se ao [Discord](https://discord.gg/JDdSxwjhGf) e pergunte à comunidade.

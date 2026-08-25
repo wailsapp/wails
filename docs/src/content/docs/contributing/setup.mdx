@@ -62,19 +62,28 @@ xcode-select -p  # Should output a path
 
 ```bash
 sudo apt update
-sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+# Default GTK4 + WebKitGTK 6.0 stack (Ubuntu 24.04+ / Debian 13+)
+sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev
+# For the legacy -tags gtk3 path:
+sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev
 ```
 
 **Linux (Fedora/RHEL):**
 
 ```bash
-sudo dnf install gcc pkg-config gtk3-devel webkit2gtk3-devel
+# Default GTK4 stack
+sudo dnf install gcc pkg-config gtk4-devel webkitgtk6.0-devel
+# Legacy GTK3 path:
+sudo dnf install gtk3-devel webkit2gtk4.1-devel
 ```
 
 **Linux (Arch):**
 
 ```bash
-sudo pacman -S base-devel gtk3 webkit2gtk
+# Default GTK4 stack
+sudo pacman -S base-devel gtk4 webkitgtk-6.0
+# Legacy GTK3 path:
+sudo pacman -S gtk3 webkit2gtk-4.1
 ```
 
 ## Repository Setup
@@ -270,12 +279,16 @@ Platform-specific debugging requires platform tools:
 
 Add the Wails directory to your PATH or use `./wails3` from the project root.
 
-### "webkit2gtk not found" (Linux)
+### "webkitgtk-6.0 not found" or "webkit2gtk not found" (Linux)
 
-Install WebKit2GTK development packages:
+Install the development packages for whichever stack you're building against:
 
 ```bash
-sudo apt install libwebkit2gtk-4.0-dev  # Debian/Ubuntu
+# Default GTK4 stack (Debian/Ubuntu):
+sudo apt install libwebkitgtk-6.0-dev
+
+# Legacy GTK3 path:
+sudo apt install libwebkit2gtk-4.1-dev
 ```
 
 ### Build fails with Go module errors

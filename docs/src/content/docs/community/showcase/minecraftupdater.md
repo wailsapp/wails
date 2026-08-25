@@ -1,5 +1,6 @@
 ---
 title: Minecraft Updater
+description: "A desktop application built with Wails"
 ---
 
 ![Minecraft Updater](../../../../assets/showcase-images/minecraft-mod-updater.webp)

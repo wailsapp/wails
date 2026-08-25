@@ -1,0 +1,275 @@
+---
+title: コントリビューション
+description: Wails に貢献する
+sidebar:
+  order: 100
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## コントリビューターの方へようこそ！
+
+Wails へのコントリビューションを歓迎します！バグの修正、新機能の追加、ドキュメントの改善など、どのような形での貢献でも感謝しています。
+
+## 貢献する方法
+
+### 1. イシューの報告
+
+バグを見つけましたか？[イシューをオープン](https://github.com/wailsapp/wails/issues/new) してください。以下の情報を含めてください：
+- 明確な説明
+- 再現手順
+- 期待される動作と実際の動作
+- システム情報
+- コードのサンプル
+
+### 2. ドキュメントの改善
+
+ドキュメントの改善は常に歓迎されます：
+- 誤字脱字やエラーの修正
+- 例の追加
+- 説明の明確化
+- コンテンツの翻訳
+
+### 3. コードの提出
+
+プルリクエストを通じてコードを貢献してください：
+- バグ修正
+- 新機能
+- パフォーマンスの改善
+- テスト
+
+## 始め方
+
+### リポジトリのフォークとクローン
+
+```bash
+# GitHub でリポジトリをフォーク
+# 次に自分のフォークをクローン
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# upstream リモートを追加
+git remote add upstream https://github.com/wailsapp/wails.git
+```
+
+### ソースからのビルド
+
+```bash
+# 依存関係をインストール
+go mod download
+
+# Wails CLI をビルド
+cd v3/cmd/wails3
+go build
+
+# ビルドをテスト
+./wails3 version
+```
+
+### テストの実行
+
+```bash
+# すべてのテストを実行
+go test ./...
+
+# 特定のパッケージのテストを実行
+go test ./v3/pkg/application
+
+# カバレッジ付きで実行
+go test -cover ./...
+```
+
+## 変更を行う
+
+### ブランチの作成
+
+```bash
+# main を更新
+git checkout main
+git pull upstream main
+
+# 機能ブランチを作成
+git checkout -b feature/my-feature
+```
+
+### 変更内容
+
+1. **Go の規約に従ってコードを書く**
+2. **新機能に対してテストを追加する**
+3. **必要に応じてドキュメントを更新する**
+4. **何も壊れていないことを確認するためにテストを実行する**
+5. **明確なメッセージで変更をコミットする**
+
+### コミットガイドライン
+
+```bash
+# 良いコミットメッセージ
+git commit -m "fix: resolve window focus issue on macOS"
+git commit -m "feat: add support for custom window chrome"
+git commit -m "docs: improve bindings documentation"
+
+# 従来のコミット形式を使用：
+# - feat: 新機能
+# - fix: バグ修正
+# - docs: ドキュメント
+# - test: テスト
+# - refactor: コードのリファクタリング
+# - chore: メンテナンス
+```
+
+### プルリクエストの提出
+
+```bash
+# フォークにプッシュ
+git push origin feature/my-feature
+
+# GitHub でプルリクエストをオープン
+# 明確な説明を提供
+# 関連するイシューを参照
+```
+
+## プルリクエストのガイドライン
+
+### 良い PR の説明
+
+```markdown
+## 説明
+変更内容の簡潔な説明
+
+## 変更内容
+- 機能 X を追加
+- バグ Y を修正
+- ドキュメントを更新
+
+## テスト
+- macOS 14 でテスト済み
+- Windows 11 でテスト済み
+- すべてのテストがパス
+
+## 関連イシュー
+Fixes #123
+```
+
+### PR チェックリスト
+
+- [ ] コードが Go の規約に従っている
+- [ ] テストが追加/更新された
+- [ ] ドキュメントが更新された
+- [ ] すべてのテストがパスしている
+- [ ] 破壊的変更がない（または文書化されている）
+- [ ] コミットメッセージが明確
+
+## コードのガイドライン
+
+### Go のコードスタイル
+
+```go
+// ✅ 良い：明確で、文書化され、テスト済み
+// ProcessData は入力データを処理し、結果を返します。
+// データが無効な場合、エラーを返します。
+func ProcessData(data string) (string, error) {
+    if data == "" {
+        return "", errors.New("data cannot be empty")
+    }
+    
+    result := process(data)
+    return result, nil
+}
+
+// ❌ 悪い：ドキュメントなし、エラーハンドリングなし
+func ProcessData(data string) string {
+    return process(data)
+}
+```
+
+### テスト
+
+```go
+func TestProcessData(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        want    string
+        wantErr bool
+    }{
+        {"valid input", "test", "processed", false},
+        {"empty input", "", "", true},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := ProcessData(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("ProcessData() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if got != tt.want {
+                t.Errorf("ProcessData() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+## ドキュメント
+
+### ドキュメントの作成
+
+ドキュメントには Starlight (Astro) を使用しています：
+
+```bash
+cd docs
+npm install
+npm run dev
+```
+
+### ドキュメントのスタイル
+
+- 国際的な英語のスペリングを使用する
+- 問題から始める
+- 動作する例を提供する
+- トラブルシューティングを含める
+- 関連コンテンツをクロス参照する
+
+## コミュニティ
+
+### ヘルプの取得
+
+- **Discord:** [コミュニティに参加](https://discord.gg/JDdSxwjhGf)
+- **GitHub Discussions:** 質問をする
+- **GitHub Issues:** バグを報告する
+
+### 行動規範
+
+敬意を持ち、包括的であり、プロフェッショナルでありましょう。私たちは皆、素晴らしいソフトウェアを一緒に作るためにここに来ています。
+
+## 表彰
+
+コントリビューターは以下で認められます：
+- リリースノート
+- コントリビューターリスト
+- GitHub のインサイト
+
+Wails への貢献に感謝します！🎉
+
+## 次のステップ
+
+<CardGrid>
+  <Card title="GitHub リポジトリ" icon="github">
+    Wails リポジトリにアクセス。
+    
+    [GitHub で表示 →](https://github.com/wailsapp/wails)
+  </Card>
+
+  <Card title="Discord コミュニティ" icon="discord">
+    コミュニティに参加。
+    
+    [Discord に参加 →](https://discord.gg/JDdSxwjhGf)
+  </Card>
+
+  <Card title="ドキュメント" icon="open-book">
+    ドキュメントを読む。
+    
+    [ドキュメントを閲覧 →](/ja/quick-start/why-wails)
+  </Card>
+</CardGrid>

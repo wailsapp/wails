@@ -80,7 +80,7 @@ ShouldSystemUseDarkMode = bool () // ordinal 138
 SetPreferredAppMode = PreferredAppMode (PreferredAppMode appMode) // ordinal 135, since 18334
 IsDarkModeAllowedForApp = bool () // ordinal 139
 */
-func init() {
+func Init() {
 	if IsWindowsVersionAtLeast(10, 0, 18334) {
 
 		// AllowDarkModeForWindow is only available on Windows 10+

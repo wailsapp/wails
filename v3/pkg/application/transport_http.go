@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"encoding/json"
 
@@ -26,9 +27,35 @@ var bufferPool = sync.Pool{
 	},
 }
 
+const (
+	chunkIDHeader    = "x-wails-chunk-id"
+	chunkIndexHeader = "x-wails-chunk-index"
+	chunkTotalHeader = "x-wails-chunk-total"
+	chunkTTL         = 30 * time.Second
+
+	maxChunkTotal     = 1024
+	maxChunkBodyBytes = 1024 * 1024
+	maxAssembledBytes = 64 * 1024 * 1024
+)
+
+// pendingChunks accumulates request body chunks sent by the JS runtime
+// to work around WebView2's ~2MB limit on request body content delivery
+// via the WebResourceRequested event.
+type pendingChunks struct {
+	mu        sync.Mutex
+	chunks    map[int][]byte
+	total     int
+	size      int
+	createdAt time.Time
+}
+
 type HTTPTransport struct {
 	messageProcessor *MessageProcessor
 	logger           *slog.Logger
+	chunkStore       sync.Map
+	cleanupMu        sync.Mutex
+	stopCleanup      chan struct{}
+	cleanupDone      chan struct{}
 }
 
 func NewHTTPTransport(opts ...HTTPTransportOption) *HTTPTransport {
@@ -57,7 +84,43 @@ func HTTPTransportWithLogger(logger *slog.Logger) HTTPTransportOption {
 func (t *HTTPTransport) Start(ctx context.Context, processor *MessageProcessor) error {
 	t.messageProcessor = processor
 
+	t.cleanupMu.Lock()
+	if t.stopCleanup != nil {
+		t.cleanupMu.Unlock()
+		return nil
+	}
+	stop := make(chan struct{})
+	done := make(chan struct{})
+	t.stopCleanup = stop
+	t.cleanupDone = done
+	t.cleanupMu.Unlock()
+
+	go t.cleanupChunks(stop, done)
 	return nil
+}
+
+func (t *HTTPTransport) cleanupChunks(stop <-chan struct{}, done chan<- struct{}) {
+	defer close(done)
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-stop:
+			return
+		case <-ticker.C:
+			now := time.Now()
+			t.chunkStore.Range(func(k, v any) bool {
+				pc := v.(*pendingChunks)
+				pc.mu.Lock()
+				expired := now.Sub(pc.createdAt) > chunkTTL
+				pc.mu.Unlock()
+				if expired {
+					t.chunkStore.Delete(k)
+				}
+				return true
+			})
+		}
+	}
 }
 
 func (t *HTTPTransport) JSClient() []byte {
@@ -65,6 +128,19 @@ func (t *HTTPTransport) JSClient() []byte {
 }
 
 func (t *HTTPTransport) Stop() error {
+	t.cleanupMu.Lock()
+	stop := t.stopCleanup
+	done := t.cleanupDone
+	if stop != nil {
+		close(stop)
+		t.stopCleanup = nil
+		t.cleanupDone = nil
+	}
+	t.cleanupMu.Unlock()
+
+	if done != nil {
+		<-done
+	}
 	return nil
 }
 
@@ -89,10 +165,13 @@ func (t *HTTPTransport) Handler() func(next http.Handler) http.Handler {
 }
 
 func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Request) {
-	var body request
-	var err error
+	// Chunked upload: JS splits large bodies into smaller pieces to work
+	// around WebView2's ~2MB request body delivery limit in WebResourceRequested.
+	if chunkID := r.Header.Get(chunkIDHeader); chunkID != "" {
+		t.handleChunkedRequest(rw, r, chunkID)
+		return
+	}
 
-	// Try to read from request body first (standard POST)
 	buf := bufferPool.Get().(*bytes.Buffer)
 	buf.Reset()
 	defer func() {
@@ -101,15 +180,99 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 		}
 	}()
 
-	_, err = io.Copy(buf, r.Body)
-	if err != nil {
+	if _, err := io.Copy(buf, r.Body); err != nil {
 		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
 		return
 	}
 
-	if buf.Len() > 0 {
-		err = json.Unmarshal(buf.Bytes(), &body)
-		if err != nil {
+	t.processBody(rw, r, buf.Bytes())
+}
+
+// handleChunkedRequest stores an incoming chunk and, once all chunks are
+// received, assembles them and delegates to processBody.
+func (t *HTTPTransport) handleChunkedRequest(rw http.ResponseWriter, r *http.Request, chunkID string) {
+	indexStr := r.Header.Get(chunkIndexHeader)
+	totalStr := r.Header.Get(chunkTotalHeader)
+
+	total, err := strconv.Atoi(totalStr)
+	if err != nil || total <= 0 || total > maxChunkTotal {
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("invalid chunk total: %s", totalStr))
+		return
+	}
+
+	index, err := strconv.Atoi(indexStr)
+	if err != nil || index < 0 || index >= total {
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("invalid chunk index: %s", indexStr))
+		return
+	}
+
+	r.Body = http.MaxBytesReader(rw, r.Body, int64(maxChunkBodyBytes))
+
+	buf := bufferPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	defer func() {
+		if buf.Cap() <= maxPooledBufferSize {
+			bufferPool.Put(buf)
+		}
+	}()
+
+	if _, err := io.Copy(buf, r.Body); err != nil {
+		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "unable to read chunk body"))
+		return
+	}
+
+	chunk := make([]byte, buf.Len())
+	copy(chunk, buf.Bytes())
+
+	actual, _ := t.chunkStore.LoadOrStore(chunkID, &pendingChunks{
+		chunks:    make(map[int][]byte),
+		total:     total,
+		createdAt: time.Now(),
+	})
+	pc := actual.(*pendingChunks)
+
+	pc.mu.Lock()
+	if pc.total != total {
+		pc.mu.Unlock()
+		t.chunkStore.Delete(chunkID)
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("inconsistent chunk total"))
+		return
+	}
+	pc.chunks[index] = chunk
+	pc.size += len(chunk)
+	if pc.size > maxAssembledBytes {
+		pc.mu.Unlock()
+		t.chunkStore.Delete(chunkID)
+		t.httpError(rw, errs.NewInvalidRuntimeCallErrorf("assembled body too large"))
+		return
+	}
+	received := len(pc.chunks)
+	pc.mu.Unlock()
+
+	if received < total {
+		rw.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// All chunks received — assemble in order and process.
+	t.chunkStore.Delete(chunkID)
+
+	pc.mu.Lock()
+	var assembled []byte
+	for i := 0; i < pc.total; i++ {
+		assembled = append(assembled, pc.chunks[i]...)
+	}
+	pc.mu.Unlock()
+
+	t.processBody(rw, r, assembled)
+}
+
+func (t *HTTPTransport) processBody(rw http.ResponseWriter, r *http.Request, bodyBytes []byte) {
+	var body request
+	var err error
+
+	if len(bodyBytes) > 0 {
+		if err = json.Unmarshal(bodyBytes, &body); err != nil {
 			t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to parse request body as JSON"))
 			return
 		}

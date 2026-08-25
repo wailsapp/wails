@@ -224,32 +224,44 @@ func pngToImage(data []byte) (*image.RGBA, error) {
 	return rgba, nil
 }
 
-func SetMenuIcons(parentMenu HMENU, itemID int, unchecked []byte, checked []byte) error {
+// SetMenuIcons decodes the given PNG bytes, installs the bitmaps on the
+// identified menu item, and returns the allocated HBITMAP handles. The caller
+// owns the returned handles and must DeleteObject them once the menu item no
+// longer needs them (for example, in the owning menu's Destroy path). When
+// checked is nil a single HBITMAP is allocated and reused for both slots, so
+// the returned slice has one entry; otherwise two.
+func SetMenuIcons(parentMenu HMENU, itemID int, unchecked []byte, checked []byte) ([]HBITMAP, error) {
 	if unchecked == nil {
-		return fmt.Errorf("invalid unchecked bitmap")
+		return nil, fmt.Errorf("invalid unchecked bitmap")
 	}
-	var err error
-	var uncheckedIcon, checkedIcon HBITMAP
-	var uncheckedImage, checkedImage *image.RGBA
-	uncheckedImage, err = pngToImage(unchecked)
+	uncheckedImage, err := pngToImage(unchecked)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	uncheckedIcon, err = CreateHBITMAPFromImage(uncheckedImage)
+	uncheckedIcon, err := CreateHBITMAPFromImage(uncheckedImage)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	handles := []HBITMAP{uncheckedIcon}
+	checkedIcon := uncheckedIcon
 	if checked != nil {
-		checkedImage, err = pngToImage(checked)
+		checkedImage, err := pngToImage(checked)
 		if err != nil {
-			return err
+			DeleteObject(HGDIOBJ(uncheckedIcon))
+			return nil, err
 		}
 		checkedIcon, err = CreateHBITMAPFromImage(checkedImage)
 		if err != nil {
-			return err
+			DeleteObject(HGDIOBJ(uncheckedIcon))
+			return nil, err
 		}
-	} else {
-		checkedIcon = uncheckedIcon
+		handles = append(handles, checkedIcon)
 	}
-	return SetMenuItemBitmaps(parentMenu, uint32(itemID), MF_BYCOMMAND, checkedIcon, uncheckedIcon)
+	if err := SetMenuItemBitmaps(parentMenu, uint32(itemID), MF_BYCOMMAND, checkedIcon, uncheckedIcon); err != nil {
+		for _, h := range handles {
+			DeleteObject(HGDIOBJ(h))
+		}
+		return nil, err
+	}
+	return handles, nil
 }

@@ -23,28 +23,33 @@ Custom protocols enable:
 
 Define custom protocols in your application options:
 
+Custom protocols are declared in `build/config.yml` (which the platform packagers — NSIS macros on Windows, MSIX manifest, macOS `CFBundleURLTypes`, Linux `.desktop`/`xdg-mime` — consume at package time). There is no `application.Protocol` type and no `Protocols` field on `application.Options`.
+
+```yaml
+# build/config.yml
+protocols:
+  - scheme: myapp
+    description: "My Application Protocol"
+```
+
+In Go code, listen for launch-with-URL via the `ApplicationLaunchedWithUrl` event:
+
 ```go
 package main
 
-import "github.com/wailsapp/wails/v3/pkg/application"
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
 
 func main() {
     app := application.New(application.Options{
         Name:        "My Application",
         Description: "My awesome application",
-        Protocols: []application.Protocol{
-            {
-                Scheme:      "myapp",
-                Description: "My Application Protocol",
-                Role:        "Editor",  // macOS only
-            },
-        },
     })
 
-    // Register handler for protocol events
-    app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
-        url := event.Context().ClickedURL()
-        handleCustomURL(url)
+    app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
+        handleCustomURL(e.Context().URL())
     })
 
     app.Run()
@@ -62,8 +67,8 @@ func handleCustomURL(url string) {
 Listen for protocol events to handle incoming URLs:
 
 ```go
-app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
-    url := event.Context().ClickedURL()
+app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
+    url := e.Context().URL()
 
     // Parse the URL
     parsedURL, err := parseCustomURL(url)
@@ -120,7 +125,7 @@ Custom protocols are registered differently on each platform.
 #### Automatic Registration
 
 When you build your application with `wails3 build`, the NSIS installer:
-1. Automatically registers all protocols defined in `application.Options.Protocols`
+1. Automatically registers all protocols declared in `build/config.yml` under the `protocols:` key
 2. Associates protocols with your application executable
 3. Sets up proper registry entries
 4. Removes protocol associations during uninstall
@@ -198,7 +203,7 @@ To enable Web-to-App linking, follow the [Microsoft guide on web-to-app linking]
 
 2. **Configure `windows-app-web-link` on your website:** Host a `windows-app-web-link` file at `https://myawesomeapp.com/.well-known/windows-app-web-link`. This file should contain your app's package information and the paths it handles.
 
-When a Web-to-App link launches your application, you'll receive the same `ApplicationOpenedWithURL` event as with custom protocol schemes.
+When a Web-to-App link launches your application, you'll receive the same `ApplicationLaunchedWithUrl` event as with custom protocol schemes.
 
   </TabItem>
 
@@ -212,7 +217,7 @@ On macOS, protocols are registered via your `Info.plist` file.
 
 Wails automatically generates the `Info.plist` with your protocols when you build with `wails3 build`.
 
-The protocols from `application.Options.Protocols` are added to:
+The protocols declared in `build/config.yml` are added to:
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -268,7 +273,7 @@ To enable Universal Links, follow the [Apple guide on supporting Universal Links
 
 3. **Configure `apple-app-site-association` on your website:** Host an `apple-app-site-association` file at `https://myawesomeapp.com/.well-known/apple-app-site-association`.
 
-When a Universal Link triggers your app, you'll receive the same `ApplicationOpenedWithURL` event, making the handling code identical to custom protocol schemes.
+When a Universal Link triggers your app, you'll receive the same `ApplicationLaunchedWithUrl` event, making the handling code identical to custom protocol schemes.
 
   </TabItem>
 
@@ -333,25 +338,22 @@ import (
     "fmt"
     "net/url"
     "strings"
+
     "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
 )
 
 type App struct {
-    app    *application.Application
+    app    *application.App
     window *application.WebviewWindow
 }
 
 func main() {
+    // Protocol registration lives in build/config.yml (the platform packagers
+    // consume it); the application code just listens for the launch event.
     app := application.New(application.Options{
         Name:        "DeepLink Demo",
         Description: "Custom protocol demonstration",
-        Protocols: []application.Protocol{
-            {
-                Scheme:      "deeplink",
-                Description: "DeepLink Demo Protocol",
-                Role:        "Editor",
-            },
-        },
     })
 
     myApp := &App{app: app}
@@ -370,9 +372,8 @@ func (a *App) setup() {
     })
 
     // Handle custom protocol URLs
-    a.app.Event.On(application.Events.ApplicationOpenedWithURL, func(event *application.ApplicationEvent) {
-        customURL := event.Context().ClickedURL()
-        a.handleDeepLink(customURL)
+    a.app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
+        a.handleDeepLink(e.Context().URL())
     })
 }
 
@@ -386,7 +387,7 @@ func (a *App) handleDeepLink(rawURL string) {
 
     // Bring window to front
     a.window.Show()
-    a.window.SetFocus()
+    a.window.Focus()
 
     // Extract path and query
     path := strings.Trim(parsedURL.Path, "/")
@@ -624,7 +625,7 @@ Create a test HTML page:
 **Check logs:**
 ```go
 app := application.New(application.Options{
-    Logger: application.NewLogger(application.LogLevelDebug),
+    LogLevel: slog.LevelDebug, // requires `import "log/slog"`
     // ...
 })
 ```
@@ -656,9 +657,9 @@ app := application.New(application.Options{
 ## Next Steps
 
 - [Windows Packaging](/guides/build/windows) - Learn about NSIS installer options
-- [File Associations](/guides/distribution/file-associations) - Open files with your app
-- [Single Instance](/guides/distribution/single-instance) - Prevent multiple app instances
+- [File Associations](/guides/file-associations) - Open files with your app
+- [Single Instance](/guides/single-instance) - Prevent multiple app instances
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [examples](https://github.com/wailsapp/wails/tree/master/v3/examples).

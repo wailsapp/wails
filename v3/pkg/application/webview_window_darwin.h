@@ -6,7 +6,13 @@
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
 
-@interface WebviewWindow : NSWindow
+@protocol WailsWebviewWindow <NSObject>
+@property (assign) WKWebView* webView;
+@property BOOL disableEscapeExitsFullscreen;
+@end
+
+@interface WebviewWindow : NSWindow <WailsWebviewWindow>
++ (NSString*)keyStringFromEvent:(NSEvent*)event;
 - (BOOL) canBecomeKeyWindow;
 - (BOOL) canBecomeMainWindow;
 - (BOOL) acceptsFirstResponder;
@@ -15,6 +21,7 @@
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 
 @property (assign) WKWebView* webView; // We already retain WKWebView since it's part of the Window.
+@property BOOL disableEscapeExitsFullscreen;
 
 @end
 
@@ -28,9 +35,14 @@
 
 - (void)handleLeftMouseUp:(NSWindow *)window;
 - (void)handleLeftMouseDown:(NSEvent*)event;
-- (void)startDrag:(WebviewWindow*)window;
+- (void)startDrag:(NSWindow*)window;
 
 @end
+
+
+NSString* keyStringFromKeyEvent(NSEvent* event);
+NSString* acceleratorStringFromKeyEvent(NSEvent* event);
+BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window);
 
 void windowSetScreen(void* window, void* screen, int yOffset);
 

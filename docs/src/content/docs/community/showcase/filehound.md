@@ -1,5 +1,6 @@
 ---
 title: FileHound Export Utility
+description: "A desktop application built with Wails"
 ---
 
 ![FileHound Export Utility](../../../../assets/showcase-images/filehound.webp)

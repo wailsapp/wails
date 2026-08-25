@@ -1,0 +1,6 @@
+
+	// Convert string '{{.Param.Name}}' to *uint16
+	{{.Param.LocalName}}, err := UTF16PtrFromString({{.Param.Name}})
+	if err != nil {
+		return {{.ErrorValues}}
+	}

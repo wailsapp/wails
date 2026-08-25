@@ -25,13 +25,16 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/wailsapp/wails/v2/internal/frontend/originvalidator"
 	wailsruntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	w32consts "github.com/wailsapp/wails/v2/internal/platform/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	w "golang.org/x/sys/windows"
 )
 
 const startURL = "http://wails.localhost/"
@@ -62,9 +65,17 @@ type Frontend struct {
 
 	hasStarted bool
 
+	originValidator *originvalidator.OriginValidator
+
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
 	resizeDebouncer func(f func())
+
+	// Pending JS callbacks are batched to avoid saturating WebView2's
+	// ExecuteScript queue under heavy concurrent Go->JS call load.
+	callbackMu      sync.Mutex
+	pendingCallbacks []string
+	drainScheduled  bool
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -72,6 +83,13 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	// Get Windows build number
 	versionInfo, _ := operatingsystem.GetWindowsVersionInfo()
 
+	// Apply DLL search path settings if specified
+	if appoptions.Windows != nil && appoptions.Windows.DLLSearchPaths != 0 {
+		w.SetDefaultDllDirectories(appoptions.Windows.DLLSearchPaths)
+	}
+	// Now initialize packages that load DLLs
+	w32.Init()
+	w32consts.Init()
 	result := &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
@@ -89,14 +107,17 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	// We currently can't use wails://wails/ as other platforms do, therefore we map the assets sever onto the following url.
 	result.startURL, _ = url.Parse(startURL)
+	result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 		return result
 	}
 
 	if port, _ := ctx.Value("assetserverport").(string); port != "" {
 		result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
+		result.originValidator = originvalidator.NewOriginValidator(result.startURL, appoptions.BindingsAllowedOrigins)
 	}
 
 	var bindings string
@@ -170,9 +191,20 @@ func (f *Frontend) Run(ctx context.Context) error {
 			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
 			event, _ := arg.Data.(*winc.SizeEventData)
 			if event != nil && event.Type == w32.SIZE_MINIMIZED {
+				// Set minimizing flag to prevent unnecessary redraws during minimize/restore for frameless windows
+				// 设置最小化标志以防止无边框窗口在最小化/恢复过程中的不必要重绘
+				// This fixes window flickering when minimizing/restoring frameless windows
+				// 这修复了无边框窗口在最小化/恢复时的闪烁问题
+				// Reference: https://github.com/wailsapp/wails/issues/3951
+				f.mainWindow.isMinimizing = true
 				return
 			}
 		}
+
+		// Clear minimizing flag for all non-minimize size events
+		// 对于所有非最小化的尺寸变化事件,清除最小化标志
+		// Reference: https://github.com/wailsapp/wails/issues/3951
+		f.mainWindow.isMinimizing = false
 
 		if f.resizeDebouncer != nil {
 			f.resizeDebouncer(func() {
@@ -503,7 +535,7 @@ func (f *Frontend) setupChromium() {
 			if f.frontendOptions.Windows != nil && f.frontendOptions.Windows.Messages != nil {
 				messages = f.frontendOptions.Windows.Messages
 			}
-			winc.Errorf(f.mainWindow, messages.WebView2ProcessCrash)
+			winc.Errorf(f.mainWindow, "%s", messages.WebView2ProcessCrash)
 			os.Exit(-1)
 		case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
 			edge.COREWEBVIEW2_PROCESS_FAILED_KIND_FRAME_RENDER_PROCESS_EXITED:
@@ -594,7 +626,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	}
 	payload, err := json.Marshal(notification)
 	if err != nil {
-		f.logger.Error(err.Error())
+		f.logger.Error("%s", err.Error())
 		return
 	}
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
@@ -669,12 +701,29 @@ var edgeMap = map[string]uintptr{
 	"nw-resize": w32.HTTOPLEFT,
 }
 
-func (f *Frontend) processMessage(message string) {
+func (f *Frontend) processMessage(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		f.logger.Error("Unable to get source from sender: %s", err.Error())
+		return
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		f.logger.Error("Unable to get source from args: %s", err.Error())
+		return
+	}
+
+	// verify both topSource and sender are allowed origins
+	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
+		return
+	}
+
 	if message == "drag" {
 		if !f.mainWindow.IsFullScreen() {
 			err := f.startDrag()
 			if err != nil {
-				f.logger.Error(err.Error())
+				f.logger.Error("%s", err.Error())
 			}
 		}
 		return
@@ -704,7 +753,7 @@ func (f *Frontend) processMessage(message string) {
 			edge := edgeMap[sl[1]]
 			err := f.startResize(edge)
 			if err != nil {
-				f.logger.Error(err.Error())
+				f.logger.Error("%s", err.Error())
 			}
 		}
 		return
@@ -714,13 +763,30 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebMessageReceivedEventArgs) {
+	topSource, err := sender.GetSource()
+	if err != nil {
+		f.logger.Error("Unable to get source from sender: %s", err.Error())
+		return
+	}
+
+	senderSource, err := args.GetSource()
+	if err != nil {
+		f.logger.Error("Unable to get source from args: %s", err.Error())
+		return
+	}
+
+	// verify both topSource and sender are allowed origins
+	if !f.validBindingOrigin(topSource) || !f.validBindingOrigin(senderSource) {
+		return
+	}
+
 	if strings.HasPrefix(message, "file:drop") {
 		if !f.frontendOptions.DragAndDrop.EnableFileDrop {
 			return
 		}
 		objs, err := args.GetAdditionalObjects()
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error("%s", err.Error())
 			return
 		}
 
@@ -728,7 +794,7 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 
 		count, err := objs.GetCount()
 		if err != nil {
-			f.logger.Error(err.Error())
+			f.logger.Error("%s", err.Error())
 			return
 		}
 
@@ -738,6 +804,11 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 			if err != nil {
 				f.logger.Error("cannot get value at %d : %s", i, err.Error())
 				return
+			}
+
+			if _file == nil {
+				f.logger.Warning("object at %d is not a file", i)
+				continue
 			}
 
 			file := (*edge.ICoreWebView2File)(unsafe.Pointer(_file))
@@ -767,10 +838,24 @@ func (f *Frontend) processMessageWithAdditionalObjects(message string, sender *e
 	}
 }
 
+func (f *Frontend) validBindingOrigin(source string) bool {
+	origin, err := f.originValidator.GetOriginFromURL(source)
+	if err != nil {
+		f.logger.Error("Error parsing source URL %s: %v", source, err.Error())
+		return false
+	}
+	allowed := f.originValidator.IsOriginAllowed(origin)
+	if !allowed {
+		f.logger.Error("Blocked request from unauthorized origin: %s", origin)
+		return false
+	}
+	return true
+}
+
 func (f *Frontend) dispatchMessage(message string) {
 	result, err := f.dispatcher.ProcessMessage(message, f)
 	if err != nil {
-		f.logger.Error(err.Error())
+		f.logger.Error("%s", err.Error())
 		f.Callback(result)
 		return
 	}
@@ -792,9 +877,52 @@ func (f *Frontend) Callback(message string) {
 	if err != nil {
 		panic(err)
 	}
-	f.mainWindow.Invoke(func() {
-		f.chromium.Eval(`window.wails.Callback(` + string(escaped) + `);`)
-	})
+	script := `window.wails.Callback(` + string(escaped) + `);`
+
+	f.callbackMu.Lock()
+	f.pendingCallbacks = append(f.pendingCallbacks, script)
+	shouldSchedule := !f.drainScheduled
+	if shouldSchedule {
+		f.drainScheduled = true
+	}
+	f.callbackMu.Unlock()
+
+	if shouldSchedule {
+		if !f.mainWindow.Invoke(f.drainCallbacks) {
+			// PostMessage failed (queue full or HWND invalid). Reset the flag so the
+			// next incoming callback can try to schedule a fresh drain.
+			f.callbackMu.Lock()
+			f.drainScheduled = false
+			f.callbackMu.Unlock()
+			f.logger.Warning("Invoke: PostMessage failed -- pending WebView2 callbacks may be delayed")
+		}
+	}
+}
+
+// drainCallbacks is called on the UI thread by the Invoke mechanism.
+// It flushes all accumulated callbacks in a single ExecuteScript call,
+// preventing WebView2 queue saturation under high concurrent load.
+func (f *Frontend) drainCallbacks() {
+	f.callbackMu.Lock()
+	scripts := f.pendingCallbacks
+	f.pendingCallbacks = nil
+	f.drainScheduled = false // allow re-scheduling before we release the lock
+	f.callbackMu.Unlock()
+
+	if len(scripts) == 0 {
+		return
+	}
+
+	totalLen := 0
+	for _, s := range scripts {
+		totalLen += len(s)
+	}
+	var sb strings.Builder
+	sb.Grow(totalLen)
+	for _, s := range scripts {
+		sb.WriteString(s)
+	}
+	f.chromium.Eval(sb.String())
 }
 
 func (f *Frontend) startDrag() error {

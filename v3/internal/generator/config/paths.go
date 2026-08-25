@@ -9,6 +9,7 @@ const WailsInternalPkgPath = "github.com/wailsapp/wails/v3/internal"
 // SystemPaths holds resolved paths of required system packages.
 type SystemPaths struct {
 	ContextPackage     string
+	TimePackage        string
 	ApplicationPackage string
 	InternalPackage    string
 }

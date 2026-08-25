@@ -155,7 +155,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nAPP_ROOT=\"${PROJECT_DIR}/../../..\"\nSDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)\nexport GOOS=ios\nexport GOARCH=arm64\nexport CGO_ENABLED=1\nexport CGO_CFLAGS=\"-isysroot ${SDK_PATH} -target arm64-apple-ios15.0-simulator -mios-simulator-version-min=15.0\"\nexport CGO_LDFLAGS=\"-isysroot ${SDK_PATH} -target arm64-apple-ios15.0-simulator\"\ncd \"${APP_ROOT}\"\n# Ensure overlay exists\nif [ ! -f build/ios/xcode/overlay.json ]; then\n  wails3 ios overlay:gen -out build/ios/xcode/overlay.json -config build/config.yml || true\nfi\n# Build Go c-archive if missing or older than sources\nif [ ! -f bin/My Product.a ]; then\n  echo \"Building Go c-archive...\"\n  go build -buildmode=c-archive -overlay build/ios/xcode/overlay.json -o bin/My Product.a\nfi\n";
+			shellScript = "set -e\nAPP_ROOT=\"${PROJECT_DIR}/../../..\"\nPLATFORM=${PLATFORM_NAME:-iphonesimulator}\nSDK_PATH=${SDKROOT:-$(xcrun --sdk ${PLATFORM} --show-sdk-path)}\nif [ ${PLATFORM} = iphonesimulator ]; then GO_TARGET=arm64-apple-ios15.0-simulator; MIN_FLAG=-mios-simulator-version-min=15.0; else GO_TARGET=arm64-apple-ios15.0; MIN_FLAG=-miphoneos-version-min=15.0; fi\nexport GOOS=ios\nexport GOARCH=arm64\nexport CGO_ENABLED=1\nexport CGO_CFLAGS=\"-isysroot ${SDK_PATH} -target ${GO_TARGET} ${MIN_FLAG}\"\nexport CGO_LDFLAGS=\"-isysroot ${SDK_PATH} -target ${GO_TARGET}\"\ncd \"${APP_ROOT}\"\n# Ensure overlay exists\nif [ ! -f build/ios/xcode/overlay.json ]; then\n  wails3 ios overlay:gen -out build/ios/xcode/overlay.json -config build/config.yml || true\nfi\n# Always rebuild the Go c-archive; Go's build cache keeps this fast\n# and avoids stale binaries when .go sources change.\necho \"Building Go c-archive...\"\ngo build -buildmode=c-archive -overlay build/ios/xcode/overlay.json -o bin/My Product.a\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -179,7 +179,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mycompany.myproduct";
 				PRODUCT_NAME = "My Product";
 				CODE_SIGNING_ALLOWED = NO;
-				SDKROOT = iphonesimulator;
+				SDKROOT = iphoneos;
 			};
 			name = Debug;
 		};
@@ -191,7 +191,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mycompany.myproduct";
 				PRODUCT_NAME = "My Product";
 				CODE_SIGNING_ALLOWED = NO;
-				SDKROOT = iphonesimulator;
+				SDKROOT = iphoneos;
 			};
 			name = Release;
 		};

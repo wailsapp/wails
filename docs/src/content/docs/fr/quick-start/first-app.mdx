@@ -1,0 +1,270 @@
+---
+title: Votre première application
+description: Créez une application Wails fonctionnelle en 10 minutes
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+Nous allons construire une simple application de salutation qui démontre les concepts clés de Wails :
+- Backend Go gérant la logique
+- Frontend appelant les fonctions Go
+- Liaisons typées (bindings)
+- Rechargement à chaud (hot reload) pendant le développement
+
+**Temps nécessaire pour compléter :** 10 minutes
+
+:::tip[Astuce de performance pour les utilisateurs de Windows 11]
+Envisagez d'utiliser [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) pour stocker vos projets. Les Dev Drives sont optimisés pour les charges de travail des développeurs et peuvent améliorer considérablement les temps de compilation et les vitesses d'accès au disque jusqu'à 30 % par rapport aux lecteurs NTFS classiques.
+:::
+
+## Créer votre projet
+
+<Steps>
+
+1. **Générer le projet**
+
+   ```bash
+   wails3 init -n myapp
+   cd myapp
+   ```
+
+   Cela crée un nouveau projet avec le modèle par défaut Vanilla + Vite (HTML/CSS/JS brut avec le bundler Vite).
+
+   :::tip[Autres modèles]
+   Essayez `-t react`, `-t vue` ou `-t svelte` pour votre framework préféré.
+   Exécutez `wails3 init -l` pour voir tous les modèles disponibles.
+   :::
+
+2. **Comprendre la structure du projet**
+
+   ```
+   myapp/
+   ├── main.go              # Point d'entrée de l'application
+   ├── greetservice.go      # Service de salutation
+   ├── frontend/            # Votre code UI
+   │   ├── index.html       # Point d'entrée HTML
+   │   ├── src/
+   │   │   └── main.js      # JavaScript du frontend
+   │   ├── public/
+   │   │   └── style.css    # Styles
+   │   ├── package.json     # Dépendances du frontend
+   │   └── vite.config.js   # Configuration du bundler Vite
+   ├── build/               # Configuration de la compilation
+   └── Taskfile.yml         # Tâches de compilation
+   ```
+
+3. **Lancer l'application**
+
+   ```bash
+   wails3 dev
+   ```
+
+   :::note[Premier lancement]
+   Le premier lancement peut prendre plus de temps que prévu car il installe les dépendances du frontend, génère les liaisons, etc. Les lancements suivants sont beaucoup plus rapides.
+   :::
+
+   L'application s'ouvre en affichant une interface de salutation. Entrez votre nom et cliquez sur "Saluer" - le backend Go traite votre entrée et renvoie une salutation.
+
+</Steps>
+
+## Comment cela fonctionne
+
+Comprendre le code qui rend cela possible.
+
+### Le backend Go
+
+Ouvrez `greetservice.go` :
+
+```go title="greetservice.go"
+package main
+
+import (
+	"fmt"
+)
+
+type GreetService struct{}
+
+func (g *GreetService) Greet(name string) string {
+	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+```
+
+**Concepts clés :**
+
+1. **Service** - Une struct Go avec des méthodes exportées
+2. **Méthode exportée** - `Greet` est en majuscule, ce qui la rend disponible pour le frontend
+3. **Logique simple** - Prend un nom, renvoie une salutation
+4. **Sécurité des types** - Les types d'entrée et de sortie sont définis
+
+:::tip[Comprendre les Services et les Liaisons]
+Les **Services** sont des modules Go autonomes qui exposent des fonctionnalités à votre frontend. Ce sont simplement des structs Go régulières avec des méthodes exportées que vous enregistrez dans le champ `Services` de la configuration de votre application.
+
+Les **Liaisons** (bindings) sont le SDK TypeScript/JavaScript généré automatiquement qui permet à votre frontend d'appeler ces services. Lorsque vous exécutez `wails3 dev` ou `wails3 build`, Wails analyse vos services enregistrés et génère des liaisons typées dans `frontend/bindings/`.
+
+Considérez les services comme votre API backend, et les liaisons comme la bibliothèque cliente qui communique avec elle.
+:::
+
+### Enregistrer le Service
+
+Ouvrez `main.go` et trouvez l'enregistrement du service :
+
+```go title="main.go" {4-6}
+err := application.New(application.Options{
+    Name: "myapp",
+    Services: []application.Service{
+        application.NewService(&GreetService{}),
+    },
+    // ... other options
+})
+```
+
+Cela enregistre votre `GreetService` avec Wails, rendant toutes ses méthodes exportées disponibles pour le frontend.
+
+### Le Frontend
+
+Ouvrez `frontend/src/main.js` :
+
+```javascript title="frontend/src/main.js"
+import {GreetService} from "../bindings/changeme";
+
+window.greet = async () => {
+    const nameElement = document.getElementById('name');
+    const resultElement = document.getElementById('result');
+
+    const name = nameElement.value;
+    if (!name) {
+        return;
+    }
+
+    try {
+        const result = await GreetService.Greet(name);
+        resultElement.innerText = result;
+    } catch (err) {
+        console.error(err);
+    }
+};
+```
+
+**Concepts clés :**
+
+1. **Liaisons générées automatiquement** - `GreetService` est importé depuis du code généré
+2. **Appels typés** - Les noms de méthodes et les signatures correspondent à votre code Go
+3. **Asynchrone par défaut** - Tous les appels Go retournent des Promises
+4. **Gestion des erreurs** - Les erreurs de Go sont capturées dans try/catch
+
+:::note[Où sont les liaisons ?]
+Les liaisons générées se trouvent dans `frontend/bindings/`. Elles sont créées automatiquement lorsque vous exécutez `wails3 dev` ou `wails3 build`.
+
+**Ne modifiez jamais ces fichiers manuellement**—ils sont régénérés à chaque compilation.
+:::
+
+## Personnaliser votre application
+
+Ajoutons une nouvelle fonctionnalité pour comprendre le flux de travail.
+
+### Ajouter une fonctionnalité "Saluer plusieurs personnes"
+
+<Steps>
+
+1. **Ajouter la méthode à GreetService**
+
+   Ajoutez ceci à `greetservice.go` :
+
+   ```go title="greetservice.go"
+   func (g *GreetService) GreetMany(names []string) []string {
+       greetings := make([]string, len(names))
+       for i, name := range names {
+           greetings[i] = fmt.Sprintf("Hello %s!", name)
+       }
+       return greetings
+   }
+   ```
+
+2. **L'application se reconstruit automatiquement**
+
+   Enregistrez le fichier et `wails3 dev` reconstruira automatiquement votre code Go et redémarrera l'application.
+
+   :::note[Reconstruction automatique]
+   Les modifications du code Go déclenchent une reconstruction automatique et un redémarrage. Les modifications du frontend se rechargent à chaud sans redémarrage.
+   :::
+
+3. **L'utiliser dans le frontend**
+
+   Ajoutez ceci à `frontend/src/main.js` :
+
+   ```javascript title="frontend/src/main.js"
+   window.greetMany = async () => {
+       const names = ['Alice', 'Bob', 'Charlie'];
+       const greetings = await GreetService.GreetMany(names);
+       console.log(greetings);
+   };
+   ```
+
+   Ouvrez la console du navigateur et appelez `greetMany()` - vous verrez le tableau de salutations.
+
+</Steps>
+
+## Compiler pour la production
+
+Lorsque vous êtes prêt à distribuer votre application :
+
+```bash
+wails3 build
+```
+
+**Ce que cela fait :**
+- Compile le code Go avec des optimisations
+- Compile le frontend pour la production (minifié)
+- Crée un exécutable natif dans `build/bin/`
+
+<Tabs syncKey="os">
+  <TabItem label="Windows" icon="seti:windows">
+    **Sortie :** `build/bin/myapp.exe`
+
+    Double-cliquez pour exécuter. Aucune dépendance nécessaire (WebView2 fait partie de Windows).
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **Sortie :** `build/bin/myapp.app`
+
+    Glissez dans le dossier Applications ou double-cliquez pour exécuter.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **Sortie :** `build/bin/myapp`
+
+    Exécutez avec `./build/bin/myapp` ou créez un fichier `.desktop` pour votre lanceur.
+  </TabItem>
+</Tabs>
+
+:::tip[Compilations multi-plateformes]
+Vous voulez compiler pour d'autres plateformes ? Voir [Compilations multi-plateformes →](/guides/build/cross-platform)
+:::
+
+## Ce que nous avons appris
+
+**Structure du projet**
+- `main.go` pour le backend Go
+- `frontend/` pour le code UI
+- `Taskfile.yml` pour les tâches de compilation
+
+**Services**
+- Créer des structs Go avec des méthodes exportées
+- Enregistrer avec `application.NewService()`
+- Les méthodes sont automatiquement disponibles dans le frontend
+
+**Liaisons**
+- Définitions TypeScript générées automatiquement
+- Appels de fonctions typés
+- Asynchrone par défaut (Promises)
+
+**Flux de développement**
+- `wails3 dev` pour le rechargement à chaud
+- Les modifications Go reconstruisent et redémarrent automatiquement
+- Les modifications du frontend se rechargent à chaud instantanément
+
+---
+
+**Des questions ?** Rejoignez [Discord](https://discord.gg/JDdSxwjhGf) et posez vos questions à la communauté.

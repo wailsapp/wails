@@ -9,7 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/pkg/errors"
+	"errors"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	_ "modernc.org/sqlite"
 )
@@ -143,13 +143,13 @@ func (s *SQLiteService) Open() error {
 
 	conn, err := sql.Open("sqlite", s.config.DBSource)
 	if err != nil {
-		return errors.Wrap(err, "error opening database connection")
+		return fmt.Errorf("error opening database connection: %w", err)
 	}
 
 	// Test connection
 	if err := conn.Ping(); err != nil {
 		_ = conn.Close()
-		return errors.Wrap(err, "error opening database connection")
+		return fmt.Errorf("error opening database connection: %w", err)
 	}
 
 	s.conn = conn
@@ -292,11 +292,15 @@ func (s *SQLiteService) PrepareContext(ctx context.Context, query string) (*Stmt
 		return nil, errors.New("no open database connection")
 	}
 
-	id := nextId.Load()
-	for id != 0 && !nextId.CompareAndSwap(id, id+1) {
-	}
-	if id == 0 {
-		return nil, errors.New("prepared statement ids exhausted")
+	var id uint64
+	for {
+		id = nextId.Load()
+		if id == 0 {
+			return nil, errors.New("prepared statement ids exhausted")
+		}
+		if nextId.CompareAndSwap(id, id+1) {
+			break
+		}
 	}
 
 	stmt, err := conn.PrepareContext(ctx, query)
@@ -470,7 +474,10 @@ func (s *Stmt) Close() error {
 		delete(s.db.stmts, s.id)
 	}()
 
-	return errors.Wrap(err, "error closing prepared statement")
+	if err != nil {
+		return fmt.Errorf("error closing prepared statement: %w", err)
+	}
+	return nil
 }
 
 func (s *Stmt) MarshalText() ([]byte, error) {

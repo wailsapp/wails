@@ -1,0 +1,181 @@
+//go:build linux && cgo && !gtk3 && !android
+
+package webview
+
+/*
+#cgo linux pkg-config: gtk4 webkitgtk-6.0 libsoup-3.0 gio-unix-2.0
+
+#include <gtk/gtk.h>
+#include <webkit/webkit.h>
+#include <libsoup/soup.h>
+#include <gio/gunixinputstream.h>
+*/
+import "C"
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"unsafe"
+)
+
+const Webkit2MinMinorVersion = 0
+
+func webkit_uri_scheme_request_get_http_method(req *C.WebKitURISchemeRequest) string {
+	// Reading request metadata touches the WebKit-owned request object, which
+	// belongs to the GTK main loop; this runs on a worker goroutine, so it must
+	// hop to the main thread. See mainthread_linux.go and issue #5631.
+	var method string
+	invokeOnMainSync(func() {
+		method = C.GoString(C.webkit_uri_scheme_request_get_http_method(req))
+	})
+	return strings.ToUpper(method)
+}
+
+func webkit_uri_scheme_request_get_http_headers(req *C.WebKitURISchemeRequest) http.Header {
+	h := http.Header{}
+	// Reading and iterating the request's libsoup headers touches WebKit-owned
+	// state on the GTK main loop; this runs on a worker goroutine, so it must hop
+	// to the main thread. See mainthread_linux.go and issue #5631.
+	invokeOnMainSync(func() {
+		hdrs := C.webkit_uri_scheme_request_get_http_headers(req)
+
+		var iter C.SoupMessageHeadersIter
+		C.soup_message_headers_iter_init(&iter, hdrs)
+
+		var name *C.char
+		var value *C.char
+
+		for C.soup_message_headers_iter_next(&iter, &name, &value) != 0 {
+			h.Add(C.GoString(name), C.GoString(value))
+		}
+	})
+	return h
+}
+
+func webkit_uri_scheme_request_finish(req *C.WebKitURISchemeRequest, code int, header http.Header, rFD int, streamLength int64) error {
+	// Completing the request touches WebKit/libsoup objects owned by the GTK
+	// main loop, but this runs on an asset-server worker goroutine. WebKit2GTK
+	// is not thread-safe, so the whole sequence must hop to the main thread.
+	//
+	// The response input stream is created and unref'd inside the same hop: it is
+	// ref-taken by webkit_uri_scheme_response_new on the main thread, so creating
+	// and releasing our reference here too keeps every refcount operation on a
+	// single thread. Previously the stream was built and unref'd on the worker
+	// while WebKit took its ref on the main thread, splitting the stream's
+	// refcount across threads. See mainthread_linux.go and issue #5631.
+	invokeOnMainSync(func() {
+		stream := C.g_unix_input_stream_new(C.int(rFD), C.gboolean(1))
+		defer C.g_object_unref(C.gpointer(stream))
+
+		resp := C.webkit_uri_scheme_response_new(stream, C.gint64(streamLength))
+		defer C.g_object_unref(C.gpointer(resp))
+
+		cReason := C.CString(http.StatusText(code))
+		C.webkit_uri_scheme_response_set_status(resp, C.guint(code), cReason)
+		C.free(unsafe.Pointer(cReason))
+
+		cMimeType := C.CString(header.Get(HeaderContentType))
+		C.webkit_uri_scheme_response_set_content_type(resp, cMimeType)
+		C.free(unsafe.Pointer(cMimeType))
+
+		// Ownership of hdrs is transferred to the response by
+		// webkit_uri_scheme_response_set_http_headers (transfer full), so we must
+		// not unref it here — doing so frees the headers while WebKit/libsoup still
+		// reference them, crashing in soup_message_headers_iter_next on render.
+		hdrs := C.soup_message_headers_new(C.SOUP_MESSAGE_HEADERS_RESPONSE)
+		for name, values := range header {
+			cName := C.CString(name)
+			for _, value := range values {
+				cValue := C.CString(value)
+				C.soup_message_headers_append(hdrs, cName, cValue)
+				C.free(unsafe.Pointer(cValue))
+			}
+			C.free(unsafe.Pointer(cName))
+		}
+
+		C.webkit_uri_scheme_response_set_http_headers(resp, hdrs)
+
+		C.webkit_uri_scheme_request_finish_with_response(req, resp)
+	})
+	return nil
+}
+
+func webkit_uri_scheme_request_get_http_body(req *C.WebKitURISchemeRequest) io.ReadCloser {
+	// Fetching the request body stream touches the WebKit-owned request on the
+	// GTK main loop; this runs on a worker goroutine, so it must hop to the main
+	// thread. See mainthread_linux.go and issue #5631.
+	var stream *C.GInputStream
+	invokeOnMainSync(func() {
+		stream = C.webkit_uri_scheme_request_get_http_body(req)
+	})
+	if stream == nil {
+		return http.NoBody
+	}
+	return &webkitRequestBody{stream: stream}
+}
+
+type webkitRequestBody struct {
+	stream *C.GInputStream
+	closed bool
+}
+
+func (r *webkitRequestBody) Read(p []byte) (int, error) {
+	if r.closed {
+		return 0, io.ErrClosedPipe
+	}
+
+	// io.Reader allows a zero-length read; taking &p[0] on an empty slice would
+	// panic, so return early before touching the backing array.
+	if len(p) == 0 {
+		return 0, nil
+	}
+
+	content := unsafe.Pointer(&p[0])
+	contentLen := len(p)
+
+	var n C.gsize
+	var gErr *C.GError
+	var res C.gboolean
+	// Reading the WebKit-owned request body stream must happen on the GTK main
+	// loop thread; this runs on a worker goroutine. See issue #5631.
+	invokeOnMainSync(func() {
+		res = C.g_input_stream_read_all(r.stream, content, C.gsize(contentLen), &n, nil, &gErr)
+	})
+	if res == 0 {
+		return 0, formatGError("stream read failed", gErr)
+	} else if n == 0 {
+		return 0, io.EOF
+	}
+	return int(n), nil
+}
+
+func (r *webkitRequestBody) Close() error {
+	if r.closed {
+		return nil
+	}
+	r.closed = true
+
+	var err error
+	var gErr *C.GError
+	// Closing and unref-ing the WebKit-owned request body stream finalizes a
+	// GObject tied to the GTK main loop; this runs on a worker goroutine, so it
+	// must hop to the main thread. See issue #5631.
+	invokeOnMainSync(func() {
+		if C.g_input_stream_close(r.stream, nil, &gErr) == 0 {
+			err = formatGError("stream close failed", gErr)
+		}
+		C.g_object_unref(C.gpointer(r.stream))
+	})
+	r.stream = nil
+	return err
+}
+
+func formatGError(msg string, gErr *C.GError, args ...any) error {
+	if gErr != nil && gErr.message != nil {
+		msg += ": " + C.GoString(gErr.message)
+		C.g_error_free(gErr)
+	}
+	return fmt.Errorf(msg, args...)
+}

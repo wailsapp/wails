@@ -3,40 +3,61 @@
 package packagemanager
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 )
 
 // Dnf represents the Dnf manager
 type Dnf struct {
-	name string
-	osid string
+	name   string
+	osid   string
+	atomic bool
 }
 
 // NewDnf creates a new Dnf instance
 func NewDnf(osid string) *Dnf {
+	return newDnf(osid, isAtomicSystem())
+}
+
+func newDnf(osid string, atomic bool) *Dnf {
 	return &Dnf{
-		name: "dnf",
-		osid: osid,
+		name:   "dnf",
+		osid:   osid,
+		atomic: atomic,
 	}
+}
+
+// isAtomicSystem reports whether the current system was booted from an
+// ostree deployment. Fedora Atomic desktops, including Bazzite, expose this
+// marker and require rpm-ostree for host package installation.
+func isAtomicSystem() bool {
+	return isAtomicSystemAt("/run/ostree-booted")
+}
+
+func isAtomicSystemAt(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	return !os.IsNotExist(err)
 }
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
 func (y *Dnf) Packages() Packagemap {
 	return Packagemap{
-		"gtk3": []*Package{
-			{Name: "gtk3-devel", SystemPackage: true, Library: true},
+		"gtk3 (legacy)": []*Package{
+			{Name: "gtk3-devel", SystemPackage: true, Library: true, Optional: true},
 		},
-		"webkit2gtk": []*Package{
-			{Name: "webkit2gtk4.1-devel", SystemPackage: true, Library: true},
-			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
+		"webkit2gtk (legacy)": []*Package{
+			{Name: "webkit2gtk4.1-devel", SystemPackage: true, Library: true, Optional: true},
 		},
-		"gtk4 (experimental)": []*Package{
-			{Name: "gtk4-devel", SystemPackage: true, Library: true, Optional: true},
+		"gtk4": []*Package{
+			{Name: "gtk4-devel", SystemPackage: true, Library: true},
 		},
-		"webkitgtk-6.0 (experimental)": []*Package{
-			{Name: "webkitgtk6.0-devel", SystemPackage: true, Library: true, Optional: true},
+		"webkitgtk-6.0": []*Package{
+			{Name: "webkitgtk6.0-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
 			{Name: "gcc-c++", SystemPackage: true},
@@ -117,6 +138,9 @@ func (y *Dnf) PackageAvailable(pkg *Package) (bool, error) {
 func (y *Dnf) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
 		return pkg.InstallCommand
+	}
+	if y.atomic {
+		return "sudo rpm-ostree install " + pkg.Name
 	}
 	return "sudo dnf install " + pkg.Name
 }

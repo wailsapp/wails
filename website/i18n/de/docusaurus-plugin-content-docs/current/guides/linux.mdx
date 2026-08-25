@@ -1,0 +1,70 @@
+# Linux
+
+Diese Seite enthält verschiedene Anleitungen zur Entwicklung von Wails Anwendungen für Linux.
+
+## Der Video-Tag löst nicht das "ended" Event aus
+
+Wenn ein Video-Tag verwendet wird, wird das "ended" Event nicht ausgelöst, wenn das Video beendet ist. Dies ist ein Fehler in WebkitGTK, aber du kannst den folgenden Workaround verwenden, um diesen zu beheben:
+
+```js
+videoTag.addEventListener("timeupdate", (event) => {
+  if (event.target.duration - event.target.currentTime < 0.2) {
+    let ended = new Event("ended");
+    event.target.dispatchEvent(ended);
+  }
+});
+```
+
+Quelle: [Lyimmi](https://github.com/Lyimmi) auf dem [Diskussion Board](https://github.com/wailsapp/wails/issues/1729#issuecomment-1212291275)
+
+## GStreamer-Fehler bei Verwendung von Audio- oder Videoelementen
+
+Wenn der folgende Fehler beim Einfügen von `<Audio>` oder `<Video>` Elementen unter Linux erscheint, muss unter Umständen `gst-plugins-good` installiert werden.
+
+```
+GStreamer element autoaudiosink not found. Please install it
+```
+
+### Installieren
+
+Führe den folgenden distro relevanten Installationsbefehl aus:
+
+```mdx-code-block
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs
+    defaultValue="Arch"
+    values={[
+        { label: "Arch", value: "Arch" },
+        { label: "Debian/Ubuntu", value: "Debian" },
+        { label: "Fedora", value: "Fedora" },
+    ]}
+>
+<TabItem value="Arch">
+
+    pacman -S gst-plugins-good
+
+</TabItem>
+<TabItem value="Debian">
+
+    apt-get install gstreamer1.0-plugins-good
+
+</TabItem>
+<TabItem value="Fedora">
+
+    dnf install gstreamer1-plugins-good
+
+</TabItem>
+</Tabs>
+```
+
+Wenn das hinzugefügte Paket das Problem nicht behebt, werden möglicherweise zusätzliche GStreamer-Abhängigkeiten benötigt. [Weitere Details sind auf der GStreamer Installationsseite zu finden.](https://gstreamer.freedesktop.org/documentation/installing/on-linux.html)
+
+### Weitere Informationen
+
+- Dieses Problem wird durch ein [Upstream-Problem mit WebkitGTK](https://bugs.webkit.org/show_bug.cgi?id=146351) verursacht.
+- [Arch basierte Systeme](https://wiki.archlinux.org/title/Arch-based_distributions) scheinen dieses Problem häufiger zu haben als andere Distributionen.
+- Dieses Problem wirkt sich auf [Tauri Apps](https://tauri.app/) aus.
+
+Quelle: [developomp](https://github.com/developomp) aus dem [Tauri Diskussionsforum](https://github.com/tauri-apps/tauri/issues/4642#issuecomment-1643229562).

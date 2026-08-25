@@ -1,5 +1,15 @@
 version: '3'
 
+vars:
+  APP_NAME: "{{.BinaryName}}"
+  BIN_DIR: "bin"
+  PACKAGE_MANAGER: '{{.Opn}}.PACKAGE_MANAGER | default "npm"{{.Cls}}'
+  VITE_PORT: '{{.Opn}}.WAILS_VITE_PORT | default 9245{{.Cls}}'
+  # Target OS for build/package/run. Defaults to the host OS, and is overridden
+  # by `wails3 build GOOS=...` (or the GOOS env var) for cross-compilation. The
+  # tasks below dispatch to the matching platform Taskfile via this variable.
+  GOOS: '{{.Opn}}.GOOS | default OS{{.Cls}}'
+
 includes:
   common: ./build/Taskfile.yml
   windows: ./build/windows/Taskfile.yml
@@ -8,31 +18,26 @@ includes:
   ios: ./build/ios/Taskfile.yml
   android: ./build/android/Taskfile.yml
 
-vars:
-  APP_NAME: "{{.ProjectName}}"
-  BIN_DIR: "bin"
-  VITE_PORT: {{ "'{{.WAILS_VITE_PORT | default 9245}}'" }}
-
 tasks:
   build:
     summary: Builds the application
     cmds:
-      - task: "{{ "{{OS}}" }}:build"
+      - task: "{{.Opn}}.GOOS{{.Cls}}:build"
 
   package:
     summary: Packages a production build of the application
     cmds:
-      - task: "{{ "{{OS}}" }}:package"
+      - task: "{{.Opn}}.GOOS{{.Cls}}:package"
 
   run:
     summary: Runs the application
     cmds:
-      - task: "{{ "{{OS}}" }}:run"
+      - task: "{{.Opn}}.GOOS{{.Cls}}:run"
 
   dev:
     summary: Runs the application in development mode
     cmds:
-      - wails3 dev -config ./build/config.yml -port {{ "{{.VITE_PORT}}" }}
+      - wails3 dev -config ./build/config.yml -port {{.Opn}}.VITE_PORT{{.Cls}}
 
   setup:docker:
     summary: Builds Docker image for cross-compilation (~800MB download)

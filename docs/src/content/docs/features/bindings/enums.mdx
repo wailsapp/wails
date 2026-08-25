@@ -54,7 +54,7 @@ The generator output will report enum counts alongside models:
 **Use in your frontend:**
 
 ```javascript
-import { Ticket, Status } from './bindings/myapp/models'
+import { Ticket, Status } from './bindings/changeme/models'
 
 const ticket = new Ticket({
     id: 1,
@@ -340,7 +340,7 @@ func (*GreetService) Greet(name string, title services.Title) string {
 The `Title` enum is generated in the `services` models file, and import paths are resolved automatically:
 
 ```typescript
-// bindings/myapp/services/models.ts
+// bindings/changeme/services/models.ts
 export enum Title {
     $zero = "",
     Mister = "Mr",
@@ -456,8 +456,8 @@ func main() {
 **Frontend (TypeScript):**
 
 ```typescript
-import { GetBackground, SetBackground } from './bindings/myapp/themeservice'
-import { BackgroundConfig, BackgroundType } from './bindings/myapp/models'
+import { GetBackground, SetBackground } from './bindings/changeme/themeservice'
+import { BackgroundConfig, BackgroundType } from './bindings/changeme/models'
 
 // Get current background
 const bg = await GetBackground()
@@ -477,8 +477,8 @@ await SetBackground(new BackgroundConfig({
 **Frontend (JavaScript):**
 
 ```javascript
-import { GetBackground, SetBackground } from './bindings/myapp/themeservice'
-import { BackgroundConfig, BackgroundType } from './bindings/myapp/models'
+import { GetBackground, SetBackground } from './bindings/changeme/themeservice'
+import { BackgroundConfig, BackgroundType } from './bindings/changeme/models'
 
 // Use enum values for type-safe comparisons
 const bg = await GetBackground()
@@ -526,4 +526,4 @@ switch (bg.type) {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/binding).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

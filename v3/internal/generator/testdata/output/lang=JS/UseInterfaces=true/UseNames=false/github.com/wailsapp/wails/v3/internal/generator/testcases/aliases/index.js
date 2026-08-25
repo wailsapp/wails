@@ -41,12 +41,6 @@ import * as $models from "./models.js";
  */
 
 /**
- * A generic alias that forwards to a type parameter.
- * @template T
- * @typedef {$models.GenericAlias<T>} GenericAlias
- */
-
-/**
  * A generic alias that wraps a map.
  * @template T,U
  * @typedef {$models.GenericMapAlias<T, U>} GenericMapAlias
@@ -93,9 +87,4 @@ import * as $models from "./models.js";
 /**
  * An alias referencing another package that is not used elsewhere.
  * @typedef {$models.SubPackageAlias} SubPackageAlias
- */
-
-/**
- * An alias that wraps a class through a typeparam alias.
- * @typedef {$models.TPIndirectPersonAlias} TPIndirectPersonAlias
  */

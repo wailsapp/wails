@@ -1,0 +1,391 @@
+---
+title: Go-프론트엔드 브리지
+description: Wails가 Go와 JavaScript 간 직접 통신을 어떻게 가능하게 하는지 심층 분석
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 직접적인 Go-JavaScript 통신
+
+Wails는 Go와 JavaScript 간에 **직접적인 인메모리 브리지**를 제공하여, HTTP 오버헤드, 프로세스 경계, 또는 직렬화 병목 현상 없이 원활한 통신을 가능하게 합니다.
+
+## 전체적인 그림
+
+```d2
+direction: right
+
+Frontend: "Frontend (JavaScript)" {
+  UI: "React/Vue/Vanilla" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+  
+  Bindings: "Auto-Generated Bindings" {
+    shape: rectangle
+    style.fill: "#A78BFA"
+  }
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+  
+  TypeGen: "Type Generator" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Your Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+  
+  Registry: "Service Registry" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend.UI -> Frontend.Bindings: "import { Method }"
+Frontend.Bindings -> Bridge.Encoder: "Call Method('arg')"
+Bridge.Encoder -> Bridge.Router: "Encode to JSON"
+Bridge.Router -> Backend.Registry: "Find service"
+Backend.Registry -> Backend.Services: "Invoke method"
+Backend.Services -> Bridge.Decoder: "Return result"
+Bridge.Decoder -> Frontend.Bindings: "Decode to JS"
+Frontend.Bindings -> Frontend.UI: "Promise resolves"
+Bridge.TypeGen -> Frontend.Bindings: "Generate types"
+```
+
+**핵심 통찰:** HTTP 없음, IPC 없음, 프로세스 경계 없음. 오직 **직접적인 함수 호출**과 **타입 안전성**만 있습니다.
+
+## 작동 원리: 단계별 설명
+
+### 1. 서비스 등록 (시작 시)
+
+애플리케이션이 시작될 때, Wails는 당신의 서비스를 스캔합니다:
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) Add(a, b int) int {
+    return a + b
+}
+
+// Register service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**Wails가 수행하는 작업:**
+1. **내보낸 메서드에 대해 구조체 스캔**
+2. **타입 정보 추출** (매개변수, 반환 타입)
+3. **메서드 이름을 함수에 매핑하는 레지스트리 빌드**
+4. **완전한 타입 정의가 포함된 TypeScript 바인딩 생성**
+
+### 2. 바인딩 생성 (빌드 타임)
+
+Wails는 TypeScript 바인딩을 자동으로 생성합니다:
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function Add(a: number, b: number): Promise<number>
+```
+
+**타입 매핑:**
+
+| Go 타입 | TypeScript 타입 |
+|---------|-----------------|
+| `string` | `string` |
+| `int`, `int32`, `int64` | `number` |
+| `float32`, `float64` | `number` |
+| `bool` | `boolean` |
+| `[]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `struct` | `interface` |
+| `time.Time` | `Date` |
+| `error` | 예외 (던져짐) |
+
+### 3. 프론트엔드 호출 (런타임)
+
+개발자가 JavaScript에서 Go 메서드를 호출합니다:
+
+```javascript
+import { Greet, Add } from './bindings/GreetService'
+
+// Call Go from JavaScript
+const greeting = await Greet("World")
+console.log(greeting)  // "Hello, World!"
+
+const sum = await Add(5, 3)
+console.log(sum)  // 8
+```
+
+**발생하는 일:**
+1. **바인딩 함수 호출** - `Greet("World")`
+2. **메시지 생성** - `{ service: "GreetService", method: "Greet", args: ["World"] }`
+3. **브리지로 전송** - WebView의 JavaScript 브리지를 통해
+4. **Promise 반환** - 응답을 대기
+
+### 4. 브리지 처리 (런타임)
+
+브리지는 메시지를 받고 처리합니다:
+
+```d2
+direction: down
+
+Receive: "Receive Message" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Parse: "Parse JSON" {
+  shape: rectangle
+}
+
+Validate: "Validate" {
+  Check: "Service exists?" {
+    shape: diamond
+  }
+  
+  CheckMethod: "Method exists?" {
+    shape: diamond
+  }
+  
+  CheckTypes: "Types correct?" {
+    shape: diamond
+  }
+}
+
+Invoke: "Invoke Go Method" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+Encode: "Encode Result" {
+  shape: rectangle
+}
+
+Send: "Send Response" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Error: "Send Error" {
+  shape: rectangle
+  style.fill: "#EF4444"
+}
+
+Receive -> Parse
+Parse -> Validate.Check
+Validate.Check -> Validate.CheckMethod: "Yes"
+Validate.Check -> Error: "No"
+Validate.CheckMethod -> Validate.CheckTypes: "Yes"
+Validate.CheckMethod -> Error: "No"
+Validate.CheckTypes -> Invoke: "Yes"
+Validate.CheckTypes -> Error: "No"
+Invoke -> Encode: "Success"
+Invoke -> Error: "Error"
+Encode -> Send
+```
+
+**보안:** 등록된 서비스와 내보낸 메서드만 호출할 수 있습니다.
+
+### 5. Go 실행 (런타임)
+
+Go 메서드가 실행됩니다:
+
+```go
+func (g *GreetService) Greet(name string) string {
+    // This runs in Go
+    return g.prefix + name + "!"
+}
+```
+
+**실행 컨텍스트:**
+- **고루틴**에서 실행 (비차단)
+- **모든 Go 기능**에 접근 가능 (파일 시스템, 네트워크, 데이터베이스)
+- **다른 Go 코드**를 자유롭게 호출 가능
+- 결과 또는 오류 반환
+
+### 6. 응답 (런타임)
+
+결과가 JavaScript로 다시 전송됩니다:
+
+```javascript
+// Promise resolves with result
+const greeting = await Greet("World")
+// greeting = "Hello, World!"
+```
+
+**오류 처리:**
+
+```go
+func (g *GreetService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+```javascript
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Go error:", error)  // "division by zero"
+}
+```
+
+## 성능 특성
+
+### 속도
+
+**일반적인 호출 오버헤드:** &lt;1ms
+
+```
+Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
+     ↓            ↓           ↓            ↓            ↓
+   &lt;0.1ms      &lt;0.1ms      [varies]     &lt;0.1ms      &lt;0.1ms
+```
+
+**대안과 비교:**
+- **HTTP/REST:** 5-50ms (네트워크 스택, 직렬화)
+- **IPC:** 1-10ms (프로세스 경계, 마샬링)
+- **Wails 브리지:** &lt;1ms (인메모리, 직접 호출)
+
+### 메모리
+
+**호출당 오버헤드:** ~1KB (메시지 버퍼)
+
+**제로 복사 최적화:** 큰 데이터 (>1MB)는 가능한 경우 공유 메모리를 사용합니다.
+
+### 동시성
+
+**호출은 동시적입니다:**
+- 각 호출은 자체 고루틴에서 실행됩니다
+- 여러 호출이 동시에 실행될 수 있습니다
+- 호출 간 차단 없음
+
+```javascript
+// These run concurrently
+const [result1, result2, result3] = await Promise.all([
+    SlowOperation1(),
+    SlowOperation2(),
+    SlowOperation3(),
+])
+```
+
+## 타입 시스템
+
+### 지원되는 타입
+
+#### 기본 타입
+
+```go
+// Go
+func Example(
+    s string,
+    i int,
+    f float64,
+    b bool,
+) (string, int, float64, bool) {
+    return s, i, f, b
+}
+```
+
+```typescript
+// TypeScript (auto-generated)
+function Example(
+    s: string,
+    i: number,
+    f: number,
+    b: boolean,
+): Promise<[string, number, number, boolean]>
+```
+
+#### 슬라이스와 배열
+
+```go
+// Go
+func Sum(numbers []int) int {
+    total := 0
+    for _, n := range numbers {
+        total += n
+    }
+    return total
+}
+```
+
+```typescript
+// TypeScript
+function Sum(numbers: number[]): Promise<number>
+
+// Usage
+const total = await Sum([1, 2, 3, 4, 5])  // 15
+```
+
+#### 맵
+
+```go
+// Go
+func GetConfig() map[string]interface{} {
+    return map[string]interface{}{
+        "theme": "dark",
+        "fontSize": 14,
+        "enabled": true,
+    }
+}
+```
+
+```typescript
+// TypeScript
+function GetConfig(): Promise<Record<string, any>>
+
+// Usage
+const config = await GetConfig()
+console.log(config.theme)  // "dark"
+```
+
+#### 구조체
+
+```go
+// Go
+type User struct {
+    ID    int    `json:"id"`
+    Name  string `json:"name"`
+    Email string `json:"email"`
+}
+
+func GetUser(id int) (*User, error) {
+    return &User{
+        ID:    id,
+        Name:  "Alice",---
+
+**브리지 관련 질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [바인딩 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)를 확인하세요.

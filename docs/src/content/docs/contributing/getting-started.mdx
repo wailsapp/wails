@@ -28,8 +28,9 @@ Before you begin, ensure you have:
 - WebView2 runtime (usually pre-installed on Windows 11)
 
 **Linux:**
-- `gcc`, `pkg-config`, `libgtk-3-dev`, `libwebkit2gtk-4.0-dev`
-- Install via: `sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev` (Debian/Ubuntu)
+- `gcc`, `pkg-config`, `libgtk-4-dev`, `libwebkitgtk-6.0-dev` (default GTK4 stack)
+- Install via: `sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev` (Debian/Ubuntu)
+- For the legacy `-tags gtk3` build path, also install `libgtk-3-dev` and `libwebkit2gtk-4.1-dev`
 
 ## Contribution Process Overview
 
@@ -141,16 +142,16 @@ Choose your contribution type:
 </Steps>
 
 </TabItem>
-<TabItem label="Enhancements">
+<TabItem label="WEP (Enhancement)">
 
 <Steps>
 
-1. **Discuss the Feature**
+1. **Write a WEP**
 
-   - Open a [GitHub Discussion](https://github.com/wailsapp/wails/discussions) or issue
-   - Describe what you want to add and why
-   - Wait for maintainer feedback before implementing
-   - Ensure it aligns with Wails' goals
+   - Read the [WEP (Wails Enhancement Proposal) process](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)
+   - Copy the WEP template into `v3/wep/proposals/<name>/proposal.md`
+   - Open a draft PR titled `[WEP] <title>` containing the WEP only
+   - Wait for a maintainer decision before implementing
 
 2. **Fork and Clone**
 
@@ -214,7 +215,7 @@ Choose your contribution type:
 7. **Document Your Feature**
 
    - Add docstrings to all public APIs
-   - Update relevant documentation in `/docs`
+   - Update relevant documentation in `/docs/src/content/docs/`
    - Add examples if applicable
 
 8. **Commit with Convention**
@@ -241,7 +242,7 @@ Choose your contribution type:
    - Describe the feature and use cases
    - Show examples or screenshots
    - List any breaking changes
-   - Reference the discussion/issue
+   - Reference the accepted WEP PR
 
 10. **Iterate Based on Review**
 
@@ -274,7 +275,7 @@ Choose your contribution type:
 
 3. **Setup Documentation Environment**
 
-   The docs are in `/docs` and built with Astro:
+   The docs are in `/docs/src/content/docs/` and built with Astro:
    ```bash
    cd docs
    npm install
@@ -356,7 +357,7 @@ Choose your contribution type:
 
 - **Discord:** Join [Wails Discord](https://discord.gg/JDdSxwjhGf)
 - **Discussions:** Post in [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
-- **Issues:** Open an issue if you find a bug or have a question
+- **Issues:** Open an issue for a reproducible bug; use Discussions for questions and a WEP PR for enhancements
 
 ## Code of Conduct
 

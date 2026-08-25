@@ -62,7 +62,7 @@ func (d *Dispatcher) processCallMessage(message string, sender frontend.Frontend
 	d.log.Trace("json call result data: %+v\n", string(messageData))
 	if err != nil {
 		// what now?
-		d.log.Fatal(err.Error())
+		d.log.Fatal("%s", err.Error())
 	}
 
 	return "c" + string(messageData), nil

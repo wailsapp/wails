@@ -1,0 +1,95 @@
+---
+title: Ikhtisar Teknis
+description: Arsitektur tingkat tinggi dan peta jalan ke codebase Wails v3
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Selamat Datang di Dokumentasi Teknis Wails v3
+
+Bagian ini **bukan** tentang panduan komunitas atau cara membuka pull-request.
+Sebaliknya, bagian ini membahas **bagaimana Wails v3 dibangun** agar Anda dapat
+dengan cepat berorientasi di codebase dan mulai hacking dengan percaya diri.
+
+Baik Anda berencana mem-patch runtime, memperluas CLI, membuat template baru, atau
+sekadar memahami internal, halaman-halaman berikut memberikan konteks teknis
+yang Anda butuhkan.
+
+---
+
+## Arsitektur Tingkat Tinggi
+
+<CardGrid>
+  <Card title="Backend Go" icon="seti:go">
+    Jantung setiap aplikasi Wails adalah kode Go yang dikompilasi menjadi executable native.
+    Backend ini memiliki logika aplikasi, integrasi sistem, dan operasi
+    kritis performa.
+  </Card>
+
+  <Card title="Frontend Web" icon="seti:html">
+    UI ditulis dengan teknologi web standar (React, Vue, Svelte, Vanilla, …)
+    dirender oleh WebView sistem yang ringan (WebKit di Linux/macOS, WebView2 di
+    Windows).
+  </Card>
+
+  <Card title="Lapisan Bridge" icon="puzzle">
+    Bridge zero-copy in-memory memungkinkan panggilan **Go⇄JavaScript** dengan konversi
+    tipe otomatis, propagasi event, dan penerusan error.
+  </Card>
+
+  <Card title="CLI & Tooling" icon="terminal">
+    `wails3` mengorkestrasi pembuatan proyek, dev server live-reload, bundling asset,
+    cross-compilation, dan packaging (deb, rpm, AppImage, msi, dmg…).
+  </Card>
+</CardGrid>
+
+---
+
+## Ikhtisar Arsitektural
+
+**Wails v3 – Alur End-to-End**
+
+{/*
+TODO: Perbaiki generasi diagram D2 (triple quotes untuk string multi-baris) atau embed sebagai gambar.
+Blok kode D2 sebelumnya menyebabkan error parsing MDX di pipeline build.
+*/}
+
+**[Placeholder Diagram Alur End-to-End]**
+
+
+Diagram menunjukkan **alur end-to-end**:
+
+1. **CLI** menggerakkan generasi, dev server, kompilasi, dan packaging.  
+2. **Binding System** menghasilkan kode glue yang memungkinkan **Web Frontend** memanggil **Go Backend**.  
+3. Selama development **Asset Server** mem-proxy ke dev server framework; di production melayani file yang di-embed.  
+4. Saat runtime **Desktop Runtime** mengelola window dan API OS, sementara **Bridge** mengantar pesan antara Go dan JavaScript.
+
+---
+
+## Apa yang Dicakup Dokumentasi Ini
+
+| Topik | Mengapa Penting |
+| ----- | -------------- |
+| **Tata Letak Codebase** | Peta direktori `/v3` dan interaksi modul. |
+| **Internal Runtime** | Manajemen window, API sistem, message processor, dan shim platform. |
+| **Asset & Dev Server** | Cara asset web dilayani di dev dan di-embed di production. |
+| **Pipeline Build & Packaging** | Alur kerja berbasis Taskfile, kompilasi lintas platform, dan generasi installer. |
+| **Binding System** | Pipeline analisis statis yang menghasilkan binding Go⇄TS type-safe. |
+| **Template System** | Arsitektur generator yang menggerakkan `wails3 init -t <framework>`. |
+| **Testing & CI** | Harness tes unit/integrasi, GitHub Actions, panduan race detector. |
+| **Memperluas Wails** | Menambahkan service, template, atau sub-perintah CLI. |
+
+Setiap halaman berikutnya membahas area-area ini dengan contoh kode konkret,
+diagram, dan referensi ke file sumber yang relevan.
+
+---
+
+:::note
+Prasyarat: Anda harus nyaman dengan **Go 1.25+**, TypeScript dasar,
+dan alat build frontend modern. Jika Anda baru mengenal Go, pertimbangkan untuk
+membaca tour resmi terlebih dahulu.
+:::
+
+Selamat menjelajah — dan selamat datang di internal Wails v3!

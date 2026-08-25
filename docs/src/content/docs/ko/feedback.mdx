@@ -1,0 +1,61 @@
+---
+title: 피드백
+description: Wails v3에 대한 피드백 제공 및 이슈 보고 방법
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+저희는 여러분의 피드백을 환영하며(그리고 권장합니다)! 새로운 이슈나 토론을 작성하기 전에 기존 항목을 검색해 주세요. 기여하는 다양한 방법은 다음과 같습니다:
+
+<Tabs>
+  <TabItem label="버그" icon="error">
+
+    버그를 발견하셨다면 버그 리포트 템플릿을 사용하여 GitHub에서 [이슈를 열어](https://github.com/wailsapp/wails/issues/new/choose) 주세요.
+
+    - 간단하고 재현 가능한 예제와 함께 버그를 명확히 설명해 주세요. 문서에서 _무엇이_ 발생해야 하는지 불분명한 경우, 그 부분을 리포트에 포함해 주세요.
+    - 리포트에 `wails doctor`의 출력 결과를 포함해 주세요.
+    - 버그가 현재 문서와 일치하지 않는 동작인 경우, 다음도 수행해 주세요:
+      - `v3/examples` 디렉토리의 기존 예제를 업데이트하거나 이슈를 명확히 보여주는 새로운 예제를 생성하세요.
+      - 관련 이슈를 참조하는 [PR](https://github.com/wailsapp/wails/pulls)을 열어 주세요.
+
+    :::caution
+
+    _기억하세요_, 예상치 못한 동작이 반드시 버그인 것은 아닙니다. 단순히 기대한 대로 동작하지 않을 뿐일 수 있습니다. 이 경우 `Suggestions`를 사용해 주세요.
+
+    :::
+
+    Discord의 [#v3](https://discord.gg/bdj28QNHmT) 채널에서 버그를 자유롭게 토론하실 수도 있습니다.
+
+  </TabItem>
+
+  <TabItem label="수정" icon="approve-check">
+
+    버그 수정이나 문서 개선이 있는 경우:
+
+    - [기여 가이드라인](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md)을 따라 [Wails 저장소](https://github.com/wailsapp/wails)에서 풀 리퀘스트를 열어 주세요.
+    - PR 설명에 관련 이슈를 참조해 주세요.
+
+  </TabItem>
+
+  <TabItem label="제안" icon="puzzle" id="abc">
+
+    기능 요청이나 제안이 있다면 GitHub에서 [토론을 시작](https://github.com/wailsapp/wails/discussions)해 주세요.
+
+    - 기능과 그것이 해결하는 문제를 명확히 설명해 주세요.
+    - Discord의 [#v3](https://discord.gg/bdj28QNHmT) 채널에서 아이디어를 토론하는 것도 환영합니다.
+
+  </TabItem>
+
+  <TabItem label="추천" icon="star">
+
+    - GitHub의 이슈와 토론에 :thumbsup: 리액션을 사용하여 지지를 표현해 주세요.
+    - "+1"이나 "나도요"와 같은 댓글만 _추가하지 마세요_.
+    - "이 버그는 ARM 빌드에도 영향을 미칩니다" 또는 "다른 접근 방식으로는..."과 같이 의미 있게 추가할 내용이 있는 경우 댓글을 남겨 주세요.
+
+  </TabItem>
+
+</Tabs>
+
+알려진 이슈 목록과 진행 중인 작업은 [여기](https://github.com/orgs/wailsapp/projects/6)에서 확인할 수 있습니다.

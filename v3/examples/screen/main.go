@@ -5,7 +5,6 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-	"os"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -46,54 +45,53 @@ func main() {
 
 					_, filename, _, _ := runtime.Caller(0)
 					dir := filepath.Dir(filename)
-					assetsDir := filepath.Join(dir, "assets")
-
-					// Resolve the assets directory to an absolute, cleaned path.
-					assetsDirAbs, err := filepath.Abs(filepath.Clean(assetsDir))
+					assetsDir, err := filepath.Abs(filepath.Join(dir, "assets"))
 					if err != nil {
-						// If we cannot resolve the assets directory safely, fall back to default handler.
 						next.ServeHTTP(w, r)
 						return
 					}
 
-					// Clean the requested URL path using path.Clean (HTTP paths always use forward slashes).
+					// URL paths always use '/', while filesystem paths are OS-specific.
+					// Clean before joining so traversal segments cannot escape assets.
 					cleanPath := path.Clean("/" + r.URL.Path)
-
-					// Reject Windows drive-letter (e.g. "C:/...") or UNC-style absolute paths.
-					if len(cleanPath) >= 2 && cleanPath[1] == ':' {
+					relativePath := filepath.FromSlash(strings.TrimPrefix(cleanPath, "/"))
+					if filepath.IsAbs(relativePath) || filepath.VolumeName(relativePath) != "" {
 						next.ServeHTTP(w, r)
 						return
 					}
 
-					// Treat the request path as relative by stripping the leading forward slash.
-					relativePath := strings.TrimPrefix(cleanPath, "/")
-					// Convert to OS-specific path separators for filesystem operations.
-					relativePath = filepath.FromSlash(relativePath)
-
-					// Resolve the requested path against the absolute assets directory.
-					resolvedPath, err := filepath.Abs(filepath.Join(assetsDirAbs, relativePath))
+					resolvedPath, err := filepath.Abs(filepath.Join(assetsDir, relativePath))
 					if err != nil {
-						// If the path cannot be resolved, fall back to default handler.
 						next.ServeHTTP(w, r)
 						return
 					}
 
-					// Ensure the resolved path is still within the assets directory.
-					// This check prevents path traversal attacks like "/../../../etc/passwd".
-					if resolvedPath != assetsDirAbs && !strings.HasPrefix(resolvedPath, assetsDirAbs+string(filepath.Separator)) {
-						// Path traversal attempt detected, fall back to default handler.
+					rel, err := filepath.Rel(assetsDir, resolvedPath)
+					if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 						next.ServeHTTP(w, r)
 						return
 					}
 
-					// Path is validated to be within assetsDirAbs above.
-					if _, err := os.Stat(resolvedPath); err == nil { // #nosec G304 // lgtm[go/path-injection] -- path validated above
-						// Serve file from disk to make testing easy
-						http.ServeFile(w, r, resolvedPath) // #nosec G304 // lgtm[go/path-injection] -- path validated above
-					} else {
-						// Passthrough to the default asset handler if file not found on disk
+					// Stat follows symlinks, so resolve the existing target too. This
+					// prevents an asset symlink from exposing a file outside assets.
+					resolvedRealPath, err := filepath.EvalSymlinks(resolvedPath)
+					if err != nil {
 						next.ServeHTTP(w, r)
+						return
 					}
+					assetsRealPath, err := filepath.EvalSymlinks(assetsDir)
+					if err != nil {
+						next.ServeHTTP(w, r)
+						return
+					}
+					realRel, err := filepath.Rel(assetsRealPath, resolvedRealPath)
+					if err != nil || realRel == ".." || strings.HasPrefix(realRel, ".."+string(filepath.Separator)) {
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					// Serve file from disk to make testing easy.
+					http.ServeFile(w, r, resolvedRealPath)
 				})
 			},
 		},

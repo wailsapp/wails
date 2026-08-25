@@ -1,0 +1,189 @@
+---
+title: Pintasan Global
+description: Daftarkan pintasan keyboard sistem-lebar yang aktif bahkan saat aplikasi Anda tidak sedang difokuskan
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Pintasan global adalah pintasan keyboard sistem-lebar yang aktif tanpa memandang aplikasi mana yang sedang difokuskan, selama aplikasi Wails Anda berjalan. Cocok untuk hotkey show/hide, alat quick capture, kontrol media, dan fitur lain yang diharapkan pengguna dapat diakses dari mana saja.
+
+:::note[Pintasan global vs key binding]
+[Key binding](/id/features/keyboard/shortcuts/) (`app.KeyBinding`) hanya aktif saat salah satu window aplikasi Anda sedang difokuskan. Pintasan global (`app.GlobalShortcut`) aktif di seluruh sistem, bahkan saat aplikasi Anda berada di latar belakang. Gunakan sesuai kebutuhan.
+:::
+
+Pintasan global dibangun langsung di atas fasilitas native setiap platform dan tidak menambahkan dependensi pihak ketiga.
+
+## Mengakses Global Shortcut Manager
+
+Manager tersedia pada properti `GlobalShortcut` dari instance aplikasi Anda:
+
+```go
+app := application.New(application.Options{
+    Name: "Global Shortcuts Demo",
+})
+
+globalShortcuts := app.GlobalShortcut
+```
+
+## Mendaftarkan Pintasan
+
+`Register` menerima akselerator dan callback. Callback dijalankan di goroutine-nya sendiri setiap kali pintasan ditekan.
+
+```go
+err := app.GlobalShortcut.Register("CmdOrCtrl+Shift+G", func() {
+    // Berjalan bahkan saat aplikasi lain sedang difokuskan.
+    window.Show()
+    window.Focus()
+})
+if err != nil {
+    app.Logger.Error("tidak dapat mendaftarkan pintasan", "error", err)
+}
+```
+
+Anda dapat mendaftarkan pintasan sebelum memanggil `app.Run`. Pengikatan dengan sistem operasi kemudian dilakukan secara otomatis saat aplikasi dimulai.
+
+:::tip[Menyentuh UI dari callback]
+Callback berjalan di luar main thread. Jika callback Anda perlu berinteraksi dengan window atau UI lainnya, hal itu sudah ditangani oleh method window, tetapi untuk pekerjaan main-thread kustom, bungkus dengan `application.InvokeSync`.
+:::
+
+### Format Akselerator
+
+Pintasan global menggunakan format akselerator yang sama dengan akselerator menu dan key binding:
+
+```go
+"CmdOrCtrl+Shift+G"  // Command di macOS, Control di tempat lain
+"Ctrl+Alt+K"         // Control + Alt + K
+"Cmd+Option+Space"   // Command + Option + Space (macOS)
+"Super+D"            // Super / Windows / Logo key + D
+"Ctrl+Shift+F5"      // Function key didukung
+```
+
+`CmdOrCtrl` menjadi Command di macOS dan Control di Windows dan Linux, sehingga memudahkan pembuatan pintasan lintas platform.
+
+## Mengelola Pintasan
+
+```go
+// Cek apakah pintasan sudah terdaftar (urutan modifier tidak penting).
+registered := app.GlobalShortcut.IsRegistered("Ctrl+Shift+G")
+
+// Daftar semua pintasan yang telah didaftarkan aplikasi ini.
+for _, accelerator := range app.GlobalShortcut.GetAll() {
+    app.Logger.Info("pintasan global", "accelerator", accelerator)
+}
+
+// Hapus satu pintasan.
+app.GlobalShortcut.Unregister("Ctrl+Shift+G")
+
+// Hapus semua pintasan (juga dilakukan otomatis saat shutdown).
+app.GlobalShortcut.UnregisterAll()
+```
+
+Semua pintasan yang terdaftar dilepas secara otomatis saat aplikasi keluar, sehingga Anda tidak perlu membersihkannya secara manual.
+
+## Yang Terjadi Saat Pintasan yang Sama Didaftarkan Dua Kali
+
+Ada dua kasus berbeda, dan Wails menanganinya secara berbeda.
+
+### Aplikasi yang sama mendaftarkan pintasan dua kali
+
+Ini diselesaikan oleh Wails sendiri dan berperilaku identik di setiap platform. Panggilan `Register` kedua mengembalikan error dan binding asli dibiarkan ("error dan pertahankan"). Ini menjaga perilaku tetap dapat diprediksi dan menampilkan kesalahan alih-alih mengganti pintasan yang berfungsi secara diam-diam.
+
+```go
+app.GlobalShortcut.Register("Ctrl+Shift+G", showWindow)        // ok
+err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: sudah terdaftar
+// showWindow masih menjadi callback aktif untuk pintasan ini.
+```
+
+Jika Anda ingin mengubah callback untuk sebuah pintasan, `Unregister` dulu lalu `Register` kembali.
+
+### Aplikasi lain sudah memiliki pintasan tersebut
+
+Ini ditentukan oleh sistem operasi, sehingga hasilnya bersifat platform-spesifik:
+
+| Platform | Perilaku saat aplikasi lain memiliki pintasan |
+| --- | --- |
+| **macOS** | Pendaftaran berhasil. macOS mengizinkan beberapa aplikasi mendaftarkan hot key yang sama, sehingga callback Anda ditambahkan bersama pemilik yang ada dan bukan ditolak. |
+| **Windows** | Pendaftaran gagal dan `Register` mengembalikan error. Aplikasi yang mendaftar pintasan pertama kali tetap memilikinya. |
+| **Linux (X11)** | Pendaftaran gagal dan `Register` mengembalikan error, karena X server menolak grab kedua dari kombinasi yang sama. |
+| **Linux (Wayland)** | Kompositor yang memutuskan. Pengguna biasanya diminta untuk menyetujui atau memilih binding melalui dialog pintasan global desktop. |
+
+Karena perbedaan ini, selalu periksa error yang dikembalikan oleh `Register` dan berikan pintasan alternatif atau feedback pengguna saat pintasan tidak dapat diklaim.
+
+## Pertimbangan Platform
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+
+    Pintasan global menggunakan API hot key Carbon Event Manager. Ini adalah mekanisme standar untuk hot key sistem-lebar di macOS dan tidak memerlukan izin Accessibility.
+
+    Hot key terikat pada posisi fisik tombol, sehingga pintasan memetakan ke tombol di posisi ANSI/QWERTY standar pada layout non-QWERTY.
+
+    :::caution[Pintasan sembunyikan dan `ApplicationShouldTerminateAfterLastWindowClosed`]
+    `window.Hide()` menggunakan `orderOut:` di macOS, yang membuat window tidak terlihat. AppKit memperlakukan window terakhir yang tidak terlihat sebagai ditutup, jadi jika Anda menetapkan `Mac.ApplicationShouldTerminateAfterLastWindowClosed: true` dan menggunakan pintasan global untuk menyembunyikan satu-satunya window Anda, aplikasi akan keluar alih-alih tetap di latar belakang. Biarkan opsi tersebut tidak diatur (default) saat Anda mengandalkan hotkey hide/show, agar window dapat disembunyikan dan dipanggil kembali nanti.
+    :::
+
+  </TabItem>
+
+  <TabItem label="Windows" icon="fa-brands:windows">
+
+    Pintasan global menggunakan API Win32 `RegisterHotKey`. Auto repeat dinonaktifkan, sehingga menahan tombol hanya memicu callback sekali, bukan berulang kali.
+
+    Pendaftaran gagal jika aplikasi lain sudah memiliki kombinasi tersebut, jadi lebih baik gunakan kombinasi yang kurang umum untuk default Anda.
+
+  </TabItem>
+
+  <TabItem label="Linux" icon="fa-brands:linux">
+
+    Pada sesi **X11**, Wails mengambil pintasan langsung dari X server, sehingga akselerator yang diminta terikat persis seperti yang ditentukan.
+
+    Pada sesi **Wayland**, secara desain tidak ada cara bagi aplikasi untuk mengambil tombol secara langsung. Wails menggunakan antarmuka XDG Desktop Portal `org.freedesktop.portal.GlobalShortcuts` sebagai gantinya. Dengan portal, akselerator yang Anda berikan adalah pemicu *yang diinginkan* dan kompositor (serta pada akhirnya pengguna) yang menentukan kombinasi tombol akhir. Callback Anda tetap aktif saat pintasan diaktifkan, tetapi tombol pasti tidak dijamin sesuai dengan permintaan Anda, dan `IsRegistered`/`GetAll` melaporkan apa yang Anda minta, bukan apa yang diikat oleh kompositor.
+
+    Portal memerlukan lingkungan desktop yang mengimplementasikan portal pintasan global (misalnya GNOME atau KDE Plasma terbaru).
+
+  </TabItem>
+</Tabs>
+
+## Contoh Lengkap
+
+```go
+package main
+
+import (
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Global Shortcuts Demo",
+    })
+
+    window := app.Window.New()
+
+    // Bawa window ke depan dari mana saja.
+    if err := app.GlobalShortcut.Register("CmdOrCtrl+Shift+G", func() {
+        window.Show()
+        window.Focus()
+    }); err != nil {
+        log.Printf("tidak dapat mendaftarkan pintasan show: %v", err)
+    }
+
+    // Sembunyikan window dari mana saja.
+    if err := app.GlobalShortcut.Register("CmdOrCtrl+Shift+H", func() {
+        window.Hide()
+    }); err != nil {
+        log.Printf("tidak dapat mendaftarkan pintasan hide: %v", err)
+    }
+
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+:::danger[Hindari pintasan sistem yang kritis]
+Beberapa kombinasi dicadangkan oleh sistem operasi atau lingkungan desktop dan tidak dapat diklaim oleh aplikasi. Pilih default yang tidak mungkin bertabrakan, dan selalu tangani error dari `Register`.
+:::

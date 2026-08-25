@@ -1,0 +1,61 @@
+---
+title: 回饋
+description: 如何為 Wails v3 提供回饋並回報問題
+sidebar:
+  order: 40
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+我們歡迎（並鼓勵）您提供回饋！在建立新的 Issue 或討論之前，請先搜尋現有的內容。以下是貢獻的不同方式：
+
+<Tabs>
+  <TabItem label="錯誤" icon="error">
+
+    如果您發現了錯誤，請使用錯誤回報範本在 GitHub 上[開啟 Issue](https://github.com/wailsapp/wails/issues/new/choose)。
+
+    - 請以簡單、可重現的範例清楚描述錯誤。如果文件不清楚說明_應該_發生什麼情況，請在回報中包含該資訊。
+    - 請在回報中附上 `wails doctor` 的輸出結果。
+    - 如果該錯誤的行為與現有文件不符，請也執行以下操作：
+      - 更新 `v3/examples` 目錄中的現有範例，或建立一個能清楚顯示問題的新範例。
+      - 開啟一個參照相關 Issue 的 [PR](https://github.com/wailsapp/wails/pulls)。
+
+    :::caution
+
+    _請記住_，非預期的行為不一定是錯誤——它可能只是沒有按照您的預期運作。請使用 `Suggestions` 來回報這類情況。
+
+    :::
+
+    您也歡迎在 Discord 的 [#v3](https://discord.gg/bdj28QNHmT) 頻道中討論錯誤。
+
+  </TabItem>
+
+  <TabItem label="修復" icon="approve-check">
+
+    如果您有修復錯誤或改進文件的方案，請：
+
+    - 依照[貢獻指南](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md)在 [Wails 儲存庫](https://github.com/wailsapp/wails)上開啟 pull request。
+    - 在 PR 描述中參照任何相關的 Issue。
+
+  </TabItem>
+
+  <TabItem label="建議" icon="puzzle" id="abc">
+
+    如果您有功能請求或建議，請在 GitHub 上[開始討論](https://github.com/wailsapp/wails/discussions)。
+
+    - 清楚描述該功能及其解決的問題。
+    - 也歡迎在 Discord 的 [#v3](https://discord.gg/bdj28QNHmT) 頻道中討論想法。
+
+  </TabItem>
+
+  <TabItem label="按讚" icon="star">
+
+    - 在 GitHub 上使用 :thumbsup: 反應來表達對 Issue 和討論的支持。
+    - 請_不要_僅添加 "+1" 或「我也是」之類的留言。
+    - 如果您有有意義的內容可以補充，例如「此錯誤也影響 ARM 版本」或「另一種方式是...」，歡迎留言。
+
+  </TabItem>
+
+</Tabs>
+
+已知問題及進行中的工作可於[此處](https://github.com/orgs/wailsapp/projects/6)查看。

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MCP Playground</title>
+    <style>
+        :root { color-scheme: light dark; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 24px;
+            user-select: none;
+        }
+        h1 { margin-top: 0; }
+        section {
+            border: 1px solid rgba(128, 128, 128, 0.4);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        section h2 { margin: 0 0 12px; font-size: 15px; }
+        button {
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid rgba(128, 128, 128, 0.5);
+            cursor: pointer;
+        }
+        input, textarea {
+            font-size: 14px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(128, 128, 128, 0.5);
+            width: 260px;
+        }
+        #counter-value { font-size: 22px; font-weight: 600; margin: 0 12px; }
+        #drag-source {
+            width: 70px; height: 70px; border-radius: 8px;
+            background: #3b82f6; color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: grab; font-size: 12px;
+        }
+        #drop-target {
+            width: 140px; height: 90px; border: 2px dashed rgba(128, 128, 128, 0.6);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+        }
+        #drop-target.over { border-color: #3b82f6; }
+        .row { display: flex; gap: 24px; align-items: center; }
+        #scroll-box { height: 120px; overflow-y: auto; border: 1px solid rgba(128,128,128,0.4); border-radius: 6px; padding: 8px; }
+        #log { font-family: ui-monospace, monospace; font-size: 12px; max-height: 140px; overflow-y: auto; }
+        #log div { padding: 1px 0; }
+    </style>
+</head>
+<body>
+    <h1>MCP Playground</h1>
+    <p>Connect an MCP client and drive this page: <code>claude mcp add --transport http mcp-demo http://127.0.0.1:9099/mcp</code></p>
+
+    <section>
+        <h2>Counter</h2>
+        <button id="increment">Increment</button>
+        <span id="counter-value">0</span>
+        <button id="reset">Reset</button>
+    </section>
+
+    <section>
+        <h2>Greeting (bound Go method)</h2>
+        <input id="name-input" type="text" placeholder="Type a name…">
+        <button id="greet">Greet</button>
+        <span id="greet-result"></span>
+    </section>
+
+    <section>
+        <h2>Drag &amp; drop</h2>
+        <div class="row">
+            <div id="drag-source" draggable="true">drag me</div>
+            <div id="drop-target">drop here</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Scrolling</h2>
+        <div id="scroll-box"></div>
+    </section>
+
+    <section>
+        <h2>Event log</h2>
+        <div id="log"></div>
+    </section>
+
+    <script type="module">
+        const runtime = await import('/wails/runtime.js');
+
+        const log = (message) => {
+            const line = document.createElement('div');
+            line.textContent = `${new Date().toLocaleTimeString()} ${message}`;
+            const logBox = document.getElementById('log');
+            logBox.prepend(line);
+        };
+
+        let count = 0;
+        document.getElementById('increment').addEventListener('click', () => {
+            count++;
+            document.getElementById('counter-value').textContent = count;
+            log(`counter incremented to ${count}`);
+            runtime.Events.Emit('playground:event', { counter: count });
+        });
+        document.getElementById('reset').addEventListener('click', () => {
+            count = 0;
+            document.getElementById('counter-value').textContent = count;
+            log('counter reset');
+        });
+
+        document.getElementById('greet').addEventListener('click', async () => {
+            const name = document.getElementById('name-input').value || 'World';
+            const result = await runtime.Call.ByName('main.GreetService.Greet', name);
+            document.getElementById('greet-result').textContent = result;
+            log(`greeted: ${result}`);
+        });
+
+        const source = document.getElementById('drag-source');
+        const target = document.getElementById('drop-target');
+        source.addEventListener('dragstart', (event) => {
+            event.dataTransfer.setData('text/plain', 'box');
+            log('drag started');
+        });
+        target.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            target.classList.add('over');
+        });
+        target.addEventListener('drop', (event) => {
+            event.preventDefault();
+            target.classList.remove('over');
+            target.textContent = 'dropped!';
+            log('drop received');
+        });
+
+        const scrollBox = document.getElementById('scroll-box');
+        for (let i = 1; i <= 50; i++) {
+            const item = document.createElement('div');
+            item.textContent = `Item ${i}`;
+            item.id = `item-${i}`;
+            scrollBox.appendChild(item);
+        }
+        scrollBox.addEventListener('scroll', () => log(`scrolled to ${Math.round(scrollBox.scrollTop)}`));
+
+        runtime.Events.On('playground:event', (event) => {
+            log(`event received: ${JSON.stringify(event.data)}`);
+        });
+
+        log('page ready');
+    </script>
+</body>
+</html>

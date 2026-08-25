@@ -1,0 +1,62 @@
+{
+  "link.title.Docs": {
+    "message": "Docs",
+    "description": "The title of the footer links column with title=Docs in the footer"
+  },
+  "link.title.Community": {
+    "message": "Community",
+    "description": "The title of the footer links column with title=Community in the footer"
+  },
+  "link.title.More": {
+    "message": "More",
+    "description": "The title of the footer links column with title=More in the footer"
+  },
+  "link.item.label.Introduction": {
+    "message": "Introduction",
+    "description": "The label of footer link with label=Introduction linking to /docs/introduction"
+  },
+  "link.item.label.Getting Started": {
+    "message": "Getting Started",
+    "description": "The label of footer link with label=Getting Started linking to /docs/gettingstarted/installation"
+  },
+  "link.item.label.Changelog": {
+    "message": "Changelog",
+    "description": "The label of footer link with label=Changelog linking to /changelog"
+  },
+  "link.item.label.Github": {
+    "message": "Github",
+    "description": "The label of footer link with label=Github linking to https://github.com/wailsapp/wails"
+  },
+  "link.item.label.Twitter": {
+    "message": "Twitter",
+    "description": "The label of footer link with label=Twitter linking to https://twitter.com/wailsapp"
+  },
+  "link.item.label.Slack": {
+    "message": "Slack",
+    "description": "The label of footer link with label=Slack linking to https://gophers.slack.com/messages/CJ4P9F7MZ/"
+  },
+  "link.item.label.Slack invite": {
+    "message": "Slack invite",
+    "description": "The label of footer link with label=Slack invite linking to https://invite.slack.golangbridge.org/"
+  },
+  "link.item.label.Blog": {
+    "message": "Blog",
+    "description": "The label of footer link with label=Blog linking to /blog"
+  },
+  "copyright": {
+    "message": "Copyright © 2022 Lea Anthony",
+    "description": "The footer copyright"
+  },
+  "link.item.label.Awesome": {
+    "message": "Awesome",
+    "description": "The label of footer link with label=Awesome linking to https://github.com/wailsapp/awesome-wails"
+  },
+  "link.item.label.Discord": {
+    "message": "Discord",
+    "description": "The label of footer link with label=Discord linking to https://discord.gg/JDdSxwjhGf"
+  },
+  "logo.alt": {
+    "message": "Wails Logo",
+    "description": "The alt text of footer logo"
+  }
+}

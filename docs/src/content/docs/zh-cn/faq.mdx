@@ -1,0 +1,260 @@
+---
+title: 常见问题解答
+description: 关于 Wails 的常见问题
+sidebar:
+  order: 99
+---
+
+## 通用
+
+### Wails 是什么？
+
+Wails 是一个使用 Go 和 Web 技术构建桌面应用程序的框架。它提供原生操作系统集成，同时允许你使用 HTML、CSS 和 JavaScript 构建用户界面。
+
+### Wails 与 Electron 相比如何？
+
+**Wails：**
+- 内存占用约 10MB
+- 二进制文件大小约 15MB
+- 原生性能
+- Go 后端
+
+**Electron：**
+- 内存占用约 100MB+
+- 二进制文件大小约 150MB+
+- Chromium 开销
+- Node.js 后端
+
+### Wails 是否已准备好用于生产环境？
+
+是的！Wails v3 适用于生产环境应用程序。许多公司都使用 Wails 构建他们的桌面应用程序。
+
+### Wails 支持哪些平台？
+
+- Windows (7+)
+- macOS (10.13+)
+- Linux (GTK3)
+
+## 开发
+
+### 我需要了解 Go 吗？
+
+具备基本的 Go 知识会有所帮助，但并非必需。你可以从简单的服务开始，并在过程中学习。
+
+### 我可以使用我喜欢的框架吗？
+
+可以！Wails 兼容：
+- 原生 JavaScript
+- React
+- Vue
+- Svelte
+- 任何构建为 HTML/CSS/JS 的框架
+
+### 如何从 JavaScript 调用 Go 函数？
+
+使用绑定（bindings）：
+
+```go
+// Go
+func (s *Service) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+```javascript
+// JavaScript
+import { Greet } from './bindings/myapp/service'
+const message = await Greet("World")
+```
+
+### 我可以使用 TypeScript 吗？
+
+可以！Wails 会自动生成 TypeScript 定义文件。
+
+### 如何调试我的应用程序？
+
+使用浏览器的开发者工具：
+- 右键点击 → 检查元素
+- 或在窗口选项中启用开发者工具
+
+## 构建与分发
+
+### 如何构建生产版本？
+
+```bash
+wails3 build
+```
+
+你的应用程序将位于 `build/bin/` 目录中。
+
+### 我可以交叉编译吗？
+
+可以！为其他平台构建：
+
+```bash
+wails3 build -platform windows/amd64
+wails3 build -platform darwin/universal
+wails3 build -platform linux/amd64
+```
+
+### 如何创建安装包？
+
+使用平台特定的工具：
+- Windows：NSIS 或 WiX
+- macOS：创建 DMG
+- Linux：DEB/RPM 包
+
+请参阅 [安装包指南](/guides/installers)。
+
+### 如何对我的应用程序进行代码签名？
+
+**macOS：**
+```bash
+codesign --deep --force --sign "Developer ID" MyApp.app
+```
+
+**Windows：**
+使用 SignTool 和你的证书进行签名。
+
+## 功能
+
+### 我可以创建多个窗口吗？
+
+可以！Wails v3 支持原生多窗口：
+
+```go
+window1 := app.Window.New()
+window2 := app.Window.New()
+```
+
+### Wails 支持系统托盘吗？
+
+可以！创建系统托盘应用程序：
+
+```go
+tray := app.SystemTray.New()
+tray.SetIcon(iconBytes)
+tray.SetMenu(menu)
+```
+
+### 我可以使用原生对话框吗？
+
+可以！Wails 提供了原生对话框：
+
+```go
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    PromptForSingleSelection()
+```
+
+### Wails 支持自动更新吗？
+
+Wails 不包含自动更新功能，但你可以自行实现或使用第三方库。
+
+## 性能
+
+### 为什么我的二进制文件很大？
+
+Go 二进制文件包含运行时。减小大小：
+
+```bash
+wails3 build -ldflags "-s -w"
+```
+
+### 如何提高性能？
+
+- 对大型数据集进行分页
+- 缓存昂贵的操作
+- 使用事件进行更新
+- 优化前端构建产物
+- 分析你的代码
+
+请参阅 [性能指南](/guides/performance)。
+
+### Wails 支持热重载吗？
+
+支持！使用开发模式：
+
+```bash
+wails3 dev
+```
+
+## 故障排除
+
+### 我的绑定不起作用
+
+重新生成绑定：
+
+```bash
+wails3 generate bindings
+```
+
+### 窗口不显示
+
+检查你是否调用了 `Show()`：
+
+```go
+window := app.Window.New()
+window.Show()  // 别忘了这个！
+```
+
+### 事件未触发
+
+确保事件名称完全匹配：
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // 必须匹配
+```
+
+### 构建失败
+
+常见修复方法：
+- 运行 `go mod tidy`
+- 检查 `wails.json` 配置
+- 验证前端构建：`cd frontend && npm run build`
+- 更新 Wails：`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+
+## 迁移
+
+### 我应该从 v2 迁移到 v3 吗？
+
+v3 提供：
+- 更好的性能
+- 多窗口支持
+- 改进的 API
+- 更好的开发者体验
+
+请参阅 [迁移指南](/migration/v2-to-v3)。
+
+### v2 还会维护吗？
+
+是的，v2 将接收关键更新。
+
+### 我可以同时运行 v2 和 v3 吗？
+
+可以，它们使用不同的导入路径。
+
+## 社区
+
+### 我如何寻求帮助？
+
+- [Discord 社区](https://discord.gg/JDdSxwjhGf)
+- [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- [GitHub Issues](https://github.com/wailsapp/wails/issues)
+
+### 我如何贡献？
+
+请参阅 [贡献指南](/contributing)。
+
+### 我在哪里可以找到示例？
+
+- [官方示例](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [社区示例](https://github.com/topics/wails)
+
+## 还有疑问？
+
+在 [Discord](https://discord.gg/JDdSxwjhGf) 提问或 [发起讨论](https://github.com/wailsapp/wails/discussions)。

@@ -1,0 +1,25 @@
+# Boutons de Souris
+
+Le runtime Wails intercepte les clics de souris pour déterminer si une fenêtre sans cadre a besoin d'être redimensionnée ou si une fenêtre doit être déplacée. Il a été demandé comment détecter quand un clic de souris s'est produit, parce que `window.onclick` ne signale pas correctement les boutons de la souris. Le code suivant montre comment détecter les clics de souris :
+
+```javascript
+window.addEventListener("mousedown", handleMouseButtonDown);
+
+function handleMouseButtonDown(event) {
+  if (event.button === 0) {
+    // left mouse button
+  } else if (event.button === 1) {
+    // middle mouse button
+  } else if (event.button === 2) {
+    // right mouse button
+  } else if (event.button === 3) {
+    // back mouse button
+  } else if (event.button === 4) {
+    // forward mouse button
+  } else {
+    // other mouse button
+  }
+}
+```
+
+Référence : https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button

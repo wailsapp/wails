@@ -186,11 +186,7 @@ Key bindings receive the active window, allowing window-specific behavior:
 ```go
 app.KeyBinding.Add("F11", func(window application.Window) {
     // Toggle fullscreen for the active window
-    if window.Fullscreen() {
-        window.SetFullscreen(false)
-    } else {
-        window.SetFullscreen(true)
-    }
+    window.ToggleFullscreen()
 })
 
 app.KeyBinding.Add("Ctrl+W", func(window application.Window) {
@@ -390,7 +386,7 @@ func main() {
 
     // View operations
     app.KeyBinding.Add("F11", func(window application.Window) {
-        window.SetFullscreen(!window.Fullscreen())
+        window.ToggleFullscreen()
     })
 
     app.KeyBinding.Add("F1", func(window application.Window) {

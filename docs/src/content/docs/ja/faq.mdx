@@ -1,0 +1,260 @@
+---
+title: よくある質問
+description: Wailsに関する一般的な質問
+sidebar:
+  order: 99
+---
+
+## 一般
+
+### Wailsとは何ですか？
+
+Wailsは、GoとWeb技術を使用してデスクトップアプリケーションを構築するためのフレームワークです。HTML、CSS、JavaScriptでUIを構築しながら、ネイティブOS統合を提供します。
+
+### WailsとElectronの違いは何ですか？
+
+**Wails:**
+- メモリ使用量：約10MB
+- バイナリサイズ：約15MB
+- ネイティブパフォーマンス
+- Goバックエンド
+
+**Electron:**
+- メモリ使用量：約100MB以上
+- バイナリサイズ：約150MB以上
+- Chromiumのオーバーヘッド
+- Node.jsバックエンド
+
+### Wailsは本番環境で使用できますか？
+
+はい！Wails v3は本番アプリケーションに適しています。多くの企業がデスクトップアプリケーションにWailsを使用しています。
+
+### Wailsはどのプラットフォームをサポートしていますか？
+
+- Windows (7以降)
+- macOS (10.13以降)
+- Linux (GTK3)
+
+## 開発
+
+### Goの知識が必要ですか？
+
+基本的なGoの知識があると役立ちますが、必須ではありません。簡単なサービスから始めて、進めながら学ぶことができます。
+
+### お気に入りのフロントエンドフレームワークを使用できますか？
+
+はい！Wailsは以下のフレームワークと連携します：
+- バニラJavaScript
+- React
+- Vue
+- Svelte
+- HTML/CSS/JSにビルドできる任意のフレームワーク
+
+### JavaScriptからGo関数を呼び出すにはどうすればよいですか？
+
+バインディングを使用します：
+
+```go
+// Go
+func (s *Service) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+```javascript
+// JavaScript
+import { Greet } from './bindings/myapp/service'
+const message = await Greet("World")
+```
+
+### TypeScriptを使用できますか？
+
+はい！WailsはTypeScript定義を自動的に生成します。
+
+### アプリケーションをデバッグするにはどうすればよいですか？
+
+ブラウザの開発ツールを使用します：
+- 右クリック → 要素の検証
+- またはウィンドウオプションで開発ツールを有効化
+
+## ビルドと配布
+
+### 本番用にビルドするにはどうすればよいですか？
+
+```bash
+wails3 build
+```
+
+アプリケーションは `build/bin/` に生成されます。
+
+### クロスコンパイルできますか？
+
+はい！他のプラットフォーム用にビルドできます：
+
+```bash
+wails3 build -platform windows/amd64
+wails3 build -platform darwin/universal
+wails3 build -platform linux/amd64
+```
+
+### インストーラーを作成するにはどうすればよいですか？
+
+プラットフォーム固有のツールを使用します：
+- Windows: NSIS または WiX
+- macOS: DMGを作成
+- Linux: DEB/RPMパッケージ
+
+[インストーラーガイド](/guides/installers) を参照してください。
+
+### アプリケーションにコード署名を行うにはどうすればよいですか？
+
+**macOS:**
+```bash
+codesign --deep --force --sign "Developer ID" MyApp.app
+```
+
+**Windows:**
+SignToolを使用して証明書で署名します。
+
+## 機能
+
+### 複数のウィンドウを作成できますか？
+
+はい！Wails v3にはネイティブのマルチウィンドウサポートがあります：
+
+```go
+window1 := app.Window.New()
+window2 := app.Window.New()
+```
+
+### Wailsはシステムトレイをサポートしていますか？
+
+はい！システムトレイアプリケーションを作成できます：
+
+```go
+tray := app.SystemTray.New()
+tray.SetIcon(iconBytes)
+tray.SetMenu(menu)
+```
+
+### ネイティブダイアログを使用できますか？
+
+はい！Wailsはネイティブダイアログを提供します：
+
+```go
+path, _ := app.Dialog.OpenFile().
+    SetTitle("ファイルを選択").
+    PromptForSingleSelection()
+```
+
+### Wailsは自動更新をサポートしていますか？
+
+Wailsには自動更新機能は含まれていませんが、自分で実装するか、サードパーティのライブラリを使用することができます。
+
+## パフォーマンス
+
+### なぜバイナリサイズが大きくなるのですか？
+
+Goのバイナリにはランタイムが含まれます。サイズを削減するには：
+
+```bash
+wails3 build -ldflags "-s -w"
+```
+
+### パフォーマンスを向上させるにはどうすればよいですか？
+
+- 大規模なデータセットにはページネーションを使用
+- 高コストな処理はキャッシュ
+- 更新にはイベントを使用
+- フロントエンドバンドルを最適化
+- コードのプロファイリング
+
+[パフォーマンスガイド](/guides/performance) を参照してください。
+
+### Wailsはホットリロードをサポートしていますか？
+
+はい！開発モードを使用します：
+
+```bash
+wails3 dev
+```
+
+## トラブルシューティング
+
+### バインディングが機能しません
+
+バインディングを再生成します：
+
+```bash
+wails3 generate bindings
+```
+
+### ウィンドウが表示されません
+
+`Show()` を呼び出したか確認してください：
+
+```go
+window := app.Window.New()
+window.Show()  // これを忘れないでください！
+```
+
+### イベントが発火しません
+
+イベント名が完全に一致していることを確認してください：
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // 一致している必要があります
+```
+
+### ビルドが失敗します
+
+一般的な解決策：
+- `go mod tidy` を実行
+- `wails.json` の設定を確認
+- フロントエンドのビルドを確認：`cd frontend && npm run build`
+- Wailsを更新：`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+
+## マイグレーション
+
+### v2からv3にマイグレーションすべきですか？
+
+v3では以下が提供されます：
+- より良いパフォーマンス
+- マルチウィンドウサポート
+- 改善されたAPI
+- 改善された開発者体験
+
+[マイグレーションガイド](/migration/v2-to-v3) を参照してください。
+
+### v2はメンテナンスされますか？
+
+はい、v2には重要なアップデートが提供されます。
+
+### v2とv3を同時に実行できますか？
+
+はい、異なるインポートパスを使用します。
+
+## コミュニティ
+
+### 助けを得るにはどうすればよいですか？
+
+- [Discordコミュニティ](https://discord.gg/JDdSxwjhGf)
+- [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- [GitHub Issues](https://github.com/wailsapp/wails/issues)
+
+### 貢献するにはどうすればよいですか？
+
+[コントリビューションガイド](/contributing) を参照してください。
+
+### 例はどこで入手できますか？
+
+- [公式例](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [コミュニティ例](https://github.com/topics/wails)
+
+## まだご質問がありますか？
+
+[Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ディスカッションをオープン](https://github.com/wailsapp/wails/discussions) してください。

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Event Block Test (#4424)</title>
+<style>
+  body { font: 14px system-ui, sans-serif; padding: 16px; }
+  h1 { font-size: 16px; margin: 0 0 8px; }
+  pre { background: #f4f4f4; padding: 8px; border-radius: 4px; }
+  .counter { font-variant-numeric: tabular-nums; font-size: 28px; }
+</style>
+</head>
+<body>
+  <h1>Manual reproduction for issue #4424</h1>
+  <p>Backend events arrive here; menu clicks should still respond.</p>
+  <div class="counter" id="counter">waiting&hellip;</div>
+  <pre id="last"></pre>
+  <script type="module">
+    import { Events } from "/wails/runtime.js";
+    let last = 0;
+    Events.On("backendmessage", (ev) => {
+      const data = ev.data;
+      document.getElementById("counter").textContent = "#" + data.counter;
+      document.getElementById("last").textContent = data.time;
+      last = data.counter;
+    });
+  </script>
+</body>
+</html>

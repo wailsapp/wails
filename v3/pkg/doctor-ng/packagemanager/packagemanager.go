@@ -28,6 +28,7 @@ var pmCommands = []string{
 	"emerge",
 	"zypper",
 	"nix-env",
+	"xbps-install",
 }
 
 func commandExists(name string) bool {
@@ -60,6 +61,8 @@ func newPackageManager(pmname string, osid string) PackageManager {
 		return NewZypper(osid)
 	case "nix-env":
 		return NewNixpkgs(osid)
+	case "xbps-install":
+		return NewXbps(osid)
 	}
 	return nil
 }

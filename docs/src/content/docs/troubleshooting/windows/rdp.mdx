@@ -1,0 +1,63 @@
+---
+title: WebView2 hangs over Remote Desktop (RDP)
+description: Fix multi-second WebView2 UI stalls when a Wails app runs over an RDP session that changes the monitor DPI mid-session.
+sidebar:
+  label: RDP Issues
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Problem
+
+When a Wails application is used over a Remote Desktop (RDP) session, the UI can stall for several seconds on common interactions:
+
+- Opening a popup window takes around 4 to 8 seconds from click to visible content.
+- Closing a window blocks the parent window for around 2 seconds.
+- The slow state persists across reconnects and only clears after the host machine is rebooted.
+
+This is most often seen with the Microsoft Remote Desktop client on iOS, which provisions a Retina-optimised virtual monitor part way through the session. Any RDP client that introduces a monitor with a different DPI context mid-session can trigger the same behaviour.
+
+## Why it happens
+
+By default, WebView2 uses windowed hosting, where its compositor surface lives in a child window. When an RDP client introduces a monitor whose DPI context differs from the session's, every WebView2 controller call (`PutIsVisible`, `MoveFocus`, first paint, and surface release) forces a synchronous DirectComposition re-marshal. Each re-marshal blocks the UI thread for around 2 seconds, which is why the stalls stack up on popup-heavy apps.
+
+A native Win32 plus WebView2 application on the same machine is unaffected, because it relies on visual hosting. That points to the hosting mode as the cause rather than a general WebView2 or Windows compositor issue.
+
+## Solution
+
+Enable visual hosting by setting `UseVisualHosting` in your Windows options. With visual hosting, WebView2's compositor surface is owned through a DirectComposition visual that the host owns, so DPI-context changes no longer trigger the synchronous re-marshal.
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+func main() {
+    app := application.New(application.Options{
+        Windows: application.WindowsOptions{
+            UseVisualHosting: true,
+        },
+    })
+
+    // ... create your windows, then:
+    app.Run()
+}
+```
+
+After enabling it, popups open within normal navigation time (roughly 150 to 500 ms) and closing a window no longer blocks the parent.
+
+<Aside type="caution">
+`UseVisualHosting` must be set before `app.Run()`. Wails reads it during application startup and sets the `COREWEBVIEW2_FORCED_HOSTING_MODE` environment variable to `COREWEBVIEW2_HOSTING_MODE_WINDOW_TO_VISUAL` before the WebView2 environment is initialised. Setting it later has no effect.
+</Aside>
+
+The option defaults to `false`, so windowed hosting remains the default. Existing apps see no change in behaviour unless they opt in.
+
+## When to enable it
+
+Set `UseVisualHosting: true` if your app is regularly used over RDP, especially the Microsoft Remote Desktop iOS client, and you see multi-second stalls when opening or closing windows. If your app does not run over RDP, you do not need this option and can leave the default in place.
+
+## References
+
+- [WebView2: windowed vs visual hosting](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/windowed-vs-visual-hosting)
+- [WebView2Feedback issue #5248](https://github.com/MicrosoftEdge/WebView2Feedback/issues/5248)
+- [WebView2Feedback issue #4485](https://github.com/MicrosoftEdge/WebView2Feedback/issues/4485)

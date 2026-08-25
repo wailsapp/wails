@@ -1,0 +1,424 @@
+---
+title: 빌드 시스템
+description: Wails가 애플리케이션을 빌드하고 패키징하는 방식 이해하기
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 통합 빌드 시스템
+
+Wails는 Go 코드를 컴파일하고 프론트엔드 애셋을 번들링하며, 모든 것을 단일 실행 파일에 임베딩하고 플랫폼별 빌드를 처리하는 **통합 빌드 시스템**을 제공합니다. 모든 과정은 한 번의 명령어로 완료됩니다.
+
+```bash
+wails3 build
+```
+
+**출력:** 모든 것이 임베딩된 네이티브 실행 파일.
+
+## 빌드 프로세스 개요
+
+{/*
+TODO: D2 다이어그램 생성을 수정하거나 이미지로 임베드하세요.
+이전 D2 코드 블록은 빌드 파이프라인에서 MDX 파싱 오류를 유발하고 있었습니다.
+*/}
+
+**[빌드 프로세스 다이어그램 자리 표시자]**
+
+
+## 빌드 단계
+
+### 1. 분석 단계
+
+Wails는 서비스 구조를 파악하기 위해 Go 코드를 스캔합니다:
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+```
+
+**Wails가 추출하는 정보:**
+- 서비스 이름: `GreetService`
+- 메서드 이름: `Greet`
+- 매개변수 타입: `string`
+- 반환 타입: `string`
+
+**사용 목적:** TypeScript 바인딩 생성
+
+### 2. 생성 단계
+
+#### TypeScript 바인딩
+
+Wails는 타입 안전한 바인딩을 생성합니다:
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string> {
+    return window.wails.Call('GreetService.Greet', name)
+}
+```
+
+**장점:**
+- 완전한 타입 안전성
+- IDE 자동 완성
+- 컴파일 타임 오류 감지
+- JSDoc 주석 지원
+
+#### 프론트엔드 빌드
+
+프론트엔드 번들러(Vite, webpack 등)가 실행됩니다:
+
+```bash
+# Vite 예제
+vite build --outDir dist
+```
+
+**발생하는 작업:**
+- JavaScript/TypeScript 컴파일
+- CSS 처리 및 최소화
+- 애셋 최적화
+- 소스 맵 생성 (개발 환경 전용)
+- `frontend/dist/` 디렉토리에 출력
+
+### 3. 컴파일 단계
+
+#### Go 컴파일
+
+Go 코드가 최적화되어 컴파일됩니다:
+
+```bash
+go build -ldflags="-s -w" -o myapp.exe
+```
+
+**플래그:**
+- `-s`: 심볼 테이블 제거
+- `-w`: DWARF 디버깅 정보 제거
+- 결과: 더 작은 바이너리 (~30% 크기 감소)
+
+**플랫폼별 차이:**
+- Windows: 아이콘이 임베딩된 `.exe`
+- macOS: `.app` 번들 구조
+- Linux: ELF 바이너리
+
+#### 애셋 임베딩
+
+프론트엔드 애셋이 Go 바이너리에 임베딩됩니다:
+
+```go
+//go:embed frontend/dist
+var assets embed.FS
+```
+
+**결과:** 모든 것이 내부에 포함된 단일 실행 파일.
+
+### 4. 출력
+
+**단일 네이티브 바이너리:**
+- Windows: `myapp.exe` (~15MB)
+- macOS: `myapp.app` (~15MB)
+- Linux: `myapp` (~15MB)
+
+**의존성 없음** (시스템 WebView 제외).
+
+## 개발 환경 vs 프로덕션 환경
+
+<Tabs syncKey="mode">
+  <TabItem label="개발 (wails3 dev)" icon="seti:config">
+    **속도에 최적화됨:**
+    
+    ```bash
+    wails3 dev
+    ```
+    
+    **발생하는 작업:**
+    1. 프론트엔드 개발 서버 시작 (포트 5173에서 Vite 실행)
+    2. 최적화 없이 Go 컴파일
+    3. 개발 서버를 가리키는 앱 실행
+    4. 핫 리로드 활성화
+    5. 소스 맵 포함
+    
+    **특징:**
+    - **빠른 재빌드** (프론트엔드 변경 시 &lt;1초)
+    - **애셋 임베딩 없음** (개발 서버에서 제공)
+    - **디버그 심볼** 포함
+    - **소스 맵** 활성화
+    - **상세 로깅**
+    
+    **파일 크기:** 더 큼 (~50MB, 디버그 심볼 포함)
+  </TabItem>
+
+  <TabItem label="프로덕션 (wails3 build)" icon="rocket">
+    **크기와 성능에 최적화됨:**
+    
+    ```bash
+    wails3 build
+    ```
+    
+    **발생하는 작업:**
+    1. 프로덕션용 프론트엔드 빌드 (최소화)
+    2. 최적화된 Go 컴파일
+    3. 디버그 심볼 제거
+    4. 애셋 임베딩
+    5. 단일 바이너리 생성
+    
+    **특징:**
+    - **최적화된 코드** (최소화, 트리 셰이킹 적용)
+    - **애셋 임베딩** (외부 파일 없음)
+    - **디버그 심볼 제거**
+    - **소스 맵 없음**
+    - **최소 로깅**
+    
+    **파일 크기:** 더 작음 (~15MB)
+  </TabItem>
+</Tabs>
+
+## 빌드 명령어
+
+### 기본 빌드
+
+```bash
+wails3 build
+```
+
+**출력:** `build/bin/myapp[.exe]`
+
+### 특정 플랫폼용 빌드
+
+```bash
+# Windows용 빌드 (어떤 OS에서도 가능)
+wails3 build -platform windows/amd64
+
+# macOS용 빌드
+wails3 build -platform darwin/amd64
+wails3 build -platform darwin/arm64
+
+# Linux용 빌드
+wails3 build -platform linux/amd64
+```
+
+**크로스 컴파일:** 어떤 플랫폼에서도 모든 플랫폼용 빌드 가능.
+
+### 옵션과 함께 빌드
+
+```bash
+# 사용자 지정 출력 디렉토리
+wails3 build -o ./dist/myapp
+
+# 프론트엔드 빌드 건너뛰기 (기존 사용)
+wails3 build -skipbindings
+
+# 클린 빌드 (캐시 제거)
+wails3 build -clean
+
+# 상세 출력
+wails3 build -v
+```
+
+### 빌드 모드
+
+```bash
+# 디버그 빌드 (심볼 포함)
+wails3 build -debug
+
+# 프로덕션 빌드 (기본값, 최적화됨)
+wails3 build
+
+# 개발 빌드 (빠름, 비최적화)
+wails3 build -devbuild
+```
+
+## 빌드 구성
+
+### Taskfile.yml
+
+Wails는 빌드 구성에 [Taskfile](https://taskfile.dev/)를 사용합니다:
+
+```yaml
+# Taskfile.yml
+version: '3'
+
+tasks:
+  build:
+    desc: 애플리케이션 빌드
+    cmds:
+      - wails3 build
+  
+  build:windows:
+    desc: Windows용 빌드
+    cmds:
+      - wails3 build -platform windows/amd64
+  
+  build:macos:
+    desc: macOS용 빌드 (유니버설)
+    cmds:
+      - wails3 build -platform darwin/amd64
+      - wails3 build -platform darwin/arm64
+      - lipo -create -output build/bin/myapp.app build/bin/myapp-amd64.app build/bin/myapp-arm64.app
+  
+  build:linux:
+    desc: Linux용 빌드
+    cmds:
+      - wails3 build -platform linux/amd64
+```
+
+**작업 실행:**
+
+```bash
+task build:windows
+task build:macos
+task build:linux
+```
+
+### 빌드 옵션 파일
+
+지속적인 구성을 위해 `build/build.json` 파일을 생성하세요:
+
+```json
+{
+  "name": "My Application",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "Application description",
+  "icon": "build/appicon.png",
+  "outputFilename": "myapp",
+  "platforms": ["windows/amd64", "darwin/amd64", "linux/amd64"],
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev"
+  },
+  "go": {
+    "ldflags": "-s -w -X main.version={{.Version}}"
+  }
+}
+```
+
+## 애셋 임베딩
+
+### 작동 방식
+
+Wails는 Go의 `embed` 패키지를 사용합니다:
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name:   "My App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**빌드 시점:**
+1. 프론트엔드가 `frontend/dist/`에 빌드됨
+2. `//go:embed` 지시문이 파일을 포함
+3. 파일이 바이너리에 컴파일됨
+4. 바이너리에 모든 것이 포함됨
+
+**런타임 시점:**
+1. 앱 시작
+2. 메모리에서 애셋 제공
+3. 애셋에 대한 디스크 I/O 없음
+4. 빠른 로딩
+
+### 사용자 지정 애셋
+
+추가 파일 임베딩:
+
+```go
+//go:embed frontend/dist
+var frontendAssets embed.FS
+
+//go:embed data/*.json
+var dataAssets embed.FS
+
+//go:embed templates/*.html
+var templateAssets embed.FS
+```
+
+## 빌드 최적화
+
+### 프론트엔드 최적화
+
+**Vite (기본값):**
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // console.log 제거
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],  // 벤더 번들 분리
+        },
+      },
+    },
+  },
+}
+```
+
+**결과:**
+- JavaScript 최소화 (~70% 크기 감소)
+- CSS 최소화 (~60% 크기 감소)
+- 이미지 최적화
+- 트리 셰이킹 적용
+
+### Go 최적화
+
+**컴파일러 플래그:**
+
+```bash
+-ldflags="-s -w"
+```
+
+- `-s`: 심볼 테이블 제거 (~10% 크기 감소)
+- `-w`: DWARF 디버그 정보 제거 (~20% 크기 감소)
+
+**추가 최적화:**
+
+```bash
+-ldflags="-s -w -X main.version=1.0.0"
+```
+
+- `-X`: 빌드 시 변수 값 설정
+- 버전 번호, 빌드 날짜 등에 유용
+
+### 바이너리 압축
+
+**UPX (선택사항):**
+
+```bash
+# 빌드 후 실행
+upx --best build/bin/myapp.exe
+```
+
+**결과:**
+- ~50% 크기 감소**빌드에 대해 질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [빌드 예제](https://github.com/wailsapp/wails/tree/master/v3/examples/build)를 확인하세요.

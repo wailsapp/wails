@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -20,6 +20,13 @@ extern void macosOnDragOver(unsigned int windowId, int x, int y);
         [self registerForDraggedTypes:@[NSFilenamesPboardType]];
     }
     return self;
+}
+
+// Pass mouse events through to the WKWebView underneath so CSS :hover,
+// mousemove, and cursor updates work. Drag-and-drop delivery uses
+// registerForDraggedTypes + geometry, not hitTest, so file drop is unaffected.
+- (NSView *)hitTest:(NSPoint)point {
+    return nil;
 }
 
 // draggingEntered:

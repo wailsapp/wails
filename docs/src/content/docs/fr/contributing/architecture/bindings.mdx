@@ -1,0 +1,156 @@
+---
+title: Système de liaison
+description: Comment le système de liaison collecte, traite et génère du code JavaScript/TypeScript
+sidebar:
+  order: 1
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+
+Ce guide explique comment le système de liaison de Wails fonctionne en interne, fournissant des informations aux développeurs qui souhaitent comprendre les mécanismes derrière la génération automatique de code.
+
+## Aperçu de l'architecture
+
+Le système de liaison de Wails est composé de trois composants principaux :
+
+1. **Collecte** : Analyse le code Go pour extraire des informations sur les services, les modèles et autres déclarations
+2. **Configuration** : Gère les paramètres et options du processus de génération de liaison
+3. **Rendu** : Génère du code JavaScript/TypeScript basé sur les informations collectées
+
+<FileTree>
+- internal/generator/
+  - collect/     # Analyse des packages et extraction d'informations
+  - config/      # Structures et interfaces de configuration
+  - render/      # Génération de code pour JS/TS
+</FileTree>
+
+## Processus de collecte
+
+Le processus de collecte est responsable de l'analyse des packages Go et de l'extraction d'informations sur les services, les modèles et autres déclarations. Cela est géré par le package `collect`.
+
+### Composants clés
+
+- **Collector** : Gère les informations du package et met en cache les données collectées
+- **Package** : Représente un package Go en cours d'analyse et stocke les services, modèles et directives collectés
+- **Service** : Collecte des informations sur les types de service et leurs méthodes
+- **Model** : Collecte des informations détaillées sur les types de modèle, y compris les champs, les valeurs et les paramètres de type
+- **Directive** : Analyse et interprète les directives `//wails:` dans le code source Go
+
+### Flux de collecte
+
+1. Le collector scanne les packages Go spécifiés dans le projet
+2. Il identifie les types de service (structs avec des méthodes qui seront exposées au frontend)
+3. Pour chaque service, il collecte des informations sur ses méthodes
+4. Il identifie les types de modèle (structs utilisés comme paramètres ou valeurs de retour dans les méthodes de service)
+5. Pour chaque modèle, il collecte des informations sur ses champs et paramètres de type
+6. Il traite toutes les directives `//wails:` trouvées dans le code
+
+## Processus de rendu
+
+Le processus de rendu est responsable de la génération du code JavaScript/TypeScript basé sur les informations collectées. Cela est géré par le package `render`.
+
+### Composants clés
+
+- **Renderer** : Orchestre le rendu des fichiers de service, de modèle et d'index
+- **Module** : Représente un module JavaScript/TypeScript généré individuellement
+- **Templates** : Modèles de texte utilisés pour la génération de code
+
+### Flux de rendu
+
+1. Pour chaque service, le renderer génère un fichier JavaScript/TypeScript avec des fonctions qui reflètent les méthodes du service
+2. Pour chaque modèle, le renderer génère une classe JavaScript/TypeScript qui reflète la struct du modèle
+3. Le renderer génère des fichiers d'index qui réexportent tous les services et modèles
+4. Le renderer applique toutes les injections de code personnalisées spécifiées par les directives `//wails:inject`
+
+## Mappage des types
+
+L'un des aspects les plus importants du système de liaison est la manière dont les types Go sont mappés aux types JavaScript/TypeScript. Voici un résumé du mappage :
+
+| Type Go | Type JavaScript | Type TypeScript |
+|---------|----------------|----------------|
+| `bool` | `boolean` | `boolean` |
+| `int`, `int8`, `int16`, `int32`, `int64`, `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `float32`, `float64` | `number` | `number` |
+| `string` | `string` | `string` |
+| `[]byte` | `Uint8Array` | `Uint8Array` |
+| `[]T` | `Array<T>` | `T[]` |
+| `map[K]V` | `Object` | `Record<K, V>` |
+| `struct` | `Object` | Classe personnalisée |
+| `interface{}` | `any` | `any` |
+| `*T` | `T \| null` | `T \| null` |
+| `func` | Non pris en charge | Non pris en charge |
+| `chan` | Non pris en charge | Non pris en charge |
+
+## Système de directives
+
+Le système de liaison prend en charge plusieurs directives qui peuvent être utilisées pour personnaliser le code généré. Ces directives sont ajoutées sous forme de commentaires dans votre code Go.
+
+### Directives disponibles
+
+- `//wails:inject` : Injecte du code JavaScript/TypeScript personnalisé dans les liaisons générées
+- `//wails:include` : Inclut des fichiers supplémentaires avec les liaisons générées
+- `//wails:internal` : Marque un type ou une méthode comme interne, empêchant son exportation vers le frontend
+- `//wails:ignore` : Ignore complètement une méthode lors de la génération de liaison
+- `//wails:id` : Spécifie un ID personnalisé pour une méthode, remplaçant l'ID basé sur le hachage par défaut
+
+### Traitement des directives
+
+1. Pendant la phase de collecte, le collector identifie et analyse les directives dans le code Go
+2. Les directives sont stockées avec les déclarations correspondantes (services, méthodes, modèles, etc.)
+3. Pendant la phase de rendu, le renderer applique les directives pour personnaliser le code généré
+
+## Fonctionnalités avancées
+
+### Génération de code conditionnelle
+
+Le système de liaison prend en charge la génération de code conditionnelle en utilisant un préfixe de condition à deux caractères pour les directives `include` et `inject` :
+
+```
+<langage><style>:<contenu>
+```
+
+Où :
+- `<langage>` peut être :
+  - `*` - JavaScript et TypeScript
+  - `j` - JavaScript uniquement
+  - `t` - TypeScript uniquement
+
+- `<style>` peut être :
+  - `*` - Classes et interfaces
+  - `c` - Classes uniquement
+  - `i` - Interfaces uniquement
+
+Par exemple :
+```go
+//wails:inject j*:console.log("JavaScript only");
+//wails:inject t*:console.log("TypeScript only");
+```
+
+### IDs de méthode personnalisés
+
+Par défaut, les méthodes sont identifiées par un ID basé sur un hachage. Cependant, vous pouvez spécifier un ID personnalisé en utilisant la directive `//wails:id` :
+
+```go
+//wails:id 42
+func (s *Service) CustomIDMethod() {}
+```
+
+Cela peut être utile pour maintenir la compatibilité lors du refactoring du code.
+
+## Considérations de performance
+
+Le générateur de liaison est conçu pour être efficace, mais il y a quelques points à garder à l'esprit :
+
+1. La première exécution sera plus lente car elle construit un cache des packages à scanner
+2. Les exécutions suivantes seront plus rapides car elles utilisent les informations mises en cache
+3. Le générateur traite tous les packages du projet, ce qui peut prendre du temps pour les grands projets
+4. Vous pouvez utiliser le drapeau `-clean` pour nettoyer le répertoire de sortie avant la génération
+
+## Débogage
+
+Si vous rencontrez des problèmes avec la génération de liaison, vous pouvez utiliser le drapeau `-v` pour activer la sortie de débogage :
+
+```bash
+wails3 generate bindings -v
+```
+
+Cela fournira des informations détaillées sur le processus de collecte et de rendu, ce qui peut aider à identifier la source du problème.

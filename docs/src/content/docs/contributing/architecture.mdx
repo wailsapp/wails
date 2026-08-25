@@ -84,10 +84,17 @@ Every feature follows this pattern:
 
 1. **Common interface** in `pkg/application`  
 2. **Message processor** entry in `pkg/application/messageprocessor_*.go`  
-3. **Implementation** per OS under `internal/runtime/*.go` guarded by build tags  
+3. **Per-OS implementation** in `pkg/application/*_{darwin,linux,windows}.go` (e.g.
+   `webview_window_darwin.go`, `clipboard_linux.go`, `dialogs_windows.go`,
+   `systemtray_*.go`, `mainthread_*.go`), guarded by build tags. Linux additionally
+   has the cgo bridge in `linux_cgo.go` / `linux_cgo_gtk4.{go,c,h}`.
 
-Missing functionality on an OS should return `ErrCapability` and register
-availability via `internal/capabilities`.
+`internal/runtime/` only carries the small `runtime{_darwin,_linux,_windows,_android,_dev,_prod}.go`
+build-tag glue plus the embedded JS runtime under `internal/runtime/desktop/`.
+
+`internal/capabilities/` exists for declaring per-platform capability sets, but
+there is no `ErrCapability` sentinel — feature gating is done via plain
+build tags and platform-specific stub returns (e.g. `nil` or feature-specific errors).
 
 ---
 

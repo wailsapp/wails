@@ -1,0 +1,266 @@
+---
+title: 매니저 API
+description: 집중된 매니저 인터페이스로 구성된 API 구조
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails v3 매니저 API는 집중된 매니저 구조체를 통해 애플리케이션 기능에 접근할 수 있는 조직적이고 탐색 가능한 방법을 제공합니다. 이 새로운 API 구조는 기존 App API와의 완전한 하위 호환성을 유지하면서 관련 메서드들을 그룹화합니다.
+
+## 개요
+
+매니저 API는 애플리케이션 기능을 11개의 집중된 영역으로 조직화합니다:
+
+- **`app.Window`** - 창 생성, 관리 및 콜백
+- **`app.ContextMenu`** - 컨텍스트 메뉴 등록 및 관리
+- **`app.KeyBinding`** - 전역 키 바인딩 관리
+- **`app.Browser`** - 브라우저 통합 (URL 및 파일 열기)
+- **`app.Env`** - 환경 정보 및 시스템 상태
+- **`app.Dialog`** - 파일 및 메시지 대화상자 작업
+- **`app.Event`** - 사용자 정의 이벤트 처리 및 애플리케이션 이벤트
+- **`app.Menu`** - 애플리케이션 메뉴 관리
+- **`app.Screen`** - 화면 관리 및 좌표 변환
+- **`app.Clipboard`** - 클립보드 텍스트 작업
+- **`app.SystemTray`** - 시스템 트레이 아이콘 생성 및 관리
+
+## 장점
+
+- **더 나은 탐색성** - IDE 자동 완성이 조직화된 API 표면 표시
+- **향상된 코드 조직화** - 관련 메서드 그룹화
+- **향상된 유지보수성** - 매니저 간 관심사 분리
+- **미래 확장성** - 특정 영역에 새 기능 추가 용이
+
+## 사용법
+
+매니저 API는 모든 애플리케이션 기능에 대한 조직화된 접근을 제공합니다:
+
+```go
+// 이벤트 및 사용자 정의 이벤트 처리
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// 창 관리
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// 브라우저 통합
+app.Browser.OpenURL("https://wails.io")
+
+// 메뉴 관리
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// 시스템 트레이
+systray := app.SystemTray.New()
+```
+
+## 매니저 참조
+
+### Window Manager
+
+창 생성, 검색 및 수명 주기 콜백을 관리합니다.
+
+```go
+// 창 생성
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// 창 검색
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// 창 콜백
+app.Window.OnCreate(func(window Window) {
+    // 창 생성 처리
+})
+```
+
+### Event Manager
+
+사용자 정의 이벤트 및 애플리케이션 이벤트 청취를 처리합니다.
+
+```go
+// 사용자 정의 이벤트
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // 이벤트 처리
+})
+app.Event.Off("userAction")
+app.Event.Reset() // 모든 리스너 제거
+
+// 애플리케이션 이벤트
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // 시스템 테마 변경 처리
+})
+```
+
+### Browser Manager
+
+URL 및 파일을 열기 위한 브라우저 통합을 제공합니다.
+
+```go
+// 기본 브라우저에서 URL 및 파일 열기
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### Environment Manager
+
+시스템 환경 정보에 대한 접근.
+
+```go
+// 환경 정보 가져오기
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// 시스템 테마 확인
+if app.Env.IsDarkMode() {
+    // 다크 모드 활성화됨
+}
+
+// 파일 관리자 열기
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### Dialog Manager
+
+파일 및 메시지 대화상자에 대한 조직화된 접근.
+
+```go
+// 파일 대화상자
+result, err := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// 메시지 대화상자
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### Menu Manager
+
+애플리케이션 메뉴 생성 및 관리.
+
+```go
+// 애플리케이션 메뉴 생성 및 설정
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // 메뉴 클릭 처리
+})
+
+app.Menu.Set(menu)
+
+// 정보 대화상자 표시
+app.Menu.ShowAbout()
+```
+
+### Key Binding Manager
+
+전역 키 바인딩의 동적 관리.
+
+```go
+// 키 바인딩 추가
+app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+    // Ctrl+N 처리
+})
+
+app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// 키 바인딩 제거
+app.KeyBinding.Remove("ctrl+n")
+
+// 모든 바인딩 가져오기
+bindings := app.KeyBinding.GetAll()
+```
+
+### Context Menu Manager
+
+고급 컨텍스트 메뉴 관리 (라이브러리 작성자용).
+
+```go
+// 컨텍스트 메뉴 생성 및 등록
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// 컨텍스트 메뉴 검색
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// 컨텍스트 메뉴 제거
+app.ContextMenu.Remove("myMenu")
+```
+
+### Screen Manager
+
+멀티 모니터 설정을 위한 화면 관리 및 좌표 변환.
+
+```go
+// 화면 정보 가져오기
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// 좌표 변환
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// 화면 감지
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### Clipboard Manager
+
+텍스트 읽기 및 쓰기를 위한 클립보드 작업.
+
+```go
+// 클립보드에 텍스트 설정
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // 오류 처리
+}
+
+// 클립보드에서 텍스트 가져오기
+text, ok := app.Clipboard.Text()
+if !ok {
+    // 오류 처리
+} else {
+    // 텍스트 사용
+}
+```
+
+### SystemTray Manager
+
+시스템 트레이 아이콘 생성 및 관리.
+
+```go
+// 시스템 트레이 생성
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// 시스템 트레이에 메뉴 추가
+menu := app.Menu.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // 클릭 처리
+})
+systray.SetMenu(menu)
+
+// 완료 시 시스템 트레이 파괴
+systray.Destroy()
+```

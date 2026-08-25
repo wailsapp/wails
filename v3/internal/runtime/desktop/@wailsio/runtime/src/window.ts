@@ -68,6 +68,7 @@ const ZoomResetMethod                   = 48;
 const SnapAssistMethod                  = 49;
 const FilesDropped                      = 50;
 const PrintMethod                       = 51;
+const SetScreenMethod                   = 52;
 
 /**
  * Finds the nearest drop target element by walking up the DOM tree.
@@ -631,8 +632,8 @@ class Window {
      * Gathers information about the drop target element and sends it back to the Go backend.
      *
      * @param filenames - An array of file paths (strings) that were dropped.
-     * @param x - The x-coordinate of the drop event (CSS pixels).
-     * @param y - The y-coordinate of the drop event (CSS pixels).
+     * @param x - The x-coordinate of the drop event, in logical (CSS) pixels relative to the webview.
+     * @param y - The y-coordinate of the drop event, in logical (CSS) pixels relative to the webview.
      */
     HandlePlatformFileDrop(filenames: string[], x: number, y: number): void {
         // Check if file drops are enabled for this window
@@ -671,6 +672,15 @@ class Window {
         cleanupNativeDrag();
     }
   
+    /**
+     * Moves the window to the center of the specified screen's work area.
+     *
+     * @param screenID - The ID of the target screen.
+     */
+    SetScreen(screenID: string): Promise<void> {
+        return this[callerSym](SetScreenMethod, { screenID });
+    }
+
     /* Triggers Windows 11 Snap Assist feature (Windows only).
      * This is equivalent to pressing Win+Z and shows snap layout options.
      */

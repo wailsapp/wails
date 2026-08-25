@@ -1,0 +1,160 @@
+name: Changelog Validation (v3)
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'docs/src/content/docs/changelog.mdx'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to validate'
+        required: true
+        type: string
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+    outputs:
+      pr_number: ${{ steps.pr_info.outputs.pr_number }}
+      result: ${{ steps.validate.outputs.result }}
+    env:
+      GOWORK: "off"
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout PR code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.inputs.pr_number) }}
+        fetch-depth: 0
+        persist-credentials: false
+        
+    - name: Select validation script
+      run: |
+        echo "Fetching the validation script from master branch..."
+        git fetch origin master
+
+        if git diff --quiet origin/master...HEAD -- v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go; then
+          git checkout origin/master -- v3/scripts/validate-changelog.go
+        else
+          echo "The PR updates the validator; retaining that version for focused tests."
+        fi
+        
+        echo "Validation script fetched successfully:"
+        ls -la v3/scripts/
+        
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.25'
+
+    - name: Test validation script changes
+      run: |
+        if ! git diff --quiet origin/master...HEAD -- v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go; then
+          go test v3/scripts/validate-changelog.go v3/scripts/validate-changelog_test.go
+        fi
+        
+    - name: Get PR information
+      id: pr_info
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+          echo "base_ref=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
+        else
+          echo "pr_number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
+          echo "base_ref=master" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Check changelog modifications
+      id: changelog_check
+      run: |
+        echo "Checking PR #${{ steps.pr_info.outputs.pr_number }} for changelog changes"
+        git fetch origin ${{ steps.pr_info.outputs.base_ref }}
+        
+        if git diff --name-only origin/${{ steps.pr_info.outputs.base_ref }}..HEAD | grep -q "docs/src/content/docs/changelog.mdx"; then
+          echo "changelog_modified=true" >> $GITHUB_OUTPUT
+          echo "✅ Changelog was modified in this PR"
+        else
+          echo "changelog_modified=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ Changelog was not modified - skipping validation"
+        fi
+        
+    - name: Get changelog diff
+      id: get_diff
+      if: steps.changelog_check.outputs.changelog_modified == 'true'
+      run: |
+        echo "Getting diff for changelog changes..."
+        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/src/content/docs/changelog.mdx > /tmp/pr_changelog.diff
+        awk '/^\+\+\+/ { next } /^\+/ { sub(/^\+/, ""); print }' /tmp/pr_changelog.diff > /tmp/pr_added_lines.txt
+        awk '/^---/ { next } /^-/ { sub(/^-/, ""); print }' /tmp/pr_changelog.diff > /tmp/pr_deleted_lines.txt
+        git show origin/${{ steps.pr_info.outputs.base_ref }}:docs/src/content/docs/changelog.mdx > /tmp/base_changelog.mdx
+        
+        echo "Lines added in this PR:"
+        cat /tmp/pr_added_lines.txt
+        echo "Total lines added: $(wc -l < /tmp/pr_added_lines.txt)"
+
+        echo "Lines deleted in this PR:"
+        cat /tmp/pr_deleted_lines.txt
+        echo "Total lines deleted: $(wc -l < /tmp/pr_deleted_lines.txt)"
+        
+    - name: Validate changelog
+      id: validate
+      if: steps.changelog_check.outputs.changelog_modified == 'true'
+      run: |
+        echo "Running changelog validation..."
+        cd v3/scripts
+        if ! OUTPUT=$(go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/pr_added_lines.txt /tmp/pr_deleted_lines.txt /tmp/base_changelog.mdx 2>&1); then
+          echo "$OUTPUT"
+          exit 1
+        fi
+        echo "$OUTPUT"
+        
+        RESULT=$(echo "$OUTPUT" | grep "VALIDATION_RESULT=" | cut -d'=' -f2)
+        echo "result=$RESULT" >> $GITHUB_OUTPUT
+        
+    - name: Fail if validation failed
+      if: steps.validate.outputs.result && steps.validate.outputs.result != 'success'
+      run: |
+        echo "❌ Changelog validation failed"
+        exit 1
+
+  report:
+    needs: validate
+    if: always() && github.event.inputs.pr_number && needs.validate.outputs.result
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+
+    steps:
+    - name: Comment on PR
+      uses: actions/github-script@v7
+      env:
+        PR_NUMBER: ${{ needs.validate.outputs.pr_number }}
+        VALIDATION_RESULT: ${{ needs.validate.outputs.result }}
+      with:
+        script: |
+          const prNumber = Number(process.env.PR_NUMBER);
+          const result = process.env.VALIDATION_RESULT;
+          const { data: pr } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+          });
+
+          const message = result === 'success'
+            ? '## ✅ Changelog Validation Passed\n\nNo misplaced changelog entries detected.'
+            : '## ⚠️ Changelog Validation Issue\n\n@' + pr.user.login +
+              ' your PR contains changelog entries outside `[Unreleased]`. ' +
+              'The validation job is read-only; apply the correction manually and rerun it.';
+
+          await github.rest.issues.createComment({
+            issue_number: prNumber,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: message,
+          });

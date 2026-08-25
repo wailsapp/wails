@@ -1,0 +1,201 @@
+# Benutzerdefinierte Protokollschema-Zuordnung
+
+Die benutzerdefinierte Protokoll-Funktion erlaubt es dir, spezifische benutzerdefinierte Protokolle mit deiner App zu verknüpfen, sodass, wenn Benutzer Links mit diesem Protokoll öffnen, die App gestartet wird. Dies kann besonders nützlich sein, um die Desktop-App mit der Web-App zu verbinden.
+In dieser Anleitung werden wir die Schritte durchgehen, um benutzerdefinierte Protokolle in Wails App zu implementieren.
+
+## Benutzerdefinierte Protokollschema-Zuordnung einrichten:
+
+Um ein benutzerdefiniertes Protokoll einzurichten, muss die wails.json Datei der Anwendung angepasst werden.
+Füge im Abschnitt "info" einen Abschnitt mit dem Namen "protocols" hinzu, in diesem werden die Protokolle angegeben, die mit der App verknüpft werden sollen.
+
+Zum Beispiel:
+
+```json
+{
+  "info": {
+    "protocols": [
+      {
+        "scheme": "myapp",
+        "description": "My App Protocol",
+        "role": "Editor"
+      }
+    ]
+  }
+}
+```
+
+| Eigenschaft    | Beschreibung                                                                                        |
+| :------------- | :-------------------------------------------------------------------------------------------------- |
+| scheme         | Benutzerdefiniertes Protokollschema. z. B. myapp                                                    |
+| description    | Nur für Windows. Beschreibung.                                                                      |
+| role           | Nur für macOS. Die Rolle der App in Bezug auf den Typ. Entspricht CFBundleTypeRoll.                 |
+
+## Plattformspezifisches:
+
+### macOS
+
+Wenn du ein benutzerdefiniertes Protokoll mit deiner App öffnest, wird das System deine App starten und die "OnUrlOpen"-Funktion in deiner Wails App aufrufen. Beispiel:
+
+```go title="main.go"
+func main() {
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		Mac: &mac.Options{
+			OnUrlOpen: func(url string) { println(url) },
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+```
+
+### Windows
+
+Auf Windows werden benutzerdefinierte Protokollschma nur mit NSIS Installer unterstützt. Während der Installation wird der Installer einen
+Registrierungseintrag für dein Schema erstellen. Wenn eine Url mit der App geöffnet wird, wird eine neue Instanz der App gestartet und die Url als Argument an deine App zu übergeben. Um dies zu verarbeiten, solltest du Kommandozeilenargumente in der App parsen. Beispiel:
+
+```go title="main.go"
+func main() {
+	argsWithoutProg := os.Args[1:]
+
+	if len(argsWithoutProg) != 0 {
+    println("launchArgs", argsWithoutProg)
+  }
+}
+```
+
+Du kannst auch einzelne Instanzsperren für deine App aktivieren. In diesem Fall, wenn die Url mit deiner App geöffnet wird, wird eine neue Instanz der App nicht gestartet
+und Argumente werden an bereits laufende Instanz übergeben. Überprüfe die Einzelinstanz-Sperren Anleitung für Details. Beispiel:
+
+```go title="main.go"
+func main() {
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+}
+```
+
+### Linux
+
+Derzeit unterstützt Wails kein Bundling für Linux. Dateiassoziationen müssen dem nach manuell erstellt werden.
+Zum Beispiel, wenn du deine App als .deb-Paket verteilst, können Datei-Assoziationen erstellt werden, indem du benötigte Dateien in deinem Bundle hinzufügst.
+Du kannst [nfpm](https://nfpm.goreleaser.com/) verwenden, um .deb-Paket für deine App zu erstellen.
+
+1. Erstelle eine .desktop Datei für deine App und gib dort Dateizuordnungen an (beachte, dass `%u` wichtig ist in Exec). Beispiel:
+
+```ini
+[Desktop Entry]
+Categories=Office
+Exec=/usr/bin/wails-open-file %u
+Icon=wails-open-file.png
+Name=wails-open-file
+Terminal=false
+Type=Application
+MimeType=x-scheme-handler/myapp;
+```
+
+2. Bereite PostInstall/PostRemove Skripte für dein Paket vor. Beispiel:
+
+```sh
+# reload desktop database to load app in list of available
+update-desktop-database /usr/s
+```
+
+3. Konfiguriere nfpm, um deine Skripte und Dateien zu verwenden. Beispiel:
+
+```yaml
+name: "wails-open-file"
+arch: "arm64"
+platform: "linux"
+version: "1.0.0"
+section: "default"
+priority: "extra"
+maintainer: "FooBarCorp <FooBarCorp@gmail.com>"
+description: "Sample Package"
+vendor: "FooBarCorp"
+homepage: "http://example.com"
+license: "MIT"
+contents:
+- src: ../bin/wails-open-file
+  dst: /usr/bin/wails-open-file
+- src: ./main.desktop
+  dst: /usr/share/applications/wails-open-file.desktop
+- src: ../appicon.svg
+  dst: /usr/share/icons/hicolor/scalable/apps/wails-open-file.svg
+# copy icons to Yaru theme as well. For some reason Ubuntu didn't pick up fileicons from hicolor theme
+- src: ../appicon.svg
+  dst: /usr/share/icons/Yaru/scalable/apps/wails-open-file.svg
+scripts:
+  postinstall: ./postInstall.sh
+  postremove: ./postRemove.sh
+```
+
+6. Erstellen dein .deb-Paket mit nfpm:
+
+```sh
+nfpm pkg --packager deb --target .
+```
+
+7. Wenn dein Paket nun installiert ist, wird deine App mit dem benutzerdefiniertem Protokollschema verknüpft. Wenn eine Url mit der App geöffnet wird, wird eine neue Instanz der App gestartet und der Dateipfad wird als Argument an deine App übergeben.
+   Um dies zu verarbeiten, solltest du Kommandozeilenargumente in der App parsen. Beispiel:
+
+```go title="main.go"
+func main() {
+	argsWithoutProg := os.Args[1:]
+
+	if len(argsWithoutProg) != 0 {
+    println("launchArgs", argsWithoutProg)
+  }
+}
+```
+
+Du kannst auch einzelne Instanzsperren für deine App aktivieren. In diesem Fall, wenn die Url mit deiner App geöffnet wird, wird eine neue Instanz der App nicht gestartet
+und Argumente werden an bereits laufende Instanz übergeben. Überprüfe die Einzelinstanz-Sperren Anleitung für Details. Beispiel:
+
+```go title="main.go"
+func main() {
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+}
+```

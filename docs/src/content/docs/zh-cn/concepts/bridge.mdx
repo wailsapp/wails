@@ -1,0 +1,412 @@
+---
+title: Go-前端桥接
+description: 深入探讨 Wails 如何实现 Go 与 JavaScript 之间的直接通信
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 直接的 Go-JavaScript 通信
+
+Wails 提供了 Go 与 JavaScript 之间的**直接内存桥接**，实现了无缝通信，无需 HTTP 开销、进程边界或序列化瓶颈。
+
+## 全局概览
+
+```d2
+direction: right
+
+Frontend: "Frontend (JavaScript)" {
+  UI: "React/Vue/Vanilla" {
+    shape: rectangle
+    style.fill: "#8B5CF6"
+  }
+  
+  Bindings: "Auto-Generated Bindings" {
+    shape: rectangle
+    style.fill: "#A78BFA"
+  }
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+  
+  TypeGen: "Type Generator" {
+    shape: rectangle
+    style.fill: "#10B981"
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Your Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+  
+  Registry: "Service Registry" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend.UI -> Frontend.Bindings: "import { Method }"
+Frontend.Bindings -> Bridge.Encoder: "Call Method('arg')"
+Bridge.Encoder -> Bridge.Router: "Encode to JSON"
+Bridge.Router -> Backend.Registry: "Find service"
+Backend.Registry -> Backend.Services: "Invoke method"
+Backend.Services -> Bridge.Decoder: "Return result"
+Bridge.Decoder -> Frontend.Bindings: "Decode to JS"
+Frontend.Bindings -> Frontend.UI: "Promise resolves"
+Bridge.TypeGen -> Frontend.Bindings: "Generate types"
+```
+
+**关键洞察：** 没有 HTTP，没有 IPC，没有进程边界。只有**直接函数调用**和**类型安全**。
+
+## 工作原理：逐步详解
+
+### 1. 服务注册（启动时）
+
+当应用程序启动时，Wails 会扫描你的服务：
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) Add(a, b int) int {
+    return a + b
+}
+
+// Register service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**Wails 执行的操作：**
+1. **扫描结构体**以查找导出的方法
+2. **提取类型信息**（参数、返回类型）
+3. **构建注册表**，将方法名映射到函数
+4. **生成带有完整类型定义的 TypeScript 绑定**
+
+### 2. 绑定生成（构建时）
+
+Wails 自动生成 TypeScript 绑定：
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function Add(a: number, b: number): Promise<number>
+```
+
+**类型映射：**
+
+| Go 类型 | TypeScript 类型 |
+|---------|-----------------|
+| `string` | `string` |
+| `int`, `int32`, `int64` | `number` |
+| `float32`, `float64` | `number` |
+| `bool` | `boolean` |
+| `[]T` | `T[]` |
+| `map[string]T` | `Record<string, T>` |
+| `struct` | `interface` |
+| `time.Time` | `Date` |
+| `error` | Exception (thrown) |
+
+### 3. 前端调用（运行时）
+
+开发者从 JavaScript 调用 Go 方法：
+
+```javascript
+import { Greet, Add } from './bindings/GreetService'
+
+// Call Go from JavaScript
+const greeting = await Greet("World")
+console.log(greeting)  // "Hello, World!"
+
+const sum = await Add(5, 3)
+console.log(sum)  // 8
+```
+
+**发生的过程：**
+1. **调用绑定函数** - `Greet("World")`
+2. **创建消息** - `{ service: "GreetService", method: "Greet", args: ["World"] }`
+3. **发送到桥接** - 通过 WebView 的 JavaScript 桥接
+4. **返回 Promise** - 等待响应
+
+### 4. 桥接处理（运行时）
+
+桥接接收消息并处理它：
+
+```d2
+direction: down
+
+Receive: "Receive Message" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Parse: "Parse JSON" {
+  shape: rectangle
+}
+
+Validate: "Validate" {
+  Check: "Service exists?" {
+    shape: diamond
+  }
+  
+  CheckMethod: "Method exists?" {
+    shape: diamond
+  }
+  
+  CheckTypes: "Types correct?" {
+    shape: diamond
+  }
+}
+
+Invoke: "Invoke Go Method" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+Encode: "Encode Result" {
+  shape: rectangle
+}
+
+Send: "Send Response" {
+  shape: rectangle
+  style.fill: "#10B981"
+}
+
+Error: "Send Error" {
+  shape: rectangle
+  style.fill: "#EF4444"
+}
+
+Receive -> Parse
+Parse -> Validate.Check
+Validate.Check -> Validate.CheckMethod: "Yes"
+Validate.Check -> Error: "No"
+Validate.CheckMethod -> Validate.CheckTypes: "Yes"
+Validate.CheckMethod -> Error: "No"
+Validate.CheckTypes -> Invoke: "Yes"
+Validate.CheckTypes -> Error: "No"
+Invoke -> Encode: "Success"
+Invoke -> Error: "Error"
+Encode -> Send
+```
+
+**安全性：** 只有注册的服务和导出的方法可被调用。
+
+### 5. Go 执行（运行时）
+
+Go 方法执行：
+
+```go
+func (g *GreetService) Greet(name string) string {
+    // This runs in Go
+    return g.prefix + name + "!"
+}
+```
+
+**执行上下文：**
+- 在 **goroutine** 中运行（非阻塞）
+- 可以访问 **所有 Go 功能**（文件系统、网络、数据库）
+- 可以自由调用 **其他 Go 代码**
+- 返回结果或错误
+
+### 6. 响应（运行时）
+
+结果发送回 JavaScript：
+
+```javascript
+// Promise resolves with result
+const greeting = await Greet("World")
+// greeting = "Hello, World!"
+```
+
+**错误处理：**
+
+```go
+func (g *GreetService) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+```
+
+```javascript
+try {
+    const result = await Divide(10, 0)
+} catch (error) {
+    console.error("Go error:", error)  // "division by zero"
+}
+```
+
+## 性能特征
+
+### 速度
+
+**典型调用开销：** &lt;1ms
+
+```
+Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
+     ↓            ↓           ↓            ↓            ↓
+   &lt;0.1ms      &lt;0.1ms      [varies]     &lt;0.1ms      &lt;0.1ms
+```
+
+**与替代方案对比：**
+- **HTTP/REST：** 5-50ms（网络栈、序列化）
+- **IPC：** 1-10ms（进程边界、编组）
+- **Wails 桥接：** &lt;1ms（内存中、直接调用）
+
+### 内存
+
+**每次调用开销：** ~1KB（消息缓冲区）
+
+**零拷贝优化：** 大数据（>1MB）在可能时使用共享内存。
+
+### 并发
+
+**调用是并发的：**
+- 每个调用在其自己的 goroutine 中运行
+- 多个调用可以同时执行
+- 调用之间无阻塞
+
+```javascript
+// These run concurrently
+const [result1, result2, result3] = await Promise.all([
+    SlowOperation1(),
+    SlowOperation2(),
+    SlowOperation3(),
+])
+```
+
+## 类型系统
+
+### 支持的类型
+
+#### 基本类型
+
+```go
+// Go
+func Example(
+    s string,
+    i int,
+    f float64,
+    b bool,
+) (string, int, float64, bool) {
+    return s, i, f, b
+}
+```
+
+```typescript
+// TypeScript (auto-generated)
+function Example(
+    s: string,
+    i: number,
+    f: number,
+    b: boolean,
+): Promise<[string, number, number, boolean]>
+```
+
+#### 切片和数组
+
+```go
+// Go
+func Sum(numbers []int) int {
+    total := 0
+    for _, n := range numbers {
+        total += n
+    }
+    return total
+}
+```
+
+```typescript
+// TypeScript
+function Sum(numbers: number[]): Promise<number>
+
+// Usage
+const total = await Sum([1, 2, 3, 4, 5])  // 15
+```
+
+#### 映射
+
+```go
+// Go
+func GetConfig() map[string]interface{} {
+    return map[string]interface{}{
+        "theme": "dark",
+        "fontSize": 14,
+        "enabled": true,
+    }
+}
+```
+
+```typescript
+// TypeScript
+function GetConfig(): Promise<Record<string, any>>
+
+// Usage
+const config = await GetConfig()
+console.log(config.theme)  // "dark"
+```
+
+#### 结构体
+
+```go
+// Go
+type User struct {
+    ID    int    `json:"id"`
+    Name  string `json:"name"`
+    Email string `json:"email"`
+}
+
+func GetUser(id int) (*User, error) {
+    return &User{
+        ID:    id,
+        Name:  "Alice",
+        Email: "alice@example.com",
+    }, nil
+}
+```
+
+```typescript
+// TypeScript（自动生成）
+interface User {
+    id: number
+    name: string
+    email: string
+}
+
+function GetUser(id: number): Promise<User>
+
+// 用法
+const user = await GetUser(1)
+console.log(user.name)  // "Alice"
+```
+
+**JSON 标签：** 使用 `json:` 标签来控制 TypeScript 中的字段名称。
+
+**有关桥接的问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 提问或查看 [绑定示例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)。

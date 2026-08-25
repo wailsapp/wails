@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: go run validate-changelog.go <changelog-file> <added-lines-file>")
+		fmt.Println("Usage: go run validate-changelog.go <changelog-file> <added-lines-file> [deleted-lines-file] [base-changelog-file]")
 		os.Exit(1)
 	}
 
@@ -33,6 +34,26 @@ func main() {
 
 	addedLines := strings.Split(addedContent, "\n")
 	fmt.Printf("📝 Lines added in this PR: %d\n", len(addedLines))
+	var deletedLines []string
+	if len(os.Args) >= 4 {
+		deletedContent, err := readFile(os.Args[3])
+		if err != nil {
+			fmt.Printf("ERROR: Failed to read deleted changelog lines: %v\n", err)
+			os.Exit(1)
+		}
+		deletedLines = strings.Split(deletedContent, "\n")
+		fmt.Printf("📝 Lines deleted in this PR: %d\n", len(deletedLines))
+	}
+	var deletedEntries []changelogEntry
+	if len(os.Args) >= 5 {
+		baseContent, err := readFile(os.Args[4])
+		if err != nil {
+			fmt.Printf("ERROR: Failed to read base changelog: %v\n", err)
+			os.Exit(1)
+		}
+		deletedEntries = deletedChangelogEntries(baseContent, content, deletedLines)
+		fmt.Printf("📝 Deleted changelog entries with section metadata: %d\n", len(deletedEntries))
+	}
 
 	// Parse changelog to find where added lines ended up
 	lines := strings.Split(content, "\n")
@@ -43,22 +64,18 @@ func main() {
 
 	for lineNum, line := range lines {
 		// Track current section
-		if strings.HasPrefix(line, "## ") {
-			if strings.Contains(line, "[Unreleased]") {
-				currentSection = "Unreleased"
-			} else if strings.Contains(line, "v3.0.0-alpha") {
-				// Extract version from line like "## v3.0.0-alpha.10 - 2025-07-06"
-				parts := strings.Split(strings.TrimSpace(line[3:]), " - ")
-				if len(parts) >= 1 {
-					currentSection = strings.TrimSpace(parts[0])
-				}
-			}
+		if section := releaseSection(line); section != "" {
+			currentSection = section
 		}
 
 		// Check if this line was added in this PR AND is in a released version
 		if currentSection != "" && currentSection != "Unreleased" &&
 			strings.HasPrefix(strings.TrimSpace(line), "- ") &&
 			wasAddedInThisPR(line, addedLines) {
+			if isSameSourceCorrection(line, currentSection, deletedEntries) {
+				fmt.Printf("✅ CORRECTION: Same-source replacement in %s: %s\n", currentSection, strings.TrimSpace(line))
+				continue
+			}
 
 			issues = append(issues, Issue{
 				Line:     lineNum,
@@ -100,6 +117,114 @@ func main() {
 	}
 }
 
+var pullRequestReference = regexp.MustCompile(`^https://github\.com/wailsapp/wails/pull/[0-9]+$`)
+
+func pullRequestReferenceFromLine(line string) string {
+	const linkPrefix = "[PR]("
+	start := strings.Index(line, linkPrefix)
+	if start == -1 {
+		return ""
+	}
+	destination := line[start+len(linkPrefix):]
+	end := strings.IndexByte(destination, ')')
+	if end == -1 {
+		return ""
+	}
+	destination = destination[:end]
+	if !pullRequestReference.MatchString(destination) {
+		return ""
+	}
+	return destination
+}
+
+type changelogEntry struct {
+	Line    string
+	Section string
+}
+
+// deletedChangelogEntries attaches release-section provenance to deleted diff
+// lines. Comparing section-specific counts between the base and current files
+// prevents a line moved between releases from masquerading as a correction.
+func deletedChangelogEntries(baseContent, currentContent string, deletedLines []string) []changelogEntry {
+	deletedCounts := make(map[string]int)
+	for _, line := range deletedLines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "- ") {
+			deletedCounts[line]++
+		}
+	}
+
+	currentCounts := make(map[changelogEntry]int)
+	for _, entry := range changelogEntries(currentContent) {
+		currentCounts[entry]++
+	}
+
+	var result []changelogEntry
+	for _, entry := range changelogEntries(baseContent) {
+		if currentCounts[entry] > 0 {
+			currentCounts[entry]--
+			continue
+		}
+		if deletedCounts[entry.Line] == 0 {
+			continue
+		}
+		deletedCounts[entry.Line]--
+		result = append(result, entry)
+	}
+	return result
+}
+
+func changelogEntries(content string) []changelogEntry {
+	var entries []changelogEntry
+	currentSection := ""
+	for _, line := range strings.Split(content, "\n") {
+		if section := releaseSection(line); section != "" {
+			currentSection = section
+		}
+		line = strings.TrimSpace(line)
+		if currentSection != "" && strings.HasPrefix(line, "- ") {
+			entries = append(entries, changelogEntry{Line: line, Section: currentSection})
+		}
+	}
+	return entries
+}
+
+func releaseSection(line string) string {
+	if !strings.HasPrefix(line, "## ") {
+		return ""
+	}
+	if strings.Contains(line, "[Unreleased]") {
+		return "Unreleased"
+	}
+	if !strings.Contains(line, "v3.0.0-") {
+		return ""
+	}
+	parts := strings.Split(strings.TrimSpace(line[3:]), " - ")
+	return strings.TrimSpace(parts[0])
+}
+
+// isSameSourceCorrection distinguishes a historical correction from a new
+// entry added to a released section. Both lines must be changelog bullets in
+// the same released section and cite the same immutable Wails pull request.
+func isSameSourceCorrection(addedLine, addedSection string, deletedEntries []changelogEntry) bool {
+	addedLine = strings.TrimSpace(addedLine)
+	if !strings.HasPrefix(addedLine, "- ") {
+		return false
+	}
+	reference := pullRequestReferenceFromLine(addedLine)
+	if reference == "" {
+		return false
+	}
+	for _, deletedEntry := range deletedEntries {
+		if deletedEntry.Section == addedSection &&
+			deletedEntry.Line != addedLine &&
+			pullRequestReferenceFromLine(deletedEntry.Line) == reference {
+			return true
+		}
+	}
+	return false
+}
+
 type Issue struct {
 	Line     int
 	Content  string
@@ -129,11 +254,11 @@ func getCurrentCategory(lines []string, lineNum int) string {
 		}
 		if strings.HasPrefix(line, "## ") &&
 			!strings.Contains(line, "[Unreleased]") &&
-			!strings.Contains(line, "v3.0.0-alpha") {
+			!strings.Contains(line, "v3.0.0-") {
 			return strings.TrimSpace(line[3:])
 		}
 		if strings.HasPrefix(line, "## ") &&
-			(strings.Contains(line, "[Unreleased]") || strings.Contains(line, "v3.0.0-alpha")) {
+			(strings.Contains(line, "[Unreleased]") || strings.Contains(line, "v3.0.0-")) {
 			break
 		}
 	}

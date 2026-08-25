@@ -1,7 +1,7 @@
 # Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3-alpha release.
+This file is used to collect changelog entries for the next v3 release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
@@ -17,12 +17,13 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add support for modal sheets (macOS) 
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
+- Correct typos in comments and localized documentation in [PR](https://github.com/wailsapp/wails/pull/6023) by @haoku123
+- Remove the precompiled macOS binaries committed under `v3/examples` in [PR](https://github.com/wailsapp/wails/pull/6025) by @4RH1T3CT0R7
 <!-- Bug fixes -->
 
 ## Deprecated
@@ -33,10 +34,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Security
 <!-- Security-related changes -->
-- Restrict GITHUB_TOKEN permissions in workflow files to follow principle of least privilege
-- Fix path traversal vulnerability in screen example asset middleware
-- Fix command injection vulnerability in setup wizard dependency installation endpoint
-- Update rollup to 3.29.5 to fix XSS vulnerability (CVE-2024-47068)
+- Restrict GITHUB_TOKEN permissions in build and publish workflows to follow the principle of least privilege
+- Fix path traversal and symlink escapes in the screen example asset middleware
+- Keep setup wizard dependency installation functional while restricting it to approved package-manager commands
 
 ---
 

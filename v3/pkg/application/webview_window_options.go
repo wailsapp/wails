@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/leaanthony/u"
+	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -21,6 +21,54 @@ const (
 	ButtonDisabled ButtonState = 1
 	ButtonHidden   ButtonState = 2
 )
+
+// effectiveZoomButtonState returns the more restrictive of two ButtonState values.
+// Hidden > Disabled > Enabled, matching the integer ordering of the constants.
+// Both MaximiseButtonState and FullscreenButtonState target NSWindowZoomButton on
+// macOS; this helper ensures neither runtime setter can silently override the other.
+func effectiveZoomButtonState(a, b ButtonState) ButtonState {
+	if b > a {
+		return b
+	}
+	return a
+}
+
+// useDarkNativeWindowsMenu reports whether Windows can draw a dark native menu
+// for a dark application window. A menu background can be selected per window,
+// but Windows selects native menu text from its process-level colour policy. If
+// the system policy is light, retaining a dark background makes the text
+// unreadable, so callers must fall back to the matching light menu instead.
+func useDarkNativeWindowsMenu(windowIsDark bool, systemAppsUseDarkMode func() bool) bool {
+	return windowIsDark && (systemAppsUseDarkMode == nil || systemAppsUseDarkMode())
+}
+
+type macWindowButtonStates struct {
+	minimise ButtonState
+	close    ButtonState
+	zoom     ButtonState
+}
+
+// usesNativeMacFramelessFrame reports whether frameless windows retain the
+// standard AppKit frame to preserve its native rounded corners.
+func usesNativeMacFramelessFrame(options MacWindow) bool {
+	return options.CornerType == MacWindowCornerTypeRounded && options.CornerRadius == 0
+}
+
+// effectiveMacWindowButtonStates returns the configured macOS title-bar button
+// states, hiding all controls while the native AppKit frame is used frameless.
+func effectiveMacWindowButtonStates(options WebviewWindowOptions) macWindowButtonStates {
+	result := macWindowButtonStates{
+		minimise: options.MinimiseButtonState,
+		close:    options.CloseButtonState,
+		zoom:     effectiveZoomButtonState(options.MaximiseButtonState, options.FullscreenButtonState),
+	}
+	if options.Frameless && usesNativeMacFramelessFrame(options.Mac) {
+		result.minimise = ButtonHidden
+		result.close = ButtonHidden
+		result.zoom = ButtonHidden
+	}
+	return result
+}
 
 type WindowStartPosition int
 
@@ -80,6 +128,31 @@ type WebviewWindowOptions struct {
 	// HTML is the HTML to load in the window.
 	HTML string
 
+	// AllowSimpleEventEmit gates the `wails:event:emit:<name>` postMessage
+	// shortcut for this window. When true, JavaScript running in this
+	// window can fire bare-named Wails custom events on the host bus via
+	// `window._wails.invoke("wails:event:emit:<name>")`. The shortcut
+	// exists so InitialHTML pages (loaded with no asset-server origin —
+	// the framework's built-in updater window is the canonical case) can
+	// still talk to the Go side without depending on the modern HTTP
+	// runtime that requires `fetch("/wails/runtime")` to work.
+	//
+	// SECURITY: leave this off (the default) unless you control every byte
+	// of HTML that this window will ever load. When enabled, ANY script
+	// running in the page — including content from a remote URL or any
+	// XSS sink in user-supplied content — can synthesise Wails custom
+	// events. The shortcut conveys bare names only (no payload) and
+	// cannot reach the binding/Call path, but it CAN trigger any
+	// `app.Event.On(name, ...)` handler your application code registers.
+	// If you have a handler that performs a privileged action based on
+	// the event name alone, that handler is exposed to anyone with
+	// scripting access to this window.
+	//
+	// Use [WebviewWindow.AsUpdaterWindow] in concert with
+	// updater.BYOWindow to opt in cleanly when you're writing your own
+	// updater UI; otherwise leave this false.
+	AllowSimpleEventEmit bool
+
 	// JS is the JavaScript to load in the window.
 	JS string
 
@@ -95,6 +168,12 @@ type WebviewWindowOptions struct {
 	// Y is the starting Y position of the window.
 	Y int
 
+	// Screen specifies the target screen for initial window placement.
+	// When set with WindowCentered, the window is centered on that screen's WorkArea.
+	// When set with WindowXY, X/Y are treated as relative to that screen's WorkArea origin.
+	// When nil, OS default behavior is used.
+	Screen *Screen
+
 	// Hidden will hide the window when it is first created.
 	Hidden bool
 
@@ -108,6 +187,12 @@ type WebviewWindowOptions struct {
 	// When enabled, files dragged from the OS onto elements with the
 	// `data-file-drop-target` attribute will trigger a FilesDropped event.
 	EnableFileDrop bool
+
+	// Permissions controls how capability requests (camera, microphone, …)
+	// from the web content are handled, per PermissionType. Unset entries use
+	// PermissionDefault. Cross-platform; see the Permission constants for the
+	// per-platform meaning of the default.
+	Permissions map[PermissionType]Permission
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
 	OpenInspectorOnStartup bool
@@ -125,6 +210,10 @@ type WebviewWindowOptions struct {
 	MinimiseButtonState ButtonState
 	MaximiseButtonState ButtonState
 	CloseButtonState    ButtonState
+	// FullscreenButtonState controls the fullscreen button state.
+	// On macOS this targets NSWindowZoomButton (the same green button as MaximiseButtonState);
+	// the more restrictive of the two states is applied. On other platforms this is a no-op.
+	FullscreenButtonState ButtonState
 
 	// If true, the window's devtools will be available (default true in builds without the `production` build tag)
 	DevToolsEnabled bool
@@ -210,6 +299,37 @@ const (
 	Tabbed  BackdropType = 4
 )
 
+// PermissionType identifies a capability that web content can request from
+// the webview (camera, microphone, …). It is the cross-platform equivalent of
+// the platform-specific permission-kind enums.
+type PermissionType uint8
+
+const (
+	PermissionMicrophone PermissionType = iota
+	PermissionCamera
+	PermissionGeolocation
+	PermissionNotifications
+	PermissionClipboardRead
+)
+
+// Permission is the policy applied to a PermissionType. The values are kept in
+// step with the native WebView2 permission-state ABI (Default=0, Allow=1,
+// Deny=2) so the Windows backend needs no translation.
+type Permission uint8
+
+const (
+	// PermissionDefault uses the platform's native handling and is the zero
+	// value. On macOS (TCC) and Windows (WebView2) this presents the OS/webview
+	// permission prompt to the user. Linux/WebKitGTK has no prompt mechanism,
+	// so media capture (camera/microphone) is allowed — restoring getUserMedia
+	// for app content — and other capabilities are denied.
+	PermissionDefault Permission = iota
+	// PermissionAllow grants the capability without prompting.
+	PermissionAllow
+	// PermissionDeny denies the capability without prompting.
+	PermissionDeny
+)
+
 type CoreWebView2PermissionKind uint32
 
 const (
@@ -261,10 +381,20 @@ type WindowsWindow struct {
 	// Default: false
 	WindowMaskDraggable bool
 
-	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
-	// when resizing the window
-	// Default: 0
-	ResizeDebounceMS uint16
+	// NonClientRegionSupport enables WebView2's native non-client region support
+	// for this window when the installed WebView2 Runtime supports it. This is
+	// primarily intended to make app-region: drag style custom titlebars work
+	// with native non-client hit testing.
+	// Default: false
+	NonClientRegionSupport bool
+
+	// WebView2CompositionHosting creates WebView2 with visual hosting using
+	// ICoreWebView2CompositionController and DirectComposition instead of the
+	// HWND-hosted controller. This is intended for custom host-owned non-client
+	// hit-testing, for example manual caption-button regions rendered in web
+	// content and resolved through GetNonClientRegionAtPoint / SendMouseInput.
+	// Default: false
+	WebView2CompositionHosting bool
 
 	// WindowDidMoveDebounceMS is the amount of time to debounce the WindowDidMove event
 	// when moving the window
@@ -285,6 +415,10 @@ type WindowsWindow struct {
 
 	// Menu is the menu to use for the window.
 	Menu *Menu
+
+	// DisableMenu will disable the menu for the window.
+	// Default: false
+	DisableMenu bool
 
 	// Permissions map for WebView2. If empty, default permissions will be granted.
 	Permissions map[CoreWebView2PermissionKind]CoreWebView2PermissionState
@@ -455,12 +589,31 @@ type MacLiquidGlass struct {
 	GroupSpacing float64
 }
 
+// MacWindowCornerType controls the corner shape of a frameless macOS window.
+type MacWindowCornerType int
+
+const (
+	// MacWindowCornerTypeRounded preserves the standard AppKit window corners by
+	// default. Set CornerRadius to use a custom rounded radius.
+	MacWindowCornerTypeRounded MacWindowCornerType = iota
+	// MacWindowCornerTypeSquare creates a true borderless window with square
+	// corners. CornerRadius is ignored.
+	MacWindowCornerTypeSquare
+)
+
 // MacWindow contains macOS specific options for Webview Windows
 type MacWindow struct {
 	// Backdrop is the backdrop type for the window
 	Backdrop MacBackdrop
 	// DisableShadow will disable the window shadow
 	DisableShadow bool
+	// CornerType controls the corner shape of a frameless window.
+	// Default: MacWindowCornerTypeRounded.
+	CornerType MacWindowCornerType
+	// CornerRadius controls the custom corner radius, in points, of a rounded
+	// frameless window. A value of 0 (the default) preserves AppKit's standard
+	// rounded corners. Ignored when CornerType is MacWindowCornerTypeSquare.
+	CornerRadius float64
 	// TitleBar contains options for the Mac titlebar
 	TitleBar MacTitleBar
 	// Appearance is the appearance type for the window
@@ -483,8 +636,64 @@ type MacWindow struct {
 	// CollectionBehavior controls how the window behaves across macOS Spaces and fullscreen
 	CollectionBehavior MacWindowCollectionBehavior
 
+	// TabbingMode sets the window tabbing mode (macOS 10.12+)
+	TabbingMode MacWindowTabbingMode
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
+
+	// DisableEscapeExitsFullscreen prevents the Escape key from exiting fullscreen mode.
+	// When true, Esc keypresses are swallowed while the window is fullscreen, allowing
+	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
+	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
+	DisableEscapeExitsFullscreen bool
+
+	// WindowClass selects the native AppKit window class.
+	// The zero value creates the standard NSWindow-backed Wails window.
+	WindowClass MacWindowClass
+
+	// PanelPreferences configures NSPanel-specific behaviour when WindowClass is
+	// MacWindowClassPanel. It is ignored for standard windows.
+	PanelPreferences MacPanelPreferences
+}
+
+// MacWindowClass selects the native AppKit class used for a webview window.
+type MacWindowClass int
+
+const (
+	// MacWindowClassWindow creates the standard NSWindow-backed Wails window.
+	MacWindowClassWindow MacWindowClass = iota
+	// MacWindowClassPanel creates an NSPanel-backed auxiliary window.
+	MacWindowClassPanel
+)
+
+// MacPanelPreferences contains options that apply only to MacWindowClassPanel.
+type MacPanelPreferences struct {
+	// FloatingPanel gives the NSPanel AppKit's floating-panel behaviour. An
+	// explicit MacWindow.WindowLevel still takes precedence over its level.
+	FloatingPanel bool
+	// BecomesKeyOnlyIfNeeded makes a non-activating panel take key status only
+	// when the clicked view needs keyboard input.
+	BecomesKeyOnlyIfNeeded bool
+	// NonActivating applies NSWindowStyleMaskNonactivatingPanel. Showing or
+	// focusing the panel then leaves the currently active application active.
+	NonActivating bool
+	// UtilityWindow applies NSWindowStyleMaskUtilityWindow.
+	UtilityWindow bool
+}
+
+// effectiveMacWindowLevel resolves the initial native window level once.
+// A caller-selected level is more specific than the AlwaysOnTop convenience
+// option, while FloatingPanel supplies the natural default for floating panels.
+func effectiveMacWindowLevel(options WebviewWindowOptions) MacWindowLevel {
+	if options.Mac.WindowLevel != "" {
+		return options.Mac.WindowLevel
+	}
+	if options.AlwaysOnTop ||
+		(options.Mac.WindowClass == MacWindowClassPanel && options.Mac.PanelPreferences.FloatingPanel) {
+		return MacWindowLevelFloating
+	}
+	return MacWindowLevelNormal
 }
 
 type MacWindowLevel string
@@ -498,6 +707,22 @@ const (
 	MacWindowLevelStatus      MacWindowLevel = "status"
 	MacWindowLevelPopUpMenu   MacWindowLevel = "popUpMenu"
 	MacWindowLevelScreenSaver MacWindowLevel = "screenSaver"
+)
+
+// MacWindowTabbingMode controls window tabbing behavior (macOS 10.12+).
+// Values map to NSWindowTabbingMode (offset by 1 so the zero value is an "unset" sentinel).
+type MacWindowTabbingMode int
+
+const (
+	// MacWindowTabbingModeDefault is the zero-value sentinel meaning "not explicitly set".
+	// At runtime it resolves to Disallowed.
+	MacWindowTabbingModeDefault MacWindowTabbingMode = iota
+	// MacWindowTabbingModeAutomatic allows the system to determine tabbing behavior
+	MacWindowTabbingModeAutomatic
+	// MacWindowTabbingModePreferred indicates the window prefers to be in tabbing mode
+	MacWindowTabbingModePreferred
+	// MacWindowTabbingModeDisallowed prevents the window from being tabbed
+	MacWindowTabbingModeDisallowed
 )
 
 // MacWindowCollectionBehavior controls window behavior across macOS Spaces and fullscreen.
@@ -537,13 +762,27 @@ const (
 // MacWebviewPreferences contains preferences for the Mac webview
 type MacWebviewPreferences struct {
 	// TabFocusesLinks will enable tabbing to links
-	TabFocusesLinks u.Bool
+	TabFocusesLinks optional.Bool
 	// TextInteractionEnabled will enable text interaction
-	TextInteractionEnabled u.Bool
+	TextInteractionEnabled optional.Bool
 	// FullscreenEnabled will enable fullscreen
-	FullscreenEnabled u.Bool
+	FullscreenEnabled optional.Bool
 	// AllowsBackForwardNavigationGestures enables horizontal swipe gestures for back/forward navigation
-	AllowsBackForwardNavigationGestures u.Bool
+	AllowsBackForwardNavigationGestures optional.Bool
+	// AllowsMagnification enables pinch-to-zoom on the webview
+	AllowsMagnification optional.Bool
+	// AllowsAirPlayForMediaPlayback enables AirPlay media playback
+	AllowsAirPlayForMediaPlayback optional.Bool
+	// JavaScriptCanOpenWindowsAutomatically allows JS to open windows without a user gesture
+	JavaScriptCanOpenWindowsAutomatically optional.Bool
+	// MinimumFontSize sets the minimum font size in points
+	MinimumFontSize optional.Var[float64]
+	// ApplicationNameForUserAgent overrides the application name portion of the user agent string.
+	// Leave empty to use the default "wails.io" suffix.
+	ApplicationNameForUserAgent string
+	// EnableAutoplayWithoutUserAction allows media to start playing automatically
+	// without requiring a user gesture. Maps to WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback.
+	EnableAutoplayWithoutUserAction optional.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar

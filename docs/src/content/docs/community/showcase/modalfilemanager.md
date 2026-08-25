@@ -1,5 +1,6 @@
 ---
 title: Modal File Manager
+description: "A desktop application built with Wails"
 ---
 
 ![Modal File Manager](../../../../assets/showcase-images/modalfilemanager.webp)
