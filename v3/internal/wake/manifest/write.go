@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -24,6 +25,10 @@ func Minimal(project Project) []byte {
 	projectBody.SetAttributeValue("identifier", cty.StringVal(project.Identifier))
 	projectBody.SetAttributeValue("version", cty.StringVal(project.Version))
 	projectBody.SetAttributeValue("binary_name", cty.StringVal(deriveBinaryName(project.Name)))
+	setOptionalStringAttribute(projectBody, "company", project.CompanyName)
+	setOptionalStringAttribute(projectBody, "description", project.Description)
+	setOptionalStringAttribute(projectBody, "copyright", project.Copyright)
+	setOptionalStringAttribute(projectBody, "comments", project.Comments)
 	body.AppendBlock(projectBlock)
 	body.AppendNewline()
 	frontendBlock := hclwrite.NewBlock("frontend", nil)
@@ -42,11 +47,70 @@ func Minimal(project Project) []byte {
 	return file.Bytes()
 }
 
+func setOptionalStringAttribute(body *hclwrite.Body, name, value string) {
+	if value != "" {
+		body.SetAttributeValue(name, cty.StringVal(value))
+	}
+}
+
 func WriteMinimal(root string, project Project) error {
 	if err := validateProject(project); err != nil {
 		return err
 	}
 	return atomicWrite(filepath.Join(root, Filename), Minimal(project), 0o644)
+}
+
+// UpdateProjectMetadata replaces only the project values owned by project
+// setup. All other Manifest intent, comments, ordering, and file permissions
+// remain user-owned and are preserved.
+func UpdateProjectMetadata(start string, project Project) error {
+	if err := validateProject(project); err != nil {
+		return err
+	}
+	loaded, err := Load(start, "")
+	if err != nil {
+		return err
+	}
+	file, diagnostics := hclwrite.ParseConfig(loaded.Raw, loaded.Path, hcl.InitialPos)
+	if diagnostics.HasErrors() {
+		return validationFromDiagnostics(diagnostics)
+	}
+	var projectBody *hclwrite.Body
+	for _, block := range file.Body().Blocks() {
+		if block.Type() == "project" {
+			projectBody = block.Body()
+			break
+		}
+	}
+	if projectBody == nil {
+		return fmt.Errorf("%s: project block is required", Filename)
+	}
+	projectBody.SetAttributeValue("name", cty.StringVal(project.Name))
+	projectBody.SetAttributeValue("product_name", cty.StringVal(project.ProductName))
+	projectBody.SetAttributeValue("identifier", cty.StringVal(project.Identifier))
+	projectBody.SetAttributeValue("version", cty.StringVal(project.Version))
+	updateOptionalStringAttribute(projectBody, "company", project.CompanyName)
+	updateOptionalStringAttribute(projectBody, "description", project.Description)
+	updateOptionalStringAttribute(projectBody, "copyright", project.Copyright)
+	updateOptionalStringAttribute(projectBody, "comments", project.Comments)
+
+	data := file.Bytes()
+	if _, err := decodeHCL(loaded.Config.Root, loaded.Path, data, ""); err != nil {
+		return err
+	}
+	info, err := os.Stat(loaded.Path)
+	if err != nil {
+		return err
+	}
+	return atomicWrite(loaded.Path, data, info.Mode().Perm())
+}
+
+func updateOptionalStringAttribute(body *hclwrite.Body, name, value string) {
+	if value == "" {
+		body.RemoveAttribute(name)
+		return
+	}
+	body.SetAttributeValue(name, cty.StringVal(value))
 }
 
 func EncodeConfig(config Config) ([]byte, error) {

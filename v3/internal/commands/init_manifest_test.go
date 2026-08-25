@@ -66,6 +66,40 @@ func TestInitBuiltInTemplatesCreateOnlyWailsHCL(t *testing.T) {
 	}
 }
 
+func TestInitWritesWizardProjectMetadataToAValidManifest(t *testing.T) {
+	originalDirectory, err := os.Getwd()
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	options := &flags.Init{
+		TemplateName:       "vanilla",
+		ProjectName:        "Wizard Project",
+		ProjectDir:         filepath.Join(t.TempDir(), "project"),
+		ModulePath:         "example.com/wizard-project",
+		ProductName:        "Wizard Product",
+		ProductCompany:     "Acme Limited",
+		ProductIdentifier:  "com.example.wizard",
+		ProductDescription: "Created through the setup wizard",
+		ProductVersion:     "2.3.4",
+		ProductCopyright:   "Copyright 2026 Acme Limited",
+		ProductComments:    "Internal preview",
+		SkipGoModTidy:      true,
+	}
+
+	require.NoError(t, Init(options))
+	loaded, err := manifest.Load(options.ProjectDir, "")
+	require.NoError(t, err)
+	assert.Equal(t, "Wizard_Project", loaded.Config.Project.Name)
+	assert.Equal(t, "Wizard Product", loaded.Config.Project.ProductName)
+	assert.Equal(t, "Acme Limited", loaded.Config.Project.CompanyName)
+	assert.Equal(t, "com.example.wizard", loaded.Config.Project.Identifier)
+	assert.Equal(t, "Created through the setup wizard", loaded.Config.Project.Description)
+	assert.Equal(t, "2.3.4", loaded.Config.Project.Version)
+	assert.Equal(t, "Copyright 2026 Acme Limited", loaded.Config.Project.Copyright)
+	assert.Equal(t, "Internal preview", loaded.Config.Project.Comments)
+}
+
 func TestInitInsideAnotherManifestProjectCreatesItsOwnManifest(t *testing.T) {
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
@@ -96,13 +130,17 @@ func TestInitInsideAnotherManifestProjectCreatesItsOwnManifest(t *testing.T) {
 
 func TestCommunityTemplateWithFullyMigratableTaskfileActivatesHCLAndPreservesLegacySource(t *testing.T) {
 	root := t.TempDir()
-	legacy := []byte("version: '3'\ntasks: {}\n")
+	legacy := []byte("version: '3'\nvars:\n  APP_NAME: custom-binary\ntasks: {}\n")
 	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), legacy, 0o600))
 	options := &flags.Init{ProjectDir: root, ProjectName: "Community", ProductName: "Community App", ProductIdentifier: "com.example.community", ProductVersion: "2.0.0", Quiet: true}
 
 	require.NoError(t, initialiseTemplateBuildManifest(options))
 	assert.FileExists(t, filepath.Join(root, manifest.Filename))
 	assert.NoFileExists(t, filepath.Join(root, manifest.MigratedFilename))
+	loaded, err := manifest.Load(root, "")
+	require.NoError(t, err)
+	assert.Equal(t, "Community", loaded.Config.Project.Name)
+	assert.Equal(t, "custom-binary", loaded.Config.Project.BinaryName)
 	actual, err := os.ReadFile(filepath.Join(root, "Taskfile.yml"))
 	require.NoError(t, err)
 	assert.Equal(t, legacy, actual)

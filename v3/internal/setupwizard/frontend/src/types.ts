@@ -40,6 +40,7 @@ export interface UserConfig {
 
 export interface WailsConfig {
   info: {
+    projectName?: string;
     companyName: string;
     productName: string;
     productIdentifier: string;

@@ -297,10 +297,7 @@ func initialiseTemplateBuildManifest(options *flags.Init) error {
 		if err != nil {
 			return fmt.Errorf("analyse community template Taskfile: %w", err)
 		}
-		doc.Project.Name = options.ProjectName
-		doc.Project.ProductName = options.ProductName
-		doc.Project.Identifier = options.ProductIdentifier
-		doc.Project.Version = options.ProductVersion
+		doc.Project = initManifestProject(options, doc.Project)
 		if report.Complete {
 			return manifest.WriteDocument(options.ProjectDir, doc)
 		}
@@ -312,10 +309,27 @@ func initialiseTemplateBuildManifest(options *flags.Init) error {
 		}
 		return nil
 	}
-	return manifest.WriteMinimal(options.ProjectDir, manifest.Project{
-		Name: options.ProjectName, ProductName: options.ProductName,
-		Identifier: options.ProductIdentifier, Version: options.ProductVersion,
-	})
+	return manifest.WriteMinimal(options.ProjectDir, initManifestProject(options, manifest.Project{}))
+}
+
+func initManifestProject(options *flags.Init, project manifest.Project) manifest.Project {
+	project.Name = options.ProjectName
+	project.ProductName = options.ProductName
+	project.Identifier = options.ProductIdentifier
+	project.Version = options.ProductVersion
+	if options.ProductCompany != "" {
+		project.CompanyName = options.ProductCompany
+	}
+	if options.ProductDescription != "" {
+		project.Description = options.ProductDescription
+	}
+	if options.ProductCopyright != "" {
+		project.Copyright = options.ProductCopyright
+	}
+	if options.ProductComments != "" {
+		project.Comments = options.ProductComments
+	}
+	return project
 }
 
 func printTemplates() error {
