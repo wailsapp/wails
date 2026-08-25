@@ -65,6 +65,10 @@ func Dependencies(p PackageManager) (DependencyList, error) {
 
 	for name, packages := range p.Packages() {
 		dependency := &Dependency{Name: name}
+		// Prefer an installed alternative over the first one the repo offers.
+		// Manjaro still ships both webkit2gtk and webkit2gtk-4.1; a system with
+		// only 4.1 installed must be reported as such, with its build tags.
+		var chosen *Package
 		for _, pkg := range packages {
 			dependency.Optional = pkg.Optional
 			dependency.External = !pkg.SystemPackage
@@ -73,24 +77,31 @@ func Dependencies(p PackageManager) (DependencyList, error) {
 			if err != nil {
 				return nil, err
 			}
-			if packageavailable {
-				dependency.Version = pkg.Version
-				dependency.PackageName = pkg.Name
-				dependency.BuildTags = pkg.BuildTags
-				installed, err := p.PackageInstalled(pkg)
-				if err != nil {
-					return nil, err
-				}
-				if installed {
-					dependency.Installed = true
-					dependency.Version = pkg.Version
-					if !pkg.SystemPackage {
-						dependency.Version = AppVersion(name)
-					}
-				} else {
-					dependency.InstallCommand = p.InstallCommand(pkg)
-				}
+			if !packageavailable {
+				continue
+			}
+			installed, err := p.PackageInstalled(pkg)
+			if err != nil {
+				return nil, err
+			}
+			if installed {
+				dependency.Installed = true
+				chosen = pkg
 				break
+			}
+			if chosen == nil {
+				chosen = pkg
+			}
+		}
+		if chosen != nil {
+			dependency.Optional = chosen.Optional
+			dependency.External = !chosen.SystemPackage
+			dependency.InstallCommand = p.InstallCommand(chosen)
+			dependency.Version = chosen.Version
+			dependency.PackageName = chosen.Name
+			dependency.BuildTags = chosen.BuildTags
+			if dependency.Installed && !chosen.SystemPackage {
+				dependency.Version = AppVersion(name)
 			}
 		}
 		dependencies = append(dependencies, dependency)
