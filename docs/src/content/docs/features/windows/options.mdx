@@ -805,7 +805,14 @@ Mac: application.MacWindow{
     },
     Backdrop:                application.MacBackdropTranslucent,
     InvisibleTitleBarHeight: 50,
-    WindowLevel:             application.MacWindowLevelNormal,
+    WindowClass:             application.MacWindowClassPanel,
+    PanelPreferences: application.MacPanelPreferences{
+        NonActivating:          true,
+        FloatingPanel:          true,
+        BecomesKeyOnlyIfNeeded: false,
+        UtilityWindow:          false,
+    },
+    WindowLevel:             application.MacWindowLevelFloating,
     CollectionBehavior:      application.MacWindowCollectionBehaviorDefault,
     TabbingMode:             application.MacWindowTabbingModeDisallowed,
 },
@@ -827,6 +834,44 @@ Mac: application.MacWindow{
 - Only takes effect when the native title bar drag area is hidden — i.e. when the window is frameless (`Frameless: true`) or uses a transparent title bar (`AppearsTransparent: true`)
 - Has no effect on standard windows with a visible title bar
 
+**WindowClass** (`MacWindowClass`)
+
+- `MacWindowClassWindow` - Standard `NSWindow` behaviour (default)
+- `MacWindowClassPanel` - An auxiliary `NSPanel` that never becomes the application's main window
+
+`PanelPreferences` applies only to `MacWindowClassPanel`:
+
+- `NonActivating` adds `NSWindowStyleMaskNonactivatingPanel`. Showing or focusing the panel does not activate the Wails application, but the panel can still become key for controls and text input.
+- `FloatingPanel` enables AppKit's floating-panel behaviour.
+- `BecomesKeyOnlyIfNeeded` takes key status only when the clicked view requests keyboard input.
+- `UtilityWindow` applies the native utility-window style.
+
+Wails panels remain visible when the application deactivates and are released
+when closed, matching the lifecycle expected by `WebviewWindow`. These are
+intentional overrides of the opposite `NSPanel` defaults.
+
+Window class, level, activation policy, and collection behaviour solve separate
+problems:
+
+- `WindowClass` selects `NSWindow` or `NSPanel` and controls main/key-window semantics.
+- `WindowLevel` controls z-order. Use `MacWindowLevelPopUpMenu` for menu-bar overlays.
+- `MacOptions.ActivationPolicy` controls the application as a whole, including Dock and menu-bar presentation. A non-activating panel does not require accessory activation policy, although an app may still use it to hide its Dock icon.
+- `CollectionBehavior` controls Spaces and fullscreen participation.
+
+```go
+// Spotlight/menu-bar panel that leaves the current application active.
+Mac: application.MacWindow{
+    WindowClass: application.MacWindowClassPanel,
+    PanelPreferences: application.MacPanelPreferences{
+        NonActivating: true,
+    },
+    WindowLevel: application.MacWindowLevelPopUpMenu,
+    CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+        application.MacWindowCollectionBehaviorFullScreenAuxiliary |
+        application.MacWindowCollectionBehaviorStationary,
+},
+```
+
 **WindowLevel** (`MacWindowLevel`)
 - `MacWindowLevelNormal` - Standard window level (default)
 - `MacWindowLevelFloating` - Floats above normal windows
@@ -836,6 +881,12 @@ Mac: application.MacWindow{
 - `MacWindowLevelStatus` - Status window level
 - `MacWindowLevelPopUpMenu` - Pop-up menu level
 - `MacWindowLevelScreenSaver` - Screen saver level
+
+An explicit `WindowLevel` takes precedence over `AlwaysOnTop` and
+`PanelPreferences.FloatingPanel`. Without an explicit level, `AlwaysOnTop` or a
+floating panel resolves to `MacWindowLevelFloating`; otherwise the level is
+`MacWindowLevelNormal`. Calling `SetAlwaysOnTop` later remains an explicit
+runtime change.
 
 **CollectionBehavior** (`MacWindowCollectionBehavior`)
 
@@ -865,6 +916,10 @@ Controls how the window behaves across macOS Spaces and fullscreen. These are bi
 ```go
 // Window that appears on all Spaces AND can overlay fullscreen apps
 Mac: application.MacWindow{
+	WindowClass: application.MacWindowClassPanel,
+	PanelPreferences: application.MacPanelPreferences{
+		NonActivating: true,
+	},
     CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
                         application.MacWindowCollectionBehaviorFullScreenAuxiliary,
     WindowLevel:        application.MacWindowLevelFloating,

@@ -172,6 +172,11 @@ type WebviewWindow struct {
 	impl    webviewWindowImpl
 	id      uint
 
+	// notchWindow is set only by WindowManager.NewNotchWindow. It is kept
+	// outside WebviewWindowOptions so the lower-level constructor cannot create
+	// a partially configured notch window.
+	notchWindow *notchWindowConfig
+
 	eventListeners     map[uint][]*WindowEventListener
 	eventListenersLock sync.RWMutex
 	eventHooks         map[uint][]*WindowEventListener
@@ -803,6 +808,9 @@ func (w *WebviewWindow) HandleMessage(message string) {
 	// Check for special messages
 	switch true {
 	case message == "wails:drag":
+		if w.notchWindow != nil {
+			return
+		}
 		if !w.IsFullscreen() {
 			InvokeSync(func() {
 				err := w.startDrag()
@@ -812,6 +820,9 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			})
 		}
 	case message == "wails:drag:doubleclick":
+		if w.notchWindow != nil {
+			return
+		}
 		w.handleTitlebarDoubleClick()
 	case strings.HasPrefix(message, "wails:resize:"):
 		if !w.IsFullscreen() {
