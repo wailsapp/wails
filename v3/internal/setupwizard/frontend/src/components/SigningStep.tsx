@@ -866,6 +866,7 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
   onBack: () => void;
 }) {
   const [starting, setStarting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [command, setCommand] = useState('');
   const [profileName, setProfileName] = useState(config.darwin?.keychainProfile || 'wails-notary');
   const [appleID, setAppleID] = useState('');
@@ -935,12 +936,19 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
     }
   };
 
+  // Only leave the waiting screen once the wizard has actually let go of the
+  // job. Clearing it first would strand a tracked job with no way to cancel it
+  // from here if the request failed.
   const handleCancel = async () => {
-    setCommand('');
+    setCancelling(true);
     try {
       await cancelNotarization();
+      setError('');
+      setCommand('');
     } catch {
-      // The wizard gives up on the window either way.
+      setError('Could not cancel — the wizard is still waiting on the Terminal window. Try again.');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -968,13 +976,20 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
           </div>
         </div>
 
+        {error && (
+          <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        )}
+
         <div className="flex gap-3 pt-2">
           <button
             type="button"
             onClick={handleCancel}
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+            disabled={cancelling}
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
           >
-            Cancel
+            {cancelling ? 'Cancelling…' : 'Cancel'}
           </button>
         </div>
       </div>

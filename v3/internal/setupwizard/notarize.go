@@ -69,6 +69,7 @@ func (j *notarizeJob) finish(state, errMsg string) bool {
 	return true
 }
 
+// snapshot reads the job's current state and error message together.
 func (j *notarizeJob) snapshot() (state, errMsg string) {
 	j.mu.Lock()
 	defer j.mu.Unlock()
