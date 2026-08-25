@@ -942,7 +942,11 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
   const handleCancel = async () => {
     setCancelling(true);
     try {
-      await cancelNotarization();
+      const result = await cancelNotarization();
+      if (!result.success) {
+        setError('Could not cancel — the wizard is still waiting on the Terminal window. Try again.');
+        return;
+      }
       setError('');
       setCommand('');
     } catch {
