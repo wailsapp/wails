@@ -16,8 +16,7 @@
 
 - Do not duplicate existing GitHub issues.
 - Keep issue descriptions current when scope or reproduction steps change.
-- Store AI-generated planning documents in `history/`, not the repository root;
-  the persistent root `IMPLEMENTATION.md` tracker described below is the exception.
+- Store AI-generated planning documents in `history/`, not the repository root.
 - **ALWAYS run `coderabbit --plain` before committing** to catch issues early.
 - All commits must use the `taliesin-ai` identity.
 - Never push until the user gives explicit manual confirmation.
@@ -25,7 +24,7 @@
 ### Managing AI-Generated Planning Documents
 
 AI assistants often create planning and design documents during development:
-- PLAN.md, IMPLEMENTATION.md, ARCHITECTURE.md
+- PLAN.md, ARCHITECTURE.md
 - DESIGN.md, CODEBASE_SUMMARY.md, INTEGRATION_PLAN.md
 - TESTING_GUIDE.md, TECHNICAL_DESIGN.md, and similar files
 
@@ -33,8 +32,7 @@ AI assistants often create planning and design documents during development:
 
 **Recommended approach:**
 - Create a `history/` directory in the project root
-- Store all ephemeral AI-generated planning/design docs in `history/`;
-  keep the persistent root `IMPLEMENTATION.md` tracker in place
+- Store all ephemeral AI-generated planning/design docs in `history/`
 - Keep the repository root clean and focused on permanent project files
 - Only access `history/` when explicitly asked to review past planning
 
@@ -51,34 +49,41 @@ history/
 - Preserves planning history for archeological research
 - Reduces noise when browsing the project
 
-## Implementation Tracking (IMPLEMENTATION.md)
+## Frontend Runtime: Two Build Outputs
 
-**IMPORTANT**: The `IMPLEMENTATION.md` file at the repository root is a **persistent tracking document** for the GTK4 / WebKitGTK 6.0 / GTK3-legacy implementation work. It is NOT an ephemeral planning document.
+The TypeScript runtime in `v3/internal/runtime/desktop/@wailsio/runtime` produces **two**
+independent artifacts, and rebuilding one but not the other is a common and confusing
+mistake:
 
-As of 2026-05-16 (issue #5459), GTK4 + WebKitGTK 6.0 is the **default** Linux stack; GTK3 + WebKit2GTK 4.1 is a legacy opt-in (`-tags gtk3`) for one v3 cycle and is scheduled for removal in v3.1. The default-flip rationale is recorded in `IMPLEMENTATION.md` Decision 1.1.
+| task | output | consumed by |
+|---|---|---|
+| `task v3:runtime:build:assets` | `v3/internal/assetserver/bundledassets/runtime.js` (+ `.debug.js`) | the webview, served at `/wails/runtime.js` |
+| `task v3:runtime:build:package` | `dist/` in the package directory | an app's frontend, via `node_modules` |
 
-### Requirements
+After changing anything under `src/`, rebuild **both**. CI verifies the committed bundles
+match `build:assets` output exactly, so the bundles must be committed with the change.
 
-1. **Update with EVERY commit** that touches GTK4/WebKitGTK 6.0 or legacy GTK3 code
-2. **Track all architectural decisions** with context, decision, and rationale
-3. **Maintain progress status** for each implementation phase
-4. **Document API differences** between the GTK4 default and GTK3 legacy paths
-5. **Keep file references** accurate and up-to-date
+An application imports `@wailsio/runtime` from npm, so it will not see runtime changes made
+in this checkout. To test an app against the working tree:
 
-### What to Update
-
-- Phase completion status (✅ COMPLETE, 🔄 IN PROGRESS, 📋 PENDING)
-- New decisions made during implementation
-- Files created or modified
-- Changelog entries with dates
-- TODO items discovered during work
-
-### Commit Message Pattern
-
-When updating IMPLEMENTATION.md:
+```bash
+task v3:install-runtime -- ./path/to/your-app/frontend
 ```
-docs: update implementation tracker for [phase/feature]
-```
+
+Undo with `npm install @wailsio/runtime@latest` in the same directory.
+
+## Subsystem References
+
+Some subsystems have a dedicated internals page written for agents. Read the relevant one
+before changing that code — several of its decisions look arbitrary until you know which
+measured bug they prevent.
+
+- **Streams** (`pkg/application/stream*.go`, `runtime/.../stream.ts`):
+  `docs/src/content/docs/guides/advanced/streams-internals.mdx`. Covers the held-poll
+  design, the buffer constants and how to pick them, session and connection lifecycle,
+  transport selection, and what is unfinished. To convert an existing WebSocket
+  implementation, follow `docs/src/content/docs/guides/streams-from-websockets.mdx` —
+  a mechanical checklist, including the differences that break silently.
 
 ## Landing the Plane (Session Completion)
 

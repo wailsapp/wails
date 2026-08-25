@@ -168,7 +168,7 @@ export default defineConfig({
         {
           label: "Tutorials",
           collapsed: true,
-          autogenerate: { directory: "tutorials" },
+          items: [{ autogenerate: { directory: "tutorials" } }],
         },
 
         // Core Concepts
@@ -194,6 +194,7 @@ export default defineConfig({
               items: [
                 { label: "Window Basics", link: "/features/windows/basics" },
                 { label: "Window Options", link: "/features/windows/options" },
+                { label: "Notch Windows", link: "/features/windows/notch-windows" },
                 { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
@@ -244,47 +245,47 @@ export default defineConfig({
             {
               label: "Autostart",
               collapsed: true,
-              autogenerate: { directory: "features/autostart" },
+              items: [{ autogenerate: { directory: "features/autostart" } }],
             },
             {
               label: "Clipboard",
               collapsed: true,
-              autogenerate: { directory: "features/clipboard" },
+              items: [{ autogenerate: { directory: "features/clipboard" } }],
             },
             {
               label: "Browser",
               collapsed: true,
-              autogenerate: { directory: "features/browser" },
+              items: [{ autogenerate: { directory: "features/browser" } }],
             },
             {
               label: "Drag & Drop",
               collapsed: true,
-              autogenerate: { directory: "features/drag-and-drop" },
+              items: [{ autogenerate: { directory: "features/drag-and-drop" } }],
             },
             {
               label: "Keyboard",
               collapsed: true,
-              autogenerate: { directory: "features/keyboard" },
+              items: [{ autogenerate: { directory: "features/keyboard" } }],
             },
             {
               label: "Notifications",
               collapsed: true,
-              autogenerate: { directory: "features/notifications" },
+              items: [{ autogenerate: { directory: "features/notifications" } }],
             },
             {
               label: "Screens",
               collapsed: true,
-              autogenerate: { directory: "features/screens" },
+              items: [{ autogenerate: { directory: "features/screens" } }],
             },
             {
               label: "Environment",
               collapsed: true,
-              autogenerate: { directory: "features/environment" },
+              items: [{ autogenerate: { directory: "features/environment" } }],
             },
             {
               label: "Platform-Specific",
               collapsed: true,
-              autogenerate: { directory: "features/platform" },
+              items: [{ autogenerate: { directory: "features/platform" } }],
             },
           ],
         },
@@ -326,7 +327,7 @@ export default defineConfig({
                 { label: "Development Workflow", link: "/guides/dev/workflow" },
                 { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
-                { label: "Testing", link: "/guides/dev/testing" },
+                { label: "Testing", link: "/guides/testing" },
               ],
             },
             {
@@ -349,9 +350,9 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: "In-App Updater", link: "/guides/updater" },
-                { label: "File Associations", link: "/guides/distribution/file-associations" },
+                { label: "File Associations", link: "/guides/file-associations" },
                 { label: "Custom Protocols", link: "/guides/distribution/custom-protocols" },
-                { label: "Single Instance", link: "/guides/distribution/single-instance" },
+                { label: "Single Instance", link: "/guides/single-instance" },
               ],
             },
             {
@@ -359,8 +360,8 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: "Frontend Routing", link: "/guides/routing" },
-                { label: "Using Gin Router", link: "/guides/patterns/gin-routing" },
-                { label: "Gin Services", link: "/guides/patterns/gin-services" },
+                { label: "Using Gin Router", link: "/guides/gin-routing" },
+                { label: "Gin Services", link: "/guides/gin-services" },
                 { label: "Database Integration", link: "/guides/patterns/database" },
                 { label: "REST APIs", link: "/guides/patterns/rest-api" },
               ],
@@ -372,8 +373,8 @@ export default defineConfig({
                 { label: "Server Build", link: "/guides/server-build" },
                 { label: "Custom Templates", link: "/guides/advanced/custom-templates" },
                 { label: "WML (Wails Markup)", link: "/guides/advanced/wml" },
-                { label: "Panic Handling", link: "/guides/advanced/panic-handling" },
-                { label: "Security Best Practices", link: "/guides/advanced/security" },
+                { label: "Panic Handling", link: "/guides/panic-handling" },
+                { label: "Security Best Practices", link: "/guides/security" },
               ],
             },
           ],
@@ -446,10 +447,14 @@ export default defineConfig({
                 { label: "Overview", link: "/community/showcase" },
                 {
                   label: "Applications",
-                  autogenerate: {
-                    directory: "community/showcase",
-                    collapsed: true,
-                  },
+                  items: [
+                    {
+                      autogenerate: {
+                        directory: "community/showcase",
+                        collapsed: true,
+                      },
+                    },
+                  ],
                 },
               ],
             },

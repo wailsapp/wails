@@ -112,6 +112,35 @@ export class User {
 
 **JSON tags control field names** in JavaScript.
 
+### Custom JSON Marshalling
+
+Bound method results are marshalled with Go's standard `encoding/json` package. Be
+aware that `MarshalJSON` methods declared on a pointer receiver are only called
+when the value being marshalled is addressable. This means a custom marshaler can
+be called for elements of a returned slice but not for a struct returned by value:
+
+```go
+func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
+    if n.Valid {
+        return json.Marshal(n.V)
+    }
+    return []byte("null"), nil
+}
+
+func (s *UserService) GetUser() User {
+    return User{} // pointer receiver may not be called
+}
+
+func (s *UserService) GetUsers() []User {
+    return []User{{}} // pointer receiver is called for elements
+}
+```
+
+To ensure consistent output, either define `MarshalJSON` on a value receiver when
+the type can be copied safely, or return a pointer to the struct (for example,
+`*User`). This is a behaviour of Go's `encoding/json`, rather than a difference
+in Wails' binding generation.
+
 ### With Comments
 
 ```go

@@ -41,6 +41,13 @@ var (
 	User32SetWindowLongPtrW  = user32.NewProc("SetWindowLongPtrW")
 	User32AdjustWindowRect   = user32.NewProc("AdjustWindowRect")
 	User32SetWindowPos       = user32.NewProc("SetWindowPos")
+
+	// GetMessageW blocks until a message arrives, which makes any loop built on
+	// it unbounded. These two allow a message loop to wait with a deadline
+	// instead: MsgWaitForMultipleObjects returns on either input or timeout,
+	// and PeekMessageW then drains whatever arrived.
+	User32MsgWaitForMultipleObjects = user32.NewProc("MsgWaitForMultipleObjects")
+	User32PeekMessageW              = user32.NewProc("PeekMessageW")
 )
 
 const (
@@ -57,6 +64,17 @@ const (
 
 const (
 	SWShow = 5
+)
+
+const (
+	WM_QUIT = 0x0012
+
+	PM_REMOVE = 0x0001
+
+	// QS_ALLINPUT wakes MsgWaitForMultipleObjects for any queued message.
+	QS_ALLINPUT = 0x04FF
+
+	WAIT_TIMEOUT = 0x00000102
 )
 
 const (

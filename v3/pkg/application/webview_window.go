@@ -172,6 +172,11 @@ type WebviewWindow struct {
 	impl    webviewWindowImpl
 	id      uint
 
+	// notchWindow is set only by WindowManager.NewNotchWindow. It is kept
+	// outside WebviewWindowOptions so the lower-level constructor cannot create
+	// a partially configured notch window.
+	notchWindow *notchWindowConfig
+
 	eventListeners     map[uint][]*WindowEventListener
 	eventListenersLock sync.RWMutex
 	eventHooks         map[uint][]*WindowEventListener
@@ -288,6 +293,12 @@ func (w *WebviewWindow) markAsDestroyed() {
 	// eventually reclaim it, but the window is gone, so release immediately.
 	if globalApplication != nil && globalApplication.eventPayloads != nil {
 		globalApplication.eventPayloads.dropWindow(w.id)
+	}
+
+	// Same reasoning for streams: nothing in this window will ever poll again,
+	// so close the connections now and let the handlers unblock.
+	if globalApplication != nil && globalApplication.streams != nil {
+		globalApplication.streams.dropWindow(w.id)
 	}
 }
 
@@ -797,6 +808,9 @@ func (w *WebviewWindow) HandleMessage(message string) {
 	// Check for special messages
 	switch true {
 	case message == "wails:drag":
+		if w.notchWindow != nil {
+			return
+		}
 		if !w.IsFullscreen() {
 			InvokeSync(func() {
 				err := w.startDrag()
@@ -806,6 +820,9 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			})
 		}
 	case message == "wails:drag:doubleclick":
+		if w.notchWindow != nil {
+			return
+		}
 		w.handleTitlebarDoubleClick()
 	case strings.HasPrefix(message, "wails:resize:"):
 		if !w.IsFullscreen() {

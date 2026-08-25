@@ -115,7 +115,9 @@
 
 ## 星星增长趋势
 
-[![星星增长趋势](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="星星增长趋势" src="website/static/img/star-history.svg" width="800" />
+</a>
 
 ## 贡献者
 
