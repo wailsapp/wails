@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -69,6 +70,20 @@ func TestNotarizeFieldClean(t *testing.T) {
 	}
 }
 
+// requirePOSIXShell skips tests that run the generated script. The script is
+// /bin/sh and only ever runs on macOS, so there is nothing to learn from
+// wrestling it through whichever sh a Windows runner happens to have.
+func requirePOSIXShell(t *testing.T) {
+	t.Helper()
+
+	if runtime.GOOS == "windows" {
+		t.Skip("the notarization script is POSIX sh and only runs on macOS")
+	}
+	if _, err := exec.LookPath("sh"); err != nil {
+		t.Skip("sh not available")
+	}
+}
+
 // stubXcrun puts a fake `xcrun` on PATH that records its arguments and exits
 // with the given code, so the generated script can be run for real.
 func stubXcrun(t *testing.T, dir string, exitCode int) string {
@@ -89,6 +104,8 @@ func stubXcrun(t *testing.T, dir string, exitCode int) string {
 
 func runNotarizeScript(t *testing.T, dir string, args []string) (statusPath string) {
 	t.Helper()
+
+	requirePOSIXShell(t)
 
 	statusPath = filepath.Join(dir, "status")
 	scriptPath := filepath.Join(dir, "notarize.command")
