@@ -10,6 +10,7 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
+	"math"
 	"os"
 	"runtime"
 	"syscall"
@@ -186,6 +187,9 @@ func iconResourceData(fileData []byte, desiredWidth, desiredHeight int) ([]byte,
 		return nil, fmt.Errorf("invalid file format")
 	}
 	if isPNG(fileData) {
+		if uint64(len(fileData)) > math.MaxUint32 {
+			return nil, fmt.Errorf("icon resource is too large")
+		}
 		return bytes.Clone(fileData), nil
 	}
 	if isICO(fileData) {
