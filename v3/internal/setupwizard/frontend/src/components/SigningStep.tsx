@@ -882,12 +882,18 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
     if (!command) return;
 
     let cancelled = false;
+    let inFlight = false;
     const timer = setInterval(async () => {
+      if (inFlight) return; // a slow poll must not stack up behind itself
+      inFlight = true;
+
       let result;
       try {
         result = await getNotarizationStatus();
       } catch {
         return; // transient; the next tick will try again
+      } finally {
+        inFlight = false;
       }
       if (cancelled || result.state === 'running') return;
 
@@ -902,6 +908,10 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         onDone();
       } else if (result.state === 'failed') {
         setError(result.error || 'Failed to create profile');
+      } else {
+        // 'idle' — the wizard no longer knows about the window, most likely
+        // because it restarted. Say so rather than dropping back to the form.
+        setError('Lost track of the Terminal window. Close it and try again.');
       }
     }, 1000);
 

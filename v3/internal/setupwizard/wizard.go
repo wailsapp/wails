@@ -254,8 +254,9 @@ type Wizard struct {
 	// Notarization state. The macOS notarization profile is created in a
 	// terminal window of the wizard's own making, so the job outlives the
 	// request that started it.
-	notarizeMu  sync.Mutex
-	notarizeJob *notarizeJob
+	notarizeMu       sync.Mutex
+	notarizeJob      *notarizeJob
+	notarizeStarting bool
 
 	// Init-mode state. When initData is non-nil the wizard runs as the project
 	// "init" wizard (wails3 init -ui) instead of the global setup wizard.
@@ -1393,7 +1394,7 @@ type notarizeCreateRequest struct {
 // prompt for the app-specific password on a terminal, and the user is looking at
 // a browser: spawning the window puts that prompt in front of them instead of
 // asking them to go and find the terminal `wails3 setup` was started from. The
-// browser polls /signing/notarize/status while the window is open.
+// browser polls /api/signing/notarize/status while the window is open.
 func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
@@ -1431,6 +1432,14 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	w.notarizeMu.Lock()
+	if w.notarizeStarting {
+		w.notarizeMu.Unlock()
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "A terminal window is already opening. Check your screen for it.",
+		})
+		return
+	}
 	if w.notarizeJob != nil {
 		if state, _ := w.notarizeJob.snapshot(); state == notarizeStateRunning {
 			command := w.notarizeJob.command
@@ -1443,18 +1452,28 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	// Spawning the window shells out to `open`, so do it with the lock released:
+	// status and cancel have to stay answerable while it happens. The sentinel
+	// keeps a second create from racing in behind it.
+	w.notarizeStarting = true
+	w.notarizeMu.Unlock()
 
 	job, err := startNotarizeJob(profileName, appleID, teamID)
+
+	w.notarizeMu.Lock()
+	w.notarizeStarting = false
+	if err == nil {
+		w.notarizeJob = job
+	}
+	w.notarizeMu.Unlock()
+
 	if err != nil {
-		w.notarizeMu.Unlock()
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"success": false,
 			"error":   err.Error(),
 		})
 		return
 	}
-	w.notarizeJob = job
-	w.notarizeMu.Unlock()
 
 	go w.watchNotarizeJob(job)
 
