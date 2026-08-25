@@ -199,3 +199,43 @@ func TestNotarizeJobFinishesOnce(t *testing.T) {
 		t.Fatalf("job = (%q, %q), want (%q, \"\")", state, errMsg, notarizeStateSucceeded)
 	}
 }
+
+func TestNotarizeJobMatches(t *testing.T) {
+	job := &notarizeJob{profileName: "wails-notary", appleID: "me@example.com", teamID: "TEAM123"}
+
+	if !job.matches("wails-notary", "me@example.com", "TEAM123") {
+		t.Fatal("the credentials the job was started for should match")
+	}
+	for _, tt := range []struct {
+		name                         string
+		profileName, appleID, teamID string
+	}{
+		{"different profile", "other-notary", "me@example.com", "TEAM123"},
+		{"different apple id", "wails-notary", "someone@example.com", "TEAM123"},
+		{"different team id", "wails-notary", "me@example.com", "OTHER99"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if job.matches(tt.profileName, tt.appleID, tt.teamID) {
+				t.Fatal("a create for different credentials must not match the running job")
+			}
+		})
+	}
+}
+
+func TestNotarizeJobAbandon(t *testing.T) {
+	dir := t.TempDir()
+	jobDir := filepath.Join(dir, "job")
+	if err := os.MkdirAll(jobDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	job := &notarizeJob{dir: jobDir, state: notarizeStateRunning}
+
+	job.abandon()
+
+	if state, errMsg := job.snapshot(); state != notarizeStateFailed || errMsg != "Cancelled" {
+		t.Fatalf("job = (%q, %q), want (%q, %q)", state, errMsg, notarizeStateFailed, "Cancelled")
+	}
+	if _, err := os.Stat(jobDir); !os.IsNotExist(err) {
+		t.Fatalf("abandon should remove the job directory, stat err = %v", err)
+	}
+}

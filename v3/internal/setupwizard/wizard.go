@@ -257,6 +257,9 @@ type Wizard struct {
 	notarizeMu       sync.Mutex
 	notarizeJob      *notarizeJob
 	notarizeStarting bool
+	// Bumped on every cancel, so a job whose window was still opening when the
+	// user gave up can tell that it is no longer wanted.
+	notarizeCancelGen uint64
 
 	// Init-mode state. When initData is non-nil the wizard runs as the project
 	// "init" wizard (wails3 init -ui) instead of the global setup wizard.
@@ -1442,27 +1445,39 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 	}
 	if w.notarizeJob != nil {
 		if state, _ := w.notarizeJob.snapshot(); state == notarizeStateRunning {
-			command := w.notarizeJob.command
+			running := w.notarizeJob
 			w.notarizeMu.Unlock()
+			// Answering a create for different credentials with the open window
+			// would store the window's profile, not the one just typed.
+			if !running.matches(profileName, appleID, teamID) {
+				json.NewEncoder(rw).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "A terminal window is already open for different credentials. Finish or cancel it first.",
+				})
+				return
+			}
 			json.NewEncoder(rw).Encode(map[string]interface{}{
 				"success": true,
 				"pending": true,
-				"command": command,
+				"command": running.command,
 			})
 			return
 		}
 	}
 	// Spawning the window shells out to `open`, so do it with the lock released:
 	// status and cancel have to stay answerable while it happens. The sentinel
-	// keeps a second create from racing in behind it.
+	// keeps a second create from racing in behind it, and the generation catches
+	// a cancel that lands while the window is still opening.
 	w.notarizeStarting = true
+	startGen := w.notarizeCancelGen
 	w.notarizeMu.Unlock()
 
 	job, err := startNotarizeJob(profileName, appleID, teamID)
 
 	w.notarizeMu.Lock()
 	w.notarizeStarting = false
-	if err == nil {
+	wanted := err == nil && w.notarizeCancelGen == startGen
+	if wanted {
 		w.notarizeJob = job
 	}
 	w.notarizeMu.Unlock()
@@ -1471,6 +1486,14 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"success": false,
 			"error":   err.Error(),
+		})
+		return
+	}
+	if !wanted {
+		job.abandon()
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Cancelled while the terminal window was opening.",
 		})
 		return
 	}
@@ -1523,6 +1546,7 @@ func (w *Wizard) handleNotarizeCancel(rw http.ResponseWriter, r *http.Request) {
 	w.notarizeMu.Lock()
 	job := w.notarizeJob
 	w.notarizeJob = nil
+	w.notarizeCancelGen++
 	w.notarizeMu.Unlock()
 
 	if job != nil {

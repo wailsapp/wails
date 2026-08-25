@@ -1026,6 +1026,14 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         </div>
       )}
 
+      {/* There is no Team ID field on this screen, so say why Save is disabled
+          rather than leaving the user with a dead button. */}
+      {!teamID && (
+        <p className="text-xs text-amber-600 dark:text-amber-400">
+          Go Back and set your Team ID before storing notarization credentials — notarytool needs it.
+        </p>
+      )}
+
       <div className="flex gap-3 pt-2">
         <button
           type="button"

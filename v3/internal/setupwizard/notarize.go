@@ -36,6 +36,7 @@ type notarizeJob struct {
 	command     string // human-readable command, shown in the browser
 	dir         string // temp dir holding the script and status file
 	profileName string
+	appleID     string
 	teamID      string
 
 	mu    sync.Mutex
@@ -72,6 +73,20 @@ func (j *notarizeJob) snapshot() (state, errMsg string) {
 	j.mu.Lock()
 	defer j.mu.Unlock()
 	return j.state, j.err
+}
+
+// matches reports whether the job was started for exactly these credentials, so
+// a repeated create can be answered with the window that is already open rather
+// than quietly adopting it for different values.
+func (j *notarizeJob) matches(profileName, appleID, teamID string) bool {
+	return j.profileName == profileName && j.appleID == appleID && j.teamID == teamID
+}
+
+// abandon drops a job the wizard never adopted — cancelled while its window was
+// still opening. The window itself is left for the user to close.
+func (j *notarizeJob) abandon() {
+	j.finish(notarizeStateFailed, "Cancelled")
+	os.RemoveAll(j.dir)
 }
 
 // notarizeArgs builds the xcrun invocation. The app-specific password is
@@ -152,7 +167,7 @@ func notarizeScript(args []string, statusPath string) string {
 	b.WriteString("printf '  It is not echoed as you type and is never passed on the\\n'\n")
 	b.WriteString("printf '  command line, so it cannot be read out of the process list.\\n\\n'\n")
 	b.WriteString("printf '  Running:\\n\\n'\n")
-	b.WriteString(fmt.Sprintf("printf '    %%s\\n\\n' %s\n\n", shellQuote(shellJoin(args))))
+	fmt.Fprintf(&b, "printf '    %%s\\n\\n' %s\n\n", shellQuote(shellJoin(args)))
 	b.WriteString(shellJoin(args) + "\n")
 	b.WriteString("__wails_status=$?\n\n")
 	b.WriteString("if [ \"$__wails_status\" -eq 0 ]; then\n")
@@ -162,8 +177,8 @@ func notarizeScript(args []string, statusPath string) string {
 	b.WriteString("\tprintf '  back to the setup wizard in your browser to try again.\\n\\n'\n")
 	b.WriteString("fi\n\n")
 	b.WriteString("# Written last: the wizard is watching for this file.\n")
-	b.WriteString(fmt.Sprintf("printf '%%s' \"$__wails_status\" > %s && mv %s %s\n",
-		shellQuote(statusPath+".tmp"), shellQuote(statusPath+".tmp"), shellQuote(statusPath)))
+	fmt.Fprintf(&b, "printf '%%s' \"$__wails_status\" > %s && mv %s %s\n",
+		shellQuote(statusPath+".tmp"), shellQuote(statusPath+".tmp"), shellQuote(statusPath))
 	return b.String()
 }
 
@@ -179,6 +194,7 @@ func startNotarizeJob(profileName, appleID, teamID string) (*notarizeJob, error)
 		command:     shellJoin(args),
 		dir:         dir,
 		profileName: profileName,
+		appleID:     appleID,
 		teamID:      teamID,
 		state:       notarizeStateRunning,
 	}
