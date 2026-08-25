@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wails v3 HCL Build System — Support Report</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18212f;
+      --muted: #5e6877;
+      --line: #dce2ea;
+      --panel: #f5f7fa;
+      --accent: #c52f45;
+      --accent-soft: #fff0f2;
+      --good: #166534;
+      --good-soft: #ecfdf3;
+      --warn: #92400e;
+      --warn-soft: #fff8e7;
+      --code: #111827;
+      --white: #fff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #eef1f5;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.58;
+    }
+
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 32px auto;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 50px rgba(24, 33, 47, .09);
+      overflow: hidden;
+    }
+
+    header {
+      padding: 54px 58px 42px;
+      color: var(--white);
+      background:
+        radial-gradient(circle at 90% 0%, rgba(255,255,255,.14), transparent 34%),
+        linear-gradient(135deg, #151d2a 0%, #273244 68%, #40303a 100%);
+    }
+
+    header .eyebrow {
+      margin: 0 0 12px;
+      color: #ffc9d1;
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 790px;
+      margin: 0 0 14px;
+      font-size: clamp(2.25rem, 5vw, 4rem);
+      line-height: 1.02;
+      letter-spacing: -.045em;
+    }
+
+    header .lede {
+      max-width: 800px;
+      margin: 0;
+      color: #e5e9ef;
+      font-size: 1.12rem;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 27px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: #f8fafc;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+
+    .content { padding: 44px 58px 62px; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 0 0 40px;
+    }
+
+    .metric {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--panel);
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1.2rem;
+      line-height: 1.25;
+    }
+
+    .metric span { color: var(--muted); font-size: .91rem; }
+
+    section { margin-top: 42px; scroll-margin-top: 20px; }
+
+    h2 {
+      margin: 0 0 16px;
+      padding-bottom: 9px;
+      border-bottom: 2px solid var(--ink);
+      font-size: 1.53rem;
+      line-height: 1.25;
+      letter-spacing: -.02em;
+    }
+
+    h3 {
+      margin: 25px 0 9px;
+      font-size: 1.08rem;
+      line-height: 1.3;
+    }
+
+    p { margin: 0 0 14px; }
+    ul, ol { margin: 10px 0 16px; padding-left: 24px; }
+    li { margin: 5px 0; }
+
+    code {
+      padding: .12em .38em;
+      border-radius: 5px;
+      background: #eef1f5;
+      color: #91243a;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: .91em;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 14px 0 20px;
+      padding: 20px 22px;
+      border-radius: 12px;
+      background: var(--code);
+      color: #e5e7eb;
+      line-height: 1.55;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+
+    pre code { padding: 0; background: none; color: inherit; }
+
+    .table-wrap { overflow-x: auto; margin: 16px 0 22px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      font-size: .94rem;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: var(--panel); font-size: .84rem; text-transform: uppercase; letter-spacing: .045em; }
+    tr:last-child td { border-bottom: 0; }
+
+    .callout {
+      margin: 19px 0;
+      padding: 17px 19px;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: var(--accent-soft);
+    }
+
+    .callout.good { border-color: var(--good); background: var(--good-soft); }
+    .callout.warn { border-color: #d97706; background: var(--warn-soft); }
+    .callout p:last-child { margin-bottom: 0; }
+
+    .checks { list-style: none; padding-left: 0; }
+    .checks li { position: relative; padding-left: 29px; }
+    .checks li::before { position: absolute; left: 2px; top: .03em; color: var(--good); content: "✓"; font-weight: 900; }
+    .checks.no li::before { color: var(--accent); content: "×"; }
+
+    .status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status.done { color: var(--good); background: var(--good-soft); }
+    .status.pending { color: var(--warn); background: var(--warn-soft); }
+
+    footer {
+      padding: 24px 58px 30px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    @media (max-width: 760px) {
+      main { width: 100%; margin: 0; border: 0; border-radius: 0; }
+      header, .content, footer { padding-left: 24px; padding-right: 24px; }
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      @page { margin: 16mm; }
+      body { background: #fff; font-size: 10.5pt; }
+      main { width: 100%; margin: 0; border: 0; box-shadow: none; }
+      header { padding: 26px 30px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .content { padding: 26px 30px; }
+      section { break-inside: avoid; }
+      .table-wrap { overflow: visible; }
+      pre { white-space: pre-wrap; }
+      footer { padding: 18px 30px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Experimental implementation report</p>
+      <h1>Wails v3 HCL Build System</h1>
+      <p class="lede">Exactly what the current branch supports, what has been verified, and what remains before multi-platform release acceptance.</p>
+      <div class="meta">
+        <span class="pill">Branch: codex/hcl-build-system</span>
+        <span class="pill">Commit: df4b562ed</span>
+        <span class="pill">Contract: Wails v3</span>
+        <span class="pill">Status: Experimental</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="summary-grid">
+        <div class="metric"><strong>Working implementation</strong><span>Config, planning, execution, caching, dev, migration and wizard integration.</span></div>
+        <div class="metric"><strong>Linux audited</strong><span>Real builds, packages, templates, development lifecycle and cache behaviour.</span></div>
+        <div class="metric"><strong>Native matrix pending</strong><span>Windows, macOS, iOS, Android and credentialed signing still require native-host acceptance.</span></div>
+      </div>
+
+      <div class="callout good">
+        <p><strong>Executive summary.</strong> This is a complete Linux-tested experimental vertical slice, not merely a proposal. Multi-platform support is implemented in code and structurally tested, but it is not release-ready until the matching-host matrix is completed.</p>
+      </div>
+
+      <section>
+        <h2>Core behaviour</h2>
+        <ul class="checks">
+          <li>A root <code>wails.hcl</code> opts the project into the native build system.</li>
+          <li>Once present, Taskfiles are completely ignored.</li>
+          <li>Invalid HCL fails explicitly and never falls back to Taskfiles.</li>
+          <li>Projects without <code>wails.hcl</code> continue using the legacy Taskfile path.</li>
+          <li>Wails owns a fixed pipeline; users describe desired outputs instead of tasks or stages.</li>
+          <li>The schema accepts literal strings, numbers, booleans, lists and maps.</li>
+          <li>Unknown fields, duplicate fields or blocks, incorrect types and unsupported combinations are rejected with source locations.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Commands supported</h2>
+        <pre><code>wails3 build
+wails3 build release
+wails3 build --targets linux/amd64,windows/arm64
+wails3 build --targets linux/amd64 --formats deb,rpm
+wails3 build ... --plan
+wails3 build ... --plan --json
+
+wails3 dev
+wails3 dev --plan
+
+wails3 migrate
+wails3 migrate --dry-run
+wails3 migrate --json
+wails3 migrate --activate
+
+wails3 eject
+wails3 eject --force
+
+wails3 clean</code></pre>
+        <p>Anonymous builds also support <code>--tags</code>, <code>--obfuscated</code>, <code>--garble-args</code> and <code>--force</code>. A named profile is a complete production request and cannot be mixed with artifact-changing CLI overrides.</p>
+        <p><code>wails3 package</code> and <code>wails3 sign</code> remain as deprecated compatibility aliases for HCL projects.</p>
+      </section>
+
+      <section>
+        <h2>Targets and outputs</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Platform</th><th>Targets</th><th>Base output</th><th>Production formats</th></tr></thead>
+            <tbody>
+              <tr><td>Windows</td><td><code>amd64</code>, <code>arm64</code></td><td><code>.exe</code></td><td>NSIS, MSIX</td></tr>
+              <tr><td>macOS</td><td><code>amd64</code>, <code>arm64</code>, <code>universal</code></td><td><code>.app</code></td><td>DMG</td></tr>
+              <tr><td>Linux</td><td><code>amd64</code>, <code>arm64</code></td><td>Binary</td><td>AppImage, DEB, RPM, Arch Linux</td></tr>
+              <tr><td>iOS</td><td><code>arm64</code></td><td>Simulator/device <code>.app</code></td><td>Device IPA</td></tr>
+              <tr><td>Android</td><td><code>amd64</code>, <code>arm64</code>, <code>universal</code></td><td>—</td><td>AAB only</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul>
+          <li>A default Android production build produces an AAB.</li>
+          <li>Production APK is deliberately rejected. APK exists only as an internal development artifact.</li>
+          <li>iOS IPA requires <code>destination = "device"</code>.</li>
+          <li><code>app</code> and <code>binary</code> are base outputs, not values passed to <code>--formats</code>.</li>
+          <li>Universal macOS builds compile and merge both architectures.</li>
+          <li>Universal Android builds combine both supported ABIs.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Cross-compilation</h2>
+        <p>Configured toolchain values are <code>auto</code>, <code>native</code>, <code>zig</code> and <code>docker</code>.</p>
+        <ul>
+          <li><strong>Windows and Linux:</strong> native, Zig or Docker.</li>
+          <li><strong>macOS:</strong> native or the prepared Docker cross-compilation environment.</li>
+          <li><strong>iOS:</strong> native Xcode toolchain on macOS.</li>
+          <li><strong>Android:</strong> Android NDK on Linux, macOS or Windows.</li>
+          <li>Docker-based cross-compilation from a Windows host is not currently supported.</li>
+          <li>Packaging has additional host restrictions: MSIX requires Windows, while DMG and IPA require macOS.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Configuration covered by <code>wails.hcl</code></h2>
+        <ul>
+          <li>Project identity, version, build number, binary name, company, description, copyright, comments and icon.</li>
+          <li>Frontend directory, install/build/dev argument vectors, package manager, output and environment.</li>
+          <li>TypeScript bindings, interface/class output, generated filenames and Go time representation.</li>
+          <li>Build output, tags, linker/compiler flags, environment, trim path, stripping, VCS metadata and garble obfuscation.</li>
+          <li>Development tags, watch/exclude patterns, Git-ignore handling, debounce, log level and shutdown grace period.</li>
+          <li>Platform metadata and user-owned assets for Windows, macOS, Linux, iOS and Android.</li>
+          <li>Per-target flags, environment, minimum OS version, build number, obfuscation and toolchain.</li>
+          <li>Named profiles selecting targets, formats, signing, notarisation and mobile destination.</li>
+          <li>File associations and custom protocols.</li>
+          <li>Structured package settings and complete package-template replacements.</li>
+          <li>Platform signing references without storing secret values in HCL.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>User-owned assets</h2>
+        <p>Supported project-owned inputs include icons, platform manifests, Apple <code>Info.plist</code> and <code>Assets.car</code>, Linux desktop entries, signing inputs, package templates, AppImage assets, Linux package lifecycle scripts, file-association icons, and DMG files and artwork.</p>
+        <p>Wails copies these inputs into disposable <code>.wails/</code> workspaces. Source files are not modified. Complete templates are opaque files or directories: no interpolation, merging or line-ending conversion is performed.</p>
+      </section>
+
+      <section>
+        <h2>Pipeline and caching</h2>
+        <ol>
+          <li>Install frontend dependencies.</li>
+          <li>Generate bindings.</li>
+          <li>Build the frontend.</li>
+          <li>Compile the native application.</li>
+          <li>Merge universal binaries where required.</li>
+          <li>Generate platform assets.</li>
+          <li>Assemble applications.</li>
+          <li>Package, sign and notarise as requested.</li>
+          <li>Publish artifacts and generate a verified receipt.</li>
+        </ol>
+        <p>The executor supports shared work across targets, bounded parallelism, content-addressed local caching, automatic input tracking, restoration of missing outputs, dirty-output detection, transactional publication and non-cacheable signing. Final artifact metadata is written to <code>.wails/artifacts/receipt.json</code>.</p>
+        <p><code>--plan</code> produces a human-readable inspection without writing state. <code>--plan --json</code> emits the same resolved graph as deterministic, versioned JSON.</p>
+      </section>
+
+      <section>
+        <h2>Development mode</h2>
+        <ul class="checks">
+          <li>Uses the same planner and cache with separate development policy.</li>
+          <li>Runs only for the current host target.</li>
+          <li>Starts and readiness-checks the frontend server and native application.</li>
+          <li>Watches configured files with debounce and optional <code>.gitignore</code> filtering.</li>
+          <li>Cancels stale rebuild generations and restarts only affected processes.</li>
+          <li>Reloads <code>wails.hcl</code> transactionally and preserves the last healthy session after a failed replacement.</li>
+          <li>Stores development binaries beneath <code>.wails/dev/</code>.</li>
+          <li>Keeps stripping, obfuscation and other production policy out of development.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>New projects, wizard and migration</h2>
+        <ul>
+          <li>All built-in templates generate <code>wails.hcl</code>.</li>
+          <li>The init wizard writes metadata and TypeScript/interface choices through a typed internal state and HCL writer.</li>
+          <li>Existing manifest updates preserve unrelated configuration, comments, ordering and file permissions.</li>
+          <li>The signing wizard updates one platform signing block without replacing the remainder of the manifest.</li>
+          <li>Community templates with Taskfiles are analysed. Representable templates can become active HCL projects; custom behaviour produces an inactive draft and preserves legacy execution.</li>
+        </ul>
+        <p>Migration inspects root and included Taskfiles, reachable build/package/sign/dev tasks, <code>build/config.yml</code>, frontend metadata and lockfiles, binding settings, conventional assets, project metadata, file associations and protocols.</p>
+        <p>Only behaviour with a typed equivalent is migrated. Reachable custom shell logic is a blocker. Activation atomically renames <code>wails.migrated.hcl</code> to <code>wails.hcl</code>; Taskfiles, scripts, YAML and assets are not deleted or edited.</p>
+      </section>
+
+      <section>
+        <h2>Signing implemented</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Platform</th><th>Implementation</th></tr></thead>
+            <tbody>
+              <tr><td>Windows</td><td>Authenticode through <code>signtool</code>.</td></tr>
+              <tr><td>macOS</td><td>App/package signing through <code>codesign</code> and optional notarisation.</td></tr>
+              <tr><td>iOS</td><td>App and IPA signing.</td></tr>
+              <tr><td>Android</td><td>AAB signing using a keystore, key alias and password environment-variable reference.</td></tr>
+              <tr><td>Linux</td><td>DEB through <code>dpkg-sig</code>; RPM through <code>rpmsign</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout warn"><p>Linux AppImage and Arch package signing are not supported by the current contract. Credentialed native signing still requires end-to-end acceptance on matching hosts.</p></div>
+      </section>
+
+      <section>
+        <h2>Explicitly not supported</h2>
+        <ul class="checks no">
+          <li>Build hooks or arbitrary pre/post-build commands.</li>
+          <li>Custom stages, dependencies or user-defined pipelines.</li>
+          <li>Calling <code>wails3 tool</code> operations from HCL.</li>
+          <li>HCL expressions, variables, functions, interpolation, includes, conditions, loops or HCL-JSON.</li>
+          <li>Remote caching.</li>
+          <li>Automatic translation of arbitrary Taskfile shell logic.</li>
+          <li>Device deployment, emulator control or IDE launching.</li>
+          <li>Production APK output.</li>
+          <li>A <code>config show</code>, <code>config check</code> or configuration command family.</li>
+          <li>Cleaning final artifacts: <code>wails3 clean</code> removes <code>.wails/</code> only.</li>
+        </ul>
+        <p>External scripts can still run separately before or after Wails, but they are not represented in the build graph.</p>
+      </section>
+
+      <section>
+        <h2>Current verification status</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Area</th><th>Status</th><th>Evidence</th></tr></thead>
+            <tbody>
+              <tr><td>Linux binaries and packages</td><td><span class="status done">Confirmed</span></td><td>Real binary, DEB, RPM, Arch Linux and AppImage builds.</td></tr>
+              <tr><td>Built-in web templates</td><td><span class="status done">Confirmed</span></td><td>All nine templates exercised.</td></tr>
+              <tr><td>Development lifecycle</td><td><span class="status done">Confirmed</span></td><td>Real frontend/backend startup, rebuild and process lifecycle.</td></tr>
+              <tr><td>Cache and artifact stability</td><td><span class="status done">Confirmed</span></td><td>Hits, restoration, stable bytes and receipts.</td></tr>
+              <tr><td>Wizard and migration</td><td><span class="status done">Confirmed</span></td><td>HCL generation, preservation and migration tests.</td></tr>
+              <tr><td>Windows and macOS</td><td><span class="status pending">Pending native acceptance</span></td><td>Implemented and structurally tested; no real host run yet.</td></tr>
+              <tr><td>iOS and Android</td><td><span class="status pending">Pending SDK acceptance</span></td><td>Implemented with fake-tool coverage; no real SDK/device evidence yet.</td></tr>
+              <tr><td>Credentialed signing</td><td><span class="status pending">Pending</span></td><td>Handlers and validation exist; native signature verification remains.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Default-template performance on the current Linux machine</h3>
+        <ul>
+          <li>Fresh production build with warm machine caches: <strong>3.5 seconds</strong>.</li>
+          <li>Unchanged rebuild median: <strong>100.8 ms</strong>.</li>
+          <li>All six default build operations cached.</li>
+        </ul>
+        <div class="callout warn">
+          <p><strong>Remaining acceptance concerns.</strong> The controlled Linux 100 ms gate has not passed; the previous badge result was 103.913 ms. The handoff verifier also requests iOS <code>--formats app</code>, although <code>app</code> is a base output rather than an explicit format, so that row must be corrected before running acceptance.</p>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      Generated 26 August 2026 from <code>origin/codex/hcl-build-system</code> at <code>df4b562ed</code>. This document describes the implemented branch, not the broader proposal.
+    </footer>
+  </main>
+</body>
+</html>
