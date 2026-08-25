@@ -173,8 +173,7 @@ export async function createNotarizationProfile(data: {
   profileName: string;
   appleID: string;
   teamID: string;
-  password: string;
-}): Promise<{ success: boolean; error?: string; output?: string }> {
+}): Promise<{ success: boolean; error?: string }> {
   const response = await fetch(`${API_BASE}/signing/notarize/create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

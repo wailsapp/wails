@@ -868,7 +868,6 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
   const [creating, setCreating] = useState(false);
   const [profileName, setProfileName] = useState(config.darwin?.keychainProfile || 'wails-notary');
   const [appleID, setAppleID] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleCreate = async () => {
@@ -879,7 +878,6 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         profileName,
         appleID,
         teamID,
-        password,
       });
       if (result.success) {
         setConfig({
@@ -903,6 +901,8 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         Stores your Apple notarization credentials securely in the macOS Keychain.
         Requires an{' '}
         <a href="https://support.apple.com/en-us/102654" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">app-specific password</a>.
+        {' '}When you click Save, enter it in the terminal where you ran{' '}
+        <code className="font-mono">wails3 setup</code>; it will not be displayed as you type.
       </p>
 
       <div>
@@ -927,19 +927,11 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App-Specific Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="xxxx-xxxx-xxxx-xxxx"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-        />
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Generate at{' '}
-          <a href="https://appleid.apple.com/account/manage" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">appleid.apple.com</a>
-          {' '}→ Sign-In and Security → App-Specific Passwords
+      <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+        <p className="text-xs text-amber-800 dark:text-amber-200">
+          Generate an app-specific password at{' '}
+          <a href="https://appleid.apple.com/account/manage" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">appleid.apple.com</a>
+          {' '}→ Sign-In and Security → App-Specific Passwords. The terminal prompt will appear after you click Save.
         </p>
       </div>
 
@@ -953,24 +945,26 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         <button
           type="button"
           onClick={onBack}
-          className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+          disabled={creating}
+          className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
         >
           Back
         </button>
         <button
           type="button"
           onClick={onSkip}
-          className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+          disabled={creating}
+          className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
         >
           Skip
         </button>
         <button
           type="button"
           onClick={handleCreate}
-          disabled={creating || !profileName || !appleID || !password}
+          disabled={creating || !profileName || !appleID || !teamID}
           className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
         >
-          {creating ? 'Saving...' : 'Save'}
+          {creating ? 'Waiting for terminal…' : 'Save'}
         </button>
       </div>
     </div>

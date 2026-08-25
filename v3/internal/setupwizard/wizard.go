@@ -1378,7 +1378,6 @@ type notarizeCreateRequest struct {
 	ProfileName string `json:"profileName"`
 	AppleID     string `json:"appleID"`
 	TeamID      string `json:"teamID"`
-	Password    string `json:"password"`
 }
 
 func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
@@ -1406,7 +1405,7 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.ProfileName == "" || req.AppleID == "" || req.TeamID == "" || req.Password == "" {
+	if req.ProfileName == "" || req.AppleID == "" || req.TeamID == "" {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"success": false,
 			"error":   "All fields are required",
@@ -1418,25 +1417,19 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 		req.ProfileName,
 		"--apple-id", req.AppleID,
 		"--team-id", req.TeamID,
-		"--password", req.Password,
 		"--validate",
 	)
-	output, err := cmd.CombinedOutput()
+	// notarytool securely prompts for the app-specific password when --password
+	// is omitted. The setup wizard runs from a terminal, so keep the prompt in
+	// that terminal instead of exposing the password in the process arguments.
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
 	if err != nil {
-		errMsg := strings.TrimSpace(string(output))
-		// Clean up the error message
-		if strings.Contains(errMsg, "Error:") {
-			lines := strings.Split(errMsg, "\n")
-			for _, line := range lines {
-				if strings.Contains(line, "Error:") {
-					errMsg = strings.TrimSpace(strings.TrimPrefix(line, "Error:"))
-					break
-				}
-			}
-		}
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"success": false,
-			"error":   errMsg,
+			"error":   "Failed to create notarization profile. Check the terminal for details.",
 		})
 		return
 	}
@@ -1462,7 +1455,6 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(rw).Encode(map[string]interface{}{
 		"success": true,
-		"output":  strings.TrimSpace(string(output)),
 	})
 }
 
