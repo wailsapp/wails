@@ -22,8 +22,6 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
-- Correct typos in comments and localized documentation in [PR](https://github.com/wailsapp/wails/pull/6023) by @haoku123
-- Remove the precompiled macOS binaries committed under `v3/examples` in [PR](https://github.com/wailsapp/wails/pull/6025) by @4RH1T3CT0R7
 <!-- Bug fixes -->
 
 ## Deprecated
