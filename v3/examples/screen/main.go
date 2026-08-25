@@ -90,8 +90,15 @@ func main() {
 						return
 					}
 
-					// Serve file from disk to make testing easy.
-					http.ServeFile(w, r, resolvedRealPath)
+					// Serve through a rooted file server rather than passing a
+					// request-derived filesystem path to http.ServeFile. The path
+					// above has already been resolved and checked against assets.
+					fileRequest := *r
+					fileURL := *r.URL
+					fileURL.Path = "/" + filepath.ToSlash(realRel)
+					fileURL.RawPath = ""
+					fileRequest.URL = &fileURL
+					http.FileServer(http.Dir(assetsRealPath)).ServeHTTP(w, &fileRequest)
 				})
 			},
 		},
