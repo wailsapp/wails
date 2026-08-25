@@ -417,35 +417,86 @@ static NSMutableDictionary* mfKeychainQuery(NSString *key) {
     return q;
 }
 
-void ios_secure_set(const char* ckey, const char* cvalue) {
+// ios_secure_set stores or updates a Keychain entry. Returns a JSON envelope:
+// {"ok":true} on success, {"ok":false,"error":"..."} on failure.
+const char* ios_secure_set(const char* ckey, const char* cvalue) {
     NSString *key = ckey ? [NSString stringWithUTF8String:ckey] : @"";
     NSString *value = cvalue ? [NSString stringWithUTF8String:cvalue] : @"";
-    if (key.length == 0) return;
+    if (key.length == 0) {
+        return mfDup(@"{\"ok\":false,\"error\":\"empty key\"}");
+    }
+
+    NSData *valueData = [value dataUsingEncoding:NSUTF8StringEncoding];
     NSMutableDictionary *q = mfKeychainQuery(key);
-    SecItemDelete((__bridge CFDictionaryRef)q);
-    q[(__bridge id)kSecValueData] = [value dataUsingEncoding:NSUTF8StringEncoding];
-    q[(__bridge id)kSecAttrAccessible] = (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly;
-    SecItemAdd((__bridge CFDictionaryRef)q, NULL);
+
+    // Try to update an existing item first.
+    NSDictionary *attrs = @{
+        (__bridge id)kSecValueData: valueData,
+        (__bridge id)kSecAttrAccessible: (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+    };
+    OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)q, (__bridge CFDictionaryRef)attrs);
+
+    if (status == errSecItemNotFound) {
+        // Item does not exist yet — add it.
+        q[(__bridge id)kSecValueData] = valueData;
+        q[(__bridge id)kSecAttrAccessible] = (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly;
+        status = SecItemAdd((__bridge CFDictionaryRef)q, NULL);
+    }
+
+    if (status == errSecSuccess) {
+        return mfDup(@"{\"ok\":true}");
+    }
+    NSString *err = [NSString stringWithFormat:@"{\"ok\":false,\"error\":\"Keychain OSStatus %d\"}", (int)status];
+    return mfDup(err);
 }
 
+// ios_secure_get reads a Keychain entry. Returns a JSON envelope:
+// {"ok":true,"found":true,"value":"..."} or {"ok":true,"found":false}
+// or {"ok":false,"error":"..."}.
 const char* ios_secure_get(const char* ckey) {
     NSString *key = ckey ? [NSString stringWithUTF8String:ckey] : @"";
+    if (key.length == 0) {
+        return mfDup(@"{\"ok\":false,\"error\":\"empty key\"}");
+    }
+
     NSMutableDictionary *q = mfKeychainQuery(key);
     q[(__bridge id)kSecReturnData] = @YES;
     q[(__bridge id)kSecMatchLimit] = (__bridge id)kSecMatchLimitOne;
     CFTypeRef result = NULL;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)q, &result);
-    if (status == errSecSuccess && result) {
-        NSData *data = (__bridge_transfer NSData *)result;
-        NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        return mfDup(s ?: @"");
+
+    if (status == errSecItemNotFound) {
+        return mfDup(@"{\"ok\":true,\"found\":false}");
     }
-    return mfDup(@"");
+    if (status != errSecSuccess) {
+        NSString *err = [NSString stringWithFormat:@"{\"ok\":false,\"error\":\"Keychain OSStatus %d\"}", (int)status];
+        return mfDup(err);
+    }
+
+    NSData *data = (__bridge_transfer NSData *)result;
+    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    if (!s) s = @"";
+
+    // JSON-escape the value to avoid injection.
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:@{@"ok": @YES, @"found": @YES, @"value": s} options:0 error:nil];
+    NSString *json = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    return mfDup(json ?: @"{\"ok\":false,\"error\":\"JSON encoding failed\"}");
 }
 
-void ios_secure_delete(const char* ckey) {
+// ios_secure_delete removes a Keychain entry. Deleting a non-existent key
+// is considered success. Returns {"ok":true} or {"ok":false,"error":"..."}.
+const char* ios_secure_delete(const char* ckey) {
     NSString *key = ckey ? [NSString stringWithUTF8String:ckey] : @"";
-    SecItemDelete((__bridge CFDictionaryRef)mfKeychainQuery(key));
+    if (key.length == 0) {
+        return mfDup(@"{\"ok\":false,\"error\":\"empty key\"}");
+    }
+
+    OSStatus status = SecItemDelete((__bridge CFDictionaryRef)mfKeychainQuery(key));
+    if (status == errSecSuccess || status == errSecItemNotFound) {
+        return mfDup(@"{\"ok\":true}");
+    }
+    NSString *err = [NSString stringWithFormat:@"{\"ok\":false,\"error\":\"Keychain OSStatus %d\"}", (int)status];
+    return mfDup(err);
 }
 
 // MARK: - Haptics
