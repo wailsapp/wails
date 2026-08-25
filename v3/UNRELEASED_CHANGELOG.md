@@ -22,6 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
+- Keep serving main thread work on macOS while a modal loop runs in [PR](https://github.com/wailsapp/wails/pull/6026) by @leaanthony
 - Make mobile secure storage fallible and fail-closed in [PR](https://github.com/wailsapp/wails/pull/5923) by @mortenolsrud
 - Run application event hooks even when no listener is registered in [PR](https://github.com/wailsapp/wails/pull/5999) by @archy-rock3t-cloud
 - Correct typos in comments and localized documentation in [PR](https://github.com/wailsapp/wails/pull/6023) by @haoku123
