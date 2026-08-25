@@ -4,27 +4,47 @@ package application
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/wailsapp/wails/v3/pkg/application/internal/mainthreadharness"
 )
 
-var appKitReady bool
+const (
+	// How long the stand-in for a modal dialog holds the main thread.
+	nestedLoopDuration = 2 * time.Second
+	// What a main thread callback is allowed to take. In practice it arrives in
+	// well under a millisecond; starved, it takes the whole nested loop. The
+	// budget sits far from both, and is used as the timeout and as the
+	// assertion, so the two can never disagree.
+	deliveryBudget = 500 * time.Millisecond
+)
+
+var (
+	appKitReady bool
+	mainLoop    *mainthreadharness.Loop
+)
 
 // TestMain runs the package's tests on their own goroutine while the main
 // thread turns the run loop, as an application's message loop does. Callbacks
 // scheduled with dispatchOnMainThread are delivered to the main thread, so
 // without a loop running there nothing would ever execute them.
 func TestMain(m *testing.M) {
-	appKitReady = initAppKitForTest()
+	appKitReady = mainthreadharness.InitAppKit()
+
+	mainLoop = mainthreadharness.NewLoop()
+	defer mainLoop.Free()
 
 	var code int
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
 		code = m.Run()
-		stopMainRunLoopForTest()
+		mainLoop.Stop()
 	}()
-	runMainRunLoopForTest()
+	mainLoop.Run()
 	<-done
 	os.Exit(code)
 }
@@ -60,15 +80,14 @@ func TestDispatchIsDeliveredDuringNestedRunLoop(t *testing.T) {
 		t.Skip("AppKit is not available, so the behaviour under test does not arise")
 	}
 
-	const nested = 2 * time.Second
-
 	entered := make(chan struct{})
 	delivered := make(chan struct{})
 
-	// A callback that does not return for `nested`, standing in for a dialog.
+	// A callback which does not return for the duration, standing in for a
+	// dialog or an open menu.
 	scheduleOnMainForTest(func() {
 		close(entered)
-		runNestedRunLoopForTest(nested)
+		mainthreadharness.RunNested(nestedLoopDuration)
 	})
 
 	select {
@@ -82,11 +101,58 @@ func TestDispatchIsDeliveredDuringNestedRunLoop(t *testing.T) {
 
 	select {
 	case <-delivered:
-		if elapsed := time.Since(start); elapsed >= nested {
-			t.Fatalf("callback ran only once the nested loop had finished, after %s", elapsed)
+		if elapsed := time.Since(start); elapsed > deliveryBudget {
+			t.Fatalf("callback took %s to arrive, budget is %s", elapsed, deliveryBudget)
 		}
-	case <-time.After(nested - 500*time.Millisecond):
-		t.Fatal("main thread dispatch starved by a nested run loop: an open dialog " +
-			"or menu would freeze every window, menu and runtime call until it was dismissed")
+	case <-time.After(deliveryBudget):
+		t.Fatalf("main thread dispatch starved by a nested run loop: nothing delivered "+
+			"within %s while a %s modal loop was up. An open dialog or menu would freeze "+
+			"every window, menu and runtime call until it was dismissed",
+			deliveryBudget, nestedLoopDuration)
+	}
+}
+
+// TestLoopHonoursStopBeforeRun guards the harness itself. TestMain stops the
+// loop from the goroutine running the suite, which can finish before the main
+// thread reaches Run; if Run were to put the loop into the running state, that
+// stop would be overwritten and the test binary would never exit.
+func TestLoopHonoursStopBeforeRun(t *testing.T) {
+	loop := mainthreadharness.NewLoop()
+	defer loop.Free()
+
+	loop.Stop()
+
+	returned := make(chan struct{})
+	go func() {
+		loop.Run()
+		close(returned)
+	}()
+
+	select {
+	case <-returned:
+	case <-time.After(3 * time.Second):
+		t.Fatal("Run kept turning after Stop: if the suite finished first, the test binary would hang")
+	}
+}
+
+// TestNoTestOnlyHelpersInShippedFiles keeps the run loop harness out of the
+// package that ships. It is only needed by the tests, and it carries cgo.
+func TestNoTestOnlyHelpersInShippedFiles(t *testing.T) {
+	entries, err := os.ReadDir(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		body, err := os.ReadFile(filepath.Join(".", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(body), "mainthreadharness") {
+			t.Errorf("%s pulls the test harness into the shipped package", name)
+		}
 	}
 }
