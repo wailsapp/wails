@@ -22,10 +22,16 @@ type ProjectMetadataState struct {
 
 // ProjectConfigState is the complete project state edited by the setup wizard.
 type ProjectConfigState struct {
-	Info ProjectMetadataState `json:"info"`
+	Info     ProjectMetadataState `json:"info"`
+	Bindings *BindingState        `json:"bindings,omitempty"`
 }
 
-var invalidWizardProjectName = regexp.MustCompile(`[^a-zA-Z0-9_-]+`)
+type BindingState struct {
+	TypeScript bool `json:"typescript"`
+	Interfaces bool `json:"interfaces"`
+}
+
+var invalidWizardProjectName = regexp.MustCompile(`[^a-zA-Z0-9_.-]+`)
 
 func (config ProjectConfigState) project(existing manifest.Project) (manifest.Project, error) {
 	project := existing
@@ -71,4 +77,28 @@ func projectConfigStateFromProject(project manifest.Project) ProjectConfigState 
 		Comments:          project.Comments,
 		Version:           project.Version,
 	}}
+}
+
+func projectConfigStateFromConfig(config manifest.Config) ProjectConfigState {
+	state := projectConfigStateFromProject(config.Project)
+	state.Bindings = &BindingState{
+		TypeScript: config.Frontend.Bindings.TypeScript,
+		Interfaces: config.Frontend.Bindings.Interfaces,
+	}
+	return state
+}
+
+// ManifestState translates wizard-owned state into the manifest writer's
+// scaffold interface. HCL layout and defaulting remain inside manifest.
+func (config ProjectConfigState) ManifestState(existing manifest.Project) (manifest.InitialState, error) {
+	project, err := config.project(existing)
+	if err != nil {
+		return manifest.InitialState{}, err
+	}
+	typescript, interfaces := true, true
+	if config.Bindings != nil {
+		typescript = config.Bindings.TypeScript
+		interfaces = typescript && config.Bindings.Interfaces
+	}
+	return manifest.InitialState{Project: project, TypeScript: typescript, Interfaces: interfaces}, nil
 }

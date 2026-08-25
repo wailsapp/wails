@@ -163,3 +163,83 @@ func TestMinimalEscapesHCLTemplateAndControlSequences(t *testing.T) {
 	assert.Equal(t, project.Name, loaded.Config.Project.Name)
 	assert.Equal(t, project.ProductName, loaded.Config.Project.ProductName)
 }
+
+func TestUpdateSigningPlatformPreservesUnrelatedManifestIntent(t *testing.T) {
+	root := t.TempDir()
+	path := writeManifest(t, root, minimalHCL+`
+# Keep this profile comment.
+profile "release" {
+  target "darwin/arm64" {
+    formats  = ["dmg"]
+    sign     = true
+    notarize = true
+  }
+}
+`)
+	require.NoError(t, os.Chmod(path, 0o640))
+
+	require.NoError(t, UpdateSigningPlatform(root, "darwin", SigningPlatform{
+		Enabled:                true,
+		Identity:               "Developer ID Application: Example",
+		Entitlements:           "build/darwin/entitlements.plist",
+		Notarize:               true,
+		NotarizationCredential: "release-notary",
+	}))
+
+	loaded, err := Load(root, "release")
+	require.NoError(t, err)
+	assert.Equal(t, "Developer ID Application: Example", loaded.Config.Signing.Darwin.Identity)
+	assert.Equal(t, "build/darwin/entitlements.plist", loaded.Config.Signing.Darwin.Entitlements)
+	assert.True(t, loaded.Config.Signing.Darwin.Notarize)
+	assert.Equal(t, "release-notary", loaded.Config.Signing.Darwin.NotarizationCredential)
+	assert.Equal(t, "pnpm", loaded.Config.Frontend.PackageManager)
+	assert.Contains(t, string(loaded.Raw), "# Keep this profile comment.")
+	info, err := os.Stat(path)
+	require.NoError(t, err)
+	assert.Equal(t, os.FileMode(0o640), info.Mode().Perm())
+}
+
+func TestUpdateSigningPlatformSupportsWindowsAndLinux(t *testing.T) {
+	t.Run("windows", func(t *testing.T) {
+		root := t.TempDir()
+		writeManifest(t, root, minimalHCL)
+		require.NoError(t, UpdateSigningPlatform(root, "windows", SigningPlatform{
+			Enabled:         true,
+			Certificate:     "build/windows/signing.pfx",
+			Thumbprint:      "ABC123",
+			TimestampServer: "https://timestamp.example.com",
+		}))
+		loaded, err := Load(root, "")
+		require.NoError(t, err)
+		assert.Equal(t, "build/windows/signing.pfx", loaded.Config.Signing.Windows.Certificate)
+		assert.Equal(t, "ABC123", loaded.Config.Signing.Windows.Thumbprint)
+		assert.Equal(t, "https://timestamp.example.com", loaded.Config.Signing.Windows.TimestampServer)
+	})
+
+	t.Run("linux", func(t *testing.T) {
+		root := t.TempDir()
+		writeManifest(t, root, minimalHCL)
+		require.NoError(t, UpdateSigningPlatform(root, "linux", SigningPlatform{
+			Enabled:     true,
+			Certificate: "signing-key.asc",
+			Identity:    "origin",
+		}))
+		loaded, err := Load(root, "")
+		require.NoError(t, err)
+		assert.Equal(t, "signing-key.asc", loaded.Config.Signing.Linux.Certificate)
+		assert.Equal(t, "origin", loaded.Config.Signing.Linux.Identity)
+	})
+}
+
+func TestUpdateSigningPlatformRejectsUnsafePathsWithoutPublishing(t *testing.T) {
+	root := t.TempDir()
+	path := writeManifest(t, root, minimalHCL)
+	original, err := os.ReadFile(path)
+	require.NoError(t, err)
+
+	err = UpdateSigningPlatform(root, "windows", SigningPlatform{Enabled: true, Certificate: "/tmp/signing.pfx"})
+	require.ErrorContains(t, err, "windows.signing.certificate")
+	after, readErr := os.ReadFile(path)
+	require.NoError(t, readErr)
+	assert.Equal(t, original, after)
+}

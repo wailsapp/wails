@@ -100,6 +100,132 @@ func TestInitWritesWizardProjectMetadataToAValidManifest(t *testing.T) {
 	assert.Equal(t, "Internal preview", loaded.Config.Project.Comments)
 }
 
+func TestInitManifestReflectsTemplateBindingChoices(t *testing.T) {
+	originalDirectory, err := os.Getwd()
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	tests := []struct {
+		name          string
+		template      string
+		useInterfaces bool
+		typescript    bool
+		interfaces    bool
+	}{
+		{name: "typescript interfaces", template: "vanilla", useInterfaces: true, typescript: true, interfaces: true},
+		{name: "typescript classes", template: "vanilla", useInterfaces: false, typescript: true, interfaces: false},
+		{name: "javascript has no interface bindings", template: "vanilla-js", useInterfaces: true, typescript: false, interfaces: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			require.NoError(t, os.Chdir(originalDirectory))
+			options := &flags.Init{
+				TemplateName:      test.template,
+				ProjectName:       "Binding Choice",
+				ProjectDir:        t.TempDir(),
+				ModulePath:        "example.com/binding-choice",
+				ProductName:       "Binding Choice",
+				ProductIdentifier: "com.example.bindingchoice",
+				ProductVersion:    "0.1.0",
+				UseInterfaces:     test.useInterfaces,
+				SkipGoModTidy:     true,
+			}
+
+			require.NoError(t, Init(options))
+			loaded, err := manifest.Load(options.ProjectDir, "")
+			require.NoError(t, err)
+			assert.Equal(t, test.typescript, loaded.Config.Frontend.Bindings.TypeScript)
+			assert.Equal(t, test.interfaces, loaded.Config.Frontend.Bindings.Interfaces)
+		})
+	}
+}
+
+func TestInitUpdatesTemplateManifestWithWizardStateAndPreservesIntent(t *testing.T) {
+	originalDirectory, err := os.Getwd()
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+
+	templateRoot := filepath.Join(t.TempDir(), "custom-ts")
+	require.NoError(t, os.MkdirAll(templateRoot, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, "template.yaml"), []byte(`name: Custom
+shortname: custom
+author: Test
+description: Custom HCL template
+version: v0.0.1
+wailsVersion: 3
+typescript: true
+`), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, "gitignore"), []byte("bin\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(templateRoot, manifest.Filename), []byte(`version = 3
+
+# Template-owned project comment.
+project {
+  name         = "template"
+  product_name = "Template"
+  identifier   = "com.example.template"
+  version      = "9.9.9"
+  company      = "Template Company"
+  description  = "Template description"
+  copyright    = "Template copyright"
+  comments     = "Template comments"
+}
+
+frontend {
+  directory = "frontend"
+  install   = ["npm", "install"]
+  build     = ["npm", "run", "build"]
+  dev       = ["npm", "run", "dev"]
+  output    = "frontend/dist"
+
+  bindings {
+    typescript = true
+    interfaces = true
+  }
+}
+
+build {
+  output = "artifacts"
+  tags   = ["template-owned"]
+}
+`), 0o640))
+
+	options := &flags.Init{
+		TemplateName:       templateRoot,
+		ProjectName:        "Wizard Project",
+		ProjectDir:         t.TempDir(),
+		ModulePath:         "example.com/wizard-project",
+		ProductName:        "Wizard Product",
+		ProductCompany:     "",
+		ProductIdentifier:  "com.example.wizard",
+		ProductDescription: "",
+		ProductVersion:     "2.3.4",
+		ProductCopyright:   "",
+		ProductComments:    "",
+		UseInterfaces:      false,
+		SkipGoModTidy:      true,
+	}
+
+	require.NoError(t, Init(options))
+	loaded, err := manifest.Load(options.ProjectDir, "")
+	require.NoError(t, err)
+	assert.Equal(t, "Wizard_Project", loaded.Config.Project.Name)
+	assert.Equal(t, "Wizard Product", loaded.Config.Project.ProductName)
+	assert.Equal(t, "com.example.wizard", loaded.Config.Project.Identifier)
+	assert.Equal(t, "2.3.4", loaded.Config.Project.Version)
+	assert.Empty(t, loaded.Config.Project.CompanyName)
+	assert.Empty(t, loaded.Config.Project.Description)
+	assert.Empty(t, loaded.Config.Project.Copyright)
+	assert.Empty(t, loaded.Config.Project.Comments)
+	assert.True(t, loaded.Config.Frontend.Bindings.TypeScript)
+	assert.False(t, loaded.Config.Frontend.Bindings.Interfaces)
+	assert.Equal(t, "artifacts", loaded.Config.Build.OutputDirectory)
+	assert.Equal(t, []string{"template-owned"}, loaded.Config.Build.Go.Tags)
+	assert.Contains(t, string(loaded.Raw), "# Template-owned project comment.")
+}
+
 func TestInitInsideAnotherManifestProjectCreatesItsOwnManifest(t *testing.T) {
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)

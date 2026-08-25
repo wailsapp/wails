@@ -1,4 +1,4 @@
-import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig, GlobalDefaults, SigningDefaults, SigningStatus } from './types';
+import type { WizardState, DependencyStatus, DockerStatus, UserConfig, GlobalDefaults, SigningDefaults, SigningStatus } from './types';
 
 const API_BASE = '/api';
 
@@ -99,20 +99,6 @@ export interface CloseResponse {
 
 export async function close(): Promise<CloseResponse> {
   const response = await fetch(`${API_BASE}/close`);
-  return response.json();
-}
-
-export async function getWailsConfig(): Promise<WailsConfig | null> {
-  const response = await fetch(`${API_BASE}/wails-config`);
-  return response.json();
-}
-
-export async function saveWailsConfig(config: WailsConfig): Promise<{ status: string }> {
-  const response = await fetch(`${API_BASE}/wails-config`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(config),
-  });
   return response.json();
 }
 

@@ -1,7 +1,7 @@
 package flags
 
 type SigningSetup struct {
-	Platforms []string `name:"platform" description:"Platform(s) to configure (darwin, windows, linux). If not specified, auto-detects from build directory."`
+	Platforms []string `name:"platform" description:"Comma-separated platforms to configure (darwin,windows,linux). If omitted, uses the current platform for HCL projects or detects legacy Taskfiles."`
 }
 
 type EntitlementsSetup struct {

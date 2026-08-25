@@ -1093,8 +1093,8 @@ function GPGKeySetup({ defaultName, defaultEmail, onCreated, startOpen }: {
         <p>GPG key created{done.keyID !== 'created' ? <> — ID <code className="font-mono">{done.keyID}</code></> : ''} and selected.</p>
         {done.keyPath && (
           <p className="text-xs">
-            Exported to <code className="font-mono break-all">{done.keyPath}</code>. Builds sign with this
-            file — set it as <code className="font-mono">PGP_KEY</code> in <code className="font-mono">build/linux/Taskfile.yml</code> (or run <code className="font-mono">wails3 setup signing</code> in your project).
+            Exported to <code className="font-mono break-all">{done.keyPath}</code>. This file is now used by
+            your global signing defaults. To configure a project-specific override, run <code className="font-mono">wails3 setup signing</code> from that project.
           </p>
         )}
       </div>

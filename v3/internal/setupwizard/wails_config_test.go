@@ -31,6 +31,10 @@ func TestWailsConfigEndpointWritesValidHCLFromProjectState(t *testing.T) {
     "copyright": "Copyright 2026 Acme Limited",
     "comments": "Internal preview",
     "version": "2.3.4"
+  },
+  "bindings": {
+    "typescript": false,
+    "interfaces": true
   }
 }`
 	mux := http.NewServeMux()
@@ -51,6 +55,8 @@ func TestWailsConfigEndpointWritesValidHCLFromProjectState(t *testing.T) {
 	assert.Equal(t, "2.3.4", loaded.Config.Project.Version)
 	assert.Equal(t, "Copyright 2026 Acme Limited", loaded.Config.Project.Copyright)
 	assert.Equal(t, "Internal preview", loaded.Config.Project.Comments)
+	assert.False(t, loaded.Config.Frontend.Bindings.TypeScript)
+	assert.False(t, loaded.Config.Frontend.Bindings.Interfaces)
 
 	getResponse := httptest.NewRecorder()
 	mux.ServeHTTP(getResponse, httptest.NewRequest(http.MethodGet, "/api/wails-config", nil))
@@ -65,6 +71,9 @@ func TestWailsConfigEndpointWritesValidHCLFromProjectState(t *testing.T) {
 	assert.Equal(t, "2.3.4", state.Info.Version)
 	assert.Equal(t, "Copyright 2026 Acme Limited", state.Info.Copyright)
 	assert.Equal(t, "Internal preview", state.Info.Comments)
+	require.NotNil(t, state.Bindings)
+	assert.False(t, state.Bindings.TypeScript)
+	assert.False(t, state.Bindings.Interfaces)
 }
 
 func TestWailsConfigEndpointPreservesBuildIntentWhenProjectStateChanges(t *testing.T) {

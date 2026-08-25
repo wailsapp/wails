@@ -15,32 +15,45 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
-// SigningSetup configures signing variables in platform Taskfiles
+type signingSetupSave func(platform string, signing manifest.SigningPlatform, taskfileVars map[string]string) error
+
+var (
+	runDarwinSigningSetup  = setupDarwinSigning
+	runWindowsSigningSetup = setupWindowsSigning
+	runLinuxSigningSetup   = setupLinuxSigning
+)
+
+// SigningSetup configures signing intent in wails.hcl projects and retains the
+// legacy Taskfile writer for projects that have not opted in to HCL.
 func SigningSetup(options *flags.SigningSetup) error {
-	// Determine which platforms to configure
-	platforms := options.Platforms
+	manifestProject := manifest.Exists(".")
+	platforms := normaliseSigningPlatforms(options.Platforms)
 	if len(platforms) == 0 {
-		// Auto-detect based on existing Taskfiles
-		platforms = detectPlatforms()
+		if manifestProject && (runtime.GOOS == "darwin" || runtime.GOOS == "windows" || runtime.GOOS == "linux") {
+			platforms = []string{runtime.GOOS}
+		} else {
+			platforms = detectPlatforms()
+		}
 		if len(platforms) == 0 {
-			return fmt.Errorf("no platform Taskfiles found in build/ directory")
+			return fmt.Errorf("could not infer a signing platform; pass --platform darwin,windows,linux")
 		}
 	}
+	save := newSigningSetupSave(manifestProject)
 
 	for _, platform := range platforms {
 		var err error
 		switch platform {
 		case "darwin":
-			err = setupDarwinSigning()
+			err = runDarwinSigningSetup(save)
 		case "windows":
-			err = setupWindowsSigning()
+			err = runWindowsSigningSetup(save)
 		case "linux":
-			err = setupLinuxSigning()
+			err = runLinuxSigningSetup(save)
 		default:
-			pterm.Warning.Printfln("Unknown platform: %s", platform)
-			continue
+			return fmt.Errorf("unsupported signing platform %q", platform)
 		}
 		if err != nil {
 			return err
@@ -48,6 +61,45 @@ func SigningSetup(options *flags.SigningSetup) error {
 	}
 
 	return nil
+}
+
+func normaliseSigningPlatforms(values []string) []string {
+	result := make([]string, 0, len(values))
+	seen := map[string]bool{}
+	for _, value := range values {
+		for _, platform := range strings.Split(value, ",") {
+			platform = strings.ToLower(strings.TrimSpace(platform))
+			if platform != "" && !seen[platform] {
+				seen[platform] = true
+				result = append(result, platform)
+			}
+		}
+	}
+	return result
+}
+
+func newSigningSetupSave(manifestProject bool) signingSetupSave {
+	if manifestProject {
+		return func(platform string, signing manifest.SigningPlatform, _ map[string]string) error {
+			if err := manifest.UpdateSigningPlatform(".", platform, signing); err != nil {
+				return err
+			}
+			_, path, err := manifest.Discover(".")
+			if err != nil {
+				return err
+			}
+			pterm.Success.Printfln("Updated %s", path)
+			return nil
+		}
+	}
+	return func(platform string, _ manifest.SigningPlatform, taskfileVars map[string]string) error {
+		path := filepath.Join("build", platform, "Taskfile.yml")
+		if err := updateTaskfileVars(path, taskfileVars); err != nil {
+			return err
+		}
+		pterm.Success.Printfln("Updated %s", path)
+		return nil
+	}
 }
 
 func detectPlatforms() []string {
@@ -61,7 +113,7 @@ func detectPlatforms() []string {
 	return platforms
 }
 
-func setupDarwinSigning() error {
+func setupDarwinSigning(save signingSetupSave) error {
 	pterm.DefaultHeader.Println("macOS Code Signing Setup")
 	fmt.Println()
 
@@ -141,9 +193,13 @@ func setupDarwinSigning() error {
 		signIdentity = ""
 	}
 
-	// Update Taskfile
-	taskfilePath := filepath.Join("build", "darwin", "Taskfile.yml")
-	err = updateTaskfileVars(taskfilePath, map[string]string{
+	err = save("darwin", manifest.SigningPlatform{
+		Enabled:                true,
+		Identity:               signIdentity,
+		Entitlements:           entitlements,
+		Notarize:               configureNotarization,
+		NotarizationCredential: keychainProfile,
+	}, map[string]string{
 		"SIGN_IDENTITY":    signIdentity,
 		"KEYCHAIN_PROFILE": keychainProfile,
 		"ENTITLEMENTS":     entitlements,
@@ -151,8 +207,6 @@ func setupDarwinSigning() error {
 	if err != nil {
 		return err
 	}
-
-	pterm.Success.Printfln("Updated %s", taskfilePath)
 
 	if configureNotarization && keychainProfile != "" {
 		fmt.Println()
@@ -169,7 +223,7 @@ func setupDarwinSigning() error {
 	return nil
 }
 
-func setupWindowsSigning() error {
+func setupWindowsSigning(save signingSetupSave) error {
 	pterm.DefaultHeader.Println("Windows Code Signing Setup")
 	fmt.Println()
 
@@ -239,28 +293,27 @@ func setupWindowsSigning() error {
 		pterm.Success.Println("Certificate password stored in system keychain")
 	}
 
-	// Update Taskfile (no passwords stored here)
-	taskfilePath := filepath.Join("build", "windows", "Taskfile.yml")
 	vars := map[string]string{
 		"TIMESTAMP_SERVER": timestampServer,
 	}
+	signing := manifest.SigningPlatform{Enabled: true, TimestampServer: timestampServer}
 
 	if certSource == "file" {
 		vars["SIGN_CERTIFICATE"] = certPath
+		signing.Certificate = certPath
 	} else {
 		vars["SIGN_THUMBPRINT"] = thumbprint
+		signing.Thumbprint = thumbprint
 	}
 
-	err = updateTaskfileVars(taskfilePath, vars)
+	err = save("windows", signing, vars)
 	if err != nil {
 		return err
 	}
-
-	pterm.Success.Printfln("Updated %s", taskfilePath)
 	return nil
 }
 
-func setupLinuxSigning() error {
+func setupLinuxSigning(save signingSetupSave) error {
 	pterm.DefaultHeader.Println("Linux Package Signing Setup")
 	fmt.Println()
 
@@ -388,8 +441,6 @@ func setupLinuxSigning() error {
 		pterm.Success.Println("PGP key password stored in system keychain")
 	}
 
-	// Update Taskfile (no passwords stored here)
-	taskfilePath := filepath.Join("build", "linux", "Taskfile.yml")
 	vars := map[string]string{
 		"PGP_KEY": keyPath,
 	}
@@ -397,12 +448,14 @@ func setupLinuxSigning() error {
 		vars["SIGN_ROLE"] = signRole
 	}
 
-	err = updateTaskfileVars(taskfilePath, vars)
+	err = save("linux", manifest.SigningPlatform{
+		Enabled:     true,
+		Certificate: keyPath,
+		Identity:    signRole,
+	}, vars)
 	if err != nil {
 		return err
 	}
-
-	pterm.Success.Printfln("Updated %s", taskfilePath)
 	return nil
 }
 

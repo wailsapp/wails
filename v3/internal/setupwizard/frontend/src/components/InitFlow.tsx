@@ -259,7 +259,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
               )}
 
               {step === 'details' && (
-                <Page key="details" title="Project details" subtitle="Written to build/config.yml" onBack={goBack} onNext={create} nextLabel={creating ? 'Creating…' : 'Create Project'} busy={creating} nextDisabled={!form.projectName.trim()}>
+                <Page key="details" title="Project details" subtitle="Written to wails.hcl" onBack={goBack} onNext={create} nextLabel={creating ? 'Creating…' : 'Create Project'} busy={creating} nextDisabled={!form.projectName.trim()}>
                   <div className="max-w-md mx-auto w-full space-y-3">
                     {([
                       ['productName', 'Product Name', 'My App'],
@@ -275,7 +275,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
                         <input type="text" value={String(form[k] ?? '')} onChange={(e) => set(k, e.target.value as never)} placeholder={ph} className={inputCls} />
                       </div>
                     ))}
-                    <p className="text-xs text-gray-400 dark:text-gray-500">Advanced config (icons, file associations, custom URL schemes, iOS overrides) can be edited in <code className="font-mono">build/config.yml</code> after creation.</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Advanced config (icons, file associations, custom URL schemes, iOS overrides) can be edited in <code className="font-mono">wails.hcl</code> after creation.</p>
                     {error && (
                       <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"><p className="text-sm text-red-600 dark:text-red-400">{error}</p></div>
                     )}

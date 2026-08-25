@@ -289,15 +289,23 @@ func Init(options *flags.Init) error {
 }
 
 func initialiseTemplateBuildManifest(options *flags.Init) error {
+	state, err := initManifestState(options, manifest.Project{})
+	if err != nil {
+		return err
+	}
 	if manifest.Exists(options.ProjectDir) {
-		return nil
+		return manifest.UpdateInitialState(options.ProjectDir, state)
 	}
 	if _, taskfileErr := findTaskfile(options.ProjectDir); taskfileErr == nil {
 		report, doc, err := analyseMigration(options.ProjectDir)
 		if err != nil {
 			return fmt.Errorf("analyse community template Taskfile: %w", err)
 		}
-		doc.Project = initManifestProject(options, doc.Project)
+		state, err := initManifestState(options, doc.Project)
+		if err != nil {
+			return err
+		}
+		doc.Project = state.Project
 		if report.Complete {
 			return manifest.WriteDocument(options.ProjectDir, doc)
 		}
@@ -309,27 +317,25 @@ func initialiseTemplateBuildManifest(options *flags.Init) error {
 		}
 		return nil
 	}
-	return manifest.WriteMinimal(options.ProjectDir, initManifestProject(options, manifest.Project{}))
+	return manifest.WriteInitial(options.ProjectDir, state)
 }
 
-func initManifestProject(options *flags.Init, project manifest.Project) manifest.Project {
-	project.Name = options.ProjectName
-	project.ProductName = options.ProductName
-	project.Identifier = options.ProductIdentifier
-	project.Version = options.ProductVersion
-	if options.ProductCompany != "" {
-		project.CompanyName = options.ProductCompany
+func initManifestState(options *flags.Init, project manifest.Project) (manifest.InitialState, error) {
+	typescript := templates.IsTypescript(options.TemplateName)
+	state := setupwizard.ProjectConfigState{
+		Info: setupwizard.ProjectMetadataState{
+			ProjectName:       options.ProjectName,
+			CompanyName:       options.ProductCompany,
+			ProductName:       options.ProductName,
+			ProductIdentifier: options.ProductIdentifier,
+			Description:       options.ProductDescription,
+			Copyright:         options.ProductCopyright,
+			Comments:          options.ProductComments,
+			Version:           options.ProductVersion,
+		},
+		Bindings: &setupwizard.BindingState{TypeScript: typescript, Interfaces: options.UseInterfaces},
 	}
-	if options.ProductDescription != "" {
-		project.Description = options.ProductDescription
-	}
-	if options.ProductCopyright != "" {
-		project.Copyright = options.ProductCopyright
-	}
-	if options.ProductComments != "" {
-		project.Comments = options.ProductComments
-	}
-	return project
+	return state.ManifestState(project)
 }
 
 func printTemplates() error {

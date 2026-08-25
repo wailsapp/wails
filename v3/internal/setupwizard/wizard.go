@@ -474,7 +474,7 @@ func (w *Wizard) handleWailsConfig(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		json.NewEncoder(rw).Encode(projectConfigStateFromProject(loaded.Config.Project))
+		json.NewEncoder(rw).Encode(projectConfigStateFromConfig(loaded.Config))
 
 	case http.MethodPost:
 		var state ProjectConfigState
@@ -498,15 +498,17 @@ func (w *Wizard) handleWailsConfig(rw http.ResponseWriter, r *http.Request) {
 			}
 			existing = loaded.Config.Project
 		}
-		project, projectErr := state.project(existing)
-		if projectErr != nil {
-			http.Error(rw, projectErr.Error(), http.StatusBadRequest)
+		initial, stateErr := state.ManifestState(existing)
+		if stateErr != nil {
+			http.Error(rw, stateErr.Error(), http.StatusBadRequest)
 			return
 		}
 		if configPath == "" {
-			err = manifest.WriteMinimal(root, project)
+			err = manifest.WriteInitial(root, initial)
+		} else if state.Bindings != nil {
+			err = manifest.UpdateInitialState(root, initial)
 		} else {
-			err = manifest.UpdateProjectMetadata(root, project)
+			err = manifest.UpdateProjectMetadata(root, initial.Project)
 		}
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)

@@ -13,22 +13,34 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+// InitialState is the complete manifest intent selected while scaffolding a
+// project. The writer owns how that state is represented in sparse HCL.
+type InitialState struct {
+	Project    Project
+	TypeScript bool
+	Interfaces bool
+}
+
 func Minimal(project Project) []byte {
+	return EncodeInitial(InitialState{Project: project, TypeScript: true, Interfaces: true})
+}
+
+func EncodeInitial(state InitialState) []byte {
 	file := hclwrite.NewEmptyFile()
 	body := file.Body()
 	body.SetAttributeValue("version", cty.NumberIntVal(3))
 	body.AppendNewline()
 	projectBlock := hclwrite.NewBlock("project", nil)
 	projectBody := projectBlock.Body()
-	projectBody.SetAttributeValue("name", cty.StringVal(project.Name))
-	projectBody.SetAttributeValue("product_name", cty.StringVal(project.ProductName))
-	projectBody.SetAttributeValue("identifier", cty.StringVal(project.Identifier))
-	projectBody.SetAttributeValue("version", cty.StringVal(project.Version))
-	projectBody.SetAttributeValue("binary_name", cty.StringVal(deriveBinaryName(project.Name)))
-	setOptionalStringAttribute(projectBody, "company", project.CompanyName)
-	setOptionalStringAttribute(projectBody, "description", project.Description)
-	setOptionalStringAttribute(projectBody, "copyright", project.Copyright)
-	setOptionalStringAttribute(projectBody, "comments", project.Comments)
+	projectBody.SetAttributeValue("name", cty.StringVal(state.Project.Name))
+	projectBody.SetAttributeValue("product_name", cty.StringVal(state.Project.ProductName))
+	projectBody.SetAttributeValue("identifier", cty.StringVal(state.Project.Identifier))
+	projectBody.SetAttributeValue("version", cty.StringVal(state.Project.Version))
+	projectBody.SetAttributeValue("binary_name", cty.StringVal(deriveBinaryName(state.Project.Name)))
+	setOptionalStringAttribute(projectBody, "company", state.Project.CompanyName)
+	setOptionalStringAttribute(projectBody, "description", state.Project.Description)
+	setOptionalStringAttribute(projectBody, "copyright", state.Project.Copyright)
+	setOptionalStringAttribute(projectBody, "comments", state.Project.Comments)
 	body.AppendBlock(projectBlock)
 	body.AppendNewline()
 	frontendBlock := hclwrite.NewBlock("frontend", nil)
@@ -38,6 +50,11 @@ func Minimal(project Project) []byte {
 	frontendBody.SetAttributeValue("build", cty.ListVal([]cty.Value{cty.StringVal("npm"), cty.StringVal("run"), cty.StringVal("build")}))
 	frontendBody.SetAttributeValue("dev", cty.ListVal([]cty.Value{cty.StringVal("npm"), cty.StringVal("run"), cty.StringVal("dev")}))
 	frontendBody.SetAttributeValue("output", cty.StringVal("frontend/dist"))
+	frontendBody.AppendNewline()
+	bindingsBlock := hclwrite.NewBlock("bindings", nil)
+	bindingsBlock.Body().SetAttributeValue("typescript", cty.BoolVal(state.TypeScript))
+	bindingsBlock.Body().SetAttributeValue("interfaces", cty.BoolVal(state.TypeScript && state.Interfaces))
+	frontendBody.AppendBlock(bindingsBlock)
 	body.AppendBlock(frontendBlock)
 	body.AppendNewline()
 	buildBlock := hclwrite.NewBlock("build", nil)
@@ -60,13 +77,96 @@ func WriteMinimal(root string, project Project) error {
 	return atomicWrite(filepath.Join(root, Filename), Minimal(project), 0o644)
 }
 
+func WriteInitial(root string, state InitialState) error {
+	if err := validateProject(state.Project); err != nil {
+		return err
+	}
+	return atomicWrite(filepath.Join(root, Filename), EncodeInitial(state), 0o644)
+}
+
 // UpdateProjectMetadata replaces only the project values owned by project
 // setup. All other Manifest intent, comments, ordering, and file permissions
 // remain user-owned and are preserved.
 func UpdateProjectMetadata(start string, project Project) error {
+	return updateInitialState(start, project, nil)
+}
+
+// UpdateInitialState applies scaffold-owned intent to an existing manifest
+// while preserving all template-owned configuration, comments, ordering, and
+// file permissions.
+func UpdateInitialState(start string, state InitialState) error {
+	return updateInitialState(start, state.Project, &state)
+}
+
+func updateInitialState(start string, project Project, initial *InitialState) error {
 	if err := validateProject(project); err != nil {
 		return err
 	}
+	return updateManifest(start, func(file *hclwrite.File) error {
+		var projectBody *hclwrite.Body
+		for _, block := range file.Body().Blocks() {
+			if block.Type() == "project" {
+				projectBody = block.Body()
+				break
+			}
+		}
+		if projectBody == nil {
+			return fmt.Errorf("%s: project block is required", Filename)
+		}
+		projectBody.SetAttributeValue("name", cty.StringVal(project.Name))
+		projectBody.SetAttributeValue("product_name", cty.StringVal(project.ProductName))
+		projectBody.SetAttributeValue("identifier", cty.StringVal(project.Identifier))
+		projectBody.SetAttributeValue("version", cty.StringVal(project.Version))
+		updateOptionalStringAttribute(projectBody, "company", project.CompanyName)
+		updateOptionalStringAttribute(projectBody, "description", project.Description)
+		updateOptionalStringAttribute(projectBody, "copyright", project.Copyright)
+		updateOptionalStringAttribute(projectBody, "comments", project.Comments)
+		if initial != nil {
+			frontendBody := ensureBlock(file.Body(), "frontend").Body()
+			bindingsBody := ensureBlock(frontendBody, "bindings").Body()
+			bindingsBody.SetAttributeValue("typescript", cty.BoolVal(initial.TypeScript))
+			bindingsBody.SetAttributeValue("interfaces", cty.BoolVal(initial.TypeScript && initial.Interfaces))
+		}
+		return nil
+	})
+}
+
+// UpdateSigningPlatform replaces the project signing intent for one platform
+// without disturbing any other manifest content.
+func UpdateSigningPlatform(start, platform string, signing SigningPlatform) error {
+	if !contains([]string{"windows", "darwin", "linux", "ios", "android"}, platform) {
+		return fmt.Errorf("unsupported signing platform %q", platform)
+	}
+	return updateManifest(start, func(file *hclwrite.File) error {
+		platformBody := ensureBlock(file.Body(), platform).Body()
+		if signing.Enabled || signingHasValues(signing) {
+			signingBody := ensureBlock(platformBody, "signing").Body()
+			updateOptionalStringAttribute(signingBody, "credential", signing.Credential)
+			updateOptionalStringAttribute(signingBody, "identity", signing.Identity)
+			updateOptionalStringAttribute(signingBody, "certificate", signing.Certificate)
+			updateOptionalStringAttribute(signingBody, "thumbprint", signing.Thumbprint)
+			updateOptionalStringAttribute(signingBody, "timestamp_server", signing.TimestampServer)
+			updateOptionalStringAttribute(signingBody, "entitlements", signing.Entitlements)
+			updateOptionalStringAttribute(signingBody, "provisioning_profile", signing.ProvisioningProfile)
+			updateOptionalStringAttribute(signingBody, "key_alias", signing.KeyAlias)
+		} else {
+			removeBlocks(platformBody, "signing")
+		}
+		if signing.Notarize {
+			notarizationBody := ensureBlock(platformBody, "notarization").Body()
+			updateOptionalStringAttribute(notarizationBody, "credential", signing.NotarizationCredential)
+		} else {
+			removeBlocks(platformBody, "notarization")
+		}
+		return nil
+	})
+}
+
+func signingHasValues(signing SigningPlatform) bool {
+	return signing.Identity != "" || signing.Certificate != "" || signing.Thumbprint != "" || signing.TimestampServer != "" || signing.Entitlements != "" || signing.ProvisioningProfile != "" || signing.KeyAlias != "" || signing.Credential != ""
+}
+
+func updateManifest(start string, mutate func(*hclwrite.File) error) error {
 	loaded, err := Load(start, "")
 	if err != nil {
 		return err
@@ -75,25 +175,9 @@ func UpdateProjectMetadata(start string, project Project) error {
 	if diagnostics.HasErrors() {
 		return validationFromDiagnostics(diagnostics)
 	}
-	var projectBody *hclwrite.Body
-	for _, block := range file.Body().Blocks() {
-		if block.Type() == "project" {
-			projectBody = block.Body()
-			break
-		}
+	if err := mutate(file); err != nil {
+		return err
 	}
-	if projectBody == nil {
-		return fmt.Errorf("%s: project block is required", Filename)
-	}
-	projectBody.SetAttributeValue("name", cty.StringVal(project.Name))
-	projectBody.SetAttributeValue("product_name", cty.StringVal(project.ProductName))
-	projectBody.SetAttributeValue("identifier", cty.StringVal(project.Identifier))
-	projectBody.SetAttributeValue("version", cty.StringVal(project.Version))
-	updateOptionalStringAttribute(projectBody, "company", project.CompanyName)
-	updateOptionalStringAttribute(projectBody, "description", project.Description)
-	updateOptionalStringAttribute(projectBody, "copyright", project.Copyright)
-	updateOptionalStringAttribute(projectBody, "comments", project.Comments)
-
 	data := file.Bytes()
 	if _, err := decodeHCL(loaded.Config.Root, loaded.Path, data, ""); err != nil {
 		return err
@@ -103,6 +187,28 @@ func UpdateProjectMetadata(start string, project Project) error {
 		return err
 	}
 	return atomicWrite(loaded.Path, data, info.Mode().Perm())
+}
+
+func ensureBlock(body *hclwrite.Body, blockType string) *hclwrite.Block {
+	for _, block := range body.Blocks() {
+		if block.Type() == blockType {
+			return block
+		}
+	}
+	if len(body.Attributes()) > 0 || len(body.Blocks()) > 0 {
+		body.AppendNewline()
+	}
+	block := hclwrite.NewBlock(blockType, nil)
+	body.AppendBlock(block)
+	return block
+}
+
+func removeBlocks(body *hclwrite.Body, blockType string) {
+	for _, block := range body.Blocks() {
+		if block.Type() == blockType {
+			body.RemoveBlock(block)
+		}
+	}
 }
 
 func updateOptionalStringAttribute(body *hclwrite.Body, name, value string) {
