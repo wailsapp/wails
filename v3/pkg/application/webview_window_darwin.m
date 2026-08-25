@@ -6,8 +6,10 @@
 #import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
+extern void cancelURLRequest(void *);
 extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
+extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
@@ -42,21 +44,13 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 
 @end
 
-@implementation WebviewWindow
-- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
-{
-    self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
-    [self setAlphaValue:1.0];
-    [self setBackgroundColor:[NSColor clearColor]];
-    [self setOpaque:NO];
-    [self setMovableByWindowBackground:YES];
-    return self;
+NSString* keyStringFromKeyEvent(NSEvent* event) {
+    return [WebviewWindow keyStringFromEvent:event];
 }
-- (void)keyDown:(NSEvent *)event {
+
+NSString* acceleratorStringFromKeyEvent(NSEvent* event) {
     NSUInteger modifierFlags = event.modifierFlags;
-    // Create an array to hold the modifier strings
-    NSMutableArray *modifierStrings = [NSMutableArray array];
-    // Check for modifier flags and add corresponding strings to the array
+    NSMutableArray* modifierStrings = [NSMutableArray array];
     if (modifierFlags & NSEventModifierFlagShift) {
         [modifierStrings addObject:@"shift"];
     }
@@ -69,17 +63,51 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     if (modifierFlags & NSEventModifierFlagCommand) {
         [modifierStrings addObject:@"cmd"];
     }
-    NSString *keyString = [self keyStringFromEvent:event];
+    NSString* keyString = keyStringFromKeyEvent(event);
     if (keyString.length > 0) {
         [modifierStrings addObject:keyString];
     }
-    // Combine the modifier strings with the key character
-    NSString *keyEventString = [modifierStrings componentsJoinedByString:@"+"];
-    const char* utf8String = [keyEventString UTF8String];
-    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
-    processWindowKeyDownEvent(delegate.windowId, utf8String);
+    return [modifierStrings componentsJoinedByString:@"+"];
 }
-- (NSString *)keyStringFromEvent:(NSEvent *)event {
+
+BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)window.delegate;
+    if (delegate == nil) {
+        return NO;
+    }
+    NSString* accelerator = acceleratorStringFromKeyEvent(event);
+    return accelerator.length > 0 &&
+        processWindowKeyEquivalent(delegate.windowId, accelerator.UTF8String);
+}
+
+@implementation WebviewWindow
+- (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
+{
+    self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
+    [self setAlphaValue:1.0];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self setOpaque:NO];
+    [self setMovableByWindowBackground:YES];
+    return self;
+}
+- (void)keyDown:(NSEvent *)event {
+    NSString *keyEventString = acceleratorStringFromKeyEvent(event);
+    WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
+    processWindowKeyDownEvent(delegate.windowId, [keyEventString UTF8String]);
+}
+// performKeyEquivalent is invoked by Cocoa for every modifier-key combo
+// BEFORE the responder chain runs, giving the window a chance to claim
+// accelerators (e.g. Ctrl+Tab) that the WKWebView would otherwise consume
+// silently. Returns YES only when there is an actual KeyBinding match;
+// otherwise falls through to super so normal Cocoa handling — including
+// main-menu key equivalents — continues unchanged.
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+    if (dispatchKeyEquivalent(event, self)) {
+        return YES;
+    }
+    return [super performKeyEquivalent:event];
+}
++ (NSString *)keyStringFromEvent:(NSEvent *)event {
     // Get the pressed key
     // Check for special keys like escape and tab
     NSString *characters = [event characters];
@@ -556,8 +584,8 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
             NSString* str = files[i];
             cArray[i] = (char*)[str UTF8String];
         }
-        // Get the WebviewWindow instance, which is the dragging destination
-        WebviewWindow *window = (WebviewWindow *)[sender draggingDestinationWindow];
+        NSWindow<WailsWebviewWindow>* window =
+            (NSWindow<WailsWebviewWindow>*)[sender draggingDestinationWindow];
         WKWebView *webView = window.webView; // Get the webView from the window
         NSPoint dropPointInWindow = [sender draggingLocation];
         NSPoint dropPointInView = [webView convertPoint:dropPointInWindow fromView:nil]; // Convert to webView's coordinate system
@@ -593,7 +621,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     self.leftMouseEvent = nil;
     [super dealloc];
 }
-- (void) startDrag:(WebviewWindow*)window {
+- (void) startDrag:(NSWindow*)window {
     [window performWindowDragWithEvent:self.leftMouseEvent];
 }
 // Handle script messages from the external bridge
@@ -651,6 +679,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     processURLRequest(self.windowId, urlSchemeTask);
 }
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    cancelURLRequest(urlSchemeTask);
     NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
     if (stream) {
         NSStreamStatus status = stream.streamStatus;
@@ -1097,7 +1126,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 }
 @end
 void windowSetScreen(void* window, void* screen, int yOffset) {
-    WebviewWindow* nsWindow = (WebviewWindow*)window;
+    NSWindow* nsWindow = (NSWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;
     // Get current frame
     NSRect frame = [nsWindow frame];
@@ -1125,7 +1154,7 @@ bool isLiquidGlassSupported() {
 }
 // Remove any existing visual effects from the window
 void windowRemoveVisualEffects(void* nsWindow) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow* window = (NSWindow*)nsWindow;
     NSView* contentView = [window contentView];
     // Get NSGlassEffectView class if available (avoid hard reference)
     Class glassEffectViewClass = nil;
@@ -1143,7 +1172,7 @@ void windowRemoveVisualEffects(void* nsWindow) {
 }
 // Configure WebView for liquid glass effect
 void configureWebViewForLiquidGlass(void* nsWindow) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)nsWindow;
     WKWebView* webView = window.webView;
     // Make WebView background transparent
     [webView setValue:@NO forKey:@"drawsBackground"];
@@ -1161,7 +1190,7 @@ void configureWebViewForLiquidGlass(void* nsWindow) {
 void windowSetLiquidGlass(void* nsWindow, int style, int material, double cornerRadius,
                           int r, int g, int b, int a,
                           const char* groupID, double groupSpacing) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)nsWindow;
     // Ensure we're on the main thread for UI operations
     if (![NSThread isMainThread]) {
         dispatch_sync(dispatch_get_main_queue(), ^{

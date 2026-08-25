@@ -63,11 +63,11 @@ func main() {
 		return
 	}
 
-	context, err := fetchCodeRabbitSummary(repo, prNumber, githubToken)
+	walkthrough, err := fetchCodeRabbitWalkthrough(repo, prNumber, githubToken)
 	if err != nil {
-		fmt.Printf("⚠️  Could not fetch CodeRabbit summary: %v — falling back to PR title\n", err)
-		context = "PR Title: " + pr.Title
+		fmt.Printf("⚠️  Could not fetch CodeRabbit walkthrough: %v — falling back to PR title\n", err)
 	}
+	context := changelogContext(pr.Title, walkthrough)
 
 	fmt.Printf("📝 Context length: %d chars\n", len(context))
 
@@ -103,30 +103,68 @@ func main() {
 	fmt.Println("✅ Changelog updated.")
 }
 
-func fetchCodeRabbitSummary(repo, prNumber, token string) (string, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/issues/%s/comments?per_page=100", repo, prNumber)
-	body, err := githubGet(url, token)
-	if err != nil {
-		return "", err
-	}
+func fetchCodeRabbitWalkthrough(repo, prNumber, token string) (string, error) {
+	for page := 1; page <= 30; page++ {
+		apiURL := fmt.Sprintf("%s/repos/%s/issues/%s/comments?per_page=100&page=%d", githubAPIBaseURL, repo, prNumber, page)
+		body, err := githubGet(apiURL, token)
+		if err != nil {
+			return "", err
+		}
 
-	var comments []struct {
-		User struct {
-			Login string `json:"login"`
-		} `json:"user"`
-		Body string `json:"body"`
-	}
-	if err := json.Unmarshal(body, &comments); err != nil {
-		return "", fmt.Errorf("parse comments: %w", err)
-	}
+		var comments []struct {
+			User struct {
+				Login string `json:"login"`
+			} `json:"user"`
+			Body string `json:"body"`
+		}
+		if err := json.Unmarshal(body, &comments); err != nil {
+			return "", fmt.Errorf("parse comments page %d: %w", page, err)
+		}
 
-	for _, c := range comments {
-		if c.User.Login == "coderabbitai[bot]" && c.Body != "" {
-			fmt.Println("✅ Found CodeRabbit summary")
-			return c.Body, nil
+		for _, c := range comments {
+			if c.User.Login != "coderabbitai[bot]" {
+				continue
+			}
+			if walkthrough, ok := extractCodeRabbitWalkthrough(c.Body); ok {
+				fmt.Println("✅ Found CodeRabbit walkthrough")
+				return walkthrough, nil
+			}
+		}
+		if len(comments) < 100 {
+			break
 		}
 	}
-	return "", fmt.Errorf("no CodeRabbit comment found")
+	return "", fmt.Errorf("no CodeRabbit walkthrough found")
+}
+
+const (
+	codeRabbitWalkthroughStart = "<!-- walkthrough_start -->"
+	codeRabbitWalkthroughEnd   = "<!-- walkthrough_end -->"
+)
+
+// extractCodeRabbitWalkthrough accepts only CodeRabbit's actual walkthrough.
+// Status-only comments (for example, "Review skipped" for lockfile-only PRs)
+// are not summaries of the change and must not be sent to the changelog model.
+func extractCodeRabbitWalkthrough(body string) (string, bool) {
+	start := strings.Index(body, codeRabbitWalkthroughStart)
+	if start == -1 {
+		return "", false
+	}
+	body = body[start+len(codeRabbitWalkthroughStart):]
+	end := strings.Index(body, codeRabbitWalkthroughEnd)
+	if end == -1 {
+		return "", false
+	}
+	walkthrough := strings.TrimSpace(body[:end])
+	return walkthrough, walkthrough != ""
+}
+
+func changelogContext(title, walkthrough string) string {
+	context := "PR Title: " + title
+	if walkthrough != "" {
+		context += "\n\nCodeRabbit Walkthrough:\n" + walkthrough
+	}
+	return context
 }
 
 type prInfo struct {
@@ -297,6 +335,8 @@ func isFeatureChange(title string) bool {
 	m := internalTitleRe.FindStringSubmatch(strings.TrimSpace(title))
 	return m != nil && strings.EqualFold(m[1], "feat")
 }
+
+var githubAPIBaseURL = "https://api.github.com"
 
 func githubGet(url, token string) ([]byte, error) {
 	req, _ := http.NewRequest("GET", url, nil)

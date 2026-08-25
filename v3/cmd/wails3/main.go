@@ -31,6 +31,9 @@ func init() {
 }
 
 func main() {
+	if os.Getenv("WAILS_MCP_CHILD") == "1" {
+		commands.DisableFooter = true
+	}
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
@@ -43,6 +46,7 @@ func main() {
 	})
 
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
+	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
 
 	pkg := app.NewSubCommand("package", "Package application")
 	var pkgFlags flags.Package

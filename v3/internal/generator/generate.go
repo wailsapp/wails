@@ -80,7 +80,7 @@ func NewGenerator(options *flags.GenerateBindingsOptions, creator config.FileCre
 // The stats result field is never nil.
 //
 // The error result field is nil in case of complete success (no warning).
-// Otherwise, it may either report errors that occured while loading
+// Otherwise, it may either report errors that occurred while loading
 // the initial set of packages, or errors returned by the static analyser,
 // or be an [ErrorReport] instance.
 //
