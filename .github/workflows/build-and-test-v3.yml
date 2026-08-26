@@ -262,14 +262,39 @@ jobs:
           else
             RUNTIME_TGZ="$(cd wails-runtime-temp && pwd)/$(ls wails-runtime-temp/*.tgz | xargs basename)"
           fi
-          mkdir -p ./test-${{ matrix.template }}
-          cd ./test-${{ matrix.template }}
-          wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
-          cd ${{ matrix.template }}/frontend
-          # Replace @wailsio/runtime version with local tarball
-          npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
-          cd ..
-          wails3 build
+          generate_and_build() (
+            set -e
+            rm -rf ./test-${{ matrix.template }}
+            mkdir -p ./test-${{ matrix.template }}
+            cd ./test-${{ matrix.template }}
+            wails3 init -n ${{ matrix.template }} -t ${{ matrix.template }}
+            cd ${{ matrix.template }}/frontend
+            # Replace @wailsio/runtime version with local tarball
+            npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
+            cd ..
+            wails3 build
+          )
+
+          # Each leg resolves a brand new module graph and node_modules, so one blip
+          # from the Go checksum DB or the npm registry reds the whole matrix.
+          transient='INTERNAL_ERROR|stream error|TLS handshake timeout|i/o timeout|connection reset'
+          transient="$transient|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|Bad Gateway|Service Unavailable"
+          transient="$transient|Cannot find native binding"
+
+          for attempt in 1 2 3; do
+            set +e
+            generate_and_build 2>&1 | tee attempt.log
+            status=${PIPESTATUS[0]}
+            set -e
+            if [[ $status -eq 0 ]]; then
+              exit 0
+            fi
+            if [[ $attempt -eq 3 ]] || ! grep -qE "$transient" attempt.log; then
+              exit "$status"
+            fi
+            echo "::warning::Transient failure generating '${{ matrix.template }}' (attempt $attempt), retrying"
+            sleep $((attempt * 15))
+          done
 
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
 
