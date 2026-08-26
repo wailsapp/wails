@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -474,6 +476,7 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 	devPort := 0
 	typescriptBindings := false
 	interfaceBindings := false
+	migratedHooks := make(map[manifest.HookPhase]manifest.Hook)
 	for _, path := range files {
 		rel, err := filepath.Rel(root, path)
 		if err != nil {
@@ -536,14 +539,21 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 			typescriptBindings = typescriptBindings || typescript
 			interfaceBindings = interfaceBindings || interfaces
 			reachable := reachability.contains(path, name)
-			if phase, ok := legacyLifecycleScript(root, filepath.Dir(path), name, tf.Tasks[name]); ok {
+			if phase, script, ok := legacyLifecycleScript(root, filepath.Dir(path), name, tf.Tasks[name]); ok {
 				severity := "info"
 				code := "unrelated-task"
 				message := "unreachable custom " + phase + " script remains user-owned"
 				if reachable {
-					report.Complete = false
-					severity, code = "warning", "deferred-hook"
-					message = "custom " + phase + " script is not representable in config-only HCL and blocks activation"
+					hookPhase := manifest.HookPhase(phase)
+					if previous, exists := migratedHooks[hookPhase]; exists && previous.Script != script {
+						report.Complete = false
+						severity, code = "warning", "duplicate-hook"
+						message = "multiple reachable scripts map to " + phase + "; choose one manually"
+					} else {
+						migratedHooks[hookPhase] = manifest.Hook{Script: script}
+						code = "translated-hook"
+						message = "translated custom " + phase + " script to hook " + script
+					}
 				}
 				report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: severity, Code: code, File: rel, Task: name, Message: message})
 				if classification.Classification == "current-default" {
@@ -622,6 +632,7 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		project.Name = binaryName
 	}
 	doc := manifest.NewDocument(project)
+	doc.Hooks = migratedHooks
 	if buildOutput != "" {
 		doc.Build.OutputDirectory = buildOutput
 	}
@@ -673,17 +684,17 @@ func normalizeLegacyAppName(value string) string {
 	return strings.ReplaceAll(value, `\ `, " ")
 }
 
-func legacyLifecycleScript(root, taskfileDir, name string, task *wakeast.Task) (string, bool) {
+func legacyLifecycleScript(root, taskfileDir, name string, task *wakeast.Task) (string, string, bool) {
 	phase := strings.ReplaceAll(strings.ToLower(name), "-", "_")
 	if !containsString([]string{"before_build", "after_build", "before_package", "after_package", "before_sign", "after_sign"}, phase) {
-		return "", false
+		return "", "", false
 	}
 	if task == nil || len(task.Cmds) != 1 || len(task.Deps) != 0 || task.Cmds[0].Cmd == "" || task.Cmds[0].Task != "" {
-		return "", false
+		return "", "", false
 	}
 	command := strings.TrimSpace(task.Cmds[0].Cmd)
 	if strings.ContainsAny(command, " \t\r\n;&|`$<>") || strings.Contains(command, "{{") {
-		return "", false
+		return "", "", false
 	}
 	base := taskfileDir
 	if task.Dir != "" {
@@ -692,13 +703,40 @@ func legacyLifecycleScript(root, taskfileDir, name string, task *wakeast.Task) (
 	script := filepath.Clean(filepath.Join(base, filepath.FromSlash(strings.TrimPrefix(command, "./"))))
 	relative, err := filepath.Rel(root, script)
 	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return "", false
+		return "", "", false
 	}
-	info, err := os.Stat(script)
-	if err != nil || info.IsDir() {
-		return "", false
+	resolved, err := manifest.ResolveProjectPath(root, "hook script", filepath.ToSlash(relative), true)
+	if err != nil {
+		return "", "", false
 	}
-	return phase, true
+	info, err := os.Stat(resolved)
+	if err != nil || !info.Mode().IsRegular() || runtime.GOOS != "windows" && info.Mode().Perm()&0o111 == 0 {
+		return "", "", false
+	}
+	if runtime.GOOS != "windows" {
+		file, openErr := os.Open(resolved)
+		if openErr != nil {
+			return "", "", false
+		}
+		var prefix [2]byte
+		_, readErr := io.ReadFull(file, prefix[:])
+		closeErr := file.Close()
+		if readErr != nil || closeErr != nil || string(prefix[:]) != "#!" {
+			return "", "", false
+		}
+	} else if !validWindowsHookMigrationScript(relative) {
+		return "", "", false
+	}
+	return phase, filepath.ToSlash(relative), true
+}
+
+func validWindowsHookMigrationScript(value string) bool {
+	switch strings.ToLower(filepath.Ext(value)) {
+	case ".cmd", ".bat", ".ps1":
+		return true
+	default:
+		return false
+	}
 }
 
 func containsString(values []string, want string) bool {

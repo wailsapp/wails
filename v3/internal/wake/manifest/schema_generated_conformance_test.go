@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -324,6 +325,10 @@ func TestPublicManifestRoundTripCoversEverySchemaField(t *testing.T) {
 	template := filepath.Join(root, "packaging", "package.tmpl")
 	require.NoError(t, os.MkdirAll(filepath.Dir(template), 0o755))
 	require.NoError(t, os.WriteFile(template, []byte("template"), 0o644))
+	hook := filepath.Join(root, filepath.FromSlash(schemaRoundTripHookScript()))
+	require.NoError(t, os.MkdirAll(filepath.Dir(hook), 0o755))
+	require.NoError(t, os.WriteFile(hook, schemaRoundTripHookContents(), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "version.txt"), []byte("1.0.0\n"), 0o644))
 	source := generatedSchemaRoundTripManifest()
 	path := filepath.Join(root, Filename)
 	require.NoError(t, os.WriteFile(path, source, 0o644))
@@ -449,6 +454,8 @@ func generatedSchemaLabel(block, parent string) string {
 		return "association"
 	case "protocol":
 		return "example"
+	case "hook":
+		return "before_build"
 	default:
 		return ""
 	}
@@ -457,6 +464,18 @@ func generatedSchemaLabel(block, parent string) string {
 func schemaRoundTripExample(path, name string, destination reflect.Type, defaultText string) string {
 	if strings.HasPrefix(path, `file_association[`) && name == "name" {
 		return `"association"`
+	}
+	if strings.HasPrefix(path, `hook[`) {
+		switch name {
+		case "script":
+			return strconv.Quote(schemaRoundTripHookScript())
+		case "directory":
+			return `"scripts"`
+		case "inputs":
+			return `["version.txt"]`
+		case "outputs":
+			return `["generated/version.go"]`
+		}
 	}
 	element := destination
 	for element.Kind() == reflect.Pointer {
@@ -475,6 +494,20 @@ func schemaRoundTripExample(path, name string, destination reflect.Type, default
 	return schemaExample(path, name, destination, defaultText)
 }
 
+func schemaRoundTripHookScript() string {
+	if runtime.GOOS == "windows" {
+		return "scripts/generate-version.cmd"
+	}
+	return "scripts/generate-version.sh"
+}
+
+func schemaRoundTripHookContents() []byte {
+	if runtime.GOOS == "windows" {
+		return []byte("@echo off\r\n")
+	}
+	return []byte("#!/bin/sh\n")
+}
+
 func normalizeGeneratedSchemaPath(path string) string {
 	for _, replacement := range []struct{ actual, schema string }{
 		{`package["nsis"]`, `package["format"]`}, {`package["msix"]`, `package["format"]`},
@@ -484,6 +517,7 @@ func normalizeGeneratedSchemaPath(path string) string {
 		{`target["windows/amd64"]`, `target["target"]`}, {`file_association["association"]`, `file_association["association"]`},
 		{`target["darwin/arm64"]`, `target["target"]`}, {`target["ios/arm64"]`, `target["target"]`},
 		{`protocol["example"]`, `protocol["scheme"]`},
+		{`hook["before_build"]`, `hook["phase"]`},
 	} {
 		path = strings.ReplaceAll(path, replacement.actual, replacement.schema)
 	}

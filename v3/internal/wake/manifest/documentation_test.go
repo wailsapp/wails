@@ -3,6 +3,7 @@ package manifest
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -17,8 +18,18 @@ func TestPublishedHCLGuideExamplesMatchTheManifestSchema(t *testing.T) {
 	examples := fencedExamples(string(data), "hcl")
 	require.NotEmpty(t, examples)
 	for index, example := range examples {
+		if runtime.GOOS == "windows" && strings.Contains(example, `hook "`) {
+			// Published hook examples use Unix scripts; the Windows extension
+			// contract is covered by host-specific manifest tests.
+			continue
+		}
 		root := t.TempDir()
 		require.NoError(t, os.MkdirAll(filepath.Join(root, "frontend"), 0o755))
+		require.NoError(t, os.MkdirAll(filepath.Join(root, "scripts"), 0o755))
+		for _, script := range []string{"generate-version.sh", "check-packages.sh"} {
+			require.NoError(t, os.WriteFile(filepath.Join(root, "scripts", script), []byte("#!/bin/sh\n"), 0o755))
+		}
+		require.NoError(t, os.WriteFile(filepath.Join(root, "version.txt"), []byte("1.0.0\n"), 0o644))
 		_, err := decodeHCL(root, guide, []byte(example), "")
 		require.NoErrorf(t, err, "HCL example %d", index+1)
 		_, err = decodeHCL(root, guide, []byte(example), "release")

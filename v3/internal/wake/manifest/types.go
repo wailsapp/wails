@@ -22,6 +22,7 @@ type Document struct {
 	Signing      Signing
 	Associations []Association
 	Protocols    []Protocol
+	Hooks        map[HookPhase]Hook
 	Profiles     map[string]Profile
 }
 
@@ -37,9 +38,33 @@ type Config struct {
 	Signing      Signing            `json:"signing"`
 	Associations []Association      `json:"associations,omitempty"`
 	Protocols    []Protocol         `json:"protocols,omitempty"`
+	Hooks        map[HookPhase]Hook `json:"hooks,omitempty"`
 	Profiles     map[string]Profile `json:"profiles,omitempty"`
 	Selected     Profile            `json:"selected_profile,omitempty"`
 	Origins      map[string]Origin  `json:"origins,omitempty"`
+}
+
+type HookPhase string
+
+const (
+	BeforeBuild   HookPhase = "before_build"
+	AfterBuild    HookPhase = "after_build"
+	BeforePackage HookPhase = "before_package"
+	AfterPackage  HookPhase = "after_package"
+	BeforeSign    HookPhase = "before_sign"
+	AfterSign     HookPhase = "after_sign"
+)
+
+var HookPhases = []HookPhase{BeforeBuild, AfterBuild, BeforePackage, AfterPackage, BeforeSign, AfterSign}
+
+// Hook is a bounded invocation of one project-owned executable script. It is
+// intentionally not a shell command or a programmable pipeline definition.
+type Hook struct {
+	Script    string   `json:"script"`
+	Directory string   `json:"directory,omitempty"`
+	Cache     bool     `json:"cache,omitempty"`
+	Inputs    []string `json:"inputs,omitempty"`
+	Outputs   []string `json:"outputs,omitempty"`
 }
 
 type OriginKind string

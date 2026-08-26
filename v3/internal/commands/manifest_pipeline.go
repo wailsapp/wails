@@ -284,7 +284,13 @@ func planOutput(plan pipeline.Plan, inspections ...pipeline.Inspection) manifest
 		for index, origin := range node.Origins {
 			origins[index] = manifestPlanOrigin{Field: origin.Field, Source: formatPlanOrigin(origin.Origin)}
 		}
-		result.Operations = append(result.Operations, manifestPlanOperation{ID: key, Kind: string(node.Kind), Stage: planStage(node.Kind), Scope: string(node.Scope), Decision: decision, Cache: string(node.Cache), DependsOn: dependencies, Output: node.Output, Origins: origins, Inputs: inputs})
+		stage := planStage(node.Kind)
+		output := node.Output
+		if spec, ok := node.Spec.(pipeline.HookSpec); ok {
+			stage = string(spec.Phase)
+			output = spec.ScopeOutput
+		}
+		result.Operations = append(result.Operations, manifestPlanOperation{ID: key, Kind: string(node.Kind), Stage: stage, Scope: string(node.Scope), Decision: decision, Cache: string(node.Cache), DependsOn: dependencies, Output: output, Origins: origins, Inputs: inputs})
 	}
 	for _, root := range plan.Artifacts {
 		if artifact, ok := planArtifact(plan.Nodes[root]); ok {
@@ -365,6 +371,8 @@ func planStage(kind pipeline.NodeKind) string {
 		return "publish"
 	case pipeline.CollectArtifacts:
 		return "collect"
+	case pipeline.RunHook:
+		return "hook"
 	default:
 		return "unknown"
 	}
@@ -462,6 +470,20 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 	case pipeline.SignArtifact:
 		// The signer is implemented by this CLI; its executable identity below
 		// is the complete tool identity.
+	case pipeline.RunHook:
+		spec, err := manifestNodeSpec[pipeline.HookSpec](node)
+		if err != nil {
+			return "", err
+		}
+		script, err := manifest.ResolveProjectPath(h.root, "hook script", spec.Script, true)
+		if err != nil {
+			return "", err
+		}
+		if interpreter, err := manifestHookInterpreter(script); err != nil {
+			return "", err
+		} else if interpreter != "" {
+			tools = append(tools, interpreter)
+		}
 	default:
 		// Built-in handlers are identified by the running CLI below.
 	}
@@ -469,7 +491,11 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 	if err != nil {
 		return "", err
 	}
-	return "wails-" + version.String() + ":" + string(node.Kind) + "|" + identity + "|external:" + externalIdentity + "|env:" + relevantEnvironment(node, h.environment), nil
+	hookRoot := ""
+	if node.Kind == pipeline.RunHook {
+		hookRoot = "|hook-root:" + filepath.Clean(h.root)
+	}
+	return "wails-" + version.String() + ":" + string(node.Kind) + "|" + identity + "|external:" + externalIdentity + "|env:" + relevantEnvironment(node, h.environment) + hookRoot, nil
 }
 
 func relevantEnvironment(node pipeline.Node, overrides []string) string {
@@ -487,6 +513,17 @@ func relevantEnvironment(node pipeline.Node, overrides []string) string {
 		if spec, ok := node.Spec.(pipeline.CompileSpec); ok && !spec.Production {
 			keys = append(keys, "FRONTEND_DEVSERVER_URL", wailsVitePort)
 		}
+	case pipeline.RunHook:
+		values := environmentValues(mergeEnvironment(os.Environ(), overrides))
+		all := make([]string, 0, len(values))
+		for key, value := range values {
+			if strings.HasPrefix(key, "WAILS_") {
+				continue
+			}
+			all = append(all, key+"="+value)
+		}
+		sort.Strings(all)
+		return strings.Join(all, "\x00")
 	}
 	values := make([]string, 0, len(keys))
 	resolved := environmentValues(mergeEnvironment(os.Environ(), overrides))
@@ -577,9 +614,163 @@ func (h *manifestHandler) Run(ctx context.Context, node pipeline.Node) (pipeline
 			return pipeline.RunResult{}, err
 		}
 		return h.collect(spec)
+	case pipeline.RunHook:
+		spec, err := manifestNodeSpec[pipeline.HookSpec](node)
+		if err != nil {
+			return pipeline.RunResult{}, err
+		}
+		return h.runHook(ctx, spec)
 	default:
 		return pipeline.RunResult{}, fmt.Errorf("wake: no handler for %s", node.Kind)
 	}
+}
+
+func (h *manifestHandler) runHook(ctx context.Context, spec pipeline.HookSpec) (pipeline.RunResult, error) {
+	script, err := manifest.ResolveProjectPath(h.root, "hook script", spec.Script, true)
+	if err != nil {
+		return pipeline.RunResult{}, err
+	}
+	directory := h.root
+	if spec.Directory != "" {
+		directory, err = manifest.ResolveProjectPath(h.root, "hook directory", spec.Directory, true)
+		if err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
+	output := ""
+	if spec.ScopeOutput != "" {
+		output, err = hookScopeOutputPath(h.root, spec.ScopeOutput)
+		if err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
+	environment := append([]string(nil), h.environment...)
+	environmentVersion := spec.EnvironmentVersion
+	if environmentVersion == 0 {
+		environmentVersion = 1
+	}
+	for _, item := range []string{
+		"WAILS_PROJECT_DIR=" + h.root,
+		"WAILS_TARGET_OS=" + spec.TargetOS,
+		"WAILS_TARGET_ARCH=" + spec.TargetArch,
+		"WAILS_PROFILE=" + spec.Profile,
+		"WAILS_OUTPUT=" + output,
+		"WAILS_PIPELINE_VERSION=" + strconv.Itoa(environmentVersion),
+	} {
+		environment = append(environment, item)
+	}
+	name, arguments, err := manifestHookCommand(script)
+	if err != nil {
+		return pipeline.RunResult{}, err
+	}
+	detail, runErr := runManifestCommand(ctx, directory, environment, name, arguments...)
+	if runErr != nil {
+		return pipeline.RunResult{Detail: detail}, runErr
+	}
+	for _, declared := range spec.DeclaredOutputs {
+		path, resolveErr := manifest.ResolveProjectPath(h.root, "hook declared output", declared, false)
+		if resolveErr != nil {
+			return pipeline.RunResult{Detail: detail}, resolveErr
+		}
+		info, statErr := os.Stat(path)
+		if statErr != nil {
+			return pipeline.RunResult{Detail: detail}, fmt.Errorf("hook %s did not produce declared output %s: %w", spec.Phase, declared, statErr)
+		}
+		if !info.Mode().IsRegular() && !info.IsDir() {
+			return pipeline.RunResult{Detail: detail}, fmt.Errorf("hook %s produced unsupported output type at %s", spec.Phase, declared)
+		}
+	}
+	if len(spec.DeclaredOutputs) > 0 {
+		root, rootErr := manifest.HookOutputRoot(spec.DeclaredOutputs)
+		if rootErr != nil {
+			return pipeline.RunResult{Detail: detail}, rootErr
+		}
+		path, resolveErr := manifest.ResolveProjectPath(h.root, "hook output root", root, false)
+		if resolveErr != nil {
+			return pipeline.RunResult{Detail: detail}, resolveErr
+		}
+		if pathErr := rejectHookOutputSymlinks(h.root, path, spec.Phase); pathErr != nil {
+			return pipeline.RunResult{Detail: detail}, pathErr
+		}
+		if walkErr := filepath.WalkDir(path, func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if entry.Type()&os.ModeSymlink != 0 {
+				return fmt.Errorf("hook %s output contains unsupported symlink %s", spec.Phase, path)
+			}
+			info, infoErr := entry.Info()
+			if infoErr != nil {
+				return infoErr
+			}
+			if !info.IsDir() && !info.Mode().IsRegular() {
+				return fmt.Errorf("hook %s output contains unsupported file type at %s", spec.Phase, path)
+			}
+			return nil
+		}); walkErr != nil {
+			return pipeline.RunResult{Detail: detail}, walkErr
+		}
+	}
+	return pipeline.RunResult{Detail: detail}, nil
+}
+
+func hookScopeOutputPath(projectRoot, value string) (string, error) {
+	clean := filepath.ToSlash(filepath.Clean(strings.ReplaceAll(value, `\`, "/")))
+	if clean != ".wails" && !strings.HasPrefix(clean, ".wails/") {
+		return manifest.ResolveProjectPath(projectRoot, "hook output", value, false)
+	}
+	if filepath.IsAbs(filepath.FromSlash(clean)) || clean == ".." || strings.HasPrefix(clean, "../") {
+		return "", fmt.Errorf("hook output must be project-relative, got %q", value)
+	}
+	resolvedRoot, err := filepath.EvalSymlinks(projectRoot)
+	if err != nil {
+		return "", err
+	}
+	candidate := filepath.Join(projectRoot, filepath.FromSlash(clean))
+	ancestor := candidate
+	for {
+		if _, statErr := os.Lstat(ancestor); statErr == nil {
+			break
+		} else if !errors.Is(statErr, fs.ErrNotExist) {
+			return "", statErr
+		}
+		parent := filepath.Dir(ancestor)
+		if parent == ancestor {
+			return "", fmt.Errorf("hook output %q has no existing project ancestor", value)
+		}
+		ancestor = parent
+	}
+	resolvedAncestor, err := filepath.EvalSymlinks(ancestor)
+	if err != nil {
+		return "", err
+	}
+	relative, err := filepath.Rel(resolvedRoot, resolvedAncestor)
+	if err != nil {
+		return "", err
+	}
+	if relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("hook output %q resolves outside the project", value)
+	}
+	return candidate, nil
+}
+
+func rejectHookOutputSymlinks(projectRoot, output string, phase manifest.HookPhase) error {
+	relative, err := filepath.Rel(projectRoot, output)
+	if err != nil {
+		return err
+	}
+	current := filepath.Clean(projectRoot)
+	for _, component := range strings.Split(relative, string(filepath.Separator)) {
+		current = filepath.Join(current, component)
+		info, statErr := os.Lstat(current)
+		if statErr != nil {
+			return statErr
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("hook %s output contains unsupported symlink %s", phase, current)
+		}
+	}
+	return nil
 }
 
 func (h *manifestHandler) collect(spec pipeline.CollectSpec) (pipeline.RunResult, error) {

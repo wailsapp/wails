@@ -466,6 +466,50 @@ func TestHCLBuildExecutesFrontendAndRealGoCompile(t *testing.T) {
 	assert.Equal(t, "install\nrun bundle\nrun bundle\ninstall\nrun bundle\n", readTestFile(t, invocationLog), "--force must rebuild cached HCL stages")
 }
 
+func TestHCLBuildExecutesLifecycleHooksAroundARealCompile(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	hcl := hclBuildFixture + `
+hook "before_build" {
+  script = "scripts/before-build.sh"
+}
+
+hook "after_build" {
+  script = "scripts/after-build.sh"
+}
+`
+	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hcl), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example.com/hooks\n\ngo 1.24\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644))
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "frontend"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "frontend", "package.json"), []byte(`{"scripts":{"bundle":"bundle"}}`), 0o644))
+	writeTestHook(t, root, "before-build.sh", `#!/bin/sh
+set -eu
+printf 'before:%s:%s:%s\n' "$WAILS_PROFILE" "$WAILS_TARGET_OS" "$WAILS_TARGET_ARCH" >> hooks.log
+`)
+	writeTestHook(t, root, "after-build.sh", `#!/bin/sh
+set -eu
+test -f "$WAILS_OUTPUT"
+printf 'after:%s:%s:%s\n' "$WAILS_PROFILE" "$WAILS_TARGET_OS" "$WAILS_TARGET_ARCH" >> hooks.log
+`)
+
+	tools := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(tools, "npm"), []byte("#!/bin/sh\nif [ \"$1\" = \"install\" ]; then mkdir -p node_modules; fi\nif [ \"$1\" = \"run\" ]; then mkdir -p dist; printf bundle > dist/index.html; fi\n"), 0o755))
+	t.Setenv("PATH", tools+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	for range 2 {
+		_, err := runManifestPipelineResult(manifestRunOptions{Verb: "build", TargetOS: runtime.GOOS, TargetArch: runtime.GOARCH})
+		require.NoError(t, err)
+	}
+	assert.Equal(t, strings.Join([]string{
+		"before:default::",
+		"after:default:" + runtime.GOOS + ":" + runtime.GOARCH,
+		"before:default::",
+		"after:default:" + runtime.GOOS + ":" + runtime.GOARCH,
+		"",
+	}, "\n"), readTestFile(t, filepath.Join(root, "hooks.log")))
+}
+
 func TestHCLDevBuildExecutesTheDevelopmentPipeline(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)

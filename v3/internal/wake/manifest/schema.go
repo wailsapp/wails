@@ -98,6 +98,7 @@ var schemaAttributeDescriptions = map[string]string{
 	"background_modes":     "iOS background execution modes.",
 	"binary_name":          "Base name of the native executable.",
 	"build":                "Frontend production build command and arguments.",
+	"cache":                "Allow this hook to use the artifact cache; complete inputs and outputs are required.",
 	"build_number":         "Platform build number.",
 	"bundle_id":            "iOS bundle identifier.",
 	"capabilities":         "Native platform capabilities requested by the application.",
@@ -133,6 +134,7 @@ var schemaAttributeDescriptions = map[string]string{
 	"info_plist":           "User-owned Apple Info.plist file.",
 	"install":              "Frontend dependency installation command and arguments.",
 	"install_scope":        "NSIS installation scope.",
+	"inputs":               "Project-relative files or directories that determine a cached hook result.",
 	"interfaces":           "Generate TypeScript interfaces instead of classes where supported.",
 	"key_alias":            "Alias of the Android signing key.",
 	"ldflags":              "Additional Go linker flags.",
@@ -147,6 +149,7 @@ var schemaAttributeDescriptions = map[string]string{
 	"notarize":             "Notarize the produced artifact.",
 	"obfuscated":           "Obfuscate Go code with garble.",
 	"output":               "Project-relative output directory.",
+	"outputs":              "Project-relative files or directories produced completely by a cached hook.",
 	"platforms":            "Platforms receiving this registration.",
 	"post_install":         "Project-relative Linux post-install script.",
 	"post_remove":          "Project-relative Linux post-remove script.",
@@ -157,6 +160,7 @@ var schemaAttributeDescriptions = map[string]string{
 	"publisher":            "Windows package publisher identity.",
 	"role":                 "Application role for a file association.",
 	"section":              "Linux package repository section.",
+	"script":               "Project-relative executable script invoked directly without a shell command string.",
 	"sign":                 "Sign the produced artifact.",
 	"strip":                "Strip debug information from production binaries.",
 	"tags":                 "Additional Go build tags.",
@@ -188,6 +192,7 @@ var schemaAttributeExamples = map[string]string{
 	"entitlements": `"signing/entitlements.plist"`, "environment": `{ RELEASE = "true" }`, "exclude": `["node_modules"]`,
 	"extensions": `["example"]`, "file_icon": `"assets/file.icns"`, "files": `{ "License.pdf" = "LICENSE.pdf" }`,
 	"formats": `["nsis"]`, "garble_args": `["-literals"]`, "icon": `"assets/appicon.png"`,
+	"inputs":     `["version.txt"]`,
 	"identifier": `"com.example.app"`, "identity": `"Developer ID Application: Example"`, "info_plist": `"assets/Info.plist"`,
 	"install_scope": `"user"`, "key_alias": `"upload"`, "ldflags": `["-X example/build.version=1.0.0"]`,
 	"log_level": `"info"`, "maintainer": `"Example <release@example.com>"`, "manifest": `"assets/manifest.xml"`,
@@ -196,6 +201,7 @@ var schemaAttributeExamples = map[string]string{
 	"post_remove": `"packaging/postremove.sh"`, "pre_install": `"packaging/preinstall.sh"`, "pre_remove": `"packaging/preremove.sh"`,
 	"provisioning_profile": `"signing/app.mobileprovision"`, "publisher": `"CN=Example"`, "role": `"editor"`,
 	"section": `"utils"`, "template": `"packaging/package.tmpl"`, "thumbprint": `"0123456789ABCDEF"`,
+	"outputs": `["generated/version.go"]`, "script": `"scripts/generate-version.sh"`,
 	"time_type": `"string"`, "timestamp_server": `"https://timestamp.example.com"`, "toolchain": `"auto"`,
 	"version_name": `"1.0.0"`, "volume_icon": `"assets/volume.icns"`,
 	"watch": `["**/*.go", "wails.hcl"]`,
@@ -204,6 +210,9 @@ var schemaAttributeExamples = map[string]string{
 func schemaDescription(path, name string) string {
 	if path == "version" {
 		return "Wails manifest schema version; this must be the first attribute."
+	}
+	if strings.HasPrefix(path, `hook[`) && name == "directory" {
+		return "Project-relative working directory used to invoke the hook."
 	}
 	return schemaAttributeDescriptions[name]
 }

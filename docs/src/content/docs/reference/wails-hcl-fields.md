@@ -81,6 +81,11 @@ Fields are listed using schema paths. Labelled blocks use placeholders such as `
 | `frontend.environment` | map(string) | no | `{}` | `{ RELEASE = "true" }` |  | Environment variables added to this operation. |
 | `frontend.install` | list(string) | no | `["npm","install"]` | `["npm","install"]` |  | Frontend dependency installation command and arguments. |
 | `frontend.output` | string | no | `dist` | `"dist"` |  | Project-relative output directory. |
+| `hook["phase"].cache` | boolean | no | `false` | `false` |  | Allow this hook to use the artifact cache; complete inputs and outputs are required. |
+| `hook["phase"].directory` | string | no |  | `"value"` |  | Project-relative working directory used to invoke the hook. |
+| `hook["phase"].inputs` | list(string) | no | `[]` | `["version.txt"]` |  | Project-relative files or directories that determine a cached hook result. |
+| `hook["phase"].outputs` | list(string) | no | `[]` | `["generated/version.go"]` |  | Project-relative files or directories produced completely by a cached hook. |
+| `hook["phase"].script` | string | yes |  | `"scripts/generate-version.sh"` |  | Project-relative executable script invoked directly without a shell command string. |
 | `ios.assets_car` | string | no |  | `"build/Assets.car"` | darwin,ios | User-owned compiled Apple asset catalogue. |
 | `ios.background_modes` | list(string) | no |  | `["fetch"]` | ios | iOS background execution modes. |
 | `ios.build_number` | integer | no |  | `1` | windows,darwin,linux,ios | Platform build number. |

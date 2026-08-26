@@ -28,9 +28,11 @@ wails3 dev
 the same planner. New project documentation should use `wails3 build` with a
 profile or anonymous `--targets` and `--formats` options.
 
-The manifest is literal configuration. The first release has no expressions,
-includes, inheritance, hooks, user-defined stages, or custom graph edges. The
-planner turns resolved configuration into an immutable typed Plan; the
+The manifest is literal configuration. It has no expressions, includes,
+inheritance, user-defined stages, or custom graph edges. The experiment supports
+six bounded lifecycle hooks that invoke one project-owned script directly; they
+do not expose the fixed stage graph as a programmable API. The planner turns
+resolved configuration into an immutable typed Plan; the
 executor schedules its dependency and resource constraints. Independent
 targets and safe package branches may run concurrently.
 
@@ -72,7 +74,8 @@ Migration never overwrites a reviewed draft and never changes Taskfiles,
 scripts, assets, or `build/config.yml`. It has no persistent report, backup,
 retirement, rollback, or force-activation state. Reachable unrepresented build
 behaviour blocks cutover; unrelated utility tasks are reported without
-blocking.
+blocking. Conservative, argument-free lifecycle tasks that invoke a contained
+script file migrate to the equivalent typed hook.
 
 `wails3 eject` exclusively writes the complete resolved reference manifest to
 inactive `wails.ejected.hcl`. `--force` atomically replaces only that inactive

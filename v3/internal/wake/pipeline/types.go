@@ -30,6 +30,7 @@ const (
 	SignArtifact                NodeKind = "SignArtifact"
 	PublishArtifact             NodeKind = "PublishArtifact"
 	CollectArtifacts            NodeKind = "CollectArtifacts"
+	RunHook                     NodeKind = "RunHook"
 )
 
 type Scope string
@@ -276,6 +277,14 @@ type CollectSpec struct {
 	Artifacts []ArtifactReference
 	Receipt   string
 }
+type HookSpec struct {
+	Phase                      manifest.HookPhase
+	Script, Directory, Profile string
+	TargetOS, TargetArch       string
+	ScopeOutput                string
+	DeclaredOutputs            []string
+	EnvironmentVersion         int
+}
 
 func (InstallSpec) nodeSpec()  {}
 func (BindingsSpec) nodeSpec() {}
@@ -287,6 +296,7 @@ func (PackageSpec) nodeSpec()  {}
 func (SignSpec) nodeSpec()     {}
 func (PublishSpec) nodeSpec()  {}
 func (CollectSpec) nodeSpec()  {}
+func (HookSpec) nodeSpec()     {}
 
 func (p Plan) Validate(root string) error {
 	if len(p.Nodes) == 0 {
@@ -432,6 +442,9 @@ func validNodeSpec(node Node) bool {
 		return ok
 	case CollectArtifacts:
 		_, ok := node.Spec.(CollectSpec)
+		return ok
+	case RunHook:
+		_, ok := node.Spec.(HookSpec)
 		return ok
 	default:
 		return false

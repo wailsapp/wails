@@ -34,6 +34,16 @@ type hclDocument struct {
 	Profiles     []hclProfile     `hcl:"profile,block"`
 	Associations []hclAssociation `hcl:"file_association,block"`
 	Protocols    []hclProtocol    `hcl:"protocol,block"`
+	Hooks        []hclHook        `hcl:"hook,block"`
+}
+
+type hclHook struct {
+	Phase     string    `hcl:",label" schema_label:"phase"`
+	Script    *string   `hcl:"script,optional" required:"true" nonempty:"true" path:"true"`
+	Directory *string   `hcl:"directory,optional" path:"true"`
+	Cache     *bool     `hcl:"cache,optional" default:"false"`
+	Inputs    *[]string `hcl:"inputs,optional" default:"[]" path:"true"`
+	Outputs   *[]string `hcl:"outputs,optional" default:"[]" path:"true"`
 }
 
 type hclProject struct {
@@ -388,7 +398,37 @@ func documentFromHCL(raw hclDocument) (Document, error) {
 		setStrings(&entry.Platforms, protocol.Platforms)
 		doc.Protocols = append(doc.Protocols, entry)
 	}
+	seenHooks := map[HookPhase]bool{}
+	for _, rawHook := range raw.Hooks {
+		phase := HookPhase(rawHook.Phase)
+		if !containsHookPhase(phase) {
+			return Document{}, fmt.Errorf("hook phase %q is not supported", rawHook.Phase)
+		}
+		if seenHooks[phase] {
+			return Document{}, fmt.Errorf("duplicate hook %q", phase)
+		}
+		seenHooks[phase] = true
+		hook := Hook{}
+		setString(&hook.Script, rawHook.Script)
+		setString(&hook.Directory, rawHook.Directory)
+		setBool(&hook.Cache, rawHook.Cache)
+		setStrings(&hook.Inputs, rawHook.Inputs)
+		setStrings(&hook.Outputs, rawHook.Outputs)
+		if doc.Hooks == nil {
+			doc.Hooks = make(map[HookPhase]Hook)
+		}
+		doc.Hooks[phase] = hook
+	}
 	return doc, nil
+}
+
+func containsHookPhase(want HookPhase) bool {
+	for _, phase := range HookPhases {
+		if phase == want {
+			return true
+		}
+	}
+	return false
 }
 
 func applyFrontend(target *Frontend, raw *hclFrontend) {
@@ -795,6 +835,19 @@ func encodeConfigHCL(config Config, header string) ([]byte, error) {
 		output.WriteString("}\n\n")
 	}
 	writeEjectedPackages(&output, config.Package)
+	for _, phase := range HookPhases {
+		hook, ok := config.Hooks[phase]
+		if !ok {
+			continue
+		}
+		hclLabeledBlockStart(&output, "", "hook", string(phase))
+		hclStringIndented(&output, "script", hook.Script, "  ")
+		hclStringIndented(&output, "directory", hook.Directory, "  ")
+		hclBoolIndented(&output, "cache", hook.Cache, "  ")
+		hclStringsIndented(&output, "inputs", hook.Inputs, "  ")
+		hclStringsIndented(&output, "outputs", hook.Outputs, "  ")
+		output.WriteString("}\n\n")
+	}
 	for _, association := range config.Associations {
 		hclLabeledBlockStart(&output, "", "file_association", association.Name)
 		hclStringsIndented(&output, "extensions", association.Extensions, "  ")

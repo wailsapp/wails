@@ -448,7 +448,7 @@ wails3 clean</code></pre>
           <li>Community templates with Taskfiles are analysed. Representable templates can become active HCL projects; custom behaviour produces an inactive draft and preserves legacy execution.</li>
         </ul>
         <p>Migration inspects root and included Taskfiles, reachable build/package/sign/dev tasks, <code>build/config.yml</code>, frontend metadata and lockfiles, binding settings, conventional assets, project metadata, file associations and protocols.</p>
-        <p>Only behaviour with a typed equivalent is migrated. Reachable custom shell logic is a blocker. Activation atomically renames <code>wails.migrated.hcl</code> to <code>wails.hcl</code>; Taskfiles, scripts, YAML and assets are not deleted or edited.</p>
+        <p>Only behaviour with a typed equivalent is migrated. Conservative argument-free lifecycle tasks that invoke one project-owned script become HCL hooks; other reachable custom shell logic remains a blocker. Activation atomically renames <code>wails.migrated.hcl</code> to <code>wails.hcl</code>; Taskfiles, scripts, YAML and assets are not deleted or edited.</p>
       </section>
 
       <section>
@@ -469,9 +469,21 @@ wails3 clean</code></pre>
       </section>
 
       <section>
+        <h2>Experimental lifecycle hooks implemented</h2>
+        <ul>
+          <li>One project-owned executable script may be declared for each of <code>before_build</code>, <code>after_build</code>, <code>before_package</code>, <code>after_package</code>, <code>before_sign</code> and <code>after_sign</code>.</li>
+          <li>Package and signing hooks form per-target barriers around the complete requested format set; independent package nodes remain concurrent.</li>
+          <li>Scripts run directly without inline shell interpolation, inherit a stable overriding <code>WAILS_*</code> environment, retain failure output and exit status, and are terminated as a process group on cancellation.</li>
+          <li>Hooks run every time by default and make downstream operations non-cacheable. Explicit <code>cache = true</code> requires complete inputs and bounded outputs, preserves downstream reuse through its artifact identity, and supports content-addressed hit and restoration.</li>
+          <li>Script, directory, input and output paths are constrained to the project after symlink resolution; cached output trees accept only regular files and directories. Windows uses explicit <code>.cmd</code>, <code>.bat</code> or <code>.ps1</code> interpreter adapters.</li>
+        </ul>
+        <div class="callout warn"><p>This hook surface is an experiment for evaluation, not accepted first-release scope. It is deliberately not a general task or user-defined pipeline language.</p></div>
+      </section>
+
+      <section>
         <h2>Explicitly not supported</h2>
         <ul class="checks no">
-          <li>Build hooks or arbitrary pre/post-build commands.</li>
+          <li>Arbitrary pre/post-build command strings or multiple commands per hook.</li>
           <li>Custom stages, dependencies or user-defined pipelines.</li>
           <li>Calling <code>wails3 tool</code> operations from HCL.</li>
           <li>HCL expressions, variables, functions, interpolation, includes, conditions, loops or HCL-JSON.</li>
@@ -482,7 +494,7 @@ wails3 clean</code></pre>
           <li>A <code>config show</code> command or generic config export.</li>
           <li>Cleaning final artifacts: <code>wails3 clean</code> removes <code>.wails/</code> only.</li>
         </ul>
-        <p>External scripts can still run separately before or after Wails, but they are not represented in the build graph.</p>
+        <p>Behaviour outside the six bounded hook phases can still run separately before or after Wails, but it is not represented in the build graph.</p>
       </section>
 
       <section>
@@ -497,6 +509,7 @@ wails3 clean</code></pre>
               <tr><td>Cache and artifact stability</td><td><span class="status done">Confirmed</span></td><td>Hits, restoration, stable bytes and receipts.</td></tr>
               <tr><td>Wizard and migration</td><td><span class="status done">Confirmed</span></td><td>HCL generation, preservation and migration tests.</td></tr>
               <tr><td>Configuration diagnostics</td><td><span class="status done">Implemented</span></td><td><code>wails3 config check</code>, all-profile validation, line/column source excerpts, caret ranges and hints are covered by focused tests.</td></tr>
+              <tr><td>Lifecycle hooks</td><td><span class="status done">Implemented experimentally</span></td><td>Schema, phase/barrier planning, stable environment, process-group cancellation, caching/restoration, symlink containment and conservative migration pass focused and race tests. The no-hook Linux gate remains within budget at 105.388ms median.</td></tr>
               <tr><td>Windows and macOS</td><td><span class="status pending">Pending native acceptance</span></td><td>Implemented and structurally tested; no real host run yet.</td></tr>
               <tr><td>Android production and emulator deployment</td><td><span class="status done">Confirmed</span></td><td>Real API 36/NDK r29 amd64, arm64 and universal AABs plus x86_64 AVD APK install and launch. Physical device remains pending.</td></tr>
               <tr><td>iOS</td><td><span class="status pending">Pending native SDK acceptance</span></td><td>Implemented with fake-tool coverage; no real Xcode/device evidence yet.</td></tr>

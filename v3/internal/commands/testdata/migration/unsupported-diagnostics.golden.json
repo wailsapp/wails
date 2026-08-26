@@ -42,13 +42,6 @@
       },
       {
         "severity": "warning",
-        "code": "deferred-hook",
-        "file": "Taskfile.yml",
-        "task": "before-build",
-        "message": "custom before_build script is not representable in config-only HCL and blocks activation"
-      },
-      {
-        "severity": "warning",
         "code": "modified-task",
         "file": "Taskfile.yml",
         "task": "build",

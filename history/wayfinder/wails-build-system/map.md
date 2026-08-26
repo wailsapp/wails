@@ -6,10 +6,11 @@ Type: map
 ## Destination
 
 An implemented first release for replacing generated v3 Taskfiles and
-`build/config.yml` with one config-only `wails.hcl`, using a fixed Wake pipeline
-for graph execution, caching, parallelism, and reporting. Pipeline extension,
-hooks, and typed `wails3 tool` calls were deliberately deferred from that first
-slice. Follow-up work now covers a separately designed hook contract,
+`build/config.yml` with one config-first `wails.hcl`, using a fixed Wake pipeline
+for graph execution, caching, parallelism, and reporting. Pipeline extension
+and typed `wails3 tool` calls were deliberately deferred from that first slice.
+The bounded lifecycle-hook follow-up is now implemented experimentally;
+follow-up work still covers
 device/emulator deployment with an interactive experience, and stronger
 line-referenced configuration diagnostics.
 
@@ -62,8 +63,9 @@ line-referenced configuration diagnostics.
   — one routing seam selects native Manifest, deliberate legacy fallback, or
   an actionable ambiguity error; `wails.hcl` itself is the opt-in flag.
 - [Script hook contract and safe extension boundary](issues/05-script-hook-contract.md)
-  — preserved as extension research only. Hooks and arbitrary calls are not in
-  the config-only first release and require a later pipeline proposal.
+  — six project/target/package barrier phases invoke project-owned scripts
+  directly, default to non-cacheable execution, and support bounded explicit
+  input/output caching without exposing arbitrary graph edges.
 - [Dev Session invalidation and process lifecycle](issues/10-dev-session-lifecycle.md)
   — finite generations drive a transactional, readiness-gated frontend,
   backend, and watch lifecycle with no-op preservation and clean cancellation.
@@ -94,6 +96,9 @@ line-referenced configuration diagnostics.
   103.913ms with 1.66% MAD, zero executed and six cached Nodes, and stable
   bytes. After the ceiling was revised to 150ms, the final post-Podman/mobile
   seven-sample run passed at 99.870ms with 4.43% MAD and stable bytes.
+- After adding bounded lifecycle hooks, the unchanged no-hook graph passed the
+  same seven-sample gate at 105.388ms median with 3.45% MAD, zero executed and
+  six cached Nodes in every sample, and byte-identical artifacts.
 - Native Linux build, DEB/RPM/Arch/AppImage packaging, all nine built-in web
   templates, and the real Dev lifecycle pass locally. Podman-backed arm64
   cross-build and DEB/RPM/Arch packaging also pass with an AArch64 ELF and
@@ -109,12 +114,16 @@ line-referenced configuration diagnostics.
   build/package runs pass.
 - A draft WEP records the public behavior and rollout proposal under
   `v3/wep/proposals/manifest-build-system/` on the experiment branch.
+- The experimental hook slice adds strict HCL schema and path validation,
+  typed `RunHook` Plan nodes, stable `WAILS_*` environment, package/sign
+  barriers, process-group cancellation, opt-in artifact restoration, and
+  conservative Taskfile lifecycle-script migration.
 
 ## Not yet specified
 
-The first config-only destination is fully specified and implemented. The hook
-contract, deployment interaction model, and final configuration-diagnostic
-surface remain open follow-up design and implementation work under `issues/`.
+The config-first destination and bounded hook contract are implemented. The
+deployment interaction model and final configuration-diagnostic surface remain
+open follow-up design and implementation work under `issues/`.
 
 ## Out of scope
 

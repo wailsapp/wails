@@ -412,7 +412,7 @@ unknownProductionSetting: enabled
 	assert.Equal(t, string(expected), string(encoded))
 
 	wantCodes := map[string]bool{
-		"config-version": true, "cyclic-include": true, "deferred-hook": true,
+		"config-version": true, "cyclic-include": true,
 		"dev-root": true, "dynamic-include": true, "dynamic-task-reference": true,
 		"external-output": true, "external-taskfile": true, "frontend-invalid": true,
 		"frontend-output": true, "frontend-package-json": true, "frontend-script": true,
@@ -427,6 +427,25 @@ unknownProductionSetting: enabled
 		}
 	}
 	assert.Empty(t, wantCodes, "every unsupported-feature diagnostic needs a golden entry")
+}
+
+func TestMigrationTranslatesReachableLifecycleScriptToHook(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "scripts"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "scripts", "preflight"), []byte("#!/bin/sh\n"), 0o755))
+	taskfile := `version: '3'
+tasks:
+  build:
+    cmds:
+      - task: before-build
+  before-build:
+    cmds: ['./scripts/preflight']
+`
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte(taskfile), 0o644))
+	report, doc, err := analyseMigration(root)
+	require.NoError(t, err)
+	assert.Equal(t, manifest.Hook{Script: "scripts/preflight"}, doc.Hooks[manifest.BeforeBuild])
+	assert.Contains(t, report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "translated-hook", File: "Taskfile.yml", Task: "before-build", Message: "translated custom before_build script to hook scripts/preflight"})
 }
 
 type migrationInputSnapshot struct {
@@ -1032,9 +1051,10 @@ func TestMigrationIncludeAndLifecycleScriptBoundaries(t *testing.T) {
 	require.NoError(t, os.MkdirAll(scripts, 0o755))
 	script := filepath.Join(scripts, "preflight")
 	require.NoError(t, os.WriteFile(script, []byte("#!/bin/sh\n"), 0o755))
-	phase, ok := legacyLifecycleScript(root, root, "before-build", &wakeast.Task{Cmds: []*wakeast.Cmd{{Cmd: "./scripts/preflight"}}})
+	phase, relativeScript, ok := legacyLifecycleScript(root, root, "before-build", &wakeast.Task{Cmds: []*wakeast.Cmd{{Cmd: "./scripts/preflight"}}})
 	assert.True(t, ok)
 	assert.Equal(t, "before_build", phase)
+	assert.Equal(t, "scripts/preflight", relativeScript)
 	for name, task := range map[string]*wakeast.Task{
 		"unknown phase":  {Cmds: []*wakeast.Cmd{{Cmd: "./scripts/preflight"}}},
 		"before_build":   nil,
@@ -1044,11 +1064,11 @@ func TestMigrationIncludeAndLifecycleScriptBoundaries(t *testing.T) {
 		"before_sign":    {Cmds: []*wakeast.Cmd{{Cmd: "./scripts/missing"}}},
 		"after_sign":     {Cmds: []*wakeast.Cmd{{Cmd: "../outside"}}},
 	} {
-		_, ok := legacyLifecycleScript(root, root, name, task)
+		_, _, ok := legacyLifecycleScript(root, root, name, task)
 		assert.False(t, ok, name)
 	}
 	require.NoError(t, os.MkdirAll(filepath.Join(scripts, "directory"), 0o755))
-	_, ok = legacyLifecycleScript(root, root, "before_build", &wakeast.Task{Cmds: []*wakeast.Cmd{{Cmd: "./scripts/directory"}}})
+	_, _, ok = legacyLifecycleScript(root, root, "before_build", &wakeast.Task{Cmds: []*wakeast.Cmd{{Cmd: "./scripts/directory"}}})
 	assert.False(t, ok)
 
 	digest, err := digestFile(script)

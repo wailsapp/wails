@@ -1,7 +1,7 @@
 # Build and stage hook contract
 
 Type: task
-Status: open
+Status: resolved
 Blocked by: none
 Label: ready-for-agent
 
@@ -40,4 +40,32 @@ be frozen until the execution and cache semantics are understood.
 
 ## Answer
 
-Pending.
+Implemented as a bounded lifecycle contract rather than a general stage API.
+`hook "<phase>"` accepts one project-owned script for `before_build`,
+`after_build`, `before_package`, `after_package`, `before_sign`, or
+`after_sign`. Project and target scopes are fixed; package and sign hooks form
+barriers around the complete requested format set while independent format
+nodes remain concurrent.
+
+Scripts execute directly with no inline shell or argument interpolation. Paths
+and working directories are project-contained after symlink resolution. Stable
+`WAILS_*` values override inherited environment, non-zero exits retain output
+and exit status, and cancellation terminates the complete process group.
+
+Hooks run every time unless `cache = true` declares complete `inputs` and
+`outputs`. The script bytes and executable mode are implicit inputs. Multiple
+outputs share one bounded non-root directory, and an output root may not contain
+the script or declared inputs or contain symbolic links or special files.
+Always-run hooks make their downstream operations non-cacheable; cacheable
+hooks contribute their declared artifact identity instead. Conservative
+argument-free Taskfile
+lifecycle scripts migrate to this shape; arbitrary commands remain blockers.
+
+The implementation includes strict schema/writer support, typed Plan nodes,
+artifact/terminal-barrier separation, Linux and Windows launch adapters, Plan
+rendering, cache restoration, migration, documentation, and focused validation,
+topology, environment, failure, cancellation, cache, and migration tests.
+The full focused suite and race detector pass; Windows amd64 and macOS arm64
+production packages cross-compile. The unchanged no-hook graph passes the
+seven-sample Linux gate at 105.388ms median with 3.45% MAD, zero executed and
+six cached Nodes, and stable artifact bytes.

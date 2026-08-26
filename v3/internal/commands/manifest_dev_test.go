@@ -487,14 +487,19 @@ func TestManifestDevBinaryPathUsesTheCompilePlanOutput(t *testing.T) {
 	assert.ErrorContains(t, err, "has no compile output")
 }
 
-func TestManifestBackendChangedOnlyForExecutedCompileOrURLChange(t *testing.T) {
+func TestManifestBackendChangedForExecutedCompileOrAfterBuildHook(t *testing.T) {
 	key := pipelineCompileKey("linux", "amd64")
+	hookKey := pipelineAfterBuildHookKey("linux", "amd64")
 	for _, status := range []cache.LookupStatus{cache.LookupHit, cache.LookupRestored} {
 		run := manifestPipelineRun{Results: map[pipeline.NodeKey]pipeline.Result{key: {Status: status}}}
 		assert.False(t, manifestBackendChanged(run, "linux", "amd64"), status)
 	}
 	run := manifestPipelineRun{Results: map[pipeline.NodeKey]pipeline.Result{key: {Status: cache.LookupMiss}}}
 	assert.True(t, manifestBackendChanged(run, "linux", "amd64"))
+	run = manifestPipelineRun{Results: map[pipeline.NodeKey]pipeline.Result{key: {Status: cache.LookupHit}, hookKey: {Status: cache.LookupMiss}}}
+	assert.True(t, manifestBackendChanged(run, "linux", "amd64"))
+	run.Results[hookKey] = pipeline.Result{Status: cache.LookupHit}
+	assert.False(t, manifestBackendChanged(run, "linux", "amd64"))
 	assert.True(t, manifestBackendChanged(manifestPipelineRun{}, "linux", "amd64"))
 }
 

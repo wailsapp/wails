@@ -3,12 +3,14 @@ package manifest
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"unicode"
@@ -118,7 +120,7 @@ func defaults(project Project) Document {
 		Linux: PackagePlatform{Formats: []string{"appimage"}}, IOS: PackagePlatform{Formats: []string{"ipa"}},
 		Android: PackagePlatform{Formats: []string{"aab"}},
 	}
-	return Document{Project: project, Frontend: frontend, Build: build, Dev: dev, Targets: targets, Package: packages, Profiles: map[string]Profile{}}
+	return Document{Project: project, Frontend: frontend, Build: build, Dev: dev, Targets: targets, Package: packages, Hooks: map[HookPhase]Hook{}, Profiles: map[string]Profile{}}
 }
 
 // NewDocument returns a resolved document seeded with the compiled defaults.
@@ -144,7 +146,7 @@ func defaultPlatform(architectures ...string) Platform {
 }
 
 func configFromDocument(root, profile string, doc Document) Config {
-	config := Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Profiles: doc.Profiles, Origins: defaultOrigins()}
+	config := Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Hooks: doc.Hooks, Profiles: doc.Profiles, Origins: defaultOrigins()}
 	if profile != "" {
 		config.Selected = doc.Profiles[profile]
 	}
@@ -247,6 +249,9 @@ func validateConfig(config Config) error {
 	if err := validateEnvironment("build.environment", config.Build.Environment); err != nil {
 		return err
 	}
+	if err := validateHooks(config.Root, paths, config.Hooks); err != nil {
+		return err
+	}
 	for _, mode := range config.Targets.IOS.BackgroundModes {
 		if !contains([]string{"audio", "location", "voip", "fetch", "remote-notification", "newsstand-content", "external-accessory", "bluetooth-central", "bluetooth-peripheral", "network-authentication", "processing"}, mode) {
 			return fieldValidationError("ios.background_modes", "contains unsupported mode %q", mode)
@@ -304,6 +309,168 @@ func validateConfig(config Config) error {
 		}
 	}
 	return nil
+}
+
+func validateHooks(root string, paths *projectPathValidator, hooks map[HookPhase]Hook) error {
+	phases := make([]string, 0, len(hooks))
+	for phase := range hooks {
+		phases = append(phases, string(phase))
+	}
+	sort.Strings(phases)
+	for _, phaseName := range phases {
+		phase := HookPhase(phaseName)
+		hook := hooks[phase]
+		field := fmt.Sprintf(`hook[%q]`, phase)
+		if !containsHookPhase(phase) {
+			return fieldValidationError(field, "unsupported hook phase")
+		}
+		if hook.Script == "" {
+			return fieldValidationError(field+".script", "cannot be empty")
+		}
+		if wailsManagedPath(hook.Script) {
+			return fieldValidationError(field+".script", "must not be inside Wails-owned .wails state")
+		}
+		if err := paths.validate(field+".script", hook.Script, true); err != nil {
+			return err
+		}
+		scriptPath, err := ResolveProjectPath(root, field+".script", hook.Script, true)
+		if err != nil {
+			return err
+		}
+		info, err := os.Stat(scriptPath)
+		if err != nil {
+			return fieldValidationError(field+".script", "%v", err)
+		}
+		if !info.Mode().IsRegular() {
+			return fieldValidationError(field+".script", "must be a regular file")
+		}
+		if runtime.GOOS == "windows" {
+			if !validWindowsHookScript(hook.Script) {
+				return fieldValidationError(field+".script", "must use a .cmd, .bat, or .ps1 script on Windows")
+			}
+		} else {
+			if info.Mode().Perm()&0o111 == 0 {
+				return fieldValidationError(field+".script", "must be executable")
+			}
+			file, openErr := os.Open(scriptPath)
+			if openErr != nil {
+				return fieldValidationError(field+".script", "%v", openErr)
+			}
+			var prefix [2]byte
+			_, readErr := io.ReadFull(file, prefix[:])
+			closeErr := file.Close()
+			if readErr != nil {
+				return fieldValidationError(field+".script", "%v", readErr)
+			}
+			if closeErr != nil {
+				return fieldValidationError(field+".script", "%v", closeErr)
+			}
+			if string(prefix[:]) != "#!" {
+				return fieldValidationError(field+".script", "must start with a shebang")
+			}
+		}
+		if hook.Directory != "" {
+			if wailsManagedPath(hook.Directory) {
+				return fieldValidationError(field+".directory", "must not be inside Wails-owned .wails state")
+			}
+			if err := paths.validate(field+".directory", hook.Directory, true); err != nil {
+				return err
+			}
+			directory, err := ResolveProjectPath(root, field+".directory", hook.Directory, true)
+			if err != nil {
+				return err
+			}
+			info, err := os.Stat(directory)
+			if err != nil || !info.IsDir() {
+				return fieldValidationError(field+".directory", "must be an existing directory")
+			}
+		}
+		if !hook.Cache && (len(hook.Inputs) != 0 || len(hook.Outputs) != 0) {
+			return fieldValidationError(field+".cache", "must be true when inputs or outputs are declared")
+		}
+		if hook.Cache && (len(hook.Inputs) == 0 || len(hook.Outputs) == 0) {
+			return fieldValidationError(field+".cache", "requires complete inputs and outputs")
+		}
+		for index, input := range hook.Inputs {
+			if input == "" || wailsManagedPath(input) {
+				return fieldValidationError(fmt.Sprintf("%s.inputs[%d]", field, index), "must be a non-empty user-owned project path")
+			}
+			if err := paths.validate(fmt.Sprintf("%s.inputs[%d]", field, index), input, false); err != nil {
+				return err
+			}
+		}
+		for index, output := range hook.Outputs {
+			if output == "" || wailsManagedPath(output) {
+				return fieldValidationError(fmt.Sprintf("%s.outputs[%d]", field, index), "must be a non-empty user-owned project path")
+			}
+			if err := paths.validate(fmt.Sprintf("%s.outputs[%d]", field, index), output, false); err != nil {
+				return err
+			}
+		}
+		if hook.Cache {
+			outputRoot, err := HookOutputRoot(hook.Outputs)
+			if err != nil {
+				return fieldValidationError(field+".outputs", "%v", err)
+			}
+			for _, input := range append([]string{hook.Script}, hook.Inputs...) {
+				if pathContains(outputRoot, input) {
+					return fieldValidationError(field+".outputs", "output root %q contains script or input %q", outputRoot, input)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func validWindowsHookScript(value string) bool {
+	switch strings.ToLower(filepath.Ext(value)) {
+	case ".cmd", ".bat", ".ps1":
+		return true
+	default:
+		return false
+	}
+}
+
+// HookOutputRoot returns the bounded artifact restored for a cacheable hook.
+func HookOutputRoot(outputs []string) (string, error) {
+	if len(outputs) == 0 {
+		return "", fmt.Errorf("at least one output is required")
+	}
+	clean := filepath.ToSlash(filepath.Clean(outputs[0]))
+	if clean == "." || clean == "" {
+		return "", fmt.Errorf("output root must not be the project root")
+	}
+	if len(outputs) == 1 {
+		return clean, nil
+	}
+	common := strings.Split(clean, "/")
+	for _, output := range outputs[1:] {
+		parts := strings.Split(filepath.ToSlash(filepath.Clean(output)), "/")
+		limit := min(len(common), len(parts))
+		index := 0
+		for index < limit && common[index] == parts[index] {
+			index++
+		}
+		common = common[:index]
+	}
+	if len(common) == 0 {
+		return "", fmt.Errorf("multiple outputs must share one non-root directory")
+	}
+	return strings.Join(common, "/"), nil
+}
+
+func pathContains(root, pathValue string) bool {
+	root = filepath.ToSlash(filepath.Clean(root))
+	pathValue = filepath.ToSlash(filepath.Clean(pathValue))
+	return pathValue == root || strings.HasPrefix(pathValue, root+"/")
+}
+
+func wailsManagedPath(value string) bool {
+	clean := strings.TrimPrefix(filepath.ToSlash(filepath.Clean(value)), "./")
+	if runtime.GOOS == "windows" {
+		clean = strings.ToLower(clean)
+	}
+	return clean == ".wails" || strings.HasPrefix(clean, ".wails/")
 }
 
 func validateDevWatchPattern(pattern string) error {

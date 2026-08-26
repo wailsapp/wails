@@ -439,11 +439,19 @@ func manifestDevTags(options *DevOptions) []string {
 
 func manifestBackendChanged(run manifestPipelineRun, goos, goarch string) bool {
 	result, exists := run.Results[pipelineCompileKey(goos, goarch)]
-	return !exists || result.Status == cache.LookupMiss
+	if !exists || result.Status == cache.LookupMiss {
+		return true
+	}
+	hook, exists := run.Results[pipelineAfterBuildHookKey(goos, goarch)]
+	return exists && hook.Status == cache.LookupMiss
 }
 
 func pipelineCompileKey(goos, goarch string) pipeline.NodeKey {
 	return pipeline.NodeKey("target:" + goos + "/" + goarch + ":compile")
+}
+
+func pipelineAfterBuildHookKey(goos, goarch string) pipeline.NodeKey {
+	return pipeline.NodeKey("hook:after_build:" + goos + "-" + goarch)
 }
 
 func devWatchSessionChanged(current, next manifest.Config) bool {

@@ -145,7 +145,7 @@ not part of the native HCL interface.
 
 ### Experimental follow-up commands
 
-The experiment branch also prototypes two post-first-release surfaces so their
+The experiment branch also prototypes post-first-release surfaces so their
 shape can be evaluated before inclusion in the accepted proposal:
 
 - `wails3 config check [profile]` validates the base manifest and either every
@@ -156,11 +156,19 @@ shape can be evaluated before inclusion in the accepted proposal:
   installs it, and optionally launches it. `--device` and `--emulator` provide
   deterministic automation; a terminal picker provides the initial interactive
   experience. APK remains unavailable as a production profile format.
+- Six bounded lifecycle hooks invoke one project-owned executable script
+  directly: `before_build`, `after_build`, `before_package`, `after_package`,
+  `before_sign`, and `after_sign`. Hooks run every time unless they explicitly
+  opt into caching with complete inputs and outputs. Always-run hooks make
+  downstream operations non-cacheable so undeclared side effects cannot reuse
+  stale artifacts. This does not expose core stage names or arbitrary graph
+  edges.
 
-These commands are experiments, not accepted first-release scope. Device log
+These surfaces are experiments, not accepted first-release scope. Device log
 streaming, long-lived lifecycle management, iOS deployment, and full source
-ranges for planner or host-capability diagnostics remain follow-up work. This
-section does not reserve or approve any hook syntax.
+ranges for planner or host-capability diagnostics remain follow-up work. The
+hook syntax and contract remain experimental rather than an accepted
+first-release commitment.
 
 ## Fixed pipeline and Plan
 
@@ -172,8 +180,9 @@ and externally stateful operations are never reusable cache entries.
 
 Stable reporting stages are `resolve`, `prepare`, `generate`, `frontend`,
 `compile`, `assemble`, `package`, `sign`, and `collect`. Stages are reporting
-categories, not execution APIs. Users cannot select, replace, reorder, or attach
-hooks to them.
+categories, not execution APIs. Users cannot select, replace, or reorder them.
+Experimental lifecycle hooks are separately named barriers and do not attach to
+arbitrary stage names.
 
 The default Plan is a compact text table. `--plan --json` emits the same Plan as
 a versioned machine-readable document. Plans include selected profile and
@@ -405,8 +414,7 @@ protocol "studio" {
 
 ## Deferred extension work
 
-A later proposal may define hooks, typed Wails tool invocations such as
-`wails.generate.icons`, or other pipeline customization. That work must specify
-lifecycle semantics, declared inputs and outputs, environment, caching,
-cancellation, failures, and external process containment. It must not infer an
-API from current stage names or legacy `wails3 tool` commands.
+A later proposal may accept the experimental hook contract, define typed Wails
+tool invocations such as `wails.generate.icons`, or add other bounded pipeline
+customization. New work must not infer an API from current stage names or legacy
+`wails3 tool` commands.

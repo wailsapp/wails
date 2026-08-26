@@ -10,10 +10,12 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="caution" title="Configuration-first preview">
-The first release supports literal configuration only. Hooks, custom stages,
-HCL expressions and typed Wails tool calls are deferred. Existing projects keep
-using Taskfiles until you explicitly activate a reviewed migration.
+<Aside type="caution" title="Experimental preview">
+The accepted first release supports literal configuration only. This experiment
+also prototypes bounded lifecycle hooks so their shape can be evaluated before
+they are proposed for release. Custom stages, HCL expressions and typed Wails
+tool calls remain deferred. Existing projects keep using Taskfiles until you
+explicitly activate a reviewed migration.
 </Aside>
 
 ## Configure a project
@@ -84,9 +86,83 @@ copies them into a disposable `.wails/` workspace before a tool consumes them.
 Final artifacts go under `build.output` and a verified receipt is written to
 `.wails/artifacts/receipt.json`.
 
-Use an external script only for behaviour outside the first configuration-only
-schema. It is not part of the build graph yet, so invoke it separately in CI or
-before `wails3 build`.
+## Run bounded lifecycle hooks
+
+The experimental hook surface invokes one project-owned script at each declared
+phase. A hook is not a shell command: Wails executes the file directly, from the
+project root unless `directory` is set.
+
+On Unix hosts the script must be executable and start with a shebang. Windows
+hosts accept `.cmd`, `.bat`, and `.ps1` scripts through fixed interpreter
+adapters; Wails does not parse an inline shell command on either platform.
+
+```hcl
+version = 3
+
+project {
+  name         = "notes"
+  product_name = "Notes"
+  identifier   = "com.example.notes"
+  version      = "1.0.0"
+}
+
+hook "before_build" {
+  script = "scripts/generate-version.sh"
+}
+
+hook "after_package" {
+  script = "scripts/check-packages.sh"
+}
+
+profile "release" {
+  target "linux/amd64" {}
+}
+```
+
+Supported phases are `before_build`, `after_build`, `before_package`,
+`after_package`, `before_sign`, and `after_sign`. Build hooks run once for the
+shared project or once per target as appropriate. Package and sign hooks form
+barriers around all formats requested for a target while the format operations
+inside the barrier remain concurrent.
+
+Hooks receive `WAILS_PROJECT_DIR`, `WAILS_TARGET_OS`, `WAILS_TARGET_ARCH`,
+`WAILS_PROFILE`, `WAILS_OUTPUT`, and `WAILS_PIPELINE_VERSION`. These stable
+values override inherited variables with the same names. A failure fails the
+normal Plan step, and cancellation terminates the hook process group.
+
+Hooks run on every invocation by default. Opt into caching only when the script
+has complete declared inputs and outputs:
+
+```hcl
+version = 3
+
+project {
+  name         = "notes"
+  product_name = "Notes"
+  identifier   = "com.example.notes"
+  version      = "1.0.0"
+}
+
+hook "before_build" {
+  script  = "scripts/generate-version.sh"
+  cache   = true
+  inputs  = ["version.txt"]
+  outputs = ["generated/version.go"]
+}
+
+profile "release" {
+  target "linux/amd64" {}
+}
+```
+
+The script and its executable mode are implicit inputs. Multiple outputs must
+share one non-root directory, which is the bounded artifact Wails records and
+restores. The output root cannot contain the script or a declared input, and
+cached output trees can contain only regular files and directories, never
+symbolic links or special files. An always-run hook makes its downstream
+operations non-cacheable because undeclared side effects cannot be fingerprinted
+safely. A cacheable hook preserves downstream caching through its declared
+artifact identity.
 
 ## Migrate an existing project
 
@@ -98,7 +174,9 @@ wails3 migrate --dry-run
 wails3 migrate --json
 ```
 
-Reachable custom Taskfile behaviour is reported as a blocker. After reviewing
+Conservative argument-free lifecycle tasks that invoke a project-owned script
+are translated to hooks. Other reachable custom Taskfile behaviour is reported
+as a blocker. After reviewing
 `wails.migrated.hcl`, activate it explicitly:
 
 ```bash
