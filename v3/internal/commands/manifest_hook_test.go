@@ -4,6 +4,7 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -19,37 +20,101 @@ import (
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
 
-func TestManifestHookRunsDirectlyWithStableEnvironment(t *testing.T) {
+func TestManifestHookReceivesGeneratedJSONContextFile(t *testing.T) {
 	root := t.TempDir()
 	script := writeTestHook(t, root, "hook.sh", `#!/bin/sh
 set -eu
 mkdir -p generated
-printf '%s\n%s\n%s\n%s\n%s\n%s\n' "$WAILS_PROJECT_DIR" "$WAILS_TARGET_OS" "$WAILS_TARGET_ARCH" "$WAILS_PROFILE" "$WAILS_OUTPUT" "$WAILS_PIPELINE_VERSION" > generated/environment
+printf '%s' "$WAILS_HOOK_CONTEXT_FILE" > generated/context-path
+cp "$WAILS_HOOK_CONTEXT_FILE" generated/context.json
+env | grep -E '^WAILS_(PROJECT_DIR|TARGET_OS|TARGET_ARCH|PROFILE|OUTPUT|PIPELINE_VERSION)=' > generated/legacy-environment || true
 `)
 	spec := pipeline.HookSpec{Phase: manifest.AfterBuild, Script: script, Directory: ".", Profile: "release", TargetOS: "linux", TargetArch: "amd64", ScopeOutput: "bin/app", DeclaredOutputs: []string{"generated/environment"}}
-	handler := &manifestHandler{root: root, environment: []string{"WAILS_PROFILE=hostile", "WAILS_OUTPUT=hostile"}}
+	spec.DeclaredOutputs = []string{"generated/context.json"}
+	t.Setenv("WAILS_PROJECT_DIR", "hostile-process-value")
+	t.Setenv("WAILS_HOOK_CONTEXT", "hostile-inline-value")
+	t.Setenv(hookContextFileEnvironment, "hostile-file-value")
+	handler := &manifestHandler{root: root, environment: []string{"WAILS_PROFILE=hostile-handler-value", "WAILS_OUTPUT=hostile-handler-value"}}
 	result, err := handler.runHook(t.Context(), spec)
 	require.NoError(t, err)
 	assert.Empty(t, result.Detail)
-	content, err := os.ReadFile(filepath.Join(root, "generated", "environment"))
+	content, err := os.ReadFile(filepath.Join(root, "generated", "context.json"))
 	require.NoError(t, err)
-	assert.Equal(t, strings.Join([]string{root, "linux", "amd64", "release", filepath.Join(root, "bin", "app"), "1", ""}, "\n"), string(content))
+	var contextFile struct {
+		Version          int    `json:"version"`
+		Phase            string `json:"phase"`
+		Command          string `json:"command"`
+		Scope            string `json:"scope"`
+		ProjectDirectory string `json:"project_dir"`
+		WorkingDirectory string `json:"working_directory"`
+		Profile          string `json:"profile"`
+		Target           *struct {
+			OS   string `json:"os"`
+			Arch string `json:"arch"`
+		} `json:"target"`
+		Output          string   `json:"output"`
+		DeclaredOutputs []string `json:"declared_outputs"`
+	}
+	require.NoError(t, json.Unmarshal(content, &contextFile))
+	assert.Equal(t, 1, contextFile.Version)
+	assert.Equal(t, "after_build", contextFile.Phase)
+	assert.Equal(t, "build", contextFile.Command)
+	assert.Equal(t, "target", contextFile.Scope)
+	assert.Equal(t, root, contextFile.ProjectDirectory)
+	assert.Equal(t, root, contextFile.WorkingDirectory)
+	assert.Equal(t, "release", contextFile.Profile)
+	require.NotNil(t, contextFile.Target)
+	assert.Equal(t, "linux", contextFile.Target.OS)
+	assert.Equal(t, "amd64", contextFile.Target.Arch)
+	assert.Equal(t, filepath.Join(root, "bin", "app"), contextFile.Output)
+	assert.Equal(t, []string{filepath.Join(root, "generated", "context.json")}, contextFile.DeclaredOutputs)
+
+	contextPath, err := os.ReadFile(filepath.Join(root, "generated", "context-path"))
+	require.NoError(t, err)
+	assert.NoFileExists(t, string(contextPath))
+	legacyEnvironment, err := os.ReadFile(filepath.Join(root, "generated", "legacy-environment"))
+	require.NoError(t, err)
+	assert.Empty(t, legacyEnvironment)
 }
 
 func TestManifestHookFailureRetainsOutputAndExitCode(t *testing.T) {
 	root := t.TempDir()
-	script := writeTestHook(t, root, "fail.sh", "#!/bin/sh\necho preflight failed\nexit 7\n")
+	script := writeTestHook(t, root, "fail.sh", "#!/bin/sh\nprintf '%s' \"$WAILS_HOOK_CONTEXT_FILE\" > context-path\necho preflight failed\nexit 7\n")
 	result, err := (&manifestHandler{root: root}).runHook(t.Context(), pipeline.HookSpec{Phase: manifest.BeforeBuild, Script: script})
 	require.Error(t, err)
+	assert.ErrorContains(t, err, "context retained at")
 	assert.Equal(t, "preflight failed", result.Detail)
 	var coder interface{ ExitCode() int }
 	require.True(t, errors.As(err, &coder))
 	assert.Equal(t, 7, coder.ExitCode())
+	contextPath, readErr := os.ReadFile(filepath.Join(root, "context-path"))
+	require.NoError(t, readErr)
+	contextInfo, statErr := os.Stat(string(contextPath))
+	require.NoError(t, statErr)
+	assert.Equal(t, os.FileMode(0o600), contextInfo.Mode().Perm())
+	contextDirectoryInfo, statErr := os.Stat(filepath.Dir(string(contextPath)))
+	require.NoError(t, statErr)
+	assert.Equal(t, os.FileMode(0o700), contextDirectoryInfo.Mode().Perm())
+	assert.Equal(t, "context.json", filepath.Base(string(contextPath)))
+	contextData, readErr := os.ReadFile(string(contextPath))
+	require.NoError(t, readErr)
+	assert.JSONEq(t, `{
+  "version": 1,
+  "phase": "before_build",
+  "command": "build",
+  "scope": "project",
+  "project_dir": "`+root+`",
+  "working_directory": "`+root+`",
+  "profile": "",
+  "target": null,
+  "output": "",
+  "declared_outputs": []
+}`, string(contextData))
 }
 
 func TestManifestHookCancellationTerminatesPromptly(t *testing.T) {
 	root := t.TempDir()
-	script := writeTestHook(t, root, "wait.sh", "#!/bin/sh\nsleep 30 &\necho $! > child.pid\nwait\n")
+	script := writeTestHook(t, root, "wait.sh", "#!/bin/sh\nprintf '%s' \"$WAILS_HOOK_CONTEXT_FILE\" > context-path\nsleep 30 &\necho $! > child.pid\nwait\n")
 	ctx, cancel := context.WithTimeout(t.Context(), 100*time.Millisecond)
 	defer cancel()
 	started := time.Now()
@@ -60,6 +125,9 @@ func TestManifestHookCancellationTerminatesPromptly(t *testing.T) {
 	require.NoError(t, readErr)
 	pid, parseErr := strconv.Atoi(strings.TrimSpace(string(pidText)))
 	require.NoError(t, parseErr)
+	contextPath, readErr := os.ReadFile(filepath.Join(root, "context-path"))
+	require.NoError(t, readErr)
+	assert.NoFileExists(t, string(contextPath))
 	deadline := time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) {
 		if signalErr := syscall.Kill(pid, 0); errors.Is(signalErr, syscall.ESRCH) {
@@ -134,6 +202,22 @@ func TestManifestHookRejectsSpecialFilesInCachedOutputs(t *testing.T) {
 		DeclaredOutputs: []string{"generated"},
 	})
 	require.ErrorContains(t, err, "output contains unsupported file type")
+}
+
+func TestManifestHookContextCannotEscapeThroughWailsSymlink(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	require.NoError(t, os.Symlink(outside, filepath.Join(root, ".wails")))
+	script := writeTestHook(t, root, "noop.sh", "#!/bin/sh\n:\n")
+
+	_, err := (&manifestHandler{root: root}).runHook(t.Context(), pipeline.HookSpec{
+		Phase:  manifest.BeforeBuild,
+		Script: script,
+	})
+	require.ErrorContains(t, err, "resolves outside the project")
+	entries, readErr := os.ReadDir(outside)
+	require.NoError(t, readErr)
+	assert.Empty(t, entries)
 }
 
 func TestManifestHookPlanUsesLifecyclePhaseAndScopeOutput(t *testing.T) {

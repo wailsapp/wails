@@ -278,12 +278,13 @@ type CollectSpec struct {
 	Receipt   string
 }
 type HookSpec struct {
-	Phase                      manifest.HookPhase
-	Script, Directory, Profile string
-	TargetOS, TargetArch       string
-	ScopeOutput                string
-	DeclaredOutputs            []string
-	EnvironmentVersion         int
+	Phase                               manifest.HookPhase
+	Script, Directory, Profile, Command string
+	TargetOS, TargetArch                string
+	Scope                               Scope
+	ScopeOutput                         string
+	DeclaredOutputs                     []string
+	ContextVersion                      int
 }
 
 func (InstallSpec) nodeSpec()  {}

@@ -61,11 +61,15 @@ platform-assets Artifact they consume.
 The Plan has six bounded `RunHook` phases: `before_build`, `after_build`,
 `before_package`, `after_package`, `before_sign`, and `after_sign`. Hooks invoke
 one project-owned script directly and must remain separate from built-in stage
-implementation. Preserve project/target/package barrier scope, stable
-`WAILS_*` environment precedence, process-group cancellation, path containment,
-and default `CacheNever`. A cacheable hook requires complete inputs and outputs;
-its bounded output root is the only reusable Artifact. Typed tool calls and
-arbitrary user-authored graph edges remain outside the public schema.
+implementation. Preserve project/target/package barrier scope, versioned JSON
+context through `WAILS_HOOK_CONTEXT_FILE`, process-group
+cancellation, path containment, and default `CacheNever`. The generated context
+path is ephemeral and must not affect cache identity; its semantic schema
+version and resolved scope must. Remove context after success or cancellation,
+retain it with a reported path after failure, and never copy inherited secrets
+into it. A cacheable hook requires complete inputs and outputs; its bounded
+output root is the only reusable Artifact. Typed tool calls and arbitrary
+user-authored graph edges remain outside the public schema.
 
 The Dev Session is outside the Plan: it owns persistent frontend/backend
 processes and replaceable watch sets while requesting ordinary finite

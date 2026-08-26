@@ -215,7 +215,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			inputs = append(inputs, InputSpec{Label: "hook-inputs", Files: declaredInputs})
 		}
 		return add(Node{Key: NodeKey(key), Kind: RunHook, Label: "Run " + strings.ReplaceAll(string(phase), "_", " ") + " hook", Scope: scope, Dependencies: append([]NodeKey(nil), dependencies...),
-			Spec:   HookSpec{Phase: phase, Script: hook.Script, Directory: hook.Directory, Profile: profileName, TargetOS: choose(scope == ProjectScope, "", request.TargetOS), TargetArch: choose(scope == ProjectScope, "", request.TargetArch), ScopeOutput: scopeOutput, DeclaredOutputs: append([]string(nil), hook.Outputs...), EnvironmentVersion: 1},
+			Spec:   HookSpec{Phase: phase, Script: hook.Script, Directory: hook.Directory, Profile: profileName, Command: request.Verb, TargetOS: choose(scope == ProjectScope, "", request.TargetOS), TargetArch: choose(scope == ProjectScope, "", request.TargetArch), Scope: scope, ScopeOutput: scopeOutput, DeclaredOutputs: append([]string(nil), hook.Outputs...), ContextVersion: 1},
 			Inputs: inputs, Output: cacheOutput, Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 256}, EstimateMS: 50})
 	}
 	beforeBuild := hookNode(manifest.BeforeBuild, ProjectScope, "", nil)

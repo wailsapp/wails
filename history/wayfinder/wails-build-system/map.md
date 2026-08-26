@@ -118,7 +118,7 @@ line-referenced configuration diagnostics.
 - A draft WEP records the public behavior and rollout proposal under
   `v3/wep/proposals/manifest-build-system/` on the experiment branch.
 - The experimental hook slice adds strict HCL schema and path validation,
-  typed `RunHook` Plan nodes, stable `WAILS_*` environment, package/sign
+  typed `RunHook` Plan nodes, versioned JSON context files, package/sign
   barriers, process-group cancellation, opt-in artifact restoration, and
   conservative Taskfile lifecycle-script migration.
 - Configuration diagnostics retain explicit HCL block and attribute origins

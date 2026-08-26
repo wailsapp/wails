@@ -173,10 +173,31 @@ shared project or once per target as appropriate. Package and sign hooks form
 barriers around all formats requested for a target while the format operations
 inside the barrier remain concurrent.
 
-Hooks receive `WAILS_PROJECT_DIR`, `WAILS_TARGET_OS`, `WAILS_TARGET_ARCH`,
-`WAILS_PROFILE`, `WAILS_OUTPUT`, and `WAILS_PIPELINE_VERSION`. These stable
-values override inherited variables with the same names. A failure fails the
-normal Plan step, and cancellation terminates the hook process group.
+Hooks receive one Wails-owned environment variable:
+`WAILS_HOOK_CONTEXT_FILE`. It names a protected JSON file containing the
+versioned invocation context:
+
+```json
+{
+  "version": 1,
+  "phase": "after_build",
+  "command": "build",
+  "scope": "target",
+  "project_dir": "/work/notes",
+  "working_directory": "/work/notes",
+  "profile": "release",
+  "target": { "os": "linux", "arch": "amd64" },
+  "output": "/work/notes/bin/notes",
+  "declared_outputs": ["/work/notes/generated/version.go"]
+}
+```
+
+The context contains resolved paths but never copies the inherited process
+environment or secrets. Wails creates it atomically with owner-only file
+permissions under `.wails/hooks/context/`. It is removed after success or
+cancellation. On failure it is retained for diagnosis and its path is included
+in the error. A non-zero exit fails the normal Plan step, and cancellation
+terminates the hook process group.
 
 Hooks run on every invocation by default. Opt into caching only when the script
 has complete declared inputs and outputs:

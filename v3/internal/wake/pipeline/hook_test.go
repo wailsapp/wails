@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/wake/cache"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
@@ -20,13 +21,21 @@ func TestHookPlannerBuildAndPackageBarriers(t *testing.T) {
 	beforeBuild := plan.Nodes["hook:before_build"]
 	assert.Equal(t, ProjectScope, beforeBuild.Scope)
 	assert.Empty(t, beforeBuild.Dependencies)
+	beforeBuildSpec := beforeBuild.Spec.(HookSpec)
+	assert.Equal(t, "package", beforeBuildSpec.Command)
+	assert.Equal(t, ProjectScope, beforeBuildSpec.Scope)
+	assert.Equal(t, 1, beforeBuildSpec.ContextVersion)
 	assert.Contains(t, plan.Nodes["frontend:install"].Dependencies, beforeBuild.Key)
 	assert.Contains(t, plan.Nodes["frontend:bindings"].Dependencies, beforeBuild.Key)
 
 	compile := NodeKey("target:linux/amd64:compile")
 	afterBuild := plan.Nodes["hook:after_build:linux-amd64"]
 	assert.Equal(t, []NodeKey{compile}, afterBuild.Dependencies)
-	assert.Equal(t, plan.Nodes[compile].Output, afterBuild.Spec.(HookSpec).ScopeOutput)
+	afterBuildSpec := afterBuild.Spec.(HookSpec)
+	assert.Equal(t, plan.Nodes[compile].Output, afterBuildSpec.ScopeOutput)
+	assert.Equal(t, TargetScope, afterBuildSpec.Scope)
+	assert.Equal(t, "linux", afterBuildSpec.TargetOS)
+	assert.Equal(t, "amd64", afterBuildSpec.TargetArch)
 
 	beforePackage := plan.Nodes["hook:before_package:linux-amd64"]
 	assert.Contains(t, beforePackage.Dependencies, afterBuild.Key)
@@ -40,6 +49,24 @@ func TestHookPlannerBuildAndPackageBarriers(t *testing.T) {
 	}
 	assert.NotContains(t, plan.Nodes, NodeKey("hook:before_sign:linux-amd64"))
 	assert.NotContains(t, plan.Nodes, NodeKey("hook:after_sign:linux-amd64"))
+}
+
+func TestHookContextContractAffectsActionIdentity(t *testing.T) {
+	base := HookSpec{Phase: manifest.BeforeBuild, Command: "build", Scope: ProjectScope, ContextVersion: 1}
+	baseKey, err := cache.ActionKey(string(RunHook), base, nil, nil)
+	require.NoError(t, err)
+
+	for name, changed := range map[string]HookSpec{
+		"command":         {Phase: manifest.BeforeBuild, Command: "package", Scope: ProjectScope, ContextVersion: 1},
+		"scope":           {Phase: manifest.BeforeBuild, Command: "build", Scope: TargetScope, ContextVersion: 1},
+		"context version": {Phase: manifest.BeforeBuild, Command: "build", Scope: ProjectScope, ContextVersion: 2},
+	} {
+		t.Run(name, func(t *testing.T) {
+			changedKey, keyErr := cache.ActionKey(string(RunHook), changed, nil, nil)
+			require.NoError(t, keyErr)
+			assert.NotEqual(t, baseKey, changedKey)
+		})
+	}
 }
 
 func TestHookPlannerSigningBarriersAndMultiTargetSharing(t *testing.T) {

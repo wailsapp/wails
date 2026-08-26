@@ -625,7 +625,7 @@ func (h *manifestHandler) Run(ctx context.Context, node pipeline.Node) (pipeline
 	}
 }
 
-func (h *manifestHandler) runHook(ctx context.Context, spec pipeline.HookSpec) (pipeline.RunResult, error) {
+func (h *manifestHandler) runHook(ctx context.Context, spec pipeline.HookSpec) (result pipeline.RunResult, resultErr error) {
 	script, err := manifest.ResolveProjectPath(h.root, "hook script", spec.Script, true)
 	if err != nil {
 		return pipeline.RunResult{}, err
@@ -644,26 +644,33 @@ func (h *manifestHandler) runHook(ctx context.Context, spec pipeline.HookSpec) (
 			return pipeline.RunResult{}, err
 		}
 	}
-	environment := append([]string(nil), h.environment...)
-	environmentVersion := spec.EnvironmentVersion
-	if environmentVersion == 0 {
-		environmentVersion = 1
+	contextFile, contextDirectory, err := h.writeHookContext(spec, directory, output)
+	if err != nil {
+		return pipeline.RunResult{}, err
 	}
-	for _, item := range []string{
-		"WAILS_PROJECT_DIR=" + h.root,
-		"WAILS_TARGET_OS=" + spec.TargetOS,
-		"WAILS_TARGET_ARCH=" + spec.TargetArch,
-		"WAILS_PROFILE=" + spec.Profile,
-		"WAILS_OUTPUT=" + output,
-		"WAILS_PIPELINE_VERSION=" + strconv.Itoa(environmentVersion),
-	} {
-		environment = append(environment, item)
-	}
+	removeContext := true
+	defer func() {
+		if !removeContext {
+			return
+		}
+		if resultErr != nil && ctx.Err() == nil {
+			contextDisplay := filepath.ToSlash(contextFile)
+			if relative, relativeErr := filepath.Rel(h.root, contextFile); relativeErr == nil {
+				contextDisplay = filepath.ToSlash(relative)
+			}
+			resultErr = fmt.Errorf("%w (context retained at %s)", resultErr, contextDisplay)
+			return
+		}
+		_ = os.RemoveAll(contextDirectory)
+	}()
+	environment := mergeEnvironment(os.Environ(), h.environment)
+	environment = removeEnvironmentKeys(environment, legacyHookContextEnvironment...)
+	environment = append(environment, hookContextFileEnvironment+"="+contextFile)
 	name, arguments, err := manifestHookCommand(script)
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	detail, runErr := runManifestCommand(ctx, directory, environment, name, arguments...)
+	detail, runErr := runManifestCommandWithEnvironment(ctx, directory, environment, name, arguments...)
 	if runErr != nil {
 		return pipeline.RunResult{Detail: detail}, runErr
 	}
@@ -711,6 +718,10 @@ func (h *manifestHandler) runHook(ctx context.Context, spec pipeline.HookSpec) (
 			return pipeline.RunResult{Detail: detail}, walkErr
 		}
 	}
+	if err := os.RemoveAll(contextDirectory); err != nil {
+		return pipeline.RunResult{Detail: detail}, fmt.Errorf("remove hook %s context: %w", spec.Phase, err)
+	}
+	removeContext = false
 	return pipeline.RunResult{Detail: detail}, nil
 }
 
@@ -2575,9 +2586,13 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 }
 
 func runManifestCommand(ctx context.Context, dir string, extraEnv []string, name string, args ...string) (string, error) {
+	return runManifestCommandWithEnvironment(ctx, dir, mergeEnvironment(os.Environ(), extraEnv), name, args...)
+}
+
+func runManifestCommandWithEnvironment(ctx context.Context, dir string, environment []string, name string, args ...string) (string, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
-	cmd.Env = mergeEnvironment(os.Environ(), extraEnv)
+	cmd.Env = environment
 	configureManifestProcess(cmd)
 	cmd.Cancel = func() error {
 		if cmd.Process == nil {

@@ -485,12 +485,13 @@ hook "after_build" {
 	require.NoError(t, os.WriteFile(filepath.Join(root, "frontend", "package.json"), []byte(`{"scripts":{"bundle":"bundle"}}`), 0o644))
 	writeTestHook(t, root, "before-build.sh", `#!/bin/sh
 set -eu
-printf 'before:%s:%s:%s\n' "$WAILS_PROFILE" "$WAILS_TARGET_OS" "$WAILS_TARGET_ARCH" >> hooks.log
+cp "$WAILS_HOOK_CONTEXT_FILE" before-context.json
+printf 'before\n' >> hooks.log
 `)
 	writeTestHook(t, root, "after-build.sh", `#!/bin/sh
 set -eu
-test -f "$WAILS_OUTPUT"
-printf 'after:%s:%s:%s\n' "$WAILS_PROFILE" "$WAILS_TARGET_OS" "$WAILS_TARGET_ARCH" >> hooks.log
+cp "$WAILS_HOOK_CONTEXT_FILE" after-context.json
+printf 'after\n' >> hooks.log
 `)
 
 	tools := t.TempDir()
@@ -501,13 +502,20 @@ printf 'after:%s:%s:%s\n' "$WAILS_PROFILE" "$WAILS_TARGET_OS" "$WAILS_TARGET_ARC
 		_, err := runManifestPipelineResult(manifestRunOptions{Verb: "build", TargetOS: runtime.GOOS, TargetArch: runtime.GOARCH})
 		require.NoError(t, err)
 	}
-	assert.Equal(t, strings.Join([]string{
-		"before:default::",
-		"after:default:" + runtime.GOOS + ":" + runtime.GOARCH,
-		"before:default::",
-		"after:default:" + runtime.GOOS + ":" + runtime.GOARCH,
-		"",
-	}, "\n"), readTestFile(t, filepath.Join(root, "hooks.log")))
+	assert.Equal(t, "before\nafter\nbefore\nafter\n", readTestFile(t, filepath.Join(root, "hooks.log")))
+	var beforeContext, afterContext hookExecutionContext
+	require.NoError(t, json.Unmarshal([]byte(readTestFile(t, filepath.Join(root, "before-context.json"))), &beforeContext))
+	require.NoError(t, json.Unmarshal([]byte(readTestFile(t, filepath.Join(root, "after-context.json"))), &afterContext))
+	assert.Equal(t, manifest.BeforeBuild, beforeContext.Phase)
+	assert.Equal(t, pipeline.ProjectScope, beforeContext.Scope)
+	assert.Nil(t, beforeContext.Target)
+	assert.Empty(t, beforeContext.Output)
+	assert.Equal(t, manifest.AfterBuild, afterContext.Phase)
+	assert.Equal(t, pipeline.TargetScope, afterContext.Scope)
+	require.NotNil(t, afterContext.Target)
+	assert.Equal(t, runtime.GOOS, afterContext.Target.OS)
+	assert.Equal(t, runtime.GOARCH, afterContext.Target.Arch)
+	assert.FileExists(t, afterContext.Output)
 }
 
 func TestHCLDevBuildExecutesTheDevelopmentPipeline(t *testing.T) {
