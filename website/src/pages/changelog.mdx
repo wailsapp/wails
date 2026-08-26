@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Hardened the `wails dev` server against cross-origin and DNS-rebinding attacks on the IPC WebSocket. It previously accepted any origin and forwarded straight to the bound-method dispatcher, so a malicious page in the developer's browser could connect to `ws://localhost:34115/wails/ipc` and invoke the entire bound Go API. Every request's `Host` header is now checked against an allowlist (localhost, IP literals, the configured bind address, plus any hosts named in `WAILS_DEV_ALLOWED_HOSTS`), the IPC upgrade requires a same-origin `Origin` header, and a per-launch capability cookie (HttpOnly, SameSite=Strict) is required on the upgrade as defense in depth. This protects against browser-based attacks; other processes running as the developer's own user are outside the dev server's threat model by @nft
+
 ## v2.15.0 - 2026-08-17
 
 ### Added
