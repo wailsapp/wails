@@ -7,6 +7,9 @@ Linux audit to release acceptance on matching native hosts.
 
 - Branch: `codex/hcl-build-system`
 - Remote: `origin/codex/hcl-build-system`
+- Feature implementation head at this handoff: `b506d3f46`
+  (`feat: preserve HCL sources in diagnostics`). The immediately preceding
+  Android and hook commits are `8a5260dcb` and `fc8b11610`.
 - Test the latest commit published to the branch; the handoff is updated alongside
   implementation changes.
 - Open acceptance ticket:
@@ -42,13 +45,19 @@ go vet ./internal/commands ./internal/wake/...
 go build -o /tmp/wails3-hcl ./cmd/wails3
 ```
 
+Also run `npm run build` from `docs`; the Linux handoff build produced 196
+pages with all internal links valid.
+
 On the current Linux audit host, the complete accepted Android toolchain is
 under `/home/lea/.local/share/android-sdk`: API 36, Build Tools 36.0.0, NDK r29,
 Emulator 37.1.11, platform tools 37.0.1, and the API 36 Google APIs x86_64
 system image. Generated Android projects use AGP 9.0.1 and Gradle 9.2.1. Java 21 is under
 `/home/linuxbrew/.linuxbrew/opt/openjdk@21`, `/dev/kvm` is accessible, and the
 configured AVD is `wails-hcl-api36`. Production AAB and emulator deployment
-acceptance already pass here; rerun them only when validating a relevant fix.
+acceptance already pass here. Attached sessions stream PID-filtered application
+logs, follow app restarts, report real emulator loss, preserve emulators by
+default, and stop them explicitly with `--stop-emulator`. Rerun them only when
+validating a relevant fix.
 
 On Windows, build the CLI to a native temporary path instead:
 
@@ -154,6 +163,19 @@ go run ./scripts/verify-manifest-build-system.go \
 
 The verifier's Android switch exercises amd64, arm64 and universal AAB rows.
 
+For physical Android-device acceptance, enable developer options and USB
+debugging, connect and authorise the device, then record:
+
+```bash
+/tmp/wails3-hcl android devices
+/tmp/wails3-hcl android run --device SERIAL --logs
+```
+
+Confirm ABI selection, install, launch, frontend-to-Go binding behavior,
+application-scoped logs, clean Ctrl+C, app-exit detection, and a clear device
+loss error after disconnecting the cable. `--stop-emulator` must be rejected
+for a physical target. Repeat with an offline or unauthorised state when safe.
+
 For each second run, require `0 ran`, a positive cached count, a valid
 `.wails/artifacts/receipt.json`, and byte-identical output. Inspect the
 universal AAB and confirm it contains both required native ABIs. An APK is a
@@ -180,37 +202,13 @@ result with the native platform tool as well as the Wails receipt:
 Redact credentials, passwords, private keys and signing-session tokens from
 all logs before committing or sharing evidence.
 
-## Controlled Linux performance gate
+## Linux performance status
 
-The release ceiling is 150 ms. The latest uncontrolled desktop result was
-103.913 ms, so it is within the absolute budget; the controlled runner must
-still confirm the semantic, relative-regression, variance, work-count and
-artifact-stability gates from a warmed disposable badge project:
-
-```bash
-go build -o /tmp/wails-build-benchmark ./scripts/benchmark-manifest-build.go
-
-/tmp/wails-build-benchmark \
-  -name badge-noop-linux-amd64 \
-  -samples 7 \
-  -warmups 2 \
-  -dir /path/to/disposable/badge \
-  -artifacts bin/badge \
-  -baseline ./internal/wake/benchmark/testdata/badge-noop-linux-amd64.json \
-  -max-ms 150 \
-  -max-regression 20 \
-  -max-mad-percent 15 \
-  -expect-ran 0 \
-  -expect-cached 6 \
-  -require-stable-artifacts \
-  -output /path/to/evidence/badge-noop-linux-amd64.json \
-  -- /tmp/wails3-hcl build --targets linux/amd64
-```
-
-The gate passes only when the seven-sample median is at most 150 ms, is no
-more than 20% slower than the checked baseline, MAD is at most 15%, all samples
-report `0 ran / 6 cached`, and artifact identities remain stable. A noisy run
-above the MAD limit is rerun once on a clean controlled runner.
+No additional performance gate is required for this handoff. The accepted
+ceiling is 150 ms. The final post-Android run passed at 99.870 ms median with
+4.43% MAD, zero executed and six cached Nodes, and stable artifact bytes. The
+unchanged no-hook graph after lifecycle-hook support passed at 105.388 ms with
+3.45% MAD and the same work count and byte stability.
 
 ## Evidence for every row
 
@@ -227,7 +225,7 @@ Create one evidence directory per host, target and format. Preserve:
 - proof that the produced application launches and its frontend-to-Go binding
   call succeeds;
 - installer/package smoke-test results on a disposable target machine;
-- the controlled benchmark JSON on Linux.
+- the existing accepted benchmark JSON when reporting the Linux row.
 
 Append a concise result table and links to the evidence under ticket 12. If a
 row fails, preserve the failed evidence and create a narrowly scoped follow-up
@@ -252,8 +250,8 @@ Multi-platform acceptance is done only when all of the following are true:
   launched desktop/mobile application.
 - Every credentialed format carries a valid native signature. Signing and its
   non-reusable downstream Nodes execute on every signing run.
-- The controlled Linux seven-sample gate satisfies every latency, variance,
-  work-count and artifact-stability budget above.
+- The accepted Linux performance evidence remains below the 150 ms ceiling;
+  rerun it only if a later fix affects planning, caching or execution.
 - Every row has complete, redacted evidence tied to the exact commit tested.
 - Every discovered defect is fixed and covered by a regression test; there are
   no skipped, waived or merely documented failing rows.

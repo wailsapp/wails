@@ -1,7 +1,7 @@
 # Device and emulator deployment experience
 
 Type: task
-Status: claimed
+Status: open
 Blocked by: none
 Label: ready-for-agent
 

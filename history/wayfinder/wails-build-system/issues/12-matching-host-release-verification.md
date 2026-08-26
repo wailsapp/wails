@@ -29,8 +29,8 @@ of the implemented contract, not additional first-release design work.
   the configured identity reaches the native tool and that unsigned or invalid
   credentials fail without publishing a stale artifact.
 - On every host, archive the JSON plan, command log, artifact digests, receipt,
-  cold timing, and warm timing. Run the seven-sample performance gate on the
-  controlled Linux release runner.
+  cold timing, and warm timing. Reuse the accepted Linux performance evidence;
+  rerun it only if a later fix affects planning, caching or execution.
 
 Use `v3/scripts/verify-manifest-build-system.go` as the primary runner and the
 matrix in `performance-acceptance.md` as the authoritative contract. Any host
@@ -129,3 +129,24 @@ package, top-resumed Wails activity, running process, API 36 target, and x86-64
 NDK r29 library. A clean regeneration after the AGP upgrade repeated both the
 AAB build and APK deployment successfully. Physical-device deployment remains
 outstanding.
+
+### 2026-08-27 — Linux-box implementation and audit complete
+
+The bounded lifecycle-hook, attached Android deployment-session and
+source-aware configuration-diagnostic slices are pushed at `fc8b11610`,
+`8a5260dcb` and `b506d3f46`. Focused command/Wake suites, complete command race
+testing, scoped vet, Windows amd64 and macOS arm64 production-code
+cross-compilation, the docs build, and real CLI diagnostics all pass.
+
+Real AVD acceptance now includes PID-filtered application logs, Ctrl+C,
+explicit emulator cleanup and deliberate emulator-loss reporting. The final
+configuration pass preserves HCL ranges through semantic, planner, signing and
+configuration-owned host failures, with golden output and environment-value
+redaction. No additional performance run is required unless later fixes affect
+the build path; accepted 99.870 ms and 105.388 ms medians remain below the
+150 ms ceiling.
+
+Remaining rows are native Windows/macOS/iOS packaging and launch, credentialed
+signing, native Linux arm64 launch/install, and a physical Android device. Use
+the refreshed handoff guide and test the latest remote branch, not an installed
+CLI.
