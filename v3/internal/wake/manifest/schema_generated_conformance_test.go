@@ -196,6 +196,39 @@ func TestSchemaMetadataDefensiveContracts(t *testing.T) {
 	assert.NotContains(t, err.Error(), "ignored")
 }
 
+func TestAnnotateValidationErrorPreservesConfigurationOwnership(t *testing.T) {
+	rangeInManifest := SourceRange{
+		Filename:    "wails.hcl",
+		StartLine:   12,
+		StartColumn: 3,
+		EndLine:     12,
+		EndColumn:   31,
+	}
+	origins := map[string]Origin{
+		`profile["release"].targets`: {Kind: OriginManifest, Range: rangeInManifest},
+	}
+
+	assert.NoError(t, AnnotateValidationError(nil, origins, `profile["release"].targets[0]`))
+
+	plain := errors.New("unsupported target")
+	annotated := AnnotateValidationError(plain, origins, `profile["release"].targets[0]`)
+	var validation *ValidationError
+	require.ErrorAs(t, annotated, &validation)
+	assert.Equal(t, `profile["release"].targets[0]`, validation.Field)
+	assert.Equal(t, "unsupported target", validation.Detail)
+	assert.Equal(t, rangeInManifest, validation.Range)
+	assert.ErrorIs(t, annotated, plain)
+
+	existing := &ValidationError{Field: `profile["release"].targets[0]`, Detail: "invalid target"}
+	annotated = AnnotateValidationError(existing, origins, "ignored-by-existing-validation")
+	require.ErrorAs(t, annotated, &validation)
+	assert.Equal(t, existing.Field, validation.Field)
+	assert.Equal(t, rangeInManifest, validation.Range)
+
+	withoutOrigin := errors.New("command-line choice failed")
+	assert.Same(t, withoutOrigin, AnnotateValidationError(withoutOrigin, origins, "package.format"))
+}
+
 func TestSchemaDefaultsReturnIndependentCollections(t *testing.T) {
 	first := defaults(Project{Name: "first"})
 	first.Frontend.Environment["MUTATED"] = "yes"
