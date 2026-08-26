@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Wails v3 HCL Build System — Support Report</title>
+  <title>Wails v3 HCL Build System — Experimental Guide</title>
   <style>
     :root {
       color-scheme: light;
@@ -22,6 +22,7 @@
     }
 
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
@@ -35,11 +36,11 @@
     main {
       width: min(1080px, calc(100% - 32px));
       margin: 32px auto;
-      background: var(--white);
+      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 18px;
+      background: var(--white);
       box-shadow: 0 18px 50px rgba(24, 33, 47, .09);
-      overflow: hidden;
     }
 
     header {
@@ -60,7 +61,7 @@
     }
 
     h1 {
-      max-width: 790px;
+      max-width: 860px;
       margin: 0 0 14px;
       font-size: clamp(2.25rem, 5vw, 4rem);
       line-height: 1.02;
@@ -74,12 +75,7 @@
       font-size: 1.12rem;
     }
 
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 9px;
-      margin-top: 27px;
-    }
+    .meta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 27px; }
 
     .pill {
       display: inline-flex;
@@ -96,30 +92,40 @@
 
     .content { padding: 44px 58px 62px; }
 
-    .summary-grid {
+    .summary-grid, .two-col {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
-      margin: 0 0 40px;
+      margin: 0 0 34px;
     }
 
-    .metric {
+    .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 18px 0; gap: 18px; }
+
+    .metric, .card {
       padding: 20px;
       border: 1px solid var(--line);
       border-radius: 13px;
       background: var(--panel);
     }
 
-    .metric strong {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 1.2rem;
-      line-height: 1.25;
+    .metric strong { display: block; margin-bottom: 4px; font-size: 1.2rem; line-height: 1.25; }
+    .metric span { color: var(--muted); font-size: .91rem; }
+    .card h3 { margin-top: 0; }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+
+    .toc {
+      margin: 0 0 42px;
+      padding: 22px 24px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--panel);
     }
 
-    .metric span { color: var(--muted); font-size: .91rem; }
+    .toc strong { display: block; margin-bottom: 9px; }
+    .toc ol { columns: 2; margin: 0; padding-left: 22px; }
+    .toc li { break-inside: avoid; margin: 4px 0; }
 
-    section { margin-top: 42px; scroll-margin-top: 20px; }
+    section { margin-top: 46px; scroll-margin-top: 20px; }
 
     h2 {
       margin: 0 0 16px;
@@ -130,15 +136,11 @@
       letter-spacing: -.02em;
     }
 
-    h3 {
-      margin: 25px 0 9px;
-      font-size: 1.08rem;
-      line-height: 1.3;
-    }
-
+    h3 { margin: 25px 0 9px; font-size: 1.08rem; line-height: 1.3; }
     p { margin: 0 0 14px; }
     ul, ol { margin: 10px 0 16px; padding-left: 24px; }
     li { margin: 5px 0; }
+    a { color: #9f233b; text-underline-offset: 3px; }
 
     code {
       padding: .12em .38em;
@@ -148,6 +150,8 @@
       font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
       font-size: .91em;
     }
+
+    header code { background: rgba(255,255,255,.1); color: #fff; }
 
     pre {
       overflow-x: auto;
@@ -162,24 +166,36 @@
 
     pre code { padding: 0; background: none; color: inherit; }
 
-    .table-wrap { overflow-x: auto; margin: 16px 0 22px; }
+    .steps { counter-reset: guide-step; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      border: 1px solid var(--line);
-      font-size: .94rem;
+    .step { position: relative; margin: 28px 0; padding-left: 54px; }
+
+    .step::before {
+      counter-increment: guide-step;
+      content: counter(guide-step);
+      position: absolute;
+      top: -2px;
+      left: 0;
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--white);
+      font-weight: 800;
     }
 
-    th, td {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: top;
-    }
+    .step h3 { margin-top: 0; font-size: 1.18rem; }
 
-    th { background: var(--panel); font-size: .84rem; text-transform: uppercase; letter-spacing: .045em; }
-    tr:last-child td { border-bottom: 0; }
+    .kicker {
+      margin: 0 0 7px;
+      color: var(--accent);
+      font-size: .77rem;
+      font-weight: 800;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
 
     .callout {
       margin: 19px 0;
@@ -196,19 +212,12 @@
     .checks { list-style: none; padding-left: 0; }
     .checks li { position: relative; padding-left: 29px; }
     .checks li::before { position: absolute; left: 2px; top: .03em; color: var(--good); content: "✓"; font-weight: 900; }
-    .checks.no li::before { color: var(--accent); content: "×"; }
 
-    .status {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: .75rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .status.done { color: var(--good); background: var(--good-soft); }
-    .status.pending { color: var(--warn); background: var(--warn-soft); }
+    .table-wrap { overflow-x: auto; margin: 16px 0 22px; }
+    table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); font-size: .94rem; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--panel); font-size: .84rem; text-transform: uppercase; letter-spacing: .045em; }
+    tr:last-child td { border-bottom: 0; }
 
     footer {
       padding: 24px 58px 30px;
@@ -221,7 +230,9 @@
     @media (max-width: 760px) {
       main { width: 100%; margin: 0; border: 0; border-radius: 0; }
       header, .content, footer { padding-left: 24px; padding-right: 24px; }
-      .summary-grid { grid-template-columns: 1fr; }
+      .summary-grid, .two-col { grid-template-columns: 1fr; }
+      .toc ol { columns: 1; }
+      .step { padding-left: 47px; }
     }
 
     @media print {
@@ -240,13 +251,13 @@
 <body>
   <main>
     <header>
-      <p class="eyebrow">Experimental implementation report</p>
-      <h1>Wails v3 HCL Build System</h1>
-      <p class="lede">Exactly what the current branch supports, what has been verified, and what remains before multi-platform release acceptance.</p>
+      <p class="eyebrow">Experimental usage guide</p>
+      <h1>Build a Wails v3 project with <code>wails.hcl</code></h1>
+      <p class="lede">A practical guide to opting in, validating configuration, building profiles, using project-owned assets and hooks, and deploying to Android.</p>
       <div class="meta">
         <span class="pill">Branch: codex/hcl-build-system</span>
-        <span class="pill">Report updated: 27 August 2026</span>
-        <span class="pill">Implementation head: fa3239cd9</span>
+        <span class="pill">Guide updated: 27 August 2026</span>
+        <span class="pill">Includes hook context: da6f1d7a4</span>
         <span class="pill">Contract: Wails v3</span>
         <span class="pill">Status: Experimental</span>
       </div>
@@ -254,316 +265,335 @@
 
     <div class="content">
       <div class="summary-grid">
-        <div class="metric"><strong>Working implementation</strong><span>Config validation, planning, execution, caching, dev, migration, wizard integration, bounded lifecycle hooks and Android deployment.</span></div>
-        <div class="metric"><strong>Linux audited</strong><span>Real builds, packages, templates, development lifecycle and cache behaviour.</span></div>
-        <div class="metric"><strong>Native matrix pending</strong><span>Windows, macOS, iOS, physical Android devices and credentialed signing still require acceptance.</span></div>
+        <div class="metric"><strong>One opt-in file</strong><span>The presence of <code>wails.hcl</code> selects the native build system and completely replaces Taskfile execution.</span></div>
+        <div class="metric"><strong>Profiles describe outcomes</strong><span>Name the targets, formats and signing policy you want; Wails owns and plans the pipeline.</span></div>
+        <div class="metric"><strong>Safe extension point</strong><span>Bounded script hooks receive one protected, versioned JSON context file.</span></div>
       </div>
 
-      <div class="callout good">
-        <p><strong>Executive summary.</strong> This is a complete Linux-tested experimental vertical slice, not merely a proposal. Multi-platform support is implemented in code and structurally tested, but it is not release-ready until the matching-host matrix is completed.</p>
+      <div class="callout warn">
+        <p><strong>This is an experimental branch.</strong> Use it to evaluate the proposed workflow, not as a released Wails contract. Keep your existing project under version control before activating <code>wails.hcl</code>.</p>
       </div>
 
-      <section>
-        <h2>Core behaviour</h2>
-        <ul class="checks">
-          <li>A root <code>wails.hcl</code> opts the project into the native build system.</li>
-          <li>Once present, Taskfiles are completely ignored.</li>
-          <li>Invalid HCL fails explicitly and never falls back to Taskfiles.</li>
-          <li>Projects without <code>wails.hcl</code> continue using the legacy Taskfile path.</li>
-          <li>Wails owns a fixed pipeline; users describe desired outputs instead of tasks or stages.</li>
-          <li>The schema accepts literal strings, numbers, booleans, lists and maps.</li>
-          <li>Unknown fields, duplicate fields or blocks, incorrect types and unsupported combinations are rejected with source locations.</li>
-        </ul>
+      <nav class="toc" aria-label="Guide contents">
+        <strong>In this guide</strong>
+        <ol>
+          <li><a href="#quick-start">Build your first profile</a></li>
+          <li><a href="#daily-work">Use the everyday workflow</a></li>
+          <li><a href="#profiles">Create production profiles</a></li>
+          <li><a href="#assets">Use project-owned assets</a></li>
+          <li><a href="#hooks">Add lifecycle hooks</a></li>
+          <li><a href="#android">Run on Android</a></li>
+          <li><a href="#migration">Migrate a Taskfile project</a></li>
+          <li><a href="#troubleshooting">Resolve common problems</a></li>
+          <li><a href="#reference">Check support and commands</a></li>
+        </ol>
+      </nav>
+
+      <section id="quick-start">
+        <p class="kicker">Start here</p>
+        <h2>Build your first profile</h2>
+        <div class="steps">
+          <div class="step">
+            <h3>Create <code>wails.hcl</code> in the project root</h3>
+            <p>Its presence is the opt-in switch. From this point, Wails ignores every Taskfile in the project; invalid HCL fails instead of falling back.</p>
+            <pre><code>version = 3
+
+project {
+  name         = "notes"
+  product_name = "Notes"
+  identifier   = "com.example.notes"
+  version      = "1.0.0"
+}
+
+frontend {
+  directory = "frontend"
+  install   = ["pnpm", "install", "--frozen-lockfile"]
+  build     = ["pnpm", "run", "build"]
+  dev       = ["pnpm", "run", "dev"]
+  output    = "frontend/dist"
+}
+
+build {
+  output    = "bin"
+  trim_path = true
+  strip     = true
+}
+
+profile "release" {
+  target "linux/amd64" {
+    formats = ["deb", "rpm", "appimage"]
+  }
+}</code></pre>
+          </div>
+
+          <div class="step">
+            <h3>Validate before building</h3>
+            <pre><code>wails3 config check
+wails3 config check release</code></pre>
+            <p>The first command checks the base manifest and every profile. The second checks only the complete <code>release</code> request after validating the base.</p>
+          </div>
+
+          <div class="step">
+            <h3>Inspect the resolved work</h3>
+            <pre><code>wails3 build release --plan
+wails3 build release --plan --json</code></pre>
+            <p><code>--plan</code> is concise text for a person. Add <code>--json</code> for deterministic, versioned machine-readable output. Planning does not write build state.</p>
+          </div>
+
+          <div class="step">
+            <h3>Build the profile</h3>
+            <pre><code>wails3 build release</code></pre>
+            <p>Final artifacts are published beneath <code>build.output</code>. Wails writes a verified artifact receipt to <code>.wails/artifacts/receipt.json</code>.</p>
+          </div>
+        </div>
       </section>
 
-      <section>
-        <h2>Commands supported</h2>
-        <pre><code>wails3 build
-wails3 build release
-wails3 build --targets linux/amd64,windows/arm64
-wails3 build --targets linux/amd64 --formats deb,rpm
-wails3 build ... --plan
-wails3 build ... --plan --json
+      <section id="daily-work">
+        <p class="kicker">How to work day to day</p>
+        <h2>Use the everyday workflow</h2>
+        <div class="two-col">
+          <div class="card">
+            <h3>Develop locally</h3>
+            <pre><code>wails3 dev
+wails3 dev --plan</code></pre>
+            <p>Dev builds only the current host target. It starts and readiness-checks the frontend and application, watches configured files, cancels stale rebuilds and preserves the last healthy session if a replacement fails.</p>
+          </div>
+          <div class="card">
+            <h3>Run a one-off build</h3>
+            <pre><code>wails3 build --targets linux/amd64
+wails3 build --targets linux/amd64 --formats deb,rpm</code></pre>
+            <p>Use comma-separated targets and formats when the request is genuinely temporary. Anonymous builds also accept <code>--tags</code>, <code>--obfuscated</code>, <code>--garble-args</code> and <code>--force</code>.</p>
+          </div>
+        </div>
+        <div class="callout good"><p><strong>Prefer profiles for repeatable outcomes.</strong> A named profile is a complete production request. It cannot be combined with artifact-changing CLI overrides, so local and CI builds mean the same thing.</p></div>
+      </section>
 
-wails3 dev
-wails3 dev --plan
+      <section id="profiles">
+        <p class="kicker">How to make repeatable releases</p>
+        <h2>Create production profiles</h2>
+        <p>Add a named profile for each outcome your team needs, then invoke the profile rather than maintaining separate build commands.</p>
+        <pre><code>profile "linux-release" {
+  target "linux/amd64" {
+    formats = ["deb", "rpm", "appimage"]
+  }
+}
 
+profile "android-release" {
+  target "android/universal" {
+    formats = ["aab"]
+  }
+}</code></pre>
+        <pre><code>wails3 config check
+wails3 build linux-release
+wails3 build android-release</code></pre>
+        <p>Profiles can also select signing, notarisation and a mobile destination. Production Android output is AAB-only. APK is generated internally only for development deployment.</p>
+      </section>
+
+      <section id="assets">
+        <p class="kicker">How to keep customisation in your repository</p>
+        <h2>Use project-owned assets</h2>
+        <p>Point HCL fields at files you own. Wails copies them into a disposable <code>.wails/</code> workspace before invoking platform tools and never edits the sources.</p>
+        <div class="two-col">
+          <div class="card">
+            <h3>Supported project inputs</h3>
+            <ul>
+              <li>Icons and platform manifests</li>
+              <li>Apple <code>Info.plist</code> and <code>Assets.car</code></li>
+              <li>Linux desktop entries and package lifecycle scripts</li>
+              <li>Package templates and AppImage assets</li>
+              <li>File-association icons and DMG artwork/files</li>
+              <li>Signing certificates, profiles and environment references</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Discover available fields</h3>
+            <pre><code>wails3 eject</code></pre>
+            <p>This writes the complete resolved configuration to <code>wails.ejected.hcl</code>. Treat it as a reference or starting point; copy only the settings your project needs into <code>wails.hcl</code>.</p>
+          </div>
+        </div>
+        <p>Complete package templates are opaque files or directories. Wails does not interpolate, merge or normalise them.</p>
+      </section>
+
+      <section id="hooks">
+        <p class="kicker">How to handle the small amount that remains custom</p>
+        <h2>Add a lifecycle hook</h2>
+        <p>A hook names one project-owned script, not an inline shell command. On Unix it must be executable and start with a shebang. Windows accepts <code>.cmd</code>, <code>.bat</code> and <code>.ps1</code>.</p>
+        <pre><code>hook "before_build" {
+  script = "scripts/generate-version.sh"
+}
+
+hook "after_package" {
+  script = "scripts/check-packages.sh"
+}</code></pre>
+
+        <h3>Read the invocation context</h3>
+        <p>Wails passes exactly one Wails-owned context variable: <code>WAILS_HOOK_CONTEXT_FILE</code>. Read that JSON file with the parser appropriate for your script.</p>
+        <pre><code>#!/bin/sh
+set -eu
+
+context="$WAILS_HOOK_CONTEXT_FILE"
+phase="$(jq -r '.phase' "$context")"
+output="$(jq -r '.output' "$context")"
+
+printf 'checking %s output: %s\n' "$phase" "$output"</code></pre>
+        <pre><code>{
+  "version": 1,
+  "phase": "after_build",
+  "command": "build",
+  "scope": "target",
+  "project_dir": "/work/notes",
+  "working_directory": "/work/notes",
+  "profile": "release",
+  "target": { "os": "linux", "arch": "amd64" },
+  "output": "/work/notes/bin/notes",
+  "declared_outputs": []
+}</code></pre>
+        <p>The file is atomically generated under <code>.wails/hooks/context/</code>, protected for the current user, and contains no inherited environment or secrets. Wails removes it after success or cancellation. A real failure retains it and reports its path.</p>
+
+        <h3>Cache a deterministic hook</h3>
+        <pre><code>hook "before_build" {
+  script  = "scripts/generate-version.sh"
+  cache   = true
+  inputs  = ["version.txt"]
+  outputs = ["generated/version.go"]
+}</code></pre>
+        <p>Hooks run every time by default. Enable caching only when every input and output is declared. The generated context path never affects cache identity; its semantic version and resolved scope do.</p>
+        <div class="callout warn"><p><strong>Intentionally bounded.</strong> Supported phases are <code>before_build</code>, <code>after_build</code>, <code>before_package</code>, <code>after_package</code>, <code>before_sign</code> and <code>after_sign</code>. This is not a custom pipeline language.</p></div>
+      </section>
+
+      <section id="android">
+        <p class="kicker">How to deploy during development</p>
+        <h2>Run on an Android device or emulator</h2>
+        <div class="steps">
+          <div class="step">
+            <h3>Discover available targets</h3>
+            <pre><code>wails3 android devices</code></pre>
+            <p>Wails lists connected ADB devices and emulators with their serial, state and model.</p>
+          </div>
+          <div class="step">
+            <h3>Select a target</h3>
+            <pre><code>wails3 android run --device SERIAL
+wails3 android run --emulator AVD_NAME</code></pre>
+            <p>Without a selector, an interactive terminal offers connected devices and configured AVDs. Automation with multiple targets must provide one explicitly.</p>
+          </div>
+          <div class="step">
+            <h3>Attach logs when diagnosing the app</h3>
+            <pre><code>wails3 android run --emulator AVD_NAME --logs
+wails3 android run --emulator AVD_NAME --logs --stop-emulator</code></pre>
+            <p><code>--logs</code> follows PID-filtered application logs and target loss. Emulators remain running by default; <code>--stop-emulator</code> stops an attached emulator when the session ends.</p>
+          </div>
+        </div>
+        <p>Wails selects the target ABI, builds an internal debug APK, installs it and launches <code>com.wails.app.MainActivity</code>. Use <code>--no-launch</code> to stop after installation, or <code>--apk PATH</code> to install an existing APK.</p>
+      </section>
+
+      <section id="migration">
+        <p class="kicker">How to try this in an existing project</p>
+        <h2>Migrate a Taskfile project safely</h2>
+        <div class="steps">
+          <div class="step">
+            <h3>Analyse without changing files</h3>
+            <pre><code>wails3 migrate --dry-run
+wails3 migrate --json</code></pre>
+          </div>
+          <div class="step">
+            <h3>Review the inactive draft</h3>
+            <pre><code>wails3 migrate</code></pre>
+            <p>Representable behaviour is written to <code>wails.migrated.hcl</code>. Custom shell logic is reported instead of being guessed. Existing Taskfiles, scripts, YAML and assets remain untouched.</p>
+          </div>
+          <div class="step">
+            <h3>Activate only after validation</h3>
+            <pre><code>wails3 migrate --activate
 wails3 config check
-wails3 config check release
-
-wails3 android devices
-wails3 android run
-wails3 android run mobile --device SERIAL
-wails3 android run mobile --emulator AVD_NAME
-wails3 android run mobile --emulator AVD_NAME --logs
-wails3 android run mobile --emulator AVD_NAME --logs --stop-emulator
-wails3 android run --apk ./build/bin/example.apk --device SERIAL
-
-wails3 migrate
-wails3 migrate --dry-run
-wails3 migrate --json
-wails3 migrate --activate
-
-wails3 eject
-wails3 eject --force
-
-wails3 clean</code></pre>
-        <p>Anonymous builds also support <code>--tags</code>, <code>--obfuscated</code>, <code>--garble-args</code> and <code>--force</code>. A named profile is a complete production request and cannot be mixed with artifact-changing CLI overrides.</p>
-        <p><code>wails3 config check</code> performs validation without building. <code>wails3 android run</code> supports <code>--profile</code>, <code>--device</code>, <code>--emulator</code>, <code>--apk</code>, <code>--no-launch</code>, <code>--logs</code> and <code>--stop-emulator</code>.</p>
-        <p><code>wails3 package</code> and <code>wails3 sign</code> remain as deprecated compatibility aliases for HCL projects.</p>
+wails3 build --plan</code></pre>
+            <p>Activation atomically renames the draft to <code>wails.hcl</code>. That immediately disables Taskfile execution, so commit or stash the project first.</p>
+          </div>
+        </div>
       </section>
 
-      <section>
-        <h2>Configuration diagnostics</h2>
-        <ul class="checks">
-          <li><code>wails3 config check</code> validates the base manifest and every named profile without executing build operations.</li>
-          <li><code>wails3 config check release</code> validates only the requested profile after validating the base manifest.</li>
-          <li>HCL syntax, schema, semantic, path, target and format failures identify the file, line and column, display the source line and caret range, and provide an actionable hint where possible.</li>
-          <li>The same source ownership continues through planner, signing and configuration-owned host-capability validation during Build and Dev.</li>
-          <li>Environment values are redacted from diagnostic source excerpts; golden output, multiple errors and terminal-neutral text are covered by tests.</li>
-          <li>Command-line-only failures remain ordinary command errors instead of being misreported as invalid HCL.</li>
-        </ul>
-        <div class="callout good"><p><strong>Source-aware validation is complete for the configuration path.</strong> A real CLI acceptance pointed an invalid Linux/AAB profile to <code>formats = ["aab"]</code>, and a Linux/arm64 native cross-build host failure to the exact <code>toolchain = "native"</code> line. The no-source renderer benchmark is approximately 1.3 µs per diagnostic on the Linux audit host.</p></div>
-      </section>
-
-      <section>
-        <h2>Android device and emulator deployment</h2>
-        <ul class="checks">
-          <li><code>wails3 android devices</code> lists connected ADB devices and emulators with serial, state and model.</li>
-          <li><code>wails3 android run [profile]</code> selects a connected device or configured AVD, using a terminal picker when selection is interactive.</li>
-          <li><code>--device</code> and <code>--emulator</code> provide deterministic automation and report offline, unauthorised or missing targets clearly.</li>
-          <li>The selected target ABI drives an <code>arm64</code> or <code>amd64</code> development build.</li>
-          <li>Wails builds a debug APK, installs or reinstalls it through ADB, and launches <code>com.wails.app.MainActivity</code>; <code>--no-launch</code> stops after installation.</li>
-          <li>Emulator startup waits for ADB, Android boot completion and Package Manager readiness, with bounded cancellation and logs under <code>.wails/android/</code>.</li>
-          <li><code>--logs</code> streams PID-filtered application logs, follows app restarts, exits on app shutdown or Ctrl+C, and reports device loss.</li>
-          <li>Emulators persist by default. <code>--stop-emulator</code> explicitly stops an emulator after an attached run; cancelled or failed startup cleans up only the newly started process.</li>
-          <li>Production Android profiles remain AAB-only. APK is an internal installable development artifact, not a Google Play publishing output.</li>
-        </ul>
-        <div class="callout good"><p><strong>Real Android acceptance passed.</strong> The Linux host has API 36, Build Tools 36.0.0, NDK r29 and an API 36 x86_64 AVD. Generated projects use the supported AGP 9.0.1/Gradle 9.2.1 pairing. Production amd64, arm64 and universal AABs passed with receipts and zero-work reruns. <code>wails3 android run</code> built a native x86_64 debug APK, installed it, launched the configured activity, and displayed the live Wails badge application without a fatal logcat error.</p></div>
+      <section id="troubleshooting">
+        <p class="kicker">How to recover quickly</p>
+        <h2>Resolve common problems</h2>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Android target</th><th>Real build</th><th>Zero-work rerun</th><th>Artifact</th></tr></thead>
+            <thead><tr><th>Problem</th><th>What to do</th></tr></thead>
             <tbody>
-              <tr><td><code>android/amd64</code></td><td>7.0s</td><td>111.8ms</td><td>8,870,925-byte AAB</td></tr>
-              <tr><td><code>android/arm64</code></td><td>6.8s</td><td>112.4ms</td><td>8,623,303-byte AAB</td></tr>
-              <tr><td><code>android/universal</code></td><td>6.6s</td><td>102.7ms</td><td>12,405,986-byte AAB</td></tr>
-              <tr><td>Development AVD</td><td>8.3s</td><td>—</td><td>15,149,530-byte x86_64 APK</td></tr>
+              <tr><td>The build fails before executing work</td><td>Run <code>wails3 config check [profile]</code>. Diagnostics identify the HCL file, line, column and field, then show a caret and correction hint where possible.</td></tr>
+              <tr><td>Taskfile changes have no effect</td><td>Check for <code>wails.hcl</code>. Its presence means Taskfiles are intentionally ignored; there is no fallback.</td></tr>
+              <tr><td>You want to see what Wails will do</td><td>Run <code>wails3 build [profile] --plan</code>. Add <code>--json</code> for tooling.</td></tr>
+              <tr><td>A hook failed</td><td>Read the captured output and exit code, then inspect the retained context path printed in the error.</td></tr>
+              <tr><td>Generated state appears stale</td><td>Run <code>wails3 clean</code>. It removes <code>.wails/</code> only and preserves final artifacts and project-owned files.</td></tr>
+              <tr><td>A cached output was deleted</td><td>Build normally; the content-addressed cache restores valid missing outputs. Use <code>--force</code> only when you deliberately need all work rerun.</td></tr>
             </tbody>
           </table>
         </div>
-        <p>Physical-device acceptance remains follow-up work. Real AVD acceptance covers application-log streaming, Ctrl+C cleanup, explicit emulator stop and device-loss reporting.</p>
       </section>
 
-      <section>
-        <h2>Targets and outputs</h2>
+      <section id="reference">
+        <p class="kicker">Compact reference</p>
+        <h2>Commands, outputs and current support</h2>
+        <h3>Command summary</h3>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Platform</th><th>Targets</th><th>Base output</th><th>Production formats</th></tr></thead>
+            <thead><tr><th>Task</th><th>Command</th></tr></thead>
+            <tbody>
+              <tr><td>Validate configuration</td><td><code>wails3 config check [profile]</code></td></tr>
+              <tr><td>Build default or named outcome</td><td><code>wails3 build [profile]</code></td></tr>
+              <tr><td>Inspect the build graph</td><td><code>wails3 build [profile] --plan [--json]</code></td></tr>
+              <tr><td>Run development mode</td><td><code>wails3 dev [--plan]</code></td></tr>
+              <tr><td>Deploy Android</td><td><code>wails3 android devices</code>, <code>wails3 android run [profile]</code></td></tr>
+              <tr><td>Analyse or activate migration</td><td><code>wails3 migrate [--dry-run|--json|--activate]</code></td></tr>
+              <tr><td>Export resolved configuration</td><td><code>wails3 eject [--force]</code></td></tr>
+              <tr><td>Remove generated workspace</td><td><code>wails3 clean</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Targets and production outputs</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Platform</th><th>Targets</th><th>Base output</th><th>Formats</th></tr></thead>
             <tbody>
               <tr><td>Windows</td><td><code>amd64</code>, <code>arm64</code></td><td><code>.exe</code></td><td>NSIS, MSIX</td></tr>
               <tr><td>macOS</td><td><code>amd64</code>, <code>arm64</code>, <code>universal</code></td><td><code>.app</code></td><td>DMG</td></tr>
               <tr><td>Linux</td><td><code>amd64</code>, <code>arm64</code></td><td>Binary</td><td>AppImage, DEB, RPM, Arch Linux</td></tr>
               <tr><td>iOS</td><td><code>arm64</code></td><td>Simulator/device <code>.app</code></td><td>Device IPA</td></tr>
-              <tr><td>Android</td><td><code>amd64</code>, <code>arm64</code>, <code>universal</code></td><td>—</td><td>AAB only</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <ul>
-          <li>A default Android production build produces an AAB.</li>
-          <li>Production APK is deliberately rejected. APK exists only as an internal development artifact.</li>
-          <li>iOS IPA requires <code>destination = "device"</code>.</li>
-          <li><code>app</code> and <code>binary</code> are base outputs, not values passed to <code>--formats</code>.</li>
-          <li>Universal macOS builds compile and merge both architectures.</li>
-          <li>Universal Android builds combine both supported ABIs.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>Cross-compilation</h2>
-        <p>Configured toolchain values are <code>auto</code>, <code>native</code>, <code>zig</code> and <code>docker</code>.</p>
-        <ul>
-          <li><strong>Windows and Linux:</strong> native, Zig or Docker.</li>
-          <li><strong>macOS:</strong> native or the prepared Docker cross-compilation environment.</li>
-          <li><strong>iOS:</strong> native Xcode toolchain on macOS.</li>
-          <li><strong>Android:</strong> Android NDK on Linux, macOS or Windows.</li>
-          <li>Docker-based cross-compilation from a Windows host is not currently supported.</li>
-          <li>Packaging has additional host restrictions: MSIX requires Windows, while DMG and IPA require macOS.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>Configuration covered by <code>wails.hcl</code></h2>
-        <ul>
-          <li>Project identity, version, build number, binary name, company, description, copyright, comments and icon.</li>
-          <li>Frontend directory, install/build/dev argument vectors, package manager, output and environment.</li>
-          <li>TypeScript bindings, interface/class output, generated filenames and Go time representation.</li>
-          <li>Build output, tags, linker/compiler flags, environment, trim path, stripping, VCS metadata and garble obfuscation.</li>
-          <li>Development tags, watch/exclude patterns, Git-ignore handling, debounce, log level and shutdown grace period.</li>
-          <li>Platform metadata and user-owned assets for Windows, macOS, Linux, iOS and Android.</li>
-          <li>Per-target flags, environment, minimum OS version, build number, obfuscation and toolchain.</li>
-          <li>Named profiles selecting targets, formats, signing, notarisation and mobile destination.</li>
-          <li>File associations and custom protocols.</li>
-          <li>Structured package settings and complete package-template replacements.</li>
-          <li>Platform signing references without storing secret values in HCL.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>User-owned assets</h2>
-        <p>Supported project-owned inputs include icons, platform manifests, Apple <code>Info.plist</code> and <code>Assets.car</code>, Linux desktop entries, signing inputs, package templates, AppImage assets, Linux package lifecycle scripts, file-association icons, and DMG files and artwork.</p>
-        <p>Wails copies these inputs into disposable <code>.wails/</code> workspaces. Source files are not modified. Complete templates are opaque files or directories: no interpolation, merging or line-ending conversion is performed.</p>
-      </section>
-
-      <section>
-        <h2>Pipeline and caching</h2>
-        <ol>
-          <li>Install frontend dependencies.</li>
-          <li>Generate bindings.</li>
-          <li>Build the frontend.</li>
-          <li>Compile the native application.</li>
-          <li>Merge universal binaries where required.</li>
-          <li>Generate platform assets.</li>
-          <li>Assemble applications.</li>
-          <li>Package, sign and notarise as requested.</li>
-          <li>Publish artifacts and generate a verified receipt.</li>
-        </ol>
-        <p>The executor supports shared work across targets, bounded parallelism, content-addressed local caching, automatic input tracking, restoration of missing outputs, dirty-output detection, transactional publication and non-cacheable signing. Final artifact metadata is written to <code>.wails/artifacts/receipt.json</code>.</p>
-        <p><code>--plan</code> produces a human-readable inspection without writing state. <code>--plan --json</code> emits the same resolved graph as deterministic, versioned JSON.</p>
-      </section>
-
-      <section>
-        <h2>Development mode</h2>
-        <ul class="checks">
-          <li>Uses the same planner and cache with separate development policy.</li>
-          <li>Runs only for the current host target.</li>
-          <li>Starts and readiness-checks the frontend server and native application.</li>
-          <li>Watches configured files with debounce and optional <code>.gitignore</code> filtering.</li>
-          <li>Cancels stale rebuild generations and restarts only affected processes.</li>
-          <li>Reloads <code>wails.hcl</code> transactionally and preserves the last healthy session after a failed replacement.</li>
-          <li>Stores development binaries beneath <code>.wails/dev/</code>.</li>
-          <li>Keeps stripping, obfuscation and other production policy out of development.</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>New projects, wizard and migration</h2>
-        <ul>
-          <li>All built-in templates generate <code>wails.hcl</code>.</li>
-          <li>The init wizard writes metadata and TypeScript/interface choices through a typed internal state and HCL writer.</li>
-          <li>Existing manifest updates preserve unrelated configuration, comments, ordering and file permissions.</li>
-          <li>The signing wizard updates one platform signing block without replacing the remainder of the manifest.</li>
-          <li>Community templates with Taskfiles are analysed. Representable templates can become active HCL projects; custom behaviour produces an inactive draft and preserves legacy execution.</li>
-        </ul>
-        <p>Migration inspects root and included Taskfiles, reachable build/package/sign/dev tasks, <code>build/config.yml</code>, frontend metadata and lockfiles, binding settings, conventional assets, project metadata, file associations and protocols.</p>
-        <p>Only behaviour with a typed equivalent is migrated. Conservative argument-free lifecycle tasks that invoke one project-owned script become HCL hooks; other reachable custom shell logic remains a blocker. Activation atomically renames <code>wails.migrated.hcl</code> to <code>wails.hcl</code>; Taskfiles, scripts, YAML and assets are not deleted or edited.</p>
-      </section>
-
-      <section>
-        <h2>Signing implemented</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Platform</th><th>Implementation</th></tr></thead>
-            <tbody>
-              <tr><td>Windows</td><td>Authenticode through <code>signtool</code>.</td></tr>
-              <tr><td>macOS</td><td>App/package signing through <code>codesign</code> and optional notarisation.</td></tr>
-              <tr><td>iOS</td><td>App and IPA signing.</td></tr>
-              <tr><td>Android</td><td>AAB signing using a keystore, key alias and password environment-variable reference.</td></tr>
-              <tr><td>Linux</td><td>DEB through <code>dpkg-sig</code>; RPM through <code>rpmsign</code>.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="callout warn"><p>Linux AppImage and Arch package signing are not supported by the current contract. Credentialed native signing still requires end-to-end acceptance on matching hosts.</p></div>
-      </section>
-
-      <section>
-        <h2>Experimental lifecycle hooks implemented</h2>
-        <ul>
-          <li>One project-owned executable script may be declared for each of <code>before_build</code>, <code>after_build</code>, <code>before_package</code>, <code>after_package</code>, <code>before_sign</code> and <code>after_sign</code>.</li>
-          <li>Package and signing hooks form per-target barriers around the complete requested format set; independent package nodes remain concurrent.</li>
-          <li>Scripts run directly without inline shell interpolation and receive one protected, versioned JSON context file through <code>WAILS_HOOK_CONTEXT_FILE</code>. Context is removed after success or cancellation, retained with its reported path after failure, and never includes inherited secrets. Failure output and exit status are retained, and the process group is terminated on cancellation.</li>
-          <li>Hooks run every time by default and make downstream operations non-cacheable. Explicit <code>cache = true</code> requires complete inputs and bounded outputs, preserves downstream reuse through its artifact identity, and supports content-addressed hit and restoration.</li>
-          <li>Script, directory, input and output paths are constrained to the project after symlink resolution; cached output trees accept only regular files and directories. Windows uses explicit <code>.cmd</code>, <code>.bat</code> or <code>.ps1</code> interpreter adapters.</li>
-        </ul>
-        <div class="callout warn"><p>This hook surface is an experiment for evaluation, not accepted first-release scope. It is deliberately not a general task or user-defined pipeline language.</p></div>
-      </section>
-
-      <section>
-        <h2>Explicitly not supported</h2>
-        <ul class="checks no">
-          <li>Arbitrary pre/post-build command strings or multiple commands per hook.</li>
-          <li>Custom stages, dependencies or user-defined pipelines.</li>
-          <li>Calling <code>wails3 tool</code> operations from HCL.</li>
-          <li>HCL expressions, variables, functions, interpolation, includes, conditions, loops or HCL-JSON.</li>
-          <li>Remote caching.</li>
-          <li>Automatic translation of arbitrary Taskfile shell logic.</li>
-          <li>iOS device deployment, simulator control or IDE launching (Android device/emulator deployment is now implemented).</li>
-          <li>Production APK output.</li>
-          <li>A <code>config show</code> command or generic config export.</li>
-          <li>Cleaning final artifacts: <code>wails3 clean</code> removes <code>.wails/</code> only.</li>
-        </ul>
-        <p>Behaviour outside the six bounded hook phases can still run separately before or after Wails, but it is not represented in the build graph.</p>
-      </section>
-
-      <section>
-        <h2>Latest automated audit</h2>
-        <div class="summary-grid">
-          <div class="metric"><strong>95.8%</strong><span>Statement coverage for the HCL manifest package.</span></div>
-          <div class="metric"><strong>98.8%</strong><span>Statement coverage for the planner and pipeline package.</span></div>
-          <div class="metric"><strong>Race-clean</strong><span>Commands, manifest and pipeline focused race suite.</span></div>
-        </div>
-        <ul class="checks">
-          <li>The exported diagnostic source-ownership contract now has direct coverage for nil errors, existing validation errors, wrapped errors, indexed-field fallback and command-line errors without an HCL origin.</li>
-          <li><code>AnnotateValidationError</code> has 100% function coverage. HCL decoding, defaults, project validation, schema generation and nearly all planning and host-validation functions are at 95–100%.</li>
-          <li>The focused race run passed for <code>internal/commands</code>, <code>internal/wake/manifest</code> and <code>internal/wake/pipeline</code>.</li>
-          <li>The full v3 repository test run passed the build-system, setup-wizard, generator and other non-GUI packages.</li>
-        </ul>
-        <div class="callout warn"><p><strong>Whole-repository GUI caveat.</strong> The unrestricted <code>go test ./...</code> run exposed two failures outside this branch: file-manager tests timed out while opening the desktop file explorer, and the X11 global-shortcut end-to-end test did not receive a synthesised key event under the current Wayland session. Neither affected package is changed by this branch; the X11 failure reproduced three times.</p></div>
-      </section>
-
-      <section>
-        <h2>Current verification status</h2>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Area</th><th>Status</th><th>Evidence</th></tr></thead>
-            <tbody>
-              <tr><td>Linux binaries and packages</td><td><span class="status done">Confirmed</span></td><td>Real amd64 binary, DEB, RPM, Arch Linux and AppImage builds; Podman/QEMU arm64 binary and DEB/RPM/Arch cross-builds.</td></tr>
-              <tr><td>Built-in web templates</td><td><span class="status done">Confirmed</span></td><td>All nine templates exercised.</td></tr>
-              <tr><td>Development lifecycle</td><td><span class="status done">Confirmed</span></td><td>Real frontend/backend startup, rebuild and process lifecycle.</td></tr>
-              <tr><td>Cache and artifact stability</td><td><span class="status done">Confirmed</span></td><td>Hits, restoration, stable bytes and receipts.</td></tr>
-              <tr><td>Wizard and migration</td><td><span class="status done">Confirmed</span></td><td>HCL generation, preservation and migration tests.</td></tr>
-              <tr><td>Configuration diagnostics</td><td><span class="status done">Confirmed</span></td><td><code>wails3 config check</code>, Build/Dev rendering, semantic/planner/host source ownership, line/column excerpts, hints, golden output, redaction and a ~1.3 µs renderer benchmark are covered.</td></tr>
-              <tr><td>Lifecycle hooks</td><td><span class="status done">Implemented experimentally</span></td><td>Schema, phase/barrier planning, protected JSON context-file transport, success/cancellation cleanup, failure retention, process-group cancellation, caching/restoration, symlink containment and conservative migration pass focused and race tests. The no-hook Linux gate remains within budget at 105.388ms median.</td></tr>
-              <tr><td>Focused automated audit</td><td><span class="status done">Confirmed</span></td><td>Manifest 95.8%, pipeline 98.8%, diagnostic annotator 100%; focused commands/manifest/pipeline race suite passed at <code>fa3239cd9</code>.</td></tr>
-              <tr><td>Windows and macOS</td><td><span class="status pending">Pending native acceptance</span></td><td>Implemented and structurally tested; no real host run yet.</td></tr>
-              <tr><td>Android production and emulator deployment</td><td><span class="status done">Confirmed</span></td><td>Real API 36/NDK r29 amd64, arm64 and universal AABs plus x86_64 AVD APK install, launch, PID-filtered logs, target-loss monitoring and explicit cleanup. Physical device remains pending.</td></tr>
-              <tr><td>iOS</td><td><span class="status pending">Pending native SDK acceptance</span></td><td>Implemented with fake-tool coverage; no real Xcode/device evidence yet.</td></tr>
-              <tr><td>Credentialed signing</td><td><span class="status pending">Pending</span></td><td>Handlers and validation exist; native signature verification remains.</td></tr>
+              <tr><td>Android</td><td><code>amd64</code>, <code>arm64</code>, <code>universal</code></td><td>Development APK only</td><td>AAB</td></tr>
             </tbody>
           </table>
         </div>
 
-        <h3>Default-template performance on the current Linux machine</h3>
-        <ul>
-          <li>Fresh production build with warm machine caches: <strong>3.5 seconds</strong>.</li>
-          <li>Unchanged rebuild median after Podman and Android changes: <strong>99.870 ms</strong>.</li>
-          <li>All six default build operations cached.</li>
-        </ul>
-        <div class="callout good">
-          <p><strong>Linux performance gate passed.</strong> The accepted ceiling is 150 ms. The latest seven-sample run was 99.870 ms median with 4.43% MAD, zero executed and six cached operations, and stable artifact bytes. The iOS verifier now treats the app as a base output and uses a complete device profile for IPA acceptance.</p>
+        <h3>Verification snapshot</h3>
+        <div class="two-col">
+          <div class="card">
+            <h3>Confirmed on this Linux host</h3>
+            <ul class="checks">
+              <li>Real Linux binaries and packages</li>
+              <li>All nine built-in web templates</li>
+              <li>Development process lifecycle</li>
+              <li>Cache hits, restoration and stable receipts</li>
+              <li>Android AABs and x86_64 AVD deployment</li>
+              <li>Focused race, vet and cross-compile gates</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Still needs matching-host acceptance</h3>
+            <ul>
+              <li>Native Windows and macOS packaging</li>
+              <li>iOS simulator/device builds</li>
+              <li>Physical Android deployment</li>
+              <li>Credentialed platform signing</li>
+            </ul>
+          </div>
         </div>
+        <p>The default Linux template builds in about <strong>3.5 seconds</strong> with warm machine caches. Its unchanged rebuild median is <strong>99.870 ms</strong>, below the accepted 150 ms gate.</p>
 
-        <h3>What remains externally blocked</h3>
-        <ul>
-          <li><strong>Physical Android:</strong> no authorised device is currently visible through USB, ADB discovery or Tailscale. Real-device install, launch, bindings, logs, disconnect handling and physical-target rejection of <code>--stop-emulator</code> remain pending.</li>
-          <li><strong>Windows:</strong> the native test node is online over Tailscale and exposes RDP, but no SSH or WinRM command channel is available for automated acceptance.</li>
-          <li><strong>macOS and iOS:</strong> the Mac test host is offline. Native macOS packaging, iOS simulator/device builds and Apple signing remain pending.</li>
-          <li><strong>Credentialed signing:</strong> matching-host verification remains for Windows, Apple, Android and supported Linux package signatures.</li>
-        </ul>
+        <h3>Outside the current contract</h3>
+        <p>Custom stages and dependency graphs, inline hook commands, HCL expressions or includes, typed <code>wails3 tool</code> calls, remote caching, arbitrary Taskfile translation, iOS deployment control, production APK output and <code>config show</code> are not supported.</p>
       </section>
     </div>
 
     <footer>
-      Updated 27 August 2026 from implementation commit <code>fa3239cd9</code> on <code>codex/hcl-build-system</code>. This document describes the implemented branch, not the broader proposal.
+      Updated 27 August 2026 for <code>codex/hcl-build-system</code>. This guide describes the experimental implementation, including protected JSON hook context transport from <code>da6f1d7a4</code>.
     </footer>
   </main>
 </body>
