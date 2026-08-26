@@ -12,7 +12,6 @@
 @end
 
 @interface WebviewWindow : NSWindow <WailsWebviewWindow>
-+ (NSString*)keyStringFromEvent:(NSEvent*)event;
 - (BOOL) canBecomeKeyWindow;
 - (BOOL) canBecomeMainWindow;
 - (BOOL) acceptsFirstResponder;
@@ -40,7 +39,6 @@
 @end
 
 
-NSString* keyStringFromKeyEvent(NSEvent* event);
 NSString* acceleratorStringFromKeyEvent(NSEvent* event);
 BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window);
 
