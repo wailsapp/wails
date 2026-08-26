@@ -90,6 +90,11 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
 }
 - (void)keyDown:(NSEvent *)event {
     NSString *keyEventString = acceleratorStringFromKeyEvent(event);
+    // A press with no name cannot match a binding, and the parser rejects the
+    // empty string, so sending it on only produces an error for every one.
+    if (keyEventString.length == 0) {
+        return;
+    }
     WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
     processWindowKeyDownEvent(delegate.windowId, [keyEventString UTF8String]);
 }

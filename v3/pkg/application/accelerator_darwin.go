@@ -65,6 +65,30 @@ var macCharacterNames = map[rune]string{
 	'\x0e': "page up",
 	'\x01': "home",
 	'\x04': "end",
+
+	// F21 to F35 exist only on extended keyboards, and AppKit reports them
+	// through these characters rather than through a key code this build
+	// knows. namedKeys accepts their names, so without this a binding written
+	// for one could never fire. NSF21FunctionKey and consecutive.
+	'\uf718': "f21",
+	'\uf719': "f22",
+	'\uf71a': "f23",
+	'\uf71b': "f24",
+	'\uf71c': "f25",
+	'\uf71d': "f26",
+	'\uf71e': "f27",
+	'\uf71f': "f28",
+	'\uf720': "f29",
+	'\uf721': "f30",
+	'\uf722': "f31",
+	'\uf723': "f32",
+	'\uf724': "f33",
+	'\uf725': "f34",
+	'\uf726': "f35",
+
+	// NSClearLineFunctionKey - the key a Mac keypad labels Clear, and which
+	// namedKeys calls numlock.
+	'\uf739': "numlock",
 }
 
 // macKeyName names the key that was pressed, or returns an empty string for a
@@ -83,6 +107,14 @@ func macKeyName(keyCode uint16, character rune, hasCharacter bool) string {
 // modifiers held, in a fixed order, then the key, joined with "+". Empty if
 // the key has no name, since a binding could not refer to it.
 func macAccelerator(keyCode uint16, modifiers uint, character rune, hasCharacter bool) string {
+	// Without a key there is nothing to bind to, and naming the press after
+	// its modifiers alone produces something like "cmd" that parseAccelerator
+	// rejects - which is what every modifier press used to be reported as.
+	key := macKeyName(keyCode, character, hasCharacter)
+	if key == "" {
+		return ""
+	}
+
 	var parts []string
 	if modifiers&macModifierShift != 0 {
 		parts = append(parts, "shift")
@@ -96,8 +128,6 @@ func macAccelerator(keyCode uint16, modifiers uint, character rune, hasCharacter
 	if modifiers&macModifierCommand != 0 {
 		parts = append(parts, "cmd")
 	}
-	if key := macKeyName(keyCode, character, hasCharacter); key != "" {
-		parts = append(parts, key)
-	}
+	parts = append(parts, key)
 	return strings.Join(parts, "+")
 }

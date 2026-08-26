@@ -2,7 +2,10 @@
 
 package application
 
-import "testing"
+import (
+	"strconv"
+	"testing"
+)
 
 // With Control held, macOS collapses letters to their control codes: Control-A
 // produces U+0001, which is also what an older reading of this took to mean
@@ -81,14 +84,60 @@ func TestModifiersAreNamedInOrder(t *testing.T) {
 	}
 }
 
-// A key with no name cannot be bound, so it is named as nothing rather than as
-// a bare list of modifiers.
+// A key with no name cannot be bound to, so the press is named as nothing at
+// all. Naming it after the modifiers alone produces something like "cmd",
+// which no binding can match and which parseAccelerator rejects - so every
+// press of an unnamed key with a modifier held was reported as an error.
 func TestAnUnknownKeyHasNoName(t *testing.T) {
-	if got := macAccelerator(999, macModifierCommand, 0, false); got != "cmd" {
-		t.Errorf("an unknown key with Command held was named %q, not %q", got, "cmd")
+	for _, modifiers := range []uint{0, macModifierCommand, macModifierShift | macModifierControl} {
+		if got := macAccelerator(999, modifiers, 0, false); got != "" {
+			t.Errorf("an unknown key with modifiers %#x was named %q, not %q", modifiers, got, "")
+		}
 	}
-	if got := macAccelerator(999, 0, 0, false); got != "" {
-		t.Errorf("an unknown key was named %q, not %q", got, "")
+}
+
+// The names this produces are handed to parseAccelerator, so anything it
+// produces for a real press has to survive that. A bare list of modifiers does
+// not.
+func TestNothingProducedIsRejectedByTheParser(t *testing.T) {
+	presses := []struct {
+		name         string
+		keyCode      uint16
+		modifiers    uint
+		character    rune
+		hasCharacter bool
+	}{
+		{"an unknown key held with Command", 999, macModifierCommand, 0, false},
+		{"a key with no name held with Shift", 56, macModifierShift, 0, false},
+		{"Control-A", 0, macModifierControl, '\x01', true},
+		{"F12", 111, 0, 0, false},
+	}
+	for _, p := range presses {
+		got := macAccelerator(p.keyCode, p.modifiers, p.character, p.hasCharacter)
+		if got == "" {
+			continue // Nothing is dispatched for an unnamed press.
+		}
+		if _, err := parseAccelerator(got); err != nil {
+			t.Errorf("%s was named %q, which the parser rejects: %s", p.name, got, err)
+		}
+	}
+}
+
+// namedKeys accepts these, so a binding can be written for them; they have to
+// be reachable from a real press or the binding can never fire. AppKit reports
+// them only through the characters they produce.
+func TestExtendedFunctionKeysAreNamed(t *testing.T) {
+	// NSF21FunctionKey is 0xF718, and they run consecutively to F35.
+	for i := 0; i <= 35-21; i++ {
+		character := rune(0xF718 + i)
+		want := "f" + strconv.Itoa(21+i)
+		if got := macAccelerator(0xFFFF, 0, character, true); got != want {
+			t.Errorf("the key producing %U was named %q, not %q", character, got, want)
+		}
+	}
+	// NSClearLineFunctionKey. Wails calls this key numlock.
+	if got := macAccelerator(0xFFFF, 0, 0xF739, true); got != "numlock" {
+		t.Errorf("the clear key was named %q, not %q", got, "numlock")
 	}
 }
 
