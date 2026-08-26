@@ -213,6 +213,56 @@
     .checks li { position: relative; padding-left: 29px; }
     .checks li::before { position: absolute; left: 2px; top: .03em; color: var(--good); content: "✓"; font-weight: 900; }
 
+    .pipeline {
+      display: grid;
+      gap: 0;
+      margin: 22px 0 28px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pipeline li {
+      position: relative;
+      margin: 0 0 22px;
+      padding: 15px 18px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+
+    .pipeline li:not(:last-child)::after {
+      position: absolute;
+      bottom: -24px;
+      left: 50%;
+      color: var(--muted);
+      content: "↓";
+      font-size: 1.2rem;
+      font-weight: 800;
+      transform: translateX(-50%);
+    }
+
+    .pipeline .hook-stage {
+      border-color: #ef9aaa;
+      background: var(--accent-soft);
+    }
+
+    .pipeline strong { display: block; margin-bottom: 2px; }
+    .pipeline span { color: var(--muted); font-size: .92rem; }
+
+    .scope {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      vertical-align: .12em;
+    }
+
     .table-wrap { overflow-x: auto; margin: 16px 0 22px; }
     table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); font-size: .94rem; }
     th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
@@ -281,6 +331,7 @@
           <li><a href="#daily-work">Use the everyday workflow</a></li>
           <li><a href="#profiles">Create production profiles</a></li>
           <li><a href="#assets">Use project-owned assets</a></li>
+          <li><a href="#stages">Understand the internal stages</a></li>
           <li><a href="#hooks">Add lifecycle hooks</a></li>
           <li><a href="#android">Run on Android</a></li>
           <li><a href="#migration">Migrate a Taskfile project</a></li>
@@ -414,10 +465,70 @@ wails3 build android-release</code></pre>
         <p>Complete package templates are opaque files or directories. Wails does not interpolate, merge or normalise them.</p>
       </section>
 
+      <section id="stages">
+        <p class="kicker">Explanation and stage reference</p>
+        <h2>Understand the internal build stages</h2>
+        <p>Wails owns a typed build graph. Configuration selects outcomes; it does not redefine these stages or their dependencies. The executor starts independent nodes as soon as their inputs are ready, so the diagram below is a lifecycle view rather than a promise that every operation runs serially.</p>
+
+        <ol class="pipeline" aria-label="Wails internal build-stage lifecycle">
+          <li><strong>Resolve configuration and plan</strong><span>Validate the manifest, profile, host capabilities and requested targets; construct the immutable graph. No hook runs during planning.</span></li>
+          <li class="hook-stage"><strong><code>before_build</code> hook <span class="scope">project</span></strong><span>Runs once before project preparation or target work begins.</span></li>
+          <li><strong>Prepare project inputs</strong><span>Install frontend dependencies and generate bindings in parallel. Platform assets may also start here when compilation needs them.</span></li>
+          <li><strong>Build frontend</strong><span>Produce the embeddable frontend after dependency installation and binding generation complete.</span></li>
+          <li><strong>Compile native target</strong><span>Compile one target or its architecture components. Merge macOS component binaries when producing a universal target.</span></li>
+          <li class="hook-stage"><strong><code>after_build</code> hook <span class="scope">target</span></strong><span>The native binary or libraries now exist. App-bundle assembly and package formats may still be pending.</span></li>
+          <li><strong>Generate remaining assets and assemble application</strong><span>Create platform-owned assets and, for app-style targets, assemble the runnable application bundle. Binary-style targets skip assembly.</span></li>
+          <li class="hook-stage"><strong><code>before_package</code> hook <span class="scope">target</span></strong><span>All package inputs are ready. The context names the planned package path or common parent, but the packages do not exist yet.</span></li>
+          <li><strong>Package requested formats</strong><span>Build independent formats concurrently, such as DEB, RPM and AppImage for one Linux target.</span></li>
+          <li class="hook-stage"><strong><code>after_package</code> hook <span class="scope">target</span></strong><span>Every requested package for the target now exists.</span></li>
+          <li class="hook-stage"><strong><code>before_sign</code> hook <span class="scope">target</span></strong><span>Unsigned packages—or the base binary/app for a sign-only request—are ready.</span></li>
+          <li><strong>Sign and notarise</strong><span>Sign requested artifacts. Independent package signatures can run concurrently; signing is deliberately never cached.</span></li>
+          <li class="hook-stage"><strong><code>after_sign</code> hook <span class="scope">target</span></strong><span>All signed outputs for the target now exist.</span></li>
+          <li><strong>Publish and collect artifacts</strong><span>Atomically publish final outputs, verify them and write <code>.wails/artifacts/receipt.json</code>.</span></li>
+        </ol>
+
+        <div class="callout warn"><p><strong>Read hook names as lifecycle boundaries.</strong> In this contract, “build” ends when native compilation and any universal-binary merge finish; it does not mean the final app bundle or installer already exists. Likewise, <code>after_package</code> is before signing and <code>after_sign</code> is before final publication and receipt collection. There is no hook around publication or collection.</p></div>
+        <div class="callout good"><p><strong>Conditional stages disappear from the graph.</strong> A build with no package formats does not run package hooks. A request with no signing does not run sign hooks. App assembly runs only for app-style targets. Use <code>wails3 build [profile] --plan</code> to see the exact graph for one request.</p></div>
+
+        <h3>Built-in stage behaviour</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Stage group</th><th>Scope</th><th>Produces</th><th>Cache policy</th></tr></thead>
+            <tbody>
+              <tr><td><code>InstallFrontendDependencies</code></td><td>Project</td><td>Frontend dependency marker</td><td>Receipt</td></tr>
+              <tr><td><code>GenerateBindings</code>, <code>BuildFrontend</code></td><td>Project</td><td>Generated bindings and frontend output</td><td>Artifact</td></tr>
+              <tr><td><code>GeneratePlatformAssets</code></td><td>Target</td><td>Generated platform workspace</td><td>Artifact</td></tr>
+              <tr><td><code>CompileApplication</code>, <code>MergeUniversalBinaries</code></td><td>Target</td><td>Native binary or libraries</td><td>Artifact</td></tr>
+              <tr><td><code>AssembleApplication</code></td><td>Target</td><td>Runnable app bundle</td><td>Artifact; iOS is never cached</td></tr>
+              <tr><td><code>PackageArtifact</code></td><td>Package format</td><td>Installable/distributable artifact</td><td>Artifact; iOS is never cached</td></tr>
+              <tr><td><code>SignArtifact</code></td><td>Package format or target</td><td>Signed or notarised artifact</td><td>Never</td></tr>
+              <tr><td><code>PublishArtifact</code>, <code>CollectArtifacts</code></td><td>Target, then invocation</td><td>Final outputs and receipt</td><td>Follows upstream reproducibility</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Hook boundaries and context</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Hook</th><th>Runs</th><th><code>scope</code></th><th><code>target</code></th><th><code>output</code> means</th></tr></thead>
+            <tbody>
+              <tr><td><code>before_build</code></td><td>Once for the shared project</td><td><code>project</code></td><td><code>null</code></td><td>Empty; no build output exists yet</td></tr>
+              <tr><td><code>after_build</code></td><td>Once per target</td><td><code>target</code></td><td>Selected OS/architecture</td><td>Compiled binary/library, or common component directory</td></tr>
+              <tr><td><code>before_package</code></td><td>Once per target</td><td><code>target</code></td><td>Selected OS/architecture</td><td>Planned package path or common parent; output does not exist yet</td></tr>
+              <tr><td><code>after_package</code></td><td>Once after all target formats</td><td><code>target</code></td><td>Selected OS/architecture</td><td>Existing package path or common parent</td></tr>
+              <tr><td><code>before_sign</code></td><td>Once before all target signatures</td><td><code>target</code></td><td>Selected OS/architecture</td><td>Unsigned artifact path or common parent</td></tr>
+              <tr><td><code>after_sign</code></td><td>Once after all target signatures</td><td><code>target</code></td><td>Selected OS/architecture</td><td>Signed artifact path or common parent</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Package and sign hooks are target-scoped barriers, not per-format callbacks. If a profile requests DEB and RPM, <code>before_package</code> runs once, both package nodes may run in parallel, and <code>after_package</code> runs once after both finish.</p>
+        <p>A configured hook runs whenever its matching phase is executed; planning never runs hooks. By default it is not cached and makes only its downstream work non-cacheable. For example, an uncached <code>after_build</code> hook does not prevent compilation from hitting the cache, while an uncached <code>before_build</code> hook makes the complete downstream build run. A cacheable hook must declare all inputs and outputs.</p>
+      </section>
+
       <section id="hooks">
         <p class="kicker">How to handle the small amount that remains custom</p>
         <h2>Add a lifecycle hook</h2>
-        <p>A hook names one project-owned script, not an inline shell command. On Unix it must be executable and start with a shebang. Windows accepts <code>.cmd</code>, <code>.bat</code> and <code>.ps1</code>.</p>
+        <p>A hook names one project-owned script at one of the <a href="#stages">documented internal stage boundaries</a>, not an inline shell command. On Unix it must be executable and start with a shebang. Windows accepts <code>.cmd</code>, <code>.bat</code> and <code>.ps1</code>.</p>
         <pre><code>hook "before_build" {
   script = "scripts/generate-version.sh"
 }
