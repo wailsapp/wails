@@ -330,14 +330,9 @@ func startAndroidAVD(ctx context.Context, name string, listDevices func(context.
 	if err != nil {
 		return androidDevice{}, fmt.Errorf("list Android devices before starting emulator: %w", err)
 	}
-	for _, device := range devices {
-		if !device.Emulator || device.State != "device" {
-			continue
-		}
-		output, err := adb(ctx, "-s", device.Serial, "emu", "avd", "name")
-		if err == nil && parseAndroidAVDName(output) == name {
-			return device, nil
-		}
+	device, running, ready := inspectAndroidAVDReadiness(ctx, name, devices, adb)
+	if ready {
+		return device, nil
 	}
 	root, err := os.Getwd()
 	if err != nil {
@@ -348,19 +343,25 @@ func startAndroidAVD(ctx context.Context, name string, listDevices func(context.
 		return androidDevice{}, err
 	}
 	logPath := filepath.Join(logDirectory, "emulator-"+strings.NewReplacer("/", "-", "\\", "-").Replace(name)+".log")
-	log, err := os.Create(logPath)
-	if err != nil {
-		return androidDevice{}, err
-	}
-	command := exec.Command("emulator", "-avd", name, "-no-snapshot-save")
-	command.Stdout, command.Stderr = log, log
-	if err := command.Start(); err != nil {
+	if !running {
+		log, createErr := os.Create(logPath)
+		if createErr != nil {
+			return androidDevice{}, createErr
+		}
+		command := exec.Command("emulator", "-avd", name, "-no-snapshot-save")
+		command.Stdout, command.Stderr = log, log
+		if startErr := command.Start(); startErr != nil {
+			_ = log.Close()
+			return androidDevice{}, fmt.Errorf("start Android emulator %q: %w", name, startErr)
+		}
+		_ = command.Process.Release()
 		_ = log.Close()
-		return androidDevice{}, fmt.Errorf("start Android emulator %q: %w", name, err)
 	}
-	_ = command.Process.Release()
-	_ = log.Close()
-	spinner := term.StartSpinner("Starting Android emulator " + name)
+	message := "Waiting for Android emulator " + name
+	if !running {
+		message = "Starting Android emulator " + name
+	}
+	spinner := term.StartSpinner(message)
 	defer term.StopSpinner(spinner)
 	deadline := time.Now().Add(3 * time.Minute)
 	var lastDiscoveryErr error
@@ -374,20 +375,40 @@ func startAndroidAVD(ctx context.Context, name string, listDevices func(context.
 		if lastDiscoveryErr != nil {
 			continue
 		}
-		for _, device := range devices {
-			if !device.Emulator || device.State != "device" {
-				continue
-			}
-			output, queryErr := adb(ctx, "-s", device.Serial, "emu", "avd", "name")
-			if queryErr == nil && parseAndroidAVDName(output) == name {
-				return device, nil
-			}
+		device, _, ready = inspectAndroidAVDReadiness(ctx, name, devices, adb)
+		if ready {
+			return device, nil
 		}
 	}
 	if lastDiscoveryErr != nil {
 		return androidDevice{}, fmt.Errorf("Android emulator %q did not become ready within 3 minutes; last device discovery failed: %w; see %s", name, lastDiscoveryErr, logPath)
 	}
+	if running {
+		return androidDevice{}, fmt.Errorf("Android emulator %q did not finish booting with a ready package manager within 3 minutes", name)
+	}
 	return androidDevice{}, fmt.Errorf("Android emulator %q did not become ready within 3 minutes; see %s", name, logPath)
+}
+
+func inspectAndroidAVDReadiness(ctx context.Context, name string, devices []androidDevice, adb func(context.Context, ...string) (string, error)) (androidDevice, bool, bool) {
+	for _, device := range devices {
+		if !device.Emulator || device.State != "device" {
+			continue
+		}
+		output, err := adb(ctx, "-s", device.Serial, "emu", "avd", "name")
+		if err != nil || parseAndroidAVDName(output) != name {
+			continue
+		}
+		bootCompleted, err := adb(ctx, "-s", device.Serial, "shell", "getprop", "sys.boot_completed")
+		if err != nil || strings.TrimSpace(bootCompleted) != "1" {
+			return androidDevice{}, true, false
+		}
+		packageManager, err := adb(ctx, "-s", device.Serial, "shell", "pm", "path", "android")
+		if err != nil || !strings.HasPrefix(strings.TrimSpace(packageManager), "package:") {
+			return androidDevice{}, true, false
+		}
+		return device, true, true
+	}
+	return androidDevice{}, false, false
 }
 
 func parseAndroidAVDName(output string) string {

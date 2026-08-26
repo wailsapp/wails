@@ -138,10 +138,29 @@ artifact-affecting overrides and accepts only operational options such as Plan
 inspection, force/cache bypass, and verbosity.
 
 `package` and `sign` are temporary compatibility aliases. New documentation
-teaches `build`. There is no `config show`, `config check`, config export, or
-graph-navigation interface: ordinary commands validate and `--plan` is the
-inspection surface. Legacy-only tool commands and Taskfile flags remain on the
-legacy route and are not part of the native HCL interface.
+teaches `build`. There is no `config show`, config export, or graph-navigation
+interface: ordinary commands validate and `--plan` is the inspection surface.
+Legacy-only tool commands and Taskfile flags remain on the legacy route and are
+not part of the native HCL interface.
+
+### Experimental follow-up commands
+
+The experiment branch also prototypes two post-first-release surfaces so their
+shape can be evaluated before inclusion in the accepted proposal:
+
+- `wails3 config check [profile]` validates the base manifest and either every
+  named profile or one requested profile without executing a build. HCL schema
+  diagnostics include the source line, range and an actionable hint.
+- `wails3 android devices` lists ADB targets. `wails3 android run [profile]`
+  selects a connected device or AVD, builds an ABI-specific development APK,
+  installs it, and optionally launches it. `--device` and `--emulator` provide
+  deterministic automation; a terminal picker provides the initial interactive
+  experience. APK remains unavailable as a production profile format.
+
+These commands are experiments, not accepted first-release scope. Device log
+streaming, long-lived lifecycle management, iOS deployment, and full source
+ranges for planner or host-capability diagnostics remain follow-up work. This
+section does not reserve or approve any hook syntax.
 
 ## Fixed pipeline and Plan
 

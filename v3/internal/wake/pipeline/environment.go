@@ -18,6 +18,10 @@ import (
 
 const CrossContainerImage = "ghcr.io/wailsapp/wails-cross:latest"
 
+func preferredCrossContainerImages() []string {
+	return []string{CrossContainerImage, "wails-cross"}
+}
+
 // HostCapabilities is a value snapshot of the execution facts that may affect
 // Plan feasibility. Its collections are private and copied at construction so
 // callers cannot mutate a capability snapshot after planning starts.
@@ -151,7 +155,7 @@ func currentHostFacts(tools []string, operations hostProbeOperations, probeConta
 			facts.ContainerRuntime = containerRuntime
 		}
 		if probeContainerImages {
-			for _, image := range []string{CrossContainerImage, "wails-cross"} {
+			for _, image := range preferredCrossContainerImages() {
 				if operations.run(containerRuntime, "image", "inspect", image) == nil {
 					facts.ContainerRuntime = containerRuntime
 					facts.ContainerImages = []string{image}
@@ -370,7 +374,7 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 }
 
 func (h HostCapabilities) crossContainerImage() string {
-	for _, image := range []string{CrossContainerImage, "wails-cross"} {
+	for _, image := range preferredCrossContainerImages() {
 		if h.hasDockerImage(image) {
 			return image
 		}

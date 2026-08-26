@@ -163,9 +163,56 @@ func TestStartAndroidAVDReusesAnAlreadyRunningNamedEmulator(t *testing.T) {
 	device := androidDevice{Serial: "emulator-5554", State: "device", Emulator: true}
 	actual, err := startAndroidAVD(context.Background(), "Pixel_8",
 		func(context.Context) ([]androidDevice, error) { return []androidDevice{device}, nil },
-		func(context.Context, ...string) (string, error) { return "Pixel_8\r\nOK\r\n", nil },
+		func(_ context.Context, arguments ...string) (string, error) {
+			switch arguments[len(arguments)-1] {
+			case "name":
+				return "Pixel_8\r\nOK\r\n", nil
+			case "sys.boot_completed":
+				return "1\n", nil
+			case "android":
+				return "package:/system/framework/framework-res.apk\n", nil
+			default:
+				return "", errors.New("unexpected adb call")
+			}
+		},
 	)
 	require.NoError(t, err)
+	assert.Equal(t, device, actual)
+}
+
+func TestInspectAndroidAVDReadinessRequiresBootAndPackageManager(t *testing.T) {
+	device := androidDevice{Serial: "emulator-5554", State: "device", Emulator: true}
+	bootCompleted := ""
+	packageManagerReady := false
+	adb := func(_ context.Context, arguments ...string) (string, error) {
+		switch arguments[len(arguments)-1] {
+		case "name":
+			return "Pixel_8\nOK\n", nil
+		case "sys.boot_completed":
+			return bootCompleted, nil
+		case "android":
+			if packageManagerReady {
+				return "package:/system/framework/framework-res.apk\n", nil
+			}
+			return "", errors.New("package manager unavailable")
+		default:
+			return "", errors.New("unexpected adb call")
+		}
+	}
+
+	_, running, ready := inspectAndroidAVDReadiness(context.Background(), "Pixel_8", []androidDevice{device}, adb)
+	assert.True(t, running)
+	assert.False(t, ready)
+
+	bootCompleted = "1\n"
+	_, running, ready = inspectAndroidAVDReadiness(context.Background(), "Pixel_8", []androidDevice{device}, adb)
+	assert.True(t, running)
+	assert.False(t, ready)
+
+	packageManagerReady = true
+	actual, running, ready := inspectAndroidAVDReadiness(context.Background(), "Pixel_8", []androidDevice{device}, adb)
+	assert.True(t, running)
+	assert.True(t, ready)
 	assert.Equal(t, device, actual)
 }
 

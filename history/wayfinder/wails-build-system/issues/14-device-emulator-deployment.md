@@ -38,7 +38,8 @@ provides `wails3 android devices` and `wails3 android run [profile]` with:
 - offline/unauthorised-state diagnostics and ABI-aware arm64/x86_64 selection;
 - profile-configured development APK builds kept separate from production AAB;
 - install/reinstall, explicit activity launch, reusable running emulators,
-  bounded startup readiness, cancellation, and `.wails/android` emulator logs;
+  bounded startup readiness that waits for Android boot completion and Package
+  Manager, cancellation, and `.wails/android` emulator logs;
 - injected adapters and focused tests for parsing, selection, build/install/
   launch sequencing, unavailable devices, and noninteractive ambiguity.
 
