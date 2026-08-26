@@ -448,6 +448,15 @@ func cancelURLRequest(wkUrlSchemeTask unsafe.Pointer) {
 	webview.CancelRequest(wkUrlSchemeTask)
 }
 
+// acceleratorFromKeyPress names a key press the way a key binding is written.
+// The naming lives in Go, in accelerator_darwin.go, so that it can be tested
+// without standing up AppKit. The caller owns the returned string.
+//
+//export acceleratorFromKeyPress
+func acceleratorFromKeyPress(keyCode C.ushort, modifiers C.ulong, character C.uint, hasCharacter C.int) *C.char {
+	return C.CString(macAccelerator(uint16(keyCode), uint(modifiers), rune(character), hasCharacter != 0))
+}
+
 //export processWindowKeyDownEvent
 func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 	windowKeyEvents <- &windowKeyEvent{
