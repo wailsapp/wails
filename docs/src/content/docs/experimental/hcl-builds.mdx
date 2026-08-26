@@ -78,6 +78,25 @@ wails3 build release --plan
 wails3 build release --plan --json
 ```
 
+## Validate configuration without building
+
+Use the dedicated preflight command in CI, an editor task, or before committing
+configuration. With no profile it validates the base manifest and every named
+profile; with a profile it checks only that complete request:
+
+```bash
+wails3 config check
+wails3 config check release
+```
+
+Syntax, schema, semantic, path, target, format, signing, planner and
+configuration-owned host-capability failures use the same diagnostic renderer
+as Build and Dev. Diagnostics identify the field and source range, print the
+source line and caret, and include a correction hint where one is useful.
+Environment values are redacted from diagnostic source excerpts. Host failures
+caused only by command-line choices remain ordinary command errors rather than
+being misreported as invalid HCL.
+
 ## Use project-owned assets
 
 Manifest paths refer to files you own, such as icons, platform manifests,

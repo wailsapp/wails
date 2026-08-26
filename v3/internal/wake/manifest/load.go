@@ -155,7 +155,7 @@ func configFromDocument(root, profile string, doc Document) Config {
 
 func validateProject(project Project) error {
 	if project.Name == "" || project.ProductName == "" || project.Identifier == "" || project.Version == "" {
-		return fmt.Errorf("%s: [project] requires name, product_name, identifier, and version", Filename)
+		return fieldValidationError("project", "requires name, product_name, identifier, and version")
 	}
 	return nil
 }

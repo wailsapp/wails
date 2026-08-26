@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
@@ -19,6 +20,10 @@ func PlanBuild(config manifest.Config, request Request) (Plan, error) {
 	}
 	outcomes, err := resolveBuildOutcomes(config, request)
 	if err != nil {
+		if config.Selected.Name != "" {
+			field := `profile[` + strconv.Quote(config.Selected.Name) + `]`
+			return Plan{}, manifest.AnnotateValidationError(err, config.Origins, field)
+		}
 		return Plan{}, err
 	}
 	combined := Plan{Name: request.Verb, Intent: BuildIntent{Command: request.Verb, Profile: config.Profile}, Nodes: map[NodeKey]Node{}}
@@ -34,7 +39,11 @@ func PlanBuild(config manifest.Config, request Request) (Plan, error) {
 		childRequest.resolved, childRequest.sign, childRequest.notarize, childRequest.destination = true, outcome.sign, outcome.notarize, outcome.destination
 		child, err := planTarget(childConfig, childRequest, len(outcomes) > 1)
 		if err != nil {
-			return Plan{}, err
+			field := `target[` + strconv.Quote(outcome.target.OS+"/"+outcome.target.Arch) + `]`
+			if config.Selected.Name != "" {
+				field = `profile[` + strconv.Quote(config.Selected.Name) + `].target[` + strconv.Quote(outcome.target.OS+"/"+outcome.target.Arch) + `]`
+			}
+			return Plan{}, manifest.AnnotateValidationError(err, config.Origins, field)
 		}
 		if err := addPlanNodes(&combined, child); err != nil {
 			return Plan{}, err
@@ -140,7 +149,8 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		destination = "simulator"
 	}
 	if !capability.SupportsToolchain(targetSettings.Toolchain) {
-		return Plan{}, fmt.Errorf("toolchain %q is not supported for target %s", targetSettings.Toolchain, target)
+		err := fmt.Errorf("toolchain %q is not supported for target %s", targetSettings.Toolchain, target)
+		return Plan{}, manifest.AnnotateValidationError(err, config.Origins, `target[`+strconv.Quote(target)+`].toolchain`)
 	}
 	platformSettings := platformConfig(config.Targets, request.TargetOS)
 	associations := associationsForPlatform(config.Associations, request.TargetOS)

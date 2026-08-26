@@ -199,12 +199,13 @@ func decodeHCL(root, filename string, src []byte, selectedProfile string) (*Load
 	if err != nil {
 		return nil, err
 	}
+	origins := manifestOrigins(body)
 	doc, err := documentFromHCL(raw)
 	if err != nil {
-		return nil, err
+		return nil, attachValidationRange(err, origins)
 	}
 	config := configFromDocument(root, selectedProfile, doc)
-	for field, origin := range manifestOrigins(body) {
+	for field, origin := range origins {
 		config.Origins[field] = origin
 	}
 	if selectedProfile != "" {
@@ -277,7 +278,7 @@ func validateLiteralExpression(expression hcl.Expression) error {
 
 func documentFromHCL(raw hclDocument) (Document, error) {
 	if raw.Project == nil {
-		return Document{}, fmt.Errorf("%s: project block is required", Filename)
+		return Document{}, fieldValidationError("project", "block is required")
 	}
 	project := Project{}
 	setString(&project.Name, raw.Project.Name)
@@ -314,27 +315,30 @@ func documentFromHCL(raw hclDocument) (Document, error) {
 	}
 	seenTargets := map[string]bool{}
 	for _, target := range raw.Targets {
+		field := `target[` + strconv.Quote(target.Name) + `]`
 		if seenTargets[target.Name] {
-			return Document{}, fmt.Errorf("duplicate target %q", target.Name)
+			return Document{}, fieldValidationError(field, "duplicate target")
 		}
 		seenTargets[target.Name] = true
 		if err := applyTarget(&doc.Targets, target); err != nil {
-			return Document{}, err
+			return Document{}, fieldValidationCause(field, err, "%v", err)
 		}
 	}
 	seenPackages := map[string]bool{}
 	for _, pkg := range raw.Packages {
+		field := `package[` + strconv.Quote(pkg.Format) + `]`
 		if seenPackages[pkg.Format] {
-			return Document{}, fmt.Errorf("duplicate package %q", pkg.Format)
+			return Document{}, fieldValidationError(field, "duplicate package block")
 		}
 		seenPackages[pkg.Format] = true
 		if err := applyPackage(&doc.Package, pkg); err != nil {
-			return Document{}, err
+			return Document{}, fieldValidationCause(field, err, "%v", err)
 		}
 	}
 	for _, association := range raw.Associations {
+		field := `file_association[` + strconv.Quote(association.Label) + `]`
 		if association.Extensions == nil || len(*association.Extensions) == 0 {
-			return Document{}, fmt.Errorf("file_association %q requires extensions", association.Label)
+			return Document{}, fieldValidationError(field+".extensions", "requires at least one extension")
 		}
 		entry := Association{Extensions: append([]string(nil), (*association.Extensions)...)}
 		setString(&entry.Name, association.Name)
@@ -350,26 +354,28 @@ func documentFromHCL(raw hclDocument) (Document, error) {
 	}
 	seenProfiles := map[string]bool{}
 	for _, rawProfile := range raw.Profiles {
+		profileField := `profile[` + strconv.Quote(rawProfile.Name) + `]`
 		if rawProfile.Name == "" || rawProfile.Name == "default" || !slugPattern.MatchString(rawProfile.Name) {
-			return Document{}, fmt.Errorf("profile name must be a lowercase slug and cannot be default")
+			return Document{}, fieldValidationError(profileField, "name must be a lowercase slug and cannot be default")
 		}
 		if seenProfiles[rawProfile.Name] {
-			return Document{}, fmt.Errorf("duplicate profile %q", rawProfile.Name)
+			return Document{}, fieldValidationError(profileField, "duplicate profile")
 		}
 		seenProfiles[rawProfile.Name] = true
 		if len(rawProfile.Targets) == 0 {
-			return Document{}, fmt.Errorf("profile %q requires at least one target", rawProfile.Name)
+			return Document{}, fieldValidationError(profileField, "requires at least one target")
 		}
 		profile := Profile{Name: rawProfile.Name}
 		seen := map[string]bool{}
 		for _, rawTarget := range rawProfile.Targets {
+			targetField := profileField + `.target[` + strconv.Quote(rawTarget.Name) + `]`
 			if seen[rawTarget.Name] {
-				return Document{}, fmt.Errorf("profile %q contains duplicate target %q", rawProfile.Name, rawTarget.Name)
+				return Document{}, fieldValidationError(targetField, "duplicate target")
 			}
 			seen[rawTarget.Name] = true
 			platform, arch, err := parseTargetName(rawTarget.Name)
 			if err != nil {
-				return Document{}, err
+				return Document{}, fieldValidationCause(targetField, err, "%v", err)
 			}
 			capability, _ := buildinfo.LookupTarget(platform, arch)
 			entry := ProfileTarget{Target: rawTarget.Name}
@@ -386,11 +392,12 @@ func documentFromHCL(raw hclDocument) (Document, error) {
 	}
 	seenProtocols := map[string]bool{}
 	for _, protocol := range raw.Protocols {
+		field := `protocol[` + strconv.Quote(protocol.Scheme) + `]`
 		if protocol.Scheme == "" {
-			return Document{}, fmt.Errorf("protocol label cannot be empty")
+			return Document{}, fieldValidationError(field, "label cannot be empty")
 		}
 		if seenProtocols[protocol.Scheme] {
-			return Document{}, fmt.Errorf("duplicate protocol %q", protocol.Scheme)
+			return Document{}, fieldValidationError(field, "duplicate protocol block")
 		}
 		seenProtocols[protocol.Scheme] = true
 		entry := Protocol{Scheme: protocol.Scheme}
@@ -401,11 +408,12 @@ func documentFromHCL(raw hclDocument) (Document, error) {
 	seenHooks := map[HookPhase]bool{}
 	for _, rawHook := range raw.Hooks {
 		phase := HookPhase(rawHook.Phase)
+		field := `hook[` + strconv.Quote(rawHook.Phase) + `]`
 		if !containsHookPhase(phase) {
-			return Document{}, fmt.Errorf("hook phase %q is not supported", rawHook.Phase)
+			return Document{}, fieldValidationError(field, "phase is not supported")
 		}
 		if seenHooks[phase] {
-			return Document{}, fmt.Errorf("duplicate hook %q", phase)
+			return Document{}, fieldValidationError(field, "duplicate hook block")
 		}
 		seenHooks[phase] = true
 		hook := Hook{}
@@ -633,36 +641,37 @@ func parseTargetName(value string) (string, string, error) {
 }
 
 func validateProfileTarget(profile string, target ProfileTarget, capability buildinfo.TargetCapability) error {
+	field := `profile[` + strconv.Quote(profile) + `].target[` + strconv.Quote(target.Target) + `]`
 	seenFormats := make(map[string]bool, len(target.Formats))
 	for _, format := range target.Formats {
 		if seenFormats[format] {
-			return fmt.Errorf("profile %q target %q contains duplicate format %q", profile, target.Target, format)
+			return fieldValidationError(field+".formats", "contains duplicate format %q", format)
 		}
 		seenFormats[format] = true
 		formatCapability, ok := buildinfo.LookupFormat(format)
 		if !ok || !formatCapability.Production || !capability.SupportsFormat(format, false) {
-			return fmt.Errorf("profile %q format %q is not a production format for %s", profile, format, target.Target)
+			return fieldValidationError(field+".formats", "format %q is not a production format for %s", format, target.Target)
 		}
 	}
 	if target.Destination != "" {
 		if capability.Target.OS != "ios" {
-			return fmt.Errorf("profile %q destination is only valid for iOS targets", profile)
+			return fieldValidationError(field+".destination", "is only valid for iOS targets")
 		}
 		if target.Destination != "simulator" && target.Destination != "device" {
-			return fmt.Errorf("profile %q iOS destination must be simulator or device", profile)
+			return fieldValidationError(field+".destination", "must be simulator or device")
 		}
 	}
 	if capability.Target.OS == "ios" && target.Destination == "" {
-		return fmt.Errorf("profile %q target %q requires destination = %q or %q", profile, target.Target, "simulator", "device")
+		return fieldValidationError(field+".destination", "requires destination = %q or %q", "simulator", "device")
 	}
 	if seenFormats["ipa"] && target.Destination != "device" {
-		return fmt.Errorf("profile %q IPA requires destination = %q", profile, "device")
+		return fieldValidationError(field+".destination", "IPA requires %q", "device")
 	}
 	if target.Notarize && capability.Target.OS != "darwin" {
-		return fmt.Errorf("profile %q notarization is only valid for darwin targets", profile)
+		return fieldValidationError(field+".notarize", "is only valid for darwin targets")
 	}
 	if target.Notarize && !target.Sign {
-		return fmt.Errorf("profile %q target %q must be signed before notarization", profile, target.Target)
+		return fieldValidationError(field+".sign", "must be signed before notarization")
 	}
 	return nil
 }

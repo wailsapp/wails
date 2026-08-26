@@ -1,7 +1,7 @@
 # Actionable HCL configuration diagnostics
 
 Type: task
-Status: open
+Status: resolved
 Blocked by: none
 Label: ready-for-agent
 
@@ -32,7 +32,7 @@ complete diagnostic experience rather than only adding another command.
 
 ## Answer
 
-Partially implemented. Manifest validation errors now render the exact file,
+Implemented. Manifest validation errors render the exact file,
 line and column, source line, caret range, field, detail, and a concise hint
 for supported-value and unknown-field cases. The same renderer is used by
 normal build and Dev command failures before pipeline execution.
@@ -40,8 +40,19 @@ normal build and Dev command failures before pipeline execution.
 `wails3 config check [profile]` was added because it has distinct CI/editor
 value: without changing build state it validates the base manifest and either
 one requested profile or every named profile, including structural Plan
-selection. Focused tests cover source extraction, caret accuracy, hints,
-joined diagnostics, and non-manifest fallback. Remaining work is to range
-annotate every planner/host error that is caused by profile fields, add any
-justified machine-readable output, and complete golden/redaction/performance
-coverage.
+selection. Explicit block-label and attribute origins now survive semantic
+validation, Plan construction, signing checks and configuration-owned host
+capability failures. Missing fields fall back to their owning block; failures
+caused only by CLI selections remain ordinary command errors.
+
+Focused tests cover source extraction, caret accuracy, actionable hints,
+unknown fields, joined diagnostics, non-manifest fallback, terminal-neutral
+text, golden output and environment-value redaction. Source files are loaded at
+most once while rendering joined failures. On the Linux audit host, the
+no-source renderer benchmark measured 1.262–1.345 microseconds per diagnostic
+with 512 bytes and 10 allocations. Real CLI acceptance verified exact ranges
+for an invalid profile format and a cross-build host/toolchain mismatch.
+
+No additional JSON format was introduced: `config check` has a stable exit
+status and human diagnostic stream, while the already-versioned
+`build --plan --json` contract remains the machine-readable planning surface.

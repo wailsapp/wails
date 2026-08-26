@@ -287,18 +287,56 @@ func fieldValidationCause(field string, cause error, format string, args ...any)
 	return &ValidationError{Field: field, Detail: fmt.Sprintf(format, args...), Cause: cause}
 }
 
+// AnnotateValidationError identifies an error caused by one manifest field and
+// attaches the nearest explicit source origin. Callers in planning and host
+// validation use this to preserve configuration ownership across package seams.
+func AnnotateValidationError(err error, origins map[string]Origin, field string) error {
+	if err == nil {
+		return nil
+	}
+	var validation *ValidationError
+	if errors.As(err, &validation) {
+		return attachValidationRange(err, origins)
+	}
+	if _, ok := nearestManifestOrigin(origins, field); !ok {
+		return err
+	}
+	return attachValidationRange(&ValidationError{Field: field, Detail: err.Error(), Cause: err}, origins)
+}
+
 func attachValidationRange(err error, origins map[string]Origin) error {
 	var validation *ValidationError
 	if !errors.As(err, &validation) || validation.Range.Filename != "" {
 		return err
 	}
-	origin, ok := origins[validation.Field]
+	origin, ok := nearestManifestOrigin(origins, validation.Field)
 	if !ok || origin.Kind != OriginManifest {
 		return err
 	}
 	copy := *validation
 	copy.Range = origin.Range
 	return &copy
+}
+
+func nearestManifestOrigin(origins map[string]Origin, field string) (Origin, bool) {
+	for candidate := field; candidate != ""; {
+		if origin, ok := origins[candidate]; ok && origin.Kind == OriginManifest {
+			return origin, true
+		}
+		if open := strings.LastIndex(candidate, "["); open >= 0 && strings.HasSuffix(candidate, "]") {
+			index := candidate[open+1 : len(candidate)-1]
+			if _, err := strconv.Atoi(index); err == nil {
+				candidate = candidate[:open]
+				continue
+			}
+		}
+		dot := strings.LastIndex(candidate, ".")
+		if dot < 0 {
+			break
+		}
+		candidate = candidate[:dot]
+	}
+	return Origin{}, false
 }
 
 func validationFromDiagnostics(diagnostics hcl.Diagnostics) error {
@@ -420,6 +458,11 @@ func collectManifestOrigins(result map[string]Origin, parent string, body *hclsy
 		for _, label := range block.Labels {
 			field += "[" + strconv.Quote(label) + "]"
 		}
+		blockRange := block.TypeRange
+		if len(block.LabelRanges) != 0 {
+			blockRange = block.LabelRanges[len(block.LabelRanges)-1]
+		}
+		result[field] = Origin{Kind: OriginManifest, Range: sourceRange(blockRange)}
 		collectManifestOrigins(result, field, block.Body)
 	}
 }

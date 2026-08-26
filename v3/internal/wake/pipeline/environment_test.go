@@ -229,6 +229,57 @@ func TestHostResolutionEnforcesExplicitToolchains(t *testing.T) {
 	assert.ErrorContains(t, err, `toolchain "docker" is not supported for target android/arm64`)
 }
 
+func TestHostResolutionPreservesConfiguredToolchainSourceRange(t *testing.T) {
+	config := testConfig(t)
+	field := `target["linux/arm64"].toolchain`
+	rangeValue := manifest.SourceRange{Filename: "/project/wails.hcl", StartLine: 20, StartColumn: 15, EndLine: 20, EndColumn: 23}
+	config.Targets.Linux.ARM64.Toolchain = "native"
+	config.Origins[field] = manifest.Origin{Kind: manifest.OriginManifest, Range: rangeValue}
+
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, testHost("darwin", "arm64"))
+	require.Error(t, err)
+	var validation *manifest.ValidationError
+	require.ErrorAs(t, err, &validation)
+	assert.Equal(t, field, validation.Field)
+	assert.Equal(t, rangeValue, validation.Range)
+}
+
+func TestHostResolutionPreservesProfileTargetRangeForMissingAndroidSDK(t *testing.T) {
+	config := configForAndroid(t)
+	field := `profile["mobile"].target["android/arm64"]`
+	rangeValue := manifest.SourceRange{Filename: "/project/wails.hcl", StartLine: 40, StartColumn: 10, EndLine: 40, EndColumn: 25}
+	config.Selected = manifest.Profile{Name: "mobile", Targets: []manifest.ProfileTarget{{Target: "android/arm64", Formats: []string{"aab"}}}}
+	config.Profile = "mobile"
+	config.Origins[field] = manifest.Origin{Kind: manifest.OriginManifest, Range: rangeValue}
+	host := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "npm", "java"}, nil, HostFacts{})
+
+	_, err := PlanBuildForHost(config, Request{Verb: "build"}, host)
+	require.Error(t, err)
+	var validation *manifest.ValidationError
+	require.ErrorAs(t, err, &validation)
+	assert.Equal(t, field, validation.Field)
+	assert.Equal(t, rangeValue, validation.Range)
+	assert.ErrorContains(t, err, "Android SDK")
+}
+
+func TestHostResolutionFallsBackToSigningBlockRangeForMissingField(t *testing.T) {
+	config := testConfig(t)
+	field := "linux.signing"
+	rangeValue := manifest.SourceRange{Filename: "/project/wails.hcl", StartLine: 30, StartColumn: 3, EndLine: 30, EndColumn: 10}
+	config.Signing.Linux.Enabled = true
+	config.Selected = manifest.Profile{Name: "release", Targets: []manifest.ProfileTarget{{Target: "linux/amd64", Formats: []string{"deb"}, Sign: true}}}
+	config.Profile = "release"
+	config.Origins[field] = manifest.Origin{Kind: manifest.OriginManifest, Range: rangeValue}
+
+	_, err := PlanBuildForHost(config, Request{Verb: "build"}, testHost("linux", "amd64", "dpkg-sig"))
+	require.Error(t, err)
+	var validation *manifest.ValidationError
+	require.ErrorAs(t, err, &validation)
+	assert.Equal(t, "linux.signing.certificate", validation.Field)
+	assert.Equal(t, rangeValue, validation.Range)
+	assert.NotContains(t, validation.Detail, "release@example.com")
+}
+
 func TestHostResolutionRejectsUnavailablePackageOperations(t *testing.T) {
 	config := testConfig(t)
 	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "darwin", TargetArch: "arm64", Formats: []string{"dmg"}}, testHost("linux", "amd64", "docker", "hdiutil"))
@@ -236,6 +287,18 @@ func TestHostResolutionRejectsUnavailablePackageOperations(t *testing.T) {
 
 	_, err = PlanBuildForHost(config, Request{Verb: "build", TargetOS: "windows", TargetArch: "amd64", Formats: []string{"nsis"}}, testHost("windows", "amd64"))
 	assert.ErrorContains(t, err, `nsis packaging for windows/amd64 requires tool "makensis"`)
+}
+
+func TestHostResolutionDoesNotBlameManifestForAnonymousPackageSelection(t *testing.T) {
+	config := testConfig(t)
+	field := `target["windows/amd64"]`
+	config.Origins[field] = manifest.Origin{Kind: manifest.OriginManifest, Range: manifest.SourceRange{Filename: "/project/wails.hcl", StartLine: 20}}
+
+	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "windows", TargetArch: "amd64", Formats: []string{"nsis"}}, testHost("windows", "amd64"))
+	require.Error(t, err)
+	assert.ErrorContains(t, err, `requires tool "makensis"`)
+	var validation *manifest.ValidationError
+	assert.False(t, errors.As(err, &validation), "CLI-only package selection must remain an ordinary command error")
 }
 
 func TestHostResolutionRejectsUnavailableSigningAndNotarization(t *testing.T) {
@@ -267,6 +330,21 @@ func TestHostResolutionValidatesFormatSpecificSigningRequirements(t *testing.T) 
 	config.Signing.Windows.Enabled = true
 	_, err = PlanBuildForHost(config, Request{Verb: "sign", TargetOS: "windows", TargetArch: "amd64", Formats: []string{"msix"}}, testHost("windows", "amd64", "MakeAppx.exe", "signtool.exe"))
 	assert.ErrorContains(t, err, "certificate or thumbprint")
+}
+
+func TestAndroidSigningReportsTheSpecificMissingField(t *testing.T) {
+	host := NewHostCapabilities("linux", "amd64", []string{"jarsigner"}, []string{"ANDROID_PASSWORD"})
+	config := manifest.SigningPlatform{Enabled: true, Certificate: "release.jks"}
+
+	err := validateSigningHost(SignSpec{TargetOS: "android", TargetArch: "arm64", Format: "aab", Config: config}, host)
+	var fieldError *hostConfigurationFieldError
+	require.ErrorAs(t, err, &fieldError)
+	assert.Equal(t, "key_alias", fieldError.field)
+
+	config.KeyAlias = "release"
+	err = validateSigningHost(SignSpec{TargetOS: "android", TargetArch: "arm64", Format: "aab", Config: config}, host)
+	require.ErrorAs(t, err, &fieldError)
+	assert.Equal(t, "credential", fieldError.field)
 }
 
 func TestHostResolutionRejectsMissingBuildExecutables(t *testing.T) {

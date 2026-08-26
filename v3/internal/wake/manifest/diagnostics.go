@@ -4,8 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
+
+var diagnosticStringAssignment = regexp.MustCompile(`(=\s*)"(?:\\.|[^"\\])*"`)
 
 // FormatValidationDiagnostics renders manifest validation failures with their
 // source line and caret. It returns false for errors outside the manifest
@@ -16,11 +19,12 @@ func FormatValidationDiagnostics(err error) (string, bool) {
 		return "", false
 	}
 	var output strings.Builder
+	sources := make(map[string][]string)
 	for index, validation := range validations {
 		if index != 0 {
 			output.WriteString("\n\n")
 		}
-		formatValidationDiagnostic(&output, validation)
+		formatValidationDiagnostic(&output, validation, sources)
 	}
 	return output.String(), true
 }
@@ -47,7 +51,7 @@ func collectValidationErrors(err error) []*ValidationError {
 	return result
 }
 
-func formatValidationDiagnostic(output *strings.Builder, validation *ValidationError) {
+func formatValidationDiagnostic(output *strings.Builder, validation *ValidationError, sources map[string][]string) {
 	location := validation.Range.Filename
 	if location == "" {
 		location = Filename
@@ -58,12 +62,19 @@ func formatValidationDiagnostic(output *strings.Builder, validation *ValidationE
 		fmt.Fprintln(output, location)
 	}
 	if validation.Range.Filename != "" && validation.Range.StartLine > 0 {
-		if raw, err := os.ReadFile(validation.Range.Filename); err == nil {
-			lines := strings.Split(strings.ReplaceAll(string(raw), "\r\n", "\n"), "\n")
+		lines, loaded := sources[validation.Range.Filename]
+		if !loaded {
+			if raw, err := os.ReadFile(validation.Range.Filename); err == nil {
+				lines = strings.Split(strings.ReplaceAll(string(raw), "\r\n", "\n"), "\n")
+			}
+			sources[validation.Range.Filename] = lines
+		}
+		if lines != nil {
 			lineIndex := validation.Range.StartLine - 1
 			if lineIndex >= 0 && lineIndex < len(lines) {
 				width := len(fmt.Sprint(validation.Range.StartLine))
-				fmt.Fprintf(output, "%*d | %s\n", width, validation.Range.StartLine, lines[lineIndex])
+				sourceLine := redactDiagnosticSourceLine(lines[lineIndex], validation.Field)
+				fmt.Fprintf(output, "%*d | %s\n", width, validation.Range.StartLine, sourceLine)
 				start := max(validation.Range.StartColumn-1, 0)
 				end := validation.Range.EndColumn - 1
 				if validation.Range.EndLine != validation.Range.StartLine || end <= start {
@@ -92,5 +103,33 @@ func validationSuggestion(validation *ValidationError) string {
 	if strings.Contains(validation.Field, ".toolchain") {
 		return "use auto, native, zig, or docker"
 	}
+	if strings.HasSuffix(validation.Field, ".formats") {
+		return "select only production formats supported by this target"
+	}
+	if strings.HasSuffix(validation.Field, ".destination") {
+		return `use "simulator" or "device" for iOS targets`
+	}
+	if strings.HasSuffix(validation.Field, ".sign") {
+		return "enable signing before requesting notarization"
+	}
+	if strings.Contains(validation.Detail, "requires an Android SDK") {
+		return "install the Android SDK and set ANDROID_HOME or ANDROID_SDK_ROOT"
+	}
+	if strings.Contains(validation.Detail, "requires an Android NDK") {
+		return "install an Android NDK under the configured Android SDK"
+	}
+	if strings.Contains(validation.Detail, "requires tool ") {
+		return "install the required tool and ensure it is available on PATH"
+	}
+	if strings.Contains(validation.Field, ".signing") || strings.Contains(validation.Field, ".notarization") {
+		return "configure the named signing field in this platform block; keep secret values outside wails.hcl"
+	}
 	return ""
+}
+
+func redactDiagnosticSourceLine(line, field string) string {
+	if !strings.Contains(field, "environment") {
+		return line
+	}
+	return diagnosticStringAssignment.ReplaceAllString(line, `${1}"<redacted>"`)
 }

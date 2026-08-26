@@ -586,6 +586,62 @@ func TestEjectionCoversEveryPackageSchemaField(t *testing.T) {
 	}
 }
 
+func TestSemanticProfileErrorsCarryTheOwningAttributeRange(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, Filename)
+	source := `version = 3
+
+project {
+  name = "diagnostics"
+  product_name = "Diagnostics"
+  identifier = "com.example.diagnostics"
+  version = "1.0.0"
+}
+
+profile "release" {
+  target "linux/amd64" {
+    formats = ["aab"]
+  }
+}
+`
+	require.NoError(t, os.WriteFile(path, []byte(source), 0o644))
+
+	_, err := LoadFile(root, path, "")
+	require.Error(t, err)
+	var validation *ValidationError
+	require.ErrorAs(t, err, &validation)
+	assert.Equal(t, `profile["release"].target["linux/amd64"].formats`, validation.Field)
+	assert.Equal(t, path, validation.Range.Filename)
+	assert.Equal(t, 12, validation.Range.StartLine)
+}
+
+func TestSemanticTargetErrorsCarryTheOwningLabelRange(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, Filename)
+	source := `version = 3
+
+project {
+  name = "diagnostics"
+  product_name = "Diagnostics"
+  identifier = "com.example.diagnostics"
+  version = "1.0.0"
+}
+
+profile "release" {
+  target "plan9/amd64" {}
+}
+`
+	require.NoError(t, os.WriteFile(path, []byte(source), 0o644))
+
+	_, err := LoadFile(root, path, "")
+	require.Error(t, err)
+	var validation *ValidationError
+	require.ErrorAs(t, err, &validation)
+	assert.Equal(t, `profile["release"].target["plan9/amd64"]`, validation.Field)
+	assert.Equal(t, path, validation.Range.Filename)
+	assert.Equal(t, 11, validation.Range.StartLine)
+}
+
 func parseEjectedBody(t *testing.T, source []byte) *hclsyntax.Body {
 	t.Helper()
 	file, diagnostics := hclsyntax.ParseConfig(source, "ejected.hcl", hcl.InitialPos)

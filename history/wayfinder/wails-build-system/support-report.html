@@ -317,10 +317,12 @@ wails3 clean</code></pre>
         <ul class="checks">
           <li><code>wails3 config check</code> validates the base manifest and every named profile without executing build operations.</li>
           <li><code>wails3 config check release</code> validates only the requested profile after validating the base manifest.</li>
-          <li>HCL syntax and schema failures identify the file, line and column, display the source line and caret range, and provide an actionable hint where possible.</li>
-          <li>The same formatted validation errors are shown when an ordinary build encounters an invalid manifest.</li>
+          <li>HCL syntax, schema, semantic, path, target and format failures identify the file, line and column, display the source line and caret range, and provide an actionable hint where possible.</li>
+          <li>The same source ownership continues through planner, signing and configuration-owned host-capability validation during Build and Dev.</li>
+          <li>Environment values are redacted from diagnostic source excerpts; golden output, multiple errors and terminal-neutral text are covered by tests.</li>
+          <li>Command-line-only failures remain ordinary command errors instead of being misreported as invalid HCL.</li>
         </ul>
-        <div class="callout warn"><p>Exact HCL source ranges are not yet available for every later planner, signing, path or host-capability error. Expanding those diagnostics is a tracked follow-up.</p></div>
+        <div class="callout good"><p><strong>Source-aware validation is complete for the configuration path.</strong> A real CLI acceptance pointed an invalid Linux/AAB profile to <code>formats = ["aab"]</code>, and a Linux/arm64 native cross-build host failure to the exact <code>toolchain = "native"</code> line. The no-source renderer benchmark is approximately 1.3 µs per diagnostic on the Linux audit host.</p></div>
       </section>
 
       <section>
@@ -512,7 +514,7 @@ wails3 clean</code></pre>
               <tr><td>Development lifecycle</td><td><span class="status done">Confirmed</span></td><td>Real frontend/backend startup, rebuild and process lifecycle.</td></tr>
               <tr><td>Cache and artifact stability</td><td><span class="status done">Confirmed</span></td><td>Hits, restoration, stable bytes and receipts.</td></tr>
               <tr><td>Wizard and migration</td><td><span class="status done">Confirmed</span></td><td>HCL generation, preservation and migration tests.</td></tr>
-              <tr><td>Configuration diagnostics</td><td><span class="status done">Implemented</span></td><td><code>wails3 config check</code>, all-profile validation, line/column source excerpts, caret ranges and hints are covered by focused tests.</td></tr>
+              <tr><td>Configuration diagnostics</td><td><span class="status done">Confirmed</span></td><td><code>wails3 config check</code>, Build/Dev rendering, semantic/planner/host source ownership, line/column excerpts, hints, golden output, redaction and a ~1.3 µs renderer benchmark are covered.</td></tr>
               <tr><td>Lifecycle hooks</td><td><span class="status done">Implemented experimentally</span></td><td>Schema, phase/barrier planning, stable environment, process-group cancellation, caching/restoration, symlink containment and conservative migration pass focused and race tests. The no-hook Linux gate remains within budget at 105.388ms median.</td></tr>
               <tr><td>Windows and macOS</td><td><span class="status pending">Pending native acceptance</span></td><td>Implemented and structurally tested; no real host run yet.</td></tr>
               <tr><td>Android production and emulator deployment</td><td><span class="status done">Confirmed</span></td><td>Real API 36/NDK r29 amd64, arm64 and universal AABs plus x86_64 AVD APK install, launch, PID-filtered logs, target-loss monitoring and explicit cleanup. Physical device remains pending.</td></tr>

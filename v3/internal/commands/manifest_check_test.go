@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -37,6 +38,11 @@ func TestConfigCheckReportsInvalidProfilePlan(t *testing.T) {
 	t.Chdir(root)
 
 	err = ConfigCheck(&ConfigCheckOptions{}, nil)
-	assert.ErrorContains(t, err, `profile "release"`)
+	assert.ErrorContains(t, err, `profile["release"]`)
 	assert.ErrorContains(t, err, `format "aab"`)
+	var validation *manifest.ValidationError
+	require.True(t, errors.As(err, &validation))
+	assert.Equal(t, `profile["release"].target["linux/amd64"].formats`, validation.Field)
+	assert.Equal(t, path, validation.Range.Filename)
+	assert.Positive(t, validation.Range.StartLine)
 }

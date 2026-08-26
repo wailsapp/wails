@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +19,21 @@ import (
 )
 
 const CrossContainerImage = "ghcr.io/wailsapp/wails-cross:latest"
+
+type hostConfigurationFieldError struct {
+	field string
+	err   error
+}
+
+func (e *hostConfigurationFieldError) Error() string { return e.err.Error() }
+func (e *hostConfigurationFieldError) Unwrap() error { return e.err }
+
+func hostConfigurationField(field string, err error) error {
+	if err == nil {
+		return nil
+	}
+	return &hostConfigurationFieldError{field: field, err: err}
+}
 
 func preferredCrossContainerImages() []string {
 	return []string{CrossContainerImage, "wails-cross"}
@@ -260,22 +277,22 @@ func PlanBuildForHost(config manifest.Config, request Request, host HostCapabili
 		case InstallFrontendDependencies:
 			spec := node.Spec.(InstallSpec)
 			if err := requireCommandTool(host, "frontend dependency installation", firstCommand(spec.Arguments, spec.Manager)); err != nil {
-				return Plan{}, err
+				return Plan{}, annotateHostConfigurationError(config, node, err)
 			}
 		case GenerateBindings:
 			if err := requireHostTools(host, "bindings generation", "go"); err != nil {
-				return Plan{}, err
+				return Plan{}, annotateHostConfigurationError(config, node, err)
 			}
 		case BuildFrontend:
 			spec := node.Spec.(FrontendSpec)
 			if err := requireCommandTool(host, "frontend build", firstCommand(spec.Arguments, spec.Manager)); err != nil {
-				return Plan{}, err
+				return Plan{}, annotateHostConfigurationError(config, node, err)
 			}
 		case CompileApplication:
 			spec := node.Spec.(CompileSpec)
 			resolved, resolveErr := resolveToolchain(spec, host)
 			if resolveErr != nil {
-				return Plan{}, resolveErr
+				return Plan{}, annotateHostConfigurationError(config, node, resolveErr)
 			}
 			spec.Toolchain = resolved
 			if resolved == "docker" {
@@ -283,7 +300,7 @@ func PlanBuildForHost(config manifest.Config, request Request, host HostCapabili
 				spec.ContainerImage = host.crossContainerImage()
 			}
 			if err := validateCompileEnvironment(spec, host); err != nil {
-				return Plan{}, err
+				return Plan{}, annotateHostConfigurationError(config, node, err)
 			}
 			node.Spec = spec
 			plan.Nodes[key] = node
@@ -291,10 +308,10 @@ func PlanBuildForHost(config manifest.Config, request Request, host HostCapabili
 			spec := node.Spec.(PackageSpec)
 			if spec.TargetOS == "ios" {
 				if host.os != "darwin" {
-					return Plan{}, fmt.Errorf("iOS application assembly for %s/%s requires a darwin host", spec.TargetOS, spec.TargetArch)
+					return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("iOS application assembly for %s/%s requires a darwin host", spec.TargetOS, spec.TargetArch))
 				}
 				if err := requireHostTools(host, "iOS application assembly for "+spec.TargetOS+"/"+spec.TargetArch, "xcrun", "codesign"); err != nil {
-					return Plan{}, err
+					return Plan{}, annotateHostConfigurationError(config, node, err)
 				}
 			}
 		case PackageArtifact:
@@ -302,23 +319,95 @@ func PlanBuildForHost(config manifest.Config, request Request, host HostCapabili
 			capability, _ := lookupFormat(spec.Format)
 			operation := spec.Format + " packaging for " + spec.TargetOS + "/" + spec.TargetArch
 			if !capability.SupportsHost(host.os) {
-				return Plan{}, fmt.Errorf("%s requires a %s host", operation, requiredHostName(capability.Hosts))
+				return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("%s requires a %s host", operation, requiredHostName(capability.Hosts)))
 			}
 			for index := range int(capability.ToolCount) {
 				if err := requireHostTools(host, operation, capability.RequiredTool(index)); err != nil {
-					return Plan{}, err
+					return Plan{}, annotateHostConfigurationError(config, node, err)
 				}
 			}
 			if spec.TargetOS == "android" && !host.androidSDK {
-				return Plan{}, fmt.Errorf("%s requires an Android SDK", operation)
+				return Plan{}, annotateHostConfigurationError(config, node, fmt.Errorf("%s requires an Android SDK", operation))
 			}
 		case SignArtifact:
 			if err := validateSigningHost(node.Spec.(SignSpec), host); err != nil {
-				return Plan{}, err
+				return Plan{}, annotateHostConfigurationError(config, node, err)
 			}
 		}
 	}
 	return plan, nil
+}
+
+func annotateHostConfigurationError(config manifest.Config, node Node, err error) error {
+	field := "build"
+	target := ""
+	switch spec := node.Spec.(type) {
+	case CompileSpec:
+		target = spec.TargetOS + "/" + spec.TargetArch
+	case PackageSpec:
+		target = spec.TargetOS + "/" + spec.TargetArch
+	case SignSpec:
+		target = spec.TargetOS + "/" + spec.TargetArch
+	}
+	profileTarget := func() string {
+		profile := config.Profile
+		if profile == "" {
+			profile = config.Selected.Name
+		}
+		if profile != "" && target != "" {
+			return `profile[` + strconv.Quote(profile) + `].target[` + strconv.Quote(target) + `]`
+		}
+		if target != "" {
+			return `target[` + strconv.Quote(target) + `]`
+		}
+		return "build"
+	}
+	switch node.Kind {
+	case InstallFrontendDependencies:
+		field = "frontend.install"
+	case GenerateBindings:
+		field = "build"
+	case BuildFrontend:
+		field = "frontend.build"
+	case CompileApplication:
+		field = profileTarget()
+		var fieldError *hostConfigurationFieldError
+		if errors.As(err, &fieldError) {
+			switch fieldError.field {
+			case "toolchain":
+				field = `target[` + strconv.Quote(target) + `].toolchain`
+			case "obfuscated":
+				targetField := `target[` + strconv.Quote(target) + `].obfuscated`
+				if config.Origins[targetField].Kind == manifest.OriginManifest {
+					field = targetField
+				} else {
+					field = "build.obfuscated"
+				}
+			case "destination":
+				field = profileTarget() + ".destination"
+			}
+		}
+	case AssembleApplication, PackageArtifact:
+		if config.Profile == "" && config.Selected.Name == "" {
+			return err
+		}
+		field = profileTarget()
+	case SignArtifact:
+		spec := node.Spec.(SignSpec)
+		field = spec.TargetOS + ".signing"
+		var fieldError *hostConfigurationFieldError
+		if errors.As(err, &fieldError) {
+			switch fieldError.field {
+			case "sign":
+				field = profileTarget() + ".sign"
+			case "notarization.credential":
+				field = spec.TargetOS + ".notarization.credential"
+			case "certificate", "thumbprint", "identity", "key_alias", "credential":
+				field += "." + fieldError.field
+			}
+		}
+	}
+	return manifest.AnnotateValidationError(err, config.Origins, field)
 }
 
 func firstCommand(arguments []string, fallback string) string {
@@ -339,7 +428,7 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 	operation := "compiling " + spec.TargetOS + "/" + spec.TargetArch
 	if spec.Toolchain == "docker" {
 		if host.containerImagesKnown && host.crossContainerImage() == "" {
-			return fmt.Errorf("%s with Docker or Podman requires container image %q", operation, CrossContainerImage)
+			return hostConfigurationField("toolchain", fmt.Errorf("%s with Docker or Podman requires container image %q", operation, CrossContainerImage))
 		}
 		return nil
 	}
@@ -348,17 +437,21 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 		tool = "garble"
 	}
 	if err := requireHostTools(host, operation, "go", tool); err != nil {
-		return err
+		field := ""
+		if tool == "garble" {
+			field = "obfuscated"
+		}
+		return hostConfigurationField(field, err)
 	}
 	if spec.TargetOS == "linux" && spec.Toolchain == "native" && !host.hasTool("cc") && !host.hasTool("gcc") && !host.hasTool("clang") {
-		return fmt.Errorf("%s with the native toolchain requires a C compiler (cc, gcc, or clang)", operation)
+		return hostConfigurationField("toolchain", fmt.Errorf("%s with the native toolchain requires a C compiler (cc, gcc, or clang)", operation))
 	}
 	if spec.TargetOS == "android" {
 		if !host.androidSDK {
-			return fmt.Errorf("%s requires an Android SDK", operation)
+			return hostConfigurationField("", fmt.Errorf("%s requires an Android SDK", operation))
 		}
 		if !host.androidNDK {
-			return fmt.Errorf("%s requires an Android NDK", operation)
+			return hostConfigurationField("", fmt.Errorf("%s requires an Android NDK", operation))
 		}
 	}
 	if spec.TargetOS == "ios" {
@@ -367,7 +460,7 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 			sdk = "iphoneos"
 		}
 		if !host.hasAppleSDK(sdk) {
-			return fmt.Errorf("%s requires Apple SDK %q", operation, sdk)
+			return hostConfigurationField("destination", fmt.Errorf("%s requires Apple SDK %q", operation, sdk))
 		}
 	}
 	return nil
@@ -399,21 +492,21 @@ func resolveToolchain(spec CompileSpec, host HostCapabilities) (string, error) {
 			return "docker", nil
 		}
 		if spec.TargetOS == "linux" {
-			return "", fmt.Errorf("target %s on %s/%s requires the wails-cross image with Docker or Podman; plain Zig does not provide the target Linux desktop sysroot", target, host.os, host.arch)
+			return "", hostConfigurationField("toolchain", fmt.Errorf("target %s on %s/%s requires the wails-cross image with Docker or Podman; plain Zig does not provide the target Linux desktop sysroot", target, host.os, host.arch))
 		}
-		return "", fmt.Errorf("target %s on %s/%s requires zig, Docker, or Podman; no compatible toolchain is available", target, host.os, host.arch)
+		return "", hostConfigurationField("toolchain", fmt.Errorf("target %s on %s/%s requires zig, Docker, or Podman; no compatible toolchain is available", target, host.os, host.arch))
 	}
 	if requested == "native" && !nativeToolchainSupports(spec, host) {
-		return "", fmt.Errorf("toolchain %q cannot build %s on %s/%s", requested, target, host.os, host.arch)
+		return "", hostConfigurationField("toolchain", fmt.Errorf("toolchain %q cannot build %s on %s/%s", requested, target, host.os, host.arch))
 	}
 	if requested == "zig" && !host.hasTool("zig") {
-		return "", fmt.Errorf("toolchain %q requires tool %q", requested, "zig")
+		return "", hostConfigurationField("toolchain", fmt.Errorf("toolchain %q requires tool %q", requested, "zig"))
 	}
 	if requested == "docker" && !dockerToolchainSupports(spec, host) {
-		return "", fmt.Errorf("toolchain %q cannot build %s on %s/%s", requested, target, host.os, host.arch)
+		return "", hostConfigurationField("toolchain", fmt.Errorf("toolchain %q cannot build %s on %s/%s", requested, target, host.os, host.arch))
 	}
 	if requested == "docker" && host.containerRuntime == "" {
-		return "", fmt.Errorf("toolchain %q requires Docker or Podman", requested)
+		return "", hostConfigurationField("toolchain", fmt.Errorf("toolchain %q requires Docker or Podman", requested))
 	}
 	return requested, nil
 }
@@ -437,71 +530,77 @@ func nativeToolchainSupports(spec CompileSpec, host HostCapabilities) bool {
 func validateSigningHost(spec SignSpec, host HostCapabilities) error {
 	operation := "signing " + spec.Format + " for " + spec.TargetOS
 	if !spec.Config.Enabled {
-		return fmt.Errorf("signing is not enabled for %s", spec.TargetOS)
+		return hostConfigurationField("sign", fmt.Errorf("signing is not enabled for %s", spec.TargetOS))
 	}
 	switch spec.TargetOS {
 	case "darwin":
 		if host.os != "darwin" {
-			return fmt.Errorf("%s requires a darwin host", operation)
+			return hostConfigurationField("sign", fmt.Errorf("%s requires a darwin host", operation))
 		}
 		if spec.Config.Identity == "" {
-			return fmt.Errorf("darwin signing requires signing.darwin.identity")
+			return hostConfigurationField("identity", fmt.Errorf("darwin signing requires signing.darwin.identity"))
 		}
 		if err := requireHostTools(host, operation, "codesign"); err != nil {
-			return err
+			return hostConfigurationField("sign", err)
 		}
 		if spec.Config.Notarize {
 			if spec.Config.NotarizationCredential == "" {
-				return fmt.Errorf("notarization requires signing.darwin.notarization credential")
+				return hostConfigurationField("notarization.credential", fmt.Errorf("notarization requires signing.darwin.notarization credential"))
 			}
 			if err := requireHostTools(host, "darwin notarization", "xcrun"); err != nil {
-				return err
+				return hostConfigurationField("sign", err)
 			}
 			if spec.Format == "app" {
 				if err := requireHostTools(host, "darwin app notarization", "ditto"); err != nil {
-					return err
+					return hostConfigurationField("sign", err)
 				}
 			}
 		}
 	case "ios":
 		if host.os != "darwin" {
-			return fmt.Errorf("%s requires a darwin host", operation)
+			return hostConfigurationField("sign", fmt.Errorf("%s requires a darwin host", operation))
 		}
 		if spec.Config.Identity == "" {
-			return fmt.Errorf("iOS signing requires signing.ios.identity")
+			return hostConfigurationField("identity", fmt.Errorf("iOS signing requires signing.ios.identity"))
 		}
-		return requireHostTools(host, operation, "codesign")
+		return hostConfigurationField("sign", requireHostTools(host, operation, "codesign"))
 	case "windows":
 		if host.os != "windows" {
-			return fmt.Errorf("%s requires a windows host", operation)
+			return hostConfigurationField("sign", fmt.Errorf("%s requires a windows host", operation))
 		}
 		if spec.Config.Certificate == "" && spec.Config.Thumbprint == "" {
-			return fmt.Errorf("windows signing requires certificate or thumbprint")
+			return hostConfigurationField("certificate", fmt.Errorf("windows signing requires certificate or thumbprint"))
 		}
-		return requireHostTools(host, operation, "signtool.exe")
+		return hostConfigurationField("sign", requireHostTools(host, operation, "signtool.exe"))
 	case "android":
-		if spec.Config.Certificate == "" || spec.Config.KeyAlias == "" || spec.Config.Credential == "" {
-			return fmt.Errorf("android signing requires certificate, key_alias, and credential")
+		if spec.Config.Certificate == "" {
+			return hostConfigurationField("certificate", fmt.Errorf("android signing requires certificate, key_alias, and credential"))
+		}
+		if spec.Config.KeyAlias == "" {
+			return hostConfigurationField("key_alias", fmt.Errorf("android signing requires certificate, key_alias, and credential"))
+		}
+		if spec.Config.Credential == "" {
+			return hostConfigurationField("credential", fmt.Errorf("android signing requires certificate, key_alias, and credential"))
 		}
 		if !host.hasCredential(spec.Config.Credential) {
-			return fmt.Errorf("android signing credential %q is unavailable", spec.Config.Credential)
+			return hostConfigurationField("credential", fmt.Errorf("android signing credential %q is unavailable", spec.Config.Credential))
 		}
 		tool := "jarsigner"
 		if spec.Format == "apk" {
 			tool = "apksigner"
 		}
-		return requireHostTools(host, operation, tool)
+		return hostConfigurationField("sign", requireHostTools(host, operation, tool))
 	case "linux":
 		if spec.Config.Certificate == "" {
-			return fmt.Errorf("linux signing requires signing.linux.certificate as the PGP key identifier")
+			return hostConfigurationField("certificate", fmt.Errorf("linux signing requires signing.linux.certificate as the PGP key identifier"))
 		}
 		switch spec.Format {
 		case "deb":
-			return requireHostTools(host, operation, "dpkg-sig")
+			return hostConfigurationField("sign", requireHostTools(host, operation, "dpkg-sig"))
 		case "rpm":
-			return requireHostTools(host, operation, "rpmsign")
+			return hostConfigurationField("sign", requireHostTools(host, operation, "rpmsign"))
 		default:
-			return fmt.Errorf("signing format %q is not supported for linux", spec.Format)
+			return hostConfigurationField("sign", fmt.Errorf("signing format %q is not supported for linux", spec.Format))
 		}
 	}
 	return nil

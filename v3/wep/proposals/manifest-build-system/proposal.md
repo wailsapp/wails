@@ -150,7 +150,10 @@ shape can be evaluated before inclusion in the accepted proposal:
 
 - `wails3 config check [profile]` validates the base manifest and either every
   named profile or one requested profile without executing a build. HCL schema
-  diagnostics include the source line, range and an actionable hint.
+  and semantic diagnostics include the source line, range and an actionable
+  hint. The same source ownership flows into planner, signing and
+  configuration-owned host-capability validation. Environment values are
+  redacted from source excerpts.
 - `wails3 android devices` lists ADB targets. `wails3 android run [profile]`
   selects a connected device or AVD, builds an ABI-specific development APK,
   installs it, and optionally launches it. `--device` and `--emulator` provide
@@ -168,9 +171,9 @@ shape can be evaluated before inclusion in the accepted proposal:
   edges.
 
 These surfaces are experiments, not accepted first-release scope. Physical
-Android-device acceptance, iOS deployment, and full source ranges for planner
-or host-capability diagnostics remain follow-up work. The hook syntax and
-contract remain experimental rather than an accepted first-release commitment.
+Android-device acceptance and iOS deployment remain follow-up work. The hook
+syntax and contract remain experimental rather than an accepted first-release
+commitment.
 
 ## Fixed pipeline and Plan
 

@@ -121,12 +121,18 @@ line-referenced configuration diagnostics.
   typed `RunHook` Plan nodes, stable `WAILS_*` environment, package/sign
   barriers, process-group cancellation, opt-in artifact restoration, and
   conservative Taskfile lifecycle-script migration.
+- Configuration diagnostics retain explicit HCL block and attribute origins
+  through semantic validation, planning, signing and host-capability checks.
+  The shared Build/Dev/config-check renderer provides source carets and hints,
+  redacts environment values, has golden and multiple-error coverage, and
+  benchmarks at approximately 1.3 microseconds without source-file I/O.
 
 ## Not yet specified
 
-The config-first destination and bounded hook contract are implemented. The
-deployment interaction model and final configuration-diagnostic surface remain
-open follow-up design and implementation work under `issues/`.
+The config-first destination, bounded hook contract, Android deployment
+interaction model and configuration-diagnostic surface are implemented.
+Physical Android-device and native Apple deployment acceptance remain follow-up
+work under `issues/`.
 
 ## Out of scope
 
