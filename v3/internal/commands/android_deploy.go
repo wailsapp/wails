@@ -265,11 +265,12 @@ func androidDeviceABI(ctx context.Context, serial string) (string, error) {
 		return "", err
 	}
 	abis := strings.Split(strings.TrimSpace(output), ",")
-	for _, candidate := range []struct{ abi, arch string }{{"arm64-v8a", "arm64"}, {"x86_64", "amd64"}} {
-		for _, abi := range abis {
-			if strings.TrimSpace(abi) == candidate.abi {
-				return candidate.arch, nil
-			}
+	for _, abi := range abis {
+		switch strings.TrimSpace(abi) {
+		case "arm64-v8a":
+			return "arm64", nil
+		case "x86_64":
+			return "amd64", nil
 		}
 	}
 	return "", fmt.Errorf("unsupported ABI list %q; Wails supports arm64-v8a and x86_64", strings.TrimSpace(output))

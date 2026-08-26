@@ -98,3 +98,34 @@ ADB adapter and reports the empty device set correctly. Installing platform 35,
 build tools, NDK r29, the emulator and an x86_64 system image—and therefore
 running the real APK/AAB and deployment matrix—requires the user to accept the
 Google Android SDK licence first.
+
+### 2026-08-26 — Android SDK and emulator acceptance complete
+
+After explicit licence acceptance, API 36, Build Tools 36.0.0, NDK r29,
+Emulator 37.1.11, platform tools 37.0.1, and an API 36 Google APIs x86_64 image
+were installed. The embedded Android project now uses AGP 9.0.1 with Gradle
+9.2.1, a supported pairing for API 36, and its Groovy DSL uses assignment syntax
+compatible with Gradle 10. The real verifier passed production AAB builds, artifact
+receipts and zero-work reruns for android/amd64, android/arm64 and
+android/universal. Final post-upgrade builds were 7.0s, 6.8s and 6.6s;
+zero-work reruns were 111.8ms, 112.4ms and 102.7ms respectively.
+
+The first real run exposed stale `.assets-stage-*` paths in generated Android
+and iOS Go overlays. A regression test now requires every replacement path to
+refer to a published file, and manifest generation rebases staged paths before
+atomic publication. A second real run exposed ABI preference inversion on an
+x86_64 emulator advertising ARM translation; ABI resolution now follows the
+device-provided preference order.
+
+The AGP migration also exposed that generated metadata substitution recognised
+only legacy Groovy spacing. It now accepts both legacy and assignment syntax,
+with regression coverage for application ID, version, build number and minimum
+SDK. The final APK reports `com.mycompany.myproduct`, version `0.0.1`, API 36,
+and minimum API 21.
+
+`wails3 android run --emulator wails-hcl-api36` then built an x86_64 development
+APK, installed it, and launched the configured application. ADB confirmed the
+package, top-resumed Wails activity, running process, API 36 target, and x86-64
+NDK r29 library. A clean regeneration after the AGP upgrade repeated both the
+AAB build and APK deployment successfully. Physical-device deployment remains
+outstanding.

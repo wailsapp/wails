@@ -41,6 +41,17 @@ func TestRunManifestPipelineLeavesUnrenderedFailurePrintable(t *testing.T) {
 	assert.False(t, wake.IsReported(err), "errors raised before Pulse starts still need the CLI error printer")
 }
 
+func TestRebaseGeneratedOverlayRejectsReplacementOutsideStaging(t *testing.T) {
+	root := t.TempDir()
+	staged := filepath.Join(root, "stage")
+	require.NoError(t, os.MkdirAll(staged, 0o755))
+	overlay := filepath.Join(staged, "overlay.json")
+	require.NoError(t, os.WriteFile(overlay, []byte(`{"Replace":{"virtual.go":"/outside/generated.go"}}`), 0o644))
+
+	err := rebaseGeneratedOverlay(overlay, staged, filepath.Join(root, "published"))
+	assert.ErrorContains(t, err, "outside staging root")
+}
+
 func TestResolveManifestPlanUsesTheDiscoveredManifestRoot(t *testing.T) {
 	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
@@ -521,6 +532,28 @@ func TestApplyGeneratedTargetSettings(t *testing.T) {
 	assert.Contains(t, string(gradle), `applicationId "com.example.badge"`)
 	assert.Contains(t, string(gradle), "minSdk 26")
 	assert.Contains(t, string(gradle), `versionName "2.4.1"`)
+}
+
+func TestApplyGeneratedTargetSettingsSupportsGradleAssignmentSyntax(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, "android", "app", "build.gradle")
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	require.NoError(t, os.WriteFile(path, []byte("android {\n    defaultConfig {\n        applicationId = \"com.wails.app\"\n        minSdk = 21\n        versionCode = 1\n        versionName = \"1.0\"\n    }\n}\n"), 0o644))
+
+	require.NoError(t, applyGeneratedTargetSettings(root, pipeline.AssetsSpec{
+		TargetOS:       "android",
+		MinimumVersion: "26",
+		Project: manifest.Project{
+			Identifier:  "com.example.badge",
+			Version:     "2.4.1",
+			BuildNumber: 42,
+		},
+	}))
+	gradle := readTestFile(t, path)
+	assert.Contains(t, gradle, `applicationId = "com.example.badge"`)
+	assert.Contains(t, gradle, "minSdk = 26")
+	assert.Contains(t, gradle, "versionCode = 42")
+	assert.Contains(t, gradle, `versionName = "2.4.1"`)
 }
 
 func TestReplacePlistStringFillsSelfClosingValue(t *testing.T) {

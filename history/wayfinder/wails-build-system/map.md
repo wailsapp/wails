@@ -97,14 +97,18 @@ line-referenced configuration diagnostics.
 - Native Linux build, DEB/RPM/Arch/AppImage packaging, all nine built-in web
   templates, and the real Dev lifecycle pass locally. Podman-backed arm64
   cross-build and DEB/RPM/Arch packaging also pass with an AArch64 ELF and
-  zero-work reruns. Foreign native packaging, signing, native-arm64 launch, and
-  SDK-backed mobile acceptance remain matching-host release work.
+  zero-work reruns. Real Android API 36/NDK r29 amd64, arm64 and universal AABs
+  also pass with receipts and zero-work reruns. `wails3 android run` starts an
+  API 36 AVD, builds its preferred x86_64 APK, installs it and resumes the Wails
+  activity. Generated projects use the API 36-compatible AGP 9.0.1/Gradle 9.2.1
+  pairing and avoid deprecated Groovy property assignment syntax.
+  Physical-device, foreign native packaging, signing and native-arm64
+  launch acceptance remain matching-host release work.
 - The full Go suite reaches unrelated desktop-environment failures only;
   focused manifest/Wake/command tests, race detection, vet, and real Linux
   build/package runs pass.
-- A local draft WEP now records the public behavior and rollout proposal under
-  `v3/wep/proposals/manifest-build-system/`; no GitHub issue, PR, or push was
-  created.
+- A draft WEP records the public behavior and rollout proposal under
+  `v3/wep/proposals/manifest-build-system/` on the experiment branch.
 
 ## Not yet specified
 

@@ -1110,14 +1110,22 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 	switch s.TargetOS {
 	case "ios":
 		xcode := filepath.Join(staged, "ios", "xcode")
-		if err := IOSOverlayGen(&IOSOverlayGenOptions{Out: filepath.Join(xcode, "overlay.json"), Config: resolvedConfig}); err != nil {
+		overlay := filepath.Join(xcode, "overlay.json")
+		if err := IOSOverlayGen(&IOSOverlayGenOptions{Out: overlay, Config: resolvedConfig}); err != nil {
+			return pipeline.RunResult{}, err
+		}
+		if err := rebaseGeneratedOverlay(overlay, staged, output); err != nil {
 			return pipeline.RunResult{}, err
 		}
 		if err := IOSXcodeGen(&IOSXcodeGenOptions{OutDir: xcode, Config: resolvedConfig}); err != nil {
 			return pipeline.RunResult{}, err
 		}
 	case "android":
-		if err := AndroidOverlayGen(&AndroidOverlayGenOptions{Out: filepath.Join(staged, "android", "overlay.json"), Config: resolvedConfig}); err != nil {
+		overlay := filepath.Join(staged, "android", "overlay.json")
+		if err := AndroidOverlayGen(&AndroidOverlayGenOptions{Out: overlay, Config: resolvedConfig}); err != nil {
+			return pipeline.RunResult{}, err
+		}
+		if err := rebaseGeneratedOverlay(overlay, staged, output); err != nil {
 			return pipeline.RunResult{}, err
 		}
 	}
@@ -1131,6 +1139,31 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 		return pipeline.RunResult{}, err
 	}
 	return pipeline.RunResult{}, replacePathTransactional(staged, output)
+}
+
+func rebaseGeneratedOverlay(overlayPath, stagedRoot, publishedRoot string) error {
+	data, err := os.ReadFile(overlayPath)
+	if err != nil {
+		return err
+	}
+	var overlay struct {
+		Replace map[string]string `json:"Replace"`
+	}
+	if err := json.Unmarshal(data, &overlay); err != nil {
+		return fmt.Errorf("parse generated Go overlay: %w", err)
+	}
+	for virtual, generated := range overlay.Replace {
+		relative, err := filepath.Rel(stagedRoot, generated)
+		if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+			return fmt.Errorf("generated Go overlay replacement %q is outside staging root %q", generated, stagedRoot)
+		}
+		overlay.Replace[virtual] = filepath.Join(publishedRoot, relative)
+	}
+	data, err = json.MarshalIndent(overlay, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(overlayPath, data, 0o644)
 }
 
 func (h *manifestHandler) stageAssociationIcons(generatedRoot, targetOS string, associations []manifest.Association) ([]manifest.Association, error) {
@@ -1337,7 +1370,7 @@ func applyGeneratedTargetSettings(output string, spec pipeline.AssetsSpec) error
 			}
 		}
 		gradle := filepath.Join(output, "android", "app", "build.gradle")
-		if err := replaceGeneratedPattern(gradle, regexp.MustCompile(`(?m)^(\s*versionCode\s+)\d+`), "${1}"+value); err != nil {
+		if err := replaceGeneratedPattern(gradle, regexp.MustCompile(`(?m)^(\s*versionCode\s*(?:=\s*)?)\d+`), "${1}"+value); err != nil {
 			return err
 		}
 		nsis := filepath.Join(output, "windows", "nsis", "project.nsi")
@@ -1352,9 +1385,9 @@ func applyGeneratedTargetSettings(output string, spec pipeline.AssetsSpec) error
 			pattern *regexp.Regexp
 			format  string
 		}{
-			{spec.Project.Identifier, regexp.MustCompile(`(?m)^(\s*applicationId\s+)["'][^"']*["']`), `${1}"%s"`},
-			{spec.Project.Version, regexp.MustCompile(`(?m)^(\s*versionName\s+)["'][^"']*["']`), `${1}"%s"`},
-			{spec.MinimumVersion, regexp.MustCompile(`(?m)^(\s*minSdk\s+)\d+`), `${1}%s`},
+			{spec.Project.Identifier, regexp.MustCompile(`(?m)^(\s*applicationId\s*(?:=\s*)?)["'][^"']*["']`), `${1}"%s"`},
+			{spec.Project.Version, regexp.MustCompile(`(?m)^(\s*versionName\s*(?:=\s*)?)["'][^"']*["']`), `${1}"%s"`},
+			{spec.MinimumVersion, regexp.MustCompile(`(?m)^(\s*minSdk\s*(?:=\s*)?)\d+`), `${1}%s`},
 		} {
 			if setting.value == "" {
 				continue

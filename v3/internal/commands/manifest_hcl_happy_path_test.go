@@ -694,8 +694,21 @@ profile "release" {
 	}
 
 	assert.FileExists(t, filepath.Join(root, ".wails", "build", "release", "windows-amd64", "assets", "windows", "wails.exe.manifest"))
-	assert.FileExists(t, filepath.Join(root, ".wails", "build", "release", "ios-arm64", "assets", "ios", "xcode", "overlay.json"))
-	assert.FileExists(t, filepath.Join(root, ".wails", "build", "release", "android-arm64", "assets", "android", "overlay.json"))
+	for _, overlayPath := range []string{
+		filepath.Join(root, ".wails", "build", "release", "ios-arm64", "assets", "ios", "xcode", "overlay.json"),
+		filepath.Join(root, ".wails", "build", "release", "android-arm64", "assets", "android", "overlay.json"),
+	} {
+		assert.FileExists(t, overlayPath)
+		var overlay struct {
+			Replace map[string]string `json:"Replace"`
+		}
+		require.NoError(t, json.Unmarshal([]byte(readTestFile(t, overlayPath)), &overlay))
+		require.NotEmpty(t, overlay.Replace)
+		for _, generated := range overlay.Replace {
+			assert.NotContains(t, generated, ".assets-stage-")
+			assert.FileExists(t, generated)
+		}
+	}
 
 	fakeTools := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "makensis"), []byte("#!/bin/sh\nmkdir -p ../../../bin\nprintf installer > ../../../bin/platforms-amd64-installer.exe\n"), 0o755))
@@ -772,7 +785,7 @@ profile "release" {
 	iosInfo := readTestFile(t, filepath.Join(base, "ios-arm64", "assets", "ios", "xcode", "main", "Info.plist"))
 	assert.Contains(t, iosInfo, "<string>15</string>")
 	assert.Contains(t, iosInfo, "<string>17.0</string>")
-	assert.Contains(t, readTestFile(t, filepath.Join(base, "android-arm64", "assets", "android", "app", "build.gradle")), "versionCode 17")
+	assert.Contains(t, readTestFile(t, filepath.Join(base, "android-arm64", "assets", "android", "app", "build.gradle")), "versionCode = 17")
 }
 
 func TestHCLLinuxSigningProducesTheSignedArtifact(t *testing.T) {

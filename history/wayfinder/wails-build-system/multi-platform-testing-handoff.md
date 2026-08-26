@@ -42,12 +42,13 @@ go vet ./internal/commands ./internal/wake/...
 go build -o /tmp/wails3-hcl ./cmd/wails3
 ```
 
-On the current Linux audit host, the official command-line tools are installed
-at `/home/lea/.local/share/android-sdk/cmdline-tools/latest`, Java 21 is under
-`/home/linuxbrew/.linuxbrew/opt/openjdk@21`, `/usr/bin/adb` is available, and
-`/dev/kvm` is accessible. Do not treat this as a complete Android SDK: platform
-35, build tools, NDK r29, the emulator and the x86_64 system image still require
-explicit acceptance of Google's Android SDK licence.
+On the current Linux audit host, the complete accepted Android toolchain is
+under `/home/lea/.local/share/android-sdk`: API 36, Build Tools 36.0.0, NDK r29,
+Emulator 37.1.11, platform tools 37.0.1, and the API 36 Google APIs x86_64
+system image. Generated Android projects use AGP 9.0.1 and Gradle 9.2.1. Java 21 is under
+`/home/linuxbrew/.linuxbrew/opt/openjdk@21`, `/dev/kvm` is accessible, and the
+configured AVD is `wails-hcl-api36`. Production AAB and emulator deployment
+acceptance already pass here; rerun them only when validating a relevant fix.
 
 On Windows, build the CLI to a native temporary path instead:
 

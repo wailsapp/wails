@@ -133,7 +133,7 @@ func TestAndroidCommandAdaptersDiscoverDevicesABIsAndAVDs(t *testing.T) {
 case "$*" in
   "devices -l") printf 'List of devices attached\nphone device model:Pixel product:pixel\n' ;;
   "-s phone shell getprop ro.product.cpu.abilist") printf 'arm64-v8a,armeabi-v7a\n' ;;
-  "-s x86 shell getprop ro.product.cpu.abilist") printf 'x86_64,x86\n' ;;
+  "-s x86 shell getprop ro.product.cpu.abilist") printf 'x86_64,arm64-v8a,x86\n' ;;
   *) printf 'bad adb invocation: %s\n' "$*" >&2; exit 3 ;;
 esac
 `

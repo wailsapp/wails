@@ -30,8 +30,9 @@ Windows, macOS and iOS native-host matrix.
 
 ## Answer
 
-Android implementation is in progress on the Linux audit host. The branch now
-provides `wails3 android devices` and `wails3 android run [profile]` with:
+The Android first slice is implemented and accepted on the Linux audit host.
+The branch provides `wails3 android devices` and
+`wails3 android run [profile]` with:
 
 - deterministic `--device`, `--emulator`, `--apk`, and `--no-launch` paths;
 - a Huh terminal picker for connected devices or configured AVDs;
@@ -45,12 +46,15 @@ provides `wails3 android devices` and `wails3 android run [profile]` with:
 
 Generated Gradle state now applies manifest application ID, version, build
 number, and minimum SDK settings so deployment launches the configured app.
-Real SDK/NDK/AVD acceptance is pending installation of the official Android
-toolchain and explicit SDK licence acceptance on this host. The current official
-command-line manager is installed at
-`/home/lea/.local/share/android-sdk/cmdline-tools/latest`; Java 21, the system
-`adb`, and `/dev/kvm` are available. A real CLI smoke test correctly reported no
-connected devices, and explicit selection of a missing serial produced an
-actionable error. SDK platform 35, build tools, NDK, emulator, system image, AVD
-creation, APK installation, and launch acceptance remain licence-gated. iOS
-remains for the native macOS pass.
+The accepted host now has API 36, Build Tools 36.0.0, NDK r29, Emulator
+37.1.11, platform tools 37.0.1, and the API 36 Google APIs x86_64 image. A real
+`wails-hcl-api36` AVD run selected x86_64 ahead of its advertised ARM
+translation ABI, built a 15,149,530-byte debug APK, installed
+`com.mycompany.myproduct`, and resumed `com.wails.app.MainActivity`. The
+installed native library is an x86-64 Android 21 ELF built by NDK r29; a
+captured screen showed the live Wails badge application and logcat contained
+no fatal exception.
+
+Remaining work is physical-device acceptance, application-log streaming,
+long-lived device-loss monitoring, an explicit emulator cleanup policy, and
+the iOS simulator/device extension on native macOS.

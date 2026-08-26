@@ -255,7 +255,7 @@
       <div class="summary-grid">
         <div class="metric"><strong>Working implementation</strong><span>Config validation, planning, execution, caching, dev, migration, wizard integration and Android deployment commands.</span></div>
         <div class="metric"><strong>Linux audited</strong><span>Real builds, packages, templates, development lifecycle and cache behaviour.</span></div>
-        <div class="metric"><strong>Native matrix pending</strong><span>Windows, macOS, iOS, real Android SDK/device runs and credentialed signing still require acceptance.</span></div>
+        <div class="metric"><strong>Native matrix pending</strong><span>Windows, macOS, iOS, physical Android devices and credentialed signing still require acceptance.</span></div>
       </div>
 
       <div class="callout good">
@@ -332,7 +332,19 @@ wails3 clean</code></pre>
           <li>Emulator startup waits for ADB, Android boot completion and Package Manager readiness, with bounded cancellation and logs under <code>.wails/android/</code>.</li>
           <li>Production Android profiles remain AAB-only. APK is an internal installable development artifact, not a Google Play publishing output.</li>
         </ul>
-        <div class="callout warn"><p>The command flow and real ADB empty-device path are exercised, but a complete SDK/NDK/AVD installation and real APK/AAB deployment run still require Android SDK licence acceptance on this machine. The embedded project currently targets API 35 and must move to API 36 for regular Google Play submissions from 31 August 2026.</p></div>
+        <div class="callout good"><p><strong>Real Android acceptance passed.</strong> The Linux host has API 36, Build Tools 36.0.0, NDK r29 and an API 36 x86_64 AVD. Generated projects use the supported AGP 9.0.1/Gradle 9.2.1 pairing. Production amd64, arm64 and universal AABs passed with receipts and zero-work reruns. <code>wails3 android run</code> built a native x86_64 debug APK, installed it, launched the configured activity, and displayed the live Wails badge application without a fatal logcat error.</p></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Android target</th><th>Real build</th><th>Zero-work rerun</th><th>Artifact</th></tr></thead>
+            <tbody>
+              <tr><td><code>android/amd64</code></td><td>7.0s</td><td>111.8ms</td><td>8,870,925-byte AAB</td></tr>
+              <tr><td><code>android/arm64</code></td><td>6.8s</td><td>112.4ms</td><td>8,623,303-byte AAB</td></tr>
+              <tr><td><code>android/universal</code></td><td>6.6s</td><td>102.7ms</td><td>12,405,986-byte AAB</td></tr>
+              <tr><td>Development AVD</td><td>8.3s</td><td>—</td><td>15,149,530-byte x86_64 APK</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Physical-device acceptance, application-log streaming, long-lived device-loss monitoring and an explicit emulator cleanup policy remain follow-up work.</p>
       </section>
 
       <section>
@@ -486,7 +498,7 @@ wails3 clean</code></pre>
               <tr><td>Wizard and migration</td><td><span class="status done">Confirmed</span></td><td>HCL generation, preservation and migration tests.</td></tr>
               <tr><td>Configuration diagnostics</td><td><span class="status done">Implemented</span></td><td><code>wails3 config check</code>, all-profile validation, line/column source excerpts, caret ranges and hints are covered by focused tests.</td></tr>
               <tr><td>Windows and macOS</td><td><span class="status pending">Pending native acceptance</span></td><td>Implemented and structurally tested; no real host run yet.</td></tr>
-              <tr><td>Android deployment</td><td><span class="status pending">Implemented; SDK acceptance pending</span></td><td>Device/AVD discovery, TUI selection, ABI-specific APK build, install and launch are fake-tested; no real SDK/device evidence yet.</td></tr>
+              <tr><td>Android production and emulator deployment</td><td><span class="status done">Confirmed</span></td><td>Real API 36/NDK r29 amd64, arm64 and universal AABs plus x86_64 AVD APK install and launch. Physical device remains pending.</td></tr>
               <tr><td>iOS</td><td><span class="status pending">Pending native SDK acceptance</span></td><td>Implemented with fake-tool coverage; no real Xcode/device evidence yet.</td></tr>
               <tr><td>Credentialed signing</td><td><span class="status pending">Pending</span></td><td>Handlers and validation exist; native signature verification remains.</td></tr>
             </tbody>
