@@ -251,6 +251,14 @@ jobs:
           name: runtime-package
           path: wails-runtime-temp
 
+      - name: Configure npm package age cutoff
+        shell: bash
+        run: |
+          # npm ignores the generated .npmrc minimum-release-age setting. Keep
+          # CI away from partially published packages and their native bindings.
+          wails_npm_before="$(node -e 'console.log(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())')"
+          echo "NPM_CONFIG_BEFORE=$wails_npm_before" >> "$GITHUB_ENV"
+
       - name: Generate template '${{ matrix.template }}' (GTK4 default)
         shell: bash
         run: |
