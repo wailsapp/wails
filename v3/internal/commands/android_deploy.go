@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -21,11 +22,13 @@ import (
 // project configuration; deployment always builds the selected device ABI as
 // a development APK because production AABs cannot be installed directly.
 type AndroidRunOptions struct {
-	Profile  string `name:"profile" description:"Build configuration profile (or pass it as the first argument)"`
-	Device   string `name:"device" description:"Connected adb device serial"`
-	Emulator string `name:"emulator" description:"Android Virtual Device name to start or reuse"`
-	APK      string `name:"apk" description:"Install an existing APK instead of building one"`
-	NoLaunch bool   `name:"no-launch" description:"Install the APK without launching the app"`
+	Profile      string `name:"profile" description:"Build configuration profile (or pass it as the first argument)"`
+	Device       string `name:"device" description:"Connected adb device serial"`
+	Emulator     string `name:"emulator" description:"Android Virtual Device name to start or reuse"`
+	APK          string `name:"apk" description:"Install an existing APK instead of building one"`
+	NoLaunch     bool   `name:"no-launch" description:"Install the APK without launching the app"`
+	Logs         bool   `name:"logs" description:"Stream application logs and monitor the target until the app exits or Ctrl+C"`
+	StopEmulator bool   `name:"stop-emulator" description:"Stop the selected emulator when an attached run exits"`
 }
 
 type AndroidDevicesOptions struct{}
@@ -40,15 +43,17 @@ type androidSelection struct {
 }
 
 type androidDeployOperations struct {
-	interactive func() bool
-	listDevices func(context.Context) ([]androidDevice, error)
-	deviceABI   func(context.Context, string) (string, error)
-	buildAPK    func(context.Context, string, string) (string, string, error)
-	packageID   func(string) (string, error)
-	adb         func(context.Context, ...string) (string, error)
-	selectValue func(string, string, []androidSelection) (string, error)
-	listAVDs    func(context.Context) ([]string, error)
-	startAVD    func(context.Context, string) (androidDevice, error)
+	interactive  func() bool
+	listDevices  func(context.Context) ([]androidDevice, error)
+	deviceABI    func(context.Context, string) (string, error)
+	buildAPK     func(context.Context, string, string) (string, string, error)
+	packageID    func(string) (string, error)
+	adb          func(context.Context, ...string) (string, error)
+	selectValue  func(string, string, []androidSelection) (string, error)
+	listAVDs     func(context.Context) ([]string, error)
+	startAVD     func(context.Context, string) (androidDevice, error)
+	attach       func(context.Context, androidDevice, string) error
+	stopEmulator func(context.Context, string) error
 }
 
 func AndroidRun(options *AndroidRunOptions, arguments []string) error {
@@ -82,13 +87,34 @@ func AndroidDevices(_ *AndroidDevicesOptions) error {
 	return nil
 }
 
-func androidRunWithOperations(ctx context.Context, options AndroidRunOptions, profile string, operations androidDeployOperations) error {
+func androidRunWithOperations(ctx context.Context, options AndroidRunOptions, profile string, operations androidDeployOperations) (resultErr error) {
 	if options.Device != "" && options.Emulator != "" {
 		return fmt.Errorf("--device and --emulator are mutually exclusive")
+	}
+	if options.Logs && options.NoLaunch {
+		return fmt.Errorf("--logs cannot be combined with --no-launch")
+	}
+	if options.StopEmulator && !options.Logs {
+		return fmt.Errorf("--stop-emulator requires --logs")
 	}
 	device, err := chooseAndroidDevice(ctx, options, operations)
 	if err != nil {
 		return err
+	}
+	if options.StopEmulator && !device.Emulator {
+		return fmt.Errorf("--stop-emulator requires an emulator target")
+	}
+	if options.StopEmulator {
+		if operations.stopEmulator == nil {
+			return fmt.Errorf("Android emulator cleanup is unavailable")
+		}
+		defer func() {
+			cleanupContext, cancelCleanup := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancelCleanup()
+			if cleanupErr := operations.stopEmulator(cleanupContext, device.Serial); cleanupErr != nil {
+				resultErr = errors.Join(resultErr, fmt.Errorf("stop Android emulator %s: %w", device.Serial, cleanupErr))
+			}
+		}()
 	}
 	arch, err := operations.deviceABI(ctx, device.Serial)
 	if err != nil {
@@ -129,6 +155,12 @@ func androidRunWithOperations(ctx context.Context, options AndroidRunOptions, pr
 		return fmt.Errorf("launch %s on %s: %s: %w", packageID, device.Serial, strings.TrimSpace(output), launchErr)
 	}
 	pterm.Success.Printfln("Launched %s on %s", packageID, androidDeviceLabel(device))
+	if options.Logs {
+		if operations.attach == nil {
+			return fmt.Errorf("Android log attachment is unavailable")
+		}
+		return operations.attach(ctx, device, packageID)
+	}
 	return nil
 }
 
@@ -218,7 +250,17 @@ func realAndroidDeployOperations() androidDeployOperations {
 	operations.startAVD = func(ctx context.Context, name string) (androidDevice, error) {
 		return startAndroidAVD(ctx, name, operations.listDevices, operations.adb)
 	}
+	operations.attach = attachAndroidApplication
+	operations.stopEmulator = stopAndroidEmulator
 	return operations
+}
+
+func stopAndroidEmulator(ctx context.Context, serial string) error {
+	output, err := runADB(ctx, "-s", serial, "emu", "kill")
+	if err != nil {
+		return fmt.Errorf("%s: %w", strings.TrimSpace(output), err)
+	}
+	return nil
 }
 
 func parseADBDevices(output string) []androidDevice {
@@ -344,18 +386,34 @@ func startAndroidAVD(ctx context.Context, name string, listDevices func(context.
 		return androidDevice{}, err
 	}
 	logPath := filepath.Join(logDirectory, "emulator-"+strings.NewReplacer("/", "-", "\\", "-").Replace(name)+".log")
+	var emulatorCommand *exec.Cmd
+	var emulatorDone <-chan error
+	startupComplete := false
+	defer func() {
+		if emulatorCommand == nil || startupComplete {
+			return
+		}
+		_ = killManifestProcess(emulatorCommand.Process)
+		select {
+		case <-emulatorDone:
+		case <-time.After(5 * time.Second):
+		}
+	}()
 	if !running {
 		log, createErr := os.Create(logPath)
 		if createErr != nil {
 			return androidDevice{}, createErr
 		}
-		command := exec.Command("emulator", "-avd", name, "-no-snapshot-save")
-		command.Stdout, command.Stderr = log, log
-		if startErr := command.Start(); startErr != nil {
+		emulatorCommand = exec.Command("emulator", "-avd", name, "-no-snapshot-save")
+		emulatorCommand.Stdout, emulatorCommand.Stderr = log, log
+		configureManifestProcess(emulatorCommand)
+		if startErr := emulatorCommand.Start(); startErr != nil {
 			_ = log.Close()
 			return androidDevice{}, fmt.Errorf("start Android emulator %q: %w", name, startErr)
 		}
-		_ = command.Process.Release()
+		finished := make(chan error, 1)
+		emulatorDone = finished
+		go func() { finished <- emulatorCommand.Wait() }()
 		_ = log.Close()
 	}
 	message := "Waiting for Android emulator " + name
@@ -370,6 +428,12 @@ func startAndroidAVD(ctx context.Context, name string, listDevices func(context.
 		select {
 		case <-ctx.Done():
 			return androidDevice{}, ctx.Err()
+		case processErr := <-emulatorDone:
+			emulatorCommand = nil
+			if processErr == nil {
+				return androidDevice{}, fmt.Errorf("Android emulator %q exited before becoming ready; see %s", name, logPath)
+			}
+			return androidDevice{}, fmt.Errorf("Android emulator %q exited before becoming ready: %w; see %s", name, processErr, logPath)
 		case <-time.After(time.Second):
 		}
 		devices, lastDiscoveryErr = listDevices(ctx)
@@ -378,6 +442,7 @@ func startAndroidAVD(ctx context.Context, name string, listDevices func(context.
 		}
 		device, _, ready = inspectAndroidAVDReadiness(ctx, name, devices, adb)
 		if ready {
+			startupComplete = true
 			return device, nil
 		}
 	}

@@ -155,7 +155,10 @@ shape can be evaluated before inclusion in the accepted proposal:
   selects a connected device or AVD, builds an ABI-specific development APK,
   installs it, and optionally launches it. `--device` and `--emulator` provide
   deterministic automation; a terminal picker provides the initial interactive
-  experience. APK remains unavailable as a production profile format.
+  experience. `--logs` attaches PID-filtered application logs and monitors app
+  and target lifecycle. Emulators persist by default; the explicit
+  `--stop-emulator` option cleans up an emulator after an attached run. APK
+  remains unavailable as a production profile format.
 - Six bounded lifecycle hooks invoke one project-owned executable script
   directly: `before_build`, `after_build`, `before_package`, `after_package`,
   `before_sign`, and `after_sign`. Hooks run every time unless they explicitly
@@ -164,11 +167,10 @@ shape can be evaluated before inclusion in the accepted proposal:
   stale artifacts. This does not expose core stage names or arbitrary graph
   edges.
 
-These surfaces are experiments, not accepted first-release scope. Device log
-streaming, long-lived lifecycle management, iOS deployment, and full source
-ranges for planner or host-capability diagnostics remain follow-up work. The
-hook syntax and contract remain experimental rather than an accepted
-first-release commitment.
+These surfaces are experiments, not accepted first-release scope. Physical
+Android-device acceptance, iOS deployment, and full source ranges for planner
+or host-capability diagnostics remain follow-up work. The hook syntax and
+contract remain experimental rather than an accepted first-release commitment.
 
 ## Fixed pipeline and Plan
 

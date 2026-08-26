@@ -1,12 +1,14 @@
 package commands
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -134,6 +136,9 @@ case "$*" in
   "devices -l") printf 'List of devices attached\nphone device model:Pixel product:pixel\n' ;;
   "-s phone shell getprop ro.product.cpu.abilist") printf 'arm64-v8a,armeabi-v7a\n' ;;
   "-s x86 shell getprop ro.product.cpu.abilist") printf 'x86_64,arm64-v8a,x86\n' ;;
+  "-s phone shell pidof com.example.app") printf '123\n' ;;
+  "-s phone logcat --pid=123 -v brief") printf 'W/Wails: application log\n' ;;
+  "-s emulator-5554 emu kill") printf 'OK: killing emulator\n' ;;
   *) printf 'bad adb invocation: %s\n' "$*" >&2; exit 3 ;;
 esac
 `
@@ -154,6 +159,15 @@ esac
 	assert.Equal(t, "amd64", arch)
 	_, err = androidDeviceABI(context.Background(), "unsupported")
 	require.Error(t, err)
+	pid, err := androidApplicationProcessID(context.Background(), "phone", "com.example.app")
+	require.NoError(t, err)
+	assert.Equal(t, "123", pid)
+	var logs bytes.Buffer
+	logsDone, err := startAndroidLogcatWithWriters(context.Background(), "phone", "123", &logs, &logs)
+	require.NoError(t, err)
+	require.NoError(t, <-logsDone)
+	assert.Contains(t, logs.String(), "application log")
+	require.NoError(t, stopAndroidEmulator(context.Background(), "emulator-5554"))
 	avds, err := listAndroidAVDs(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, []string{"Pixel_8", "Tablet"}, avds)
@@ -250,6 +264,316 @@ func TestAndroidRunBuildsInstallsAndLaunchesTheSelectedDeviceABI(t *testing.T) {
 		{"-s", "phone", "install", "-r", "/tmp/app.apk"},
 		{"-s", "phone", "shell", "am", "start", "-n", "com.example.app/com.wails.app.MainActivity"},
 	}, calls)
+}
+
+func TestAndroidRunCanAttachApplicationLogsAfterLaunch(t *testing.T) {
+	operations := fakeAndroidDeployOperations()
+	attached := false
+	operations.attach = func(_ context.Context, device androidDevice, packageID string) error {
+		attached = true
+		assert.Equal(t, "phone", device.Serial)
+		assert.Equal(t, "com.example.app", packageID)
+		return nil
+	}
+
+	err := androidRunWithOperations(context.Background(), AndroidRunOptions{Device: "phone", Logs: true}, "", operations)
+	require.NoError(t, err)
+	assert.True(t, attached)
+}
+
+func TestAndroidRunRejectsLogsWithoutLaunching(t *testing.T) {
+	operations := fakeAndroidDeployOperations()
+	err := androidRunWithOperations(context.Background(), AndroidRunOptions{Device: "phone", Logs: true, NoLaunch: true}, "", operations)
+	assert.ErrorContains(t, err, "--logs cannot be combined with --no-launch")
+}
+
+func TestAndroidRunRequiresAttachedSessionForEmulatorCleanup(t *testing.T) {
+	operations := fakeAndroidDeployOperations()
+	err := androidRunWithOperations(context.Background(), AndroidRunOptions{Emulator: "Pixel_8", StopEmulator: true}, "", operations)
+	assert.ErrorContains(t, err, "--stop-emulator requires --logs")
+}
+
+func TestAndroidRunNeverAppliesEmulatorCleanupToAPhysicalDevice(t *testing.T) {
+	operations := fakeAndroidDeployOperations()
+	err := androidRunWithOperations(context.Background(), AndroidRunOptions{Device: "phone", Logs: true, StopEmulator: true}, "", operations)
+	assert.ErrorContains(t, err, "--stop-emulator requires an emulator target")
+}
+
+func TestAndroidRunStopsAnEmulatorOnlyWhenExplicitlyRequested(t *testing.T) {
+	operations := fakeAndroidDeployOperations()
+	operations.startAVD = func(context.Context, string) (androidDevice, error) {
+		return androidDevice{Serial: "emulator-5554", State: "device", Emulator: true}, nil
+	}
+	operations.attach = func(context.Context, androidDevice, string) error { return nil }
+	stopped := ""
+	operations.stopEmulator = func(_ context.Context, serial string) error {
+		stopped = serial
+		return nil
+	}
+
+	err := androidRunWithOperations(context.Background(), AndroidRunOptions{Emulator: "Pixel_8", Logs: true, StopEmulator: true}, "", operations)
+	require.NoError(t, err)
+	assert.Equal(t, "emulator-5554", stopped)
+}
+
+func TestAndroidRunReportsBothAttachedSessionAndCleanupFailures(t *testing.T) {
+	operations := fakeAndroidDeployOperations()
+	operations.startAVD = func(context.Context, string) (androidDevice, error) {
+		return androidDevice{Serial: "emulator-5554", State: "device", Emulator: true}, nil
+	}
+	operations.attach = func(context.Context, androidDevice, string) error { return errors.New("log stream failed") }
+	operations.stopEmulator = func(context.Context, string) error { return errors.New("emulator kill failed") }
+
+	err := androidRunWithOperations(context.Background(), AndroidRunOptions{Emulator: "Pixel_8", Logs: true, StopEmulator: true}, "", operations)
+	require.ErrorContains(t, err, "log stream failed")
+	require.ErrorContains(t, err, "emulator kill failed")
+}
+
+func TestAndroidAttachedLogsExitCleanlyOnCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	started := make(chan struct{})
+	operations := androidAttachOperations{
+		deviceState: func(context.Context, string) (string, bool, error) { return "device", true, nil },
+		processID:   func(context.Context, string, string) (string, error) { return "123", nil },
+		startLogs: func(logContext context.Context, serial, pid string) (<-chan error, error) {
+			assert.Equal(t, "phone", serial)
+			assert.Equal(t, "123", pid)
+			result := make(chan error, 1)
+			close(started)
+			go func() {
+				<-logContext.Done()
+				result <- logContext.Err()
+			}()
+			return result, nil
+		},
+		pollInterval: time.Millisecond,
+		startupWait:  time.Second,
+	}
+	done := make(chan error, 1)
+	go func() {
+		done <- attachAndroidApplicationWithOperations(ctx, androidDevice{Serial: "phone", State: "device"}, "com.example.app", operations)
+	}()
+	select {
+	case <-started:
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for Android log attachment")
+	}
+	cancel()
+	require.NoError(t, <-done)
+}
+
+func TestAndroidAttachedLogsCancelCleanlyWhileWaitingForTheApplication(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	operations := androidAttachOperations{
+		deviceState:  func(context.Context, string) (string, bool, error) { return "device", true, nil },
+		processID:    func(context.Context, string, string) (string, error) { return "", nil },
+		pollInterval: time.Millisecond,
+		startupWait:  time.Second,
+	}
+	err := attachAndroidApplicationWithOperations(ctx, androidDevice{Serial: "phone", State: "device"}, "com.example.app", operations)
+	require.NoError(t, err)
+}
+
+func TestAndroidAttachedLogsWaitForTheLaunchedApplicationProcess(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	attempts := 0
+	started := make(chan struct{})
+	operations := androidAttachOperations{
+		deviceState: func(context.Context, string) (string, bool, error) { return "device", true, nil },
+		processID: func(context.Context, string, string) (string, error) {
+			attempts++
+			if attempts < 3 {
+				return "", nil
+			}
+			return "456", nil
+		},
+		startLogs: func(logContext context.Context, _, pid string) (<-chan error, error) {
+			assert.Equal(t, "456", pid)
+			result := make(chan error, 1)
+			close(started)
+			go func() {
+				<-logContext.Done()
+				result <- logContext.Err()
+			}()
+			return result, nil
+		},
+		pollInterval: time.Millisecond,
+		startupWait:  time.Second,
+	}
+	done := make(chan error, 1)
+	go func() {
+		done <- attachAndroidApplicationWithOperations(ctx, androidDevice{Serial: "phone", State: "device"}, "com.example.app", operations)
+	}()
+	select {
+	case <-started:
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for Android log attachment")
+	}
+	cancel()
+	require.NoError(t, <-done)
+	assert.GreaterOrEqual(t, attempts, 3)
+}
+
+func TestAndroidAttachedLogsReportDeviceLoss(t *testing.T) {
+	operations := androidAttachOperations{
+		deviceState: func(context.Context, string) (string, bool, error) { return "", false, nil },
+		processID:   func(context.Context, string, string) (string, error) { return "123", nil },
+		startLogs: func(logContext context.Context, _, _ string) (<-chan error, error) {
+			result := make(chan error, 1)
+			go func() {
+				<-logContext.Done()
+				result <- logContext.Err()
+			}()
+			return result, nil
+		},
+		pollInterval: time.Millisecond,
+		startupWait:  time.Second,
+	}
+	done := make(chan error, 1)
+	go func() {
+		done <- attachAndroidApplicationWithOperations(context.Background(), androidDevice{Serial: "phone", State: "device"}, "com.example.app", operations)
+	}()
+	select {
+	case err := <-done:
+		require.ErrorContains(t, err, "phone disconnected")
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for device-loss detection")
+	}
+}
+
+func TestAndroidAttachedLogsPreferDeviceLossOverConcurrentPIDFailure(t *testing.T) {
+	stateChecks := 0
+	processChecks := 0
+	operations := androidAttachOperations{
+		deviceState: func(context.Context, string) (string, bool, error) {
+			stateChecks++
+			if stateChecks == 1 {
+				return "device", true, nil
+			}
+			return "", false, nil
+		},
+		processID: func(context.Context, string, string) (string, error) {
+			processChecks++
+			if processChecks == 1 {
+				return "123", nil
+			}
+			return "", errors.New("adb transport closed")
+		},
+		startLogs: func(logContext context.Context, _, _ string) (<-chan error, error) {
+			result := make(chan error, 1)
+			go func() {
+				<-logContext.Done()
+				result <- logContext.Err()
+			}()
+			return result, nil
+		},
+		pollInterval: time.Millisecond,
+		startupWait:  time.Second,
+	}
+
+	err := attachAndroidApplicationWithOperations(context.Background(), androidDevice{Serial: "phone", State: "device"}, "com.example.app", operations)
+	require.ErrorContains(t, err, "Android target phone disconnected")
+	assert.NotContains(t, err.Error(), "adb transport closed")
+}
+
+func TestAndroidAttachedLogsFinishWhenTheApplicationStops(t *testing.T) {
+	processChecks := 0
+	operations := androidAttachOperations{
+		deviceState: func(context.Context, string) (string, bool, error) { return "device", true, nil },
+		processID: func(context.Context, string, string) (string, error) {
+			processChecks++
+			if processChecks == 1 {
+				return "123", nil
+			}
+			return "", nil
+		},
+		startLogs: func(logContext context.Context, _, _ string) (<-chan error, error) {
+			result := make(chan error, 1)
+			go func() {
+				<-logContext.Done()
+				result <- logContext.Err()
+			}()
+			return result, nil
+		},
+		pollInterval: time.Millisecond,
+		startupWait:  time.Second,
+	}
+	done := make(chan error, 1)
+	go func() {
+		done <- attachAndroidApplicationWithOperations(context.Background(), androidDevice{Serial: "phone", State: "device"}, "com.example.app", operations)
+	}()
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for application-exit detection")
+	}
+}
+
+func TestAndroidAttachedLogsFollowAnApplicationRestart(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	processChecks := 0
+	var loggedPIDs []string
+	secondStarted := make(chan struct{})
+	operations := androidAttachOperations{
+		deviceState: func(context.Context, string) (string, bool, error) { return "device", true, nil },
+		processID: func(context.Context, string, string) (string, error) {
+			processChecks++
+			if processChecks == 1 {
+				return "123", nil
+			}
+			return "456", nil
+		},
+		startLogs: func(logContext context.Context, _, pid string) (<-chan error, error) {
+			loggedPIDs = append(loggedPIDs, pid)
+			if pid == "456" {
+				close(secondStarted)
+			}
+			result := make(chan error, 1)
+			go func() {
+				<-logContext.Done()
+				result <- logContext.Err()
+			}()
+			return result, nil
+		},
+		pollInterval: time.Millisecond,
+		startupWait:  time.Second,
+	}
+	done := make(chan error, 1)
+	go func() {
+		done <- attachAndroidApplicationWithOperations(ctx, androidDevice{Serial: "phone", State: "device"}, "com.example.app", operations)
+	}()
+	select {
+	case <-secondStarted:
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for restarted application logs")
+	}
+	cancel()
+	require.NoError(t, <-done)
+	assert.Equal(t, []string{"123", "456"}, loggedPIDs)
+}
+
+func TestAndroidAttachedLogsReportUnexpectedLogcatExit(t *testing.T) {
+	operations := androidAttachOperations{
+		deviceState: func(context.Context, string) (string, bool, error) { return "device", true, nil },
+		processID:   func(context.Context, string, string) (string, error) { return "123", nil },
+		startLogs: func(context.Context, string, string) (<-chan error, error) {
+			result := make(chan error, 1)
+			result <- nil
+			return result, nil
+		},
+		pollInterval: time.Millisecond,
+		startupWait:  time.Second,
+	}
+	err := attachAndroidApplicationWithOperations(context.Background(), androidDevice{Serial: "phone", State: "device"}, "com.example.app", operations)
+	require.ErrorContains(t, err, "logcat stopped while com.example.app is still running")
 }
 
 func TestAndroidRunReportsUnavailableSelectedDevice(t *testing.T) {

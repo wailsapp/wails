@@ -294,6 +294,8 @@ wails3 android devices
 wails3 android run
 wails3 android run mobile --device SERIAL
 wails3 android run mobile --emulator AVD_NAME
+wails3 android run mobile --emulator AVD_NAME --logs
+wails3 android run mobile --emulator AVD_NAME --logs --stop-emulator
 wails3 android run --apk ./build/bin/example.apk --device SERIAL
 
 wails3 migrate
@@ -306,7 +308,7 @@ wails3 eject --force
 
 wails3 clean</code></pre>
         <p>Anonymous builds also support <code>--tags</code>, <code>--obfuscated</code>, <code>--garble-args</code> and <code>--force</code>. A named profile is a complete production request and cannot be mixed with artifact-changing CLI overrides.</p>
-        <p><code>wails3 config check</code> performs validation without building. <code>wails3 android run</code> supports <code>--profile</code>, <code>--device</code>, <code>--emulator</code>, <code>--apk</code> and <code>--no-launch</code>.</p>
+        <p><code>wails3 config check</code> performs validation without building. <code>wails3 android run</code> supports <code>--profile</code>, <code>--device</code>, <code>--emulator</code>, <code>--apk</code>, <code>--no-launch</code>, <code>--logs</code> and <code>--stop-emulator</code>.</p>
         <p><code>wails3 package</code> and <code>wails3 sign</code> remain as deprecated compatibility aliases for HCL projects.</p>
       </section>
 
@@ -330,6 +332,8 @@ wails3 clean</code></pre>
           <li>The selected target ABI drives an <code>arm64</code> or <code>amd64</code> development build.</li>
           <li>Wails builds a debug APK, installs or reinstalls it through ADB, and launches <code>com.wails.app.MainActivity</code>; <code>--no-launch</code> stops after installation.</li>
           <li>Emulator startup waits for ADB, Android boot completion and Package Manager readiness, with bounded cancellation and logs under <code>.wails/android/</code>.</li>
+          <li><code>--logs</code> streams PID-filtered application logs, follows app restarts, exits on app shutdown or Ctrl+C, and reports device loss.</li>
+          <li>Emulators persist by default. <code>--stop-emulator</code> explicitly stops an emulator after an attached run; cancelled or failed startup cleans up only the newly started process.</li>
           <li>Production Android profiles remain AAB-only. APK is an internal installable development artifact, not a Google Play publishing output.</li>
         </ul>
         <div class="callout good"><p><strong>Real Android acceptance passed.</strong> The Linux host has API 36, Build Tools 36.0.0, NDK r29 and an API 36 x86_64 AVD. Generated projects use the supported AGP 9.0.1/Gradle 9.2.1 pairing. Production amd64, arm64 and universal AABs passed with receipts and zero-work reruns. <code>wails3 android run</code> built a native x86_64 debug APK, installed it, launched the configured activity, and displayed the live Wails badge application without a fatal logcat error.</p></div>
@@ -344,7 +348,7 @@ wails3 clean</code></pre>
             </tbody>
           </table>
         </div>
-        <p>Physical-device acceptance, application-log streaming, long-lived device-loss monitoring and an explicit emulator cleanup policy remain follow-up work.</p>
+        <p>Physical-device acceptance remains follow-up work. Real AVD acceptance covers application-log streaming, Ctrl+C cleanup, explicit emulator stop and device-loss reporting.</p>
       </section>
 
       <section>
@@ -511,7 +515,7 @@ wails3 clean</code></pre>
               <tr><td>Configuration diagnostics</td><td><span class="status done">Implemented</span></td><td><code>wails3 config check</code>, all-profile validation, line/column source excerpts, caret ranges and hints are covered by focused tests.</td></tr>
               <tr><td>Lifecycle hooks</td><td><span class="status done">Implemented experimentally</span></td><td>Schema, phase/barrier planning, stable environment, process-group cancellation, caching/restoration, symlink containment and conservative migration pass focused and race tests. The no-hook Linux gate remains within budget at 105.388ms median.</td></tr>
               <tr><td>Windows and macOS</td><td><span class="status pending">Pending native acceptance</span></td><td>Implemented and structurally tested; no real host run yet.</td></tr>
-              <tr><td>Android production and emulator deployment</td><td><span class="status done">Confirmed</span></td><td>Real API 36/NDK r29 amd64, arm64 and universal AABs plus x86_64 AVD APK install and launch. Physical device remains pending.</td></tr>
+              <tr><td>Android production and emulator deployment</td><td><span class="status done">Confirmed</span></td><td>Real API 36/NDK r29 amd64, arm64 and universal AABs plus x86_64 AVD APK install, launch, PID-filtered logs, target-loss monitoring and explicit cleanup. Physical device remains pending.</td></tr>
               <tr><td>iOS</td><td><span class="status pending">Pending native SDK acceptance</span></td><td>Implemented with fake-tool coverage; no real Xcode/device evidence yet.</td></tr>
               <tr><td>Credentialed signing</td><td><span class="status pending">Pending</span></td><td>Handlers and validation exist; native signature verification remains.</td></tr>
             </tbody>

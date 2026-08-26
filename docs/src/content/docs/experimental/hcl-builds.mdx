@@ -86,6 +86,35 @@ copies them into a disposable `.wails/` workspace before a tool consumes them.
 Final artifacts go under `build.output` and a verified receipt is written to
 `.wails/artifacts/receipt.json`.
 
+## Deploy to Android
+
+Production Android profiles produce AABs. For local deployment, Wails builds an
+ABI-specific debug APK internally, installs it with ADB, and launches the app:
+
+```bash
+wails3 android devices
+wails3 android run --device SERIAL
+wails3 android run --emulator AVD_NAME
+```
+
+Without an explicit selector, an interactive terminal offers connected devices
+and configured Android Virtual Devices. Automation with multiple available
+targets must provide `--device` or `--emulator`.
+
+Attach an application-scoped log stream and monitor the target until the app
+exits or you press Ctrl+C:
+
+```bash
+wails3 android run --emulator AVD_NAME --logs
+wails3 android run --emulator AVD_NAME --logs --stop-emulator
+```
+
+Attached runs follow an application restart and report target disconnects or
+offline transitions. Emulators remain running by default for quick iteration.
+`--stop-emulator` is explicit, requires `--logs`, and stops only an emulator
+target when the attached session ends. If Wails starts a new emulator but boot
+readiness fails or is cancelled, it cleans up that process automatically.
+
 ## Run bounded lifecycle hooks
 
 The experimental hook surface invokes one project-owned script at each declared

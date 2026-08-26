@@ -105,8 +105,11 @@ line-referenced configuration diagnostics.
   zero-work reruns. Real Android API 36/NDK r29 amd64, arm64 and universal AABs
   also pass with receipts and zero-work reruns. `wails3 android run` starts an
   API 36 AVD, builds its preferred x86_64 APK, installs it and resumes the Wails
-  activity. Generated projects use the API 36-compatible AGP 9.0.1/Gradle 9.2.1
-  pairing and avoid deprecated Groovy property assignment syntax.
+  activity. Attached runs stream PID-filtered application logs, follow process
+  restarts, detect real emulator loss, and support explicit post-session cleanup;
+  failed startup is cleaned up automatically. Generated projects use the API
+  36-compatible AGP 9.0.1/Gradle 9.2.1 pairing and avoid deprecated Groovy
+  property assignment syntax.
   Physical-device, foreign native packaging, signing and native-arm64
   launch acceptance remain matching-host release work.
 - The full Go suite reaches unrelated desktop-environment failures only;

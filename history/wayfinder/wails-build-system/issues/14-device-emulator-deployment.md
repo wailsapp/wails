@@ -1,7 +1,7 @@
 # Device and emulator deployment experience
 
 Type: task
-Status: open
+Status: claimed
 Blocked by: none
 Label: ready-for-agent
 
@@ -35,12 +35,16 @@ The branch provides `wails3 android devices` and
 `wails3 android run [profile]` with:
 
 - deterministic `--device`, `--emulator`, `--apk`, and `--no-launch` paths;
+- opt-in `--logs` application log streaming and `--stop-emulator` cleanup;
 - a Huh terminal picker for connected devices or configured AVDs;
 - offline/unauthorised-state diagnostics and ABI-aware arm64/x86_64 selection;
 - profile-configured development APK builds kept separate from production AAB;
 - install/reinstall, explicit activity launch, reusable running emulators,
   bounded startup readiness that waits for Android boot completion and Package
-  Manager, cancellation, and `.wails/android` emulator logs;
+  Manager, cancellation, failed-start cleanup, and `.wails/android` emulator
+  logs;
+- PID-filtered logcat attachment that follows application restarts, exits
+  cleanly on Ctrl+C or app shutdown, and reports disconnect/offline transitions;
 - injected adapters and focused tests for parsing, selection, build/install/
   launch sequencing, unavailable devices, and noninteractive ambiguity.
 
@@ -55,6 +59,11 @@ installed native library is an x86-64 Android 21 ELF built by NDK r29; a
 captured screen showed the live Wails badge application and logcat contained
 no fatal exception.
 
-Remaining work is physical-device acceptance, application-log streaming,
-long-lived device-loss monitoring, an explicit emulator cleanup policy, and
-the iOS simulator/device extension on native macOS.
+On 2026-08-27, a second real AVD acceptance streamed the Wails application's
+PID-filtered logs. Killing the emulator ended the command promptly with
+`Android target emulator-5554 became offline`. A separate attached run ended
+cleanly on Ctrl+C and `--stop-emulator` removed the ADB target. New-emulator
+startup cancellation also has process-level cleanup and reaping coverage.
+
+Remaining work is physical-device acceptance and the iOS simulator/device
+extension on native macOS.
