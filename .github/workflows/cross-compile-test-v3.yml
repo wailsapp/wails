@@ -88,6 +88,8 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
+          # Runner images ship Microsoft apt repos Wails does not use; they 403 and fail the update.
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/azure-cli.list
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
 
