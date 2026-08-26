@@ -245,7 +245,8 @@
       <p class="lede">Exactly what the current branch supports, what has been verified, and what remains before multi-platform release acceptance.</p>
       <div class="meta">
         <span class="pill">Branch: codex/hcl-build-system</span>
-        <span class="pill">Report updated: 26 August 2026</span>
+        <span class="pill">Report updated: 27 August 2026</span>
+        <span class="pill">Implementation head: fa3239cd9</span>
         <span class="pill">Contract: Wails v3</span>
         <span class="pill">Status: Experimental</span>
       </div>
@@ -253,7 +254,7 @@
 
     <div class="content">
       <div class="summary-grid">
-        <div class="metric"><strong>Working implementation</strong><span>Config validation, planning, execution, caching, dev, migration, wizard integration and Android deployment commands.</span></div>
+        <div class="metric"><strong>Working implementation</strong><span>Config validation, planning, execution, caching, dev, migration, wizard integration, bounded lifecycle hooks and Android deployment.</span></div>
         <div class="metric"><strong>Linux audited</strong><span>Real builds, packages, templates, development lifecycle and cache behaviour.</span></div>
         <div class="metric"><strong>Native matrix pending</strong><span>Windows, macOS, iOS, physical Android devices and credentialed signing still require acceptance.</span></div>
       </div>
@@ -504,6 +505,22 @@ wails3 clean</code></pre>
       </section>
 
       <section>
+        <h2>Latest automated audit</h2>
+        <div class="summary-grid">
+          <div class="metric"><strong>95.8%</strong><span>Statement coverage for the HCL manifest package.</span></div>
+          <div class="metric"><strong>98.8%</strong><span>Statement coverage for the planner and pipeline package.</span></div>
+          <div class="metric"><strong>Race-clean</strong><span>Commands, manifest and pipeline focused race suite.</span></div>
+        </div>
+        <ul class="checks">
+          <li>The exported diagnostic source-ownership contract now has direct coverage for nil errors, existing validation errors, wrapped errors, indexed-field fallback and command-line errors without an HCL origin.</li>
+          <li><code>AnnotateValidationError</code> has 100% function coverage. HCL decoding, defaults, project validation, schema generation and nearly all planning and host-validation functions are at 95–100%.</li>
+          <li>The focused race run passed for <code>internal/commands</code>, <code>internal/wake/manifest</code> and <code>internal/wake/pipeline</code>.</li>
+          <li>The full v3 repository test run passed the build-system, setup-wizard, generator and other non-GUI packages.</li>
+        </ul>
+        <div class="callout warn"><p><strong>Whole-repository GUI caveat.</strong> The unrestricted <code>go test ./...</code> run exposed two failures outside this branch: file-manager tests timed out while opening the desktop file explorer, and the X11 global-shortcut end-to-end test did not receive a synthesised key event under the current Wayland session. Neither affected package is changed by this branch; the X11 failure reproduced three times.</p></div>
+      </section>
+
+      <section>
         <h2>Current verification status</h2>
         <div class="table-wrap">
           <table>
@@ -516,6 +533,7 @@ wails3 clean</code></pre>
               <tr><td>Wizard and migration</td><td><span class="status done">Confirmed</span></td><td>HCL generation, preservation and migration tests.</td></tr>
               <tr><td>Configuration diagnostics</td><td><span class="status done">Confirmed</span></td><td><code>wails3 config check</code>, Build/Dev rendering, semantic/planner/host source ownership, line/column excerpts, hints, golden output, redaction and a ~1.3 µs renderer benchmark are covered.</td></tr>
               <tr><td>Lifecycle hooks</td><td><span class="status done">Implemented experimentally</span></td><td>Schema, phase/barrier planning, stable environment, process-group cancellation, caching/restoration, symlink containment and conservative migration pass focused and race tests. The no-hook Linux gate remains within budget at 105.388ms median.</td></tr>
+              <tr><td>Focused automated audit</td><td><span class="status done">Confirmed</span></td><td>Manifest 95.8%, pipeline 98.8%, diagnostic annotator 100%; focused commands/manifest/pipeline race suite passed at <code>fa3239cd9</code>.</td></tr>
               <tr><td>Windows and macOS</td><td><span class="status pending">Pending native acceptance</span></td><td>Implemented and structurally tested; no real host run yet.</td></tr>
               <tr><td>Android production and emulator deployment</td><td><span class="status done">Confirmed</span></td><td>Real API 36/NDK r29 amd64, arm64 and universal AABs plus x86_64 AVD APK install, launch, PID-filtered logs, target-loss monitoring and explicit cleanup. Physical device remains pending.</td></tr>
               <tr><td>iOS</td><td><span class="status pending">Pending native SDK acceptance</span></td><td>Implemented with fake-tool coverage; no real Xcode/device evidence yet.</td></tr>
@@ -533,11 +551,19 @@ wails3 clean</code></pre>
         <div class="callout good">
           <p><strong>Linux performance gate passed.</strong> The accepted ceiling is 150 ms. The latest seven-sample run was 99.870 ms median with 4.43% MAD, zero executed and six cached operations, and stable artifact bytes. The iOS verifier now treats the app as a base output and uses a complete device profile for IPA acceptance.</p>
         </div>
+
+        <h3>What remains externally blocked</h3>
+        <ul>
+          <li><strong>Physical Android:</strong> no authorised device is currently visible through USB, ADB discovery or Tailscale. Real-device install, launch, bindings, logs, disconnect handling and physical-target rejection of <code>--stop-emulator</code> remain pending.</li>
+          <li><strong>Windows:</strong> the native test node is online over Tailscale and exposes RDP, but no SSH or WinRM command channel is available for automated acceptance.</li>
+          <li><strong>macOS and iOS:</strong> the Mac test host is offline. Native macOS packaging, iOS simulator/device builds and Apple signing remain pending.</li>
+          <li><strong>Credentialed signing:</strong> matching-host verification remains for Windows, Apple, Android and supported Linux package signatures.</li>
+        </ul>
       </section>
     </div>
 
     <footer>
-      Generated 26 August 2026 from the working branch <code>codex/hcl-build-system</code>. This document describes the implemented branch, not the broader proposal.
+      Updated 27 August 2026 from implementation commit <code>fa3239cd9</code> on <code>codex/hcl-build-system</code>. This document describes the implemented branch, not the broader proposal.
     </footer>
   </main>
 </body>
