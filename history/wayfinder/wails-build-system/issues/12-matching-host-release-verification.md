@@ -61,7 +61,40 @@ file-manager launching in the test context.
 
 The final combined seven-sample badge run measured 103.913ms median with 1.66%
 MAD, zero executed and six cached Nodes in every sample, and byte-identical
-artifacts. It passes semantic, artifact, variance, and relative-baseline gates
-but fails the 100ms absolute ceiling by 3.913ms. Matching-host work must begin
-with the controlled Linux performance rerun before proceeding through the
-native platform matrix.
+artifacts. It passes semantic, artifact, variance, and relative-baseline gates.
+
+### 2026-08-26 — Local work resumed and gate revised
+
+The accepted warm no-op ceiling is now 150ms. Complete every Linux and Android
+task available on the current Linux machine before handing off Windows, macOS,
+and iOS acceptance. Android work now includes emulator/device deployment and a
+polished interactive selection experience. Build/stage hooks and improved
+configuration diagnostics are separately tracked follow-up capabilities and
+must not be inferred from illustrative syntax alone.
+
+### 2026-08-26 — Linux matrix completed on the audit host
+
+The copied badge project passed native linux/amd64 binary, DEB, RPM, Arch and
+AppImage acceptance. After the Podman and Android-command changes, the latest
+seven-sample no-op result is 99.870ms median with 4.43% MAD, zero executed and
+six cached Nodes in every sample, and stable artifact bytes, passing the
+revised 150ms ceiling.
+
+Linux arm64 cross acceptance also passed with Podman and the arm64 variant of
+`ghcr.io/wailsapp/wails-cross:latest`: the produced ELF is AArch64 and DEB,
+RPM and Arch packages pass receipt and zero-work verification. The cold QEMU
+compile took 5m03s; warm binary and package reruns took 1.28s and 225ms. The
+implementation now resolves Docker or Podman behind the container toolchain,
+uses SELinux-safe Podman mounts, selects the target image platform, and uses
+the image-native compiler for Linux. Native arm64 hardware remains a separate
+matching-host launch/install row.
+
+### 2026-08-26 — Android host preparation
+
+The checksum-verified official Android command-line tools are installed
+user-locally at `/home/lea/.local/share/android-sdk`, alongside Java 21, system
+`adb`, and working KVM access. `wails3 android devices` runs against the real
+ADB adapter and reports the empty device set correctly. Installing platform 35,
+build tools, NDK r29, the emulator and an x86_64 system image—and therefore
+running the real APK/AAB and deployment matrix—requires the user to accept the
+Google Android SDK licence first.

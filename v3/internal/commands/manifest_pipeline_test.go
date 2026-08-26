@@ -397,7 +397,7 @@ func TestManifestCompileUsesResolvedDockerToolchainAndReadOnlyLocalMounts(t *tes
 	assert.FileExists(t, filepath.Join(root, ".wails", "build", "app"))
 }
 
-func TestManifestDockerLinuxCrossCompileUsesArchitectureSpecificZigCompilers(t *testing.T) {
+func TestManifestDockerLinuxCrossCompileUsesNativeContainerCompiler(t *testing.T) {
 	root := t.TempDir()
 	tools := t.TempDir()
 	record := filepath.Join(root, "docker-linux.txt")
@@ -411,8 +411,34 @@ func TestManifestDockerLinuxCrossCompileUsesArchitectureSpecificZigCompilers(t *
 	_, err := (&manifestHandler{root: root}).compile(t.Context(), pipeline.CompileSpec{TargetOS: "linux", TargetArch: "arm64", Output: ".wails/build/app", Toolchain: "docker"})
 	require.NoError(t, err)
 	arguments := strings.Split(strings.TrimSpace(readTestFile(t, record)), "\n")
-	assert.Contains(t, arguments, "CC=zig cc -target aarch64-linux-gnu")
-	assert.Contains(t, arguments, "CXX=zig c++ -target aarch64-linux-gnu")
+	assert.Contains(t, arguments, "CC=gcc")
+	assert.Contains(t, arguments, "CXX=g++")
+}
+
+func TestManifestPodmanCrossCompileUsesSELinuxSafeMounts(t *testing.T) {
+	root := t.TempDir()
+	localRoot := t.TempDir()
+	tools := t.TempDir()
+	record := filepath.Join(root, "podman-linux.txt")
+	script := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$PODMAN_RECORD\"\noutput=\nwhile [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"-o\" ]; then output=$2; shift; fi; shift; done\nmkdir -p \"$(dirname \"$output\")\"\nprintf binary > \"$output\"\n"
+	require.NoError(t, os.WriteFile(filepath.Join(tools, "podman"), []byte(script), 0o755))
+	t.Setenv("PATH", tools)
+	t.Setenv("PODMAN_RECORD", record)
+	previousHost := manifestHostOS
+	manifestHostOS = "linux"
+	t.Cleanup(func() { manifestHostOS = previousHost })
+
+	_, err := (&manifestHandler{root: root}).compile(t.Context(), pipeline.CompileSpec{
+		TargetOS: "linux", TargetArch: "arm64", Output: ".wails/build/app",
+		Toolchain: "docker", ContainerRuntime: "podman", ContainerImage: "ghcr.io/wailsapp/wails-cross:latest", LocalRoots: []string{localRoot},
+	})
+	require.NoError(t, err)
+	arguments := strings.Split(strings.TrimSpace(readTestFile(t, record)), "\n")
+	assert.Contains(t, arguments, root+":"+root+":Z")
+	assert.Contains(t, arguments, localRoot+":"+localRoot+":ro,Z")
+	assert.Contains(t, arguments, "--platform")
+	assert.Contains(t, arguments, "linux/arm64")
+	assert.Contains(t, arguments, "ghcr.io/wailsapp/wails-cross:latest")
 }
 
 func TestZigTargetRejectsTargetsOutsideTheClosedZigRegistry(t *testing.T) {
@@ -480,7 +506,7 @@ func TestApplyGeneratedTargetSettings(t *testing.T) {
 		require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
 	}
 	write("ios/xcode/main/Info.plist", "<key>CFBundleVersion</key><string>1.0.0</string><key>MinimumOSVersion</key><string>15.0</string>")
-	write("android/app/build.gradle", "android {\n    versionCode 1\n}\n")
+	write("android/app/build.gradle", "android {\n    defaultConfig {\n        applicationId \"com.wails.app\"\n        minSdk 21\n        versionCode 1\n        versionName \"1.0\"\n    }\n}\n")
 	require.NoError(t, applyGeneratedTargetSettings(root, pipeline.AssetsSpec{TargetOS: "ios", MinimumVersion: "17.0", Project: manifest.Project{BuildNumber: 42}}))
 	plist, err := os.ReadFile(filepath.Join(root, "ios/xcode/main/Info.plist"))
 	require.NoError(t, err)
@@ -489,6 +515,12 @@ func TestApplyGeneratedTargetSettings(t *testing.T) {
 	gradle, err := os.ReadFile(filepath.Join(root, "android/app/build.gradle"))
 	require.NoError(t, err)
 	assert.Contains(t, string(gradle), "versionCode 42")
+	require.NoError(t, applyGeneratedTargetSettings(root, pipeline.AssetsSpec{TargetOS: "android", MinimumVersion: "26", Project: manifest.Project{Identifier: "com.example.badge", Version: "2.4.1", BuildNumber: 42}}))
+	gradle, err = os.ReadFile(filepath.Join(root, "android/app/build.gradle"))
+	require.NoError(t, err)
+	assert.Contains(t, string(gradle), `applicationId "com.example.badge"`)
+	assert.Contains(t, string(gradle), "minSdk 26")
+	assert.Contains(t, string(gradle), `versionName "2.4.1"`)
 }
 
 func TestReplacePlistStringFillsSelfClosingValue(t *testing.T) {
@@ -546,7 +578,7 @@ func TestManifestDockerIdentityIncludesTheExactCrossImage(t *testing.T) {
 	t.Setenv("PATH", tools)
 	previous := manifestDockerImageIdentity
 	image := "sha256:first"
-	manifestDockerImageIdentity = func(context.Context) (string, error) { return image, nil }
+	manifestDockerImageIdentity = func(context.Context, string, string) (string, error) { return image, nil }
 	t.Cleanup(func() { manifestDockerImageIdentity = previous })
 	handler := &manifestHandler{root: t.TempDir()}
 	node := pipeline.Node{Key: "compile", Kind: pipeline.CompileApplication, Spec: pipeline.CompileSpec{Toolchain: "docker"}}

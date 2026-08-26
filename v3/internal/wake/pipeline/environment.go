@@ -16,25 +16,32 @@ import (
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
+const CrossContainerImage = "ghcr.io/wailsapp/wails-cross:latest"
+
 // HostCapabilities is a value snapshot of the execution facts that may affect
 // Plan feasibility. Its collections are private and copied at construction so
 // callers cannot mutate a capability snapshot after planning starts.
 type HostCapabilities struct {
-	os           string
-	arch         string
-	tools        []string
-	credentials  []string
-	dockerImages []string
-	appleSDKs    []string
-	androidSDK   bool
-	androidNDK   bool
+	os                   string
+	arch                 string
+	tools                []string
+	credentials          []string
+	dockerImages         []string
+	containerRuntime     string
+	containerImages      []string
+	containerImagesKnown bool
+	appleSDKs            []string
+	androidSDK           bool
+	androidNDK           bool
 }
 
 type HostFacts struct {
-	DockerImages []string
-	AppleSDKs    []string
-	AndroidSDK   bool
-	AndroidNDK   bool
+	DockerImages     []string
+	ContainerRuntime string
+	ContainerImages  []string
+	AppleSDKs        []string
+	AndroidSDK       bool
+	AndroidNDK       bool
 }
 
 func NewHostCapabilities(hostOS, hostArch string, tools, credentials []string) HostCapabilities {
@@ -42,10 +49,27 @@ func NewHostCapabilities(hostOS, hostArch string, tools, credentials []string) H
 }
 
 func NewHostCapabilitiesWithFacts(hostOS, hostArch string, tools, credentials []string, facts HostFacts) HostCapabilities {
+	sortedTools := uniqueSorted(tools)
+	containerRuntime := facts.ContainerRuntime
+	containerImages := facts.ContainerImages
+	if containerRuntime == "" && len(facts.DockerImages) != 0 {
+		containerRuntime = "docker"
+		containerImages = facts.DockerImages
+	}
+	if containerRuntime == "" {
+		for _, candidate := range []string{"docker", "podman"} {
+			if containsSorted(sortedTools, candidate) {
+				containerRuntime = candidate
+				break
+			}
+		}
+	}
 	return HostCapabilities{
-		os: hostOS, arch: hostArch, tools: uniqueSorted(tools), credentials: uniqueSorted(credentials),
+		os: hostOS, arch: hostArch, tools: sortedTools, credentials: uniqueSorted(credentials),
 		dockerImages: uniqueSorted(facts.DockerImages), appleSDKs: uniqueSorted(facts.AppleSDKs),
-		androidSDK: facts.AndroidSDK, androidNDK: facts.AndroidNDK,
+		containerRuntime: containerRuntime, containerImages: uniqueSorted(containerImages),
+		containerImagesKnown: true,
+		androidSDK:           facts.AndroidSDK, androidNDK: facts.AndroidNDK,
 	}
 }
 
@@ -71,7 +95,13 @@ type hostProbeOperations struct {
 }
 
 func currentHostCapabilitiesWithOperations(credentials []string, operations hostProbeOperations) HostCapabilities {
-	knownTools := []string{"go", "garble", "zig", "docker", "cc", "gcc", "clang", "npm", "pnpm", "yarn", "bun", "makensis", "MakeAppx.exe", "signtool.exe", "hdiutil", "xcrun", "codesign", "ditto", "zip", "java", "jarsigner", "apksigner", "dpkg-sig", "rpmsign"}
+	tools, presentCredentials := probeHostToolsAndCredentials(credentials, operations)
+	facts := currentHostFacts(tools, operations, true)
+	return NewHostCapabilitiesWithFacts(operations.hostOS, operations.hostArch, tools, presentCredentials, facts)
+}
+
+func probeHostToolsAndCredentials(credentials []string, operations hostProbeOperations) ([]string, []string) {
+	knownTools := []string{"go", "garble", "zig", "docker", "podman", "cc", "gcc", "clang", "npm", "pnpm", "yarn", "bun", "makensis", "MakeAppx.exe", "signtool.exe", "hdiutil", "xcrun", "codesign", "ditto", "zip", "java", "jarsigner", "apksigner", "dpkg-sig", "rpmsign"}
 	tools := make([]string, 0, len(knownTools))
 	for _, tool := range knownTools {
 		if _, err := operations.lookPath(tool); err == nil {
@@ -86,18 +116,17 @@ func currentHostCapabilitiesWithOperations(credentials []string, operations host
 			}
 		}
 	}
-	facts := currentHostFacts(tools, operations)
-	return NewHostCapabilitiesWithFacts(operations.hostOS, operations.hostArch, tools, presentCredentials, facts)
+	return tools, presentCredentials
 }
 
 func (h HostCapabilities) hasTool(name string) bool       { return containsSorted(h.tools, name) }
 func (h HostCapabilities) hasCredential(name string) bool { return containsSorted(h.credentials, name) }
 func (h HostCapabilities) hasDockerImage(name string) bool {
-	return containsSorted(h.dockerImages, name)
+	return containsSorted(h.containerImages, name) || containsSorted(h.dockerImages, name)
 }
 func (h HostCapabilities) hasAppleSDK(name string) bool { return containsSorted(h.appleSDKs, name) }
 
-func currentHostFacts(tools []string, operations hostProbeOperations) HostFacts {
+func currentHostFacts(tools []string, operations hostProbeOperations, probeContainerImages bool) HostFacts {
 	sortedTools := uniqueSorted(tools)
 	hasTool := func(name string) bool { return containsSorted(sortedTools, name) }
 	facts := HostFacts{}
@@ -114,8 +143,28 @@ func currentHostFacts(tools []string, operations hostProbeOperations) HostFacts 
 		}
 	}
 	facts.AndroidNDK = directoryExists(ndk, operations.stat)
-	if hasTool("docker") && operations.run("docker", "image", "inspect", "wails-cross") == nil {
-		facts.DockerImages = []string{"wails-cross"}
+	for _, containerRuntime := range []string{"docker", "podman"} {
+		if !hasTool(containerRuntime) {
+			continue
+		}
+		if facts.ContainerRuntime == "" {
+			facts.ContainerRuntime = containerRuntime
+		}
+		if probeContainerImages {
+			for _, image := range []string{CrossContainerImage, "wails-cross"} {
+				if operations.run(containerRuntime, "image", "inspect", image) == nil {
+					facts.ContainerRuntime = containerRuntime
+					facts.ContainerImages = []string{image}
+					if containerRuntime == "docker" {
+						facts.DockerImages = []string{image}
+					}
+					break
+				}
+			}
+		}
+		if !probeContainerImages || len(facts.ContainerImages) != 0 {
+			break
+		}
 	}
 	if hasTool("xcrun") {
 		for _, sdkName := range []string{"macosx", "iphoneos", "iphonesimulator"} {
@@ -125,6 +174,44 @@ func currentHostFacts(tools []string, operations hostProbeOperations) HostFacts 
 		}
 	}
 	return facts
+}
+
+// PlanBuildForCurrentHost keeps native planning free of container subprocesses.
+// It probes image availability only after the structural host plan selects the
+// container-backed toolchain, then re-plans with the complete immutable facts.
+func PlanBuildForCurrentHost(config manifest.Config, request Request, credentials ...string) (Plan, error) {
+	operations := hostProbeOperations{
+		hostOS: runtime.GOOS, hostArch: runtime.GOARCH, lookPath: exec.LookPath, lookupEnv: os.LookupEnv, getenv: os.Getenv,
+		stat: os.Stat, glob: filepath.Glob, run: func(name string, arguments ...string) error {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			return exec.CommandContext(ctx, name, arguments...).Run()
+		},
+	}
+	return planBuildForCurrentHostWithOperations(config, request, credentials, operations)
+}
+
+func planBuildForCurrentHostWithOperations(config manifest.Config, request Request, credentials []string, operations hostProbeOperations) (Plan, error) {
+	tools, presentCredentials := probeHostToolsAndCredentials(credentials, operations)
+	facts := currentHostFacts(tools, operations, false)
+	host := NewHostCapabilitiesWithFacts(operations.hostOS, operations.hostArch, tools, presentCredentials, facts)
+	host.containerImagesKnown = false
+	plan, err := PlanBuildForHost(config, request, host)
+	if err != nil || !planUsesContainerToolchain(plan) {
+		return plan, err
+	}
+	facts = currentHostFacts(tools, operations, true)
+	host = NewHostCapabilitiesWithFacts(operations.hostOS, operations.hostArch, tools, presentCredentials, facts)
+	return PlanBuildForHost(config, request, host)
+}
+
+func planUsesContainerToolchain(plan Plan) bool {
+	for _, node := range plan.Nodes {
+		if node.Kind == CompileApplication && node.Spec.(CompileSpec).Toolchain == "docker" {
+			return true
+		}
+	}
+	return false
 }
 
 func firstNonemptyEnvironment(getenv func(string) string, names ...string) string {
@@ -187,6 +274,10 @@ func PlanBuildForHost(config manifest.Config, request Request, host HostCapabili
 				return Plan{}, resolveErr
 			}
 			spec.Toolchain = resolved
+			if resolved == "docker" {
+				spec.ContainerRuntime = host.containerRuntime
+				spec.ContainerImage = host.crossContainerImage()
+			}
 			if err := validateCompileEnvironment(spec, host); err != nil {
 				return Plan{}, err
 			}
@@ -243,8 +334,8 @@ func requireCommandTool(host HostCapabilities, operation, command string) error 
 func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 	operation := "compiling " + spec.TargetOS + "/" + spec.TargetArch
 	if spec.Toolchain == "docker" {
-		if !host.hasDockerImage("wails-cross") {
-			return fmt.Errorf("%s with Docker requires Docker image %q", operation, "wails-cross")
+		if host.containerImagesKnown && host.crossContainerImage() == "" {
+			return fmt.Errorf("%s with Docker or Podman requires container image %q", operation, CrossContainerImage)
 		}
 		return nil
 	}
@@ -278,6 +369,15 @@ func validateCompileEnvironment(spec CompileSpec, host HostCapabilities) error {
 	return nil
 }
 
+func (h HostCapabilities) crossContainerImage() string {
+	for _, image := range []string{CrossContainerImage, "wails-cross"} {
+		if h.hasDockerImage(image) {
+			return image
+		}
+	}
+	return ""
+}
+
 func resolveToolchain(spec CompileSpec, host HostCapabilities) (string, error) {
 	target := spec.TargetOS + "/" + spec.TargetArch
 	requested := spec.Toolchain
@@ -288,13 +388,16 @@ func resolveToolchain(spec CompileSpec, host HostCapabilities) (string, error) {
 		if nativeToolchainSupports(spec, host) {
 			return "native", nil
 		}
-		if (spec.TargetOS == "windows" || spec.TargetOS == "linux") && host.hasTool("zig") {
+		if spec.TargetOS == "windows" && host.hasTool("zig") {
 			return "zig", nil
 		}
-		if dockerToolchainSupports(spec, host) && host.hasTool("docker") {
+		if dockerToolchainSupports(spec, host) && host.containerRuntime != "" {
 			return "docker", nil
 		}
-		return "", fmt.Errorf("target %s on %s/%s requires zig or docker; neither tool is available", target, host.os, host.arch)
+		if spec.TargetOS == "linux" {
+			return "", fmt.Errorf("target %s on %s/%s requires the wails-cross image with Docker or Podman; plain Zig does not provide the target Linux desktop sysroot", target, host.os, host.arch)
+		}
+		return "", fmt.Errorf("target %s on %s/%s requires zig, Docker, or Podman; no compatible toolchain is available", target, host.os, host.arch)
 	}
 	if requested == "native" && !nativeToolchainSupports(spec, host) {
 		return "", fmt.Errorf("toolchain %q cannot build %s on %s/%s", requested, target, host.os, host.arch)
@@ -302,11 +405,11 @@ func resolveToolchain(spec CompileSpec, host HostCapabilities) (string, error) {
 	if requested == "zig" && !host.hasTool("zig") {
 		return "", fmt.Errorf("toolchain %q requires tool %q", requested, "zig")
 	}
-	if requested == "docker" && !host.hasTool("docker") {
-		return "", fmt.Errorf("toolchain %q requires tool %q", requested, "docker")
-	}
 	if requested == "docker" && !dockerToolchainSupports(spec, host) {
 		return "", fmt.Errorf("toolchain %q cannot build %s on %s/%s", requested, target, host.os, host.arch)
+	}
+	if requested == "docker" && host.containerRuntime == "" {
+		return "", fmt.Errorf("toolchain %q requires Docker or Podman", requested)
 	}
 	return requested, nil
 }

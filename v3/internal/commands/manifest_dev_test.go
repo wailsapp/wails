@@ -576,7 +576,14 @@ func TestManifestProcessReadinessRequiresBackendToStayAlive(t *testing.T) {
 	defer stable.stop(100 * time.Millisecond)
 	require.NoError(t, waitForProcessStable(context.Background(), stable, 50*time.Millisecond))
 
-	exited := startReadinessHelper(t, "exit")
+	exited := &manifestProcess{done: make(chan struct{})}
+	go func() {
+		time.Sleep(20 * time.Millisecond)
+		exited.mu.Lock()
+		exited.err = errors.New("synthetic startup failure")
+		exited.mu.Unlock()
+		close(exited.done)
+	}()
 	err := waitForProcessStable(context.Background(), exited, 200*time.Millisecond)
 	require.ErrorContains(t, err, "process exited during startup")
 	cleanExit := &manifestProcess{done: make(chan struct{})}

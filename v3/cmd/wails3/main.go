@@ -14,6 +14,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 func init() {
@@ -47,6 +48,11 @@ func main() {
 
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
 	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
+	config := app.NewSubCommand("config", "Validate Wails configuration")
+	configCheck := config.NewSubCommand("check", "Validate wails.hcl and its profiles without building")
+	var configCheckOptions commands.ConfigCheckOptions
+	configCheck.AddFlags(&configCheckOptions)
+	configCheck.Action(func() error { return commands.ConfigCheck(&configCheckOptions, configCheck.OtherArgs()) })
 
 	eject := app.NewSubCommand("eject", "Write the complete resolved reference manifest to wails.ejected.hcl")
 	var ejectOptions commands.EjectOptions
@@ -182,6 +188,11 @@ func main() {
 	// Android tools
 	android := app.NewSubCommand("android", "Android tooling")
 	android.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the Android main", commands.AndroidOverlayGen)
+	android.NewSubCommandFunction("devices", "List connected Android devices and emulators", commands.AndroidDevices)
+	androidRun := android.NewSubCommand("run", "Build, install and launch a development APK")
+	var androidRunOptions commands.AndroidRunOptions
+	androidRun.AddFlags(&androidRunOptions)
+	androidRun.Action(func() error { return commands.AndroidRun(&androidRunOptions, androidRun.OtherArgs()) })
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
@@ -193,7 +204,11 @@ func main() {
 		// A wake build failure is already rendered as a clean panel by the build
 		// reporter; printing the raw error again would duplicate it.
 		if !wake.IsReported(err) {
-			pterm.Error.Println(err)
+			if diagnostic, ok := manifest.FormatValidationDiagnostics(err); ok {
+				pterm.Error.Println("Invalid wails.hcl\n" + diagnostic)
+			} else {
+				pterm.Error.Println(err)
+			}
 		}
 		os.Exit(1)
 	}

@@ -28,6 +28,7 @@ func TestCrossDockerfileMatchesLinuxSupportContract(t *testing.T) {
 		"libwebkitgtk-6.0-dev",
 		"libgtk-3-dev",
 		"libwebkit2gtk-4.1-dev",
+		"libx11-dev",
 	} {
 		require.True(t, strings.Contains(contents, dependency), "cross image must install %s", dependency)
 	}

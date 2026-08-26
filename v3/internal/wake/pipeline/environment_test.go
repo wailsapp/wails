@@ -48,7 +48,7 @@ func TestCurrentHostCapabilityProbeIsDeterministicAndCopiesFacts(t *testing.T) {
 	assert.True(t, host.hasCredential("SIGNING_PASSWORD"))
 	assert.True(t, host.androidSDK)
 	assert.True(t, host.androidNDK)
-	assert.True(t, host.hasDockerImage("wails-cross"))
+	assert.True(t, host.hasDockerImage(CrossContainerImage))
 	assert.True(t, host.hasAppleSDK("macosx"))
 	assert.True(t, host.hasAppleSDK("iphoneos"))
 	assert.False(t, host.hasAppleSDK("iphonesimulator"))
@@ -72,8 +72,94 @@ func TestCurrentHostCapabilitiesUsesTheRealProbeAdapterWithoutRequiringInstalled
 	assert.NotEmpty(t, host.arch)
 	assert.True(t, host.hasTool("go"))
 	assert.True(t, host.hasCredential("PIPELINE_TEST_CREDENTIAL"))
-	assert.True(t, host.hasDockerImage("wails-cross"))
+	assert.True(t, host.hasDockerImage(CrossContainerImage))
 	assert.True(t, host.hasAppleSDK("iphonesimulator"))
+}
+
+func TestCurrentHostPlanningProbesContainerImagesOnlyForSelectedContainerBuilds(t *testing.T) {
+	probeCalls := 0
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "amd64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "npm" || name == "cc" || name == "podman" {
+				return "/tools/" + name, nil
+			}
+			return "", fs.ErrNotExist
+		},
+		lookupEnv: func(string) (string, bool) { return "", false },
+		getenv:    func(string) string { return "" }, stat: os.Stat, glob: filepath.Glob,
+		run: func(name string, arguments ...string) error {
+			if name == "podman" {
+				probeCalls++
+				return nil
+			}
+			return fs.ErrNotExist
+		},
+	}
+	plan, err := planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64"}, nil, operations)
+	require.NoError(t, err)
+	assert.Equal(t, 0, probeCalls)
+	assert.Equal(t, "native", plan.Nodes["target:linux/amd64:compile"].Spec.(CompileSpec).Toolchain)
+
+	plan, err = planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, nil, operations)
+	require.NoError(t, err)
+	assert.Equal(t, 1, probeCalls)
+	compile := plan.Nodes["target:linux/arm64:compile"].Spec.(CompileSpec)
+	assert.Equal(t, "podman", compile.ContainerRuntime)
+	assert.Equal(t, CrossContainerImage, compile.ContainerImage)
+}
+
+func TestCurrentHostPlanningSupportsLegacyImageAndRejectsMissingImages(t *testing.T) {
+	imageAvailable := true
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "amd64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "npm" || name == "cc" || name == "docker" {
+				return "/tools/" + name, nil
+			}
+			return "", fs.ErrNotExist
+		},
+		lookupEnv: func(string) (string, bool) { return "", false },
+		getenv:    func(string) string { return "" }, stat: os.Stat, glob: filepath.Glob,
+		run: func(_ string, arguments ...string) error {
+			if imageAvailable && arguments[len(arguments)-1] == "wails-cross" {
+				return nil
+			}
+			return fs.ErrNotExist
+		},
+	}
+	plan, err := planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, nil, operations)
+	require.NoError(t, err)
+	assert.Equal(t, "wails-cross", plan.Nodes["target:linux/arm64:compile"].Spec.(CompileSpec).ContainerImage)
+
+	imageAvailable = false
+	_, err = planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, nil, operations)
+	assert.ErrorContains(t, err, "requires container image")
+}
+
+func TestCurrentHostPlanningUsesPodmanWhenOnlyPodmanHasTheImage(t *testing.T) {
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "amd64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "npm" || name == "cc" || name == "docker" || name == "podman" {
+				return "/tools/" + name, nil
+			}
+			return "", fs.ErrNotExist
+		},
+		lookupEnv: func(string) (string, bool) { return "", false },
+		getenv:    func(string) string { return "" }, stat: os.Stat, glob: filepath.Glob,
+		run: func(name string, arguments ...string) error {
+			if name == "podman" && arguments[len(arguments)-1] == CrossContainerImage {
+				return nil
+			}
+			return fs.ErrNotExist
+		},
+	}
+	plan, err := planBuildForCurrentHostWithOperations(testConfig(t), Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}, nil, operations)
+	require.NoError(t, err)
+	compile := plan.Nodes["target:linux/arm64:compile"].Spec.(CompileSpec)
+	assert.Equal(t, "podman", compile.ContainerRuntime)
+	assert.Equal(t, CrossContainerImage, compile.ContainerImage)
 }
 
 func testHost(hostOS, hostArch string, extraTools ...string) HostCapabilities {
@@ -97,8 +183,23 @@ func TestHostResolutionChoosesTheFastestAvailableCompatibleToolchain(t *testing.
 	require.NoError(t, err)
 	assert.Equal(t, "docker", plan.Nodes["target:windows/amd64:compile"].Spec.(CompileSpec).Toolchain)
 
-	_, err = PlanBuildForHost(config, request, testHost("linux", "amd64"))
-	assert.ErrorContains(t, err, "requires zig or docker")
+	_, err = PlanBuildForHost(config, request, NewHostCapabilities("linux", "amd64", []string{"go", "npm", "cc"}, nil))
+	assert.ErrorContains(t, err, "requires zig, Docker, or Podman")
+}
+
+func TestHostResolutionUsesAContainerForLinuxCrossCompilation(t *testing.T) {
+	config := testConfig(t)
+	request := Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}
+	host := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "npm", "cc", "zig", "podman"}, nil, HostFacts{
+		ContainerRuntime: "podman",
+		ContainerImages:  []string{"wails-cross"},
+	})
+
+	plan, err := PlanBuildForHost(config, request, host)
+	require.NoError(t, err)
+	compile := plan.Nodes["target:linux/arm64:compile"].Spec.(CompileSpec)
+	assert.Equal(t, "docker", compile.Toolchain)
+	assert.Equal(t, "podman", compile.ContainerRuntime)
 }
 
 func TestHostResolutionUsesTheInjectedHostAsTheAnonymousDefaultTarget(t *testing.T) {
@@ -186,7 +287,7 @@ func TestHostResolutionRejectsMissingToolchainRuntimeFacts(t *testing.T) {
 	config := testConfig(t)
 	config.Targets.Windows.AMD64.Toolchain = "docker"
 	_, err := PlanBuildForHost(config, Request{Verb: "build", TargetOS: "windows", TargetArch: "amd64"}, NewHostCapabilities("linux", "amd64", []string{"go", "npm", "docker"}, nil))
-	assert.ErrorContains(t, err, `requires Docker image "wails-cross"`)
+	assert.ErrorContains(t, err, `requires container image "ghcr.io/wailsapp/wails-cross:latest"`)
 
 	host := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "npm", "java"}, nil, HostFacts{})
 	_, err = PlanBuildForHost(configForAndroid(t), Request{Verb: "build", TargetOS: "android", TargetArch: "arm64"}, host)
@@ -224,12 +325,12 @@ func TestHostAndToolchainValidationCoversEveryFailureContract(t *testing.T) {
 
 	docker := CompileSpec{TargetOS: "windows", TargetArch: "amd64", Toolchain: "docker"}
 	err = validateCompileEnvironment(docker, NewHostCapabilities("linux", "amd64", []string{"go", "docker"}, nil))
-	assert.ErrorContains(t, err, "Docker image")
+	assert.ErrorContains(t, err, "container image")
 	hostWithImage := NewHostCapabilitiesWithFacts("linux", "amd64", []string{"go", "docker"}, nil, HostFacts{DockerImages: []string{"wails-cross"}})
 	assert.NoError(t, validateCompileEnvironment(docker, hostWithImage))
 
 	_, err = resolveToolchain(CompileSpec{TargetOS: "windows", TargetArch: "amd64", Toolchain: "docker"}, NewHostCapabilities("linux", "amd64", []string{"go"}, nil))
-	assert.ErrorContains(t, err, `requires tool "docker"`)
+	assert.ErrorContains(t, err, `requires Docker or Podman`)
 	_, err = resolveToolchain(CompileSpec{TargetOS: "plan9", TargetArch: "amd64", Toolchain: "docker"}, NewHostCapabilities("linux", "amd64", []string{"go", "docker"}, nil))
 	assert.ErrorContains(t, err, "cannot build")
 	assert.False(t, dockerToolchainSupports(CompileSpec{TargetOS: "plan9", TargetArch: "amd64"}, testHost("linux", "amd64", "docker")))

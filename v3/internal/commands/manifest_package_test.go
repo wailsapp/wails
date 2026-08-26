@@ -329,6 +329,32 @@ func TestAndroidPackageFailurePreservesLastCompleteWorkspaceAndArtifact(t *testi
 	assert.Empty(t, staging)
 }
 
+func TestAndroidAPKUsesTheDebugGradleVariant(t *testing.T) {
+	root := t.TempDir()
+	spec := packageTestSpec("android", "arm64", "apk")
+	spec.Assets = ".wails/assets"
+	spec.Binary = ".wails/binaries/libwails.so"
+	spec.Output = ".wails/artifacts/example.apk"
+	handler := &manifestHandler{root: root}
+	assets := filepath.Join(root, ".wails", "assets", "android")
+	require.NoError(t, os.MkdirAll(assets, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(assets, "gradlew"), []byte(`#!/bin/sh
+if [ "$1" != "assembleDebug" ]; then
+  echo "unexpected Gradle task: $1" >&2
+  exit 17
+fi
+mkdir -p app/build/outputs/apk/debug
+printf apk > app/build/outputs/apk/debug/app-debug.apk
+`), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(root, ".wails", "binaries"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("binary"), 0o755))
+
+	_, err := handler.packageAndroid(t.Context(), spec)
+	require.NoError(t, err)
+	assert.Equal(t, "apk", readTestFile(t, filepath.Join(root, spec.Output)))
+	assert.FileExists(t, filepath.Join(handler.packageWorkspace(spec), "app", "src", "main", "jniLibs", "arm64-v8a", "libwails.so"))
+}
+
 func TestMSIXStructureUsesCustomAppxManifest(t *testing.T) {
 	root := t.TempDir()
 	executable := filepath.Join(root, "example.exe")

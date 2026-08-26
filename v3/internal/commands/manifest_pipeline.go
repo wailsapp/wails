@@ -157,7 +157,7 @@ func resolveManifestPlan(options manifestRunOptions) (string, *manifest.Loaded, 
 		getwd: os.Getwd,
 		load:  manifest.Load,
 		plan: func(config manifest.Config, request pipeline.Request) (pipeline.Plan, error) {
-			return pipeline.PlanBuildForHost(config, request, pipeline.CurrentHostCapabilities(manifestCredentialNames(config)...))
+			return pipeline.PlanBuildForCurrentHost(config, request, manifestCredentialNames(config)...)
 		},
 	})
 }
@@ -383,8 +383,8 @@ var manifestHostOS = runtime.GOOS
 var manifestLipo = ToolLipo
 var manifestToolPackage = toolPackage
 var manifestSign = Sign
-var manifestDockerImageIdentity = func(ctx context.Context) (string, error) {
-	output, err := exec.CommandContext(ctx, "docker", "image", "inspect", "--format", "{{.Id}}", "wails-cross").Output()
+var manifestDockerImageIdentity = func(ctx context.Context, runtime, image string) (string, error) {
+	output, err := exec.CommandContext(ctx, runtime, "image", "inspect", "--format", "{{.Id}}", image).Output()
 	if err != nil {
 		return "", err
 	}
@@ -424,8 +424,16 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 			case "zig":
 				names = append(names, "zig")
 			case "docker":
-				names = []string{"docker"}
-				externalIdentity, err = manifestDockerImageIdentity(ctx)
+				runtime := spec.ContainerRuntime
+				if runtime == "" {
+					runtime = "docker"
+				}
+				names = []string{runtime}
+				image := spec.ContainerImage
+				if image == "" {
+					image = "wails-cross"
+				}
+				externalIdentity, err = manifestDockerImageIdentity(ctx, runtime, image)
 				if err != nil {
 					return "", fmt.Errorf("inspect wails-cross image identity: %w", err)
 				}
@@ -796,9 +804,27 @@ func (h *manifestHandler) compileDocker(ctx context.Context, s pipeline.CompileS
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	arguments := []string{"run", "--rm", "-w", h.root, "-v", h.root + ":" + h.root}
+	runtime := s.ContainerRuntime
+	if runtime == "" {
+		runtime = "docker"
+	}
+	image := s.ContainerImage
+	if image == "" {
+		image = "wails-cross"
+	}
+	rootMount := h.root + ":" + h.root
+	readOnlySuffix := ":ro"
+	if runtime == "podman" {
+		rootMount += ":Z"
+		readOnlySuffix = ":ro,Z"
+	}
+	arguments := []string{"run", "--rm"}
+	if s.TargetOS == "linux" {
+		arguments = append(arguments, "--platform", "linux/"+s.TargetArch)
+	}
+	arguments = append(arguments, "-w", h.root, "-v", rootMount)
 	for _, localRoot := range s.LocalRoots {
-		arguments = append(arguments, "-v", localRoot+":"+localRoot+":ro")
+		arguments = append(arguments, "-v", localRoot+":"+localRoot+readOnlySuffix)
 	}
 	for _, value := range []string{"GOOS=" + s.TargetOS, "GOARCH=" + s.TargetArch, "CGO_ENABLED=1", "CC=" + cc, "CXX=" + cxx} {
 		arguments = append(arguments, "-e", value)
@@ -815,13 +841,13 @@ func (h *manifestHandler) compileDocker(ctx context.Context, s pipeline.CompileS
 	if s.TargetOS == "darwin" && s.MinimumVersion != "" {
 		arguments = append(arguments, "-e", "MACOSX_DEPLOYMENT_TARGET="+s.MinimumVersion)
 	}
-	arguments = append(arguments, "--entrypoint", tool, "wails-cross")
+	arguments = append(arguments, "--entrypoint", tool, image)
 	var result string
 	err = producePathTransactional(output, ".docker-compile-output-*", func(staged string) error {
 		commandArguments := append(append([]string(nil), arguments...), buildArgs...)
 		commandArguments = append(commandArguments, "-o", staged, ".")
 		var runErr error
-		result, runErr = runManifestCommand(ctx, h.root, nil, "docker", commandArguments...)
+		result, runErr = runManifestCommand(ctx, h.root, nil, runtime, commandArguments...)
 		return runErr
 	})
 	if err != nil && strings.Contains(result, "updates to go.mod needed") {
@@ -835,8 +861,7 @@ func dockerCompilers(targetOS, targetArch string) (string, string, error) {
 		return "", "", fmt.Errorf("docker toolchain does not support %s/%s", targetOS, targetArch)
 	}
 	if targetOS == "linux" {
-		arch := map[string]string{"amd64": "x86_64", "arm64": "aarch64"}[targetArch]
-		return "zig cc -target " + arch + "-linux-gnu", "zig c++ -target " + arch + "-linux-gnu", nil
+		return "gcc", "g++", nil
 	}
 	if targetOS == "windows" || targetOS == "darwin" {
 		compiler := "zcc-" + targetOS + "-" + targetArch
@@ -1318,6 +1343,25 @@ func applyGeneratedTargetSettings(output string, spec pipeline.AssetsSpec) error
 		nsis := filepath.Join(output, "windows", "nsis", "project.nsi")
 		if err := replaceGeneratedLiteral(nsis, `${INFO_PRODUCTVERSION}.0`, `${INFO_PRODUCTVERSION}.`+value); err != nil {
 			return err
+		}
+	}
+	if spec.TargetOS == "android" {
+		gradle := filepath.Join(output, "android", "app", "build.gradle")
+		for _, setting := range []struct {
+			value   string
+			pattern *regexp.Regexp
+			format  string
+		}{
+			{spec.Project.Identifier, regexp.MustCompile(`(?m)^(\s*applicationId\s+)["'][^"']*["']`), `${1}"%s"`},
+			{spec.Project.Version, regexp.MustCompile(`(?m)^(\s*versionName\s+)["'][^"']*["']`), `${1}"%s"`},
+			{spec.MinimumVersion, regexp.MustCompile(`(?m)^(\s*minSdk\s+)\d+`), `${1}%s`},
+		} {
+			if setting.value == "" {
+				continue
+			}
+			if err := replaceGeneratedPattern(gradle, setting.pattern, fmt.Sprintf(setting.format, setting.value)); err != nil {
+				return err
+			}
 		}
 	}
 	if spec.MinimumVersion != "" {
@@ -2044,8 +2088,8 @@ func (h *manifestHandler) packageAndroid(ctx context.Context, s pipeline.Package
 	if err := os.Chmod(gradlew, 0o755); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	task := "assembleRelease"
-	producedRelative := filepath.Join("app", "build", "outputs", "apk", "release", "app-release.apk")
+	task := "assembleDebug"
+	producedRelative := filepath.Join("app", "build", "outputs", "apk", "debug", "app-debug.apk")
 	if s.Format == "aab" {
 		task = "bundleRelease"
 		producedRelative = filepath.Join("app", "build", "outputs", "bundle", "release", "app-release.aab")

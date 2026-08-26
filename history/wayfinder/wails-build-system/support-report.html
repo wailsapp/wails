@@ -430,9 +430,9 @@ wails3 clean</code></pre>
           <li>HCL expressions, variables, functions, interpolation, includes, conditions, loops or HCL-JSON.</li>
           <li>Remote caching.</li>
           <li>Automatic translation of arbitrary Taskfile shell logic.</li>
-          <li>Device deployment, emulator control or IDE launching.</li>
+          <li>iOS device deployment, simulator control or IDE launching (Android device/emulator deployment is now implemented).</li>
           <li>Production APK output.</li>
-          <li>A <code>config show</code>, <code>config check</code> or configuration command family.</li>
+          <li>A <code>config show</code> command; <code>wails3 config check</code> now validates the base manifest and named profiles.</li>
           <li>Cleaning final artifacts: <code>wails3 clean</code> removes <code>.wails/</code> only.</li>
         </ul>
         <p>External scripts can still run separately before or after Wails, but they are not represented in the build graph.</p>
@@ -444,13 +444,14 @@ wails3 clean</code></pre>
           <table>
             <thead><tr><th>Area</th><th>Status</th><th>Evidence</th></tr></thead>
             <tbody>
-              <tr><td>Linux binaries and packages</td><td><span class="status done">Confirmed</span></td><td>Real binary, DEB, RPM, Arch Linux and AppImage builds.</td></tr>
+              <tr><td>Linux binaries and packages</td><td><span class="status done">Confirmed</span></td><td>Real amd64 binary, DEB, RPM, Arch Linux and AppImage builds; Podman/QEMU arm64 binary and DEB/RPM/Arch cross-builds.</td></tr>
               <tr><td>Built-in web templates</td><td><span class="status done">Confirmed</span></td><td>All nine templates exercised.</td></tr>
               <tr><td>Development lifecycle</td><td><span class="status done">Confirmed</span></td><td>Real frontend/backend startup, rebuild and process lifecycle.</td></tr>
               <tr><td>Cache and artifact stability</td><td><span class="status done">Confirmed</span></td><td>Hits, restoration, stable bytes and receipts.</td></tr>
               <tr><td>Wizard and migration</td><td><span class="status done">Confirmed</span></td><td>HCL generation, preservation and migration tests.</td></tr>
               <tr><td>Windows and macOS</td><td><span class="status pending">Pending native acceptance</span></td><td>Implemented and structurally tested; no real host run yet.</td></tr>
-              <tr><td>iOS and Android</td><td><span class="status pending">Pending SDK acceptance</span></td><td>Implemented with fake-tool coverage; no real SDK/device evidence yet.</td></tr>
+              <tr><td>Android deployment</td><td><span class="status pending">Implemented; SDK acceptance pending</span></td><td>Device/AVD discovery, TUI selection, ABI-specific APK build, install and launch are fake-tested; no real SDK/device evidence yet.</td></tr>
+              <tr><td>iOS</td><td><span class="status pending">Pending native SDK acceptance</span></td><td>Implemented with fake-tool coverage; no real Xcode/device evidence yet.</td></tr>
               <tr><td>Credentialed signing</td><td><span class="status pending">Pending</span></td><td>Handlers and validation exist; native signature verification remains.</td></tr>
             </tbody>
           </table>
@@ -459,17 +460,17 @@ wails3 clean</code></pre>
         <h3>Default-template performance on the current Linux machine</h3>
         <ul>
           <li>Fresh production build with warm machine caches: <strong>3.5 seconds</strong>.</li>
-          <li>Unchanged rebuild median: <strong>100.8 ms</strong>.</li>
+          <li>Unchanged rebuild median after Podman and Android changes: <strong>99.870 ms</strong>.</li>
           <li>All six default build operations cached.</li>
         </ul>
-        <div class="callout warn">
-          <p><strong>Remaining acceptance concerns.</strong> The controlled Linux 100 ms gate has not passed; the previous badge result was 103.913 ms. The handoff verifier also requests iOS <code>--formats app</code>, although <code>app</code> is a base output rather than an explicit format, so that row must be corrected before running acceptance.</p>
+        <div class="callout good">
+          <p><strong>Linux performance gate passed.</strong> The accepted ceiling is 150 ms. The latest seven-sample run was 99.870 ms median with 4.43% MAD, zero executed and six cached operations, and stable artifact bytes. The iOS verifier now treats the app as a base output and uses a complete device profile for IPA acceptance.</p>
         </div>
       </section>
     </div>
 
     <footer>
-      Generated 26 August 2026 from <code>origin/codex/hcl-build-system</code> at <code>df4b562ed</code>. This document describes the implemented branch, not the broader proposal.
+      Generated 26 August 2026 from the working branch <code>codex/hcl-build-system</code>. This document describes the implemented branch, not the broader proposal.
     </footer>
   </main>
 </body>

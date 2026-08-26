@@ -102,7 +102,7 @@ func matrixToolchainAvailable(target, host Target, toolchain string) bool {
 	case "docker":
 		return host.OS != "windows" && target.OS != "ios" && target.OS != "android"
 	case "auto":
-		return native || target.OS == "windows" || target.OS == "linux" || host.OS != "windows" && target.OS == "darwin"
+		return native || target.OS == "windows" || host.OS != "windows" && (target.OS == "linux" || target.OS == "darwin")
 	default:
 		panic(fmt.Sprintf("unexpected matrix toolchain %q", toolchain))
 	}

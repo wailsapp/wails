@@ -227,6 +227,8 @@ type CompileSpec struct {
 	Production, Obfuscated, TrimPath, Strip      bool
 	VCSInfo                                      bool
 	Toolchain                                    string
+	ContainerRuntime                             string
+	ContainerImage                               string
 	Environment                                  map[string]string
 }
 type MergeSpec struct {

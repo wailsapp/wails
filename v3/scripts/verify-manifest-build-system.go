@@ -31,9 +31,10 @@ func main() {
 	project := flag.String("project", ".", "migrated disposable project")
 	targetsFlag := flag.String("targets", "", "comma-separated host-platform targets; defaults to the current host target")
 	appImage := flag.Bool("appimage", false, "include the slow/networked Linux AppImage acceptance run")
-	android := flag.Bool("android", false, "include an Android universal AAB run when the SDK/NDK are installed")
+	android := flag.Bool("android", false, "include Android amd64, arm64 and universal AAB runs when the SDK/NDK are installed")
 	ios := flag.Bool("ios", false, "include iOS simulator app packaging on macOS")
 	iosDevice := flag.Bool("ios-device", false, "include iOS device IPA packaging on macOS with a device target profile")
+	iosDeviceProfile := flag.String("ios-device-profile", "ios-device", "complete HCL profile used by -ios-device; it must select ios/arm64, destination=device, IPA and signing")
 	sign := flag.Bool("sign", false, "run host signing with credentials already declared in wails.hcl")
 	verifyCache := flag.Bool("verify-cache", true, "rerun cacheable commands and require a zero-work result")
 	timeout := flag.Duration("timeout", 30*time.Minute, "complete verification timeout")
@@ -74,7 +75,9 @@ func main() {
 	case "windows":
 		hostFormats = "nsis,msix"
 	case "darwin":
-		hostFormats = "app,dmg"
+		// The runnable .app is the base output from the preceding build. DMG is
+		// the only explicit macOS package format.
+		hostFormats = "dmg"
 	default:
 		fatal(fmt.Errorf("unsupported native acceptance host %s", runtime.GOOS))
 	}
@@ -95,24 +98,26 @@ func main() {
 		if runtime.GOOS != "darwin" {
 			fatal(fmt.Errorf("iOS acceptance requires macOS"))
 		}
-		commands = append(commands,
-			acceptanceCommand{args: []string{"build", "--targets", "ios/arm64"}, verifyCache: true},
-			acceptanceCommand{args: []string{"build", "--targets", "ios/arm64", "--formats", "app"}},
-		)
+		// iOS app assembly invokes codesign, including for the simulator, and is
+		// deliberately non-reusable. The base build already produces the .app;
+		// "app" is not an explicit --formats value.
+		commands = append(commands, acceptanceCommand{args: []string{"build", "--targets", "ios/arm64"}})
 	}
 	if *iosDevice {
 		if runtime.GOOS != "darwin" {
 			fatal(fmt.Errorf("iOS acceptance requires macOS"))
 		}
-		commands = append(commands,
-			acceptanceCommand{args: []string{"build", "--targets", "ios/arm64"}, verifyCache: true},
-			acceptanceCommand{args: []string{"build", "--targets", "ios/arm64", "--formats", "ipa"}},
-		)
+		if strings.TrimSpace(*iosDeviceProfile) == "" {
+			fatal(fmt.Errorf("-ios-device-profile must name a complete device profile"))
+		}
+		// Destination and signing are profile intent, not anonymous CLI
+		// overrides. This run is non-reusable because it signs the device app.
+		commands = append(commands, acceptanceCommand{args: []string{"build", *iosDeviceProfile}})
 	}
 	if *android {
-		commands = append(commands,
-			acceptanceCommand{args: []string{"build", "--targets", "android/universal", "--formats", "aab"}, verifyCache: true},
-		)
+		for _, target := range []string{"android/amd64", "android/arm64", "android/universal"} {
+			commands = append(commands, acceptanceCommand{args: []string{"build", "--targets", target, "--formats", "aab"}, verifyCache: true})
+		}
 	}
 	for _, item := range commands {
 		fmt.Printf("\n==> %s %s\n", *wails, strings.Join(item.args, " "))
