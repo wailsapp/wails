@@ -40,7 +40,9 @@ type MacSidebarItem struct {
 
 	internalID uint64
 	label      string
+	subtitle   string
 	symbolName string
+	imageData  []byte
 	tooltip    string
 	disabled   bool
 	hidden     bool
@@ -136,14 +138,42 @@ func (i *MacSidebarItem) SetLabel(label string) *MacSidebarItem {
 	return i
 }
 
+// SetSubtitle updates the secondary text in a native sidebar row. A row with
+// a subtitle uses the larger two-line AppKit presentation.
+func (i *MacSidebarItem) SetSubtitle(subtitle string) *MacSidebarItem {
+	if i == nil || i.isDead() {
+		return i
+	}
+	i.lock.Lock()
+	i.subtitle = subtitle
+	i.lock.Unlock()
+	i.sidebar.reload()
+	return i
+}
+
 // SetSymbol sets an SF Symbol for the row on macOS 11 and newer. Passing an
-// empty string removes the image.
+// empty string removes the symbol. SetImage takes precedence when an image is
+// also present.
 func (i *MacSidebarItem) SetSymbol(symbol string) *MacSidebarItem {
 	if i == nil || i.isDead() {
 		return i
 	}
 	i.lock.Lock()
 	i.symbolName = symbol
+	i.lock.Unlock()
+	i.sidebar.reload()
+	return i
+}
+
+// SetImage sets an encoded image (for example PNG or JPEG) for the row.
+// Passing nil or an empty slice removes the image. An image or subtitle uses
+// the larger AppKit presentation, with the image displayed as an avatar.
+func (i *MacSidebarItem) SetImage(image []byte) *MacSidebarItem {
+	if i == nil || i.isDead() {
+		return i
+	}
+	i.lock.Lock()
+	i.imageData = append(i.imageData[:0], image...)
 	i.lock.Unlock()
 	i.sidebar.reload()
 	return i
@@ -227,7 +257,9 @@ func (i *MacSidebarItem) isDead() bool {
 type macSidebarItemSnapshot struct {
 	internalID uint64
 	label      string
+	subtitle   string
 	symbolName string
+	imageData  []byte
 	tooltip    string
 	disabled   bool
 	hidden     bool
@@ -291,7 +323,9 @@ func snapshotMacSidebarItem(item *MacSidebarItem) macSidebarItemSnapshot {
 	return macSidebarItemSnapshot{
 		internalID: item.internalID,
 		label:      item.label,
+		subtitle:   item.subtitle,
 		symbolName: item.symbolName,
+		imageData:  append([]byte(nil), item.imageData...),
 		tooltip:    item.tooltip,
 		disabled:   item.disabled,
 		hidden:     item.hidden,

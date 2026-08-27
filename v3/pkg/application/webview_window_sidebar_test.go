@@ -44,10 +44,24 @@ func TestMacSidebarSelectionAndCallbacks(t *testing.T) {
 func TestMacSidebarLiveItemState(t *testing.T) {
 	sidebar := NewMacSidebar()
 	item := sidebar.AddItem("Draft")
-	item.SetLabel("Published").SetSymbol("checkmark").SetTooltip("Ready").SetEnabled(false).SetHidden(true)
+	image := []byte{1, 2, 3}
+	item.SetLabel("Published").
+		SetSubtitle("Ready for review").
+		SetSymbol("checkmark").
+		SetImage(image).
+		SetTooltip("Ready").
+		SetEnabled(false).
+		SetHidden(true)
+	image[0] = 9
 	snapshot := sidebar.snapshot().entries[0].item
-	if snapshot.label != "Published" || snapshot.symbolName != "checkmark" || snapshot.tooltip != "Ready" ||
+	if snapshot.label != "Published" || snapshot.subtitle != "Ready for review" ||
+		snapshot.symbolName != "checkmark" || len(snapshot.imageData) != 3 || snapshot.imageData[0] != 1 ||
+		snapshot.tooltip != "Ready" ||
 		!snapshot.disabled || !snapshot.hidden {
 		t.Fatalf("unexpected sidebar item snapshot: %#v", snapshot)
+	}
+	item.SetImage(nil)
+	if len(sidebar.snapshot().entries[0].item.imageData) != 0 {
+		t.Fatal("SetImage(nil) should remove the image")
 	}
 }

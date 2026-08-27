@@ -25,7 +25,9 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 @property unsigned long long nodeID;
 @property BOOL section;
 @property (copy) NSString* label;
+@property (copy) NSString* subtitle;
 @property (copy) NSString* symbolName;
+@property (retain) NSData* imageData;
 @property (copy) NSString* tooltip;
 @property BOOL disabled;
 @property BOOL hidden;
@@ -35,9 +37,22 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 @implementation WailsSidebarNode
 - (void)dealloc {
     [_label release];
+    [_subtitle release];
     [_symbolName release];
+    [_imageData release];
     [_tooltip release];
     [_children release];
+    [super dealloc];
+}
+@end
+
+@interface WailsSidebarDetailCell : NSTableCellView
+@property (retain) NSTextField* subtitleTextField;
+@end
+
+@implementation WailsSidebarDetailCell
+- (void)dealloc {
+    [_subtitleTextField release];
     [super dealloc];
 }
 @end
@@ -187,16 +202,84 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     return cell;
 }
 
+- (WailsSidebarDetailCell*)newDetailCellWithIdentifier:(NSUserInterfaceItemIdentifier)identifier {
+    WailsSidebarDetailCell* cell = [[[WailsSidebarDetailCell alloc] initWithFrame:NSMakeRect(0, 0, 220, 56)] autorelease];
+    cell.identifier = identifier;
+
+    NSImageView* imageView = [[[NSImageView alloc] initWithFrame:NSZeroRect] autorelease];
+    imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    imageView.imageScaling = NSImageScaleProportionallyUpOrDown;
+    imageView.wantsLayer = YES;
+    imageView.layer.cornerRadius = 20;
+    imageView.layer.masksToBounds = YES;
+
+    NSTextField* title = [NSTextField labelWithString:@""];
+    title.translatesAutoresizingMaskIntoConstraints = NO;
+    title.font = [NSFont systemFontOfSize:13 weight:NSFontWeightSemibold];
+    title.lineBreakMode = NSLineBreakByTruncatingTail;
+
+    NSTextField* subtitle = [NSTextField labelWithString:@""];
+    subtitle.translatesAutoresizingMaskIntoConstraints = NO;
+    subtitle.font = [NSFont systemFontOfSize:12 weight:NSFontWeightRegular];
+    subtitle.lineBreakMode = NSLineBreakByTruncatingTail;
+    subtitle.textColor = [NSColor secondaryLabelColor];
+
+    [cell addSubview:imageView];
+    [cell addSubview:title];
+    [cell addSubview:subtitle];
+    [NSLayoutConstraint activateConstraints:@[
+        [imageView.leadingAnchor constraintEqualToAnchor:cell.leadingAnchor constant:6],
+        [imageView.centerYAnchor constraintEqualToAnchor:cell.centerYAnchor],
+        [imageView.widthAnchor constraintEqualToConstant:40],
+        [imageView.heightAnchor constraintEqualToConstant:40],
+        [title.leadingAnchor constraintEqualToAnchor:imageView.trailingAnchor constant:10],
+        [title.trailingAnchor constraintEqualToAnchor:cell.trailingAnchor constant:-6],
+        [title.centerYAnchor constraintEqualToAnchor:cell.centerYAnchor constant:-9],
+        [subtitle.leadingAnchor constraintEqualToAnchor:title.leadingAnchor],
+        [subtitle.trailingAnchor constraintEqualToAnchor:title.trailingAnchor],
+        [subtitle.centerYAnchor constraintEqualToAnchor:cell.centerYAnchor constant:10]
+    ]];
+    cell.imageView = imageView;
+    cell.textField = title;
+    cell.subtitleTextField = subtitle;
+    return cell;
+}
+
+- (CGFloat)outlineView:(NSOutlineView*)outlineView heightOfRowByItem:(id)item {
+    WailsSidebarNode* node = (WailsSidebarNode*)item;
+    if (node.section) return 22;
+    return node.subtitle.length > 0 || node.imageData.length > 0 ? 56 : 28;
+}
+
 - (NSView*)outlineView:(NSOutlineView*)outlineView viewForTableColumn:(NSTableColumn*)tableColumn item:(id)item {
     WailsSidebarNode* node = (WailsSidebarNode*)item;
-    NSUserInterfaceItemIdentifier identifier = node.section ? @"WailsSidebarSection" : @"WailsSidebarItem";
+    BOOL detail = !node.section && (node.subtitle.length > 0 || node.imageData.length > 0);
+    NSUserInterfaceItemIdentifier identifier = node.section ? @"WailsSidebarSection" :
+        (detail ? @"WailsSidebarDetailItem" : @"WailsSidebarItem");
     NSTableCellView* cell = [outlineView makeViewWithIdentifier:identifier owner:self];
-    if (cell == nil) cell = [self newCellWithIdentifier:identifier section:node.section];
+    if (cell == nil) cell = detail ? [self newDetailCellWithIdentifier:identifier] :
+        [self newCellWithIdentifier:identifier section:node.section];
     cell.textField.stringValue = node.label ?: @"";
     cell.toolTip = node.tooltip.length > 0 ? node.tooltip : nil;
     cell.textField.textColor = node.disabled ? [NSColor disabledControlTextColor] :
         (node.section ? [NSColor secondaryLabelColor] : [NSColor labelColor]);
-    if (!node.section) {
+    if (detail) {
+        WailsSidebarDetailCell* detailCell = (WailsSidebarDetailCell*)cell;
+        detailCell.subtitleTextField.stringValue = node.subtitle ?: @"";
+        detailCell.subtitleTextField.textColor = node.disabled ? [NSColor disabledControlTextColor] : [NSColor secondaryLabelColor];
+        NSImage* image = node.imageData.length > 0 ? [[[NSImage alloc] initWithData:node.imageData] autorelease] : nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+        if (image == nil) {
+            if (@available(macOS 11.0, *)) {
+                image = node.symbolName.length > 0
+                    ? [NSImage imageWithSystemSymbolName:node.symbolName accessibilityDescription:node.label]
+                    : nil;
+            }
+        }
+#endif
+        detailCell.imageView.image = image;
+        detailCell.imageView.hidden = image == nil;
+    } else if (!node.section) {
         NSImage* image = nil;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
         if (@available(macOS 11.0, *)) {
@@ -1287,14 +1370,18 @@ void splitViewSidebarAddSection(void* handlePtr, unsigned long long paneID,
 
 void splitViewSidebarAddItem(void* handlePtr, unsigned long long paneID,
     unsigned long long sectionID, unsigned long long itemID,
-    const char* label, const char* symbolName, const char* tooltip,
+    const char* label, const char* subtitle, const char* symbolName,
+    const unsigned char* imageData, size_t imageDataLength, const char* tooltip,
     bool disabled, bool hidden) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
     if (record == nil || record.role != WailsSplitPaneRoleSidebar) return;
     WailsSidebarNode* node = [[WailsSidebarNode alloc] init];
     node.nodeID = itemID;
     node.label = label == NULL ? @"" : [NSString stringWithUTF8String:label];
+    node.subtitle = subtitle == NULL ? @"" : [NSString stringWithUTF8String:subtitle];
     node.symbolName = symbolName == NULL ? @"" : [NSString stringWithUTF8String:symbolName];
+    node.imageData = imageData == NULL || imageDataLength == 0 ? nil :
+        [NSData dataWithBytes:imageData length:imageDataLength];
     node.tooltip = tooltip == NULL ? @"" : [NSString stringWithUTF8String:tooltip];
     node.disabled = disabled;
     node.hidden = hidden;
