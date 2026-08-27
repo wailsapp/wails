@@ -442,6 +442,13 @@ void* toolbarAddSearchItem(void* handlePtr, const char* identifier, unsigned int
         [field release];
     }
 
+    // Keep toolbar search compact by default. NSSearchToolbarItem otherwise
+    // claims a wide field that competes with document navigation and actions.
+    field.controlSize = NSControlSizeSmall;
+    field.frameSize = NSMakeSize(160, 22);
+    item.minSize = NSMakeSize(120, 22);
+    item.maxSize = NSMakeSize(160, 22);
+
     WailsToolbarSearchTarget* target = [[WailsToolbarSearchTarget alloc] init];
     target.itemID = itemID;
     objc_setAssociatedObject(item, WailsToolbarSearchTargetAssociationKey, target, OBJC_ASSOCIATION_RETAIN);
