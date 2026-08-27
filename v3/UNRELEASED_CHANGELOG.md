@@ -23,7 +23,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
-- Increase WebView2 embed timeout to 60 seconds in [PR](https://github.com/wailsapp/wails/pull/6043) by @Grantmartin2002
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
