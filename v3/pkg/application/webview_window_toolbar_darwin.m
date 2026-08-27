@@ -14,6 +14,8 @@ typedef struct {
 static const void* WailsToolbarDelegateAssociationKey = &WailsToolbarDelegateAssociationKey;
 static const void* WailsToolbarSearchTargetAssociationKey = &WailsToolbarSearchTargetAssociationKey;
 static const void* WailsToolbarGroupTargetAssociationKey = &WailsToolbarGroupTargetAssociationKey;
+static const void* WailsToolbarGroupAssociationKey = &WailsToolbarGroupAssociationKey;
+static const void* WailsToolbarGroupIndexAssociationKey = &WailsToolbarGroupIndexAssociationKey;
 static const void* WailsToolbarShareTargetAssociationKey = &WailsToolbarShareTargetAssociationKey;
 static const void* WailsToolbarShareProviderLifetimeAssociationKey = &WailsToolbarShareProviderLifetimeAssociationKey;
 
@@ -397,6 +399,10 @@ void* toolbarAddGroupItem(void* handlePtr, const char* identifier,
             actual.toolTip = source.toolTip;
             actual.enabled = source.enabled;
             actual.hidden = source.hidden;
+            objc_setAssociatedObject(actual, WailsToolbarGroupAssociationKey,
+                [NSValue valueWithNonretainedObject:group], OBJC_ASSOCIATION_RETAIN);
+            objc_setAssociatedObject(actual, WailsToolbarGroupIndexAssociationKey,
+                @(i), OBJC_ASSOCIATION_RETAIN);
             delegate.itemsByIdentifier[source.itemIdentifier] = actual;
             [source release];
         }
@@ -428,22 +434,15 @@ void* toolbarAddSearchItem(void* handlePtr, const char* identifier, unsigned int
     if (delegate == nil) return NULL;
 
     NSString* identifierString = [NSString stringWithUTF8String:identifier];
-    NSToolbarItem* item = nil;
-    NSSearchField* field = nil;
+    // Use a regular toolbar item rather than NSSearchToolbarItem. The latter
+    // intentionally grows to consume available unified-toolbar space and does
+    // not reliably honour maxSize on recent macOS releases. A view-backed
+    // search field stays compact until the application explicitly replaces it.
+    NSToolbarItem* item = [[NSToolbarItem alloc] initWithItemIdentifier:identifierString];
+    NSSearchField* field = [[NSSearchField alloc] initWithFrame:NSMakeRect(0, 0, 160, 22)];
+    item.view = field;
+    [field release];
 
-    if (@available(macOS 11.0, *)) {
-        Class searchToolbarItemClass = NSClassFromString(@"NSSearchToolbarItem");
-        item = [[searchToolbarItemClass alloc] initWithItemIdentifier:identifierString];
-        field = [item valueForKey:@"searchField"];
-    } else {
-        item = [[NSToolbarItem alloc] initWithItemIdentifier:identifierString];
-        field = [[NSSearchField alloc] initWithFrame:NSMakeRect(0, 0, 220, 24)];
-        item.view = field;
-        [field release];
-    }
-
-    // Keep toolbar search compact by default. NSSearchToolbarItem otherwise
-    // claims a wide field that competes with document navigation and actions.
     field.controlSize = NSControlSizeSmall;
     field.frameSize = NSMakeSize(160, 22);
     item.minSize = NSMakeSize(120, 22);
@@ -734,6 +733,12 @@ void toolbarItemSetEnabled(void* handlePtr, const char* identifier, bool enabled
         item.enabled = enabled;
         if ([item.view isKindOfClass:[NSControl class]]) {
             ((NSControl*)item.view).enabled = enabled;
+        }
+        NSValue* groupValue = objc_getAssociatedObject(item, WailsToolbarGroupAssociationKey);
+        NSNumber* segmentIndex = objc_getAssociatedObject(item, WailsToolbarGroupIndexAssociationKey);
+        NSToolbarItemGroup* group = groupValue.nonretainedObjectValue;
+        if ([group.view isKindOfClass:[NSSegmentedControl class]] && segmentIndex != nil) {
+            [(NSSegmentedControl*)group.view setEnabled:enabled forSegment:segmentIndex.integerValue];
         }
     }
 }
