@@ -182,7 +182,6 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 @property (retain) WailsSidebarNode* footer;
 @property (retain) WailsSidebarFooterView* footerView;
 @property (retain) NSLayoutConstraint* footerHeightConstraint;
-@property (retain) NSColor* surfaceColor;
 @property unsigned long long selectedItemID;
 @property BOOL suppressSelectionCallback;
 - (void)reloadContents;
@@ -197,7 +196,6 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     [_footer release];
     [_footerView release];
     [_footerHeightConstraint release];
-    [_surfaceColor release];
     [super dealloc];
 }
 
@@ -205,8 +203,11 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     NSView* container = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 240, 600)];
     NSScrollView* scrollView = [[NSScrollView alloc] initWithFrame:NSMakeRect(0, 0, 240, 600)];
     scrollView.translatesAutoresizingMaskIntoConstraints = NO;
-    scrollView.drawsBackground = self.surfaceColor != nil;
-    if (self.surfaceColor != nil) scrollView.backgroundColor = self.surfaceColor;
+    // The semantic NSSplitViewItem supplies the native sidebar material.
+    // Keeping the scrolling rows transparent makes them resolve against the
+    // same surface as the fixed footer instead of covering it with the
+    // primary pane's solid background colour.
+    scrollView.drawsBackground = NO;
     scrollView.borderType = NSNoBorder;
     scrollView.hasVerticalScroller = YES;
     scrollView.autohidesScrollers = YES;
@@ -1081,7 +1082,6 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
             sidebar.roots = record.sidebarRoots;
             sidebar.footer = record.sidebarFooter;
             sidebar.selectedItemID = record.selectedSidebarItemID;
-            sidebar.surfaceColor = primaryBackground;
             (void)sidebar.view;
             if (sidebar.view == nil) {
                 [sidebar release];
@@ -1291,7 +1291,6 @@ bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop
             sidebar.roots = record.sidebarRoots;
             sidebar.footer = record.sidebarFooter;
             sidebar.selectedItemID = record.selectedSidebarItemID;
-            sidebar.surfaceColor = primaryBackground;
             (void)sidebar.view;
             if (sidebar.view == nil) {
                 [sidebar release];
