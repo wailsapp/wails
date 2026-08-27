@@ -80,11 +80,15 @@ void* toolbarBuildButtonItemStandalone(const char* identifier, unsigned int item
 void* toolbarAddSearchItem(void* handlePtr, const char* identifier, unsigned int itemID,
     const char* label, const char* tooltip, bool disabled, bool hidden);
 
+void* toolbarAddTitleItem(void* handlePtr, const char* identifier,
+    const char* label, bool hidden);
+
 void* toolbarAddShareItem(void* handlePtr, const char* identifier, unsigned int itemID,
     const char* label, const char* symbolName, const char* tooltip,
     bool disabled, bool hidden, const char* providerJSON);
 
 void toolbarAddFlexibleSpaceIdentifier(void* handlePtr);
+void toolbarAddSeparatorIdentifier(void* handlePtr);
 
 // Standard AppKit sidebar items. AppKit creates and owns these; they never
 // pass through the delegate's item factory.

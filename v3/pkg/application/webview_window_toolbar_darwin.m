@@ -470,6 +470,32 @@ void* toolbarAddSearchItem(void* handlePtr, const char* identifier, unsigned int
     return item;
 }
 
+void* toolbarAddTitleItem(void* handlePtr, const char* identifier,
+    const char* label, bool hidden) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate == nil) return NULL;
+
+    NSString* identifierString = [NSString stringWithUTF8String:identifier];
+    NSString* title = [NSString stringWithUTF8String:label];
+    NSToolbarItem* item = [[NSToolbarItem alloc] initWithItemIdentifier:identifierString];
+    NSTextField* field = [NSTextField labelWithString:title];
+    field.font = [NSFont systemFontOfSize:13 weight:NSFontWeightSemibold];
+    field.lineBreakMode = NSLineBreakByTruncatingTail;
+    field.maximumNumberOfLines = 1;
+    field.frame = NSMakeRect(0, 0, 180, 24);
+    item.view = field;
+    item.label = title;
+    item.minSize = NSMakeSize(80, 24);
+    item.maxSize = NSMakeSize(180, 24);
+    item.visibilityPriority = NSToolbarItemVisibilityPriorityHigh;
+    item.hidden = hidden;
+
+    [delegate.orderedIdentifiers addObject:identifierString];
+    delegate.itemsByIdentifier[identifierString] = item;
+    [item release];
+    return item;
+}
+
 static NSError* toolbarShareError(NSString* message) {
     return [NSError errorWithDomain:@"WailsMacShareError" code:1
         userInfo:@{NSLocalizedDescriptionKey: message ?: @"Unable to provide share data"}];
@@ -615,6 +641,12 @@ void toolbarAddFlexibleSpaceIdentifier(void* handlePtr) {
     }
 }
 
+void toolbarAddSeparatorIdentifier(void* handlePtr) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate == nil) return;
+    [delegate.orderedIdentifiers addObject:NSToolbarSeparatorItemIdentifier];
+}
+
 void toolbarAddSidebarToggleIdentifier(void* handlePtr) {
     WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
     if (delegate != nil) {
@@ -678,7 +710,14 @@ void toolbarShareItemSetProvider(void* handlePtr, const char* identifier, const 
 
 void toolbarItemSetLabel(void* handlePtr, const char* identifier, const char* label) {
     NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
-    if (item != nil) item.label = [NSString stringWithUTF8String:label];
+    if (item != nil) {
+        NSString* value = [NSString stringWithUTF8String:label];
+        item.label = value;
+        if ([item.view isKindOfClass:[NSTextField class]]) {
+            ((NSTextField*)item.view).stringValue = value;
+            [item.view setNeedsLayout:YES];
+        }
+    }
 }
 
 void toolbarItemSetSymbol(void* handlePtr, const char* identifier, const char* symbolName) {

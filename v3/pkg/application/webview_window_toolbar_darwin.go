@@ -276,6 +276,12 @@ func addToolbarItem(handle unsafe.Pointer, item *MacToolbarItem) []uint {
 		C.toolbarAddSearchItem(handle, idCStr, C.uint(id), labelCStr, tooltipCStr,
 			C.bool(snapshot.disabled), C.bool(snapshot.hidden))
 
+	case toolbarTitle:
+		C.toolbarAddTitleItem(handle, idCStr, labelCStr, C.bool(snapshot.hidden))
+
+	case toolbarSeparator:
+		C.toolbarAddSeparatorIdentifier(handle)
+
 	case toolbarShare:
 		id := nextToolbarNativeID()
 		itemIDs = append(itemIDs, id)
@@ -356,6 +362,7 @@ func applyMacToolbarItemLatestState(native unsafe.Pointer, item *MacToolbarItem)
 	// separator) are created and owned by AppKit and have no entry in the
 	// delegate's item map.
 	if snapshot.kind == toolbarFlexibleSpace ||
+		snapshot.kind == toolbarSeparator ||
 		snapshot.kind == toolbarSidebarToggle ||
 		snapshot.kind == toolbarSidebarTrackingSeparator ||
 		snapshot.kind == toolbarInspectorTrackingSeparator {

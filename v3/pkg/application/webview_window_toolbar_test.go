@@ -11,6 +11,8 @@ func TestValidateToolbarItems(t *testing.T) {
 	toolbar := NewMacToolbar()
 	button := toolbar.AddButton("Save").SetSymbol("checkmark").OnClick(func(*Context) {})
 	search := toolbar.AddSearch("Search").OnSearch(func(*Context, string) {})
+	title := toolbar.AddTitle("Document")
+	toolbar.AddSeparator()
 	share := toolbar.AddShare("Share").SetProvider(MacShareProviderFunc{
 		Available: []MacShareRepresentation{{ContentType: MacShareTypePlainText}},
 		Load:      func(MacShareRequest) ([]byte, error) { return []byte("A note"), nil },
@@ -21,7 +23,7 @@ func TestValidateToolbarItems(t *testing.T) {
 	if err := validateToolbarItems(toolbar.itemSnapshot()); err != nil {
 		t.Fatalf("valid toolbar rejected: %v", err)
 	}
-	if toolbar.identifier == "" || button.identifier == "" || search.identifier == "" || share.identifier == "" || group.identifier == "" {
+	if toolbar.identifier == "" || button.identifier == "" || search.identifier == "" || title.identifier == "" || share.identifier == "" || group.identifier == "" {
 		t.Fatal("toolbar and items should receive internal identifiers")
 	}
 	if button.identifier == search.identifier || button.identifier == group.identifier {

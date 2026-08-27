@@ -88,6 +88,8 @@ const (
 	toolbarGroup
 	toolbarSearchField
 	toolbarShare
+	toolbarTitle
+	toolbarSeparator
 	toolbarFlexibleSpace
 	toolbarSidebarToggle
 	toolbarSidebarTrackingSeparator
@@ -282,11 +284,20 @@ func (t *MacToolbar) AddButton(label string) *MacToolbarItem {
 	return t.add(newMacToolbarItem(t, toolbarButton, label))
 }
 
-// AddSearch adds a native NSSearchToolbarItem on macOS 11 and newer. Wails
-// uses an NSToolbarItem containing an NSSearchField on older supported macOS
-// releases, preserving the same callback behavior.
+// AddSearch adds a compact native search field.
 func (t *MacToolbar) AddSearch(label string) *MacToolbarItem {
 	return t.add(newMacToolbarItem(t, toolbarSearchField, label))
+}
+
+// AddTitle adds a non-interactive native title whose text may be updated with
+// SetLabel. Long titles truncate to preserve room for toolbar controls.
+func (t *MacToolbar) AddTitle(label string) *MacToolbarItem {
+	return t.add(newMacToolbarItem(t, toolbarTitle, label))
+}
+
+// AddSeparator adds a standard AppKit toolbar separator.
+func (t *MacToolbar) AddSeparator() {
+	t.add(newMacToolbarItem(t, toolbarSeparator, ""))
 }
 
 // AddShare adds the system sharing-service toolbar item. AppKit presents the
@@ -786,7 +797,7 @@ func validateToolbarItems(items []*MacToolbarItem) error {
 				if err := validate(members, label); err != nil {
 					return err
 				}
-			case toolbarShare, toolbarFlexibleSpace:
+			case toolbarShare, toolbarTitle, toolbarSeparator, toolbarFlexibleSpace:
 			case toolbarSidebarToggle:
 				// AppKit owns the toggle's action, so no OnClick is required.
 				sidebarToggles++
