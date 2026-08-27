@@ -27,6 +27,20 @@ static const void* WailsToolbarShareProviderLifetimeAssociationKey = &WailsToolb
 
 @end
 
+@interface WailsToolbarTitleField : NSTextField
+@end
+
+@implementation WailsToolbarTitleField
+- (BOOL)mouseDownCanMoveWindow { return YES; }
+- (void)mouseDown:(NSEvent*)event {
+    if (event.clickCount == 1) {
+        [self.window performWindowDragWithEvent:event];
+        return;
+    }
+    [super mouseDown:event];
+}
+@end
+
 @implementation WailsToolbarShareProviderLifetime
 
 - (void)dealloc {
@@ -484,7 +498,7 @@ void* toolbarAddTitleItem(void* handlePtr, const char* identifier,
     NSString* identifierString = [NSString stringWithUTF8String:identifier];
     NSString* title = [NSString stringWithUTF8String:label];
     NSToolbarItem* item = [[NSToolbarItem alloc] initWithItemIdentifier:identifierString];
-    NSTextField* field = [NSTextField labelWithString:title];
+    WailsToolbarTitleField* field = [WailsToolbarTitleField labelWithString:title];
     field.font = [NSFont systemFontOfSize:15 weight:NSFontWeightSemibold];
     field.lineBreakMode = NSLineBreakByTruncatingTail;
     field.maximumNumberOfLines = 1;
