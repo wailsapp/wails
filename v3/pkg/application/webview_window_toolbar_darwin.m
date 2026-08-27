@@ -194,6 +194,10 @@ static void applyCommonItemStyle(NSToolbarItem* item, const char* tooltip,
     item.toolTip = tooltip != NULL && strlen(tooltip) > 0
         ? [NSString stringWithUTF8String:tooltip]
         : nil;
+    // Wails owns enabled state through MacToolbarItem.SetEnabled. AppKit's
+    // target/action auto-validation otherwise re-enables a disabled item as
+    // soon as it discovers that the target implements the action selector.
+    item.autovalidates = NO;
     item.enabled = !disabled;
     item.hidden = hidden;
     if (@available(macOS 10.15, *)) {
@@ -397,6 +401,7 @@ void* toolbarAddGroupItem(void* handlePtr, const char* identifier,
             actual.label = source.label;
             actual.image = source.image;
             actual.toolTip = source.toolTip;
+            actual.autovalidates = NO;
             actual.enabled = source.enabled;
             actual.hidden = source.hidden;
             objc_setAssociatedObject(actual, WailsToolbarGroupAssociationKey,
@@ -420,6 +425,7 @@ void* toolbarAddGroupItem(void* handlePtr, const char* identifier,
             [source release];
         }
     }
+    group.autovalidates = NO;
     group.label = [NSString stringWithUTF8String:label];
 
     [delegate.orderedIdentifiers addObject:identifierString];
@@ -479,7 +485,7 @@ void* toolbarAddTitleItem(void* handlePtr, const char* identifier,
     NSString* title = [NSString stringWithUTF8String:label];
     NSToolbarItem* item = [[NSToolbarItem alloc] initWithItemIdentifier:identifierString];
     NSTextField* field = [NSTextField labelWithString:title];
-    field.font = [NSFont systemFontOfSize:13 weight:NSFontWeightSemibold];
+    field.font = [NSFont systemFontOfSize:15 weight:NSFontWeightSemibold];
     field.lineBreakMode = NSLineBreakByTruncatingTail;
     field.maximumNumberOfLines = 1;
     field.frame = NSMakeRect(0, 0, 180, 24);
@@ -702,6 +708,17 @@ static NSToolbarItem* toolbarItemForIdentifier(void* handlePtr, const char* iden
     return delegate.itemsByIdentifier[[NSString stringWithUTF8String:identifier]];
 }
 
+static NSSegmentedControl* toolbarSegmentedControlInView(NSView* view) {
+    if ([view isKindOfClass:[NSSegmentedControl class]]) {
+        return (NSSegmentedControl*)view;
+    }
+    for (NSView* subview in view.subviews) {
+        NSSegmentedControl* control = toolbarSegmentedControlInView(subview);
+        if (control != nil) return control;
+    }
+    return nil;
+}
+
 void toolbarShareItemSetProvider(void* handlePtr, const char* identifier, const char* providerJSON) {
     NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
     WailsToolbarShareTarget* target = objc_getAssociatedObject(item, WailsToolbarShareTargetAssociationKey);
@@ -776,8 +793,9 @@ void toolbarItemSetEnabled(void* handlePtr, const char* identifier, bool enabled
         NSValue* groupValue = objc_getAssociatedObject(item, WailsToolbarGroupAssociationKey);
         NSNumber* segmentIndex = objc_getAssociatedObject(item, WailsToolbarGroupIndexAssociationKey);
         NSToolbarItemGroup* group = groupValue.nonretainedObjectValue;
-        if ([group.view isKindOfClass:[NSSegmentedControl class]] && segmentIndex != nil) {
-            [(NSSegmentedControl*)group.view setEnabled:enabled forSegment:segmentIndex.integerValue];
+        NSSegmentedControl* control = toolbarSegmentedControlInView(group.view);
+        if (control != nil && segmentIndex != nil) {
+            [control setEnabled:enabled forSegment:segmentIndex.integerValue];
         }
     }
 }
