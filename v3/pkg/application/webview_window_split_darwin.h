@@ -46,7 +46,8 @@ void splitViewAddPane(void* handlePtr, unsigned long long paneID, int role, bool
     double holdingPriority, bool hasHoldingPriority,
     bool collapsible, bool hasCollapsible,
     bool canCollapseFromResize, bool hasCanCollapseFromResize,
-    bool startCollapsed, int contentLayout);
+    bool startCollapsed, int contentLayout,
+    int scrollEdgeEffectStyle, bool hasScrollEdgeEffectStyle);
 
 // splitViewInstall builds the NSSplitViewController, reparents the window's
 // primary WKWebView into the pane marked primary, creates native AppKit
@@ -85,6 +86,7 @@ void splitViewPaneSetHoldingPriority(void* handlePtr, unsigned long long paneID,
 void splitViewPaneSetCollapsible(void* handlePtr, unsigned long long paneID, bool collapsible);
 void splitViewPaneSetCanCollapseFromWindowResize(void* handlePtr, unsigned long long paneID, bool allowed);
 void splitViewPaneSetContentLayout(void* handlePtr, unsigned long long paneID, int layout);
+void splitViewPaneSetScrollEdgeEffectStyle(void* handlePtr, unsigned long long paneID, int style);
 void splitViewPaneSetCollapsed(void* handlePtr, unsigned long long paneID, bool collapsed);
 void splitViewPaneToggleCollapsed(void* handlePtr, unsigned long long paneID);
 

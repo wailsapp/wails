@@ -180,6 +180,7 @@ type macToolbarItemSnapshot struct {
 	prominent          bool
 	tintColor          *RGBA
 	badgeCount         int
+	draggable          bool
 	disabled           bool
 	hidden             bool
 	items              []*MacToolbarItem
@@ -203,6 +204,7 @@ func snapshotMacToolbarItem(item *MacToolbarItem) macToolbarItemSnapshot {
 		bordered:           item.bordered,
 		prominent:          item.prominent,
 		badgeCount:         item.badgeCount,
+		draggable:          item.draggable,
 		disabled:           item.disabled,
 		hidden:             item.hidden,
 		items:              append([]*MacToolbarItem(nil), item.items...),
@@ -277,7 +279,8 @@ func addToolbarItem(handle unsafe.Pointer, item *MacToolbarItem) []uint {
 			C.bool(snapshot.disabled), C.bool(snapshot.hidden))
 
 	case toolbarTitle:
-		C.toolbarAddTitleItem(handle, idCStr, labelCStr, C.bool(snapshot.hidden))
+		C.toolbarAddTitleItem(handle, idCStr, labelCStr,
+			C.bool(snapshot.draggable), C.bool(snapshot.hidden))
 
 	case toolbarSeparator:
 		C.toolbarAddSeparatorIdentifier(handle)
@@ -347,6 +350,8 @@ func applyMacToolbarLatestState(toolbar *MacToolbar) {
 		return
 	}
 	macToolbarSetDisplayMode(toolbar.state.native, toolbar.displayMode)
+	macToolbarSetBackgroundMaterial(toolbar.state.native,
+		toolbar.backgroundMaterialSet, toolbar.backgroundMaterial)
 	for _, item := range toolbar.itemSnapshot() {
 		applyMacToolbarItemLatestState(toolbar.state.native, item)
 	}
@@ -354,6 +359,10 @@ func applyMacToolbarLatestState(toolbar *MacToolbar) {
 
 func macToolbarSetDisplayMode(native unsafe.Pointer, mode MacToolbarDisplayMode) {
 	C.toolbarSetDisplayMode(native, C.int(mode))
+}
+
+func macToolbarSetBackgroundMaterial(native unsafe.Pointer, enabled bool, material NSVisualEffectMaterial) {
+	C.toolbarSetBackgroundMaterial(native, C.bool(enabled), C.int(material))
 }
 
 func applyMacToolbarItemLatestState(native unsafe.Pointer, item *MacToolbarItem) {
@@ -388,6 +397,7 @@ func applyMacToolbarItemLatestState(native unsafe.Pointer, item *MacToolbarItem)
 	macToolbarItemSetEnabled(native, snapshot.identifier, enabled)
 	macToolbarItemSetHidden(native, snapshot.identifier, snapshot.hidden)
 	macToolbarItemSetBadgeCount(native, snapshot.identifier, snapshot.badgeCount)
+	macToolbarItemSetDraggable(native, snapshot.identifier, snapshot.draggable)
 
 	if snapshot.kind == toolbarGroup {
 		macToolbarGroupSetSelectionMode(native, snapshot.identifier, snapshot.selectionMode)
@@ -521,6 +531,12 @@ func macToolbarItemSetBadgeCount(native unsafe.Pointer, id string, count int) {
 	idC := C.CString(id)
 	defer C.free(unsafe.Pointer(idC))
 	C.toolbarItemSetBadgeCount(native, idC, C.int(count))
+}
+
+func macToolbarItemSetDraggable(native unsafe.Pointer, id string, draggable bool) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	C.toolbarItemSetDraggable(native, idC, C.bool(draggable))
 }
 
 func macToolbarGroupSetSelectedIndex(native unsafe.Pointer, id string, index int) {

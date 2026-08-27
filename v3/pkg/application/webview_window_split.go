@@ -640,11 +640,13 @@ type MacSplitWebviewPane struct {
 	url     string
 	primary bool
 	// contentLayout overrides MacWindow.ContentLayout when non-automatic.
-	contentLayout MacContentLayout
-	sidebar       *MacSidebar
-	inspector     *MacInspector
-	editor        *MacTextEditor
-	loaded        bool
+	contentLayout            MacContentLayout
+	scrollEdgeEffectStyle    MacScrollEdgeEffectStyle
+	scrollEdgeEffectStyleSet bool
+	sidebar                  *MacSidebar
+	inspector                *MacInspector
+	editor                   *MacTextEditor
+	loaded                   bool
 	// navigationGeneration increments synchronously when WebKit starts a new
 	// navigation. Completion events capture it before leaving AppKit so a stale
 	// completion cannot flush a newer navigation's JavaScript queue.
@@ -691,6 +693,44 @@ func (p *MacSplitWebviewPane) ContentLayout() MacContentLayout {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
 	return p.contentLayout
+}
+
+// SetScrollEdgeEffectStyle sets AppKit's preferred treatment where scrolling
+// content meets the top edge of this pane. The style is applied through a
+// native split-view-item accessory, so AppKit owns the blur, tint, fade, and
+// adaptation to the current appearance. Explicit soft and hard styles require
+// macOS 26.1; older releases retain their system-default treatment.
+//
+// Calls made after installation update the native accessory immediately.
+func (p *MacSplitWebviewPane) SetScrollEdgeEffectStyle(style MacScrollEdgeEffectStyle) *MacSplitWebviewPane {
+	if p == nil {
+		return p
+	}
+	if !validMacScrollEdgeEffectStyle(style) {
+		reportMacSplitError(p.split.ownerWindow(), "SetScrollEdgeEffectStyle: unknown style value %d", style)
+		return p
+	}
+	p.lock.Lock()
+	if p.dead {
+		p.lock.Unlock()
+		return p
+	}
+	p.scrollEdgeEffectStyle = style
+	p.scrollEdgeEffectStyleSet = true
+	p.lock.Unlock()
+	macSplitPaneApplyScrollEdgeEffectStyle(p.MacSplitPane, style)
+	return p
+}
+
+// ScrollEdgeEffectStyle returns the pane's configured AppKit scroll-edge
+// preference. Automatic is returned when no explicit preference was set.
+func (p *MacSplitWebviewPane) ScrollEdgeEffectStyle() MacScrollEdgeEffectStyle {
+	if p == nil {
+		return MacScrollEdgeEffectStyleAutomatic
+	}
+	p.lock.RLock()
+	defer p.lock.RUnlock()
+	return p.scrollEdgeEffectStyle
 }
 
 // SetURL navigates the pane. For the primary content pane this is equivalent

@@ -64,6 +64,7 @@ void toolbarDetach(void* nsWindow);
 
 // Sets NSToolbar.displayMode. Values map to NSToolbarDisplayMode.
 void toolbarSetDisplayMode(void* handlePtr, int displayMode);
+void toolbarSetBackgroundMaterial(void* handlePtr, bool enabled, int material);
 
 void* toolbarAddButtonItem(void* handlePtr, const char* identifier, unsigned int itemID,
     const char* label, const char* symbolName, const char* tooltip,
@@ -81,7 +82,7 @@ void* toolbarAddSearchItem(void* handlePtr, const char* identifier, unsigned int
     const char* label, const char* tooltip, bool disabled, bool hidden);
 
 void* toolbarAddTitleItem(void* handlePtr, const char* identifier,
-    const char* label, bool hidden);
+    const char* label, bool draggable, bool hidden);
 
 void* toolbarAddShareItem(void* handlePtr, const char* identifier, unsigned int itemID,
     const char* label, const char* symbolName, const char* tooltip,
@@ -111,6 +112,7 @@ void toolbarItemSetTintColor(void* handlePtr, const char* identifier, bool hasTi
 void toolbarItemSetEnabled(void* handlePtr, const char* identifier, bool enabled);
 void toolbarItemSetHidden(void* handlePtr, const char* identifier, bool hidden);
 void toolbarItemSetBadgeCount(void* handlePtr, const char* identifier, int badgeCount);
+void toolbarItemSetDraggable(void* handlePtr, const char* identifier, bool draggable);
 void toolbarGroupSetSelectedIndex(void* handlePtr, const char* identifier, int index);
 void toolbarGroupSetSelectionMode(void* handlePtr, const char* identifier, int selectionMode);
 void toolbarShareItemSetProvider(void* handlePtr, const char* identifier, const char* providerJSON);

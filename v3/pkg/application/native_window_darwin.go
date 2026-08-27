@@ -129,7 +129,9 @@ func (w *macosNativeWindow) installSplitView() error {
 			C.double(snapshot.holdingPriority), C.bool(snapshot.holdingPrioritySet),
 			C.bool(snapshot.collapsible), C.bool(snapshot.collapsibleSet),
 			C.bool(snapshot.canCollapseFromResize), C.bool(snapshot.canCollapseFromResizeSet),
-			C.bool(snapshot.collapsed), C.int(MacContentLayoutEdgeToEdge))
+			C.bool(snapshot.collapsed), C.int(MacContentLayoutEdgeToEdge),
+			C.int(MacScrollEdgeEffectStyleAutomatic), C.bool(false))
+
 		if pane.sidebar != nil {
 			pane.sidebar.registerItems()
 			applyMacSidebarSnapshotToNative(unsafe.Pointer(handle), pane.internalID, pane.sidebar.snapshot())

@@ -49,6 +49,31 @@ func TestToolbarDisplayModeDefaultsAndValidation(t *testing.T) {
 	}
 }
 
+func TestToolbarBackgroundMaterial(t *testing.T) {
+	toolbar := NewMacToolbar().SetBackgroundMaterial(NSVisualEffectMaterialHeaderView)
+	toolbar.stateLock.RLock()
+	if !toolbar.backgroundMaterialSet || toolbar.backgroundMaterial != NSVisualEffectMaterialHeaderView {
+		toolbar.stateLock.RUnlock()
+		t.Fatal("background material was not stored")
+	}
+	toolbar.stateLock.RUnlock()
+
+	toolbar.SetBackgroundMaterial(NSVisualEffectMaterial(99))
+	toolbar.stateLock.RLock()
+	if toolbar.backgroundMaterial != NSVisualEffectMaterialHeaderView {
+		toolbar.stateLock.RUnlock()
+		t.Fatal("invalid background material changed the toolbar")
+	}
+	toolbar.stateLock.RUnlock()
+	toolbar.ClearBackgroundMaterial()
+	toolbar.stateLock.RLock()
+	if toolbar.backgroundMaterialSet {
+		toolbar.stateLock.RUnlock()
+		t.Fatal("ClearBackgroundMaterial did not clear the explicit material")
+	}
+	toolbar.stateLock.RUnlock()
+}
+
 func TestToolbarShareProviderIsNormalisedAndInvokedLazily(t *testing.T) {
 	toolbar := NewMacToolbar()
 	formats := []MacShareRepresentation{
@@ -245,7 +270,8 @@ func TestToolbarMutatorsBeforeInstallation(t *testing.T) {
 		SetTintColor(color).
 		SetEnabled(false).
 		SetHidden(true).
-		SetBadgeCount(3)
+		SetBadgeCount(3).
+		SetDraggable(true)
 
 	// Mutating the caller's color after SetTintColor must not mutate the item.
 	color.Red = 200
@@ -253,7 +279,8 @@ func TestToolbarMutatorsBeforeInstallation(t *testing.T) {
 	if snapshot.label != "Details (3)" || snapshot.symbolName != "info.circle" || snapshot.tooltip != "Show details" {
 		t.Fatal("text and symbol mutators should update the item before installation")
 	}
-	if !snapshot.bordered || !snapshot.prominent || !snapshot.disabled || !snapshot.hidden || snapshot.badgeCount != 3 {
+	if !snapshot.bordered || !snapshot.prominent || !snapshot.disabled || !snapshot.hidden ||
+		snapshot.badgeCount != 3 || !snapshot.draggable {
 		t.Fatal("state mutators should update the item before installation")
 	}
 	if snapshot.tintColor == nil || snapshot.tintColor.Red != 12 {
@@ -338,6 +365,7 @@ type toolbarItemTestSnapshot struct {
 	prominent     bool
 	tintColor     *RGBA
 	badgeCount    int
+	draggable     bool
 	disabled      bool
 	hidden        bool
 	selectionMode MacToolbarGroupSelectionMode
@@ -357,6 +385,7 @@ func snapshotToolbarItemForTest(item *MacToolbarItem) toolbarItemTestSnapshot {
 		bordered:      item.bordered,
 		prominent:     item.prominent,
 		badgeCount:    item.badgeCount,
+		draggable:     item.draggable,
 		disabled:      item.disabled,
 		hidden:        item.hidden,
 		selectionMode: item.selectionMode,

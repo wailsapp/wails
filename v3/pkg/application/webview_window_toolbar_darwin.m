@@ -9,6 +9,10 @@
 typedef struct {
     NSToolbar* toolbar;
     WailsToolbarDelegate* delegate;
+    NSWindow* window;
+    NSVisualEffectView* backgroundView;
+    bool backgroundMaterialEnabled;
+    int backgroundMaterial;
 } WailsToolbarHandle;
 
 static const void* WailsToolbarDelegateAssociationKey = &WailsToolbarDelegateAssociationKey;
@@ -28,16 +32,58 @@ static const void* WailsToolbarShareProviderLifetimeAssociationKey = &WailsToolb
 @end
 
 @interface WailsToolbarTitleField : NSTextField
+@property BOOL windowDraggable;
 @end
 
 @implementation WailsToolbarTitleField
+- (BOOL)mouseDownCanMoveWindow { return self.windowDraggable; }
+@end
+
+@interface WailsToolbarMaterialView : NSVisualEffectView
+- (void)updateMaterialFrame;
+- (void)windowGeometryDidChange:(NSNotification*)notification;
+@end
+
+@implementation WailsToolbarMaterialView
 - (BOOL)mouseDownCanMoveWindow { return YES; }
-- (void)mouseDown:(NSEvent*)event {
-    if (event.clickCount == 1) {
-        [self.window performWindowDragWithEvent:event];
-        return;
+
+- (void)viewDidMoveToWindow {
+    [super viewDidMoveToWindow];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    if (self.window != nil) {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+            selector:@selector(windowGeometryDidChange:)
+            name:NSWindowDidResizeNotification object:self.window];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+            selector:@selector(windowGeometryDidChange:)
+            name:NSWindowDidBecomeKeyNotification object:self.window];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+            selector:@selector(windowGeometryDidChange:)
+            name:NSWindowDidEnterFullScreenNotification object:self.window];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+            selector:@selector(windowGeometryDidChange:)
+            name:NSWindowDidExitFullScreenNotification object:self.window];
+        [self updateMaterialFrame];
     }
-    [super mouseDown:event];
+}
+
+- (void)windowGeometryDidChange:(NSNotification*)notification {
+    [self updateMaterialFrame];
+}
+
+- (void)updateMaterialFrame {
+    NSView* contentView = self.superview;
+    NSWindow* window = self.window;
+    if (contentView == nil || window == nil) return;
+    NSRect unobscured = [contentView convertRect:window.contentLayoutRect fromView:nil];
+    CGFloat height = MAX(0, NSMaxY(contentView.bounds) - NSMaxY(unobscured));
+    self.frame = NSMakeRect(NSMinX(contentView.bounds),
+        NSMaxY(contentView.bounds) - height, NSWidth(contentView.bounds), height);
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 @end
 
@@ -202,6 +248,33 @@ static NSImage* toolbarSymbolImage(const char* symbolName, NSString* accessibili
     return nil;
 }
 
+static void toolbarApplyBackgroundMaterial(WailsToolbarHandle* handle) {
+    if (handle == NULL) return;
+    if (!handle->backgroundMaterialEnabled || handle->window == nil) {
+        [handle->backgroundView removeFromSuperview];
+        [handle->backgroundView release];
+        handle->backgroundView = nil;
+        return;
+    }
+
+    NSView* contentView = handle->window.contentView;
+    if (contentView == nil) return;
+
+    WailsToolbarMaterialView* effectView = (WailsToolbarMaterialView*)handle->backgroundView;
+    if (effectView == nil) {
+        effectView = [[WailsToolbarMaterialView alloc] initWithFrame:NSZeroRect];
+        effectView.autoresizingMask = NSViewWidthSizable | NSViewMinYMargin;
+        effectView.blendingMode = NSVisualEffectBlendingModeWithinWindow;
+        effectView.state = NSVisualEffectStateFollowsWindowActiveState;
+        [contentView addSubview:effectView positioned:NSWindowAbove relativeTo:nil];
+        handle->backgroundView = effectView;
+    }
+    [effectView updateMaterialFrame];
+    effectView.material = handle->backgroundMaterial < 0
+        ? NSVisualEffectMaterialHeaderView
+        : (NSVisualEffectMaterial)handle->backgroundMaterial;
+}
+
 static void applyCommonItemStyle(NSToolbarItem* item, const char* tooltip,
     bool bordered, bool prominent, bool disabled, bool hidden,
     bool hasTint, double tintR, double tintG, double tintB, double tintA, int badgeCount) {
@@ -285,6 +358,7 @@ void toolbarAttach(void* nsWindow, void* handlePtr, int style) {
     }
 
     window.toolbar = toolbar;
+    handle->window = window;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
     if (@available(macOS 11.0, *)) {
         window.toolbarStyle = style;
@@ -292,11 +366,16 @@ void toolbarAttach(void* nsWindow, void* handlePtr, int style) {
 #endif
     [toolbar validateVisibleItems];
     toolbar.visible = YES;
+    toolbarApplyBackgroundMaterial(handle);
 }
 
 void toolbarRelease(void* handlePtr) {
     WailsToolbarHandle* handle = toolbarHandle(handlePtr);
     if (handle == NULL) return;
+    [handle->backgroundView removeFromSuperview];
+    [handle->backgroundView release];
+    handle->backgroundView = nil;
+    handle->window = nil;
     [handle->toolbar release];
     handle->toolbar = nil;
     handle->delegate = nil;
@@ -313,6 +392,14 @@ void toolbarSetDisplayMode(void* handlePtr, int displayMode) {
     if (handle == NULL || handle->toolbar == nil) return;
     if (displayMode < NSToolbarDisplayModeDefault || displayMode > NSToolbarDisplayModeLabelOnly) return;
     handle->toolbar.displayMode = (NSToolbarDisplayMode)displayMode;
+}
+
+void toolbarSetBackgroundMaterial(void* handlePtr, bool enabled, int material) {
+    WailsToolbarHandle* handle = toolbarHandle(handlePtr);
+    if (handle == NULL) return;
+    handle->backgroundMaterialEnabled = enabled;
+    handle->backgroundMaterial = material;
+    toolbarApplyBackgroundMaterial(handle);
 }
 
 // Returns a +1 retained item. A caller must transfer it to an owning
@@ -491,7 +578,7 @@ void* toolbarAddSearchItem(void* handlePtr, const char* identifier, unsigned int
 }
 
 void* toolbarAddTitleItem(void* handlePtr, const char* identifier,
-    const char* label, bool hidden) {
+    const char* label, bool draggable, bool hidden) {
     WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
     if (delegate == nil) return NULL;
 
@@ -499,6 +586,7 @@ void* toolbarAddTitleItem(void* handlePtr, const char* identifier,
     NSString* title = [NSString stringWithUTF8String:label];
     NSToolbarItem* item = [[NSToolbarItem alloc] initWithItemIdentifier:identifierString];
     WailsToolbarTitleField* field = [WailsToolbarTitleField labelWithString:title];
+    field.windowDraggable = draggable;
     field.font = [NSFont systemFontOfSize:15 weight:NSFontWeightSemibold];
     field.lineBreakMode = NSLineBreakByTruncatingTail;
     field.maximumNumberOfLines = 1;
@@ -826,6 +914,13 @@ void toolbarItemSetBadgeCount(void* handlePtr, const char* identifier, int badge
         if (item != nil) item.badge = badgeCount > 0 ? [NSItemBadge badgeWithCount:badgeCount] : nil;
     }
 #endif
+}
+
+void toolbarItemSetDraggable(void* handlePtr, const char* identifier, bool draggable) {
+    NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
+    if ([item.view isKindOfClass:[WailsToolbarTitleField class]]) {
+        ((WailsToolbarTitleField*)item.view).windowDraggable = draggable;
+    }
 }
 
 void toolbarGroupSetSelectedIndex(void* handlePtr, const char* identifier, int index) {

@@ -97,6 +97,8 @@ func (w *macosWebviewWindow) installSplitView() {
 		snapshot := snapshotMacSplitPane(pane.MacSplitPane)
 		pane.lock.RLock()
 		paneLayout := pane.contentLayout
+		scrollEdgeStyle := pane.scrollEdgeEffectStyle
+		hasScrollEdgeStyle := pane.scrollEdgeEffectStyleSet
 		pane.lock.RUnlock()
 		snapshot.contentLayout = resolveMacContentLayout(w.parent.options.Mac, paneLayout)
 		C.splitViewAddPane(handle,
@@ -114,7 +116,9 @@ func (w *macosWebviewWindow) installSplitView() {
 			C.bool(snapshot.canCollapseFromResize),
 			C.bool(snapshot.canCollapseFromResizeSet),
 			C.bool(snapshot.collapsed),
-			C.int(snapshot.contentLayout))
+			C.int(snapshot.contentLayout),
+			C.int(scrollEdgeStyle),
+			C.bool(hasScrollEdgeStyle))
 		if pane.sidebar != nil {
 			pane.sidebar.registerItems()
 			applyMacSidebarSnapshotToNative(handle, pane.internalID, pane.sidebar.snapshot())
@@ -282,9 +286,14 @@ func applyMacSplitPaneLatestState(pane *MacSplitWebviewPane) {
 	}
 	pane.lock.RLock()
 	layout := pane.contentLayout
+	scrollEdgeStyle := pane.scrollEdgeEffectStyle
+	hasScrollEdgeStyle := pane.scrollEdgeEffectStyleSet
 	pane.lock.RUnlock()
 	if owner := pane.split.ownerWindow(); owner != nil {
 		macSplitPaneApplyContentLayout(pane.MacSplitPane, resolveMacContentLayout(owner.macSplitOptions(), layout))
+	}
+	if hasScrollEdgeStyle {
+		macSplitPaneApplyScrollEdgeEffectStyle(pane.MacSplitPane, scrollEdgeStyle)
 	}
 }
 
@@ -334,6 +343,12 @@ func macSplitPaneApplyCanCollapseFromResize(p *MacSplitPane, allowed bool) {
 func macSplitPaneApplyContentLayout(p *MacSplitPane, layout MacContentLayout) {
 	macSplitPaneWithNative(p, func(handle unsafe.Pointer, paneID C.ulonglong) {
 		C.splitViewPaneSetContentLayout(handle, paneID, C.int(layout))
+	})
+}
+
+func macSplitPaneApplyScrollEdgeEffectStyle(p *MacSplitPane, style MacScrollEdgeEffectStyle) {
+	macSplitPaneWithNative(p, func(handle unsafe.Pointer, paneID C.ulonglong) {
+		C.splitViewPaneSetScrollEdgeEffectStyle(handle, paneID, C.int(style))
 	})
 }
 
