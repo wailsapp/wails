@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Increase WebView2 embed timeout to 60 seconds in [PR](https://github.com/wailsapp/wails/pull/6043) by @Grantmartin2002
+- Fix right-clicking a Linux system tray icon running the click handler as well as opening the menu, so an attached window toggled on every right-click (#6018)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
