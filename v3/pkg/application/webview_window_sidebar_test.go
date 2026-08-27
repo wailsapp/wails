@@ -65,3 +65,33 @@ func TestMacSidebarLiveItemState(t *testing.T) {
 		t.Fatal("SetImage(nil) should remove the image")
 	}
 }
+
+func TestMacSidebarFixedFooterUsesDetailedItemWithoutChangingSelection(t *testing.T) {
+	sidebar := NewMacSidebar()
+	selected := sidebar.AddItem("Inbox")
+	footerClicks := 0
+	footer := sidebar.SetFooter("Lea Anthony").
+		SetSubtitle("Grafana Cloud").
+		SetImage([]byte{1, 2, 3}).
+		OnClick(func(*Context) { footerClicks++ })
+	sidebar.SetSelectedItem(selected)
+	sidebar.registerItems()
+
+	snapshot := sidebar.snapshot()
+	if snapshot.footer == nil || snapshot.footer.label != "Lea Anthony" ||
+		snapshot.footer.subtitle != "Grafana Cloud" || len(snapshot.footer.imageData) != 3 {
+		t.Fatalf("unexpected footer snapshot: %#v", snapshot.footer)
+	}
+	handleMacSidebarItemSelected(footer.internalID)
+	if footerClicks != 1 {
+		t.Fatalf("footer callback count = %d, want 1", footerClicks)
+	}
+	if sidebar.selected != selected {
+		t.Fatal("clicking a fixed footer must not replace the selected destination")
+	}
+	sidebar.ClearFooter()
+	if sidebar.snapshot().footer != nil {
+		t.Fatal("ClearFooter should remove the footer snapshot")
+	}
+	sidebar.markDead()
+}

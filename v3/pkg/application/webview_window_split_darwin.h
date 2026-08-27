@@ -98,6 +98,10 @@ void splitViewSidebarAddItem(void* handlePtr, unsigned long long paneID,
     const char* label, const char* subtitle, const char* symbolName,
     const unsigned char* imageData, size_t imageDataLength, const char* tooltip,
     bool disabled, bool hidden);
+void splitViewSidebarSetFooter(void* handlePtr, unsigned long long paneID,
+    unsigned long long itemID, const char* label, const char* subtitle, const char* symbolName,
+    const unsigned char* imageData, size_t imageDataLength, const char* tooltip,
+    bool disabled, bool hidden);
 void splitViewSidebarSetSelectedItem(void* handlePtr, unsigned long long paneID,
     unsigned long long itemID);
 

@@ -57,6 +57,96 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 }
 @end
 
+// A fixed account/status item outside the outline view. It uses the same
+// detailed presentation as a sidebar row, without scrolling or selection.
+@interface WailsSidebarFooterView : NSView
+@property (nonatomic, retain) WailsSidebarNode* node;
+@property (retain) NSImageView* imageView;
+@property (retain) NSTextField* titleTextField;
+@property (retain) NSTextField* subtitleTextField;
+@end
+
+@implementation WailsSidebarFooterView
+- (instancetype)initWithFrame:(NSRect)frame {
+    self = [super initWithFrame:frame];
+    if (self == nil) return nil;
+    NSImageView* image = [[NSImageView alloc] initWithFrame:NSZeroRect];
+    image.translatesAutoresizingMaskIntoConstraints = NO;
+    image.imageScaling = NSImageScaleProportionallyUpOrDown;
+    image.wantsLayer = YES;
+    image.layer.cornerRadius = 20;
+    image.layer.masksToBounds = YES;
+    NSTextField* title = [NSTextField labelWithString:@""];
+    title.translatesAutoresizingMaskIntoConstraints = NO;
+    title.font = [NSFont systemFontOfSize:13 weight:NSFontWeightSemibold];
+    title.lineBreakMode = NSLineBreakByTruncatingTail;
+    NSTextField* subtitle = [NSTextField labelWithString:@""];
+    subtitle.translatesAutoresizingMaskIntoConstraints = NO;
+    subtitle.font = [NSFont systemFontOfSize:12 weight:NSFontWeightRegular];
+    subtitle.lineBreakMode = NSLineBreakByTruncatingTail;
+    subtitle.textColor = [NSColor secondaryLabelColor];
+    [self addSubview:image];
+    [self addSubview:title];
+    [self addSubview:subtitle];
+    [NSLayoutConstraint activateConstraints:@[
+        [image.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:12],
+        [image.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+        [image.widthAnchor constraintEqualToConstant:40],
+        [image.heightAnchor constraintEqualToConstant:40],
+        [title.leadingAnchor constraintEqualToAnchor:image.trailingAnchor constant:10],
+        [title.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-12],
+        [title.centerYAnchor constraintEqualToAnchor:self.centerYAnchor constant:-9],
+        [subtitle.leadingAnchor constraintEqualToAnchor:title.leadingAnchor],
+        [subtitle.trailingAnchor constraintEqualToAnchor:title.trailingAnchor],
+        [subtitle.centerYAnchor constraintEqualToAnchor:self.centerYAnchor constant:10]
+    ]];
+    self.imageView = image;
+    self.titleTextField = title;
+    self.subtitleTextField = subtitle;
+    [image release];
+    return self;
+}
+
+- (void)setNode:(WailsSidebarNode*)node {
+    if (_node == node) return;
+    [_node release];
+    _node = [node retain];
+    self.hidden = node == nil || node.hidden;
+    self.toolTip = node.tooltip.length > 0 ? node.tooltip : nil;
+    self.titleTextField.stringValue = node.label ?: @"";
+    self.subtitleTextField.stringValue = node.subtitle ?: @"";
+    BOOL disabled = node.disabled;
+    self.titleTextField.textColor = disabled ? [NSColor disabledControlTextColor] : [NSColor labelColor];
+    self.subtitleTextField.textColor = disabled ? [NSColor disabledControlTextColor] : [NSColor secondaryLabelColor];
+    NSImage* image = node.imageData.length > 0 ? [[[NSImage alloc] initWithData:node.imageData] autorelease] : nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+    if (image == nil) {
+        if (@available(macOS 11.0, *)) {
+            image = node.symbolName.length > 0
+                ? [NSImage imageWithSystemSymbolName:node.symbolName accessibilityDescription:node.label]
+                : nil;
+        }
+    }
+#endif
+    self.imageView.image = image;
+    self.imageView.hidden = image == nil;
+}
+
+- (void)mouseUp:(NSEvent*)event {
+    if (self.node != nil && !self.node.disabled && NSPointInRect([self convertPoint:event.locationInWindow fromView:nil], self.bounds)) {
+        processMacSidebarItemSelected(self.node.nodeID);
+    }
+}
+
+- (void)dealloc {
+    [_node release];
+    [_imageView release];
+    [_titleTextField release];
+    [_subtitleTextField release];
+    [super dealloc];
+}
+@end
+
 @interface WailsPrimaryPaneView : NSView
 @property (retain) NSColor* fillColor;
 @end
@@ -88,6 +178,10 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 @interface WailsSidebarViewController : NSViewController <NSOutlineViewDataSource, NSOutlineViewDelegate>
 @property (retain) NSMutableArray<WailsSidebarNode*>* roots;
 @property (retain) NSOutlineView* outlineView;
+@property (retain) NSScrollView* scrollView;
+@property (retain) WailsSidebarNode* footer;
+@property (retain) WailsSidebarFooterView* footerView;
+@property (retain) NSLayoutConstraint* footerHeightConstraint;
 @property (retain) NSColor* surfaceColor;
 @property unsigned long long selectedItemID;
 @property BOOL suppressSelectionCallback;
@@ -99,12 +193,18 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 - (void)dealloc {
     [_roots release];
     [_outlineView release];
+    [_scrollView release];
+    [_footer release];
+    [_footerView release];
+    [_footerHeightConstraint release];
     [_surfaceColor release];
     [super dealloc];
 }
 
 - (void)loadView {
+    NSView* container = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 240, 600)];
     NSScrollView* scrollView = [[NSScrollView alloc] initWithFrame:NSMakeRect(0, 0, 240, 600)];
+    scrollView.translatesAutoresizingMaskIntoConstraints = NO;
     scrollView.drawsBackground = self.surfaceColor != nil;
     if (self.surfaceColor != nil) scrollView.backgroundColor = self.surfaceColor;
     scrollView.borderType = NSNoBorder;
@@ -133,10 +233,30 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     outlineView.dataSource = self;
     outlineView.delegate = self;
     scrollView.documentView = outlineView;
+    WailsSidebarFooterView* footer = [[WailsSidebarFooterView alloc] initWithFrame:NSMakeRect(0, 0, 240, 64)];
+    footer.translatesAutoresizingMaskIntoConstraints = NO;
+    [container addSubview:scrollView];
+    [container addSubview:footer];
+    NSLayoutConstraint* footerHeight = [footer.heightAnchor constraintEqualToConstant:0];
+    [NSLayoutConstraint activateConstraints:@[
+        [scrollView.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
+        [scrollView.trailingAnchor constraintEqualToAnchor:container.trailingAnchor],
+        [scrollView.topAnchor constraintEqualToAnchor:container.topAnchor],
+        [scrollView.bottomAnchor constraintEqualToAnchor:footer.topAnchor],
+        [footer.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
+        [footer.trailingAnchor constraintEqualToAnchor:container.trailingAnchor],
+        [footer.bottomAnchor constraintEqualToAnchor:container.bottomAnchor],
+        footerHeight
+    ]];
     self.outlineView = outlineView;
-    self.view = scrollView;
+    self.scrollView = scrollView;
+    self.footerView = footer;
+    self.footerHeightConstraint = footerHeight;
+    self.view = container;
+    [container release];
     [outlineView release];
     [scrollView release];
+    [footer release];
 }
 
 - (NSArray<WailsSidebarNode*>*)visibleNodes:(NSArray<WailsSidebarNode*>*)nodes {
@@ -333,6 +453,8 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     }
     [self.outlineView selectRowIndexes:selection byExtendingSelection:NO];
     self.suppressSelectionCallback = NO;
+    self.footerView.node = self.footer;
+    self.footerHeightConstraint.constant = self.footerView.hidden ? 0 : 64;
 }
 
 @end
@@ -727,6 +849,7 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 @property int contentLayout;
 @property unsigned long long selectedSidebarItemID;
 @property (retain) NSMutableArray<WailsSidebarNode*>* sidebarRoots;
+@property (retain) WailsSidebarNode* sidebarFooter;
 @property (retain) WailsSidebarViewController* sidebarController;
 @property (retain) NSMutableArray<WailsInspectorSectionModel*>* inspectorSections;
 @property (retain) NSMutableDictionary<NSNumber*, WailsInspectorControlModel*>* inspectorModelsByID;
@@ -747,6 +870,7 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 @implementation WailsSplitPaneRecord
 - (void)dealloc {
     [_sidebarRoots release];
+    [_sidebarFooter release];
     [_sidebarController release];
     [_inspectorSections release];
     [_inspectorModelsByID release];
@@ -955,6 +1079,7 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
         } else if (record.role == WailsSplitPaneRoleSidebar) {
             WailsSidebarViewController* sidebar = [[WailsSidebarViewController alloc] init];
             sidebar.roots = record.sidebarRoots;
+            sidebar.footer = record.sidebarFooter;
             sidebar.selectedItemID = record.selectedSidebarItemID;
             sidebar.surfaceColor = primaryBackground;
             (void)sidebar.view;
@@ -1164,6 +1289,7 @@ bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop
         } else if (record.role == WailsSplitPaneRoleSidebar) {
             WailsSidebarViewController* sidebar = [[WailsSidebarViewController alloc] init];
             sidebar.roots = record.sidebarRoots;
+            sidebar.footer = record.sidebarFooter;
             sidebar.selectedItemID = record.selectedSidebarItemID;
             sidebar.surfaceColor = primaryBackground;
             (void)sidebar.view;
@@ -1352,6 +1478,8 @@ void splitViewSidebarReset(void* handlePtr, unsigned long long paneID) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
     if (record == nil || record.role != WailsSplitPaneRoleSidebar) return;
     [record.sidebarRoots removeAllObjects];
+    record.sidebarFooter = nil;
+    record.sidebarController.footer = nil;
     [record.sidebarController reloadContents];
 }
 
@@ -1388,6 +1516,27 @@ void splitViewSidebarAddItem(void* handlePtr, unsigned long long paneID,
     WailsSidebarNode* section = sectionID == 0 ? nil : sidebarSection(record, sectionID);
     if (section != nil) [section.children addObject:node];
     else [record.sidebarRoots addObject:node];
+    [node release];
+}
+
+void splitViewSidebarSetFooter(void* handlePtr, unsigned long long paneID,
+    unsigned long long itemID, const char* label, const char* subtitle, const char* symbolName,
+    const unsigned char* imageData, size_t imageDataLength, const char* tooltip,
+    bool disabled, bool hidden) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    if (record == nil || record.role != WailsSplitPaneRoleSidebar) return;
+    WailsSidebarNode* node = [[WailsSidebarNode alloc] init];
+    node.nodeID = itemID;
+    node.label = label == NULL ? @"" : [NSString stringWithUTF8String:label];
+    node.subtitle = subtitle == NULL ? @"" : [NSString stringWithUTF8String:subtitle];
+    node.symbolName = symbolName == NULL ? @"" : [NSString stringWithUTF8String:symbolName];
+    node.imageData = imageData == NULL || imageDataLength == 0 ? nil :
+        [NSData dataWithBytes:imageData length:imageDataLength];
+    node.tooltip = tooltip == NULL ? @"" : [NSString stringWithUTF8String:tooltip];
+    node.disabled = disabled;
+    node.hidden = hidden;
+    record.sidebarFooter = node;
+    record.sidebarController.footer = node;
     [node release];
 }
 

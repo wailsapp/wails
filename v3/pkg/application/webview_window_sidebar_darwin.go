@@ -67,6 +67,9 @@ func applyMacSidebarSnapshotToNative(handle unsafe.Pointer, paneID uint64, snaps
 			addMacSidebarItemToNative(handle, paneID, entry.section.internalID, item)
 		}
 	}
+	if snapshot.footer != nil {
+		addMacSidebarFooterToNative(handle, paneID, *snapshot.footer)
+	}
 	C.splitViewSidebarSetSelectedItem(handle, C.ulonglong(paneID), C.ulonglong(snapshot.selectedItemID))
 }
 
@@ -91,6 +94,24 @@ func addMacSidebarItemToNative(handle unsafe.Pointer, paneID, sectionID uint64, 
 		tooltipC,
 		C.bool(item.disabled),
 		C.bool(item.hidden))
+	C.free(unsafe.Pointer(labelC))
+	C.free(unsafe.Pointer(subtitleC))
+	C.free(unsafe.Pointer(symbolC))
+	C.free(unsafe.Pointer(tooltipC))
+}
+
+func addMacSidebarFooterToNative(handle unsafe.Pointer, paneID uint64, item macSidebarItemSnapshot) {
+	labelC := C.CString(item.label)
+	subtitleC := C.CString(item.subtitle)
+	symbolC := C.CString(item.symbolName)
+	tooltipC := C.CString(item.tooltip)
+	var imageDataC *C.uchar
+	if len(item.imageData) > 0 {
+		imageDataC = (*C.uchar)(unsafe.Pointer(&item.imageData[0]))
+	}
+	C.splitViewSidebarSetFooter(handle,
+		C.ulonglong(paneID), C.ulonglong(item.internalID), labelC, subtitleC, symbolC,
+		imageDataC, C.size_t(len(item.imageData)), tooltipC, C.bool(item.disabled), C.bool(item.hidden))
 	C.free(unsafe.Pointer(labelC))
 	C.free(unsafe.Pointer(subtitleC))
 	C.free(unsafe.Pointer(symbolC))

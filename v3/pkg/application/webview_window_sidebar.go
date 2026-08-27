@@ -12,9 +12,57 @@ type MacSidebar struct {
 	lock sync.RWMutex
 
 	entries  []macSidebarEntry
+	footer   *MacSidebarItem
 	selected *MacSidebarItem
 	pane     *MacSplitPane
 	dead     bool
+}
+
+// SetFooter adds or replaces a fixed, non-scrolling item at the bottom of the
+// native sidebar. The returned item supports the same title, subtitle, image,
+// symbol and OnClick API as normal sidebar rows, but is never selected as a
+// source-list destination.
+func (s *MacSidebar) SetFooter(label string) *MacSidebarItem {
+	if s == nil {
+		return nil
+	}
+	item := newMacSidebarItem(s, label)
+	item.footer = true
+	s.lock.Lock()
+	if s.dead {
+		s.lock.Unlock()
+		return nil
+	}
+	previous := s.footer
+	s.footer = item
+	s.lock.Unlock()
+	if previous != nil {
+		unregisterMacSidebarItem(previous.internalID)
+		previous.lock.Lock()
+		previous.onClick = nil
+		previous.lock.Unlock()
+	}
+	s.reload()
+	return item
+}
+
+// ClearFooter removes the fixed bottom item, if present.
+func (s *MacSidebar) ClearFooter() *MacSidebar {
+	if s == nil {
+		return nil
+	}
+	s.lock.Lock()
+	footer := s.footer
+	s.footer = nil
+	s.lock.Unlock()
+	if footer != nil {
+		unregisterMacSidebarItem(footer.internalID)
+		footer.lock.Lock()
+		footer.onClick = nil
+		footer.lock.Unlock()
+	}
+	s.reload()
+	return s
 }
 
 type macSidebarEntry struct {
@@ -46,6 +94,7 @@ type MacSidebarItem struct {
 	tooltip    string
 	disabled   bool
 	hidden     bool
+	footer     bool
 	sidebar    *MacSidebar
 	onClick    func(*Context)
 }
@@ -278,6 +327,7 @@ type macSidebarEntrySnapshot struct {
 
 type macSidebarSnapshot struct {
 	entries        []macSidebarEntrySnapshot
+	footer         *macSidebarItemSnapshot
 	selectedItemID uint64
 }
 
@@ -287,11 +337,16 @@ func (s *MacSidebar) snapshot() macSidebarSnapshot {
 	}
 	s.lock.RLock()
 	entries := append([]macSidebarEntry(nil), s.entries...)
+	footer := s.footer
 	selected := s.selected
 	s.lock.RUnlock()
 	result := macSidebarSnapshot{entries: make([]macSidebarEntrySnapshot, 0, len(entries))}
 	if selected != nil {
 		result.selectedItemID = selected.internalID
+	}
+	if footer != nil {
+		item := snapshotMacSidebarItem(footer)
+		result.footer = &item
 	}
 	for _, entry := range entries {
 		if entry.item != nil {
@@ -361,6 +416,7 @@ func (s *MacSidebar) itemHandles() []*MacSidebarItem {
 	}
 	s.lock.RLock()
 	entries := append([]macSidebarEntry(nil), s.entries...)
+	footer := s.footer
 	s.lock.RUnlock()
 	var result []*MacSidebarItem
 	for _, entry := range entries {
@@ -372,6 +428,9 @@ func (s *MacSidebar) itemHandles() []*MacSidebarItem {
 			result = append(result, entry.section.items...)
 			entry.section.lock.RUnlock()
 		}
+	}
+	if footer != nil {
+		result = append(result, footer)
 	}
 	return result
 }
@@ -408,9 +467,11 @@ func handleMacSidebarItemSelected(id uint64) {
 	if item == nil || item.isDead() {
 		return
 	}
-	item.sidebar.lock.Lock()
-	item.sidebar.selected = item
-	item.sidebar.lock.Unlock()
+	if !item.footer {
+		item.sidebar.lock.Lock()
+		item.sidebar.selected = item
+		item.sidebar.lock.Unlock()
+	}
 	item.lock.RLock()
 	callback := item.onClick
 	item.lock.RUnlock()
