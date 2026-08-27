@@ -665,39 +665,6 @@ void windowSetUseToolbar(void* nsWindow, bool useToolbar) {
 	}
 }
 
-// Set window toolbar style
-void windowSetToolbarStyle(void* nsWindow, int style) {
-	NSWindow* window = nativeWindow(nsWindow);
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-	if (@available(macOS 11.0, *)) {
-		NSToolbar* toolbar = [window toolbar];
-		if ( toolbar == nil ) {
-			return;
-		}
-		[window setToolbarStyle:style];
-	}
-#endif
-
-}
-// Set Hide Toolbar Separator
-void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
-	NSToolbar* toolbar = [nativeWindow(nsWindow) toolbar];
-	if( toolbar == nil ) {
-		return;
-	}
-	[toolbar setShowsBaselineSeparator:!hideSeparator];
-}
-
-// Configure the toolbar auto-hide feature
-void windowSetShowToolbarWhenFullscreen(void* window, bool setting) {
-	NSWindow* nsWindow = nativeWindow(window);
-	// Get delegate
-	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
-	// Set height
-	delegate.showToolbarWhenFullscreen = setting;
-}
-
 // Set Window appearance type
 void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
 	// set window appearance type by name
