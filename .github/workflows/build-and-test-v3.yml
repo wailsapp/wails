@@ -108,6 +108,8 @@ jobs:
       - name: Install linux dependencies (GTK4 default)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
 
@@ -219,6 +221,8 @@ jobs:
       - name: Install linux dependencies (GTK4 default)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
 
