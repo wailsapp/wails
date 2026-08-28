@@ -184,6 +184,7 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 @property (retain) NSLayoutConstraint* footerHeightConstraint;
 @property unsigned long long selectedItemID;
 @property BOOL suppressSelectionCallback;
+- (void)fitOutlineToViewport;
 - (void)reloadContents;
 @end
 
@@ -210,15 +211,32 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     scrollView.drawsBackground = NO;
     scrollView.borderType = NSNoBorder;
     scrollView.hasVerticalScroller = YES;
+    scrollView.hasHorizontalScroller = NO;
     scrollView.autohidesScrollers = YES;
+    scrollView.horizontalScrollElasticity = NSScrollElasticityNone;
 
     NSOutlineView* outlineView = [[NSOutlineView alloc] initWithFrame:scrollView.bounds];
     outlineView.backgroundColor = [NSColor clearColor];
     outlineView.headerView = nil;
     outlineView.floatsGroupRows = YES;
     outlineView.indentationPerLevel = 12.0;
-    outlineView.autoresizesOutlineColumn = NO;
+    outlineView.autoresizingMask = NSViewWidthSizable;
+    outlineView.autoresizesOutlineColumn = YES;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+    if (@available(macOS 11.0, *)) {
+        // The table style, rather than the deprecated selection-only style,
+        // preserves AppKit's source-list material and subdued selection.
+        outlineView.style = NSTableViewStyleSourceList;
+    } else {
+        outlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
+    }
+#else
     outlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
+#endif
+    // Finder keeps focus in the primary content when its source-list rows are
+    // clicked. The selected row therefore uses AppKit's subdued,
+    // non-emphasized treatment instead of the bright accent fill.
+    outlineView.refusesFirstResponder = YES;
     outlineView.allowsEmptySelection = YES;
     outlineView.allowsMultipleSelection = NO;
     outlineView.rowSizeStyle = NSTableViewRowSizeStyleDefault;
@@ -258,6 +276,30 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     [outlineView release];
     [scrollView release];
     [footer release];
+}
+
+- (void)viewDidLayout {
+    [super viewDidLayout];
+    [self fitOutlineToViewport];
+}
+
+- (void)fitOutlineToViewport {
+    if (self.outlineView == nil || self.scrollView == nil) return;
+    CGFloat width = self.scrollView.contentView.bounds.size.width;
+    if (width <= 0) return;
+
+    NSRect frame = self.outlineView.frame;
+    frame.origin.x = 0;
+    frame.size.width = width;
+    self.outlineView.frame = frame;
+    self.outlineView.outlineTableColumn.width = width;
+
+    NSPoint origin = self.scrollView.contentView.bounds.origin;
+    if (origin.x != 0) {
+        origin.x = 0;
+        [self.scrollView.contentView scrollToPoint:origin];
+        [self.scrollView reflectScrolledClipView:self.scrollView.contentView];
+    }
 }
 
 - (NSArray<WailsSidebarNode*>*)visibleNodes:(NSArray<WailsSidebarNode*>*)nodes {
@@ -436,8 +478,7 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 - (void)reloadContents {
     if (self.outlineView == nil) return;
     self.suppressSelectionCallback = YES;
-    CGFloat availableWidth = self.outlineView.bounds.size.width;
-    if (availableWidth > 0) self.outlineView.outlineTableColumn.width = availableWidth;
+    [self fitOutlineToViewport];
     [self.outlineView reloadData];
     for (WailsSidebarNode* node in self.roots) {
         if (node.section && !node.hidden) [self.outlineView expandItem:node];
