@@ -848,9 +848,6 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 @property BOOL hasCanCollapseFromResize;
 @property BOOL startCollapsed;
 @property int contentLayout;
-@property int scrollEdgeEffectStyle;
-@property BOOL hasScrollEdgeEffectStyle;
-@property (retain) NSSplitViewItemAccessoryViewController* scrollEdgeAccessory;
 @property unsigned long long selectedSidebarItemID;
 @property (retain) NSMutableArray<WailsSidebarNode*>* sidebarRoots;
 @property (retain) WailsSidebarNode* sidebarFooter;
@@ -881,7 +878,6 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     [_inspectorController release];
     [_viewController release];
     [_item release];
-    [_scrollEdgeAccessory release];
 #ifndef WAILS_NATIVE_ONLY
     [_webView release];
 #endif
@@ -991,36 +987,6 @@ static void splitViewItemApplyCanCollapseFromResize(NSSplitViewItem* item, BOOL 
     }
 }
 
-static void splitViewRecordApplyScrollEdgeEffect(WailsSplitPaneRecord* record) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
-    if (record == nil || !record.primary || !record.hasScrollEdgeEffectStyle || record.item == nil) return;
-    if (@available(macOS 26.0, *)) {
-        NSSplitViewItemAccessoryViewController* accessory = record.scrollEdgeAccessory;
-        if (accessory == nil) {
-            accessory = [[NSSplitViewItemAccessoryViewController alloc] init];
-            accessory.automaticallyAppliesContentInsets = NO;
-            accessory.view = [[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 1, 1)] autorelease];
-            [record.item addTopAlignedAccessoryViewController:accessory];
-            record.scrollEdgeAccessory = accessory;
-            [accessory release];
-        }
-        if (@available(macOS 26.1, *)) {
-            switch (record.scrollEdgeEffectStyle) {
-                case 1:
-                    accessory.preferredScrollEdgeEffectStyle = NSScrollEdgeEffectStyle.softStyle;
-                    break;
-                case 2:
-                    accessory.preferredScrollEdgeEffectStyle = NSScrollEdgeEffectStyle.hardStyle;
-                    break;
-                default:
-                    accessory.preferredScrollEdgeEffectStyle = NSScrollEdgeEffectStyle.automaticStyle;
-                    break;
-            }
-        }
-    }
-#endif
-}
-
 void* splitViewCreate(const char* autosaveName) {
     WailsSplitViewOwner* owner = [[WailsSplitViewOwner alloc] init];
     if (owner == nil) return NULL;
@@ -1035,10 +1001,9 @@ void splitViewAddPane(void* handlePtr, unsigned long long paneID, int role, bool
     double minThickness, double maxThickness,
     double preferredFraction, bool hasPreferredFraction,
     double holdingPriority, bool hasHoldingPriority,
-    bool collapsible, bool hasCollapsible,
-    bool canCollapseFromResize, bool hasCanCollapseFromResize,
-    bool startCollapsed, int contentLayout,
-    int scrollEdgeEffectStyle, bool hasScrollEdgeEffectStyle) {
+	bool collapsible, bool hasCollapsible,
+	bool canCollapseFromResize, bool hasCanCollapseFromResize,
+	bool startCollapsed, int contentLayout) {
     WailsSplitViewOwner* owner = splitViewOwner(handlePtr);
     if (owner == nil || owner.installed || owner.torndown) return;
     WailsSplitPaneRecord* record = [[WailsSplitPaneRecord alloc] init];
@@ -1055,10 +1020,8 @@ void splitViewAddPane(void* handlePtr, unsigned long long paneID, int role, bool
     record.hasCollapsible = hasCollapsible;
     record.canCollapseFromResize = canCollapseFromResize;
     record.hasCanCollapseFromResize = hasCanCollapseFromResize;
-    record.startCollapsed = startCollapsed;
-    record.contentLayout = contentLayout;
-    record.scrollEdgeEffectStyle = scrollEdgeEffectStyle;
-    record.hasScrollEdgeEffectStyle = hasScrollEdgeEffectStyle;
+	record.startCollapsed = startCollapsed;
+	record.contentLayout = contentLayout;
     record.sidebarRoots = [NSMutableArray array];
     record.inspectorSections = [NSMutableArray array];
     record.inspectorModelsByID = [NSMutableDictionary dictionary];
@@ -1179,9 +1142,8 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
             if (record.role == WailsSplitPaneRoleSidebar) item.allowsFullHeightLayout = YES;
         }
 #endif
-        [controller addSplitViewItem:item];
-        record.item = item;
-        splitViewRecordApplyScrollEdgeEffect(record);
+		[controller addSplitViewItem:item];
+		record.item = item;
     }
 
     [primaryWebView retain];
@@ -1387,9 +1349,8 @@ bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop
             if (record.role == WailsSplitPaneRoleSidebar) item.allowsFullHeightLayout = YES;
         }
 #endif
-        [controller addSplitViewItem:item];
-        record.item = item;
-        splitViewRecordApplyScrollEdgeEffect(record);
+		[controller addSplitViewItem:item];
+		record.item = item;
     }
 
     for (WailsSplitPaneRecord* record in owner.records) {
@@ -1502,13 +1463,6 @@ void splitViewPaneSetContentLayout(void* handlePtr, unsigned long long paneID, i
 #ifndef WAILS_NATIVE_ONLY
     if (record.webView != nil) windowApplyContentLayout(record.webView.window, layout);
 #endif
-}
-void splitViewPaneSetScrollEdgeEffectStyle(void* handlePtr, unsigned long long paneID, int style) {
-    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
-    if (record == nil || !record.primary || style < 0 || style > 2) return;
-    record.scrollEdgeEffectStyle = style;
-    record.hasScrollEdgeEffectStyle = YES;
-    splitViewRecordApplyScrollEdgeEffect(record);
 }
 void splitViewPaneSetCollapsed(void* handlePtr, unsigned long long paneID, bool collapsed) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);

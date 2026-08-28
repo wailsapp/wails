@@ -49,31 +49,6 @@ func TestToolbarDisplayModeDefaultsAndValidation(t *testing.T) {
 	}
 }
 
-func TestToolbarBackgroundMaterial(t *testing.T) {
-	toolbar := NewMacToolbar().SetBackgroundMaterial(NSVisualEffectMaterialHeaderView)
-	toolbar.stateLock.RLock()
-	if !toolbar.backgroundMaterialSet || toolbar.backgroundMaterial != NSVisualEffectMaterialHeaderView {
-		toolbar.stateLock.RUnlock()
-		t.Fatal("background material was not stored")
-	}
-	toolbar.stateLock.RUnlock()
-
-	toolbar.SetBackgroundMaterial(NSVisualEffectMaterial(99))
-	toolbar.stateLock.RLock()
-	if toolbar.backgroundMaterial != NSVisualEffectMaterialHeaderView {
-		toolbar.stateLock.RUnlock()
-		t.Fatal("invalid background material changed the toolbar")
-	}
-	toolbar.stateLock.RUnlock()
-	toolbar.ClearBackgroundMaterial()
-	toolbar.stateLock.RLock()
-	if toolbar.backgroundMaterialSet {
-		toolbar.stateLock.RUnlock()
-		t.Fatal("ClearBackgroundMaterial did not clear the explicit material")
-	}
-	toolbar.stateLock.RUnlock()
-}
-
 func TestToolbarShareProviderIsNormalisedAndInvokedLazily(t *testing.T) {
 	toolbar := NewMacToolbar()
 	formats := []MacShareRepresentation{

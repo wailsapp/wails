@@ -350,8 +350,6 @@ func applyMacToolbarLatestState(toolbar *MacToolbar) {
 		return
 	}
 	macToolbarSetDisplayMode(toolbar.state.native, toolbar.displayMode)
-	macToolbarSetBackgroundMaterial(toolbar.state.native,
-		toolbar.backgroundMaterialSet, toolbar.backgroundMaterial)
 	for _, item := range toolbar.itemSnapshot() {
 		applyMacToolbarItemLatestState(toolbar.state.native, item)
 	}
@@ -359,10 +357,6 @@ func applyMacToolbarLatestState(toolbar *MacToolbar) {
 
 func macToolbarSetDisplayMode(native unsafe.Pointer, mode MacToolbarDisplayMode) {
 	C.toolbarSetDisplayMode(native, C.int(mode))
-}
-
-func macToolbarSetBackgroundMaterial(native unsafe.Pointer, enabled bool, material NSVisualEffectMaterial) {
-	C.toolbarSetBackgroundMaterial(native, C.bool(enabled), C.int(material))
 }
 
 func applyMacToolbarItemLatestState(native unsafe.Pointer, item *MacToolbarItem) {

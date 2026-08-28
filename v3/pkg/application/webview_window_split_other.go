@@ -6,13 +6,12 @@ package application
 // public API buildable everywhere; pane handles are inert and the window
 // keeps its ordinary primary WebView.
 
-func macSplitPaneApplyMinimumThickness(*MacSplitPane, float64)                       {}
-func macSplitPaneApplyMaximumThickness(*MacSplitPane, float64)                       {}
-func macSplitPaneApplyPreferredFraction(*MacSplitPane, float64)                      {}
-func macSplitPaneApplyHoldingPriority(*MacSplitPane, float64)                        {}
-func macSplitPaneApplyCollapsible(*MacSplitPane, bool)                               {}
-func macSplitPaneApplyCanCollapseFromResize(*MacSplitPane, bool)                     {}
-func macSplitPaneApplyContentLayout(*MacSplitPane, MacContentLayout)                 {}
-func macSplitPaneApplyScrollEdgeEffectStyle(*MacSplitPane, MacScrollEdgeEffectStyle) {}
-func macSplitPaneApplyCollapsed(*MacSplitPane, bool)                                 {}
-func macSplitPaneApplyToggle(*MacSplitPane)                                          {}
+func macSplitPaneApplyMinimumThickness(*MacSplitPane, float64)       {}
+func macSplitPaneApplyMaximumThickness(*MacSplitPane, float64)       {}
+func macSplitPaneApplyPreferredFraction(*MacSplitPane, float64)      {}
+func macSplitPaneApplyHoldingPriority(*MacSplitPane, float64)        {}
+func macSplitPaneApplyCollapsible(*MacSplitPane, bool)               {}
+func macSplitPaneApplyCanCollapseFromResize(*MacSplitPane, bool)     {}
+func macSplitPaneApplyContentLayout(*MacSplitPane, MacContentLayout) {}
+func macSplitPaneApplyCollapsed(*MacSplitPane, bool)                 {}
+func macSplitPaneApplyToggle(*MacSplitPane)                          {}

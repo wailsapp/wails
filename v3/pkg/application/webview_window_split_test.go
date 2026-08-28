@@ -159,21 +159,6 @@ func TestMacSplitPrimaryContentLayout(t *testing.T) {
 	}
 }
 
-func TestMacSplitPrimaryScrollEdgeEffectStyle(t *testing.T) {
-	primary := NewMacSplitView().AddPrimaryContent()
-	if got := primary.ScrollEdgeEffectStyle(); got != MacScrollEdgeEffectStyleAutomatic {
-		t.Fatalf("default scroll-edge style = %d, want automatic", got)
-	}
-	primary.SetScrollEdgeEffectStyle(MacScrollEdgeEffectStyleSoft)
-	if got := primary.ScrollEdgeEffectStyle(); got != MacScrollEdgeEffectStyleSoft {
-		t.Fatalf("scroll-edge style = %d, want soft", got)
-	}
-	primary.SetScrollEdgeEffectStyle(MacScrollEdgeEffectStyle(99))
-	if got := primary.ScrollEdgeEffectStyle(); got != MacScrollEdgeEffectStyleSoft {
-		t.Fatalf("invalid style changed preference to %d", got)
-	}
-}
-
 func TestMacSplitPaneCollapseCallbackDeduplicates(t *testing.T) {
 	split, _, pane, _ := newTestSidebarSplit()
 	internal := split.paneSnapshot()[0]

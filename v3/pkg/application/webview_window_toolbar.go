@@ -24,11 +24,9 @@ type MacToolbar struct {
 	// stateLock protects state and every field in macToolbarState. Native
 	// operations take this lock on the application thread so a toolbar cannot
 	// be detached while an item update is using its AppKit handle.
-	stateLock             sync.RWMutex
-	state                 *macToolbarState
-	displayMode           MacToolbarDisplayMode
-	backgroundMaterial    NSVisualEffectMaterial
-	backgroundMaterialSet bool
+	stateLock   sync.RWMutex
+	state       *macToolbarState
+	displayMode MacToolbarDisplayMode
 }
 
 var toolbarIdentifier uint64
@@ -81,84 +79,6 @@ func (t *MacToolbar) SetDisplayMode(mode MacToolbarDisplayMode) *MacToolbar {
 		}
 	})
 	return t
-}
-
-// SetBackgroundMaterial places a native NSVisualEffectView beneath the
-// toolbar controls and above edge-to-edge window content. AppKit owns the
-// material's tint, blur, vibrancy, active-state changes, and accessibility
-// adaptation. Pair it with a transparent titlebar when content should remain
-// visible through the toolbar.
-//
-// Passing NSVisualEffectMaterialAuto selects AppKit's header material.
-func (t *MacToolbar) SetBackgroundMaterial(material NSVisualEffectMaterial) *MacToolbar {
-	if t == nil || !validMacToolbarBackgroundMaterial(material) {
-		return t
-	}
-	t.stateLock.Lock()
-	t.backgroundMaterial = material
-	t.backgroundMaterialSet = true
-	installed := t.state != nil && t.state.native != nil
-	t.stateLock.Unlock()
-	if !installed {
-		return t
-	}
-	InvokeSync(func() {
-		t.stateLock.RLock()
-		defer t.stateLock.RUnlock()
-		if t.state != nil && t.state.native != nil {
-			macToolbarSetBackgroundMaterial(t.state.native, true, t.backgroundMaterial)
-		}
-	})
-	return t
-}
-
-// ClearBackgroundMaterial removes the toolbar's explicit visual-effect
-// background and returns background rendering to the containing window.
-func (t *MacToolbar) ClearBackgroundMaterial() *MacToolbar {
-	if t == nil {
-		return t
-	}
-	t.stateLock.Lock()
-	t.backgroundMaterialSet = false
-	installed := t.state != nil && t.state.native != nil
-	t.stateLock.Unlock()
-	if !installed {
-		return t
-	}
-	InvokeSync(func() {
-		t.stateLock.RLock()
-		defer t.stateLock.RUnlock()
-		if t.state != nil && t.state.native != nil {
-			macToolbarSetBackgroundMaterial(t.state.native, false, t.backgroundMaterial)
-		}
-	})
-	return t
-}
-
-func validMacToolbarBackgroundMaterial(material NSVisualEffectMaterial) bool {
-	switch material {
-	case NSVisualEffectMaterialAuto,
-		NSVisualEffectMaterialAppearanceBased,
-		NSVisualEffectMaterialLight,
-		NSVisualEffectMaterialDark,
-		NSVisualEffectMaterialTitlebar,
-		NSVisualEffectMaterialSelection,
-		NSVisualEffectMaterialMenu,
-		NSVisualEffectMaterialPopover,
-		NSVisualEffectMaterialSidebar,
-		NSVisualEffectMaterialHeaderView,
-		NSVisualEffectMaterialSheet,
-		NSVisualEffectMaterialWindowBackground,
-		NSVisualEffectMaterialHUDWindow,
-		NSVisualEffectMaterialFullScreenUI,
-		NSVisualEffectMaterialToolTip,
-		NSVisualEffectMaterialContentBackground,
-		NSVisualEffectMaterialUnderWindowBackground,
-		NSVisualEffectMaterialUnderPageBackground:
-		return true
-	default:
-		return false
-	}
 }
 
 type macToolbarItemKind int

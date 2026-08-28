@@ -64,7 +64,6 @@ void toolbarDetach(void* nsWindow);
 
 // Sets NSToolbar.displayMode. Values map to NSToolbarDisplayMode.
 void toolbarSetDisplayMode(void* handlePtr, int displayMode);
-void toolbarSetBackgroundMaterial(void* handlePtr, bool enabled, int material);
 
 void* toolbarAddButtonItem(void* handlePtr, const char* identifier, unsigned int itemID,
     const char* label, const char* symbolName, const char* tooltip,
