@@ -7,7 +7,7 @@
 extern void systrayClickCallback(long, int);
 extern int systrayPreClickCallback(long, int);
 
-// Bit returned by -[NSEvent pressedMouseButtons] for the right mouse button.
+// Bit returned by +[NSEvent pressedMouseButtons] for the right mouse button.
 static const NSUInteger kRightMouseButtonBit = 1UL << 1;
 
 // See systemtray_darwin.h for the #5752 rationale.
