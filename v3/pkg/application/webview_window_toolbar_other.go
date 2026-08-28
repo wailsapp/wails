@@ -9,6 +9,7 @@ func macToolbarItemSetLabel(unsafe.Pointer, string, string)          {}
 func macToolbarItemSetSymbol(unsafe.Pointer, string, string)         {}
 func macToolbarItemSetTooltip(unsafe.Pointer, string, string)        {}
 func macToolbarItemSetBordered(unsafe.Pointer, string, bool)         {}
+func macToolbarItemSetNavigational(unsafe.Pointer, string, bool)     {}
 func macToolbarItemSetProminent(unsafe.Pointer, string, bool)        {}
 func macToolbarItemSetTintColor(unsafe.Pointer, string, *RGBA)       {}
 func macToolbarItemSetEnabled(unsafe.Pointer, string, bool)          {}

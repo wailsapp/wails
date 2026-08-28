@@ -177,6 +177,7 @@ type macToolbarItemSnapshot struct {
 	symbolName         string
 	tooltip            string
 	bordered           bool
+	navigational       bool
 	prominent          bool
 	tintColor          *RGBA
 	badgeCount         int
@@ -202,6 +203,7 @@ func snapshotMacToolbarItem(item *MacToolbarItem) macToolbarItemSnapshot {
 		symbolName:         item.symbolName,
 		tooltip:            item.tooltip,
 		bordered:           item.bordered,
+		navigational:       item.navigational,
 		prominent:          item.prominent,
 		badgeCount:         item.badgeCount,
 		draggable:          item.draggable,
@@ -381,6 +383,7 @@ func applyMacToolbarItemLatestState(native unsafe.Pointer, item *MacToolbarItem)
 	}
 	macToolbarItemSetTooltip(native, snapshot.identifier, snapshot.tooltip)
 	macToolbarItemSetBordered(native, snapshot.identifier, snapshot.bordered)
+	macToolbarItemSetNavigational(native, snapshot.identifier, snapshot.navigational)
 	macToolbarItemSetProminent(native, snapshot.identifier, snapshot.prominent)
 	macToolbarItemSetTintColor(native, snapshot.identifier, snapshot.tintColor)
 	enabled := !snapshot.disabled && (snapshot.kind != toolbarShare || len(snapshot.shareFormats) > 0)
@@ -494,6 +497,12 @@ func macToolbarItemSetBordered(native unsafe.Pointer, id string, bordered bool) 
 	idC := C.CString(id)
 	defer C.free(unsafe.Pointer(idC))
 	C.toolbarItemSetBordered(native, idC, C.bool(bordered))
+}
+
+func macToolbarItemSetNavigational(native unsafe.Pointer, id string, navigational bool) {
+	idC := C.CString(id)
+	defer C.free(unsafe.Pointer(idC))
+	C.toolbarItemSetNavigational(native, idC, C.bool(navigational))
 }
 
 func macToolbarItemSetProminent(native unsafe.Pointer, id string, prominent bool) {

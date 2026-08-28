@@ -241,6 +241,7 @@ func TestToolbarMutatorsBeforeInstallation(t *testing.T) {
 		SetSymbol("info.circle").
 		SetTooltip("Show details").
 		SetBordered(true).
+		SetNavigational(true).
 		SetProminent(true).
 		SetTintColor(color).
 		SetEnabled(false).
@@ -254,7 +255,7 @@ func TestToolbarMutatorsBeforeInstallation(t *testing.T) {
 	if snapshot.label != "Details (3)" || snapshot.symbolName != "info.circle" || snapshot.tooltip != "Show details" {
 		t.Fatal("text and symbol mutators should update the item before installation")
 	}
-	if !snapshot.bordered || !snapshot.prominent || !snapshot.disabled || !snapshot.hidden ||
+	if !snapshot.bordered || !snapshot.navigational || !snapshot.prominent || !snapshot.disabled || !snapshot.hidden ||
 		snapshot.badgeCount != 3 || !snapshot.draggable {
 		t.Fatal("state mutators should update the item before installation")
 	}
@@ -280,6 +281,23 @@ func TestToolbarGroupSelectionValidation(t *testing.T) {
 	group.SetSelectionMode(ToolbarGroupMomentary)
 	if got := snapshotToolbarItemForTest(group.MacToolbarItem).selectionMode; got != ToolbarGroupMomentary {
 		t.Fatalf("selection mode = %d, want momentary", got)
+	}
+}
+
+func TestToolbarMomentaryGroupDoesNotRetainSelection(t *testing.T) {
+	toolbar := NewMacToolbar()
+	group := toolbar.AddGroup("Navigation", ToolbarGroupMomentary)
+	group.AddButton("Back").OnClick(func(*Context) {})
+	group.AddButton("Forward").OnClick(func(*Context) {})
+
+	if got := snapshotToolbarItemForTest(group.MacToolbarItem).selectedIndex; got != -1 {
+		t.Fatalf("momentary group selected index = %d, want -1", got)
+	}
+
+	group.SetSelectedIndex(0)
+	group.SetSelectionMode(ToolbarGroupMomentary)
+	if got := snapshotToolbarItemForTest(group.MacToolbarItem).selectedIndex; got != -1 {
+		t.Fatalf("momentary selection mode retained index %d, want -1", got)
 	}
 }
 
@@ -337,6 +355,7 @@ type toolbarItemTestSnapshot struct {
 	symbolName    string
 	tooltip       string
 	bordered      bool
+	navigational  bool
 	prominent     bool
 	tintColor     *RGBA
 	badgeCount    int
@@ -358,6 +377,7 @@ func snapshotToolbarItemForTest(item *MacToolbarItem) toolbarItemTestSnapshot {
 		symbolName:    item.symbolName,
 		tooltip:       item.tooltip,
 		bordered:      item.bordered,
+		navigational:  item.navigational,
 		prominent:     item.prominent,
 		badgeCount:    item.badgeCount,
 		draggable:     item.draggable,

@@ -217,16 +217,17 @@ type MacToolbarItem struct {
 	toolbar    *MacToolbar
 	parent     *MacToolbarItem
 
-	label      string
-	symbolName string
-	tooltip    string
-	bordered   bool
-	prominent  bool
-	tintColor  *RGBA
-	badgeCount int
-	draggable  bool
-	disabled   bool
-	hidden     bool
+	label        string
+	symbolName   string
+	tooltip      string
+	bordered     bool
+	navigational bool
+	prominent    bool
+	tintColor    *RGBA
+	badgeCount   int
+	draggable    bool
+	disabled     bool
+	hidden       bool
 
 	items              []*MacToolbarItem
 	selectionMode      MacToolbarGroupSelectionMode
@@ -316,6 +317,12 @@ func (t *MacToolbar) AddShare(label string) *MacToolbarShareItem {
 func (t *MacToolbar) AddGroup(label string, mode MacToolbarGroupSelectionMode) *MacToolbarGroup {
 	item := newMacToolbarItem(t, toolbarGroup, label)
 	item.selectionMode = mode
+	if mode == ToolbarGroupMomentary {
+		// Momentary groups must not retain a selected segment. Leaving this at
+		// Go's zero value preselects the first segment and prevents consecutive
+		// activations of that segment from dispatching through AppKit.
+		item.selectedIndex = -1
+	}
 	t.add(item)
 	return &MacToolbarGroup{MacToolbarItem: item}
 }
@@ -502,6 +509,22 @@ func (i *MacToolbarItem) SetBordered(bordered bool) *MacToolbarItem {
 	return i
 }
 
+// SetNavigational marks the item as a navigation control on macOS 11 and
+// newer. AppKit may position navigation items before the unified window title,
+// in the order they appear in the toolbar.
+func (i *MacToolbarItem) SetNavigational(navigational bool) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	i.navigational = navigational
+	i.lock.Unlock()
+	i.update(func(native unsafe.Pointer) {
+		macToolbarItemSetNavigational(native, i.identifier, navigational)
+	})
+	return i
+}
+
 // SetProminent controls the prominent toolbar-item style on macOS 26 and
 // newer.
 func (i *MacToolbarItem) SetProminent(prominent bool) *MacToolbarItem {
@@ -611,8 +634,16 @@ func (g *MacToolbarGroup) SetSelectionMode(mode MacToolbarGroupSelectionMode) *M
 	}
 	g.lock.Lock()
 	g.selectionMode = mode
+	if mode == ToolbarGroupMomentary {
+		g.selectedIndex = -1
+	}
 	g.lock.Unlock()
-	g.update(func(native unsafe.Pointer) { macToolbarGroupSetSelectionMode(native, g.identifier, mode) })
+	g.update(func(native unsafe.Pointer) {
+		macToolbarGroupSetSelectionMode(native, g.identifier, mode)
+		if mode == ToolbarGroupMomentary {
+			macToolbarGroupSetSelectedIndex(native, g.identifier, -1)
+		}
+	})
 	return g
 }
 

@@ -105,6 +105,7 @@ void toolbarItemSetLabel(void* handlePtr, const char* identifier, const char* la
 void toolbarItemSetSymbol(void* handlePtr, const char* identifier, const char* symbolName);
 void toolbarItemSetTooltip(void* handlePtr, const char* identifier, const char* tooltip);
 void toolbarItemSetBordered(void* handlePtr, const char* identifier, bool bordered);
+void toolbarItemSetNavigational(void* handlePtr, const char* identifier, bool navigational);
 void toolbarItemSetProminent(void* handlePtr, const char* identifier, bool prominent);
 void toolbarItemSetTintColor(void* handlePtr, const char* identifier, bool hasTint,
     double tintR, double tintG, double tintB, double tintA);

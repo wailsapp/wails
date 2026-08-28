@@ -770,6 +770,15 @@ void toolbarItemSetBordered(void* handlePtr, const char* identifier, bool border
     }
 }
 
+void toolbarItemSetNavigational(void* handlePtr, const char* identifier, bool navigational) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+    NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
+    if (@available(macOS 11.0, *)) {
+        if (item != nil) item.navigational = navigational;
+    }
+#endif
+}
+
 void toolbarItemSetProminent(void* handlePtr, const char* identifier, bool prominent) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
     NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
