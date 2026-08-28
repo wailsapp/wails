@@ -31,6 +31,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.15 - 2026-08-27
+
+## Fixed
+- Increase WebView2 embed timeout to 60 seconds in [PR](https://github.com/wailsapp/wails/pull/6043) by @Grantmartin2002
+
+## v3.0.0-beta.14 - 2026-08-26
+
+## Fixed
+- Name Control-letter key presses correctly on macOS in [PR](https://github.com/wailsapp/wails/pull/6032) by @taliesin-ai
+- Fix ICO tray icons and follow taskbar theme on Windows in [PR](https://github.com/wailsapp/wails/pull/6016) by @nik9play
+
+## v3.0.0-beta.13 - 2026-08-25
+
+## Fixed
+- Keep serving main thread work on macOS while a modal loop runs in [PR](https://github.com/wailsapp/wails/pull/6026) by @leaanthony
+- Make mobile secure storage fallible and fail-closed in [PR](https://github.com/wailsapp/wails/pull/5923) by @mortenolsrud
+- Run application event hooks even when no listener is registered in [PR](https://github.com/wailsapp/wails/pull/5999) by @archy-rock3t-cloud
+- Correct typos in comments and localized documentation in [PR](https://github.com/wailsapp/wails/pull/6023) by @haoku123
+- Remove the precompiled macOS binaries committed under `v3/examples` in [PR](https://github.com/wailsapp/wails/pull/6025) by @4RH1T3CT0R7
+
+## v3.0.0-beta.12 - 2026-08-21
+
+## Added
+- Add macOS notch notification windows with lifecycle and telemetry example — see [documentation](https://v3.wails.io/features/windows/notch-windows) in [PR](https://github.com/wailsapp/wails/pull/6010) by @leaanthony
+- Add macOS NSPanel window support with new options and native integration — see [documentation](https://v3.wails.io/features/windows/options) in [PR](https://github.com/wailsapp/wails/pull/6008) by @leaanthony
+
+## Fixed
+- Prevent SQLite Prepare from hanging under concurrent calls in [PR](https://github.com/wailsapp/wails/pull/5998) by @archy-rock3t-cloud
+
+## v3.0.0-beta.11 - 2026-08-20
+
+## Removed
+- Remove obsolete implementation tracker from docs in [PR](https://github.com/wailsapp/wails/pull/6005) by @leaanthony
+
+## v3.0.0-beta.10 - 2026-08-19
+
+## Fixed
+- Fix GTK4 Linux host dropping custom-protocol and file-association launch arguments in [PR](https://github.com/wailsapp/wails/pull/6000) by @midagedev
+- Correctly handle deleted lines and same-source corrections in changelog validation in [PR](https://github.com/wailsapp/wails/pull/5993) by @taliesin-ai
+
 ## v3.0.0-beta.9 - 2026-08-16
 
 ## Added
@@ -51,8 +91,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Import Fragment in preact-ts template to resolve build failure in [PR](https://github.com/wailsapp/wails/pull/5979) by @haoku123
 - Prevent legacy GTK3 service-only applications from crashing when screen
   discovery runs before an active window or display is available (#5966)
-- Fixes issue with incorrect handling of empty strings in JSON parsing in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
 - Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
+
+## Security
+- Update website nanoid lockfiles to patched 3.3.18 to resolve security advisories in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
 
 ## v3.0.0-beta.8 - 2026-08-12
 

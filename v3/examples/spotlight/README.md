@@ -1,6 +1,7 @@
 # Spotlight Example
 
-This example demonstrates how to create a Spotlight-like launcher window using the `CollectionBehavior` option on macOS.
+This example demonstrates how to create a Spotlight-like launcher using an
+opt-in macOS `NSPanel` together with `CollectionBehavior`.
 
 ## Features
 
@@ -8,6 +9,7 @@ This example demonstrates how to create a Spotlight-like launcher window using t
 - **Overlays fullscreen apps**: Using `MacWindowCollectionBehaviorFullScreenAuxiliary`, the window can appear over fullscreen applications
 - **Combined behaviors**: Demonstrates combining multiple behaviors with bitwise OR
 - **Floating window**: `MacWindowLevelFloating` keeps the window above other windows
+- **Non-activating panel**: Uses a dedicated `NSPanel`, so the previously active app stays active
 - **Accessory app**: Doesn't appear in the Dock (uses `ActivationPolicyAccessory`)
 - **Frameless design**: Clean, borderless appearance with translucent backdrop
 
