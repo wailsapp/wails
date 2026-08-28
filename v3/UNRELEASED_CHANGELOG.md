@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Prompt for notarization password in a new terminal window in [PR](https://github.com/wailsapp/wails/pull/6029) by @leaanthony
 
 ## Fixed
 <!-- Bug fixes -->
