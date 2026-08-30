@@ -36,11 +36,26 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
 }
 
 - (void)cancelOperation:(id)sender {
-    if (self.disableEscapeExitsFullscreen &&
-        (self.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+    if ((self.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+        if (!self.disableEscapeExitsFullscreen) {
+            // Keep the system behaviour: Escape leaves fullscreen.
+            [super cancelOperation:sender];
+        }
         return;
     }
-    [super cancelOperation:sender];
+    // Swallow the event outside fullscreen: an Escape the web content left
+    // unhandled would otherwise fall off the responder chain and play the
+    // system alert sound on every press.
+}
+
+// An unhandled key event that reaches the window plays the system alert
+// (NSBeep) by default — audible on every keypress the web content chooses not
+// to claim. Swallow just the keyDown case; other unhandled selectors keep
+// their default behaviour.
+- (void)noResponderFor:(SEL)eventSelector {
+    if (eventSelector != @selector(keyDown:)) {
+        [super noResponderFor:eventSelector];
+    }
 }
 
 @end
