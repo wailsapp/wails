@@ -7,6 +7,84 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
+const (
+	portalBusName       = "org.freedesktop.portal.Desktop"
+	portalObjectPath    = "/org/freedesktop/portal/desktop"
+	portalSettingsIface = "org.freedesktop.portal.Settings"
+
+	// appearanceNamespace is the standardised namespace every portal
+	// implementation publishes; it is the only one read or watched. GNOME also
+	// mirrors the preference under org.gnome.desktop.interface as a string, but
+	// honouring that in the signal filter alone would be inert: the handler
+	// resolves through portalColorScheme, which speaks only this namespace.
+	appearanceNamespace = "org.freedesktop.appearance"
+	colorSchemeKey      = "color-scheme"
+
+	colorSchemePreferDark = 1
+)
+
+// isDarkMode reports the desktop colour-scheme preference, read from the
+// freedesktop Settings portal on every call.
+//
+// Read on demand rather than served from state maintained by
+// monitorThemeChanges: that monitor is started per backend, so any cache it
+// owns is only as correct as its startup wiring, and a cache fed from
+// SettingChanged payloads reports light on every desktop until the first signal
+// arrives. An on-demand read is right whether or not the monitor is running.
+// Callers that need this on a hot path should cache it themselves.
+func (a *linuxApp) isDarkMode() bool {
+	scheme, ok := portalColorScheme()
+	return ok && scheme == colorSchemePreferDark
+}
+
+// portalColorScheme reads org.freedesktop.appearance color-scheme: 0 is no
+// preference, 1 prefers dark, 2 prefers light. ok is false when the portal is
+// unreachable or the value is not the documented type.
+func portalColorScheme() (uint32, bool) {
+	conn, err := dbus.SessionBus()
+	if err != nil {
+		return 0, false
+	}
+
+	obj := conn.Object(portalBusName, portalObjectPath)
+	call := obj.Call(portalSettingsIface+".Read", 0, appearanceNamespace, colorSchemeKey)
+	if call.Err != nil {
+		return 0, false
+	}
+
+	var outer dbus.Variant
+	if err := call.Store(&outer); err != nil {
+		return 0, false
+	}
+	// Portal v1 Read double-wraps the value; other implementations, and ReadOne,
+	// return it singly wrapped. Accept both, because rejecting one shape here
+	// silently reports light -- the failure this whole path exists to remove.
+	if inner, ok := outer.Value().(dbus.Variant); ok {
+		scheme, ok := inner.Value().(uint32)
+		return scheme, ok
+	}
+	scheme, ok := outer.Value().(uint32)
+	return scheme, ok
+}
+
+// isColorSchemeChange reports whether a signal is a colour-scheme
+// SettingChanged in the standardised appearance namespace.
+func isColorSchemeChange(sig *dbus.Signal) bool {
+	if sig.Name != portalSettingsIface+".SettingChanged" {
+		return false
+	}
+	if len(sig.Body) < 2 {
+		return false
+	}
+	namespace, _ := sig.Body[0].(string)
+	key, _ := sig.Body[1].(string)
+	return namespace == appearanceNamespace && key == colorSchemeKey
+}
+
+// monitorThemeChanges emits Linux.SystemThemeChanged when the desktop colour
+// scheme changes. The portal is re-read rather than the signal payload trusted,
+// so the emitted value always agrees with isDarkMode regardless of which
+// namespace fired and what type it carried.
 func (a *linuxApp) monitorThemeChanges() {
 	go func() {
 		defer handlePanic()
@@ -21,7 +99,10 @@ func (a *linuxApp) monitorThemeChanges() {
 		defer conn.Close()
 
 		if err = conn.AddMatchSignal(
-			dbus.WithMatchObjectPath("/org/freedesktop/portal/desktop"),
+			dbus.WithMatchSender(portalBusName),
+			dbus.WithMatchObjectPath(portalObjectPath),
+			dbus.WithMatchInterface(portalSettingsIface),
+			dbus.WithMatchMember("SettingChanged"),
 		); err != nil {
 			a.parent.warning(
 				"[WARNING] Failed to subscribe to portal SettingChanged; theme changes will not fire: %v",
@@ -33,40 +114,20 @@ func (a *linuxApp) monitorThemeChanges() {
 		c := make(chan *dbus.Signal, 10)
 		conn.Signal(c)
 
-		getTheme := func(body []interface{}) (string, bool) {
-			if len(body) < 3 {
-				return "", false
-			}
-			if entry, ok := body[0].(string); !ok || entry != "org.gnome.desktop.interface" {
-				return "", false
-			}
-			if entry, ok := body[1].(string); !ok || entry != "color-scheme" {
-				return "", false
-			}
-			variant, ok := body[2].(dbus.Variant)
-			if !ok {
-				return "", false
-			}
-			value, ok := variant.Value().(string)
-			if !ok {
-				return "", false
-			}
-			return value, true
-		}
-
+		last := a.isDarkMode()
 		for v := range c {
-			theme, ok := getTheme(v.Body)
-			if !ok {
+			if !isColorSchemeChange(v) {
 				continue
 			}
-
-			if theme != a.theme {
-				a.theme = theme
-				event := newApplicationEvent(events.Linux.SystemThemeChanged)
-				event.Context().setIsDarkMode(a.isDarkMode())
-				applicationEvents <- event
+			dark := a.isDarkMode()
+			if dark == last {
+				continue
 			}
+			last = dark
 
+			event := newApplicationEvent(events.Linux.SystemThemeChanged)
+			event.Context().setIsDarkMode(dark)
+			applicationEvents <- event
 		}
 	}()
 }
