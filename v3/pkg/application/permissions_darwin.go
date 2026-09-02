@@ -30,19 +30,23 @@ const (
 //
 //export resolveMediaCapturePermission
 func resolveMediaCapturePermission(windowID C.uint, needAudio C.bool, needVideo C.bool) C.int {
-	if !bool(needAudio) && !bool(needVideo) {
-		return C.int(captureDecisionPrompt)
+	return C.int(mediaCaptureDecision(uint(windowID), bool(needAudio), bool(needVideo)))
+}
+
+func mediaCaptureDecision(windowID uint, needAudio bool, needVideo bool) captureDecision {
+	if !needAudio && !needVideo {
+		return captureDecisionPrompt
 	}
 
 	decision := captureDecisionGrant
-	if bool(needAudio) {
-		decision = strictestCaptureDecision(decision, captureDecisionFor(uint(windowID), PermissionMicrophone))
+	if needAudio {
+		decision = strictestCaptureDecision(decision, captureDecisionFor(windowID, PermissionMicrophone))
 	}
-	if bool(needVideo) {
-		decision = strictestCaptureDecision(decision, captureDecisionFor(uint(windowID), PermissionCamera))
+	if needVideo {
+		decision = strictestCaptureDecision(decision, captureDecisionFor(windowID, PermissionCamera))
 	}
 
-	return C.int(decision)
+	return decision
 }
 
 func captureDecisionFor(windowID uint, kind PermissionType) captureDecision {
