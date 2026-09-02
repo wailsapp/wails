@@ -24,6 +24,11 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
+- Fix Linux dark mode detection returning light on a dark desktop until the colour
+  scheme changed, and `linux:SystemThemeChanged` never firing on the GTK4 backend.
+  Both backends now share one implementation, backed by the
+  `org.freedesktop.appearance` portal namespace (#6072)
+
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
