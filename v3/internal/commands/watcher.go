@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/atterpac/refresh/engine"
@@ -18,7 +19,8 @@ func ensureIgnored(list *[]string, pattern string) {
 }
 
 type WatcherOptions struct {
-	Config string `description:"The config file including path" default:"."`
+	AppArgs string `name:"appargs" description:"Extra app arguments"`
+	Config  string `description:"The config file including path" default:"."`
 }
 
 func Watcher(options *WatcherOptions) error {
@@ -42,6 +44,18 @@ func Watcher(options *WatcherOptions) error {
 	}
 
 	ensureIgnored(&devconfig.Config.Ignore.File, "*_test.go")
+
+	// If we have application arguments, append them to the wails task
+	if options.AppArgs != "" {
+		for idx, execAction := range devconfig.Config.ExecStruct {
+			if execAction.Cmd == "wails3 task run" {
+				clonedExec := execAction
+				clonedExec.Cmd = fmt.Sprintf("wails3 task run -appargs='%s'", options.AppArgs)
+				devconfig.Config.ExecStruct[idx] = clonedExec
+				fmt.Printf("Executing %s\n", clonedExec.Cmd)
+			}
+		}
+	}
 
 	watcherEngine, err := engine.NewEngineFromConfig(devconfig.Config)
 	if err != nil {
