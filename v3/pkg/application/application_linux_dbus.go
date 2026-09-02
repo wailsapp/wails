@@ -3,6 +3,9 @@
 package application
 
 import (
+	"context"
+	"time"
+
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -21,6 +24,14 @@ const (
 	colorSchemeKey      = "color-scheme"
 
 	colorSchemePreferDark = 1
+
+	// portalReadTimeout bounds a single Settings.Read. godbus's Object.Call
+	// passes context.Background(), so an unresponsive portal would block the
+	// caller forever, and IsDarkMode is reachable from application code on the
+	// main thread. A local IPC round-trip is sub-millisecond in practice; the
+	// budget is wide enough only to cover D-Bus activating the portal on a cold
+	// first call.
+	portalReadTimeout = 2 * time.Second
 )
 
 // isDarkMode reports the desktop colour-scheme preference, read from the
@@ -46,8 +57,13 @@ func portalColorScheme() (uint32, bool) {
 		return 0, false
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), portalReadTimeout)
+	defer cancel()
+
 	obj := conn.Object(portalBusName, portalObjectPath)
-	call := obj.Call(portalSettingsIface+".Read", 0, appearanceNamespace, colorSchemeKey)
+	call := obj.CallWithContext(ctx, portalSettingsIface+".Read", 0, appearanceNamespace, colorSchemeKey)
+	// A deadline lands here as call.Err, so a hung portal reports the same
+	// "no preference" as an absent one.
 	if call.Err != nil {
 		return 0, false
 	}
