@@ -54,3 +54,25 @@ func TestSystemTrayExplicitHandlersOverrideSmartDefaults(t *testing.T) {
 		t.Fatalf("custom handlers replaced: left calls = %d, right calls = %d", leftCalls, rightCalls)
 	}
 }
+
+// stubTrayImpl embeds the interface so only the methods a test exercises need bodies.
+type stubTrayImpl struct{ systemTrayImpl }
+
+func (stubTrayImpl) setLabel(string) {}
+
+// Label() must report the value set after the tray is running, not the one it started with.
+func TestSystemTrayLabelUpdatedAfterRun(t *testing.T) {
+	probe := &threadProbeApp{}
+	probe.onMain.Store(true)
+	prev := globalApplication
+	globalApplication = &App{impl: probe}
+	t.Cleanup(func() { globalApplication = prev })
+
+	tray := newSystemTray(1)
+	tray.SetLabel("before")
+	tray.impl = stubTrayImpl{}
+	tray.SetLabel("after")
+	if got := tray.Label(); got != "after" {
+		t.Fatalf("Label() = %q, want %q", got, "after")
+	}
+}

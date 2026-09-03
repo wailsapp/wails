@@ -117,8 +117,8 @@ func newSystemTray(id uint) *SystemTray {
 }
 
 func (s *SystemTray) SetLabel(label string) {
+	s.label = label
 	if s.impl == nil {
-		s.label = label
 		return
 	}
 	InvokeSync(func() {
@@ -285,8 +285,8 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 }
 
 func (s *SystemTray) SetTooltip(tooltip string) {
+	s.tooltip = tooltip
 	if s.impl == nil {
-		s.tooltip = tooltip
 		return
 	}
 	InvokeSync(func() {
