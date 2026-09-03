@@ -3,7 +3,6 @@
 package application
 
 import (
-	"cmp"
 	"errors"
 	"fmt"
 	"syscall"
@@ -527,9 +526,10 @@ func (s *windowsSystemTray) setTooltip(tooltip string) {
 	}
 }
 
-// setLabel shows the label as the tooltip: Windows has no text next to the tray icon.
-func (s *windowsSystemTray) setLabel(label string) {
-	s.setTooltip(label)
+// setLabel shows the label as the tooltip unless an explicit tooltip is set,
+// the same rule show() applies when the icon is (re-)added.
+func (s *windowsSystemTray) setLabel(string) {
+	s.setTooltip(s.parent.tooltipOrLabel())
 }
 
 // ---- Unsupported ----
@@ -629,7 +629,7 @@ func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 	s.updateIcon()
 
 	// A label set before Run has to reach the tooltip too, see setLabel.
-	if tooltip := cmp.Or(s.parent.tooltip, s.parent.label); tooltip != "" {
+	if tooltip := s.parent.tooltipOrLabel(); tooltip != "" {
 		s.setTooltip(tooltip)
 	}
 
