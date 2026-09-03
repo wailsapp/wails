@@ -603,9 +603,28 @@ func (f *Frontend) setupChromium() {
 	// Set background colour
 	f.WindowSetBackgroundColour(f.frontendOptions.BackgroundColour)
 
-	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
+	configurePermissionRequested(
+		f.frontendOptions.Windows,
+		func(callback windows.PermissionRequestedCallback) {
+			chromium.PermissionRequestedCallback = callback
+		},
+		chromium.SetGlobalPermission,
+	)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 	chromium.Navigate(f.startURL.String())
+}
+
+func configurePermissionRequested(
+	windowsOptions *windows.Options,
+	setPermissionRequestedCallback func(windows.PermissionRequestedCallback),
+	setGlobalPermission func(edge.CoreWebView2PermissionState),
+) {
+	if windowsOptions != nil && windowsOptions.PermissionRequested != nil {
+		setPermissionRequestedCallback(windowsOptions.PermissionRequested)
+		return
+	}
+
+	setGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 }
 
 type EventNotify struct {
