@@ -84,6 +84,7 @@ type RunTaskOptions struct {
 	Color            bool   `name:"c" description:"colored output. Enabled by default. Set flag to false or use NO_COLOR=1 to disable" default:"true"`
 	Concurrency      int    `name:"C" description:"limit number tasks to run concurrently"`
 	Interval         int64  `name:"interval" description:"interval to watch for changes"`
+	AppArgs          string `name:"appargs" description:"Additional arguments to postfix to tasks using app_args"`
 }
 
 func RunTask(options *RunTaskOptions, otherArgs []string) error {
@@ -115,6 +116,9 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 			return err
 		}
 		vars := parseCLIVars(otherArgs)
+		if len(options.AppArgs) > 0 {
+			vars["CLI_ARGS"] = options.AppArgs
+		}
 		opts := wake.ExecuteOptions{
 			Dir:      dir,
 			Verb:     options.Name,
@@ -127,7 +131,6 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 		}
 		return wake.Execute(options.Name, opts)
 	}
-
 
 	if options.Dir != "" && options.EntryPoint != "" {
 		return fmt.Errorf("task: You can't set both --dir and --taskfile")
@@ -193,41 +196,16 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 	}
 
 	// Parse task name and CLI variables from otherArgs or os.Args
-	var tasksAndVars []string
-
+	taskName := "default"
+	var taskVars []string
 	// Check if we have a task name specified in options
 	if options.Name != "" {
-		// If task name is provided via options, use it and treat otherArgs as CLI variables
-		tasksAndVars = append([]string{options.Name}, otherArgs...)
+		taskName = options.Name
+		taskVars = otherArgs
 	} else if len(otherArgs) > 0 {
-		// Use otherArgs directly if provided
-		tasksAndVars = otherArgs
-	} else {
-		// Fall back to parsing os.Args for backward compatibility
-		var index int
-		var arg string
-		for index, arg = range os.Args[2:] {
-			if !strings.HasPrefix(arg, "-") {
-				break
-			}
-		}
-
-		for _, taskAndVar := range os.Args[index+2:] {
-			if taskAndVar == "--" {
-				break
-			}
-			tasksAndVars = append(tasksAndVars, taskAndVar)
-		}
+		taskName = otherArgs[0]
+		taskVars = otherArgs[1:]
 	}
-
-	// Default task
-	if len(tasksAndVars) == 0 {
-		tasksAndVars = []string{"default"}
-	}
-
-	// Parse task name and CLI variables
-	taskName := tasksAndVars[0]
-	cliVars := tasksAndVars[1:]
 
 	// Create call with CLI variables
 	call := &ast.Call{
@@ -236,7 +214,7 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 	}
 
 	// Parse CLI variables (format: KEY=VALUE)
-	for _, v := range cliVars {
+	for _, v := range taskVars {
 		if strings.Contains(v, "=") {
 			parts := strings.SplitN(v, "=", 2)
 			if len(parts) == 2 {
@@ -249,6 +227,19 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 					})
 				}
 			}
+		}
+	}
+
+	// Forward passthrough args after `--` into Task's special CLI_ARGS variable.
+	if len(options.AppArgs) > 0 {
+		call.Vars.Set("CLI_ARGS", ast.Var{
+			Value: options.AppArgs,
+		})
+
+		if e.Taskfile != nil {
+			e.Taskfile.Vars.Set("CLI_ARGS", ast.Var{
+				Value: options.AppArgs,
+			})
 		}
 	}
 
