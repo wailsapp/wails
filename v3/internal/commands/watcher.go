@@ -3,6 +3,8 @@ package commands
 import (
 	"fmt"
 	"os"
+	"runtime"
+	"strings"
 
 	"github.com/atterpac/refresh/engine"
 	"github.com/wailsapp/wails/v3/internal/signal"
@@ -50,7 +52,19 @@ func Watcher(options *WatcherOptions) error {
 		for idx, execAction := range devconfig.Config.ExecStruct {
 			if execAction.Cmd == "wails3 task run" {
 				clonedExec := execAction
-				clonedExec.Cmd = fmt.Sprintf("wails3 task run -appargs='%s'", options.AppArgs)
+
+				escapedAppArgs := options.AppArgs
+				if runtime.GOOS == "windows" {
+					escapedAppArgs = fmt.Sprintf("%q", options.AppArgs)
+				} else {
+					escapedAppArgs =
+						"'" + strings.ReplaceAll(options.AppArgs, "'", `'"'"'`) + "'"
+				}
+
+				clonedExec.Cmd = fmt.Sprintf(
+					"wails3 task run -appargs=%s",
+					escapedAppArgs,
+				)
 				devconfig.Config.ExecStruct[idx] = clonedExec
 				fmt.Printf("Executing %s\n", clonedExec.Cmd)
 			}

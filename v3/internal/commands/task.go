@@ -116,7 +116,9 @@ func RunTask(options *RunTaskOptions, otherArgs []string) error {
 			return err
 		}
 		vars := parseCLIVars(otherArgs)
-
+		if len(options.AppArgs) > 0 {
+			vars["CLI_ARGS"] = options.AppArgs
+		}
 		opts := wake.ExecuteOptions{
 			Dir:      dir,
 			Verb:     options.Name,
