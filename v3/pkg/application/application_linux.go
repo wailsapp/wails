@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"sync"
@@ -26,22 +25,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
-
-var invalidAppNameChars = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
-var leadingDigits = regexp.MustCompile(`^[0-9]+`)
-
-func sanitizeAppName(name string) string {
-	name = invalidAppNameChars.ReplaceAllString(name, "_")
-	name = leadingDigits.ReplaceAllString(name, "_$0")
-	for strings.Contains(name, "__") {
-		name = strings.ReplaceAll(name, "__", "_")
-	}
-	name = strings.Trim(name, "_")
-	if name == "" {
-		name = "wailsapp"
-	}
-	return strings.ToLower(name)
-}
 
 func init() {
 	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
@@ -232,16 +215,20 @@ func (a *linuxApp) unregisterWindow(window windowPointer) {
 }
 
 func newPlatformApp(parent *App) *linuxApp {
-	name := sanitizeAppName(parent.options.Name)
+	appID, err := applicationID(parent.options)
+	if err != nil {
+		parent.error("invalid Linux.ApplicationID: %w; falling back to %q", err, appID)
+	}
+
 	app := &linuxApp{
 		parent:      parent,
-		application: appNew(name),
+		application: appNew(appID),
 		activated:   make(chan struct{}),
 		windowMap:   map[windowPointer]uint{},
 	}
 
-	if parent.options.Linux.ProgramName != "" {
-		setProgramName(parent.options.Linux.ProgramName)
+	if name := programName(parent.options, appID); name != "" {
+		setProgramName(name)
 	}
 
 	return app
