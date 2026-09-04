@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Stop `wails3 dev` and its background processes when the primary application exits (#6048)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
