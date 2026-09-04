@@ -12,6 +12,10 @@ on:
     types: [submitted]
     branches:
       - master
+
+permissions:
+  contents: read
+
 jobs:
   test_js:
     name: Run JS Tests
@@ -187,6 +191,8 @@ jobs:
     if: always()
     needs: [test_js, test_go, test_templates]
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
       - uses: geekyeggo/delete-artifact@v5
         with:
@@ -281,6 +287,7 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     name: v3 Build Results
+    permissions: {}
     needs: [test_go, test_js, test_templates]
     steps:
       - run: |
