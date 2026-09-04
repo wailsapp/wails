@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `LinuxOptions.ApplicationID` to override the GTK application ID, which Flatpak and Snap require to be a domain the publisher controls (#6020)
 
 ## Changed
 <!-- Changes in existing functionality -->

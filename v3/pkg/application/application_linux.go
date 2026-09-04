@@ -233,9 +233,16 @@ func (a *linuxApp) unregisterWindow(window windowPointer) {
 
 func newPlatformApp(parent *App) *linuxApp {
 	name := sanitizeAppName(parent.options.Name)
+	application := pointer(nil)
+	if id := parent.options.Linux.ApplicationID; id != "" {
+		application = appNewWithID(id)
+	}
+	if application == nil {
+		application = appNew(name)
+	}
 	app := &linuxApp{
 		parent:      parent,
-		application: appNew(name),
+		application: application,
 		activated:   make(chan struct{}),
 		windowMap:   map[windowPointer]uint{},
 	}

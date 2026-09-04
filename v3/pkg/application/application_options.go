@@ -329,6 +329,16 @@ type LinuxOptions struct {
 	//
 	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
 	ProgramName string
+
+	// ApplicationID overrides the GTK application ID, which defaults to
+	// org.wails.<name>.
+	//
+	// It is the app ID a Wayland compositor sees, and a desktop entry is found
+	// by matching it, so a window's icon and its grouping both hang off it.
+	// Flatpak and Snap go further and require the ID to be a domain the
+	// publisher controls, which the default cannot be. Must be a valid GTK
+	// application ID; an invalid one is ignored in favour of the default.
+	ApplicationID string
 }
 
 /********* iOS Options *********/
