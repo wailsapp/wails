@@ -190,7 +190,11 @@ func TestBuildPlanShowsResolvedAnonymousCompilerOverrides(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
 	options := flags.Build{Plan: true, Targets: "linux/amd64", Tags: "sqlite", Obfuscated: true, GarbleArgs: "-tiny -seed=random"}
 	output := captureHCLStdout(t, func() { require.NoError(t, Build(&options, nil)) })
-	assert.Contains(t, output, "Compiler linux/amd64: toolchain=native; tags=production, sqlite, wails_obfuscated")
+	toolchain := "native"
+	if runtime.GOOS != "linux" {
+		toolchain = "docker"
+	}
+	assert.Contains(t, output, "Compiler linux/amd64: toolchain="+toolchain+"; tags=production, sqlite, wails_obfuscated")
 	assert.Contains(t, output, "obfuscated=yes")
 	assert.Contains(t, output, "garble args=-tiny -seed=random")
 
@@ -219,6 +223,10 @@ func TestBuildPlanShowsResolvedAnonymousCompilerOverrides(t *testing.T) {
 func prependFakePlanTools(t *testing.T, names ...string) {
 	t.Helper()
 	directory := t.TempDir()
+	// Cross-platform plan tests may resolve Linux/Windows compilation through
+	// the container toolchain on macOS. A successful image probe keeps these
+	// tests about Plan rendering instead of the developer's local Docker cache.
+	names = append(names, "docker")
 	for _, name := range names {
 		require.NoError(t, os.WriteFile(filepath.Join(directory, name), []byte("#!/bin/sh\nexit 0\n"), 0o755))
 	}
@@ -295,6 +303,9 @@ project {
 }
 
 func TestHCLSignCommandRunsTheCompleteProfilePipeline(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux package signing integration requires a Linux host")
+	}
 	root := t.TempDir()
 	t.Chdir(root)
 	hcl := `version = 3
@@ -343,6 +354,9 @@ if [ "$1" = "run" ]; then mkdir -p dist; printf bundle > dist/index.html; fi
 }
 
 func TestHCLPackageCommandBuildsTheRequestedTargetAndFormat(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Linux package integration requires a Linux host")
+	}
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
@@ -426,7 +440,17 @@ func TestHCLBuildExecutesFrontendAndRealGoCompile(t *testing.T) {
 
 	first, err := runManifestPipelineResult(manifestRunOptions{Verb: "build", TargetOS: runtime.GOOS, TargetArch: runtime.GOARCH})
 	require.NoError(t, err)
-	assert.FileExists(t, filepath.Join(root, "bin", "hello"))
+	expectedOutput := filepath.Join(root, "bin", "hello")
+	expectedReceiptPath := "bin/hello"
+	expectedKind := pipeline.ArtifactBinary
+	if runtime.GOOS == "darwin" {
+		expectedOutput += ".app"
+		expectedReceiptPath += ".app"
+		expectedKind = pipeline.ArtifactBundle
+		assert.DirExists(t, expectedOutput)
+	} else {
+		assert.FileExists(t, expectedOutput)
+	}
 	assert.FileExists(t, filepath.Join(root, "frontend", "dist", "index.html"))
 	assert.Equal(t, "install\nrun bundle\n", readTestFile(t, invocationLog))
 	assert.Equal(t, "must remain untouched\n", readTestFile(t, filepath.Join(root, "Taskfile.yml")))
@@ -436,9 +460,9 @@ func TestHCLBuildExecutesFrontendAndRealGoCompile(t *testing.T) {
 	var receipt pipeline.ArtifactReceipt
 	require.NoError(t, json.Unmarshal([]byte(readTestFile(t, filepath.Join(root, ".wails", "artifacts", "receipt.json"))), &receipt))
 	require.Len(t, receipt.Artifacts, 1)
-	assert.Equal(t, "bin/hello", receipt.Artifacts[0].Path)
+	assert.Equal(t, expectedReceiptPath, receipt.Artifacts[0].Path)
 	assert.Equal(t, runtime.GOOS+"/"+runtime.GOARCH, receipt.Artifacts[0].Target)
-	assert.Equal(t, pipeline.ArtifactBinary, receipt.Artifacts[0].Kind)
+	assert.Equal(t, expectedKind, receipt.Artifacts[0].Kind)
 	assert.Regexp(t, `^sha256:[0-9a-f]{64}$`, receipt.Artifacts[0].Digest)
 
 	second, err := runManifestPipelineResult(manifestRunOptions{Verb: "build", TargetOS: runtime.GOOS, TargetArch: runtime.GOARCH})
@@ -681,13 +705,15 @@ profile "release" {
 	require.NoError(t, err)
 	packageNode := plan.Nodes[pipeline.NodeKey("package:darwin/arm64:dmg")]
 	spec := packageNode.Spec.(pipeline.PackageSpec)
-	require.NoError(t, os.MkdirAll(filepath.Dir(filepath.Join(root, spec.Binary)), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, spec.Binary), []byte("darwin binary"), 0o755))
+	assert.Equal(t, assemblyNode.Output, spec.Binary)
 
 	var received *flags.ToolPackage
 	previousToolPackage := manifestToolPackage
 	manifestToolPackage = func(options *flags.ToolPackage) error {
 		received = options
+		if _, err := os.Stat(filepath.Join(options.Out, options.ExecutableName+".app", "Contents", "MacOS", options.ExecutableName)); err != nil {
+			return err
+		}
 		return os.WriteFile(filepath.Join(options.Out, options.ExecutableName+".dmg"), []byte("dmg"), 0o644)
 	}
 	t.Cleanup(func() { manifestToolPackage = previousToolPackage })
@@ -835,6 +861,7 @@ profile "release" {
 	assert.Contains(t, darwinInfo, "<string>13</string>")
 	assert.Contains(t, darwinInfo, "<string>14.0</string>")
 	iosInfo := readTestFile(t, filepath.Join(base, "ios-arm64", "assets", "ios", "xcode", "main", "Info.plist"))
+	assert.Contains(t, iosInfo, "<key>CFBundleExecutable</key>\n    <string>versions</string>")
 	assert.Contains(t, iosInfo, "<string>15</string>")
 	assert.Contains(t, iosInfo, "<string>17.0</string>")
 	assert.Contains(t, readTestFile(t, filepath.Join(base, "android-arm64", "assets", "android", "app", "build.gradle")), "versionCode = 17")
@@ -1312,7 +1339,10 @@ printf executable > "$output"
 	_, err = handler.Run(t.Context(), packageNode)
 	require.NoError(t, err)
 	assert.DirExists(t, filepath.Join(root, spec.Output))
-	assert.Contains(t, readTestFile(t, filepath.Join(root, spec.Output, "Info.plist")), "com.example.simulatorapp")
+	info := readTestFile(t, filepath.Join(root, spec.Output, "Info.plist"))
+	assert.Contains(t, info, "com.example.simulatorapp")
+	assert.Contains(t, info, "<key>CFBundleExecutable</key>\n    <string>simulator-app</string>")
+	assert.FileExists(t, filepath.Join(root, spec.Output, "simulator-app"))
 }
 
 func TestHCLDarwinUniversalCompileUsesBothArchitectures(t *testing.T) {
@@ -1387,7 +1417,7 @@ profile "release" {
   target "linux/amd64" {}
 }
 `,
-			wantEnv: "linux|amd64|||",
+			wantEnv: "linux|amd64||||",
 		},
 		{
 			name:   "darwin minimum",
@@ -1406,7 +1436,7 @@ profile "release" {
   target "darwin/amd64" {}
 }
 `,
-			wantEnv: "darwin|amd64|13.0|-mmacosx-version-min=13.0|-mmacosx-version-min=13.0",
+			wantEnv: "darwin|amd64|13.0|-mmacosx-version-min=13.0|-mmacosx-version-min=13.0|1",
 		},
 	}
 
@@ -1424,7 +1454,7 @@ profile "release" {
 			fakeTools := t.TempDir()
 			log := filepath.Join(root, "go.log")
 			require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "go"), []byte(`#!/bin/sh
-printf '%s|%s|%s|%s|%s\n' "$GOOS" "$GOARCH" "$MACOSX_DEPLOYMENT_TARGET" "$CGO_CFLAGS" "$CGO_LDFLAGS" >> "$GO_LOG"
+printf '%s|%s|%s|%s|%s|%s\n' "$GOOS" "$GOARCH" "$MACOSX_DEPLOYMENT_TARGET" "$CGO_CFLAGS" "$CGO_LDFLAGS" "$CGO_ENABLED" >> "$GO_LOG"
 printf '%s\n' "$*" >> "$GO_LOG"
 output=
 while [ "$#" -gt 0 ]; do
@@ -1436,6 +1466,7 @@ printf binary > "$output"
 `), 0o755))
 			t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
 			t.Setenv("GO_LOG", log)
+			t.Setenv("CGO_ENABLED", "")
 
 			_, err = (&manifestHandler{root: root, config: loaded.Config}).Run(t.Context(), node)
 			require.NoError(t, err)
@@ -1664,6 +1695,10 @@ profile "release" {
 }
 
 func TestHCLAndroidCompileUsesConfiguredNDKForBothArchitectures(t *testing.T) {
+	previousHost := manifestHostOS
+	manifestHostOS = "linux"
+	t.Cleanup(func() { manifestHostOS = previousHost })
+
 	root := t.TempDir()
 	t.Chdir(root)
 	hcl := hclBuildFixture + `

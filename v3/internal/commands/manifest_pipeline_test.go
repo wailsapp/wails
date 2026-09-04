@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -26,9 +27,9 @@ func TestRunManifestPipelineMarksRenderedFailure(t *testing.T) {
 	for _, name := range []string{"go", "npm", "cc"} {
 		require.NoError(t, os.WriteFile(filepath.Join(tools, name), []byte("#!/bin/sh\nexit 7\n"), 0o755))
 	}
-	t.Setenv("PATH", tools)
+	t.Setenv("PATH", tools+string(os.PathListSeparator)+os.Getenv("PATH"))
 
-	err := runManifestPipeline(manifestRunOptions{Verb: "build", TargetOS: "linux", TargetArch: "amd64"})
+	err := runManifestPipeline(manifestRunOptions{Verb: "build", TargetOS: runtime.GOOS, TargetArch: runtime.GOARCH})
 	require.Error(t, err)
 	assert.True(t, wake.IsReported(err), "execution failure was rendered by Pulse and must not be printed again by the CLI")
 }
@@ -84,8 +85,13 @@ func TestResolveManifestPlanPropagatesAnonymousGarbleArgumentsOnce(t *testing.T)
 	loaded.Config.Build.Obfuscation = true
 	loaded.Config.Build.Go.GarbleArgs = []string{"-tiny"}
 
-	_, _, plan, err := resolveManifestPlan(manifestRunOptions{
+	_, _, plan, err := resolveManifestPlanWithOperations(manifestRunOptions{
 		Verb: "build", Loaded: loaded, TargetOS: "linux", TargetArch: "amd64", GarbleArgs: []string{"-literals"},
+	}, manifestPlanOperations{
+		getwd: os.Getwd,
+		plan: func(config manifest.Config, request pipeline.Request) (pipeline.Plan, error) {
+			return pipeline.PlanBuild(config, request)
+		},
 	})
 	require.NoError(t, err)
 	compile := plan.Nodes["target:linux/amd64:compile"].Spec.(pipeline.CompileSpec)
@@ -328,6 +334,42 @@ func TestManifestSigningNeverMutatesItsInputArtifact(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "unsigned", string(readTestFile(t, input)))
 	assert.Equal(t, "signed", string(readTestFile(t, input+".signed")))
+}
+
+func TestManifestDMGSigningPreparesContainedAppBeforeSigningImage(t *testing.T) {
+	root := t.TempDir()
+	input := filepath.Join(root, ".wails", "artifacts", "example.dmg")
+	require.NoError(t, os.MkdirAll(filepath.Dir(input), 0o755))
+	require.NoError(t, os.WriteFile(input, []byte("unsigned"), 0o644))
+
+	previousPrepare := manifestPrepareDMGForSigning
+	previousSign := manifestSign
+	prepared := false
+	manifestPrepareDMGForSigning = func(_ context.Context, staged, identity, entitlements string, hardened bool) error {
+		prepared = true
+		assert.NotEqual(t, input, staged)
+		assert.Equal(t, "Developer ID", identity)
+		assert.Empty(t, entitlements)
+		assert.True(t, hardened)
+		return os.WriteFile(staged, []byte("app-signed"), 0o644)
+	}
+	manifestSign = func(options *flags.Sign) error {
+		assert.True(t, prepared, "the app in the DMG must be signed before the image")
+		assert.Equal(t, "app-signed", string(readTestFile(t, options.Input)))
+		return os.WriteFile(options.Input, []byte("image-signed"), 0o644)
+	}
+	t.Cleanup(func() {
+		manifestPrepareDMGForSigning = previousPrepare
+		manifestSign = previousSign
+	})
+
+	_, err := (&manifestHandler{root: root}).sign(t.Context(), pipeline.SignSpec{
+		TargetOS: "darwin", Format: "dmg", Input: ".wails/artifacts/example.dmg",
+		Config: manifest.SigningPlatform{Enabled: true, Identity: "Developer ID", Notarize: true},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "unsigned", string(readTestFile(t, input)))
+	assert.Equal(t, "image-signed", string(readTestFile(t, input+".signed")))
 }
 
 func TestManifestCompileUsesResolvedZigToolchain(t *testing.T) {

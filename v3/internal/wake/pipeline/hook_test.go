@@ -152,7 +152,9 @@ func TestHookPlannerFingerprintsResolvedInProjectSymlinkTargets(t *testing.T) {
 	require.NoError(t, err)
 	node := plan.Nodes["hook:before_build"]
 	require.Len(t, node.Inputs, 2)
-	assert.Equal(t, filepath.Join(config.Root, "version.txt"), node.Inputs[1].Files[0])
+	resolvedInput, err := filepath.EvalSymlinks(filepath.Join(config.Root, "version.txt"))
+	require.NoError(t, err)
+	assert.Equal(t, resolvedInput, node.Inputs[1].Files[0])
 }
 
 func allPlannerHooks() map[manifest.HookPhase]manifest.Hook {

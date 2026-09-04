@@ -53,6 +53,8 @@ type devWatchMatcher struct {
 	patterns [][]devWatchSegment
 }
 
+const manifestBackendReadinessDelay = 500 * time.Millisecond
+
 type devWatchSegment struct {
 	value      string
 	glob       bool
@@ -186,7 +188,7 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 	if err != nil {
 		return err
 	}
-	if err := ops.waitStable(sessionCtx, app, 150*time.Millisecond); err != nil {
+	if err := ops.waitStable(sessionCtx, app, manifestBackendReadinessDelay); err != nil {
 		app.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
 		if errors.Is(err, context.Canceled) && sessionCtx.Err() != nil {
 			return nil
@@ -369,7 +371,7 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 					nextApp, err = ops.startApp(root, binaryPath, frontendURL, port)
 				}
 				if err == nil {
-					err = ops.waitStable(sessionCtx, nextApp, 150*time.Millisecond)
+					err = ops.waitStable(sessionCtx, nextApp, manifestBackendReadinessDelay)
 				}
 				if err != nil {
 					transitionErr := err

@@ -461,7 +461,10 @@ func TestManifestDevReportsUnexpectedOwnedProcessExit(t *testing.T) {
 			go func() { done <- runManifestDevContext(ctx, &DevOptions{VitePort: fixture.port}) }()
 			waitForManifestDevStart(t, fixture.backendLog, done, 30*time.Second)
 			waitForManifestDevLines(t, fixture.frontendLog, 1, 5*time.Second)
-			time.Sleep(200 * time.Millisecond)
+			// The PID is logged by the child before the controller finishes its
+			// backend stability window. Wait until the process is session-owned so
+			// this tests an unexpected runtime exit, not startup readiness.
+			time.Sleep(manifestBackendReadinessDelay + 100*time.Millisecond)
 			backendPID := manifestDevLoggedPIDs(t, fixture.backendLog)[0]
 			frontendPID := manifestDevLoggedPIDs(t, fixture.frontendLog)[0]
 			pid := frontendPID
@@ -516,7 +519,9 @@ exec "$WAILS_TEST_REAL_GO" "$@"
 	done := make(chan error, 1)
 	go func() { done <- runManifestDevContext(ctx, &DevOptions{VitePort: fixture.port}) }()
 	waitForManifestDevStart(t, fixture.backendLog, done, 30*time.Second)
-	time.Sleep(200 * time.Millisecond)
+	// The backend logs before the controller completes its stability window and
+	// starts the watcher. Wait until the session is ready before editing source.
+	time.Sleep(manifestBackendReadinessDelay + 100*time.Millisecond)
 
 	generationTwo := strings.Replace(mainSource, "return 1", "return 2", 1)
 	require.NoError(t, os.WriteFile(filepath.Join(fixture.root, "main.go"), []byte(generationTwo), 0o644))

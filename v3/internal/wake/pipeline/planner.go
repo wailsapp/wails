@@ -526,7 +526,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			packageCache = CacheNever
 		}
 		packageBinary := binaryOut
-		if format == "ipa" {
+		if format == "dmg" || format == "ipa" {
 			packageBinary = plan.Nodes[lastRunnable].Output
 		}
 		pkg := add(Node{Key: key, Kind: PackageArtifact, Label: "Package " + format, Scope: PackageScope, Dependencies: packageDeps,

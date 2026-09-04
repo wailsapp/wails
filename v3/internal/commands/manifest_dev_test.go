@@ -234,13 +234,20 @@ func TestManifestWatchSetupReportsMissingRoots(t *testing.T) {
 	assert.Same(t, current, restarted, "a failed replacement must retain the healthy watcher")
 	changed := filepath.Join(root, "main.go")
 	require.NoError(t, os.WriteFile(changed, []byte("package main\n"), 0o644))
-	select {
-	case event := <-current.events:
-		canonicalChanged, resolveErr := filepath.EvalSymlinks(changed)
-		require.NoError(t, resolveErr)
-		assert.Equal(t, canonicalChanged, event.Path())
-	case <-time.After(2 * time.Second):
-		t.Fatal("healthy watcher stopped after failed replacement")
+	deadline := time.After(2 * time.Second)
+	for {
+		select {
+		case event := <-current.events:
+			if filepath.Base(event.Path()) != filepath.Base(changed) {
+				continue
+			}
+			canonicalChanged, resolveErr := filepath.EvalSymlinks(changed)
+			require.NoError(t, resolveErr)
+			assert.Equal(t, canonicalChanged, event.Path())
+			return
+		case <-deadline:
+			t.Fatal("healthy watcher stopped after failed replacement")
+		}
 	}
 }
 
@@ -259,16 +266,23 @@ func TestRestartManifestWatchesContinuesDeliveringEvents(t *testing.T) {
 	t.Cleanup(restarted.stop)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte("version = 3\n"), 0o644))
 
-	select {
-	case event := <-restarted.events:
-		expected, statErr := os.Stat(filepath.Join(root, manifest.Filename))
-		require.NoError(t, statErr)
-		actual, statErr := os.Stat(event.Path())
-		require.NoError(t, statErr)
-		assert.True(t, os.SameFile(expected, actual))
-		assert.False(t, ignoreDevEvent(restarted.root, loaded.Config, restarted.ignored, event.Path()))
-	case <-time.After(2 * time.Second):
-		t.Fatal("replacement watcher did not deliver the manifest write")
+	deadline := time.After(2 * time.Second)
+	for {
+		select {
+		case event := <-restarted.events:
+			if filepath.Base(event.Path()) != manifest.Filename {
+				continue
+			}
+			expected, statErr := os.Stat(filepath.Join(root, manifest.Filename))
+			require.NoError(t, statErr)
+			actual, statErr := os.Stat(event.Path())
+			require.NoError(t, statErr)
+			assert.True(t, os.SameFile(expected, actual))
+			assert.False(t, ignoreDevEvent(restarted.root, loaded.Config, restarted.ignored, event.Path()))
+			return
+		case <-deadline:
+			t.Fatal("replacement watcher did not deliver the manifest write")
+		}
 	}
 }
 

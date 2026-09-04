@@ -391,6 +391,7 @@ var manifestHostOS = runtime.GOOS
 var manifestLipo = ToolLipo
 var manifestToolPackage = toolPackage
 var manifestSign = Sign
+var manifestPrepareDMGForSigning = prepareManifestDMGForSigning
 var manifestDockerImageIdentity = func(ctx context.Context, runtime, image string) (string, error) {
 	output, err := exec.CommandContext(ctx, runtime, "image", "inspect", "--format", "{{.Id}}", image).Output()
 	if err != nil {
@@ -953,6 +954,13 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 	}
 	env := declaredEnvironment(h.environment, s.Environment)
 	env = append(env, "GOOS="+s.TargetOS, "GOARCH="+s.TargetArch)
+	// CGo defaults to disabled when Go cross-compiles between architectures,
+	// even when both architectures use the native macOS toolchain. Wails'
+	// Darwin implementation is CGo-backed, so Intel builds on Apple Silicon
+	// (and the amd64 half of universal builds) must enable it explicitly.
+	if s.TargetOS == "darwin" {
+		env = append(env, "CGO_ENABLED=1")
+	}
 	if s.Toolchain == "zig" {
 		triple, err := zigTarget(s.TargetOS, s.TargetArch)
 		if err != nil {
@@ -1561,6 +1569,16 @@ func manifestPlatform(targets manifest.Targets, targetOS string) *manifest.Platf
 }
 
 func applyGeneratedTargetSettings(output string, spec pipeline.AssetsSpec) error {
+	if spec.TargetOS == "ios" {
+		// packageIOS links the executable using project.binary_name. Keep the
+		// bundle metadata in lockstep so Simulator and devices can install and
+		// launch the generated app, including when an Info.plist was supplied as
+		// a user-owned platform input.
+		info := filepath.Join(output, "ios", "xcode", "main", "Info.plist")
+		if err := replacePlistString(info, "CFBundleExecutable", spec.Project.BinaryName); err != nil {
+			return err
+		}
+	}
 	if spec.Project.BuildNumber > 0 {
 		value := strconv.Itoa(spec.Project.BuildNumber)
 		for _, path := range []string{
@@ -1804,6 +1822,13 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 		}
 		if err := os.MkdirAll(outputDirectory, 0o755); err != nil {
 			return pipeline.RunResult{}, err
+		}
+		appBundle, err := existingArtifactPathInsideProject(h.root, s.Binary)
+		if err != nil {
+			return pipeline.RunResult{}, fmt.Errorf("DMG application bundle: %w", err)
+		}
+		if err := copyManifestPath(appBundle, filepath.Join(outputDirectory, s.Project.BinaryName+".app")); err != nil {
+			return pipeline.RunResult{}, fmt.Errorf("stage DMG application bundle: %w", err)
 		}
 		options.Out = outputDirectory
 		if err := manifestToolPackage(options); err != nil {
@@ -2579,6 +2604,11 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 	err = produceNamedPathTransactional(output, ".sign-output-*", filepath.Base(input), func(staged string) error {
 		if err := copyManifestPath(input, staged); err != nil {
 			return err
+		}
+		if s.TargetOS == "darwin" && s.Format == "dmg" {
+			if err := manifestPrepareDMGForSigning(ctx, staged, s.Config.Identity, entitlements, s.Config.Notarize); err != nil {
+				return err
+			}
 		}
 		return manifestSign(&flags.Sign{Input: staged, Certificate: certificate, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.Credential, PGPKey: chooseString(s.TargetOS == "linux", certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")})
 	})

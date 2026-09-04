@@ -61,7 +61,9 @@ env | grep -E '^WAILS_(PROJECT_DIR|TARGET_OS|TARGET_ARCH|PROFILE|OUTPUT|PIPELINE
 	assert.Equal(t, "build", contextFile.Command)
 	assert.Equal(t, "target", contextFile.Scope)
 	assert.Equal(t, root, contextFile.ProjectDirectory)
-	assert.Equal(t, root, contextFile.WorkingDirectory)
+	resolvedRoot, err := filepath.EvalSymlinks(root)
+	require.NoError(t, err)
+	assert.Equal(t, resolvedRoot, contextFile.WorkingDirectory)
 	assert.Equal(t, "release", contextFile.Profile)
 	require.NotNil(t, contextFile.Target)
 	assert.Equal(t, "linux", contextFile.Target.OS)
@@ -115,13 +117,24 @@ func TestManifestHookFailureRetainsOutputAndExitCode(t *testing.T) {
 func TestManifestHookCancellationTerminatesPromptly(t *testing.T) {
 	root := t.TempDir()
 	script := writeTestHook(t, root, "wait.sh", "#!/bin/sh\nprintf '%s' \"$WAILS_HOOK_CONTEXT_FILE\" > context-path\nsleep 30 &\necho $! > child.pid\nwait\n")
-	ctx, cancel := context.WithTimeout(t.Context(), 100*time.Millisecond)
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
+	errCh := make(chan error, 1)
+	go func() {
+		_, err := (&manifestHandler{root: root}).runHook(ctx, pipeline.HookSpec{Phase: manifest.BeforeBuild, Script: script})
+		errCh <- err
+	}()
+	childPID := filepath.Join(root, "child.pid")
+	require.Eventually(t, func() bool {
+		_, err := os.Stat(childPID)
+		return err == nil
+	}, 3*time.Second, 10*time.Millisecond, "hook child process did not start")
 	started := time.Now()
-	_, err := (&manifestHandler{root: root}).runHook(ctx, pipeline.HookSpec{Phase: manifest.BeforeBuild, Script: script})
+	cancel()
+	err := <-errCh
 	require.Error(t, err)
 	assert.Less(t, time.Since(started), 3*time.Second)
-	pidText, readErr := os.ReadFile(filepath.Join(root, "child.pid"))
+	pidText, readErr := os.ReadFile(childPID)
 	require.NoError(t, readErr)
 	pid, parseErr := strconv.Atoi(strings.TrimSpace(string(pidText)))
 	require.NoError(t, parseErr)

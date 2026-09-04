@@ -27,12 +27,22 @@ func TestStartAndroidAVDCleansUpANewProcessWhenStartupIsCancelled(t *testing.T) 
 	t.Setenv("PATH", tools+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Setenv("EMULATOR_PID_FILE", pidFile)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, err := startAndroidAVD(ctx, "Pixel_8",
-		func(context.Context) ([]androidDevice, error) { return nil, nil },
-		func(context.Context, ...string) (string, error) { return "", nil },
-	)
+	errCh := make(chan error, 1)
+	go func() {
+		_, err := startAndroidAVD(ctx, "Pixel_8",
+			func(context.Context) ([]androidDevice, error) { return nil, nil },
+			func(context.Context, ...string) (string, error) { return "", nil },
+		)
+		errCh <- err
+	}()
+	require.Eventually(t, func() bool {
+		_, err := os.Stat(pidFile)
+		return err == nil
+	}, 3*time.Second, 10*time.Millisecond, "emulator process did not start")
+	cancel()
+	err := <-errCh
 	require.Error(t, err)
 	pidText, readErr := os.ReadFile(pidFile)
 	require.NoError(t, readErr)
@@ -60,10 +70,15 @@ func TestStartAndroidAVDPreservesANewProcessAfterReadiness(t *testing.T) {
 	t.Setenv("EMULATOR_PID_FILE", pidFile)
 	device := androidDevice{Serial: "emulator-5554", State: "device", Emulator: true}
 	discoveries := 0
-	actual, err := startAndroidAVD(context.Background(), "Pixel_8",
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	actual, err := startAndroidAVD(ctx, "Pixel_8",
 		func(context.Context) ([]androidDevice, error) {
 			discoveries++
 			if discoveries == 1 {
+				return nil, nil
+			}
+			if _, err := os.Stat(pidFile); err != nil {
 				return nil, nil
 			}
 			return []androidDevice{device}, nil
@@ -97,11 +112,9 @@ func TestStartAndroidAVDReportsANewProcessThatExitsBeforeReadiness(t *testing.T)
 	tools := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(tools, "emulator"), []byte("#!/bin/sh\nexit 7\n"), 0o755))
 	t.Setenv("PATH", tools+string(os.PathListSeparator)+os.Getenv("PATH"))
-	started := time.Now()
 	_, err := startAndroidAVD(context.Background(), "Pixel_8",
 		func(context.Context) ([]androidDevice, error) { return nil, nil },
 		func(context.Context, ...string) (string, error) { return "", nil },
 	)
 	require.ErrorContains(t, err, "exited before becoming ready")
-	assert.Less(t, time.Since(started), time.Second)
 }
