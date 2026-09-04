@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2PermissionRequestedEventHandler struct {
 	impl ICoreWebView2PermissionRequestedEventHandlerImpl
 }
 
-func (i *ICoreWebView2PermissionRequestedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2PermissionRequestedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2PermissionRequestedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2PermissionRequestedEventHandlerIUnknownQueryInterface(this *ICoreWebView2PermissionRequestedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2PermissionRequestedEventHandlerIUnknownQueryInterface(this *IC
 }
 
 func ICoreWebView2PermissionRequestedEventHandlerIUnknownAddRef(this *ICoreWebView2PermissionRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2PermissionRequestedEventHandlerIUnknownRelease(this *ICoreWebView2PermissionRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2PermissionRequestedEventHandlerInvoke(this *ICoreWebView2PermissionRequestedEventHandler, sender *ICoreWebView2, args *ICoreWebView2PermissionRequestedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2PermissionRequestedEventHandlerImpl interface {
 }
 
 var ICoreWebView2PermissionRequestedEventHandlerFn = ICoreWebView2PermissionRequestedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2PermissionRequestedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2PermissionRequestedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2PermissionRequestedEventHandlerIUnknownRelease),

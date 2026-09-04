@@ -1,0 +1,9 @@
+
+	// Copy the COM-allocated array into a Go slice, then free the array itself.
+	// The elements are interface pointers whose references are owned by the caller.
+	{{.Name}} := make({{.GoType}}, {{.CountVariableName}})
+	if {{.LocalName}} != nil {
+		copy({{.Name}}, unsafe.Slice({{.LocalName}}, {{.CountVariableName}}))
+		CoTaskMemFree(unsafe.Pointer({{.LocalName}}))
+	}
+	{{- .ClearLocalName}}

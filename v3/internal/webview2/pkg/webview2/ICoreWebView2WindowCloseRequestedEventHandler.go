@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2WindowCloseRequestedEventHandler struct {
 	impl ICoreWebView2WindowCloseRequestedEventHandlerImpl
 }
 
-func (i *ICoreWebView2WindowCloseRequestedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2WindowCloseRequestedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2WindowCloseRequestedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2WindowCloseRequestedEventHandlerIUnknownQueryInterface(this *ICoreWebView2WindowCloseRequestedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2WindowCloseRequestedEventHandlerIUnknownQueryInterface(this *I
 }
 
 func ICoreWebView2WindowCloseRequestedEventHandlerIUnknownAddRef(this *ICoreWebView2WindowCloseRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2WindowCloseRequestedEventHandlerIUnknownRelease(this *ICoreWebView2WindowCloseRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2WindowCloseRequestedEventHandlerInvoke(this *ICoreWebView2WindowCloseRequestedEventHandler, sender *ICoreWebView2, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2WindowCloseRequestedEventHandlerImpl interface {
 }
 
 var ICoreWebView2WindowCloseRequestedEventHandlerFn = ICoreWebView2WindowCloseRequestedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2WindowCloseRequestedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2WindowCloseRequestedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2WindowCloseRequestedEventHandlerIUnknownRelease),

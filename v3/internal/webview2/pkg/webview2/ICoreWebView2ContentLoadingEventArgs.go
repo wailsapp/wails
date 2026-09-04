@@ -1,16 +1,15 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ContentLoadingEventArgsVtbl struct {
 	IUnknownVtbl
-	GetIsErrorPage  ComProc
+	GetIsErrorPage ComProc
 	GetNavigationId ComProc
 }
 
@@ -18,10 +17,16 @@ type ICoreWebView2ContentLoadingEventArgs struct {
 	Vtbl *ICoreWebView2ContentLoadingEventArgsVtbl
 }
 
-func (i *ICoreWebView2ContentLoadingEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2ContentLoadingEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ContentLoadingEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ContentLoadingEventArgs) GetIsErrorPage() (bool, error) {
 	// Create int32 to hold bool result
@@ -35,7 +40,7 @@ func (i *ICoreWebView2ContentLoadingEventArgs) GetIsErrorPage() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
