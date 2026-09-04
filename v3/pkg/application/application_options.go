@@ -429,7 +429,7 @@ type AndroidOptions struct {
 	// DisableScroll disables scrolling in the WebView
 	DisableScroll bool
 
-	// DisableBounce disables the overscroll bounce effect
+	// DisableOverscroll disables the overscroll bounce effect
 	DisableOverscroll bool
 
 	// EnableZoom allows pinch-to-zoom in the WebView (default: false)
