@@ -5,7 +5,7 @@ package darwin
 
 /*
 #cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
+#cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit -framework UniformTypeIdentifiers
 #import <Foundation/Foundation.h>
 #import "Application.h"
 #import "WailsContext.h"
