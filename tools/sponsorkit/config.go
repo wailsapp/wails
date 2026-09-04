@@ -109,6 +109,10 @@ type Band struct {
 	// for this band. Contributors land in the first band whose minimum
 	// they meet.
 	MinCredit int
+	// PRMinCredit replaces MinCredit when ranking by merged PRs
+	// (-metric prs): one merged PR is a much rarer unit than one commit,
+	// so the cut-off sits far lower.
+	PRMinCredit int
 	// Avatar is the squircle's edge length in CSS pixels.
 	Avatar float64
 	// Box is the horizontal space reserved per contributor.
@@ -131,50 +135,45 @@ type Band struct {
 	Hover bool
 }
 
-// prBandMins replaces the bands' MinCredit thresholds when ranking by
-// merged PRs (-metric prs): one merged PR is a much rarer unit than one
-// commit, so the cut-offs sit far lower.
-var prBandMins = []int{300, 100, 40, 15, 6, 2, 0}
-
 // bands is ordered from most to least prolific, with MinCredit thresholds
 // tuned for the commit metric. The last entry is the catch-all for
 // first-time and drive-by contributors.
 var bands = []Band{
 	{
-		MinCredit: 1000,
+		MinCredit: 1000, PRMinCredit: 300,
 		Avatar:    116, Box: 190, RowGap: 26,
 		ShowName: true, NameSize: 15, MaxName: 22,
 		Ring: "animated", RingWidth: 4.5, RingGradient: "ringPartner", Hover: true,
 	},
 	{
-		MinCredit: 150,
+		MinCredit: 150, PRMinCredit: 100,
 		Avatar:    94, Box: 152, RowGap: 24,
 		ShowName: true, NameSize: 13.5, MaxName: 18,
 		Ring: "animated", RingWidth: 4, RingGradient: "ringChampion", Hover: true,
 	},
 	{
-		MinCredit: 60,
+		MinCredit: 60, PRMinCredit: 40,
 		Avatar:    74, Box: 116, RowGap: 22,
 		ShowName: true, NameSize: 12, MaxName: 15,
 		Ring: "static", RingWidth: 3, RingGradient: "ringGold", Hover: true,
 	},
 	{
-		MinCredit: 20,
+		MinCredit: 20, PRMinCredit: 15,
 		Avatar:    58, Box: 74, RowGap: 16,
 		Ring: "static", RingWidth: 2, RingGradient: "ringSilver", Hover: true,
 	},
 	{
-		MinCredit: 8,
+		MinCredit: 8, PRMinCredit: 6,
 		Avatar:    46, Box: 59, RowGap: 13,
 		Ring: "subtle", RingWidth: 1.5,
 	},
 	{
-		MinCredit: 3,
+		MinCredit: 3, PRMinCredit: 2,
 		Avatar:    37, Box: 48, RowGap: 12,
 		Ring: "subtle", RingWidth: 1.25,
 	},
 	{
-		MinCredit: 0,
+		MinCredit: 0, PRMinCredit: 0,
 		Avatar:    30, Box: 40, RowGap: 11,
 		Ring: "subtle", RingWidth: 1,
 	},
