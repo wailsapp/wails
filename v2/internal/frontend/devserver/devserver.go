@@ -24,6 +24,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/ipcauth"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -34,7 +35,31 @@ type Screen = frontend.Screen
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin:     func(r *http.Request) bool { return true },
+	// Refuse a WebSocket upgrade unless its Origin is the dev server's own. The
+	// dev runtime builds its socket URL from window.location, so a genuine
+	// browser client is always same-origin; there is no legitimate headerless
+	// client, so a missing Origin is refused too.
+	CheckOrigin: sameOrigin,
+}
+
+// sameOrigin reports whether the upgrade carries an Origin header equal to the
+// request Host. A missing, malformed, non-HTTP, or foreign Origin is refused.
+// Because requireAllowedHost has already validated the Host header against an
+// allowlist, comparing the Origin against it is meaningful rather than a
+// comparison of two attacker-controlled values.
+func sameOrigin(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return false
+	}
+	u, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false
+	}
+	return u.Host != "" && strings.EqualFold(u.Host, r.Host)
 }
 
 type DevWebServer struct {
@@ -58,8 +83,7 @@ type DevWebServer struct {
 func (d *DevWebServer) Run(ctx context.Context) error {
 	d.ctx = ctx
 
-	d.server.GET("/wails/reload", d.handleReload)
-	d.server.GET("/wails/ipc", d.handleIPCWebSocket)
+	d.registerRoutes()
 
 	assetServerConfig, err := assetserver.BuildAssetServerConfig(d.appoptions)
 	if err != nil {
@@ -136,6 +160,39 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	return err
 }
 
+// registerRoutes wires the dev server's middleware and fixed routes. The host
+// guard is registered first so it runs outermost (echo composes Use middleware
+// outermost-first): a request whose Host is not allowed is rejected before the
+// capability cookie is set or any route runs.
+func (d *DevWebServer) registerRoutes() {
+	d.server.Use(d.requireAllowedHost())
+
+	// Hand the per-launch capability to every page the dev server serves, as an
+	// HttpOnly, SameSite=Strict cookie — defense in depth behind the host guard
+	// and origin check. A same-origin page returns it automatically on the IPC
+	// WebSocket upgrade. It is not local-client authentication: a process
+	// running as the same user can read it straight off a served response. Its
+	// job is to raise the bar for the browser vector, not to authenticate an
+	// arbitrary local caller.
+	d.server.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if !c.IsWebSocket() {
+				http.SetCookie(c.Response(), &http.Cookie{
+					Name:     ipcauth.CookieName,
+					Value:    ipcauth.Token(),
+					Path:     "/",
+					HttpOnly: true,
+					SameSite: http.SameSiteStrictMode,
+				})
+			}
+			return next(c)
+		}
+	})
+
+	d.server.GET("/wails/reload", d.handleReload)
+	d.server.GET("/wails/ipc", d.handleIPCWebSocket)
+}
+
 func (d *DevWebServer) WindowReload() {
 	d.broadcast("reload")
 	d.Frontend.WindowReload()
@@ -161,6 +218,15 @@ func (d *DevWebServer) handleReloadApp(c echo.Context) error {
 }
 
 func (d *DevWebServer) handleIPCWebSocket(c echo.Context) error {
+	// Require the capability cookie on the upgrade as defense in depth, behind
+	// the host guard and the same-origin check. This is not local-client
+	// authentication — a process running as the same user can read the cookie
+	// from a served response — so it is not relied on to stop such a caller.
+	if cookie, err := c.Cookie(ipcauth.CookieName); err != nil || !ipcauth.Valid(cookie.Value) {
+		d.logger.Error("IPC WebSocket rejected: missing or invalid capability")
+		return c.NoContent(http.StatusForbidden)
+	}
+
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
 		d.logger.Error("WebSocket upgrade failed %v", err)
