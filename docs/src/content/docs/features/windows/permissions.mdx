@@ -77,11 +77,21 @@ WebView2 has a native permission prompt and a per-kind permission API. All five 
 
 This means if you configure `Permissions` at all on Windows, any capability you don't explicitly list will show a prompt rather than being silently allowed. Set the capabilities you need explicitly.
 
-### macOS (TCC)
+### macOS (WKWebView + TCC)
 
-macOS manages camera, microphone, geolocation, and notification access through its system privacy framework. The OS prompt appears automatically the first time web content requests a capability, and the user's choice is remembered per-app in System Settings → Privacy & Security.
+Two layers have to agree on macOS. WKWebView asks the application before it starts a capture session, and that request is what the `Permissions` map answers. Beneath it, the system privacy framework (TCC) gates the device itself: the OS prompt appears the first time the app actually reaches for the camera or the microphone, and the user's choice is remembered per-app in System Settings → Privacy & Security.
 
-This works correctly without any `Permissions` configuration. The map is **currently ignored on macOS** — all requests go through TCC regardless of what you set. The practical gap is that `PermissionDeny` has no effect on macOS: you cannot block a webview from using a capability that TCC has already granted at the system level.
+Wails handles **camera and microphone** requests on macOS 12 and later. Geolocation, notifications, and clipboard read have no `WKUIDelegate` equivalent, so they are not wired up and are left to TCC alone — as on Linux, the policy you set for them has no effect.
+
+| Policy | Camera / Microphone | Geolocation, Notifications, Clipboard |
+|---|---|---|
+| `PermissionDefault` | WebKit shows its own permission prompt | TCC only |
+| `PermissionAllow` | WebKit's prompt is skipped — **TCC still applies** | TCC only |
+| `PermissionDeny` | Denied before the device is touched | TCC only |
+
+`PermissionAllow` grants the webview's request, not the device. The first capture still raises the TCC prompt, and an app the user has denied in System Settings stays denied — no application can grant itself device access. What `PermissionAllow` removes is WebKit's own prompt in front of that.
+
+Below macOS 12 the delegate method does not exist, so the map is ignored there and every request falls back to WebKit's prompt.
 
 Ensure your `Info.plist` includes the appropriate usage description keys:
 
@@ -91,6 +101,21 @@ Ensure your `Info.plist` includes the appropriate usage description keys:
 <key>NSCameraUsageDescription</key>
 <string>Used for video calls</string>
 ```
+
+<Aside type="caution" title="Deny what your Info.plist does not declare">
+
+A capability that reaches AVFoundation without its usage description key does not fail — macOS terminates the app.
+
+`PermissionDefault` is the zero value, so `{PermissionMicrophone: PermissionAllow}` on its own leaves the camera on WebKit's prompt. If the user accepts that prompt and the app declares only `NSMicrophoneUsageDescription`, the app dies. Set `PermissionDeny` explicitly for every capability you have no usage description for:
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionDeny,
+},
+```
+
+</Aside>
 
 ## Common Patterns
 
@@ -107,7 +132,7 @@ Permissions: map[application.PermissionType]application.Permission{
 
 On **Linux** this explicitly allows both devices; other capabilities remain denied.  
 On **Windows** this allows both; any other capability you don't list will show a native prompt.  
-On **macOS** this has no effect; TCC handles everything.
+On **macOS** this allows both at the WebKit layer, so no browser prompt appears; TCC still asks for the devices themselves on first use, and both usage description keys must be present in `Info.plist`.
 
 ### Deny media capture on Linux
 
@@ -185,11 +210,13 @@ The evaluation order on Windows is:
 
 | Capability | Linux | Windows | macOS |
 |---|---|---|---|
-| Microphone | ✅ | ✅ | TCC only |
-| Camera | ✅ | ✅ | TCC only |
-| Geolocation | ❌ not yet | ✅ | TCC only |
-| Notifications | ❌ not yet | ✅ | TCC only |
-| Clipboard Read | ❌ not yet | ✅ | TCC only |
+| Microphone | ✅ | ✅ | ✅ (macOS 12+) |
+| Camera | ✅ | ✅ | ✅ (macOS 12+) |
+| Geolocation | ❌ not yet | ✅ | ❌ not yet |
+| Notifications | ❌ not yet | ✅ | ❌ not yet |
+| Clipboard Read | ❌ not yet | ✅ | ❌ not yet |
+
+Where macOS is ✅, the policy answers WebKit's request; TCC still gates the device on top of it. Where it is ❌, the capability is left to TCC alone.
 
 ## Troubleshooting
 
@@ -203,7 +230,11 @@ Once any entry is present in `Permissions`, Wails no longer sets the blanket `Al
 
 **macOS permissions aren't working**
 
-The `Permissions` map has no effect on macOS. Ensure your `Info.plist` includes the correct usage description keys (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, etc.) and that the user has granted access in System Settings → Privacy & Security.
+`Permissions` covers camera and microphone on macOS 12 and later; geolocation, notifications, and clipboard read are not wired up yet and ignore the policy. Where it is honoured, TCC still gates the device on top: `PermissionAllow` removes WebKit's prompt but not the system one. Ensure your `Info.plist` includes the correct usage description keys (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`) and that the user has granted access in System Settings → Privacy & Security.
+
+**My macOS app quits when web content asks for the camera or microphone**
+
+macOS terminates an app that reaches AVFoundation without the matching usage description key. Add the key, or set `PermissionDeny` for that capability so the request never gets that far — `PermissionDefault` leaves it on WebKit's prompt, which the user can accept.
 
 **Geolocation/notifications/clipboard have no effect on Linux**
 

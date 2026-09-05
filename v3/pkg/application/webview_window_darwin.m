@@ -14,6 +14,7 @@ extern char* acceleratorFromKeyPress(unsigned short keyCode, unsigned long modif
                                      unsigned int character, int hasCharacter);
 extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
+extern int resolveMediaCapturePermission(unsigned int, bool, bool);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
 // Define custom glass effect style constants (these match the Go constants)
@@ -1005,6 +1006,21 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
             else
                 completionHandler(nil);
         }];
+}
+// WKUIDelegate - Handle a getUserMedia request for the camera or microphone.
+// Left unimplemented, WebKit takes its default action instead, which on Cocoa
+// is its own prompt — so the window's Permissions never reach the decision and
+// PermissionAllow and PermissionDeny do nothing. The answer comes from them
+// here; PermissionDefault asks for the same prompt as before.
+- (void)webView:(WKWebView *)webView
+    requestMediaCapturePermissionForOrigin:(WKSecurityOrigin *)origin
+                          initiatedByFrame:(WKFrameInfo *)frame
+                                      type:(WKMediaCaptureType)type
+                           decisionHandler:(void (^)(WKPermissionDecision decision))decisionHandler
+    API_AVAILABLE(macos(12.0)) {
+    bool needAudio = type == WKMediaCaptureTypeMicrophone || type == WKMediaCaptureTypeCameraAndMicrophone;
+    bool needVideo = type == WKMediaCaptureTypeCamera || type == WKMediaCaptureTypeCameraAndMicrophone;
+    decisionHandler((WKPermissionDecision)resolveMediaCapturePermission(self.windowId, needAudio, needVideo));
 }
 @end
 void windowSetScreen(void* window, void* screen, int yOffset) {
