@@ -128,6 +128,23 @@ func TestPanelNamesAndWindowTeardown(t *testing.T) {
 	}
 }
 
+func TestPanelGeneratedNamesAvoidExplicitNames(t *testing.T) {
+	window := &WebviewWindow{}
+	reserved := fmt.Sprintf("panel-%d", atomic.LoadUint32(&panelID)+3)
+	explicit := window.NewPanel(WebviewPanelOptions{Name: reserved})
+	suffixed := window.NewPanel(WebviewPanelOptions{Name: reserved + "-1"})
+	generated := window.NewPanel(WebviewPanelOptions{})
+	if generated.Name() == reserved || generated.Name() == suffixed.Name() {
+		t.Fatal("generated name collided with explicit name")
+	}
+	if window.GetPanel(reserved) != explicit || window.GetPanel(generated.Name()) != generated {
+		t.Fatal("name lookup returned the wrong panel")
+	}
+	if generated.snapshotOptions().Name != generated.Name() {
+		t.Fatal("generated name differs from stored options")
+	}
+}
+
 func TestPanelDestroyExactlyOnce(t *testing.T) {
 	panelTestApp(t, true)
 	window := &WebviewWindow{}

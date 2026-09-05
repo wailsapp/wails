@@ -2026,6 +2026,16 @@ func (w *WebviewWindow) NewPanel(options WebviewPanelOptions) *WebviewPanel {
 		}
 	}
 	panel := NewPanel(options)
+	if options.Name == "" {
+		names := make(map[string]bool, len(w.panels))
+		for _, existing := range w.panels {
+			names[existing.name] = true
+		}
+		for suffix := 1; names[panel.name]; suffix++ {
+			panel.name = fmt.Sprintf("panel-%d-%d", panel.id, suffix)
+		}
+		panel.options.Name = panel.name
+	}
 	panel.parent = w
 	if w.panels == nil {
 		w.panels = make(map[uint]*WebviewPanel)
