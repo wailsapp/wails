@@ -26,7 +26,7 @@ footer { display:flex; justify-content:space-between; gap:16px; color:#b8c2df; f
 <button data-site="local" class="active">Local page</button>
 <button data-site="wails">Wails.io</button>
 <button data-site="google">Google</button>
-<button id="toggle">Hide panel</button>
+<button id="toggle" disabled>Hide panel</button>
 </nav>
 </header>
 <div id="panelContainer" aria-label="Embedded browser"></div>
@@ -34,43 +34,49 @@ footer { display:flex; justify-content:space-between; gap:16px; color:#b8c2df; f
 <footer><span>Resize the window to keep the panel aligned.</span><span id="sizeInfo"></span></footer>
 <script type="module">
 import {Call, Panel} from '/wails/runtime.js';
+import {createLayoutScheduler} from './layout.mjs';
 const panel = Panel.Get('embedded-content');
 const container = document.getElementById('panelContainer');
 const error = document.getElementById('error');
 let visible = true;
-let scheduled = false;
+let initialLayout = true;
 function report(err) { error.textContent = String(err); error.hidden = false; }
 async function layout() {
-    scheduled = false;
     const rect = container.getBoundingClientRect();
     const bounds = {x:Math.round(rect.left+1),y:Math.round(rect.top+1),width:Math.max(1,Math.round(rect.width-2)),height:Math.max(1,Math.round(rect.height-2))};
-    try {
-        await panel.SetBounds(bounds);
-        document.getElementById('sizeInfo').textContent = `${bounds.width} × ${bounds.height} px`;
-    } catch (err) { report(err); }
+    await panel.SetBounds(bounds);
+    document.getElementById('sizeInfo').textContent = `${bounds.width} × ${bounds.height} px`;
+    if (initialLayout) {
+        await panel.Show();
+        initialLayout = false;
+        document.getElementById('toggle').disabled = false;
+    }
 }
-function scheduleLayout() {
-    if (!scheduled) { scheduled = true; requestAnimationFrame(layout); }
-}
+const scheduleLayout = createLayoutScheduler(layout, report);
 new ResizeObserver(scheduleLayout).observe(container);
 window.addEventListener('resize',scheduleLayout);
-await layout();
-await panel.Show().catch(report);
+scheduleLayout();
 for (const button of document.querySelectorAll('[data-site]')) {
     button.addEventListener('click',async () => {
+        const destinations = document.querySelectorAll('[data-site]');
+        for (const item of destinations) item.disabled = true;
         try {
             await Call.ByName('main.App.SwitchPanel',button.dataset.site);
-            for (const item of document.querySelectorAll('[data-site]')) item.classList.toggle('active',item===button);
+            for (const item of destinations) item.classList.toggle('active',item===button);
             error.hidden = true;
         } catch (err) { report(err); }
+        finally { for (const item of destinations) item.disabled = false; }
     });
 }
 document.getElementById('toggle').addEventListener('click',async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
     try {
         if (visible) await panel.Hide(); else await panel.Show();
         visible = !visible;
-        event.target.textContent = visible ? 'Hide panel' : 'Show panel';
+        button.textContent = visible ? 'Hide panel' : 'Show panel';
     } catch (err) { report(err); }
+    finally { button.disabled = false; }
 });
 </script>
 </body>

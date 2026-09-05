@@ -38,6 +38,8 @@ Names are unique within a window. `window.NewPanel` returns an existing named pa
 
 `Headers` supplies custom headers on the initial navigation request only. `UserAgent` replaces the panel's browser user agent. Both are supported on desktop platforms. These options are copied when the panel is created. Later `SetURL` calls and reloads do not reapply initial headers; redirects follow the browser's own rules.
 
+Go code owns the destination and headers. Use HTTPS when sending credentials, and only send them to endpoints whose redirect behavior you trust. Panels do not implement a credential store or an application-specific origin policy; custom header names are not automatically classified as secrets.
+
 Local URLs are resolved through the Wails asset server. An empty URL leaves a new panel blank. `SetURL("")` and malformed URLs do not navigate. `URL()` reports the last URL requested by Go, not redirects or links followed inside the page.
 
 ## Frontend control and navigation policy
@@ -88,6 +90,7 @@ From `v3`:
 
 ```sh
 go test -race ./pkg/application -run TestPanel
+node --test ./examples/webview-panel/layout.test.mjs
 go run ./test/manual/webview-panel
 # On a Linux graphical desktop, or under xvfb-run:
 go run -tags gtk3 ./test/manual/webview-panel
