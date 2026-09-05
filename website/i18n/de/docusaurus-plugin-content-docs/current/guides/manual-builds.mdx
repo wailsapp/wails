@@ -1,0 +1,95 @@
+# Manuelle Builds
+
+Die Wails-CLI erledigt eine Menge schwerer Arbeit für das Projekt, aber manchmal ist es wünschenswert, das Projekt manuell zu erstellen. Dieses Dokument beschreibt die verschiedenen Operationen der CLI und wie diese auf unterschiedliche Weise erreicht werden können.
+
+## Build-Prozess
+
+Wenn entweder `wails build` oder `wails dev` verwendet werden, führt die Wails-CLI einen gemeinsamen Build-Prozess aus:
+
+    - Frontend Abhängigkeiten werden installiert
+    - Frontend Projekt wird gebuildet
+    - Build-Assets werden generiert
+    - Die Anwendung wird kompiliert
+    - [optional] Die Anwendung wird komprimiert
+
+### Frontend Abhängigkeiten werden installiert
+
+#### CLI Schritte
+
+- Wenn das `-s` Flag angegeben ist, wird dieser Schritt übersprungen
+- Überprüft `wails.json` um zu sehen, ob ein Installationsbefehl im Schlüssel `frontend:install` vorhanden ist
+- Falls nicht, überspringt es diesen Schritt
+- Falls vorhanden, wird geprüft, ob `package.json` im Frontend-Verzeichnis existiert. Wenn es nicht existiert, überspringt es diesen Schritt
+- Eine MD5-Summe wird aus dem `package.json` Dateiinhalt generiert
+- Es prüft, ob `package.json.md5` existiert, und vergleicht, falls vorhanden, den Inhalt (eine MD5-Summe) mit der neu generierten, um festzustellen, ob sich der Inhalt geändert hat. Wenn diese gleich sind, wird dieser Schritt übersprungen
+- Wenn `package.json.md5` nicht existiert, wird es mit der erzeugten MD5-Summe erstellt
+- Wird ein Build benötigt, existiert `node_modules` nicht oder ist die Flag `-f` gesetzt, wird der Installationsbefehl im Frontend-Verzeichnis ausgeführt.
+
+#### Manuelle Schritte
+
+Dieser Schritt kann über die Kommandozeile oder ein Skript mit `npm install` durchgeführt werden.
+
+### Frontend Projekt wird gebuildet
+
+#### Wails CLI
+
+- Wenn das `-s` Flag angegeben ist, wird dieser Schritt übersprungen
+- Überprüft `wails.json` um zu sehen, ob ein Installationsbefehl im Schlüssel `frontend:install` vorhanden ist
+- Falls nicht, überspringt es diesen Schritt
+- Falls vorhanden, wird sie im Frontend-Verzeichnis ausgeführt
+
+#### Manuelle Schritte
+
+Dieser Schritt könnte von der Kommandozeile oder einem Skript mit `npm build` oder was auch immer das Frontend Build-Skript ist, ausgeführt werden.
+
+### Assets generieren
+
+#### Wails CLI
+
+- Wenn die `-nopackage` Flag gesetzt ist, wird diese Stufe übersprungen
+- Wenn die `build/appicon.png` Datei nicht existiert, wird eine Standarddatei erstellt
+- Für Windows siehe [Bundling für Windows](#windows)
+- Wenn `build/windows/icon.ico` nicht existiert, wird es aus dem `build/appicon.png` Bild erzeugt.
+
+##### Windows
+
+- Wenn `build/windows/icon.ico` nicht existiert, wird es aus `build/appicon.png` mit den Icon-Größen 256, 128, 64, 48, 32 und 16 erstellt. Dies geschieht mit [winicon](https://github.com/leaanthony/winicon).
+- Wenn die Datei `build/windows/<projectname>.manifest` nicht existiert, wird sie von einer Standardversion erzeugt.
+- Kompiliert die Anwendung als Produktionsbuild (siehe oben)
+- Verwendet [Winres](https://github.com/tc-hib/winres) um das Icon zu bündeln und in eine `.syso` Datei zu manifestieren, die zum Verlinken bereit ist.
+
+#### Manuelle Schritte
+
+- Erstelle `icon.ico` mit dem [Winicon](https://github.com/leaanthony/winicon) CLI Tool (oder einem anderen Tool).
+- Erstelle / Aktualisiere eine `.manifest` Datei für deine Anwendung
+- Verwende das [Winres CLI](https://github.com/tc-hib/go-winres) um eine `.syso` Datei zu generieren.
+
+### Die Anwendung wird kompiliert
+
+#### Wails CLI
+
+- Wenn die `-clean` Flag angegeben wird, wird das `Build` Verzeichnis gelöscht und neu erstellt
+- Für `wails dev` werden folgende Go-Standardflags verwendet: `-tags dev -gcflags "all=-N -l"`
+- Für `wails build` werden folgende Go-Standardflags verwendet: `-tags desktop,production -ldflags "-w -s"`
+  - Unter Windows, `-ldflags "-w -h -H windowsgui"`
+- Zusätzlich an das CLI übergebene Tags mit `-tags` werden zu den Standardwerten hinzugefügt
+- Zusätzliche ldflags, die über `-ldflags` an die Befehlszeilenschnittstelle übergeben werden, werden zu den Standardeinstellungen hinzugefügt
+- Die `-o` Flag wird übergeben
+- Der von `-compiler` angegebene Go-Compiler wird zur Kompilierung verwendet
+
+#### Manuelle Schritte
+
+- Für dev build wäre das Minimum der Befehl: `go build -tags dev -gcflags "all=-N -l"`
+- Für einen Produktionsbuild wäre der minimale Befehl: `go build -tags desktop,production -ldflags "-w -s -H windowsgui"`
+- Stelle sicher, dass du im selben Verzeichnis wie die `.syso` Datei kompilierst
+
+### Anwendung komprimieren
+
+#### Wails CLI
+
+- Wenn die `-upx` Flag angegeben wurde, wird das `upx` Programm ausgeführt, um die Anwendung mit den Standardeinstellungen zu komprimieren
+- Wenn `-upxflags` ebenfalls übergeben wird, werden diese Flags anstelle der Standardflags verwendet
+
+#### Manuelle Schritte
+
+- Führe `upx [flags]` manuell aus, um die Anwendung zu komprimieren.

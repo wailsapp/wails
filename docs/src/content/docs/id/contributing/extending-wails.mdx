@@ -1,0 +1,282 @@
+---
+title: Memperluas Wails
+description: Panduan praktis untuk menambahkan fitur dan platform baru ke Wails v3
+sidebar:
+  order: 8
+---
+
+> Wails dirancang agar **dapat di-hack**.
+> Setiap subsistem utama ada di kode Go yang dapat Anda baca, modifikasi, dan kirim.
+> Halaman ini menunjukkan _di mana_ memulai dan _bagaimana_ tetap lintas platform saat Anda:
+
+* Menambahkan **Service** (notifications, KV store, custom IPC, …)
+* Membuat **perintah CLI baru** (`wails3 <foo>`)
+* Memperluas **Runtime** (API window, dialog, event)
+* Memperkenalkan **kemampuan platform** (Wayland, …)
+* Menjaga **kompatibilitas lintas platform** tanpa tenggelam dalam tag `//go:build`
+
+---
+
+## 1. Menambahkan Service
+
+"Service" di v3 adalah tipe Go yang disediakan pengguna dan didaftarkan melalui
+`application.Options.Services` serta diekspos ke JS via binding yang dihasilkan. Codebase v3 mengirim:
+
+* `internal/service/` — scaffolding untuk `wails3 generate service`:
+  ```
+  internal/service/
+  ├── service.go              # Install(options *flags.ServiceInit)
+  └── template/
+      ├── README.tmpl.md
+      ├── go.mod.tmpl
+      ├── service.go.tmpl
+      └── service.tmpl.yml
+  ```
+* `pkg/services/` — service siap pakai yang dapat Anda daftarkan hari ini
+  (notifications, kvstore, sqlite, log, fileserver, dock, …).
+
+File generator dan CLI yang direferensikan draft lama sebagai
+`internal/service/template/template.go` dan
+`internal/generator/collect/services.go` tidak ada — scaffolder adalah
+`internal/service/service.go` (entry point `service.Install`), dan metadata
+binding untuk service dikumpulkan di `internal/generator/collect/service.go`.
+
+### 1.1 Definisikan Service
+
+```go
+package chat
+
+type Service struct {
+    messages []string
+}
+
+func New() *Service { return &Service{} }
+
+func (s *Service) Send(msg string) string {
+    s.messages = append(s.messages, msg)
+    return "ok"
+}
+```
+
+### 1.2 Implementasikan interface lifecycle (opsional)
+
+Service dapat secara opsional memenuhi interface ini (dari `pkg/application`):
+
+```go
+func (s *Service) ServiceStartup(ctx context.Context, options application.ServiceOptions) error { return nil }
+func (s *Service) ServiceShutdown() error                                                       { return nil }
+```
+
+> **Penting:** `ServiceShutdown` **tidak menerima argumen**. Method dengan
+> signature `ServiceShutdown(ctx context.Context) error` **tidak** memenuhi
+> interface dan akan diam-diam tidak pernah dipanggil.
+
+### 1.3 Daftarkan service ke aplikasi
+
+Tidak ada panggilan global `services.Register(...)`. Service didaftarkan saat
+runtime via `application.Options.Services`:
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(chat.New()),
+    },
+})
+```
+
+Setelah terdaftar, `wails3 generate bindings` memancarkan modul ES di bawah
+`frontend/bindings/<your import path>/...` yang membungkus method exported.
+
+### 1.4 Memanggil dari JS
+
+```js
+import { Send } from "../bindings/github.com/you/yourapp/chat";
+
+await Send("hi");
+```
+
+Tidak ada global `window.backend.*` di v3 — call melalui modul ES
+yang dihasilkan, yang pada gilirannya memanggil `Call.ByID(...)` dari `/wails/runtime.js`.
+
+---
+
+## 2. Menulis Perintah CLI Baru
+
+CLI v3 menggunakan **`github.com/leaanthony/clir`** (bukan cobra). Wiring ada di
+`v3/cmd/wails3/main.go`:
+
+```go
+import "github.com/leaanthony/clir"
+
+func main() {
+    app := clir.NewCli("wails", "The Wails3 CLI", "v3")
+    app.NewSubCommand("hello", "Prints Hello Wails").Action(func() error {
+        fmt.Println("Hello Wails!")
+        return nil
+    })
+    // ... sub-perintah lain di-wire eksplisit di sini
+    _ = app.Run()
+}
+```
+
+Tidak ada auto-registration berbasis `init()`. Tambahkan sub-perintah baru ke
+`cmd/wails3/main.go`, plus fungsi backing di `internal/commands/` (dan struct flag
+di bawah `internal/flags/` jika menerima opsi). Re-build CLI:
+
+```
+cd v3
+go install ./cmd/wails3
+wails3 hello
+```
+
+Jika perintah Anda membutuhkan glue Taskfile, gunakan kembali helper di
+`internal/commands/task_wrapper.go` (`wrapTask("yourtask", args)`).
+
+---
+
+## 3. Memodifikasi Runtime
+
+Alasan umum:
+
+* Fitur window baru (`SetOpacity`, `Shake`, …)
+* Dialog ekstra (`ColorPicker`)
+* API level sistem (kecerahan layar)
+
+### 3.1 API Publik
+
+Tambahkan method ke `pkg/application/webview_window.go` (interface ada di
+`window.go`):
+
+```go
+func (w *WebviewWindow) SetOpacity(o float32) Window {
+    InvokeSync(func() { w.impl.setOpacity(o) })
+    return w
+}
+```
+
+Gunakan helper `InvokeSync`/`InvokeAsync` yang ada untuk memastikan call berjalan di
+main thread.
+
+### 3.2 Message Processor
+
+Jika JS perlu memanggil method baru, perluas file
+`pkg/application/messageprocessor_*.go` yang sesuai. Message processor menggunakan
+method berbasis switch pada `MessageProcessor`, bukan panggilan global `register(...)`:
+
+```go
+// di dalam messageprocessor_window.go
+case "setOpacity":
+    var args struct {
+        WindowID uint    `json:"windowID"`
+        Opacity  float32 `json:"opacity"`
+    }
+    if err := json.Unmarshal(payload, &args); err != nil { ... }
+    window, _ := m.app.Window.GetByID(args.WindowID)
+    window.SetOpacity(args.Opacity)
+```
+
+**Tidak ada** file `messageprocessor_window_opacity.go` atau pola
+`register(MsgSetOpacity, ...)` berbasis `init()` di codebase.
+
+### 3.3 Implementasi Platform
+
+Tambahkan implementasi ke setiap file per-OS di bawah `pkg/application/`:
+
+```
+pkg/application/
+├── webview_window_darwin.go   //go:build darwin
+├── webview_window_linux.go    //go:build linux
+└── webview_window_windows.go  //go:build windows
+```
+
+Jika platform tidak dapat mendukung fitur, tulis stub no-op. Framework
+tidak memiliki sentinel `ErrCapability` — tampilkan dukungan via dokumentasi dan, jika
+diperlukan, via field boolean relevan pada `Options` / struct options
+spesifik platform.
+
+### 3.4 Flag Kemampuan (opsional)
+
+Paket `internal/capabilities/` ada untuk mendeklarasikan set kemampuan per-platform.
+Tidak ada API publik `application.HasCapability` /
+`application.CapOpacity`. Jika Anda ingin kemampuan yang dapat diperiksa saat runtime,
+tambahkan di bawah `internal/capabilities/` dan tampilkan getter typed dari
+`pkg/application`.
+
+---
+
+## 4. Menambahkan Kemampuan Platform Baru
+
+Contoh: dukungan Wayland opsional di Linux.
+
+1. Pisahkan file `pkg/application/*_linux.go` yang relevan menjadi
+   `*_linux_x11.go` (`//go:build linux && !wayland`) dan
+   `*_linux_wayland.go` (`//go:build linux && wayland`).
+2. Biarkan pengguna opt-in dengan `wails3 build --tags wayland`. Teruskan tag ekstra
+   melalui plumbing `EXTRA_TAGS` yang ada di
+   `internal/commands/task_wrapper.go`. Tidak ada flag
+   `--tags wayland` di level `dev` — `wails3 dev` hanya menerima `--config`, `--port`,
+   dan `-s`.
+3. Perbarui docs dan README spesifik platform di bawah
+   `pkg/application/`.
+
+> Jaga build tag default minimal; cadangkan tag opt-in untuk fitur niche.
+
+---
+
+## 5. Checklist Kompatibilitas Lintas Platform
+
+| ✅ Langkah | Mengapa |
+|---------|-----|
+| Sediakan **setiap** method publik di semua file platform (meski stub) | Menjaga build hijau di setiap OS |
+| Dokumentasikan degradasi graceful per OS | Aplikasi dapat branch pada `runtime.GOOS` tanpa error tersembunyi |
+| Gunakan **pure Go** dulu, Cgo hanya jika diperlukan | Menyederhanakan cross-compile (Linux sudah membayar pajak Cgo) |
+| Jalankan `task test:cli`, `task test:generator`, `task test:templates` | Mereproduksi CI secara lokal |
+| Dokumentasikan build tag baru di docs kontributor / README template | Pengguna harus tahu tentang opt-in |
+
+---
+
+## 6. Debug Build & Kecepatan Iterasi
+
+* Gunakan `Options.LogLevel = slog.LevelDebug` (`Options.Logger = slog.Default()`)
+  untuk mencetak aktivitas runtime verbose. Tidak ada variabel lingkungan
+  `WAILS_LOG_LEVEL`.
+* Flag `wails3 dev` adalah `--config`, `--port`, `-s`. Tidak ada flag `-race` atau
+  `-verbose` — latih race detector dengan `go test -race ./...` atau
+  dengan `go build -race` aplikasi Anda dan menjalankannya langsung.
+* Panduan tes race / Cgo ada di `v3/TESTING.md` (draft lama menunjuk
+  ke `pkg/application/RACE.md`, yang tidak ada).
+
+---
+
+## 7. Kontribusi Upstream
+
+1. Buka **issue** untuk mendiskusikan ide & desain.
+2. Ikuti teknik di atas untuk mengimplementasikan.
+3. Tambahkan:
+   * Unit test (`*_test.go`)
+   * Dokumentasi (file ini atau halaman `docs/...` yang relevan)
+   * Regression test di bawah `internal/generator/testcases/` jika Anda menyentuh
+     generator binding
+4. Jalankan `task precommit` plus target `task test:*` relevan secara lokal
+   sebelum push.
+
+---
+
+### Tautan Cepat
+
+| Area | Lokasi |
+|------|----------|
+| Service bawaan | `pkg/services/` |
+| Service scaffolder | `internal/service/` |
+| Wiring CLI | `v3/cmd/wails3/main.go` |
+| Body perintah CLI | `internal/commands/` |
+| Runtime per-OS | `pkg/application/*_{darwin,linux,windows}.go` |
+| Deklarasi kemampuan | `internal/capabilities/` |
+| DSL Taskfile | `v3/Taskfile.yaml` |
+| Generator konstanta event | `v3/tasks/events/generate.go` |
+
+---
+
+Anda sekarang memiliki **roadmap** untuk membengkokkan Wails sesuai keinginan — tambahkan service,
+taburkan keajaiban CLI, hack runtime, atau bawa fitur OS yang sama sekali baru.
+Happy extending!

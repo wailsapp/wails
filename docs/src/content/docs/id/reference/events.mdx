@@ -1,0 +1,850 @@
+---
+title: API Events
+description: Referensi lengkap untuk API Events
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Gambaran Umum
+
+API Events menyediakan metode untuk mengirim dan mendengarkan event, memungkinkan komunikasi antar bagian berbeda dalam aplikasi Anda.
+
+**Jenis Event:**
+- **Application Events** - Event lifecycle aplikasi (startup, shutdown)
+- **Window Events** - Perubahan status window (focus, blur, resize)
+- **Custom Events** - Event yang ditentukan pengguna untuk komunikasi khusus aplikasi
+
+**Pola Komunikasi:**
+- **Go ke Frontend** - Kirim event dari Go, dengarkan di JavaScript
+- **Frontend ke Go** - Tidak langsung (gunakan service bindings sebagai gantinya)
+- **Frontend ke Frontend** - Melalui Go atau event runtime lokal
+- **Window ke Window** - Target window tertentu atau siarkan ke semua
+
+## Metode Event (Go)
+
+### app.Event.Emit()
+
+Mengirim event kustom ke semua window. Mengembalikan `true` jika hook membatalkan emit.
+
+```go
+func (em *EventManager) Emit(name string, data ...any) bool
+```
+
+**Parameter:**
+- `name` - Nama event
+- `data` - Data opsional untuk dikirim dengan event
+
+**Contoh:**
+```go
+// Kirim event sederhana
+app.Event.Emit("user-logged-in")
+
+// Kirim dengan data
+app.Event.Emit("data-updated", map[string]interface{}{
+    "count": 42,
+    "status": "success",
+})
+
+// Kirim beberapa nilai
+app.Event.Emit("progress", 75, "Processing files...")
+```
+
+### app.Event.On()
+
+Mendengarkan event kustom di Go.
+
+```go
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
+```
+
+**Parameter:**
+- `name` - Nama event untuk didengarkan
+- `callback` - Fungsi yang dipanggil saat event dikirim
+
+**Mengembalikan:** Fungsi cleanup untuk menghapus event listener
+
+**Contoh:**
+```go
+// Dengarkan event
+cleanup := app.Event.On("user-action", func(e *application.CustomEvent) {
+    data := e.Data.(map[string]interface{})
+    action := data["action"].(string)
+    app.Logger.Info("User action", "action", action)
+})
+
+// Nanti, hapus listener
+cleanup()
+```
+
+### Event Khusus Window
+
+Kirim event ke window tertentu:
+
+```go
+// Kirim ke window tertentu
+window.EmitEvent("notification", "Hello from Go!")
+
+// Kirim ke semua window
+app.Event.Emit("global-update", data)
+```
+
+## Metode Event (Frontend)
+
+### On()
+
+Mendengarkan event dari Go.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.On(eventName, callback)
+```
+
+**Parameter:**
+- `eventName` - Nama event untuk didengarkan
+- `callback` - Fungsi yang dipanggil saat event diterima
+
+**Mengembalikan:** Fungsi cleanup
+
+**Contoh:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Dengarkan event
+const cleanup = Events.On('data-updated', (data) => {
+    console.log('Count:', data.count)
+    console.log('Status:', data.status)
+    updateUI(data)
+})
+
+// Nanti, hapus listener
+cleanup()
+```
+
+### Once()
+
+Mendengarkan satu kejadian event.
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+Events.Once(eventName, callback)
+```
+
+**Contoh:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Dengarkan kejadian pertama saja
+Events.Once('initialization-complete', (data) => {
+    console.log('App initialized!', data)
+    // Ini hanya akan dipicu sekali
+})
+```
+
+### Off()
+
+Menghapus semua listener untuk satu atau lebih event. `Off` menerima string nama event variadic — **tidak** menerima callback. Untuk menghapus satu listener, simpan fungsi unsubscribe yang dikembalikan oleh `Events.On(...)` dan panggil.
+
+```typescript
+import { Events } from '@wailsio/runtime'
+
+Events.Off(...eventNames: string[]): void
+```
+
+**Contoh:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Disarankan: simpan fungsi unsubscribe dari On()
+const unsubscribe = Events.On('my-event', (data) => {
+    console.log('Event received:', data)
+})
+
+// Nanti — hapus listener ini saja
+unsubscribe()
+
+// Atau: hapus setiap listener untuk satu atau lebih event
+Events.Off('my-event', 'another-event')
+```
+
+### OffAll()
+
+Menghapus **setiap** event listener. Tidak menerima argumen.
+
+```typescript
+import { Events } from '@wailsio/runtime'
+
+Events.OffAll(): void
+```
+
+**Contoh:**
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Hapus semua listener — biasanya digunakan saat teardown.
+Events.OffAll()
+```
+
+### OnMultiple()
+
+Mendengarkan event hingga `max` kali, lalu berhenti berlangganan secara otomatis.
+
+```typescript
+Events.OnMultiple(eventName: string, callback, max: number): () => void
+```
+
+**Contoh:**
+```javascript
+Events.OnMultiple('progress', (data) => {
+    console.log('progress', data)
+}, 5)
+```
+
+## Application Events
+
+### app.Event.OnApplicationEvent()
+
+Mendengarkan event lifecycle aplikasi.
+
+```go
+func (em *EventManager) OnApplicationEvent(
+    eventType events.ApplicationEventType,
+    callback func(*ApplicationEvent),
+) func()
+```
+
+Konstanta event berada di paket `events` — `events.Common.*` untuk event lintas platform, `events.Mac.*` / `events.Windows.*` / `events.Linux.*` untuk yang khusus platform.
+
+**Event aplikasi umum:**
+- `events.Common.ApplicationStarted` - Aplikasi selesai diluncurkan.
+- `events.Common.ThemeChanged` - Tema sistem beralih antara terang dan gelap.
+- `events.Common.ApplicationOpenedWithFile` - Diluncurkan melalui asosiasi file.
+- `events.Common.ApplicationLaunchedWithUrl` - Diluncurkan melalui skema URL.
+
+Tidak ada konstanta event "application shutdown" generik — daftarkan cleanup shutdown melalui `application.Options.OnShutdown` atau `app.OnShutdown(func())`.
+
+**Contoh:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Tangani startup aplikasi
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application started")
+})
+
+// Bereaksi terhadap perubahan tema
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    if e.Context().IsDarkMode() {
+        app.Logger.Info("Dark mode enabled")
+    }
+})
+
+// Cleanup shutdown dikonfigurasi pada aplikasi, bukan sebagai event:
+app.OnShutdown(func() {
+    database.Close()
+    saveSettings()
+})
+```
+
+## Window Events
+
+### OnWindowEvent()
+
+Mendengarkan event khusus window.
+
+```go
+func (w *WebviewWindow) OnWindowEvent(
+    eventType events.WindowEventType,
+    callback func(*WindowEvent),
+) func()
+```
+
+Konstanta event window berada di paket `events`: `events.Common.*` untuk event lintas platform (dan `events.Mac.*` / `events.Windows.*` / `events.Linux.*` untuk yang khusus platform).
+
+**Event window umum:**
+- `events.Common.WindowFocus` - Window mendapat fokus.
+- `events.Common.WindowLostFocus` - Window kehilangan fokus.
+- `events.Common.WindowClosing` - Window akan ditutup (dapat dibatalkan melalui `RegisterHook`).
+- `events.Common.WindowDidResize` - Window diubah ukurannya.
+- `events.Common.WindowDidMove` - Window dipindahkan.
+- `events.Common.WindowMinimise` / `WindowUnMinimise` / `WindowMaximise` / `WindowUnMaximise` / `WindowFullscreen` / `WindowUnFullscreen`.
+- `events.Common.WindowRuntimeReady` - Aman untuk mengirim event ke runtime dalam window.
+
+**Contoh:**
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Tangani fokus window
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// Tangani resize window
+window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
+    width, height := window.Size()
+    app.Logger.Info("Window resized", "width", width, "height", height)
+})
+```
+
+## Pola Umum
+
+Pola ini mendemonstrasikan pendekatan terbukti untuk menggunakan event dalam aplikasi dunia nyata. Setiap pola menyelesaikan tantangan komunikasi tertentu antara backend Go dan frontend Anda, membantu Anda membangun aplikasi yang responsif dan terstruktur dengan baik.
+
+### Pola Request/Response
+
+Gunakan ini saat Anda ingin memberi tahu frontend tentang penyelesaian operasi backend, seperti setelah pengambilan data, pemrosesan file, atau tugas latar belakang. Service binding mengembalikan data secara langsung, sementara event menyediakan notifikasi tambahan untuk pembaruan UI seperti menampilkan pesan toast atau memperbarui daftar.
+
+**Go:**
+
+```go
+// Metode service
+type DataService struct {
+    app *application.App
+}
+
+func (s *DataService) FetchData(query string) ([]Item, error) {
+    items := fetchFromDatabase(query)
+
+    // Kirim event saat selesai
+    s.app.Event.Emit("data-fetched", map[string]interface{}{
+        "query": query,
+        "count": len(items),
+    })
+
+    return items, nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { FetchData } from './bindings/DataService'
+import { Events } from '@wailsio/runtime'
+
+// Dengarkan event penyelesaian
+Events.On('data-fetched', (data) => {
+    console.log(`Fetched ${data.count} items for query: ${data.query}`)
+    showNotification(`Found ${data.count} results`)
+})
+
+// Panggil metode service
+const items = await FetchData("search term")
+displayItems(items)
+```
+
+### Pembaruan Progress
+
+Ideal untuk operasi berjalan lama seperti unggah file, pemrosesan batch, impor data besar, atau encoding video. Kirim event progress selama operasi untuk memperbarui progress bar, teks status, atau indikator langkah di UI, memberikan umpan balik real-time kepada pengguna.
+
+**Go:**
+
+```go
+func (s *Service) ProcessFiles(files []string) error {
+    total := len(files)
+
+    for i, file := range files {
+        // Proses file
+        processFile(file)
+
+        // Kirim event progress
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "current": i + 1,
+            "total":   total,
+            "percent": float64(i+1) / float64(total) * 100,
+            "file":    file,
+        })
+    }
+
+    s.app.Event.Emit("processing-complete")
+    return nil
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Perbarui progress bar
+Events.On('progress', (data) => {
+    progressBar.style.width = `${data.percent}%`
+    statusText.textContent = `Processing ${data.file}... (${data.current}/${data.total})`
+})
+
+// Tangani penyelesaian
+Events.Once('processing-complete', () => {
+    progressBar.style.width = '100%'
+    statusText.textContent = 'Complete!'
+    setTimeout(() => hideProgressBar(), 2000)
+})
+```
+
+### Komunikasi Multi-Window
+
+Sempurna untuk aplikasi dengan beberapa window seperti panel pengaturan, dashboard, atau penampil dokumen. Siarkan event untuk menyinkronkan status di semua window (perubahan tema, preferensi pengguna) atau kirim event tertarget ke window tertentu untuk pembaruan khusus window.
+
+**Go:**
+
+```go
+// Siarkan ke semua window
+app.Event.Emit("theme-changed", "dark")
+
+// Kirim ke window tertentu
+preferencesWindow.EmitEvent("settings-updated", settings)
+
+// Listener per-window — terima di event bus global, tetapi
+// filter berdasarkan nama window sumber event (diatur otomatis saat
+// window mengirim melalui window.EmitEvent).
+app.Event.On("request-data", func(e *application.CustomEvent) {
+    if e.Sender != window1.Name() {
+        return
+    }
+    window1.EmitEvent("data-response", data)
+})
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Dengarkan di window mana pun
+Events.On('theme-changed', (theme) => {
+    document.body.className = theme
+})
+```
+
+### Sinkronisasi Status
+
+Gunakan saat Anda perlu menjaga status frontend dan backend tetap sinkron, seperti sesi pengguna, konfigurasi aplikasi, atau fitur kolaboratif. Saat status berubah di backend, kirim event untuk memperbarui semua frontend yang terhubung, memastikan konsistensi di seluruh aplikasi Anda.
+
+**Go:**
+
+```go
+type StateService struct {
+    app   *application.App
+    state map[string]interface{}
+    mu    sync.RWMutex
+}
+
+func (s *StateService) UpdateState(key string, value interface{}) {
+    s.mu.Lock()
+    s.state[key] = value
+    s.mu.Unlock()
+
+    // Beri tahu semua window
+    s.app.Event.Emit("state-updated", map[string]interface{}{
+        "key":   key,
+        "value": value,
+    })
+}
+
+func (s *StateService) GetState(key string) interface{} {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+    return s.state[key]
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { GetState } from './bindings/StateService'
+
+// Jaga status lokal tetap sinkron
+let localState = {}
+
+Events.On('state-updated', async (data) => {
+    localState[data.key] = data.value
+    updateUI(data.key, data.value)
+})
+
+// Inisialisasi status
+const initialState = await GetState("all")
+localState = initialState
+```
+
+### Notifikasi Berbasis Event
+
+Terbaik untuk menampilkan umpan balik pengguna seperti konfirmasi sukses, peringatan error, atau pesan info. Alih-alih memanggil kode UI langsung dari service, kirim event notifikasi yang ditangani frontend secara konsisten, memudahkan perubahan gaya notifikasi atau penambahan fitur seperti riwayat notifikasi.
+
+**Go:**
+
+```go
+type NotificationService struct {
+    app *application.App
+}
+
+func (s *NotificationService) Success(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "success",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Error(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "error",
+        "message": message,
+    })
+}
+
+func (s *NotificationService) Info(message string) {
+    s.app.Event.Emit("notification", map[string]interface{}{
+        "type":    "info",
+        "message": message,
+    })
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+// Handler notifikasi terpadu
+Events.On('notification', (data) => {
+    const toast = document.createElement('div')
+    toast.className = `toast toast-${data.type}`
+    toast.textContent = data.message
+
+    document.body.appendChild(toast)
+
+    setTimeout(() => {
+        toast.classList.add('fade-out')
+        setTimeout(() => toast.remove(), 300)
+    }, 3000)
+})
+```
+
+## Contoh Lengkap
+
+**Go:**
+
+```go
+package main
+
+import (
+    "sync"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/events"
+)
+
+type EventDemoService struct {
+    app *application.App
+    mu  sync.Mutex
+}
+
+func NewEventDemoService(app *application.App) *EventDemoService {
+    service := &EventDemoService{app: app}
+
+    // Dengarkan event kustom
+    app.Event.On("user-action", func(e *application.CustomEvent) {
+        data := e.Data.(map[string]interface{})
+        app.Logger.Info("User action received", "data", data)
+    })
+
+    return service
+}
+
+func (s *EventDemoService) StartLongTask() {
+    go func() {
+        s.app.Event.Emit("task-started")
+
+        for i := 1; i <= 10; i++ {
+            time.Sleep(500 * time.Millisecond)
+
+            s.app.Event.Emit("task-progress", map[string]interface{}{
+                "step":    i,
+                "total":   10,
+                "percent": i * 10,
+            })
+        }
+
+        s.app.Event.Emit("task-completed", map[string]interface{}{
+            "message": "Task finished successfully!",
+        })
+    }()
+}
+
+func (s *EventDemoService) BroadcastMessage(message string) {
+    s.app.Event.Emit("broadcast", message)
+}
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Event Demo",
+    })
+
+    // Tangani lifecycle aplikasi
+    app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+        app.Logger.Info("Application started!")
+    })
+
+    app.OnShutdown(func() {
+        app.Logger.Info("Application shutting down...")
+    })
+
+    // Daftarkan service (RegisterService tidak mengembalikan nilai).
+    service := NewEventDemoService(app)
+    app.RegisterService(application.NewService(service))
+
+    // Buat window
+    window := app.Window.New()
+
+    // Tangani event window
+    window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "focused")
+    })
+
+    window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+        window.EmitEvent("window-state", "blurred")
+    })
+
+    window.Show()
+    app.Run()
+}
+```
+
+**JavaScript:**
+
+```javascript
+import { Events } from '@wailsio/runtime'
+import { StartLongTask, BroadcastMessage } from './bindings/EventDemoService'
+
+// Event tugas
+Events.On('task-started', () => {
+    console.log('Task started...')
+    document.getElementById('status').textContent = 'Running...'
+})
+
+Events.On('task-progress', (data) => {
+    const progressBar = document.getElementById('progress')
+    progressBar.style.width = `${data.percent}%`
+    console.log(`Step ${data.step} of ${data.total}`)
+})
+
+Events.Once('task-completed', (data) => {
+    console.log('Task completed!', data.message)
+    document.getElementById('status').textContent = data.message
+})
+
+// Event siaran
+Events.On('broadcast', (message) => {
+    console.log('Broadcast:', message)
+    alert(message)
+})
+
+// Event status window
+Events.On('window-state', (state) => {
+    console.log('Window is now:', state)
+    document.body.dataset.windowState = state
+})
+
+// Picu tugas panjang
+document.getElementById('startTask').addEventListener('click', async () => {
+    await StartLongTask()
+})
+
+// Kirim siaran
+document.getElementById('broadcast').addEventListener('click', async () => {
+    const message = document.getElementById('message').value
+    await BroadcastMessage(message)
+})
+```
+
+## Event Bawaan
+
+Wails menyediakan event sistem bawaan untuk lifecycle aplikasi dan window. Event ini dikirim secara otomatis oleh framework.
+
+### Common Events vs Event Native Platform
+
+Wails menyediakan dua jenis event sistem:
+
+**Common Events** (`events.Common.*`) adalah abstraksi lintas platform yang berfungsi konsisten di macOS, Windows, dan Linux. Ini adalah event yang harus Anda gunakan dalam aplikasi untuk portabilitas maksimum.
+
+**Platform-Native Events** (`events.Mac.*`, `events.Windows.*`, `events.Linux.*`) adalah event khusus OS yang mendasari yang dipetakan dari Common Events. Ini menyediakan akses ke perilaku dan edge case khusus platform.
+
+**Cara Kerjanya:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// ✅ DIREKOMENDASIKAN: Gunakan Common Events untuk kode lintas platform
+window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    // Ini berfungsi di semua platform
+})
+
+// Event khusus platform untuk kasus penggunaan lanjutan
+window.OnWindowEvent(events.Mac.WindowWillClose, func(e *application.WindowEvent) {
+    // Event "will close" khusus macOS (sebelum WindowClosing)
+})
+
+window.OnWindowEvent(events.Windows.WindowClosing, func(e *application.WindowEvent) {
+    // Event close khusus Windows
+})
+```
+
+**Pemetaan Event:**
+
+Event native platform secara otomatis dipetakan ke Common Events:
+
+- macOS: `events.Mac.WindowShouldClose` → `events.Common.WindowClosing`
+- Windows: `events.Windows.WindowClosing` → `events.Common.WindowClosing`
+- Linux: `events.Linux.WindowDeleteEvent` → `events.Common.WindowClosing`
+
+Pemetaan ini terjadi secara otomatis di latar belakang, jadi saat Anda mendengarkan `events.Common.WindowClosing`, Anda akan menerimanya terlepas dari platform.
+
+**Kapan Menggunakan Masing-masing:**
+
+- **Gunakan Common Events** untuk 99% kode aplikasi Anda - mereka menyediakan perilaku konsisten di seluruh platform
+- **Gunakan Platform-Native Events** hanya saat Anda membutuhkan fungsionalitas khusus platform yang tidak tersedia di Common Events (mis., event lifecycle window khusus macOS, event manajemen daya Windows)
+
+### Application Events
+
+| Event | Deskripsi | Kapan Dikirim | Dapat Dibatalkan |
+|-------|-------------|--------------|-------------|
+| `ApplicationOpenedWithFile` | Aplikasi dibuka dengan file | Saat aplikasi diluncurkan dengan file (mis., dari asosiasi file) | Tidak |
+| `ApplicationStarted` | Aplikasi selesai diluncurkan | Setelah inisialisasi aplikasi selesai dan aplikasi siap | Tidak |
+| `ApplicationLaunchedWithUrl` | Aplikasi diluncurkan dengan URL | Saat aplikasi diluncurkan melalui skema URL | Tidak |
+| `ThemeChanged` | Tema sistem berubah | Saat tema OS beralih antara mode terang/gelap | Tidak |
+| `SystemWillSleep` | Sistem akan ditangguhkan | Tepat sebelum OS ditangguhkan (macOS / Windows / Linux-dengan-logind) | Tidak |
+| `SystemDidWake` | Sistem dilanjutkan dari penangguhan | Segera setelah resume dari sleep (macOS / Windows / Linux-dengan-logind) | Tidak |
+
+**Penggunaan:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    app.Logger.Info("Application ready!")
+})
+
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *application.ApplicationEvent) {
+    // Perbarui tema aplikasi
+})
+```
+
+### Window Events
+
+| Event | Deskripsi | Kapan Dikirim | Dapat Dibatalkan |
+|-------|-------------|--------------|-------------|
+| `WindowClosing` | Window akan ditutup | Sebelum window ditutup (pengguna mengklik X, Close() dipanggil) | Ya |
+| `WindowDidMove` | Window dipindahkan ke posisi baru | Setelah posisi window berubah (debounced) | Tidak |
+| `WindowDidResize` | Window diubah ukurannya | Setelah ukuran window berubah | Tidak |
+| `WindowDPIChanged` | Skala DPI window berubah | Saat berpindah antar monitor dengan DPI berbeda (Windows) | Tidak |
+| `WindowFilesDropped` | File dijatuhkan melalui drag-drop OS native | Setelah file dijatuhkan dari OS ke window | Tidak |
+| `WindowFocus` | Window mendapat fokus | Saat window menjadi aktif | Tidak |
+| `WindowFullscreen` | Window masuk fullscreen | Setelah Fullscreen() atau pengguna masuk fullscreen | Tidak |
+| `WindowHide` | Window disembunyikan | Setelah Hide() atau window tertutup | Tidak |
+| `WindowLostFocus` | Window kehilangan fokus | Saat window menjadi tidak aktif | Tidak |
+| `WindowMaximise` | Window dimaksimalkan | Setelah Maximise() atau pengguna memaksimalkan | Ya (macOS) |
+| `WindowMinimise` | Window diminimalkan | Setelah Minimise() atau pengguna meminimalkan | Ya (macOS) |
+| `WindowRestore` | Window dipulihkan dari status min/max | Setelah Restore() (terutama Windows) | Tidak |
+| `WindowRuntimeReady` | Runtime Wails dimuat dan siap | Saat inisialisasi runtime JavaScript selesai | Tidak |
+| `WindowShow` | Window menjadi terlihat | Setelah Show() atau window menjadi terlihat | Tidak |
+| `WindowUnFullscreen` | Window keluar fullscreen | Setelah UnFullscreen() atau pengguna keluar fullscreen | Tidak |
+| `WindowUnMaximise` | Window keluar dari status dimaksimalkan | Setelah UnMaximise() atau pengguna membatalkan maksimalkan | Ya (macOS) |
+| `WindowUnMinimise` | Window keluar dari status diminimalkan | Setelah UnMinimise()/Restore() atau pengguna memulihkan | Ya (macOS) |
+| `WindowZoomIn` | Zoom konten window ditingkatkan | Setelah ZoomIn() dipanggil (terutama macOS) | Ya (macOS) |
+| `WindowZoomOut` | Zoom konten window dikurangi | Setelah ZoomOut() dipanggil (terutama macOS) | Ya (macOS) |
+| `WindowZoomReset` | Zoom konten window direset ke 100% | Setelah ZoomReset() dipanggil (terutama macOS) | Ya (macOS) |
+| `WindowDropZoneFilesDropped` | File dijatuhkan pada drop zone yang didefinisikan JS | Saat file dijatuhkan ke elemen dengan drop zone | Tidak |
+
+**Penggunaan:**
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Dengarkan event window
+window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
+    app.Logger.Info("Window focused")
+})
+
+// Batalkan penutupan window
+window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
+    dlg := app.Dialog.Question().SetMessage("Close window?")
+    yes := dlg.AddButton("Yes")
+    no := dlg.AddButton("No")
+    dlg.SetDefaultButton(yes)
+    dlg.SetCancelButton(no)
+    no.OnClick(func() { e.Cancel() })
+
+    dlg.Show()
+})
+
+// Tunggu runtime siap
+window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
+    app.Logger.Info("Runtime ready, safe to emit events to frontend")
+    window.EmitEvent("app-initialized", data)
+})
+```
+
+**Catatan Penting:**
+
+- **WindowRuntimeReady** sangat penting - tunggu event ini sebelum mengirim event ke frontend
+- **WindowDidMove** dan **WindowDidResize** di-debounce (default 50ms) untuk mencegah banjir event
+- **Event yang dapat dibatalkan** dapat dicegah dengan memanggil `event.Cancel()` dalam handler `RegisterHook()`
+- **WindowFilesDropped** untuk drop file OS native; **WindowDropZoneFilesDropped** untuk drop zone berbasis web
+- Beberapa event khusus platform (mis., WindowDPIChanged di Windows, event zoom terutama di macOS)
+
+## Konvensi Penamaan Event
+
+```go
+// Baik - deskriptif dan spesifik
+app.Event.Emit("user:logged-in", user)
+app.Event.Emit("data:fetch:complete", results)
+app.Event.Emit("ui:theme:changed", theme)
+
+// Buruk - samar dan tidak jelas
+app.Event.Emit("event1", data)
+app.Event.Emit("update", stuff)
+app.Event.Emit("e", value)
+```
+
+## Pertimbangan Performa
+
+### Debouncing Event Frekuensi Tinggi
+
+```go
+type Service struct {
+    app            *application.App
+    lastEmit       time.Time
+    debounceWindow time.Duration
+}
+
+func (s *Service) EmitWithDebounce(event string, data interface{}) {
+    now := time.Now()
+    if now.Sub(s.lastEmit) < s.debounceWindow {
+        return // Lewati emit ini
+    }
+
+    s.app.Event.Emit(event, data)
+    s.lastEmit = now
+}
+```
+
+### Throttling Event
+
+```javascript
+import { Events } from '@wailsio/runtime'
+
+let lastUpdate = 0
+const throttleMs = 100
+
+Events.On('high-frequency-event', (data) => {
+    const now = Date.now()
+    if (now - lastUpdate < throttleMs) {
+        return // Lewati pembaruan ini
+    }
+
+    processUpdate(data)
+    lastUpdate = now
+})
+```

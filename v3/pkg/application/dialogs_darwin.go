@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 package application
 
@@ -31,9 +31,12 @@ static void showAboutBox(char* title, char *message, void *icon, int length) {
 	if (icon != NULL) {
 		NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
 		[alert setIcon:image];
+		// The alert retains its icon
+		[image release];
 	}
 	[alert setAlertStyle:NSAlertStyleInformational];
 	[alert runModal];
+	[alert release];
 }
 
 
@@ -52,6 +55,8 @@ static void* createAlert(int alertType, char* title, char *message, void *icon, 
 	if (icon != NULL) {
 		NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
 		[alert setIcon:image];
+		// The alert retains its icon
+		[image release];
 	} else {
 		if(alertType == NSAlertStyleCritical || alertType == NSAlertStyleWarning) {
 			NSImage *image = [NSImage imageNamed:NSImageNameCaution];
@@ -168,16 +173,30 @@ static void showOpenFileDialog(unsigned int dialogID,
 		NSString *filterPatternsString = [[NSString alloc] initWithBytes:filterPatterns length:filterPatternsCount encoding:NSUTF8StringEncoding];
 		// Convert NSString to NSArray
 		delegate.allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
+		// componentsSeparatedByString: returned a new (retained-by-property) array
+		[filterPatternsString release];
 
 			// Use UTType if macOS 11 or higher to add file filters
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
 		if (@available(macOS 11, *)) {
 			NSMutableArray *filterTypes = [NSMutableArray array];
-			// Iterate the filtertypes, create uti's that are limited to the file extensions then add
+			NSMutableArray *legacyTypes = [NSMutableArray array];
+
 			for (NSString *filterType in delegate.allowedExtensions) {
-				[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
+				UTType *utType = [UTType typeWithFilenameExtension:filterType];
+				if (utType != nil) {
+					[filterTypes addObject:utType];
+				} else {
+					[legacyTypes addObject:filterType];
+				}
 			}
-			[panel setAllowedContentTypes:filterTypes];
+
+			if ([filterTypes count] > 0) {
+				[panel setAllowedContentTypes:filterTypes];
+			}
+			if ([legacyTypes count] > 0) {
+				[panel setAllowedFileTypes:legacyTypes];
+			}
 		}
 #else
 		[panel setAllowedFileTypes:delegate.allowedExtensions];
@@ -218,10 +237,22 @@ static void showOpenFileDialog(unsigned int dialogID,
 	if (window != NULL) {
 		[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
 			processOpenFileDialogResults(panel, result, dialogID);
+			// Release the OpenPanelDelegate created above (the panel's
+			// delegate property does not own it)
+			id delegate = panel.delegate;
+			if (delegate != nil) {
+				[panel setDelegate:nil];
+				[delegate release];
+			}
 		}];
 	} else {
 		[panel beginWithCompletionHandler:^(NSInteger result) {
 			processOpenFileDialogResults(panel, result, dialogID);
+			id delegate = panel.delegate;
+			if (delegate != nil) {
+				[panel setDelegate:nil];
+				[delegate release];
+			}
 		}];
 	}
 }
@@ -392,13 +423,13 @@ func (m *macosDialog) show() {
 		}
 		var iconData unsafe.Pointer
 		var iconLength C.int
-		if m.dialog.Icon != nil {
+		if len(m.dialog.Icon) > 0 {
 			iconData = unsafe.Pointer(&m.dialog.Icon[0])
 			iconLength = C.int(len(m.dialog.Icon))
 		} else {
 			// if it's an error, use the application Icon
 			if m.dialog.DialogType == ErrorDialogType {
-				if globalApplication.options.Icon != nil {
+				if len(globalApplication.options.Icon) > 0 {
 					iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
 					iconLength = C.int(len(globalApplication.options.Icon))
 				}

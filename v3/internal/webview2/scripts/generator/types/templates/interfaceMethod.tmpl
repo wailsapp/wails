@@ -1,0 +1,17 @@
+
+func (i *{{.Name}}) {{.Method.ProcessedName}}({{.Method.GoInputs}}) {{.Method.GoReturnTypes}} {
+{{ .Method.SetupCode}}
+
+	{{ .Method.GetHResultVariable }}, _, err := i.Vtbl.{{.Method.ProcessedName}}.Call(
+		uintptr(unsafe.Pointer(i)),
+{{ .Method.VtableCallInputs}}	)
+
+{{- if .Method.ReturnsHRESULT}}
+	if windows.Handle(hr) != windows.S_OK {
+		return {{.Method.ErrorValuesHRESULT}}
+	}
+{{- end}}
+
+{{- .Method.CleanupCode}}
+	return {{.Method.SuccessValues}}
+}

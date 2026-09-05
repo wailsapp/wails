@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 package application
 
@@ -8,33 +8,12 @@ package application
 
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
+#import "webview_window_darwin.h"
 #import <WebKit/WebKit.h>
-
-// WebviewPanel delegate for handling messages
-@interface WebviewPanelDelegate : NSObject <WKScriptMessageHandler, WKNavigationDelegate>
-@property unsigned int panelId;
-@property unsigned int windowId;
-@property (assign) WKWebView* webView;
-@end
-
-@implementation WebviewPanelDelegate
-
-- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
-	// Handle messages from the panel's webview
-	// For now, log them - in future this could route to Go
-}
-
-- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
-	// Navigation completed callback
-	extern void panelNavigationCompleted(unsigned int windowId, unsigned int panelId);
-	panelNavigationCompleted(self.windowId, self.panelId);
-}
-
-@end
 
 // Create a new WebviewPanel
 void* panelNew(unsigned int panelId, unsigned int windowId, void* parentWindow, int x, int y, int width, int height, bool transparent) {
-	WebviewWindow* window = (WebviewWindow*)parentWindow;
+	NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)parentWindow;
 	NSView* contentView = [window contentView];
 
 	// Calculate frame (macOS uses bottom-left origin)
@@ -48,27 +27,13 @@ void* panelNew(unsigned int panelId, unsigned int windowId, void* parentWindow, 
 	config.suppressesIncrementalRendering = true;
 	config.applicationNameForUserAgent = @"wails.io";
 
-	// Setup user content controller
-	WKUserContentController* userContentController = [WKUserContentController new];
-	[userContentController autorelease];
+ // Reuse only the local asset handler; panel pages do not receive the Wails IPC bridge.
+ id<WKURLSchemeHandler> handler = [window.webView.configuration urlSchemeHandlerForURLScheme:@"wails"];
+ if (handler) [config setURLSchemeHandler:handler forURLScheme:@"wails"];
+ WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 
-	WebviewPanelDelegate* delegate = [[WebviewPanelDelegate alloc] init];
-	[delegate autorelease];
-	delegate.panelId = panelId;
-	delegate.windowId = windowId;
-
-	[userContentController addScriptMessageHandler:delegate name:@"external"];
-	config.userContentController = userContentController;
-
-	// Create the WKWebView
-	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
-	delegate.webView = webView;
-
-	// Set navigation delegate so didFinishNavigation callback fires
-	[webView setNavigationDelegate:delegate];
-
-	// Configure webview
-	[webView setAutoresizingMask:NSViewNotSizable];
+ // Configure webview
+	[webView setAutoresizingMask:NSViewMinYMargin];
 
 	if (transparent) {
 		[webView setValue:@NO forKey:@"drawsBackground"];
@@ -83,14 +48,17 @@ void* panelNew(unsigned int panelId, unsigned int windowId, void* parentWindow, 
 // Destroy a WebviewPanel
 void panelDestroy(void* panel) {
 	WKWebView* webView = (WKWebView*)panel;
-	[webView removeFromSuperview];
-	[webView release];
+	[webView stopLoading];
+ [webView setNavigationDelegate:nil];
+ [webView setUIDelegate:nil];
+ [webView removeFromSuperview];
+ [webView release];
 }
 
 // Set panel bounds
 void panelSetBounds(void* panel, void* parentWindow, int x, int y, int width, int height) {
 	WKWebView* webView = (WKWebView*)panel;
-	WebviewWindow* window = (WebviewWindow*)parentWindow;
+	NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)parentWindow;
 	NSView* contentView = [window contentView];
 
 	// Calculate frame (macOS uses bottom-left origin)
@@ -103,7 +71,7 @@ void panelSetBounds(void* panel, void* parentWindow, int x, int y, int width, in
 // Get panel bounds
 void panelGetBounds(void* panel, void* parentWindow, int* x, int* y, int* width, int* height) {
 	WKWebView* webView = (WKWebView*)panel;
-	WebviewWindow* window = (WebviewWindow*)parentWindow;
+	NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)parentWindow;
 	NSView* contentView = [window contentView];
 
 	NSRect frame = [webView frame];
@@ -115,31 +83,19 @@ void panelGetBounds(void* panel, void* parentWindow, int* x, int* y, int* width,
 	*height = (int)frame.size.height;
 }
 
-// Set panel z-index (bring to front or send to back)
-// Note: This is a binary implementation - panels are either on top (zIndex > 0)
-// or at the bottom (zIndex <= 0). Granular z-index ordering would require tracking
-// all panels and repositioning them relative to each other using NSWindowOrderingMode.
-void panelSetZIndex(void* panel, void* parentWindow, int zIndex) {
-	WKWebView* webView = (WKWebView*)panel;
-	WebviewWindow* window = (WebviewWindow*)parentWindow;
-	NSView* contentView = [window contentView];
-
-	if (zIndex > 0) {
-		// Bring to front
-		[webView removeFromSuperview];
-		[contentView addSubview:webView positioned:NSWindowAbove relativeTo:nil];
-	} else {
-		// Send to back (but above main webview which is at index 0)
-		[webView removeFromSuperview];
-		[contentView addSubview:webView positioned:NSWindowBelow relativeTo:nil];
-	}
+// Place panels in ascending z-index order, above the main webview.
+static void panelRaise(void* panel) {
+ WKWebView* webView = (WKWebView*)panel;
+ NSView* parent = webView.superview;
+ [parent addSubview:webView positioned:NSWindowAbove relativeTo:nil];
 }
 
 // Navigate to URL
 void panelLoadURL(void* panel, const char* url) {
 	WKWebView* webView = (WKWebView*)panel;
 	NSURL* nsURL = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
-	NSURLRequest* request = [NSURLRequest requestWithURL:nsURL];
+	if (!nsURL) return;
+ NSURLRequest* request = [NSURLRequest requestWithURL:nsURL];
 	[webView loadRequest:request];
 }
 
@@ -185,13 +141,6 @@ double panelGetZoom(void* panel) {
 	return [webView magnification];
 }
 
-// Open DevTools (inspector)
-void panelOpenDevTools(void* panel) {
-	WKWebView* webView = (WKWebView*)panel;
-	// Note: Opening inspector programmatically requires private API
-	// This is a no-op for now - users can right-click -> Inspect Element if enabled
-}
-
 // Focus panel
 void panelFocus(void* panel) {
 	WKWebView* webView = (WKWebView*)panel;
@@ -202,7 +151,8 @@ void panelFocus(void* panel) {
 bool panelIsFocused(void* panel) {
 	WKWebView* webView = (WKWebView*)panel;
 	NSWindow* window = [webView window];
-	return [window firstResponder] == webView;
+	NSResponder* responder = [window firstResponder];
+ return responder == webView || ([responder isKindOfClass:[NSView class]] && [(NSView*)responder isDescendantOf:webView]);
 }
 
 // Set background color
@@ -215,9 +165,24 @@ void panelSetBackgroundColour(void* panel, int r, int g, int b, int a) {
 	}
 }
 
+static void panelConfigure(void* panel, const char* userAgent) {
+ WKWebView* view = (WKWebView*)panel;
+ if (userAgent && userAgent[0]) view.customUserAgent = [NSString stringWithUTF8String:userAgent];
+}
+static void panelLoadInitialURL(void* panel, const char* url, const char* headersJSON) {
+ WKWebView* view = (WKWebView*)panel;
+ NSURL* target = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
+ if (!target) return;
+ NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:target];
+ NSData* data = [[NSString stringWithUTF8String:headersJSON] dataUsingEncoding:NSUTF8StringEncoding];
+ NSDictionary* headers = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+ for (NSString* key in headers) [request setValue:headers[key] forHTTPHeaderField:key];
+ [view loadRequest:request];
+}
 */
 import "C"
 import (
+	"encoding/json"
 	"unsafe"
 )
 
@@ -244,14 +209,8 @@ func newPanelImpl(panel *WebviewPanel) webviewPanelImpl {
 	}
 }
 
-//export panelNavigationCompleted
-func panelNavigationCompleted(windowID C.uint, panelID C.uint) {
-	// Navigation completed callback - could be used for future functionality
-	globalApplication.debug("panelNavigationCompleted", "windowID", uint(windowID), "panelID", uint(panelID))
-}
-
 func (p *darwinPanelImpl) create() {
-	options := p.panel.options
+	options := p.panel.snapshotOptions()
 
 	transparent := options.Transparent
 
@@ -287,22 +246,27 @@ func (p *darwinPanelImpl) create() {
 		C.panelSetZoom(p.webview, C.double(options.Zoom))
 	}
 
-	// Navigate to initial URL
-	if options.URL != "" {
-		// TODO: Add support for custom headers when WKWebView supports it
-		if len(options.Headers) > 0 {
-			globalApplication.debug("[Panel-Darwin] Custom headers specified (not yet supported)",
-				"panelID", p.panel.id,
-				"headers", options.Headers)
-		}
-
-		url := C.CString(options.URL)
-		C.panelLoadURL(p.webview, url)
-		C.free(unsafe.Pointer(url))
+	agent := C.CString(options.UserAgent)
+	C.panelConfigure(p.webview, agent)
+	C.free(unsafe.Pointer(agent))
+	enabled := globalApplication.isDebugMode
+	if options.DevToolsEnabled != nil {
+		enabled = *options.DevToolsEnabled
 	}
-
-	// Note: markRuntimeLoaded() is called in panelNavigationCompleted callback
-	// when the navigation completes
+	configureEmbeddedPanelDevTools(p.webview, enabled)
+	if options.URL != "" {
+		headers, _ := json.Marshal(options.Headers)
+		if options.Headers == nil {
+			headers = []byte("{}")
+		}
+		uri, rawHeaders := C.CString(options.URL), C.CString(string(headers))
+		C.panelLoadInitialURL(p.webview, uri, rawHeaders)
+		C.free(unsafe.Pointer(uri))
+		C.free(unsafe.Pointer(rawHeaders))
+	}
+	if enabled && options.OpenInspectorOnStartup {
+		p.openDevTools()
+	}
 }
 
 func (p *darwinPanelImpl) destroy() {
@@ -340,11 +304,16 @@ func (p *darwinPanelImpl) bounds() Rect {
 	}
 }
 
-func (p *darwinPanelImpl) setZIndex(zIndex int) {
-	if p.webview == nil {
-		return
+func (p *darwinPanelImpl) setZIndex(_ int) {
+	panels := p.panel.sortedSiblings()
+	for _, panel := range panels {
+		panel.destroyedLock.RLock()
+		native, ok := panel.impl.(*darwinPanelImpl)
+		panel.destroyedLock.RUnlock()
+		if ok && native.webview != nil {
+			C.panelRaise(native.webview)
+		}
 	}
-	C.panelSetZIndex(p.webview, p.parentNSWindow, C.int(zIndex))
 }
 
 func (p *darwinPanelImpl) setURL(url string) {
@@ -409,7 +378,7 @@ func (p *darwinPanelImpl) openDevTools() {
 	if p.webview == nil {
 		return
 	}
-	C.panelOpenDevTools(p.webview)
+	openEmbeddedPanelDevTools(p.webview)
 }
 
 func (p *darwinPanelImpl) focus() {

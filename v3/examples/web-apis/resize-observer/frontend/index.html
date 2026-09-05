@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resize Observer API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .resizable {
+            resize: both;
+            overflow: auto;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 150px;
+            min-height: 100px;
+            max-width: 100%;
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+        .resizable-info {
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .responsive-box {
+            background: #0f3460;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .responsive-box.small { background: #f87171; }
+        .responsive-box.medium { background: #fbbf24; color: #1a1a2e; }
+        .responsive-box.large { background: #4ade80; color: #1a1a2e; }
+        .size-indicator {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .size-indicator .size {
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            text-align: center;
+        }
+        .size-indicator .size.active {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+        .aspect-ratio-box {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: all 0.3s;
+            min-height: 100px;
+        }
+        .chart-container {
+            height: 200px;
+            background: #0a0a1a;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-bar {
+            position: absolute;
+            bottom: 20px;
+            background: linear-gradient(to top, #4ade80, #22c55e);
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s;
+        }
+        .chart-label {
+            position: absolute;
+            bottom: 5px;
+            font-size: 0.7rem;
+            color: #aaa;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resize Observer API Demo</h1>
+        <p class="description">
+            The Resize Observer API provides a way to observe changes to the size of elements,
+            enabling responsive layouts without relying solely on media queries.
+        </p>
+
+        <div class="status success">
+            Resize Observer: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Resizable Element</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Drag the bottom-right corner to resize this element:</p>
+            <div class="resizable" id="resizable">
+                <div>Drag to resize me!</div>
+                <div class="resizable-info" id="resizableInfo">
+                    Width: -- | Height: --
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Responsive Component</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">This component changes based on its container size (not viewport):</p>
+            <div class="size-indicator">
+                <div class="size" id="sizeSmall">Small<br>&lt; 300px</div>
+                <div class="size" id="sizeMedium">Medium<br>300-500px</div>
+                <div class="size" id="sizeLarge">Large<br>&gt; 500px</div>
+            </div>
+            <div class="responsive-box" id="responsiveBox">
+                <div id="responsiveText">Resize the window to see me change</div>
+                <div style="font-family: monospace; margin-top: 10px;" id="responsiveSize">--</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Aspect Ratio Monitor</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">This box displays its current aspect ratio:</p>
+            <div class="aspect-ratio-box" id="aspectBox" style="height: 200px;">
+                <span id="aspectRatio">--</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Responsive Chart</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">This chart redraws when its container resizes:</p>
+            <div class="chart-container" id="chartContainer"></div>
+        </div>
+
+        <div class="card">
+            <h2>Resize Events Log</h2>
+            <div class="output" id="eventLog">Resize events will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let logEntries = [];
+
+        function checkSupport() {
+            const supported = 'ResizeObserver' in window;
+            document.getElementById('supported').textContent = supported ? 'Available' : 'Not available';
+            return supported;
+        }
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 15) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        // Resizable element observer
+        function setupResizableObserver() {
+            const resizable = document.getElementById('resizable');
+            const info = document.getElementById('resizableInfo');
+
+            const observer = new ResizeObserver(entries => {
+                for (const entry of entries) {
+                    const { width, height } = entry.contentRect;
+                    info.textContent = `Width: ${Math.round(width)}px | Height: ${Math.round(height)}px`;
+                    log(`Resizable: ${Math.round(width)} x ${Math.round(height)}`);
+                }
+            });
+
+            observer.observe(resizable);
+        }
+
+        // Responsive component observer
+        function setupResponsiveObserver() {
+            const box = document.getElementById('responsiveBox');
+            const text = document.getElementById('responsiveText');
+            const size = document.getElementById('responsiveSize');
+
+            const observer = new ResizeObserver(entries => {
+                for (const entry of entries) {
+                    const width = entry.contentRect.width;
+                    size.textContent = `${Math.round(width)}px wide`;
+
+                    document.querySelectorAll('.size').forEach(s => s.classList.remove('active'));
+
+                    if (width < 300) {
+                        box.className = 'responsive-box small';
+                        text.textContent = 'Small layout - single column';
+                        document.getElementById('sizeSmall').classList.add('active');
+                    } else if (width < 500) {
+                        box.className = 'responsive-box medium';
+                        text.textContent = 'Medium layout - two columns';
+                        document.getElementById('sizeMedium').classList.add('active');
+                    } else {
+                        box.className = 'responsive-box large';
+                        text.textContent = 'Large layout - full width';
+                        document.getElementById('sizeLarge').classList.add('active');
+                    }
+                }
+            });
+
+            observer.observe(box);
+        }
+
+        // Aspect ratio observer
+        function setupAspectObserver() {
+            const box = document.getElementById('aspectBox');
+            const ratio = document.getElementById('aspectRatio');
+
+            const observer = new ResizeObserver(entries => {
+                for (const entry of entries) {
+                    const { width, height } = entry.contentRect;
+                    const aspectRatio = (width / height).toFixed(2);
+                    ratio.textContent = `${Math.round(width)} x ${Math.round(height)} (${aspectRatio}:1)`;
+
+                    // Change color based on aspect ratio
+                    const hue = Math.min(200, Math.max(0, (aspectRatio - 0.5) * 100));
+                    box.style.background = `linear-gradient(135deg, hsl(${hue}, 70%, 60%), hsl(${hue + 30}, 70%, 50%))`;
+                }
+            });
+
+            observer.observe(box);
+        }
+
+        // Chart observer
+        function setupChartObserver() {
+            const container = document.getElementById('chartContainer');
+            const data = [65, 45, 80, 35, 55, 70, 40, 90, 50, 75];
+
+            function drawChart(width, height) {
+                container.innerHTML = '';
+                const barWidth = (width - 40) / data.length - 5;
+                const maxValue = Math.max(...data);
+
+                data.forEach((value, i) => {
+                    const barHeight = (value / maxValue) * (height - 40);
+                    const left = 20 + i * (barWidth + 5);
+
+                    const bar = document.createElement('div');
+                    bar.className = 'chart-bar';
+                    bar.style.left = left + 'px';
+                    bar.style.width = barWidth + 'px';
+                    bar.style.height = barHeight + 'px';
+                    container.appendChild(bar);
+
+                    const label = document.createElement('div');
+                    label.className = 'chart-label';
+                    label.style.left = (left + barWidth / 2) + 'px';
+                    label.textContent = value;
+                    container.appendChild(label);
+                });
+            }
+
+            const observer = new ResizeObserver(entries => {
+                for (const entry of entries) {
+                    const { width, height } = entry.contentRect;
+                    drawChart(width, height);
+                    log(`Chart redrawn: ${Math.round(width)} x ${Math.round(height)}`);
+                }
+            });
+
+            observer.observe(container);
+        }
+
+        if (checkSupport()) {
+            setupResizableObserver();
+            setupResponsiveObserver();
+            setupAspectObserver();
+            setupChartObserver();
+        }
+    </script>
+</body>
+</html>

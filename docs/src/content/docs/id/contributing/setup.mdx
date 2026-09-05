@@ -1,0 +1,310 @@
+---
+title: Setup Development
+description: Siapkan lingkungan development Anda untuk pengembangan Wails v3
+---
+
+## Setup Lingkungan Development
+
+Panduan ini memandu Anda menyiapkan lingkungan development lengkap untuk bekerja pada Wails v3.
+
+## Alat yang Diperlukan
+
+### Development Go
+
+1. **Instal Go 1.25 atau lebih baru:**
+   ```bash
+   # Unduh dari https://go.dev/dl/
+   go version  # Verifikasi instalasi
+   ```
+
+2. **Konfigurasi lingkungan Go:**
+   ```bash
+   # Tambahkan ke shell profile Anda (.bashrc, .zshrc, dll.)
+   export GOPATH=$HOME/go
+   export PATH=$PATH:$GOPATH/bin
+   ```
+
+3. **Instal alat Go yang berguna:**
+   ```bash
+   go install golang.org/x/tools/cmd/goimports@latest
+   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+   ```
+
+### Node.js dan npm
+
+Diperlukan untuk membangun dokumentasi dan menguji integrasi frontend.
+
+```bash
+# Instal Node.js 20+ dan npm
+node --version  # Harus 20+
+npm --version
+```
+
+### Dependensi Spesifik Platform
+
+**macOS:**
+
+```bash
+# Instal Xcode Command Line Tools
+xcode-select --install
+
+# Verifikasi instalasi
+xcode-select -p  # Harus menampilkan path
+```
+
+**Windows:**
+
+1. Instal [MSYS2](https://www.msys2.org/) untuk lingkungan mirip Unix
+2. WebView2 Runtime (sudah terinstal di Windows 11, [unduh](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) untuk Windows 10)
+3. Opsional: Instal [Git for Windows](https://git-scm.com/download/win)
+
+**Linux (Debian/Ubuntu):**
+
+```bash
+sudo apt update
+# Stack default GTK4 + WebKitGTK 6.0 (Ubuntu 24.04+ / Debian 13+)
+sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev
+# Untuk jalur legacy -tags gtk3:
+sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev
+```
+
+**Linux (Fedora/RHEL):**
+
+```bash
+# Stack GTK4 default
+sudo dnf install gcc pkg-config gtk4-devel webkitgtk6.0-devel
+# Jalur GTK3 legacy:
+sudo dnf install gtk3-devel webkit2gtk4.1-devel
+```
+
+**Linux (Arch):**
+
+```bash
+# Stack GTK4 default
+sudo pacman -S base-devel gtk4 webkitgtk-6.0
+# Jalur GTK3 legacy:
+sudo pacman -S gtk3 webkit2gtk-4.1
+```
+
+## Setup Repository
+
+### Clone dan Konfigurasi
+
+```bash
+# Clone fork Anda
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# Tambahkan remote upstream
+git remote add upstream https://github.com/wailsapp/wails.git
+
+# Verifikasi remote
+git remote -v
+```
+
+### Build CLI Wails
+
+```bash
+# Navigasi ke direktori v3
+cd v3
+
+# Build CLI
+go build -o ../wails3 ./cmd/wails3
+
+# Tes build
+cd ..
+./wails3 version
+```
+
+### Tambahkan ke PATH (Opsional)
+
+**Linux/macOS:**
+
+```bash
+# Tambahkan ke ~/.bashrc atau ~/.zshrc
+export PATH=$PATH:/path/to/wails
+```
+
+**Windows:**
+
+Tambahkan direktori Wails ke variabel lingkungan PATH melalui System Properties.
+
+## Setup IDE
+
+### VS Code (Direkomendasikan)
+
+1. **Instal VS Code:** [Unduh](https://code.visualstudio.com/)
+
+2. **Instal ekstensi:**
+   - Go (by Go Team at Google)
+   - ESLint
+   - Prettier
+   - MDX (untuk dokumentasi)
+
+3. **Konfigurasi workspace settings** (`.vscode/settings.json`):
+   ```json
+   {
+     "go.useLanguageServer": true,
+     "go.lintTool": "golangci-lint",
+     "go.lintOnSave": "workspace",
+     "editor.formatOnSave": true,
+     "go.formatTool": "goimports"
+   }
+   ```
+
+### GoLand
+
+1. **Instal GoLand:** [Unduh](https://www.jetbrains.com/go/)
+
+2. **Konfigurasi:**
+   - Aktifkan dukungan Go modules
+   - Siapkan file watchers untuk `goimports`
+   - Konfigurasi code style agar sesuai konvensi proyek
+
+## Verifikasi Setup Anda
+
+Jalankan perintah berikut untuk memverifikasi semuanya berfungsi:
+
+```bash
+# Cek versi Go
+go version
+
+# Build Wails
+cd v3
+go build ./cmd/wails3
+
+# Jalankan tes
+go test ./pkg/...
+
+# Buat aplikasi tes
+cd ..
+./wails3 init -n mytest -t vanilla
+cd mytest
+../wails3 dev
+```
+
+Jika aplikasi tes berhasil di-build dan berjalan, lingkungan Anda siap!
+
+## Menjalankan Tes
+
+### Unit Test
+
+```bash
+cd v3
+go test ./...
+```
+
+### Tes Paket Spesifik
+
+```bash
+go test ./pkg/application
+go test ./pkg/events -v  # Output verbose
+```
+
+### Jalankan dengan Coverage
+
+```bash
+go test ./... -coverprofile=coverage.out
+go tool cover -html=coverage.out
+```
+
+### Jalankan dengan Race Detector
+
+```bash
+go test ./... -race
+```
+
+## Bekerja dengan Dokumentasi
+
+Dokumentasi Wails dibangun dengan Astro dan Starlight.
+
+```bash
+cd docs
+
+# Instal dependensi
+npm install
+
+# Mulai dev server
+npm run dev
+
+# Build untuk production
+npm run build
+```
+
+Dokumentasi akan tersedia di `http://localhost:4321/`
+
+## Debugging
+
+### Debugging Kode Go
+
+**VS Code:**
+
+Buat `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Wails CLI",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/v3/cmd/wails3",
+      "args": ["dev"]
+    }
+  ]
+}
+```
+
+**Command Line:**
+
+```bash
+# Gunakan debugger Delve
+go install github.com/go-delve/delve/cmd/dlv@latest
+dlv debug ./cmd/wails3 -- dev
+```
+
+### Debugging Kode Platform
+
+Debugging spesifik platform memerlukan alat platform:
+
+- **macOS:** Xcode Instruments
+- **Windows:** Visual Studio Debugger
+- **Linux:** GDB
+
+## Masalah Umum
+
+### "command not found: wails3"
+
+Tambahkan direktori Wails ke PATH Anda atau gunakan `./wails3` dari root proyek.
+
+### "webkitgtk-6.0 not found" atau "webkit2gtk not found" (Linux)
+
+Instal paket development untuk stack yang Anda build:
+
+```bash
+# Stack GTK4 default (Debian/Ubuntu):
+sudo apt install libwebkitgtk-6.0-dev
+
+# Jalur GTK3 legacy:
+sudo apt install libwebkit2gtk-4.1-dev
+```
+
+### Build gagal dengan error Go module
+
+```bash
+cd v3
+go mod tidy
+go mod download
+```
+
+### Error "CGO_ENABLED" di Windows
+
+Pastikan Anda memiliki kompiler C (MinGW-w64 via MSYS2) di PATH Anda.
+
+## Langkah Selanjutnya
+
+- Tinjau [Standar Coding](/id/contributing/standards)
+- Jelajahi [Dokumentasi Teknis](/id/contributing)
+- Temukan issue untuk dikerjakan: [Good First Issues](https://github.com/wailsapp/wails/labels/good%20first%20issue)

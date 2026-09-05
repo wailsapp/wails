@@ -43,6 +43,9 @@ type Collector struct {
 	// events holds collected information about registered custom events.
 	events *EventMap
 
+	// SpecialTypeCache caches types that are treated as special cases in the generation process.
+	SpecialTypeCache
+
 	systemPaths *config.SystemPaths
 	options     *flags.GenerateBindingsOptions
 	scheduler   Scheduler
@@ -53,6 +56,8 @@ type Collector struct {
 func NewCollector(pkgs []*packages.Package, registerEvent types.Object, systemPaths *config.SystemPaths, options *flags.GenerateBindingsOptions, scheduler Scheduler, logger config.Logger) *Collector {
 	collector := &Collector{
 		pkgs: make(map[*types.Package]*PackageInfo, len(pkgs)),
+
+		SpecialTypeCache: NewSpecialTypeCache(systemPaths),
 
 		systemPaths: systemPaths,
 		options:     options,

@@ -15,14 +15,13 @@ export {
     IndirectPersonAlias,
     Person,
     StrangelyAliasedPerson,
-    TPIndirectPersonAlias
+    SubPackageAlias
 } from "./models.js";
 
 export type {
     Alias,
     AliasStruct,
     EmptyAliasStruct,
-    GenericAlias,
     GenericMapAlias,
     GenericPtrAlias,
     OtherAliasStruct

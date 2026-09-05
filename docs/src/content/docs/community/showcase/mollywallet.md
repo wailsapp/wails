@@ -1,5 +1,6 @@
 ---
 title: Molley Wallet
+description: "A desktop application built with Wails"
 ---
 
 ![Molly Wallet](../../../../assets/showcase-images/mollywallet.webp)

@@ -1,0 +1,266 @@
+---
+title: Manager-API
+description: Organisierte API-Struktur mit fokussierten Manager-Schnittstellen
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Die Wails v3 Manager-API bietet eine organisierte und gut auffindbare Möglichkeit, auf die Anwendungsfunktionalität über fokussierte Manager-Strukturen zuzugreifen. Diese neue API-Struktur gruppiert zusammengehörige Methoden zusammen und bewahrt dabei die volle Abwärtskompatibilität mit der traditionellen App-API.
+
+## Übersicht
+
+Die Manager-API organisiert die Anwendungsfunktionalität in elf fokussierte Bereiche:
+
+- **`app.Window`** - Fenstererstellung, -verwaltung und Callbacks
+- **`app.ContextMenu`** - Registrierung und Verwaltung von Kontextmenüs
+- **`app.KeyBinding`** - Verwaltung globaler Tastenkürzel
+- **`app.Browser`** - Browserintegration (Öffnen von URLs und Dateien)
+- **`app.Env`** - Umgebungsinformationen und Systemstatus
+- **`app.Dialog`** - Datei- und Nachrichten-Dialoge
+- **`app.Event`** - Verarbeitung benutzerdefinierter Ereignisse und Anwendungsereignisse
+- **`app.Menu`** - Verwaltung des Anwendungsmenüs
+- **`app.Screen`** - Bildschirmverwaltung und Koordinatentransformationen
+- **`app.Clipboard`** - Zwischenablage-Textoperationen
+- **`app.SystemTray`** - Erstellung und Verwaltung von Systemablage-Symbolen
+
+## Vorteile
+
+- **Bessere Auffindbarkeit** - Die IDE-Vervollständigung zeigt eine organisierte API-Oberfläche
+- **Verbesserte Codeorganisation** - Zusammengehörige Methoden sind gruppiert
+- **Verbesserte Wartbarkeit** - Trennung der Zuständigkeiten zwischen den Managern
+- **Zukünftige Erweiterbarkeit** - Einfacher, neue Funktionen in spezifische Bereiche hinzuzufügen
+
+## Verwendung
+
+Die Manager-API bietet organisierten Zugriff auf alle Anwendungsfunktionalitäten:
+
+```go
+// Ereignisse und benutzerdefinierte Ereignisverarbeitung
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// Fensterverwaltung
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// Browserintegration
+app.Browser.OpenURL("https://wails.io")
+
+// Menüverwaltung
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// Systemablage
+systray := app.SystemTray.New()
+```
+
+## Manager-Referenz
+
+### Fenster-Manager
+
+Verwaltet die Fenstererstellung, -abruf und Lebenszyklus-Callbacks.
+
+```go
+// Fenster erstellen
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// Fenster finden
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// Fenster-Callbacks
+app.Window.OnCreate(func(window Window) {
+    // Fenstererstellung verarbeiten
+})
+```
+
+### Ereignis-Manager
+
+Verwaltet benutzerdefinierte Ereignisse und das Abhören von Anwendungsereignissen.
+
+```go
+// Benutzerdefinierte Ereignisse
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // Ereignis verarbeiten
+})
+app.Event.Off("userAction")
+app.Event.Reset() // Alle Listener entfernen
+
+// Anwendungsereignisse
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // System-Designänderung verarbeiten
+})
+```
+
+### Browser-Manager
+
+Bietet Browserintegration zum Öffnen von URLs und Dateien.
+
+```go
+// URLs und Dateien im Standardbrowser öffnen
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### Umgebungs-Manager
+
+Zugriff auf Systemumgebungsinformationen.
+
+```go
+// Umgebungsinformationen abrufen
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// System-Design prüfen
+if app.Env.IsDarkMode() {
+    // Dunkles Design ist aktiv
+}
+
+// Dateimanager öffnen
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### Dialog-Manager
+
+Organisierter Zugriff auf Datei- und Nachrichten-Dialoge.
+
+```go
+// Datei-Dialoge
+result, err := app.Dialog.OpenFile().
+    AddFilter("Textdateien", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// Nachrichten-Dialoge
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Vorgang erfolgreich abgeschlossen").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Fehler").  
+    SetMessage("Ein Fehler ist aufgetreten").
+    Show()
+```
+
+### Menü-Manager
+
+Erstellung und Verwaltung des Anwendungsmenüs.
+
+```go
+// Anwendungsmenü erstellen und festlegen
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("Datei")
+fileMenu.Add("Neu").OnClick(func(ctx *Context) {
+    // Menü-Klick verarbeiten
+})
+
+app.Menu.Set(menu)
+
+// Über-Dialog anzeigen
+app.Menu.ShowAbout()
+```
+
+### Tastenkürzel-Manager
+
+Dynamische Verwaltung globaler Tastenkürzel.
+
+```go
+// Tastenkürzel hinzufügen
+app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+    // Strg+N verarbeiten
+})
+
+app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// Tastenkürzel entfernen
+app.KeyBinding.Remove("ctrl+n")
+
+// Alle Kürzel abrufen
+bindings := app.KeyBinding.GetAll()
+```
+
+### Kontextmenü-Manager
+
+Erweiterte Kontextmenüverwaltung (für Bibliotheksautoren).
+
+```go
+// Kontextmenü erstellen und registrieren
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// Kontextmenü abrufen
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// Kontextmenü entfernen
+app.ContextMenu.Remove("myMenu")
+```
+
+### Bildschirm-Manager
+
+Bildschirmverwaltung und Koordinatentransformationen für Multi-Monitor-Setups.
+
+```go
+// Bildschirminformationen abrufen
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// Koordinatentransformationen
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// Bildschirmerkennung
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### Zwischenablage-Manager
+
+Zwischenablage-Operationen zum Lesen und Schreiben von Text.
+
+```go
+// Text in die Zwischenablage schreiben
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // Fehler verarbeiten
+}
+
+// Text aus der Zwischenablage lesen
+text, ok := app.Clipboard.Text()
+if !ok {
+    // Fehler verarbeiten
+} else {
+    // Text verwenden
+}
+```
+
+### Systemablage-Manager
+
+Erstellung und Verwaltung von Systemablage-Symbolen.
+
+```go
+// Systemablage erstellen
+systray := app.SystemTray.New()
+systray.SetLabel("Meine App")
+systray.SetIcon(iconBytes)
+
+// Menü zur Systemablage hinzufügen
+menu := app.Menu.New()
+menu.Add("Öffnen").OnClick(func(ctx *Context) {
+    // Klick verarbeiten
+})
+systray.SetMenu(menu)
+
+// Systemablage zerstören, wenn fertig
+systray.Destroy()
+```

@@ -1,0 +1,92 @@
+---
+sidebar_position: 1
+---
+
+# Installation
+
+## Unterstützte Plattformen
+
+- Windows 10/11 AMD64/ARM64
+- MacOS 10.15+ AMD64 für die Entwicklung, MacOS 10.13+ für die Veröffentlichung
+- MacOS 11.0+ ARM64
+- Linux AMD64/ARM64
+
+## Abhängigkeiten
+
+Wails hat eine Reihe von Abhängigkeiten, die vor der Installation benötigt werden:
+
+- Go 1.21+ (macOS 15+ benötigt Go 1.23.3+)
+- NPM (Node 15+)
+
+### Go
+
+Lade Go von der [Download Seite](https://go.dev/dl/) runter.
+
+Befolge bitte die offiziellen [Installationsanweisungen](https://go.dev/doc/install). Außerdem muss sichergestellt werden, dass die `PATH` Umgebungsvariable auch den Pfad zu Ihrem `~/go/bin` Verzeichnis enthält. Starte dein Terminal neu und führe folgende Überprüfungen durch:
+
+- Prüfe ob Go korrekt installiert ist: `go version`
+- Überprüfe ob "~/go/bin" in der PATH-Variable vorhanden ist: `echo $PATH | grep go/bin`
+
+### NPM
+
+NPM von der [Node Downloads Seite](https://nodejs.org/en/download/) herunterladen. Es ist am besten, die neueste Version zu verwenden, da wir damit im Allgemeinen testen.
+
+Führe `npm --version` aus, um zu überprüfen, ob NPM richtig installiert wurde.
+
+## Plattformspezifische Abhängigkeiten
+
+Außerdem müssen plattformspezifische Abhängigkeiten installiert werden:
+
+```mdx-code-block
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs
+  defaultValue="Windows"
+  values={[
+    { label: "Windows", value: "Windows" },
+    { label: "MacOS", value: "MacOS" },
+    { label: "Linux", value: "Linux" },
+  ]}
+>
+  <TabItem value="MacOS">
+    Wails erfordert die Installation der Xcode-Kommandozeilenprogramme. Dies kann
+    über <code>xcode-select --install</code> erfolgen.
+  </TabItem>
+  <TabItem value="Windows">
+    Wails erfordert die Installation der <a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a>-Laufzeit. Einige Windows-Installationen werden dies bereits installiert haben. Du kannst den Befehl <code>wails doctor</code> ausführen zum überprüfen.
+  </TabItem>
+  <TabItem value={"Linux"}>
+    Linux benötigt die Standard <code>gcc</code> Build-Tools sowie <code>libgtk3</code> und <code>libwebkit</code>. Anstatt eine Vielzahl von Befehlen für verschiedene Distributionen aufzulisten, kann Wails versuchen herauszufinden, was die Installationsbefehle für deine spezifische Distribution sind. Führe <code>wails doctor</code> nach der Installation aus, um zu sehen, wie die Abhängigkeiten installiert werden sollen. Wenn deine Distribution oder dein Paketmanager nicht unterstützt wird, schaue dir die <a href={"/docs/guides/linux-distro-support"}>Füge ein Linux Distro hinzu</a> Anleitung an.
+    <br/><strong>Hinweis:</strong><br/>
+    Wenn  die neueste Linux-Version verwendet wird (Beispiel: Ubuntu 24. 4) und es <code>libwebkit2gtk-4.0-dev</code> nicht unterstützt, dann könnte folgendes Problem in <code>wails doctor</code> auftreten: <code>libwebkit</code> nicht gefunden. Um dieses Problem zu beheben, kann <code>libwebkit2gtk-4.1-dev</code> installiert werden und während des Builds der Tag <code>-tags webkit2_41</code> verwendet werden.
+  </TabItem>
+</Tabs>
+```
+
+## Optionale Abhängigkeiten
+
+- [UPX](https://upx.github.io/) zum Komprimieren der Anwendungen.
+- [NSIS](https://wails.io/docs/guides/windows-installer/) zur Erzeugung von Windows-Installern.
+
+## Wails installieren
+
+Führe `go install github.com/wailsapp/wails/v2/cmd/wails@latest` aus, um das Wails CLI zu installieren.
+
+Hinweis: Wenn ein ähnlicher Fehler auftritt:
+
+```shell
+....\Go\pkg\mod\github.com\wailsapp\wails\v2@v2.1.0\pkg\templates\templates.go:28:12: pattern all:ides/*: no matching files found
+```
+überprüfe, ob Go 1.18+ installiert wurde:
+```shell
+go version
+```
+
+## Systemprüfung
+
+Führe `wails doctor` aus um zu prüfen ob die richtigen Abhängigkeiten installiert wurden. Sollte das nicht der Fall sein, wird es Hinweise darauf geben, was fehlt, sowie eine Hilfestellung, wie eventuelle Probleme behoben werden können.
+
+## Der `wails` Befehl fehlt?
+
+Wenn das System meldet, dass der `wails` Befehl fehlt, stelle sicher, dass die Go-Installationsanleitung korrekt befolgt wurde. Normalerweise bedeutet dies, dass sich das `go/bin` Verzeichnis im Home-Verzeichnis Ihres Benutzers nicht in der `PATH` Umgebungsvariable befindet. Normalerweise müssen alle Eingabeaufforderungen geschlossen und neu geöffnet werden, so dass Änderungen an der Umgebung des Installers in der Eingabeaufforderung übernommen werden.

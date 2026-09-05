@@ -7,7 +7,7 @@
  */
 
 /**
- * @typedef {({ [_: string]: Alias } | null)[] | null} Cyclic
+ * @typedef {({ [_ in string]?: Alias } | null)[] | null} Cyclic
  */
 
 /**

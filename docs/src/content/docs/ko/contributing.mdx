@@ -1,0 +1,275 @@
+---
+title: 기여하기
+description: Wails에 기여하세요
+sidebar:
+  order: 100
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## 기여자 여러분을 환영합니다!
+
+Wails에 대한 기여를 환영합니다! 버그 수정, 기능 추가, 문서 개선 등 여러분의 도움이 매우 감사합니다.
+
+## 기여 방법
+
+### 1. 이슈 보고
+
+버그를 발견하셨나요? 다음 내용을 포함하여 [이슈를 열어주세요](https://github.com/wailsapp/wails/issues/new):
+- 명확한 설명
+- 재현 단계
+- 기대 동작과 실제 동작
+- 시스템 정보
+- 코드 샘플
+
+### 2. 문서 개선
+
+문서 개선은 항상 환영합니다:
+- 오타 및 오류 수정
+- 예제 추가
+- 설명 명확화
+- 콘텐츠 번역
+
+### 3. 코드 제출
+
+풀 리퀘스트(Pull Request)를 통해 코드를 기여하세요:
+- 버그 수정
+- 새로운 기능
+- 성능 개선
+- 테스트
+
+## 시작하기
+
+### 포크 및 클론
+
+```bash
+# GitHub에서 저장소를 포크한 후
+# 자신의 포크를 클론합니다
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# 업스트림 원격 저장소 추가
+git remote add upstream https://github.com/wailsapp/wails.git
+```
+
+### 소스에서 빌드
+
+```bash
+# 의존성 설치
+go mod download
+
+# Wails CLI 빌드
+cd v3/cmd/wails3
+go build
+
+# 빌드 테스트
+./wails3 version
+```
+
+### 테스트 실행
+
+```bash
+# 모든 테스트 실행
+go test ./...
+
+# 특정 패키지 테스트 실행
+go test ./v3/pkg/application
+
+# 커버리지 포함 실행
+go test -cover ./...
+```
+
+## 변경 사항 적용
+
+### 브랜치 생성
+
+```bash
+# main 브랜치 업데이트
+git checkout main
+git pull upstream main
+
+# 기능 브랜치 생성
+git checkout -b feature/my-feature
+```
+
+### 변경 사항 적용
+
+1. **Go 컨벤션**을 따르며 코드 작성
+2. 새로운 기능에 대한 **테스트 추가**
+3. 필요한 경우 **문서 업데이트**
+4. 깨진 부분이 없는지 확인하기 위해 **테스트 실행**
+5. 명확한 메시지로 **변경 사항 커밋**
+
+### 커밋 가이드라인
+
+```bash
+# 좋은 커밋 메시지 예시
+git commit -m "fix: resolve window focus issue on macOS"
+git commit -m "feat: add support for custom window chrome"
+git commit -m "docs: improve bindings documentation"
+
+# 컨벤셔널 커밋(Conventional Commits) 형식 사용:
+# - feat: 새로운 기능
+# - fix: 버그 수정
+# - docs: 문서
+# - test: 테스트
+# - refactor: 코드 리팩토링
+# - chore: 유지보수
+```
+
+### 풀 리퀘스트 제출
+
+```bash
+# 자신의 포크로 푸시
+git push origin feature/my-feature
+
+# GitHub에서 풀 리퀘스트 열기
+# 명확한 설명 제공
+# 관련 이슈 참조
+```
+
+## 풀 리퀘스트 가이드라인
+
+### 좋은 PR 설명
+
+```markdown
+## 설명
+변경 사항에 대한 간략한 설명
+
+## 변경 사항
+- 기능 X 추가
+- 버그 Y 수정
+- 문서 업데이트
+
+## 테스트
+- macOS 14에서 테스트 완료
+- Windows 11에서 테스트 완료
+- 모든 테스트 통과
+
+## 관련 이슈
+Fixes #123
+```
+
+### PR 체크리스트
+
+- [ ] 코드가 Go 컨벤션을 따름
+- [ ] 테스트 추가/업데이트됨
+- [ ] 문서 업데이트됨
+- [ ] 모든 테스트 통과
+- [ ] 브레이킹 체인지 없음 (또는 문서화됨)
+- [ ] 커밋 메시지가 명확함
+
+## 코드 가이드라인
+
+### Go 코드 스타일
+
+```go
+// ✅ 좋음: 명확하고, 문서화되어 있으며, 테스트됨
+// ProcessData는 입력 데이터를 처리하여 결과를 반환합니다.
+// 데이터가 유효하지 않으면 오류를 반환합니다.
+func ProcessData(data string) (string, error) {
+    if data == "" {
+        return "", errors.New("data cannot be empty")
+    }
+    
+    result := process(data)
+    return result, nil
+}
+
+// ❌ 나쁨: 문서화 없음, 오류 처리 없음
+func ProcessData(data string) string {
+    return process(data)
+}
+```
+
+### 테스트
+
+```go
+func TestProcessData(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        want    string
+        wantErr bool
+    }{
+        {"valid input", "test", "processed", false},
+        {"empty input", "", "", true},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := ProcessData(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("ProcessData() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if got != tt.want {
+                t.Errorf("ProcessData() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+## 문서
+
+### 문서 작성
+
+문서는 Starlight(Astro)를 사용합니다:
+
+```bash
+cd docs
+npm install
+npm run dev
+```
+
+### 문서 스타일
+
+- 국제 영어 철자법 사용
+- 문제 상황으로 시작
+- 작동하는 예제 제공
+- 문제 해결 가이드 포함
+- 관련 콘텐츠에 대한 교차 참조 포함
+
+## 커뮤니티
+
+### 도움 받기
+
+- **Discord:** [커뮤니티에 가입하기](https://discord.gg/JDdSxwjhGf)
+- **GitHub Discussions:** 질문하기
+- **GitHub Issues:** 버그 보고
+
+### 행동 강령
+
+존중적이고 포용적이며 전문적으로 행동하세요. 우리는 모두 함께 훌륭한 소프트웨어를 만들기 위해 여기 있습니다.
+
+## 인정
+
+기여자는 다음에서 인정받습니다:
+- 릴리스 노트
+- 기여자 목록
+- GitHub 인사이트
+
+Wails에 기여해 주셔서 감사합니다! 🎉
+
+## 다음 단계
+
+<CardGrid>
+  <Card title="GitHub Repository" icon="github">
+    Wails 저장소를 방문하세요.
+    
+    [GitHub에서 보기 →](https://github.com/wailsapp/wails)
+  </Card>
+
+  <Card title="Discord Community" icon="discord">
+    커뮤니티에 가입하세요.
+    
+    [Discord 가입하기 →](https://discord.gg/JDdSxwjhGf)
+  </Card>
+
+  <Card title="Documentation" icon="open-book">
+    문서를 읽어보세요.
+    
+    [문서 둘러보기 →](/ko/quick-start/why-wails)
+  </Card>
+</CardGrid>

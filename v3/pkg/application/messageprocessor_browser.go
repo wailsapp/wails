@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/pkg/browser"
+	"github.com/wailsapp/wails/v3/internal/browser"
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 

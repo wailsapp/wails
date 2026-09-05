@@ -2,6 +2,9 @@ package application
 
 import (
 	"fmt"
+	"maps"
+	"math"
+	"sort"
 	"sync"
 	"sync/atomic"
 
@@ -59,6 +62,7 @@ type WebviewPanel struct {
 	parent  *WebviewWindow
 
 	// Track if the panel has been destroyed
+	creating      bool // Accessed only on the UI thread.
 	destroyed     bool
 	destroyedLock sync.RWMutex
 
@@ -75,16 +79,16 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 	id := getNextPanelID()
 
 	// Apply defaults
-	if options.Width == 0 {
+	if options.Width <= 0 {
 		options.Width = 400
 	}
-	if options.Height == 0 {
+	if options.Height <= 0 {
 		options.Height = 300
 	}
 	if options.ZIndex == 0 {
 		options.ZIndex = 1
 	}
-	if options.Zoom == 0 {
+	if options.Zoom <= 0 || math.IsNaN(options.Zoom) || math.IsInf(options.Zoom, 0) {
 		options.Zoom = 1.0
 	}
 	if options.Name == "" {
@@ -96,10 +100,22 @@ func NewPanel(options WebviewPanelOptions) *WebviewPanel {
 		options.Visible = &visible
 	}
 
+	options.Headers = maps.Clone(options.Headers)
+	if options.Visible != nil {
+		visible := *options.Visible
+		options.Visible = &visible
+	}
+	if options.DevToolsEnabled != nil {
+		enabled := *options.DevToolsEnabled
+		options.DevToolsEnabled = &enabled
+	}
+
 	// Normalize URL via asset server for local paths
 	if options.URL != "" {
 		if normalizedURL, err := assetserver.GetStartURL(options.URL); err == nil && normalizedURL != "" {
 			options.URL = normalizedURL
+		} else {
+			options.URL = ""
 		}
 	}
 
@@ -137,42 +153,32 @@ func (p *WebviewPanel) Parent() *WebviewWindow {
 // SetBounds sets the position and size of the panel within its parent window.
 // This also updates the anchor baseline so future window resizes calculate from the new position.
 func (p *WebviewPanel) SetBounds(bounds Rect) *WebviewPanel {
-	p.options.X = bounds.X
-	p.options.Y = bounds.Y
-	p.options.Width = bounds.Width
-	p.options.Height = bounds.Height
-
-	// Update anchor baseline so future resizes calculate from the new position
+	bounds.Width = max(1, bounds.Width)
+	bounds.Height = max(1, bounds.Height)
 	p.updateAnchorBaseline(bounds)
-
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(func() {
-			p.impl.setBounds(bounds)
-		})
-	}
+	p.setBoundsInternal(bounds)
 	return p
 }
 
 // updateAnchorBaseline updates the original bounds and window size used for anchor calculations.
 // Called when the user manually changes panel bounds.
 func (p *WebviewPanel) updateAnchorBaseline(bounds Rect) {
-	p.originalBounds = bounds
+	var width, height int
 	if p.parent != nil {
-		p.originalWindowWidth, p.originalWindowHeight = p.parent.Size()
+		width, height = p.parentSize()
 	}
+	p.destroyedLock.Lock()
+	defer p.destroyedLock.Unlock()
+	p.originalBounds = bounds
+	p.originalWindowWidth, p.originalWindowHeight = width, height
 }
 
 // Bounds returns the current bounds of the panel
 func (p *WebviewPanel) Bounds() Rect {
-	if p.impl != nil && !p.isDestroyed() {
-		return InvokeSyncWithResult(p.impl.bounds)
-	}
-	return Rect{
-		X:      p.options.X,
-		Y:      p.options.Y,
-		Width:  p.options.Width,
-		Height: p.options.Height,
-	}
+	options := p.snapshotOptions()
+	bounds := Rect{X: options.X, Y: options.Y, Width: options.Width, Height: options.Height}
+	p.withImpl(func(impl webviewPanelImpl) { bounds = impl.bounds() })
+	return bounds
 }
 
 // SetPosition sets the position of the panel within its parent window
@@ -205,140 +211,144 @@ func (p *WebviewPanel) Size() (int, int) {
 
 // SetZIndex sets the stacking order of the panel
 func (p *WebviewPanel) SetZIndex(zIndex int) *WebviewPanel {
+	p.destroyedLock.Lock()
 	p.options.ZIndex = zIndex
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(func() {
-			p.impl.setZIndex(zIndex)
-		})
-	}
+	p.destroyedLock.Unlock()
+	p.withImpl(func(impl webviewPanelImpl) { impl.setZIndex(zIndex) })
 	return p
 }
 
 // ZIndex returns the current z-index of the panel
 func (p *WebviewPanel) ZIndex() int {
-	return p.options.ZIndex
+	return p.snapshotOptions().ZIndex
 }
 
 // SetURL navigates the panel to the specified URL
 // Local paths (e.g., "/panel.html") are normalized via the asset server.
 func (p *WebviewPanel) SetURL(url string) *WebviewPanel {
-	// Normalize URL via asset server for local paths
-	normalizedURL := url
-	if normalized, err := assetserver.GetStartURL(url); err == nil && normalized != "" {
-		normalizedURL = normalized
+	// Empty means no navigation. Invalid URLs never reach the native webview.
+	if url == "" {
+		return p
 	}
-	p.options.URL = normalizedURL
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(func() {
-			p.impl.setURL(normalizedURL)
-		})
+	normalized, err := assetserver.GetStartURL(url)
+	if err != nil || normalized == "" {
+		return p
 	}
+	p.destroyedLock.Lock()
+	p.options.URL = normalized
+	p.destroyedLock.Unlock()
+	p.withImpl(func(impl webviewPanelImpl) { impl.setURL(normalized) })
 	return p
 }
 
 // URL returns the current URL of the panel
 func (p *WebviewPanel) URL() string {
-	return p.options.URL
+	return p.snapshotOptions().URL
 }
 
 // Reload reloads the current page
 func (p *WebviewPanel) Reload() {
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(p.impl.reload)
-	}
+	p.withImpl(func(impl webviewPanelImpl) { impl.reload() })
 }
 
 // ForceReload reloads the current page, bypassing the cache
 func (p *WebviewPanel) ForceReload() {
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(p.impl.forceReload)
-	}
+	p.withImpl(func(impl webviewPanelImpl) { impl.forceReload() })
 }
 
 // Show makes the panel visible
 func (p *WebviewPanel) Show() *WebviewPanel {
 	visible := true
+	p.destroyedLock.Lock()
 	p.options.Visible = &visible
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(p.impl.show)
-	}
+	p.destroyedLock.Unlock()
+	p.withImpl(func(impl webviewPanelImpl) { impl.show() })
 	return p
 }
 
 // Hide hides the panel
 func (p *WebviewPanel) Hide() *WebviewPanel {
 	visible := false
+	p.destroyedLock.Lock()
 	p.options.Visible = &visible
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(p.impl.hide)
-	}
+	p.destroyedLock.Unlock()
+	p.withImpl(func(impl webviewPanelImpl) { impl.hide() })
 	return p
 }
 
 // IsVisible returns whether the panel is currently visible
 func (p *WebviewPanel) IsVisible() bool {
-	if p.impl != nil && !p.isDestroyed() {
-		return InvokeSyncWithResult(p.impl.isVisible)
+	if p.isDestroyed() {
+		return false
 	}
-	return p.options.Visible != nil && *p.options.Visible
+	options := p.snapshotOptions()
+	visible := options.Visible != nil && *options.Visible
+	p.withImpl(func(impl webviewPanelImpl) { visible = impl.isVisible() })
+	return visible
 }
 
 // SetZoom sets the zoom level of the panel
 func (p *WebviewPanel) SetZoom(zoom float64) *WebviewPanel {
-	p.options.Zoom = zoom
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(func() {
-			p.impl.setZoom(zoom)
-		})
+	if zoom <= 0 || math.IsNaN(zoom) || math.IsInf(zoom, 0) {
+		return p
 	}
+	p.destroyedLock.Lock()
+	p.options.Zoom = zoom
+	p.destroyedLock.Unlock()
+	p.withImpl(func(impl webviewPanelImpl) { impl.setZoom(zoom) })
 	return p
 }
 
 // GetZoom returns the current zoom level of the panel
 func (p *WebviewPanel) GetZoom() float64 {
-	if p.impl != nil && !p.isDestroyed() {
-		return InvokeSyncWithResult(p.impl.getZoom)
-	}
-	return p.options.Zoom
+	zoom := p.snapshotOptions().Zoom
+	p.withImpl(func(impl webviewPanelImpl) { zoom = impl.getZoom() })
+	return zoom
 }
 
 // OpenDevTools opens the developer tools for this panel
 func (p *WebviewPanel) OpenDevTools() {
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(p.impl.openDevTools)
+	options := p.snapshotOptions()
+	enabled := globalApplication != nil && globalApplication.isDebugMode
+	if options.DevToolsEnabled != nil {
+		enabled = *options.DevToolsEnabled
+	}
+	if enabled {
+		p.withImpl(func(impl webviewPanelImpl) { impl.openDevTools() })
 	}
 }
 
 // Focus gives focus to this panel
 func (p *WebviewPanel) Focus() {
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(p.impl.focus)
-	}
+	p.withImpl(func(impl webviewPanelImpl) { impl.focus() })
 }
 
 // IsFocused returns whether this panel currently has focus
 func (p *WebviewPanel) IsFocused() bool {
-	if p.impl != nil && !p.isDestroyed() {
-		return InvokeSyncWithResult(p.impl.isFocused)
-	}
-	return false
+	focused := false
+	p.withImpl(func(impl webviewPanelImpl) { focused = impl.isFocused() })
+	return focused
 }
 
 // Destroy removes the panel from its parent window and releases resources
 func (p *WebviewPanel) Destroy() {
-	if p.isDestroyed() {
+	p.destroyedLock.Lock()
+	if p.destroyed {
+		p.destroyedLock.Unlock()
 		return
 	}
-
-	p.destroyedLock.Lock()
 	p.destroyed = true
+	impl := p.impl
 	p.destroyedLock.Unlock()
-
-	if p.impl != nil {
-		InvokeSync(p.impl.destroy)
+	if impl != nil {
+		InvokeSync(func() {
+			// Embed may pump messages while the native view is being created.
+			// In that case run performs cleanup as soon as create returns.
+			if !p.creating {
+				impl.destroy()
+			}
+		})
 	}
-
-	// Remove from parent
 	if p.parent != nil {
 		p.parent.removePanel(p.id)
 	}
@@ -354,40 +364,45 @@ func (p *WebviewPanel) isDestroyed() bool {
 // run initializes the platform-specific implementation
 // This is called by the parent window when the panel is added
 func (p *WebviewPanel) run() {
-	globalApplication.debug("[Panel] run() called", "panelID", p.id, "panelName", p.name)
-
-	p.destroyedLock.Lock()
-	if p.impl != nil || p.destroyed {
-		globalApplication.debug("[Panel] run() skipped - impl already exists or destroyed",
-			"panelID", p.id, "hasImpl", p.impl != nil, "destroyed", p.destroyed)
+	if p.parent == nil || p.isDestroyed() {
+		return
+	}
+	InvokeSync(func() {
+		p.destroyedLock.Lock()
+		if p.impl != nil || p.destroyed || p.parent.isDestroyed() || p.parent.impl == nil {
+			p.destroyedLock.Unlock()
+			return
+		}
+		impl := newPanelImpl(p)
+		p.impl = impl
 		p.destroyedLock.Unlock()
-		return
-	}
-
-	// Check parent window state before creating impl
-	if p.parent == nil {
-		globalApplication.error("[Panel] run() failed - parent window is nil", "panelID", p.id)
-		p.destroyedLock.Unlock()
-		return
-	}
-	if p.parent.impl == nil {
-		globalApplication.error("[Panel] run() failed - parent window impl is nil", "panelID", p.id, "windowID", p.parent.id)
-		p.destroyedLock.Unlock()
-		return
-	}
-
-	globalApplication.debug("[Panel] Creating platform impl", "panelID", p.id, "parentWindowID", p.parent.id)
-	p.impl = newPanelImpl(p)
-	p.destroyedLock.Unlock()
-
-	if p.impl == nil {
-		globalApplication.error("[Panel] newPanelImpl returned nil", "panelID", p.id)
-		return
-	}
-
-	globalApplication.debug("[Panel] Calling impl.create()", "panelID", p.id)
-	InvokeSync(p.impl.create)
-	globalApplication.debug("[Panel] impl.create() completed", "panelID", p.id)
+		if impl == nil {
+			return
+		}
+		p.initializeAnchor()
+		initialURL := p.snapshotOptions().URL
+		p.creating = true
+		impl.create()
+		p.creating = false
+		if p.isDestroyed() {
+			impl.destroy()
+			return
+		}
+		// Changes can arrive while a native create call pumps its event loop.
+		// Reapply the latest configuration before exposing the completed view.
+		options := p.snapshotOptions()
+		impl.setBounds(Rect{X: options.X, Y: options.Y, Width: options.Width, Height: options.Height})
+		impl.setZoom(options.Zoom)
+		if *options.Visible {
+			impl.show()
+		} else {
+			impl.hide()
+		}
+		if options.URL != initialURL && options.URL != "" {
+			impl.setURL(options.URL)
+		}
+		impl.setZIndex(options.ZIndex)
+	})
 }
 
 // =========================================================================
@@ -401,7 +416,7 @@ func (p *WebviewPanel) FillWindow() *WebviewPanel {
 	if p.parent == nil {
 		return p
 	}
-	width, height := p.parent.Size()
+	width, height := p.parentSize()
 	return p.SetBounds(Rect{X: 0, Y: 0, Width: width, Height: height})
 }
 
@@ -411,7 +426,7 @@ func (p *WebviewPanel) DockLeft(width int) *WebviewPanel {
 	if p.parent == nil {
 		return p
 	}
-	_, height := p.parent.Size()
+	_, height := p.parentSize()
 	return p.SetBounds(Rect{X: 0, Y: 0, Width: width, Height: height})
 }
 
@@ -421,7 +436,7 @@ func (p *WebviewPanel) DockRight(width int) *WebviewPanel {
 	if p.parent == nil {
 		return p
 	}
-	windowWidth, height := p.parent.Size()
+	windowWidth, height := p.parentSize()
 	return p.SetBounds(Rect{X: windowWidth - width, Y: 0, Width: width, Height: height})
 }
 
@@ -431,7 +446,7 @@ func (p *WebviewPanel) DockTop(height int) *WebviewPanel {
 	if p.parent == nil {
 		return p
 	}
-	width, _ := p.parent.Size()
+	width, _ := p.parentSize()
 	return p.SetBounds(Rect{X: 0, Y: 0, Width: width, Height: height})
 }
 
@@ -441,18 +456,18 @@ func (p *WebviewPanel) DockBottom(height int) *WebviewPanel {
 	if p.parent == nil {
 		return p
 	}
-	width, windowHeight := p.parent.Size()
+	width, windowHeight := p.parentSize()
 	return p.SetBounds(Rect{X: 0, Y: windowHeight - height, Width: width, Height: height})
 }
 
 // FillBeside fills the remaining space beside another panel.
 // The direction specifies whether to fill to the right, left, above, or below the reference panel.
 func (p *WebviewPanel) FillBeside(refPanel *WebviewPanel, direction string) *WebviewPanel {
-	if p.parent == nil || refPanel == nil {
+	if p.parent == nil || refPanel == nil || refPanel == p || refPanel.parent != p.parent {
 		return p
 	}
 
-	windowWidth, windowHeight := p.parent.Size()
+	windowWidth, windowHeight := p.parentSize()
 	refBounds := refPanel.Bounds()
 
 	var bounds Rect
@@ -502,13 +517,23 @@ func (p *WebviewPanel) initializeAnchor() {
 	if p.parent == nil {
 		return
 	}
-	p.originalWindowWidth, p.originalWindowHeight = p.parent.Size()
+	width, height := p.parentSize()
+	p.destroyedLock.Lock()
+	p.originalWindowWidth, p.originalWindowHeight = width, height
+	p.destroyedLock.Unlock()
 }
 
 // handleWindowResize recalculates the panel's bounds based on its anchor settings.
 // This is called automatically when the parent window is resized.
 func (p *WebviewPanel) handleWindowResize(newWindowWidth, newWindowHeight int) {
-	if p.isDestroyed() || p.options.Anchor == AnchorNone {
+	if p.isDestroyed() {
+		return
+	}
+	options := p.snapshotOptions()
+	if options.Anchor == AnchorNone {
+		// A DPI change still requires rescaling an absolutely positioned child.
+		bounds := Rect{X: options.X, Y: options.Y, Width: options.Width, Height: options.Height}
+		p.withImpl(func(impl webviewPanelImpl) { impl.setBounds(bounds) })
 		return
 	}
 
@@ -520,20 +545,17 @@ func (p *WebviewPanel) handleWindowResize(newWindowWidth, newWindowHeight int) {
 // setBoundsInternal sets bounds without updating anchor baseline.
 // Used internally during window resize handling.
 func (p *WebviewPanel) setBoundsInternal(bounds Rect) {
-	p.options.X = bounds.X
-	p.options.Y = bounds.Y
-	p.options.Width = bounds.Width
-	p.options.Height = bounds.Height
-
-	if p.impl != nil && !p.isDestroyed() {
-		InvokeSync(func() {
-			p.impl.setBounds(bounds)
-		})
-	}
+	p.destroyedLock.Lock()
+	p.options.X, p.options.Y = bounds.X, bounds.Y
+	p.options.Width, p.options.Height = bounds.Width, bounds.Height
+	p.destroyedLock.Unlock()
+	p.withImpl(func(impl webviewPanelImpl) { impl.setBounds(bounds) })
 }
 
 // calculateAnchoredBounds computes the new bounds based on anchor settings.
 func (p *WebviewPanel) calculateAnchoredBounds(newWindowWidth, newWindowHeight int) Rect {
+	p.destroyedLock.RLock()
+	defer p.destroyedLock.RUnlock()
 	anchor := p.options.Anchor
 	orig := p.originalBounds
 	origWinW := p.originalWindowWidth
@@ -600,4 +622,56 @@ func (p *WebviewPanel) calculateAnchoredBounds(newWindowWidth, newWindowHeight i
 		Width:  newWidth,
 		Height: newHeight,
 	}
+}
+
+// snapshotOptions returns a consistent view of the panel configuration.
+// Reference-valued options are copied at construction and never mutated in place.
+func (p *WebviewPanel) snapshotOptions() WebviewPanelOptions {
+	p.destroyedLock.RLock()
+	defer p.destroyedLock.RUnlock()
+	return p.options
+}
+
+// withImpl checks lifecycle state again on the UI thread, so queued operations
+// cannot access a native view that has already been destroyed.
+func (p *WebviewPanel) withImpl(fn func(webviewPanelImpl)) {
+	p.destroyedLock.RLock()
+	ready := p.impl != nil && !p.destroyed
+	p.destroyedLock.RUnlock()
+	if !ready {
+		return
+	}
+	InvokeSync(func() {
+		p.destroyedLock.RLock()
+		impl, destroyed := p.impl, p.destroyed
+		p.destroyedLock.RUnlock()
+		if impl != nil && !destroyed && !p.creating {
+			fn(impl)
+		}
+	})
+}
+
+// parentSize uses the configured content size before the native window exists.
+func (p *WebviewPanel) parentSize() (int, int) {
+	if p.parent.impl == nil {
+		return p.parent.options.Width, p.parent.options.Height
+	}
+	return p.parent.Size()
+}
+
+// sortedSiblings snapshots stacking keys before sorting so concurrent setters
+// cannot change the comparator midway through a native reordering pass.
+func (p *WebviewPanel) sortedSiblings() []*WebviewPanel {
+	panels := p.parent.GetPanels()
+	keys := make(map[uint]int, len(panels))
+	for _, panel := range panels {
+		keys[panel.id] = panel.ZIndex()
+	}
+	sort.Slice(panels, func(i, j int) bool {
+		if keys[panels[i].id] == keys[panels[j].id] {
+			return panels[i].id < panels[j].id
+		}
+		return keys[panels[i].id] < keys[panels[j].id]
+	})
+	return panels
 }

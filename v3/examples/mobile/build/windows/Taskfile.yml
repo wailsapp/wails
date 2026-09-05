@@ -1,0 +1,98 @@
+version: '3'
+
+includes:
+  common: ../Taskfile.yml
+
+tasks:
+  build:
+    summary: Builds the application for Windows
+    deps:
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          PRODUCTION:
+            ref: .PRODUCTION
+      - task: common:generate:icons
+    cmds:
+      - task: generate:syso
+      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}.exe
+      - cmd: powershell Remove-item *.syso
+        platforms: [windows]
+      - cmd: rm -f *.syso
+        platforms: [linux, darwin]
+    vars:
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui"{{else}}-buildvcs=false -gcflags=all="-l"{{end}}'
+    env:
+      GOOS: windows
+      CGO_ENABLED: 0
+      GOARCH: '{{.ARCH | default ARCH}}'
+      PRODUCTION: '{{.PRODUCTION | default "false"}}'
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - |-
+        if [ "{{.FORMAT | default "nsis"}}" = "msix" ]; then
+          task: create:msix:package
+        else
+          task: create:nsis:installer
+        fi
+    vars:
+      FORMAT: '{{.FORMAT | default "nsis"}}'
+
+  generate:syso:
+    summary: Generates Windows `.syso` file
+    dir: build
+    cmds:
+      - wails3 generate syso -arch {{.ARCH}} -icon windows/icon.ico -manifest windows/wails.exe.manifest -info windows/info.json -out ../wails_windows_{{.ARCH}}.syso
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+
+  create:nsis:installer:
+    summary: Creates an NSIS installer
+    dir: build/windows/nsis
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      # Create the Microsoft WebView2 bootstrapper if it doesn't exist
+      - wails3 generate webview2bootstrapper -dir "{{.ROOT_DIR}}/build/windows/nsis"
+      - makensis -DARG_WAILS_{{.ARG_FLAG}}_BINARY="{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}.exe" project.nsi
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+      ARG_FLAG: '{{if eq .ARCH "amd64"}}AMD64{{else}}ARM64{{end}}'
+
+  create:msix:package:
+    summary: Creates an MSIX package
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - |-
+        wails3 tool msix \
+          --config "{{.ROOT_DIR}}/wails.json" \
+          --name "{{.APP_NAME}}" \
+          --executable "{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}.exe" \
+          --arch "{{.ARCH}}" \
+          --out "{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}-{{.ARCH}}.msix" \
+          {{if .CERT_PATH}}--cert "{{.CERT_PATH}}"{{end}} \
+          {{if .PUBLISHER}}--publisher "{{.PUBLISHER}}"{{end}} \
+          {{if .USE_MSIX_TOOL}}--use-msix-tool{{else}}--use-makeappx{{end}}
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+      CERT_PATH: '{{.CERT_PATH | default ""}}'
+      PUBLISHER: '{{.PUBLISHER | default ""}}'
+      USE_MSIX_TOOL: '{{.USE_MSIX_TOOL | default "false"}}'
+
+  install:msix:tools:
+    summary: Installs tools required for MSIX packaging
+    cmds:
+      - wails3 tool msix-install-tools
+
+  run:
+    cmds:
+      - '{{.BIN_DIR}}/{{.APP_NAME}}.exe'

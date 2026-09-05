@@ -71,6 +71,23 @@ This creates platform-specific packages:
 - **macOS**: Application bundle (`.app`) — see [macOS Packaging](/guides/build/macos)
 - **Linux**: AppImage, deb, and rpm — see [Linux Packaging](/guides/build/linux)
 
+## Custom Build Tags
+
+Pass custom Go build tags with the `-tags` flag:
+
+```bash
+# Build with legacy GTK3 + WebKit2GTK 4.1 on Linux (default is GTK4 + WebKitGTK 6.0)
+wails3 build -tags gtk3
+
+# Build in server mode (no GUI, CGO-free)
+wails3 build -tags server
+
+# Combine multiple tags
+wails3 build -tags gtk3,customtag
+```
+
+Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile. See [Server Build](/guides/server-build) and [Linux Packaging - Legacy GTK3 Support](/guides/build/linux#legacy-gtk3-support) for details.
+
 ## Using Task Directly
 
 For more control, use Task directly:

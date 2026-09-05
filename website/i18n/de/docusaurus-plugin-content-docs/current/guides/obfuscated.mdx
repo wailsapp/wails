@@ -1,0 +1,40 @@
+# Verschleierte Builds
+
+Wails unterstützt das Verschleiern von Anwendungen mit [garble](https://github.com/burrowers/garble).
+
+Um eine verschleierte Version zu erzeugen, kann die `-obfuscate` Flag mit dem `wails build` Befehl verwendet werden:
+
+```bash
+wails build -obfuscated
+```
+
+Um die Verschleierungseinstellungen anzupassen, kann die `garbleargs` Flag verwendet werden:
+
+```bash
+wails build -obfuscated -garbleargs "-literals -tiny -seed=myrandomseed"
+```
+
+Diese Einstellung kann auch in der [Projekt-Konfiguration](../reference/project-config.mdx) angegeben werden.
+
+## So funktioniert es
+
+In einer Standardversion sind alle verknüpften Methoden im Frontend unter der Variable `window.go` verfügbar. Wenn diese Methoden aufgerufen werden, wird die zugehörige Backend-Methode mit dem voll qualifizierten Funktionsnamen aufgerufen. Wenn ein verschleierter Build verwendet wird, werden Methoden mit einer Id anstelle eines Namens verknüpft. Die im Verzeichnis `wailsjs` erzeugten Verknüpfungen verwenden diese Ids um die Backend-Funktionen aufzurufen.
+
+:::note
+
+Um sicherzustellen, dass die Anwendung im verschleierten Modus funktioniert, müssen die generierten Verknüpfungen in dem `wailsjs` Verzeichnis der Anwendung verwendet werden.
+
+:::
+
+## Beispiel
+
+Importing the "Greet" method from the bindings like this:
+
+```js
+import { Greet } from "../../wailsjs/go/main/App";
+
+// snip
+Greet("World");
+```
+
+stelle sicher, dass die Methode im verschleierten Modus korrekt funktioniert, da die Bindungen mit Ids neu generiert und der Call Mechanismus aktualisiert wird.

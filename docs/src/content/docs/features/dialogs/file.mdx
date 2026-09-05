@@ -6,10 +6,16 @@ sidebar:
 ---
 
 import { Card, CardGrid } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import fileDialogMacOS from "../../../../assets/screenshots/file-dialog-macos.png";
 
 ## File dialogs
 
 Wails provides **native file dialogs** with platform-appropriate appearance for opening files, saving files, and selecting folders. Simple API with file type filtering, multiple selection support, and default locations.
+
+<Image src={fileDialogMacOS} alt="A native macOS file picker opened by a Wails application" style="max-width: 900px; margin: 1.5rem auto; display: block; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
+
+The Wails API delegates to the operating system's picker, so familiar navigation, filtering, and selection behaviour are retained.
 
 ## Creating File Dialogs
 
@@ -565,4 +571,4 @@ func importConfiguration(app *application.App) {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [file dialog examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/dialogs).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [file dialog examples](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

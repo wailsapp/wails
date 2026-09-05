@@ -1,189 +1,98 @@
-# WebView Panel Example
+# WebviewPanel example
 
-This example demonstrates the **WebviewPanel** feature - embedding multiple independent webview panels within a single window. This is similar to Electron's BrowserView/WebContentsView and addresses [GitHub issue #1997](https://github.com/wailsapp/wails/issues/1997).
+A `WebviewPanel` embeds a native webview inside a `WebviewWindow`. Each panel has its own page and keyboard focus. Panels overlay the main webview and are positioned in its content coordinate system, using CSS pixels.
 
-## Features Demonstrated
+Run from this directory:
 
-- **URL Loading**: Load external websites (like <https://wails.io>) in an embedded panel
-- **Responsive Layout**: Panel automatically resizes with the window using anchor settings
-- **Dynamic Switching**: Switch panel content between different URLs at runtime
-- **Custom UI Integration**: Panel embedded within a custom HTML interface
-
-## Running
-
-```bash
-cd v3/examples/webview-panel
+```sh
 go run .
+# Legacy Linux GTK3:
+go run -tags gtk3 .
 ```
 
-## What This Example Shows
+The demo initially loads a bundled local page. The buttons switch between that page, [Wails](https://wails.io), and [Google](https://www.google.com), or hide/show the panel. A `ResizeObserver` measures the placeholder and updates native bounds; no hard-coded browser measurements are needed.
 
-1. **Embedded Webview**: The main window displays a custom UI with a header and navigation buttons
-2. **Panel Inside Window**: An embedded webview panel shows <https://wails.io> inside the window
-3. **URL Switching**: Click the "Wails.io" or "Google.com" buttons to switch the panel content
-4. **Responsive Behavior**: Resize the window to see the panel automatically adjust its size
+## Create and manage panels in Go
 
-## Use Cases
-
-WebviewPanel is ideal for:
-
-- **IDE-like layouts**: Editor + preview + terminal panels
-- **Browser-style apps**: Tab bar + content area  
-- **Dashboard apps**: Navigation sidebar + main content
-- **Email clients**: Folder list + message list + preview pane
-- **News readers**: Article list + external website viewer
-- **Dev tools**: App preview + inspector panels
-
-## API Overview
-
-### Creating Panels
+Create panels before `app.Run()` or after the parent window is running:
 
 ```go
-// Create a panel with URL and positioning
 panel := window.NewPanel(application.WebviewPanelOptions{
-    Name:   "content",
-    URL:    "https://example.com",
-    X:      20,
-    Y:      60,
-    Width:  800,
-    Height: 500,
-})
-
-// Panel with anchoring (responsive to window resize)
-panel := window.NewPanel(application.WebviewPanelOptions{
-    Name:   "sidebar",
-    URL:    "/sidebar.html",
-    X:      0,
-    Y:      0,
-    Width:  200,
-    Height: 600,
-    Anchor: application.AnchorTop | application.AnchorBottom | application.AnchorLeft,
-})
-
-// Panel that fills the entire window
-panel := window.NewPanel(application.WebviewPanelOptions{
-    Name:   "fullscreen",
-    URL:    "https://wails.io",
-    X:      0,
-    Y:      0,
-    Width:  800,
-    Height: 600,
+    Name: "browser",
+    URL: "/panel.html",
+    X: 20, Y: 80, Width: 600, Height: 400,
     Anchor: application.AnchorFill,
+    BackgroundColour: application.NewRGB(248, 250, 252),
 })
-```
 
-### Anchor Types
-
-Anchors control how panels respond to window resizing:
-
-| Anchor | Behavior |
-|--------|----------|
-| `AnchorNone` | Fixed position and size |
-| `AnchorTop` | Maintains distance from top edge |
-| `AnchorBottom` | Maintains distance from bottom edge |
-| `AnchorLeft` | Maintains distance from left edge |
-| `AnchorRight` | Maintains distance from right edge |
-| `AnchorFill` | Anchored to all edges (fills window with margins) |
-
-Combine anchors with `|` for complex layouts:
-```go
-// Left sidebar that stretches vertically
-Anchor: application.AnchorTop | application.AnchorBottom | application.AnchorLeft
-```
-
-### Panel Options
-
-```go
-application.WebviewPanelOptions{
-    // Identity
-    Name: "panel-name",           // Unique identifier
-    
-    // Content
-    URL:     "https://example.com", // URL to load
-    Headers: map[string]string{     // Custom HTTP headers (optional)
-        "Authorization": "Bearer token",
-    },
-    UserAgent: "Custom UA",         // Custom user agent (optional)
-    
-    // Position & Size
-    X:      100,                    // X position (CSS pixels)
-    Y:      50,                     // Y position (CSS pixels)  
-    Width:  800,                    // Width (CSS pixels)
-    Height: 600,                    // Height (CSS pixels)
-    ZIndex: 1,                      // Stacking order
-    Anchor: application.AnchorFill, // Resize behavior
-    
-    // Appearance
-    Visible:         boolPtr(true),  // Initially visible
-    BackgroundColour: application.NewRGB(255, 255, 255),
-    Transparent:     false,          // Transparent background
-    Zoom:            1.0,            // Zoom level (1.0 = 100%)
-    
-    // Developer
-    DevToolsEnabled:        boolPtr(true),
-    OpenInspectorOnStartup: false,
-}
-```
-
-### Panel Manipulation
-
-```go
-// Position and size
-panel.SetBounds(application.Rect{X: 100, Y: 50, Width: 400, Height: 300})
-bounds := panel.Bounds()
-
-// Content
 panel.SetURL("https://wails.io")
-panel.Reload()
-panel.ForceReload() // Bypass cache
-
-// Visibility
-panel.Show()
-panel.Hide()
-visible := panel.IsVisible()
-
-// Stacking order
-panel.SetZIndex(10)
-
-// Focus
-panel.Focus()
-focused := panel.IsFocused()
-
-// Zoom
-panel.SetZoom(1.5)
+panel.SetBounds(application.Rect{X: 20, Y: 80, Width: 500, Height: 300})
+panel.SetZoom(1.25)
 zoom := panel.GetZoom()
-
-// Developer tools
-panel.OpenDevTools()
-
-// Cleanup
-panel.Destroy()
+_ = zoom
+panel.Hide()
+panel.Show()
 ```
 
-### Getting Panels
+Names are unique within a window. `window.NewPanel` returns an existing named panel unchanged; it returns `nil` once window teardown begins. Empty names receive generated identifiers. Use `GetPanel(name)`, `GetPanelByID(id)`, or `GetPanels()` to retrieve panels. `Destroy`, `RemovePanel`, and closing the parent window release native resources; repeated destruction is safe.
 
-```go
-// Get panel by name
-panel := window.GetPanel("sidebar")
+`Headers` supplies custom headers on the initial navigation request only. `UserAgent` replaces the panel's browser user agent. Both are supported on desktop platforms. These options are copied when the panel is created. Later `SetURL` calls and reloads do not reapply initial headers; redirects follow the browser's own rules.
 
-// Get panel by ID
-panel := window.GetPanelByID(1)
+Local URLs are resolved through the Wails asset server. An empty URL leaves a new panel blank. `SetURL("")` and malformed URLs do not navigate. `URL()` reports the last URL requested by Go, not redirects or links followed inside the page.
 
-// Get all panels
-panels := window.GetPanels()
+## Frontend control and navigation policy
 
-// Remove panel
-window.RemovePanel("sidebar")
+```js
+import {Panel} from '@wailsio/runtime';
+
+const panel = Panel.Get('browser');
+await panel.SetBounds({x: 20, y: 80, width: 500, height: 300});
+await panel.SetZoom(1.25);
+const focused = await panel.IsFocused();
+await panel.Hide();
+await panel.Show();
 ```
 
-## Key Differences: WebviewWindow vs WebviewPanel
+The runtime exposes bounds, stacking order, visibility, zoom, focus, reload, developer tools, name, and destruction. It controls panels already created in Go; it cannot create them.
 
-| Feature | WebviewWindow | WebviewPanel |
-|---------|---------------|--------------|
-| Has title bar | ✅ | ❌ |
-| Can be minimized/maximized | ✅ | ❌ |
-| Independent window | ✅ | ❌ (child of window) |
-| Can show external URLs | ✅ | ✅ |
-| Multiple per app | ✅ | ✅ (multiple per window) |
-| Position relative to | Screen | Parent window |
-| Responsive anchoring | ❌ | ✅ |
+**Navigation is Go-only.** There are no frontend `SetURL`, `SetHTML`, or `ExecJS` methods, and raw calls to their reserved method IDs are rejected. If an application needs frontend-triggered navigation, expose a Go service with an application-specific allowlist. This example accepts a site key (`local`, `wails`, or `google`), never an arbitrary URL from JavaScript.
+
+Panel pages do not receive the Wails message bridge or runtime automatically. An embedded browser is not a DOM iframe: CSS clipping, transforms, and DOM z-index in the parent do not control it. It also does not disable browser CORS or other web security rules.
+
+## Layout
+
+- `AnchorLeft | AnchorRight` stretches width while retaining edge margins.
+- `AnchorTop | AnchorBottom` stretches height while retaining edge margins.
+- A single right/bottom anchor moves the panel with that edge.
+- `AnchorFill` retains all four margins; set bounds to the window size first for a full-window panel.
+- Manual bounds changes establish a new resize baseline. Shrinking clamps dimensions to at least one pixel.
+
+`FillWindow`, `DockLeft`, `DockRight`, `DockTop`, `DockBottom`, and `FillBeside` are one-time positioning helpers; set `Anchor` to maintain that layout on later resizes. `FillBeside` requires a different panel in the same window. For layouts driven by HTML, use `ResizeObserver` as this example does.
+
+`ZIndex` orders panels relative to each other (higher values on top); equal values use creation order. All panels are above the main webview.
+
+## Platform notes
+
+| Platform | Implementation | Notes |
+| --- | --- | --- |
+| Windows | WebView2 child windows | Uses parent-window DPI for local coordinates. `ForceReload` currently falls back to ordinary reload. |
+| macOS | WKWebView child views | Developer tools require a development build or the `devtools` build tag. |
+| Linux | WebKitGTK overlay children | GTK4 is the default; `-tags gtk3` selects the legacy backend. |
+| Android, iOS, server | No native panel support | Desktop panel APIs are not a portable mobile or server UI. |
+
+`DevToolsEnabled` overrides the application's debug-mode default. An explicit `false` also prevents `OpenDevTools` and inspector-on-startup calls. The native panel is rectangular; use its background and bounds to integrate it into the parent UI.
+
+## Verification
+
+From `v3`:
+
+```sh
+go test -race ./pkg/application -run TestPanel
+go run ./test/manual/webview-panel
+# On a Linux graphical desktop, or under xvfb-run:
+go run -tags gtk3 ./test/manual/webview-panel
+```
+
+The smoke app checks real runtime dispatch, local asset loading, initial HTTP headers, user agent, visibility, bounds, zoom, dynamic creation, and concurrent destruction. It exits with `PASS` when all checks finish. Run the interactive example as well to inspect keyboard focus, stacking, resize behavior, and mixed-DPI displays.
+
+The frontend tests in `src/panel.test.js` compare every exported panel method with the actual Go method-ID table and protect the `IsFocused`/`Destroy` regression. Runtime bundles and the npm package must both be rebuilt after changing TypeScript sources.

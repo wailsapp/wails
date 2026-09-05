@@ -10,13 +10,11 @@ The electron alternative for Go
 
 import { newRuntimeCaller, objectNames } from "./runtime.js";
 
-// Panel method constants - must match messageprocessor_panel.go
+// Panel method constants - checked against messageprocessor_panel.go by panel.test.ts.
+// IDs 3-5 are reserved. Navigation and content execution are Go-only.
 const SetBoundsMethod    = 0;
 const GetBoundsMethod    = 1;
 const SetZIndexMethod    = 2;
-const SetURLMethod       = 3;
-const SetHTMLMethod      = 4;
-const ExecJSMethod       = 5;
 const ReloadMethod       = 6;
 const ForceReloadMethod  = 7;
 const ShowMethod         = 8;
@@ -122,42 +120,6 @@ export class Panel {
         return this[callerSym](SetZIndexMethod, {
             panel: this[panelNameSym],
             zIndex
-        });
-    }
-
-    /**
-     * Navigates the panel to the specified URL.
-     *
-     * @param url - The URL to navigate to.
-     */
-    SetURL(url: string): Promise<void> {
-        return this[callerSym](SetURLMethod, {
-            panel: this[panelNameSym],
-            url
-        });
-    }
-
-    /**
-     * Sets the HTML content of the panel directly.
-     *
-     * @param html - The HTML content to load.
-     */
-    SetHTML(html: string): Promise<void> {
-        return this[callerSym](SetHTMLMethod, {
-            panel: this[panelNameSym],
-            html
-        });
-    }
-
-    /**
-     * Executes JavaScript code in the panel's context.
-     *
-     * @param js - The JavaScript code to execute.
-     */
-    ExecJS(js: string): Promise<void> {
-        return this[callerSym](ExecJSMethod, {
-            panel: this[panelNameSym],
-            js
         });
     }
 

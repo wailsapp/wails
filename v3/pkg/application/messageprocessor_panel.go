@@ -1,36 +1,36 @@
 package application
 
 import (
-	"fmt"
+	"math"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
 // Panel method constants for frontend-to-backend communication
 const (
-	PanelSetBounds    = 0
-	PanelGetBounds    = 1
-	PanelSetZIndex    = 2
-	PanelSetURL       = 3
-	PanelReload       = 4
-	PanelForceReload  = 5
-	PanelShow         = 6
-	PanelHide         = 7
-	PanelIsVisible    = 8
-	PanelSetZoom      = 9
-	PanelGetZoom      = 10
-	PanelFocus        = 11
-	PanelIsFocused    = 12
-	PanelOpenDevTools = 13
-	PanelDestroy      = 14
-	PanelName         = 15
+	PanelSetBounds = 0
+	PanelGetBounds = 1
+	PanelSetZIndex = 2
+	// IDs 3-5 are reserved for removed content-control methods. Never reuse them:
+	// a stale frontend must not dispatch navigation or script execution.
+	PanelReload       = 6
+	PanelForceReload  = 7
+	PanelShow         = 8
+	PanelHide         = 9
+	PanelIsVisible    = 10
+	PanelSetZoom      = 11
+	PanelGetZoom      = 12
+	PanelFocus        = 13
+	PanelIsFocused    = 14
+	PanelOpenDevTools = 15
+	PanelDestroy      = 16
+	PanelName         = 17
 )
 
 var panelMethodNames = map[int]string{
 	PanelSetBounds:    "SetBounds",
 	PanelGetBounds:    "GetBounds",
 	PanelSetZIndex:    "SetZIndex",
-	PanelSetURL:       "SetURL",
 	PanelReload:       "Reload",
 	PanelForceReload:  "ForceReload",
 	PanelShow:         "Show",
@@ -53,7 +53,6 @@ var panelMethodHandlers = map[int]panelMethodHandler{
 	PanelSetBounds:    handlePanelSetBounds,
 	PanelGetBounds:    handlePanelGetBounds,
 	PanelSetZIndex:    handlePanelSetZIndex,
-	PanelSetURL:       handlePanelSetURL,
 	PanelReload:       handlePanelReload,
 	PanelForceReload:  handlePanelForceReload,
 	PanelShow:         handlePanelShow,
@@ -72,47 +71,50 @@ func (m *MessageProcessor) processPanelMethod(
 	req *RuntimeRequest,
 	window Window,
 ) (any, error) {
+	if req == nil || req.Args == nil {
+		return nil, errs.NewInvalidRuntimeCallErrorf("panel arguments are required")
+	}
+	handler, ok := panelMethodHandlers[req.Method]
+	if !ok {
+		return nil, errs.NewInvalidRuntimeCallErrorf("unknown panel method: %d", req.Method)
+	}
 	args := req.Args.AsMap()
 
 	// Get the WebviewWindow to access panels
 	ww, ok := window.(*WebviewWindow)
-	if !ok {
+	if !ok || ww == nil {
 		return nil, errs.NewInvalidRuntimeCallErrorf("window is not a WebviewWindow")
 	}
 
 	// Get panel name from args
 	panelName := args.String("panel")
-	if panelName == nil || *panelName == "" {
-		return nil, errs.NewInvalidRuntimeCallErrorf("panel name is required")
+	var panel *WebviewPanel
+	if panelName != nil && *panelName != "" {
+		panel = ww.GetPanel(*panelName)
 	}
-
-	// Get the panel by name or ID
-	panel := ww.GetPanel(*panelName)
 	if panel == nil {
-		panelID := args.UInt("panelId")
+		panelID := panelInteger(args, "panelId")
 		if panelID != nil && *panelID > 0 {
 			panel = ww.GetPanelByID(uint(*panelID))
 		}
 	}
 	if panel == nil {
-		return nil, errs.NewInvalidRuntimeCallErrorf("panel not found: %s", *panelName)
+		return nil, errs.NewInvalidRuntimeCallErrorf("panel not found: a valid panel name or panelId is required")
 	}
 
-	// Look up and execute the handler
-	handler, ok := panelMethodHandlers[req.Method]
-	if !ok {
-		return nil, fmt.Errorf("unknown panel method: %d", req.Method)
-	}
 	return handler(panel, args)
 }
 
 func handlePanelSetBounds(panel *WebviewPanel, args *MapArgs) (any, error) {
-	x := args.Int("x")
-	y := args.Int("y")
-	width := args.Int("width")
-	height := args.Int("height")
+	x := panelInteger(args, "x")
+	y := panelInteger(args, "y")
+	width := panelInteger(args, "width")
+	height := panelInteger(args, "height")
 	if x == nil || y == nil || width == nil || height == nil {
 		return nil, errs.NewInvalidRuntimeCallErrorf("x, y, width, and height are required")
+	}
+	if *width <= 0 || *height <= 0 {
+		return nil, errs.NewInvalidRuntimeCallErrorf("width and height must be positive")
 	}
 	panel.SetBounds(Rect{X: *x, Y: *y, Width: *width, Height: *height})
 	return unit, nil
@@ -129,20 +131,11 @@ func handlePanelGetBounds(panel *WebviewPanel, _ *MapArgs) (any, error) {
 }
 
 func handlePanelSetZIndex(panel *WebviewPanel, args *MapArgs) (any, error) {
-	zIndex := args.Int("zIndex")
+	zIndex := panelInteger(args, "zIndex")
 	if zIndex == nil {
 		return nil, errs.NewInvalidRuntimeCallErrorf("zIndex is required")
 	}
 	panel.SetZIndex(*zIndex)
-	return unit, nil
-}
-
-func handlePanelSetURL(panel *WebviewPanel, args *MapArgs) (any, error) {
-	url := args.String("url")
-	if url == nil {
-		return nil, errs.NewInvalidRuntimeCallErrorf("url is required")
-	}
-	panel.SetURL(*url)
 	return unit, nil
 }
 
@@ -172,8 +165,8 @@ func handlePanelIsVisible(panel *WebviewPanel, _ *MapArgs) (any, error) {
 
 func handlePanelSetZoom(panel *WebviewPanel, args *MapArgs) (any, error) {
 	zoom := args.Float64("zoom")
-	if zoom == nil {
-		return nil, errs.NewInvalidRuntimeCallErrorf("zoom is required")
+	if zoom == nil || *zoom <= 0 || math.IsNaN(*zoom) || math.IsInf(*zoom, 0) {
+		return nil, errs.NewInvalidRuntimeCallErrorf("zoom must be a positive finite number")
 	}
 	panel.SetZoom(*zoom)
 	return unit, nil
@@ -204,4 +197,17 @@ func handlePanelDestroy(panel *WebviewPanel, _ *MapArgs) (any, error) {
 
 func handlePanelName(panel *WebviewPanel, _ *MapArgs) (any, error) {
 	return panel.Name(), nil
+}
+
+// panelInteger rejects truncation and overflow before passing geometry or IDs
+// to native APIs, whose integer coordinates are 32-bit on desktop platforms.
+func panelInteger(args *MapArgs, key string) *int {
+	value := args.Int(key)
+	if value == nil || *value < math.MinInt32 || *value > math.MaxInt32 {
+		return nil
+	}
+	if raw := args.Float64(key); raw != nil && *raw != float64(*value) {
+		return nil
+	}
+	return value
 }

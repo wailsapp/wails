@@ -1,7 +1,7 @@
 # Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3-alpha release.
+This file is used to collect changelog entries for the next v3 release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
@@ -16,7 +16,7 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
-- Add support for using `.icon` files (Apple Icon Composer format) for generating Liquid Glass icons and asset catalogs (macOS) (#4934) by @wimaha
+<!-- New features, capabilities, or enhancements -->
 
 ## Changed
 <!-- Changes in existing functionality -->

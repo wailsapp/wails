@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permissions API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.small { padding: 6px 12px; font-size: 0.85rem; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .permission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        .permission-card {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #333;
+            transition: all 0.3s;
+        }
+        .permission-card.granted { border-left-color: #4ade80; }
+        .permission-card.denied { border-left-color: #f87171; }
+        .permission-card.prompt { border-left-color: #fbbf24; }
+        .permission-card .name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .permission-card .state {
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .permission-card .state.granted { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .permission-card .state.denied { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .permission-card .state.prompt { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .permission-card .state.unknown { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+        .permission-card .description {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .permission-card .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: #4ade80;
+            color: #1a1a2e;
+            font-weight: 600;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .summary-bar {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .summary-item .count {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .summary-item .label { color: #888; font-size: 0.85rem; }
+        .summary-item.granted .count { color: #4ade80; }
+        .summary-item.denied .count { color: #f87171; }
+        .summary-item.prompt .count { color: #fbbf24; }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Permissions API Demo</h1>
+        <p class="description">
+            The Permissions API allows you to query and monitor the status of various browser permissions.
+            It provides a unified way to check whether permissions are granted, denied, or need to be requested.
+        </p>
+
+        <div id="status" class="status">
+            Permissions API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Permission Summary</h2>
+            <div class="summary-bar" id="summaryBar">
+                <div class="summary-item granted">
+                    <span class="count" id="grantedCount">0</span>
+                    <span class="label">Granted</span>
+                </div>
+                <div class="summary-item denied">
+                    <span class="count" id="deniedCount">0</span>
+                    <span class="label">Denied</span>
+                </div>
+                <div class="summary-item prompt">
+                    <span class="count" id="promptCount">0</span>
+                    <span class="label">Prompt</span>
+                </div>
+            </div>
+            <button onclick="refreshAllPermissions()">Refresh All Permissions</button>
+        </div>
+
+        <div class="card">
+            <h2>Standard Permissions</h2>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">
+                These are the commonly supported permission types across browsers.
+            </p>
+            <div class="permission-grid" id="standardPermissions"></div>
+        </div>
+
+        <div class="card">
+            <h2>Extended Permissions</h2>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">
+                These permissions may not be supported in all browsers or WebView implementations.
+            </p>
+            <div class="permission-grid" id="extendedPermissions"></div>
+        </div>
+
+        <div class="card">
+            <h2>Custom Permission Query</h2>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">
+                Query any permission by name. Some permissions may require additional parameters.
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <input type="text" id="customPermission" value="geolocation"
+                    style="flex: 1; min-width: 200px; padding: 10px; border: 1px solid #333; border-radius: 6px; background: #1a1a2e; color: #eee;">
+                <button onclick="queryCustomPermission()">Query Permission</button>
+            </div>
+            <div class="output" id="customResult">Enter a permission name and click Query to check its status...</div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <div class="output" id="eventLog">Permission events will appear here...</div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let logEntries = [];
+        let permissionStatuses = {};
+
+        const standardPermissions = [
+            { name: 'geolocation', description: 'Access device location', icon: 'location' },
+            { name: 'notifications', description: 'Show system notifications', icon: 'bell' },
+            { name: 'camera', description: 'Access camera device', icon: 'camera' },
+            { name: 'microphone', description: 'Access microphone', icon: 'mic' },
+            { name: 'clipboard-read', description: 'Read from clipboard', icon: 'clipboard' },
+            { name: 'clipboard-write', description: 'Write to clipboard', icon: 'clipboard' },
+        ];
+
+        const extendedPermissions = [
+            { name: 'persistent-storage', description: 'Use persistent storage', icon: 'storage' },
+            { name: 'push', description: 'Receive push messages', userVisibleOnly: true, icon: 'push' },
+            { name: 'midi', description: 'Access MIDI devices', icon: 'midi' },
+            { name: 'background-sync', description: 'Sync in background', icon: 'sync' },
+            { name: 'accelerometer', description: 'Access accelerometer', icon: 'sensor' },
+            { name: 'gyroscope', description: 'Access gyroscope', icon: 'sensor' },
+            { name: 'magnetometer', description: 'Access magnetometer', icon: 'sensor' },
+            { name: 'ambient-light-sensor', description: 'Access light sensor', icon: 'sensor' },
+            { name: 'screen-wake-lock', description: 'Prevent screen sleep', icon: 'screen' },
+        ];
+
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '[ERROR]' : type === 'success' ? '[SUCCESS]' : '[INFO]';
+            logEntries.unshift(`[${time}] ${prefix} ${message}`);
+            if (logEntries.length > 50) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function showNotification(message, isError = false) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.style.background = isError ? '#f87171' : '#4ade80';
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
+
+        function checkSupport() {
+            const hasPermissions = 'permissions' in navigator;
+
+            document.getElementById('supported').textContent = hasPermissions ? 'Available' : 'Not available';
+            document.getElementById('status').className = hasPermissions ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'navigator.permissions', supported: hasPermissions },
+                { name: 'permissions.query()', supported: hasPermissions && 'query' in navigator.permissions },
+                { name: 'PermissionStatus', supported: typeof PermissionStatus !== 'undefined' },
+                { name: 'onchange event', supported: hasPermissions },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+
+            log('API support check completed');
+            return hasPermissions;
+        }
+
+        async function queryPermission(permName, options = {}) {
+            if (!navigator.permissions) {
+                return { state: 'unknown', error: 'Permissions API not supported' };
+            }
+
+            try {
+                const descriptor = { name: permName, ...options };
+                const status = await navigator.permissions.query(descriptor);
+
+                // Watch for changes
+                if (!permissionStatuses[permName]) {
+                    status.addEventListener('change', () => {
+                        log(`Permission "${permName}" changed to: ${status.state}`, 'info');
+                        showNotification(`${permName}: ${status.state}`);
+                        renderPermissions();
+                        updateSummary();
+                    });
+                }
+
+                permissionStatuses[permName] = status.state;
+                return { state: status.state };
+            } catch (e) {
+                return { state: 'unknown', error: e.message };
+            }
+        }
+
+        function getStateClass(state) {
+            if (state === 'granted') return 'granted';
+            if (state === 'denied') return 'denied';
+            if (state === 'prompt') return 'prompt';
+            return '';
+        }
+
+        function getIcon(iconType) {
+            const icons = {
+                location: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
+                bell: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>',
+                camera: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>',
+                mic: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>',
+                clipboard: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z"/></svg>',
+                storage: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z"/></svg>',
+                push: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>',
+                midi: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 10.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm0 5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm4-5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm0 5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm4-5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm0 5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm4-5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm0 5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm4-5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zm0 5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5z"/></svg>',
+                sync: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>',
+                sensor: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
+                screen: '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>',
+            };
+            return icons[iconType] || icons.sensor;
+        }
+
+        async function requestPermission(permName) {
+            log(`Requesting permission: ${permName}`);
+
+            try {
+                switch (permName) {
+                    case 'geolocation':
+                        await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(resolve, reject);
+                        });
+                        break;
+                    case 'notifications':
+                        await Notification.requestPermission();
+                        break;
+                    case 'camera':
+                        const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        cameraStream.getTracks().forEach(t => t.stop());
+                        break;
+                    case 'microphone':
+                        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        micStream.getTracks().forEach(t => t.stop());
+                        break;
+                    case 'clipboard-read':
+                        await navigator.clipboard.readText();
+                        break;
+                    case 'clipboard-write':
+                        await navigator.clipboard.writeText('test');
+                        break;
+                    case 'persistent-storage':
+                        if (navigator.storage && navigator.storage.persist) {
+                            await navigator.storage.persist();
+                        }
+                        break;
+                    case 'screen-wake-lock':
+                        if ('wakeLock' in navigator) {
+                            const lock = await navigator.wakeLock.request('screen');
+                            lock.release();
+                        }
+                        break;
+                    default:
+                        log(`No request handler for: ${permName}`, 'error');
+                        showNotification(`Cannot request ${permName}`, true);
+                        return;
+                }
+
+                log(`Permission request for ${permName} completed`, 'success');
+                showNotification(`Requested ${permName}`);
+
+                // Refresh the permission status
+                await refreshPermission(permName);
+            } catch (e) {
+                log(`Permission request failed: ${e.message}`, 'error');
+                showNotification(`Request failed: ${e.message}`, true);
+                await refreshPermission(permName);
+            }
+        }
+
+        async function refreshPermission(permName) {
+            const result = await queryPermission(permName);
+            permissionStatuses[permName] = result.state;
+            renderPermissions();
+            updateSummary();
+        }
+
+        async function refreshAllPermissions() {
+            log('Refreshing all permissions...');
+
+            const allPerms = [...standardPermissions, ...extendedPermissions];
+
+            for (const perm of allPerms) {
+                const options = {};
+                if (perm.userVisibleOnly) {
+                    options.userVisibleOnly = true;
+                }
+                const result = await queryPermission(perm.name, options);
+                permissionStatuses[perm.name] = result.state;
+            }
+
+            renderPermissions();
+            updateSummary();
+            log('All permissions refreshed', 'success');
+            showNotification('Permissions refreshed');
+        }
+
+        function updateSummary() {
+            const states = Object.values(permissionStatuses);
+            document.getElementById('grantedCount').textContent = states.filter(s => s === 'granted').length;
+            document.getElementById('deniedCount').textContent = states.filter(s => s === 'denied').length;
+            document.getElementById('promptCount').textContent = states.filter(s => s === 'prompt').length;
+        }
+
+        function renderPermissionCard(perm) {
+            const state = permissionStatuses[perm.name] || 'unknown';
+            const stateClass = getStateClass(state);
+
+            return `
+                <div class="permission-card ${stateClass}">
+                    <div class="name">
+                        <span class="icon">${getIcon(perm.icon)}</span>
+                        ${perm.name}
+                    </div>
+                    <div class="state ${stateClass}">${state}</div>
+                    <div class="description">${perm.description}</div>
+                    <div class="actions">
+                        <button class="small secondary" onclick="refreshPermission('${perm.name}')">Refresh</button>
+                        ${state !== 'granted' ? `<button class="small" onclick="requestPermission('${perm.name}')">Request</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPermissions() {
+            document.getElementById('standardPermissions').innerHTML =
+                standardPermissions.map(p => renderPermissionCard(p)).join('');
+
+            document.getElementById('extendedPermissions').innerHTML =
+                extendedPermissions.map(p => renderPermissionCard(p)).join('');
+        }
+
+        async function queryCustomPermission() {
+            const permName = document.getElementById('customPermission').value.trim();
+            const resultEl = document.getElementById('customResult');
+
+            if (!permName) {
+                resultEl.textContent = 'Please enter a permission name';
+                return;
+            }
+
+            log(`Querying custom permission: ${permName}`);
+
+            try {
+                const status = await navigator.permissions.query({ name: permName });
+
+                const result = {
+                    name: permName,
+                    state: status.state,
+                    onchange: status.onchange !== null ? 'supported' : 'not set'
+                };
+
+                resultEl.textContent = JSON.stringify(result, null, 2);
+                log(`Custom query result: ${permName} = ${status.state}`, 'success');
+
+                // Listen for changes
+                status.addEventListener('change', () => {
+                    log(`Custom permission "${permName}" changed to: ${status.state}`, 'info');
+                    showNotification(`${permName}: ${status.state}`);
+                });
+            } catch (e) {
+                resultEl.textContent = `Error: ${e.message}\n\nThis permission name may not be supported or may require additional parameters.`;
+                log(`Custom query failed: ${e.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        async function init() {
+            checkSupport();
+
+            if (navigator.permissions) {
+                await refreshAllPermissions();
+            } else {
+                renderPermissions();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

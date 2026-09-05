@@ -96,8 +96,15 @@ var (
 )
 
 func init() {
-	if IsWindowsVersionAtLeast(10, 0, 18334) {
-		// AllowDarkModeForWindow is only available on Windows 10+
+	// The dark-mode uxtheme exports (ordinals 132/133/135/136/104) exist from
+	// Windows 10 1809 (build 17763), which includes Windows Server 2019. Gating
+	// them on a later build left those hosts with unreadable menus: the menu
+	// background is painted dark regardless (updateTheme applies a MENUINFO
+	// brush), but Windows draws menu text from the process's immersive colour
+	// policy, and the opt-in below never ran - so the text stayed light-theme
+	// dark on a dark background. On 1809, ordinal 135 is AllowDarkModeForApp and
+	// PreferredAppModeAllowDark is 1, so that call is the opt-in this host needs.
+	if IsWindowsVersionAtLeast(10, 0, 17763) {
 		localUXTheme, err := windows.LoadLibrary("uxtheme.dll")
 		if err == nil {
 			procAllowDarkModeForWindow, err := windows.GetProcAddressByOrdinal(localUXTheme, uintptr(133))
@@ -107,7 +114,7 @@ func init() {
 					if allow {
 						allowInt = 1
 					}
-					ret, _, _ := syscall.SyscallN(procAllowDarkModeForWindow, uintptr(allowInt))
+					ret, _, _ := syscall.SyscallN(procAllowDarkModeForWindow, uintptr(hwnd), uintptr(allowInt))
 					return ret
 				}
 			}
@@ -269,6 +276,21 @@ func IsCurrentlyDarkMode() bool {
 		return false
 	}
 	return AppsUseLightTheme == 0
+}
+
+// IsSystemCurrentlyDarkMode reports whether Windows system surfaces use dark mode.
+func IsSystemCurrentlyDarkMode() bool {
+	key, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize`, registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer key.Close()
+
+	systemUsesLightTheme, _, err := key.GetIntegerValue("SystemUsesLightTheme")
+	if err != nil {
+		return false
+	}
+	return systemUsesLightTheme == 0
 }
 
 type highContrast struct {

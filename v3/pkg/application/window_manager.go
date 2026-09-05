@@ -53,20 +53,22 @@ func (wm *WindowManager) New() *WebviewWindow {
 // NewWithOptions creates a new webview window with options
 func (wm *WindowManager) NewWithOptions(windowOptions WebviewWindowOptions) *WebviewWindow {
 	newWindow := NewWindow(windowOptions)
+	wm.addAndRun(newWindow)
+	return newWindow
+}
+
+func (wm *WindowManager) addAndRun(newWindow *WebviewWindow) {
 	id := newWindow.ID()
 
 	wm.app.windowsLock.Lock()
 	wm.app.windows[id] = newWindow
 	wm.app.windowsLock.Unlock()
 
-	// Call hooks
 	for _, hook := range wm.app.windowCreatedCallbacks {
 		hook(newWindow)
 	}
 
 	wm.app.runOrDeferToAppRun(newWindow)
-
-	return newWindow
 }
 
 // Current returns the current active window (may be nil)
@@ -77,8 +79,7 @@ func (wm *WindowManager) Current() Window {
 	id := wm.app.impl.getCurrentWindowID()
 	wm.app.windowsLock.RLock()
 	defer wm.app.windowsLock.RUnlock()
-	result := wm.app.windows[id]
-	return result
+	return wm.app.windows[id]
 }
 
 // Add adds a window to the manager

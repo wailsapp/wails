@@ -1,8 +1,8 @@
-name: Nightly Release v3-alpha
+name: Nightly Release v3
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # 2 AM UTC daily
+    - cron: '0 15 * * *'  # 3 PM UTC daily
   workflow_dispatch:
     inputs:
       force_release:
@@ -15,10 +15,18 @@ on:
         required: false
         default: true
         type: boolean
+      release_version:
+        description: 'Optional explicit version for an ad-hoc release (e.g. v3.0.0-beta.8)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   nightly-release:
     runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+    env:
+      GOWORK: "off"
     
     permissions:
       contents: write
@@ -29,14 +37,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: v3-alpha
+        ref: master
         fetch-depth: 0
         token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.24'
+        go-version: '1.25'
         cache: true
         cache-dependency-path: 'v3/go.sum'
     
@@ -53,7 +61,7 @@ jobs:
         
         # Configure git to use the token for authentication
         git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
-    
+
     - name: Check for existing release tag
       id: check_tag
       run: |
@@ -73,72 +81,51 @@ jobs:
         # Run the release script in check mode to see if there's content
         cd v3/tasks/release
         
-        # Use the release script itself to check for content
-        if go run release.go --check-only 2>/dev/null; then
+        # Use the release script itself to check for content. The script uses
+        # exit status 1 for the expected "no content" result, so preserve that
+        # result while allowing read/parse failures to fail this workflow.
+        set +e
+        CHECK_OUTPUT=$(go run release.go --check-only 2>&1)
+        CHECK_STATUS=$?
+        set -e
+
+        if [ "$CHECK_STATUS" -eq 0 ]; then
           echo "has_unreleased_content=true" >> $GITHUB_OUTPUT
           echo "✅ Found unreleased changelog content"
-        else
+        elif [ "$CHECK_STATUS" -eq 1 ] && grep -Fq "No unreleased changelog content found." <<< "$CHECK_OUTPUT"; then
           echo "has_unreleased_content=false" >> $GITHUB_OUTPUT
           echo "ℹ️  No unreleased changelog content found"
+        else
+          echo "$CHECK_OUTPUT" >&2
+          echo "❌ Changelog check failed (exit status $CHECK_STATUS)" >&2
+          exit "$CHECK_STATUS"
         fi
 
     - name: Quick change detection and early exit
       id: quick_check
       run: |
         echo "🔍 Quick check for changes to determine if we should continue..."
-        
-        # First check if we have unreleased changelog content
+        # The unreleased changelog is the release input. Do not infer that a
+        # release is needed from arbitrary commits after the previous tag:
+        # release bookkeeping, documentation automation, and other unrelated
+        # commits must not create a release by themselves.
         if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
           echo "✅ Found unreleased changelog content, proceeding with release"
           echo "has_changes=true" >> $GITHUB_OUTPUT
           echo "should_continue=true" >> $GITHUB_OUTPUT
           echo "reason=Found unreleased changelog content" >> $GITHUB_OUTPUT
-          exit 0
-        fi
-        
-        # If no unreleased changelog content, check for git changes as fallback
-        echo "No unreleased changelog content found, checking for git changes..."
-        
-        # Check if current commit has a release tag
-        if git describe --tags --exact-match HEAD 2>/dev/null; then
-          CURRENT_TAG=$(git describe --tags --exact-match HEAD)
-          echo "Current commit has release tag: $CURRENT_TAG"
-          
-          # For tagged commits, check if there are changes since the tag
-          COMMIT_COUNT=$(git rev-list ${CURRENT_TAG}..HEAD --count)
-          if [ "$COMMIT_COUNT" -eq 0 ]; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "should_continue=false" >> $GITHUB_OUTPUT
-            echo "reason=No changes since existing tag $CURRENT_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "should_continue=true" >> $GITHUB_OUTPUT
-          fi
         else
-          # No current tag, check against latest release
-          LATEST_TAG=$(git tag --list "v3.0.0-alpha.*" | sort -V | tail -1)
-          if [ -z "$LATEST_TAG" ]; then
-            echo "No previous release found, proceeding with release"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "should_continue=true" >> $GITHUB_OUTPUT
-          else
-            COMMIT_COUNT=$(git rev-list ${LATEST_TAG}..HEAD --count)
-            if [ "$COMMIT_COUNT" -gt 0 ]; then
-              echo "Found $COMMIT_COUNT commits since $LATEST_TAG"
-              echo "has_changes=true" >> $GITHUB_OUTPUT
-              echo "should_continue=true" >> $GITHUB_OUTPUT
-            else
-              echo "has_changes=false" >> $GITHUB_OUTPUT
-              echo "should_continue=false" >> $GITHUB_OUTPUT
-              echo "reason=No changes since latest release $LATEST_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
-            fi
-          fi
+          echo "ℹ️  No unreleased changelog content found; skipping release."
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "should_continue=false" >> $GITHUB_OUTPUT
+          echo "reason=No unreleased changelog content" >> $GITHUB_OUTPUT
         fi
     
     - name: Early exit - No changes detected
       if: |
         steps.quick_check.outputs.should_continue == 'false' && 
-        github.event.inputs.force_release != 'true'
+        github.event.inputs.force_release != 'true' &&
+        inputs.release_version == ''
       run: |
         echo "🛑 EARLY EXIT: ${{ steps.quick_check.outputs.reason }}"
         echo ""
@@ -156,7 +143,8 @@ jobs:
     - name: Continue with release process
       if: |
         steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        github.event.inputs.force_release == 'true' ||
+        inputs.release_version != ''
       run: |
         echo "✅ Proceeding with release process..."
         if [ "${{ github.event.inputs.force_release }}" == "true" ]; then
@@ -167,15 +155,26 @@ jobs:
       id: release
       if: |
         steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        github.event.inputs.force_release == 'true' ||
+        inputs.release_version != ''
       env:
-        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
-        GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        # Keep these DISTINCT: the release script validates WAILS_REPO_TOKEN
+        # against the API before pushing anything and falls back to
+        # GITHUB_TOKEN if the PAT is expired/revoked. Passing the same value
+        # for both (as before) made the fallback meaningless and an expired
+        # PAT produced a half-release: tag pushed, no GitHub release.
+        WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
+        DRY_RUN: ${{ inputs.dry_run }}
+        RELEASE_VERSION: ${{ inputs.release_version }}
       run: |
         cd v3/tasks/release
         ARGS=()
-        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+        if [ "$DRY_RUN" == "true" ]; then
           ARGS+=(--dry-run)
+        fi
+        if [ -n "$RELEASE_VERSION" ]; then
+          ARGS+=(--version "$RELEASE_VERSION")
         fi
         go run release.go "${ARGS[@]}"
 

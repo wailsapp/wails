@@ -9,11 +9,41 @@ The electron alternative for Go
 */
 
 import { nanoid } from "./nanoid.js";
+import { hasDOM } from "./environment.js";
 
-const runtimeURL = window.location.origin + "/wails/runtime";
+// Resolved lazily: window does not exist when the module is imported during
+// server-side rendering (#4679), and nothing can call the runtime there.
+function runtimeURL(): string {
+    return window.location.origin + "/wails/runtime";
+}
+
+// Stay under WebView2's ~2MB request body buffering limit in WebResourceRequested.
+const CHUNK_THRESHOLD = 512 * 1024;
 
 // Re-export nanoid for custom transport implementations
 export { nanoid };
+
+type CallErrorType = {
+    message: string,
+    cause?: unknown,
+    kind: "ReferenceError" | "TypeError" | "RuntimeError"
+}
+
+/**
+ * Exception class that will be thrown in case the bound method returns an error.
+ * The value of the {@link RuntimeError#name} property is "RuntimeError".
+ */
+export class RuntimeError extends Error {
+    /**
+     * Constructs a new RuntimeError instance.
+     * @param message - The error message.
+     * @param options - Options to be forwarded to the Error constructor.
+     */
+    constructor(message?: string, options?: ErrorOptions) {
+        super(message, options);
+        this.name = "RuntimeError";
+    }
+}
 
 // Object Names
 export const objectNames = Object.freeze({
@@ -108,7 +138,7 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
     }
 
     // Default HTTP fetch transport
-    let url = new URL(runtimeURL);
+    let url = new URL(runtimeURL());
 
     let body: { object: number; method: number, args?: any } = {
       object: objectID,
@@ -126,13 +156,28 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
         headers["x-wails-window-name"] = windowName;
     }
 
-    let response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body)
-    });
+    const bodyStr = JSON.stringify(body);
+    let response: Response;
+    if (bodyStr.length > CHUNK_THRESHOLD) {
+        response = await sendChunked(url, headers, bodyStr);
+    } else {
+        response = await fetch(url, { method: 'POST', headers, body: bodyStr });
+    }
     if (!response.ok) {
-        throw new Error(await response.text());
+      const ct = response.headers.get("Content-Type");
+      if (ct?.includes("application/json")) {
+          const json: CallErrorType = await response.json();
+          let err;
+          switch (json.kind) {
+              case "ReferenceError": err = new ReferenceError(json.message); break;
+              case "TypeError":      err = new TypeError(json.message); break;
+              case "RuntimeError":   err = new RuntimeError(json.message); break;
+              default:               err = new Error(json.message);
+          }
+          err.cause = json.cause;
+          throw err
+      }
+      throw new Error(await response.text());
     }
 
     if ((response.headers.get("Content-Type")?.indexOf("application/json") ?? -1) !== -1) {
@@ -140,4 +185,103 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
     } else {
         return response.text();
     }
+}
+
+// sendChunked splits a large serialised request body into CHUNK_THRESHOLD-sized
+// byte chunks and sends them serially.  Encoding to UTF-8 bytes before slicing
+// prevents corruption of non-BMP characters (surrogate pairs) that would occur
+// when splitting at JavaScript string indices.  The Go transport assembles the
+// raw bytes before processing.  Only the final chunk's response carries the RPC result.
+async function sendChunked(url: URL, headers: Record<string, string>, bodyStr: string): Promise<Response> {
+    const chunkId = nanoid();
+    const bodyBytes = new TextEncoder().encode(bodyStr);
+    const totalChunks = Math.ceil(bodyBytes.length / CHUNK_THRESHOLD);
+
+    for (let i = 0; i < totalChunks - 1; i++) {
+        const chunk = bodyBytes.subarray(i * CHUNK_THRESHOLD, (i + 1) * CHUNK_THRESHOLD);
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+                ...headers,
+                'x-wails-chunk-id': chunkId,
+                'x-wails-chunk-index': String(i),
+                'x-wails-chunk-total': String(totalChunks),
+            },
+            body: chunk,
+        });
+        if (!resp.ok) {
+            throw new Error(await resp.text());
+        }
+    }
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'x-wails-chunk-id': chunkId,
+            'x-wails-chunk-index': String(totalChunks - 1),
+            'x-wails-chunk-total': String(totalChunks),
+        },
+        body: bodyBytes.subarray((totalChunks - 1) * CHUNK_THRESHOLD),
+    });
+}
+
+/**
+ * Android WebView cannot deliver fetch() POST bodies to
+ * shouldInterceptRequest, so the default HTTP transport cannot reach Go.
+ * When the Android JavascriptInterface bridge (window.wails) is present,
+ * route runtime calls through it instead. Responses arrive via
+ * window._wailsAndroidCallback, invoked by the Java side.
+ */
+interface AndroidJSBridge {
+    invokeAsync(callbackID: string, payload: string): void;
+}
+
+const androidBridge: AndroidJSBridge | null = hasDOM &&
+    typeof (window as any).wails?.invokeAsync === "function" ? (window as any).wails : null;
+
+if (androidBridge) {
+    const pending = new Map<string, { resolve: (value: any) => void; reject: (reason: any) => void }>();
+
+    (window as any)._wailsAndroidCallback = (id: string, response: string | null, error: string | null) => {
+        const promise = pending.get(id);
+        if (!promise) return;
+        pending.delete(id);
+        if (error) {
+            promise.reject(new Error(error));
+            return;
+        }
+        try {
+            const envelope = JSON.parse(response ?? "{}");
+            if (!envelope.ok) {
+                promise.reject(new Error(envelope.error ?? "unknown runtime call error"));
+                return;
+            }
+            promise.resolve("text" in envelope ? envelope.text : envelope.data);
+        } catch (e) {
+            promise.reject(e);
+        }
+    };
+
+    customTransport = {
+        call(objectID: number, method: number, windowName: string, args: any): Promise<any> {
+            return new Promise((resolve, reject) => {
+                const id = nanoid();
+                pending.set(id, { resolve, reject });
+                try {
+                    androidBridge.invokeAsync(id, JSON.stringify({
+                        object: objectID,
+                        method: method,
+                        windowName: windowName,
+                        args: args ?? null,
+                        clientId: clientId,
+                    }));
+                } catch (e) {
+                    // Don't leak the pending entry if dispatch throws synchronously
+                    pending.delete(id);
+                    reject(e);
+                }
+            });
+        },
+    };
 }

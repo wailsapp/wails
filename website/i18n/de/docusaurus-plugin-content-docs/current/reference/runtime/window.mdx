@@ -1,0 +1,227 @@
+---
+sidebar_position: 4
+---
+
+# Window
+
+Diese Methoden ermöglichen die Kontrolle über das Anwendungsfenster.
+
+### WindowSetTitle
+
+Legt den Text in der Titelleiste des Fensters fest.
+
+Go: `WindowSetTitle(ctx context.Context, title string)`<br/> JS: `WindowSetTitle(title: string)`
+
+### WindowFullscreen
+
+Ändert das Fenster zum Vollbildmodus.
+
+Go: `WindowFullscreen(ctx context.Context)`<br/> JS: `WindowFullscreen()`
+
+### WindowUnfullscreen
+
+Stellt die vorherige Fenstergröße und -position vor dem Vollbild wieder her.
+
+Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
+
+### WindowIsFullscreen
+
+Gibt true zurück, wenn das Fenster im Vollbildmodus ist.
+
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() Promise<boolean>`
+
+### WindowCenter
+
+Zentriert das Fenster auf dem Monitor, an dem sich das Fenster gerade befindet.
+
+Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
+
+### WindowExecJS
+
+Führt beliebigen JS-Code im Fenster aus.
+
+Diese Methode führt den Code asynchron im Browser aus und gibt sofort einen Rückgabewert zurück. Wenn das Skript Fehler verursacht, sind diese nur in dem Browser-Konsole verfügbar.
+
+Go: `WindowExecJS(ctx context.Context, js string)`
+
+### WindowReload
+
+Führt eine "Neuladung" aus (lädt aktuelle Seite neu).
+
+Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
+
+### WindowReloadApp
+
+Lädt das Frontend der Anwendung neu.
+
+Go: `WindowReloadApp(ctx context.Context)`<br/> JS: `WindowReloadApp()`
+
+### WindowSetSystemStandardTheme
+
+Nur für Windows.
+
+Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/> JS: `WindowSetSystemDefaultTheme()`
+
+Setzt Fensterdesign auf den Systemstandard (dunkel/hell).
+
+### WindowSetLightTheme
+
+Nur für Windows.
+
+Go: `WindowSetLightTheme(ctx context.Context)`<br/> JS: `WindowSetLightTheme()`
+
+Setzt das Fensterdesign auf den Hellen Modus.
+
+### WindowSetDarkTheme
+
+Nur für Windows.
+
+Go: `WindowSetDarkTheme(ctx context.Context)`<br/> JS: `WindowSetDarkTheme()`
+
+Setzt das Fensterdesign auf den dunklen Modus.
+
+### WindowShow
+
+Zeigt das Fenster, wenn es gerade ausgeblendet wird.
+
+Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
+
+### WindowHide
+
+Versteckt das Fenster, wenn es gerade sichtbar ist.
+
+Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
+
+### WindowIsNormal
+
+Gibt true zurück, wenn das Fenster nicht minimiert, maximiert oder im Vollbild Modus ist.
+
+Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() Promise<boolean>`
+
+### WindowSetSize
+
+Legt die Breite und Höhe des Fensters fest.
+
+Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(width: number, height: number)`
+
+### WindowGetSize
+
+Ruft die Breite und Höhe des Fensters ab.
+
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize(): Promise<Size>`
+
+### WindowSetMinSize
+
+Legt die minimale Fenstergröße fest. Ändert die Größe des Fensters, wenn das Fenster derzeit kleiner ist als die angegebene Dimension.
+
+Das Setzen einer Größe von `0,0` deaktiviert diese Einschränkung.
+
+Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(width: number, height: number)`
+
+### WindowSetMaxSize
+
+Legt die maximale Fenstergröße fest. Ändert die Größe des Fensters, wenn das Fenster zur Zeit größer ist als die angegebene Dimension.
+
+Das Setzen einer Größe von `0,0` deaktiviert diese Einschränkung.
+
+Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(width: number, height: number)`
+
+### WindowSetAlwaysOnTop
+
+Legt fest, ob das Fenster immer im Vordergrund oder nicht im Vordergrund angezeigt werden soll.
+
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: boolean)`
+
+### WindowSetPosition
+
+Legt die Fensterposition relativ zum Monitor fest, auf dem sich das Fenster befindet.
+
+Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(x: number, y: number)`
+
+### WindowGetPosition
+
+Ruft die Fensterposition relativ zum Monitor ab, auf dem sich das Fenster gerade befindet.
+
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition(): Promise<Position>`
+
+### WindowMaximise
+
+Maximiert das Fenster, um den Bildschirm zu füllen.
+
+Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
+
+### WindowUnmaximise
+
+Stellt das Fenster vor der Maximierung wieder auf die Dimensionen und Position zurück.
+
+Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
+
+### WindowIsMaximised
+
+Gibt true zurück, wenn das Fenster maximiert ist.
+
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() Promise<boolean>`
+
+### WindowToggleMaximise
+
+Wechselt zwischen Maximiert und Nicht-Maximiert.
+
+Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()`
+
+### WindowMinimise
+
+Minimiert das Fenster.
+
+Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
+
+### WindowUnminimise
+
+Stellt das Fenster vor der Minimierung wieder auf die Dimensionen und Position zurück.
+
+Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
+
+### WindowIsMinimised
+
+Gibt true zurück, wenn das Fenster minimiert ist.
+
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() Promise<boolean>`
+
+### WindowSetBackgroundColour
+
+Legt die Hintergrundfarbe des Fensters auf die angegebene RGBA-Farbdefinition fest. Diese Farbe wird für alle transparenten Pixel angezeigt.
+
+Gültige Werte für R, G, B und A sind 0-255.
+
+:::info Windows
+
+Unter Windows werden nur Alphawerte von 0 oder 255 unterstützt. Jeder Wert, der nicht 0 ist, gilt als 255.
+
+:::
+
+Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
+
+### WindowPrint
+
+Öffnet den nativen Druckdialog.
+
+Go: `WindowPrint(ctx context.Context)`<br/> JS: `WindowPrint()`
+
+## TypeScript Object Definitions
+
+### Position
+
+```ts
+interface Position {
+  x: number;
+  y: number;
+}
+```
+
+### Size
+
+```ts
+interface Size {
+  w: number;
+  h: number;
+}
+```

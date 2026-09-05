@@ -1,0 +1,106 @@
+---
+title: Arsitektur Wails v3
+description: Diagram dan penjelasan mendalam setiap komponen di dalam Wails v3
+sidebar:
+  order: 1
+---
+
+
+Wails v3 adalah **framework desktop full-stack** yang terdiri dari runtime Go,
+bridge JavaScript, tool-chain berbasis task, dan koleksi template yang
+memungkinkan Anda mengirim aplikasi native yang didukung teknologi web modern.
+
+Halaman ini menyajikan *gambaran besar* dalam empat diagram:
+
+1. **Arsitektur Keseluruhan** – bagaimana setiap subsistem terhubung  
+2. **Alur Runtime** – apa yang terjadi saat JS memanggil Go dan sebaliknya  
+3. **Development vs Production** – dua mode asset server  
+4. **Implementasi Platform** – di mana kode spesifik OS berada  
+
+---
+
+## 1 · Arsitektur Keseluruhan
+
+**Wails v3 – Stack Tingkat Tinggi**
+
+{/*
+TODO: Perbaiki generasi diagram D2 (triple quotes untuk string multi-baris) atau embed sebagai gambar.
+Blok kode D2 sebelumnya menyebabkan error parsing MDX di pipeline build.
+*/}
+
+**[Placeholder Diagram Stack Tingkat Tinggi]**
+
+---
+
+## 2 · Alur Panggilan Runtime
+
+**Runtime – Jalur Pemanggilan JavaScript ⇄ Go**
+
+{/*
+TODO: Perbaiki generasi diagram D2 (triple quotes untuk string multi-baris) atau embed sebagai gambar.
+Blok kode D2 sebelumnya menyebabkan error parsing MDX di pipeline build.
+*/}
+
+**[Placeholder Diagram Alur Panggilan Runtime]**
+
+Poin penting:
+
+* **Tanpa HTTP / IPC** – bridge menggunakan channel in-memory native WebView  
+* **Method ID** – hash FNV deterministik memungkinkan lookup O(1) di Go  
+* **Promise** – error dipropagasi sebagai rejection dengan stack & code
+
+---
+
+## 3 · Alur Asset Development vs Production
+
+**Dev ↔ Prod Asset Server**
+
+{/*
+TODO: Perbaiki generasi diagram D2 (triple quotes untuk string multi-baris) atau embed sebagai gambar.
+Blok kode D2 sebelumnya menyebabkan error parsing MDX di pipeline build.
+*/}
+
+**[Placeholder Diagram Alur Asset]**
+
+* Di **dev** server mem-proxy path yang tidak dikenal ke live-reload
+  server framework dan melayani asset statis dari disk.  
+* Di **prod** API yang sama didukung oleh `go:embed`, menghasilkan binary
+  tanpa dependensi eksternal.
+
+---
+
+## 4 · Pemisahan Runtime Spesifik Platform
+
+**File Runtime Per-OS**
+
+{/*
+TODO: Perbaiki generasi diagram D2 (triple quotes untuk string multi-baris) atau embed sebagai gambar.
+Blok kode D2 sebelumnya menyebabkan error parsing MDX di pipeline build.
+*/}
+
+**[Placeholder Diagram Pemisahan Platform]**
+
+Setiap fitur mengikuti pola ini:
+
+1. **Interface umum** di `pkg/application`  
+2. **Entry message processor** di `pkg/application/messageprocessor_*.go`  
+3. **Implementasi per-OS** di `pkg/application/*_{darwin,linux,windows}.go` (mis.
+   `webview_window_darwin.go`, `clipboard_linux.go`, `dialogs_windows.go`,
+   `systemtray_*.go`, `mainthread_*.go`), dilindungi build tag. Linux additionally
+   memiliki cgo bridge di `linux_cgo.go` / `linux_cgo_gtk4.{go,c,h}`.
+
+`internal/runtime/` hanya membawa glue build-tag kecil `runtime{_darwin,_linux,_windows,_android,_dev,_prod}.go`
+plus runtime JS embedded di bawah `internal/runtime/desktop/`.
+
+`internal/capabilities/` ada untuk mendeklarasikan set capability per-platform, tetapi
+tidak ada sentinel `ErrCapability` — feature gating dilakukan via
+build tag biasa dan stub return spesifik platform (mis. `nil` atau error spesifik fitur).
+
+---
+
+## Ringkasan
+
+Diagram-diagram ini menguraikan **di mana kode berada**, **bagaimana data bergerak**, dan
+**lapisan mana yang memiliki tanggung jawab apa**.  
+Simpan sebagai referensi saat menjelajahi halaman detail berikut — ini adalah
+peta Anda ke source tree Wails v3.

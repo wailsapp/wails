@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
@@ -6,8 +6,13 @@
 #import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
+extern void cancelURLRequest(void *);
 extern void processDragItems(unsigned int windowId, char** arr, int length, int x, int y);
 extern void processWindowKeyDownEvent(unsigned int, const char*);
+// Implemented in Go, in accelerator_darwin.go.
+extern char* acceleratorFromKeyPress(unsigned short keyCode, unsigned long modifiers,
+                                     unsigned int character, int hasCharacter);
+extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
@@ -18,6 +23,61 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     LiquidGlassStyleDark = 2,
     LiquidGlassStyleVibrant = 3
 };
+
+@interface WebviewWindow ()
+
+@property (retain) NSTimer* zoomAnimationTimer;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+@property (retain) CADisplayLink* zoomDisplayLink;
+#endif
+@property NSRect zoomAnimationStartFrame;
+@property NSRect zoomAnimationTargetFrame;
+@property CFTimeInterval zoomAnimationStartTime;
+@property NSTimeInterval zoomAnimationDuration;
+@property BOOL zoomAnimationTargetIsZoomed;
+@property BOOL preparingZoomAnimationTarget;
+@property BOOL applyingZoomAnimationFrame;
+@property NSRect zoomRestoreFrame;
+@property BOOL hasZoomRestoreFrame;
+
+- (void)stepZoomAnimationAtTime:(CFTimeInterval)time;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+- (void)stepZoomAnimationFromDisplayLink:(CADisplayLink*)displayLink API_AVAILABLE(macos(14.0));
+#endif
+
+@end
+
+NSString* acceleratorStringFromKeyEvent(NSEvent* event) {
+    // Only the first character is of interest: every key named from its
+    // characters rather than its key code produces exactly one. Passing the
+    // character rather than the string also keeps Control-Space, which
+    // produces a NUL, from looking like no character at all.
+    NSString* characters = [event characters];
+    int hasCharacter = characters.length > 0;
+    unichar character = hasCharacter ? [characters characterAtIndex:0] : 0;
+
+    char* accelerator = acceleratorFromKeyPress((unsigned short)event.keyCode,
+                                                (unsigned long)event.modifierFlags,
+                                                (unsigned int)character,
+                                                hasCharacter);
+    if (accelerator == NULL) {
+        return @"";
+    }
+    NSString* result = [NSString stringWithUTF8String:accelerator];
+    free(accelerator);
+    return result;
+}
+
+BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)window.delegate;
+    if (delegate == nil) {
+        return NO;
+    }
+    NSString* accelerator = acceleratorStringFromKeyEvent(event);
+    return accelerator.length > 0 &&
+        processWindowKeyEquivalent(delegate.windowId, accelerator.UTF8String);
+}
+
 @implementation WebviewWindow
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
@@ -29,152 +89,26 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     return self;
 }
 - (void)keyDown:(NSEvent *)event {
-    NSUInteger modifierFlags = event.modifierFlags;
-    // Create an array to hold the modifier strings
-    NSMutableArray *modifierStrings = [NSMutableArray array];
-    // Check for modifier flags and add corresponding strings to the array
-    if (modifierFlags & NSEventModifierFlagShift) {
-        [modifierStrings addObject:@"shift"];
+    NSString *keyEventString = acceleratorStringFromKeyEvent(event);
+    // A press with no name cannot match a binding, and the parser rejects the
+    // empty string, so sending it on only produces an error for every one.
+    if (keyEventString.length == 0) {
+        return;
     }
-    if (modifierFlags & NSEventModifierFlagControl) {
-        [modifierStrings addObject:@"ctrl"];
-    }
-    if (modifierFlags & NSEventModifierFlagOption) {
-        [modifierStrings addObject:@"option"];
-    }
-    if (modifierFlags & NSEventModifierFlagCommand) {
-        [modifierStrings addObject:@"cmd"];
-    }
-    NSString *keyString = [self keyStringFromEvent:event];
-    if (keyString.length > 0) {
-        [modifierStrings addObject:keyString];
-    }
-    // Combine the modifier strings with the key character
-    NSString *keyEventString = [modifierStrings componentsJoinedByString:@"+"];
-    const char* utf8String = [keyEventString UTF8String];
     WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)self.delegate;
-    processWindowKeyDownEvent(delegate.windowId, utf8String);
+    processWindowKeyDownEvent(delegate.windowId, [keyEventString UTF8String]);
 }
-- (NSString *)keyStringFromEvent:(NSEvent *)event {
-    // Get the pressed key
-    // Check for special keys like escape and tab
-    NSString *characters = [event characters];
-    if (characters.length == 0) {
-        return @"";
+// performKeyEquivalent is invoked by Cocoa for every modifier-key combo
+// BEFORE the responder chain runs, giving the window a chance to claim
+// accelerators (e.g. Ctrl+Tab) that the WKWebView would otherwise consume
+// silently. Returns YES only when there is an actual KeyBinding match;
+// otherwise falls through to super so normal Cocoa handling — including
+// main-menu key equivalents — continues unchanged.
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+    if (dispatchKeyEquivalent(event, self)) {
+        return YES;
     }
-    if ([characters isEqualToString:@"\r"]) {
-        return @"enter";
-    }
-    if ([characters isEqualToString:@"\b"]) {
-        return @"backspace";
-    }
-    if ([characters isEqualToString:@"\e"]) {
-        return @"escape";
-    }
-    // page down
-    if ([characters isEqualToString:@"\x0B"]) {
-        return @"page down";
-    }
-    // page up
-    if ([characters isEqualToString:@"\x0E"]) {
-        return @"page up";
-    }
-    // home
-    if ([characters isEqualToString:@"\x01"]) {
-        return @"home";
-    }
-    // end
-    if ([characters isEqualToString:@"\x04"]) {
-        return @"end";
-    }
-    // clear
-    if ([characters isEqualToString:@"\x0C"]) {
-        return @"clear";
-    }
-    switch ([event keyCode]) {
-        // Function keys
-        case 122: return @"f1";
-        case 120: return @"f2";
-        case 99: return @"f3";
-        case 118: return @"f4";
-        case 96: return @"f5";
-        case 97: return @"f6";
-        case 98: return @"f7";
-        case 100: return @"f8";
-        case 101: return @"f9";
-        case 109: return @"f10";
-        case 103: return @"f11";
-        case 111: return @"f12";
-        case 105: return @"f13";
-        case 107: return @"f14";
-        case 113: return @"f15";
-        case 106: return @"f16";
-        case 64: return @"f17";
-        case 79: return @"f18";
-        case 80: return @"f19";
-        case 90: return @"f20";
-        // Letter keys
-        case 0: return @"a";
-        case 11: return @"b";
-        case 8: return @"c";
-        case 2: return @"d";
-        case 14: return @"e";
-        case 3: return @"f";
-        case 5: return @"g";
-        case 4: return @"h";
-        case 34: return @"i";
-        case 38: return @"j";
-        case 40: return @"k";
-        case 37: return @"l";
-        case 46: return @"m";
-        case 45: return @"n";
-        case 31: return @"o";
-        case 35: return @"p";
-        case 12: return @"q";
-        case 15: return @"r";
-        case 1: return @"s";
-        case 17: return @"t";
-        case 32: return @"u";
-        case 9: return @"v";
-        case 13: return @"w";
-        case 7: return @"x";
-        case 16: return @"y";
-        case 6: return @"z";
-        // Number keys
-        case 29: return @"0";
-        case 18: return @"1";
-        case 19: return @"2";
-        case 20: return @"3";
-        case 21: return @"4";
-        case 23: return @"5";
-        case 22: return @"6";
-        case 26: return @"7";
-        case 28: return @"8";
-        case 25: return @"9";
-        // Other special keys
-        case 51: return @"delete";
-        case 117: return @"forward delete";
-        case 123: return @"left";
-        case 124: return @"right";
-        case 126: return @"up";
-        case 125: return @"down";
-        case 48: return @"tab";
-        case 53: return @"escape";
-        case 49: return @"space";
-        // Punctuation and other keys (for a standard US layout)
-        case 33: return @"[";
-        case 30: return @"]";
-        case 43: return @",";
-        case 27: return @"-";
-        case 39: return @"'";
-        case 44: return @"/";
-        case 47: return @".";
-        case 41: return @";";
-        case 24: return @"=";
-        case 50: return @"`";
-        case 42: return @"\\";
-        default: return @"";
-    }
+    return [super performKeyEquivalent:event];
 }
 - (BOOL)canBecomeKeyWindow {
     return YES;
@@ -191,6 +125,252 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 - (BOOL) resignFirstResponder {
     return YES;
 }
+- (void) cancelOperation:(id)sender {
+    if (self.disableEscapeExitsFullscreen &&
+        (self.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
+        return;
+    }
+    [super cancelOperation:sender];
+}
+- (void)cancelZoomAnimation {
+    [self.zoomAnimationTimer invalidate];
+    self.zoomAnimationTimer = nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+    if (@available(macOS 14.0, *)) {
+        [self.zoomDisplayLink invalidate];
+        self.zoomDisplayLink = nil;
+    }
+#endif
+}
+- (BOOL)zoomAnimationIsRunning {
+    BOOL isRunning = self.zoomAnimationTimer != nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+    isRunning = isRunning || self.zoomDisplayLink != nil;
+#endif
+    return isRunning;
+}
+- (BOOL)shouldReduceZoomMotion {
+    return [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
+}
+- (BOOL)isZoomed {
+    if ([self zoomAnimationIsRunning]) {
+        return self.zoomAnimationTargetIsZoomed;
+    }
+    return [super isZoomed];
+}
+- (NSTimeInterval)animationResizeTime:(NSRect)newFrame {
+    if (self.preparingZoomAnimationTarget) {
+        return 0;
+    }
+    return [super animationResizeTime:newFrame];
+}
+- (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag {
+    if ([self zoomAnimationIsRunning] && !self.applyingZoomAnimationFrame) {
+        [self cancelZoomAnimation];
+    }
+    NSSize oldSize = self.frame.size;
+    if (self.hasZoomRestoreFrame &&
+        !self.applyingZoomAnimationFrame &&
+        ![super isZoomed] &&
+        !NSEqualSizes(oldSize, frameRect.size)) {
+        [super setFrame:frameRect display:displayFlag];
+        self.zoomRestoreFrame = self.frame;
+        return;
+    }
+    [super setFrame:frameRect display:displayFlag];
+}
+- (void)setFrame:(NSRect)frameRect display:(BOOL)displayFlag animate:(BOOL)animateFlag {
+    if ([self zoomAnimationIsRunning] && !self.applyingZoomAnimationFrame) {
+        [self cancelZoomAnimation];
+    }
+    NSSize oldSize = self.frame.size;
+    if (self.hasZoomRestoreFrame &&
+        !self.applyingZoomAnimationFrame &&
+        ![super isZoomed] &&
+        !NSEqualSizes(oldSize, frameRect.size)) {
+        [super setFrame:frameRect display:displayFlag animate:animateFlag];
+        self.zoomRestoreFrame = self.frame;
+        return;
+    }
+    [super setFrame:frameRect display:displayFlag animate:animateFlag];
+}
+- (void)startZoomAnimationDriver {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+    if (@available(macOS 14.0, *)) {
+        if (self.screen != nil) {
+            CADisplayLink *displayLink = [self displayLinkWithTarget:self
+                                                            selector:@selector(stepZoomAnimationFromDisplayLink:)];
+            NSInteger maximumFramesPerSecond = self.screen.maximumFramesPerSecond;
+            if (maximumFramesPerSecond > 0) {
+                displayLink.preferredFrameRateRange = CAFrameRateRangeMake(
+                    MIN(60, maximumFramesPerSecond),
+                    maximumFramesPerSecond,
+                    maximumFramesPerSecond);
+            }
+            self.zoomDisplayLink = displayLink;
+            [displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+            return;
+        }
+    }
+#endif
+
+    NSInteger framesPerSecond = 60;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 120000
+    if (@available(macOS 12.0, *)) {
+        NSInteger maximumFramesPerSecond = self.screen.maximumFramesPerSecond;
+        if (maximumFramesPerSecond > 0) {
+            framesPerSecond = maximumFramesPerSecond;
+        }
+    }
+#endif
+    NSTimer *timer = [NSTimer timerWithTimeInterval:1.0 / framesPerSecond
+        target:self
+        selector:@selector(stepZoomAnimationFromTimer:)
+        userInfo:nil
+        repeats:YES];
+    self.zoomAnimationTimer = timer;
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+}
+- (void)stepZoomAnimationFromTimer:(NSTimer*)timer {
+    if (timer != self.zoomAnimationTimer) {
+        [timer invalidate];
+        return;
+    }
+    [self stepZoomAnimationAtTime:CACurrentMediaTime()];
+}
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+- (void)stepZoomAnimationFromDisplayLink:(CADisplayLink*)displayLink API_AVAILABLE(macos(14.0)) {
+    if (displayLink != self.zoomDisplayLink) {
+        [displayLink invalidate];
+        return;
+    }
+    [self stepZoomAnimationAtTime:displayLink.targetTimestamp];
+}
+#endif
+- (void)stepZoomAnimationAtTime:(CFTimeInterval)time {
+
+    if ([self shouldReduceZoomMotion]) {
+        self.applyingZoomAnimationFrame = YES;
+        [super setFrame:self.zoomAnimationTargetFrame display:YES animate:NO];
+        self.applyingZoomAnimationFrame = NO;
+        if (!self.zoomAnimationTargetIsZoomed) {
+            self.hasZoomRestoreFrame = NO;
+        }
+        [self cancelZoomAnimation];
+        return;
+    }
+
+    double progress = (time - self.zoomAnimationStartTime) / self.zoomAnimationDuration;
+    progress = MIN(1.0, MAX(0.0, progress));
+    double easedProgress;
+    if (progress < 0.5) {
+        easedProgress = 4.0 * progress * progress * progress;
+    } else {
+        double remaining = -2.0 * progress + 2.0;
+        easedProgress = 1.0 - (remaining * remaining * remaining) / 2.0;
+    }
+
+    NSRect start = self.zoomAnimationStartFrame;
+    NSRect target = self.zoomAnimationTargetFrame;
+    NSRect frame = NSMakeRect(
+        start.origin.x + ((target.origin.x - start.origin.x) * easedProgress),
+        start.origin.y + ((target.origin.y - start.origin.y) * easedProgress),
+        start.size.width + ((target.size.width - start.size.width) * easedProgress),
+        start.size.height + ((target.size.height - start.size.height) * easedProgress)
+    );
+
+    self.applyingZoomAnimationFrame = YES;
+    [super setFrame:frame display:YES animate:NO];
+    self.applyingZoomAnimationFrame = NO;
+
+    if (progress >= 1.0) {
+        if (!self.zoomAnimationTargetIsZoomed) {
+            self.hasZoomRestoreFrame = NO;
+        }
+        [self cancelZoomAnimation];
+    }
+}
+- (void)zoom:(id)sender {
+    NSRect startFrame = self.frame;
+    BOOL startIsZoomed = [super isZoomed];
+    BOOL interruptedAnimation = [self zoomAnimationIsRunning];
+    NSRect previousTargetFrame = self.zoomAnimationTargetFrame;
+    [self cancelZoomAnimation];
+
+    // AppKit determines whether zoom() enters the standard frame or restores
+    // the user's frame from the window's current zoom state. During an
+    // interrupted animation, first move to the previous intended target
+    // without displaying it so AppKit toggles from the correct native state.
+    if (interruptedAnimation) {
+        self.applyingZoomAnimationFrame = YES;
+        [super setFrame:previousTargetFrame display:NO animate:NO];
+        self.applyingZoomAnimationFrame = NO;
+    }
+
+    // Ask AppKit to calculate and apply the native target immediately. This
+    // preserves delegate hooks, constraints, and the standard/user frame pair.
+    self.preparingZoomAnimationTarget = YES;
+    [super zoom:sender];
+    self.preparingZoomAnimationTarget = NO;
+
+    NSRect targetFrame = self.frame;
+    BOOL targetIsZoomed = [super isZoomed];
+    if (NSEqualRects(startFrame, targetFrame)) {
+        if (startIsZoomed && self.hasZoomRestoreFrame) {
+            targetFrame = self.zoomRestoreFrame;
+            targetIsZoomed = NO;
+        } else {
+            return;
+        }
+    }
+
+    if (targetIsZoomed) {
+        if (!self.hasZoomRestoreFrame) {
+            self.zoomRestoreFrame = startFrame;
+            self.hasZoomRestoreFrame = YES;
+        }
+    } else if (self.hasZoomRestoreFrame) {
+        targetFrame = self.zoomRestoreFrame;
+    }
+
+    // Reduced-motion users should not receive a replacement animation. AppKit
+    // has already applied the correct target and updated its zoom state.
+    if ([self shouldReduceZoomMotion]) {
+        if (!targetIsZoomed) {
+            self.applyingZoomAnimationFrame = YES;
+            [super setFrame:targetFrame display:YES animate:NO];
+            self.applyingZoomAnimationFrame = NO;
+            self.hasZoomRestoreFrame = NO;
+        }
+        return;
+    }
+
+    // Restore the actual visible frame before starting our incremental resize.
+    // Every tick is non-animated so WKWebView receives each intermediate
+    // viewport instead of deferring layout until AppKit's animation completes.
+    self.applyingZoomAnimationFrame = YES;
+    [super setFrame:startFrame display:YES animate:NO];
+    self.applyingZoomAnimationFrame = NO;
+
+    NSTimeInterval duration = [super animationResizeTime:targetFrame];
+    if (duration <= 0) {
+        self.applyingZoomAnimationFrame = YES;
+        [super setFrame:targetFrame display:YES animate:NO];
+        self.applyingZoomAnimationFrame = NO;
+        if (!targetIsZoomed) {
+            self.hasZoomRestoreFrame = NO;
+        }
+        return;
+    }
+
+    self.zoomAnimationStartFrame = startFrame;
+    self.zoomAnimationTargetFrame = targetFrame;
+    self.zoomAnimationStartTime = CACurrentMediaTime();
+    self.zoomAnimationDuration = duration;
+    self.zoomAnimationTargetIsZoomed = targetIsZoomed;
+
+    [self startZoomAnimationDriver];
+}
 - (void) setDelegate:(id<NSWindowDelegate>) delegate {
     [delegate retain];
     [super setDelegate: delegate];
@@ -199,7 +379,12 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
         [self registerForDraggedTypes:@[NSFilenamesPboardType]]; // 'self' is the WebviewWindow instance
     }
 }
+- (void)close {
+    [self cancelZoomAnimation];
+    [super close];
+}
 - (void) dealloc {
+    [self cancelZoomAnimation];
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
     // See: https://stackoverflow.com/questions/26383031/wkwebview-causes-my-view-controller-to-leak
     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
@@ -222,14 +407,14 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 - (void)performZoomIn:(id)sender {
-    [super zoom:sender];
+    [self zoom:sender];
     if (hasListeners(EventWindowZoomIn)) {
         WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
         processWindowEvent(delegate.windowId, EventWindowZoomIn);
     }
 }
 - (void)performZoomOut:(id)sender {
-    [super zoom:sender];
+    [self zoom:sender];
     if (hasListeners(EventWindowZoomOut)) {
         WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[sender delegate];
         processWindowEvent(delegate.windowId, EventWindowZoomOut);
@@ -281,8 +466,8 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
             NSString* str = files[i];
             cArray[i] = (char*)[str UTF8String];
         }
-        // Get the WebviewWindow instance, which is the dragging destination
-        WebviewWindow *window = (WebviewWindow *)[sender draggingDestinationWindow];
+        NSWindow<WailsWebviewWindow>* window =
+            (NSWindow<WailsWebviewWindow>*)[sender draggingDestinationWindow];
         WKWebView *webView = window.webView; // Get the webView from the window
         NSPoint dropPointInWindow = [sender draggingLocation];
         NSPoint dropPointInView = [webView convertPoint:dropPointInWindow fromView:nil]; // Convert to webView's coordinate system
@@ -318,7 +503,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     self.leftMouseEvent = nil;
     [super dealloc];
 }
-- (void) startDrag:(WebviewWindow*)window {
+- (void) startDrag:(NSWindow*)window {
     [window performWindowDragWithEvent:self.leftMouseEvent];
 }
 // Handle script messages from the external bridge
@@ -340,11 +525,25 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
 - (void)handleLeftMouseDown:(NSEvent *)event {
     self.leftMouseEvent = event;
     NSWindow *window = [event window];
-    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
     if( self.invisibleTitleBarHeight > 0 ) {
         NSPoint location = [event locationInWindow];
         NSRect frame = [window frame];
         if( location.y > frame.size.height - self.invisibleTitleBarHeight ) {
+            // Only the first click can begin a drag. Starting another native
+            // drag for the second click races the JavaScript double-click
+            // handler and can make AppKit discard the zoom restore frame.
+            if (event.clickCount != 1) {
+                return;
+            }
+            // Skip drag if the click is near a window edge (resize zone).
+            // This prevents conflict between dragging and native top-corner resizing,
+            // which causes window content to shake/jitter (#4960).
+            CGFloat resizeThreshold = 5.0;
+            BOOL nearLeftEdge = location.x < resizeThreshold;
+            BOOL nearRightEdge = location.x > frame.size.width - resizeThreshold;
+            if( nearLeftEdge || nearRightEdge ) {
+                return;
+            }
             [window performWindowDragWithEvent:event];
             return;
         }
@@ -362,6 +561,7 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     processURLRequest(self.windowId, urlSchemeTask);
 }
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    cancelURLRequest(urlSchemeTask);
     NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
     if (stream) {
         NSStreamStatus status = stream.streamStatus;
@@ -780,9 +980,35 @@ typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
     }
 }
 // GENERATED EVENTS END
+// WKNavigationDelegate - Recover from WebContent process termination.
+// WebKit invokes this on the main thread when the WebContent (renderer) process
+// crashes or is jetsammed — notably after macOS sleep. Without this handler the
+// WKWebView is left showing an unresponsive blank page.
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
+    if( hasListeners(EventWebViewWebContentProcessDidTerminate) ) {
+        processWindowEvent(self.windowId, EventWebViewWebContentProcessDidTerminate);
+    }
+    [webView reload];
+}
+// WKUIDelegate - Handle file input element clicks
+- (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
+    initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection;
+    if (@available(macOS 10.14, *)) {
+        openPanel.canChooseDirectories = parameters.allowsDirectories;
+    }
+    [openPanel beginSheetModalForWindow:webView.window
+        completionHandler:^(NSInteger result) {
+            if (result == NSModalResponseOK)
+                completionHandler(openPanel.URLs);
+            else
+                completionHandler(nil);
+        }];
+}
 @end
 void windowSetScreen(void* window, void* screen, int yOffset) {
-    WebviewWindow* nsWindow = (WebviewWindow*)window;
+    NSWindow* nsWindow = (NSWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;
     // Get current frame
     NSRect frame = [nsWindow frame];
@@ -810,7 +1036,7 @@ bool isLiquidGlassSupported() {
 }
 // Remove any existing visual effects from the window
 void windowRemoveVisualEffects(void* nsWindow) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow* window = (NSWindow*)nsWindow;
     NSView* contentView = [window contentView];
     // Get NSGlassEffectView class if available (avoid hard reference)
     Class glassEffectViewClass = nil;
@@ -828,7 +1054,7 @@ void windowRemoveVisualEffects(void* nsWindow) {
 }
 // Configure WebView for liquid glass effect
 void configureWebViewForLiquidGlass(void* nsWindow) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)nsWindow;
     WKWebView* webView = window.webView;
     // Make WebView background transparent
     [webView setValue:@NO forKey:@"drawsBackground"];
@@ -846,7 +1072,7 @@ void configureWebViewForLiquidGlass(void* nsWindow) {
 void windowSetLiquidGlass(void* nsWindow, int style, int material, double cornerRadius,
                           int r, int g, int b, int a,
                           const char* groupID, double groupSpacing) {
-    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)nsWindow;
     // Ensure we're on the main thread for UI operations
     if (![NSThread isMainThread]) {
         dispatch_sync(dispatch_get_main_queue(), ^{

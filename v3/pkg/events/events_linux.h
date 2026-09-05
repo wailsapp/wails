@@ -6,19 +6,21 @@
 extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 
-#define EventApplicationStartup 1050
-#define EventSystemThemeChanged 1051
-#define EventWindowDeleteEvent 1052
-#define EventWindowDidMove 1053
-#define EventWindowDidResize 1054
-#define EventWindowFocusIn 1055
-#define EventWindowFocusOut 1056
-#define EventWindowLoadStarted 1057
-#define EventWindowLoadRedirected 1058
-#define EventWindowLoadCommitted 1059
-#define EventWindowLoadFinished 1060
+#define EventApplicationStartup 1052
+#define EventSystemDidWake 1053
+#define EventSystemThemeChanged 1054
+#define EventSystemWillSleep 1055
+#define EventWindowDeleteEvent 1056
+#define EventWindowDidMove 1057
+#define EventWindowDidResize 1058
+#define EventWindowFocusIn 1059
+#define EventWindowFocusOut 1060
+#define EventWindowLoadStarted 1061
+#define EventWindowLoadRedirected 1062
+#define EventWindowLoadCommitted 1063
+#define EventWindowLoadFinished 1064
 
-#define MAX_EVENTS 1061
+#define MAX_EVENTS 1065
 
 
 #endif

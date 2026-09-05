@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        textarea { min-height: 80px; resize: vertical; }
+        label { display: block; color: #aaa; font-size: 0.9rem; margin-bottom: 5px; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 200px; }
+        .preview {
+            background: #2d2d3a;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .preview-icon {
+            width: 48px;
+            height: 48px;
+            background: #4ade80;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .preview-content { flex: 1; }
+        .preview-title { font-weight: 600; margin-bottom: 5px; }
+        .preview-body { color: #aaa; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Notifications API Demo</h1>
+        <p class="description">
+            The Notifications API allows web applications to display system notifications
+            to the user, even when the app is in the background.
+        </p>
+
+        <div id="status" class="status">
+            Notifications: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Permission</h2>
+            <p style="margin-bottom: 15px;">Current permission: <strong id="permissionStatus">checking...</strong></p>
+            <button onclick="requestPermission()">Request Permission</button>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 10px;">
+                Note: Permission must be granted before notifications can be shown.
+                Some browsers block permission requests in webviews.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Create Notification</h2>
+            <div class="row">
+                <div>
+                    <label for="notifTitle">Title</label>
+                    <input type="text" id="notifTitle" value="Hello from Wails!">
+                </div>
+            </div>
+            <label for="notifBody">Body</label>
+            <textarea id="notifBody">This is a notification from the WebView API demo.</textarea>
+            <div class="row">
+                <div>
+                    <label for="notifIcon">Icon (emoji)</label>
+                    <select id="notifIcon">
+                        <option value="">None</option>
+                        <option value="bell">Bell</option>
+                        <option value="check">Check</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="notifTag">Tag (for grouping)</label>
+                    <input type="text" id="notifTag" placeholder="optional-tag">
+                </div>
+            </div>
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px;">
+                <input type="checkbox" id="notifRequireInteraction"> Require interaction (stays visible)
+            </label>
+            <button onclick="showNotification()">Show Notification</button>
+            <button class="secondary" onclick="showMultiple()">Show Multiple</button>
+        </div>
+
+        <div class="card">
+            <h2>Preview</h2>
+            <div class="preview">
+                <div class="preview-icon" id="previewIcon">-</div>
+                <div class="preview-content">
+                    <div class="preview-title" id="previewTitle">Notification Title</div>
+                    <div class="preview-body" id="previewBody">Notification body text...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <div class="output" id="eventLog">Notification events will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        const icons = {
+            bell: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234ade80"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>',
+            check: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234ade80"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>',
+            warning: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23fbbf24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>',
+            error: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f87171"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>'
+        };
+
+        let logEntries = [];
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 20) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function checkSupport() {
+            const supported = 'Notification' in window;
+            document.getElementById('supported').textContent = supported ? 'Available' : 'Not available';
+            document.getElementById('status').className = supported ? 'status success' : 'status error';
+
+            if (supported) {
+                updatePermissionStatus();
+            }
+        }
+
+        function updatePermissionStatus() {
+            const permission = Notification.permission;
+            document.getElementById('permissionStatus').textContent = permission;
+
+            const status = document.getElementById('status');
+            if (permission === 'granted') {
+                status.className = 'status success';
+                status.innerHTML = 'Notifications: <span>Permission granted</span>';
+            } else if (permission === 'denied') {
+                status.className = 'status error';
+                status.innerHTML = 'Notifications: <span>Permission denied</span>';
+            } else {
+                status.className = 'status warning';
+                status.innerHTML = 'Notifications: <span>Permission not requested</span>';
+            }
+        }
+
+        async function requestPermission() {
+            try {
+                const permission = await Notification.requestPermission();
+                updatePermissionStatus();
+                log(`Permission request result: ${permission}`);
+            } catch (e) {
+                log(`Permission request failed: ${e.message}`);
+            }
+        }
+
+        function showNotification() {
+            if (Notification.permission !== 'granted') {
+                log('Permission not granted. Request permission first.');
+                alert('Please grant notification permission first.');
+                return;
+            }
+
+            const title = document.getElementById('notifTitle').value;
+            const body = document.getElementById('notifBody').value;
+            const iconType = document.getElementById('notifIcon').value;
+            const tag = document.getElementById('notifTag').value;
+            const requireInteraction = document.getElementById('notifRequireInteraction').checked;
+
+            const options = {
+                body,
+                requireInteraction,
+            };
+
+            if (iconType && icons[iconType]) {
+                options.icon = icons[iconType];
+            }
+
+            if (tag) {
+                options.tag = tag;
+            }
+
+            try {
+                const notification = new Notification(title, options);
+
+                notification.onclick = () => {
+                    log('Notification clicked');
+                    window.focus();
+                    notification.close();
+                };
+
+                notification.onshow = () => log('Notification shown');
+                notification.onclose = () => log('Notification closed');
+                notification.onerror = (e) => log(`Notification error: ${e.message}`);
+
+                log(`Notification created: "${title}"`);
+            } catch (e) {
+                log(`Failed to create notification: ${e.message}`);
+            }
+        }
+
+        function showMultiple() {
+            const notifications = [
+                { title: 'Message 1', body: 'First notification' },
+                { title: 'Message 2', body: 'Second notification' },
+                { title: 'Message 3', body: 'Third notification' },
+            ];
+
+            notifications.forEach((n, i) => {
+                setTimeout(() => {
+                    new Notification(n.title, { body: n.body, tag: 'multi-' + i });
+                    log(`Sent notification ${i + 1}`);
+                }, i * 500);
+            });
+        }
+
+        // Update preview
+        function updatePreview() {
+            document.getElementById('previewTitle').textContent = document.getElementById('notifTitle').value || 'Notification Title';
+            document.getElementById('previewBody').textContent = document.getElementById('notifBody').value || 'Notification body text...';
+
+            const iconType = document.getElementById('notifIcon').value;
+            const previewIcon = document.getElementById('previewIcon');
+            if (iconType === 'bell') previewIcon.textContent = '';
+            else if (iconType === 'check') previewIcon.textContent = '';
+            else if (iconType === 'warning') previewIcon.textContent = '';
+            else if (iconType === 'error') previewIcon.textContent = '';
+            else previewIcon.textContent = '';
+        }
+
+        document.getElementById('notifTitle').addEventListener('input', updatePreview);
+        document.getElementById('notifBody').addEventListener('input', updatePreview);
+        document.getElementById('notifIcon').addEventListener('change', updatePreview);
+
+        checkSupport();
+        updatePreview();
+    </script>
+</body>
+</html>

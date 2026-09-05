@@ -1,0 +1,424 @@
+---
+title: ビルドシステム
+description: Wails がアプリケーションをビルドおよびパッケージする方法を理解する
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 統一されたビルドシステム
+
+Wails は **統一されたビルドシステム** を提供しており、Go コードのコンパイル、フロントエンドアセットのバンドル、それらを単一の実行ファイルへの埋め込み、プラットフォーム固有のビルドの処理をすべて 1 つのコマンドで実行します。
+
+```bash
+wails3 build
+```
+
+**出力:** すべてが埋め込まれたネイティブ実行ファイル。
+
+## ビルドプロセスの概要
+
+{/*
+TODO: D2 ダイアグラムの生成を修正するか、画像として埋め込む。
+以前の D2 コードブロックはビルドパイプラインで MDX パースエラーを引き起こしていました。
+*/}
+
+**[ビルドプロセスダイアグラムのプレースホルダー]**
+
+
+## ビルドフェーズ
+
+### 1. 解析フェーズ
+
+Wails は Go コードをスキャンして、サービスの内容を理解します。
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+```
+
+**Wails が抽出する情報:**
+- サービス名: `GreetService`
+- メソッド名: `Greet`
+- パラメータ型: `string`
+- 戻り値の型: `string`
+
+**用途:** TypeScript バインディングの生成
+
+### 2. 生成フェーズ
+
+#### TypeScript バインディング
+
+Wails は型安全なバインディングを生成します。
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string> {
+    return window.wails.Call('GreetService.Greet', name)
+}
+```
+
+**利点:**
+- 完全な型安全性
+- IDE のオートコンプリート
+- コンパイル時のエラー検出
+- JSDoc コメント
+
+#### フロントエンドビルド
+
+フロントエンドのバンドラーが実行されます（Vite、webpack など）。
+
+```bash
+# Vite の例
+vite build --outDir dist
+```
+
+**処理内容:**
+- JavaScript/TypeScript のコンパイル
+- CSS の処理と圧縮
+- アセットの最適化
+- ソースマップの生成（開発環境のみ）
+- 出力先: `frontend/dist/`
+
+### 3. コンパイルフェーズ
+
+#### Go コンパイル
+
+Go コードが最適化されてコンパイルされます。
+
+```bash
+go build -ldflags="-s -w" -o myapp.exe
+```
+
+**フラグ:**
+- `-s`: シンボルテーブルの削除
+- `-w`: DWARF デバッグ情報の削除
+- 結果: より小さいバイナリ（約 30% の削減）
+
+**プラットフォーム固有の処理:**
+- Windows: アイコンが埋め込まれた `.exe`
+- macOS: `.app` バンドル構造
+- Linux: ELF バイナリ
+
+#### アセットの埋め込み
+
+フロントエンドアセットが Go バイナリに埋め込まれます。
+
+```go
+//go:embed frontend/dist
+var assets embed.FS
+```
+
+**結果:** すべてが内部に含まれた単一の実行ファイル。
+
+### 4. 出力
+
+**単一のネイティブバイナリ:**
+- Windows: `myapp.exe`（約 15MB）
+- macOS: `myapp.app`（約 15MB）
+- Linux: `myapp`（約 15MB）
+
+**依存関係なし**（システム WebView を除く）。
+
+## 開発環境と本番環境
+
+<Tabs syncKey="mode">
+  <TabItem label="開発環境 (wails3 dev)" icon="seti:config">
+    **速度を最適化:**
+    
+    ```bash
+    wails3 dev
+    ```
+    
+    **処理内容:**
+    1. フロントエンドの開発サーバーを起動（Vite、ポート 5173）
+    2. 最適化なしで Go をコンパイル
+    3. 開発サーバーを指してアプリを起動
+    4. ホットリロードを有効化
+    5. ソースマップを含める
+    
+    **特徴:**
+    - **高速なリビルド**（フロントエンドの変更で &lt;1 秒）
+    - **アセットの埋め込みなし**（開発サーバーから提供）
+    - **デバッグシンボル**を含める
+    - **ソースマップ**を有効化
+    - **冗長なログ出力**
+    
+    **ファイルサイズ:** 大きい（デバッグシンボル込みで約 50MB）
+  </TabItem>
+
+  <TabItem label="本番環境 (wails3 build)" icon="rocket">
+    **サイズとパフォーマンスを最適化:**
+    
+    ```bash
+    wails3 build
+    ```
+    
+    **処理内容:**
+    1. 本番用フロントエンドをビルド（圧縮済み）
+    2. 最適化付きで Go をコンパイル
+    3. デバッグシンボルを削除
+    4. アセットを埋め込み
+    5. 単一バイナリを作成
+    
+    **特徴:**
+    - **最適化されたコード**（圧縮、ツリーシェイキング適用）
+    - **アセットが埋め込まれている**（外部ファイルなし）
+    - **デバッグシンボルが削除されている**
+    - **ソースマップなし**
+    - **最小限のログ出力**
+    
+    **ファイルサイズ:** 小さい（約 15MB）
+  </TabItem>
+</Tabs>
+
+## ビルドコマンド
+
+### 基本ビルド
+
+```bash
+wails3 build
+```
+
+**出力:** `build/bin/myapp[.exe]`
+
+### 特定のプラットフォーム向けビルド
+
+```bash
+# Windows 向けビルド（どの OS からでも可能）
+wails3 build -platform windows/amd64
+
+# macOS 向けビルド
+wails3 build -platform darwin/amd64
+wails3 build -platform darwin/arm64
+
+# Linux 向けビルド
+wails3 build -platform linux/amd64
+```
+
+**クロスコンパイル:** どのプラットフォームからでも任意のプラットフォーム向けにビルド可能。
+
+### オプション付きビルド
+
+```bash
+# カスタム出力ディレクトリ
+wails3 build -o ./dist/myapp
+
+# フロントエンドビルドをスキップ（既存のものを使用）
+wails3 build -skipbindings
+
+# クリーンビルド（キャッシュを削除）
+wails3 build -clean
+
+# 冗長出力
+wails3 build -v
+```
+
+### ビルドモード
+
+```bash
+# デバッグビルド（シンボルを含む）
+wails3 build -debug
+
+# 本番ビルド（デフォルト、最適化済み）
+wails3 build
+
+# 開発ビルド（高速、非最適化）
+wails3 build -devbuild
+```
+
+## ビルド設定
+
+### Taskfile.yml
+
+Wails はビルド設定に [Taskfile](https://taskfile.dev/) を使用します。
+
+```yaml
+# Taskfile.yml
+version: '3'
+
+tasks:
+  build:
+    desc: アプリケーションをビルド
+    cmds:
+      - wails3 build
+  
+  build:windows:
+    desc: Windows 向けビルド
+    cmds:
+      - wails3 build -platform windows/amd64
+  
+  build:macos:
+    desc: macOS 向けビルド（ユニバーサル）
+    cmds:
+      - wails3 build -platform darwin/amd64
+      - wails3 build -platform darwin/arm64
+      - lipo -create -output build/bin/myapp.app build/bin/myapp-amd64.app build/bin/myapp-arm64.app
+  
+  build:linux:
+    desc: Linux 向けビルド
+    cmds:
+      - wails3 build -platform linux/amd64
+```
+
+**タスクの実行:**
+
+```bash
+task build:windows
+task build:macos
+task build:linux
+```
+
+### ビルドオプションファイル
+
+永続的な設定のために `build/build.json` を作成します。
+
+```json
+{
+  "name": "My Application",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "Application description",
+  "icon": "build/appicon.png",
+  "outputFilename": "myapp",
+  "platforms": ["windows/amd64", "darwin/amd64", "linux/amd64"],
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev"
+  },
+  "go": {
+    "ldflags": "-s -w -X main.version={{.Version}}"
+  }
+}
+```
+
+## アセットの埋め込み
+
+### 仕組み
+
+Wails は Go の `embed` パッケージを使用します。
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name:   "My App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**ビルド時:**
+1. フロントエンドが `frontend/dist/` にビルドされる
+2. `//go:embed` ディレクティブでファイルが含まれる
+3. ファイルがバイナリにコンパイルされる
+4. バイナリにすべてが含まれる
+
+**実行時:**
+1. アプリが起動
+2. アセットがメモリから提供される
+3. アセットのディスク I/O は発生しない
+4. 高速な読み込み
+
+### カスタムアセット
+
+追加のファイルを埋め込みます。
+
+```go
+//go:embed frontend/dist
+var frontendAssets embed.FS
+
+//go:embed data/*.json
+var dataAssets embed.FS
+
+//go:embed templates/*.html
+var templateAssets embed.FS
+```
+
+## ビルドの最適化
+
+### フロントエンドの最適化
+
+**Vite（デフォルト）:**
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // console.log を削除
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],  // ベンダーバンドルを分離
+        },
+      },
+    },
+  },
+}
+```
+
+**結果:**
+- JavaScript の圧縮（約 70% の削減）
+- CSS の圧縮（約 60% の削減）
+- 画像の最適化
+- ツリーシェイキングの適用
+
+### Go の最適化
+
+**コンパイラフラグ:**
+
+```bash
+-ldflags="-s -w"
+```
+
+- `-s`: シンボルテーブルの削除（約 10% の削減）
+- `-w`: DWARF デバッグ情報の削除（約 20% の削減）
+
+**追加の最適化:**
+
+```bash
+-ldflags="-s -w -X main.version=1.0.0"
+```
+
+- `-X`: ビルド時に変数の値を設定
+- バージョン番号やビルド日時に有用
+
+### バイナリの圧縮
+
+**UPX（オプション）:**
+
+```bash
+# ビルド後
+upx --best build/bin/myapp.exe
+```
+
+**結果:**
+- サイズの約 50% 削減**ビルドについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ビルドの例](https://github.com/wailsapp/wails/tree/master/v3/examples/build) を確認してください。

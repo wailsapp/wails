@@ -57,6 +57,15 @@ static void init(void) {
 	NSDistributedNotificationCenter *center = [NSDistributedNotificationCenter defaultCenter];
 	[center addObserver:appDelegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
 
+	// Workspace power notifications are posted on a separate notification
+	// center from the default one — apps must observe NSWorkspace's centre
+	// to receive sleep/wake events. Mirrors WM_POWERBROADCAST on Windows.
+	NSNotificationCenter *workspaceCenter = [[NSWorkspace sharedWorkspace] notificationCenter];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceWillSleep:) name:NSWorkspaceWillSleepNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceDidWake:) name:NSWorkspaceDidWakeNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidSleep:) name:NSWorkspaceScreensDidSleepNotification object:nil];
+	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidWake:) name:NSWorkspaceScreensDidWakeNotification object:nil];
+
 	// Register the custom URL scheme handler
 	StartCustomProtocolHandler();
 }
@@ -132,7 +141,19 @@ static void destroyApp(void) {
 // Set the application menu
 static void setApplicationMenu(void *menu) {
 	NSMenu *nsMenu = (__bridge NSMenu *)menu;
-	[NSApp setMainMenu:menu];
+	void (^apply)(void) = ^{
+		[NSApp setMainMenu:nsMenu];
+	};
+
+	// AppKit requires the main menu to be replaced on the main thread. Menu.Set
+	// may be called from Wails event listeners, which execute on worker
+	// goroutines, so marshal the update synchronously. Avoid dispatch_sync when
+	// already on the main thread because that would deadlock.
+	if ([NSThread isMainThread]) {
+		apply();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), apply);
+	}
 }
 
 // Get the application name
@@ -146,10 +167,37 @@ static char* getAppName(void) {
 
 // get the current window ID
 static unsigned int getCurrentWindowID(void) {
-	NSWindow *window = [NSApp keyWindow];
-	// Get the window delegate
-	WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
-	return delegate.windowId;
+	// AppKit must be accessed on the main thread. This function may be called
+	// from arbitrary Go goroutines, so we hop to the main queue when needed.
+	__block unsigned int result = 0;
+	if (NSApp == nil) {
+		return result;
+	}
+	void (^resolve)(void) = ^{
+		NSWindow *window = [NSApp keyWindow];
+		if (window == nil) {
+			window = [NSApp mainWindow];
+		}
+		if (window == nil) {
+			return;
+		}
+		// System panels (e.g. PMPrintPanelController) can become the key window;
+		// their delegates are not WebviewWindowDelegate and would crash on windowId.
+		id delegateObj = [window delegate];
+		if (![delegateObj isKindOfClass:[WebviewWindowDelegate class]]) {
+			return;
+		}
+		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)delegateObj;
+		if (delegate != nil) {
+			result = delegate.windowId;
+		}
+	};
+	if ([NSThread isMainThread]) {
+		resolve();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), resolve);
+	}
+	return result;
 }
 
 // Set the application icon
@@ -278,7 +326,26 @@ func (m *macosApp) run() error {
 				C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed),
 			)
 			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-			C.activateIgnoringOtherApps()
+			// Only bring the app to the foreground for a regular (UI) app.
+			// Accessory and Prohibited apps are background/agent processes;
+			// force-activating them steals focus from whatever the user was
+			// using (e.g. the terminal that launched a headless server), which a
+			// background app should never do.
+			if m.parent.options.Mac.ActivationPolicy == ActivationPolicyRegular {
+				C.activateIgnoringOtherApps()
+			}
+			if err := m.processAndCacheScreens(); err != nil {
+				m.parent.handleError(err)
+			}
+		},
+	)
+	// Refresh screen cache when display configuration changes
+	m.parent.Event.OnApplicationEvent(
+		events.Mac.ApplicationDidChangeScreenParameters,
+		func(*ApplicationEvent) {
+			if err := m.processAndCacheScreens(); err != nil {
+				m.parent.handleError(err)
+			}
 		},
 	)
 	m.setupCommonEvents()
@@ -376,12 +443,56 @@ func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	}
 }
 
+//export cancelURLRequest
+func cancelURLRequest(wkUrlSchemeTask unsafe.Pointer) {
+	webview.CancelRequest(wkUrlSchemeTask)
+}
+
+// acceleratorFromKeyPress names a key press the way a key binding is written.
+// The naming lives in Go, in accelerator_darwin.go, so that it can be tested
+// without standing up AppKit. The caller owns the returned string.
+//
+//export acceleratorFromKeyPress
+func acceleratorFromKeyPress(keyCode C.ushort, modifiers C.ulong, character C.uint, hasCharacter C.int) *C.char {
+	return C.CString(macAccelerator(uint16(keyCode), uint(modifiers), rune(character), hasCharacter != 0))
+}
+
 //export processWindowKeyDownEvent
 func processWindowKeyDownEvent(windowID C.uint, acceleratorString *C.char) {
 	windowKeyEvents <- &windowKeyEvent{
 		windowId:          uint(windowID),
 		acceleratorString: C.GoString(acceleratorString),
 	}
+}
+
+// processWindowKeyEquivalent is the synchronous counterpart to
+// processWindowKeyDownEvent. Called from -[WebviewWindow performKeyEquivalent:]
+// before the responder chain runs, so the caller can decide whether to
+// consume a modifier-key combo (returning true) or let the WKWebView see it
+// (returning false). Required for accelerators the webview would otherwise
+// swallow before NSWindow's keyDown: is ever reached — Ctrl+Tab is the
+// canonical example.
+//
+//export processWindowKeyEquivalent
+func processWindowKeyEquivalent(windowID C.uint, acceleratorString *C.char) C.bool {
+	if globalApplication == nil {
+		return C.bool(false)
+	}
+	globalApplication.windowsLock.RLock()
+	window, ok := globalApplication.windows[uint(windowID)]
+	globalApplication.windowsLock.RUnlock()
+	if !ok {
+		return C.bool(false)
+	}
+	webviewWindow, ok := window.(*WebviewWindow)
+	if !ok {
+		return C.bool(false)
+	}
+	accelerator, err := parseAccelerator(C.GoString(acceleratorString))
+	if err != nil {
+		return C.bool(false)
+	}
+	return C.bool(webviewWindow.processKeyBinding(accelerator.String()))
 }
 
 //export processDragItems

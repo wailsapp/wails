@@ -55,16 +55,16 @@ type WebviewPanelOptions struct {
 	Y int
 
 	// Width is the width of the panel in CSS pixels.
-	// If 0, defaults to 400.
+	// If zero or negative, defaults to 400.
 	Width int
 
 	// Height is the height of the panel in CSS pixels.
-	// If 0, defaults to 300.
+	// If zero or negative, defaults to 300.
 	Height int
 
 	// ZIndex controls the stacking order of panels within the window.
 	// Higher values appear on top of lower values.
-	// The main webview has an effective ZIndex of 0.
+	// Panels are always above the main webview. Equal values use creation order.
 	// Default: 1
 	ZIndex int
 
@@ -94,10 +94,6 @@ type WebviewPanelOptions struct {
 	// Default: false
 	Transparent bool
 
-	// Frameless removes the default styling/border around the panel.
-	// Default: false
-	Frameless bool
-
 	// Zoom is the initial zoom level of the panel.
 	// 1.0 = 100%, 1.5 = 150%, etc.
 	// Default: 1.0
@@ -119,7 +115,7 @@ type WebviewPanelOptions struct {
 //
 // When a window is resized:
 //   - Anchored edges maintain their distance from the window edge
-//   - Non-anchored edges allow the panel to stretch/shrink
+//   - Opposite anchored edges stretch/shrink the panel; a single edge moves it
 //
 // Example combinations:
 //   - AnchorLeft: Panel stays on left, doesn't resize

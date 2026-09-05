@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Crypto API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        textarea, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+            font-family: monospace;
+            margin-bottom: 15px;
+        }
+        textarea { min-height: 80px; resize: vertical; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+        label { display: block; color: #aaa; font-size: 0.9rem; margin-bottom: 5px; }
+        select {
+            padding: 10px;
+            background: #1a1a2e;
+            color: #eee;
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 200px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Crypto API Demo</h1>
+        <p class="description">
+            The Web Cryptography API provides cryptographic operations including hashing,
+            signature generation, encryption/decryption, and key management.
+        </p>
+
+        <div class="status success">
+            Web Crypto API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Random Values</h2>
+            <button onclick="generateRandom(16)">16 bytes</button>
+            <button onclick="generateRandom(32)">32 bytes</button>
+            <button onclick="generateRandom(64)">64 bytes</button>
+            <button onclick="generateUUID()">Generate UUID</button>
+            <div class="output" id="randomOutput">Click a button to generate random values...</div>
+        </div>
+
+        <div class="card">
+            <h2>Hash Functions</h2>
+            <label for="hashInput">Text to hash:</label>
+            <textarea id="hashInput" placeholder="Enter text to hash...">Hello, World!</textarea>
+            <div class="row">
+                <div>
+                    <label>Algorithm:</label>
+                    <select id="hashAlgo">
+                        <option value="SHA-1">SHA-1</option>
+                        <option value="SHA-256" selected>SHA-256</option>
+                        <option value="SHA-384">SHA-384</option>
+                        <option value="SHA-512">SHA-512</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="computeHash()">Compute Hash</button>
+            <div class="output" id="hashOutput">Hash will appear here...</div>
+        </div>
+
+        <div class="card">
+            <h2>Symmetric Encryption (AES-GCM)</h2>
+            <label for="encryptInput">Text to encrypt:</label>
+            <textarea id="encryptInput" placeholder="Enter text to encrypt...">Secret message!</textarea>
+            <label for="encryptPassword">Password:</label>
+            <input type="password" id="encryptPassword" placeholder="Enter password..." value="my-secret-key">
+            <button onclick="encryptData()">Encrypt</button>
+            <button class="secondary" onclick="decryptData()">Decrypt</button>
+            <div class="output" id="encryptOutput">Encrypted/decrypted data will appear here...</div>
+        </div>
+
+        <div class="card">
+            <h2>Digital Signatures (ECDSA)</h2>
+            <label for="signInput">Message to sign:</label>
+            <textarea id="signInput" placeholder="Enter message to sign...">This is an authentic message.</textarea>
+            <button onclick="generateSigningKey()">Generate Key Pair</button>
+            <button onclick="signMessage()">Sign Message</button>
+            <button class="secondary" onclick="verifySignature()">Verify Signature</button>
+            <div class="output" id="signOutput">Generate a key pair first...</div>
+        </div>
+
+        <div class="card">
+            <h2>HMAC</h2>
+            <label for="hmacInput">Message:</label>
+            <textarea id="hmacInput" placeholder="Enter message...">Message to authenticate</textarea>
+            <label for="hmacKey">Secret Key:</label>
+            <input type="text" id="hmacKey" placeholder="Enter secret key..." value="my-hmac-secret">
+            <button onclick="computeHMAC()">Compute HMAC</button>
+            <div class="output" id="hmacOutput">HMAC will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let signingKeyPair = null;
+        let lastSignature = null;
+
+        function checkSupport() {
+            const supported = crypto && crypto.subtle;
+            document.getElementById('supported').textContent = supported ? 'Available' : 'Not available';
+            return supported;
+        }
+
+        function arrayBufferToHex(buffer) {
+            return Array.from(new Uint8Array(buffer))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function arrayBufferToBase64(buffer) {
+            return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        // Random values
+        function generateRandom(length) {
+            const array = new Uint8Array(length);
+            crypto.getRandomValues(array);
+            document.getElementById('randomOutput').textContent =
+                `Hex: ${arrayBufferToHex(array.buffer)}\n\nBase64: ${arrayBufferToBase64(array.buffer)}`;
+        }
+
+        function generateUUID() {
+            const uuid = crypto.randomUUID();
+            document.getElementById('randomOutput').textContent = `UUID: ${uuid}`;
+        }
+
+        // Hashing
+        async function computeHash() {
+            const text = document.getElementById('hashInput').value;
+            const algo = document.getElementById('hashAlgo').value;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+
+            const hash = await crypto.subtle.digest(algo, data);
+            document.getElementById('hashOutput').textContent =
+                `Algorithm: ${algo}\nInput: "${text}"\n\nHash (hex): ${arrayBufferToHex(hash)}\n\nHash (base64): ${arrayBufferToBase64(hash)}`;
+        }
+
+        // Encryption
+        async function deriveKey(password, salt) {
+            const encoder = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw',
+                encoder.encode(password),
+                'PBKDF2',
+                false,
+                ['deriveKey']
+            );
+
+            return crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+        }
+
+        async function encryptData() {
+            const text = document.getElementById('encryptInput').value;
+            const password = document.getElementById('encryptPassword').value;
+
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const key = await deriveKey(password, salt);
+
+            const encoder = new TextEncoder();
+            const encrypted = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv },
+                key,
+                encoder.encode(text)
+            );
+
+            // Combine salt + iv + ciphertext
+            const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+            combined.set(salt, 0);
+            combined.set(iv, salt.length);
+            combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+            const base64 = arrayBufferToBase64(combined.buffer);
+            document.getElementById('encryptOutput').textContent =
+                `Encrypted (base64):\n${base64}\n\n(Salt: 16 bytes, IV: 12 bytes, then ciphertext)`;
+
+            // Store for decryption demo
+            document.getElementById('encryptInput').dataset.encrypted = base64;
+        }
+
+        async function decryptData() {
+            const base64 = document.getElementById('encryptInput').dataset.encrypted;
+            if (!base64) {
+                document.getElementById('encryptOutput').textContent = 'Encrypt something first!';
+                return;
+            }
+
+            const password = document.getElementById('encryptPassword').value;
+            const combined = new Uint8Array(base64ToArrayBuffer(base64));
+
+            const salt = combined.slice(0, 16);
+            const iv = combined.slice(16, 28);
+            const ciphertext = combined.slice(28);
+
+            try {
+                const key = await deriveKey(password, salt);
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv },
+                    key,
+                    ciphertext
+                );
+
+                const decoder = new TextDecoder();
+                document.getElementById('encryptOutput').textContent =
+                    `Decrypted:\n${decoder.decode(decrypted)}`;
+            } catch (e) {
+                document.getElementById('encryptOutput').textContent = `Decryption failed: ${e.message}\n(Wrong password or corrupted data)`;
+            }
+        }
+
+        // Digital signatures
+        async function generateSigningKey() {
+            signingKeyPair = await crypto.subtle.generateKey(
+                { name: 'ECDSA', namedCurve: 'P-256' },
+                true,
+                ['sign', 'verify']
+            );
+
+            const publicKeyJWK = await crypto.subtle.exportKey('jwk', signingKeyPair.publicKey);
+            document.getElementById('signOutput').textContent =
+                `Key pair generated!\n\nPublic Key (JWK):\n${JSON.stringify(publicKeyJWK, null, 2)}`;
+        }
+
+        async function signMessage() {
+            if (!signingKeyPair) {
+                document.getElementById('signOutput').textContent = 'Generate a key pair first!';
+                return;
+            }
+
+            const message = document.getElementById('signInput').value;
+            const encoder = new TextEncoder();
+
+            lastSignature = await crypto.subtle.sign(
+                { name: 'ECDSA', hash: 'SHA-256' },
+                signingKeyPair.privateKey,
+                encoder.encode(message)
+            );
+
+            document.getElementById('signOutput').textContent =
+                `Message signed!\n\nSignature (base64):\n${arrayBufferToBase64(lastSignature)}\n\nSignature (hex):\n${arrayBufferToHex(lastSignature)}`;
+        }
+
+        async function verifySignature() {
+            if (!signingKeyPair || !lastSignature) {
+                document.getElementById('signOutput').textContent = 'Sign a message first!';
+                return;
+            }
+
+            const message = document.getElementById('signInput').value;
+            const encoder = new TextEncoder();
+
+            const valid = await crypto.subtle.verify(
+                { name: 'ECDSA', hash: 'SHA-256' },
+                signingKeyPair.publicKey,
+                lastSignature,
+                encoder.encode(message)
+            );
+
+            document.getElementById('signOutput').textContent =
+                `Signature verification: ${valid ? 'VALID' : 'INVALID'}\n\nMessage: "${message}"`;
+        }
+
+        // HMAC
+        async function computeHMAC() {
+            const message = document.getElementById('hmacInput').value;
+            const secretKey = document.getElementById('hmacKey').value;
+            const encoder = new TextEncoder();
+
+            const key = await crypto.subtle.importKey(
+                'raw',
+                encoder.encode(secretKey),
+                { name: 'HMAC', hash: 'SHA-256' },
+                false,
+                ['sign']
+            );
+
+            const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(message));
+            document.getElementById('hmacOutput').textContent =
+                `HMAC-SHA256:\n\nHex: ${arrayBufferToHex(signature)}\n\nBase64: ${arrayBufferToBase64(signature)}`;
+        }
+
+        checkSupport();
+    </script>
+</body>
+</html>

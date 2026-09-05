@@ -1,5 +1,6 @@
 ---
 title: Wombat
+description: "A desktop application built with Wails"
 ---
 
 ![Wombat Screenshot](../../../../assets/showcase-images/wombat.webp)

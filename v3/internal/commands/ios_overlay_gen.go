@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 )
@@ -39,15 +38,13 @@ func IOSOverlayGen(options *IOSOverlayGenOptions) error { // options currently u
 		return err
 	}
 
-	// Locate the internal template file to source content
-	root, err := repoRoot()
+	// Source the canonical main_ios.go from the build assets embedded in wails3.
+	// Reading from the wails source tree (repoRoot) only works when building
+	// inside the wails repo itself; a normal user project has no such tree, so
+	// this must come from the embedded FS.
+	content, err := buildAssets.ReadFile("build_assets/ios/main_ios.go")
 	if err != nil {
-		return err
-	}
-	tmplPath := filepath.Join(root, "v3", "internal", "commands", "build_assets", "ios", "main_ios.go")
-	content, err := os.ReadFile(tmplPath)
-	if err != nil {
-		return fmt.Errorf("read template %s: %w", tmplPath, err)
+		return fmt.Errorf("read embedded ios main_ios.go template: %w", err)
 	}
 
 	genDir := filepath.Join(targetDir, "gen")
@@ -89,27 +86,4 @@ func IOSOverlayGenCmd() error {
 	out := filepath.Join("build", "ios", "xcode", "overlay.json")
 	cfg := filepath.Join("build", "config.yml")
 	return IOSOverlayGen(&IOSOverlayGenOptions{Out: out, Config: cfg})
-}
-
-// repoRoot attempts to find the repository root relative to this file location.
-func repoRoot() (string, error) {
-	// Resolve based on the location of this source at build time if possible.
-	self, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	// Walk up until we find a directory containing v3/internal/commands
-	probe := self
-	for i := 0; i < 10; i++ {
-		p := filepath.Join(probe, "v3", "internal", "commands")
-		if st, err := os.Stat(p); err == nil && st.IsDir() {
-			return probe, nil
-		}
-		next := filepath.Dir(probe)
-		if next == probe {
-			break
-		}
-		probe = next
-	}
-	return "", fs.ErrNotExist
 }

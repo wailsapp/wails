@@ -84,7 +84,10 @@ func GetMenuItemInfo(hmenu HMENU, item uint32, fByPosition bool, lpmii *MENUITEM
 
 func GetMenuItemCount(hmenu HMENU) int {
 	ret, _, _ := procGetMenuItemCount.Call(uintptr(hmenu))
-	return int(ret)
+	// GetMenuItemCount returns a signed Win32 int and uses -1 for failure.
+	// syscall.Proc.Call returns uintptr, so preserve the 32-bit sign when
+	// converting on 64-bit Windows.
+	return int(int32(ret))
 }
 
 func GetMenuItemRect(hwnd HWND, hmenu HMENU, item uint32, rect *RECT) bool {
@@ -199,6 +202,11 @@ type MenuBarTheme struct {
 	menuBarBackgroundBrush      HBRUSH // Separate brush for menubar
 	menuHoverBackgroundBrush    HBRUSH
 	menuSelectedBackgroundBrush HBRUSH
+
+	// lastSizeWParam tracks the most-recent WM_SIZE wParam to detect genuine
+	// snap/restore state transitions. SIZE_RESTORED fires on every WM_SIZE during
+	// live drag-resize; only repaint when the size state actually changes.
+	lastSizeWParam WPARAM
 }
 
 func createColourWithDefaultColor(color *uint32, def uint32) *uint32 {
@@ -561,15 +569,21 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		// Repaint menubar after size change
 		paintDarkMenuBar(hwnd, theme)
 
-		// CRITICAL: Force complete menubar redraw when maximized
-		if msg == WM_SIZE && wParam == SIZE_MAXIMIZED {
-			// Invalidate the entire menubar area to force redraw
+		// Force-redraw only on genuine snap/maximize state transitions.
+		// SIZE_RESTORED fires continuously during live drag-resize (wParam stays the same),
+		// so gate on a wParam change to avoid per-frame InvalidateRect/DrawMenuBar calls.
+		// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot be used here because keyboard snap
+		// (Win+Left) bypasses those messages entirely.
+		if msg == WM_SIZE && (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED) && wParam != theme.lastSizeWParam {
 			var mbi MENUBARINFO
 			mbi.CbSize = uint32(unsafe.Sizeof(mbi))
 			if GetMenuBarInfo(hwnd, OBJID_MENU, 0, &mbi) {
 				InvalidateRect(hwnd, &mbi.Bar, true)
 				DrawMenuBar(hwnd)
 			}
+		}
+		if msg == WM_SIZE {
+			theme.lastSizeWParam = wParam
 		}
 
 		return false, result

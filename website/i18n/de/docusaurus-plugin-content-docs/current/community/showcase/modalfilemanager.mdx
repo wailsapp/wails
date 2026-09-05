@@ -1,0 +1,14 @@
+# Modal File Manager
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img
+    src={require("@site/static/img/showcase/modalfilemanager.webp").default}
+  />
+  <br />
+</p>
+```
+
+[Modal File Manager](https://github.com/raguay/ModalFileManager) ist ein Dateimanager mit zwei Fenstern, der Webtechnologien verwendet. Mein ursprüngliches Design basierte auf NW.js und kann [hier ](https://github.com/raguay/ModalFileManager-NWjs) gefunden werden. Diese Version verwendet denselben auf Svelte basierenden Frontend-Code (der jedoch seit der Abkehr von NW.js stark verändert wurde), aber das Backend ist eine [Wails 2](https://wails.io/)-Implementierung. Durch diese Implementierung verwende ich nicht mehr die Kommandozeilenbefehle `rm`, `cp` usw., aber eine Git-Installation muss auf dem System vorhanden sein, um Themes und Erweiterungen herunterzuladen. Es ist vollständig in Go programmiert und läuft viel schneller als die vorherigen Versionen.
+
+Dieser Dateimanager basiert auf dem gleichen Prinzip wie Vim: zustandskontrollierte Tastaturbefehle. Die Anzahl der Zustände ist nicht fixiert, aber sehr programmierbar. So kann eine unendliche Anzahl von Tastaturkonfigurationen erstellt und verwendet werden. Das ist der Hauptunterschied zu anderen Dateimanagern. Es stehen Themen und Erweiterungen zum Download von GitHub zur Verfügung.

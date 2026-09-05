@@ -24,6 +24,7 @@ type windowsDock struct {
 	badgeSize    int
 	fontManager  *FontManager
 	badgeOptions BadgeOptions
+	badge        *string
 }
 
 var defaultOptions = BadgeOptions{
@@ -48,6 +49,7 @@ func NewWithOptions(options BadgeOptions) *DockService {
 	return &DockService{
 		impl: &windowsDock{
 			badgeOptions: options,
+			badge:        nil,
 		},
 	}
 }
@@ -121,6 +123,7 @@ func (w *windowsDock) SetBadge(label string) error {
 		}
 		defer w32.DestroyIcon(hicon)
 
+		w.badge = &label
 		return w.taskbar.SetOverlayIcon(hwnd, hicon, nil)
 	})
 }
@@ -182,6 +185,7 @@ func (w *windowsDock) SetCustomBadge(label string, options BadgeOptions) error {
 		}
 		defer w32.DestroyIcon(hicon)
 
+		w.badge = &label
 		return w.taskbar.SetOverlayIcon(hwnd, hicon, nil)
 	})
 }
@@ -209,6 +213,7 @@ func (w *windowsDock) RemoveBadge() error {
 		}
 		hwnd := uintptr(nativeWindow)
 
+		w.badge = nil
 		return w.taskbar.SetOverlayIcon(hwnd, 0, nil)
 	})
 }
@@ -393,4 +398,8 @@ func (w *windowsDock) createBadge() {
 	}
 
 	w.badgeImg = img
+}
+
+func (w *windowsDock) GetBadge() *string {
+	return w.badge
 }

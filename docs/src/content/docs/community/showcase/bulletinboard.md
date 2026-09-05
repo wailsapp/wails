@@ -1,5 +1,6 @@
 ---
 title: BulletinBoard
+description: "A desktop application built with Wails"
 ---
 
 ![BulletinBoard](../../../../assets/showcase-images/bboard.webp)

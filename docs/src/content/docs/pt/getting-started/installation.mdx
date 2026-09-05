@@ -1,0 +1,113 @@
+---
+title: Instalação
+description: Instale o Wails e configure seu ambiente de desenvolvimento
+sidebar:
+  order: 10
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Plataformas Suportadas
+
+- Windows 10/11 AMD64/ARM64
+- macOS 10.15+ AMD64 (Pode implantar para macOS 10.13+)
+- macOS 11.0+ ARM64
+- Ubuntu 24.04 AMD64/ARM64 (outros Linuxs também podem funcionar!)
+
+## Dependências
+
+O Wails possui várias dependências comuns que são necessárias antes da instalação:
+
+<Tabs>
+  <TabItem label="Go (pelo menos 1.24)" icon="seti:go">
+
+    Baixe o Go na [Página de Downloads do Go](https://go.dev/dl/).
+
+    Certifique-se de seguir as [instruções oficiais de instalação do Go](https://go.dev/doc/install). Você também precisará garantir que sua variável de ambiente `PATH` inclua o caminho para o diretório `~/go/bin`. Reinicie seu terminal e execute as seguintes verificações:
+
+    - Verifique se o Go está instalado corretamente: `go version`
+    - Verifique se `~/go/bin` está na sua variável PATH
+        - Mac / Linux: `echo $PATH | grep go/bin`
+        - Windows: `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
+
+  </TabItem>
+
+  <TabItem label="npm (Opcional)" icon="seti:npm">
+
+    Embora o Wails não exija que o npm esteja instalado, ele é necessário na maioria dos modelos embutidos.
+
+    Baixe o instalador mais recente do Node na [Página de Downloads do Node](https://nodejs.org/en/download/). É melhor usar a versão mais recente, pois é contra ela que geralmente testamos.
+
+    Execute `npm --version` para verificar.
+
+      :::note
+      Se você preferir um gerenciador de pacotes diferente do npm, sinta-se à vontade para usá-lo. Você precisará atualizar os Taskfiles do projeto para usá-lo.
+      :::
+
+  </TabItem>
+
+</Tabs>
+
+## Dependências Específicas da Plataforma
+
+Você também precisará instalar dependências específicas da plataforma:
+
+<Tabs syncKey="platform">
+  <TabItem label="Mac" icon="apple">
+
+    O Wails requer que as ferramentas de linha de comando do xcode estejam instaladas. Isso pode ser feito executando:
+
+    ```sh
+    xcode-select --install
+    ```
+
+  </TabItem>
+  <TabItem label="Windows" icon="seti:windows">
+
+    O Wails requer que o [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) esteja instalado. Quase todas as instalações do Windows já terão isso instalado. Você pode verificar usando o comando `wails doctor`.
+
+  </TabItem>
+  <TabItem label="Linux" icon="linux">
+
+    O Linux requer as ferramentas de compilação `gcc` padrão, além de `gtk3` e `webkit2gtk`. Execute <code>wails doctor</code> após a instalação para ver como instalar as dependências. Se sua distribuição ou gerenciador de pacotes não for suportado, avise-nos no Discord.
+
+  </TabItem>
+
+</Tabs>
+
+## Instalação
+
+Para instalar a CLI do Wails usando Go Modules, execute os seguintes comandos:
+
+```shell
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+```
+
+Se você deseja instalar a versão de desenvolvimento mais recente, execute os seguintes
+comandos:
+
+```shell
+git clone https://github.com/wailsapp/wails.git
+cd wails
+cd v3/cmd/wails3
+go install
+```
+
+Ao usar a versão de desenvolvimento, todos os projetos gerados usarão a diretiva
+[replace](https://go.dev/ref/mod#go-mod-file-replace) do Go para garantir que
+os projetos usem a versão de desenvolvimento do Wails.
+
+## Verificação do Sistema
+
+Executar `wails3 doctor` verificará se você tem as dependências corretas
+instaladas. Se não tiver, ele informará o que está faltando e ajudará a resolver
+qualquer problema.
+
+## O comando `wails3` parece estar ausente?
+
+Se seu sistema estiver relatando que o comando `wails3` está ausente, verifique o
+seguinte:
+
+- Certifique-se de ter seguido o `guia de instalação do Go` acima corretamente e
+  que o diretório `go/bin` esteja na variável de ambiente `PATH`.
+- Feche/Reabra os terminais atuais para aplicar a nova variável `PATH`.

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Visibility API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        .visibility-display {
+            text-align: center;
+            padding: 40px;
+            margin-bottom: 20px;
+        }
+        .visibility-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .visibility-state {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+        .visibility-state.visible { color: #4ade80; }
+        .visibility-state.hidden { color: #f87171; }
+        .visibility-detail { color: #aaa; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .demo-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        .demo-section h3 {
+            color: #60a5fa;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        .timer-display {
+            font-family: monospace;
+            font-size: 3rem;
+            color: #4ade80;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .timer-display.paused { color: #fbbf24; }
+        .video-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #333, #444);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        .video-placeholder::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+            animation: shimmer 2s infinite;
+        }
+        .video-placeholder.paused::before {
+            animation: none;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .play-indicator {
+            width: 60px;
+            height: 60px;
+            background: rgba(74, 222, 128, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        .play-indicator::after {
+            content: '';
+            border-left: 20px solid #1a1a2e;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 5px;
+        }
+        .paused .play-indicator {
+            background: rgba(251, 191, 36, 0.9);
+        }
+        .paused .play-indicator::after {
+            border-left: 8px solid #1a1a2e;
+            border-right: 8px solid #1a1a2e;
+            border-top: none;
+            border-bottom: none;
+            width: 8px;
+            height: 20px;
+            margin-left: 0;
+        }
+        .notification-badge {
+            display: inline-block;
+            background: #f87171;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Page Visibility API Demo</h1>
+        <p class="description">
+            The Page Visibility API provides events to know when a document becomes visible or hidden,
+            allowing you to pause/resume activities, save resources, and improve user experience.
+        </p>
+
+        <div id="status" class="status success">
+            Page Visibility API: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <div class="visibility-display">
+                <div class="visibility-icon" id="visibilityIcon">&#128065;</div>
+                <div class="visibility-state visible" id="visibilityState">VISIBLE</div>
+                <div class="visibility-detail" id="visibilityDetail">document.visibilityState: visible</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="visibleTime">0s</div>
+                    <div class="stat-label">Time Visible</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="hiddenTime">0s</div>
+                    <div class="stat-label">Time Hidden</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="changeCount">0</div>
+                    <div class="stat-label">State Changes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="hiddenCount">0</div>
+                    <div class="stat-label">Times Hidden</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Timer Demo (Pauses When Hidden)</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                This timer pauses when the page is hidden and resumes when visible.
+                Try switching to another tab or minimizing the window.
+            </p>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <button onclick="startTimer()">Start Timer</button>
+            <button onclick="pauseTimer()">Pause</button>
+            <button class="danger" onclick="resetTimer()">Reset</button>
+            <span id="timerStatus" style="color: #aaa; margin-left: 10px;">Timer stopped</span>
+        </div>
+
+        <div class="card">
+            <h2>Video Simulation (Pauses When Hidden)</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Simulated video player that automatically pauses when you switch tabs.
+            </p>
+            <div class="video-placeholder" id="videoPlaceholder">
+                <div class="play-indicator"></div>
+            </div>
+            <button onclick="playVideo()">Play</button>
+            <button onclick="pauseVideo()">Pause</button>
+            <span id="videoStatus" style="color: #aaa; margin-left: 10px;">Video paused</span>
+        </div>
+
+        <div class="card">
+            <h2>Use Cases</h2>
+            <div class="demo-section">
+                <h3>Common Applications</h3>
+                <ul style="color: #aaa; padding-left: 20px; line-height: 1.8;">
+                    <li><strong style="color: #4ade80;">Pause media playback</strong> - Stop videos/audio when tab is hidden</li>
+                    <li><strong style="color: #4ade80;">Stop animations</strong> - Pause CSS/JS animations to save CPU</li>
+                    <li><strong style="color: #4ade80;">Defer updates</strong> - Skip DOM updates while hidden</li>
+                    <li><strong style="color: #4ade80;">Analytics</strong> - Track actual time spent viewing content</li>
+                    <li><strong style="color: #4ade80;">Save resources</strong> - Stop polling/WebSocket activity</li>
+                    <li><strong style="color: #4ade80;">Show notifications</strong> - Alert users to updates when they return</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">Visibility events will be logged here...
+
+Try switching tabs, minimizing the window, or switching to another application.</div>
+        </div>
+    </div>
+
+    <script>
+        let logEntries = [];
+        let stateChangeCount = 0;
+        let hiddenCount = 0;
+        let visibleStartTime = Date.now();
+        let hiddenStartTime = null;
+        let totalVisibleTime = 0;
+        let totalHiddenTime = 0;
+
+        // Timer state
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let timerRunning = false;
+        let timerWasRunning = false;
+
+        // Video state
+        let videoPlaying = false;
+        let videoWasPlaying = false;
+
+        function checkSupport() {
+            const hasVisibility = 'visibilityState' in document;
+            document.getElementById('available').textContent = hasVisibility ? 'Available' : 'Not available';
+            document.getElementById('status').className = hasVisibility ? 'status success' : 'status error';
+            return hasVisibility;
+        }
+
+        function checkFeatures() {
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'document.visibilityState', supported: 'visibilityState' in document },
+                { name: 'document.hidden', supported: 'hidden' in document },
+                { name: 'visibilitychange event', supported: 'onvisibilitychange' in document },
+                { name: 'Page Lifecycle API', supported: 'onfreeze' in document },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 30) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        function updateVisibilityDisplay() {
+            const state = document.visibilityState;
+            const isHidden = document.hidden;
+
+            const stateEl = document.getElementById('visibilityState');
+            const iconEl = document.getElementById('visibilityIcon');
+            const detailEl = document.getElementById('visibilityDetail');
+
+            if (isHidden) {
+                stateEl.textContent = 'HIDDEN';
+                stateEl.className = 'visibility-state hidden';
+                iconEl.textContent = '\u{1F648}'; // See-no-evil monkey
+                iconEl.style.opacity = '0.5';
+            } else {
+                stateEl.textContent = 'VISIBLE';
+                stateEl.className = 'visibility-state visible';
+                iconEl.textContent = '\u{1F441}'; // Eye
+                iconEl.style.opacity = '1';
+            }
+
+            detailEl.textContent = `document.visibilityState: ${state}\ndocument.hidden: ${isHidden}`;
+        }
+
+        function updateStats() {
+            const now = Date.now();
+
+            if (!document.hidden && visibleStartTime) {
+                totalVisibleTime = (now - visibleStartTime) / 1000;
+            }
+
+            document.getElementById('visibleTime').textContent = formatTime(totalVisibleTime);
+            document.getElementById('hiddenTime').textContent = formatTime(totalHiddenTime);
+            document.getElementById('changeCount').textContent = stateChangeCount;
+            document.getElementById('hiddenCount').textContent = hiddenCount;
+        }
+
+        function formatTime(seconds) {
+            if (seconds < 60) return Math.floor(seconds) + 's';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ' + Math.floor(seconds % 60) + 's';
+            return Math.floor(seconds / 3600) + 'h ' + Math.floor((seconds % 3600) / 60) + 'm';
+        }
+
+        // Timer functions
+        function startTimer() {
+            if (timerInterval) return;
+            timerRunning = true;
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+            document.getElementById('timerStatus').textContent = 'Timer running';
+            document.getElementById('timerDisplay').classList.remove('paused');
+            log('Timer started');
+        }
+
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timerRunning = false;
+            document.getElementById('timerStatus').textContent = 'Timer paused';
+            document.getElementById('timerDisplay').classList.add('paused');
+            log('Timer paused');
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 0;
+            updateTimerDisplay();
+            document.getElementById('timerStatus').textContent = 'Timer reset';
+            log('Timer reset');
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(timerSeconds / 3600);
+            const minutes = Math.floor((timerSeconds % 3600) / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }
+
+        // Video functions
+        function playVideo() {
+            videoPlaying = true;
+            document.getElementById('videoPlaceholder').classList.remove('paused');
+            document.getElementById('videoStatus').textContent = 'Video playing';
+            log('Video playing');
+        }
+
+        function pauseVideo() {
+            videoPlaying = false;
+            document.getElementById('videoPlaceholder').classList.add('paused');
+            document.getElementById('videoStatus').textContent = 'Video paused';
+            log('Video paused');
+        }
+
+        // Visibility change handler
+        function handleVisibilityChange() {
+            const now = Date.now();
+            stateChangeCount++;
+
+            if (document.hidden) {
+                // Page became hidden
+                hiddenCount++;
+                hiddenStartTime = now;
+
+                // Save accumulated visible time
+                if (visibleStartTime) {
+                    totalVisibleTime += (now - visibleStartTime) / 1000;
+                    visibleStartTime = null;
+                }
+
+                // Pause timer if running
+                if (timerRunning) {
+                    timerWasRunning = true;
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    document.getElementById('timerStatus').textContent = 'Timer paused (tab hidden)';
+                    document.getElementById('timerDisplay').classList.add('paused');
+                }
+
+                // Pause video if playing
+                if (videoPlaying) {
+                    videoWasPlaying = true;
+                    document.getElementById('videoPlaceholder').classList.add('paused');
+                    document.getElementById('videoStatus').textContent = 'Video paused (tab hidden)';
+                }
+
+                log('Page HIDDEN - Activities paused');
+            } else {
+                // Page became visible
+                visibleStartTime = now;
+
+                // Save accumulated hidden time
+                if (hiddenStartTime) {
+                    totalHiddenTime += (now - hiddenStartTime) / 1000;
+                    hiddenStartTime = null;
+                }
+
+                // Resume timer if it was running
+                if (timerWasRunning) {
+                    timerWasRunning = false;
+                    timerRunning = true;
+                    timerInterval = setInterval(() => {
+                        timerSeconds++;
+                        updateTimerDisplay();
+                    }, 1000);
+                    document.getElementById('timerStatus').textContent = 'Timer resumed';
+                    document.getElementById('timerDisplay').classList.remove('paused');
+                }
+
+                // Resume video if it was playing
+                if (videoWasPlaying) {
+                    videoWasPlaying = false;
+                    document.getElementById('videoPlaceholder').classList.remove('paused');
+                    document.getElementById('videoStatus').textContent = 'Video resumed';
+                }
+
+                log('Page VISIBLE - Activities resumed');
+            }
+
+            updateVisibilityDisplay();
+            updateStats();
+        }
+
+        // Stats update interval
+        setInterval(updateStats, 1000);
+
+        // Initialize
+        if (checkSupport()) {
+            checkFeatures();
+            updateVisibilityDisplay();
+
+            // Listen for visibility changes
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Also listen for Page Lifecycle events if available
+            if ('onfreeze' in document) {
+                document.addEventListener('freeze', () => {
+                    log('Page FROZEN (Page Lifecycle API)');
+                });
+                document.addEventListener('resume', () => {
+                    log('Page RESUMED (Page Lifecycle API)');
+                });
+            }
+
+            log('Page Visibility API initialized');
+            log(`Initial state: ${document.visibilityState}`);
+        }
+
+        // Initialize video as paused
+        document.getElementById('videoPlaceholder').classList.add('paused');
+    </script>
+</body>
+</html>

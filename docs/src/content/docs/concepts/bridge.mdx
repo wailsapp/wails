@@ -504,12 +504,14 @@ Services can access the call context:
 type UserService struct{}
 
 func (s *UserService) GetCurrentUser(ctx context.Context) (*User, error) {
-    // Access window that made the call
-    window := application.ContextWindow(ctx)
-    
-    // Access application
-    app := application.ContextApplication(ctx)
-    
+    // Access the calling window via the context value
+    window, _ := ctx.Value(application.WindowKey).(application.Window)
+    _ = window
+
+    // Access the application
+    app := application.Get()
+    _ = app
+
     // Your logic
     return getCurrentUser(), nil
 }
@@ -549,11 +551,11 @@ func ProcessLargeFile(path string) error {
 ```
 
 ```javascript
-import { On } from '@wailsio/runtime'
+import { Events } from '@wailsio/runtime'
 import { ProcessLargeFile } from './bindings/FileService'
 
 // Listen for progress
-On('file-progress', (data) => {
+Events.On('file-progress', (data) => {
     console.log(`Line ${data.line}: ${data.text}`)
 })
 
@@ -613,9 +615,10 @@ func ProcessItems(items []Item) ([]Result, error) {
 
 ```go
 app := application.New(application.Options{
-    Name: "My App",
-    Logger: application.NewDefaultLogger(),
-    LogLevel: logger.DEBUG,
+    Name:     "My App",
+    LogLevel: slog.LevelDebug, // requires `import "log/slog"`
+    // `Logger` is an optional *slog.Logger; the default-logger helper is
+    // application.DefaultLogger(slog.Leveler) if you want to construct one explicitly.
 })
 ```
 
@@ -630,10 +633,12 @@ app := application.New(application.Options{
 
 Check `frontend/bindings/` to see generated TypeScript:
 
-```typescript
-// frontend/bindings/MyService.ts
-export function MyMethod(arg: string): Promise<number> {
-    return window.wails.Call('MyService.MyMethod', arg)
+```javascript
+// frontend/bindings/<full-go-import-path>/myservice.js (real generated shape)
+import { Call as $Call } from "/wails/runtime.js";
+
+export function MyMethod($0) {
+    return $Call.ByID(1234567890, $0); // numeric method ID assigned by the generator
 }
 ```
 
@@ -697,4 +702,4 @@ The bridge is secure by default:
 
 ---
 
-**Questions about the bridge?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/v3-alpha/v3/examples/binding).
+**Questions about the bridge?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [binding examples](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

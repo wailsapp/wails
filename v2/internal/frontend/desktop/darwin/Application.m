@@ -14,7 +14,7 @@
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int zoomable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences, int singleInstanceLockEnabled, const char* singleInstanceUniqueId, bool enableDragAndDrop, bool disableWebViewDragAndDrop) {
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int zoomable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int contentProtection, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences, int singleInstanceLockEnabled, const char* singleInstanceUniqueId, bool enableDragAndDrop, bool disableWebViewDragAndDrop, int disableEscapeExitsFullscreen) {
 
     [NSApplication sharedApplication];
 
@@ -27,9 +27,14 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
         fullscreen = 1;
     }
 
-    [result CreateWindow:width :height :frameless :resizable :zoomable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled :preferences :enableDragAndDrop :disableWebViewDragAndDrop];
+    [result CreateWindow:width :height :frameless :resizable :zoomable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled :preferences :enableDragAndDrop :disableWebViewDragAndDrop :disableEscapeExitsFullscreen];
     [result SetTitle:safeInit(title)];
     [result Center];
+
+    if (contentProtection == 1 &&
+        [result.mainWindow respondsToSelector:@selector(setSharingType:)]) {
+        [result.mainWindow setSharingType:NSWindowSharingNone];
+    }
 
     switch( windowStartState ) {
         case WindowStartsMaximised:
@@ -361,6 +366,74 @@ void AppendSeparator(void* inMenu) {
     [menu AppendSeparator];
 }
 
+
+bool IsNotificationAvailable(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx IsNotificationAvailable];
+}
+
+bool CheckBundleIdentifier(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx CheckBundleIdentifier];
+}
+
+bool EnsureDelegateInitialized(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    return [ctx EnsureDelegateInitialized];
+}
+
+void RequestNotificationAuthorization(void *inctx, int channelID) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RequestNotificationAuthorization:channelID];
+}
+
+void CheckNotificationAuthorization(void *inctx, int channelID) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx CheckNotificationAuthorization:channelID];
+}
+
+void SendNotification(void *inctx, int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx SendNotification:channelID :identifier :title :subtitle :body :data_json];
+}
+
+void SendNotificationWithActions(void *inctx, int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *categoryId, const char *actions_json) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+
+    [ctx SendNotificationWithActions:channelID :identifier :title :subtitle :body :categoryId :actions_json];
+}
+
+void RegisterNotificationCategory(void *inctx, int channelID, const char *categoryId, const char *actions_json, bool hasReplyField, const char *replyPlaceholder, const char *replyButtonTitle) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+
+    [ctx RegisterNotificationCategory:channelID :categoryId :actions_json :hasReplyField :replyPlaceholder :replyButtonTitle];
+}
+
+void RemoveNotificationCategory(void *inctx, int channelID, const char *categoryId) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+
+    [ctx RemoveNotificationCategory:channelID :categoryId];
+}
+
+void RemoveAllPendingNotifications(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemoveAllPendingNotifications];
+}
+
+void RemovePendingNotification(void *inctx, const char *identifier) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemovePendingNotification:identifier];
+}
+
+void RemoveAllDeliveredNotifications(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemoveAllDeliveredNotifications];
+}
+
+void RemoveDeliveredNotification(void *inctx, const char *identifier) {
+    WailsContext *ctx = (__bridge WailsContext*)inctx;
+    [ctx RemoveDeliveredNotification:identifier];
+}
 
 
 void Run(void *inctx, const char* url) {

@@ -1,0 +1,531 @@
+---
+title: Menu
+description: Panduan membuat dan menyesuaikan menu di Wails v3
+---
+
+Wails v3 menyediakan sistem menu yang powerful yang memungkinkan Anda membuat menu aplikasi dan menu konteks. Panduan ini akan memandu Anda melalui berbagai fitur dan kemampuan sistem menu.
+
+### Membuat Menu
+
+Untuk membuat menu baru, gunakan method `New()` dari manager Menus:
+
+```go
+menu := app.Menu.New()
+```
+
+### Menambahkan Item Menu
+
+Wails mendukung beberapa tipe item menu, masing-masing dengan tujuan spesifik:
+
+#### Item Menu Reguler
+Item menu reguler adalah blok dasar menu. Item ini menampilkan teks dan dapat memicu aksi saat diklik:
+
+```go
+menuItem := menu.Add("Click Me")
+```
+
+#### Checkbox
+Item menu checkbox menyediakan state yang dapat di-toggle, berguna untuk mengaktifkan/menonaktifkan fitur atau pengaturan:
+
+```go
+checkbox := menu.AddCheckbox("My checkbox", true)  // true = initially checked
+```
+
+#### Grup Radio
+Grup radio memungkinkan pengguna memilih satu opsi dari sekumpulan pilihan yang saling eksklusif. Grup dibuat otomatis saat item radio ditempatkan berdampingan:
+
+```go
+menu.AddRadio("Option 1", true)   // true = initially selected
+menu.AddRadio("Option 2", false)
+menu.AddRadio("Option 3", false)
+```
+
+#### Separator
+Separator adalah garis horizontal yang membantu mengorganisir item menu ke dalam grup logis:
+
+```go
+menu.AddSeparator()
+```
+
+#### Submenu
+Submenu adalah menu bersarang yang muncul saat hover atau klik item menu. Berguna untuk mengorganisir struktur menu yang kompleks:
+
+```go
+submenu := menu.AddSubmenu("File")
+submenu.Add("Open")
+submenu.Add("Save")
+```
+
+#### Menggabungkan menu
+Menu dapat ditambahkan ke menu lain dengan append atau prepend.
+```go
+menu := app.Menu.New()
+menu.Add("First Menu")
+
+secondaryMenu := app.Menu.New()
+secondaryMenu.Add("Second Menu")
+
+// insert 'secondaryMenu' after 'menu'
+menu.Append(secondaryMenu)
+
+// insert 'secondaryMenu' before 'menu'
+menu.Prepend(secondaryMenu)
+
+// update the menu
+menu.Update()
+```
+
+:::note
+Secara default, `prepend` dan `append` akan berbagi state dengan menu asli. Jika Anda ingin membuat menu baru dengan state sendiri,
+Anda dapat memanggil `.Clone()` pada menu.
+
+Contoh: `menu.Append(secondaryMenu.Clone())`
+:::
+
+#### Membersihkan menu
+Dalam beberapa kasus, lebih baik membangun menu baru jika Anda bekerja dengan jumlah item menu yang bervariasi.
+
+Ini akan membersihkan semua item pada menu yang ada dan memungkinkan Anda menambahkan item lagi.
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// after certain logic, the menu has to be updated
+menu.Clear()
+menu.Add("Update complete!")
+menu.Update()
+```
+
+:::note
+Membersihkan menu hanya menghapus item menu di level teratas. Submenu tidak akan terlihat, tetapi masih menempati memori
+jadi pastikan mengelola menu dengan hati-hati.
+:::
+
+#### Menghancurkan menu
+
+Jika Anda ingin membersihkan dan melepaskan menu, gunakan method `Destroy()`:
+
+```go
+menu := app.Menu.New()
+menu.Add("Waiting for update...")
+
+// after certain logic, the menu has to be destroyed
+menu.Destroy()
+```
+
+
+### Properti Item Menu
+
+Item menu memiliki beberapa properti yang dapat dikonfigurasi:
+
+| Properti    | Method                   | Deskripsi                                           |
+|-------------|--------------------------|-----------------------------------------------------|
+| Label       | `SetLabel(string)`       | Mengatur teks tampilan                              |
+| Enabled     | `SetEnabled(bool)`       | Mengaktifkan/menonaktifkan item                     |
+| Checked     | `SetChecked(bool)`       | Mengatur state checked (untuk checkbox/radio)       |
+| Tooltip     | `SetTooltip(string)`     | Mengatur teks tooltip                               |
+| Hidden      | `SetHidden(bool)`        | Menampilkan/menyembunyikan item                     |
+| Accelerator | `SetAccelerator(string)` | Mengatur keyboard shortcut                          |
+
+### State Item Menu
+
+Item menu dapat berada dalam state berbeda yang mengontrol visibilitas dan interaktivitas:
+
+#### Visibilitas
+
+Item menu dapat ditampilkan atau disembunyikan secara dinamis menggunakan method `SetHidden()`:
+
+```go
+menuItem := menu.Add("Dynamic Item")
+
+// Hide the menu item
+menuItem.SetHidden(true)
+
+// Show the menu item
+menuItem.SetHidden(false)
+
+// Check current visibility
+isHidden := menuItem.Hidden()
+```
+
+Item menu yang disembunyikan sepenuhnya dihapus dari menu hingga ditampilkan kembali. Berguna untuk item menu kontekstual yang hanya muncul dalam state aplikasi tertentu.
+
+#### State Enabled
+
+Item menu dapat diaktifkan atau dinonaktifkan menggunakan method `SetEnabled()`:
+
+```go
+menuItem := menu.Add("Save")
+
+// Disable the menu item
+menuItem.SetEnabled(false)  // Item appears grayed out and cannot be clicked
+
+// Enable the menu item
+menuItem.SetEnabled(true)   // Item becomes clickable again
+
+// Check current enabled state
+isEnabled := menuItem.Enabled()
+```
+
+Item menu yang dinonaktifkan tetap terlihat tetapi tampak abu-abu dan tidak dapat diklik. Umum digunakan untuk menandakan aksi saat ini tidak tersedia, seperti:
+- Menonaktifkan "Save" saat tidak ada perubahan untuk disimpan
+- Menonaktifkan "Copy" saat tidak ada yang dipilih
+- Menonaktifkan "Undo" saat tidak ada aksi untuk di-undo
+
+#### Manajemen State Dinamis
+
+Anda dapat menggabungkan state ini dengan event handler untuk membuat menu dinamis:
+
+```go
+saveMenuItem := menu.Add("Save")
+
+// Initially disable the Save menu item
+saveMenuItem.SetEnabled(false)
+
+// Enable Save only when there are unsaved changes
+documentChanged := func() {
+    saveMenuItem.SetEnabled(true)
+    menu.Update()  // Remember to update the menu after changing states
+}
+
+// Disable Save after saving
+documentSaved := func() {
+    saveMenuItem.SetEnabled(false)
+    menu.Update()
+}
+```
+
+### Penanganan Event
+
+Item menu dapat merespons event klik menggunakan method `OnClick`:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // Handle the click event
+    println("Menu item clicked!")
+})
+```
+
+Context menyediakan informasi tentang item menu yang diklik:
+
+```go
+menuItem.OnClick(func(ctx *application.Context) {
+    // Get the clicked menu item
+    clickedItem := ctx.ClickedMenuItem()
+    // Get its current state
+    isChecked := clickedItem.Checked()
+})
+```
+
+### Item Menu Berbasis Role
+
+Wails menyediakan sekumpulan role menu yang telah didefinisikan yang secara otomatis membuat item menu dengan fungsionalitas standar. Berikut role menu yang didukung:
+
+#### Struktur Menu Lengkap
+Role ini membuat struktur menu lengkap dengan fungsionalitas umum:
+
+| Role | Deskripsi | Catatan Platform |
+|------|-----------|------------------|
+| `AppMenu` | Menu aplikasi dengan About, Services, Hide/Show, dan Quit | macOS saja |
+| `EditMenu` | Menu Edit standar dengan Undo, Redo, Cut, Copy, Paste, dll. | Semua platform |
+| `ViewMenu` | Menu View dengan kontrol Reload, Zoom, dan Fullscreen | Semua platform |
+| `WindowMenu` | Kontrol window (Minimise, Zoom, dll.) | Semua platform |
+| `HelpMenu` | Menu Help dengan tautan "Learn More" ke situs Wails | Semua platform |
+
+#### Item Menu Individual
+Role ini dapat digunakan untuk menambahkan item menu individual:
+
+| Role | Deskripsi | Catatan Platform |
+|------|-----------|------------------|
+| `About` | Menampilkan dialog About aplikasi | Semua platform |
+| `Hide` | Menyembunyikan aplikasi | macOS saja |
+| `HideOthers` | Menyembunyikan aplikasi lain | macOS saja |
+| `UnHide` | Menampilkan aplikasi yang disembunyikan | macOS saja |
+| `CloseWindow` | Menutup window saat ini | Semua platform |
+| `Minimise` | Meminimalkan window | Semua platform |
+| `Zoom` | Zoom window | macOS saja |
+| `Front` | Membawa window ke depan | macOS saja |
+| `Quit` | Keluar dari aplikasi | Semua platform |
+| `Undo` | Undo aksi terakhir | Semua platform |
+| `Redo` | Redo aksi terakhir | Semua platform |
+| `Cut` | Cut seleksi | Semua platform |
+| `Copy` | Copy seleksi | Semua platform |
+| `Paste` | Paste dari clipboard | Semua platform |
+| `PasteAndMatchStyle` | Paste dan cocokkan style | macOS saja |
+| `SelectAll` | Pilih semua | Semua platform |
+| `Delete` | Hapus seleksi | Semua platform |
+| `Reload` | Reload halaman saat ini | Semua platform |
+| `ForceReload` | Force reload halaman saat ini | Semua platform |
+| `ToggleFullscreen` | Toggle mode fullscreen | Semua platform |
+| `ResetZoom` | Reset level zoom | Semua platform |
+| `ZoomIn` | Perbesar zoom | Semua platform |
+| `ZoomOut` | Perkecil zoom | Semua platform |
+
+Berikut contoh penggunaan menu lengkap dan role individual:
+
+```go
+menu := app.Menu.New()
+
+// Add complete menu structures
+menu.AddRole(application.AppMenu)    // macOS only
+menu.AddRole(application.EditMenu)   // Common edit operations
+menu.AddRole(application.ViewMenu)   // View controls
+menu.AddRole(application.WindowMenu) // Window controls
+
+// Add individual role-based items to a custom menu
+fileMenu := menu.AddSubmenu("File")
+fileMenu.AddRole(application.CloseWindow)
+fileMenu.AddSeparator()
+fileMenu.AddRole(application.Quit)
+```
+
+## Menu Aplikasi
+
+Menu aplikasi adalah menu yang muncul di bagian atas window aplikasi (Windows/Linux) atau di bagian atas layar (macOS).
+
+
+### Perilaku Menu Aplikasi
+
+Saat Anda mengatur menu aplikasi menggunakan `app.Menu.Set()`, menu tersebut menjadi menu utama di macOS.
+Menu diatur per window untuk Windows/Linux.
+
+```go
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Custom Menu Window",
+    Windows: application.WindowsWindow{
+        Menu: customMenu,  // Override application menu for this window
+    },
+})
+```
+
+Berikut contoh lengkap yang menunjukkan perilaku menu berbeda:
+
+```go
+func main() {
+    app := application.New(application.Options{})
+
+    // Create application menu
+    appMenu := app.Menu.New()
+    fileMenu := appMenu.AddSubmenu("File")
+    fileMenu.Add("New").OnClick(func(ctx *application.Context) {
+        // This will be available in all windows unless overridden
+        window := app.Window.Current()
+        window.SetTitle("New Window")
+    })
+    
+    // Set as application menu - this is for macOS
+    app.Menu.Set(appMenu)
+
+    // Window with custom menu on Windows
+    customMenu := app.Menu.New()
+    customMenu.Add("Custom Action")
+    app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: "Custom Menu",
+        Windows: application.WindowsWindow{
+            Menu: customMenu,
+        },
+    })
+
+    app.Run()
+}
+```
+
+## Menu Konteks
+
+Menu konteks adalah menu popup yang muncul saat klik kanan elemen di aplikasi Anda. Menu ini memberikan akses cepat ke aksi yang relevan untuk elemen yang diklik.
+
+### Menu Konteks Default
+
+Menu konteks default adalah menu konteks bawaan webview yang menyediakan operasi level sistem seperti:
+- Copy, Cut, dan Paste untuk manipulasi teks
+- Kontrol seleksi teks
+- Opsi spell checking
+
+#### Mengontrol Menu Konteks Default
+
+Anda dapat mengontrol kapan menu konteks default muncul menggunakan properti CSS `--default-contextmenu`:
+
+```html
+<!-- Always show default context menu -->
+<div style="--default-contextmenu: show">
+    <input type="text" placeholder="Right-click for text operations"/>
+    <textarea>Standard text operations available here</textarea>
+</div>
+
+<!-- Hide default context menu -->
+<div style="--default-contextmenu: hide">
+    <div class="custom-component">Custom context menu only</div>
+</div>
+
+<!-- Smart context menu behaviour (default) -->
+<div style="--default-contextmenu: auto">
+    <!-- Shows default menu when text is selected or in input fields -->
+    <p>Select this text to see the default menu</p>
+    <input type="text" placeholder="Default menu for input operations"/>
+</div>
+```
+
+:::note
+Fitur ini hanya bekerja seperti yang diharapkan setelah runtime [telah diinisialisasi](/learn/runtime#initialisation).
+:::
+
+#### Perilaku Menu Konteks Bersarang
+
+Saat menggunakan properti `--default-contextmenu` pada elemen bersarang, aturan berikut berlaku:
+
+1. Elemen anak mewarisi pengaturan menu konteks induk kecuali secara eksplisit di-override
+2. Pengaturan paling spesifik (terdekat) yang diutamakan
+3. Nilai `auto` dapat digunakan untuk reset ke perilaku default
+
+Contoh perilaku menu konteks bersarang:
+
+```html
+<!-- Parent sets hide -->
+<div style="--default-contextmenu: hide">
+    <!-- This inherits hide -->
+    <p>No context menu here</p>
+    
+    <!-- This overrides to show -->
+    <div style="--default-contextmenu: show">
+        <p>Context menu shown here</p>
+        
+        <!-- This inherits show -->
+        <span>Also has context menu</span>
+        
+        <!-- This resets to automatic behaviour -->
+        <div style="--default-contextmenu: auto">
+            <p>Shows menu only when text is selected</p>
+        </div>
+    </div>
+</div>
+```
+
+### Menu Konteks Kustom
+
+Menu konteks kustom memungkinkan Anda menyediakan aksi spesifik aplikasi yang relevan dengan elemen yang diklik. Sangat berguna untuk:
+- Operasi file di document manager
+- Alat manipulasi gambar
+- Aksi kustom di data grid
+- Operasi spesifik komponen
+
+#### Membuat Menu Konteks Kustom
+
+Saat membuat menu konteks kustom, Anda menyediakan identifier unik (nama) yang menghubungkan menu ke elemen HTML:
+
+```go
+// Create a context menu with identifier "imageMenu"
+contextMenu := app.ContextMenu.New()
+app.ContextMenu.Add("imageMenu", contextMenu)
+```
+
+Parameter name ("imageMenu" dalam contoh ini) berfungsi sebagai identifier unik yang akan digunakan untuk:
+1. Menghubungkan elemen HTML ke menu konteks spesifik ini
+2. Mengidentifikasi menu mana yang ditampilkan saat klik kanan
+3. Memungkinkan pembaruan dan pembersihan menu
+
+#### Data Konteks
+
+Saat menangani event menu konteks, Anda dapat mengakses item menu yang diklik dan data konteks terkait:
+
+```go
+contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
+    // Get the clicked menu item
+    menuItem := ctx.ClickedMenuItem()
+    
+    // Get the context data as a string
+    contextData := ctx.ContextMenuData()
+    
+    // Check if the menu item is checked (for checkbox/radio items)
+    isChecked := ctx.IsChecked()
+    
+    // Use the data
+    if contextData != "" {
+        processItem(contextData)
+    }
+})
+```
+
+Data konteks diteruskan dari properti `--custom-contextmenu-data` elemen HTML dan tersedia di click handler melalui `ctx.ContextMenuData()`. Sangat berguna saat:
+
+- Bekerja dengan list atau grid di mana setiap item membutuhkan identifikasi unik
+- Menangani operasi pada komponen atau elemen spesifik
+- Meneruskan state atau metadata dari frontend ke backend
+
+#### Manajemen Menu Konteks
+
+Setelah melakukan perubahan pada menu konteks, panggil method `Update()` untuk menerapkan perubahan:
+
+```go
+contextMenu.Update()
+```
+
+Saat menu konteks tidak lagi diperlukan, Anda dapat menghancurkannya:
+
+```go
+contextMenu.Destroy()
+```
+:::danger[Peringatan] 
+Setelah memanggil `Destroy()`, menggunakan referensi menu konteks lagi akan menyebabkan panic.
+:::
+
+### Contoh Dunia Nyata: Galeri Gambar
+
+Berikut contoh lengkap implementasi menu konteks kustom untuk galeri gambar:
+
+```go
+// Backend: Create the context menu
+imageMenu := app.ContextMenu.New()
+app.ContextMenu.Add("imageMenu", imageMenu)
+
+// Add relevant operations
+imageMenu.Add("View Full Size").OnClick(func(ctx *application.Context) {
+    // Get the image ID from context data
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        openFullSizeImage(imageID)
+    }
+})
+
+imageMenu.Add("Download").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        downloadImage(imageID)
+    }
+})
+
+imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
+    if imageID := ctx.ContextMenuData(); imageID != "" {
+        showShareDialog(imageID)
+    }
+})
+```
+
+```html
+<!-- Frontend: Image gallery implementation -->
+<div class="gallery">
+    <!-- Each image container with context menu -->
+    <div class="image-container" 
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_123">
+        <img src="/images/img_123.jpg" alt="Gallery Image"/>
+        <span class="caption">Nature Photo</span>
+    </div>
+    
+    <div class="image-container"
+         style="--custom-contextmenu: imageMenu; --custom-contextmenu-data: img_124">
+        <img src="/images/img_124.jpg" alt="Gallery Image"/>
+        <span class="caption">City Photo</span>
+    </div>
+</div>
+```
+
+Dalam contoh ini:
+1. Menu konteks dibuat dengan identifier "imageMenu"
+2. Setiap container gambar dihubungkan ke menu menggunakan `--custom-contextmenu: imageMenu`
+3. Setiap container menyediakan ID gambar sebagai data konteks menggunakan `--custom-contextmenu-data`
+4. Backend menerima ID gambar di click handler dan dapat melakukan operasi spesifik
+5. Menu yang sama digunakan ulang untuk semua gambar, tetapi data konteks memberi tahu gambar mana yang dioperasikan
+
+Pola ini sangat powerful untuk:
+- Data grid di mana baris membutuhkan operasi spesifik
+- File manager di mana file membutuhkan aksi spesifik konteks
+- Alat desain di mana elemen berbeda membutuhkan operasi berbeda
+- Komponen apa pun di mana operasi yang sama berlaku untuk banyak instance

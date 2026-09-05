@@ -1,130 +1,90 @@
-//go:build linux && cgo && !android
+//go:build linux && cgo && !android && !server
 
 package application
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1 gdk-3.0
-
+#cgo gtk3 pkg-config: gtk+-3.0 webkit2gtk-4.1
+#cgo !gtk3 pkg-config: gtk4 webkitgtk-6.0
 #include <gtk/gtk.h>
-#include <gdk/gdk.h>
+#if GTK_MAJOR_VERSION >= 4
+#include <webkit/webkit.h>
+#else
 #include <webkit2/webkit2.h>
-#include <stdio.h>
+#endif
 #include <stdlib.h>
 
-// Create a new WebKitWebView for a panel
-static GtkWidget* panel_new_webview() {
-    WebKitUserContentManager *manager = webkit_user_content_manager_new();
-    GtkWidget *webView = webkit_web_view_new_with_user_content_manager(manager);
-    return webView;
+static gboolean embedded_panel_position(GtkOverlay *overlay, GtkWidget *widget, GdkRectangle *allocation, gpointer data) {
+ GdkRectangle *bounds = g_object_get_data(G_OBJECT(widget), "wails-panel-bounds");
+ if (!bounds) return FALSE;
+ *allocation = *bounds;
+ return TRUE;
 }
 
-// Create a fixed container to hold the panel webview at specific position
-static GtkWidget* panel_new_fixed() {
-    return gtk_fixed_new();
+// Wrap only the main webview, preserving the menu and content-area coordinates.
+static GtkWidget* embedded_panel_overlay(GtkWidget *main, GtkWidget *box) {
+ GtkWidget *parent = gtk_widget_get_parent(main);
+ if (GTK_IS_OVERLAY(parent)) return parent;
+ GtkWidget *overlay = gtk_overlay_new();
+ g_object_ref(main);
+#if GTK_MAJOR_VERSION >= 4
+ gtk_box_remove(GTK_BOX(box), main);
+ gtk_overlay_set_child(GTK_OVERLAY(overlay), main);
+ gtk_box_append(GTK_BOX(box), overlay);
+#else
+ gtk_container_remove(GTK_CONTAINER(box), main);
+ gtk_container_add(GTK_CONTAINER(overlay), main);
+ gtk_box_pack_start(GTK_BOX(box), overlay, TRUE, TRUE, 0);
+#endif
+ g_object_unref(main);
+ gtk_widget_set_hexpand(overlay, TRUE);
+ gtk_widget_set_vexpand(overlay, TRUE);
+ g_signal_connect(overlay, "get-child-position", G_CALLBACK(embedded_panel_position), NULL);
+ gtk_widget_show(overlay);
+ gtk_widget_show(main);
+ return overlay;
 }
 
-// Add webview to fixed container at position
-static void panel_fixed_put(GtkWidget *fixed, GtkWidget *webview, int x, int y) {
-    gtk_fixed_put(GTK_FIXED(fixed), webview, x, y);
+static GtkWidget* embedded_panel_new(GtkWidget *main, unsigned int windowID) {
+ WebKitWebContext *context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(main));
+ GtkWidget *view = g_object_new(WEBKIT_TYPE_WEB_VIEW, "web-context", context, NULL);
+ // The shared context already has Wails' local asset scheme registered.
+ g_object_set_data(G_OBJECT(view), "windowid", GUINT_TO_POINTER(windowID));
+#if GTK_MAJOR_VERSION < 4
+ // Parent show_all must not undo an explicitly hidden panel.
+ gtk_widget_set_no_show_all(view, TRUE);
+#endif
+ return view;
 }
-
-// Move webview in fixed container
-static void panel_fixed_move(GtkWidget *fixed, GtkWidget *webview, int x, int y) {
-    gtk_fixed_move(GTK_FIXED(fixed), webview, x, y);
+static void embedded_panel_bounds(GtkWidget *view, int x, int y, int width, int height) {
+ GdkRectangle *bounds = g_new(GdkRectangle, 1);
+ *bounds = (GdkRectangle){x,y,width,height};
+ g_object_set_data_full(G_OBJECT(view), "wails-panel-bounds", bounds, g_free);
+ GtkWidget *parent = gtk_widget_get_parent(view);
+ if (parent) gtk_widget_queue_resize(parent);
 }
-
-// Set webview size
-static void panel_set_size(GtkWidget *webview, int width, int height) {
-    gtk_widget_set_size_request(webview, width, height);
+static void embedded_panel_raise(GtkWidget *overlay, GtkWidget *view) {
+#if GTK_MAJOR_VERSION >= 4
+ gtk_widget_insert_before(view, overlay, NULL);
+#else
+ gtk_overlay_reorder_overlay(GTK_OVERLAY(overlay), view, -1);
+#endif
 }
-
-// Load URL in webview
-static void panel_load_url(GtkWidget *webview, const char *url) {
-    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), url);
+static void embedded_panel_remove(GtkWidget *overlay, GtkWidget *view) {
+ webkit_web_view_stop_loading(WEBKIT_WEB_VIEW(view));
+#if GTK_MAJOR_VERSION >= 4
+ gtk_overlay_remove_overlay(GTK_OVERLAY(overlay), view);
+#else
+ gtk_widget_destroy(view);
+#endif
 }
-
-// Reload webview
-static void panel_reload(GtkWidget *webview) {
-    webkit_web_view_reload(WEBKIT_WEB_VIEW(webview));
+static void embedded_panel_header(WebKitURIRequest *request, const char *key, const char *value) {
+ SoupMessageHeaders *headers = webkit_uri_request_get_http_headers(request);
+ if (headers) soup_message_headers_replace(headers, key, value);
 }
-
-// Force reload webview (bypass cache)
-static void panel_force_reload(GtkWidget *webview) {
-    webkit_web_view_reload_bypass_cache(WEBKIT_WEB_VIEW(webview));
+static void embedded_panel_colour(WebKitWebView *view, int r, int g, int b, int a) {
+ GdkRGBA colour = {r/255.0,g/255.0,b/255.0,a/255.0};
+ webkit_web_view_set_background_color(view,&colour);
 }
-
-// Show webview
-static void panel_show(GtkWidget *webview) {
-    gtk_widget_show(webview);
-}
-
-// Hide webview
-static void panel_hide(GtkWidget *webview) {
-    gtk_widget_hide(webview);
-}
-
-// Check if visible
-static gboolean panel_is_visible(GtkWidget *webview) {
-    return gtk_widget_get_visible(webview);
-}
-
-// Set zoom level
-static void panel_set_zoom(GtkWidget *webview, double zoom) {
-    webkit_web_view_set_zoom_level(WEBKIT_WEB_VIEW(webview), zoom);
-}
-
-// Get zoom level
-static double panel_get_zoom(GtkWidget *webview) {
-    return webkit_web_view_get_zoom_level(WEBKIT_WEB_VIEW(webview));
-}
-
-// Open inspector
-static void panel_open_devtools(GtkWidget *webview) {
-    WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
-    webkit_web_inspector_show(inspector);
-}
-
-// Focus webview
-static void panel_focus(GtkWidget *webview) {
-    gtk_widget_grab_focus(webview);
-}
-
-// Check if focused
-static gboolean panel_is_focused(GtkWidget *webview) {
-    return gtk_widget_has_focus(webview);
-}
-
-// Set background color
-static void panel_set_background_color(GtkWidget *webview, int r, int g, int b, int a) {
-    GdkRGBA color;
-    color.red = r / 255.0;
-    color.green = g / 255.0;
-    color.blue = b / 255.0;
-    color.alpha = a / 255.0;
-    webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(webview), &color);
-}
-
-// Enable/disable devtools
-static void panel_enable_devtools(GtkWidget *webview, gboolean enable) {
-    WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
-    webkit_settings_set_enable_developer_extras(settings, enable);
-}
-
-// Destroy the panel webview
-static void panel_destroy(GtkWidget *webview) {
-    gtk_widget_destroy(webview);
-}
-
-// Get position allocation
-static void panel_get_allocation(GtkWidget *webview, int *x, int *y, int *width, int *height) {
-    GtkAllocation alloc;
-    gtk_widget_get_allocation(webview, &alloc);
-    *x = alloc.x;
-    *y = alloc.y;
-    *width = alloc.width;
-    *height = alloc.height;
-}
-
 */
 import "C"
 import (
@@ -134,219 +94,144 @@ import (
 type linuxPanelImpl struct {
 	panel   *WebviewPanel
 	webview *C.GtkWidget
-	fixed   *C.GtkWidget // Fixed container to position the webview
+	overlay *C.GtkWidget
 	parent  *linuxWebviewWindow
 }
 
 func newPanelImpl(panel *WebviewPanel) webviewPanelImpl {
-	parentWindow := panel.parent
-	if parentWindow == nil || parentWindow.impl == nil {
+	parent, ok := panel.parent.impl.(*linuxWebviewWindow)
+	if !ok || parent.webview == nil {
 		return nil
 	}
-
-	linuxParent, ok := parentWindow.impl.(*linuxWebviewWindow)
-	if !ok {
-		return nil
-	}
-
-	return &linuxPanelImpl{
-		panel:  panel,
-		parent: linuxParent,
-	}
+	return &linuxPanelImpl{panel: panel, parent: parent}
 }
-
+func (p *linuxPanelImpl) view() *C.WebKitWebView {
+	return (*C.WebKitWebView)(unsafe.Pointer(p.webview))
+}
 func (p *linuxPanelImpl) create() {
-	options := p.panel.options
-
-	// Create the webview
-	p.webview = C.panel_new_webview()
-
-	// Set size
-	C.panel_set_size(p.webview, C.int(options.Width), C.int(options.Height))
-
-	// Create a fixed container if the parent's vbox doesn't have one for panels
-	// For simplicity, we'll use an overlay approach - add the webview directly to the vbox
-	// and use CSS/GTK positioning
-
-	// Actually, we need to use GtkFixed or GtkOverlay for absolute positioning
-	// For now, let's use the overlay approach with GtkFixed
-	p.fixed = C.panel_new_fixed()
-
-	// Add the webview to the fixed container at the specified position
-	C.panel_fixed_put(p.fixed, p.webview, C.int(options.X), C.int(options.Y))
-
-	// Add the fixed container to the parent's vbox (above the main webview)
-	vbox := (*C.GtkBox)(p.parent.vbox)
-	C.gtk_box_pack_start(vbox, p.fixed, 0, 0, 0) // Don't expand
-
-	// Enable devtools if in debug mode
-	debugMode := globalApplication.isDebugMode
-	devToolsEnabled := debugMode
+	options := p.panel.snapshotOptions()
+	p.overlay = C.embedded_panel_overlay((*C.GtkWidget)(p.parent.webview), (*C.GtkWidget)(p.parent.vbox))
+	p.webview = C.embedded_panel_new((*C.GtkWidget)(p.parent.webview), C.uint(p.panel.parent.id))
+	C.gtk_overlay_add_overlay((*C.GtkOverlay)(unsafe.Pointer(p.overlay)), p.webview)
+	p.setBounds(Rect{X: options.X, Y: options.Y, Width: options.Width, Height: options.Height})
+	settings := C.webkit_web_view_get_settings(p.view())
+	enabled := globalApplication.isDebugMode
 	if options.DevToolsEnabled != nil {
-		devToolsEnabled = *options.DevToolsEnabled
+		enabled = *options.DevToolsEnabled
 	}
-	C.panel_enable_devtools(p.webview, C.gboolean(boolToInt(devToolsEnabled)))
-
-	// Set background color
+	C.webkit_settings_set_enable_developer_extras(settings, gtkBool(enabled))
+	if options.UserAgent != "" {
+		agent := C.CString(options.UserAgent)
+		C.webkit_settings_set_user_agent(settings, agent)
+		C.free(unsafe.Pointer(agent))
+	}
+	colour := options.BackgroundColour
 	if options.Transparent {
-		C.panel_set_background_color(p.webview, 0, 0, 0, 0)
-	} else {
-		C.panel_set_background_color(p.webview,
-			C.int(options.BackgroundColour.Red),
-			C.int(options.BackgroundColour.Green),
-			C.int(options.BackgroundColour.Blue),
-			C.int(options.BackgroundColour.Alpha),
-		)
+		colour = RGBA{}
 	}
-
-	// Set zoom if specified
-	if options.Zoom > 0 && options.Zoom != 1.0 {
-		C.panel_set_zoom(p.webview, C.double(options.Zoom))
-	}
-
-	// Set initial visibility
-	if options.Visible == nil || *options.Visible {
-		C.gtk_widget_show_all(p.fixed)
-	}
-
-	// Navigate to initial URL
+	C.embedded_panel_colour(p.view(), C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
+	p.setZoom(options.Zoom)
 	if options.URL != "" {
-		// TODO: Add support for custom headers when WebKitWebView supports it
-		if len(options.Headers) > 0 {
-			globalApplication.debug("[Panel-Linux] Custom headers specified (not yet supported)",
-				"panelID", p.panel.id,
-				"headers", options.Headers)
+		uri := C.CString(options.URL)
+		request := C.webkit_uri_request_new(uri)
+		C.free(unsafe.Pointer(uri))
+		for key, value := range options.Headers {
+			k, v := C.CString(key), C.CString(value)
+			C.embedded_panel_header(request, k, v)
+			C.free(unsafe.Pointer(k))
+			C.free(unsafe.Pointer(v))
 		}
-
-		url := C.CString(options.URL)
-		defer C.free(unsafe.Pointer(url))
-		C.panel_load_url(p.webview, url)
+		C.webkit_web_view_load_request(p.view(), request)
+		C.g_object_unref(C.gpointer(request))
 	}
-
-	// Open inspector if requested
-	if debugMode && options.OpenInspectorOnStartup {
-		C.panel_open_devtools(p.webview)
+	if *options.Visible {
+		p.show()
+	} else {
+		p.hide()
+	}
+	if enabled && options.OpenInspectorOnStartup {
+		p.openDevTools()
 	}
 }
-
-func boolToInt(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
-}
-
 func (p *linuxPanelImpl) destroy() {
-	if p.fixed != nil {
-		C.panel_destroy(p.fixed)
-		p.fixed = nil
+	if p.webview != nil {
+		C.embedded_panel_remove(p.overlay, p.webview)
 		p.webview = nil
+		p.overlay = nil
 	}
 }
-
 func (p *linuxPanelImpl) setBounds(bounds Rect) {
-	if p.webview == nil || p.fixed == nil {
-		return
+	if p.webview != nil {
+		C.embedded_panel_bounds(p.webview, C.int(bounds.X), C.int(bounds.Y), C.int(bounds.Width), C.int(bounds.Height))
 	}
-	C.panel_fixed_move(p.fixed, p.webview, C.int(bounds.X), C.int(bounds.Y))
-	C.panel_set_size(p.webview, C.int(bounds.Width), C.int(bounds.Height))
 }
-
 func (p *linuxPanelImpl) bounds() Rect {
-	if p.webview == nil {
-		return Rect{}
-	}
-	var x, y, width, height C.int
-	C.panel_get_allocation(p.webview, &x, &y, &width, &height)
-	return Rect{
-		X:      int(x),
-		Y:      int(y),
-		Width:  int(width),
-		Height: int(height),
-	}
+	options := p.panel.snapshotOptions()
+	return Rect{X: options.X, Y: options.Y, Width: options.Width, Height: options.Height}
 }
-
 func (p *linuxPanelImpl) setZIndex(_ int) {
-	// GTK doesn't have a direct z-index concept
-	// We could use gtk_box_reorder_child to change ordering
-	// For now, this is a no-op
+	panels := p.panel.sortedSiblings()
+	for _, panel := range panels {
+		panel.destroyedLock.RLock()
+		native, ok := panel.impl.(*linuxPanelImpl)
+		panel.destroyedLock.RUnlock()
+		if ok && native.webview != nil {
+			C.embedded_panel_raise(native.overlay, native.webview)
+		}
+	}
 }
-
 func (p *linuxPanelImpl) setURL(url string) {
 	if p.webview == nil {
 		return
 	}
-	urlStr := C.CString(url)
-	defer C.free(unsafe.Pointer(urlStr))
-	C.panel_load_url(p.webview, urlStr)
+	uri := C.CString(url)
+	defer C.free(unsafe.Pointer(uri))
+	C.webkit_web_view_load_uri(p.view(), uri)
 }
-
 func (p *linuxPanelImpl) reload() {
-	if p.webview == nil {
-		return
+	if p.webview != nil {
+		C.webkit_web_view_reload(p.view())
 	}
-	C.panel_reload(p.webview)
 }
-
 func (p *linuxPanelImpl) forceReload() {
-	if p.webview == nil {
-		return
+	if p.webview != nil {
+		C.webkit_web_view_reload_bypass_cache(p.view())
 	}
-	C.panel_force_reload(p.webview)
 }
-
 func (p *linuxPanelImpl) show() {
-	if p.fixed == nil {
-		return
+	if p.webview != nil {
+		C.gtk_widget_set_visible(p.webview, 1)
 	}
-	C.gtk_widget_show_all(p.fixed)
 }
-
 func (p *linuxPanelImpl) hide() {
-	if p.fixed == nil {
-		return
+	if p.webview != nil {
+		C.gtk_widget_set_visible(p.webview, 0)
 	}
-	C.gtk_widget_hide(p.fixed)
 }
-
 func (p *linuxPanelImpl) isVisible() bool {
-	if p.fixed == nil {
-		return false
-	}
-	return C.gtk_widget_get_visible(p.fixed) != 0
+	return p.webview != nil && C.gtk_widget_get_visible(p.webview) != 0
 }
-
 func (p *linuxPanelImpl) setZoom(zoom float64) {
-	if p.webview == nil {
-		return
+	if p.webview != nil {
+		C.webkit_web_view_set_zoom_level(p.view(), C.double(zoom))
 	}
-	C.panel_set_zoom(p.webview, C.double(zoom))
 }
-
 func (p *linuxPanelImpl) getZoom() float64 {
-	if p.webview == nil {
-		return 1.0
+	if p.webview != nil {
+		return float64(C.webkit_web_view_get_zoom_level(p.view()))
 	}
-	return float64(C.panel_get_zoom(p.webview))
+	return 1
 }
-
 func (p *linuxPanelImpl) openDevTools() {
-	if p.webview == nil {
-		return
+	if p.webview != nil {
+		C.webkit_web_inspector_show(C.webkit_web_view_get_inspector(p.view()))
 	}
-	C.panel_open_devtools(p.webview)
 }
-
 func (p *linuxPanelImpl) focus() {
-	if p.webview == nil {
-		return
+	if p.webview != nil {
+		C.gtk_widget_grab_focus(p.webview)
 	}
-	C.panel_focus(p.webview)
 }
-
 func (p *linuxPanelImpl) isFocused() bool {
-	if p.webview == nil {
-		return false
-	}
-	return C.panel_is_focused(p.webview) != 0
+	return p.webview != nil && C.gtk_widget_has_focus(p.webview) != 0
 }

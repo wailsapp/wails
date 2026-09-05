@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server-Sent Events (EventSource) Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        .form-row { display: flex; gap: 10px; align-items: end; }
+        .form-row .form-group { flex: 1; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+        }
+        .indicator.connected { background: #4ade80; }
+        .indicator.connecting { background: #fbbf24; animation: pulse 1s infinite; }
+        .indicator.disconnected { background: #f87171; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .event-log {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 6px 10px;
+            margin: 3px 0;
+            border-radius: 4px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .log-entry.message { background: rgba(96, 165, 250, 0.1); border-left: 3px solid #60a5fa; }
+        .log-entry.open { background: rgba(74, 222, 128, 0.1); border-left: 3px solid #4ade80; }
+        .log-entry.error { background: rgba(248, 113, 113, 0.1); border-left: 3px solid #f87171; }
+        .log-entry.custom { background: rgba(167, 139, 250, 0.1); border-left: 3px solid #a78bfa; }
+        .log-entry.mock { background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; }
+        .log-time { color: #666; flex-shrink: 0; }
+        .log-type { color: #60a5fa; flex-shrink: 0; width: 100px; font-weight: 600; }
+        .log-message { color: #ccc; flex: 1; }
+        .mock-controls {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px dashed #fbbf24;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .mock-controls h3 { color: #fbbf24; font-size: 1rem; margin-bottom: 10px; }
+        .stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
+        .stat {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #4ade80; }
+        .stat-label { font-size: 0.8rem; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Server-Sent Events (EventSource) Demo</h1>
+        <p class="description">
+            Server-Sent Events (SSE) enable servers to push data to web clients over HTTP.
+            Unlike WebSockets, SSE is unidirectional (server to client) and works over standard HTTP.
+        </p>
+
+        <div id="status" class="status">
+            <div class="indicator" id="indicator"></div>
+            <span>EventSource: <span id="connectionStatus">Checking...</span></span>
+        </div>
+
+        <div class="card">
+            <h2>Connection</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sseUrl">SSE Endpoint URL</label>
+                    <input type="text" id="sseUrl" value="https://sse.dev/test" placeholder="Enter SSE endpoint URL">
+                </div>
+            </div>
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled class="danger">Disconnect</button>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 10px;">
+                Public SSE test servers: sse.dev/test, or use the mock stream below for testing.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Mock Event Stream</h2>
+            <div class="mock-controls">
+                <h3>Local Mock (No Server Required)</h3>
+                <p style="color: #aaa; font-size: 0.85rem; margin-bottom: 10px;">
+                    Since SSE requires a server, this mock simulates event streams locally for testing.
+                </p>
+                <div class="form-group">
+                    <label for="mockInterval">Event Interval (ms)</label>
+                    <input type="number" id="mockInterval" value="1000" min="100" max="10000">
+                </div>
+                <div class="form-group">
+                    <label for="mockEventType">Event Type</label>
+                    <select id="mockEventType">
+                        <option value="message">message (default)</option>
+                        <option value="update">update (custom)</option>
+                        <option value="notification">notification (custom)</option>
+                        <option value="random">random types</option>
+                    </select>
+                </div>
+                <button id="mockStartBtn" onclick="startMock()">Start Mock Stream</button>
+                <button id="mockStopBtn" onclick="stopMock()" disabled class="danger">Stop Mock Stream</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Statistics</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="totalEvents">0</div>
+                    <div class="stat-label">Total Events</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="messageEvents">0</div>
+                    <div class="stat-label">Messages</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="customEvents">0</div>
+                    <div class="stat-label">Custom Events</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="errorCount">0</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="event-log" id="eventLog">
+                <div class="log-entry open">
+                    <span class="log-time">--:--:--</span>
+                    <span class="log-type">INFO</span>
+                    <span class="log-message">Ready to connect to an SSE endpoint or start mock stream...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>EventSource API Reference</h2>
+            <div class="output">
+// Create EventSource connection
+const source = new EventSource('https://api.example.com/stream');
+
+// Connection opened
+source.onopen = (event) => {
+    console.log('Connection opened');
+};
+
+// Default message event
+source.onmessage = (event) => {
+    console.log('Message:', event.data);
+    console.log('Last Event ID:', event.lastEventId);
+    console.log('Origin:', event.origin);
+};
+
+// Custom named events
+source.addEventListener('update', (event) => {
+    console.log('Update event:', event.data);
+});
+
+source.addEventListener('notification', (event) => {
+    console.log('Notification:', event.data);
+});
+
+// Error handling
+source.onerror = (event) => {
+    if (source.readyState === EventSource.CONNECTING) {
+        console.log('Reconnecting...');
+    } else {
+        console.log('Error occurred');
+    }
+};
+
+// Close connection
+source.close();
+
+// Ready states
+EventSource.CONNECTING  // 0 - Connecting
+EventSource.OPEN        // 1 - Open
+EventSource.CLOSED      // 2 - Closed
+
+// Server response format (text/event-stream):
+// data: Simple message\n\n
+// data: {"json": "data"}\n\n
+// event: custom\ndata: Custom event\n\n
+// id: 123\ndata: Message with ID\n\n
+// retry: 5000\n\n</div>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let mockInterval = null;
+        let mockEventId = 0;
+        let stats = { total: 0, messages: 0, custom: 0, errors: 0 };
+
+        const readyStates = {
+            0: 'CONNECTING',
+            1: 'OPEN',
+            2: 'CLOSED'
+        };
+
+        function checkEventSource() {
+            const available = typeof EventSource !== 'undefined';
+            const indicator = document.getElementById('indicator');
+            const statusText = document.getElementById('connectionStatus');
+            const status = document.getElementById('status');
+
+            if (available) {
+                indicator.className = 'indicator disconnected';
+                statusText.textContent = 'Available (Disconnected)';
+                status.className = 'status success';
+            } else {
+                indicator.className = 'indicator';
+                statusText.textContent = 'Not Supported';
+                status.className = 'status error';
+                document.getElementById('connectBtn').disabled = true;
+            }
+            return available;
+        }
+
+        function updateStatus(state) {
+            const indicator = document.getElementById('indicator');
+            const statusText = document.getElementById('connectionStatus');
+            const status = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+
+            switch (state) {
+                case 'connecting':
+                    indicator.className = 'indicator connecting';
+                    statusText.textContent = 'Connecting...';
+                    status.className = 'status warning';
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = true;
+                    break;
+                case 'connected':
+                    indicator.className = 'indicator connected';
+                    statusText.textContent = 'Connected';
+                    status.className = 'status success';
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                    break;
+                case 'disconnected':
+                    indicator.className = 'indicator disconnected';
+                    statusText.textContent = 'Disconnected';
+                    status.className = 'status error';
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                    break;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalEvents').textContent = stats.total;
+            document.getElementById('messageEvents').textContent = stats.messages;
+            document.getElementById('customEvents').textContent = stats.custom;
+            document.getElementById('errorCount').textContent = stats.errors;
+        }
+
+        function logEvent(type, message, className = 'message') {
+            const log = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${className}`;
+            entry.innerHTML = `
+                <span class="log-time">${escapeHtml(time)}</span>
+                <span class="log-type">${escapeHtml(type)}</span>
+                <span class="log-message">${escapeHtml(message)}</span>
+            `;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '';
+            stats = { total: 0, messages: 0, custom: 0, errors: 0 };
+            updateStats();
+            logEvent('INFO', 'Log cleared', 'open');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function connect() {
+            const url = document.getElementById('sseUrl').value;
+            if (!url) {
+                alert('Please enter an SSE endpoint URL');
+                return;
+            }
+
+            updateStatus('connecting');
+            logEvent('CONNECTING', `Connecting to ${url}...`, 'open');
+
+            try {
+                eventSource = new EventSource(url);
+
+                eventSource.onopen = function(event) {
+                    updateStatus('connected');
+                    logEvent('OPEN', 'Connection established', 'open');
+                };
+
+                eventSource.onmessage = function(event) {
+                    stats.total++;
+                    stats.messages++;
+                    updateStats();
+                    logEvent('MESSAGE', `Data: ${event.data}${event.lastEventId ? ` | ID: ${event.lastEventId}` : ''}`, 'message');
+                };
+
+                eventSource.onerror = function(event) {
+                    stats.errors++;
+                    updateStats();
+
+                    if (eventSource.readyState === EventSource.CONNECTING) {
+                        logEvent('RECONNECT', 'Connection lost, attempting to reconnect...', 'error');
+                        updateStatus('connecting');
+                    } else if (eventSource.readyState === EventSource.CLOSED) {
+                        logEvent('ERROR', 'Connection failed or closed', 'error');
+                        updateStatus('disconnected');
+                        eventSource = null;
+                    }
+                };
+
+                // Listen for common custom event types
+                ['update', 'notification', 'ping', 'status'].forEach(eventType => {
+                    eventSource.addEventListener(eventType, function(event) {
+                        stats.total++;
+                        stats.custom++;
+                        updateStats();
+                        logEvent(eventType.toUpperCase(), `Data: ${event.data}`, 'custom');
+                    });
+                });
+
+            } catch (e) {
+                logEvent('ERROR', `Failed to create EventSource: ${e.message}`, 'error');
+                updateStatus('disconnected');
+            }
+        }
+
+        function disconnect() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                logEvent('CLOSE', 'Connection closed by user', 'error');
+                updateStatus('disconnected');
+            }
+        }
+
+        // Mock stream functionality
+        function startMock() {
+            const interval = parseInt(document.getElementById('mockInterval').value) || 1000;
+            const eventType = document.getElementById('mockEventType').value;
+
+            document.getElementById('mockStartBtn').disabled = true;
+            document.getElementById('mockStopBtn').disabled = false;
+
+            logEvent('MOCK START', `Starting mock stream (interval: ${interval}ms, type: ${eventType})`, 'mock');
+
+            const eventTypes = ['message', 'update', 'notification', 'ping'];
+            const sampleData = [
+                { type: 'message', data: 'Hello from mock stream!' },
+                { type: 'update', data: JSON.stringify({ status: 'active', time: Date.now() }) },
+                { type: 'notification', data: 'New notification received' },
+                { type: 'ping', data: 'pong' },
+                { type: 'message', data: JSON.stringify({ id: Math.random(), value: Math.floor(Math.random() * 100) }) },
+                { type: 'update', data: 'System update in progress...' },
+                { type: 'notification', data: JSON.stringify({ alert: 'Warning', level: 'medium' }) }
+            ];
+
+            mockInterval = setInterval(() => {
+                mockEventId++;
+                let selectedType, data;
+
+                if (eventType === 'random') {
+                    const sample = sampleData[Math.floor(Math.random() * sampleData.length)];
+                    selectedType = sample.type;
+                    data = sample.data;
+                } else {
+                    selectedType = eventType;
+                    if (eventType === 'message') {
+                        data = `Mock message #${mockEventId} - ${new Date().toISOString()}`;
+                    } else {
+                        data = JSON.stringify({
+                            eventId: mockEventId,
+                            type: selectedType,
+                            timestamp: Date.now(),
+                            random: Math.random().toFixed(4)
+                        });
+                    }
+                }
+
+                stats.total++;
+                if (selectedType === 'message') {
+                    stats.messages++;
+                } else {
+                    stats.custom++;
+                }
+                updateStats();
+
+                const className = selectedType === 'message' ? 'message' : 'custom';
+                logEvent(selectedType.toUpperCase(), `ID: ${mockEventId} | Data: ${data}`, className);
+
+            }, interval);
+        }
+
+        function stopMock() {
+            if (mockInterval) {
+                clearInterval(mockInterval);
+                mockInterval = null;
+                document.getElementById('mockStartBtn').disabled = false;
+                document.getElementById('mockStopBtn').disabled = true;
+                logEvent('MOCK STOP', 'Mock stream stopped', 'mock');
+            }
+        }
+
+        // Initialize
+        checkEventSource();
+    </script>
+</body>
+</html>

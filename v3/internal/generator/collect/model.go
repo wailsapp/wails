@@ -71,6 +71,7 @@ type (
 		IsMapKey           bool
 		IsTypeParam        bool
 		IsStringAlias      bool
+		IsNumberAlias      bool
 		IsClass            bool
 		IsAny              bool
 	}
@@ -178,6 +179,7 @@ func (info *ModelInfo) Collect() *ModelInfo {
 			IsMapKey:           IsMapKey(ityp),
 			IsTypeParam:        IsTypeParam(ityp),
 			IsStringAlias:      IsStringAlias(ityp),
+			IsNumberAlias:      IsNumberAlias(ityp),
 			IsClass:            IsClass(ityp),
 			IsAny:              IsAny(ityp),
 		}

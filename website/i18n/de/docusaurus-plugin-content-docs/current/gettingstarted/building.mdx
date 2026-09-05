@@ -1,0 +1,26 @@
+---
+sidebar_position: 6
+---
+
+# Kompilieren deines Projektes
+
+Führe in deinem Projektverzeichnis `wails build` aus. Dadurch wird dein Projekt kompiliert und die produktionsfertige Binärdatei im `build/bin` Verzeichnis gespeichert.
+
+:::info Linux
+Wenn eine Linux-Distribution ohne webkit2gtk-4.0 verwendet wird (wie Ubuntu 24.04), muss `-Tags webkit2_41` hinzugefügt werden.
+:::
+
+Wenn die Binärdatei ausgeführt wird, sollte folgende Standardanwendung zu sehen sein:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/defaultproject.webp").default}
+    width="50%"
+    class="screenshot"
+  />
+</div>
+<br />
+```
+
+Weitere Details zu den Kompilierungsoptionen findet man in der [CLI Referenz](../reference/cli.mdx#build).

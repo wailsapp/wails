@@ -1,5 +1,6 @@
 ---
 title: Tiny RDM
+description: "A desktop application built with Wails"
 ---
 
 ![Tiny RDM Screenshot](../../../../assets/showcase-images/tiny-rdm1.webp)

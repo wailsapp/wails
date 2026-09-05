@@ -1,0 +1,53 @@
+//go:build windows
+
+package webview2
+import (
+	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
+)
+
+type ICoreWebView2Vtbl struct {
+	IUnknownVtbl
+	AddNavigationStarting ComProc
+	GetSettings ComProc
+}
+
+type ICoreWebView2 struct {
+	Vtbl *ICoreWebView2Vtbl
+}
+
+func (i *ICoreWebView2) AddRef() uintptr {
+	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return refCounter
+}
+
+
+func (i *ICoreWebView2) AddNavigationStarting(eventHandler *ICoreWebView2NavigationStartingEventHandler) (EventRegistrationToken, error) {
+
+	var token EventRegistrationToken
+
+	hr, _, err := i.Vtbl.AddNavigationStarting.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(eventHandler)),
+		uintptr(unsafe.Pointer(&token)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return EventRegistrationToken{}, syscall.Errno(hr)
+	}
+	return token, err
+}
+
+func (i *ICoreWebView2) GetSettings() (*ICoreWebView2Settings, error) {
+
+	var settings *ICoreWebView2Settings
+
+	hr, _, err := i.Vtbl.GetSettings.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&settings)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return settings, err
+}

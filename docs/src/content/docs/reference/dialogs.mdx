@@ -152,8 +152,8 @@ func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error)
 ```
 
 **Returns:**
-- `string` - Selected file path (empty if cancelled)
-- `error` - Error if dialog failed
+- `string` - Selected file path. Treat an empty string as "no selection" (the platform impls may return either an empty string or a non-nil error on cancellation depending on OS).
+- `error` - Non-nil if the dialog itself failed to present.
 
 **Example:**
 ```go
@@ -163,7 +163,11 @@ path, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 
 if err != nil {
-    // User cancelled or error occurred
+    // The dialog failed to present (rare).
+    return
+}
+if path == "" {
+    // User cancelled.
     return
 }
 
@@ -772,6 +776,29 @@ func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
 - GTK dialogs on GTK-based systems
 - Qt dialogs on Qt-based systems
 - Matches desktop environment
+
+#### Linux Dialog Behavior
+
+On Linux, the default GTK4 build uses **xdg-desktop-portal** for file dialogs, which provides
+native desktop integration but means some options have no effect. The legacy GTK3 path
+(`-tags gtk3`) retains full programmatic control over these options:
+
+| Option | GTK3 (`-tags gtk3`) | GTK4 (default) | Notes |
+|--------|---------------------|----------------|-------|
+| `ShowHiddenFiles()` | ✅ Works | ❌ No effect | User controls via dialog's UI toggle (Ctrl+H or menu) |
+| `CanCreateDirectories()` | ✅ Works | ❌ No effect | Always enabled in the portal |
+| `ResolvesAliases()` | ✅ Works | ❌ No effect | Portal handles symlink resolution |
+| `SetButtonText()` | ✅ Works | ✅ Works | Custom accept button text works |
+
+**Why these limitations exist:** GTK4's portal-based dialogs delegate UI control to the desktop
+environment (GNOME, KDE, etc.). This is by design — the portal provides consistent UX across
+applications and respects user preferences.
+
+:::note
+The default GTK4 build uses the portal-backed dialogs. If your application needs full
+programmatic control over the dialog options above, build with the legacy `-tags gtk3` path
+(supported through v3.0.x; removed in v3.1) — see [Linux Packaging - Legacy GTK3 Support](/guides/build/linux#legacy-gtk3-support).
+:::
 
 ## Common Patterns
 

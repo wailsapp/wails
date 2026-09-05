@@ -1,0 +1,66 @@
+# Crossplatform build mit Github Actions
+
+Um ein Wails Projekt für alle verfügbaren Plattformen zu erstellen, muss für jedes Betriebssystem eine Applikation erstellt werden. Eine effektive Methode, um dies zu erreichen, ist die Verwendung von GitHub Actions.
+
+Eine Aktion, die das Erstellen einer Wails App erleichtert, ist verfügbar unter:
+https://github.com/dAppServer/wails-build-action
+
+Falls die bestehende Aktion die Anforderungen nicht erfüllt, können nur die notwendigen Schritte aus der Quelle ausgewählt werden:
+https://github.com/dAppServer/wails-build-action/blob/main/action.yml
+
+Nachfolgend findest du ein umfassendes Beispiel, das die Erstellung einer App nach der Erstellung eines neuen Git-Tags und das anschließende Hochladen in die Actions-Artefakte zeigt:
+
+```yaml
+name: Wails build
+
+on:
+  push:
+    tags:
+    # Match any new tag
+      - '*'
+
+env:
+  # Necessary for most environments as build failure can occur due to OOM issues
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+jobs:
+  build:
+    strategy:
+    # Failure in one platform build won't impact the others
+      fail-fast: false
+      matrix:
+        build:
+          - name: 'App'
+            platform:  'linux/amd64'
+            os: 'ubuntu-latest'
+          - name: 'App'
+            platform:  'windows/amd64'
+            os: 'windows-latest'
+          - name: 'App'
+            platform:  'darwin/universal'
+            os: 'macos-latest'
+
+    runs-on: ${{ matrix.build.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Build wails
+        uses: dAppServer/wails-build-action@v2.2
+        id: build
+        with:
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          package: false
+          go-version: '1.20'
+```
+
+Dieses Beispiel bietet Möglichkeiten für verschiedene Verbesserungen, unter anderem:
+
+- Cache-Abhängigkeiten
+- Code-Signierung
+- Hochladen auf Plattformen wie S3, Supabase, etc.
+- Secrets als Umgebungsvariablen einfügen
+- Verwendung von Umgebungsvariablen als Build-Variablen (wie zum Beispiel aus dem aktuellen Git-Tag extrahierte Versionsvariablen)

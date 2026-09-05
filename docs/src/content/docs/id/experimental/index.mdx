@@ -1,0 +1,74 @@
+---
+title: Fitur Eksperimental
+description: Rumah bagi eksperimen yang sedang berjalan di Wails v3 — apa itu, mengapa ada, dan cara memberikan umpan balik.
+sidebar:
+    label: Ikhtisar
+    order: 0
+    badge:
+        text: Eksperimental
+        variant: caution
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Di sini ada eksperimen">
+Semua hal dalam bagian ini, menurut definisinya, adalah eksperimen. Fitur-fitur di sini
+bersifat opt-in, tidak aktif secara default, dan mungkin berubah bentuk, diganti namanya, atau dihapus
+sepenuhnya antar rilis. Jangan membangun sesuatu yang kritis berdasarkan fitur-fitur ini tanpa
+siap menghadapi perubahan.
+</Aside>
+
+## Apa yang dimaksud "Eksperimental"
+
+Wails merilis eksperimen secara terbuka. Eksperimen adalah ide yang menurut kami cukup
+menjanjikan untuk diberikan ke tangan Anda lebih awal — tetapi belum sepenuhnya kami komitkan.
+Kami mempublikasikannya *karena* kami ingin belajar dari penggunaan nyata sebelum memutuskan apakah
+ini akan menjadi bagian permanen dan didukung dari Wails.
+
+Artinya beberapa hal berlaku untuk semua yang ada di bagian ini:
+
+- **Bersifat opt-in.** Eksperimen tidak pernah mengubah perilaku default `wails3`.
+  Anda mengaktifkannya secara sengaja (biasanya dengan variabel lingkungan atau
+  build flag), dan dengan dinonaktifkan, tidak ada yang berubah dari alur kerja Anda yang ada.
+- **Mungkin tidak bertahan.** Beberapa eksperimen berkembang menjadi fitur stabil.
+  Yang lain dikerjakan ulang hingga tidak dikenali, atau dihapus. Kami lebih memilih mencoba hal-hal
+  secara publik dan belajar cepat daripada hanya merilis apa yang sudah kami yakini.
+- **API belum beku.** Nama, flag, default, dan perilaku dapat berubah
+  antar rilis selama eksperimen masih menemukan bentuknya. Catatan rilis akan
+  menyebutkan perubahan tersebut, tetapi jangan mengharapkan jaminan stabilitas yang dimiliki fitur stabil.
+
+## Kami ingin umpan balik Anda
+
+Ini adalah bagian terpenting. Eksperimen hidup atau mati berdasarkan apa yang kami dengar dari
+orang-orang yang benar-benar menggunakannya. Jika Anda mencoba salah satunya, kami benar-benar ingin tahu:
+
+- Apakah berhasil untuk proyek Anda? Di mana ia gagal?
+- Apakah lebih cepat / lebih jelas / lebih baik — atau tidak sepadan?
+- Apa yang harus benar agar Anda menggunakannya secara default?
+
+Umpan balik yang paling berguna bersifat konkret: apa yang Anda jalankan, apa yang Anda harapkan, apa
+yang sebenarnya terjadi. Setiap eksperimen memiliki thread-nya sendiri di kategori **Experiments**
+di GitHub Discussions:
+
+<CardGrid>
+  <LinkCard
+    title="Diskusi Eksperimen"
+    description="Temukan thread untuk eksperimen yang Anda gunakan dan ceritakan hasilnya, apa yang rusak, atau apa yang kurang."
+    href="https://github.com/wailsapp/wails/discussions/categories/experiments"
+  />
+</CardGrid>
+
+## Eksperimen saat ini
+
+<CardGrid>
+  <LinkCard
+    title="Wake"
+    description="Build runner alternatif yang mengenal Wails untuk Taskfile Anda yang sudah ada. Build inkremental lebih cepat, output terstruktur, paralel secara default."
+    href="/id/experimental/wake"
+  />
+  <LinkCard
+    title="Kontrol LLM (MCP)"
+    description="Server Model Context Protocol bawaan yang memungkinkan agen LLM memeriksa, menguji, dan mengendalikan aplikasi Wails yang berjalan — tidak diperlukan kode pengguna, diaktifkan dengan build tag."
+    href="/id/guides/mcp-service"
+  />
+</CardGrid>

@@ -19,7 +19,7 @@ import * as $models from "./models.js";
  * It has a multiline doc comment
  * The comment has even some * / traps!!
  */
-export function Greet(str: string, people: $models.Person[], $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_: `${number}`]: boolean | null }, $4: (number | null)[], ...other: string[]): $CancellablePromise<[$models.Person, any, number[]]> {
+export function Greet(str: string, people: $models.Person[], $2: {"AnotherCount": number, "AnotherOne": $models.Person | null}, assoc: { [_ in `${number}`]?: boolean | null }, $4: (number | null)[], ...other: string[]): $CancellablePromise<[$models.Person, any, number[]]> {
     return $Call.ByName("main.GreetService.Greet", str, people, $2, assoc, $4, other).then(($result: any) => {
         $result[0] = $$createType0($result[0]);
         $result[2] = $$createType1($result[2]);

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .fullscreen-target {
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .fullscreen-target h3 {
+            font-size: 2rem;
+            color: #4ade80;
+        }
+        .fullscreen-target p {
+            color: #aaa;
+        }
+        .fullscreen-target:fullscreen {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 100%);
+        }
+        .fullscreen-target:fullscreen h3 {
+            font-size: 4rem;
+        }
+        .video-container {
+            width: 100%;
+            max-width: 640px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .video-container video {
+            width: 100%;
+            display: block;
+        }
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: flex;
+            gap: 10px;
+        }
+        .video-controls button {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+
+        /* Fullscreen styles */
+        :fullscreen {
+            background: #0a0a1a;
+        }
+        ::backdrop {
+            background: rgba(0, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fullscreen API Demo</h1>
+        <p class="description">
+            The Fullscreen API allows elements to be displayed in full-screen mode,
+            hiding all browser UI for an immersive experience.
+        </p>
+
+        <div class="status success">
+            Fullscreen API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Element Fullscreen</h2>
+            <div class="fullscreen-target" id="fullscreenTarget">
+                <h3>Fullscreen Target</h3>
+                <p>Click the button below to make this element fullscreen</p>
+                <p id="fullscreenStatus">Press ESC or click Exit to leave fullscreen</p>
+                <button onclick="enterFullscreen('fullscreenTarget')">Enter Fullscreen</button>
+                <button class="danger" onclick="exitFullscreen()">Exit Fullscreen</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Document Fullscreen</h2>
+            <button onclick="enterFullscreen('document')">Fullscreen Entire Page</button>
+            <button onclick="toggleFullscreen()">Toggle Fullscreen</button>
+            <button class="danger" onclick="exitFullscreen()">Exit Fullscreen</button>
+        </div>
+
+        <div class="card">
+            <h2>Video Fullscreen</h2>
+            <div class="video-container" id="videoContainer">
+                <video id="demoVideo" loop muted>
+                    <source src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAA" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="video-controls">
+                    <button onclick="document.getElementById('demoVideo').play()">Play</button>
+                    <button onclick="document.getElementById('demoVideo').pause()">Pause</button>
+                    <button onclick="enterFullscreen('videoContainer')">Fullscreen</button>
+                </div>
+            </div>
+            <p style="color: #666; margin-top: 10px; font-size: 0.85rem;">
+                Note: A sample video would play here. The fullscreen button demonstrates video fullscreen.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Fullscreen State</h2>
+            <div class="output" id="stateOutput">Current state will be displayed here...</div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+    </div>
+
+    <script>
+        function checkSupport() {
+            const enabled = document.fullscreenEnabled ||
+                           document.webkitFullscreenEnabled ||
+                           document.mozFullScreenEnabled ||
+                           document.msFullscreenEnabled;
+
+            document.getElementById('supported').textContent = enabled ? 'Available' : 'Not available';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'document.fullscreenEnabled', supported: !!document.fullscreenEnabled },
+                { name: 'element.requestFullscreen()', supported: !!document.documentElement.requestFullscreen },
+                { name: 'document.exitFullscreen()', supported: !!document.exitFullscreen },
+                { name: 'document.fullscreenElement', supported: 'fullscreenElement' in document },
+                { name: ':fullscreen pseudo-class', supported: CSS.supports('selector(:fullscreen)') },
+                { name: '::backdrop pseudo-element', supported: true }, // Can't easily test
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+
+            updateState();
+        }
+
+        function enterFullscreen(target) {
+            let element;
+            if (target === 'document') {
+                element = document.documentElement;
+            } else {
+                element = document.getElementById(target);
+            }
+
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        function toggleFullscreen() {
+            if (document.fullscreenElement) {
+                exitFullscreen();
+            } else {
+                enterFullscreen('document');
+            }
+        }
+
+        function updateState() {
+            const fullscreenElement = document.fullscreenElement ||
+                                     document.webkitFullscreenElement ||
+                                     document.mozFullScreenElement ||
+                                     document.msFullscreenElement;
+
+            const output = document.getElementById('stateOutput');
+            output.textContent = `Fullscreen active: ${!!fullscreenElement}
+Fullscreen element: ${fullscreenElement ? fullscreenElement.id || fullscreenElement.tagName : 'none'}
+Document fullscreen enabled: ${document.fullscreenEnabled}
+
+Keyboard shortcuts:
+- F11: Browser fullscreen (not API)
+- ESC: Exit fullscreen
+- Click outside: May exit fullscreen`;
+        }
+
+        // Event listeners
+        document.addEventListener('fullscreenchange', () => {
+            updateState();
+            const status = document.getElementById('fullscreenStatus');
+            if (document.fullscreenElement) {
+                status.textContent = 'Now in fullscreen mode! Press ESC to exit.';
+            } else {
+                status.textContent = 'Press ESC or click Exit to leave fullscreen';
+            }
+        });
+
+        document.addEventListener('fullscreenerror', (e) => {
+            console.error('Fullscreen error:', e);
+            document.getElementById('stateOutput').textContent = 'Fullscreen request failed. This may happen if:\n- User gesture required\n- Element not in DOM\n- Permission denied';
+        });
+
+        checkSupport();
+    </script>
+</body>
+</html>

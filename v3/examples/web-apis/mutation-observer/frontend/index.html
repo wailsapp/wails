@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MutationObserver API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(233, 69, 96, 0.2); color: #e94560; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #e94560; }
+        button.warning { background: #fbbf24; color: #1a1a2e; }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .observed-container {
+            background: #0a0a1a;
+            border: 2px dashed #4ade80;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 150px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        .observed-container.active {
+            border-color: #e94560;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3);
+        }
+        .child-element {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: #1a1a2e;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .child-element.modified {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        }
+        .child-element.highlighted {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+        .observer-config {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .config-option {
+            background: #0a0a1a;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .config-option label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .config-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #4ade80;
+        }
+        .config-option .option-desc {
+            color: #888;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        .mutation-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        .mutation-badge.childList { background: #4ade80; color: #1a1a2e; }
+        .mutation-badge.attributes { background: #60a5fa; color: #1a1a2e; }
+        .mutation-badge.characterData { background: #fbbf24; color: #1a1a2e; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .stat-box {
+            background: #0a0a1a;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-box .value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #4ade80;
+            font-family: monospace;
+        }
+        .stat-box .label {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        .text-content {
+            background: #0a0a1a;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 60px;
+        }
+        .text-content[contenteditable="true"] {
+            border: 2px solid #333;
+            cursor: text;
+        }
+        .text-content[contenteditable="true"]:focus {
+            border-color: #4ade80;
+            outline: none;
+        }
+        .observer-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .observer-status.active {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        .observer-status.inactive {
+            background: rgba(233, 69, 96, 0.2);
+            color: #e94560;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MutationObserver API Demo</h1>
+        <p class="description">
+            The MutationObserver API provides the ability to watch for changes being made to the DOM tree,
+            including child elements, attributes, and text content.
+        </p>
+
+        <div class="status success" id="status">
+            MutationObserver: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Observer Configuration</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Configure what types of mutations to observe:</p>
+            <div class="observer-config">
+                <div class="config-option">
+                    <label>
+                        <input type="checkbox" id="configChildList" checked>
+                        <span>Child List</span>
+                    </label>
+                    <div class="option-desc">Watch for added/removed child nodes</div>
+                </div>
+                <div class="config-option">
+                    <label>
+                        <input type="checkbox" id="configAttributes" checked>
+                        <span>Attributes</span>
+                    </label>
+                    <div class="option-desc">Watch for attribute changes</div>
+                </div>
+                <div class="config-option">
+                    <label>
+                        <input type="checkbox" id="configCharacterData" checked>
+                        <span>Character Data</span>
+                    </label>
+                    <div class="option-desc">Watch for text content changes</div>
+                </div>
+                <div class="config-option">
+                    <label>
+                        <input type="checkbox" id="configSubtree" checked>
+                        <span>Subtree</span>
+                    </label>
+                    <div class="option-desc">Include descendant nodes</div>
+                </div>
+            </div>
+            <div class="controls">
+                <button onclick="startObserver()">Start Observer</button>
+                <button class="danger" onclick="stopObserver()">Stop Observer</button>
+                <span class="observer-status inactive" id="observerStatus">Inactive</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Mutation Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="value" id="statChildList">0</div>
+                    <div class="label">Child List Mutations</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="statAttributes">0</div>
+                    <div class="label">Attribute Mutations</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="statCharacterData">0</div>
+                    <div class="label">Character Data Mutations</div>
+                </div>
+            </div>
+            <button class="secondary" onclick="resetStats()">Reset Statistics</button>
+        </div>
+
+        <div class="card">
+            <h2>Child List Mutations</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Add, remove, or modify child elements:</p>
+            <div class="controls">
+                <button onclick="addChild()">Add Child</button>
+                <button class="secondary" onclick="removeLastChild()">Remove Last Child</button>
+                <button class="warning" onclick="clearChildren()">Clear All</button>
+            </div>
+            <div class="observed-container" id="childContainer">
+                <div class="child-element">Initial Element 1</div>
+                <div class="child-element">Initial Element 2</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Attribute Mutations</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Modify element attributes:</p>
+            <div class="controls">
+                <button onclick="toggleClass()">Toggle Class</button>
+                <button class="secondary" onclick="changeStyle()">Change Style</button>
+                <button class="warning" onclick="setDataAttribute()">Set Data Attribute</button>
+            </div>
+            <div class="observed-container" id="attributeTarget">
+                <div class="child-element" id="attrElement">Watch my attributes change!</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Character Data Mutations</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Edit the text content below (click to edit):</p>
+            <div class="text-content" id="textContent" contenteditable="true">
+                Edit this text to trigger characterData mutations. Try typing, deleting, or pasting text!
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Batch Mutations</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Perform multiple mutations at once:</p>
+            <div class="controls">
+                <button onclick="batchMutations(5)">5 Mutations</button>
+                <button class="secondary" onclick="batchMutations(10)">10 Mutations</button>
+                <button class="warning" onclick="batchMutations(25)">25 Mutations</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <div class="output" id="eventLog">Mutation events will appear here...</div>
+            <button onclick="clearLog()" style="margin-top: 15px;">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        let observer = null;
+        let logEntries = [];
+        let childCounter = 2;
+        let stats = { childList: 0, attributes: 0, characterData: 0 };
+
+        function checkSupport() {
+            const supported = 'MutationObserver' in window;
+            const statusEl = document.getElementById('status');
+            const supportedEl = document.getElementById('supported');
+
+            if (supported) {
+                supportedEl.textContent = 'Available';
+                statusEl.classList.remove('error');
+                statusEl.classList.add('success');
+            } else {
+                supportedEl.textContent = 'Not available';
+                statusEl.classList.remove('success');
+                statusEl.classList.add('error');
+            }
+            return supported;
+        }
+
+        function log(type, message) {
+            const time = new Date().toLocaleTimeString();
+            const badge = `<span class="mutation-badge ${type}">${type}</span>`;
+            logEntries.unshift(`[${time}] ${type.toUpperCase()}: ${message}`);
+            if (logEntries.length > 30) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Mutation events will appear here...';
+        }
+
+        function updateStats() {
+            document.getElementById('statChildList').textContent = stats.childList;
+            document.getElementById('statAttributes').textContent = stats.attributes;
+            document.getElementById('statCharacterData').textContent = stats.characterData;
+        }
+
+        function resetStats() {
+            stats = { childList: 0, attributes: 0, characterData: 0 };
+            updateStats();
+            log('info', 'Statistics reset');
+        }
+
+        function getConfig() {
+            return {
+                childList: document.getElementById('configChildList').checked,
+                attributes: document.getElementById('configAttributes').checked,
+                characterData: document.getElementById('configCharacterData').checked,
+                subtree: document.getElementById('configSubtree').checked,
+                attributeOldValue: true,
+                characterDataOldValue: true
+            };
+        }
+
+        function startObserver() {
+            if (observer) {
+                observer.disconnect();
+            }
+
+            const config = getConfig();
+
+            observer = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    switch (mutation.type) {
+                        case 'childList':
+                            stats.childList++;
+                            if (mutation.addedNodes.length > 0) {
+                                log('childList', `${mutation.addedNodes.length} node(s) added`);
+                            }
+                            if (mutation.removedNodes.length > 0) {
+                                log('childList', `${mutation.removedNodes.length} node(s) removed`);
+                            }
+                            break;
+                        case 'attributes':
+                            stats.attributes++;
+                            log('attributes', `"${mutation.attributeName}" changed on <${mutation.target.tagName.toLowerCase()}>`);
+                            break;
+                        case 'characterData':
+                            stats.characterData++;
+                            const preview = mutation.target.textContent.substring(0, 30);
+                            log('characterData', `Text changed: "${preview}..."`);
+                            break;
+                    }
+                    updateStats();
+                });
+
+                // Flash the container to show mutation detected
+                document.querySelectorAll('.observed-container').forEach(el => {
+                    el.classList.add('active');
+                    setTimeout(() => el.classList.remove('active'), 300);
+                });
+            });
+
+            // Observe all containers
+            const targets = [
+                document.getElementById('childContainer'),
+                document.getElementById('attributeTarget'),
+                document.getElementById('textContent')
+            ];
+
+            targets.forEach(target => {
+                if (target) observer.observe(target, config);
+            });
+
+            document.getElementById('observerStatus').textContent = 'Active';
+            document.getElementById('observerStatus').className = 'observer-status active';
+            log('info', 'Observer started with config: ' + JSON.stringify(config));
+        }
+
+        function stopObserver() {
+            if (observer) {
+                observer.disconnect();
+                observer = null;
+            }
+            document.getElementById('observerStatus').textContent = 'Inactive';
+            document.getElementById('observerStatus').className = 'observer-status inactive';
+            log('info', 'Observer stopped');
+        }
+
+        // Child List mutations
+        function addChild() {
+            const container = document.getElementById('childContainer');
+            childCounter++;
+            const child = document.createElement('div');
+            child.className = 'child-element';
+            child.textContent = `Dynamic Element ${childCounter}`;
+            container.appendChild(child);
+        }
+
+        function removeLastChild() {
+            const container = document.getElementById('childContainer');
+            const children = container.querySelectorAll('.child-element');
+            if (children.length > 0) {
+                children[children.length - 1].remove();
+            }
+        }
+
+        function clearChildren() {
+            const container = document.getElementById('childContainer');
+            container.innerHTML = '';
+            childCounter = 0;
+        }
+
+        // Attribute mutations
+        let toggleState = false;
+        function toggleClass() {
+            const el = document.getElementById('attrElement');
+            toggleState = !toggleState;
+            el.classList.toggle('modified', toggleState);
+            el.classList.toggle('highlighted', !toggleState);
+        }
+
+        let styleState = 0;
+        const styles = [
+            { transform: 'scale(1)', borderRadius: '6px' },
+            { transform: 'scale(1.02)', borderRadius: '12px' },
+            { transform: 'scale(0.98)', borderRadius: '20px' }
+        ];
+        function changeStyle() {
+            const el = document.getElementById('attrElement');
+            styleState = (styleState + 1) % styles.length;
+            Object.assign(el.style, styles[styleState]);
+        }
+
+        let dataCounter = 0;
+        function setDataAttribute() {
+            const el = document.getElementById('attrElement');
+            dataCounter++;
+            el.dataset.counter = dataCounter;
+            el.dataset.timestamp = Date.now();
+        }
+
+        // Batch mutations
+        function batchMutations(count) {
+            const container = document.getElementById('childContainer');
+
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    // Add a child
+                    childCounter++;
+                    const child = document.createElement('div');
+                    child.className = 'child-element';
+                    child.textContent = `Batch Element ${childCounter}`;
+                    container.appendChild(child);
+
+                    // Also modify an attribute
+                    child.dataset.batchIndex = i;
+                }, i * 50);
+            }
+
+            log('info', `Batch of ${count} mutations started`);
+        }
+
+        // Initialize
+        if (checkSupport()) {
+            startObserver();
+        }
+    </script>
+</body>
+</html>

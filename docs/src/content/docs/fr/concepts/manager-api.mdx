@@ -1,0 +1,266 @@
+---
+title: API des gestionnaires
+description: Structure d'API organisée avec des interfaces de gestionnaire spécialisées
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+L'API des gestionnaires de Wails v3 offre un moyen organisé et facile à découvrir d'accéder aux fonctionnalités de l'application via des structs de gestionnaire spécialisées. Cette nouvelle structure d'API regroupe les méthodes liées tout en maintenant une compatibilité ascendante totale avec l'API App traditionnelle.
+
+## Aperçu
+
+L'API des gestionnaires organise les fonctionnalités de l'application en onze domaines spécialisés :
+
+- **`app.Window`** - Création, gestion et rappels des fenêtres
+- **`app.ContextMenu`** - Enregistrement et gestion des menus contextuels  
+- **`app.KeyBinding`** - Gestion des raccourcis clavier globaux
+- **`app.Browser`** - Intégration du navigateur (ouverture d'URL et de fichiers)
+- **`app.Env`** - Informations d'environnement et état du système
+- **`app.Dialog`** - Opérations de boîtes de dialogue de fichiers et de messages
+- **`app.Event`** - Gestion des événements personnalisés et des événements de l'application
+- **`app.Menu`** - Gestion du menu de l'application
+- **`app.Screen`** - Gestion des écrans et transformations de coordonnées
+- **`app.Clipboard`** - Opérations de texte du presse-papiers
+- **`app.SystemTray`** - Création et gestion de l'icône de la zone de notification
+
+## Avantages
+
+- **Meilleure découvrabilité** - L'autocomplétion de l'IDE affiche une surface d'API organisée
+- **Organisation du code améliorée** - Méthodes liées regroupées ensemble
+- **Maintenabilité accrue** - Séparation des responsabilités entre les gestionnaires
+- **Extensibilité future** - Plus facile d'ajouter de nouvelles fonctionnalités à des domaines spécifiques
+
+## Utilisation
+
+L'API des gestionnaires fournit un accès organisé à toutes les fonctionnalités de l'application :
+
+```go
+// Événements et gestion d'événements personnalisés
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// Gestion des fenêtres
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// Intégration du navigateur
+app.Browser.OpenURL("https://wails.io")
+
+// Gestion du menu
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// Zone de notification
+systray := app.SystemTray.New()
+```
+
+## Référence des gestionnaires
+
+### Gestionnaire de fenêtres
+
+Gère la création, la récupération et les rappels de cycle de vie des fenêtres.
+
+```go
+// Créer des fenêtres
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// Trouver des fenêtres
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// Rappels de fenêtre
+app.Window.OnCreate(func(window Window) {
+    // Gérer la création de la fenêtre
+})
+```
+
+### Gestionnaire d'événements
+
+Gère les événements personnalisés et l'écoute des événements de l'application.
+
+```go
+// Événements personnalisés
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // Gérer l'événement
+})
+app.Event.Off("userAction")
+app.Event.Reset() // Supprimer tous les écouteurs
+
+// Événements de l'application
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // Gérer le changement de thème système
+})
+```
+
+### Gestionnaire de navigateur
+
+Fournit l'intégration du navigateur pour l'ouverture d'URL et de fichiers.
+
+```go
+// Ouvrir des URL et des fichiers dans le navigateur par défaut
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### Gestionnaire d'environnement
+
+Accès aux informations de l'environnement système.
+
+```go
+// Obtenir les informations de l'environnement
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// Vérifier le thème système
+if app.Env.IsDarkMode() {
+    // Le mode sombre est actif
+}
+
+// Ouvrir le gestionnaire de fichiers
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### Gestionnaire de boîtes de dialogue
+
+Accès organisé aux boîtes de dialogue de fichiers et de messages.
+
+```go
+// Boîtes de dialogue de fichiers
+result, err := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetDefaultFilename("document.txt").
+    PromptForSingleSelection()
+
+// Boîtes de dialogue de messages
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### Gestionnaire de menus
+
+Création et gestion du menu de l'application.
+
+```go
+// Créer et définir le menu de l'application
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // Gérer le clic de menu
+})
+
+app.Menu.Set(menu)
+
+// Afficher la boîte de dialogue À propos
+app.Menu.ShowAbout()
+```
+
+### Gestionnaire de raccourcis clavier
+
+Gestion dynamique des raccourcis clavier globaux.
+
+```go
+// Ajouter des raccourcis clavier
+app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
+    // Gérer Ctrl+N
+})
+
+app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+    app.Quit()
+})
+
+// Supprimer des raccourcis clavier
+app.KeyBinding.Remove("ctrl+n")
+
+// Obtenir tous les raccourcis
+bindings := app.KeyBinding.GetAll()
+```
+
+### Gestionnaire de menus contextuels
+
+Gestion avancée des menus contextuels (pour les auteurs de bibliothèques).
+
+```go
+// Créer et enregistrer un menu contextuel
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// Récupérer le menu contextuel
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// Supprimer le menu contextuel
+app.ContextMenu.Remove("myMenu")
+```
+
+### Gestionnaire d'écrans
+
+Gestion des écrans et transformations de coordonnées pour les configurations multi-écrans.
+
+```go
+// Obtenir les informations des écrans
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// Transformations de coordonnées
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// Détection d'écran
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### Gestionnaire de presse-papiers
+
+Opérations de presse-papiers pour la lecture et l'écriture de texte.
+
+```go
+// Définir le texte dans le presse-papiers
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // Gérer l'erreur
+}
+
+// Obtenir le texte du presse-papiers
+text, ok := app.Clipboard.Text()
+if !ok {
+    // Gérer l'erreur
+} else {
+    // Utiliser le texte
+}
+```
+
+### Gestionnaire de zone de notification
+
+Création et gestion de l'icône de la zone de notification.
+
+```go
+// Créer la zone de notification
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// Ajouter un menu à la zone de notification
+menu := app.Menu.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // Gérer le clic
+})
+systray.SetMenu(menu)
+
+// Détruire la zone de notification lorsque c'est terminé
+systray.Destroy()
+```

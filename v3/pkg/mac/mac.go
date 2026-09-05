@@ -1,4 +1,4 @@
-//go:build darwin
+//go:build darwin && !ios
 
 // Package mac provides a set of functions to interact with the macOS platform.
 package mac

@@ -1,0 +1,14 @@
+# Angular
+
+Embora as Wails não tenham um modelo angular, é possível usar Angular com Wails.
+
+## Modo Desenvolvedor
+
+Para que o modo de desenvolvimento funcione com Angular, você precisa adicionar o seguinte ao seu `wails.json`:
+
+```json
+  "frontend:build": "npx ng build",
+  "frontend:install": "npm install",
+  "frontend:dev:watcher": "npx ng serve",
+  "frontend:dev:serverUrl": "http://localhost:4200",
+```

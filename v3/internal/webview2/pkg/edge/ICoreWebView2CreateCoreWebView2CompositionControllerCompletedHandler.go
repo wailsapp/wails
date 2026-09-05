@@ -1,0 +1,50 @@
+//go:build windows
+
+package edge
+
+type iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerVtbl struct {
+	_IUnknownVtbl
+	Invoke ComProc
+}
+
+type iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler struct {
+	vtbl *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerVtbl
+	impl iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerImpl
+}
+
+func iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownQueryInterface(this *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler, refiid, object uintptr) uintptr {
+	return this.impl.QueryInterface(refiid, object)
+}
+
+func iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownAddRef(this *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) uintptr {
+	return this.impl.AddRef()
+}
+
+func iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownRelease(this *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) uintptr {
+	return this.impl.Release()
+}
+
+func iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerInvoke(this *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler, errorCode uintptr, result *ICoreWebView2CompositionController) uintptr {
+	return this.impl.CreateCoreWebView2CompositionControllerCompleted(errorCode, result)
+}
+
+type iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerImpl interface {
+	_IUnknownImpl
+	CreateCoreWebView2CompositionControllerCompleted(errorCode uintptr, result *ICoreWebView2CompositionController) uintptr
+}
+
+var iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerFn = iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerVtbl{
+	_IUnknownVtbl{
+		NewComProc(iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownQueryInterface),
+		NewComProc(iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownAddRef),
+		NewComProc(iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownRelease),
+	},
+	NewComProc(iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerInvoke),
+}
+
+func newICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler(impl iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerImpl) *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler {
+	return &iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler{
+		vtbl: &iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerFn,
+		impl: impl,
+	}
+}

@@ -7,7 +7,6 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/generator/collect"
-	"golang.org/x/tools/go/types/typeutil"
 )
 
 // SkipCreate returns true if the given array of types needs no creation code.
@@ -22,35 +21,42 @@ func (m *module) SkipCreate(ts []types.Type) bool {
 
 // NeedsCreate returns true if the given type needs some creation code.
 func (m *module) NeedsCreate(typ types.Type) bool {
-	return m.needsCreateImpl(typ, new(typeutil.Map))
+	return m.needsCreateImpl(typ, make(map[*types.TypeName]bool))
 }
 
 // needsCreateImpl provides the actual implementation of NeedsCreate.
 // The visited parameter is used to break cycles.
-func (m *module) needsCreateImpl(typ types.Type, visited *typeutil.Map) bool {
+func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]bool) bool {
 	switch t := typ.(type) {
 	case *types.Alias:
-		if m.collector.IsVoidAlias(t.Obj()) {
-			return false
-		}
-
 		return m.needsCreateImpl(types.Unalias(typ), visited)
 
 	case *types.Named:
-		if visited.Set(typ, true) != nil {
+		obj := t.Obj()
+		if visited[obj] {
 			// The only way to hit a cycle here
 			// is through a chain of structs, nested pointers and arrays (not slices).
 			// We can safely return false at this point
-			// as the final answer is independent of the cycle.
+			// since the cycle will not contribute to the final answer.
 			return false
 		}
+		visited[obj] = true
 
-		if t.Obj().Pkg() == nil {
+		if obj.Pkg() == nil {
 			// Builtin named type: render underlying type.
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
-		if m.collector.IsVoidAlias(t.Obj()) {
+		// Handle special cases.
+		switch {
+		case m.collector.IsStdTime(obj):
+			switch m.TimeType {
+			case "Date":
+				return true
+			default:
+				return false
+			}
+		case m.collector.IsVoidAlias(obj):
 			return false
 		}
 
@@ -112,10 +118,6 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 	switch t := typ.(type) {
 	case *types.Alias:
-		if m.collector.IsVoidAlias(t.Obj()) {
-			return "$Create.Any"
-		}
-
 		return m.JSCreateWithParams(types.Unalias(typ), params)
 
 	case *types.Array, *types.Pointer:
@@ -147,7 +149,16 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		if m.collector.IsVoidAlias(t.Obj()) {
+		// Handle special cases.
+		switch {
+		case m.collector.IsStdTime(t.Obj()):
+			switch m.TimeType {
+			case "Date":
+				return "$Create.DateFromTime"
+			default:
+				return "$Create.Any"
+			}
+		case m.collector.IsVoidAlias(t.Obj()):
 			return "$Create.Any"
 		}
 

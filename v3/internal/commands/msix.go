@@ -202,7 +202,7 @@ func validateMSIXOptions(options *MSIXOptions) error {
 
 	// Set default processor architecture if not provided
 	if options.ProcessorArchitecture == "" {
-		options.ProcessorArchitecture = "x64"
+		options.ProcessorArchitecture = archToMSIX(runtime.GOARCH)
 	}
 
 	// Set default publisher if not provided

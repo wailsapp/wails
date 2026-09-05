@@ -1,0 +1,275 @@
+---
+title: Mitwirken
+description: Zu Wails beitragen
+sidebar:
+  order: 100
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Willkommen, Mitwirkende!
+
+Wir freuen uns über Beiträge zu Wails! Egal, ob du Fehler behebst, neue Funktionen hinzufügst oder die Dokumentation verbesserst, deine Hilfe wird sehr geschätzt.
+
+## Möglichkeiten zur Mitarbeit
+
+### 1. Probleme melden
+
+Einen Fehler gefunden? [Öffne ein Issue](https://github.com/wailsapp/wails/issues/new) mit:
+- Klare Beschreibung
+- Schritte zur Reproduktion
+- Erwartetes vs. tatsächliches Verhalten
+- Systeminformationen
+- Code-Beispiele
+
+### 2. Dokumentation verbessern
+
+Verbesserungen der Dokumentation sind immer willkommen:
+- Tippfehler und Fehler korrigieren
+- Beispiele hinzufügen
+- Erklärungen präzisieren
+- Inhalte übersetzen
+
+### 3. Code einreichen
+
+Reiche Code über Pull Requests ein:
+- Fehlerbehebungen
+- Neue Funktionen
+- Leistungsverbesserungen
+- Tests
+
+## Erste Schritte
+
+### Forken und Klonen
+
+```bash
+# Fork das Repository auf GitHub
+# Dann deinen Fork klonen
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# Upstream-Remote hinzufügen
+git remote add upstream https://github.com/wailsapp/wails.git
+```
+
+### Vom Quellcode bauen
+
+```bash
+# Abhängigkeiten installieren
+go mod download
+
+# Wails CLI bauen
+cd v3/cmd/wails3
+go build
+
+# Dein Build testen
+./wails3 version
+```
+
+### Tests ausführen
+
+```bash
+# Alle Tests ausführen
+go test ./...
+
+# Tests für bestimmte Pakete ausführen
+go test ./v3/pkg/application
+
+# Mit Abdeckungsanalyse ausführen
+go test -cover ./...
+```
+
+## Änderungen vornehmen
+
+### Einen Branch erstellen
+
+```bash
+# main aktualisieren
+git checkout main
+git pull upstream main
+
+# Feature-Branch erstellen
+git checkout -b feature/my-feature
+```
+
+### Deine Änderungen vornehmen
+
+1. **Code schreiben** unter Einhaltung der Go-Konventionen
+2. **Tests hinzufügen** für neue Funktionalitäten
+3. **Dokumentation aktualisieren**, falls erforderlich
+4. **Tests ausführen**, um sicherzustellen, dass nichts kaputtgeht
+5. **Änderungen committen** mit klaren Nachrichten
+
+### Richtlinien für Commits
+
+```bash
+# Gute Commit-Nachrichten
+git commit -m "fix: window focus issue on macOS beheben"
+git commit -m "feat: Unterstützung für benutzerdefiniertes Fenster-Chrome hinzufügen"
+git commit -m "docs: Bindings-Dokumentation verbessern"
+
+# Verwende konventionelle Commits:
+# - feat: Neue Funktion
+# - fix: Fehlerbehebung
+# - docs: Dokumentation
+# - test: Tests
+# - refactor: Code-Refactoring
+# - chore: Wartung
+```
+
+### Pull Request einreichen
+
+```bash
+# Zu deinem Fork pushen
+git push origin feature/my-feature
+
+# Pull Request auf GitHub öffnen
+# Klare Beschreibung bereitstellen
+# Verwandte Issues referenzieren
+```
+
+## Richtlinien für Pull Requests
+
+### Gute PR-Beschreibung
+
+```markdown
+## Beschreibung
+Kurze Beschreibung der Änderungen
+
+## Änderungen
+- Feature X hinzugefügt
+- Bug Y behoben
+- Dokumentation aktualisiert
+
+## Testing
+- Getestet auf macOS 14
+- Getestet auf Windows 11
+- Alle Tests bestanden
+
+## Verwandte Issues
+Behebt #123
+```
+
+### PR-Checkliste
+
+- [ ] Code folgt den Go-Konventionen
+- [ ] Tests hinzugefügt/aktualisiert
+- [ ] Dokumentation aktualisiert
+- [ ] Alle Tests bestanden
+- [ ] Keine Breaking Changes (oder dokumentiert)
+- [ ] Commit-Nachrichten klar
+
+## Code-Richtlinien
+
+### Go-Code-Stil
+
+```go
+// ✅ Gut: Klar, dokumentiert, getestet
+// ProcessData verarbeitet die Eingabedaten und gibt das Ergebnis zurück.
+// Es gibt einen Fehler zurück, wenn die Daten ungültig sind.
+func ProcessData(data string) (string, error) {
+    if data == "" {
+        return "", errors.New("data cannot be empty")
+    }
+    
+    result := process(data)
+    return result, nil
+}
+
+// ❌ Schlecht: Keine Docs, keine Fehlerbehandlung
+func ProcessData(data string) string {
+    return process(data)
+}
+```
+
+### Testing
+
+```go
+func TestProcessData(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        want    string
+        wantErr bool
+    }{
+        {"gültige Eingabe", "test", "processed", false},
+        {"leere Eingabe", "", "", true},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := ProcessData(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("ProcessData() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if got != tt.want {
+                t.Errorf("ProcessData() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+## Dokumentation
+
+### Schreiben von Docs
+
+Die Dokumentation verwendet Starlight (Astro):
+
+```bash
+cd docs
+npm install
+npm run dev
+```
+
+### Stil der Dokumentation
+
+- Verwende britisches Englisch als Rechtschreibung
+- Beginne mit dem Problem
+- Biete funktionierende Beispiele
+- Füge Troubleshooting hinzu
+- Verweise auf verwandte Inhalte
+
+## Community
+
+### Hilfe erhalten
+
+- **Discord:** [Tritt unserer Community bei](https://discord.gg/JDdSxwjhGf)
+- **GitHub Discussions:** Stelle Fragen
+- **GitHub Issues:** Melde Fehler
+
+### Verhaltenskodex
+
+Sei respektvoll, inklusiv und professionell. Wir sind alle hier, um großartige Software gemeinsam zu entwickeln.
+
+## Anerkennung
+
+Mitwirkende werden anerkannt in:
+- Release-Notizen
+- Liste der Mitwirkenden
+- GitHub-Einblicken
+
+Danke, dass du zu Wails beigetragen hast! 🎉
+
+## Nächste Schritte
+
+<CardGrid>
+  <Card title="GitHub Repository" icon="github">
+    Besuche das Wails-Repository.
+    
+    [Auf GitHub ansehen →](https://github.com/wailsapp/wails)
+  </Card>
+
+  <Card title="Discord-Community" icon="discord">
+    Tritt der Community bei.
+    
+    [Discord beitreten →](https://discord.gg/JDdSxwjhGf)
+  </Card>
+
+  <Card title="Dokumentation" icon="open-book">
+    Lies die Docs.
+    
+    [Docs durchsuchen →](/de/quick-start/why-wails)
+  </Card>
+</CardGrid>

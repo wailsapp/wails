@@ -1,0 +1,260 @@
+---
+title: 자주 묻는 질문
+description: Wails에 대한 일반적인 질문
+sidebar:
+  order: 99
+---
+
+## 일반
+
+### Wails란 무엇인가요?
+
+Wails는 Go와 웹 기술을 사용하여 데스크톱 애플리케이션을 구축하기 위한 프레임워크입니다. HTML, CSS 및 JavaScript로 UI를 구축할 수 있으면서도 네이티브 OS 통합을 제공합니다.
+
+### Wails는 Electron과 어떻게 비교되나요?
+
+**Wails:**
+- ~10MB 메모리 사용량
+- ~15MB 바이너리 크기
+- 네이티브 성능
+- Go 백엔드
+
+**Electron:**
+- ~100MB+ 메모리 사용량
+- ~150MB+ 바이너리 크기
+- Chromium 오버헤드
+- Node.js 백엔드
+
+### Wails는 프로덕션 환경에서 사용할 수 있나요?
+
+네! Wails v3는 프로덕션 애플리케이션에 적합합니다. 많은 회사들이 데스크톱 애플리케이션에 Wails를 사용하고 있습니다.
+
+### Wails는 어떤 플랫폼을 지원하나요?
+
+- Windows (7+)
+- macOS (10.13+)
+- Linux (GTK3)
+
+## 개발
+
+### Go를 알아야 하나요?
+
+기본적인 Go 지식이 도움이 되지만 필수 사항은 아닙니다. 간단한 서비스부터 시작하면서 진행하면서 배울 수 있습니다.
+
+### 좋아하는 프론트엔드 프레임워크를 사용할 수 있나요?
+
+네! Wails는 다음과 함께 작동합니다:
+- Vanilla JavaScript
+- React
+- Vue
+- Svelte
+- HTML/CSS/JS로 빌드되는 모든 프레임워크
+
+### JavaScript에서 Go 함수를 호출하려면 어떻게 하나요?
+
+바인딩을 사용하세요:
+
+```go
+// Go
+func (s *Service) Greet(name string) string {
+    return "Hello " + name
+}
+```
+
+```javascript
+// JavaScript
+import { Greet } from './bindings/myapp/service'
+const message = await Greet("World")
+```
+
+### TypeScript를 사용할 수 있나요?
+
+네! Wails는 TypeScript 정의를 자동으로 생성합니다.
+
+### 애플리케이션을 디버깅하려면 어떻게 하나요?
+
+브라우저의 개발자 도구를 사용하세요:
+- 마우스 오른쪽 클릭 → 요소 검사
+- 또는 창 옵션에서 개발자 도구를 활성화
+
+## 빌드 및 배포
+
+### 프로덕션을 위해 빌드하려면 어떻게 하나요?
+
+```bash
+wails3 build
+```
+
+애플리케이션은 `build/bin/`에 생성됩니다.
+
+### 크로스 컴파일이 가능한가요?
+
+네! 다른 플랫폼을 위해 빌드하세요:
+
+```bash
+wails3 build -platform windows/amd64
+wails3 build -platform darwin/universal
+wails3 build -platform linux/amd64
+```
+
+### 인스톨러를 어떻게 생성하나요?
+
+플랫폼별 도구를 사용하세요:
+- Windows: NSIS 또는 WiX
+- macOS: DMG 생성
+- Linux: DEB/RPM 패키지
+
+[인스톨러 가이드](/guides/installers)를 참조하세요.
+
+### 애플리케이션에 코드 서명을 어떻게 하나요?
+
+**macOS:**
+```bash
+codesign --deep --force --sign "Developer ID" MyApp.app
+```
+
+**Windows:**
+인증서와 함께 SignTool을 사용하세요.
+
+## 기능
+
+### 여러 창을 생성할 수 있나요?
+
+네! Wails v3는 네이티브 멀티 윈도우 지원을 제공합니다:
+
+```go
+window1 := app.Window.New()
+window2 := app.Window.New()
+```
+
+### Wails는 시스템 트레이를 지원하나요?
+
+네! 시스템 트레이 애플리케이션을 생성하세요:
+
+```go
+tray := app.SystemTray.New()
+tray.SetIcon(iconBytes)
+tray.SetMenu(menu)
+```
+
+### 네이티브 대화상자를 사용할 수 있나요?
+
+네! Wails는 네이티브 대화상자를 제공합니다:
+
+```go
+path, _ := app.Dialog.OpenFile().
+    SetTitle("Select File").
+    PromptForSingleSelection()
+```
+
+### Wails는 자동 업데이트를 지원하나요?
+
+Wails는 자동 업데이트 기능을 포함하지 않지만, 직접 구현하거나 서드파티 라이브러리를 사용할 수 있습니다.
+
+## 성능
+
+### 왜 내 바이너리 크기가 큰가요?
+
+Go 바이너리는 런타임을 포함합니다. 크기를 줄이려면:
+
+```bash
+wails3 build -ldflags "-s -w"
+```
+
+### 성능을 어떻게 개선하나요?
+
+- 대용량 데이터셋에 페이지네이션 적용
+- 비용이 많이 드는 작업 캐싱
+- 업데이트에 이벤트 사용
+- 프론트엔드 번들 최적화
+- 코드 프로파일링
+
+[성능 가이드](/guides/performance)를 참조하세요.
+
+### Wails는 핫 리로드를 지원하나요?
+
+네! 개발 모드를 사용하세요:
+
+```bash
+wails3 dev
+```
+
+## 문제 해결
+
+### 바인딩이 작동하지 않습니다
+
+바인딩을 다시 생성하세요:
+
+```bash
+wails3 generate bindings
+```
+
+### 창이 표시되지 않습니다
+
+`Show()`를 호출했는지 확인하세요:
+
+```go
+window := app.Window.New()
+window.Show()  // 이 부분을 잊지 마세요!
+```
+
+### 이벤트가 발생하지 않습니다
+
+이벤트 이름이 정확히 일치하는지 확인하세요:
+
+```go
+// Go
+app.Event.Emit("my-event", data)
+
+// JavaScript
+OnEvent("my-event", handler)  // 일치해야 함
+```
+
+### 빌드가 실패합니다
+
+일반적인 해결 방법:
+- `go mod tidy` 실행
+- `wails.json` 구성 확인
+- 프론트엔드 빌드 확인: `cd frontend && npm run build`
+- Wails 업데이트: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+
+## 마이그레이션
+
+### v2에서 v3로 마이그레이션해야 하나요?
+
+v3는 다음과 같은 기능을 제공합니다:
+- 향상된 성능
+- 멀티 윈도우 지원
+- 개선된 API
+- 향상된 개발자 경험
+
+[마이그레이션 가이드](/migration/v2-to-v3)를 참조하세요.
+
+### v2는 유지 관리되나요?
+
+네, v2는 중요 업데이트를 받습니다.
+
+### v2와 v3를 병렬로 실행할 수 있나요?
+
+네, 서로 다른 import 경로를 사용합니다.
+
+## 커뮤니티
+
+### 도움을 받으려면 어떻게 하나요?
+
+- [Discord 커뮤니티](https://discord.gg/JDdSxwjhGf)
+- [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- [GitHub Issues](https://github.com/wailsapp/wails/issues)
+
+### 어떻게 기여하나요?
+
+[기여 가이드](/contributing)를 참조하세요.
+
+### 예제는 어디에서 찾을 수 있나요?
+
+- [공식 예제](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [커뮤니티 예제](https://github.com/topics/wails)
+
+## 여전히 궁금한 점이 있나요?
+
+[Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [토론을 시작](https://github.com/wailsapp/wails/discussions)하세요.

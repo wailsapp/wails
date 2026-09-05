@@ -24,9 +24,24 @@ contents:
   - src: "./build/linux/notifications.desktop"
     dst: "/usr/share/applications/notifications.desktop"
 
+# Default dependencies for the GTK4 + WebKitGTK 6.0 stack (Ubuntu 24.04+ / Debian 13+)
 depends:
-  - gtk3
-  - libwebkit2gtk
+  - libgtk-4-1
+  - libwebkitgtk-6.0-4
+
+# Distribution-specific overrides for different package formats
+overrides:
+  # RPM packages for Fedora / RHEL / AlmaLinux / Rocky Linux
+  rpm:
+    depends:
+      - gtk4
+      - webkitgtk6.0
+
+  # Arch Linux packages
+  archlinux:
+    depends:
+      - gtk4
+      - webkitgtk-6.0
 
 # replaces:
 #   - foobar

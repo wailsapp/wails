@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Workers API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        label { display: block; color: #aaa; font-size: 0.9rem; margin-bottom: 5px; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .progress-bar {
+            height: 20px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #60a5fa);
+            transition: width 0.1s;
+            width: 0%;
+        }
+        .animation-box {
+            width: 50px;
+            height: 50px;
+            background: #4ade80;
+            border-radius: 8px;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .row { display: flex; gap: 20px; align-items: center; }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Workers API Demo</h1>
+        <p class="description">
+            Web Workers allow JavaScript to run in background threads,
+            enabling CPU-intensive tasks without blocking the UI.
+        </p>
+
+        <div class="status success">
+            Web Workers: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Prime Number Calculator</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Calculate prime numbers up to a given limit. Try with/without a worker to see the difference.
+            </p>
+            <label for="primeLimit">Calculate primes up to:</label>
+            <input type="number" id="primeLimit" value="100000">
+            <div class="row" style="margin-bottom: 15px;">
+                <div class="animation-box" id="animationBox"></div>
+                <span style="color: #aaa;">This animation should stay smooth when using a worker</span>
+            </div>
+            <button onclick="calculateWithWorker()">Calculate with Worker</button>
+            <button class="secondary" onclick="calculateWithoutWorker()">Calculate WITHOUT Worker (blocks UI)</button>
+            <button class="danger" onclick="terminateWorker()">Terminate Worker</button>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="output" id="primeOutput">Results will appear here...</div>
+        </div>
+
+        <div class="card">
+            <h2>Fibonacci Calculator</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Calculate Fibonacci numbers using a dedicated worker.
+            </p>
+            <label for="fibN">Calculate Fibonacci(n):</label>
+            <input type="number" id="fibN" value="40">
+            <button onclick="calculateFibonacci()">Calculate</button>
+            <div class="output" id="fibOutput">Result will appear here...</div>
+        </div>
+
+        <div class="card">
+            <h2>Message Passing</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Send custom messages to a worker and receive responses.
+            </p>
+            <label for="workerMessage">Message to send:</label>
+            <input type="text" id="workerMessage" value="Hello, Worker!">
+            <button onclick="sendMessage()">Send to Worker</button>
+            <div class="output" id="messageOutput">Messages will appear here...</div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+    </div>
+
+    <script>
+        let primeWorker = null;
+        let fibWorker = null;
+        let messageWorker = null;
+
+        function checkSupport() {
+            const supported = typeof Worker !== 'undefined';
+            document.getElementById('supported').textContent = supported ? 'Available' : 'Not available';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'Web Workers', supported: typeof Worker !== 'undefined' },
+                { name: 'Shared Workers', supported: typeof SharedWorker !== 'undefined' },
+                { name: 'Service Workers', supported: 'serviceWorker' in navigator },
+                { name: 'Worker from Blob', supported: typeof Blob !== 'undefined' && typeof URL.createObjectURL !== 'undefined' },
+                { name: 'Transferable Objects', supported: true },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        // Create worker from inline code
+        function createWorker(code) {
+            const blob = new Blob([code], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            return new Worker(url);
+        }
+
+        // Prime number worker
+        const primeWorkerCode = `
+            function isPrime(n) {
+                if (n < 2) return false;
+                for (let i = 2; i * i <= n; i++) {
+                    if (n % i === 0) return false;
+                }
+                return true;
+            }
+
+            self.onmessage = function(e) {
+                const limit = e.data;
+                const primes = [];
+                const reportEvery = Math.max(1, Math.floor(limit / 100));
+
+                for (let i = 2; i <= limit; i++) {
+                    if (isPrime(i)) {
+                        primes.push(i);
+                    }
+                    if (i % reportEvery === 0) {
+                        self.postMessage({ type: 'progress', value: (i / limit) * 100 });
+                    }
+                }
+
+                self.postMessage({ type: 'complete', primes });
+            };
+        `;
+
+        function calculateWithWorker() {
+            const limit = parseInt(document.getElementById('primeLimit').value);
+            const output = document.getElementById('primeOutput');
+            const progress = document.getElementById('progressFill');
+
+            output.textContent = 'Starting worker...';
+            progress.style.width = '0%';
+
+            if (primeWorker) primeWorker.terminate();
+            primeWorker = createWorker(primeWorkerCode);
+
+            const startTime = performance.now();
+
+            primeWorker.onmessage = function(e) {
+                if (e.data.type === 'progress') {
+                    progress.style.width = e.data.value + '%';
+                } else if (e.data.type === 'complete') {
+                    const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+                    const primes = e.data.primes;
+                    output.textContent = `Found ${primes.length} primes up to ${limit}\n` +
+                        `Time: ${duration}s\n\n` +
+                        `First 20: ${primes.slice(0, 20).join(', ')}...\n` +
+                        `Last 20: ...${primes.slice(-20).join(', ')}`;
+                    progress.style.width = '100%';
+                }
+            };
+
+            primeWorker.postMessage(limit);
+        }
+
+        function calculateWithoutWorker() {
+            const limit = parseInt(document.getElementById('primeLimit').value);
+            const output = document.getElementById('primeOutput');
+            const progress = document.getElementById('progressFill');
+
+            output.textContent = 'Calculating (UI will freeze)...';
+            progress.style.width = '0%';
+
+            // Give UI time to update
+            setTimeout(() => {
+                const startTime = performance.now();
+                const primes = [];
+
+                function isPrime(n) {
+                    if (n < 2) return false;
+                    for (let i = 2; i * i <= n; i++) {
+                        if (n % i === 0) return false;
+                    }
+                    return true;
+                }
+
+                for (let i = 2; i <= limit; i++) {
+                    if (isPrime(i)) primes.push(i);
+                }
+
+                const duration = ((performance.now() - startTime) / 1000).toFixed(2);
+                output.textContent = `Found ${primes.length} primes up to ${limit}\n` +
+                    `Time: ${duration}s (UI was blocked!)\n\n` +
+                    `First 20: ${primes.slice(0, 20).join(', ')}...\n` +
+                    `Last 20: ...${primes.slice(-20).join(', ')}`;
+                progress.style.width = '100%';
+            }, 50);
+        }
+
+        function terminateWorker() {
+            if (primeWorker) {
+                primeWorker.terminate();
+                primeWorker = null;
+                document.getElementById('primeOutput').textContent = 'Worker terminated.';
+                document.getElementById('progressFill').style.width = '0%';
+            }
+        }
+
+        // Fibonacci worker
+        const fibWorkerCode = `
+            function fibonacci(n) {
+                if (n <= 1) return n;
+                let a = 0, b = 1;
+                for (let i = 2; i <= n; i++) {
+                    const temp = a + b;
+                    a = b;
+                    b = temp;
+                }
+                return b;
+            }
+
+            self.onmessage = function(e) {
+                const n = e.data;
+                const startTime = Date.now();
+                const result = fibonacci(n);
+                const duration = Date.now() - startTime;
+                self.postMessage({ n, result: result.toString(), duration });
+            };
+        `;
+
+        function calculateFibonacci() {
+            const n = parseInt(document.getElementById('fibN').value);
+            const output = document.getElementById('fibOutput');
+
+            output.textContent = 'Calculating...';
+
+            if (fibWorker) fibWorker.terminate();
+            fibWorker = createWorker(fibWorkerCode);
+
+            fibWorker.onmessage = function(e) {
+                output.textContent = `Fibonacci(${e.data.n}) = ${e.data.result}\nTime: ${e.data.duration}ms`;
+            };
+
+            fibWorker.postMessage(n);
+        }
+
+        // Message passing worker
+        const messageWorkerCode = `
+            self.onmessage = function(e) {
+                const message = e.data;
+                // Echo back with transformation
+                self.postMessage({
+                    original: message,
+                    reversed: message.split('').reverse().join(''),
+                    uppercase: message.toUpperCase(),
+                    length: message.length,
+                    timestamp: new Date().toISOString()
+                });
+            };
+        `;
+
+        let messageLog = [];
+
+        function sendMessage() {
+            const message = document.getElementById('workerMessage').value;
+            const output = document.getElementById('messageOutput');
+
+            if (!messageWorker) {
+                messageWorker = createWorker(messageWorkerCode);
+                messageWorker.onmessage = function(e) {
+                    messageLog.unshift(`Received: ${JSON.stringify(e.data, null, 2)}`);
+                    if (messageLog.length > 5) messageLog.pop();
+                    output.textContent = messageLog.join('\n\n');
+                };
+            }
+
+            messageLog.unshift(`Sent: "${message}"`);
+            messageWorker.postMessage(message);
+        }
+
+        checkSupport();
+    </script>
+</body>
+</html>

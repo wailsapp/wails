@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+            min-height: 120px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            min-height: 100px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: #4ade80;
+            color: #1a1a2e;
+            font-weight: 600;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clipboard API Demo</h1>
+        <p class="description">
+            The Clipboard API provides asynchronous read and write access to the system clipboard,
+            enabling secure copy/paste operations for text and other data types.
+        </p>
+
+        <div class="status success">
+            Clipboard API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Write to Clipboard</h2>
+            <textarea id="copyText" placeholder="Enter text to copy to clipboard...">Hello from Wails WebView!</textarea>
+            <button onclick="copyText()">Copy Text</button>
+            <button class="secondary" onclick="copyRichText()">Copy Rich Text (HTML)</button>
+        </div>
+
+        <div class="card">
+            <h2>Read from Clipboard</h2>
+            <button onclick="pasteText()">Paste Text</button>
+            <button class="secondary" onclick="readAll()">Read All Formats</button>
+            <div class="output" id="pasteOutput">Click "Paste Text" to read clipboard contents...</div>
+        </div>
+
+        <div class="card">
+            <h2>Clipboard Events</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Try using Ctrl+C/Ctrl+V in the text area below:</p>
+            <textarea id="eventText" placeholder="Type here and try copy/paste..."></textarea>
+            <div class="output" id="eventLog">Clipboard events will be logged here...</div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        function checkSupport() {
+            const hasClipboard = 'clipboard' in navigator;
+            document.getElementById('supported').textContent = hasClipboard ? 'Available' : 'Not available';
+            document.getElementById('supported').parentElement.className = hasClipboard ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'navigator.clipboard', supported: 'clipboard' in navigator },
+                { name: 'clipboard.writeText()', supported: navigator.clipboard && 'writeText' in navigator.clipboard },
+                { name: 'clipboard.readText()', supported: navigator.clipboard && 'readText' in navigator.clipboard },
+                { name: 'clipboard.write()', supported: navigator.clipboard && 'write' in navigator.clipboard },
+                { name: 'clipboard.read()', supported: navigator.clipboard && 'read' in navigator.clipboard },
+                { name: 'ClipboardItem', supported: typeof ClipboardItem !== 'undefined' },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function showNotification(message, isError = false) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.style.background = isError ? '#f87171' : '#4ade80';
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 2000);
+        }
+
+        async function copyText() {
+            const text = document.getElementById('copyText').value;
+            try {
+                await navigator.clipboard.writeText(text);
+                showNotification('Text copied to clipboard!');
+            } catch (e) {
+                showNotification('Failed to copy: ' + e.message, true);
+            }
+        }
+
+        async function copyRichText() {
+            const text = document.getElementById('copyText').value;
+            try {
+                const html = `<div style="color: #4ade80; font-weight: bold;">${text}</div>`;
+                const blob = new Blob([html], { type: 'text/html' });
+                const textBlob = new Blob([text], { type: 'text/plain' });
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        'text/html': blob,
+                        'text/plain': textBlob
+                    })
+                ]);
+                showNotification('Rich text copied!');
+            } catch (e) {
+                showNotification('Failed: ' + e.message, true);
+            }
+        }
+
+        async function pasteText() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('pasteOutput').textContent = text || '(empty clipboard)';
+                showNotification('Text pasted from clipboard!');
+            } catch (e) {
+                document.getElementById('pasteOutput').textContent = 'Error: ' + e.message + '\n\nNote: Reading clipboard requires user permission.';
+            }
+        }
+
+        async function readAll() {
+            try {
+                const items = await navigator.clipboard.read();
+                let output = `Clipboard contains ${items.length} item(s):\n\n`;
+
+                for (const item of items) {
+                    output += `Types: ${item.types.join(', ')}\n`;
+                    for (const type of item.types) {
+                        const blob = await item.getType(type);
+                        if (type.startsWith('text/')) {
+                            const text = await blob.text();
+                            output += `\n[${type}]:\n${text.substring(0, 500)}${text.length > 500 ? '...' : ''}\n`;
+                        } else {
+                            output += `\n[${type}]: ${blob.size} bytes\n`;
+                        }
+                    }
+                }
+                document.getElementById('pasteOutput').textContent = output;
+            } catch (e) {
+                document.getElementById('pasteOutput').textContent = 'Error: ' + e.message;
+            }
+        }
+
+        // Clipboard events
+        const eventText = document.getElementById('eventText');
+        const eventLog = document.getElementById('eventLog');
+        let logEntries = [];
+
+        function logEvent(type, data) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${type}: ${data}`);
+            if (logEntries.length > 10) logEntries.pop();
+            eventLog.textContent = logEntries.join('\n');
+        }
+
+        eventText.addEventListener('copy', (e) => {
+            logEvent('copy', `"${window.getSelection().toString().substring(0, 50)}..."`);
+        });
+
+        eventText.addEventListener('cut', (e) => {
+            logEvent('cut', `"${window.getSelection().toString().substring(0, 50)}..."`);
+        });
+
+        eventText.addEventListener('paste', (e) => {
+            const text = e.clipboardData.getData('text/plain');
+            logEvent('paste', `"${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
+        });
+
+        checkSupport();
+    </script>
+</body>
+</html>
