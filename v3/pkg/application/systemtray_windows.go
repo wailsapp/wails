@@ -526,9 +526,13 @@ func (s *windowsSystemTray) setTooltip(tooltip string) {
 	}
 }
 
-// ---- Unsupported ----
-func (s *windowsSystemTray) setLabel(label string) {}
+// setLabel shows the label as the tooltip unless an explicit tooltip is set,
+// the same rule show() applies when the icon is (re-)added.
+func (s *windowsSystemTray) setLabel(string) {
+	s.setTooltip(s.parent.tooltipOrLabel())
+}
 
+// ---- Unsupported ----
 func (s *windowsSystemTray) setTemplateIcon(_ []byte) {
 	// Unsupported - do nothing
 }
@@ -624,8 +628,9 @@ func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 
 	s.updateIcon()
 
-	if s.parent.tooltip != "" {
-		s.setTooltip(s.parent.tooltip)
+	// A label set before Run has to reach the tooltip too, see setLabel.
+	if tooltip := s.parent.tooltipOrLabel(); tooltip != "" {
+		s.setTooltip(tooltip)
 	}
 
 	return nid, nil
