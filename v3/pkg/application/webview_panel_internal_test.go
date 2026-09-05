@@ -148,6 +148,45 @@ func TestPanelDestroyExactlyOnce(t *testing.T) {
 	}
 }
 
+func TestPanelDestroyDuringCreation(t *testing.T) {
+	for _, dispatchDuringCreate := range []bool{false, true} {
+		t.Run(fmt.Sprintf("dispatchDuringCreate=%t", dispatchDuringCreate), func(t *testing.T) {
+			dispatcher := panelTestApp(t, false)
+			panel := NewPanel(WebviewPanelOptions{})
+			native := &panelProbe{}
+			panel.impl = native
+			panel.creating = true
+			done := make(chan struct{})
+			go func() { panel.Destroy(); close(done) }()
+			deadline := time.After(time.Second)
+			for dispatcher.pendingCount() == 0 {
+				select {
+				case <-deadline:
+					t.Fatal("Destroy was not queued")
+				default:
+					time.Sleep(time.Millisecond)
+				}
+			}
+			if dispatchDuringCreate {
+				// A native create call may dispatch the queued callback itself.
+				dispatcher.runPending()
+			}
+			if native.destroyed.Load() != 0 {
+				t.Fatal("destroy called before native creation finished")
+			}
+			// Creation returns on the UI thread and sees the pending destruction.
+			panel.creating = false
+			panel.destroyNative(native)
+			dispatcher.runPending()
+			<-done
+			panel.Destroy()
+			if native.destroyed.Load() != 1 {
+				t.Fatalf("destroy called %d times", native.destroyed.Load())
+			}
+		})
+	}
+}
+
 func TestPanelQueuedOperationSkipsDestroyedNativeView(t *testing.T) {
 	dispatcher := panelTestApp(t, false)
 	panel := NewPanel(WebviewPanelOptions{})

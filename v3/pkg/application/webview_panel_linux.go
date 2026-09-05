@@ -39,8 +39,8 @@ static GtkWidget* embedded_panel_overlay(GtkWidget *main, GtkWidget *box) {
  gtk_widget_set_hexpand(overlay, TRUE);
  gtk_widget_set_vexpand(overlay, TRUE);
  g_signal_connect(overlay, "get-child-position", G_CALLBACK(embedded_panel_position), NULL);
- gtk_widget_show(overlay);
- gtk_widget_show(main);
+ gtk_widget_set_visible(overlay, TRUE);
+ gtk_widget_set_visible(main, TRUE);
  return overlay;
 }
 

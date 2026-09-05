@@ -62,9 +62,10 @@ type WebviewPanel struct {
 	parent  *WebviewWindow
 
 	// Track if the panel has been destroyed
-	creating      bool // Accessed only on the UI thread.
-	destroyed     bool
-	destroyedLock sync.RWMutex
+	creating        bool // Accessed only on the UI thread.
+	nativeDestroyed bool // Accessed only on the UI thread.
+	destroyed       bool
+	destroyedLock   sync.RWMutex
 
 	// Original window size when panel was created (for anchor calculations)
 	originalWindowWidth  int
@@ -341,17 +342,22 @@ func (p *WebviewPanel) Destroy() {
 	impl := p.impl
 	p.destroyedLock.Unlock()
 	if impl != nil {
-		InvokeSync(func() {
-			// Embed may pump messages while the native view is being created.
-			// In that case run performs cleanup as soon as create returns.
-			if !p.creating {
-				impl.destroy()
-			}
-		})
+		InvokeSync(func() { p.destroyNative(impl) })
 	}
 	if p.parent != nil {
 		p.parent.removePanel(p.id)
 	}
+}
+
+// destroyNative runs only on the UI thread. Native creation may pump events,
+// so cleanup waits for create to return. A queued Destroy callback may arrive
+// after run has already cleaned up; both paths must release the view only once.
+func (p *WebviewPanel) destroyNative(impl webviewPanelImpl) {
+	if p.creating || p.nativeDestroyed {
+		return
+	}
+	p.nativeDestroyed = true
+	impl.destroy()
 }
 
 // isDestroyed returns whether the panel has been destroyed
@@ -385,7 +391,7 @@ func (p *WebviewPanel) run() {
 		impl.create()
 		p.creating = false
 		if p.isDestroyed() {
-			impl.destroy()
+			p.destroyNative(impl)
 			return
 		}
 		// Changes can arrive while a native create call pumps its event loop.
