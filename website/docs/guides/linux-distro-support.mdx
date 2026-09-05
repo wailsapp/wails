@@ -139,7 +139,7 @@ When building your application, use the appropriate build tag:
 - openSUSE provides both WebKitGTK 4.0 and 4.1; use `libwebkit2gtk-4_1-0` for the modern ABI
 - Fedora only has `webkit2gtk4.1` starting from version 40; earlier versions use 4.0
 - On RHEL/AlmaLinux/Rocky/CentOS 8-9, `webkit2gtk3` corresponds to ABI 4.0; 4.1 is not available
-- Arch Linux offers both `webkit2gtk` (4.0) and `webkit2gtk-4.1`; use the latter for modern ABI
+- Arch Linux ships only `webkit2gtk-4.1`; the unversioned `webkit2gtk` (4.0) has been dropped from the repositories
 
 ## Packaging with nfpm
 
@@ -173,10 +173,6 @@ overrides:
     depends:
       - libgtk-3-0
       - libwebkit2gtk-4.0-37
-  archlinux:
-    depends:
-      - gtk3
-      - webkit2gtk
 ```
 
 ### For Fedora 40+

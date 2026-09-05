@@ -33,7 +33,10 @@ func (p *Pacman) Packages() packagemap {
 			{Name: "gtk3", SystemPackage: true, Library: true},
 		},
 		"libwebkit": []*Package{
+			// webkit2gtk provides the 4.0 API used by default builds. Arch has
+			// dropped it, leaving only webkit2gtk-4.1.
 			{Name: "webkit2gtk", SystemPackage: true, Library: true},
+			{Name: "webkit2gtk-4.1", SystemPackage: true, Library: true, BuildTags: "webkit2_41"},
 		},
 		"gcc": []*Package{
 			{Name: "gcc", SystemPackage: true},
