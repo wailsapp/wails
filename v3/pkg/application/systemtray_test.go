@@ -97,3 +97,14 @@ func TestSystemTrayTooltipWinsOverLabel(t *testing.T) {
 		t.Fatalf("tooltipOrLabel() = %q, want %q", got, "label")
 	}
 }
+
+// SetLabel then SetTooltip("") must leave the label as the hover text. The Windows
+// setTooltip reads tooltipOrLabel when it runs instead of applying the empty argument.
+func TestSystemTrayClearedTooltipFallsBackToLabel(t *testing.T) {
+	tray := runningTray(t)
+	tray.SetLabel("label")
+	tray.SetTooltip("")
+	if got := tray.tooltipOrLabel(); got != "label" {
+		t.Fatalf("tooltipOrLabel() = %q, want %q", got, "label")
+	}
+}
