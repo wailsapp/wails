@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2FrameScreenCaptureStartingEventHandler struct {
 	impl ICoreWebView2FrameScreenCaptureStartingEventHandlerImpl
 }
 
-func (i *ICoreWebView2FrameScreenCaptureStartingEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2FrameScreenCaptureStartingEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2FrameScreenCaptureStartingEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2FrameScreenCaptureStartingEventHandlerIUnknownQueryInterface(this *ICoreWebView2FrameScreenCaptureStartingEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2FrameScreenCaptureStartingEventHandlerIUnknownQueryInterface(t
 }
 
 func ICoreWebView2FrameScreenCaptureStartingEventHandlerIUnknownAddRef(this *ICoreWebView2FrameScreenCaptureStartingEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2FrameScreenCaptureStartingEventHandlerIUnknownRelease(this *ICoreWebView2FrameScreenCaptureStartingEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2FrameScreenCaptureStartingEventHandlerInvoke(this *ICoreWebView2FrameScreenCaptureStartingEventHandler, sender *ICoreWebView2Frame, args *ICoreWebView2ScreenCaptureStartingEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2FrameScreenCaptureStartingEventHandlerImpl interface {
 }
 
 var ICoreWebView2FrameScreenCaptureStartingEventHandlerFn = ICoreWebView2FrameScreenCaptureStartingEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2FrameScreenCaptureStartingEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2FrameScreenCaptureStartingEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2FrameScreenCaptureStartingEventHandlerIUnknownRelease),

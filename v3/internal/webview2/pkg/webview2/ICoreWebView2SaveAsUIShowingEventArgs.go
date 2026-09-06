@@ -1,45 +1,51 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2SaveAsUIShowingEventArgsVtbl struct {
 	IUnknownVtbl
-	GetContentMimeType       ComProc
-	PutCancel                ComProc
-	GetCancel                ComProc
+	GetContentMimeType ComProc
+	PutCancel ComProc
+	GetCancel ComProc
 	PutSuppressDefaultDialog ComProc
 	GetSuppressDefaultDialog ComProc
-	GetDeferral              ComProc
-	PutSaveAsFilePath        ComProc
-	GetSaveAsFilePath        ComProc
-	PutAllowReplace          ComProc
-	GetAllowReplace          ComProc
-	PutKind                  ComProc
-	GetKind                  ComProc
+	GetDeferral ComProc
+	PutSaveAsFilePath ComProc
+	GetSaveAsFilePath ComProc
+	PutAllowReplace ComProc
+	GetAllowReplace ComProc
+	PutKind ComProc
+	GetKind ComProc
 }
 
 type ICoreWebView2SaveAsUIShowingEventArgs struct {
 	Vtbl *ICoreWebView2SaveAsUIShowingEventArgsVtbl
 }
 
-func (i *ICoreWebView2SaveAsUIShowingEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2SaveAsUIShowingEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2SaveAsUIShowingEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetContentMimeType() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetContentMimeType.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -52,15 +58,15 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetContentMimeType() (string, er
 
 func (i *ICoreWebView2SaveAsUIShowingEventArgs) PutCancel(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -80,21 +86,21 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetCancel() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2SaveAsUIShowingEventArgs) PutSuppressDefaultDialog(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutSuppressDefaultDialog.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -114,7 +120,7 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetSuppressDefaultDialog() (bool
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -154,9 +160,10 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetSaveAsFilePath() (string, err
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetSaveAsFilePath.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -169,15 +176,15 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetSaveAsFilePath() (string, err
 
 func (i *ICoreWebView2SaveAsUIShowingEventArgs) PutAllowReplace(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutAllowReplace.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -197,11 +204,12 @@ func (i *ICoreWebView2SaveAsUIShowingEventArgs) GetAllowReplace() (bool, error) 
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2SaveAsUIShowingEventArgs) PutKind(value COREWEBVIEW2_SAVE_AS_KIND) error {
+
 
 	hr, _, _ := i.Vtbl.PutKind.Call(
 		uintptr(unsafe.Pointer(i)),

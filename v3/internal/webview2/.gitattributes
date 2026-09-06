@@ -1,0 +1,10 @@
+# Force LF line endings for all webview2 sources, generated bindings, and
+# generator fixtures so Windows checkouts with core.autocrlf=true don't
+# silently convert templates to CRLF — which makes text/template emit
+# CRLF in the bindings, which then diverges from the LF golden files
+# committed in scripts/generator/testfiles/.
+*               text=auto eol=lf
+*.tmpl          text eol=lf
+*.idl           text eol=lf
+*.go            text eol=lf
+*.go.txt        text eol=lf

@@ -1,48 +1,54 @@
 //go:build windows
 
 package webview2
-
 import (
-	"syscall"
 	"unsafe"
-
+	"math"
+	"syscall"
 	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2CookieVtbl struct {
 	IUnknownVtbl
-	GetName       ComProc
-	GetValue      ComProc
-	PutValue      ComProc
-	GetDomain     ComProc
-	GetPath       ComProc
-	GetExpires    ComProc
-	PutExpires    ComProc
+	GetName ComProc
+	GetValue ComProc
+	PutValue ComProc
+	GetDomain ComProc
+	GetPath ComProc
+	GetExpires ComProc
+	PutExpires ComProc
 	GetIsHttpOnly ComProc
 	PutIsHttpOnly ComProc
-	GetSameSite   ComProc
-	PutSameSite   ComProc
-	GetIsSecure   ComProc
-	PutIsSecure   ComProc
-	GetIsSession  ComProc
+	GetSameSite ComProc
+	PutSameSite ComProc
+	GetIsSecure ComProc
+	PutIsSecure ComProc
+	GetIsSession ComProc
 }
 
 type ICoreWebView2Cookie struct {
 	Vtbl *ICoreWebView2CookieVtbl
 }
 
-func (i *ICoreWebView2Cookie) AddRef() uintptr {
+func (i *ICoreWebView2Cookie) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2Cookie) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2Cookie) GetName() (string, error) {
 	// Create *uint16 to hold result
 	var _name *uint16
 
+
 	hr, _, _ := i.Vtbl.GetName.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_name)),
+		uintptr(unsafe.Pointer(&_name)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -57,9 +63,10 @@ func (i *ICoreWebView2Cookie) GetValue() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetValue.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -92,9 +99,10 @@ func (i *ICoreWebView2Cookie) GetDomain() (string, error) {
 	// Create *uint16 to hold result
 	var _domain *uint16
 
+
 	hr, _, _ := i.Vtbl.GetDomain.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_domain)),
+		uintptr(unsafe.Pointer(&_domain)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -109,9 +117,10 @@ func (i *ICoreWebView2Cookie) GetPath() (string, error) {
 	// Create *uint16 to hold result
 	var _path *uint16
 
+
 	hr, _, _ := i.Vtbl.GetPath.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_path)),
+		uintptr(unsafe.Pointer(&_path)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -138,15 +147,22 @@ func (i *ICoreWebView2Cookie) GetExpires() (float64, error) {
 
 func (i *ICoreWebView2Cookie) PutExpires(expires float64) error {
 
-	// The double parameter is passed BY VALUE: a pointer here reaches the
-	// callee as a near 0.0 double value (an epoch-zero expiry). The per-arch
-	// appendDoubleArg helpers pass it correctly for the target ABI.
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, expires)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutExpires.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(expires))),
+			uintptr(uint32(math.Float64bits(expires)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutExpires.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(expires)),
+		)
 	}
-	hr, _, _ := i.Vtbl.PutExpires.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -165,21 +181,21 @@ func (i *ICoreWebView2Cookie) GetIsHttpOnly() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	isHttpOnly := _isHttpOnly != 0
+    isHttpOnly := _isHttpOnly != 0
 	return isHttpOnly, nil
 }
 
 func (i *ICoreWebView2Cookie) PutIsHttpOnly(isHttpOnly bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _isHttpOnlyInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _isHttpOnly int32
 	if isHttpOnly {
-		_isHttpOnlyInt = 1
+		_isHttpOnly = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutIsHttpOnly.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_isHttpOnlyInt),
+		uintptr(_isHttpOnly),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -203,6 +219,7 @@ func (i *ICoreWebView2Cookie) GetSameSite() (COREWEBVIEW2_COOKIE_SAME_SITE_KIND,
 
 func (i *ICoreWebView2Cookie) PutSameSite(sameSite COREWEBVIEW2_COOKIE_SAME_SITE_KIND) error {
 
+
 	hr, _, _ := i.Vtbl.PutSameSite.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(sameSite),
@@ -225,21 +242,21 @@ func (i *ICoreWebView2Cookie) GetIsSecure() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	isSecure := _isSecure != 0
+    isSecure := _isSecure != 0
 	return isSecure, nil
 }
 
 func (i *ICoreWebView2Cookie) PutIsSecure(isSecure bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _isSecureInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _isSecure int32
 	if isSecure {
-		_isSecureInt = 1
+		_isSecure = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutIsSecure.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_isSecureInt),
+		uintptr(_isSecure),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -259,6 +276,6 @@ func (i *ICoreWebView2Cookie) GetIsSession() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	isSession := _isSession != 0
+    isSession := _isSession != 0
 	return isSession, nil
 }

@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ServerCertificateErrorDetectedEventHandler struct {
 	impl ICoreWebView2ServerCertificateErrorDetectedEventHandlerImpl
 }
 
-func (i *ICoreWebView2ServerCertificateErrorDetectedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2ServerCertificateErrorDetectedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ServerCertificateErrorDetectedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ServerCertificateErrorDetectedEventHandlerIUnknownQueryInterface(this *ICoreWebView2ServerCertificateErrorDetectedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ServerCertificateErrorDetectedEventHandlerIUnknownQueryInterfa
 }
 
 func ICoreWebView2ServerCertificateErrorDetectedEventHandlerIUnknownAddRef(this *ICoreWebView2ServerCertificateErrorDetectedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ServerCertificateErrorDetectedEventHandlerIUnknownRelease(this *ICoreWebView2ServerCertificateErrorDetectedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ServerCertificateErrorDetectedEventHandlerInvoke(this *ICoreWebView2ServerCertificateErrorDetectedEventHandler, sender *ICoreWebView2, args *ICoreWebView2ServerCertificateErrorDetectedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ServerCertificateErrorDetectedEventHandlerImpl interface {
 }
 
 var ICoreWebView2ServerCertificateErrorDetectedEventHandlerFn = ICoreWebView2ServerCertificateErrorDetectedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ServerCertificateErrorDetectedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ServerCertificateErrorDetectedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ServerCertificateErrorDetectedEventHandlerIUnknownRelease),

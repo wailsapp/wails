@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2CallDevToolsProtocolMethodCompletedHandler struct {
 	impl ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,15 +30,16 @@ func ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerIUnknownQueryInterfa
 }
 
 func ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerIUnknownAddRef(this *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerIUnknownRelease(this *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
-func ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerInvoke(this *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler, errorCode uintptr, result string) uintptr {
-	return this.impl.CallDevToolsProtocolMethodCompleted(errorCode, result)
+func ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerInvoke(this *ICoreWebView2CallDevToolsProtocolMethodCompletedHandler, errorCode uintptr, result *uint16) uintptr {
+	_result := UTF16PtrToString(result)
+	return this.impl.CallDevToolsProtocolMethodCompleted(errorCode, _result)
 }
 
 type ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerImpl interface {
@@ -43,7 +48,7 @@ type ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerFn = ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2CallDevToolsProtocolMethodCompletedHandlerIUnknownRelease),

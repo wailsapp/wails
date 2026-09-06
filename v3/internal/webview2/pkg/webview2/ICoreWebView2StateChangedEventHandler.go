@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2StateChangedEventHandler struct {
 	impl ICoreWebView2StateChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2StateChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2StateChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2StateChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2StateChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2StateChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2StateChangedEventHandlerIUnknownQueryInterface(this *ICoreWebV
 }
 
 func ICoreWebView2StateChangedEventHandlerIUnknownAddRef(this *ICoreWebView2StateChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2StateChangedEventHandlerIUnknownRelease(this *ICoreWebView2StateChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2StateChangedEventHandlerInvoke(this *ICoreWebView2StateChangedEventHandler, sender *ICoreWebView2DownloadOperation, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2StateChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2StateChangedEventHandlerFn = ICoreWebView2StateChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2StateChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2StateChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2StateChangedEventHandlerIUnknownRelease),

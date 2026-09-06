@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2FramePermissionRequestedEventHandler struct {
 	impl ICoreWebView2FramePermissionRequestedEventHandlerImpl
 }
 
-func (i *ICoreWebView2FramePermissionRequestedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2FramePermissionRequestedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2FramePermissionRequestedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2FramePermissionRequestedEventHandlerIUnknownQueryInterface(this *ICoreWebView2FramePermissionRequestedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2FramePermissionRequestedEventHandlerIUnknownQueryInterface(thi
 }
 
 func ICoreWebView2FramePermissionRequestedEventHandlerIUnknownAddRef(this *ICoreWebView2FramePermissionRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2FramePermissionRequestedEventHandlerIUnknownRelease(this *ICoreWebView2FramePermissionRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2FramePermissionRequestedEventHandlerInvoke(this *ICoreWebView2FramePermissionRequestedEventHandler, sender *ICoreWebView2Frame, args *ICoreWebView2PermissionRequestedEventArgs2) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2FramePermissionRequestedEventHandlerImpl interface {
 }
 
 var ICoreWebView2FramePermissionRequestedEventHandlerFn = ICoreWebView2FramePermissionRequestedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2FramePermissionRequestedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2FramePermissionRequestedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2FramePermissionRequestedEventHandlerIUnknownRelease),

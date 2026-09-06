@@ -1,0 +1,12 @@
+
+	// Decode the COM-allocated array of UTF-16 strings, freeing each string
+	// and then the array itself.
+	{{.Name}} := make([]string, {{.CountVariableName}})
+	if {{.LocalName}} != nil {
+		for _i, _p := range unsafe.Slice({{.LocalName}}, {{.CountVariableName}}) {
+			{{.Name}}[_i] = UTF16PtrToString(_p)
+			CoTaskMemFree(unsafe.Pointer(_p))
+		}
+		CoTaskMemFree(unsafe.Pointer({{.LocalName}}))
+	}
+	{{- .ClearLocalName}}
