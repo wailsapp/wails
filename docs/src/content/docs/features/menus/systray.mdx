@@ -95,7 +95,7 @@ func main() {
 
     systray := app.SystemTray.New()
     systray.SetIcon(icon)
-    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    systray.SetDarkModeIcon(iconDark)  // Windows and macOS dark mode
     
     app.Run()
 }
@@ -641,7 +641,7 @@ app := application.New(application.Options{
 
 - **Don't use large icons** - Follow platform guidelines
 - **Don't use long labels** - Gets truncated
-- **Don't forget dark mode** - Test on macOS dark mode
+- **Don't forget dark mode** - Test on Windows and macOS dark mode
 - **Don't block click handlers** - Keep them fast
 - **Don't forget menu.Update()** - After changing menu state
 - **Don't assume tray support** - Some Linux DEs don't support it

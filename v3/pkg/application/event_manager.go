@@ -142,25 +142,21 @@ func (em *EventManager) dispatch(event *CustomEvent) {
 // HandleApplicationEvent handles application events (internal use)
 func (em *EventManager) handleApplicationEvent(event *ApplicationEvent) {
 	defer handlePanic()
-	em.app.applicationEventListenersLock.RLock()
-	listeners, ok := em.app.applicationEventListeners[event.Id]
-	em.app.applicationEventListenersLock.RUnlock()
-	if !ok {
-		return
-	}
 
 	// Process Hooks
 	em.app.applicationEventHooksLock.RLock()
-	hooks, ok := em.app.applicationEventHooks[event.Id]
+	hooks := slices.Clone(em.app.applicationEventHooks[event.Id])
 	em.app.applicationEventHooksLock.RUnlock()
-	if ok {
-		for _, thisHook := range hooks {
-			thisHook.callback(event)
-			if event.IsCancelled() {
-				return
-			}
+	for _, thisHook := range hooks {
+		thisHook.callback(event)
+		if event.IsCancelled() {
+			return
 		}
 	}
+
+	em.app.applicationEventListenersLock.RLock()
+	listeners := slices.Clone(em.app.applicationEventListeners[event.Id])
+	em.app.applicationEventListenersLock.RUnlock()
 
 	for _, listener := range listeners {
 		go func() {

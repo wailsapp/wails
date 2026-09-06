@@ -2,6 +2,12 @@
 
 package application
 
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+)
+
 // Genuinely-mobile native capabilities for Android, mirroring the iOS surface
 // in mobile_features_ios.go. Each call is forwarded to a matching method on the
 // Java WailsBridge via the reflective bridge helpers. Asynchronous results
@@ -88,19 +94,73 @@ func (androidManager) Notify(jsonPayload string) {
 	androidBridgeVoidString("postNotification", jsonPayload)
 }
 
-// SecureSet stores a value in EncryptedSharedPreferences. JSON: {"key","value"}.
-func (androidManager) SecureSet(jsonPayload string) {
-	androidBridgeVoidString("secureSet", jsonPayload)
+// SecureSet stores a key-value pair in encrypted storage. The key and value
+// are sent as a JSON object to the Java bridge which returns a JSON envelope.
+func (androidManager) SecureSet(key, value string) error {
+	if key == "" {
+		return errors.New("secure storage: empty key")
+	}
+	payload, _ := json.Marshal(map[string]string{"key": key, "value": value})
+	s, ok := androidBridgeStringString("secureSet", string(payload))
+	if !ok {
+		return errors.New("secure storage: bridge call failed")
+	}
+	return androidParseOkError(s)
 }
 
-// SecureGet reads a value from secure storage (empty if absent).
-func (androidManager) SecureGet(key string) string {
-	s, _ := androidBridgeStringString("secureGet", key)
-	return s
+// SecureGet reads a value from encrypted storage.
+func (androidManager) SecureGet(key string) (string, bool, error) {
+	if key == "" {
+		return "", false, errors.New("secure storage: empty key")
+	}
+	s, ok := androidBridgeStringString("secureGet", key)
+	if !ok {
+		return "", false, errors.New("secure storage: bridge call failed")
+	}
+	var env struct {
+		Ok    bool   `json:"ok"`
+		Found bool   `json:"found"`
+		Value string `json:"value"`
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal([]byte(s), &env); err != nil {
+		return "", false, fmt.Errorf("secure storage: malformed response: %w", err)
+	}
+	if !env.Ok {
+		return "", false, errors.New("secure storage: " + env.Error)
+	}
+	if !env.Found {
+		return "", false, nil
+	}
+	return env.Value, true, nil
 }
 
-// SecureDelete removes a value from secure storage.
-func (androidManager) SecureDelete(key string) { androidBridgeVoidString("secureDelete", key) }
+// SecureDelete removes a value from encrypted storage.
+func (androidManager) SecureDelete(key string) error {
+	if key == "" {
+		return errors.New("secure storage: empty key")
+	}
+	s, ok := androidBridgeStringString("secureDelete", key)
+	if !ok {
+		return errors.New("secure storage: bridge call failed")
+	}
+	return androidParseOkError(s)
+}
+
+// androidParseOkError parses a {"ok":true} / {"ok":false,"error":"..."} envelope.
+func androidParseOkError(raw string) error {
+	var env struct {
+		Ok    bool   `json:"ok"`
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal([]byte(raw), &env); err != nil {
+		return fmt.Errorf("secure storage: malformed response: %w", err)
+	}
+	if !env.Ok {
+		return errors.New("secure storage: " + env.Error)
+	}
+	return nil
+}
 
 // --- Phase D: sensors & hardware ---------------------------------------------
 

@@ -69,16 +69,25 @@ func registerNativeFeatures(app *application.App) {
 		application.IOS.PostNotification(payloadJSON(e.Data))
 	})
 	app.Event.On("common:secureSet", func(e *application.CustomEvent) {
-		application.IOS.SecureSet(eventString(e.Data, "key"), eventString(e.Data, "value"))
+		if err := application.IOS.SecureSet(eventString(e.Data, "key"), eventString(e.Data, "value")); err != nil {
+			app.Event.Emit("common:secureError", map[string]any{"error": err.Error()})
+		}
 	})
 	app.Event.On("common:secureGet", func(e *application.CustomEvent) {
 		key := eventString(e.Data, "key")
+		value, found, err := application.IOS.SecureGet(key)
+		if err != nil {
+			app.Event.Emit("common:secureError", map[string]any{"error": err.Error()})
+			return
+		}
 		app.Event.Emit("common:secureValue", map[string]any{
-			"key": key, "value": application.IOS.SecureGet(key),
+			"key": key, "value": value, "found": found,
 		})
 	})
 	app.Event.On("common:secureDelete", func(e *application.CustomEvent) {
-		application.IOS.SecureDelete(eventString(e.Data, "key"))
+		if err := application.IOS.SecureDelete(eventString(e.Data, "key")); err != nil {
+			app.Event.Emit("common:secureError", map[string]any{"error": err.Error()})
+		}
 	})
 
 	// Phase D — sensors & hardware

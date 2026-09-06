@@ -234,7 +234,7 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 // embedTimeout bounds how long Embed waits for CreateCoreWebView2Controller to
 // complete. Controller creation is normally well under a second; this is a
 // backstop for the case where the callback never arrives, not a budget.
-const embedTimeout = 30 * time.Second
+const embedTimeout = 60 * time.Second
 
 // pumpUntilInited runs a message loop until the controller is ready, the queue
 // receives WM_QUIT, or timeout elapses. It reports whether the controller
