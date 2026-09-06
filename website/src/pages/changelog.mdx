@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed `wails doctor` reporting `libwebkit` as missing on Arch Linux, which has replaced the unversioned `webkit2gtk` package with `webkit2gtk-4.1`. Doctor now also notes when the detected WebKit package needs `-tags webkit2_41` [#5775](https://github.com/wailsapp/wails/issues/5775) by @4RH1T3CT0R7
+
 ## v2.15.0 - 2026-08-17
 
 ### Added

@@ -246,6 +246,12 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		pterm.Println("Optional package(s) installation details: \n" + info.Dependencies.InstallAllOptionalCommand())
 	}
 
+	for _, dependency := range info.Dependencies {
+		if dependency.BuildTags != "" {
+			pterm.Println("Note: " + dependency.PackageName + " requires -tags " + dependency.BuildTags + " when running wails build or wails dev")
+		}
+	}
+
 	if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
 		pterm.Success.Println("Your system is ready for Wails development!")
 	} else {

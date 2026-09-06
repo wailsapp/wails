@@ -33,7 +33,7 @@ func (x *Xbps) Packages() packagemap {
 			{Name: "gtk+3-devel", SystemPackage: true, Library: true},
 		},
 		"libwebkit": []*Package{
-			{Name: "libwebkit2gtk41-devel", SystemPackage: true, Library: true},
+			{Name: "libwebkit2gtk41-devel", SystemPackage: true, Library: true, BuildTags: "webkit2_41"},
 		},
 		"gcc": []*Package{
 			{Name: "gcc", SystemPackage: true},
