@@ -13,20 +13,22 @@ type Calloc struct {
 	pool []unsafe.Pointer
 }
 
-// NewCalloc creates a new allocator
-func NewCalloc() Calloc {
-	return Calloc{}
+// NewCalloc creates a new allocator.
+// A pointer is returned so the allocation pool is shared across calls
+// instead of being copied into each method's value receiver.
+func NewCalloc() *Calloc {
+	return &Calloc{}
 }
 
 // String creates a new C string and retains a reference to it
-func (c Calloc) String(in string) *C.char {
+func (c *Calloc) String(in string) *C.char {
 	result := C.CString(in)
 	c.pool = append(c.pool, unsafe.Pointer(result))
 	return result
 }
 
 // Free frees all allocated C memory
-func (c Calloc) Free() {
+func (c *Calloc) Free() {
 	for _, str := range c.pool {
 		C.free(str)
 	}
