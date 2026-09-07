@@ -1,0 +1,166 @@
+---
+title: Debugging Crashes
+description: Collecting diagnostic reports and minidumps from a Wails application
+---
+
+When something goes wrong in production, logs are rarely enough. This guide
+covers the `github.com/wailsapp/wails/v3/pkg/debug` package, which produces
+structured diagnostic reports and — on Windows — full minidumps openable in
+WinDbg or Visual Studio.
+
+The package is intentionally small and has two entry points:
+
+- `debug.Dump(...)` — write a Windows minidump of the current process.
+- `debug.Report(...)` — collect a rich diagnostic snapshot, with an opt-in
+  minidump.
+
+Both run under the calling user's token. No elevation, no
+`SeDebugPrivilege`, no `OpenProcess`: dumping the current process uses the
+`GetCurrentProcess` pseudo-handle, which bypasses ACL checks for
+own-process access.
+
+## Quick reference
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+// 1. Just a minidump (Windows only).
+path, err := debug.Dump()
+
+// 2. Dump to a specific path.
+path, err := debug.Dump(debug.WithPath("C:\\crashes\\my.dmp"))
+
+// 3. Full-memory minidump (large, gigabytes).
+path, err := debug.Dump(debug.WithFullMemory())
+
+// 4. Full diagnostic report, no minidump.
+r, err := debug.Report()
+
+// 5. Report + minidump.
+r, err := debug.Report(debug.WithDump())
+
+// 6. Report + minidump at a specific path, full-memory.
+r, err := debug.Report(
+    debug.WithDumpPath("C:\\crashes\\my.dmp"),
+    debug.WithDumpFullMemory(),
+)
+```
+
+`debug.Report` always returns a `*CrashReport`, even on partial failure —
+callers get whatever was successfully collected before the error, so the
+report is never `nil` when `err != nil`.
+
+## The `CrashReport` structure
+
+```go
+type CrashReport struct {
+    Timestamp   time.Time          // when the report was generated
+    System      SystemInfo         // OS, hardware, CPU, GPU from doctor
+    Build       BuildInfo          // Go version, buildmode, compiler, CGO flag
+    Crash       *CrashInfo         // process, memory, modules, env vars
+    Diagnostics []DiagnosticResult // doctor's health-check results
+    DumpPath    string             // set only if WithDump() was passed
+}
+```
+
+Serialise with `encoding/json` for crash-reporting services, or walk the
+fields directly if you only care about a subset.
+
+## Integrating with `PanicHandler`
+
+The most useful pattern is to collect a report (and optionally a minidump)
+the moment Wails catches a panic, then hand the combined data off to your
+own reporting pipeline:
+
+```go
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        // Always: capture a diagnostic snapshot plus a minidump.
+        report, reportErr := debug.Report(debug.WithDump())
+        if reportErr != nil {
+            log.Printf("debug.Report: %v", reportErr)
+        }
+
+        // Now you have:
+        //   pd.Error, pd.StackTrace, pd.FullStackTrace  — from wails
+        //   report.DumpPath                              — minidump (Windows)
+        //   report.System / report.Crash / report.Build — context
+        //
+        // Ship it off (Sentry, S3, support ticket, local log...).
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+Wails does **not** call `debug.Report` automatically — crash reporting
+often involves user consent or PII redaction, so the decision belongs in
+your handler. See the [panic-handling guide](./panic-handling) for details
+on when Wails invokes `PanicHandler` and how to cover user-spawned
+goroutines as well.
+
+## Manual debugging
+
+`debug.Dump` and `debug.Report` are also useful outside of panics:
+
+- Hang detection: if a watchdog fires, dump the process so you can open it
+  in WinDbg and see exactly what every thread was blocked on.
+- Anomalous-state reports: e.g. goroutine count climbing without bound —
+  capture a report, let the app keep running, investigate later.
+- On-demand support bundles: wire a "Report a bug" menu item to
+  `debug.Report(debug.WithDump())` and attach the result to the user's
+  support ticket.
+
+## Windows minidumps in practice
+
+Minidumps default to a rich-but-compact flag set:
+
+- `MiniDumpNormal`
+- `MiniDumpWithThreadInfo`
+- `MiniDumpWithHandleData`
+- `MiniDumpWithUnloadedModules`
+
+This produces dumps in the ~5–50 MB range that preserve all thread stacks,
+handle tables, and module lists — enough to reconstruct where every
+goroutine was at the moment of the dump.
+
+`debug.WithFullMemory()` (or `debug.WithDumpFullMemory()` on `Report`) adds
+`MiniDumpWithFullMemory`, which captures the entire process address space.
+Useful for "why did this specific pointer get corrupted" investigations,
+but file sizes go into the hundreds of MB or GB. Reserve for deep dives.
+
+Open a resulting `.dmp` in WinDbg with `windbg -z C:\path\to\your.dmp` or
+File → Open Crash Dump in Visual Studio. Symbols are typically stripped in
+release builds — pair the dump with the same build's `.pdb` (or the Go
+binary itself, if built with debug info) for useful stack traces.
+
+## Non-Windows platforms
+
+`debug.Dump` returns an "unimplemented" error on non-Windows. Linux and
+macOS have different postmortem toolchains (core dumps via
+`GOTRACEBACK=crash`, `rr`, or platform-specific crash reporters) that don't
+map cleanly onto the `MiniDumpWriteDump` API. `debug.Report` still works —
+you get everything except a dump file.
+
+The error from `Dump` is designed to be checkable so you can degrade
+gracefully:
+
+```go
+path, err := debug.Dump()
+if err != nil {
+    log.Printf("minidump unavailable on %s: %v", runtime.GOOS, err)
+    // Continue with just debug.Report() or pd.StackTrace from wails.
+}
+```
+
+## Security notes
+
+- **No elevation is required.** The package deliberately avoids
+  `SeDebugPrivilege` and the `OpenProcess` / remote-PID path used by
+  credential-harvesting tools. It dumps only the calling process.
+- **Dump files contain everything in memory.** That includes in-flight
+  credentials, auth tokens, user data, encryption keys. Treat a dump like
+  a full memory image: protect it in transit, scrub it at rest, consider
+  redaction before uploading to third parties.
+- **The default path is `os.TempDir()`.** On Windows this resolves to
+  `%LOCALAPPDATA%\Temp` — per-user, not world-readable, but still
+  persistent. Move dumps to a secure location if you keep them around.
