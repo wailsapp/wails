@@ -67,6 +67,14 @@ Removes the autostart registration. Returns `nil` if the application wasn't regi
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+Removes the registration created under a specific `AutostartOptions.Identifier`, regardless of where the registered command points — use it to clean up a registration left behind by a moved or renamed executable. An empty `Identifier` keeps the discovery-based behaviour of `Disable`. Idempotent: removing an absent registration returns nil.
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 Reports whether a registration exists. Fast — doesn't validate the registered path.

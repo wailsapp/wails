@@ -59,7 +59,7 @@ func TestLinuxAutostartRoundTrip(t *testing.T) {
 		}
 	}
 
-	if err := a.disable(); err != nil {
+	if err := a.disable(AutostartOptions{}); err != nil {
 		t.Fatalf("disable: %v", err)
 	}
 	if st, _ := a.status(); st.Enabled {
@@ -104,5 +104,54 @@ func TestDesktopExecPath(t *testing.T) {
 		if got := desktopExecPath(in); got != want {
 			t.Errorf("desktopExecPath(%q) = %q, want %q", in, got, want)
 		}
+	}
+}
+
+func TestLinuxAutostartDisableWithOptions(t *testing.T) {
+	a := newLinuxAutostartForTest(t, "Test App")
+	dir, err := a.autostartDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	stale := filepath.Join(dir, "com.example.stale.desktop")
+	if err := os.WriteFile(stale, []byte("[Desktop Entry]\nType=Application\nName=Old\nExec=/nonexistent/old/path --hidden\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	// Also an unrelated registration that must survive.
+	other := filepath.Join(dir, "unrelated-app.desktop")
+	if err := os.WriteFile(other, []byte("[Desktop Entry]\nType=Application\nName=Other\nExec=/usr/bin/other\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Discovery-based disable cannot see the stale entry (Exec mismatch).
+	if err := a.disable(AutostartOptions{}); err != nil {
+		t.Fatalf("discovery disable: %v", err)
+	}
+	if _, err := os.Stat(stale); err != nil {
+		t.Fatalf("stale file should still exist after discovery disable: %v", err)
+	}
+
+	// Identifier-targeted disable removes exactly the named file.
+	if err := a.disable(AutostartOptions{Identifier: "com.example.stale"}); err != nil {
+		t.Fatalf("disable with identifier: %v", err)
+	}
+	if _, err := os.Stat(stale); !os.IsNotExist(err) {
+		t.Fatal("stale desktop file should be gone")
+	}
+	if _, err := os.Stat(other); err != nil {
+		t.Fatalf("unrelated desktop file must survive: %v", err)
+	}
+
+	// Idempotent: removing an absent identifier is not an error.
+	if err := a.disable(AutostartOptions{Identifier: "com.example.stale"}); err != nil {
+		t.Fatalf("second disable should be nil, got %v", err)
+	}
+
+	// Invalid identifiers rejected consistently with enable().
+	if err := a.disable(AutostartOptions{Identifier: "bad/identifier"}); err == nil {
+		t.Error("expected error for invalid identifier")
 	}
 }

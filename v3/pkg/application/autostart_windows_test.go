@@ -3,6 +3,7 @@
 package application
 
 import (
+	"errors"
 	"testing"
 
 	"golang.org/x/sys/windows/registry"
@@ -60,7 +61,7 @@ func TestWindowsAutostartRoundTrip(t *testing.T) {
 		t.Errorf("strategy=%q want %q", st.Strategy, AutostartStrategyRegistryRun)
 	}
 
-	if err := a.disable(); err != nil {
+	if err := a.disable(AutostartOptions{}); err != nil {
 		t.Fatalf("disable: %v", err)
 	}
 	st, err = a.status()
@@ -107,7 +108,7 @@ func TestWindowsAutostartIdentifierValidation(t *testing.T) {
 
 func TestWindowsAutostartDisableNoOp(t *testing.T) {
 	a := newWindowsAutostartForTest(t, "Test App")
-	if err := a.disable(); err != nil {
+	if err := a.disable(AutostartOptions{}); err != nil {
 		t.Errorf("disable when not enabled should be nil, got %v", err)
 	}
 }
@@ -145,5 +146,49 @@ func TestQuoteWindowsArg(t *testing.T) {
 		if got := quoteWindowsArg(in); got != want {
 			t.Errorf("quoteWindowsArg(%q) = %q, want %q", in, got, want)
 		}
+	}
+}
+
+func TestWindowsAutostartDisableWithOptions(t *testing.T) {
+	a := newWindowsAutostartForTest(t, "Test App")
+	k, _, err := registry.CreateKey(registry.CURRENT_USER, a.registrySubKey, registry.SET_VALUE)
+	if err != nil {
+		t.Fatalf("create key: %v", err)
+	}
+	if err := k.SetStringValue("com.example.stale", `"C:\old\loc\app.exe" --hidden`); err != nil {
+		t.Fatalf("set stale value: %v", err)
+	}
+	if err := k.SetStringValue("unrelated-app", `"C:\somewhere\other.exe"`); err != nil {
+		t.Fatalf("set unrelated value: %v", err)
+	}
+	k.Close()
+
+	// Discovery-based disable cannot see the stale entry (command mismatch).
+	if err := a.disable(AutostartOptions{}); err != nil {
+		t.Fatalf("discovery disable: %v", err)
+	}
+	k, _ = registry.OpenKey(registry.CURRENT_USER, a.registrySubKey, registry.QUERY_VALUE)
+	if _, _, err := k.GetStringValue("com.example.stale"); err != nil {
+		t.Fatalf("stale value should still exist after discovery disable: %v", err)
+	}
+	k.Close()
+
+	if err := a.disable(AutostartOptions{Identifier: "com.example.stale"}); err != nil {
+		t.Fatalf("disable with identifier: %v", err)
+	}
+	k, _ = registry.OpenKey(registry.CURRENT_USER, a.registrySubKey, registry.QUERY_VALUE)
+	if _, _, err := k.GetStringValue("com.example.stale"); !errors.Is(err, registry.ErrNotExist) {
+		t.Fatal("stale registry value should be gone")
+	}
+	if _, _, err := k.GetStringValue("unrelated-app"); err != nil {
+		t.Fatalf("unrelated value must survive: %v", err)
+	}
+	k.Close()
+
+	if err := a.disable(AutostartOptions{Identifier: "com.example.stale"}); err != nil {
+		t.Fatalf("second disable should be nil, got %v", err)
+	}
+	if err := a.disable(AutostartOptions{Identifier: "bad/identifier"}); err == nil {
+		t.Error("expected error for invalid identifier")
 	}
 }
