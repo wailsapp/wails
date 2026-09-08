@@ -2587,15 +2587,25 @@ func (h *manifestHandler) packageIOS(ctx context.Context, s pipeline.PackageSpec
 		if err := os.MkdirAll(assetTemp, 0o755); err != nil {
 			return pipeline.RunResult{}, err
 		}
-		actool := []string{"actool", "--compile", assetTemp, "--app-icon", "AppIcon", "--platform", sdk, "--minimum-deployment-target", minimum, "--product-type", "com.apple.product-type.application", "--target-device", "iphone", "--target-device", "ipad", "--output-partial-info-plist", filepath.Join(stagedApp, "assetcatalog_generated_info.plist"), assetInput}
+		actool := []string{"actool", "--compile", assetTemp, "--app-icon", "AppIcon", "--platform", sdk, "--minimum-deployment-target", minimum, "--product-type", "com.apple.product-type.application", "--target-device", "iphone", "--target-device", "ipad", "--output-partial-info-plist", filepath.Join(stagedWorkspace, "assetcatalog_generated_info.plist"), assetInput}
 		if output, err := runManifestCommand(ctx, h.root, nil, "xcrun", actool...); err != nil {
 			return pipeline.RunResult{Detail: output}, err
 		}
-		if _, err := os.Stat(filepath.Join(assetTemp, "Assets.car")); err == nil {
-			if err := copyManifestPath(filepath.Join(assetTemp, "Assets.car"), filepath.Join(stagedApp, "Assets.car")); err != nil {
-				return pipeline.RunResult{}, err
-			}
+		if err := copyManifestPath(assetTemp, stagedApp); err != nil {
+			return pipeline.RunResult{}, err
 		}
+		if err := mergeIOSAssetInfo(filepath.Join(stagedApp, "Info.plist"), filepath.Join(stagedWorkspace, "assetcatalog_generated_info.plist")); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
+	launchScreen := filepath.Join(h.root, s.Assets, "ios", "xcode", "main", "LaunchScreen.storyboard")
+	if _, err := os.Stat(launchScreen); err == nil {
+		args := []string{"--sdk", sdk, "ibtool", "--compile", filepath.Join(stagedApp, "LaunchScreen.storyboardc"), "--minimum-deployment-target", minimum, "--target-device", "iphone", "--target-device", "ipad", launchScreen}
+		if output, err := runManifestCommand(ctx, h.root, nil, "xcrun", args...); err != nil {
+			return pipeline.RunResult{Detail: output}, err
+		}
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return pipeline.RunResult{}, err
 	}
 	associationIcons, err := filepath.Glob(filepath.Join(h.root, s.Assets, "ios", "xcode", "main", "association-*"))
 	if err != nil {

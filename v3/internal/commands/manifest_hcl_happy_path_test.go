@@ -1044,7 +1044,7 @@ func TestHCLIOSSignedAppAndIPAUseDeclaredTargetSettings(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "packaging"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "Info.plist"), []byte("ios com.example.mobile"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "packaging", "Info.plist"), []byte(`<plist version="1.0"><dict><key>CFBundleIdentifier</key><string>com.example.mobile</string></dict></plist>`), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "ios.entitlements"), []byte("entitlements"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "distribution.mobileprovision"), []byte("provisioning"), 0o644))
 	hcl := `version = 3
@@ -1083,7 +1083,7 @@ profile "release" {
 	t.Cleanup(func() { manifestHostOS = previousHost })
 	fakeTools := t.TempDir()
 	codesignRecord := filepath.Join(root, "codesign-args.txt")
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "xcrun"), []byte("#!/bin/sh\nfor arg in \"$@\"; do if [ \"$arg\" = \"--show-sdk-path\" ]; then printf /fake/sdk; exit 0; fi; if [ \"$arg\" = \"--find\" ]; then printf /fake/clang; exit 0; fi; if [ \"$arg\" = \"actool\" ]; then compile=; plist=; while [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"--compile\" ]; then compile=$2; shift; fi; if [ \"$1\" = \"--output-partial-info-plist\" ]; then plist=$2; shift; fi; shift; done; mkdir -p \"$compile\" \"$(dirname \"$plist\")\"; printf car > \"$compile/Assets.car\"; printf plist > \"$plist\"; exit 0; fi; done\noutput=\nwhile [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"-o\" ]; then output=$2; shift; fi; shift; done\nmkdir -p \"$(dirname \"$output\")\"\nprintf binary > \"$output\"\n"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "xcrun"), []byte(iosPackagingToolFixture), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "go"), []byte("#!/bin/sh\noutput=\nwhile [ \"$#\" -gt 0 ]; do if [ \"$1\" = \"-o\" ]; then output=$2; shift; fi; shift; done\nmkdir -p \"$(dirname \"$output\")\"\nprintf archive > \"$output\"\n"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "codesign"), []byte("#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$CODESIGN_RECORD\"\n"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "zip"), []byte("#!/bin/sh\noutput=$2\nprintf ipa > \"$output\"\n"), 0o755))
@@ -1108,7 +1108,7 @@ profile "release" {
 	_, err = handler.Run(t.Context(), assemblyNode)
 	require.NoError(t, err)
 	assert.DirExists(t, filepath.Join(root, assemblySpec.Output))
-	assert.Equal(t, "ios com.example.mobile", readTestFile(t, filepath.Join(root, assemblySpec.Output, "Info.plist")))
+	assert.Contains(t, readTestFile(t, filepath.Join(root, assemblySpec.Output, "Info.plist")), "com.example.mobile")
 	assert.Equal(t, "provisioning", readTestFile(t, filepath.Join(root, assemblySpec.Output, "embedded.mobileprovision")))
 	codesignArgs := readTestFile(t, codesignRecord)
 	assert.Contains(t, codesignArgs, filepath.Join(stagedSigning, "entitlements.entitlements"))
@@ -1122,7 +1122,7 @@ profile "release" {
 	require.NoError(t, packageErr, packageResult.Detail)
 	assert.FileExists(t, filepath.Join(root, spec.Output))
 	workspace := filepath.Join(root, ".wails", "build", "release", "ios-arm64", "package", "ipa")
-	assert.Equal(t, "ios com.example.mobile", readTestFile(t, filepath.Join(workspace, "Payload", "mobile.app", "Info.plist")))
+	assert.Contains(t, readTestFile(t, filepath.Join(workspace, "Payload", "mobile.app", "Info.plist")), "com.example.mobile")
 	signNode := plan.Nodes[pipeline.NodeKey(string(packageKey)+":sign")]
 	_, err = handler.Run(t.Context(), signNode)
 	require.NoError(t, err)
@@ -1152,31 +1152,7 @@ profile "release" {
 	manifestHostOS = "darwin"
 	t.Cleanup(func() { manifestHostOS = previousHost })
 	fakeTools := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "xcrun"), []byte(`#!/bin/sh
-for arg in "$@"; do
-  if [ "$arg" = "--show-sdk-path" ]; then printf /fake/iphonesimulator.sdk; exit 0; fi
-  if [ "$arg" = "actool" ]; then
-    compile=
-    plist=
-    while [ "$#" -gt 0 ]; do
-      if [ "$1" = "--compile" ]; then compile=$2; shift; fi
-      if [ "$1" = "--output-partial-info-plist" ]; then plist=$2; shift; fi
-      shift
-    done
-    mkdir -p "$compile" "$(dirname "$plist")"
-    printf car > "$compile/Assets.car"
-    printf plist > "$plist"
-    exit 0
-  fi
-done
-output=
-while [ "$#" -gt 0 ]; do
-  if [ "$1" = "-o" ]; then output=$2; shift; fi
-  shift
-done
-mkdir -p "$(dirname "$output")"
-printf executable > "$output"
-`), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "xcrun"), []byte(iosPackagingToolFixture), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "codesign"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
 	t.Setenv("PATH", fakeTools+string(os.PathListSeparator)+os.Getenv("PATH"))
 	handler := &manifestHandler{root: root, config: loaded.Config}
@@ -1192,8 +1168,29 @@ printf executable > "$output"
 	assert.DirExists(t, filepath.Join(root, spec.Output))
 	info := readTestFile(t, filepath.Join(root, spec.Output, "Info.plist"))
 	assert.Contains(t, info, "com.example.simulatorapp")
-	assert.Contains(t, info, "<key>CFBundleExecutable</key>\n    <string>simulator-app</string>")
+	assert.Contains(t, info, "<string>simulator-app</string>")
+	assert.Contains(t, info, "CFBundleIcons")
+	assert.FileExists(t, filepath.Join(root, spec.Output, "AppIcon60x60@2x.png"))
+	assert.DirExists(t, filepath.Join(root, spec.Output, "LaunchScreen.storyboardc"))
+	assert.NoFileExists(t, filepath.Join(root, spec.Output, "assetcatalog_generated_info.plist"))
 	assert.FileExists(t, filepath.Join(root, spec.Output, "simulator-app"))
+
+	// A resource compiler failure must not replace the last working bundle.
+	marker := filepath.Join(root, spec.Output, "previous-build")
+	require.NoError(t, os.WriteFile(marker, []byte("keep"), 0o644))
+	for _, tool := range []string{"actool", "ibtool"} {
+		t.Run(tool+" failure preserves app", func(t *testing.T) {
+			brokenTool := strings.Replace(iosPackagingToolFixture,
+				`if [ "$arg" = "`+tool+`" ]; then`,
+				`if [ "$arg" = "`+tool+`" ]; then echo resource-compiler-failed >&2; exit 1;`, 1)
+			require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "xcrun"), []byte(brokenTool), 0o755))
+			result, err := handler.Run(t.Context(), packageNode)
+			require.Error(t, err)
+			assert.Contains(t, result.Detail, "resource-compiler-failed")
+			assert.Equal(t, "keep", readTestFile(t, marker))
+			assert.Equal(t, info, readTestFile(t, filepath.Join(root, spec.Output, "Info.plist")))
+		})
+	}
 }
 
 func TestHCLDarwinUniversalCompileUsesBothArchitectures(t *testing.T) {
@@ -1997,3 +1994,36 @@ func mapArtifacts(items []struct {
 	}
 	return result
 }
+
+const iosPackagingToolFixture = `#!/bin/sh
+for arg in "$@"; do
+ if [ "$arg" = "--show-sdk-path" ]; then printf /fake/sdk; exit 0; fi
+ if [ "$arg" = "--find" ]; then printf /fake/clang; exit 0; fi
+ if [ "$arg" = "actool" ]; then
+  compile=; plist=
+  while [ "$#" -gt 0 ]; do
+   if [ "$1" = "--compile" ]; then compile=$2; shift; fi
+   if [ "$1" = "--output-partial-info-plist" ]; then plist=$2; shift; fi
+   shift
+  done
+  mkdir -p "$compile" "$(dirname "$plist")"
+  printf car > "$compile/Assets.car"
+  printf icon > "$compile/AppIcon60x60@2x.png"
+  printf '%s' '<plist version="1.0"><dict><key>CFBundleIcons</key><dict><key>CFBundlePrimaryIcon</key><dict><key>CFBundleIconFiles</key><array><string>AppIcon60x60</string></array></dict></dict></dict></plist>' > "$plist"
+  exit 0
+ fi
+ if [ "$arg" = "ibtool" ]; then
+  while [ "$#" -gt 0 ]; do
+   if [ "$1" = "--compile" ]; then mkdir -p "$2"; printf nib > "$2/LaunchScreen.nib"; exit 0; fi
+   shift
+  done
+ fi
+done
+output=
+while [ "$#" -gt 0 ]; do
+ if [ "$1" = "-o" ]; then output=$2; shift; fi
+ shift
+done
+mkdir -p "$(dirname "$output")"
+printf binary > "$output"
+`
