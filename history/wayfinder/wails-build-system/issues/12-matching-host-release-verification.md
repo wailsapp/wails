@@ -150,3 +150,16 @@ Remaining rows are native Windows/macOS/iOS packaging and launch, credentialed
 signing, native Linux arm64 launch/install, and a physical Android device. Use
 the refreshed handoff guide and test the latest remote branch, not an installed
 CLI.
+
+2026-09-08 GA review follow-up on `codex/hcl-ga-fixes`: refreshed Android amd64,
+arm64 and universal AAB builds and unsigned cache verification passed. Actual
+bundle/APK inspection verifies non-default ID, version and SDK metadata.
+Disposable password-protected AAB signing and signature verification passed;
+repeat signing executes while packaging remains cached, and wrong/missing
+credentials fail. API 36 x86_64 emulator build/install/launch, a live Go binding
+call, existing-APK launch, log streaming and SIGINT cancellation passed. This
+caught and fixed the Android deployment application-ID mismatch. Windows job
+ownership and signing-password propagation fixes are implemented with tests,
+but their native acceptance remains open. See the
+[platform evidence and manual commands](../../../hcl-ga-review-2026-09-08/platform-fixes.md).
+Physical Android and production release credentials remain outstanding.

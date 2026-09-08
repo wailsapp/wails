@@ -610,3 +610,22 @@ func fakeAndroidDeployOperations() androidDeployOperations {
 		},
 	}
 }
+
+func TestAndroidDeployUsesPlatformApplicationID(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	require.NoError(t, os.WriteFile(filepath.Join(root, "wails.hcl"), []byte(`version = 3
+project {
+ name = "deploy"
+ product_name = "Deploy"
+ version = "1.0.0"
+ identifier = "com.example.desktop"
+}
+android {
+ application_id = "com.example.android"
+}
+`), 0600))
+	id, err := realAndroidDeployOperations().packageID("")
+	require.NoError(t, err)
+	assert.Equal(t, "com.example.android", id)
+}

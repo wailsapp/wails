@@ -1,0 +1,112 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="36" android:compileSdkVersionCodename="16" android:versionCode="372" android:versionName="3.7.2" package="com.wails.gareview.badge" platformBuildVersionCode="36" platformBuildVersionName="16">
+
+  <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="35"/>
+
+
+  <uses-permission android:name="android.permission.INTERNET"/>
+
+  <uses-permission android:name="android.permission.VIBRATE"/>
+
+
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+  <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+  <uses-permission android:name="android.permission.CAMERA"/>
+
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+
+  <queries>
+
+    <intent>
+
+      <action android:name="android.media.action.IMAGE_CAPTURE"/>
+
+    </intent>
+
+    <intent>
+
+      <action android:name="android.media.action.VIDEO_CAPTURE"/>
+
+    </intent>
+
+  </queries>
+
+
+  <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+
+  <permission android:name="com.wails.gareview.badge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="0x00000002"/>
+
+  <uses-permission android:name="com.wails.gareview.badge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"/>
+
+  <application android:allowBackup="true" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:extractNativeLibs="false" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/Theme.WailsApp">
+
+    <activity android:configChanges="0x000006a0" android:exported="true" android:name="com.wails.app.MainActivity" android:windowSoftInputMode="0x00000010">
+
+      <intent-filter>
+
+        <action android:name="android.intent.action.MAIN"/>
+
+        <category android:name="android.intent.category.LAUNCHER"/>
+
+      </intent-filter>
+
+    </activity>
+
+    <provider android:authorities="com.wails.gareview.badge.fileprovider" android:exported="false" android:grantUriPermissions="true" android:name="androidx.core.content.FileProvider">
+
+      <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths"/>
+
+    </provider>
+
+    <service android:exported="false" android:foregroundServiceType="0x00000001" android:name="com.wails.app.WailsForegroundService"/>
+
+    <provider android:authorities="com.wails.gareview.badge.androidx-startup" android:exported="false" android:name="androidx.startup.InitializationProvider">
+
+      <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer" android:value="androidx.startup"/>
+
+      <meta-data android:name="androidx.lifecycle.ProcessLifecycleInitializer" android:value="androidx.startup"/>
+
+      <meta-data android:name="androidx.profileinstaller.ProfileInstallerInitializer" android:value="androidx.startup"/>
+
+    </provider>
+
+    <receiver android:directBootAware="false" android:enabled="true" android:exported="true" android:name="androidx.profileinstaller.ProfileInstallReceiver" android:permission="android.permission.DUMP">
+
+      <intent-filter>
+
+        <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE"/>
+
+      </intent-filter>
+
+      <intent-filter>
+
+        <action android:name="androidx.profileinstaller.action.SKIP_FILE"/>
+
+      </intent-filter>
+
+      <intent-filter>
+
+        <action android:name="androidx.profileinstaller.action.SAVE_PROFILE"/>
+
+      </intent-filter>
+
+      <intent-filter>
+
+        <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION"/>
+
+      </intent-filter>
+
+    </receiver>
+
+  </application>
+
+</manifest>

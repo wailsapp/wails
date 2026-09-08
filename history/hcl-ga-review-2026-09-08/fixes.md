@@ -4,6 +4,8 @@
 
 The [original review](review.md) identified 16 defects. Fifteen are fixed, and the sixteenth (descendants surviving parent exit) is fixed for Unix. Windows process ownership remains an [open follow-up](../wayfinder/hcl-ga-review-2026-09-08/issues/17-windows-process-cleanup.md). This is not full v3 GA certification.
 
+Further progress: [additional platform fixes and Android acceptance](platform-fixes.md) updates the Windows cleanup and native Android status below.
+
 ## Changes
 
 - Cache correctness: discover embedded Go resources, preserve binding registrations inside methods, fingerprint compiler CPU/environment settings and persistent GOENV contents. The binding cache key is versioned to invalidate older fingerprints.

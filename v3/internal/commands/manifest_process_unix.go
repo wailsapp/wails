@@ -26,3 +26,11 @@ func killManifestProcess(process *os.Process) error {
 func cleanupManifestProcessGroup(process *os.Process) {
 	_ = syscall.Kill(-process.Pid, syscall.SIGKILL)
 }
+
+func startManifestOwnedProcess(cmd *exec.Cmd) (func(), error) {
+	configureManifestProcess(cmd)
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+	return func() { cleanupManifestProcessGroup(cmd.Process) }, nil
+}

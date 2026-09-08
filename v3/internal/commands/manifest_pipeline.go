@@ -2680,6 +2680,13 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 		})
 		return pipeline.RunResult{Detail: detail}, err
 	}
+	password := ""
+	if s.TargetOS == "windows" && s.Config.Credential != "" {
+		password = os.Getenv(s.Config.Credential)
+		if password == "" {
+			return pipeline.RunResult{}, fmt.Errorf("windows signing password environment variable %s is empty", s.Config.Credential)
+		}
+	}
 	certificate := s.Config.Certificate
 	if s.TargetOS != "linux" {
 		var err error
@@ -2701,7 +2708,7 @@ func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeli
 				return err
 			}
 		}
-		return manifestSign(&flags.Sign{Input: staged, Certificate: certificate, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.Credential, PGPKey: chooseString(s.TargetOS == "linux", certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")})
+		return manifestSign(&flags.Sign{Input: staged, Certificate: certificate, Password: password, Thumbprint: s.Config.Thumbprint, Timestamp: s.Config.TimestampServer, Identity: s.Config.Identity, Entitlements: entitlements, Notarize: s.Config.Notarize, KeychainProfile: s.Config.Credential, PGPKey: chooseString(s.TargetOS == "linux", certificate, ""), Role: chooseString(s.TargetOS == "linux", s.Config.Identity, "")})
 	})
 	return pipeline.RunResult{}, err
 }

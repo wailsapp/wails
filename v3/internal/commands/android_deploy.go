@@ -242,7 +242,7 @@ func realAndroidDeployOperations() androidDeployOperations {
 		if err != nil {
 			return "", err
 		}
-		return loaded.Config.Project.Identifier, nil
+		return androidApplicationID(loaded.Config), nil
 	}
 	operations.adb = runADB
 	operations.selectValue = selectAndroidValue
@@ -347,10 +347,17 @@ func buildAndroidDevelopmentAPK(ctx context.Context, profile, arch string) (stri
 	for _, key := range run.Plan.Artifacts {
 		node := run.Plan.Nodes[key]
 		if node.Artifact.Format == "apk" {
-			return filepath.Join(development.Config.Root, filepath.FromSlash(node.Output)), development.Config.Project.Identifier, nil
+			return filepath.Join(development.Config.Root, filepath.FromSlash(node.Output)), androidApplicationID(development.Config), nil
 		}
 	}
 	return "", "", fmt.Errorf("Android development build produced no APK")
+}
+
+func androidApplicationID(config manifest.Config) string {
+	if config.Targets.Android.Identifier != "" {
+		return config.Targets.Android.Identifier
+	}
+	return config.Project.Identifier
 }
 
 func listAndroidAVDs(ctx context.Context) ([]string, error) {

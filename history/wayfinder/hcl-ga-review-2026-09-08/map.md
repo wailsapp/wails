@@ -47,3 +47,11 @@ Review HEAD: `3452def9defa5ad7f711efe1aa14a34ca93cbe41`.
 ## Remaining implementation work
 
 Open follow-ups are recorded in `issues/`, including Windows descendant cleanup. Existing matching-host acceptance and device deployment tickets remain open in the original build-system tracker.
+
+## Additional platform follow-up
+
+- [Windows signing credential](issues/18-windows-signing-credential.md): fixed and regression-tested; native PFX verification remains.
+- [Android launch identity](issues/19-android-launch-identity.md): fixed and verified on the emulator, including existing-APK launch and log cancellation.
+- [Windows process ownership](issues/17-windows-process-cleanup.md): implemented; awaiting native Windows process tests.
+
+See the [platform verification and manual handoff](../../hcl-ga-review-2026-09-08/platform-fixes.md).

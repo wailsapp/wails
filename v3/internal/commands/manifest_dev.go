@@ -719,8 +719,8 @@ func startManifestProcess(dir, name string, env []string, args ...string) (*mani
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
-	configureManifestProcess(cmd)
-	if err := cmd.Start(); err != nil {
+	cleanup, err := startManifestOwnedProcess(cmd)
+	if err != nil {
 		return nil, err
 	}
 	result := &manifestProcess{cmd: cmd, done: make(chan struct{})}
@@ -728,7 +728,7 @@ func startManifestProcess(dir, name string, env []string, args ...string) (*mani
 		waitErr := cmd.Wait()
 		// A wrapper may exit before its descendants. Clean its group immediately,
 		// before exposing completion, instead of signalling a stale PID in stop.
-		cleanupManifestProcessGroup(cmd.Process)
+		cleanup()
 		result.mu.Lock()
 		result.err = waitErr
 		result.mu.Unlock()
