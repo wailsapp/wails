@@ -854,15 +854,26 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
-	// Re-enable parent window if this was a modal window
-	if w.parentHWND != 0 {
-		w32.EnableWindow(w.parentHWND, true)
-		w.parentHWND = 0
-	}
+	w.releaseModalParent(w.isFocused())
 
 	w.parent.markAsDestroyed()
 	// destroy the window
 	w32.DestroyWindow(w.hwnd)
+}
+
+// releaseModalParent makes an attached modal's owner eligible for activation
+// again. If the modal is currently foreground, activate its owner before the
+// modal is destroyed so Windows does not select the next unrelated top-level
+// window. A background modal must not steal activation from another app.
+func (w *windowsWebviewWindow) releaseModalParent(activate bool) {
+	if w.parentHWND == 0 {
+		return
+	}
+	w32.EnableWindow(w.parentHWND, true)
+	if activate {
+		w32.SetActiveWindow(w.parentHWND)
+	}
+	w.parentHWND = 0
 }
 
 func (w *windowsWebviewWindow) reload() {
@@ -1645,21 +1656,15 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			return 0
 		}
 
-		defer func() {
-			// Re-enable parent window if this was a modal window
-			if w.parentHWND != 0 {
-				w32.EnableWindow(w.parentHWND, true)
-				w.parentHWND = 0
-			}
-
-			windowsApp := globalApplication.impl.(*windowsApp)
-			windowsApp.unregisterWindow(w)
-
-		}()
-
-		// Now do the actual close
+		// DefWindowProc destroys the modal and may select the next unrelated
+		// top-level window, so remember whether its owner should remain active.
+		restoreParentActivation := w.isFocused()
 		w.chromium.ShuttingDown()
-		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
+		w.releaseModalParent(restoreParentActivation)
+		result := w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
+		windowsApp := globalApplication.impl.(*windowsApp)
+		windowsApp.unregisterWindow(w)
+		return result
 	case w32.WM_SETCURSOR:
 		if w.compositionCursor != 0 && w32.LOWORD(uint32(lparam)) == w32.HTCLIENT {
 			w32.SetCursor(w.compositionCursor)
