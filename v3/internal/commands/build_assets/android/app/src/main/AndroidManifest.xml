@@ -42,6 +42,31 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!--
+              Deep linking (Android App Links). Uncomment and set your own host to
+              receive HTTPS links (OAuth/OIDC callbacks, email verification, shared
+              content, …) in Go via the common:ApplicationLaunchedWithUrl event.
+
+              The URL is delivered to MainActivity's onCreate (cold start) /
+              onNewIntent (warm start) and forwarded to Go. For reliable warm-start
+              delivery, also set android:launchMode="singleTask" on this <activity>
+              so a new intent reuses the running instance instead of spawning a copy.
+
+              android:autoVerify="true" enables verified App Links; you must host
+              https://<your-host>/.well-known/assetlinks.json containing this app's
+              signing certificate SHA-256 fingerprint for the OS to open links
+              directly in the app (without it, the OS shows a chooser).
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https"
+                      android:host="your-app.example.com"
+                      android:pathPrefix="/auth" />
+            </intent-filter>
+            -->
         </activity>
 
         <provider
