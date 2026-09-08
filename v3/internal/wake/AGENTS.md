@@ -11,10 +11,10 @@ Wake contains two deliberately separated paths:
   discover or interpret Taskfiles. Package and sign are deprecated aliases
   over the same build planner.
 - The Go-native Taskfile executor is the legacy compatibility and migration
-  path. `WAILS_USE_WAKE=true` selects it instead of the external `task` CLI for
-  Taskfile projects; unsupported Taskfile features still fall back to `task`.
+  path, retained as an internal executor. CLI Taskfile commands always use the
+  embedded Task runtime; the old environment-variable selector was removed.
 
-The legacy Taskfile environment flag does not enable the manifest pipeline.
+The retired `WAILS_USE_WAKE` flag is ignored.
 The shared `internal/features.WakeEnabled` presence check gates the HCL CLI,
 init/setup generation and build/dev/package/sign routing. An empty value or
 `false` still opts in; an unset variable preserves legacy Taskfile behavior.
@@ -153,7 +153,7 @@ Result (badge example, no-op rebuild): wake ~20ms vs `task` ~316ms (~94% faster)
 - **Glob exclude**: `recursiveMatch` treats `**/*` suffix as matching everything under the prefix. Pattern `frontend/**/*` matches any file under `frontend/`.
 - **Namespace filtering**: `filterTaskNamespaces` removes `common:` tasks and non-matching platform prefixes when target is `darwin:*` / `linux:*` / `windows:*`.
 - **Dep namespace resolution**: Short dep names resolved to full namespace via `resolveDepNamespaces` (pre-execution) and `resolveTaskName` (runtime). Tries `prefix:task`, then `prefix:common:task`, then `include:task`.
-- **Fallback**: When `WAILS_USE_WAKE` not set or unsupported features detected (dotenv, output modes, defer, interval, short), falls back to `task` CLI if available.
+- **Fallback**: When unsupported features are detected (dotenv, output modes, defer, interval, short), falls back to `task` CLI if available.
 
 ## Build Reporting (UI)
 

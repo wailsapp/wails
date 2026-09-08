@@ -10,8 +10,8 @@ writer. Presence enables it, including an empty value, `0` or `false`. When
 unset, build/dev/package/sign use Taskfiles, init generates legacy build assets,
 and setup retains its legacy YAML/Taskfile writers without modifying HCL.
 
-`WAILS_USE_WAKE=true` still selects only the legacy Taskfile runner. It does not
-enable the experimental HCL CLI.
+The former `WAILS_USE_WAKE` variable is ignored. Only `WAILS_EXP_USE_WAKE`
+enables the experimental HCL CLI.
 
 ## Native HCL projects
 
@@ -89,20 +89,11 @@ file.
 
 ## Legacy Taskfile projects
 
-Without active `wails.hcl`, existing projects continue through the legacy
-Taskfile path. `WAILS_USE_WAKE=true` selects the experimental Go-native runner
-instead of the external `task` CLI:
-
-```bash
-WAILS_USE_WAKE=true wails3 build
-WAILS_USE_WAKE=true wails3 task <task-name>
-```
-
-The runner supports v3 parsing, static includes, namespaces, variables, local
-override layers, parallel dependencies, reporting, and `.wake/cache.json`.
-Unsupported Taskfile features fall back to the external Task CLI when
-available. This path is compatibility code, not a customisation language for
-HCL projects.
+When the HCL experiment is disabled or no active `wails.hcl` exists,
+`build`, `package`, `sign` and `task` use the embedded Task runtime. Root task
+customisations, CLI variables, task selection and Task flags retain their
+existing behavior. No environment variable selects the old native Taskfile
+executor. Its implementation remains internal for compatibility tests.
 
 ## Verification
 

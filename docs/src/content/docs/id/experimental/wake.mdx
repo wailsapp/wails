@@ -10,10 +10,11 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="caution" title="Fitur Eksperimental">
-Wake bersifat opt-in di balik `WAILS_USE_WAKE=true` dan **bukan** runner default.
-Tanpa variabel tersebut, `wails3 build / package / sign / task` berperilaku persis
-seperti sebelumnya. Cakupan fitur dan perilaku mungkin berubah antar rilis.
+<Aside type="caution" title="Eksperimen Taskfile dihentikan">
+Variabel `WAILS_USE_WAKE` telah dihapus dan diabaikan. Proyek Taskfile memakai
+runtime Task bawaan. Atur `WAILS_EXP_USE_WAKE` untuk mengaktifkan CLI HCL dan
+pembuatan proyek HCL. Materi runner Taskfile di bawah ini adalah dokumentasi
+historis; perintah aktivasi tersebut tidak lagi mengaktifkan runner itu.
 </Aside>
 
 Wake adalah **build runner alternatif eksperimental** untuk `wails3`. Ia membaca

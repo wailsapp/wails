@@ -10,10 +10,11 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside type="caution" title="Experimental Feature">
-Wake is opt-in behind `WAILS_USE_WAKE=true` and is **not** the default runner.
-With the variable unset, `wails3 build / package / sign / task` behave exactly
-as before. Feature coverage and behaviour may change between releases.
+<Aside type="caution" title="Retired Taskfile experiment">
+The `WAILS_USE_WAKE` switch has been removed and is ignored. Taskfile projects
+use the embedded Task runtime. Set `WAILS_EXP_USE_WAKE` to opt into the separate
+HCL CLI and project generation. The Taskfile-runner material below is historical;
+its activation commands no longer enable that runner.
 </Aside>
 
 Wake is an **experimental alternative build runner** for `wails3`. It reads the

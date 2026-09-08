@@ -10,8 +10,7 @@ import "os/exec"
 // `vars: {X: {sh: ...}}`, status:, and precondition: shell-out would
 // fail.
 //
-// Users who want a POSIX shell (Git Bash, MSYS, WSL) can keep
-// WAILS_USE_WAKE unset and use the embedded Task runtime instead.
+// CLI Taskfile commands use the embedded Task runtime and its shell semantics.
 func ShellCommand(script string) *exec.Cmd {
 	return exec.Command("cmd", "/C", script)
 }

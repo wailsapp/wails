@@ -12,7 +12,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
-	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
@@ -322,9 +321,7 @@ func wrapTask(action string, otherArgs []string) error {
 		}
 	}
 
-	// platformTaskName always targets the platform-specific task (e.g.
-	// "linux:build"). The experimental wake runner is built against this concrete
-	// name, so it keeps using it unconditionally.
+	// Use the platform-specific task for verbs without a root dispatcher.
 	platformTaskName := action
 	if validPlatforms[goos] {
 		platformTaskName = goos + ":" + action
@@ -342,18 +339,10 @@ func wrapTask(action string, otherArgs []string) error {
 		taskName = action
 	}
 
-	if useWake() {
-		return runWakeTask(action, platformTaskName, goos, goarch, remainingArgs)
-	}
-
 	newArgs := []string{"wails3", "task", taskName}
 	newArgs = append(newArgs, remainingArgs...)
 	os.Args = newArgs
 	return runTaskFunc(&RunTaskOptions{Name: taskName}, remainingArgs)
-}
-
-func useWake() bool {
-	return os.Getenv("WAILS_USE_WAKE") == "true"
 }
 
 // title capitalises an action ("build" -> "Build") for the command banner.
@@ -362,42 +351,4 @@ func title(action string) string {
 		return action
 	}
 	return strings.ToUpper(action[:1]) + action[1:]
-}
-
-func runWakeTask(verb, taskName, goos, goarch string, cliVars []string) error {
-	dir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	vars := make(map[string]string)
-	for _, v := range cliVars {
-		if strings.Contains(v, "=") {
-			parts := strings.SplitN(v, "=", 2)
-			if len(parts) == 2 {
-				vars[parts[0]] = parts[1]
-			}
-		}
-	}
-
-	opts := wake.ExecuteOptions{
-		Dir:      dir,
-		Platform: goos,
-		Arch:     goarch,
-		Verb:     verb,
-		Vars:     vars,
-		Verbose:  os.Getenv("WAKE_VERBOSE") != "",
-		Silent:   os.Getenv("WAKE_SILENT") != "",
-		Debug:    os.Getenv("WAKE_DEBUG") != "",
-		// Parallel execution is the default. Set WAKE_SERIAL=true to opt out
-		// (useful when debugging task ordering or when stdout interleaving
-		// from sibling steps would muddle a specific investigation).
-		Parallel: os.Getenv("WAKE_SERIAL") == "",
-		// WAKE_FORCE=true skips every cache lookup, both the Taskfile
-		// sources/generates/status check and the implicit native-Go cache.
-		// Use when you want a true "clean" build without rm -rf .wake/.
-		Force: os.Getenv("WAKE_FORCE") != "",
-	}
-
-	return wake.Execute(taskName, opts)
 }
