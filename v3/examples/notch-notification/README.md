@@ -1,5 +1,7 @@
 # Notch Notification Example
 
+> **macOS:** Webview transparency requires `go run -tags private_mac_apis .`. Without the tag, the example still builds and runs, but the webview remains opaque.
+
 This macOS example demonstrates `NewNotchWindow` with a compact, stateful
 system monitor. The frontend continuously updates real CPU, memory, and disk
 telemetry from public macOS host and filesystem APIs while Wails owns the

@@ -1,5 +1,7 @@
 # Liquid Glass Demo for Wails v3
 
+> **macOS:** Run with `go run -tags private_mac_apis .` to enable private WebKit transparency and the existing private visual effects. Without the tag, the example still builds and runs, but the webview remains opaque; Liquid Glass grouping and programmatic inspector opening are no-ops.
+
 This demo showcases the native Liquid Glass effect available in macOS 15.0+ with fallback to NSVisualEffectView for older systems.
 
 ## Features Demonstrated

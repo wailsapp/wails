@@ -3,6 +3,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
 #import "webview_window_darwin.h"
+#import "mac_private_api_darwin.h"
 #import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
@@ -16,13 +17,6 @@ extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
-// Define custom glass effect style constants (these match the Go constants)
-typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
-    LiquidGlassStyleAutomatic = 0,
-    LiquidGlassStyleLight = 1,
-    LiquidGlassStyleDark = 2,
-    LiquidGlassStyleVibrant = 3
-};
 
 @interface WebviewWindow ()
 
@@ -1057,10 +1051,8 @@ void configureWebViewForLiquidGlass(void* nsWindow) {
     NSWindow<WailsWebviewWindow>* window = (NSWindow<WailsWebviewWindow>*)nsWindow;
     WKWebView* webView = window.webView;
     // Make WebView background transparent
-    [webView setValue:@NO forKey:@"drawsBackground"];
-    if (@available(macOS 10.12, *)) {
-        [webView setValue:[NSColor clearColor] forKey:@"backgroundColor"];
-    }
+    wailsPrivateSetWebviewTransparent((void*)webView);
+    wailsPrivateSetWebviewBackgroundColour((void*)webView, 0, 0, 0, 0);
     // Ensure WebView is above glass layer
     if (webView.layer) {
         webView.layer.zPosition = 1.0;
@@ -1099,26 +1091,11 @@ void windowSetLiquidGlass(void* nsWindow, int style, int material, double corner
                 // Use performSelector to safely set tintColor if the setter exists
                 [glassView performSelector:@selector(setTintColor:) withObject:tintColor];
             }
-            // Set style if the property exists
-            if ([glassView respondsToSelector:@selector(setStyle:)]) {
-                // For vibrant style, try to use Light style for a lighter effect
-                int lightStyle = (style == LiquidGlassStyleVibrant) ? LiquidGlassStyleLight : style;
-                [glassView setValue:@(lightStyle) forKey:@"style"];
-            }
-            // Set group identifier if the property exists and groupID is specified
-            if (groupID && strlen(groupID) > 0) {
-                if ([glassView respondsToSelector:@selector(setGroupIdentifier:)]) {
-                    NSString* groupIDString = [NSString stringWithUTF8String:groupID];
-                    [glassView performSelector:@selector(setGroupIdentifier:) withObject:groupIDString];
-                } else if ([glassView respondsToSelector:@selector(setGroupName:)]) {
-                    NSString* groupIDString = [NSString stringWithUTF8String:groupID];
-                    [glassView performSelector:@selector(setGroupName:) withObject:groupIDString];
-                }
-            }
-            // Set group spacing if the property exists and spacing is specified
-            if (groupSpacing > 0 && [glassView respondsToSelector:@selector(setGroupSpacing:)]) {
-                [glassView setValue:@(groupSpacing) forKey:@"groupSpacing"];
-            }
+            // Only regular and clear are documented NSGlassEffectView styles,
+            // and cross-window grouping has no public API at all, so both are
+            // applied by the build-guarded implementations.
+            wailsPrivateSetGlassStyle((void*)glassView, style);
+            wailsPrivateSetGlassGrouping((void*)glassView, groupID, groupSpacing);
         }
     }
     // Fallback to NSVisualEffectView if NSGlassEffectView is not available

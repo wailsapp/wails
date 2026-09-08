@@ -7,6 +7,33 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
+## Private macOS APIs
+
+Wails v3 uses public macOS APIs by default. To opt into features that require undocumented Apple APIs, build your app with the single Go build tag `private_mac_apis`:
+
+```bash
+wails3 build -tags private_mac_apis
+EXTRA_TAGS=private_mac_apis wails3 dev
+wails3 package GOOS=darwin EXTRA_TAGS=private_mac_apis
+```
+
+For a direct Go build, use `go build -tags private_mac_apis .` (or `-tags production,private_mac_apis` for production). Existing applications that depend on private behavior must add this tag to retain it. The tag applies only to macOS desktop builds.
+
+The public Wails API is identical in both builds. Options and methods remain available without the tag; operations requiring a private API become no-ops, while documented alternatives continue to work:
+
+| Feature | Default build | With `private_mac_apis` |
+| --- | --- | --- |
+| Transparent WKWebView, including transparent, translucent, Liquid Glass and notch windows | The transparency operation is a no-op. The native window/backdrop remains configured behind an opaque webview. | The webview draws without a background. |
+| Webview background colour | Uses public `underPageBackgroundColor` on macOS 12+, or the view's layer on older versions. This does not make the webview transparent. | Uses WebKit's private background colour property. |
+| Liquid Glass styles | Uses documented regular/clear styles, with light/dark expressed through `NSAppearance`. | Preserves Wails' existing native style mapping. |
+| Liquid Glass `GroupID` and `GroupSpacing` | No-ops; glass views remain independent. | Requests private cross-window grouping where available. |
+| `OpenDevTools()` and `OpenInspectorOnStartup` | No-ops on macOS. | Opens WebKit's inspector on macOS 12+. |
+| Safari inspection | Available on macOS 13.3+ through public `WKWebView.inspectable`. | Also enables the private developer-extras fallback on older macOS versions. |
+
+Inspector support still requires a development build or the existing `devtools` tag. For production with programmatic inspector support, use `-tags production,devtools,private_mac_apis`.
+
+All private macOS calls are maintained in `v3/pkg/application/mac_private_api_darwin.go`. Default builds compile `mac_public_api_darwin.go` instead. The experimental tags `appstore` and `noprivateapis` from earlier proposals are not used.
+
 ## Application Bundle
 
 Package your app as a standard macOS `.app` bundle:

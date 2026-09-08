@@ -824,6 +824,8 @@ Mac: application.MacWindow{
 - `HideTitle` - Hides only the title text
 - `FullSizeContent` - Extends content to full window size
 
+On macOS, webview transparency and programmatic inspector opening require the `private_mac_apis` build tag. Without it, the same options remain valid but private-only operations are no-ops. Liquid Glass grouping is also ignored, and styles use public alternatives. See [Private macOS APIs](/guides/build/macos/#private-macos-apis) for build commands and exact behavior.
+
 **Backdrop** (`MacBackdrop`)
 - `MacBackdropNormal` - Standard opaque background
 - `MacBackdropTranslucent` - Blurred translucent background
