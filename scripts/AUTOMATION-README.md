@@ -4,12 +4,13 @@ This directory contains automation workflows and scripts to help manage the Wail
 
 ## GitHub Workflow Files
 
-### 1. Auto-Label Issues (`auto-label-issues.yml`)
+### 1. Auto-Label Issues (`.github/workflows/labeler.yml`)
 - Automatically labels issues and PRs based on their content and modified files
-- Labels are defined in `issue-labeler.yml` and `file-labeler.yml`
-- Activates when issues are opened, edited, or reopened
+- The shared `scripts/label-github-items.sh` classifier applies version, type,
+  and security labels
+- Activates when issues or PRs are opened, edited, reopened, or updated
 
-### 2. Issue Triage Automation (`issue-triage-automation.yml`)
+### 2. Issue Triage Automation
 - Performs automated actions for issue triage
 - Requests more info for incomplete bug reports
 - Prioritizes security issues
@@ -40,7 +41,18 @@ This directory contains automation workflows and scripts to help manage the Wail
 - Provides easy keyboard shortcuts for common actions
 - Run during your dedicated issue triage time
 
-### 2. PR Review Helper (`scripts/pr-review-helper.ps1`)
+### 2. Label Backfill (`scripts/label-github-items.sh`)
+- Processes every issue, or one issue/PR with `--number`
+- Adds a `v2` or `v3` label, a `Bug` or `Enhancement` label, and `Security`
+  for security-related bugs
+- Use `--dry-run` to preview changes and `--interactive` for ambiguous items
+
+```bash
+GH_TOKEN=... ./scripts/label-github-items.sh --dry-run
+GH_TOKEN=... ./scripts/label-github-items.sh
+```
+
+### 3. PR Review Helper (`scripts/pr-review-helper.ps1`)
 - PowerShell script to efficiently review PRs
 - Generates review checklists
 - Provides easy shortcuts for common review actions

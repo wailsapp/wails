@@ -2,17 +2,32 @@ name: Auto Labeler
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, edited, reopened]
   pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
+  classify:
+    name: Classify version and type
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply shared issue classifier
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ITEM_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: ./scripts/label-github-items.sh --number "$ITEM_NUMBER" --default-version v3
+
   issue-labeler:
     name: Label issues
     if: github.event_name == 'issues'
+    needs: classify
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
     steps:
       - uses: github/issue-labeler@v3.4
         with:
@@ -24,10 +39,8 @@ jobs:
   pr-labeler:
     name: Label pull requests
     if: github.event_name == 'pull_request_target'
+    needs: classify
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
       - uses: actions/labeler@v5
         with:
