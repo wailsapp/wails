@@ -409,7 +409,17 @@ func TestManifestDevRetainsWatcherWhenRefreshFails(t *testing.T) {
 	require.NoError(t, os.WriteFile(manifestPath, []byte(hcl), 0o644))
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan error, 1)
-	go func() { done <- runManifestDevContext(ctx, &DevOptions{VitePort: fixture.port}) }()
+	ops := productionManifestDevOps()
+	startWatches := ops.startWatches
+	watchesStarted := make(chan struct{})
+	ops.startWatches = func(root string, config manifest.Config) (*manifestWatchSet, error) {
+		watches, err := startWatches(root, config)
+		if err == nil {
+			close(watchesStarted)
+		}
+		return watches, err
+	}
+	go func() { done <- runManifestDevContextWithOps(ctx, &DevOptions{VitePort: fixture.port}, ops) }()
 	t.Cleanup(func() {
 		cancel()
 		select {
@@ -419,9 +429,15 @@ func TestManifestDevRetainsWatcherWhenRefreshFails(t *testing.T) {
 		}
 	})
 	waitForManifestDevStart(t, fixture.backendLog, done, 30*time.Second)
-	// The backend writes its PID before the controller's stability check and
-	// watcher registration complete.
-	time.Sleep(300 * time.Millisecond)
+	select {
+	case <-watchesStarted:
+	case err := <-done:
+		done <- err
+		require.NoError(t, err, "development session exited before starting its watcher")
+		require.FailNow(t, "development session exited before starting its watcher")
+	case <-time.After(5 * time.Second):
+		require.FailNow(t, "development watcher did not start")
+	}
 
 	sealed := filepath.Join(fixture.root, "sealed")
 	require.NoError(t, os.Mkdir(sealed, 0o755))
