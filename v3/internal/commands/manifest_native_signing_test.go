@@ -140,7 +140,7 @@ profile "release" {
 			assert.Equal(t, expectedEntitlements, received.Entitlements)
 			if test.platform == "darwin" {
 				assert.True(t, received.Notarize)
-				assert.Equal(t, spec.Config.Credential, received.KeychainProfile)
+				assert.Equal(t, "NOTARY_PROFILE", received.KeychainProfile)
 				assert.DirExists(t, input+".signed")
 			} else {
 				assert.FileExists(t, input+".signed")

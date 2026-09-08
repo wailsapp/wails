@@ -603,6 +603,17 @@ func frontendSessionChanged(current, next manifest.Config) bool {
 func startFrontendDev(root string, config manifest.Config, host string, port int, frontendURL string) (*manifestProcess, error) {
 	if len(config.Frontend.Dev) > 0 {
 		args := append([]string(nil), config.Frontend.Dev...)
+		// Migration and explicit HCL defaults express package scripts as argv.
+		// Recognised Vite scripts need the same endpoint configuration as
+		// compiled defaults. Other user commands keep their exact argv/launcher.
+		if manager, script, ok := frontendPackageScript(args); ok {
+			config.Frontend.PackageManager = manager
+			config.Frontend.DevCommand = script
+			if frontendDevCommandUsesVite(root, config) {
+				config.Frontend.Dev = nil
+				return startFrontendDev(root, config, host, port, frontendURL)
+			}
+		}
 		env := declaredEnvironment(nil, config.Frontend.Environment)
 		env = mergeEnvironment(env, []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL})
 		return startManifestProcess(filepath.Join(root, config.Frontend.Directory), args[0], env, args[1:]...)
@@ -622,6 +633,19 @@ func startFrontendDev(root string, config manifest.Config, host string, port int
 	env := declaredEnvironment(nil, config.Frontend.Environment)
 	env = mergeEnvironment(env, []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL})
 	return startPackageManagerProcess(filepath.Join(root, config.Frontend.Directory), manager, env, args...)
+}
+
+func frontendPackageScript(args []string) (manager, script string, ok bool) {
+	if len(args) < 2 || !containsString([]string{"npm", "pnpm", "yarn", "bun"}, args[0]) {
+		return "", "", false
+	}
+	if len(args) == 3 && args[1] == "run" && args[2] != "" && !strings.HasPrefix(args[2], "-") {
+		return args[0], args[2], true
+	}
+	if len(args) == 2 && args[0] == "yarn" && args[1] != "" && !strings.HasPrefix(args[1], "-") {
+		return args[0], args[1], true
+	}
+	return "", "", false
 }
 
 func frontendDevArgs(manager, command string, serverArgs []string) ([]string, error) {

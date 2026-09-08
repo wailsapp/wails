@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/x/ansi"
 	"github.com/wailsapp/wails/v3/internal/report"
 )
 
@@ -456,15 +457,13 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 			r.s.bold(r.s.fg(Failure, padRight("command", labelW))),
 			f.Command)
 	}
-	// Skip the error body only for a known non-zero process exit code — the
-	// panel header carries the "exit N" badge and captured output supplies
-	// the detail. ExitCode -1 means unknown, so startup errors must retain
-	// their actionable message instead of appearing as an empty panel.
-	if f.ExitCode <= 0 && f.Err != nil {
+	// Only omit a bare exit status when captured output already explains it.
+	// Wrapped native errors may carry the entire diagnostic in Err instead.
+	out := strings.TrimRight(f.Output, "\n")
+	if f.Err != nil && (strings.TrimSpace(out) == "" || f.ExitCode <= 0 || f.Err.Error() != fmt.Sprintf("exit status %d", f.ExitCode)) {
 		body.WriteString(f.Err.Error())
 		body.WriteByte('\n')
 	}
-	out := strings.TrimRight(f.Output, "\n")
 	if out != "" {
 		body.WriteString("\n")
 		body.WriteString(tailLines(out, 20))
@@ -534,16 +533,14 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 
 	fmt.Fprintf(r.w, "  %s\n", top)
 	for _, ln := range bodyLines {
-		// Body lines past the available inner width get truncated with an
-		// ellipsis — wrapping a compile-error line at a panel boundary tends
-		// to mangle the file:line:col pattern that the reader actually cares
-		// about, so we'd rather show "…" than break the column.
-		clipped := truncate(ln, inner)
-		padded := padRight(clipped, inner)
-		fmt.Fprintf(r.w, "  %s %s %s\n",
-			r.s.fg(Failure, "│"),
-			padded,
-			r.s.fg(Failure, "│"))
+		// Long paths often precede the actionable diagnostic. Preserve it by
+		// wrapping rather than truncating; ANSI styles and links stay intact.
+		for _, line := range strings.Split(ansi.Wrap(ln, inner, ""), "\n") {
+			fmt.Fprintf(r.w, "  %s %s %s\n",
+				r.s.fg(Failure, "│"),
+				padRight(line, inner),
+				r.s.fg(Failure, "│"))
+		}
 	}
 	fmt.Fprintf(r.w, "  %s\n", r.s.fg(Failure, bot))
 }

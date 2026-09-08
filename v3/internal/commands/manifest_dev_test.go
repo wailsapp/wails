@@ -362,6 +362,26 @@ func TestFrontendDevFlagsAreOnlyAddedForViteScripts(t *testing.T) {
 	assert.False(t, frontendDevCommandUsesVite(root, config))
 }
 
+func TestFrontendPackageScriptLeavesCustomCommandsAlone(t *testing.T) {
+	for _, args := range [][]string{
+		{"npm", "run", "dev", "--", "--host", "custom-host"},
+		{"npm", "--prefix", "other", "run", "dev"},
+		{"sh", "-c", "npm run dev"},
+		{"custom-server", "dev"},
+		{"npm", "run", "--help"},
+		{},
+	} {
+		_, _, ok := frontendPackageScript(args)
+		assert.False(t, ok, "custom argv must remain unchanged: %v", args)
+	}
+	for _, manager := range []string{"npm", "pnpm", "yarn", "bun"} {
+		actualManager, script, ok := frontendPackageScript([]string{manager, "run", "serve"})
+		assert.True(t, ok)
+		assert.Equal(t, manager, actualManager)
+		assert.Equal(t, "serve", script)
+	}
+}
+
 func TestStartFrontendDevValidatesResolvedCommands(t *testing.T) {
 	root := t.TempDir()
 	config := manifest.Config{Frontend: manifest.Frontend{Directory: "frontend"}}
@@ -377,33 +397,37 @@ func TestStartFrontendDevRunsResolvedNPMThroughNode(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("the fixture uses POSIX shell scripts")
 	}
-	root := t.TempDir()
-	frontend := filepath.Join(root, "frontend")
-	tools := filepath.Join(root, "tools")
-	require.NoError(t, os.MkdirAll(frontend, 0o755))
-	require.NoError(t, os.MkdirAll(tools, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(frontend, "package.json"), []byte(`{"scripts":{"dev":"vite"}}`), 0o644))
-	invocation := filepath.Join(root, "npm-invocation")
-	npm := "#!/bin/sh\nprintf '%s\\n%s\\n%s\\n' \"$*\" \"$FRONTEND_DEVSERVER_URL\" \"$WAILS_VITE_PORT\" > \"$WAILS_TEST_NPM_INVOCATION\"\ntrap 'exit 0' INT TERM\nwhile :; do sleep 1; done\n"
-	node := "#!/bin/sh\nexec \"$@\"\n"
-	require.NoError(t, os.WriteFile(filepath.Join(tools, "npm"), []byte(npm), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(tools, "node"), []byte(node), 0o755))
-	t.Setenv("PATH", tools)
-	t.Setenv("WAILS_TEST_NPM_INVOCATION", invocation)
-	process, err := startFrontendDev(root, manifest.Config{Frontend: manifest.Frontend{Directory: "frontend", PackageManager: "npm", DevCommand: "dev"}}, "127.0.0.1", 9754, "http://127.0.0.1:9754")
-	require.NoError(t, err)
-	defer process.stop(100 * time.Millisecond)
-	deadline := time.Now().Add(2 * time.Second)
-	for {
-		if _, statErr := os.Stat(invocation); statErr == nil {
-			break
-		}
-		if time.Now().After(deadline) {
-			t.Fatal("npm invocation was not recorded")
-		}
-		time.Sleep(10 * time.Millisecond)
+	for name, dev := range map[string][]string{"defaults": nil, "migrated": {"npm", "run", "dev"}} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			frontend := filepath.Join(root, "frontend")
+			tools := filepath.Join(root, "tools")
+			require.NoError(t, os.MkdirAll(frontend, 0o755))
+			require.NoError(t, os.MkdirAll(tools, 0o755))
+			require.NoError(t, os.WriteFile(filepath.Join(frontend, "package.json"), []byte(`{"scripts":{"dev":"vite"}}`), 0o644))
+			invocation := filepath.Join(root, "npm-invocation")
+			npm := "#!/bin/sh\nprintf '%s\\n%s\\n%s\\n' \"$*\" \"$FRONTEND_DEVSERVER_URL\" \"$WAILS_VITE_PORT\" > \"$WAILS_TEST_NPM_INVOCATION\"\ntrap 'exit 0' INT TERM\nwhile :; do sleep 1; done\n"
+			node := "#!/bin/sh\nexec \"$@\"\n"
+			require.NoError(t, os.WriteFile(filepath.Join(tools, "npm"), []byte(npm), 0o755))
+			require.NoError(t, os.WriteFile(filepath.Join(tools, "node"), []byte(node), 0o755))
+			t.Setenv("PATH", tools+string(os.PathListSeparator)+os.Getenv("PATH"))
+			t.Setenv("WAILS_TEST_NPM_INVOCATION", invocation)
+			process, err := startFrontendDev(root, manifest.Config{Frontend: manifest.Frontend{Directory: "frontend", PackageManager: "npm", DevCommand: "dev", Dev: dev}}, "127.0.0.1", 9754, "http://127.0.0.1:9754")
+			require.NoError(t, err)
+			defer process.stop(100 * time.Millisecond)
+			deadline := time.Now().Add(2 * time.Second)
+			for {
+				if _, statErr := os.Stat(invocation); statErr == nil {
+					break
+				}
+				if time.Now().After(deadline) {
+					t.Fatal("npm invocation was not recorded")
+				}
+				time.Sleep(10 * time.Millisecond)
+			}
+			assert.Equal(t, "run dev -- --host 127.0.0.1 --port 9754 --strictPort\nhttp://127.0.0.1:9754\n9754\n", readTestFile(t, invocation))
+		})
 	}
-	assert.Equal(t, "run dev -- --host 127.0.0.1 --port 9754 --strictPort\nhttp://127.0.0.1:9754\n9754\n", readTestFile(t, invocation))
 }
 
 func TestStartPackageManagerProcessReportsMissingLaunchers(t *testing.T) {

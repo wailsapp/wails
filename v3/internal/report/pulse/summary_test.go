@@ -35,6 +35,22 @@ func TestUnknownExitCodeShowsUnderlyingError(t *testing.T) {
 	}
 }
 
+func TestProcessFailureRetainsDiagnosticWithoutCapturedOutput(t *testing.T) {
+	var output bytes.Buffer
+	reporter := New(&output, report.Normal)
+	reporter.BuildStart("build", "darwin/arm64", 1)
+	step := reporter.StepStart("sign", "Sign application")
+	reporter.StepFailed(step, report.Failure{
+		ExitCode: 1,
+		Err:      errors.New("sign DMG application: " + strings.Repeat("long-project-path/", 8) + "badge.app: resource fork not allowed: exit status 1"),
+	})
+	reporter.BuildEnd(time.Second, false)
+	rendered := output.String()
+	if !strings.Contains(rendered, "sign DMG application:") || !strings.Contains(rendered, "resource fork not allowed") {
+		t.Fatalf("failure panel lost the native diagnostic:\n%s", rendered)
+	}
+}
+
 func TestCanceledBuildDoesNotRenderFailureOrSuccessSummary(t *testing.T) {
 	var output bytes.Buffer
 	reporter := New(&output, report.Normal)
