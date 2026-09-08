@@ -4,6 +4,7 @@
 #import <QuartzCore/QuartzCore.h>
 #include <math.h>
 #import "webview_notch_window_darwin.h"
+#import "mac_private_api_darwin.h"
 
 // Keep these webview insets synchronized with notchWindowHorizontalInset and
 // notchWindowBottomInset in notch_window.go.
@@ -145,9 +146,8 @@ static const CGFloat NotchBottomCornerRadius = 28.0;
     // either side instead of sitting below a native-only top inset.
     webView.frame = NSMakeRect(NotchHorizontalInset, NotchBottomInset, contentWidth, contentHeight);
     webView.autoresizingMask = NSViewNotSizable;
-    // WKWebView still has no public background toggle. Wails already uses this
-    // WebKit key for transparent and translucent windows.
-    [webView setValue:@NO forKey:@"drawsBackground"];
+    // WKWebView still has no public background toggle.
+    wailsPrivateSetWebviewTransparent((void*)webView);
 
     NSTrackingAreaOptions trackingOptions = NSTrackingMouseEnteredAndExited |
         NSTrackingActiveAlways | NSTrackingInVisibleRect;

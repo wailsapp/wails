@@ -39,6 +39,16 @@
 @end
 
 
+// Glass effect style constants. These match the Go MacLiquidGlassStyle
+// constants and are shared with the build-guarded implementations in
+// mac_private_api_darwin.go and mac_private_api_appstore_darwin.go.
+typedef NS_ENUM(NSInteger, MacLiquidGlassStyle) {
+    LiquidGlassStyleAutomatic = 0,
+    LiquidGlassStyleLight = 1,
+    LiquidGlassStyleDark = 2,
+    LiquidGlassStyleVibrant = 3
+};
+
 NSString* acceleratorStringFromKeyEvent(NSEvent* event);
 BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window);
 

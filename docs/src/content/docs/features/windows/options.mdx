@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## Window Configuration Options
 
@@ -978,6 +978,7 @@ Mac: application.MacWindow{
         MinimumFontSize:                       optional.NewVar(12.0),
         ApplicationNameForUserAgent:           "MyApp",
         EnableAutoplayWithoutUserAction:       optional.True,
+        PreferPageRenderingUpdatesNear60FPS:   optional.False,
     },
 },
 ```
@@ -992,6 +993,23 @@ Mac: application.MacWindow{
 - `MinimumFontSize` — Minimum font size in points. Use `optional.NewVar(12.0)` to set. Unset leaves WebKit default.
 - `ApplicationNameForUserAgent` — Overrides the application-name suffix in the WebKit user-agent string. Useful when sites reject the default `"wails.io"` identifier (e.g. YouTube embeds). Leave empty to keep the default.
 - `EnableAutoplayWithoutUserAction` — When `true`, audio and video can autoplay without a user gesture. Maps to `WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone` (default: `false`)
+- `PreferPageRenderingUpdatesNear60FPS` — When `true` (WebKit's default), page rendering updates are clamped to roughly 60fps even on a high-refresh display. Set it to `optional.False` to let the webview render at the display's native refresh rate, so `requestAnimationFrame` runs at 120Hz on a ProMotion Mac. See [High refresh rate rendering](#high-refresh-rate-rendering) below.
+
+#### High refresh rate rendering
+
+WebKit ships with the `PreferPageRenderingUpdatesNear60FPSEnabled` feature flag turned on — the same flag Safari exposes as *Prefer Page Rendering Updates near 60fps*. It rounds the display's refresh rate down to the nearest whole multiple of 60, so a 120Hz ProMotion display drives the page at 60fps and a 165Hz display at 55fps. This applies to `requestAnimationFrame`, CSS animations driven by the page, and canvas rendering; compositor-driven work such as scrolling already runs at the native rate.
+
+```go
+Mac: application.MacWindow{
+    WebviewPreferences: application.MacWebviewPreferences{
+        PreferPageRenderingUpdatesNear60FPS: application.Disabled,
+    },
+},
+```
+
+<Aside type="caution">
+WebKit exposes no public API for this, so Wails sets the flag through a private one. The option is ignored in builds made with `-tags appstore`, and it becomes a no-op if a future WebKit release removes the flag. Higher frame rates also cost more GPU time and battery, so enable it only where the extra frames matter. See [Private macOS APIs](/guides/build/macos#private-macos-apis).
+</Aside>
 
 ### Windows Options (per-window)
 

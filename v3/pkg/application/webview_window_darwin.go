@@ -8,6 +8,7 @@ package application
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
+#include "mac_private_api_darwin.h"
 #include "webview_panel_darwin.h"
 #include "webview_notch_window_darwin.h"
 #include <stdlib.h>
@@ -26,6 +27,7 @@ struct WebviewPreferences {
     bool *JavaScriptCanOpenWindowsAutomatically;
     double *MinimumFontSize;
     bool *EnableAutoplayWithoutUserAction;
+    bool *PreferPageRenderingUpdatesNear60FPS;
 };
 
 struct PanelPreferences {
@@ -170,6 +172,11 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	}
 	if (preferences.MinimumFontSize != NULL) {
 		config.preferences.minimumFontSize = *preferences.MinimumFontSize;
+	}
+	if (preferences.PreferPageRenderingUpdatesNear60FPS != NULL) {
+		// Must be applied before the WKWebView is created: WKWebView copies the
+		// configuration, so later changes do not reach the web process.
+		wailsPrivateSetPreferPageRenderingUpdatesNear60FPS((void*)config.preferences, *preferences.PreferPageRenderingUpdatesNear60FPS);
 	}
 	config.suppressesIncrementalRendering = true;
 	if (applicationNameForUserAgent != NULL && applicationNameForUserAgent[0] != '\0') {
@@ -526,15 +533,13 @@ void windowSetTranslucent(void* nsWindow) {
 // Make webview background transparent
 void webviewSetTransparent(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Set webview background transparent
-	[window.webView setValue:@NO forKey:@"drawsBackground"];
+	wailsPrivateSetWebviewTransparent((void*)window.webView);
 }
 
 // Set webview background colour
 void webviewSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Set webview background color
-	[window.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
+	wailsPrivateSetWebviewBackgroundColour((void*)window.webView, r, g, b, alpha);
 }
 
 // Set the window background colour
@@ -1604,6 +1609,9 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	}
 	if wvprefs.EnableAutoplayWithoutUserAction.IsSet() {
 		result.EnableAutoplayWithoutUserAction = bool2CboolPtr(wvprefs.EnableAutoplayWithoutUserAction.Get())
+	}
+	if wvprefs.PreferPageRenderingUpdatesNear60FPS.IsSet() {
+		result.PreferPageRenderingUpdatesNear60FPS = bool2CboolPtr(wvprefs.PreferPageRenderingUpdatesNear60FPS.Get())
 	}
 
 	return result

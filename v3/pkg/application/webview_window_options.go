@@ -195,6 +195,8 @@ type WebviewWindowOptions struct {
 	Permissions map[PermissionType]Permission
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
+	// On macOS this uses a private WebKit API and is ignored in builds made with
+	// -tags appstore; the window stays inspectable from Safari's Develop menu.
 	OpenInspectorOnStartup bool
 
 	// Mac options
@@ -582,10 +584,14 @@ type MacLiquidGlass struct {
 	// Tint color for the glass (optional, nil for no tint)
 	TintColor *RGBA
 
-	// Group identifier for merging multiple glass windows
+	// Group identifier for merging multiple glass windows.
+	// This uses a private AppKit API and is ignored in builds made with
+	// -tags appstore.
 	GroupID string
 
-	// Spacing between grouped glass elements (in points)
+	// Spacing between grouped glass elements (in points).
+	// This uses a private AppKit API and is ignored in builds made with
+	// -tags appstore.
 	GroupSpacing float64
 }
 
@@ -783,6 +789,24 @@ type MacWebviewPreferences struct {
 	// EnableAutoplayWithoutUserAction allows media to start playing automatically
 	// without requiring a user gesture. Maps to WKWebViewConfiguration.mediaTypesRequiringUserActionForPlayback.
 	EnableAutoplayWithoutUserAction optional.Bool
+	// PreferPageRenderingUpdatesNear60FPS mirrors the WebKit feature flag of the
+	// same name, which Safari exposes as "Prefer Page Rendering Updates near
+	// 60fps". WebKit enables it by default, which clamps requestAnimationFrame
+	// and other page rendering updates to 60fps even on a 120Hz ProMotion
+	// display. Set it to application.Disabled to let the webview render at the
+	// display's native refresh rate:
+	//
+	//	WebviewPreferences: application.MacWebviewPreferences{
+	//		PreferPageRenderingUpdatesNear60FPS: application.Disabled,
+	//	}
+	//
+	// Higher frame rates cost more GPU time and battery, so leave it unset
+	// unless the app benefits from the extra frames.
+	//
+	// WebKit offers no public API for this, so Wails uses a private one. The
+	// option is ignored in builds made with -tags appstore, and it is a no-op if
+	// a future WebKit removes the flag. It has no effect on other platforms.
+	PreferPageRenderingUpdatesNear60FPS optional.Bool
 }
 
 // MacTitleBar contains options for the Mac titlebar
