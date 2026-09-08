@@ -202,6 +202,16 @@ func (androidManager) PowerJSON() string { s, _ := androidBridgeString("getPower
 // NetworkJSON returns {"connected":bool,"type":"wifi|cellular|ethernet|none"}.
 func (androidManager) NetworkJSON() string { s, _ := androidBridgeString("getNetworkJson"); return s }
 
+// SystemLocale returns the device's configured locale as a BCP-47 language tag
+// (e.g. "nb-NO", "en-US"). Uses Locale.getDefault().toLanguageTag().
+func (androidManager) SystemLocale() string {
+	s, _ := androidBridgeString("getLocale")
+	if s == "" {
+		return "en"
+	}
+	return s
+}
+
 // SetKeyboardWatch starts/stops emitting "common:keyboard"
 // {visible,height} events as the soft keyboard shows and hides.
 func (androidManager) SetKeyboardWatch(enabled bool) {
