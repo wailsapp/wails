@@ -151,11 +151,25 @@ public class MainActivity extends AppCompatActivity {
                             headers.put("Cache-Control", "no-cache");
                             headers.put("Content-Type", "application/json");
 
+                            // Detect error envelopes: if the body starts with
+                            // {"ok":false, return HTTP 500 so the fallback
+                            // transport's fetch() rejects the promise.
+                            int status = 200;
+                            String reason = "OK";
+                            if (data.length > 12) {
+                                String prefix = new String(data, 0, Math.min(data.length, 20),
+                                        java.nio.charset.StandardCharsets.UTF_8);
+                                if (prefix.contains("\"ok\":false")) {
+                                    status = 500;
+                                    reason = "Internal Error";
+                                }
+                            }
+
                             return new WebResourceResponse(
                                 "application/json",
                                 "UTF-8",
-                                200,
-                                "OK",
+                                status,
+                                reason,
                                 headers,
                                 inputStream
                             );
