@@ -3,6 +3,7 @@ package cache
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -120,4 +121,24 @@ func TestSnapshotGoAPIIgnoresRetainedNonGoAndTestInputs(t *testing.T) {
 	afterAPIEdit, err := store.SnapshotGoAPI(options)
 	require.NoError(t, err)
 	assert.NotEqual(t, afterIgnoredEdits, afterAPIEdit)
+}
+
+func TestSnapshotGoAPITracksRegistrationsInsideMethods(t *testing.T) {
+	for _, registration := range []string{"application.RegisterEvent[string](\"first\")", "RegisterEvent[string](\"first\")", "application.NewService(&First{})"} {
+		t.Run(registration, func(t *testing.T) {
+			root := t.TempDir()
+			file := filepath.Join(root, "service.go")
+			source := "package app\ntype Service struct{}\nfunc (Service) Start(){ " + registration + " }\n"
+			require.NoError(t, os.WriteFile(file, []byte(source), 0644))
+			store, err := OpenCache(root)
+			require.NoError(t, err)
+			before, err := store.SnapshotGoAPI(SnapshotOptions{Label: "bindings", Root: root})
+			require.NoError(t, err)
+			source = strings.ReplaceAll(strings.ReplaceAll(source, "first", "second"), "First", "Second")
+			require.NoError(t, os.WriteFile(file, []byte(source), 0644))
+			after, err := store.SnapshotGoAPI(SnapshotOptions{Label: "bindings", Root: root})
+			require.NoError(t, err)
+			require.NotEqual(t, before, after)
+		})
+	}
 }

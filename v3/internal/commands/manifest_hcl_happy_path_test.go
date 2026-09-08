@@ -1892,7 +1892,7 @@ profile "release" {
 
 	fakeTools := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "where"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "signtool.exe"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "signtool.exe"), []byte("#!/bin/sh\necho unexpected signing during packaging >&2\nexit 97\n"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(fakeTools, "MakeAppx.exe"), []byte(`#!/bin/sh
 output=
 while [ "$#" -gt 0 ]; do

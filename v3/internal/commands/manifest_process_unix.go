@@ -22,3 +22,7 @@ func signalManifestProcess(process *os.Process, signal os.Signal) error {
 func killManifestProcess(process *os.Process) error {
 	return syscall.Kill(-process.Pid, syscall.SIGKILL)
 }
+
+func cleanupManifestProcessGroup(process *os.Process) {
+	_ = syscall.Kill(-process.Pid, syscall.SIGKILL)
+}

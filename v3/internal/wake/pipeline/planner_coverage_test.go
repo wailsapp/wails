@@ -49,7 +49,7 @@ func TestPlannerCoversDevelopmentAppAndExplicitObfuscation(t *testing.T) {
 	plan, err := PlanBuild(config, Request{Verb: "build", TargetOS: "darwin", TargetArch: "arm64", Development: true})
 	require.NoError(t, err)
 	assembly := plan.Nodes["assemble:darwin/arm64"]
-	assert.Equal(t, "bin/app.app", assembly.Output)
+	assert.Equal(t, ".wails/dev/darwin-arm64/app.app", assembly.Output)
 
 	plan, err = PlanBuild(config, Request{Verb: "build", TargetOS: "linux", TargetArch: "amd64", Obfuscated: true})
 	require.NoError(t, err)

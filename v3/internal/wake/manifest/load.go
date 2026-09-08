@@ -171,7 +171,7 @@ func validateConfig(config Config) error {
 	if config.Project.BinaryName != filepath.Base(config.Project.BinaryName) || strings.ContainsAny(config.Project.BinaryName, `/\\`) || config.Project.BinaryName == "." || config.Project.BinaryName == ".." {
 		return fieldValidationError("project.binary_name", "must be a plain file name, got %q", config.Project.BinaryName)
 	}
-	if !contains([]string{"npm", "pnpm", "yarn", "bun"}, config.Frontend.PackageManager) {
+	if len(config.Frontend.Install) == 0 && !contains([]string{"npm", "pnpm", "yarn", "bun"}, config.Frontend.PackageManager) {
 		return fieldValidationError("frontend.install", "unsupported package manager %q", config.Frontend.PackageManager)
 	}
 	for field, value := range map[string]string{

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"net"
 	"os"
 	"os/exec"
@@ -129,6 +130,7 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 	if err != nil {
 		return err
 	}
+	root = loaded.Config.Root
 	goos, goarch, err := splitTarget(options.Target)
 	if err != nil {
 		return err
@@ -595,13 +597,14 @@ func reportManifestRebuildFailure(err error) {
 }
 
 func frontendSessionChanged(current, next manifest.Config) bool {
-	return current.Frontend.Directory != next.Frontend.Directory || current.Frontend.PackageManager != next.Frontend.PackageManager || current.Frontend.DevCommand != next.Frontend.DevCommand || !equalStrings(current.Frontend.Dev, next.Frontend.Dev)
+	return current.Frontend.Directory != next.Frontend.Directory || current.Frontend.PackageManager != next.Frontend.PackageManager || current.Frontend.DevCommand != next.Frontend.DevCommand || !equalStrings(current.Frontend.Dev, next.Frontend.Dev) || !maps.Equal(current.Frontend.Environment, next.Frontend.Environment)
 }
 
 func startFrontendDev(root string, config manifest.Config, host string, port int, frontendURL string) (*manifestProcess, error) {
 	if len(config.Frontend.Dev) > 0 {
 		args := append([]string(nil), config.Frontend.Dev...)
-		env := []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL}
+		env := declaredEnvironment(nil, config.Frontend.Environment)
+		env = mergeEnvironment(env, []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL})
 		return startManifestProcess(filepath.Join(root, config.Frontend.Directory), args[0], env, args[1:]...)
 	}
 	manager := config.Frontend.PackageManager
@@ -616,7 +619,8 @@ func startFrontendDev(root string, config manifest.Config, host string, port int
 	if err != nil {
 		return nil, err
 	}
-	env := []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL}
+	env := declaredEnvironment(nil, config.Frontend.Environment)
+	env = mergeEnvironment(env, []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL})
 	return startPackageManagerProcess(filepath.Join(root, config.Frontend.Directory), manager, env, args...)
 }
 
@@ -722,6 +726,9 @@ func startManifestProcess(dir, name string, env []string, args ...string) (*mani
 	result := &manifestProcess{cmd: cmd, done: make(chan struct{})}
 	go func() {
 		waitErr := cmd.Wait()
+		// A wrapper may exit before its descendants. Clean its group immediately,
+		// before exposing completion, instead of signalling a stale PID in stop.
+		cleanupManifestProcessGroup(cmd.Process)
 		result.mu.Lock()
 		result.err = waitErr
 		result.mu.Unlock()

@@ -455,7 +455,6 @@ project {
 		{name: "wrong version", source: strings.Replace(projectOnly, "version = 3", "version = 2", 1)},
 		{name: "missing version", source: strings.TrimPrefix(projectOnly, "version = 3\n")},
 		{name: "version must be first", source: "other = \"value\"\n" + projectOnly},
-		{name: "unsupported package manager", source: projectOnly + "frontend { install = [\"unknown\", \"install\"] }\n"},
 		{name: "default profile is reserved", source: validProfile, profile: "default"},
 		{name: "profile must be lowercase slug", source: validProfile, profile: "Release"},
 		{name: "profile must exist", source: validProfile, profile: "missing"},
@@ -616,4 +615,25 @@ func TestLoadFileReportsWorkingDirectoryResolutionFailure(t *testing.T) {
 	require.NoError(t, os.RemoveAll(working))
 	_, err := LoadFile(".", draft, "")
 	assert.Error(t, err)
+}
+
+func TestHCLAcceptsExplicitCustomFrontendCommands(t *testing.T) {
+	root := t.TempDir()
+	source := `version = 3
+project {
+ name = "custom"
+ product_name = "Custom"
+ identifier = "com.example.custom"
+ version = "1.0.0"
+}
+frontend {
+ install = ["python3", "install.py"]
+ build = ["corepack", "pnpm", "build"]
+ dev = ["./serve", "--dev"]
+}
+`
+	require.NoError(t, os.WriteFile(filepath.Join(root, Filename), []byte(source), 0644))
+	loaded, err := Load(root, "")
+	require.NoError(t, err)
+	require.Equal(t, []string{"python3", "install.py"}, loaded.Config.Frontend.Install)
 }

@@ -3,6 +3,7 @@ package commands
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -408,8 +409,27 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 	}
 	switch node.Kind {
 	case pipeline.InstallFrontendDependencies, pipeline.BuildFrontend:
-		manager := h.config.Frontend.PackageManager
-		path, err := exec.LookPath(manager)
+		manager, directory := h.config.Frontend.PackageManager, h.config.Frontend.Directory
+		var arguments []string
+		switch spec := node.Spec.(type) {
+		case pipeline.InstallSpec:
+			manager, directory, arguments = spec.Manager, spec.Directory, spec.Arguments
+		case pipeline.FrontendSpec:
+			manager, directory, arguments = spec.Manager, spec.Directory, spec.Arguments
+		default:
+			return "", fmt.Errorf("invalid frontend spec for %s", node.Kind)
+		}
+		if len(arguments) > 0 {
+			manager = arguments[0]
+		}
+		if manager == "" {
+			manager = h.config.Frontend.PackageManager
+		}
+		executable := manager
+		if !filepath.IsAbs(executable) && strings.ContainsAny(executable, `/\`) {
+			executable = filepath.Join(h.root, directory, executable)
+		}
+		path, err := exec.LookPath(executable)
 		if err != nil {
 			return "", fmt.Errorf("%s not found: %w", manager, err)
 		}
@@ -420,6 +440,15 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 			}
 		}
 	case pipeline.GenerateBindings, pipeline.CompileApplication:
+		environment := h.environment
+		if spec, ok := node.Spec.(pipeline.CompileSpec); ok {
+			environment = declaredEnvironment(environment, spec.Environment)
+		}
+		var err error
+		externalIdentity, err = goEnvironmentFileIdentity(environment)
+		if err != nil {
+			return "", err
+		}
 		names := []string{"go"}
 		if node.Kind == pipeline.CompileApplication {
 			spec, err := manifestNodeSpec[pipeline.CompileSpec](node)
@@ -499,6 +528,31 @@ func (h *manifestHandler) Identity(ctx context.Context, node pipeline.Node) (str
 	return "wails-" + version.String() + ":" + string(node.Kind) + "|" + identity + "|external:" + externalIdentity + "|env:" + relevantEnvironment(node, h.environment) + hookRoot, nil
 }
 
+// Go also reads persistent settings written by go env -w. The filename alone
+// is not enough: edits must invalidate compilation even when no variable changes.
+func goEnvironmentFileIdentity(overrides []string) (string, error) {
+	values := environmentValues(mergeEnvironment(os.Environ(), overrides))
+	path := values["GOENV"]
+	if path == "off" {
+		return "goenv:off", nil
+	}
+	if path == "" {
+		directory, err := os.UserConfigDir()
+		if err != nil {
+			return "", err
+		}
+		path = filepath.Join(directory, "go", "env")
+	}
+	data, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return "goenv:missing", nil
+	}
+	if err != nil {
+		return "", fmt.Errorf("read Go environment configuration: %w", err)
+	}
+	return fmt.Sprintf("goenv:%x", sha256.Sum256(data)), nil
+}
+
 func relevantEnvironment(node pipeline.Node, overrides []string) string {
 	keys := []string{"PATH"}
 	switch node.Kind {
@@ -510,7 +564,7 @@ func relevantEnvironment(node pipeline.Node, overrides []string) string {
 			keys = append(keys, "FRONTEND_DEVSERVER_URL", wailsVitePort)
 		}
 	case pipeline.GenerateBindings, pipeline.CompileApplication:
-		keys = append(keys, "GOENV", "GOFLAGS", "GOTOOLCHAIN", "GOWORK", "CGO_ENABLED", "CC", "CXX", "CGO_CFLAGS", "CGO_CPPFLAGS", "CGO_CXXFLAGS", "CGO_LDFLAGS")
+		keys = append(keys, "GOENV", "GOFLAGS", "GOTOOLCHAIN", "GOWORK", "GOROOT", "GOEXPERIMENT", "GOAMD64", "GOARM64", "GO386", "GOARM", "GOMIPS", "GOMIPS64", "GOPPC64", "GORISCV64", "GOWASM", "CGO_ENABLED", "CC", "CXX", "CGO_CFLAGS", "CGO_CPPFLAGS", "CGO_CXXFLAGS", "CGO_LDFLAGS")
 		if spec, ok := node.Spec.(pipeline.CompileSpec); ok && !spec.Production {
 			keys = append(keys, "FRONTEND_DEVSERVER_URL", wailsVitePort)
 		}
@@ -1293,7 +1347,7 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	configPath, err := writeGeneratedConfig(tmp, s.Project, associations, s.Protocols)
+	configPath, err := writeGeneratedConfig(tmp, s.Project, associations, s.Protocols, s.BackgroundModes)
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
@@ -1327,10 +1381,21 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 		if err := rebaseGeneratedOverlay(overlay, staged, output); err != nil {
 			return pipeline.RunResult{}, err
 		}
-		if err := IOSXcodeGen(&IOSXcodeGenOptions{OutDir: xcode, Config: resolvedConfig}); err != nil {
+		icon := filepath.Join(staged, "appicon.png")
+		if h.config.Targets.IOS.Icon != "" {
+			icon, err = existingPathInsideProject(h.root, h.config.Targets.IOS.Icon)
+			if err != nil {
+				return pipeline.RunResult{}, err
+			}
+		}
+		if err := IOSXcodeGen(&IOSXcodeGenOptions{OutDir: xcode, Config: resolvedConfig, Icon: icon}); err != nil {
 			return pipeline.RunResult{}, err
 		}
 	case "android":
+		// Packaging stays unsigned; only the explicit signing stage may use credentials.
+		if err := prepareUnsignedAndroidRelease(filepath.Join(staged, "android", "app", "build.gradle")); err != nil {
+			return pipeline.RunResult{}, err
+		}
 		overlay := filepath.Join(staged, "android", "overlay.json")
 		if err := AndroidOverlayGen(&AndroidOverlayGenOptions{Out: overlay, Config: resolvedConfig}); err != nil {
 			return pipeline.RunResult{}, err
@@ -1339,13 +1404,14 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 			return pipeline.RunResult{}, err
 		}
 	}
+	// Apply generated settings before copying complete user replacements.
+	if err := applyGeneratedTargetSettings(staged, s); err != nil {
+		return pipeline.RunResult{}, err
+	}
 	if err := h.applyUserPlatformInputs(staged, s.TargetOS, s.Project.BinaryName); err != nil {
 		return pipeline.RunResult{}, err
 	}
 	if err := h.applyUserSigningInputs(staged, s.TargetOS); err != nil {
-		return pipeline.RunResult{}, err
-	}
-	if err := applyGeneratedTargetSettings(staged, s); err != nil {
 		return pipeline.RunResult{}, err
 	}
 	return pipeline.RunResult{}, replacePathTransactional(staged, output)
@@ -1572,8 +1638,7 @@ func applyGeneratedTargetSettings(output string, spec pipeline.AssetsSpec) error
 	if spec.TargetOS == "ios" {
 		// packageIOS links the executable using project.binary_name. Keep the
 		// bundle metadata in lockstep so Simulator and devices can install and
-		// launch the generated app, including when an Info.plist was supplied as
-		// a user-owned platform input.
+		// launch the generated app, before applying a complete user-owned Info.plist replacement.
 		info := filepath.Join(output, "ios", "xcode", "main", "Info.plist")
 		if err := replacePlistString(info, "CFBundleExecutable", spec.Project.BinaryName); err != nil {
 			return err
@@ -1608,6 +1673,7 @@ func applyGeneratedTargetSettings(output string, spec pipeline.AssetsSpec) error
 			{spec.Project.Identifier, regexp.MustCompile(`(?m)^(\s*applicationId\s*(?:=\s*)?)["'][^"']*["']`), `${1}"%s"`},
 			{spec.Project.Version, regexp.MustCompile(`(?m)^(\s*versionName\s*(?:=\s*)?)["'][^"']*["']`), `${1}"%s"`},
 			{spec.MinimumVersion, regexp.MustCompile(`(?m)^(\s*minSdk\s*(?:=\s*)?)\d+`), `${1}%s`},
+			{positiveIntString(spec.TargetSDK), regexp.MustCompile(`(?m)^(\s*targetSdk\s*(?:=\s*)?)\d+`), `${1}%s`},
 		} {
 			if setting.value == "" {
 				continue
@@ -1630,6 +1696,31 @@ func applyGeneratedTargetSettings(output string, spec pipeline.AssetsSpec) error
 		}
 	}
 	return nil
+}
+
+func positiveIntString(value int) string {
+	if value <= 0 {
+		return ""
+	}
+	return strconv.Itoa(value)
+}
+
+func prepareUnsignedAndroidRelease(path string) error {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	start := bytes.Index(data, []byte("    def keystoreFile ="))
+	end := bytes.Index(data, []byte("    buildTypes {"))
+	if start < 0 || end < start {
+		return fmt.Errorf("generated Android signing configuration is not recognised")
+	}
+	data = append(append([]byte(nil), data[:start]...), data[end:]...)
+	data = bytes.ReplaceAll(data, []byte("            signingConfig = hasKeystore ? signingConfigs.release : signingConfigs.debug"), []byte("            signingConfig = null // Signing is owned by the Wails signing stage."))
+	return os.WriteFile(path, data, 0o644)
 }
 
 func replacePlistString(path, key, value string) error {
@@ -2310,7 +2401,7 @@ func (h *manifestHandler) packageMSIX(s pipeline.PackageSpec) (pipeline.RunResul
 	if err := os.MkdirAll(filepath.Dir(generatedOutput), 0o755); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	if err := ToolMSIX(&flags.ToolMSIX{ConfigPath: configPath, Publisher: publisher, CertificatePath: signing.Certificate, Arch: arch, ExecutableName: s.Project.BinaryName + ".exe", ExecutablePath: filepath.Join(h.root, s.Binary), OutputPath: generatedOutput, AppxManifest: appxManifest, UseMakeAppx: true}); err != nil {
+	if err := ToolMSIX(&flags.ToolMSIX{ConfigPath: configPath, Publisher: publisher, Arch: arch, ExecutableName: s.Project.BinaryName + ".exe", ExecutablePath: filepath.Join(h.root, s.Binary), OutputPath: generatedOutput, AppxManifest: appxManifest, UseMakeAppx: true}); err != nil {
 		return pipeline.RunResult{}, err
 	}
 	return pipeline.RunResult{}, copyPathTransactional(generatedOutput, filepath.Join(h.root, s.Output), ".msix-output-*")
@@ -2759,7 +2850,7 @@ func existingPathInsideProject(root, value string) (string, error) {
 	return manifest.ResolveProjectPath(root, "path", value, true)
 }
 
-func writeGeneratedConfig(dir string, project manifest.Project, associations []manifest.Association, protocols []manifest.Protocol) (string, error) {
+func writeGeneratedConfig(dir string, project manifest.Project, associations []manifest.Association, protocols []manifest.Protocol, backgroundModes []string) (string, error) {
 	type info struct {
 		CompanyName       string `yaml:"companyName"`
 		ProductName       string `yaml:"productName"`
@@ -2780,10 +2871,11 @@ func writeGeneratedConfig(dir string, project manifest.Project, associations []m
 		schemes = append(schemes, ProtocolConfig{Scheme: p.Scheme, Description: p.Description})
 	}
 	data, err := yaml.Marshal(struct {
+		IOS              map[string]any    `yaml:"ios,omitempty"`
 		Info             info              `yaml:"info"`
 		FileAssociations []FileAssociation `yaml:"fileAssociations,omitempty"`
 		Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
-	}{Info: info{project.CompanyName, project.ProductName, project.Identifier, project.Description, project.Copyright, project.Comments, project.Version}, FileAssociations: files, Protocols: schemes})
+	}{IOS: map[string]any{"backgroundModes": backgroundModes}, Info: info{project.CompanyName, project.ProductName, project.Identifier, project.Description, project.Copyright, project.Comments, project.Version}, FileAssociations: files, Protocols: schemes})
 	if err != nil {
 		return "", err
 	}

@@ -1,0 +1,117 @@
+{
+  "version": 3,
+  "scenario": "ga-fixes-badge-noop",
+  "command": [
+    "/tmp/wails-hcl-ga-wails3",
+    "build"
+  ],
+  "samples": [
+    {
+      "wall_ms": 119.534,
+      "cpu_ms": 257.61,
+      "peak_rss_bytes": 85008384,
+      "reported_build_ms": 46,
+      "cached_steps": 6,
+      "steps_reported": true,
+      "artifacts": {
+        "/tmp/wails-hcl-ga-badge-0qn7nnnk/bin/badge": {
+          "digest": "sha256:f58031b6147d2bd1160e47138e69b9d42fab79862101de1162558c0c0125ea9a",
+          "size_bytes": 9733120
+        }
+      }
+    },
+    {
+      "wall_ms": 116.796,
+      "cpu_ms": 249.319,
+      "peak_rss_bytes": 85876736,
+      "reported_build_ms": 37,
+      "cached_steps": 6,
+      "steps_reported": true,
+      "artifacts": {
+        "/tmp/wails-hcl-ga-badge-0qn7nnnk/bin/badge": {
+          "digest": "sha256:f58031b6147d2bd1160e47138e69b9d42fab79862101de1162558c0c0125ea9a",
+          "size_bytes": 9733120
+        }
+      }
+    },
+    {
+      "wall_ms": 142.651,
+      "cpu_ms": 275.18,
+      "peak_rss_bytes": 84439040,
+      "reported_build_ms": 55,
+      "cached_steps": 6,
+      "steps_reported": true,
+      "artifacts": {
+        "/tmp/wails-hcl-ga-badge-0qn7nnnk/bin/badge": {
+          "digest": "sha256:f58031b6147d2bd1160e47138e69b9d42fab79862101de1162558c0c0125ea9a",
+          "size_bytes": 9733120
+        }
+      }
+    },
+    {
+      "wall_ms": 131.65,
+      "cpu_ms": 270.308,
+      "peak_rss_bytes": 85614592,
+      "reported_build_ms": 46,
+      "cached_steps": 6,
+      "steps_reported": true,
+      "artifacts": {
+        "/tmp/wails-hcl-ga-badge-0qn7nnnk/bin/badge": {
+          "digest": "sha256:f58031b6147d2bd1160e47138e69b9d42fab79862101de1162558c0c0125ea9a",
+          "size_bytes": 9733120
+        }
+      }
+    },
+    {
+      "wall_ms": 129.317,
+      "cpu_ms": 269.124,
+      "peak_rss_bytes": 85688320,
+      "reported_build_ms": 48,
+      "cached_steps": 6,
+      "steps_reported": true,
+      "artifacts": {
+        "/tmp/wails-hcl-ga-badge-0qn7nnnk/bin/badge": {
+          "digest": "sha256:f58031b6147d2bd1160e47138e69b9d42fab79862101de1162558c0c0125ea9a",
+          "size_bytes": 9733120
+        }
+      }
+    },
+    {
+      "wall_ms": 138.785,
+      "cpu_ms": 271.855,
+      "peak_rss_bytes": 83832832,
+      "reported_build_ms": 45,
+      "cached_steps": 6,
+      "steps_reported": true,
+      "artifacts": {
+        "/tmp/wails-hcl-ga-badge-0qn7nnnk/bin/badge": {
+          "digest": "sha256:f58031b6147d2bd1160e47138e69b9d42fab79862101de1162558c0c0125ea9a",
+          "size_bytes": 9733120
+        }
+      }
+    },
+    {
+      "wall_ms": 130.279,
+      "cpu_ms": 261.901,
+      "peak_rss_bytes": 86016000,
+      "reported_build_ms": 45,
+      "cached_steps": 6,
+      "steps_reported": true,
+      "artifacts": {
+        "/tmp/wails-hcl-ga-badge-0qn7nnnk/bin/badge": {
+          "digest": "sha256:f58031b6147d2bd1160e47138e69b9d42fab79862101de1162558c0c0125ea9a",
+          "size_bytes": 9733120
+        }
+      }
+    }
+  ],
+  "median_wall_ms": 130.279,
+  "min_wall_ms": 116.796,
+  "max_wall_ms": 142.651,
+  "median_cpu_ms": 269.124,
+  "median_peak_rss_bytes": 85614592,
+  "median_reported_build_ms": 46,
+  "median_absolute_deviation_ms": 8.506,
+  "mad_percent": 6.529064546089547,
+  "orchestration_overhead_percent": 183.21521739130432
+}

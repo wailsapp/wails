@@ -20,3 +20,7 @@ func signalManifestProcess(process *os.Process, _ os.Signal) error {
 func killManifestProcess(process *os.Process) error {
 	return exec.Command("taskkill", "/F", "/T", "/PID", strconv.Itoa(process.Pid)).Run()
 }
+
+func cleanupManifestProcessGroup(process *os.Process) {
+	// Windows tree cleanup is performed by taskkill while the parent is alive.
+}

@@ -454,7 +454,7 @@ func snapshotNodeInputs(store executorCache, node Node) ([]string, error) {
 		} else if len(input.Files) > 0 {
 			digest, err = store.SnapshotFiles(input.Label, input.Files...)
 		} else {
-			digest, err = store.Snapshot(cache.SnapshotOptions{Label: input.Label, Root: input.Root, IncludeAll: input.IncludeAll, IncludeNames: input.IncludeNames, IncludeExtensions: input.IncludeExtensions, ExcludeDirs: input.ExcludeDirs, ExcludeSuffixes: input.ExcludeSuffixes, UseGitIgnore: input.UseGitIgnore})
+			digest, err = store.Snapshot(cache.SnapshotOptions{Label: input.Label, Root: input.Root, IncludeGoEmbed: input.IncludeGoEmbed, IncludeAll: input.IncludeAll, IncludeNames: input.IncludeNames, IncludeExtensions: input.IncludeExtensions, ExcludeDirs: input.ExcludeDirs, ExcludeSuffixes: input.ExcludeSuffixes, UseGitIgnore: input.UseGitIgnore})
 		}
 		if err != nil {
 			return nil, err

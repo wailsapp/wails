@@ -501,6 +501,10 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		if err != nil {
 			return report, manifest.Document{}, err
 		}
+		if len(reachability.reachable[filepath.Clean(path)]) > 0 && (len(tf.Env) > 0 || len(tf.Dotenv) > 0 || len(tf.Shopt) > 0 || tf.Requires != nil) {
+			report.Complete = false
+			report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "taskfile-execution-policy", File: rel, Message: "reachable Taskfile environment, dotenv, shell options or requirements are not represented in HCL; keep using Taskfiles until migrated manually"})
+		}
 		role := taskfileRole(rel)
 		allowed := legacyTaskNames[role]
 		knownStock := knownStockTaskfiles[role][digest]
@@ -619,6 +623,9 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 					if convErr != nil || port < 1 || port > 65535 {
 						devPort = 0
 						report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "invalid-port", File: rel, Message: "VITE_PORT=" + value.Static + " is not a valid port and was not migrated"})
+					} else if port != defaultVitePort {
+						report.Complete = false
+						report.Diagnostics = append(report.Diagnostics, MigrationDiagnostic{Severity: "warning", Code: "unsupported-dev-port", File: rel, Message: "VITE_PORT is not representable in HCL; use wails3 dev --port explicitly and remove the legacy override before activation"})
 					} else {
 						devPort = port
 					}
@@ -1051,11 +1058,11 @@ var knownStockTaskfiles = map[string]map[string]bool{
 }
 
 func recognizedRootTask(name string, task *wakeast.Task) bool {
-	if task == nil || len(task.Cmds) != 1 || len(task.Deps) != 0 {
+	if task == nil || len(task.Cmds) != 1 || len(task.Deps) != 0 || len(task.Env) > 0 || len(task.Vars) > 0 || task.Dir != "" || len(task.Precondition) > 0 || len(task.Status) > 0 || len(task.Defer) > 0 {
 		return false
 	}
 	command := task.Cmds[0]
-	if command == nil {
+	if command == nil || len(command.Vars) > 0 || command.IgnoreError || command.For != nil {
 		return false
 	}
 	if name == "dev" {

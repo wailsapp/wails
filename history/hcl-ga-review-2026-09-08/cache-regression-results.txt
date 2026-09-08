@@ -1,0 +1,33 @@
+Reviewed HEAD: 3452def9d
+
+Reproduction files are preserved next to this file. Copy to the active package
+paths shown in their first comments, run the commands below from v3, and remove
+the copied files afterward. These reproductions intentionally PASS when the bug
+is present. They are diagnostic artifacts, not proposed regression assertions.
+
+$ go test ./internal/wake/pipeline ./internal/wake/cache -run TestReview -v
+=== RUN   TestReviewEmbeddedDataCache
+CONFIRMED: compile snapshots unchanged after embedded JSON edit
+--- PASS: TestReviewEmbeddedDataCache (0.00s)
+=== RUN   TestReviewCustomFrontendCommand
+CONFIRMED: /usr/bin/python3 exists but plan rejected:
+frontend.install: frontend dependency installation requires tool "python3"
+--- PASS: TestReviewCustomFrontendCommand (0.04s)
+PASS
+ok github.com/wailsapp/wails/v3/internal/wake/pipeline 0.051s
+=== RUN   TestReviewMethodRegistrationIgnored
+CONFIRMED: changing registered event name AND payload in method gives identical binding API digest
+--- PASS: TestReviewMethodRegistrationIgnored (0.00s)
+PASS
+ok github.com/wailsapp/wails/v3/internal/wake/cache 0.004s
+
+$ go test ./internal/commands -run TestReviewGOAMD64 -v
+=== RUN   TestReviewGOAMD64CacheIdentity
+CONFIRMED: GOAMD64=v3 and GOAMD64=v1 share handler identity and action key 4b659f920a64896c90e85c35be950db26c7926ccc332b8fb2cbe69460595c889
+--- PASS: TestReviewGOAMD64CacheIdentity (0.00s)
+PASS
+ok github.com/wailsapp/wails/v3/internal/commands 0.073s
+
+GOAMD64 reproduction invokes real manifestHandler.Identity and cache.ActionKey,
+not a copied implementation. It proves compilation cache identity collision;
+it does not compile/run architecture-specific binaries.

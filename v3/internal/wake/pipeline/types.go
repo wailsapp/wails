@@ -84,6 +84,7 @@ type ResourceClaims struct {
 }
 
 type InputSpec struct {
+	IncludeGoEmbed    bool
 	Label             string
 	Root              string
 	Files             []string
@@ -241,6 +242,8 @@ type ComponentBinary struct {
 	Path string
 }
 type AssetsSpec struct {
+	TargetSDK                       int
+	BackgroundModes                 []string
 	TargetOS, TargetArch, Directory string
 	MinimumVersion                  string
 	Capabilities                    []string

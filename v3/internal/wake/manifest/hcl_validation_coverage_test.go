@@ -25,7 +25,7 @@ func TestHCLValidationRejectsInvalidCoreConfiguration(t *testing.T) {
 	}{
 		{"missing binary name", func(config *Config) { config.Project.BinaryName = "" }},
 		{"binary path", func(config *Config) { config.Project.BinaryName = "../app" }},
-		{"unsupported package manager", func(config *Config) { config.Frontend.PackageManager = "deno" }},
+		{"unsupported package manager", func(config *Config) { config.Frontend.PackageManager = "deno"; config.Frontend.Install = nil }},
 		{"empty frontend directory", func(config *Config) { config.Frontend.Directory = "" }},
 		{"empty frontend output", func(config *Config) { config.Frontend.OutputDirectory = "" }},
 		{"empty build output", func(config *Config) { config.Build.OutputDirectory = "" }},

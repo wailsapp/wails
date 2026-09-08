@@ -50,6 +50,7 @@ type ActionResult struct {
 }
 
 type indexData struct {
+	GoEmbeds map[string][]string     `json:"go_embeds,omitempty"`
 	Files    map[string]FileRecord   `json:"files"`
 	GoAPI    map[string]FileRecord   `json:"go_api"`
 	Actions  map[string]ActionResult `json:"actions"`
@@ -105,6 +106,7 @@ func (f *observedFile) fileIdentity(info fs.FileInfo) string {
 }
 
 type SnapshotOptions struct {
+	IncludeGoEmbed    bool
 	Label             string
 	Root              string
 	IncludeAll        bool
@@ -486,6 +488,13 @@ func (c *Cache) Snapshot(options SnapshotOptions) (string, error) {
 		writePart(h, file.relative)
 		writePart(h, strconv.FormatUint(uint64(relevantMode(info.Mode())), 8))
 		writePart(h, digest)
+		if options.IncludeGoEmbed && strings.HasSuffix(file.path, ".go") && !strings.HasSuffix(file.path, "_test.go") {
+			embedded, err := c.snapshotGoEmbed(file.path, digest)
+			if err != nil {
+				return "", err
+			}
+			writePart(h, embedded)
+		}
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
@@ -591,7 +600,7 @@ type cacheFormatNode func(io.Writer, *token.FileSet, any) error
 
 func (c *Cache) goAPIDigestWithFormatter(path string, info fs.FileInfo, identity string, formatNode cacheFormatNode) (string, error) {
 	c.stats.Files++
-	key := path
+	key := "registrations-v2:" + path
 	record, ok := c.index.GoAPI[key]
 	if metadataFastPathSafe(info, identity) && ok && record.Size == info.Size() && record.ModTimeNS == info.ModTime().UnixNano() && record.Mode == uint32(info.Mode()) && record.Identity == identity {
 		c.stats.DigestsReused++
@@ -606,7 +615,7 @@ func (c *Cache) goAPIDigestWithFormatter(path string, info fs.FileInfo, identity
 	for _, decl := range file.Decls {
 		if fn, ok := decl.(*ast.FuncDecl); ok {
 			copy := *fn
-			if fn.Recv != nil {
+			if fn.Recv != nil && !containsBindingRegistration(fn.Body) {
 				copy.Body = nil
 			}
 			semantic.Decls = append(semantic.Decls, &copy)
@@ -1242,4 +1251,24 @@ func makeSet(values []string) map[string]bool {
 
 func relevantMode(mode fs.FileMode) fs.FileMode {
 	return mode & (0o111 | os.ModeType)
+}
+
+// Method implementations normally do not affect bindings, but registrations
+// are discovered anywhere in a package. Be conservative about same-named
+// identifiers so import aliases and dot imports remain safe without typechecking.
+func containsBindingRegistration(body *ast.BlockStmt) bool {
+	if body == nil {
+		return false
+	}
+	found := false
+	ast.Inspect(body, func(node ast.Node) bool {
+		if name, ok := node.(*ast.Ident); ok {
+			switch name.Name {
+			case "RegisterEvent", "NewService", "NewServiceWithOptions":
+				found = true
+			}
+		}
+		return !found
+	})
+	return found
 }

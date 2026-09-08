@@ -313,7 +313,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		compileDeps = append(compileDeps, assets)
 	}
 	compileInputs := []InputSpec{
-		{Label: "go-sources", Root: ".", IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: []string{".go", ".c", ".cc", ".cpp", ".h", ".hh", ".hpp", ".s", ".syso"}, ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
+		{Label: "go-sources", Root: ".", IncludeGoEmbed: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: []string{".go", ".c", ".cc", ".cpp", ".h", ".hh", ".hpp", ".s", ".syso"}, ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
 		{Label: "go-module", Files: goMetadataFiles(config.Root)},
 	}
 	compileInputs = append(compileInputs, localInputs...)
@@ -397,7 +397,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		finalOutput := runnableOutput(config, request.TargetOS, request.TargetArch, capability, multiTarget)
 		output := filepath.ToSlash(filepath.Join(generatedRoot, "artifacts", filepath.Base(finalOutput)))
 		if request.Development {
-			output = finalOutput
+			output = filepath.ToSlash(filepath.Join(".wails", "dev", request.TargetOS+"-"+request.TargetArch, filepath.Base(finalOutput)))
 		}
 		packageConfig := registeredPackageFormat(config.Package, request.TargetOS, "app")
 		cachePolicy := CacheArtifact
@@ -734,7 +734,7 @@ func platformAssetsNode(config manifest.Config, request Request, target, output 
 	project, targetSettings := effectiveTarget(config, request.TargetOS, request.TargetArch)
 	platformSettings := platformConfig(config.Targets, request.TargetOS)
 	return Node{Key: NodeKey("target:" + target + ":assets"), Kind: GeneratePlatformAssets, Label: "Generate " + request.TargetOS + " assets", Scope: TargetScope, Dependencies: dependencies,
-		Spec:   AssetsSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Directory: output, MinimumVersion: targetSettings.MinimumVersion, Capabilities: platformSettings.Capabilities, Project: project, Associations: associationsForPlatform(config.Associations, request.TargetOS), Protocols: protocolsForPlatform(config.Protocols, request.TargetOS)},
+		Spec:   AssetsSpec{TargetSDK: platformSettings.TargetSDK, BackgroundModes: append([]string(nil), platformSettings.BackgroundModes...), TargetOS: request.TargetOS, TargetArch: request.TargetArch, Directory: output, MinimumVersion: targetSettings.MinimumVersion, Capabilities: platformSettings.Capabilities, Project: project, Associations: associationsForPlatform(config.Associations, request.TargetOS), Protocols: protocolsForPlatform(config.Protocols, request.TargetOS)},
 		Inputs: assetInputs(config), Output: output, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "legacy-command-adapter"}, EstimateMS: 250}
 }
 
@@ -831,7 +831,7 @@ func goLocalSourceInputsWithAbs(root string, abs func(string) (string, error)) (
 	sort.Strings(paths)
 	inputs := make([]InputSpec, 0, len(paths))
 	for _, path := range paths {
-		inputs = append(inputs, InputSpec{Label: "go-local-source", Root: path, IncludeNames: []string{"go.mod", "go.sum"}, IncludeExtensions: []string{".go", ".c", ".cc", ".cpp", ".h", ".hh", ".hpp", ".s", ".syso"}, ExcludeDirs: []string{".git", ".wails", "bin", "dist", "node_modules"}, ExcludeSuffixes: []string{"_test.go"}})
+		inputs = append(inputs, InputSpec{Label: "go-local-source", Root: path, IncludeGoEmbed: true, IncludeNames: []string{"go.mod", "go.sum"}, IncludeExtensions: []string{".go", ".c", ".cc", ".cpp", ".h", ".hh", ".hpp", ".s", ".syso"}, ExcludeDirs: []string{".git", ".wails", "bin", "dist", "node_modules"}, ExcludeSuffixes: []string{"_test.go"}})
 	}
 	return inputs, nil
 }
@@ -1081,6 +1081,17 @@ func effectiveTarget(config manifest.Config, platform, arch string) (manifest.Pr
 	}
 	if common.BuildNumber != 0 {
 		project.BuildNumber = common.BuildNumber
+	}
+	if platform == "android" {
+		if common.VersionName != "" {
+			project.Version = common.VersionName
+		}
+		if common.VersionCode != 0 {
+			project.BuildNumber = common.VersionCode
+		}
+		if target.MinimumVersion == "" && common.MinimumSDK != 0 {
+			target.MinimumVersion = strconv.Itoa(common.MinimumSDK)
+		}
 	}
 	if target.BuildNumber != 0 {
 		project.BuildNumber = target.BuildNumber

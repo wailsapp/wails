@@ -214,6 +214,14 @@ func PlanBuildForCurrentHost(config manifest.Config, request Request, credential
 
 func planBuildForCurrentHostWithOperations(config manifest.Config, request Request, credentials []string, operations hostProbeOperations) (Plan, error) {
 	tools, presentCredentials := probeHostToolsAndCredentials(credentials, operations)
+	for _, command := range [][]string{config.Frontend.Install, config.Frontend.Build, config.Frontend.Dev} {
+		if len(command) == 0 || strings.ContainsAny(command[0], `/\`) {
+			continue
+		}
+		if _, err := operations.lookPath(command[0]); err == nil {
+			tools = append(tools, command[0])
+		}
+	}
 	facts := currentHostFacts(tools, operations, false)
 	host := NewHostCapabilitiesWithFacts(operations.hostOS, operations.hostArch, tools, presentCredentials, facts)
 	host.containerImagesKnown = false

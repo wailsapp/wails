@@ -469,3 +469,23 @@ func configForAndroid(t *testing.T) manifest.Config {
 	t.Helper()
 	return testConfig(t)
 }
+
+func TestCurrentHostPlanningDiscoversConfiguredFrontendExecutable(t *testing.T) {
+	config := testConfig(t)
+	config.Frontend.Install = []string{"custom-manager", "install"}
+	operations := hostProbeOperations{
+		hostOS: "linux", hostArch: "amd64",
+		lookPath: func(name string) (string, error) {
+			if name == "go" || name == "cc" || name == "npm" || name == "custom-manager" {
+				return "/tools/" + name, nil
+			}
+			return "", os.ErrNotExist
+		}, lookupEnv: func(string) (string, bool) { return "", false }, getenv: func(string) string { return "" }, stat: os.Stat, glob: filepath.Glob,
+		run: func(string, ...string) error { return os.ErrNotExist },
+	}
+	_, err := planBuildForCurrentHostWithOperations(config, Request{}, nil, operations)
+	require.NoError(t, err)
+	config.Frontend.Install = []string{"missing-manager", "install"}
+	_, err = planBuildForCurrentHostWithOperations(config, Request{}, nil, operations)
+	require.ErrorContains(t, err, "missing-manager")
+}
