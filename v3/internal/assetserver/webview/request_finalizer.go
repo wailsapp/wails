@@ -1,6 +1,7 @@
 package webview
 
 import (
+	"context"
 	"runtime"
 	"sync/atomic"
 )
@@ -38,3 +39,6 @@ func (r *requestFinalizer) close(asyncRelease bool) error {
 	}
 	return nil
 }
+
+// Context preserves native cancellation through the finalizer wrapper.
+func (r *requestFinalizer) Context() context.Context { return Context(r.Request) }

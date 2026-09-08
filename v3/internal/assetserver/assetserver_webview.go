@@ -125,7 +125,7 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	}
 	defer body.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(webview.Context(r))
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, method, uri, body)

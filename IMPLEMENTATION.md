@@ -82,6 +82,18 @@ fail to compile otherwise supported GTK4 applications (#5928).
 Debian 13+ GTK4 support contract, fails early if the image regresses, and preserves
 the legacy `-tags gtk3` path for the v3.0.x compatibility window.
 
+### Decision 7: Linux custom-scheme request cancellation (2026-09-08, #5963)
+
+**Context**: Browser aborts and navigation ended WebKit loads without cancelling the Go handler context. A normal retained GObject reference hid WebKit releasing the request. Closing the last window while keeping the application running also left loads active.
+
+**Decision**: Both Linux backends retain each request with a GObject toggle reference, cancel its context when WebKit releases its last other reference, and remove the callback before deleting its Go handle on the GTK thread. Optional request contexts are forwarded through the finalizer and application metadata wrappers. Stop WebKit loading before native window destruction.
+
+**Rationale**: Native request identity distinguishes concurrent identical URLs. The existing main-thread dispatcher serializes reference cleanup with WebKit and handles application shutdown. Platforms without a native context retain the prior behavior; this change does not implement Windows cancellation.
+
+**Files**: `v3/internal/assetserver/webview/request_lifetime_linux.go`, `request_context.go`, `request_finalizer.go`, `request_linux.go`, `request_linux_gtk3.go`; `v3/internal/assetserver/assetserver_webview.go`; `v3/pkg/application/application.go`, `linux_cgo.go`, `linux_cgo_gtk3.go`.
+
+**Status**: Linux implementation complete; regression coverage is in the asset-server tests and `v3/test/manual/request-cancellation/`. GTK4 and GTK3 use the same GObject API; the native matrix covers abort before response, streaming abort, normal completion, independent identical URLs, navigation, and window close. Older WebKit releases still need compatibility validation.
+
 ## Implementation Progress
 
 ### Phase 1: Build Infrastructure ✅ COMPLETE
@@ -471,6 +483,11 @@ v3/internal/assetserver/webview/
 ```
 
 ## Changelog
+
+### 2026-09-08
+- Implement Linux native request-context cancellation for GTK4 and GTK3 (#5963), including navigation and window teardown.
+- Add handler/context-wrapper regression tests and an automated native probe; retain the unchanged fallback on other platforms.
+
 
 ### 2026-08-11
 - Corrected the Phase 6 build guidance to reflect GTK4 as the default and

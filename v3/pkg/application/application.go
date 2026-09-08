@@ -371,6 +371,11 @@ type windowKeyEvent struct {
 	acceleratorString string
 }
 
+// Context preserves cancellation while adding the window metadata headers.
+func (r *webViewAssetRequest) Context() context.Context {
+	return webview.Context(r.Request)
+}
+
 func (r *webViewAssetRequest) URL() (string, error) {
 	return r.Request.URL()
 }
