@@ -2,21 +2,27 @@
 
 `internal/wake` contains two separate systems:
 
-- the native HCL build engine selected by an active project-root `wails.hcl`;
+- the experimental HCL build engine, enabled by `WAILS_EXP_USE_WAKE` and selected by an active project-root `wails.hcl`;
 - the temporary Go-native Taskfile runner for legacy compatibility.
 
-`WAILS_USE_WAKE` selects only the legacy Taskfile runner. It never enables or
-disables the HCL engine.
+Set `WAILS_EXP_USE_WAKE` to opt into the HCL CLI, project generation and setup
+writer. Presence enables it, including an empty value, `0` or `false`. When
+unset, build/dev/package/sign use Taskfiles, init generates legacy build assets,
+and setup retains its legacy YAML/Taskfile writers without modifying HCL.
+
+`WAILS_USE_WAKE=true` still selects only the legacy Taskfile runner. It does not
+enable the experimental HCL CLI.
 
 ## Native HCL projects
 
-The presence of `wails.hcl` is the explicit cutover flag. Wails then ignores
+With the experiment enabled, the presence of `wails.hcl` is the cutover marker. Wails then ignores
 all Taskfiles, including local overrides, and an invalid manifest fails without
 falling back to legacy execution.
 
 The canonical workflows are:
 
 ```bash
+export WAILS_EXP_USE_WAKE=1
 wails3 build
 wails3 build release
 wails3 build --plan

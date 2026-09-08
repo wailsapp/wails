@@ -81,6 +81,7 @@ func TestBuildCommandWithMCPEnvVar(t *testing.T) {
 }
 
 func TestMCPEnvTagDoesNotOverrideANamedManifestProfile(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	t.Chdir(root)

@@ -5,7 +5,8 @@
 Wake contains two deliberately separated paths:
 
 - The manifest-native Wails pipeline (`manifest/`, `pipeline/`, and `cache/`)
-  is selected automatically when an active root `wails.hcl` exists. It is the
+  is available when `WAILS_EXP_USE_WAKE` is present in the environment and
+  selected when an active root `wails.hcl` exists. It is the
   build/dev implementation for new and fully migrated projects and does not
   discover or interpret Taskfiles. Package and sign are deprecated aliases
   over the same build planner.
@@ -13,7 +14,10 @@ Wake contains two deliberately separated paths:
   path. `WAILS_USE_WAKE=true` selects it instead of the external `task` CLI for
   Taskfile projects; unsupported Taskfile features still fall back to `task`.
 
-The Taskfile environment flag does not gate the manifest pipeline.
+The legacy Taskfile environment flag does not enable the manifest pipeline.
+The shared `internal/features.WakeEnabled` presence check gates the HCL CLI,
+init/setup generation and build/dev/package/sign routing. An empty value or
+`false` still opts in; an unset variable preserves legacy Taskfile behavior.
 
 ## Architecture
 

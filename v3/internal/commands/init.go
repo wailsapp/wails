@@ -11,6 +11,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/defaults"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/setupwizard"
@@ -265,7 +266,8 @@ func Init(options *flags.Init) error {
 		_ = os.Rename(npmrcSrc, filepath.Join(options.ProjectDir, "frontend", ".npmrc"))
 	}
 
-	// Built-in templates deliberately omit build configuration so the manifest
+	// With the experiment disabled, retain legacy Taskfiles and build assets.
+	// Experimental built-in templates omit build configuration so the manifest
 	// schema writer remains the single source of the generated HCL shape. An
 	// older community template may still ship a customised Taskfile: analyse it
 	// and retain legacy execution until migration is complete instead of
@@ -289,6 +291,17 @@ func Init(options *flags.Init) error {
 }
 
 func initialiseTemplateBuildManifest(options *flags.Init) error {
+	if !features.WakeEnabled() {
+		return GenerateBuildAssets(&BuildAssetsOptions{
+			Name: options.ProjectName, Dir: filepath.Join(options.ProjectDir, "build"), Silent: true,
+			ProductCompany: options.ProductCompany, ProductName: options.ProductName,
+			ProductDescription: options.ProductDescription, ProductVersion: options.ProductVersion,
+			ProductIdentifier: options.ProductIdentifier, ProductCopyright: options.ProductCopyright,
+			ProductComments: options.ProductComments, Typescript: templates.IsTypescript(options.TemplateName),
+			UseInterfaces: options.UseInterfaces,
+		})
+	}
+
 	state, err := initManifestState(options, manifest.Project{})
 	if err != nil {
 		return err

@@ -11,6 +11,7 @@ import (
 )
 
 func TestManifestPresenceIsTheCutoverFlag(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := t.TempDir()
 	require.NoError(t, manifest.WriteMinimal(root, manifest.Project{Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0"}))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte("version: '3'\n"), 0o644))

@@ -16,6 +16,7 @@ import (
 )
 
 func TestInitBuiltInTemplatesCreateOnlyWailsHCL(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
@@ -68,6 +69,7 @@ func TestInitBuiltInTemplatesCreateOnlyWailsHCL(t *testing.T) {
 }
 
 func TestInitWritesWizardProjectMetadataToAValidManifest(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
@@ -102,6 +104,7 @@ func TestInitWritesWizardProjectMetadataToAValidManifest(t *testing.T) {
 }
 
 func TestInitManifestReflectsTemplateBindingChoices(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
@@ -145,6 +148,7 @@ func TestInitManifestReflectsTemplateBindingChoices(t *testing.T) {
 }
 
 func TestInitUpdatesTemplateManifestWithWizardStateAndPreservesIntent(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
@@ -229,6 +233,7 @@ build {
 }
 
 func TestInitInsideAnotherManifestProjectCreatesItsOwnManifest(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
@@ -257,6 +262,7 @@ func TestInitInsideAnotherManifestProjectCreatesItsOwnManifest(t *testing.T) {
 }
 
 func TestCommunityTemplateWithFullyMigratableTaskfileActivatesHCLAndPreservesLegacySource(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := t.TempDir()
 	legacy := []byte("version: '3'\nvars:\n  APP_NAME: custom-binary\ntasks: {}\n")
 	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), legacy, 0o600))
@@ -281,6 +287,7 @@ func TestCommunityTemplateWithFullyMigratableTaskfileActivatesHCLAndPreservesLeg
 }
 
 func TestCommunityTemplateWithCustomTaskWritesOnlyInactiveDraft(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := t.TempDir()
 	legacy := []byte("version: '3'\ntasks:\n  build:\n    cmds:\n      - task: bespoke\n  bespoke:\n    cmds: ['echo custom']\n")
 	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), legacy, 0o640))
@@ -301,4 +308,29 @@ func TestCommunityTemplateWithCustomTaskWritesOnlyInactiveDraft(t *testing.T) {
 		assert.Equal(t, os.FileMode(0o640), info.Mode().Perm())
 	}
 	assert.NoFileExists(t, filepath.Join(root, ".wails", "migration-report.json"))
+}
+
+func TestInitWithoutExperimentCreatesLegacyTaskfiles(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "restore")
+	require.NoError(t, os.Unsetenv("WAILS_EXP_USE_WAKE"))
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	for _, template := range templates.GetDefaultTemplates() {
+		t.Run(template.Name, func(t *testing.T) {
+			t.Chdir(t.TempDir())
+			options := &flags.Init{
+				TemplateName: template.Name, ProjectName: "Legacy App", ProjectDir: filepath.Join(t.TempDir(), "project"),
+				ModulePath: "example.com/legacy", ProductName: "Legacy App", ProductIdentifier: "com.example.legacy",
+				ProductVersion: "1.2.3", SkipGoModTidy: true,
+			}
+			require.NoError(t, Init(options))
+			require.NoFileExists(t, filepath.Join(options.ProjectDir, "wails.hcl"))
+			require.NoFileExists(t, filepath.Join(options.ProjectDir, "wails.migrated.hcl"))
+			for _, name := range []string{"Taskfile.yml", "build/config.yml", "build/Taskfile.yml", "build/darwin/Taskfile.yml", "build/windows/Taskfile.yml", "build/linux/Taskfile.yml"} {
+				require.FileExists(t, filepath.Join(options.ProjectDir, name))
+			}
+			data, err := os.ReadFile(filepath.Join(options.ProjectDir, "Taskfile.yml"))
+			require.NoError(t, err)
+			require.Contains(t, string(data), `APP_NAME: "legacy-app"`)
+		})
+	}
 }

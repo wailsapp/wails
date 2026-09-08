@@ -16,6 +16,7 @@ import (
 )
 
 func TestWailsConfigEndpointWritesValidHCLFromProjectState(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
@@ -77,6 +78,7 @@ func TestWailsConfigEndpointWritesValidHCLFromProjectState(t *testing.T) {
 }
 
 func TestWailsConfigEndpointPreservesBuildIntentWhenProjectStateChanges(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
@@ -154,6 +156,7 @@ build {
 }
 
 func TestWailsConfigEndpointRejectsIncompleteProjectStateWithoutWritingHCL(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })

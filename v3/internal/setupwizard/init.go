@@ -3,6 +3,8 @@ package setupwizard
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/wailsapp/wails/v3/internal/features"
 )
 
 // InitTemplate is a selectable project template, sourced from the templates
@@ -19,15 +21,18 @@ type InitData struct {
 	// Mode lets the frontend distinguish the init wizard from the setup wizard.
 	Mode string `json:"mode"`
 
-	ProjectName       string `json:"projectName"`
-	TemplateName      string `json:"templateName"`
-	ProductName       string `json:"productName"`
-	ProductCompany    string `json:"productCompany"`
-	ProductIdentifier string `json:"productIdentifier"`
+	// BuildConfigFile is display-only; the backend always checks the environment.
+	BuildConfigFile string `json:"buildConfigFile"`
+
+	ProjectName        string `json:"projectName"`
+	TemplateName       string `json:"templateName"`
+	ProductName        string `json:"productName"`
+	ProductCompany     string `json:"productCompany"`
+	ProductIdentifier  string `json:"productIdentifier"`
 	ProductDescription string `json:"productDescription"`
-	ProductVersion    string `json:"productVersion"`
-	ProductCopyright  string `json:"productCopyright"`
-	ProductComments   string `json:"productComments"`
+	ProductVersion     string `json:"productVersion"`
+	ProductCopyright   string `json:"productCopyright"`
+	ProductComments    string `json:"productComments"`
 	// UseInterfaces selects interface vs class bindings for TypeScript projects.
 	UseInterfaces bool `json:"useInterfaces"`
 
@@ -45,6 +50,10 @@ type InitData struct {
 func NewInitWizard(data InitData) *Wizard {
 	d := data
 	d.Mode = "init"
+	d.BuildConfigFile = "build/config.yml"
+	if features.WakeEnabled() {
+		d.BuildConfigFile = "wails.hcl"
+	}
 	w := New()
 	w.initData = &d
 	return w

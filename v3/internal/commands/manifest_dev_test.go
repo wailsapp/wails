@@ -81,6 +81,7 @@ func TestLegacyDevUsesDefaultPortForInvalidEnvironmentValue(t *testing.T) {
 }
 
 func TestManifestDevRejectsProductionProfiles(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := t.TempDir()
 	t.Chdir(root)
 	require.NoError(t, manifest.WriteMinimal(root, manifest.Project{Name: "dev", ProductName: "Dev", Identifier: "com.example.dev", Version: "1.0.0"}))

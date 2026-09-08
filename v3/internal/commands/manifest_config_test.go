@@ -54,6 +54,7 @@ type failingWriter struct{ err error }
 func (w failingWriter) Write([]byte) (int, error) { return 0, w.err }
 
 func BenchmarkNativeManifestRouting(b *testing.B) {
+	b.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := b.TempDir()
 	require.NoError(b, manifest.WriteMinimal(root, manifest.Project{Name: "bench", ProductName: "Bench", Identifier: "com.example.bench", Version: "1.0.0"}))
 	b.ReportAllocs()

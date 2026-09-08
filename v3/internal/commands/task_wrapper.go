@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/wailsapp/wails/v3/internal/buildwarnings"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
@@ -148,7 +149,9 @@ func Package(options *flags.Package, otherArgs []string) error {
 }
 
 func packageWithOperations(options *flags.Package, otherArgs []string, operations manifestCommandOperations) error {
-	term.Warning("wails3 package is deprecated; use wails3 build with a profile or --formats")
+	if features.WakeEnabled() {
+		term.Warning("wails3 package is deprecated; use wails3 build with a profile or --formats")
+	}
 	active, err := operations.active()
 	if err != nil {
 		return err
@@ -175,7 +178,9 @@ func SignWrapper(options *flags.SignWrapper, otherArgs []string) error {
 }
 
 func signWithOperations(options *flags.SignWrapper, otherArgs []string, operations manifestCommandOperations) error {
-	term.Warning("wails3 sign is deprecated; select signing in a profile and use wails3 build")
+	if features.WakeEnabled() {
+		term.Warning("wails3 sign is deprecated; select signing in a profile and use wails3 build")
+	}
 	active, err := operations.active()
 	if err != nil {
 		return err
@@ -218,10 +223,10 @@ func activeManifestProject() (bool, error) {
 }
 
 func activeManifestProjectAt(root string) (bool, error) {
-	// The native manifest is the explicit cutover marker. Once it exists,
+	// Within the experiment, the native manifest is the cutover marker. Once it exists,
 	// Taskfiles are completely ignored—even when the manifest is invalid—so a
 	// configuration error can never silently execute a different build path.
-	return manifest.Exists(root), nil
+	return features.WakeEnabled() && manifest.Exists(root), nil
 }
 
 func splitTarget(target string) (string, string, error) {

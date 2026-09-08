@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/s"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -519,6 +520,30 @@ func Install(options *flags.Init) error {
 			s.RMDIR(template.tempDir)
 		}
 	}
+	if !features.WakeEnabled() {
+		// Local templates generated under the experiment also need a legacy
+		// entry point. Never replace a template author's existing Taskfile.
+		hasTaskfile := false
+		for _, name := range []string{"Taskfile.yml", "Taskfile.yaml", "Taskfile.dist.yml", "Taskfile.dist.yaml"} {
+			_, err := os.Stat(filepath.Join(options.ProjectDir, name))
+			if err == nil {
+				hasTaskfile = true
+				break
+			}
+			if !os.IsNotExist(err) {
+				return err
+			}
+		}
+		if !hasTaskfile {
+			legacy, err := fs.Sub(templates, "_legacy")
+			if err != nil {
+				return err
+			}
+			if err := gosod.New(legacy).Extract(options.ProjectDir, templateData); err != nil {
+				return err
+			}
+		}
+	}
 	if !options.SkipGoModTidy {
 		err = goModTidy(templateData.ProjectDir)
 		if err != nil {
@@ -565,6 +590,16 @@ func GenerateTemplate(options *BaseTemplate) error {
 	}
 	if err = os.CopyFS(outDir, commonFS); err != nil {
 		return err
+	}
+
+	if !features.WakeEnabled() {
+		legacy, err := fs.Sub(templates, "_legacy")
+		if err != nil {
+			return err
+		}
+		if err := os.CopyFS(outDir, legacy); err != nil {
+			return err
+		}
 	}
 
 	// Replace the placeholder frontend directory with the real frontend content.

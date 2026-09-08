@@ -5,6 +5,7 @@ import (
 	"runtime/debug"
 
 	"github.com/wailsapp/wails/v3/internal/browser"
+	"github.com/wailsapp/wails/v3/internal/features"
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/lo"
@@ -41,35 +42,48 @@ func main() {
 
 	build := app.NewSubCommand("build", "Build the project")
 	var buildFlags flags.Build
-	build.AddFlags(&buildFlags)
+	addBuildFlags(build, &buildFlags)
 	build.Action(func() error {
 		return commands.Build(&buildFlags, build.OtherArgs())
 	})
 
-	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
+	dev := app.NewSubCommand("dev", "Run in Dev mode")
+	var devOptions commands.DevOptions
+	addDevFlags(dev, &devOptions)
+	dev.Action(func() error { return commands.Dev(&devOptions) })
 	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
-	config := app.NewSubCommand("config", "Validate Wails configuration")
-	configCheck := config.NewSubCommand("check", "Validate wails.hcl and its profiles without building")
-	var configCheckOptions commands.ConfigCheckOptions
-	configCheck.AddFlags(&configCheckOptions)
-	configCheck.Action(func() error { return commands.ConfigCheck(&configCheckOptions, configCheck.OtherArgs()) })
+	if features.WakeEnabled() {
+		config := app.NewSubCommand("config", "Validate Wails configuration")
+		configCheck := config.NewSubCommand("check", "Validate wails.hcl and its profiles without building")
+		var configCheckOptions commands.ConfigCheckOptions
+		configCheck.AddFlags(&configCheckOptions)
+		configCheck.Action(func() error { return commands.ConfigCheck(&configCheckOptions, configCheck.OtherArgs()) })
 
-	eject := app.NewSubCommand("eject", "Write the complete resolved reference manifest to wails.ejected.hcl")
-	var ejectOptions commands.EjectOptions
-	eject.AddFlags(&ejectOptions)
-	eject.Action(func() error { return commands.Eject(&ejectOptions, eject.OtherArgs()) })
+		eject := app.NewSubCommand("eject", "Write the complete resolved reference manifest to wails.ejected.hcl")
+		var ejectOptions commands.EjectOptions
+		eject.AddFlags(&ejectOptions)
+		eject.Action(func() error { return commands.Eject(&ejectOptions, eject.OtherArgs()) })
 
-	migrate := app.NewSubCommand("migrate", "Create or activate a reviewed wails.hcl migration draft")
-	var migrateOptions commands.MigrateOptions
-	migrate.AddFlags(&migrateOptions)
-	migrate.Action(func() error { return commands.Migrate(&migrateOptions) })
+		migrate := app.NewSubCommand("migrate", "Create or activate a reviewed wails.hcl migration draft")
+		var migrateOptions commands.MigrateOptions
+		migrate.AddFlags(&migrateOptions)
+		migrate.Action(func() error { return commands.Migrate(&migrateOptions) })
 
-	clean := app.NewSubCommand("clean", "Remove disposable Wails-generated build state")
-	clean.Action(func() error { return commands.Clean(clean.OtherArgs()) })
+		clean := app.NewSubCommand("clean", "Remove disposable Wails-generated build state")
+		clean.Action(func() error { return commands.Clean(clean.OtherArgs()) })
+	}
 
-	pkg := app.NewSubCommand("package", "Deprecated: use build with a profile or --formats")
+	packageDescription := "Package the project"
+	if features.WakeEnabled() {
+		packageDescription = "Deprecated: use build with a profile or --formats"
+	}
+	pkg := app.NewSubCommand("package", packageDescription)
 	var pkgFlags flags.Package
-	pkg.AddFlags(&pkgFlags)
+	if features.WakeEnabled() {
+		pkg.AddFlags(&pkgFlags)
+	} else {
+		pkg.AddFlags(&pkgFlags.Common)
+	}
 	pkg.Action(func() error {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
@@ -154,9 +168,17 @@ func main() {
 	})
 
 	// Sign command (wrapper that calls platform-specific tasks)
-	sign := app.NewSubCommand("sign", "Deprecated: select signing in a profile and use build")
+	signDescription := "Sign the project"
+	if features.WakeEnabled() {
+		signDescription = "Deprecated: select signing in a profile and use build"
+	}
+	sign := app.NewSubCommand("sign", signDescription)
 	var signWrapperFlags flags.SignWrapper
-	sign.AddFlags(&signWrapperFlags)
+	if features.WakeEnabled() {
+		sign.AddFlags(&signWrapperFlags)
+	} else {
+		sign.AddFlags(&signWrapperFlags.Common)
+	}
 	sign.Action(func() error {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
@@ -188,11 +210,13 @@ func main() {
 	// Android tools
 	android := app.NewSubCommand("android", "Android tooling")
 	android.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the Android main", commands.AndroidOverlayGen)
-	android.NewSubCommandFunction("devices", "List connected Android devices and emulators", commands.AndroidDevices)
-	androidRun := android.NewSubCommand("run", "Build, install and launch a development APK")
-	var androidRunOptions commands.AndroidRunOptions
-	androidRun.AddFlags(&androidRunOptions)
-	androidRun.Action(func() error { return commands.AndroidRun(&androidRunOptions, androidRun.OtherArgs()) })
+	if features.WakeEnabled() {
+		android.NewSubCommandFunction("devices", "List connected Android devices and emulators", commands.AndroidDevices)
+		androidRun := android.NewSubCommand("run", "Build, install and launch a development APK")
+		var androidRunOptions commands.AndroidRunOptions
+		androidRun.AddFlags(&androidRunOptions)
+		androidRun.Action(func() error { return commands.AndroidRun(&androidRunOptions, androidRun.OtherArgs()) })
+	}
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)

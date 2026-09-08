@@ -184,6 +184,7 @@ func TestStripUnsafe_CleanString_Unchanged(t *testing.T) {
 // --- GenerateTemplate ---
 
 func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	dir := t.TempDir()
 	opts := &BaseTemplate{
 		Name:    "MyTemplate",

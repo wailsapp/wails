@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/browser"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
@@ -456,6 +457,11 @@ func (w *Wizard) handleCheckMobileDependencies(rw http.ResponseWriter, r *http.R
 }
 
 func (w *Wizard) handleWailsConfig(rw http.ResponseWriter, r *http.Request) {
+	if !features.WakeEnabled() {
+		w.handleLegacyWailsConfig(rw, r)
+		return
+	}
+
 	rw.Header().Set("Content-Type", "application/json")
 
 	// Find the active Manifest in the current project.

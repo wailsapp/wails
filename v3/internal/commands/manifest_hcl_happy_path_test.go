@@ -46,6 +46,7 @@ build {
 `
 
 func TestBuildPlanUsesHCLProfileAndDoesNotInvokeTaskfile(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
 	hcl := hclBuildFixture + `
@@ -82,6 +83,7 @@ profile "release" {
 }
 
 func TestBuildJSONPlanIsDeterministicAndDescribesArtifacts(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
@@ -159,6 +161,7 @@ profile "release" {
 }
 
 func TestBuildPlanAcceptsCommaSeparatedTargets(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
 	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(hclBuildFixture), 0o644))
@@ -171,6 +174,7 @@ func TestBuildPlanAcceptsCommaSeparatedTargets(t *testing.T) {
 }
 
 func TestBuildPlanPrintsRequestedFormats(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
@@ -183,6 +187,7 @@ func TestBuildPlanPrintsRequestedFormats(t *testing.T) {
 }
 
 func TestBuildPlanShowsResolvedAnonymousCompilerOverrides(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
 	prependFakePlanTools(t, "npm", "garble")
@@ -235,6 +240,7 @@ func prepareHCLPlanInputs(t *testing.T, root string) {
 }
 
 func TestBuildGarbleArgumentsPreserveQuotedTokensAndRejectMalformedInput(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
 	prependFakePlanTools(t, "npm", "garble")
@@ -250,6 +256,7 @@ func TestBuildGarbleArgumentsPreserveQuotedTokensAndRejectMalformedInput(t *test
 }
 
 func TestDevPlanUsesTheHCLBuildPipeline(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	prependFakePlanTools(t, "npm")
 	root := t.TempDir()
 	prepareHCLPlanInputs(t, root)
@@ -264,6 +271,7 @@ func TestDevPlanUsesTheHCLBuildPipeline(t *testing.T) {
 }
 
 func TestBuildRejectsJSONWithoutPlanBeforeLoadingProject(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	t.Chdir(t.TempDir())
 	err := Build(&flags.Build{JSON: true}, nil)
 	assert.ErrorContains(t, err, "--json requires --plan")

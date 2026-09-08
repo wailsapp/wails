@@ -12,6 +12,7 @@ import (
 )
 
 func TestSigningSetupUpdatesHCLWithoutTouchingTaskfiles(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
 	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
@@ -49,4 +50,26 @@ func TestSigningSetupUpdatesHCLWithoutTouchingTaskfiles(t *testing.T) {
 
 func TestSigningSetupAcceptsCommaSeparatedPlatforms(t *testing.T) {
 	assert.Equal(t, []string{"darwin", "windows", "linux"}, normaliseSigningPlatforms([]string{"darwin, windows", "linux"}))
+}
+
+func TestSigningSetupWithoutExperimentUsesTaskfiles(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "restore")
+	require.NoError(t, os.Unsetenv("WAILS_EXP_USE_WAKE"))
+	t.Chdir(t.TempDir())
+	require.NoError(t, os.MkdirAll("build/linux", 0755))
+	require.NoError(t, os.WriteFile("build/linux/Taskfile.yml", []byte("version: '3'\nvars:\n  PGP_KEY: old.asc\ntasks:\n  custom:\n    cmds: ['echo keep']\n"), 0644))
+	require.NoError(t, os.WriteFile("wails.hcl", []byte("do not read or modify"), 0644))
+	previous := runLinuxSigningSetup
+	t.Cleanup(func() { runLinuxSigningSetup = previous })
+	runLinuxSigningSetup = func(save signingSetupSave) error {
+		return save("linux", manifest.SigningPlatform{Certificate: "new.asc"}, map[string]string{"PGP_KEY": "new.asc"})
+	}
+	require.NoError(t, SigningSetup(&flags.SigningSetup{Platforms: []string{"linux"}}))
+	data, err := os.ReadFile("build/linux/Taskfile.yml")
+	require.NoError(t, err)
+	require.Contains(t, string(data), "new.asc")
+	require.Contains(t, string(data), "echo keep")
+	data, err = os.ReadFile("wails.hcl")
+	require.NoError(t, err)
+	require.Equal(t, "do not read or modify", string(data))
 }

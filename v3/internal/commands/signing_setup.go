@@ -13,6 +13,7 @@ import (
 	"github.com/ProtonMail/go-crypto/openpgp/packet"
 	"github.com/charmbracelet/huh"
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
@@ -29,7 +30,7 @@ var (
 // SigningSetup configures signing intent in wails.hcl projects and retains the
 // legacy Taskfile writer for projects that have not opted in to HCL.
 func SigningSetup(options *flags.SigningSetup) error {
-	manifestProject := manifest.Exists(".")
+	manifestProject := features.WakeEnabled() && manifest.Exists(".")
 	platforms := normaliseSigningPlatforms(options.Platforms)
 	if len(platforms) == 0 {
 		if manifestProject && (runtime.GOOS == "darwin" || runtime.GOOS == "windows" || runtime.GOOS == "linux") {

@@ -543,6 +543,8 @@ func TestManifestProfileRejectsDuplicateFlagAndPositionalValue(t *testing.T) {
 }
 
 func TestPackageCommand(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "restore")
+	require.NoError(t, os.Unsetenv("WAILS_EXP_USE_WAKE"))
 	currentOS := runtime.GOOS
 	currentArch := runtime.GOARCH
 
@@ -594,12 +596,14 @@ func TestPackageCommand(t *testing.T) {
 	})
 	err := Package(packageFlags, otherArgs)
 	assert.NoError(t, err)
-	assert.Contains(t, output.String(), "wails3 package is deprecated")
+	assert.NotContains(t, output.String(), "wails3 package is deprecated")
 	assert.Equal(t, "package", capturedOptions.Name)
 	assert.Equal(t, []string{"VERSION=2.0.0", "OUTPUT=myapp.dmg", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }
 
 func TestSignWrapperCommand(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "restore")
+	require.NoError(t, os.Unsetenv("WAILS_EXP_USE_WAKE"))
 	currentOS := runtime.GOOS
 	currentArch := runtime.GOARCH
 
@@ -651,7 +655,7 @@ func TestSignWrapperCommand(t *testing.T) {
 	})
 	err := SignWrapper(signFlags, otherArgs)
 	assert.NoError(t, err)
-	assert.Contains(t, output.String(), "wails3 sign is deprecated")
+	assert.NotContains(t, output.String(), "wails3 sign is deprecated")
 	assert.Equal(t, currentOS+":sign", capturedOptions.Name)
 	assert.Equal(t, []string{"IDENTITY=Developer ID", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }

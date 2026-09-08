@@ -121,6 +121,7 @@ export interface InitTemplate {
 }
 
 export interface InitData {
+  buildConfigFile: string;
   mode: string;
   projectName: string;
   templateName: string;
