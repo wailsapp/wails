@@ -218,7 +218,7 @@ func TestProjectPathValidationIsCrossPlatformAndChecksSymlinkedParents(t *testin
 	require.NoError(t, err)
 	assert.Equal(t, filepath.Join(root, "future", "output"), resolved)
 
-	for _, value := range []string{"/tmp/file", `C:\temp\file`, `\\server\share\file`, "../file", `..\file`, ".wails/file", `folder\.WAILS\file`} {
+	for _, value := range []string{"/tmp/file", `\temp\file`, `C:\temp\file`, `C:temp\file`, `\\server\share\file`, "../file", `..\file`, ".wails/file", `folder\.WAILS\file`} {
 		err := validateProjectPath(root, "source.field", value, false)
 		require.Error(t, err, value)
 		assert.Contains(t, err.Error(), "source.field")

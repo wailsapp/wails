@@ -18,7 +18,7 @@ import (
 func TestInitBuiltInTemplatesCreateOnlyWailsHCL(t *testing.T) {
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 
 	templateNames := make([]string, 0, len(templates.GetDefaultTemplates()))
@@ -30,6 +30,7 @@ func TestInitBuiltInTemplatesCreateOnlyWailsHCL(t *testing.T) {
 
 	for _, templateName := range templateNames {
 		t.Run(templateName, func(t *testing.T) {
+			defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
 			require.NoError(t, os.Chdir(originalDirectory))
 			options := &flags.Init{
 				TemplateName:      templateName,
@@ -69,7 +70,7 @@ func TestInitBuiltInTemplatesCreateOnlyWailsHCL(t *testing.T) {
 func TestInitWritesWizardProjectMetadataToAValidManifest(t *testing.T) {
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 
 	options := &flags.Init{
@@ -103,7 +104,7 @@ func TestInitWritesWizardProjectMetadataToAValidManifest(t *testing.T) {
 func TestInitManifestReflectsTemplateBindingChoices(t *testing.T) {
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 
 	tests := []struct {
@@ -120,6 +121,7 @@ func TestInitManifestReflectsTemplateBindingChoices(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
 			require.NoError(t, os.Chdir(originalDirectory))
 			options := &flags.Init{
 				TemplateName:      test.template,
@@ -145,7 +147,7 @@ func TestInitManifestReflectsTemplateBindingChoices(t *testing.T) {
 func TestInitUpdatesTemplateManifestWithWizardStateAndPreservesIntent(t *testing.T) {
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 
 	templateRoot := filepath.Join(t.TempDir(), "custom-ts")
@@ -229,7 +231,7 @@ build {
 func TestInitInsideAnotherManifestProjectCreatesItsOwnManifest(t *testing.T) {
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 
 	parent := t.TempDir()

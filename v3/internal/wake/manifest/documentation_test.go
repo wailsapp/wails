@@ -15,7 +15,7 @@ func TestPublishedHCLGuideExamplesMatchTheManifestSchema(t *testing.T) {
 	guide := repositoryDocumentationPath("experimental", "hcl-builds.mdx")
 	data, err := os.ReadFile(guide)
 	require.NoError(t, err)
-	examples := fencedExamples(string(data), "hcl")
+	examples := fencedExamples(strings.ReplaceAll(string(data), "\r\n", "\n"), "hcl")
 	require.NotEmpty(t, examples)
 	for index, example := range examples {
 		if runtime.GOOS == "windows" && strings.Contains(example, `hook "`) {
@@ -40,6 +40,7 @@ func TestPublishedHCLGuideExamplesMatchTheManifestSchema(t *testing.T) {
 func TestPublishedFieldReferenceIsCurrent(t *testing.T) {
 	data, err := os.ReadFile(repositoryDocumentationPath("reference", "wails-hcl-fields.md"))
 	require.NoError(t, err)
+	data = []byte(strings.ReplaceAll(string(data), "\r\n", "\n"))
 	marker := "| Field | Type | Required | Default | Example | Applies to | Description |\n"
 	index := strings.Index(string(data), marker)
 	require.NotEqual(t, -1, index)

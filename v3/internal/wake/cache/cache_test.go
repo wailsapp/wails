@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -671,7 +672,11 @@ func TestArtifactDigestIsIndependentOfRootNameAndIncludesTreeMetadata(t *testing
 	require.NoError(t, os.Chmod(second, 0o755))
 	secondDigest, err = artifactDigest(second)
 	require.NoError(t, err)
-	assert.NotEqual(t, firstDigest, secondDigest)
+	if runtime.GOOS == "windows" {
+		assert.Equal(t, firstDigest, secondDigest, "Windows exposes no executable mode bits")
+	} else {
+		assert.NotEqual(t, firstDigest, secondDigest)
+	}
 
 	firstDirectory := filepath.Join(root, "one")
 	secondDirectory := filepath.Join(root, "two")
@@ -939,6 +944,9 @@ func (f *cacheFaultFile) Sync() error  { return f.syncErr }
 func (f *cacheFaultFile) Close() error { return f.closeErr }
 
 func TestSnapshotFilesIncludesExecutableMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows file modes do not expose executable bits")
+	}
 	root := t.TempDir()
 	path := filepath.Join(root, "hook.sh")
 	require.NoError(t, os.WriteFile(path, []byte("#!/bin/sh\n"), 0o644))
@@ -1002,10 +1010,11 @@ func TestSnapshotFilesFaultsMissingAndExternalPaths(t *testing.T) {
 
 	operations = base
 	operations.rel = func(string, string) (string, error) { return "", want }
-	fromRelError, err := store.snapshotFilesWithOperations("files", []string{"/outside/source"}, operations)
+	outside := filepath.Join(t.TempDir(), "source")
+	fromRelError, err := store.snapshotFilesWithOperations("files", []string{outside}, operations)
 	require.NoError(t, err)
 	operations = base
-	fromEscape, err := store.snapshotFilesWithOperations("files", []string{"/outside/source"}, operations)
+	fromEscape, err := store.snapshotFilesWithOperations("files", []string{outside}, operations)
 	require.NoError(t, err)
 	assert.Equal(t, fromEscape, fromRelError, "relative-path failures and explicit escapes use the same stable external identity")
 }

@@ -10,9 +10,11 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -285,7 +287,7 @@ func TestMigrateGoldenFixtures(t *testing.T) {
 			require.NoError(t, err)
 			expectedDraftPath := filepath.Join(fixture, "wails.migrated.golden.hcl")
 			if expectedDraft, readErr := os.ReadFile(expectedDraftPath); readErr == nil {
-				assert.Equal(t, strings.TrimSpace(string(expectedDraft)), strings.TrimSpace(string(actualDraft)))
+				assert.Equal(t, strings.TrimSpace(strings.ReplaceAll(string(expectedDraft), "\r\n", "\n")), strings.TrimSpace(string(actualDraft)))
 			} else {
 				require.ErrorIs(t, readErr, fs.ErrNotExist)
 			}
@@ -327,6 +329,12 @@ func TestMigrationUnsupportedDiagnosticsGolden(t *testing.T) {
 	}
 	write := func(root, name, contents string) {
 		t.Helper()
+		if runtime.GOOS == "windows" {
+			if name == "scripts/preflight" {
+				name += ".cmd"
+			}
+			contents = strings.ReplaceAll(contents, "./scripts/preflight", "./scripts/preflight.cmd")
+		}
 		path := filepath.Join(root, filepath.FromSlash(name))
 		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
 		require.NoError(t, os.WriteFile(path, []byte(contents), 0o755))
@@ -409,7 +417,7 @@ unknownProductionSetting: enabled
 	if err != nil {
 		t.Fatalf("read unsupported diagnostic golden: %v\nactual:\n%s", err, encoded)
 	}
-	assert.Equal(t, string(expected), string(encoded))
+	assert.Equal(t, strings.ReplaceAll(string(expected), "\r\n", "\n"), string(encoded))
 
 	wantCodes := map[string]bool{
 		"config-version": true, "cyclic-include": true,
@@ -431,8 +439,12 @@ unknownProductionSetting: enabled
 
 func TestMigrationTranslatesReachableLifecycleScriptToHook(t *testing.T) {
 	root := t.TempDir()
+	scriptName := "preflight"
+	if runtime.GOOS == "windows" {
+		scriptName += ".cmd"
+	}
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "scripts"), 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(root, "scripts", "preflight"), []byte("#!/bin/sh\n"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "scripts", scriptName), []byte("#!/bin/sh\n"), 0o755))
 	taskfile := `version: '3'
 tasks:
   build:
@@ -441,11 +453,11 @@ tasks:
   before-build:
     cmds: ['./scripts/preflight']
 `
-	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte(taskfile), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "Taskfile.yml"), []byte(strings.ReplaceAll(taskfile, "./scripts/preflight", "./scripts/"+scriptName)), 0o644))
 	report, doc, err := analyseMigration(root)
 	require.NoError(t, err)
-	assert.Equal(t, manifest.Hook{Script: "scripts/preflight"}, doc.Hooks[manifest.BeforeBuild])
-	assert.Contains(t, report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "translated-hook", File: "Taskfile.yml", Task: "before-build", Message: "translated custom before_build script to hook scripts/preflight"})
+	assert.Equal(t, manifest.Hook{Script: "scripts/" + scriptName}, doc.Hooks[manifest.BeforeBuild])
+	assert.Contains(t, report.Diagnostics, MigrationDiagnostic{Severity: "info", Code: "translated-hook", File: "Taskfile.yml", Task: "before-build", Message: "translated custom before_build script to hook scripts/" + scriptName})
 }
 
 type migrationInputSnapshot struct {
@@ -503,6 +515,9 @@ func copyMigrationFixture(source, destination string) error {
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return err
+		}
+		if utf8.Valid(data) && !bytes.ContainsRune(data, 0) {
+			data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 		}
 		return os.WriteFile(target, data, info.Mode().Perm())
 	})
@@ -896,6 +911,41 @@ func TestMigrationAcceptsStockGeneratedExampleDeterministically(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestMigrationHistoricalDefaultsAcceptCRLFButRejectEdits(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.CopyFS(root, os.DirFS(filepath.Join("..", "..", "examples", "badge"))))
+	require.NoError(t, filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() || entry.Name() != "Taskfile.yml" {
+			return nil
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		data = bytes.ReplaceAll(bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")), []byte("\n"), []byte("\r\n"))
+		return os.WriteFile(path, data, 0o644)
+	}))
+	report, _, err := analyseMigration(root)
+	require.NoError(t, err)
+	require.True(t, report.Complete, report.Diagnostics)
+	path := filepath.Join(root, "build", "Taskfile.yml")
+	digest, err := digestFile(path)
+	require.NoError(t, err)
+	assert.Equal(t, digest, report.Sources["build/Taskfile.yml"])
+	data, err := os.ReadFile(path)
+	require.NoError(t, err)
+	require.Contains(t, string(data), "go mod tidy")
+	data = bytes.ReplaceAll(data, []byte("go mod tidy"), []byte("go mod tidy && echo customised"))
+	require.NoError(t, os.WriteFile(path, data, 0o644))
+	report, _, err = analyseMigration(root)
+	require.NoError(t, err)
+	assert.False(t, report.Complete)
+	assert.Contains(t, migrationDiagnosticCodes(report), "modified-task")
+}
+
 func TestMigrationAnalysisIsConcurrentAndDeterministic(t *testing.T) {
 	root, err := filepath.Abs(filepath.Join("..", "..", "examples", "badge"))
 	require.NoError(t, err)
@@ -1026,6 +1076,10 @@ func TestMigrationCanonicalAndClassificationHelpersCoverEveryProjectShape(t *tes
 
 func TestMigrationIncludeAndLifecycleScriptBoundaries(t *testing.T) {
 	root := t.TempDir()
+	scriptName := "preflight"
+	if runtime.GOOS == "windows" {
+		scriptName += ".cmd"
+	}
 	rootTask := filepath.Join(root, "Taskfile.yml")
 	require.NoError(t, os.WriteFile(rootTask, []byte("version: '3'\n"), 0o644))
 	fileInclude := filepath.Join(root, "included.yml")
@@ -1049,16 +1103,16 @@ func TestMigrationIncludeAndLifecycleScriptBoundaries(t *testing.T) {
 
 	scripts := filepath.Join(root, "scripts")
 	require.NoError(t, os.MkdirAll(scripts, 0o755))
-	script := filepath.Join(scripts, "preflight")
+	script := filepath.Join(scripts, scriptName)
 	require.NoError(t, os.WriteFile(script, []byte("#!/bin/sh\n"), 0o755))
-	phase, relativeScript, ok := legacyLifecycleScript(root, root, "before-build", &wakeast.Task{Cmds: []*wakeast.Cmd{{Cmd: "./scripts/preflight"}}})
+	phase, relativeScript, ok := legacyLifecycleScript(root, root, "before-build", &wakeast.Task{Cmds: []*wakeast.Cmd{{Cmd: "./scripts/" + scriptName}}})
 	assert.True(t, ok)
 	assert.Equal(t, "before_build", phase)
-	assert.Equal(t, "scripts/preflight", relativeScript)
+	assert.Equal(t, "scripts/"+scriptName, relativeScript)
 	for name, task := range map[string]*wakeast.Task{
-		"unknown phase":  {Cmds: []*wakeast.Cmd{{Cmd: "./scripts/preflight"}}},
+		"unknown phase":  {Cmds: []*wakeast.Cmd{{Cmd: "./scripts/" + scriptName}}},
 		"before_build":   nil,
-		"after_build":    {Deps: []*wakeast.Dep{{Task: "other"}}, Cmds: []*wakeast.Cmd{{Cmd: "./scripts/preflight"}}},
+		"after_build":    {Deps: []*wakeast.Dep{{Task: "other"}}, Cmds: []*wakeast.Cmd{{Cmd: "./scripts/" + scriptName}}},
 		"before_package": {Cmds: []*wakeast.Cmd{{Cmd: "echo custom"}}},
 		"after_package":  {Cmds: []*wakeast.Cmd{{Task: "other"}}},
 		"before_sign":    {Cmds: []*wakeast.Cmd{{Cmd: "./scripts/missing"}}},
@@ -1098,7 +1152,9 @@ func TestActivateMigrationRenamesOnlyTheReviewedDraft(t *testing.T) {
 	assert.Equal(t, legacy, actualLegacy)
 	info, err := os.Stat(filepath.Join(root, "Taskfile.yml"))
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	if runtime.GOOS != "windows" {
+		assert.Equal(t, os.FileMode(0o600), info.Mode().Perm())
+	}
 	assert.NoFileExists(t, filepath.Join(root, ".wails", "migration-report.json"))
 }
 

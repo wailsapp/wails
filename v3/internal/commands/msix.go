@@ -1,9 +1,12 @@
 package commands
 
 import (
+	"bytes"
 	"embed"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/png"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"golang.org/x/image/draw"
 )
 
 //go:embed build_assets/windows/msix/*
@@ -53,6 +57,7 @@ type MSIXOptions struct {
 	ExecutablePath        string `json:"executablePath"`
 	OutputPath            string `json:"outputPath"`
 	AppxManifest          string `json:"appxManifest,omitempty"`
+	IconPath              string `json:"iconPath,omitempty"`
 	UseMsixPackagingTool  bool   `json:"useMsixPackagingTool"`
 	UseMakeAppx           bool   `json:"useMakeAppx"`
 }
@@ -102,6 +107,7 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 		ExecutablePath:        options.ExecutablePath,
 		OutputPath:            options.OutputPath,
 		AppxManifest:          options.AppxManifest,
+		IconPath:              options.IconPath,
 		UseMsixPackagingTool:  options.UseMsixPackagingTool,
 		UseMakeAppx:           options.UseMakeAppx,
 	}
@@ -384,7 +390,19 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 	// This would include DLLs, resources, etc.
 	// For now, we'll just copy the executable
 
-	// Generate placeholder assets
+	iconData, err := buildAssets.ReadFile("build_assets/appicon.png")
+	if options.IconPath != "" {
+		iconData, err = os.ReadFile(options.IconPath)
+	}
+	if err != nil {
+		return fmt.Errorf("read MSIX icon: %w", err)
+	}
+	icon, _, err := image.Decode(bytes.NewReader(iconData))
+	if err != nil {
+		return fmt.Errorf("decode MSIX icon: %w", err)
+	}
+
+	// Generate correctly sized assets from the application's icon.
 	assets := []string{
 		"Square150x150Logo.png",
 		"Square44x44Logo.png",
@@ -398,11 +416,35 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 		assets = append(assets, "FileIcon.png")
 	}
 
-	// Generate placeholder assets
+	dimensions := map[string]image.Point{
+		"Square150x150Logo.png": {150, 150}, "Square44x44Logo.png": {44, 44},
+		"Wide310x150Logo.png": {310, 150}, "SplashScreen.png": {620, 300},
+		"StoreLogo.png": {50, 50}, "FileIcon.png": {44, 44},
+	}
 	for _, asset := range assets {
 		assetPath := filepath.Join(assetsDir, asset)
-		if err := generatePlaceholderImage(assetPath); err != nil {
-			return fmt.Errorf("error generating placeholder image %s: %w", asset, err)
+		size := dimensions[asset]
+		canvas := image.NewRGBA(image.Rect(0, 0, size.X, size.Y))
+		bounds := icon.Bounds()
+		width, height := size.X, size.X*bounds.Dy()/bounds.Dx()
+		if height > size.Y {
+			height = size.Y
+			width = size.Y * bounds.Dx() / bounds.Dy()
+		}
+		width, height = max(1, width), max(1, height)
+		x, y := (size.X-width)/2, (size.Y-height)/2
+		draw.CatmullRom.Scale(canvas, image.Rect(x, y, x+width, y+height), icon, bounds, draw.Over, nil)
+		file, err := os.Create(assetPath)
+		if err != nil {
+			return err
+		}
+		encodeErr := png.Encode(file, canvas)
+		closeErr := file.Close()
+		if encodeErr != nil {
+			return fmt.Errorf("encode MSIX icon %s: %w", asset, encodeErr)
+		}
+		if closeErr != nil {
+			return closeErr
 		}
 	}
 
@@ -436,24 +478,6 @@ func generateAppxManifest(options *MSIXOptions, outputPath string) error {
 	}
 
 	return nil
-}
-
-// generatePlaceholderImage generates a placeholder image file
-func generatePlaceholderImage(outputPath string) error {
-	// For now, we'll create a simple 1x1 transparent PNG
-	// In a real implementation, we would generate proper icons based on the application icon
-
-	// Create a minimal valid PNG file (1x1 transparent pixel)
-	pngData := []byte{
-		0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
-		0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-		0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
-		0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
-		0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
-		0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
-	}
-
-	return os.WriteFile(outputPath, pngData, 0644)
 }
 
 // copyFile copies a file from src to dst

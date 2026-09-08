@@ -530,6 +530,10 @@ func nativeToolchainSupports(spec CompileSpec, host HostCapabilities) bool {
 		return hostBit(host.os) != 0
 	case "ios":
 		return host.os == "darwin"
+	case "windows":
+		// Wails' Windows runtime does not require CGo. Go can build both
+		// supported Windows architectures without an external cross compiler.
+		return host.os == "windows"
 	default:
 		return host.os == spec.TargetOS && (host.arch == spec.TargetArch || spec.TargetOS == "darwin")
 	}

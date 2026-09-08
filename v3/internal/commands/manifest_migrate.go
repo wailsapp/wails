@@ -508,6 +508,17 @@ func analyseMigration(root string) (MigrationReport, manifest.Document, error) {
 		role := taskfileRole(rel)
 		allowed := legacyTaskNames[role]
 		knownStock := knownStockTaskfiles[role][digest]
+		if !knownStock && len(knownStockTaskfiles[role]) > 0 {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return report, manifest.Document{}, err
+			}
+			// Git commonly checks out generated Taskfiles as CRLF on Windows.
+			// YAML normalises these line breaks; keep the source receipt's raw
+			// digest, but compare historical defaults using their shipped LF form.
+			sum := blake3.Sum256(bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n")))
+			knownStock = knownStockTaskfiles[role][hex.EncodeToString(sum[:])]
+		}
 		classification := migration.Taskfile{File: rel, Role: role}
 		var canonical canonicalDiff
 		if knownStock {

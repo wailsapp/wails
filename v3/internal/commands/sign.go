@@ -285,12 +285,10 @@ func signWindows(options *flags.Sign) error {
 
 	// Try native signtool first on Windows
 	if runtime.GOOS == "windows" {
-		err := signWindowsNative(options, password)
-		if err == nil {
-			return nil
-		}
-		if options.Verbose {
-			pterm.Warning.Printfln("Native signing failed, trying built-in: %v", err)
+		if _, err := findSigntool(); err == nil {
+			// A present signer rejected this request. Preserve its diagnostic;
+			// an unrelated fallback must not hide a bad password or certificate.
+			return signWindowsNative(options, password)
 		}
 	}
 
@@ -328,11 +326,13 @@ func signWindowsNative(options *flags.Sign, password string) error {
 	args = append(args, options.Input)
 
 	cmd := exec.Command(signtool, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("signtool failed: %w", err)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		detail := strings.TrimSpace(string(output))
+		if password != "" {
+			detail = strings.ReplaceAll(detail, password, "<redacted>")
+		}
+		return fmt.Errorf("signtool failed: %s: %w", detail, err)
 	}
 
 	pterm.Success.Printfln("Signed: %s", options.Input)

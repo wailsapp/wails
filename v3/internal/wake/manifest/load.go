@@ -711,7 +711,9 @@ func packageManifestField(name string) string {
 
 func manifestPathIsAbsolute(value string) bool {
 	normalized := strings.ReplaceAll(value, `\`, "/")
-	return filepath.IsAbs(normalized) || strings.HasPrefix(normalized, "//") || len(normalized) >= 3 && normalized[1] == ':' && normalized[2] == '/'
+	// A rooted path without a drive is not IsAbs on Windows, but it still
+	// escapes project-relative intent. Drive-relative paths are unsafe too.
+	return filepath.IsAbs(normalized) || strings.HasPrefix(normalized, "/") || len(normalized) >= 2 && normalized[1] == ':'
 }
 
 func pathEscapes(path string) bool {

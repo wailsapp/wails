@@ -30,6 +30,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/packagetemplate"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
+	"golang.org/x/mod/modfile"
 	"gopkg.in/yaml.v3"
 )
 
@@ -1178,19 +1179,48 @@ func compileGoArgs(s pipeline.CompileSpec) (string, []string) {
 }
 
 func (h *manifestHandler) windowsResourceOverlay(s pipeline.CompileSpec) (string, error) {
+	root, err := filepath.EvalSymlinks(h.root)
+	if err != nil {
+		return "", err
+	}
 	assets := filepath.Join(h.root, filepath.FromSlash(s.Assets), "windows")
-	generated := filepath.Join(h.root, ".wails", "generated", "windows", s.TargetArch)
+	generated := filepath.Join(root, ".wails", "generated", "windows", s.TargetArch)
 	syso := filepath.Join(generated, "wails_windows_"+s.TargetArch+".syso")
-	virtual := filepath.Join(h.root, "wails_windows_"+s.TargetArch+".syso")
+	moduleData, err := os.ReadFile(filepath.Join(h.root, "go.mod"))
+	if err != nil {
+		return "", err
+	}
+	modulePath := modfile.ModulePath(moduleData)
+	if modulePath == "" {
+		return "", fmt.Errorf("Windows resources require a module path in go.mod")
+	}
+	// Go's pack and CGo steps open .syso files directly, bypassing -overlay.
+	// Keep the object in a real generated package and overlay only its import.
+	virtual := filepath.Join(root, "wails_windows_resources.go")
+	if _, err := os.Lstat(virtual); err == nil {
+		return "", fmt.Errorf("Windows resource overlay would replace project file %s", virtual)
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return "", err
+	}
 	data, err := json.Marshal(struct {
 		Replace map[string]string `json:"Replace"`
-	}{map[string]string{virtual: syso}})
+	}{map[string]string{virtual: filepath.Join(generated, "overlay", "import.go")}})
 	if err != nil {
 		return "", err
 	}
 	overlay := filepath.Join(generated, "overlay.json")
 	err = prepareGeneratedWorkspace(generated, ".windows-resource-stage-*", func(staged string) error {
 		if err := GenerateSyso(&SysoOptions{Manifest: filepath.Join(assets, "wails.exe.manifest"), Info: filepath.Join(assets, "info.json"), Icon: filepath.Join(assets, "icon.ico"), Out: filepath.Join(staged, filepath.Base(syso)), Arch: s.TargetArch}); err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(staged, "resources.go"), []byte("package wailsresources\n"), 0o644); err != nil {
+			return err
+		}
+		importPath := modulePath + "/.wails/generated/windows/" + s.TargetArch
+		if err := os.MkdirAll(filepath.Join(staged, "overlay"), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(staged, "overlay", "import.go"), []byte(fmt.Sprintf("package main\nimport _ %q\n", importPath)), 0o644); err != nil {
 			return err
 		}
 		return os.WriteFile(filepath.Join(staged, "overlay.json"), data, 0o644)
@@ -1351,7 +1381,13 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 	if err != nil {
 		return pipeline.RunResult{}, err
 	}
-	if err := UpdateBuildAssets(&UpdateBuildAssetsOptions{Dir: tmp, Name: s.Project.Name, BinaryName: s.Project.BinaryName, Config: configPath, Silent: true}); err != nil {
+	if err := UpdateBuildAssets(&UpdateBuildAssetsOptions{
+		Dir: tmp, Name: s.Project.Name, BinaryName: s.Project.BinaryName, Config: configPath, Silent: true,
+		ProductName: s.Project.ProductName, ProductDescription: s.Project.Description,
+		ProductVersion: s.Project.Version, ProductCompany: s.Project.CompanyName,
+		ProductIdentifier: s.Project.Identifier, ProductCopyright: s.Project.Copyright,
+		ProductComments: s.Project.Comments,
+	}); err != nil {
 		return pipeline.RunResult{}, err
 	}
 	staged, err := os.MkdirTemp(parent, ".assets-stage-*")
@@ -2332,13 +2368,18 @@ func (h *manifestHandler) prepareNSISWorkspace(s pipeline.PackageSpec) (dir, pac
 	dir = filepath.Join(packageRoot, "assets", "windows", "nsis")
 	err = prepareGeneratedWorkspace(packageRoot, ".nsis-stage-*", func(staged string) error {
 		stagedDir := filepath.Join(staged, "assets", "windows", "nsis")
-		if err := copyManifestPath(filepath.Join(h.root, s.Assets, "windows", "nsis"), stagedDir); err != nil {
+		// Stock and replacement NSIS scripts reference sibling Windows assets
+		// such as ../icon.ico, so preserve that directory layout in staging.
+		if err := copyManifestPath(filepath.Join(h.root, s.Assets, "windows"), filepath.Join(staged, "assets", "windows")); err != nil {
 			return err
 		}
 		if s.Config.Template != "" {
 			if err := h.copyPackageReplacement(s, filepath.Join(stagedDir, "project.nsi")); err != nil {
 				return err
 			}
+		}
+		if err := os.MkdirAll(filepath.Join(staged, "bin"), 0o755); err != nil {
+			return err
 		}
 		return GenerateWebView2Bootstrapper(&GenerateWebView2Options{Directory: stagedDir})
 	})
@@ -2401,7 +2442,7 @@ func (h *manifestHandler) packageMSIX(s pipeline.PackageSpec) (pipeline.RunResul
 	if err := os.MkdirAll(filepath.Dir(generatedOutput), 0o755); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	if err := ToolMSIX(&flags.ToolMSIX{ConfigPath: configPath, Publisher: publisher, Arch: arch, ExecutableName: s.Project.BinaryName + ".exe", ExecutablePath: filepath.Join(h.root, s.Binary), OutputPath: generatedOutput, AppxManifest: appxManifest, UseMakeAppx: true}); err != nil {
+	if err := ToolMSIX(&flags.ToolMSIX{ConfigPath: configPath, Publisher: publisher, Arch: arch, ExecutableName: s.Project.BinaryName + ".exe", ExecutablePath: filepath.Join(h.root, s.Binary), OutputPath: generatedOutput, AppxManifest: appxManifest, IconPath: filepath.Join(h.root, s.Assets, "appicon.png"), UseMakeAppx: true}); err != nil {
 		return pipeline.RunResult{}, err
 	}
 	return pipeline.RunResult{}, copyPathTransactional(generatedOutput, filepath.Join(h.root, s.Output), ".msix-output-*")

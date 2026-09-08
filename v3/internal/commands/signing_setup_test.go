@@ -14,7 +14,7 @@ import (
 func TestSigningSetupUpdatesHCLWithoutTouchingTaskfiles(t *testing.T) {
 	originalDirectory, err := os.Getwd()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, os.Chdir(originalDirectory)) })
+	defer func() { require.NoError(t, os.Chdir(originalDirectory)) }()
 
 	root := t.TempDir()
 	require.NoError(t, manifest.WriteMinimal(root, manifest.Project{

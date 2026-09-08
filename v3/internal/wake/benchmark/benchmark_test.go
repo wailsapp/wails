@@ -73,7 +73,7 @@ func TestCheckBudgetRequiresEvidenceForRequestedChecks(t *testing.T) {
 func TestRunMeasuresCommandSamples(t *testing.T) {
 	command := []string{"sh", "-c", "printf 'build succeeded 2ms  1 ran • 3 cached\\n'"}
 	if runtime.GOOS == "windows" {
-		command = []string{"cmd.exe", "/c", "echo build succeeded 2ms  1 ran • 3 cached"}
+		command = []string{"cmd.exe", "/c", "chcp 65001 >nul & echo build succeeded 2ms  1 ran • 3 cached"}
 	}
 	result, err := Run(context.Background(), Config{Scenario: "test", Command: command, Warmups: 1, Samples: 3})
 	require.NoError(t, err)

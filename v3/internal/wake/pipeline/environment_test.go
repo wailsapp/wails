@@ -187,6 +187,16 @@ func TestHostResolutionChoosesTheFastestAvailableCompatibleToolchain(t *testing.
 	assert.ErrorContains(t, err, "requires zig, Docker, or Podman")
 }
 
+func TestWindowsHostBuildsBothArchitecturesWithNativeGo(t *testing.T) {
+	for _, hostArch := range []string{"amd64", "arm64"} {
+		for _, arch := range []string{"amd64", "arm64"} {
+			plan, err := PlanBuildForHost(testConfig(t), Request{Verb: "build", TargetOS: "windows", TargetArch: arch}, testHost("windows", hostArch))
+			require.NoError(t, err)
+			assert.Equal(t, "native", plan.Nodes[NodeKey("target:windows/"+arch+":compile")].Spec.(CompileSpec).Toolchain)
+		}
+	}
+}
+
 func TestHostResolutionUsesAContainerForLinuxCrossCompilation(t *testing.T) {
 	config := testConfig(t)
 	request := Request{Verb: "build", TargetOS: "linux", TargetArch: "arm64"}
@@ -488,4 +498,12 @@ func TestCurrentHostPlanningDiscoversConfiguredFrontendExecutable(t *testing.T) 
 	config.Frontend.Install = []string{"missing-manager", "install"}
 	_, err = planBuildForCurrentHostWithOperations(config, Request{}, nil, operations)
 	require.ErrorContains(t, err, "missing-manager")
+}
+
+func TestSignedWindowsPublicationsRetainFileExtensions(t *testing.T) {
+	for _, path := range []string{"bin/app.exe", "bin/app.msix"} {
+		got := signedPublicationPath(path, "windows")
+		assert.Equal(t, filepath.Ext(path), filepath.Ext(got))
+		assert.NotEqual(t, path, got)
+	}
 }

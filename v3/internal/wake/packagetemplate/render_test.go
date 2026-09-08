@@ -41,7 +41,9 @@ func TestRenderDirectoryCopiesAllOwnedFiles(t *testing.T) {
 	assert.Equal(t, "applicationId '{{.Project.Identifier}}'\n", string(gradle))
 	info, err := os.Stat(filepath.Join(destination, "gradlew"))
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o770), info.Mode().Perm())
+	sourceInfo, err := os.Stat(filepath.Join(source, "gradlew"))
+	require.NoError(t, err)
+	assert.Equal(t, sourceInfo.Mode().Perm(), info.Mode().Perm())
 	_, err = os.Stat(filepath.Join(destination, "app", "build.gradle"))
 	assert.ErrorIs(t, err, os.ErrNotExist)
 }
@@ -85,7 +87,9 @@ func TestRenderCopiesUserFileByteForByteWithoutInterpolation(t *testing.T) {
 	assert.Equal(t, contents, actual)
 	info, err := os.Stat(destination)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o751), info.Mode().Perm())
+	sourceInfo, err := os.Stat(source)
+	require.NoError(t, err)
+	assert.Equal(t, sourceInfo.Mode().Perm(), info.Mode().Perm())
 }
 
 func TestRenderCopiesDirectoryNamesAndContentsExactly(t *testing.T) {

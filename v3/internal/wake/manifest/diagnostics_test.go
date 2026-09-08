@@ -70,7 +70,7 @@ func TestFormatValidationDiagnosticsMatchesGoldenOutput(t *testing.T) {
 	formatted = strings.ReplaceAll(formatted, path, "<manifest>") + "\n"
 	want, readErr := os.ReadFile(filepath.Join("testdata", "semantic-diagnostic.golden"))
 	require.NoError(t, readErr)
-	assert.Equal(t, string(want), formatted)
+	assert.Equal(t, strings.ReplaceAll(string(want), "\r\n", "\n"), formatted)
 }
 
 func BenchmarkFormatValidationDiagnostics(b *testing.B) {

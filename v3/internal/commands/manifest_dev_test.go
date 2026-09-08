@@ -455,13 +455,13 @@ func TestResolveNPMProcessFallsBackToUnresolvedLauncher(t *testing.T) {
 	assert.Equal(t, []string{"/tools/npm", "run", "dev"}, args)
 }
 
-func TestResolveNPMProcessUsesCommandInterpreterForWindowsLauncher(t *testing.T) {
+func TestResolveNPMProcessUsesNodeForWindowsLauncher(t *testing.T) {
 	lookup := func(name string) (string, error) {
 		switch name {
 		case "npm":
-			return `C:\tools\npm.cmd`, nil
-		case "cmd":
-			return `C:\Windows\System32\cmd.exe`, nil
+			return filepath.Join("Program Files", "nodejs", "npm.cmd"), nil
+		case "node":
+			return filepath.Join("Program Files", "nodejs", "node.exe"), nil
 		default:
 			return "", os.ErrNotExist
 		}
@@ -471,8 +471,8 @@ func TestResolveNPMProcessUsesCommandInterpreterForWindowsLauncher(t *testing.T)
 		return "", nil
 	})
 	require.NoError(t, err)
-	assert.Equal(t, `C:\Windows\System32\cmd.exe`, name)
-	assert.Equal(t, []string{"/d", "/s", "/c", `C:\tools\npm.cmd`, "run", "dev"}, args)
+	assert.Equal(t, filepath.Join("Program Files", "nodejs", "node.exe"), name)
+	assert.Equal(t, []string{filepath.Join("Program Files", "nodejs", "node_modules", "npm", "bin", "npm-cli.js"), "run", "dev"}, args)
 }
 
 func TestRestoreManifestFrontendReportsLaunchAndReadinessFailures(t *testing.T) {
@@ -658,7 +658,13 @@ func TestManifestProcessStopIsIdempotent(t *testing.T) {
 	process.stop(100 * time.Millisecond)
 	select {
 	case <-process.done:
-		assert.NoError(t, process.waitError())
+		if runtime.GOOS == "windows" {
+			// taskkill terminates console helpers with a nonzero exit status.
+			// Idempotence requires reaping, not Unix signal-exit semantics.
+			assert.Error(t, process.waitError())
+		} else {
+			assert.NoError(t, process.waitError())
+		}
 	default:
 		t.Fatal("process was not reaped")
 	}
@@ -794,4 +800,11 @@ func BenchmarkUncompiledDevWatchMatcher(b *testing.B) {
 			}
 		}
 	}
+}
+
+func TestManifestConfigurationRemainsWatchedWithNarrowSourcePatterns(t *testing.T) {
+	root := t.TempDir()
+	config := manifest.Config{Dev: manifest.Dev{Watch: []string{"*.go"}}}
+	assert.False(t, ignoreDevEvent(root, config, nil, filepath.Join(root, manifest.Filename)))
+	assert.True(t, ignoreDevEvent(root, config, nil, filepath.Join(root, "notes.txt")))
 }

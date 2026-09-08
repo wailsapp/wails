@@ -1603,6 +1603,7 @@ printf shared-library > "$output"
 
 func TestHCLWindowsCompileGeneratesTheResourceOverlay(t *testing.T) {
 	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example.com/resource-test\ngo 1.26\n"), 0o644))
 	t.Chdir(root)
 	hcl := hclBuildFixture + `
 profile "release" {

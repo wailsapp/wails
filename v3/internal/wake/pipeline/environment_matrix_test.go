@@ -93,7 +93,7 @@ func matrixCombinationSupported(target buildinfo.TargetCapability, format string
 }
 
 func matrixToolchainAvailable(target, host Target, toolchain string) bool {
-	native := target.OS == "android" || target.OS == "ios" && host.OS == "darwin" || target.OS == host.OS && (target.Arch == host.Arch || target.OS == "darwin")
+	native := target.OS == "android" || target.OS == "ios" && host.OS == "darwin" || target.OS == host.OS && (target.Arch == host.Arch || target.OS == "darwin" || target.OS == "windows")
 	switch toolchain {
 	case "native":
 		return native

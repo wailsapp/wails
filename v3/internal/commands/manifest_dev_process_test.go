@@ -73,7 +73,13 @@ func TestManifestProcessTreeHelper(t *testing.T) {
 		if err := os.WriteFile(os.Getenv("WAILS_PROCESS_TREE_READY"), []byte("ready"), 0o600); err != nil {
 			os.Exit(13)
 		}
-		select {}
+		for {
+			connection, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			_ = connection.Close()
+		}
 	}
 }
 

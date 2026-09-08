@@ -29,10 +29,13 @@ import (
 )
 
 type manifestProcess struct {
-	cmd  *exec.Cmd
-	done chan struct{}
-	mu   sync.Mutex
-	err  error
+	// Windows must stop the previous WebView2 owner before starting another
+	// backend with the same browser profile. Keep its image for startup rollback.
+	restartImage []byte
+	cmd          *exec.Cmd
+	done         chan struct{}
+	mu           sync.Mutex
+	err          error
 }
 
 type manifestRebuild struct {
@@ -365,11 +368,16 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 			}
 
 			var nextApp *manifestProcess
+			var stoppedApp *manifestProcess
 			if backendChanged {
 				binaryPath, pathErr := ops.binaryPath(root, result.run, goos, goarch)
 				if pathErr != nil {
 					err = pathErr
 				} else {
+					if len(app.restartImage) > 0 {
+						stoppedApp = app
+						stoppedApp.stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
+					}
 					nextApp, err = ops.startApp(root, binaryPath, frontendURL, port)
 				}
 				if err == nil {
@@ -392,6 +400,12 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 					}
 					if errors.Is(transitionErr, context.Canceled) && sessionCtx.Err() != nil {
 						return nil
+					}
+					if stoppedApp != nil {
+						app, err = restoreManifestWindowsApp(sessionCtx, root, stoppedApp, frontendURL, port)
+						if err != nil {
+							return fmt.Errorf("replacement failed (%v) and restoring the previous backend failed: %w", transitionErr, err)
+						}
 					}
 					fmt.Fprintf(os.Stderr, "restart failed; keeping the current app running: %v\n", transitionErr)
 					continue
@@ -540,8 +554,8 @@ func startManifestWatches(root string, config manifest.Config) (*manifestWatchSe
 		return nil, fmt.Errorf("load .gitignore: %w", err)
 	}
 	events := make(chan notify.EventInfo, 1024)
-	if err := registerManifestWatches(root, config, ignored, events); err != nil {
-		notify.Stop(events)
+	if err := registerManifestWatches(canonicalRoot, config, ignored, events); err != nil {
+		stopManifestWatchChannel(events)
 		return nil, fmt.Errorf("watch project: %w", err)
 	}
 	return &manifestWatchSet{events: events, ignored: ignored, matcher: newDevWatchMatcher(config.Dev.Watch), root: canonicalRoot}, nil
@@ -549,7 +563,7 @@ func startManifestWatches(root string, config manifest.Config) (*manifestWatchSe
 
 func (w *manifestWatchSet) stop() {
 	if w != nil && w.events != nil {
-		notify.Stop(w.events)
+		stopManifestWatchChannel(w.events)
 	}
 }
 
@@ -705,11 +719,14 @@ func resolvePackageManagerProcess(manager string, args []string, lookPath func(s
 		}
 		switch strings.ToLower(filepath.Ext(npm)) {
 		case ".cmd", ".bat":
-			commandInterpreter, err := lookPath("cmd")
+			// npm's Windows shim lives beside node_modules/npm. Launch its
+			// JavaScript entry point directly, avoiding cmd.exe's incompatible
+			// quoting rules for installations under Program Files.
+			node, err := lookPath("node")
 			if err != nil {
 				return "", nil, err
 			}
-			return commandInterpreter, append([]string{"/d", "/s", "/c", npm}, args...), nil
+			return node, append([]string{filepath.Join(filepath.Dir(npm), "node_modules", "npm", "bin", "npm-cli.js")}, args...), nil
 		}
 		script, err := evalSymlinks(npm)
 		if err != nil {
@@ -734,7 +751,37 @@ func manifestDevBinaryPath(root string, run manifestPipelineRun, goos, goarch st
 
 func startManifestApp(root, binaryPath, frontendURL string, port int) (*manifestProcess, error) {
 	env := []string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL}
-	return startManifestProcess(root, binaryPath, env)
+	var restartImage []byte
+	if runtime.GOOS == "windows" {
+		var err error
+		restartImage, err = os.ReadFile(binaryPath)
+		if err != nil {
+			return nil, err
+		}
+	}
+	process, err := startManifestProcess(root, binaryPath, env)
+	if err == nil {
+		process.restartImage = restartImage
+	}
+	return process, err
+}
+
+func restoreManifestWindowsApp(ctx context.Context, root string, previous *manifestProcess, frontendURL string, port int) (*manifestProcess, error) {
+	binaryPath := previous.cmd.Path
+	if err := producePathTransactional(binaryPath, ".backend-rollback-*", func(staged string) error {
+		return os.WriteFile(staged, previous.restartImage, 0o755)
+	}); err != nil {
+		return nil, err
+	}
+	process, err := startManifestApp(root, binaryPath, frontendURL, port)
+	if err != nil {
+		return nil, err
+	}
+	if err := waitForProcessStable(ctx, process, manifestBackendReadinessDelay); err != nil {
+		process.stop(time.Second)
+		return nil, err
+	}
+	return process, nil
 }
 func startManifestProcess(dir, name string, env []string, args ...string) (*manifestProcess, error) {
 	cmd := exec.CommandContext(context.Background(), name, args...)
@@ -851,6 +898,11 @@ func ignoreDevEventMatched(root string, config manifest.Config, ignored gitignor
 		return true
 	}
 	rel = filepath.ToSlash(rel)
+	// The manifest controls the session itself, even when migrated or custom
+	// source watch patterns contain only Go files.
+	if rel == manifest.Filename {
+		return false
+	}
 	if rel == "." || devPathExcluded(config, rel) {
 		return true
 	}
@@ -882,7 +934,7 @@ func registerManifestWatches(root string, config manifest.Config, ignored gitign
 		if rel != "." && ignored != nil && ignored.Match(strings.Split(rel, "/"), true) {
 			return filepath.SkipDir
 		}
-		return notify.Watch(current, events, notify.All)
+		return watchManifestDirectory(current, events)
 	})
 }
 

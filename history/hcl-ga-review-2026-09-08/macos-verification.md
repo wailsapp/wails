@@ -29,7 +29,7 @@ Signed builds used a non-synced local temporary directory. This host's synced Do
 | DMG validation | Ticket validation, Gatekeeper primary-signature assessment and strict image/enclosed-app signature checks passed |
 | Repeated signed/notarized DMG | Passed; unsigned packaging reused while signing and notarization reran |
 | Signed standalone app and mounted DMG launch | Passed frontend-to-Go request/response round trips on arm64 |
-| Intel build execution | Passed request/response round trip under Rosetta; not native Intel hardware acceptance |
+| Intel build execution (community-supported) | Passed request/response round trip under Rosetta; native Intel hardware execution remains untested and is non-blocking |
 | Existing migrated Vite app | Passed initial launch and frontend configuration restart with no manual host argument |
 | Fresh migrate / activate / build / dev | Passed with generated HCL unchanged |
 | Development isolation and cleanup | Production app file hashes unchanged; dev app under `.wails/dev/`; SIGINT exit 0; frontend/backend gone and listening port reusable |
@@ -55,4 +55,6 @@ CodeRabbit reviewed the implementation and tests with no findings. The installed
 
 ## Acceptance boundary
 
-All macOS checks available on this Apple Silicon machine are confirmed. Native Intel launch must still be performed on an Intel Mac if that is required by the release matrix. This record does not close Windows or iOS acceptance; in particular, the previously observed iOS icon assembly defect is outside these macOS corrections. No production release or upload was published.
+macOS HCL acceptance is complete for Apple Silicon. Per the project owner's decision on 8 September 2026, Intel macOS is community-supported: native Intel hardware confirmation is non-blocking. Intel and universal build targets remain available, with builds and Intel execution under Rosetta verified above; native Intel hardware execution is not claimed.
+
+This record does not close Windows or iOS acceptance; in particular, the previously observed iOS icon assembly defect is outside these macOS corrections. No production release or upload was published.

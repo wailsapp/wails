@@ -177,6 +177,8 @@ profile "release" {
 }
 `)
 	require.NoError(t, os.Chmod(path, 0o640))
+	originalInfo, err := os.Stat(path)
+	require.NoError(t, err)
 
 	require.NoError(t, UpdateSigningPlatform(root, "darwin", SigningPlatform{
 		Enabled:                true,
@@ -196,7 +198,7 @@ profile "release" {
 	assert.Contains(t, string(loaded.Raw), "# Keep this profile comment.")
 	info, err := os.Stat(path)
 	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0o640), info.Mode().Perm())
+	assert.Equal(t, originalInfo.Mode().Perm(), info.Mode().Perm())
 }
 
 func TestUpdateSigningPlatformSupportsWindowsAndLinux(t *testing.T) {

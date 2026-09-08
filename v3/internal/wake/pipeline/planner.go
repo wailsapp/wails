@@ -449,7 +449,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			if capability.Runnable == runnableApp {
 				destination = runnableOutput(config, request.TargetOS, request.TargetArch, capability, multiTarget)
 			}
-			published := publish(signed, destination+".signed")
+			published := publish(signed, signedPublicationPath(destination, request.TargetOS))
 			if afterSign != "" {
 				node := plan.Nodes[published]
 				node.Dependencies = appendUniqueKeys(node.Dependencies, afterSign)
@@ -557,7 +557,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			identity.Signed, identity.Notarized = true, config.Signing.Darwin.Notarize
 			signedKey := add(Node{Key: NodeKey(string(artifact) + ":sign"), Kind: SignArtifact, Label: "Sign " + filepath.Base(input), Scope: PackageScope, Dependencies: dependencies, Spec: SignSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: identity.Format, Input: input, Config: signingPlatformForPlan(config.Signing, request.TargetOS, assetsOut)}, Output: input + ".signed", Cache: CacheNever, Claims: ResourceClaims{CPU: 1, MemoryMB: 256, Exclusive: "sign"}, EstimateMS: 1000, Artifact: identity})
 			signed = append(signed, signedKey)
-			finalOutputs[signedKey] = finalOutputs[artifact] + ".signed"
+			finalOutputs[signedKey] = signedPublicationPath(finalOutputs[artifact], request.TargetOS)
 		}
 		packageRoots = signed
 		afterSign := hookNode(manifest.AfterSign, TargetScope, packageScopeOutput(nodeOutputs(plan, signed)), signed)
@@ -1160,4 +1160,14 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// Keep Windows extensions intact so Explorer and package installers recognise
+// published signed artifacts. Private staging paths retain their own identity.
+func signedPublicationPath(path, targetOS string) string {
+	if targetOS == "windows" {
+		extension := filepath.Ext(path)
+		return strings.TrimSuffix(path, extension) + ".signed" + extension
+	}
+	return path + ".signed"
 }

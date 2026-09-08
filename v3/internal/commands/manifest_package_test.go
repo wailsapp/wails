@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -181,6 +182,7 @@ func TestPackageWorkspacesDoNotMutateGeneratedPlatformAssets(t *testing.T) {
 	assets := filepath.Join(root, ".wails", "assets")
 	require.NoError(t, os.MkdirAll(filepath.Join(assets, "windows", "nsis"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(assets, "appicon.png"), []byte("icon"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(assets, "windows", "icon.ico"), []byte("windows-icon"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(assets, "windows", "nsis", "project.nsi"), []byte("generated-default"), 0o644))
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "templates"), 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(root, "templates", "project.nsi.tmpl"), []byte("custom amd64"), 0o644))
@@ -194,6 +196,7 @@ func TestPackageWorkspacesDoNotMutateGeneratedPlatformAssets(t *testing.T) {
 	rendered, err := os.ReadFile(filepath.Join(dir, "project.nsi"))
 	require.NoError(t, err)
 	assert.Equal(t, "custom amd64", string(rendered))
+	assert.Equal(t, "windows-icon", readTestFile(t, filepath.Join(dir, "..", "icon.ico")))
 
 	appImage := packageTestSpec("linux", "amd64", "appimage")
 	appImage.Assets = ".wails/assets"
@@ -330,6 +333,9 @@ func TestAndroidPackageFailurePreservesLastCompleteWorkspaceAndArtifact(t *testi
 }
 
 func TestAndroidAPKUsesTheDebugGradleVariant(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("fixture invokes Unix shell tools; native Windows paths are tested separately")
+	}
 	root := t.TempDir()
 	spec := packageTestSpec("android", "arm64", "apk")
 	spec.Assets = ".wails/assets"

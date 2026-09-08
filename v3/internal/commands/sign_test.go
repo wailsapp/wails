@@ -3,6 +3,7 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -67,6 +68,9 @@ func TestResolveSigningDefaults(t *testing.T) {
 }
 
 func TestSignMacOSDiskImageSignsNotarizesAndStaples(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("fixture invokes Unix shell tools; native Windows paths are tested separately")
+	}
 	root := t.TempDir()
 	input := filepath.Join(root, "App.dmg")
 	if err := os.WriteFile(input, []byte("disk image"), 0o644); err != nil {

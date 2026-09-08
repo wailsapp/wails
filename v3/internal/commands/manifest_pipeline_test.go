@@ -373,6 +373,9 @@ func TestManifestDMGSigningPreparesContainedAppBeforeSigningImage(t *testing.T) 
 }
 
 func TestManifestCompileUsesResolvedZigToolchain(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("fixture invokes Unix shell tools; native Windows paths are tested separately")
+	}
 	root := t.TempDir()
 	tools := t.TempDir()
 	record := filepath.Join(root, "zig-compile.txt")
@@ -411,6 +414,9 @@ func TestManifestCompileFailurePreservesLastCompleteArtifact(t *testing.T) {
 }
 
 func TestManifestCompileUsesResolvedDockerToolchainAndReadOnlyLocalMounts(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("fixture invokes Unix shell tools; native Windows paths are tested separately")
+	}
 	root := t.TempDir()
 	localRoot := t.TempDir()
 	tools := t.TempDir()
@@ -451,6 +457,9 @@ func TestManifestCompileUsesResolvedDockerToolchainAndReadOnlyLocalMounts(t *tes
 }
 
 func TestManifestDockerLinuxCrossCompileUsesNativeContainerCompiler(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("fixture invokes Unix shell tools; native Windows paths are tested separately")
+	}
 	root := t.TempDir()
 	tools := t.TempDir()
 	record := filepath.Join(root, "docker-linux.txt")
@@ -469,6 +478,9 @@ func TestManifestDockerLinuxCrossCompileUsesNativeContainerCompiler(t *testing.T
 }
 
 func TestManifestPodmanCrossCompileUsesSELinuxSafeMounts(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("fixture invokes Unix shell tools; native Windows paths are tested separately")
+	}
 	root := t.TempDir()
 	localRoot := t.TempDir()
 	tools := t.TempDir()
@@ -648,6 +660,9 @@ func TestManifestHandlerIdentityIncludesRelevantEnvironment(t *testing.T) {
 }
 
 func TestManifestDockerIdentityIncludesTheExactCrossImage(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("fixture invokes Unix shell tools; native Windows paths are tested separately")
+	}
 	tools := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(tools, "docker"), []byte("#!/bin/sh\nexit 0\n"), 0o755))
 	t.Setenv("PATH", tools)
