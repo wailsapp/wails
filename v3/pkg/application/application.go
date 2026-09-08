@@ -208,11 +208,7 @@ func New(appOptions Options) *App {
 		manager, err := newSingleInstanceManager(result, appOptions.SingleInstance)
 		if err != nil {
 			if errors.Is(err, alreadyRunningError) && manager != nil {
-				err = manager.notifyFirstInstance()
-				if err != nil {
-					globalApplication.error("failed to notify first instance: %w", err)
-				}
-				os.Exit(appOptions.SingleInstance.ExitCode)
+				manager.exitSecondInstance()
 			}
 			result.fatal("failed to initialize single instance manager: %w", err)
 		} else {

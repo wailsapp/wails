@@ -92,10 +92,5 @@ func (l *linuxLock) notify(data string) error {
 		return err
 	}
 
-	err = conn.Object(l.dbusName, dbus.ObjectPath(l.dbusPath)).Call(l.dbusName+".SendMessage", 0, data).Store()
-	if err != nil {
-		return err
-	}
-	os.Exit(l.manager.options.ExitCode)
-	return nil
+	return conn.Object(l.dbusName, dbus.ObjectPath(l.dbusPath)).Call(l.dbusName+".SendMessage", 0, data).Store()
 }

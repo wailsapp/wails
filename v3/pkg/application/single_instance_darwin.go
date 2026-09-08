@@ -78,8 +78,6 @@ func (l *darwinLock) notify(data string) error {
 	defer C.free(unsafe.Pointer(cData))
 
 	C.SendDataToFirstInstance(singleInstanceUniqueId, cData)
-
-	os.Exit(l.manager.options.ExitCode)
 	return nil
 }
 

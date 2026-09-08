@@ -40,6 +40,13 @@ type SingleInstanceOptions struct {
 	// ExitCode is the exit code to use when the second instance exits
 	ExitCode int
 
+	// OnSecondInstanceExit is called in the second instance after it has
+	// notified the first instance and just before it exits with ExitCode.
+	// The exit uses os.Exit, so deferred functions in the caller never run:
+	// anything opened before New() that needs flushing or releasing should
+	// be handled here.
+	OnSecondInstanceExit func()
+
 	// EncryptionKey is a 32-byte key used for encrypting instance communication
 	// If not provided (zero array), data will be sent unencrypted
 	EncryptionKey [32]byte
@@ -122,6 +129,18 @@ func (m *singleInstanceManager) cleanup() {
 		return
 	}
 	m.lock.release()
+}
+
+// exitSecondInstance notifies the first instance, runs the caller's
+// OnSecondInstanceExit hook and then terminates the process with ExitCode.
+func (m *singleInstanceManager) exitSecondInstance() {
+	if err := m.notifyFirstInstance(); err != nil {
+		m.app.error("failed to notify first instance: %w", err)
+	}
+	if m.options.OnSecondInstanceExit != nil {
+		m.options.OnSecondInstanceExit()
+	}
+	os.Exit(m.options.ExitCode)
 }
 
 // encrypt encrypts data using AES-256-GCM

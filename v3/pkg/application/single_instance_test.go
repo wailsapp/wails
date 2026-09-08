@@ -1,8 +1,13 @@
 package application
 
 import (
+	"errors"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -191,6 +196,9 @@ func TestSingleInstanceOptions_Defaults(t *testing.T) {
 	if opts.ExitCode != 0 {
 		t.Error("ExitCode should default to 0")
 	}
+	if opts.OnSecondInstanceExit != nil {
+		t.Error("OnSecondInstanceExit should default to nil")
+	}
 	var zeroKey [32]byte
 	if opts.EncryptionKey != zeroKey {
 		t.Error("EncryptionKey should default to zero array")
@@ -225,5 +233,49 @@ func TestAlreadyRunningError(t *testing.T) {
 	}
 	if alreadyRunningError.Error() != "application is already running" {
 		t.Errorf("alreadyRunningError.Error() = %q", alreadyRunningError.Error())
+	}
+}
+
+// recordingLock stands in for the platform lock and remembers what was sent
+// to the first instance.
+type recordingLock struct{ sent string }
+
+func (l *recordingLock) acquire(string) error     { return nil }
+func (l *recordingLock) release()                 {}
+func (l *recordingLock) notify(data string) error { l.sent = data; return nil }
+
+// TestExitSecondInstance re-runs itself in a child process, because the code
+// under test ends in os.Exit. The child must call OnSecondInstanceExit after
+// the first instance has been notified, and then exit with ExitCode.
+func TestExitSecondInstance(t *testing.T) {
+	if os.Getenv("WAILS_TEST_EXIT_SECOND_INSTANCE") == "1" {
+		lock := &recordingLock{}
+		m := &singleInstanceManager{
+			lock: lock,
+			options: &SingleInstanceOptions{
+				ExitCode: 3,
+				OnSecondInstanceExit: func() {
+					fmt.Printf("hook ran, notified=%t\n", lock.sent != "")
+				},
+			},
+		}
+		m.exitSecondInstance()
+		fmt.Println("exitSecondInstance returned")
+		return
+	}
+	if runtime.GOOS == "darwin" {
+		t.Skip("notifyFirstInstance runs an AppKit event loop to capture the launch URL")
+	}
+
+	cmd := exec.Command(os.Args[0], "-test.run=^TestExitSecondInstance$")
+	cmd.Env = append(os.Environ(), "WAILS_TEST_EXIT_SECOND_INSTANCE=1")
+	out, err := cmd.Output()
+
+	var exitErr *exec.ExitError
+	if !errors.As(err, &exitErr) || exitErr.ExitCode() != 3 {
+		t.Fatalf("child exited with %v, want exit status 3; output:\n%s", err, out)
+	}
+	if got := string(out); !strings.Contains(got, "hook ran, notified=true") || strings.Contains(got, "returned") {
+		t.Fatalf("unexpected child output:\n%s", got)
 	}
 }
