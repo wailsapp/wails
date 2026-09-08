@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.17 - 2026-09-06
+
+## Fixed
+- Windows: a failed or nil `GetRequest` in the WebResourceRequested handler no longer kills the process (`log.Fatal` / nil-dereference panic) — the request is dropped and logged instead in [PR](https://github.com/wailsapp/wails/pull/6006) by @midagedev
+
 ## v3.0.0-beta.16 - 2026-08-29
 
 ## Changed
