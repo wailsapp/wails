@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Apply the repository's version and issue-type labels to GitHub issues and
-# pull requests. The default mode processes every issue (excluding PRs).
+# Apply the repository's version and issue-type labels to unclassified GitHub
+# issues and pull requests. The default mode processes unversioned issues.
 #
 # This intentionally uses the GitHub CLI rather than a third-party action so
 # that the bulk backfill and the event-driven workflow use the same classifier.
@@ -18,9 +18,10 @@ usage() {
     cat <<'EOF'
 Usage: label-github-items.sh [options]
 
-Label all issues in wailsapp/wails by default, or one issue/PR when --number
-is provided. Existing labels are preserved. Pull requests are included when
---number points to one, which lets the GitHub workflow use this same script.
+Label issues without a v2/v3 label in wailsapp/wails by default, or one
+issue/PR when --number is provided. Existing labels are preserved. Pull
+requests are included when --number points to one, which lets the GitHub
+workflow use this same script.
 
 Options:
   --repo REPOSITORY       GitHub repository (default: wailsapp/wails)
@@ -247,6 +248,15 @@ apply_labels() {
     local number title
     number=$(jq -r '.number' <<<"$item")
     title=$(jq -r '.title // ""' <<<"$item")
+
+    # Version is the gate for classification. This keeps a backfill from
+    # revisiting items that have already been triaged, even if their type or
+    # security labels are incomplete.
+    if item_has_any_label "$item" "v2" "v3"; then
+        SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+        return
+    fi
+
     classify_item "$item"
 
     local -a labels_to_add=()
@@ -264,7 +274,7 @@ apply_labels() {
     fi
 
     if ((${#labels_to_add[@]} == 0)); then
-        VERBOSE_COUNT=$((VERBOSE_COUNT + 1))
+        SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
         return
     fi
 
@@ -290,7 +300,7 @@ apply_labels() {
 }
 
 CHANGED_COUNT=0
-VERBOSE_COUNT=0
+SKIPPED_COUNT=0
 
 if [[ -n "$NUMBER" ]]; then
     apply_labels "$(gh api "repos/$REPO/issues/$NUMBER")"
@@ -299,7 +309,7 @@ else
     while IFS= read -r item; do
         [[ -n "$item" ]] && apply_labels "$item"
     done < <(gh api --paginate "repos/$REPO/issues?state=all&per_page=100" \
-        --jq '.[] | select(.pull_request == null) | @json')
+        --jq '.[] | select(.pull_request == null) | select(any(.labels[]?; .name == "v2" or .name == "v3") | not) | @json')
 fi
 
-echo "Completed: $CHANGED_COUNT item(s) changed; $VERBOSE_COUNT already classified."
+echo "Completed: $CHANGED_COUNT item(s) changed; $SKIPPED_COUNT item(s) skipped because they already have a version label."

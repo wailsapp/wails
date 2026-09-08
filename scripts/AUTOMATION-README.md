@@ -42,7 +42,7 @@ This directory contains automation workflows and scripts to help manage the Wail
 - Run during your dedicated issue triage time
 
 ### 2. Label Backfill (`scripts/label-github-items.sh`)
-- Processes every issue, or one issue/PR with `--number`
+- Processes issues without a `v2`/`v3` label, or one issue/PR with `--number`
 - Adds a `v2` or `v3` label, a `Bug` or `Enhancement` label, and `Security`
   for security-related bugs
 - Use `--dry-run` to preview changes and `--interactive` for ambiguous items
