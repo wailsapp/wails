@@ -5,6 +5,17 @@ on:
     types: [opened, edited, reopened]
   pull_request_target:
     types: [opened, edited, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      number:
+        description: "Optional issue or pull request number; blank scans all unversioned issues"
+        required: false
+        type: string
+      dry_run:
+        description: "Preview API work without changing labels"
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -20,8 +31,17 @@ jobs:
       - name: Apply shared issue classifier
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ITEM_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
-        run: ./scripts/label-github-items.sh --number "$ITEM_NUMBER" --default-version v3
+          ITEM_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number || inputs.number }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          args=(--default-version v3)
+          if [[ -n "$ITEM_NUMBER" ]]; then
+            args+=(--number "$ITEM_NUMBER")
+          fi
+          if [[ "$DRY_RUN" == "true" ]]; then
+            args+=(--dry-run)
+          fi
+          ./scripts/label-github-items.sh "${args[@]}"
 
   issue-labeler:
     name: Label issues

@@ -9,6 +9,8 @@ This directory contains automation workflows and scripts to help manage the Wail
 - The shared `scripts/label-github-items.sh` classifier applies version, type,
   and security labels
 - Activates when issues or PRs are opened, edited, reopened, or updated
+- Supports manual `workflow_dispatch` runs; these default to dry-run mode and
+  can target one issue/PR or scan all unversioned issues
 
 ### 2. Issue Triage Automation
 - Performs automated actions for issue triage
