@@ -33,6 +33,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Security
 <!-- Security-related changes -->
+- Restrict GITHUB_TOKEN permissions in build and publish workflows to follow the principle of least privilege
+- Fix path traversal and symlink escapes in the screen example asset middleware
+- Keep setup wizard dependency installation functional while restricting it to approved package-manager commands
 
 ---
 

@@ -5,9 +5,10 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-	"os"
+	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -44,16 +45,60 @@ func main() {
 
 					_, filename, _, _ := runtime.Caller(0)
 					dir := filepath.Dir(filename)
-					url := r.URL.Path
-					path := dir + "/assets" + url
-
-					if _, err := os.Stat(path); err == nil {
-						// Serve file from disk to make testing easy
-						http.ServeFile(w, r, path)
-					} else {
-						// Passthrough to the default asset handler if file not found on disk
+					assetsDir, err := filepath.Abs(filepath.Join(dir, "assets"))
+					if err != nil {
 						next.ServeHTTP(w, r)
+						return
 					}
+
+					// URL paths always use '/', while filesystem paths are OS-specific.
+					// Clean before joining so traversal segments cannot escape assets.
+					cleanPath := path.Clean("/" + r.URL.Path)
+					relativePath := filepath.FromSlash(strings.TrimPrefix(cleanPath, "/"))
+					if filepath.IsAbs(relativePath) || filepath.VolumeName(relativePath) != "" {
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					resolvedPath, err := filepath.Abs(filepath.Join(assetsDir, relativePath))
+					if err != nil {
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					rel, err := filepath.Rel(assetsDir, resolvedPath)
+					if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					// Stat follows symlinks, so resolve the existing target too. This
+					// prevents an asset symlink from exposing a file outside assets.
+					resolvedRealPath, err := filepath.EvalSymlinks(resolvedPath)
+					if err != nil {
+						next.ServeHTTP(w, r)
+						return
+					}
+					assetsRealPath, err := filepath.EvalSymlinks(assetsDir)
+					if err != nil {
+						next.ServeHTTP(w, r)
+						return
+					}
+					realRel, err := filepath.Rel(assetsRealPath, resolvedRealPath)
+					if err != nil || realRel == ".." || strings.HasPrefix(realRel, ".."+string(filepath.Separator)) {
+						next.ServeHTTP(w, r)
+						return
+					}
+
+					// Serve through a rooted file server rather than passing a
+					// request-derived filesystem path to http.ServeFile. The path
+					// above has already been resolved and checked against assets.
+					fileRequest := *r
+					fileURL := *r.URL
+					fileURL.Path = "/" + filepath.ToSlash(realRel)
+					fileURL.RawPath = ""
+					fileRequest.URL = &fileURL
+					http.FileServer(http.Dir(assetsRealPath)).ServeHTTP(w, &fileRequest)
 				})
 			},
 		},
