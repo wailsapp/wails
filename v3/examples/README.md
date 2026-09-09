@@ -22,18 +22,14 @@ Some examples use Wails features that require private macOS APIs. To see those e
 
 For examples that run directly with Go:
 
-```bash
-cd v3/examples/spotlight
-go run -tags private_mac_apis .
-```
+    cd v3/examples/spotlight
+    go run -tags private_mac_apis .
 
 For frontend examples with a `run` task, use their build pipeline so bindings and frontend assets are ready:
 
-```bash
-cd v3/examples/badge
-wails3 build -tags private_mac_apis
-wails3 task run
-```
+    cd v3/examples/badge
+    wails3 build -tags private_mac_apis
+    wails3 task run
 
 For live reload in those examples, use `EXTRA_TAGS=private_mac_apis wails3 dev`. The `ios`, `mobile`, and `mac-window-tabs` examples have their own modules; their READMEs include `GOWORK=off` where needed. Follow each example's existing setup instructions first. The `dev` example remains a work in progress.
 
@@ -48,9 +44,7 @@ No example sets Liquid Glass `GroupID` or `GroupSpacing`. Those options also req
 
 To make a production binary directly with Go, use:
 
-```bash
-go build -tags production,private_mac_apis .
-```
+    go build -tags production,private_mac_apis .
 
 Production builds still disable inspector support by default. To keep an inspector shortcut working in a production example, use `go build -tags production,devtools,private_mac_apis .`. On macOS 13.3+, Safari inspection remains available without private APIs in development builds or builds with `devtools`.
 

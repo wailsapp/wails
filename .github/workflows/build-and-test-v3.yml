@@ -320,6 +320,8 @@ jobs:
           - production,devtools,private_mac_apis
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v5
         with:
           go-version-file: v3/go.mod

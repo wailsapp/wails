@@ -28,6 +28,7 @@ Omit `-tags private_mac_apis` to run with public macOS APIs only. The tag has no
 ## Running the example
 
 ```bash
+# Public macOS APIs only; private effects and inspector opening are disabled.
 go run .
 ```
 
