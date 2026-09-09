@@ -187,7 +187,7 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 	if _, err := io.Copy(buf, r.Body); err != nil {
 		var sizeErr *http.MaxBytesError
 		if errors.As(err, &sizeErr) {
-			http.Error(rw, "runtime request body exceeds 64 MiB", http.StatusRequestEntityTooLarge)
+			http.Error(rw, "runtime request body exceeds "+strconv.FormatInt(sizeErr.Limit/(1024*1024), 10)+" MiB", http.StatusRequestEntityTooLarge)
 			return
 		}
 		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
