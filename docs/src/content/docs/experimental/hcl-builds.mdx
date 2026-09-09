@@ -18,10 +18,32 @@ tool calls remain deferred. Existing projects keep using Taskfiles until you
 explicitly activate a reviewed migration.
 </Aside>
 
+## Enable HCL builds
+
+Set `WAILS_EXP_USE_WAKE` in every terminal that runs the experimental commands.
+For Bash or Zsh:
+
+```bash
+export WAILS_EXP_USE_WAKE=1
+```
+
+For PowerShell:
+
+```powershell
+$env:WAILS_EXP_USE_WAKE = '1'
+```
+
+The variable is a presence-based opt-in: even an empty value or `false` enables
+it. Unset it (`unset WAILS_EXP_USE_WAKE` in Bash/Zsh, or
+`Remove-Item Env:WAILS_EXP_USE_WAKE` in PowerShell) to return to Taskfile routing.
+Without the variable, HCL build/dev routing and HCL project generation are
+disabled, and `migrate`, `config` and `eject` commands are unavailable.
+
 ## Configure a project
 
-Add `wails.hcl` at the project root. Its presence selects the native build
-system and makes Wails ignore every Taskfile in that project.
+With the opt-in enabled, add `wails.hcl` at the project root. Its presence
+selects the native build system and makes Wails ignore every Taskfile in that
+project. Keep the opt-in set for all commands below.
 
 ```hcl
 version = 3

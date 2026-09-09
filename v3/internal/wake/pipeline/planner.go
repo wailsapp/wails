@@ -275,7 +275,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	}
 	bindingsOut := filepath.ToSlash(filepath.Join(config.Frontend.Directory, config.Frontend.Bindings.OutputDirectory))
 	bindingInputs := []InputSpec{
-		{Label: "go-binding-api", Root: ".", SemanticGo: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: []string{".go", ".c", ".cc", ".cpp", ".h", ".hh", ".hpp", ".s", ".syso"}, ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
+		{Label: "go-binding-api", Root: ".", SemanticGo: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: goSourceExtensions(), ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
 		{Label: "go-module", Files: goMetadataFiles(config.Root)},
 	}
 	for _, input := range localInputs {
@@ -313,7 +313,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		compileDeps = append(compileDeps, assets)
 	}
 	compileInputs := []InputSpec{
-		{Label: "go-sources", Root: ".", IncludeGoEmbed: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: []string{".go", ".c", ".cc", ".cpp", ".h", ".hh", ".hpp", ".s", ".syso"}, ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
+		{Label: "go-sources", Root: ".", IncludeGoEmbed: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: goSourceExtensions(), ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
 		{Label: "go-module", Files: goMetadataFiles(config.Root)},
 	}
 	compileInputs = append(compileInputs, localInputs...)
@@ -831,7 +831,7 @@ func goLocalSourceInputsWithAbs(root string, abs func(string) (string, error)) (
 	sort.Strings(paths)
 	inputs := make([]InputSpec, 0, len(paths))
 	for _, path := range paths {
-		inputs = append(inputs, InputSpec{Label: "go-local-source", Root: path, IncludeGoEmbed: true, IncludeNames: []string{"go.mod", "go.sum"}, IncludeExtensions: []string{".go", ".c", ".cc", ".cpp", ".h", ".hh", ".hpp", ".s", ".syso"}, ExcludeDirs: []string{".git", ".wails", "bin", "dist", "node_modules"}, ExcludeSuffixes: []string{"_test.go"}})
+		inputs = append(inputs, InputSpec{Label: "go-local-source", Root: path, IncludeGoEmbed: true, IncludeNames: []string{"go.mod", "go.sum"}, IncludeExtensions: goSourceExtensions(), ExcludeDirs: []string{".git", ".wails", "bin", "dist", "node_modules"}, ExcludeSuffixes: []string{"_test.go"}})
 	}
 	return inputs, nil
 }
@@ -1170,4 +1170,11 @@ func signedPublicationPath(path, targetOS string) string {
 		return strings.TrimSuffix(path, extension) + ".signed" + extension
 	}
 	return path + ".signed"
+}
+
+// goSourceExtensions includes the inputs recognized by go/build's fileListForExt,
+// plus Go sources. Snapshot matching folds extensions to lower case (including
+// .F and .S), so both project and local-module inputs share this list.
+func goSourceExtensions() []string {
+	return []string{".go", ".c", ".cc", ".cpp", ".cxx", ".m", ".h", ".hh", ".hpp", ".hxx", ".f", ".for", ".f90", ".s", ".sx", ".swig", ".swigcxx", ".syso"}
 }

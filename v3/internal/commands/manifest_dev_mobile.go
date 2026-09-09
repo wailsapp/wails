@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/dev"
+	"github.com/wailsapp/wails/v3/internal/wake/cache"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 )
@@ -116,7 +117,6 @@ func configureMobileDev(ctx context.Context, options *DevOptions, output *dev.Ou
 		}
 		return path, nil
 	}
-	ops.BackendChanged = func(manifestPipelineRun, string, string) bool { return true }
 	if options.Plan {
 		return func() {}, nil
 	}
@@ -190,6 +190,7 @@ func configureMobileDev(ctx context.Context, options *DevOptions, output *dev.Ou
 		}
 		return p, nil
 	}
+	trackMobileDevArtifact(ops)
 	return cleanup, nil
 }
 func selectIOSDevSimulator(ctx context.Context, device string) (string, error) {
@@ -380,4 +381,74 @@ func prepareAndroidDevNetwork(root string) error {
 		}
 	}
 	return nil
+}
+
+// Track the content identity that actually reached readiness, not the last
+// attempted build. A failed install/launch must remain eligible for retry.
+func trackMobileDevArtifact(ops *dev.Operations) {
+	var active, pending string
+	build := ops.Build
+	ops.Build = func(ctx context.Context, loaded *manifest.Loaded, goos, arch, url string, port int) (manifestPipelineRun, error) {
+		run, err := build(ctx, loaded, goos, arch, url, port)
+		if err != nil {
+			return run, err
+		}
+		// iOS assembly and signing deliberately bypass the artifact cache. Snapshot
+		// their final output too, so unchanged bundles need not be installed again.
+		for _, key := range run.Plan.Artifacts {
+			node := run.Plan.Nodes[key]
+			if node.Artifact.Format != "app" && node.Artifact.Format != "apk" {
+				continue
+			}
+			result := run.Results[key]
+			if result.Artifact == "" {
+				store, err := cache.OpenCacheReadOnly(loaded.Config.Root)
+				if err != nil {
+					return run, err
+				}
+				if _, err := os.Stat(filepath.Join(loaded.Config.Root, filepath.FromSlash(node.Output))); err != nil {
+					return run, err
+				}
+				result.Artifact, err = store.SnapshotFiles("mobile-dev-artifact", node.Output)
+				if err != nil {
+					return run, err
+				}
+				if run.Results == nil {
+					run.Results = make(map[pipeline.NodeKey]pipeline.Result)
+				}
+				run.Results[key] = result
+			}
+			break
+		}
+		return run, nil
+	}
+	binaryPath, waitReady := ops.BinaryPath, ops.WaitReady
+	ops.BinaryPath = func(root string, run manifestPipelineRun, goos, arch string) (string, error) {
+		path, err := binaryPath(root, run, goos, arch)
+		if err == nil {
+			pending = mobileDevArtifactDigest(run)
+		}
+		return path, err
+	}
+	ops.WaitReady = func(ctx context.Context, process dev.Process, timeout time.Duration) error {
+		if err := waitReady(ctx, process, timeout); err != nil {
+			return err
+		}
+		active = pending
+		return nil
+	}
+	ops.BackendChanged = func(run manifestPipelineRun, _, _ string) bool {
+		digest := mobileDevArtifactDigest(run)
+		return digest == "" || active == "" || digest != active
+	}
+}
+
+func mobileDevArtifactDigest(run manifestPipelineRun) string {
+	for _, key := range run.Plan.Artifacts {
+		node := run.Plan.Nodes[key]
+		if node.Artifact.Format == "app" || node.Artifact.Format == "apk" {
+			return run.Results[key].Artifact
+		}
+	}
+	return ""
 }

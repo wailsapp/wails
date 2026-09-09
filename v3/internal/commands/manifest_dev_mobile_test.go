@@ -2,12 +2,16 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/dev"
+	"github.com/wailsapp/wails/v3/internal/wake/cache"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
 	"howett.net/plist"
@@ -81,4 +85,75 @@ func TestDevelopmentPackageWorkspacesDoNotOverlapProduction(t *testing.T) {
 	development := h.packageWorkspace(s)
 	require.NotEqual(t, production, development)
 	require.Contains(t, filepath.ToSlash(development), "/.wails/dev/android-arm64/")
+}
+
+func TestMobileDevTracksSuccessfullyLaunchedArtifact(t *testing.T) {
+	for _, format := range []string{"apk", "app"} {
+		t.Run(format, func(t *testing.T) {
+			root := t.TempDir()
+			output := "app." + format
+			file := filepath.Join(root, output)
+			if format == "app" {
+				require.NoError(t, os.MkdirAll(file, 0755))
+				file = filepath.Join(file, "Info.plist")
+			}
+			require.NoError(t, os.WriteFile(file, []byte("initial"), 0644))
+			plan := pipeline.Plan{Artifacts: []pipeline.NodeKey{"installable"}, Nodes: map[pipeline.NodeKey]pipeline.Node{
+				"installable": {Output: output, Artifact: pipeline.ArtifactIdentity{Format: format}},
+			}}
+			var readyErr error
+			ops := dev.Operations{
+				Build: func(context.Context, *manifest.Loaded, string, string, string, int) (manifestPipelineRun, error) {
+					// No reusable digest, as with real iOS assembly/signing.
+					return manifestPipelineRun{Plan: plan}, nil
+				},
+				BinaryPath: func(root string, run manifestPipelineRun, goos, arch string) (string, error) {
+					return mobileDevArtifact(root, run, goos, arch)
+				},
+				WaitReady: func(context.Context, dev.Process, time.Duration) error { return readyErr },
+			}
+			trackMobileDevArtifact(&ops)
+			loaded := &manifest.Loaded{Config: manifest.Config{Root: root}}
+			build := func() manifestPipelineRun {
+				run, err := ops.Build(context.Background(), loaded, "ios", "arm64", "", 0)
+				require.NoError(t, err)
+				return run
+			}
+			activate := func(run manifestPipelineRun) error {
+				_, err := ops.BinaryPath(root, run, "ios", "arm64")
+				require.NoError(t, err)
+				return ops.WaitReady(context.Background(), nil, time.Second)
+			}
+			first := build()
+			require.True(t, ops.BackendChanged(first, "ios", "arm64"))
+			require.NoError(t, activate(first))
+			// A manifest-only debounce edit must keep the installed process.
+			loaded.Config.Dev.DebounceMS++
+			require.False(t, ops.BackendChanged(build(), "ios", "arm64"))
+			// Packaging-only changes must restart even without a compile change.
+			require.NoError(t, os.WriteFile(file, []byte("packaging changed"), 0644))
+			changed := build()
+			require.True(t, ops.BackendChanged(changed, "ios", "arm64"))
+			readyErr = fmt.Errorf("launch failed")
+			require.Error(t, activate(changed))
+			require.True(t, ops.BackendChanged(build(), "ios", "arm64"), "failed replacement must remain retryable")
+			require.False(t, ops.BackendChanged(first, "ios", "arm64"), "rollback keeps the previous identity")
+			readyErr = nil
+			require.NoError(t, activate(changed))
+			require.False(t, ops.BackendChanged(build(), "ios", "arm64"))
+			// Restoring an older cache artifact must replace the currently installed one.
+			require.True(t, ops.BackendChanged(first, "ios", "arm64"))
+			// Cached APK identities also participate, independent of lookup status.
+			cached := manifestPipelineRun{Plan: plan, Results: map[pipeline.NodeKey]pipeline.Result{
+				"installable": {Artifact: "cached-apk", Status: cache.LookupRestored},
+			}}
+			require.True(t, ops.BackendChanged(cached, "android", "arm64"))
+			require.NoError(t, activate(cached))
+			require.False(t, ops.BackendChanged(cached, "android", "arm64"))
+			require.True(t, ops.BackendChanged(manifestPipelineRun{}, "ios", "arm64"))
+			require.NoError(t, os.RemoveAll(filepath.Join(root, output)))
+			_, err := ops.Build(context.Background(), loaded, "ios", "arm64", "", 0)
+			require.Error(t, err, "missing installable output must not be accepted as an unchanged app")
+		})
+	}
 }

@@ -1,7 +1,7 @@
 # Include CGo sources in compilation cache inputs
 
 Type: task
-Status: open
+Status: resolved
 Blocked by: none
 Label: ready-for-agent
 Priority: P1
@@ -18,3 +18,7 @@ Cover every compiler input type in root and local-module snapshots; prove native
 ## Comments
 
 2026-09-10: Audited at `6c556f0b9`. See the [Ripwire audit](../../../ripwire-audit-2026-09-10/report.md) for evidence and limits.
+
+## Answer
+
+2026-09-10: Both project and local-module snapshots now share the complete Go/native source extension list. Regression coverage checks 19 native extensions in both locations. A Linux CGo integration fixture proves a warm executable changes from 1 to 2 after only helper.cxx changes, with cache hits before and after. The original audit reproduction also passes.

@@ -29,7 +29,12 @@ Go race tests and vet passed for `./internal/wake/... ./internal/commands ./cmd/
 
 ## Manual native checks
 
-Check out `codex/hcl-ga-fixes` and record `git rev-parse HEAD`, OS/architecture and native tool versions with each result. Run from `v3/` unless a command explicitly changes into the disposable application. Use a migrated disposable app with its Go module pointing to this checkout; do not test against a previously installed Wails release.
+Check out `codex/hcl-build-system` and record `git rev-parse HEAD`, OS/architecture and native tool versions with each result. Run from `v3/` unless a command explicitly changes into the disposable application. Use a migrated disposable app with its Go module pointing to this checkout; do not test against a previously installed Wails release.
+
+Before these commands, enable HCL routing in the current shell:
+`export WAILS_EXP_USE_WAKE=1` on Bash/Zsh or
+`$env:WAILS_EXP_USE_WAKE = '1'` in PowerShell. Keep it set for the native runner
+and every `wails3` command; an unset variable selects the legacy CLI.
 
 ### Windows
 

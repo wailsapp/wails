@@ -1,7 +1,7 @@
 # Preserve unchanged mobile development applications
 
 Type: task
-Status: open
+Status: resolved
 Blocked by: none
 Label: ready-for-agent
 Priority: P2
@@ -18,3 +18,7 @@ Compare installable artifact identity and retain live app state for cached/non-a
 ## Comments
 
 2026-09-10: Audited at `6c556f0b9`. See the [Ripwire audit](../../../ripwire-audit-2026-09-10/report.md) for evidence and limits.
+
+## Answer
+
+2026-09-10: Mobile development now compares final installable content with the last successfully launched artifact. Uncached iOS assembly/signing outputs are fingerprinted directly. Failed replacements do not advance the active identity. Tests cover unchanged bundles, packaging changes, retries, older restored artifacts, cached APKs and missing outputs. Native device acceptance steps are in the updated platform handoff; hardware execution was not repeated on this Linux host.

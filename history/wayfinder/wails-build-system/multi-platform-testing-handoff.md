@@ -30,6 +30,35 @@ The status must show a clean branch tracking
 `origin/codex/hcl-build-system`. Keep fixes and test evidence on this branch and
 push them before handing off again.
 
+## Enable the experimental commands
+
+Set the opt-in in each shell before generating/migrating a fixture or running
+any HCL CLI or acceptance command:
+
+```bash
+export WAILS_EXP_USE_WAKE=1
+```
+
+PowerShell:
+
+```powershell
+$env:WAILS_EXP_USE_WAKE = '1'
+```
+
+Presence enables the feature, including an empty or `false` value. With the
+variable unset, the CLI uses legacy Taskfile routing and hides `config`,
+`migrate` and `eject`. Confirm `wails3 config check` actually reports the
+fixture's manifest as valid; general command help is not a passing check.
+
+For mobile dev restart acceptance, start `wails3 dev --target android/arm64`
+(or `ios/arm64` on macOS) on an appropriate device. Change only
+`dev.debounce_ms` in `wails.hcl`: the CLI must report the backend unchanged and
+the app must retain its state. Then change native code or package metadata:
+the updated app must install and launch. After a failed deployment, a subsequent
+successful rebuild must retry deployment rather than treat the failed version
+as already running. Repeat with a restored older artifact and with a signed
+physical-device iOS build where credentials are available.
+
 ## Prepare each test host
 
 Use a disposable native machine or VM for each host operating system. Record
