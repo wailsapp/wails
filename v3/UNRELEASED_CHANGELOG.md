@@ -32,6 +32,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Security
 <!-- Security-related changes -->
+- Harden MCP origins and remote access with token authentication in [PR](https://github.com/wailsapp/wails/pull/6092) by @leaanthony
 
 ---
 
