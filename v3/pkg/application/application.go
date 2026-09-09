@@ -647,6 +647,15 @@ func (a *App) Run() error {
 	a.starting = true
 	a.runLock.Unlock()
 
+	// Start the default signal handler, when one was set up at creation, so
+	// that Ctrl+C and SIGTERM go through App.Quit and the application's
+	// shutdown hooks instead of the OS default disposition. It is a no-op
+	// when DisableDefaultSignalHandler was requested or on platforms that
+	// carry no signal handler.
+	if a.signalHandler != nil {
+		a.signalHandler.Start()
+	}
+
 	// Ensure application context is cancelled in case of failures.
 	defer a.cancel()
 
