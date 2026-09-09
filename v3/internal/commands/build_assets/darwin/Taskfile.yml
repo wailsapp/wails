@@ -143,13 +143,17 @@ tasks:
         --background "{{.DMG_BACKGROUND}}"
         --volume-icon "{{.DMG_VOLUME_ICON}}"
         --file-icon "{{.DMG_FILE_ICON}}"
+        --icon-layout "{{.DMG_ICON_LAYOUT}}"
         --window-width "{{.DMG_WINDOW_WIDTH}}"
         --window-height "{{.DMG_WINDOW_HEIGHT}}"
         {{if .DMG_FILES}}--files "{{.DMG_FILES}}"{{end}}
+        {{if .DMG_ICON_POSITIONS}}--icon-positions "{{.DMG_ICON_POSITIONS}}"{{end}}
     vars:
       DMG_BACKGROUND: '{{.DMG_BACKGROUND | default "build/darwin/dmg-background.png"}}'
       DMG_VOLUME_ICON: '{{.DMG_VOLUME_ICON | default "build/darwin/icons.icns"}}'
       DMG_FILE_ICON: '{{.DMG_FILE_ICON | default "build/darwin/dmg-file-icon.icns"}}'
+      DMG_ICON_LAYOUT: '{{.DMG_ICON_LAYOUT | default "auto"}}'
+      DMG_ICON_POSITIONS: '{{.DMG_ICON_POSITIONS | default ""}}'
       DMG_WINDOW_WIDTH: '{{.DMG_WINDOW_WIDTH | default "540"}}'
       DMG_WINDOW_HEIGHT: '{{.DMG_WINDOW_HEIGHT | default "380"}}'
       DMG_FILES: '{{.DMG_FILES | default ""}}'

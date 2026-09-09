@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/leaanthony/dmg/dmg"
@@ -112,16 +113,6 @@ func buildDMGOptions(options *flags.ToolPackage, appPath, dmgPath string) (dmg.O
 	opts.Window = dmg.WindowConfig{X: 100, Y: 100, Width: windowWidth, Height: windowHeight}
 	opts.Icon = dmg.IconConfig{Size: 96, TextSize: 12, GridSpace: 100}
 	opts.Files[filepath.Base(appPath)] = appPath
-	// Finder renders the stored Y from the top of its content area, below a
-	// small title-bar offset. Subtract it so the default row is visibly centred.
-	iconY := windowHeight/2 - 26
-	if iconY < 0 {
-		iconY = windowHeight / 2
-	}
-	opts.IconPositions = map[string]dmg.IconPosition{
-		filepath.Base(appPath): {X: windowWidth * 28 / 100, Y: iconY},
-		"Applications":         {X: windowWidth * 72 / 100, Y: iconY},
-	}
 	if options.BackgroundImage != "" {
 		opts.Background = &dmg.BackgroundConfig{File: options.BackgroundImage}
 	}
@@ -134,7 +125,84 @@ func buildDMGOptions(options *flags.ToolPackage, appPath, dmgPath string) (dmg.O
 	if err := addDMGFiles(&opts, options.DmgFiles); err != nil {
 		return dmg.Options{}, err
 	}
+	if err := applyDMGIconLayout(&opts, options.DmgIconLayout, options.DmgIconPositions); err != nil {
+		return dmg.Options{}, err
+	}
 	return opts, nil
+}
+
+// applyDMGIconLayout either delegates placement to the DMG library or parses
+// explicit Finder-window pixel centres supplied as name=x,y;name=x,y.
+func applyDMGIconLayout(opts *dmg.Options, layout, positions string) error {
+	switch strings.ToLower(strings.TrimSpace(layout)) {
+	case "", "auto":
+		if strings.TrimSpace(positions) != "" {
+			return fmt.Errorf("DMG icon positions require manual icon layout")
+		}
+		opts.IconPositions = nil
+		return nil
+	case "manual":
+		iconPositions, err := parseDMGIconPositions(positions)
+		if err != nil {
+			return err
+		}
+		for name := range iconPositions {
+			if name != "Applications" {
+				if _, ok := opts.Files[name]; !ok {
+					return fmt.Errorf("DMG icon position references unknown item %q", name)
+				}
+			}
+		}
+		for name := range opts.Files {
+			if _, ok := iconPositions[name]; !ok {
+				return fmt.Errorf("manual DMG icon layout is missing a position for %q", name)
+			}
+		}
+		if opts.AddApplicationsSymlink {
+			if _, ok := iconPositions["Applications"]; !ok {
+				return fmt.Errorf("manual DMG icon layout is missing a position for Applications")
+			}
+		}
+		opts.IconPositions = iconPositions
+		return nil
+	default:
+		return fmt.Errorf("invalid DMG icon layout %q: expected auto or manual", layout)
+	}
+}
+
+func parseDMGIconPositions(value string) (map[string]dmg.IconPosition, error) {
+	if strings.TrimSpace(value) == "" {
+		return nil, fmt.Errorf("manual DMG icon layout requires icon positions")
+	}
+
+	positions := make(map[string]dmg.IconPosition)
+	for _, item := range strings.Split(value, ";") {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+		name, coordinates, ok := strings.Cut(item, "=")
+		if !ok || strings.TrimSpace(name) == "" {
+			return nil, fmt.Errorf("invalid DMG icon position %q: expected name=x,y", item)
+		}
+		xy := strings.Split(coordinates, ",")
+		if len(xy) != 2 {
+			return nil, fmt.Errorf("invalid DMG icon position %q: expected name=x,y", item)
+		}
+		x, err := strconv.Atoi(strings.TrimSpace(xy[0]))
+		if err != nil {
+			return nil, fmt.Errorf("invalid DMG icon X coordinate in %q: %w", item, err)
+		}
+		y, err := strconv.Atoi(strings.TrimSpace(xy[1]))
+		if err != nil {
+			return nil, fmt.Errorf("invalid DMG icon Y coordinate in %q: %w", item, err)
+		}
+		positions[strings.TrimSpace(name)] = dmg.IconPosition{X: x, Y: y}
+	}
+	if len(positions) == 0 {
+		return nil, fmt.Errorf("manual DMG icon layout requires icon positions")
+	}
+	return positions, nil
 }
 
 // addDMGFiles adds optional installer resources configured in a Taskfile. The
