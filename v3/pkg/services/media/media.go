@@ -23,7 +23,8 @@ const chunkBytes = 64 << 10
 // limit on each complete clip; the frontend can request a smaller limit.
 //
 // Only expose a filesystem containing media the frontend may read. For disk
-// files, os.Root.FS can confine access even when the directory contains symlinks.
+// files, call os.OpenRoot(directory) and pass root.FS() to NewHandler to confine
+// access even when the directory contains symlinks.
 // The caller owns the filesystem and must keep it open for the handler's lifetime.
 // Transfers are chunked, but the frontend retains the complete clip as a blob.
 func NewHandler(files fs.FS, maxBytes int64) (application.StreamHandler, error) {
