@@ -201,7 +201,8 @@ All configuration is via environment variables — no code changes required.
 | Environment variable   | Default     | Description |
 |------------------------|-------------|-------------|
 | `WAILS_MCP`            | (unset)     | Set to `1`, `true`, `on` or `yes` to add the `mcp` build tag automatically when using the Wails CLI. |
-| `WAILS_MCP_HOST`       | `127.0.0.1` | Interface to bind to. Change only in trusted, isolated networks. |
+| `WAILS_MCP_HOST`       | `127.0.0.1` | Interface to bind to. Non-loopback binds require `WAILS_MCP_TOKEN`. |
+| `WAILS_MCP_TOKEN` | unset | Optional bearer token on loopback; required on other bind addresses. Clients send `Authorization: Bearer <token>`. |
 | `WAILS_MCP_PORT`       | `9099`      | Port to listen on. Set to `0` for a randomly assigned free port (printed in the log). |
 | `WAILS_MCP_TIMEOUT`    | `30000`     | Default JS evaluation timeout in **milliseconds**. |
 | `WAILS_MCP_HIDE_CURSOR`| (unset)     | Set to `1` or `true` to disable the animated cursor overlay. |
@@ -258,15 +259,23 @@ Drag from selector: ".card" to selector: ".dropzone"
 
 <Aside type="caution">
 The MCP server gives full programmatic control over your application. Anyone who can
-reach the port can read the DOM, evaluate JavaScript, click buttons, and call Go methods.
+access its tools can read the DOM, evaluate JavaScript, click buttons, and call Go methods.
 </Aside>
 
-- The server binds to `127.0.0.1` by default and rejects non-local browser origins
-  (DNS-rebinding protection per the MCP spec).
+- The server binds to `127.0.0.1` by default. Browser origins must be HTTP(S)
+  loopback origins; opaque (`null`), malformed, and foreign origins are rejected.
+- Headerless native MCP clients remain supported. Without `WAILS_MCP_TOKEN`, local
+  processes and permitted local browser origins are trusted; origin checks are not
+  authentication. Set a high-entropy token to require bearer authentication for all
+  `/mcp` calls. Configure the same token in the client's `Authorization: Bearer <token>` header. Preflight requests do not require the token.
+- The `/eval-result` callback uses unpredictable per-evaluation IDs rather than
+  the client bearer token, so webview result delivery remains compatible.
 - Production builds should **not** include the `mcp` tag. The Wails CLI only adds it when
   `WAILS_MCP=1` is explicitly set, and the default `wails3 build` has none of the server code.
 - If you need to expose the server on a non-loopback interface (e.g. LAN testing), set
-  `WAILS_MCP_HOST=0.0.0.0` and ensure your network is trusted.
+  `WAILS_MCP_HOST=0.0.0.0` and a high-entropy `WAILS_MCP_TOKEN`; startup fails
+  without a token. Use an encrypted tunnel or TLS-terminating proxy on untrusted
+  networks because the built-in listener uses HTTP.
 
 ## Example application
 
