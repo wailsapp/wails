@@ -275,6 +275,8 @@ func setupProductionFeatures(app *application.App) {
 }
 ```
 
+**Private API on macOS:** `OpenDevTools()` requires `private_mac_apis`; otherwise the call is a no-op. Production builds also require `devtools`. See the [Web Inspector build matrix](/guides/build/private-macos-apis/#web-inspector).
+
 ## Environment Information Dialog
 
 ### Display System Information

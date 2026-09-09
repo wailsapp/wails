@@ -234,7 +234,7 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 // embedTimeout bounds how long Embed waits for CreateCoreWebView2Controller to
 // complete. Controller creation is normally well under a second; this is a
 // backstop for the case where the callback never arrives, not a budget.
-const embedTimeout = 30 * time.Second
+const embedTimeout = 60 * time.Second
 
 // pumpUntilInited runs a message loop until the controller is ready, the queue
 // receives WM_QUIT, or timeout elapses. It reports whether the controller
@@ -723,8 +723,15 @@ func (e *Chromium) PermissionRequested(_ *ICoreWebView2, args *iCoreWebView2Perm
 
 func (e *Chromium) WebResourceRequested(sender *ICoreWebView2, args *ICoreWebView2WebResourceRequestedEventArgs) uintptr {
 	req, err := args.GetRequest()
-	if err != nil {
-		log.Fatal(err)
+	if err != nil || req == nil {
+		// COM can fail here under load without setting the out pointer
+		// (#1103). Dropping one request is recoverable (the WebView falls
+		// back to default handling for it); killing the process is not.
+		if err == nil {
+			err = errors.New("no error, but the request out pointer was not set (#1103)")
+		}
+		log.Printf("[WebView2] WebResourceRequested failed to get request: %v", err)
+		return 0
 	}
 	defer req.Release()
 

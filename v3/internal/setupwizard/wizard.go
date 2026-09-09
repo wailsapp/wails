@@ -251,6 +251,16 @@ type Wizard struct {
 	shutdownOnce    sync.Once
 	buildWg         sync.WaitGroup
 
+	// Notarization state. The macOS notarization profile is created in a
+	// terminal window of the wizard's own making, so the job outlives the
+	// request that started it.
+	notarizeMu       sync.Mutex
+	notarizeJob      *notarizeJob
+	notarizeStarting bool
+	// Bumped on every cancel, so a job whose window was still opening when the
+	// user gave up can tell that it is no longer wanted.
+	notarizeCancelGen uint64
+
 	// Init-mode state. When initData is non-nil the wizard runs as the project
 	// "init" wizard (wails3 init -ui) instead of the global setup wizard.
 	initData   *InitData
@@ -334,6 +344,8 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/signing", w.handleSigning)
 	mux.HandleFunc("/api/signing/status", w.handleSigningStatus)
 	mux.HandleFunc("/api/signing/notarize/create", w.handleNotarizeCreate)
+	mux.HandleFunc("/api/signing/notarize/status", w.handleNotarizeStatus)
+	mux.HandleFunc("/api/signing/notarize/cancel", w.handleNotarizeCancel)
 	mux.HandleFunc("/api/signing/notarize/validate", w.handleNotarizeValidate)
 	mux.HandleFunc("/api/init", w.handleInit)
 	mux.HandleFunc("/api/init/create", w.handleInitCreate)
@@ -1378,9 +1390,14 @@ type notarizeCreateRequest struct {
 	ProfileName string `json:"profileName"`
 	AppleID     string `json:"appleID"`
 	TeamID      string `json:"teamID"`
-	Password    string `json:"password"`
 }
 
+// handleNotarizeCreate hands the credential setup to a terminal window of its
+// own rather than running it against the wizard's own stdin. notarytool needs to
+// prompt for the app-specific password on a terminal, and the user is looking at
+// a browser: spawning the window puts that prompt in front of them instead of
+// asking them to go and find the terminal `wails3 setup` was started from. The
+// browser polls /api/signing/notarize/status while the window is open.
 func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
@@ -1406,64 +1423,138 @@ func (w *Wizard) handleNotarizeCreate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.ProfileName == "" || req.AppleID == "" || req.TeamID == "" || req.Password == "" {
+	profileName, okProfile := notarizeFieldClean(req.ProfileName)
+	appleID, okAppleID := notarizeFieldClean(req.AppleID)
+	teamID, okTeamID := notarizeFieldClean(req.TeamID)
+	if !okProfile || !okAppleID || !okTeamID {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"success": false,
-			"error":   "All fields are required",
+			"error":   "Profile name, Apple ID and Team ID are all required",
 		})
 		return
 	}
 
-	cmd := exec.Command("xcrun", "notarytool", "store-credentials",
-		req.ProfileName,
-		"--apple-id", req.AppleID,
-		"--team-id", req.TeamID,
-		"--password-stdin",
-		"--validate",
-	)
-	cmd.Stdin = strings.NewReader(req.Password)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		errMsg := strings.TrimSpace(string(output))
-		// Clean up the error message
-		if strings.Contains(errMsg, "Error:") {
-			lines := strings.Split(errMsg, "\n")
-			for _, line := range lines {
-				if strings.Contains(line, "Error:") {
-					errMsg = strings.TrimSpace(strings.TrimPrefix(line, "Error:"))
-					break
-				}
+	w.notarizeMu.Lock()
+	if w.notarizeStarting {
+		w.notarizeMu.Unlock()
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "A terminal window is already opening. Check your screen for it.",
+		})
+		return
+	}
+	if w.notarizeJob != nil {
+		if state, _ := w.notarizeJob.snapshot(); state == notarizeStateRunning {
+			running := w.notarizeJob
+			w.notarizeMu.Unlock()
+			// Answering a create for different credentials with the open window
+			// would store the window's profile, not the one just typed.
+			if !running.matches(profileName, appleID, teamID) {
+				json.NewEncoder(rw).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "A terminal window is already open for different credentials. Finish or cancel it first.",
+				})
+				return
 			}
+			json.NewEncoder(rw).Encode(map[string]interface{}{
+				"success": true,
+				"pending": true,
+				"command": running.command,
+			})
+			return
 		}
+	}
+	// Spawning the window shells out to `open`, so do it with the lock released:
+	// status and cancel have to stay answerable while it happens. The sentinel
+	// keeps a second create from racing in behind it, and the generation catches
+	// a cancel that lands while the window is still opening.
+	w.notarizeStarting = true
+	startGen := w.notarizeCancelGen
+	w.notarizeMu.Unlock()
+
+	job, err := startNotarizeJob(profileName, appleID, teamID)
+
+	w.notarizeMu.Lock()
+	w.notarizeStarting = false
+	wanted := err == nil && w.notarizeCancelGen == startGen
+	if wanted {
+		w.notarizeJob = job
+	}
+	w.notarizeMu.Unlock()
+
+	if err != nil {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
 			"success": false,
-			"error":   errMsg,
+			"error":   err.Error(),
+		})
+		return
+	}
+	if !wanted {
+		job.abandon()
+		json.NewEncoder(rw).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Cancelled while the terminal window was opening.",
 		})
 		return
 	}
 
-	// Save the profile name to defaults
-	defs, err := LoadGlobalDefaults()
-	if err != nil {
+	go w.watchNotarizeJob(job)
+
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"success": true,
+		"pending": true,
+		"command": job.command,
+	})
+}
+
+// handleNotarizeStatus reports on the terminal window opened by
+// handleNotarizeCreate.
+func (w *Wizard) handleNotarizeStatus(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	w.notarizeMu.Lock()
+	job := w.notarizeJob
+	w.notarizeMu.Unlock()
+
+	if job == nil {
 		json.NewEncoder(rw).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "Profile created but failed to load defaults: " + err.Error(),
+			"state": notarizeStateIdle,
 		})
 		return
 	}
-	defs.Signing.Darwin.KeychainProfile = req.ProfileName
-	defs.Signing.Darwin.TeamID = req.TeamID
-	if err := SaveGlobalDefaults(defs); err != nil {
-		json.NewEncoder(rw).Encode(map[string]interface{}{
-			"success": false,
-			"error":   "Profile created but failed to save defaults: " + err.Error(),
-		})
+
+	state, errMsg := job.snapshot()
+	json.NewEncoder(rw).Encode(map[string]interface{}{
+		"state":   state,
+		"error":   errMsg,
+		"command": job.command,
+	})
+}
+
+// handleNotarizeCancel stops the wizard waiting on a terminal window the user
+// has given up on. The window itself is left alone: it may still be sitting at
+// notarytool's password prompt, and killing it out from under the user would be
+// ruder than letting them close it.
+func (w *Wizard) handleNotarizeCancel(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
 		return
+	}
+
+	w.notarizeMu.Lock()
+	job := w.notarizeJob
+	w.notarizeJob = nil
+	w.notarizeCancelGen++
+	w.notarizeMu.Unlock()
+
+	if job != nil {
+		job.finish(notarizeStateFailed, "Cancelled")
 	}
 
 	json.NewEncoder(rw).Encode(map[string]interface{}{
 		"success": true,
-		"output":  strings.TrimSpace(string(output)),
 	})
 }
 

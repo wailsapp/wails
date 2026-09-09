@@ -31,6 +31,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.19 - 2026-09-09
+
+## Added
+- Gate private macOS APIs behind build tags for opt-in usage — see [documentation](https://v3.wails.io/features/browser/integration) and [documentation](https://v3.wails.io/features/environment/info) and [documentation](https://v3.wails.io/features/windows/basics) and [documentation](https://v3.wails.io/features/windows/frameless) and [documentation](https://v3.wails.io/features/windows/notch-windows) and [documentation](https://v3.wails.io/features/windows/options) and [documentation](https://v3.wails.io/guides/build/macos) and [documentation](https://v3.wails.io/guides/build/private-macos-apis) and [documentation](https://v3.wails.io/reference/overview) in [PR](https://github.com/wailsapp/wails/pull/6087) by @leaanthony
+
+## Fixed
+- Reject runtime requests over 64 MiB with HTTP 413 in [PR](https://github.com/wailsapp/wails/pull/6091) by @leaanthony
+
+## Security
+- Harden MCP origins and remote access with token authentication in [PR](https://github.com/wailsapp/wails/pull/6092) by @leaanthony
+
+## v3.0.0-beta.18 - 2026-09-08
+
+## Fixed
+- Fix Calloc memory leak on Linux and Darwin by using pointer receivers in [PR](https://github.com/wailsapp/wails/pull/6083) by @4RH1T3CT0R7
+
+## v3.0.0-beta.17 - 2026-09-06
+
+## Fixed
+- Windows: a failed or nil `GetRequest` in the WebResourceRequested handler no longer kills the process (`log.Fatal` / nil-dereference panic) — the request is dropped and logged instead in [PR](https://github.com/wailsapp/wails/pull/6006) by @midagedev
+
+## v3.0.0-beta.16 - 2026-08-29
+
+## Changed
+- Prompt for notarization password in a new terminal window in [PR](https://github.com/wailsapp/wails/pull/6029) by @leaanthony
+
+## Fixed
+- Correctly handle systray click types on macOS in [PR](https://github.com/wailsapp/wails/pull/5919) by @ChewbaccaCookie
+- CI removes unused Microsoft apt repos before updating in [PR](https://github.com/wailsapp/wails/pull/6041) by @Grantmartin2002
+
+## v3.0.0-beta.15 - 2026-08-27
+
+## Fixed
+- Increase WebView2 embed timeout to 60 seconds in [PR](https://github.com/wailsapp/wails/pull/6043) by @Grantmartin2002
+
 ## v3.0.0-beta.14 - 2026-08-26
 
 ## Fixed

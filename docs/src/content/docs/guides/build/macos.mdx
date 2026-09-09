@@ -7,6 +7,20 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
+## Private macOS APIs
+
+Wails v3 uses public macOS APIs by default. To opt into features that require undocumented Apple APIs, build your app with the single Go build tag `private_mac_apis`:
+
+```bash
+wails3 build -tags private_mac_apis
+EXTRA_TAGS=private_mac_apis wails3 dev
+wails3 package GOOS=darwin EXTRA_TAGS=private_mac_apis
+```
+
+For a direct Go build, use `go build -tags private_mac_apis .` (or `-tags production,private_mac_apis` for production). Existing applications that depend on private behavior must add this tag to retain it. The tag applies only to macOS desktop builds.
+
+See [Private macOS APIs](/guides/build/private-macos-apis/) for the complete inventory of affected features and option values, exact public-build fallbacks, Liquid Glass style mappings, and inspector build combinations. Private-only operations are no-ops without the tag; the public Go API is unchanged.
+
 ## Application Bundle
 
 Package your app as a standard macOS `.app` bundle:

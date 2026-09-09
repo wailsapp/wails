@@ -340,6 +340,7 @@ export default defineConfig({
                 { label: "Code Signing", link: "/guides/build/signing" },
                 { label: "Windows Packaging", link: "/guides/build/windows" },
                 { label: "macOS Packaging", link: "/guides/build/macos" },
+                { label: "Private macOS APIs", link: "/guides/build/private-macos-apis" },
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
                 { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },

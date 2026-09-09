@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SigningStatus, SigningDefaults } from '../types';
-import { getSigningStatus, getSigning, saveSigning, getState, createNotarizationProfile, createGPGKey, createWindowsCert, exportGPGKey } from '../api';
+import { getSigningStatus, getSigning, saveSigning, getState, createNotarizationProfile, getNotarizationStatus, cancelNotarization, createGPGKey, createWindowsCert, exportGPGKey } from '../api';
 
 const pageVariants = {
   initial: { opacity: 0 },
@@ -865,37 +865,140 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
   onSkip: () => void;
   onBack: () => void;
 }) {
-  const [creating, setCreating] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [command, setCommand] = useState('');
   const [profileName, setProfileName] = useState(config.darwin?.keychainProfile || 'wails-notary');
   const [appleID, setAppleID] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleCreate = async () => {
-    setError('');
-    setCreating(true);
-    try {
-      const result = await createNotarizationProfile({
-        profileName,
-        appleID,
-        teamID,
-        password,
-      });
-      if (result.success) {
+  // Held in a ref so the polling effect below can stay keyed on `command` alone:
+  // re-running it on every parent render would keep restarting the interval.
+  const latest = useRef({ config, setConfig, onDone, profileName });
+  latest.current = { config, setConfig, onDone, profileName };
+
+  // While a command is set, notarytool is waiting for the password in the
+  // Terminal window the wizard opened. Poll until that window is done.
+  useEffect(() => {
+    if (!command) return;
+
+    let cancelled = false;
+    let inFlight = false;
+    const timer = setInterval(async () => {
+      if (inFlight) return; // a slow poll must not stack up behind itself
+      inFlight = true;
+
+      let result;
+      try {
+        result = await getNotarizationStatus();
+      } catch {
+        return; // transient; the next tick will try again
+      } finally {
+        inFlight = false;
+      }
+      if (cancelled || result.state === 'running') return;
+
+      clearInterval(timer);
+      setCommand('');
+      if (result.state === 'succeeded') {
+        const { config, setConfig, onDone, profileName } = latest.current;
         setConfig({
           ...config,
           darwin: { ...config.darwin, keychainProfile: profileName }
         });
         onDone();
+      } else if (result.state === 'failed') {
+        setError(result.error || 'Failed to create profile');
+      } else {
+        // 'idle' — the wizard no longer knows about the window, most likely
+        // because it restarted. Say so rather than dropping back to the form.
+        setError('Lost track of the Terminal window. Close it and try again.');
+      }
+    }, 1000);
+
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [command]);
+
+  const handleCreate = async () => {
+    setError('');
+    setStarting(true);
+    try {
+      const result = await createNotarizationProfile({ profileName, appleID, teamID });
+      if (result.success && result.command) {
+        setCommand(result.command);
       } else {
         setError(result.error || 'Failed to create profile');
       }
     } catch (e) {
       setError('Failed to create notarization profile');
     } finally {
-      setCreating(false);
+      setStarting(false);
     }
   };
+
+  // Only leave the waiting screen once the wizard has actually let go of the
+  // job. Clearing it first would strand a tracked job with no way to cancel it
+  // from here if the request failed.
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      const result = await cancelNotarization();
+      if (!result.success) {
+        setError('Could not cancel — the wizard is still waiting on the Terminal window. Try again.');
+        return;
+      }
+      setError('');
+      setCommand('');
+    } catch {
+      setError('Could not cancel — the wizard is still waiting on the Terminal window. Try again.');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  if (command) {
+    return (
+      <div className="space-y-4">
+        <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 space-y-3">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+              Enter your password in the Terminal window
+            </p>
+          </div>
+          <p className="text-xs text-blue-800/80 dark:text-blue-200/80">
+            A new Terminal window has opened in front of your browser. <code className="font-mono">notarytool</code> is
+            asking for your app-specific password there — it isn't shown as you type, and it never passes through the
+            browser or the command line. This page updates itself when the window is done.
+          </p>
+          <div>
+            <p className="text-xs font-medium text-blue-800 dark:text-blue-200">Running in that window:</p>
+            <CopyableCommand cmd={command} />
+          </div>
+        </div>
+
+        {error && (
+          <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        )}
+
+        <div className="flex gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={cancelling}
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
+          >
+            {cancelling ? 'Cancelling…' : 'Cancel'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -927,19 +1030,12 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App-Specific Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="xxxx-xxxx-xxxx-xxxx"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-        />
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Generate at{' '}
-          <a href="https://appleid.apple.com/account/manage" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">appleid.apple.com</a>
-          {' '}→ Sign-In and Security → App-Specific Passwords
+      <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+        <p className="text-xs text-amber-800 dark:text-amber-200">
+          Generate an app-specific password at{' '}
+          <a href="https://appleid.apple.com/account/manage" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">appleid.apple.com</a>
+          {' '}→ Sign-In and Security → App-Specific Passwords. Save opens a Terminal window that asks for it, so the
+          password stays out of the browser and out of the process list.
         </p>
       </div>
 
@@ -947,6 +1043,14 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
           <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </div>
+      )}
+
+      {/* There is no Team ID field on this screen, so say why Save is disabled
+          rather than leaving the user with a dead button. */}
+      {!teamID && (
+        <p className="text-xs text-amber-600 dark:text-amber-400">
+          Go Back and set your Team ID before storing notarization credentials — notarytool needs it.
+        </p>
       )}
 
       <div className="flex gap-3 pt-2">
@@ -967,10 +1071,10 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
         <button
           type="button"
           onClick={handleCreate}
-          disabled={creating || !profileName || !appleID || !password}
+          disabled={starting || !profileName || !appleID || !teamID}
           className="flex-1 px-4 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
         >
-          {creating ? 'Saving...' : 'Save'}
+          {starting ? 'Opening Terminal…' : 'Save'}
         </button>
       </div>
     </div>

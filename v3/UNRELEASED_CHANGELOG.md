@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update Clave showcase links to current website and repository in [PR](https://github.com/wailsapp/wails/pull/6082) by @01xR4in
 
 ## Fixed
 <!-- Bug fixes -->
@@ -31,6 +32,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Removed
 <!-- Features removed in this release -->
 - Remove native WebView2 loader support, superseded by the pure Go loader. This drops the embedded `WebView2Loader.dll` binaries and the `github.com/jchv/go-winloader` dependency. The `native_webview2loader` build tag is still accepted and no longer errors, but has no effect on v3 builds, in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
+- Remove unused build tags and FPS option from macOS API guide in [PR](https://github.com/wailsapp/wails/pull/6097) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
