@@ -22,6 +22,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Changes in existing functionality -->
 
 ## Fixed
+- Cancel aborted Windows asset requests, including worker requests, while preserving keepalive handlers across navigation. Forward native request contexts through the application wrapper on Apple platforms. (#5963, #5969)
 <!-- Bug fixes -->
 
 ## Deprecated
