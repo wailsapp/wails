@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Reject runtime requests over 64 MiB with HTTP 413 in [PR](https://github.com/wailsapp/wails/pull/6091) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
@@ -32,6 +33,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Security
 <!-- Security-related changes -->
+- Harden MCP origins and remote access with token authentication in [PR](https://github.com/wailsapp/wails/pull/6092) by @leaanthony
 
 ---
 
