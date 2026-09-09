@@ -1,0 +1,108 @@
+---
+title: Private macOS APIs
+description: Every Wails feature and option that depends on private macOS APIs, with opt-in commands and public-build fallbacks.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Wails uses public macOS APIs by default. The single Go build tag `private_mac_apis` enables the private WebKit and AppKit calls listed on this page. All public Go options and methods remain available in either build. Without the tag, private-only operations are no-ops; features with public alternatives use those alternatives.
+
+<Aside type="caution" title="Opt in to private macOS behavior">
+  Setting a window option does not enable private APIs. Add `private_mac_apis` to the build command to enable them. The tag applies only to macOS desktop builds, not iOS, Android, Windows, Linux, or server builds.
+</Aside>
+
+## Enable private APIs
+
+```bash
+# Build an application
+wails3 build -tags private_mac_apis
+
+# Run with live reload
+EXTRA_TAGS=private_mac_apis wails3 dev
+
+# Package an application
+wails3 package GOOS=darwin EXTRA_TAGS=private_mac_apis
+
+# Run a Go-only example from its directory
+go run -tags private_mac_apis .
+```
+
+For a direct production build, use `go build -tags production,private_mac_apis .`. For frontend examples, follow their README to build bindings and assets before running. Custom or older Taskfiles must forward `EXTRA_TAGS` to the Go compiler.
+
+## Feature inventory
+
+| Feature or value | What `private_mac_apis` enables | Without the tag |
+| --- | --- | --- |
+| `Mac.Backdrop: MacBackdropTransparent` | Transparent WKWebView over the native window | The native window is configured, but the webview remains opaque |
+| `Mac.Backdrop: MacBackdropTranslucent` | Transparent WKWebView so the native blur shows through | The blur is configured behind an opaque webview |
+| `Mac.Backdrop: MacBackdropLiquidGlass` | Transparent WKWebView over the glass layer, with private webview background control | The glass layer is configured behind an opaque webview; styling uses public alternatives |
+| Webview background clearing during Liquid Glass setup | Private WebKit `backgroundColor` control | Public `underPageBackgroundColor` on macOS 12+, or a layer colour on older macOS; does not make the webview transparent |
+| `app.Window.NewNotchWindow(...)` | Transparent webview inside the shaped notch panel | The panel still works, including placement and animations, but its webview remains opaque |
+| `Mac.LiquidGlass.Style` | Wails' existing native style mapping, including an undocumented dark style value | Uses public regular/clear styles and light/dark appearances; see the value table below |
+| `Mac.LiquidGlass.GroupID` | Requests private glass grouping for a non-empty identifier | Ignored; no grouping is requested |
+| `Mac.LiquidGlass.GroupSpacing` | Requests private group spacing for a value greater than zero | Ignored |
+| `window.OpenDevTools()` and JavaScript `Window.OpenDevTools()` | Opens the WebKit inspector programmatically on macOS 12+ | No-op |
+| `WebviewWindowOptions.OpenInspectorOnStartup: true` | Requests programmatic inspector opening when the window is first shown, on macOS 12+ | No-op |
+| Legacy inspector enablement, before macOS 13.3 | Enables WebKit developer extras when inspector support is compiled in | No-op; public Safari inspection requires macOS 13.3+ |
+
+## Webview transparency and background
+
+**Requires private APIs:** the webview transparency used by `MacBackdropTransparent`, `MacBackdropTranslucent`, `MacBackdropLiquidGlass`, and notch windows. Internally, Wails sets WebKit's private `drawsBackground` key. A transparent HTML or CSS background alone cannot make an opaque native WKWebView transparent.
+
+```go
+Mac: application.MacWindow{
+    // Requires -tags private_mac_apis for the blur to show through the webview.
+    Backdrop: application.MacBackdropTranslucent,
+},
+```
+
+The private webview background-colour operation uses WebKit's `backgroundColor` key. Liquid Glass setup uses this to clear the webview background. Without the tag, this internal operation uses public `underPageBackgroundColor` on macOS 12+, or the view's layer on older macOS. Those alternatives do not make the webview transparent.
+
+`WebviewWindowOptions.BackgroundColour` and `window.SetBackgroundColour()` set the **native window** colour on macOS and do not themselves require private APIs. Likewise, `Frameless` and `Mac.TitleBar.AppearsTransparent` use public AppKit APIs; the private dependency is webview transparency, not title-bar transparency. For macOS backdrop effects, configure `Mac.Backdrop` rather than relying on `BackgroundType` alone.
+
+See [window options](/features/windows/options/#mac-options), [frameless windows](/features/windows/frameless/#with-transparent-background), and [notch windows](/features/windows/notch-windows/).
+
+## Liquid Glass values
+
+When a native `NSGlassEffectView` is available (macOS 26+), the following mappings apply. Only native style values `0` (regular) and `1` (clear) are documented. The Go constants keep their existing values in both builds.
+
+| `MacLiquidGlassStyle` value | With `private_mac_apis` | Without the tag |
+| --- | --- | --- |
+| `LiquidGlassStyleAutomatic` (`0`) | Native regular style (`0`) | Native regular style (`0`) |
+| `LiquidGlassStyleLight` (`1`) | Existing native style mapping (`1`, clear) | Native regular style (`0`) with Aqua appearance |
+| `LiquidGlassStyleDark` (`2`) | **Undocumented native style value `2`** | Native regular style (`0`) with Dark Aqua appearance |
+| `LiquidGlassStyleVibrant` (`3`) | Maps to the existing light/native clear style (`1`) | Native clear style (`1`) |
+
+Automatic and Vibrant use documented native style values, but a full-window Liquid Glass backdrop still needs the tag for **webview transparency**. Light's appearance differs between the two builds. The private style mapping does not guarantee that a future macOS version will render the same effect.
+
+**Always private:** `GroupID` and `GroupSpacing`. Wails checks for the private `setGroupIdentifier:`, `setGroupName:`, and `setGroupSpacing:` selectors before requesting grouping. Without the tag these operations are no-ops. Enabling the tag does not guarantee that the running macOS version supports these selectors.
+
+`MacLiquidGlass.Material`, `CornerRadius`, and `TintColor` do not themselves require private APIs. On macOS versions without native Liquid Glass support, Wails configures a translucent fallback; seeing it through the webview still requires the tag.
+
+## Web Inspector
+
+**Requires private APIs:** calling `OpenDevTools()` or setting `OpenInspectorOnStartup: true` to open WebKit's inspector from the application. Wails uses the private `_inspector` selector. Without `private_mac_apis`, these operations are silent no-ops.
+
+Inspector support must also be compiled in. The existing `production` and `devtools` tags retain their meaning:
+
+| Build tags | Programmatic inspector opening | Public Safari inspection on macOS 13.3+ |
+| --- | --- | --- |
+| None | No-op | Enabled |
+| `private_mac_apis` | Enabled on macOS 12+ | Enabled |
+| `production` | No-op | Disabled |
+| `production,private_mac_apis` | No-op | Disabled |
+| `production,devtools` | No-op | Enabled |
+| `production,devtools,private_mac_apis` | Enabled on macOS 12+ | Enabled |
+
+On macOS 13.3+, Wails enables Safari inspection using public `WKWebView.inspectable`; that does not require private APIs. Before macOS 13.3, the fallback uses the private `developerExtrasEnabled` preference and therefore requires `private_mac_apis` as well as compiled-in inspector support.
+
+```bash
+# Production build with programmatic inspector support
+go build -tags production,devtools,private_mac_apis .
+```
+
+## Maintaining this list
+
+All private native calls are isolated in `v3/pkg/application/mac_private_api_darwin.go`; default builds select `mac_public_api_darwin.go`. This inventory covers transparency, webview background colour, glass styles, glass grouping, inspector opening, and legacy inspector enablement. Changes to those implementations should update this page and the affected option documentation together.
+
+The proposed `appstore` and `noprivateapis` tags are not used. There is no `PreferPageRenderingUpdatesNear60FPS` option in this change.

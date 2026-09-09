@@ -48,4 +48,4 @@ To make a production binary directly with Go, use:
 
 Production builds still disable inspector support by default. To keep an inspector shortcut working in a production example, use `go build -tags production,devtools,private_mac_apis .`. On macOS 13.3+, Safari inspection remains available without private APIs in development builds or builds with `devtools`.
 
-For task-based examples, `wails3 build -tags private_mac_apis` passes the tag to the build task. Omit the private API tag from any of these commands to use public APIs only. See the [macOS build guide](https://v3.wails.io/guides/build/macos/#private-macos-apis) for the complete fallback behavior.
+For task-based examples, `wails3 build -tags private_mac_apis` passes the tag to the build task. Omit the private API tag from any of these commands to use public APIs only. See the [private macOS API reference](https://v3.wails.io/guides/build/private-macos-apis/) for the complete fallback behavior.
