@@ -1,5 +1,8 @@
 name: Build + Test v3
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
