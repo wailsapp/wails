@@ -348,3 +348,12 @@ These take precedence over the `ServerOptions` in your code, which is why the Do
 - [Custom Transport](/guides/custom-transport) - For advanced IPC customization
 - [Services](/features/bindings/services) - Service binding documentation
 - [Events](/guides/events-reference) - Event system documentation
+
+
+### Runtime request size
+
+Requests to `/wails/runtime` are limited to 64 MiB before JSON processing. An
+ordinary request above this limit receives HTTP 413, including requests without
+`Content-Length`. Chunked runtime uploads retain their separate 1 MiB per-chunk
+and 64 MiB assembled-payload limits. Use application middleware or a reverse proxy
+to impose a lower limit where appropriate.
