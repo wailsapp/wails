@@ -30,6 +30,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
+- Remove unused build tags and FPS option from macOS API guide in [PR](https://github.com/wailsapp/wails/pull/6097) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
