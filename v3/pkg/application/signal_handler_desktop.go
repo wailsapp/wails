@@ -16,5 +16,6 @@ func (a *App) setupSignalHandler(options Options) {
 		a.signalHandler.ExitMessage = func(sig os.Signal) string {
 			return "Quitting application..."
 		}
+		a.signalHandler.Start()
 	}
 }
