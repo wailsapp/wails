@@ -12,10 +12,13 @@ type GenerateBindingsOptions struct {
 	OutputDirectory   string `name:"d" description:"The output directory" default:"frontend/bindings"`
 	ModelsFilename    string `name:"models" description:"File name for exported JS/TS models (excluding the extension)" default:"models"`
 	IndexFilename     string `name:"index" description:"File name for JS/TS package indexes (excluding the extension)" default:"index"`
+	TimeType          string `name:"time-type" description:"The JS type to use for time.Time values. Must be either 'string' or 'Date'." default:"string"`
 	TS                bool   `name:"ts" description:"Generate Typescript bindings"`
 	UseInterfaces     bool   `name:"i" description:"Generate Typescript interfaces instead of classes"`
 	UseBundledRuntime bool   `name:"b" description:"Use the bundled runtime instead of importing the npm package"`
 	UseNames          bool   `name:"names" description:"Use names instead of IDs for the binding calls"`
+	Obfuscated        bool   `name:"obfuscated" description:"Generate Go metadata that keeps binding method IDs stable in obfuscated builds"`
+	ObfuscatedOutput  string `name:"obfuscated-output" description:"Directory for the generated obfuscated bindings file (defaults to the main package directory). The destination package must be reachable from the main package's import graph so its init() runs."`
 	NoEvents          bool   `name:"noevents" description:"Do not generate types for registered custom events"`
 	NoIndex           bool   `name:"noindex" description:"Do not generate JS/TS index files"`
 	DryRun            bool   `name:"dry" description:"Do not write output files"`

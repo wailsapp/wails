@@ -42,7 +42,7 @@
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) ·
-[Türkçe](README.tr.md)
+[Türkçe](README.tr.md) · [Bahasa Indonesia](README.id.md)
 
 </samp>
 </strong>
@@ -123,7 +123,9 @@ Roadmap проекта вы можете найти [здесь](https://github.
 
 ## График звёздочек репозитория по времени
 
-[![График звёзд](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="График звёзд" src="website/static/img/star-history.svg" width="800" />
+</a>
 
 ## Контрибьюторы
 

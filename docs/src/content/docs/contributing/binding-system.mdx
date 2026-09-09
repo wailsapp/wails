@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-> “Bindings” are the **type-safe contract** that lets you write:
+> "Bindings" are the **type-safe contract** that lets you write:
 
 ```go
 msg, err := chatService.Send("Hello")
@@ -14,13 +14,19 @@ msg, err := chatService.Send("Hello")
 in Go *and*
 
 ```ts
-const msg = await window.backend.ChatService.Send("Hello")
+import { Send } from "../bindings/github.com/you/yourapp/services/chatservice";
+
+const msg = await Send("Hello");
 ```
 
-in TypeScript **without manual glue code**.  
-This document breaks down *how* that magic happens, from **static analysis** at
+in TypeScript **without writing any IPC glue by hand**.
+This document breaks down *how* that happens, from **static analysis** at
 build time, through **code generation**, to the **runtime bridge** that moves
 bytes over the WebView.
+
+> See [`contributing/architecture/bindings.mdx`](./architecture/bindings) for
+> the authoritative deep-dive on the generator pipeline — this page is a
+> contributor-focused overview.
 
 ---
 
@@ -28,16 +34,23 @@ bytes over the WebView.
 
 | Stage | Component | Output |
 |-------|-----------|--------|
-| **Analysis** | `internal/generator/analyse.go` | In-memory AST of exported Go structs, methods, params, return types |
-| **Generation** | `internal/generator/render/*.tmpl` | • `pkg/application/bindings.go` (Go)<br />• `frontend/src/wailsjs/**.ts` (TS defs)<br />• `runtime/desktop/@wailsio/runtime/internal/bindings.json` |
-| **Runtime** | `pkg/application/messageprocessor_call.go` + JS runtime (`invoke.ts`) | JSON messages over WebView native bridge |
+| **Collect / Analyse** | `internal/generator/collect/`, `internal/generator/analyse.go` | In-memory model of exported Go services, methods, params, return types, models |
+| **Generation** | `internal/generator/render/templates/*.tmpl` (`service.{js,ts}.tmpl`, `models.{js,ts}.tmpl`, `index.tmpl`, `eventcreate.js.tmpl`, `eventdata.d.ts.tmpl`, `newline.tmpl`) | Per-service ES modules under `frontend/bindings/<full Go import path>/...` |
+| **Runtime** | `pkg/application/messageprocessor*.go` + the embedded JS runtime under `internal/runtime/desktop/@wailsio/runtime/src/` (`calls.ts`, `events.ts`, …) | Call/event messages over the WebView's native bridge |
 
-The flow is orchestrated by the `wails3` CLI:
+The flow is orchestrated by the `wails3 generate bindings` command, which
+drives `generator.Generate` (defined in `internal/generator/generate.go`)
+over a set of Go packages.
 
 ```
-wails3 generate  ─┬─> generator.Collect()   // parse Go packages
-                  ├─> generator.Analyse()   // build semantic model
-                  └─> generator.Render()    // write files + `go fmt`
+wails3 generate bindings
+        │
+        ▼
+internal/generator/generate.go: Generator.Generate(patterns...)
+        │
+        ├── internal/generator/collect/   // load.go, collector.go, service.go, model.go, …
+        ├── internal/generator/analyse.go // semantic checks
+        └── internal/generator/render/    // template execution → frontend/bindings/**
 ```
 
 ---
@@ -47,38 +60,31 @@ wails3 generate  ─┬─> generator.Collect()   // parse Go packages
 ### Entry Point
 
 ```
-internal/generator/analyse.go
+internal/generator/generate.go        // Generator + Generate(patterns…)
+internal/generator/analyse.go         // semantic validation
+internal/generator/collect/load.go    // go/packages loader
+internal/generator/collect/collector.go
 ```
 
-`Analyse(cfg generator.Config)`:
+The collector pass walks every loaded package and records:
 
-1. Recursively loads provided Go packages with `go/packages`.
-2. Walks the *type* and *value* specs of every AST file.
-3. Filters **exported** symbols (capitalised) outside `internal/` packages.
-4. Records:
-   * Receiver type (`struct`, `interface`)
-   * Method name
-   * Parameter list (name, type, pointer, variadic)
-   * Return tuple (values + error presence)
-5. Normalises types to a **serialisable set**  
-   (`int`, `float64`, `string`, `[]byte`, slices, maps, structs, pointers).
+* `collect.ServiceInfo` — one per exported, bound Go struct.
+* `collect.ServiceMethodInfo` / `collect.MethodInfo` — per-method signature info
+  (name, params, results, error position, receiver, doc).
+* `collect.ModelInfo` / `collect.StructInfo` — emitted as TS / JS models.
+* Directive comments such as `//wails:inject`, `//wails:include`,
+  `//wails:internal`, `//wails:ignore`, `//wails:id <hex>` (see
+  `internal/generator/collect/directive.go`).
 
-Unsupported types produce a **compile-time error** so mistakes are caught early.
+Unsupported types produce a generator error so mistakes surface at build time,
+not at runtime.
 
-### Model
+### Model Identifiers
 
-```go
-type Method struct {
-    ID       uint32 // stable hash for runtime lookup
-    Name     string
-    Params   []Param
-    Results  []Result
-    Receiver *Struct // nil for package funcs
-}
-```
-
-A deterministic **FNV-1a** hash (`internal/hash/fnv.go`) of
-`<Receiver>.<Name>(<Signature>)` becomes the *method ID* used at runtime.
+The runtime call envelope identifies a method by a **deterministic FNV-1a hash**
+of its fully-qualified name (`pkg.Struct.Method`). You'll see this as
+`$Call.ByID(<numeric-id>, …)` in generated bindings or `$Call.ByName("pkg.Struct.Method", …)`
+when generation runs with `-names`.
 
 ---
 
@@ -86,51 +92,65 @@ A deterministic **FNV-1a** hash (`internal/hash/fnv.go`) of
 
 ### Templates
 
-`internal/generator/render/` contains text/template files:
+`internal/generator/render/templates/`:
 
-| Template | Target |
-|----------|--------|
-| `go_bindings.tmpl` | `pkg/application/bindings.go` |
-| `ts_bindings.tmpl` | `frontend/wailsjs/go/models.d.ts` |
-| `ts_index.tmpl`    | `frontend/wailsjs/index.ts` |
+| Template | Purpose |
+|----------|---------|
+| `service.js.tmpl` | One JS module per bound service |
+| `service.ts.tmpl` | TypeScript companion (with `-ts`) |
+| `models.js.tmpl` | Model class output (per-package) |
+| `models.ts.tmpl` | Model `.d.ts` output (per-package) |
+| `index.tmpl` | Per-package `index.{js,ts}` barrel re-exports |
+| `eventcreate.js.tmpl` / `eventdata.d.ts.tmpl` | Event constructor / payload typings |
+| `newline.tmpl` | Trailing-newline normaliser |
 
-Add or adjust templates here to customise generation.
+Output goes under `frontend/bindings/<full Go import path>/...` — for example
+a service defined in `github.com/you/yourapp/services/chat` lands under
+`frontend/bindings/github.com/you/yourapp/services/chat/`. There is no
+`frontend/src/wailsjs/` directory in v3.
 
-### Go Output
+### JavaScript Output
 
-`bindings.go` registers a lookup table:
+Generated bindings are ES modules that import the runtime helpers from
+`/wails/runtime.js`:
 
-```go
-var bindings = []application.BoundMethod{
-    {ID: 0x7A1201D3, Name: "ChatService.Send", Call: chatServiceSend},
-}
+```js
+import { Call as $Call, Create as $Create } from "/wails/runtime.js";
 
-func chatServiceSend(ctx context.Context, in []byte) ([]byte, error) {
-    var req struct{ Msg string }
-    if err := json.Unmarshal(in, &req); err != nil { return nil, err }
-    res, err := chatService.Send(req.Msg)
-    return json.Marshal(res), err
-}
-```
-
-Key points:
-
-* **Zero reflection** at runtime → performance.
-* Marshal/Unmarshal is **per-method** with generated struct wrappers.
-
-### TypeScript Output
-
-```ts
-export namespace backend {
-  export namespace ChatService {
-    function Send(msg: string): Promise<string>;
-  }
+/**
+ * @param {string} msg
+ * @returns {Promise<string> & { cancel(): void }}
+ */
+export function Send(msg) {
+    return $Call.ByID(2042131923, msg);
 }
 ```
 
-* Emitted as **ES modules** so any bundler can tree-shake.
-* Method IDs are embedded in an auto-generated `bindings.json` for the JS
-  runtime.
+When generation runs with `-names`, `$Call.ByName("pkg.Struct.Method", ...)`
+is emitted instead — always **fully-qualified**, never just `"Method"`.
+
+Generated model classes use a `$$source` constructor pattern with per-field
+`if (!("X" in $$source))` defaults, quoted field names, and a
+`static createFrom(...)` that runs `JSON.parse` on string inputs.
+
+### Type Mapping Highlights
+
+Verified against `internal/generator/render/`:
+
+| Go | TypeScript |
+|----|------------|
+| `map[string]V` | `{ [_: string]: V }` |
+| `map[K]V` (non-string `K`) | `{ [_ in K]?: V }` (not `Map<K, V>`, not `Record<K, V>`) |
+| `[]byte` | `Uint8Array` |
+| `time.Time` | `string` (JSON ISO 8601) |
+| `error` (return position) | rejected promise |
+
+### Reflection Note
+
+`pkg/application/bindings.go` is **hand-written** and uses `reflect` to drive
+method dispatch from a `BoundMethod` registry. Don't read older claims of
+"zero reflection at runtime" too literally — the generator avoids reflection,
+but the runtime dispatcher uses it.
 
 ---
 
@@ -139,58 +159,52 @@ export namespace backend {
 ### JavaScript Side
 
 ```ts
-import { System } from "@wailsio/runtime";
+import { Call } from "/wails/runtime.js";
 
-await System.invoke(0x7a1201d3 /* ChatService.Send */, ["Hello"]);
+await Call.ByID(0x7a1201d3 /* ChatService.Send */, "Hello");
+// or, with -names:
+await Call.ByName("chatservice.ChatService.Send", "Hello");
 ```
 
-Implementation: `runtime/desktop/@wailsio/runtime/invoke.ts`
-
-1. Packs `{t:"c", id:<methodID>, p:[...args]}` into JSON.
-2. Calls `window.external.invoke(payload)` (WebView2) or equivalent.
-3. Returns a `Promise` that resolves/rejects based on the reply.
+The runtime helpers live in
+`internal/runtime/desktop/@wailsio/runtime/src/calls.ts` (call dispatch),
+`events.ts` (events), and friends — there is no `invoke.ts` or `errors.ts`
+in this tree. The exact wire envelope is encoded by `calls.ts` on the JS
+side and decoded by `pkg/application/messageprocessor_call.go` on the Go
+side; consult those two files together when debugging the bridge.
 
 ### Go Side
 
-1. `messageprocessor_call.go` receives the JSON.
-2. Looks up `methodID` in the `bindings` slice.
-3. Executes the generated stub (`chatServiceSend`).
-4. Serialises `{result, error}` back to JS.
+1. `pkg/application/messageprocessor_call.go` receives the call message.
+2. Looks up the bound method by ID or name in
+   `pkg/application/bindings.go` (driven by `reflect`).
+3. Invokes the bound method and serialises `{result, error}` back to JS.
 
 ### Error Mapping
 
 | Go | JavaScript |
 |----|------------|
 | `error == nil` | `Promise` resolves with result |
-| `errors.New(...)` | `Promise` rejects with `{message, stack, code}` |
-
-The mapping code lives in `runtime/desktop/@wailsio/runtime/errors.ts`.
+| `error != nil` | `Promise` rejects with an `Error` whose `message` is the Go error string |
 
 ---
 
 ## 5. Calling JavaScript from Go
 
-*Browser → Go* is covered above.  
-*Go → Browser* uses **Events** or **Eval**:
+The binding generator is one-way (Go methods exposed to JS). For Go → JS
+communication, use the event bus or run JS in a window:
 
 ```go
-window.Eval(`alert("Hi")`)
-app.Publish("chat:new-message", msg)
+app.Event.Emit("chat:new-message", msg)
+window.ExecJS(`window.dispatchEvent(new CustomEvent("ping"))`)
 ```
 
-Binding generation is one-way (Go methods).  
-For JS-exposed functions use `runtime.EventsOn` in JS and `application.Publish`
-from Go.
+On the JS side, subscribe with `Events.On(name, cb)` from
+`/wails/runtime.js`.
 
 ---
 
 ## 6. Extending & Troubleshooting
-
-### Adding Custom Serialisers
-
-* Implement `generator.TypeConverter` interface.
-* Register in `generator.Config.Converters`.
-* Update JS runtime deserialisation if needed.
 
 ### Unsupported Type Error
 
@@ -198,18 +212,22 @@ from Go.
 error: field "Client" uses unsupported type: chan struct{}
 ```
 
-→ wrap the channel in a struct with an exposed API or redesign.
+→ wrap the channel behind a method API, or mark the field with
+`//wails:internal` so the generator skips it.
 
-### Version Skew
+### Stale Bindings
 
-Bindings are regenerated on **every** `wails3 dev` / `wails3 build`.  
-If IDE intellisense shows stale stubs, delete `frontend/wailsjs` and rebuild.
+Generated output is overwritten on every `wails3 generate bindings` /
+`wails3 dev` / `wails3 build`. If IDE intellisense shows stale stubs, delete
+`frontend/bindings/` and re-run the generator. The `-clean` flag (default
+`true` in current builds) wipes the bindings directory before each run.
 
 ### Performance Tips
 
-* Prefer **value** receivers for small structs to reduce allocations.
-* Avoid large byte slices over the bridge; use `application.FileServer` instead.
-* Batch multiple quick calls into one method to minimise bridge latency.
+* Avoid streaming large byte slices over the bridge — serve them via the
+  asset server instead.
+* Batch multiple quick calls into one method when latency matters.
+* Prefer value receivers for small parameter structs to reduce allocations.
 
 ---
 
@@ -217,13 +235,13 @@ If IDE intellisense shows stale stubs, delete `frontend/wailsjs` and rebuild.
 
 | Concern | File |
 |---------|------|
-| Static analysis entry | `internal/generator/analyse.go` |
-| Render pipeline | `internal/generator/generate.go` |
-| Template assets | `internal/generator/render/*.tmpl` |
-| Go binding table | `pkg/application/bindings.go` (generated) |
-| Call processor | `pkg/application/messageprocessor_call.go` |
-| JS runtime | `runtime/desktop/@wailsio/runtime/invoke.ts` |
-| Errors mapping | `runtime/desktop/@wailsio/runtime/errors.ts` |
+| Generator orchestration | `internal/generator/generate.go` |
+| Semantic checks | `internal/generator/analyse.go` |
+| Collection (services, methods, models) | `internal/generator/collect/{service,method,model,struct,package}.go` |
+| Render templates | `internal/generator/render/templates/*.tmpl` |
+| Generated bindings location | `frontend/bindings/<full Go import path>/...` |
+| Go side dispatcher | `pkg/application/bindings.go`, `messageprocessor_call.go` |
+| JS runtime | `internal/runtime/desktop/@wailsio/runtime/src/{calls,events,index}.ts` |
 
 Keep this cheat-sheet handy when you trace a bridge bug.
 
@@ -231,10 +249,10 @@ Keep this cheat-sheet handy when you trace a bridge bug.
 
 ## 8. Recap
 
-1. **Generator** scans your Go code → semantic model.  
-2. **Templates** emit **Go stubs** + **TypeScript definitions**.  
-3. **Message Processor** executes stubs at runtime.  
-4. **JS Runtime** wraps it all in idiomatic promises.
+1. **Collector** scans your Go code → in-memory semantic model.
+2. **Templates** emit per-service ES modules and per-package model/index files.
+3. **Message Processor** dispatches calls on the Go side via the bindings registry.
+4. **JS Runtime** wraps it all in idiomatic promises with cancellation.
 
-All without reflection, without IPC servers, and without you writing a single
-line of boilerplate. That’s the Wails v3 binding system. Go forth and bind!  
+All without you writing a single line of IPC boilerplate. That's the Wails v3
+binding system. Go forth and bind!

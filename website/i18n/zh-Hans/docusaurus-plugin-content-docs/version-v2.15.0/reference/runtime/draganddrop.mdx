@@ -1,0 +1,37 @@
+---
+sidebar_position: 10
+---
+
+# Drag And Drop
+
+:::
+
+This part of the runtime handles dragging and dropping files and or folders in to the window.<br/>
+
+To enable this functionality you have to set [EnableFileDrop](../../reference/options.mdx#enablefiledrop) to `true`
+in [Application Options](../../reference/options.mdx#drag-and-drop).
+
+### OnFileDrop
+
+This method handles the drop event on the window.
+
+Go: `OnFileDrop(ctx context.Context, callback func(x, y int, paths []string))`<br/>
+Calls the callback function with the coordinates inside the window where the drag was released and a slice of absolute file paths.
+
+JS: `OnFileDrop(callback: (x: number, y: number, paths: string[]) => void, useDropTarget: boolean) :void`<br/>
+Calls the callback function with the coordinates inside the window where the drag was released and a slice of absolute file paths.
+
+When the `useDropTarget` is `true` in addition to calling the callback when the drop happens, it registers event listeners on
+the window that are listening for the drag coordinates and checks if the mouse is over an element that has the
+[CSSDropProperty](../../reference/options.mdx#cssdropproperty) style. If the element has the required property
+it adds the `wails-drop-target-active` class to the element's class list and removes it when the mouse moves off of it.
+
+### OnFileDropOff
+
+This method removes all registered listeners and handlers for drag and drop events.
+
+Go: `OnFileDropOff(ctx context.Context)`<br/>
+Returns: has no return value.
+
+JS: `OnFileDropOff(): void`<br/>
+Returns: has no return value.

@@ -650,20 +650,20 @@ In this tutorial, you'll build a notes application that demonstrates file operat
 
 ## Key Concepts
 
-### Package-Level Dialog Functions
+### File and Message Dialogs
 
-In Wails v3, file and message dialogs are package-level functions, not methods on the app instance:
+In Wails v3 there are **no** package-level dialog constructors — every dialog is created through the `app.Dialog` manager. From a service, get the app via `application.Get()` (it returns the running `*application.App`):
 
 ```go
-// Correct - package-level function
-path, err := application.SaveFileDialog().
+// Correct — manager-based dialogs.
+app := application.Get()
+path, err := app.Dialog.SaveFile().
     SetFilename("notes.json").
     AddFilter("JSON Files", "*.json").
     PromptForSingleSelection()
-
-// Wrong - not available
-path, err := app.Dialog.SaveFile() // This doesn't exist
 ```
+
+The matching methods are `app.Dialog.Info() / Question() / Warning() / Error()` for message dialogs and `app.Dialog.OpenFile() / SaveFile()` (plus the `*WithOptions` variants) for file dialogs.
 
 ### JSON Tag Mapping
 

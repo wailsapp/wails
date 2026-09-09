@@ -1,0 +1,189 @@
+---
+title: Global Shortcuts
+description: Register system-wide keyboard shortcuts that fire even when your application is not focused
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Global shortcuts are system-wide keyboard shortcuts that fire regardless of which application currently has focus, for as long as your Wails application is running. They are ideal for show/hide hotkeys, quick capture tools, media controls, and other features that users expect to reach from anywhere.
+
+:::note[Global shortcuts vs key bindings]
+[Key bindings](/features/keyboard/shortcuts/) (`app.KeyBinding`) only fire while one of your application windows has focus. Global shortcuts (`app.GlobalShortcut`) fire system-wide, even when your application is in the background. Use whichever matches your need.
+:::
+
+Global shortcuts are built directly on each platform's native facilities and add no third party dependencies.
+
+## Accessing the Global Shortcut Manager
+
+The manager is available on the `GlobalShortcut` property of your application instance:
+
+```go
+app := application.New(application.Options{
+    Name: "Global Shortcuts Demo",
+})
+
+globalShortcuts := app.GlobalShortcut
+```
+
+## Registering a Shortcut
+
+`Register` takes an accelerator and a callback. The callback runs on its own goroutine whenever the shortcut is pressed.
+
+```go
+err := app.GlobalShortcut.Register("CmdOrCtrl+Shift+G", func() {
+    // Runs even when another application is focused.
+    window.Show()
+    window.Focus()
+})
+if err != nil {
+    app.Logger.Error("could not register shortcut", "error", err)
+}
+```
+
+You can register shortcuts before calling `app.Run`. The binding with the operating system is then performed automatically when the application starts.
+
+:::tip[Touching the UI from a callback]
+Callbacks run off the main thread. If your callback needs to interact with windows or other UI, that is handled for you by the window methods, but for custom main-thread work wrap it with `application.InvokeSync`.
+:::
+
+### Accelerator Format
+
+Global shortcuts use the same accelerator format as menu accelerators and key bindings:
+
+```go
+"CmdOrCtrl+Shift+G"  // Command on macOS, Control elsewhere
+"Ctrl+Alt+K"         // Control + Alt + K
+"Cmd+Option+Space"   // Command + Option + Space (macOS)
+"Super+D"            // Super / Windows / Logo key + D
+"Ctrl+Shift+F5"      // Function keys are supported
+```
+
+`CmdOrCtrl` resolves to Command on macOS and Control on Windows and Linux, which makes it convenient for cross-platform shortcuts.
+
+## Managing Shortcuts
+
+```go
+// Check whether a shortcut is registered (modifier order does not matter).
+registered := app.GlobalShortcut.IsRegistered("Ctrl+Shift+G")
+
+// List every shortcut this application has registered.
+for _, accelerator := range app.GlobalShortcut.GetAll() {
+    app.Logger.Info("global shortcut", "accelerator", accelerator)
+}
+
+// Release a single shortcut.
+app.GlobalShortcut.Unregister("Ctrl+Shift+G")
+
+// Release everything (also done automatically on shutdown).
+app.GlobalShortcut.UnregisterAll()
+```
+
+All registered shortcuts are released automatically when the application exits, so you do not need to clean them up manually.
+
+## What Happens When the Same Shortcut Is Registered Twice
+
+There are two distinct cases, and Wails handles them differently.
+
+### The same application registers a shortcut twice
+
+This is resolved by Wails itself and behaves identically on every platform. The second `Register` call returns an error and the original binding is left in place ("error and preserve"). This keeps behavior predictable and surfaces the mistake instead of silently replacing a working shortcut.
+
+```go
+app.GlobalShortcut.Register("Ctrl+Shift+G", showWindow)        // ok
+err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: already registered
+// showWindow is still the active callback for this shortcut.
+```
+
+If you want to change the callback for a shortcut, `Unregister` it first and then `Register` it again.
+
+### Another application already owns the shortcut
+
+This is decided by the operating system, so the result is platform specific:
+
+| Platform | Behavior when another application owns the shortcut |
+| --- | --- |
+| **macOS** | Registration succeeds. macOS allows several applications to register the same hot key, so your callback is added alongside the existing owner rather than rejected. |
+| **Windows** | Registration fails and `Register` returns an error. The application that registered the shortcut first keeps it. |
+| **Linux (X11)** | Registration fails and `Register` returns an error, because the X server refuses a second grab of the same combination. |
+| **Linux (Wayland)** | The compositor arbitrates. The user is typically asked to approve or choose the binding through the desktop's global shortcuts dialog. |
+
+Because of these differences, always check the error returned by `Register` and provide a fallback shortcut or user feedback when a shortcut cannot be claimed.
+
+## Platform Considerations
+
+<Tabs>
+  <TabItem label="macOS" icon="fa-brands:apple">
+
+    Global shortcuts use the Carbon Event Manager's hot key API. This is the standard mechanism for system-wide hot keys on macOS and does not require Accessibility permission.
+
+    Hot keys are bound to physical key positions, so a shortcut maps to the key in the standard ANSI/QWERTY position on non-QWERTY layouts.
+
+    :::caution[Hide shortcuts and `ApplicationShouldTerminateAfterLastWindowClosed`]
+    `window.Hide()` uses `orderOut:` on macOS, which makes the window non-visible. AppKit treats the last non-visible window as closed, so if you set `Mac.ApplicationShouldTerminateAfterLastWindowClosed: true` and use a global shortcut to hide your only window, the application will quit instead of staying in the background. Leave that option unset (the default) when you rely on a hide/show hotkey, so the window can be hidden and summoned back later.
+    :::
+
+  </TabItem>
+
+  <TabItem label="Windows" icon="fa-brands:windows">
+
+    Global shortcuts use the Win32 `RegisterHotKey` API. Auto repeat is suppressed, so holding the keys down fires the callback once rather than repeatedly.
+
+    Registration fails if another application already owns the combination, so prefer less common combinations for your defaults.
+
+  </TabItem>
+
+  <TabItem label="Linux" icon="fa-brands:linux">
+
+    On **X11** sessions Wails grabs the shortcut directly from the X server, so the requested accelerator is bound exactly as specified.
+
+    On **Wayland** sessions there is, by design, no way for an application to grab keys directly. Wails uses the XDG Desktop Portal `org.freedesktop.portal.GlobalShortcuts` interface instead. With the portal, the accelerator you pass is a *preferred* trigger and the compositor (and ultimately the user) decides the final key combination. Your callback still fires when the shortcut is activated, but the exact keys are not guaranteed to match your request, and `IsRegistered`/`GetAll` report what you asked for rather than what the compositor bound.
+
+    The portal requires a desktop environment that implements the global shortcuts portal (for example recent GNOME or KDE Plasma).
+
+  </TabItem>
+</Tabs>
+
+## Complete Example
+
+```go
+package main
+
+import (
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "Global Shortcuts Demo",
+    })
+
+    window := app.Window.New()
+
+    // Bring the window to the front from anywhere.
+    if err := app.GlobalShortcut.Register("CmdOrCtrl+Shift+G", func() {
+        window.Show()
+        window.Focus()
+    }); err != nil {
+        log.Printf("could not register show shortcut: %v", err)
+    }
+
+    // Hide the window from anywhere.
+    if err := app.GlobalShortcut.Register("CmdOrCtrl+Shift+H", func() {
+        window.Hide()
+    }); err != nil {
+        log.Printf("could not register hide shortcut: %v", err)
+    }
+
+    if err := app.Run(); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+:::danger[Avoid critical system shortcuts]
+Some combinations are reserved by the operating system or desktop environment and cannot be claimed by applications. Choose defaults that are unlikely to clash, and always handle the error from `Register`.
+:::

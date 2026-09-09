@@ -1,0 +1,85 @@
+---
+sidebar_position: 1
+---
+
+# 소개
+
+런타임은 애플리케이션에 유틸리티 메서드를 제공하는 라이브러리입니다. There is both a Go and JavaScript runtime and the aim is to try and keep them at parity where possible.
+
+다음에 대한 유틸리티 메서드가 있습니다:
+
+- [Window](window.mdx)
+- [Menu](menu.mdx)
+- [Dialog](dialog.mdx)
+- [Events](events.mdx)
+- [Browser](browser.mdx)
+- [Log](log.mdx)
+- [Clipboard](clipboard.mdx)
+
+Go 런타임은 `github.com/wailsapp/wails/v2/pkg/runtime` 가져오기를 통해 사용할 수 있습니다. 이 패키지의 모든 메소드는 컨텍스트를 첫 번째 매개변수로 사용합니다. 이 컨텍스트는 [OnStartup](../options.mdx#onstartup) 또는 [OnDomReady](../options.mdx#ondomready) 후크에서 가져와야 합니다.
+
+:::참고
+
+컨텍스트는 [OnStartup](../options.mdx#onstartup) 메서드를 사용할 경우 런타임이 이 메서드에서 다음과 같이 작동할 것이라는 보장은 없습니다. 창이 다른 스레드에서 초기화되고 있습니다. 시작 시 런타임 메서드를 호출하려면 [OnDomReady](../options.mdx#ondomready)를 사용하세요.
+
+:::
+
+The JavaScript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides TypeScript declarations for the runtime. 이것은 프론트엔드 디렉토리의 `wailsjs` 디렉토리에 있어야 합니다.
+
+### Hide
+
+Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
+
+애플리케이션을 숨깁니다.
+
+:::참고
+
+On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications. This is different to hiding the window, but the application still being in the foreground. For Windows and Linux, this is currently the same as `WindowHide`.
+
+:::
+
+### Show
+
+Shows the application.
+
+:::참고
+
+On Mac, this will bring the application back into the foreground. For Windows and Linux, this is currently the same as `WindowShow`.
+
+:::
+
+Go: `Show(ctx context.Context)`<br/> JS: `Show()`
+
+### Quit
+
+Quits the application.
+
+Go: `Quit(ctx context.Context)`<br/> JS: `Quit()`
+
+### Environment
+
+Returns details of the current environment.
+
+Go: `Environment(ctx context.Context) EnvironmentInfo`<br/> JS: `Environment(): Promise<EnvironmentInfo>`
+
+#### EnvironmentInfo
+
+Go:
+
+```go
+type EnvironmentInfo struct {
+    BuildType string
+    Platform  string
+    Arch      string
+}
+```
+
+JS:
+
+```ts
+interface EnvironmentInfo {
+  buildType: string;
+  platform: string;
+  arch: string;
+}
+```

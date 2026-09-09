@@ -11,7 +11,11 @@ The electron alternative for Go
 import {newRuntimeCaller, objectNames} from "./runtime.js";
 
 // setup
-window._wails = window._wails || {};
+import { hasDOM } from "./environment.js";
+
+if (hasDOM) {
+    window._wails = window._wails || {};
+}
 
 const call = newRuntimeCaller(objectNames.Dialog);
 

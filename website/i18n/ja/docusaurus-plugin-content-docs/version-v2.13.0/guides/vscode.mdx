@@ -1,0 +1,82 @@
+
+# Visual Studio Code
+
+このページでは、Wailsでの開発でVisual Studio Codeを使用する際のさまざまなヒントやコツをご紹介します。
+
+## Veturの構成設定
+
+このヒントを提供してくれた[@Lyimmi](https://github.com/Lyimmi)に感謝します。 このヒントは[こちら](https://github.com/wailsapp/wails/issues/1791#issuecomment-1228158349)に投稿されたものです。
+
+Veturは、Vueプロジェクトのシンタックスハイライトおよびコード補完を提供してくれる、Visual Studio Codeでのポピュラーな拡張機能です。 VSCodeでWailsのプロジェクトを読み込むと、Veturはルートディレクトリでフロントエンドのプロジェクトを見つけようとするため、エラーが発生します。 これを解消するためには、次の手順を実施します:
+
+プロジェクトのルートディレクトリに、`vetur.config.js`という名前のファイルを作成します。
+
+```javascript
+// vetur.config.js
+/** @type {import('vls').VeturConfig} */
+module.exports = {
+    // **optional** default: `{}`
+    // override vscode settings
+    // Notice: It only affects the settings used by Vetur.
+    settings: {
+        "vetur.useWorkspaceDependencies": true,
+        "vetur.experimental.templateInterpolationService": true
+    },
+    // **optional** default: `[{ root: './' }]`
+    // support monorepos
+    projects: [
+        {
+            // **required**
+            // Where is your project?
+            // It is relative to `vetur.config.js`.
+            // root: './packages/repo1',
+            root: './frontend',
+            // **optional** default: `'package.json'`
+            // Where is `package.json` in the project?
+            // We use it to determine the version of vue.
+            // It is relative to root property.
+            package: './package.json',
+            // **optional**
+            // Where is TypeScript config file in the project?
+            // It is relative to root property.
+            tsconfig: './tsconfig.json',
+            // **optional** default: `'./.vscode/vetur/snippets'`
+            // Where is vetur custom snippets folders?
+            snippetFolder: './.vscode/vetur/snippets',
+            // **optional** default: `[]`
+            // Register globally Vue component glob.
+            // If you set it, you can get completion by that components.
+            // It is relative to root property.
+            // Notice: It won't actually do it. You need to use `require.context` or `Vue.component`
+            globalComponents: [
+                './src/components/**/*.vue'
+            ]
+        }
+    ]
+}
+```
+
+次に、`frontend/tsconfig.json`の構成を修正します:
+
+```javascript
+{
+  "compilerOptions": {
+    "module": "system",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "outFile": "../../built/local/tsc.js",
+    "allowJs": true
+  },
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ],
+  "include": [
+    "src/**/*",
+    "wailsjs/**/*.ts"
+  ]
+}
+```
+以上により、Veturを期待どおりに使用できるようになります。

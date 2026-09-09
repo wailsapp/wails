@@ -82,3 +82,25 @@ Build an Apple Notes-style application with native file dialogs and auto-save fu
 <div style="text-align: center; margin-top: 1rem;">
 <LinkButton href="/tutorials/03-notes-vanilla" variant="secondary" icon="right-arrow">Get Started</LinkButton>
 </div>
+
+---
+
+### Self-Updating Wails App
+
+Add in-app self-updates to a Wails application from a fresh `wails3 init` through signed release verification and the helper-mode binary swap. Uses GitHub Releases as the update source.
+
+**What you'll learn:**
+- How `app.Updater` plugs into a Wails app
+- Configuring the GitHub Releases provider
+- Publishing releases with `SHA256SUMS` for digest verification
+- Adding Ed25519 signing for tamper-resistance
+- Customising the default window via CSS, custom HTML, or BYO
+- Periodic background checks with `CheckInterval`
+
+**Time to complete:** ~25 minutes
+
+**Best for:** Shipping an updateable desktop app — covers the full release pipeline, not just the API
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/tutorials/04-self-update-a-wails-app" variant="secondary" icon="right-arrow">Get Started</LinkButton>
+</div>

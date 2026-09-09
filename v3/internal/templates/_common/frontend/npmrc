@@ -1,0 +1,5 @@
+# Refuse to install package versions published less than 7 days (10080 minutes)
+# ago, reducing exposure to freshly compromised or malicious releases.
+# Honoured by pnpm and bun; npm currently has no native support and ignores it,
+# so this is harmless today and forward-compatible.
+minimum-release-age=10080

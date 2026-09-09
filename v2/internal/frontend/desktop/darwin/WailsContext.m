@@ -241,6 +241,12 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
         config.suppressesIncrementalRendering = true;
     }
     config.applicationNameForUserAgent = @"wails.io";
+    if (preferences.applicationNameForUserAgent != NULL) {
+        NSString *customAppName = [NSString stringWithUTF8String:preferences.applicationNameForUserAgent];
+        if (customAppName.length > 0) {
+            config.applicationNameForUserAgent = customAppName;
+        }
+    }
     [config setURLSchemeHandler:self forURLScheme:@"wails"];
 
     if (preferences.tabFocusesLinks != NULL) {
@@ -268,6 +274,10 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
         config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
     }
 #endif
+
+    if (preferences.enableAutoplayWithoutUserAction != NULL && *preferences.enableAutoplayWithoutUserAction) {
+        config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+    }
 
     WKUserContentController* userContentController = [WKUserContentController new];
     [userContentController addScriptMessageHandler:self name:@"external"];

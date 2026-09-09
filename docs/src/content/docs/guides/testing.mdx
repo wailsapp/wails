@@ -113,10 +113,10 @@ describe('formatDate', () => {
 
 ```javascript
 import { vi } from 'vitest'
-import { GetUser } from './bindings/myapp/userservice'
+import { GetUser } from './bindings/changeme/userservice'
 
 // Mock the binding
-vi.mock('./bindings/myapp/userservice', () => ({
+vi.mock('./bindings/changeme/userservice', () => ({
     GetUser: vi.fn()
 }))
 

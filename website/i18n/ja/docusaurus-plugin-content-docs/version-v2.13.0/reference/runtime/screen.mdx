@@ -1,0 +1,38 @@
+---
+sidebar_position: 9
+---
+
+# スクリーン
+
+これらのメソッドは、現在接続されているスクリーンに関する情報を提供します。
+
+### ScreenGetAll
+
+現在接続されているスクリーンのリストを返します。
+
+Go: `ScreenGetAll(ctx context.Context) []screen`<br/>
+JS: `ScreenGetAll()`
+
+#### スクリーン
+
+Go構造体:
+
+```go
+type Screen struct {
+	IsCurrent bool
+	IsPrimary bool
+	Width     int
+	Height    int
+}
+```
+
+Typescript型定義:
+
+```ts
+interface Screen {
+    isCurrent: boolean;
+    isPrimary: boolean;
+    width : number
+    height : number
+}
+```

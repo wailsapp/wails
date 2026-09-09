@@ -1,4 +1,4 @@
-import {GreetService} from "./bindings/changeme";
+import {GreetService} from "./bindings/ios-example";
 import * as Runtime from "@wailsio/runtime";
 
 const resultElement = document.getElementById('result');
@@ -111,3 +111,5 @@ window.addEventListener('nativeTabSelected', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
   showPaneByIndex(0);
 });
+
+

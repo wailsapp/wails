@@ -4,10 +4,13 @@ import (
 	"github.com/wailsapp/wails/v3/internal/defaults"
 )
 
-// Re-export types for convenience
 type GlobalDefaults = defaults.GlobalDefaults
 type AuthorDefaults = defaults.AuthorDefaults
 type ProjectDefaults = defaults.ProjectDefaults
+type SigningDefaults = defaults.SigningDefaults
+type DarwinSigningDefaults = defaults.DarwinSigningDefaults
+type WindowsSigningDefaults = defaults.WindowsSigningDefaults
+type LinuxSigningDefaults = defaults.LinuxSigningDefaults
 
 // DefaultGlobalDefaults returns sensible defaults for first-time users
 func DefaultGlobalDefaults() GlobalDefaults {

@@ -30,7 +30,7 @@ import { defineConfig } from '@playwright/test'
 export default defineConfig({
   testDir: './e2e',
   use: {
-    baseURL: 'http://localhost:34115', // Wails dev server
+    baseURL: 'http://localhost:9245', // Wails v3 dev server (default port)
   },
 })
 ```
@@ -170,4 +170,4 @@ jobs:
 ## Next Steps
 
 - [Testing](/guides/testing) - Learn unit testing
-- [Building](/guides/building) - Build your application
+- [Building](/guides/build/building) - Build your application

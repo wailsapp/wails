@@ -2,6 +2,8 @@ package version
 
 import (
 	_ "embed"
+	"strings"
+
 	"github.com/wailsapp/wails/v3/internal/debug"
 )
 
@@ -12,13 +14,13 @@ const DevVersion = "v3.0.0-dev"
 
 func String() string {
 	if !IsDev() {
-		return versionString
+		return strings.TrimSpace(versionString)
 	}
 	return DevVersion
 }
 
 func LatestStable() string {
-	return versionString
+	return strings.TrimSpace(versionString)
 }
 
 func IsDev() bool {

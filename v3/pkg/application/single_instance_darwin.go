@@ -11,11 +11,19 @@ package application
 #import <Cocoa/Cocoa.h>
 
 static void SendDataToFirstInstance(char *singleInstanceUniqueId, char* message) {
+    // Pass message via object, not userInfo: sandboxed apps cannot post distributed
+    // notifications with userInfo (the entire post call is blocked by the sandbox).
+    NSString *messageStr = [NSString stringWithUTF8String:message];
     [[NSDistributedNotificationCenter defaultCenter]
         postNotificationName:[NSString stringWithUTF8String:singleInstanceUniqueId]
-        object:nil
-        userInfo:@{@"message": [NSString stringWithUTF8String:message]}
+        object:messageStr
+        userInfo:nil
         deliverImmediately:YES];
+}
+
+static char* getMacOSTempDir() {
+    NSString *tempDir = NSTemporaryDirectory();
+    return strdup([tempDir UTF8String]);
 }
 
 */
@@ -40,10 +48,14 @@ func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
 
 func (l *darwinLock) acquire(uniqueID string) error {
 	l.uniqueID = uniqueID
-	lockFilePath := os.TempDir()
+	// NSTemporaryDirectory() returns the correct sandbox-container temp dir
+	// regardless of $TMPDIR, which may point outside the sandbox when launched from a terminal.
+	cTmpDir := C.getMacOSTempDir()
+	lockFilePath := C.GoString(cTmpDir)
+	C.free(unsafe.Pointer(cTmpDir))
 	lockFileName := uniqueID + ".lock"
 	var err error
-	l.file, err = createLockFile(lockFilePath + "/" + lockFileName)
+	l.file, err = createLockFile(lockFilePath + lockFileName)
 	if err != nil {
 		return alreadyRunningError
 	}

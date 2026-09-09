@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>streamperf</title>
+<style>
+  body { font: 13px ui-monospace, Menlo, monospace; background:#141414; color:#ddd; padding:16px; }
+  h1 { font-size:14px; color:#8ab4f8; margin:0 0 12px; }
+  td { padding:2px 10px 2px 0; }
+  .n { color:#9ae6a0; text-align:right; }
+  .w { color:#f0a860; text-align:right; }
+</style>
+</head>
+<body>
+<h1>streamperf — GoStream load measurement</h1>
+<table>
+  <tr><td>epoch</td><td class="n" id="epoch">0</td></tr>
+  <tr><td>received</td><td class="n" id="recv">0</td></tr>
+  <tr><td>MB received</td><td class="n" id="mb">0</td></tr>
+  <tr><td>drops</td><td class="w" id="drops">0</td></tr>
+  <tr><td>reorders</td><td class="w" id="reord">0</td></tr>
+  <tr><td>poll responses</td><td class="n" id="polls">0</td></tr>
+  <tr><td>frames/response (max)</td><td class="n" id="batch">0</td></tr>
+  <tr><td>latency p99</td><td class="n" id="p99">0</td></tr>
+  <tr><td>echo round trips</td><td class="n" id="echo">0</td></tr>
+  <tr><td>echo errors</td><td class="w" id="echoerr">0</td></tr>
+  <tr><td>state</td><td class="n" id="state">connecting</td></tr>
+</table>
+
+<script type="module">
+import { Stream } from "/wails/runtime.js";
+
+// ---------------------------------------------------------------------------
+// Go -> JS: the measurement that matters.
+// ---------------------------------------------------------------------------
+
+const CAP = 8192;                      // bounded latency ring, so the page
+const deltas = new Float64Array(CAP);  // itself does not perturb the run
+let dn = 0, dcount = 0;
+
+const st = {
+  epoch: 0, received: 0, bytes: 0, drops: 0, reorders: 0,
+  polls: 0, maxBatch: 0, lastSeq: -1, deltaMin: Infinity,
+  echoes: 0, echoErrors: 0,
+};
+
+function reset(epoch) {
+  st.epoch = epoch;
+  st.received = 0; st.bytes = 0; st.drops = 0; st.reorders = 0;
+  st.polls = 0; st.maxBatch = 0; st.lastSeq = -1; st.deltaMin = Infinity;
+  dn = 0; dcount = 0;
+}
+
+// Every frame delivered from one poll response is dispatched synchronously in
+// a single run, so a microtask queued on the first message of a run fires
+// exactly once per response. That is how batch size is counted without the
+// runtime having to expose any counters.
+let inBatch = false, batchN = 0;
+function noteBatch() {
+  if (inBatch) { batchN++; return; }
+  inBatch = true;
+  batchN = 1;
+  queueMicrotask(() => {
+    st.polls++;
+    if (batchN > st.maxBatch) st.maxBatch = batchN;
+    inBatch = false;
+  });
+}
+
+const perf = Stream("perf");
+perf.onopen = () => { document.getElementById("state").textContent = "open"; };
+perf.onclose = (ev) => { document.getElementById("state").textContent = "closed " + ev.code; };
+perf.onerror = () => { document.getElementById("state").textContent = "error"; };
+
+perf.onmessage = (ev) => {
+  const buf = ev.data;
+  const dv = new DataView(buf);
+  const seq = dv.getBigInt64(0);
+
+  if (seq === -1n) {
+    // Scenario boundary: epoch lives where the payload starts.
+    reset(Number(dv.getBigInt64(16)));
+    return;
+  }
+
+  noteBatch();
+
+  const tms = dv.getFloat64(8);
+  const delta = performance.now() - tms;
+  if (delta < st.deltaMin) st.deltaMin = delta;
+  deltas[dn++ % CAP] = delta;
+  if (dcount < CAP) dcount++;
+
+  st.received++;
+  st.bytes += buf.byteLength;
+
+  const s = Number(seq);
+  if (st.lastSeq >= 0) {
+    if (s > st.lastSeq + 1)      st.drops += s - st.lastSeq - 1;
+    else if (s <= st.lastSeq)    st.reorders++;
+  }
+  if (s > st.lastSeq) st.lastSeq = s;
+};
+
+// ---------------------------------------------------------------------------
+// JS -> Go: lighter, but exercised continuously under the Go->JS load, and
+// including one oversized frame that must go through the chunked send path.
+// ---------------------------------------------------------------------------
+
+const echo = Stream("echo");
+const pending = new Map();
+let echoSeq = 0;
+
+echo.onmessage = (ev) => {
+  const dv = new DataView(ev.data);
+  const id = Number(dv.getBigInt64(0));
+  const expected = pending.get(id);
+  pending.delete(id);
+  if (expected === undefined) { st.echoErrors++; return; }
+  if (ev.data.byteLength !== expected) { st.echoErrors++; return; }
+  st.echoes++;
+};
+
+function sendEcho(size) {
+  if (echo.readyState !== 1) return;
+  const buf = new ArrayBuffer(size);
+  const id = ++echoSeq;
+  new DataView(buf).setBigInt64(0, BigInt(id));
+  pending.set(id, size);
+  try { echo.send(buf); } catch (e) { st.echoErrors++; }
+}
+
+echo.onopen = () => {
+  setInterval(() => sendEcho(64), 100);        // steady small traffic
+  setInterval(() => sendEcho(1024 * 1024), 2000); // exercises chunked send
+};
+
+// ---------------------------------------------------------------------------
+// JS -> Go throughput, driven from Go over a control stream.
+//
+// Each uploader keeps at most a couple of frames queued: send() chains
+// internally, so pushing without a gate would grow bufferedAmount without
+// bound and measure the queue rather than the transport.
+// ---------------------------------------------------------------------------
+
+// setTimeout(0) is clamped to ~4ms once nested, which would cap small-frame
+// uploads at ~250/s and measure the timer instead of the transport. A
+// MessageChannel round trip is an unclamped macrotask, so the pump yields to
+// the event loop — letting fetch completions run — without adding delay.
+// Waiters are a FIFO, not a single slot: with several uploaders pumping at
+// once, one slot would be overwritten and every pump but the last would wait
+// forever — which reads as "concurrency makes it slower" rather than as a bug.
+const tickChannel = new MessageChannel();
+const tickWaiters = [];
+tickChannel.port1.onmessage = () => { const r = tickWaiters.shift(); if (r) r(); };
+function tick() {
+  return new Promise((resolve) => { tickWaiters.push(resolve); tickChannel.port2.postMessage(0); });
+}
+
+const ctl = Stream("ctl");
+let uploaders = [];
+
+ctl.onmessage = (ev) => {
+  const cmd = JSON.parse(new TextDecoder().decode(ev.data));
+  if (cmd.cmd === "upload") startUpload(cmd.size, cmd.conns);
+  else if (cmd.cmd === "stop") stopUpload();
+};
+
+function stopUpload() {
+  for (const u of uploaders) {
+    u.running = false;
+    try { u.sock.close(); } catch (e) { /* already gone */ }
+  }
+  uploaders = [];
+}
+
+function startUpload(size, conns) {
+  stopUpload();
+  const payload = new ArrayBuffer(size);
+
+  for (let i = 0; i < conns; i++) {
+    const sock = Stream("sink");
+    const u = { sock, running: true };
+    uploaders.push(u);
+
+    sock.onopen = async () => {
+      while (u.running && sock.readyState === 1) {
+        if (sock.bufferedAmount > size * 2) {
+          await tick();
+          continue;
+        }
+        try { sock.send(payload); } catch (e) { break; }
+        await tick();
+      }
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+
+function pct(sorted, p) {
+  if (!sorted.length) return 0;
+  const i = Math.min(sorted.length - 1, Math.max(0, Math.ceil(p / 100 * sorted.length) - 1));
+  return sorted[i];
+}
+
+setInterval(() => {
+  const arr = Array.prototype.slice.call(deltas.subarray(0, dcount)).sort((a, b) => a - b);
+  const body = {
+    epoch: st.epoch,
+    received: st.received, bytes: st.bytes,
+    drops: st.drops, reorders: st.reorders,
+    polls: st.polls, maxBatch: st.maxBatch,
+    echoes: st.echoes, echoErrors: st.echoErrors,
+    deltaMin: (st.deltaMin === Infinity ? 0 : st.deltaMin),
+    p50: pct(arr, 50), p95: pct(arr, 95), p99: pct(arr, 99),
+    max: arr.length ? arr[arr.length - 1] : 0,
+  };
+
+  document.getElementById("epoch").textContent = st.epoch;
+  document.getElementById("recv").textContent = st.received;
+  document.getElementById("mb").textContent = (st.bytes / 1048576).toFixed(1);
+  document.getElementById("drops").textContent = st.drops;
+  document.getElementById("reord").textContent = st.reorders;
+  document.getElementById("polls").textContent = st.polls;
+  document.getElementById("batch").textContent = st.maxBatch;
+  document.getElementById("p99").textContent = (body.p99 - body.deltaMin).toFixed(2) + " ms";
+  document.getElementById("echo").textContent = st.echoes;
+  document.getElementById("echoerr").textContent = st.echoErrors;
+
+  fetch("/harness/report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }).catch(() => { /* harness shutting down */ });
+}, 250);
+</script>
+</body>
+</html>

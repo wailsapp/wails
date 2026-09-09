@@ -102,6 +102,24 @@ func (m *module) renderNamedDefault(typ aliasOrNamed, quoted bool) (result strin
 		return m.JSDefault(typ.Underlying(), quoted), true
 	}
 
+	// Handle special cases.
+	unaliased := types.Unalias(typ)
+	if unaliasedNamed, isNamed := unaliased.(*types.Named); isNamed {
+		switch {
+		case m.collector.IsStdTime(unaliasedNamed.Obj()):
+			switch m.TimeType {
+			case "string":
+				return "\"0001-01-01T00:00:00.000Z\"", true
+			case "Date":
+				return "new Date(\"0001-01-01T00:00:00.000Z\")", true
+			default:
+				return "", false
+			}
+		case m.collector.IsVoidAlias(unaliasedNamed.Obj()):
+			return "((() => {})())", true
+		}
+	}
+
 	if quoted {
 		// WARN: Do not test with IsAny/IsStringAlias here!! We only want to catch marshalers.
 		if collect.MaybeJSONMarshaler(typ) == collect.NonMarshaler && collect.MaybeTextMarshaler(typ) == collect.NonMarshaler {

@@ -6,19 +6,18 @@ import (
 	"C"
 )
 
-// For iOS builds, we need to export a function that can be called from Objective-C
-// This wrapper allows us to keep the original main.go unmodified
+// For iOS builds we export a function the WailsAppDelegate can call.
+// This wrapper keeps the user's main.go unmodified.
 
+// WailsIOSMain runs the user's main() (application.New / app.Run). It is invoked
+// by the WailsAppDelegate from didFinishLaunchingWithOptions — i.e. only AFTER
+// UIKit has launched — on a BACKGROUND thread, so the Go runtime never starts
+// concurrently with UIApplicationMain (that race intermittently corrupts the
+// FrontBoard launch handshake on a physical device → blank cold launch /
+// scene-create watchdog 0x8BADF00D). Keeping all app setup off the OS main
+// thread also leaves UIApplicationMain unobstructed on the main thread.
+//
 //export WailsIOSMain
 func WailsIOSMain() {
-	// DO NOT lock the goroutine to the current OS thread on iOS!
-	// This causes signal handling issues:
-	// "signal 16 received on thread with no signal stack"
-	// "fatal error: non-Go code disabled sigaltstack"
-	// iOS apps run in a sandboxed environment where the Go runtime's
-	// signal handling doesn't work the same way as desktop platforms.
-
-	// Call the actual main function from main.go
-	// This ensures all the user's code is executed
 	main()
 }

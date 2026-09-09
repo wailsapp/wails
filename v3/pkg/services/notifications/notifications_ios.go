@@ -55,6 +55,11 @@ func (n *iosNotifier) SendNotificationWithActions(options NotificationOptions) e
 	return nil
 }
 
+func (n *iosNotifier) UpdateNotification(options NotificationOptions) error {
+	// iOS notification update would go here via native bridge
+	return nil
+}
+
 func (n *iosNotifier) RegisterNotificationCategory(category NotificationCategory) error {
 	// iOS notification category registration would go here via native bridge
 	return nil

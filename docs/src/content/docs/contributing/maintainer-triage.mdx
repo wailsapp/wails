@@ -1,0 +1,44 @@
+---
+title: Maintainer Triage
+description: Triage bugs, documentation reports, and WEPs consistently
+sidebar:
+  order: 10
+---
+
+## Purpose
+
+Issues record reproducible bugs and documentation problems. A WEP (Wails
+Enhancement Proposal) pull request records a proposed capability or change to
+public behaviour.
+
+## Issue triage
+
+- Confirm that a bug report includes a released version, platform, reproducible
+  steps, expected behaviour, actual behaviour, and `wails3 doctor` output.
+- Label confirmed reports `Bug` and apply the relevant version and platform
+  labels. Ask for a minimal reproduction when needed.
+- Keep documentation reports open when they identify a concrete documentation
+  defect; encourage a PR when the reporter can make the change.
+- Redirect feature requests to the WEP guide, then close them. The automated
+  redirect workflow handles newly labelled enhancement issues; use the same
+  wording for older issues.
+- Move questions and support requests to GitHub Discussions or Discord.
+
+## WEP triage
+
+1. Check that the PR is a draft titled `[WEP] <title>` and contains only the
+   WEP and supporting material.
+2. Check that it uses the WEP template, identifies an implementor, and covers
+   compatibility, platforms, testing, maintenance, and security/privacy.
+3. Keep technical discussion on the WEP PR. Discussions are useful context but
+   are not the decision record.
+4. Record the maintainer decision in a PR comment: accepted, rejected, or
+   withdrawn, with a short rationale.
+5. For an accepted WEP, assign its number, update the WEP index, merge the WEP
+   PR, and require implementation PRs to link back to it.
+
+## Existing enhancement issues
+
+Do not silently delete historical enhancement issues. For each still-relevant
+request, leave the redirect comment and close it; interested contributors can
+open a WEP. Close duplicates with a link to the existing WEP or decision.

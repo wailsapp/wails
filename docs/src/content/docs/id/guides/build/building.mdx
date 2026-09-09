@@ -1,0 +1,121 @@
+---
+title: Membangun Aplikasi
+description: Build dan package aplikasi Wails Anda
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Aside } from "@astrojs/starlight/components";
+
+Wails v3 menggunakan [Task](https://taskfile.dev) sebagai sistem build-nya. Perintah `wails3 build` dan `wails3 package` adalah wrapper praktis di atas Task.
+
+## Build
+
+Build untuk platform saat ini:
+
+```bash
+wails3 build
+```
+
+Build untuk platform tertentu:
+
+```bash
+wails3 build GOOS=windows
+wails3 build GOOS=darwin
+wails3 build GOOS=linux
+
+# With architecture
+wails3 build GOOS=darwin GOARCH=arm64
+
+# Environment variable style works too
+GOOS=windows wails3 build
+```
+
+Output disimpan ke direktori `bin/`.
+
+<Aside type="tip">
+Cross-compile ke macOS atau Linux dari platform lain memerlukan Docker. Lihat [Build Lintas Platform](/id/guides/build/cross-platform) untuk setup.
+</Aside>
+
+## Development
+
+Jalankan aplikasi Anda dengan hot reload:
+
+```bash
+wails3 dev
+```
+
+Ini memulai file watcher yang rebuild dan restart aplikasi saat ada perubahan. Frontend dev server berjalan di port 9245 secara default.
+
+```bash
+# Custom port
+wails3 dev -port 3000
+
+# Enable HTTPS
+wails3 dev -s
+```
+
+## Packaging
+
+Package aplikasi Anda untuk distribusi:
+
+```bash
+wails3 package
+wails3 package GOOS=windows
+wails3 package GOOS=darwin
+wails3 package GOOS=linux
+```
+
+Ini membuat package spesifik platform:
+- **Windows**: Installer NSIS — lihat [Packaging Windows](/id/guides/build/windows)
+- **macOS**: Application bundle (`.app`) — lihat [Packaging macOS](/id/guides/build/macos)
+- **Linux**: AppImage, deb, dan rpm — lihat [Packaging Linux](/id/guides/build/linux)
+
+## Custom Build Tags
+
+Teruskan custom Go build tags dengan flag `-tags`:
+
+```bash
+# Build with legacy GTK3 + WebKit2GTK 4.1 on Linux (default is GTK4 + WebKitGTK 6.0)
+wails3 build -tags gtk3
+
+# Build in server mode (no GUI, CGO-free)
+wails3 build -tags server
+
+# Combine multiple tags
+wails3 build -tags gtk3,customtag
+```
+
+Tags diteruskan sebagai `EXTRA_TAGS` ke Taskfile dasar. Lihat [Server Build](/id/guides/server-build) dan [Packaging Linux - Dukungan Legacy GTK3](/id/guides/build/linux#legacy-gtk3-support) untuk detail.
+
+## Menggunakan Task Langsung
+
+Untuk kontrol lebih, gunakan Task langsung:
+
+```bash
+# List available tasks
+wails3 task --list
+
+# Verbose output
+wails3 task build -v
+
+# Dry run
+wails3 task --dry
+
+# Force rebuild
+wails3 task build -f
+
+# Pass variables
+wails3 task darwin:build ARCH=amd64
+```
+
+Task spesifik platform seperti `linux:create:deb` atau `darwin:build:universal` hanya tersedia melalui Task.
+
+## Menghasilkan Asset
+
+Regenerasi ikon atau perbarui konfigurasi build:
+
+```bash
+wails3 generate icons -input build/appicon.png
+wails3 update build-assets -name "MyApp" -config build/config.yml -dir build
+```

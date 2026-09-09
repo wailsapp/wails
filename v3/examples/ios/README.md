@@ -1,3 +1,20 @@
+# Wails v3 iOS Example
+
+This example runs on iOS (simulator and device) as well as desktop. See
+[`IOS.md`](../../IOS.md) for the full iOS guide.
+
+```bash
+wails3 task ios:run        # build + launch in the iOS Simulator
+wails3 task ios:package    # production .app (add IOS_PLATFORM=device for devices)
+wails3 task ios:logs:dev   # stream simulator logs
+wails3 task ios:xcode      # open the generated Xcode project
+```
+
+It demonstrates service bindings, Go->JS events, native UITabBar tabs,
+haptics, device info, and runtime WKWebView toggles from both Go and JS.
+
+---
+
 # Welcome to Your New Wails3 Project!
 
 Congratulations on generating your Wails3 application! This README will guide you through the next steps to get your project up and running.

@@ -1,6 +1,6 @@
 ---
 title: 첫 번째 애플리케이션 만들기
-description: 단계별로 첫 번째 Wails 데스크톱 애플리케이션을 생성하세요
+description: 단계별로 첫 번째 Wails 데스크탑 애플리케이션을 생성하세요
 sidebar:
   order: 20
 ---
@@ -229,17 +229,19 @@ import wails_dev from '../../../../assets/wails_dev.mp4';
        git push -u origin main
        ```
 
-    이렇게 하면 Go 모듈 이름이 Go의 모듈 이름 규칙과 일치하게 되어 코드를 공유하기 쉬워집니다.:::tip[Pro Tip]
-프로젝트 생성 시 `-git` 플래그를 사용하면 초기화 단계를 모두 자동화할 수 있습니다:
-```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
-```
-이 명령어는 다양한 Git URL 형식을 지원합니다:
-- HTTPS: `https://github.com/username/project`
-- SSH: `git@github.com:username/project` 또는 `ssh://git@github.com/username/project`
-- Git 프로토콜: `git://github.com/username/project`
-- 파일 시스템: `file:///path/to/project.git`
-:::
+    이렇게 하면 Go 모듈 이름이 Go의 모듈 이름 규칙과 일치하게 되어 코드를 공유하기 쉬워집니다.
+
+    :::tip[Pro Tip]
+    프로젝트 생성 시 `-git` 플래그를 사용하면 초기화 단계를 모두 자동화할 수 있습니다:
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    이 명령어는 다양한 Git URL 형식을 지원합니다:
+    - HTTPS: `https://github.com/username/project`
+    - SSH: `git@github.com:username/project` 또는 `ssh://git@github.com/username/project`
+    - Git 프로토콜: `git://github.com/username/project`
+    - 파일 시스템: `file:///path/to/project.git`
+    :::
 
 </Steps>
 

@@ -63,6 +63,13 @@ func (c *ApplicationEventContext) setData(data map[string]any) {
 	c.data = data
 }
 
+// Data returns the raw context data map. Mobile system events (battery,
+// network, …) attach their structured payload here; the typed getters above
+// (IsDarkMode, Filename, URL, …) cover the well-known keys.
+func (c ApplicationEventContext) Data() map[string]any {
+	return c.data
+}
+
 func (c *ApplicationEventContext) setOpenedWithFile(filepath string) {
 	c.data[CONTEXT_FILENAME] = filepath
 }

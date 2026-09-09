@@ -1,0 +1,130 @@
+---
+sidebar_position: 3
+---
+
+# Log
+
+The Wails runtime provides a logging mechanism that may be called from Go or JavaScript. 대부분처럼 loggers 에는 다양한 로그 수준이 있습니다:
+
+- Trace
+- Debug
+- Info
+- Warning
+- Error
+- Fatal
+
+Logger는 현재 이상의 로그 수준에서 모든 로그 메시지를 출력합니다. Example: `Debug` 로그 level은 `Trace` 메시지를 제외한 모든 메시지를 출력합니다.
+
+### LogPrint
+
+주어진 메시지를 원본 메시지로 기록합니다.
+
+Go: `LogPrint(ctx context.Context, message string)`<br/> JS: `LogPrint(message: string)`
+
+### LogPrintf
+
+주어진 메시지를 원본 메시지로 기록합니다.
+
+Go: `LogPrintf(ctx context.Context, format string, args ...interface{})`<br/>
+
+### LogTrace
+
+`Trace` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogTrace(ctx context.Context, message string)`<br/> JS: `LogTrace(message: string)`
+
+### LogTracef
+
+`Trace` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogTracef(ctx context.Context, format string, args ...interface{})`<br/>
+
+### LogDebug
+
+`Debug` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogDebug(ctx context.Context, message string)`<br/> JS: `LogDebug(message: string)`
+
+### LogDebugf
+
+`Debug` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogDebugf(ctx context.Context, format string, args ...interface{})`<br/>
+
+### LogInfo
+
+`Info` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogInfo(ctx context.Context, message string)`<br/> JS: `LogInfo(message: string)`
+
+### LogInfof
+
+`Info` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogInfof(ctx context.Context, format string, args ...interface{})`<br/>
+
+### LogWarning
+
+`Warning` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogWarning(ctx context.Context, message string)`<br/> JS: `LogWarning(message: string)`
+
+### LogWarningf
+
+`Warning` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogWarningf(ctx context.Context, format string, args ...interface{})`<br/>
+
+### LogError
+
+`Error` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogError(ctx context.Context, message string)`<br/> JS: `LogError(message: string)`
+
+### LogErrorf
+
+`Error` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogErrorf(ctx context.Context, format string, args ...interface{})`<br/>
+
+### LogFatal
+
+`Fatal` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogFatal(ctx context.Context, message string)`<br/> JS: `LogFatal(message: string)`
+
+### LogFatalf
+
+`Fatal` 로그 수준에서 지정된 메시지를 기록합니다.
+
+Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
+
+### LogSetLogLevel
+
+로그 레벨을 설정합니다. In JavaScript, the number relates to the following log levels:
+
+| 값 | 로그 레벨   |
+| - | ------- |
+| 1 | Trace   |
+| 2 | Debug   |
+| 3 | Info    |
+| 4 | Warning |
+| 5 | Error   |
+
+Go: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`<br/> JS: `LogSetLogLevel(level: number)`
+
+## 커스텀 Logger 사용하기
+
+사용자 커스텀 logger는 [Logger](../options.mdx#logger)를 사용하여 제공하여 사용할 수 있습니다. 응용 프로그램 옵션. 유일한 요구 사항은 logger가 `logger.Logger` 인터페이스를 구현한다는 것입니다. 이는 `github.com/wailsapp/wails/v2/pkg/logger`에 정의되어 있습니다:
+
+```go title="logger.go"
+type Logger interface {
+    Print(message string)
+    Trace(message string)
+    Debug(message string)
+    Info(message string)
+    Warning(message string)
+    Error(message string)
+    Fatal(message string)
+}
+```

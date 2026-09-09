@@ -1,0 +1,216 @@
+---
+title: Testing & Continuous Integration
+description: Cara Wails v3 memastikan kualitas dengan unit test, suite integrasi, race detection, dan GitHub Actions CI.
+sidebar:
+  order: 9
+---
+
+Framework desktop yang robust menuntut testing yang solid.
+Wails v3 menggunakan **strategi berlapis**:
+
+| Lapisan | Tujuan | Tooling |
+|-------|------|---------|
+| Unit test | Feedback cepat untuk fungsi terisolasi | `go test ./...` |
+| Generator / CLI test | Validasi `wails3 generate bindings` dan plumbing CLI | `task test:generator`, `task test:cli` |
+| Template test | Memastikan setiap template yang dikirim masih build | `task test:templates` |
+| Race detection | Menangkap data race di runtime & bridge | `go test -race ./...` |
+| Matriks CI | Keyakinan lintas OS di setiap PR | GitHub Actions |
+
+Dokumen ini menjelaskan **di mana tes berada**, **cara menjalankannya**, dan **apa
+yang diorkestrasi Taskfile**.
+
+> Panduan race yang direferensikan draft lama sebagai `pkg/application/RACE.md`
+> ada di `v3/TESTING.md` hari ini.
+
+---
+
+## 1. Konvensi Direktori
+
+```
+v3/
+├── internal/.../_test.go     # Unit test untuk paket internal
+├── pkg/.../_test.go          # Tes API publik
+├── tasks/events/generate.go  # Generator kode untuk konstanta event (BUKAN harness tes)
+├── tests/                    # Harness integration test tingkat atas
+└── TESTING.md                # Panduan tes race / Cgo
+```
+
+Panduan:
+
+* **Jaga unit test di samping kode** (`foo.go` ↔ `foo_test.go`).
+* Gunakan **gaya black-box** untuk paket `pkg/` (`package application_test`)
+  jika meningkatkan kebersihan API.
+* Fixture bersama ada di tempat digunakan (tidak ada paket `internal/testutil/` sentral
+  di pohon ini — wire helper per paket).
+
+---
+
+## 2. Unit Test
+
+### Menulis Tes
+
+```go
+func TestEventConstants(t *testing.T) {
+    assert.NotEmpty(t, events.Common.WindowFocus)
+}
+```
+
+Rekomendasi:
+
+* Gunakan [`stretchr/testify`](https://github.com/stretchr/testify) — sudah ada di
+  `go.mod`.
+* Ikuti gaya **table-driven** untuk cabang.
+* Stub keanehan platform di belakang build tag (`foo_windows_test.go`,
+  `foo_darwin_test.go`, …) jika diperlukan.
+
+### Menjalankan Secara Lokal
+
+```bash
+cd v3
+go test ./... -cover
+```
+
+Atau via Taskfile (target nyata — tidak ada shortcut `task test`):
+
+```
+task test:cli            # Tes plumbing CLI
+task test:generator      # Tes round-trip generator binding
+task test:templates      # Build setiap template yang dikirim
+task test:infrastructure # Helper pendukung
+task test:examples       # Latih matriks contoh (unduh sesuai kebutuhan)
+task test:all            # semua di atas
+task sanity              # smoke check cepat (juga: sanity:gtk4)
+task precommit           # yang harus Anda jalankan sebelum push
+```
+
+---
+
+## 3. Integration Test
+
+`v3/tests/` menampung harness integrasi lintas-paket. Target Taskfile
+`test:example:*` dan `test:examples:*` menggerakkan pemeriksaan build-and-launch
+di darwin / windows / linux (termasuk matriks GTK3 / GTK4 berbasis Docker di
+Linux).
+
+> Direktori `v3/examples/` yang direferensikan docs lama telah dihapus dari
+> working tree ini; contoh publik ada di folder `v3/examples/` repository upstream
+> di GitHub.
+
+Jalankan smoke suite platform host dengan:
+
+```
+task test:examples       # host
+task test:examples:all   # matriks penuh (lambat)
+```
+
+---
+
+## 4. Race Detection
+
+Data race fatal di runtime GUI.
+
+### Panduan Race
+
+Lihat `v3/TESTING.md` untuk:
+
+* Race benign yang diketahui dan alasan supresi
+* Cara menafsirkan stack-trace melintasi batas Cgo (Linux GTK + WebKit2GTK)
+
+### Race Suite Lokal
+
+```
+go test -race ./...
+```
+
+> `wails3 dev` tidak memiliki flag `-race` — flag CLI-nya adalah `--config`, `--port`,
+> dan `-s` (aktifkan HTTPS). Untuk melatih runtime di bawah race detector,
+> build aplikasi tes dengan `go build -race` dan jalankan langsung.
+
+---
+
+## 5. GitHub Actions Workflows
+
+File workflow nyata di bawah `.github/workflows/` (diverifikasi terhadap pohon):
+
+| File | Tujuan |
+|------|---------|
+| `build-and-test-v3.yml` | Matriks build + test v3 utama. Menggunakan `actions/setup-go@v5` dengan `go-version: 1.25`. Menjalankan `task runtime:check`, `task runtime:test`, `task runtime:build`, `task test:examples` (dan `BUILD_TAGS=gtk4 task test:examples` untuk jalur GTK4), `task generator:test:check`, `task install`, lalu `wails3 build` sebagai smoke check. Job Linux menginstal `libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk` dan menjalankan suite tes di bawah `dbus-run-session -- xvfb-run`. |
+| `cross-compile-test-v3.yml` | Sanity check cross-compile |
+| `auto-changelog-v3.yml`, `changelog-v3.yml` | Otomasi changelog |
+| `nightly-release-v3.yml` | Artefak release nightly v3 |
+| `bump-webview2-v3.yml`, `release-webview2.yml` | Manajemen dependensi / release WebView2 |
+| `build-cross-image.yml` | Membangun image container cross-compiler |
+| `publish-npm.yml` | Menerbitkan runtime JS embedded `@wailsio/runtime` ke npm |
+| `pr-master.yml` | Pemeriksaan sisi PR terhadap branch `master` |
+| `semgrep.yml` | Analisis statis Semgrep |
+| `stale-issues.yml`, `issue-labeler.yml`, `file-labeler.yml`, `claude.yml`, `generate-sponsor-image.yml`, `sync-translated-documents.yml`, `upload-source-documents.yml`, `build-and-test.yml`, `weekly-release-v2.yml` | Housekeeping repo / alur sisi v2 |
+
+**Tidak ada** `qodana.yaml` dan **tidak ada** `runtime.yml` di pohon ini — draft lama
+halaman ini menamai keduanya, tetapi hanya `semgrep.yml` yang mencakup analisis statis
+dan paket runtime JS diterbitkan melalui `publish-npm.yml`.
+
+Langkah CI mencerminkan target Taskfile di atas (`task test:cli`,
+`task test:generator`, `task test:templates`, `task test:examples`, …) sehingga Anda
+dapat mereproduksi CI secara lokal satu-ke-satu. Langkah smoke `wails3 build` di
+`build-and-test-v3.yml` dipanggil **tanpa flag ekstra** — tidak ada
+flag `-skip-package` pada `wails3 build`.
+
+---
+
+## 6. Paritas CI Lokal
+
+Tidak ada target payung `task ci` tunggal. Reproduksi CI dengan menggabungkan
+target nyata:
+
+```
+task precommit
+task test:cli
+task test:generator
+task test:templates
+task test:examples
+```
+
+---
+
+## 7. Troubleshooting Tes yang Gagal
+
+| Gejala | Kemungkinan Penyebab | Perbaikan |
+|---------|--------------|-----|
+| **Race di `webview_window_darwin.go`** | Mutasi state window di luar main thread | Marshal melalui `application.InvokeAsync` / `Invoke` agar call berjalan di main thread |
+| **Tes Linux hang di CI headless** | GTK membutuhkan display | Jalankan di bawah `xvfb-run`, mis. `xvfb-run task test:examples:linux` |
+| **Build template gagal** | Lockfile frontend usang | Jalankan ulang `wails3 init` terhadap direktori bersih untuk me-refresh template |
+| **Error Coverpkg** | Integration test mengimpor `main` | Beralih ke build tag `//go:build integration` dan gate import |
+
+---
+
+## 8. Menambahkan Tes Baru
+
+1. **Unit** — buat `*_test.go`, jalankan `go test ./...`
+2. **Generator / CLI** — perluas case di bawah `internal/generator/testcases/`
+   atau `internal/commands/*_test.go` dan jalankan ulang `task test:generator` /
+   `task test:cli`
+3. **Template / contoh** — pastikan template yang dikirim masih build dengan
+   `task test:templates`
+
+---
+
+## 9. Peta File Kunci
+
+| Apa | Path |
+|------|------|
+| Tes round-trip generator | `internal/generator/generate_test.go` |
+| Tes build-assets | `internal/commands/build-assets_test.go` |
+| Panduan race / Cgo | `v3/TESTING.md` |
+| Target tes Taskfile | `v3/Taskfile.yaml` |
+| Generator konstanta event | `v3/tasks/events/generate.go` |
+| Workflow CI | `.github/workflows/build-and-test-v3.yml` (Go 1.25 via `actions/setup-go@v5`) |
+| Analisis statis | `.github/workflows/semgrep.yml` |
+| Publish npm runtime | `.github/workflows/publish-npm.yml` |
+
+---
+
+Kualitas bukan afterthought di Wails v3.
+Dengan unit test, suite generator/template, race detection, dan matriks CI
+lintas platform Anda dapat berkontribusi dengan percaya diri, mengetahui perubahan Anda
+hijau di setiap OS yang kami dukung.
+Happy testing!

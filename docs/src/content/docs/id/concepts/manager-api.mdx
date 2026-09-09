@@ -1,0 +1,289 @@
+---
+title: Manager API
+description: Struktur API terorganisir dengan antarmuka manager yang fokus
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Manager API Wails v3 menyediakan cara yang terorganisir dan mudah ditemukan untuk mengakses fungsionalitas aplikasi melalui struct manager yang fokus, dikelompokkan di bawah field publik pada `*application.App`. Wails 3 adalah perubahan bersih dari v2 — tidak ada lapisan wrapper per-panggilan untuk menjaga kompatibilitas dengan API gaya lama `app.NewWebviewWindow(...)`, jadi manager di bawah ini adalah cara untuk mengendalikan aplikasi.
+
+## Ringkasan
+
+Manager API mengorganisir fungsionalitas aplikasi ke dalam dua belas area fokus (satu logger plus sebelas manager):
+
+- **`app.Window`** - Pembuatan, pengelolaan, dan callback window
+- **`app.ContextMenu`** - Registrasi dan pengelolaan context menu
+- **`app.KeyBinding`** - Pengelolaan key binding global
+- **`app.Browser`** - Integrasi browser (membuka URL dan file)
+- **`app.Env`** - Informasi lingkungan dan status sistem
+- **`app.Dialog`** - Operasi dialog file dan pesan
+- **`app.Event`** - Penanganan event kustom dan event aplikasi
+- **`app.Menu`** - Pengelolaan menu aplikasi
+- **`app.Screen`** - Pengelolaan layar dan transformasi koordinat
+- **`app.Clipboard`** - Operasi teks clipboard
+- **`app.SystemTray`** - Pembuatan dan pengelolaan ikon system tray
+- **`app.Autostart`** - Mendaftarkan aplikasi agar diluncurkan saat login pengguna
+
+## Manfaat
+
+- **Discoverability lebih baik** - Autocomplete IDE menampilkan permukaan API yang terorganisir
+- **Organisasi kode lebih baik** - Metode terkait dikelompokkan bersama
+- **Maintainability lebih baik** - Pemisahan concern antar manager
+- **Ekstensibilitas ke depan** - Lebih mudah menambahkan fitur baru ke area spesifik
+
+## Penggunaan
+
+Manager API menyediakan akses terorganisir ke semua fungsionalitas aplikasi:
+
+```go
+// Event dan penanganan event kustom
+app.Event.Emit("custom", data)
+app.Event.On("custom", func(e *CustomEvent) { ... })
+
+// Pengelolaan window
+window, _ := app.Window.GetByName("main")
+app.Window.OnCreate(func(window Window) { ... })
+
+// Integrasi browser
+app.Browser.OpenURL("https://wails.io")
+
+// Pengelolaan menu
+menu := app.Menu.New()
+app.Menu.Set(menu)
+
+// System tray
+systray := app.SystemTray.New()
+```
+
+## Referensi Manager
+
+### Window Manager
+
+Mengelola pembuatan window, pengambilan, dan callback siklus hidup.
+
+```go
+// Membuat window
+window := app.Window.New()
+window := app.Window.NewWithOptions(options)
+current := app.Window.Current()
+
+// Mencari window
+window, exists := app.Window.GetByName("main")
+windows := app.Window.GetAll()
+
+// Callback window
+app.Window.OnCreate(func(window Window) {
+    // Tangani pembuatan window
+})
+```
+
+### Event Manager
+
+Menangani event kustom dan pendengaran event aplikasi.
+
+```go
+// Event kustom
+app.Event.Emit("userAction", data)
+cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
+    // Tangani event
+})
+app.Event.Off("userAction")
+app.Event.Reset() // Hapus semua listener
+
+// Event aplikasi
+app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
+    // Tangani perubahan tema sistem
+})
+```
+
+### Browser Manager
+
+Menyediakan integrasi browser untuk membuka URL dan file.
+
+```go
+// Buka URL dan file di browser default
+err := app.Browser.OpenURL("https://wails.io")
+err := app.Browser.OpenFile("/path/to/document.pdf")
+```
+
+### Environment Manager
+
+Akses ke informasi lingkungan sistem.
+
+```go
+// Dapatkan info lingkungan
+env := app.Env.Info()
+fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
+
+// Periksa tema sistem
+if app.Env.IsDarkMode() {
+    // Mode gelap aktif
+}
+
+// Buka file manager
+err := app.Env.OpenFileManager("/path/to/folder", false)
+```
+
+### Dialog Manager
+
+Akses terorganisir ke dialog file dan pesan.
+
+```go
+// Dialog file
+result, err := app.Dialog.OpenFile().
+    AddFilter("Text Files", "*.txt").
+    PromptForSingleSelection()
+
+result, err = app.Dialog.SaveFile().
+    SetFilename("document.txt").
+    PromptForSingleSelection()
+
+// Dialog pesan
+app.Dialog.Info().
+    SetTitle("Information").
+    SetMessage("Operation completed successfully").
+    Show()
+
+app.Dialog.Error().
+    SetTitle("Error").  
+    SetMessage("An error occurred").
+    Show()
+```
+
+### Menu Manager
+
+Pembuatan dan pengelolaan menu aplikasi.
+
+```go
+// Buat dan atur menu aplikasi
+menu := app.Menu.New()
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // Tangani klik menu
+})
+
+app.Menu.Set(menu)
+
+// Tampilkan dialog about
+app.Menu.ShowAbout()
+```
+
+### Key Binding Manager
+
+Pengelolaan dinamis key binding global.
+
+```go
+// Tambahkan key binding
+app.KeyBinding.Add("ctrl+n", func(window application.Window) {
+    // Tangani Ctrl+N
+})
+
+app.KeyBinding.Add("ctrl+q", func(window application.Window) {
+    app.Quit()
+})
+
+// Hapus key binding
+app.KeyBinding.Remove("ctrl+n")
+
+// Dapatkan semua binding
+bindings := app.KeyBinding.GetAll()
+```
+
+### Context Menu Manager
+
+Pengelolaan context menu lanjutan (untuk penulis library).
+
+```go
+// Buat dan daftarkan context menu
+menu := app.ContextMenu.New()
+app.ContextMenu.Add("myMenu", menu)
+
+// Ambil context menu
+menu, exists := app.ContextMenu.Get("myMenu")
+
+// Hapus context menu
+app.ContextMenu.Remove("myMenu")
+```
+
+### Screen Manager
+
+Pengelolaan layar dan transformasi koordinat untuk setup multi-monitor.
+
+```go
+// Dapatkan informasi layar
+screens := app.Screen.GetAll()
+primary := app.Screen.GetPrimary()
+
+// Transformasi koordinat
+physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
+logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
+
+// Deteksi layar
+screen := app.Screen.ScreenNearestDipPoint(point)
+screen = app.Screen.ScreenNearestDipRect(rect)
+```
+
+### Clipboard Manager
+
+Operasi clipboard untuk membaca dan menulis teks.
+
+```go
+// Set teks ke clipboard
+success := app.Clipboard.SetText("Hello World")
+if !success {
+    // Tangani error
+}
+
+// Ambil teks dari clipboard
+text, ok := app.Clipboard.Text()
+if !ok {
+    // Tangani error
+} else {
+    // Gunakan teks
+}
+```
+
+### SystemTray Manager
+
+Pembuatan dan pengelolaan ikon system tray.
+
+```go
+// Buat system tray
+systray := app.SystemTray.New()
+systray.SetLabel("My App")
+systray.SetIcon(iconBytes)
+
+// Tambahkan menu ke system tray
+menu := app.Menu.New()
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // Tangani klik
+})
+systray.SetMenu(menu)
+
+// Hancurkan system tray saat selesai
+systray.Destroy()
+```
+
+### Autostart Manager
+
+Mendaftarkan aplikasi agar diluncurkan saat login pengguna. Memilih mekanisme native yang sesuai per platform: SMAppService atau LaunchAgent plist di macOS, kunci registry `HKCU\…\Run` di Windows, entri XDG `.desktop` di Linux.
+
+```go
+// Daftarkan untuk diluncurkan saat login
+err := app.Autostart.Enable()
+
+// Dengan argumen tambahan saat peluncuran dan identifier kustom
+err = app.Autostart.EnableWithOptions(application.AutostartOptions{
+    Identifier: "com.example.myapp",
+    Arguments:  []string{"--hidden"},
+})
+
+// Periksa / hapus
+enabled, err := app.Autostart.IsEnabled()
+status, err := app.Autostart.Status()  // includes Path + Strategy
+err = app.Autostart.Disable()
+```
+
+Lihat [halaman fitur Autostart](/id/features/autostart/basics/) untuk perilaku platform, aturan identifier, dan jaminan deteksi stale.

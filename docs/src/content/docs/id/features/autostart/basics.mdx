@@ -1,0 +1,200 @@
+---
+title: Autostart
+description: Daftarkan aplikasi Anda agar diluncurkan saat pengguna login di macOS, Windows, dan Linux
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+
+## Autostart
+
+`app.Autostart` mendaftarkan aplikasi Anda agar diluncurkan secara otomatis saat pengguna login. API ini memilih mekanisme native yang tepat per platform dan menyelesaikan path instalasi yang disymlink (Homebrew, Scoop) sehingga pendaftaran tidak rusak saat binary di-upgrade.
+
+Pendaftaran berlaku pada **login berikutnya**, bukan segera.
+
+## Memulai Cepat
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+// Register to launch at login
+if err := app.Autostart.Enable(); err != nil {
+    app.Logger.Error("autostart enable failed", "error", err)
+}
+
+// Stop launching at login
+if err := app.Autostart.Disable(); err != nil {
+    app.Logger.Error("autostart disable failed", "error", err)
+}
+
+// Check status
+enabled, err := app.Autostart.IsEnabled()
+```
+
+## API
+
+### `Enable`
+
+Mendaftarkan aplikasi agar diluncurkan saat login dengan opsi default.
+
+```go
+func (m *AutostartManager) Enable() error
+```
+
+Memanggil `Enable` berulang kali aman — pendaftaran ditimpa setiap kali, jadi benar untuk dipanggil pada setiap startup jika Anda telah menyimpan preferensi pengguna.
+
+### `EnableWithOptions`
+
+Mendaftarkan dengan opsi kustom.
+
+```go
+func (m *AutostartManager) EnableWithOptions(opts AutostartOptions) error
+```
+
+**`AutostartOptions`:**
+
+| Field | Type | Description |
+|---|---|---|
+| `Identifier` | `string` | Menimpa ID pendaftaran yang di-derive otomatis. Lihat "Identifier" di bawah. |
+| `Arguments` | `[]string` | Argumen tambahan yang ditambahkan ke path executable saat diluncurkan saat login (mis. `--hidden`). |
+
+### `Disable`
+
+Menghapus pendaftaran autostart. Mengembalikan `nil` jika aplikasi belum terdaftar — disable bersifat idempotent.
+
+```go
+func (m *AutostartManager) Disable() error
+```
+
+### `IsEnabled`
+
+Melaporkan apakah pendaftaran ada. Cepat — tidak memvalidasi path yang terdaftar.
+
+```go
+func (m *AutostartManager) IsEnabled() (bool, error)
+```
+
+### `Status`
+
+Mengembalikan status pendaftaran lengkap.
+
+```go
+func (m *AutostartManager) Status() (AutostartStatus, error)
+```
+
+**`AutostartStatus`:**
+
+| Field | Type | Description |
+|---|---|---|
+| `Enabled` | `bool` | Apakah pendaftaran ada. |
+| `Path` | `string` | Lokasi artefak pendaftaran di disk (path plist, path `.desktop`, atau sub-key registry). Kosong saat `Enabled` false. |
+| `Strategy` | `AutostartStrategy` | Mekanisme mana yang mendaftarkan aplikasi (lihat [Perilaku Platform](#perilaku-platform)). |
+
+## Perilaku Platform
+
+<Tabs syncKey="platform">
+  <TabItem label="macOS" icon="apple">
+    Dua mekanisme digunakan tergantung cara aplikasi dikemas:
+
+    - **macOS 13+, bundled `.app`**: `SMAppService.mainAppService`. Berfungsi untuk aplikasi sandboxed dan build Mac App Store. Tanpa prompt otomatisasi TCC (pendekatan AppleScript historis memicu satu).
+    - **macOS pre-13, atau binary tidak bundled**: LaunchAgent plist ditulis ke `~/Library/LaunchAgents/<identifier>.plist` dengan `RunAtLoad=true`.
+
+    `Status()` mengembalikan `AutostartStrategySMAppService` atau `AutostartStrategyLaunchAgent` sehingga pemanggil dapat mengetahui path mana yang diambil.
+
+    Saat aplikasi di-upgrade dari unbundled ke bundled, kedua path diperiksa pada `Status()` dan dibersihkan oleh `Disable()` sehingga LaunchAgent yatim tidak terus meluncurkan build lama.
+  </TabItem>
+
+  <TabItem label="Windows" icon="seti:windows">
+    Nilai registry ditambahkan di bawah `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, dengan nama nilai disetel ke `Identifier` autostart dan data disetel ke path executable yang di-quote plus `Arguments` apa pun.
+
+    Quoting argumen mengikuti aturan `CommandLineToArgvW` (backslash digandakan sebelum quote) sehingga path dengan spasi atau quote round-trip dengan benar.
+
+    `Status().Strategy` mengembalikan `AutostartStrategyRegistryRun`.
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    Entri autostart XDG ditulis ke `$XDG_CONFIG_HOME/autostart/<identifier>.desktop` (default ke `~/.config/autostart/`) dengan:
+
+    ```ini
+    Type=Application
+    Hidden=false
+    X-GNOME-Autostart-enabled=true
+    Exec=<executable> <arguments>
+    ```
+
+    The `Exec` field is escaped per the [freedesktop.org Desktop Entry spec](https://specifications.freedesktop.org/desktop-entry-spec/) — reserved characters (``"``, `` ` ``, `$`, `\\`) are backslash-escaped and the value is double-quoted when it contains whitespace.
+
+    `Status().Strategy` returns `AutostartStrategyXDGAutostart`.
+  </TabItem>
+
+  <TabItem label="iOS / Android / server" icon="information">
+    Not supported. All methods return `ErrAutostartNotSupported`. Use `errors.Is(err, application.ErrAutostartNotSupported)` to detect this cleanly:
+
+    ```go
+    if err := app.Autostart.Enable(); err != nil {
+        if errors.Is(err, application.ErrAutostartNotSupported) {
+            // hide the toggle in the UI
+            return
+        }
+        // real failure — surface it
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+## Identifier
+
+If `Options.Identifier` is empty, a default is derived from your app's name:
+
+| Platform | Default identifier |
+|---|---|
+| macOS (bundled) | The app's bundle identifier, e.g. `com.example.MyApp` |
+| macOS (unbundled) | `wails.autostart.<slug>`, where `<slug>` is derived from `application.Options.Name` |
+| Windows | Slug of `application.Options.Name` (lowercase, non-`A-Za-z0-9._-` stripped, spaces become dashes) |
+| Linux | Same slug as Windows |
+
+Identifiers must match `^[A-Za-z0-9._-]+$` and be no longer than 200 characters. Reverse-DNS form is recommended for macOS (it matches how launchd Labels are conventionally written).
+
+When `AutostartOptions.Identifier` is overridden, the same identifier is reused as the registry value name on Windows and the `.desktop` filename on Linux, so a single string identifies the registration cross-platform.
+
+## Stale Detection
+
+`Disable()` and `Status()` locate the registration by **matching the registered executable path against `os.Executable()` (resolved through any symlinks)**, not by looking up the identifier. This means:
+
+- **Changing the identifier between releases is safe.** The old registration is still discoverable by `Status()` and cleaned up by `Disable()` — as long as the executable path is the same.
+- **A second copy of the app at a different path won't clobber the first's registration.** Each binary location is tracked independently.
+- **Symlinked installs (Homebrew, Scoop) are stable.** `filepath.EvalSymlinks` is applied to `os.Executable()` before matching, so a Homebrew upgrade that swaps the target doesn't strand the entry.
+
+What this does *not* cover: if the user moves or renames the binary to an unrelated path, the old registration becomes orphaned (it points at the now-missing file). Apps that ship from a stable install path don't need to worry about this; apps shipped as portable single-file binaries should call `Disable()` before moving themselves, or always launch through a stable symlink.
+
+## Example
+
+```go
+package main
+
+import (
+    "errors"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+func main() {
+    app := application.New(application.Options{
+        Name: "My App",
+    })
+
+    // Pulihkan preferensi pengguna saat startup
+    if userPrefersAutostart() {
+        if err := app.Autostart.Enable(); err != nil {
+            if !errors.Is(err, application.ErrAutostartNotSupported) {
+                app.Logger.Error("autostart", "error", err)
+            }
+        }
+    }
+
+    app.Run()
+}
+```
+
+Contoh lengkap yang dapat dijalankan dengan tombol status / enable / disable ada di [`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart).

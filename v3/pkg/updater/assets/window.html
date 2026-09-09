@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Software Update</title>
+<style>
+:root {
+  /* Light palette — Apple/Microsoft system defaults */
+  --bg:        #f8f8fa;
+  --surface:   #ffffff;
+  --surface-2: #f0f0f3;
+  --fg:        #1d1d1f;
+  --fg-dim:    #6b6b73;
+  --fg-faint:  #99999f;
+  --border:    #d6d6dc;
+  --accent:    #0a84ff;
+  --accent-fg: #ffffff;
+  --accent-dim:#3a99ff33;
+  --success:   #34c759;
+  --error:     #ff3b30;
+  --warning:   #ff9500;
+
+  --radius:    10px;
+  --radius-sm: 6px;
+  --pad:       20px;
+  --gap:       14px;
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI",
+          "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #1a1a1c;
+    --surface:   #232326;
+    --surface-2: #2c2c30;
+    --fg:        #f5f5f7;
+    --fg-dim:    #b0b0b8;
+    --fg-faint:  #7a7a82;
+    --border:    #3a3a3e;
+    --accent:    #0a84ff;
+    --accent-dim:#0a84ff44;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font: 13px/1.4 var(--font);
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* === Layout === */
+.u {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--pad);
+  gap: var(--gap);
+}
+.u__hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.u__icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  line-height: 1;
+  user-select: none;
+}
+.u--ready      .u__icon { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+.u--up-to-date .u__icon { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+.u--error      .u__icon { background: rgba(255, 59, 48, 0.15); color: var(--error); }
+
+/* === Up-to-date compact layout ===
+   Same hero shape as Update Available (left-aligned icon + title + version
+   pill) but with the green check and a "this is the latest version" suffix
+   in the pill. The Go side resizes the window via WindowSizer to ~210px
+   tall when entering this state so the layout doesn't show a wasted
+   bottom half. No notes panel here. */
+.u__head { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.u__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.u__subtitle {
+  font-size: 12px;
+  color: var(--fg-dim);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.u__ver-from {
+  text-decoration: line-through;
+  color: var(--fg-faint);
+}
+.u__ver-arrow { color: var(--fg-faint); }
+.u__ver-to {
+  font-weight: 600;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.u__size {
+  color: var(--fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* === Notes ===
+   Block-flow content (Markdown rendered to HTML by renderMarkdown). */
+.u__notes {
+  flex: 1 1 auto;
+  min-height: 60px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  overflow-y: auto;
+  color: var(--fg);
+  line-height: 1.5;
+  font-size: 12.5px;
+}
+.u__notes:empty::before {
+  content: "No release notes provided.";
+  color: var(--fg-faint);
+  font-style: italic;
+}
+.u__notes::-webkit-scrollbar { width: 10px; }
+.u__notes::-webkit-scrollbar-thumb { background: var(--border); border: 2px solid var(--surface); border-radius: 5px; }
+/* Markdown subset rendered by renderMarkdown() inside notes */
+.u__notes p { margin: 0 0 8px 0; }
+.u__notes p:last-child { margin-bottom: 0; }
+.u__notes strong { font-weight: 600; }
+.u__notes em { font-style: italic; }
+.u__notes code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  padding: 1px 5px;
+  background: var(--surface-2);
+  border-radius: 3px;
+}
+.u__notes pre {
+  background: var(--surface-2);
+  padding: 8px 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 6px 0;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  white-space: pre;
+}
+.u__notes pre code { background: none; padding: 0; font-size: inherit; }
+.u__notes ul, .u__notes ol { margin: 4px 0 8px 0; padding-left: 22px; }
+.u__notes li { margin: 2px 0; }
+.u__notes h1, .u__notes h2, .u__notes h3 {
+  margin: 10px 0 6px 0;
+  font-weight: 600;
+  font-size: 13px;
+}
+.u__notes h1 { font-size: 14px; }
+.u__notes table {
+  border-collapse: collapse;
+  margin: 6px 0;
+  font-size: 11.5px;
+  border: 1px solid var(--border);
+}
+.u__notes th, .u__notes td {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.u__notes th { background: var(--surface-2); font-weight: 600; }
+.u__notes a { color: var(--accent); text-decoration: none; }
+.u__notes a:hover { text-decoration: underline; }
+
+/* === Progress === */
+.u__progress-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  flex: 0 0 auto;
+}
+.u__progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--fg-dim);
+}
+.u__progress-state { font-weight: 500; color: var(--fg); }
+.u__progress-rate { font-variant-numeric: tabular-nums; }
+.u__bar {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border: none;
+  border-radius: 2px;
+  background: var(--surface-2);
+}
+.u__bar::-webkit-progress-bar { background: var(--surface-2); border-radius: 2px; }
+.u__bar::-webkit-progress-value { background: var(--accent); border-radius: 2px; transition: width 80ms linear; }
+.u__bar::-moz-progress-bar { background: var(--accent); border-radius: 2px; }
+.u__bar:indeterminate {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--accent-dim) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: u-pulse 1.4s linear infinite;
+}
+@keyframes u-pulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* === Spinner === */
+.u__spinner {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 80px;
+  color: var(--fg-dim);
+}
+.u__spinner::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--surface-2);
+  border-top-color: var(--accent);
+  animation: u-spin 0.9s linear infinite;
+}
+@keyframes u-spin { to { transform: rotate(360deg); } }
+
+/* === Error banner === */
+.u__error {
+  background: rgba(255, 59, 48, 0.12);
+  border: 1px solid var(--error);
+  color: var(--error);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 12.5px;
+  flex: 0 0 auto;
+}
+
+/* === Buttons === */
+.u__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.u__secondary-actions {
+  display: flex;
+  gap: 4px;
+}
+.u__primary-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.u__btn {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 120ms ease, transform 80ms ease;
+  user-select: none;
+  white-space: nowrap;
+}
+.u__btn:hover:not(:disabled) { background: var(--surface-2); }
+.u__btn:active:not(:disabled) { transform: scale(0.98); }
+.u__btn:disabled { opacity: 0.4; cursor: default; }
+.u__btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--fg-dim);
+  padding: 7px 10px;
+}
+.u__btn--ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--fg); }
+.u__btn--primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: transparent;
+}
+.u__btn--primary:hover:not(:disabled) { filter: brightness(1.08); }
+.u__btn--primary:active:not(:disabled) { filter: brightness(0.94); }
+
+/* === State-driven visibility ===
+   Each state shows only what's relevant. Hide everything by default
+   under the data-state attribute, then opt-in per state. Default display
+   value when shown is `flex` (matches the hero, footer, progress-box,
+   spinner layouts); .u__notes overrides to `block` because its children
+   are HTML flow content (paragraphs, lists, tables). */
+.u [data-show] { display: none; }
+.u[data-state="checking"]     [data-show~="checking"]     { display: flex; }
+.u[data-state="available"]    [data-show~="available"]    { display: flex; }
+.u[data-state="downloading"]  [data-show~="downloading"]  { display: flex; }
+.u[data-state="verifying"]    [data-show~="verifying"]    { display: flex; }
+.u[data-state="installing"]   [data-show~="installing"]   { display: flex; }
+.u[data-state="ready"]        [data-show~="ready"]        { display: flex; }
+.u[data-state="up-to-date"]   [data-show~="up-to-date"]   { display: flex; }
+.u[data-state="error"]        [data-show~="error"]        { display: flex; }
+
+/* Notes are block-flow content (markdown-rendered); never a flex container.
+   No up-to-date entry — that state uses the compact centered-hero layout
+   (see .u--up-to-date rules above) and renders no notes panel. */
+.u[data-state="available"] .u__notes[data-show~="available"],
+.u[data-state="ready"]     .u__notes[data-show~="ready"] {
+  display: block;
+}
+
+/* Buttons default to inline-flex when shown */
+.u[data-state] .u__btn[data-show] { display: none; }
+.u[data-state="available"]   .u__btn[data-show~="available"]   { display: inline-flex; }
+.u[data-state="downloading"] .u__btn[data-show~="downloading"] { display: inline-flex; }
+.u[data-state="ready"]       .u__btn[data-show~="ready"]       { display: inline-flex; }
+.u[data-state="up-to-date"]  .u__btn[data-show~="up-to-date"]  { display: inline-flex; }
+.u[data-state="error"]       .u__btn[data-show~="error"]       { display: inline-flex; }
+
+/* The hero subtitle (version line) only appears when there's content for it */
+.u__subtitle:empty { display: none; }
+</style>
+</head>
+<body>
+<main class="u wails-updater" id="root" data-state="checking" data-wails-updater-window="1">
+  <header class="u__hero">
+    <div class="u__icon" id="state-icon" aria-hidden="true">↓</div>
+    <div class="u__head">
+      <h1 class="u__title" id="title">Checking for Updates…</h1>
+      <div class="u__subtitle" id="subtitle"></div>
+    </div>
+  </header>
+
+  <!-- Checking / Verifying / Installing all share a spinner -->
+  <div class="u__spinner" data-show="checking verifying installing" id="spinner-text">Contacting update server…</div>
+
+  <!-- Release notes (Available + Ready + Up-to-date) -->
+  <div class="u__notes" data-show="available ready" id="notes"></div>
+
+  <!-- Download progress -->
+  <div class="u__progress-box" data-show="downloading">
+    <div class="u__progress-row">
+      <span class="u__progress-state" id="progress-state">Downloading…</span>
+      <span class="u__progress-rate" id="progress-rate"></span>
+    </div>
+    <progress class="u__bar" id="bar" max="100" value="0"></progress>
+  </div>
+
+  <!-- Error banner -->
+  <div class="u__error" data-show="error" id="error-text">An error occurred.</div>
+
+  <!-- Up-to-date message body -->
+  <!-- Up-to-Date state has no notes panel — the compact centered hero (.u--up-to-date) carries everything. -->
+
+
+  <footer class="u__footer">
+    <div class="u__secondary-actions">
+      <button class="u__btn u__btn--ghost" data-show="available" id="btn-skip" type="button">Skip This Version</button>
+      <button class="u__btn u__btn--ghost" data-show="available" id="btn-remind" type="button">Remind Me Later</button>
+    </div>
+    <div class="u__primary-actions">
+      <button class="u__btn" data-show="available downloading ready error up-to-date" id="btn-cancel" type="button">Close</button>
+      <button class="u__btn u__btn--primary" data-show="available" id="btn-install" type="button">Install Update</button>
+      <button class="u__btn u__btn--primary" data-show="ready" id="btn-restart" type="button">Restart &amp; Apply</button>
+      <button class="u__btn u__btn--primary" data-show="error" id="btn-retry" type="button">Try Again</button>
+    </div>
+  </footer>
+</main>
+
+<script>
+/* ===============================================================
+   Updater window controller
+   ===============================================================
+   The framework auto-injects window.wails.Events.On / Emit for any
+   window opened with AllowSimpleEventEmit=true and InitialHTML set —
+   see pkg/application/inline_event_shim.go for the shim source and
+   the threat-model note. This file just uses those bindings. */
+(function () {
+  var Events = window.wails.Events;
+
+  var els = {
+    root:        document.getElementById("root"),
+    icon:        document.getElementById("state-icon"),
+    title:       document.getElementById("title"),
+    subtitle:    document.getElementById("subtitle"),
+    notes:       document.getElementById("notes"),
+    spinnerText: document.getElementById("spinner-text"),
+    progress:    document.getElementById("bar"),
+    progressRate:document.getElementById("progress-rate"),
+    progressState: document.getElementById("progress-state"),
+    error:       document.getElementById("error-text"),
+    btnInstall:  document.getElementById("btn-install"),
+    btnSkip:     document.getElementById("btn-skip"),
+    btnRemind:   document.getElementById("btn-remind"),
+    btnCancel:   document.getElementById("btn-cancel"),
+    btnRestart:  document.getElementById("btn-restart"),
+    btnRetry:    document.getElementById("btn-retry"),
+  };
+
+  /* Per-state visual identity for the hero icon */
+  var ICONS = {
+    "checking":    "↻",
+    "available":   "↓",
+    "downloading": "↓",
+    "verifying":   "✓",
+    "installing":  "↓",
+    "ready":       "✓",
+    "up-to-date":  "✓",
+    "error":       "!",
+  };
+
+  /* Wails' event bus dispatches each Emit on a fresh goroutine, so
+     events arrive out of source order under load (we have seen
+     installing → verifying → update-ready → download-complete).
+     Rank monotonically so a late event can't downgrade the UI. */
+  var RANK = {
+    "":            0,
+    "checking":    1,
+    "available":   2,
+    "downloading": 3,
+    "verifying":   4,
+    "installing":  5,
+    "ready":       6,
+    "up-to-date":  6,
+    "error":       99,
+  };
+  var rank = 0;
+  var errored = false;
+  var currentRelease = null;
+  var currentVersion = null;
+  var skippedVersion = "";
+
+  function setState(name) {
+    if (errored && name !== "error") return false;
+    if (name === "error") {
+      errored = true;
+    } else {
+      if ((RANK[name] || 0) < rank) return false;
+      rank = RANK[name] || 0;
+    }
+    els.root.setAttribute("data-state", name);
+    els.root.classList.toggle("u--ready",      name === "ready");
+    els.root.classList.toggle("u--up-to-date", name === "up-to-date");
+    els.root.classList.toggle("u--error",      name === "error");
+    if (els.icon) els.icon.textContent = ICONS[name] || "";
+    return true;
+  }
+
+  /* Minimal Markdown→HTML renderer for release notes. Handles the subset
+     real release notes actually contain — paragraphs, bold, italic, inline
+     code, fenced code blocks, bullet/numbered lists, GFM tables, and
+     headings. Source is escaped before any HTML substitution so a
+     compromised release note can't inject script tags (links use a fixed
+     rel="noopener" + target="_blank"). Anything outside this subset falls
+     through as literal text. */
+  function renderMarkdown(src) {
+    if (!src) return "";
+    function escapeHtml(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function inline(s) {
+      s = s.replace(/`([^`]+)`/g, function (_, c) { return "<code>" + c + "</code>"; });
+      s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      s = s.replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
+      s = s.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      return s;
+    }
+    var lines = escapeHtml(src).split(/\r?\n/);
+    var out = [];
+    var i = 0;
+    while (i < lines.length) {
+      var L = lines[i];
+      // Fenced code block
+      if (/^```/.test(L)) {
+        var buf = [];
+        i++;
+        while (i < lines.length && !/^```/.test(lines[i])) { buf.push(lines[i]); i++; }
+        out.push("<pre><code>" + buf.join("\n") + "</code></pre>");
+        i++; continue;
+      }
+      // Heading
+      var h = /^(#{1,6})\s+(.+)$/.exec(L);
+      if (h) {
+        var lvl = Math.min(h[1].length, 3); // cap at h3 visual-weight-wise
+        out.push("<h" + lvl + ">" + inline(h[2]) + "</h" + lvl + ">");
+        i++; continue;
+      }
+      // GFM-style table
+      if (/^\|.*\|$/.test(L) && i + 1 < lines.length && /^\|[\s:|-]+\|$/.test(lines[i+1])) {
+        var rows = [L];
+        i += 2; // skip header + separator
+        while (i < lines.length && /^\|.*\|$/.test(lines[i])) { rows.push(lines[i]); i++; }
+        var html = "<table>";
+        rows.forEach(function (r, idx) {
+          var cells = r.replace(/^\||\|$/g, "").split("|").map(function (c) { return inline(c.trim()); });
+          var tag = idx === 0 ? "th" : "td";
+          html += "<tr><" + tag + ">" + cells.join("</" + tag + "><" + tag + ">") + "</" + tag + "></tr>";
+        });
+        html += "</table>";
+        out.push(html);
+        continue;
+      }
+      // List (bullet or numbered)
+      var ulRe = /^[-*]\s+(.+)$/;
+      var olRe = /^\d+\.\s+(.+)$/;
+      if (ulRe.test(L) || olRe.test(L)) {
+        var isOL = olRe.test(L);
+        var re = isOL ? olRe : ulRe;
+        var items = [];
+        while (i < lines.length && re.test(lines[i])) {
+          items.push("<li>" + inline(re.exec(lines[i])[1]) + "</li>");
+          i++;
+        }
+        out.push("<" + (isOL ? "ol" : "ul") + ">" + items.join("") + "</" + (isOL ? "ol" : "ul") + ">");
+        continue;
+      }
+      // Blank line — paragraph break
+      if (L.trim() === "") { i++; continue; }
+      // Paragraph (collect contiguous non-empty lines)
+      var para = [L];
+      i++;
+      while (i < lines.length && lines[i].trim() !== "" && !/^[-*]\s/.test(lines[i]) && !/^\d+\.\s/.test(lines[i]) && !/^\|.*\|$/.test(lines[i]) && !/^#{1,6}\s/.test(lines[i]) && !/^```/.test(lines[i])) {
+        para.push(lines[i]); i++;
+      }
+      out.push("<p>" + inline(para.join(" ")) + "</p>");
+    }
+    return out.join("\n");
+  }
+
+  function fmtBytes(n) {
+    if (!n || n <= 0) return "";
+    var u = ["B", "KB", "MB", "GB"], k = 1024;
+    var i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(k)));
+    return (n / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1) + " " + u[i];
+  }
+  function fmtRate(bps) {
+    var s = fmtBytes(bps);
+    return s ? s + "/s" : "";
+  }
+
+  function renderSubtitle(rel) {
+    if (!rel) { els.subtitle.textContent = ""; return; }
+    els.subtitle.innerHTML = "";
+    if (currentVersion) {
+      var from = document.createElement("span"); from.className = "u__ver-from"; from.textContent = currentVersion;
+      var arr  = document.createElement("span"); arr.className  = "u__ver-arrow"; arr.textContent  = "→";
+      els.subtitle.appendChild(from);
+      els.subtitle.appendChild(arr);
+    }
+    if (rel.version) {
+      var to = document.createElement("span"); to.className = "u__ver-to"; to.textContent = "v" + rel.version;
+      els.subtitle.appendChild(to);
+    }
+    var size = (rel.artifact && rel.artifact.size) || 0;
+    if (size > 0) {
+      var sz = document.createElement("span"); sz.className = "u__size"; sz.textContent = "· " + fmtBytes(size);
+      els.subtitle.appendChild(sz);
+    }
+  }
+
+  /* === State handlers === */
+  function onCheckStarted() {
+    if (!setState("checking")) return;
+    els.title.textContent = "Checking for Updates…";
+    els.spinnerText.textContent = "Contacting update server…";
+  }
+  function onUpdateAvailable(rel) {
+    currentRelease = rel || null;
+    if (!setState("available")) return;
+    els.title.textContent = "Update Available";
+    renderSubtitle(rel);
+    els.notes.innerHTML = (rel && rel.notes) ? renderMarkdown(rel.notes) : "";
+  }
+  function onNoUpdate() {
+    if (!setState("up-to-date")) return;
+    els.title.textContent = "You're Up to Date";
+    // The title already conveys "this is the latest version"; the subtitle
+    // just carries the current version number so the user knows WHICH
+    // version they're on. Keeping it to a single version token (no
+    // explanatory suffix) leaves room for long versions like
+    // 1.0.0-rc.4+build.20260522.x86_64 without the line wrapping.
+    els.subtitle.innerHTML = "";
+    if (currentVersion) {
+      var v = document.createElement("span");
+      v.className = "u__ver-to";
+      v.textContent = "v" + currentVersion;
+      els.subtitle.appendChild(v);
+    }
+  }
+  function onDownloadStarted(rel) {
+    if (!setState("downloading")) return;
+    els.title.textContent = "Downloading Update";
+    els.progressState.textContent = "Starting download…";
+    els.progressRate.textContent = "";
+    els.progress.removeAttribute("value");
+  }
+  function onDownloadProgress(p) {
+    if (!p) return;
+    if (rank !== RANK.downloading) return;
+    if (p.total > 0) {
+      els.progress.max = p.total;
+      els.progress.value = p.written;
+      var pct = Math.round((p.written / p.total) * 100);
+      els.progressState.textContent = pct + "% · " + fmtBytes(p.written) + " of " + fmtBytes(p.total);
+    } else {
+      els.progress.removeAttribute("value");
+      els.progressState.textContent = "Downloaded " + fmtBytes(p.written);
+    }
+    els.progressRate.textContent = p.rate ? fmtRate(p.rate) : "";
+  }
+  function onVerifying() {
+    if (!setState("verifying")) return;
+    els.title.textContent = "Verifying Update";
+    els.spinnerText.textContent = "Checking signature…";
+  }
+  function onInstalling() {
+    if (!setState("installing")) return;
+    els.title.textContent = "Installing Update";
+    els.spinnerText.textContent = "Unpacking and staging…";
+  }
+  function onUpdateReady() {
+    if (!setState("ready")) return;
+    els.title.textContent = "Update Ready";
+    if (currentRelease) renderSubtitle(currentRelease);
+    if (currentRelease && currentRelease.notes && els.notes) {
+      els.notes.innerHTML = renderMarkdown(currentRelease.notes);
+    }
+  }
+  function onError(info) {
+    setState("error");
+    els.title.textContent = "Update Failed";
+    var msg = (info && info.message) ? info.message : "An unexpected error occurred.";
+    if (info && info.stage) msg = "During " + info.stage + ": " + msg;
+    els.error.textContent = msg;
+  }
+
+  /* === Wire up === */
+  Events.On("wails:updater:meta", function (e) {
+    var m = e && (e.data != null ? e.data : e);
+    if (m && typeof m.currentVersion === "string") currentVersion = m.currentVersion;
+    if (m && typeof m.skippedVersion === "string") skippedVersion = m.skippedVersion;
+  });
+  Events.On("wails:updater:check-started",     function () { onCheckStarted(); });
+  Events.On("wails:updater:update-available",  function (e) { onUpdateAvailable(e && (e.data != null ? e.data : e)); });
+  Events.On("wails:updater:no-update",         function () { onNoUpdate(); });
+  Events.On("wails:updater:download-started",  function (e) { onDownloadStarted(e && (e.data != null ? e.data : e)); });
+  Events.On("wails:updater:download-progress", function (e) { onDownloadProgress(e && (e.data != null ? e.data : e)); });
+  Events.On("wails:updater:download-complete", function () {});
+  Events.On("wails:updater:verifying",         function () { onVerifying(); });
+  Events.On("wails:updater:installing",        function () { onInstalling(); });
+  Events.On("wails:updater:update-ready",      function (e) { onUpdateReady(); });
+  Events.On("wails:updater:error",             function (e) { onError(e && (e.data != null ? e.data : e)); });
+
+  if (els.btnInstall) els.btnInstall.addEventListener("click", function () { Events.Emit("wails:updater:user:install"); });
+  if (els.btnSkip)    els.btnSkip.addEventListener   ("click", function () { Events.Emit("wails:updater:user:skip"); });
+  if (els.btnRemind)  els.btnRemind.addEventListener ("click", function () { Events.Emit("wails:updater:user:remind"); });
+  if (els.btnCancel)  els.btnCancel.addEventListener ("click", function () { Events.Emit("wails:updater:user:cancel"); });
+  if (els.btnRestart) els.btnRestart.addEventListener("click", function () { Events.Emit("wails:updater:user:restart"); });
+  if (els.btnRetry)   els.btnRetry.addEventListener  ("click", function () { Events.Emit("wails:updater:user:install"); });
+
+  /* Wails queues ExecJS calls (including dispatchWailsEvent pushes) until
+     the page invokes "wails:runtime:ready" — see HandleMessage in
+     pkg/application/webview_window.go. Without this handshake every state
+     event the framework dispatched while we were still loading sits in the
+     pendingJS list forever and the UI stays on its initial HTML. Poll for
+     invoke (set by runtime Core after WebViewDidFinishNavigation) and
+     trigger the flush. */
+  (function announce() {
+    if (window._wails && typeof window._wails.invoke === "function") {
+      window._wails.invoke("wails:runtime:ready");
+      Events.Emit("wails:updater:window:ready");
+    } else {
+      setTimeout(announce, 30);
+    }
+  })();
+})();
+</script>
+</body>
+</html>

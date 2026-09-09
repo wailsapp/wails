@@ -1,0 +1,103 @@
+# Prise en charge des distributions Linux
+
+## Vue d'ensemble
+
+Wails offre le support de Linux, mais fournir des instructions d'installation pour toutes les distributions disponibles est une tâche impossible. À la place, Wails essaie de déterminer si les paquets dont vous avez besoin pour développer des applications sont disponibles via le gestionnaire de paquets de votre système. Actuellement, nous supportons les gestionnaires de paquets suivants :
+
+- apt
+- dnf
+- emerge
+- eopkg
+- nixpkgs
+- pacman
+- zypper
+
+## Ajout des noms de paquets
+
+Il peut y avoir des cas où votre distribution de linux utilise un des gestionnaires de paquets pris en charge mais le nom du paquet est différent. Par exemple, vous pouvez utiliser un dérivé Ubuntu, mais le nom du paquet pour gtk peut être différent. Wails tente de trouver le paquet correct en itérant une liste de noms de paquets. La liste des paquets est stockée dans un fichier spécifique dans le dossier `v2/internal/system/packagemanager` . Dans notre exemple, ce serait `v2/internal/system/packagemanager/apt.go`.
+
+Dans ce fichier, la liste des paquets est définie par la méthode `Packages()`:
+
+```go
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+Supposons que dans notre distribution linux, `libgtk-3` est empaqueté sous le nom `lib-gtk3-dev`. Nous pourrions ajouter le support de ce paquet en ajoutant la ligne suivante :
+
+```go {5}
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+            {Name: "lib-gtk3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+## Ajout de nouveaux gestionnaires de paquets
+
+Pour ajouter un nouveau gestionnaire de paquets, effectuez les étapes suivantes :
+
+- Créez un nouveau fichier dans `v2/internal/system/packagemanager` appelé `<pm>.go`, où `<pm>` est le nom du gestionnaire de paquets.
+- Définit une structure conforme à l'interface du gestionnaire de paquets définie dans `pm.go`:
+
+```go
+type PackageManager interface {
+    Name() string
+    Packages() packagemap
+    PackageInstalled(*Package) (bool, error)
+    PackageAvailable(*Package) (bool, error)
+    InstallCommand(*Package) string
+}
+```
+
+- `Name()` doit retourner le nom du gestionnaire de paquets
+- `Packages()` doit retourner une `packagemap`, qui fournit des noms de fichiers candidats pour les dépendances
+- `PackageInstalled()` devrait retourner `true` si le paquet donné est installé
+- `PackageAvailable()` devrait retourner `true` si le paquet donné n'est pas installé mais disponible pour l'installation
+- `InstallCommand()` doit retourner la commande exacte pour installer le nom du paquet donné
+
+Jetez un coup d'œil au code des autres gestionnaires de paquets pour avoir une idée de comment cela fonctionne.
+
+:::info Rappel
+
+Si vous ajoutez le support d'un nouveau gestionnaire de paquets, n'oubliez pas de mettre également à jour cette page !
+
+:::

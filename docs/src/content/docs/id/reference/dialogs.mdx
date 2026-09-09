@@ -1,0 +1,850 @@
+---
+title: API Dialogs
+description: Referensi lengkap untuk API dialog native
+sidebar:
+  order: 5
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Gambaran Umum
+
+API Dialogs menyediakan metode untuk menampilkan dialog file native dan dialog pesan. Akses dialog melalui manajer `app.Dialog`.
+
+**Jenis Dialog:**
+- **Dialog File** - Dialog Buka dan Simpan
+- **Dialog Pesan** - Dialog Info, Error, Warning, dan Question
+
+Semua dialog adalah **dialog OS native** yang sesuai dengan tampilan dan nuansa platform.
+
+## Mengakses Dialog
+
+Dialog diakses melalui manajer `app.Dialog`:
+
+```go
+app.Dialog.OpenFile()
+app.Dialog.SaveFile()
+app.Dialog.Info()
+app.Dialog.Question()
+app.Dialog.Warning()
+app.Dialog.Error()
+```
+
+## Dialog File
+
+### OpenFile()
+
+Membuat dialog buka file.
+
+```go
+func (dm *DialogManager) OpenFile() *OpenFileDialogStruct
+```
+
+**Contoh:**
+```go
+dialog := app.Dialog.OpenFile()
+```
+
+### Metode OpenFileDialogStruct
+
+#### SetTitle()
+
+Mengatur judul dialog.
+
+```go
+func (d *OpenFileDialogStruct) SetTitle(title string) *OpenFileDialogStruct
+```
+
+**Contoh:**
+```go
+dialog.SetTitle("Select Image")
+```
+
+#### AddFilter()
+
+Menambahkan filter tipe file.
+
+```go
+func (d *OpenFileDialogStruct) AddFilter(displayName, pattern string) *OpenFileDialogStruct
+```
+
+**Parameter:**
+- `displayName` - Deskripsi filter yang ditampilkan ke pengguna (mis., "Images", "Documents")
+- `pattern` - Daftar ekstensi yang dipisahkan titik koma (mis., "*.png;*.jpg")
+
+**Contoh:**
+```go
+dialog.AddFilter("Images", "*.png;*.jpg;*.gif").
+    AddFilter("Documents", "*.pdf;*.docx").
+    AddFilter("All Files", "*.*")
+```
+
+#### SetDirectory()
+
+Mengatur direktori awal.
+
+```go
+func (d *OpenFileDialogStruct) SetDirectory(directory string) *OpenFileDialogStruct
+```
+
+**Contoh:**
+```go
+homeDir, _ := os.UserHomeDir()
+dialog.SetDirectory(homeDir)
+```
+
+#### CanChooseDirectories()
+
+Mengaktifkan atau menonaktifkan pemilihan direktori.
+
+```go
+func (d *OpenFileDialogStruct) CanChooseDirectories(canChooseDirectories bool) *OpenFileDialogStruct
+```
+
+**Contoh (pemilihan folder):**
+```go
+// Pilih folder alih-alih file
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+```
+
+#### CanChooseFiles()
+
+Mengaktifkan atau menonaktifkan pemilihan file.
+
+```go
+func (d *OpenFileDialogStruct) CanChooseFiles(canChooseFiles bool) *OpenFileDialogStruct
+```
+
+#### CanCreateDirectories()
+
+Mengaktifkan atau menonaktifkan pembuatan direktori baru.
+
+```go
+func (d *OpenFileDialogStruct) CanCreateDirectories(canCreateDirectories bool) *OpenFileDialogStruct
+```
+
+#### ShowHiddenFiles()
+
+Menampilkan atau menyembunyikan file tersembunyi.
+
+```go
+func (d *OpenFileDialogStruct) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialogStruct
+```
+
+#### AttachToWindow()
+
+Melampirkan dialog ke window tertentu.
+
+```go
+func (d *OpenFileDialogStruct) AttachToWindow(window Window) *OpenFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+Menampilkan dialog dan mengembalikan file yang dipilih.
+
+```go
+func (d *OpenFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**Mengembalikan:**
+- `string` - Path file yang dipilih. Anggap string kosong sebagai "tidak ada pilihan" (implementasi platform dapat mengembalikan string kosong atau error non-nil saat pembatalan tergantung OS).
+- `error` - Non-nil jika dialog gagal ditampilkan.
+
+**Contoh:**
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Image").
+    AddFilter("Images", "*.png;*.jpg;*.gif").
+    PromptForSingleSelection()
+
+if err != nil {
+    // Dialog gagal ditampilkan (jarang).
+    return
+}
+if path == "" {
+    // Pengguna membatalkan.
+    return
+}
+
+// Gunakan file yang dipilih
+processFile(path)
+```
+
+#### PromptForMultipleSelection()
+
+Menampilkan dialog dan mengembalikan beberapa file yang dipilih.
+
+```go
+func (d *OpenFileDialogStruct) PromptForMultipleSelection() ([]string, error)
+```
+
+**Mengembalikan:**
+- `[]string` - Array path file yang dipilih
+- `error` - Error jika dialog gagal
+
+**Contoh:**
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Select Images").
+    AddFilter("Images", "*.png;*.jpg").
+    PromptForMultipleSelection()
+
+if err != nil {
+    return
+}
+
+for _, path := range paths {
+    processFile(path)
+}
+```
+
+### SaveFile()
+
+Membuat dialog simpan file.
+
+```go
+func (dm *DialogManager) SaveFile() *SaveFileDialogStruct
+```
+
+**Contoh:**
+```go
+dialog := app.Dialog.SaveFile()
+```
+
+### Metode SaveFileDialogStruct
+
+#### SetTitle()
+
+Mengatur judul dialog.
+
+```go
+func (d *SaveFileDialogStruct) SetTitle(title string) *SaveFileDialogStruct
+```
+
+#### SetFilename()
+
+Mengatur nama file default.
+
+```go
+func (d *SaveFileDialogStruct) SetFilename(filename string) *SaveFileDialogStruct
+```
+
+**Contoh:**
+```go
+dialog.SetFilename("document.pdf")
+```
+
+#### AddFilter()
+
+Menambahkan filter tipe file.
+
+```go
+func (d *SaveFileDialogStruct) AddFilter(displayName, pattern string) *SaveFileDialogStruct
+```
+
+**Contoh:**
+```go
+dialog.AddFilter("PDF Document", "*.pdf").
+    AddFilter("Text Document", "*.txt")
+```
+
+#### SetDirectory()
+
+Mengatur direktori awal.
+
+```go
+func (d *SaveFileDialogStruct) SetDirectory(directory string) *SaveFileDialogStruct
+```
+
+#### AttachToWindow()
+
+Melampirkan dialog ke window tertentu.
+
+```go
+func (d *SaveFileDialogStruct) AttachToWindow(window Window) *SaveFileDialogStruct
+```
+
+#### PromptForSingleSelection()
+
+Menampilkan dialog dan mengembalikan path simpan.
+
+```go
+func (d *SaveFileDialogStruct) PromptForSingleSelection() (string, error)
+```
+
+**Contoh:**
+```go
+path, err := app.Dialog.SaveFile().
+    SetTitle("Save Document").
+    SetFilename("untitled.pdf").
+    AddFilter("PDF Document", "*.pdf").
+    PromptForSingleSelection()
+
+if err != nil {
+    // Pengguna membatalkan
+    return
+}
+
+// Simpan ke path yang dipilih
+saveDocument(path)
+```
+
+### Pemilihan Folder
+
+Tidak ada `SelectFolderDialog` terpisah. Gunakan `OpenFile()` dengan opsi direktori:
+
+```go
+path, err := app.Dialog.OpenFile().
+    SetTitle("Select Output Folder").
+    CanChooseDirectories(true).
+    CanChooseFiles(false).
+    PromptForSingleSelection()
+
+if err != nil {
+    // Pengguna membatalkan
+    return
+}
+
+// Gunakan folder yang dipilih
+outputDir = path
+```
+
+## Dialog Pesan
+
+Semua dialog pesan mengembalikan `*MessageDialog` dan berbagi metode yang sama.
+
+### Info()
+
+Membuat dialog informasi.
+
+```go
+func (dm *DialogManager) Info() *MessageDialog
+```
+
+**Contoh:**
+```go
+app.Dialog.Info().
+    SetTitle("Success").
+    SetMessage("File saved successfully!").
+    Show()
+```
+
+### Error()
+
+Membuat dialog error.
+
+```go
+func (dm *DialogManager) Error() *MessageDialog
+```
+
+**Contoh:**
+```go
+app.Dialog.Error().
+    SetTitle("Error").
+    SetMessage("Failed to save file: " + err.Error()).
+    Show()
+```
+
+### Warning()
+
+Membuat dialog peringatan.
+
+```go
+func (dm *DialogManager) Warning() *MessageDialog
+```
+
+**Contoh:**
+```go
+app.Dialog.Warning().
+    SetTitle("Warning").
+    SetMessage("This action cannot be undone.").
+    Show()
+```
+
+### Question()
+
+Membuat dialog pertanyaan dengan tombol kustom.
+
+```go
+func (dm *DialogManager) Question() *MessageDialog
+```
+
+**Contoh:**
+```go
+dialog := app.Dialog.Question().
+    SetTitle("Confirm").
+    SetMessage("Do you want to save changes?")
+
+save := dialog.AddButton("Save")
+save.OnClick(func() {
+    saveDocument()
+})
+
+dontSave := dialog.AddButton("Don't Save")
+dontSave.OnClick(func() {
+    // Lanjutkan tanpa menyimpan
+})
+
+cancel := dialog.AddButton("Cancel")
+cancel.OnClick(func() {
+    // Tidak melakukan apa-apa
+})
+
+dialog.SetDefaultButton(save)
+dialog.SetCancelButton(cancel)
+dialog.Show()
+```
+
+### Metode MessageDialog
+
+#### SetTitle()
+
+Mengatur judul dialog.
+
+```go
+func (d *MessageDialog) SetTitle(title string) *MessageDialog
+```
+
+#### SetMessage()
+
+Mengatur pesan dialog.
+
+```go
+func (d *MessageDialog) SetMessage(message string) *MessageDialog
+```
+
+#### SetIcon()
+
+Mengatur ikon kustom untuk dialog.
+
+```go
+func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog
+```
+
+#### AddButton()
+
+Menambahkan tombol ke dialog dan mengembalikan tombol untuk konfigurasi.
+
+```go
+func (d *MessageDialog) AddButton(label string) *Button
+```
+
+**Mengembalikan:** `*Button` - Instance tombol untuk konfigurasi lebih lanjut
+
+**Contoh:**
+```go
+button := dialog.AddButton("OK")
+button.OnClick(func() {
+    // Tangani klik
+})
+```
+
+#### SetDefaultButton()
+
+Mengatur tombol mana yang menjadi default (diaktifkan dengan menekan Enter).
+
+```go
+func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog
+```
+
+**Contoh:**
+```go
+yes := dialog.AddButton("Yes")
+no := dialog.AddButton("No")
+dialog.SetDefaultButton(yes)
+```
+
+#### SetCancelButton()
+
+Mengatur tombol mana yang menjadi tombol batal (diaktifkan dengan menekan Escape).
+
+```go
+func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog
+```
+
+**Contoh:**
+```go
+ok := dialog.AddButton("OK")
+cancel := dialog.AddButton("Cancel")
+dialog.SetCancelButton(cancel)
+```
+
+#### AttachToWindow()
+
+Melampirkan dialog ke window tertentu.
+
+```go
+func (d *MessageDialog) AttachToWindow(window Window) *MessageDialog
+```
+
+#### Show()
+
+Menampilkan dialog. Callback tombol menangani respons pengguna.
+
+```go
+func (d *MessageDialog) Show()
+```
+
+**Catatan:** `Show()` tidak mengembalikan nilai. Gunakan callback tombol untuk menangani respons pengguna.
+
+### Metode Button
+
+#### OnClick()
+
+Mengatur fungsi callback saat tombol diklik.
+
+```go
+func (b *Button) OnClick(callback func()) *Button
+```
+
+#### SetAsDefault()
+
+Menandai tombol ini sebagai tombol default.
+
+```go
+func (b *Button) SetAsDefault() *Button
+```
+
+#### SetAsCancel()
+
+Menandai tombol ini sebagai tombol batal.
+
+```go
+func (b *Button) SetAsCancel() *Button
+```
+
+## Contoh Lengkap
+
+### Contoh Pemilihan File
+
+```go
+type FileService struct {
+    app *application.App
+}
+
+func (s *FileService) OpenImage() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("Select Image").
+        AddFilter("Images", "*.png;*.jpg;*.jpeg;*.gif").
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SaveDocument(defaultName string) (string, error) {
+    path, err := s.app.Dialog.SaveFile().
+        SetTitle("Save Document").
+        SetFilename(defaultName).
+        AddFilter("PDF Document", "*.pdf").
+        AddFilter("Text Document", "*.txt").
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+
+func (s *FileService) SelectOutputFolder() (string, error) {
+    path, err := s.app.Dialog.OpenFile().
+        SetTitle("Select Output Folder").
+        CanChooseDirectories(true).
+        CanChooseFiles(false).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### Contoh Dialog Konfirmasi
+
+```go
+func (s *Service) DeleteItem(app *application.App, id string) {
+    dialog := app.Dialog.Question().
+        SetTitle("Confirm Delete").
+        SetMessage("Are you sure you want to delete this item?")
+
+    deleteBtn := dialog.AddButton("Delete")
+    deleteBtn.OnClick(func() {
+        deleteFromDatabase(id)
+    })
+
+    cancelBtn := dialog.AddButton("Cancel")
+    // Cancel tidak melakukan apa-apa
+
+    dialog.SetDefaultButton(cancelBtn) // Default ke Cancel untuk keamanan
+    dialog.SetCancelButton(cancelBtn)
+    dialog.Show()
+}
+```
+
+### Dialog Simpan Perubahan
+
+```go
+func (s *Editor) PromptSaveChanges(app *application.App) {
+    dialog := app.Dialog.Question().
+        SetTitle("Unsaved Changes").
+        SetMessage("Do you want to save your changes before closing?")
+
+    save := dialog.AddButton("Save")
+    save.OnClick(func() {
+        s.Save()
+        s.Close()
+    })
+
+    dontSave := dialog.AddButton("Don't Save")
+    dontSave.OnClick(func() {
+        s.Close()
+    })
+
+    cancel := dialog.AddButton("Cancel")
+    // Cancel tidak melakukan apa-apa, dialog ditutup
+
+    dialog.SetDefaultButton(save)
+    dialog.SetCancelButton(cancel)
+    dialog.Show()
+}
+```
+
+### Pemrosesan Multi-File
+
+```go
+func (s *Service) ProcessMultipleFiles(app *application.App) error {
+    // Pilih beberapa file
+    paths, err := app.Dialog.OpenFile().
+        SetTitle("Select Files to Process").
+        AddFilter("Images", "*.png;*.jpg").
+        PromptForMultipleSelection()
+
+    if err != nil {
+        return err
+    }
+
+    if len(paths) == 0 {
+        app.Dialog.Info().
+            SetTitle("No Files Selected").
+            SetMessage("Please select at least one file.").
+            Show()
+        return nil
+    }
+
+    // Proses file
+    for _, path := range paths {
+        err := processFile(path)
+        if err != nil {
+            app.Dialog.Error().
+                SetTitle("Processing Error").
+                SetMessage(fmt.Sprintf("Failed to process %s: %v", path, err)).
+                Show()
+            continue
+        }
+    }
+
+    // Tampilkan penyelesaian
+    app.Dialog.Info().
+        SetTitle("Complete").
+        SetMessage(fmt.Sprintf("Successfully processed %d files", len(paths))).
+        Show()
+
+    return nil
+}
+```
+
+### Penanganan Error dengan Dialog
+
+```go
+func (s *Service) SaveFile(app *application.App, data []byte) error {
+    // Pilih lokasi simpan
+    path, err := app.Dialog.SaveFile().
+        SetTitle("Save File").
+        SetFilename("data.json").
+        AddFilter("JSON File", "*.json").
+        PromptForSingleSelection()
+
+    if err != nil {
+        // Pengguna membatalkan - bukan error
+        return nil
+    }
+
+    // Coba simpan
+    err = os.WriteFile(path, data, 0644)
+    if err != nil {
+        // Tampilkan dialog error
+        app.Dialog.Error().
+            SetTitle("Save Failed").
+            SetMessage(fmt.Sprintf("Could not save file: %v", err)).
+            Show()
+        return err
+    }
+
+    // Tampilkan sukses
+    app.Dialog.Info().
+        SetTitle("Success").
+        SetMessage("File saved successfully!").
+        Show()
+
+    return nil
+}
+```
+
+### Default Khusus Platform
+
+```go
+import (
+    "os"
+    "path/filepath"
+    "runtime"
+)
+
+func (s *Service) GetDefaultDirectory() string {
+    homeDir, _ := os.UserHomeDir()
+
+    switch runtime.GOOS {
+    case "windows":
+        return filepath.Join(homeDir, "Documents")
+    case "darwin":
+        return filepath.Join(homeDir, "Documents")
+    case "linux":
+        return filepath.Join(homeDir, "Documents")
+    default:
+        return homeDir
+    }
+}
+
+func (s *Service) OpenWithDefaults(app *application.App) (string, error) {
+    return app.Dialog.OpenFile().
+        SetTitle("Open File").
+        SetDirectory(s.GetDefaultDirectory()).
+        AddFilter("All Files", "*.*").
+        PromptForSingleSelection()
+}
+```
+
+## Praktik Terbaik
+
+### Lakukan
+
+- **Gunakan dialog native** - Sesuai dengan tampilan dan nuansa platform
+- **Berikan judul yang jelas** - Bantu pengguna memahami tujuan
+- **Atur filter yang sesuai** - Pandu pengguna ke tipe file yang benar
+- **Tangani pembatalan** - Periksa error (pengguna dapat membatalkan)
+- **Tampilkan konfirmasi untuk aksi destruktif** - Gunakan dialog Question
+- **Berikan umpan balik** - Gunakan dialog Info untuk pesan sukses
+- **Atur default yang masuk akal** - Direktori default, nama file, dll.
+- **Gunakan callback untuk aksi tombol** - Tangani respons pengguna dengan benar
+
+### Jangan
+
+- **Jangan abaikan error** - Pembatalan pengguna mengembalikan error
+- **Jangan gunakan label tombol ambigu** - Spesifik: "Save"/"Cancel"
+- **Jangan berlebihan menggunakan dialog** - Dialog mengganggu alur kerja
+- **Jangan tampilkan error untuk pembatalan** - Itu aksi normal
+- **Jangan lupa filter file** - Bantu pengguna menemukan file yang tepat
+- **Jangan hardcode path** - Gunakan os.UserHomeDir() atau serupa
+
+## Jenis Dialog per Platform
+
+### macOS
+
+- Dialog meluncur turun dari title bar
+- Gaya "Sheet" dilampirkan ke window induk
+- Tampilan macOS native
+
+### Windows
+
+- Dialog Windows standar
+- Mengikuti panduan desain Windows
+- Tampilan Windows 10/11 modern
+
+### Linux
+
+- Dialog GTK pada sistem berbasis GTK
+- Dialog Qt pada sistem berbasis Qt
+- Sesuai dengan desktop environment
+
+#### Perilaku Dialog Linux
+
+Di Linux, build GTK4 default menggunakan **xdg-desktop-portal** untuk dialog file, yang menyediakan
+integrasi desktop native tetapi berarti beberapa opsi tidak berpengaruh. Jalur GTK3 legacy
+(`-tags gtk3`) mempertahankan kontrol programatik penuh atas opsi ini:
+
+| Opsi | GTK3 (`-tags gtk3`) | GTK4 (default) | Catatan |
+|--------|---------------------|----------------|-------|
+| `ShowHiddenFiles()` | ✅ Berfungsi | ❌ Tidak berpengaruh | Pengguna mengontrol melalui toggle UI dialog (Ctrl+H atau menu) |
+| `CanCreateDirectories()` | ✅ Berfungsi | ❌ Tidak berpengaruh | Selalu diaktifkan di portal |
+| `ResolvesAliases()` | ✅ Berfungsi | ❌ Tidak berpengaruh | Portal menangani resolusi symlink |
+| `SetButtonText()` | ✅ Berfungsi | ✅ Berfungsi | Teks tombol terima kustom berfungsi |
+
+**Mengapa keterbatasan ini ada:** Dialog berbasis portal GTK4 mendelegasikan kontrol UI ke desktop
+environment (GNOME, KDE, dll.). Ini memang disengaja — portal menyediakan UX konsisten di seluruh
+aplikasi dan menghormati preferensi pengguna.
+
+:::note
+Build GTK4 default menggunakan dialog berbasis portal. Jika aplikasi Anda membutuhkan kontrol
+programatik penuh atas opsi dialog di atas, build dengan jalur legacy `-tags gtk3`
+(didukung hingga v3.0.x; dihapus di v3.1) — lihat [Linux Packaging - Dukungan GTK3 Legacy](/id/guides/build/linux#legacy-gtk3-support).
+:::
+
+## Pola Umum
+
+### Pola "Save As"
+
+```go
+func (s *Service) SaveAs(app *application.App, currentPath string) (string, error) {
+    // Ekstrak nama file dari path saat ini
+    filename := filepath.Base(currentPath)
+
+    // Tampilkan dialog simpan
+    path, err := app.Dialog.SaveFile().
+        SetTitle("Save As").
+        SetFilename(filename).
+        PromptForSingleSelection()
+
+    if err != nil {
+        return "", err
+    }
+
+    return path, nil
+}
+```
+
+### Pola "Open Recent"
+
+```go
+func (s *Service) OpenRecent(app *application.App, recentPath string) error {
+    // Periksa apakah file masih ada
+    if _, err := os.Stat(recentPath); os.IsNotExist(err) {
+        dialog := app.Dialog.Question().
+            SetTitle("File Not Found").
+            SetMessage("The file no longer exists. Remove from recent files?")
+
+        remove := dialog.AddButton("Remove")
+        remove.OnClick(func() {
+            s.removeFromRecent(recentPath)
+        })
+
+        cancel := dialog.AddButton("Cancel")
+        dialog.SetCancelButton(cancel)
+        dialog.Show()
+
+        return err
+    }
+
+    return s.openFile(recentPath)
+}
+```

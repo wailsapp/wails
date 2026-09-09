@@ -63,7 +63,7 @@ Este guia mostra como criar seu primeiro aplicativo Wails v3, cobrindo a configu
             - info.json          Metadados do aplicativo
             - wails.exe.manifest Arquivo de manifesto do Windows
             - nsis/              Arquivos do instalador NSIS
-                - project.nshi                    Arquivo do projeto NSIS
+                - project.nsi                    Arquivo do projeto NSIS
                 - wails_tools.nsh               Scripts auxiliares do NSIS
     - frontend/        Arquivos do aplicativo frontend
         - index.html   Arquivo HTML principal
@@ -243,17 +243,19 @@ Este guia mostra como criar seu primeiro aplicativo Wails v3, cobrindo a configu
        git push -u origin main
        ```
 
-    Isso garante que o nome do seu módulo Go esteja alinhado com as convenções de nomenclagem de módulos do Go e facilita o compartilhamento do seu código.:::tip[Dica]
-Você pode automatizar todas as etapas de inicialização usando a flag `-git` ao criar seu projeto:
-```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
-```
-Isso suporta vários formatos de URL do Git:
-- HTTPS: `https://github.com/username/project`
-- SSH: `git@github.com:username/project` ou `ssh://git@github.com/username/project`
-- Protocolo Git: `git://github.com/username/project`
-- Sistema de arquivos: `file:///path/to/project.git`
-:::
+    Isso garante que o nome do seu módulo Go esteja alinhado com as convenções de nomenclagem de módulos do Go e facilita o compartilhamento do seu código.
+
+    :::tip[Dica]
+    Você pode automatizar todas as etapas de inicialização usando a flag `-git` ao criar seu projeto:
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    Isso suporta vários formatos de URL do Git:
+    - HTTPS: `https://github.com/username/project`
+    - SSH: `git@github.com:username/project` ou `ssh://git@github.com/username/project`
+    - Protocolo Git: `git://github.com/username/project`
+    - Sistema de arquivos: `file:///path/to/project.git`
+    :::
 
 </Steps>
 

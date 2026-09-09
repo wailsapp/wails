@@ -1,0 +1,106 @@
+---
+title: Tutorial
+description: Pelajari Wails dengan membangun aplikasi
+sidebar:
+  label: Ikhtisar
+  order: 0
+---
+
+import { LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import qr1 from "../../../../assets/qr1.png";
+import todoApp from "../../../../assets/todo-app.png";
+import notesApp from "../../../../assets/notes-app.png";
+
+Tutorial langkah demi langkah yang mengajarkan konsep Wails dengan membangun aplikasi lengkap. Setiap tutorial mencakup kode yang berfungsi, penjelasan, dan pola praktis.
+
+:::tip[Baru mengenal Go?]
+Selesaikan [Go Tour](https://go.dev/tour/) sebelum memulai tutorial.
+:::
+
+### Layanan QR Code
+
+<Image src={qr1} alt="Contoh QR Code" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+Pelajari dasar-dasar layanan Wails dengan membangun generator QR code. Tutorial ini memperkenalkan konsep inti mengorganisasi logika aplikasi ke dalam layanan yang dapat digunakan kembali.
+
+**Yang akan Anda pelajari:**
+- Cara membuat dan menyusun layanan Wails
+- Mengelola dependensi Go eksternal
+- Mengikat metode Go ke frontend Anda
+- Meneruskan data antara Go dan JavaScript
+- Mengorganisasi kode agar mudah dirawat
+
+**Cocok untuk:** Pengguna Wails pertama kali yang ingin memahami arsitektur layanan
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/id/tutorials/01-creating-a-service" variant="secondary" icon="right-arrow">Mulai</LinkButton>
+</div>
+
+---
+
+### Daftar TODO
+
+<Image src={todoApp} alt="Aplikasi Daftar TODO" style="max-width: 400px; margin: 1rem auto; display: block;" />
+
+Bangun aplikasi daftar TODO lengkap dengan antarmuka modern yang indah. Tutorial praktis ini mengajarkan pola inti Wails melalui aplikasi nyata menggunakan vanilla JavaScript.
+
+**Yang akan Anda pelajari:**
+- Arsitektur berbasis layanan dengan manajemen state thread-safe
+- Operasi CRUD (Create, Read, Update, Delete)
+- Binding type-safe antara Go dan JavaScript
+- Membangun UI modern tanpa kompleksitas framework
+- Pola penanganan error dan validasi yang tepat
+
+**Waktu penyelesaian:** ~20 menit
+
+**Cocok untuk:** Aplikasi Wails lengkap pertama Anda — sempurna untuk memahami dasar-dasar sebelum menambah kompleksitas framework
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/id/tutorials/02-todo-vanilla" variant="secondary" icon="right-arrow">Mulai</LinkButton>
+</div>
+
+---
+
+### Catatan
+
+<Image src={notesApp} alt="Aplikasi Catatan" style="max-width: 600px; margin: 1rem auto; display: block;" />
+
+Bangun aplikasi bergaya Apple Notes dengan dialog file native dan fungsi auto-save. Tutorial ini mendemonstrasikan fitur khusus desktop seperti operasi file, dialog native, dan pola UI profesional.
+
+**Yang akan Anda pelajari:**
+- Dialog file native (Save, Open, Info)
+- Persistensi data berbasis JSON
+- Pola auto-save dengan debounce
+- Tata letak desktop dua kolom yang profesional
+- Bekerja dengan operasi sistem file di Go
+
+**Waktu penyelesaian:** ~30 menit
+
+**Cocok untuk:** Mempelajari fitur khusus desktop seperti operasi file dan dialog OS native
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/id/tutorials/03-notes-vanilla" variant="secondary" icon="right-arrow">Mulai</LinkButton>
+</div>
+
+---
+
+### Aplikasi Wails dengan Self-Update
+
+Tambahkan self-update dalam aplikasi ke aplikasi Wails, dari `wails3 init` baru hingga verifikasi rilis yang ditandatangani dan pertukaran biner mode helper. Menggunakan GitHub Releases sebagai sumber update.
+
+**Yang akan Anda pelajari:**
+- Cara `app.Updater` terintegrasi ke aplikasi Wails
+- Mengonfigurasi provider GitHub Releases
+- Menerbitkan rilis dengan `SHA256SUMS` untuk verifikasi digest
+- Menambahkan penandatanganan Ed25519 untuk ketahanan terhadap perubahan
+- Menyesuaikan jendela default via CSS, HTML kustom, atau BYO
+- Pengecekan latar belakang berkala dengan `CheckInterval`
+
+**Waktu penyelesaian:** ~25 menit
+
+**Cocok untuk:** Mengirim aplikasi desktop yang dapat diperbarui — mencakup pipeline rilis lengkap, bukan hanya API
+
+<div style="text-align: center; margin-top: 1rem;">
+<LinkButton href="/id/tutorials/04-self-update-a-wails-app" variant="secondary" icon="right-arrow">Mulai</LinkButton>
+</div>

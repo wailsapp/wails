@@ -151,7 +151,7 @@ import wails_dev from '../../../../assets/wails_dev.mp4';
 
     1. Откройте `greetservice.go`.
     2. Измените строку `return "Hello " + name + "!"` на
-       `return "Hello there " + name + "!"`.
+       `return "Hello there " + name + "`!"`.
     3. Сохраните файл.
 
     Приложение обновится в течение нескольких секунд.
@@ -232,17 +232,19 @@ import wails_dev from '../../../../assets/wails_dev.mp4';
        git push -u origin main
        ```
 
-    Это гарантирует, что имя вашего Go-модуля соответствует соглашениям об именовании модулей Go и облегчает обмен вашим кодом.:::tip[Совет]
-Вы можете автоматизировать все шаги инициализации, используя флаг `-git` при создании проекта:
-```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
-```
-Эта команда поддерживает различные форматы URL Git:
-- HTTPS: `https://github.com/username/project`
-- SSH: `git@github.com:username/project` или `ssh://git@github.com/username/project`
-- Протокол Git: `git://github.com/username/project`
-- Файловая система: `file:///path/to/project.git`
-:::
+    Это гарантирует, что имя вашего Go-модуля соответствует соглашениям об именовании модулей Go и облегчает обмен вашим кодом.
+
+    :::tip[Совет]
+    Вы можете автоматизировать все шаги инициализации, используя флаг `-git` при создании проекта:
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    Эта команда поддерживает различные форматы URL Git:
+    - HTTPS: `https://github.com/username/project`
+    - SSH: `git@github.com:username/project` или `ssh://git@github.com/username/project`
+    - Протокол Git: `git://github.com/username/project`
+    - Файловая система: `file:///path/to/project.git`
+    :::
 
 </Steps>
 

@@ -249,6 +249,19 @@ setInterval(async () => {
 }, 100)
 
 // ✅ Good: Events
+// Service must hold a reference to *application.App to emit events / log:
+//
+//   type Service struct {
+//       app *application.App
+//   }
+//
+//   func NewService(app *application.App) *Service {
+//       return &Service{app: app}
+//   }
+//
+//   app := application.New(application.Options{})
+//   app.RegisterService(application.NewService(NewService(app)))
+
 func (s *Service) ProcessLargeFile(path string) error {
     file, err := os.Open(path)
     if err != nil {
@@ -285,8 +298,10 @@ func (s *Service) ProcessLargeFile(path string) error {
 }
 
 // JavaScript listens
-OnEvent("progress", (data) => {
-    updateProgress(data.percent)
+import { Events } from '@wailsio/runtime'
+
+Events.On("progress", (event) => {
+    updateProgress(event.data.percent)
 })
 ```
 

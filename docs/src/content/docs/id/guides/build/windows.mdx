@@ -1,0 +1,124 @@
+---
+title: Packaging Windows
+description: Package aplikasi Wails Anda untuk distribusi Windows
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Installer NSIS
+
+Format packaging default membuat installer NSIS:
+
+```bash
+wails3 package GOOS=windows
+```
+
+Ini menjalankan `wails3 task windows:package` yang:
+1. Membangun aplikasi
+2. Menghasilkan bootstrapper WebView2
+3. Membuat installer NSIS
+
+Output: `build/windows/nsis/<AppName>-installer.exe`
+
+### Paket MSIX
+
+Untuk distribusi Microsoft Store atau deployment Windows modern:
+
+```bash
+wails3 package GOOS=windows FORMAT=msix
+```
+
+Output: `bin/<AppName>-<arch>.msix`
+
+<Aside type="note">
+MSIX memerlukan `makeappx.exe` (Windows SDK) atau tooling MSIX standalone. Taskfile Windows mengekspos task instalasi sebagai `wails3 task install:msix:tools`.
+</Aside>
+
+## Kustomisasi Installer
+
+Konfigurasi NSIS ada di `build/windows/nsis/project.nsi`. Edit file ini untuk menyesuaikan:
+
+- UI dan branding installer
+- Direktori instalasi
+- Shortcut Start menu dan desktop
+- Asosiasi file
+- Perjanjian lisensi
+
+Metadata aplikasi berasal dari `build/windows/info.json`:
+
+```json
+{
+  "fixed": {
+    "file_version": "1.0.0"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "1.0.0",
+      "CompanyName": "My Company",
+      "FileDescription": "My Application",
+      "ProductName": "MyApp"
+    }
+  }
+}
+```
+
+## Code Signing
+
+Tandatangani executable dan installer Anda untuk menghindari peringatan SmartScreen:
+
+```bash
+# Using the wrapper (auto-detects platform)
+wails3 sign GOOS=windows
+
+# Or using tasks directly
+wails3 task windows:sign
+wails3 task windows:sign:installer
+```
+
+Konfigurasi signing di `build/windows/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_CERTIFICATE: "path/to/certificate.pfx"
+  # Or use thumbprint for certificates in Windows store
+  SIGN_THUMBPRINT: "certificate-thumbprint"
+  TIMESTAMP_SERVER: "http://timestamp.digicert.com"
+```
+
+Simpan password sertifikat Anda dengan aman:
+
+```bash
+wails3 setup signing
+```
+
+Lihat [Menandatangani Aplikasi](/id/guides/build/signing) untuk detail.
+
+## Build untuk ARM
+
+```bash
+wails3 build GOOS=windows GOARCH=arm64
+wails3 package GOOS=windows GOARCH=arm64
+```
+
+## Troubleshooting
+
+### makensis not found
+
+Instal NSIS:
+
+```bash
+# Windows
+winget install NSIS.NSIS
+
+# Or download from https://nsis.sourceforge.io/
+```
+
+### Peringatan SmartScreen
+
+Executable Anda belum ditandatangani. Lihat [Code Signing](#code-signing) di atas.
+
+### WebView2 hilang
+
+Installer menyertakan bootstrapper WebView2 yang mengunduh runtime jika diperlukan. Jika Anda memerlukan instalasi offline, unduh Evergreen Standalone Installer dari Microsoft.

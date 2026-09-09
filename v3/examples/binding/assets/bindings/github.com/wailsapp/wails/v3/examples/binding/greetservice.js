@@ -9,7 +9,7 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import {Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create} from "/wails/runtime.js";
+import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "/wails/runtime.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -18,10 +18,11 @@ import * as data$0 from "./data/models.js";
 /**
  * GetPerson returns a person with the given name.
  * @param {string} name
+ * @param {Date} birthday
  * @returns {$CancellablePromise<data$0.Person>}
  */
-export function GetPerson(name) {
-    return $Call.ByID(2952413357, name).then(/** @type {($result: any) => any} */(($result) => {
+export function GetPerson(name, birthday) {
+    return $Call.ByID(2952413357, name, birthday).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType0($result);
     }));
 }

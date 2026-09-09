@@ -76,34 +76,7 @@ Contrairement à Electron qui bundle un navigateur entier et l'exécution Node.j
 Les applications Wails sont composées de deux parties principales qui communiquent de manière transparente : un backend Go gérant la logique métier et les opérations système, et un frontend web pour votre interface utilisateur. Le WebView fourni par le système d'exploitation rend votre interface utilisateur sans bundle de navigateur, tandis que la couche de liaisons fournit une communication sécurisée par typage entre Go et JavaScript.
 
 <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0;">
-<div style="max-width: 600px;">
-
-```d2
-direction: down
-
-Application: {
-Go: "Backend Go" {
-  shape: rectangle
-  style.fill: "#00ADD8"
-}
-WebView: "WebView natif" {
-  shape: rectangle
-  style.fill: "#3B82F6"
-
-    Frontend: "Votre interface\n(React/Vue/etc)" {
-      shape: rectangle
-      style.fill: "#8B5CF6"
-    }
-
-}
-Go <-> WebView: "Liaisons et événements"
-}
-
-
-
-```
-
-</div>
+  <img src="/img/architecture.svg" alt="Wails architecture: a Go backend and your web UI compiled into one native binary, connected by generated bindings and rendered by the operating system's WebView" style="max-width: 640px; width: 100%;" />
 </div>
 
 Cette architecture simple permet au code JavaScript d'appeler directement les fonctions Go (via des liaisons générées automatiquement), tandis que Go peut envoyer des événements et des données au frontend. Les deux couches communiquent via un pont efficace en mémoire avec une surcharge inférieure à la milliseconde.

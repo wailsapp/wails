@@ -1,0 +1,579 @@
+---
+title: Panduan Events
+description: Panduan praktis menggunakan events di Wails v3 untuk komunikasi aplikasi dan manajemen lifecycle
+---
+
+**CATATAN: Panduan ini masih dalam proses penyusunan**
+
+# Panduan Events
+
+Events adalah denyut nadi komunikasi di aplikasi Wails. Events memungkinkan berbagai bagian aplikasi Anda saling berkomunikasi tanpa ketergantungan yang ketat. Panduan ini akan memandu Anda melalui semua yang perlu diketahui tentang penggunaan events secara efektif di aplikasi Wails Anda.
+
+## Memahami Events Wails
+
+Anggap events sebagai pesan yang disiarkan ke seluruh aplikasi Anda. Bagian mana pun dari aplikasi dapat mendengarkan pesan-pesan ini dan bereaksi sesuai kebutuhan. Ini sangat berguna untuk:
+
+- **Merespons perubahan window**: Mengetahui kapan window diminimalkan, dimaksimalkan, atau dipindahkan
+- **Menangani system events**: Bereaksi terhadap perubahan tema atau power events
+- **Logika aplikasi kustom**: Membuat events Anda sendiri untuk fitur seperti pembaruan data atau aksi pengguna
+- **Komunikasi antar-komponen**: Memungkinkan bagian berbeda dari aplikasi berkomunikasi tanpa ketergantungan langsung
+
+## Konvensi Penamaan Event
+
+Semua events Wails mengikuti pola namespace untuk menunjukkan asalnya dengan jelas:
+
+- `common:` - Events lintas platform yang berfungsi di Windows, macOS, dan Linux
+- `windows:` - Events khusus Windows
+- `mac:` - Events khusus macOS
+- `linux:` - Events khusus Linux
+
+Contoh:
+- `common:WindowFocus` - Window mendapat fokus (berfungsi di semua platform)
+- `windows:APMSuspend` - Sistem sedang suspend (hanya Windows)
+- `mac:ApplicationDidBecomeActive` - Aplikasi menjadi aktif (hanya macOS)
+
+## Memulai dengan Events
+
+### Mendengarkan Events (Frontend)
+
+Kasus penggunaan paling umum adalah mendengarkan events di kode frontend Anda:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Dengarkan saat window mendapat fokus
+Events.On('common:WindowFocus', () => {
+    console.log('Window is now focused!');
+    // Mungkin refresh beberapa data atau lanjutkan animasi
+});
+
+// Dengarkan perubahan tema
+Events.On('common:ThemeChanged', (event) => {
+    console.log('Theme changed:', event.data);
+    // Perbarui tema aplikasi Anda sesuai kebutuhan
+});
+
+// Dengarkan custom events dari backend Go Anda
+Events.On('my-app:data-updated', (event) => {
+    console.log('Data updated:', event.data);
+    // Perbarui UI dengan data baru
+});
+```
+
+### Mengirim Events (Backend)
+
+Dari kode Go Anda, Anda dapat mengirim events yang dapat didengarkan frontend:
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "time"
+)
+
+func (s *Service) UpdateData() {
+    // Lakukan pemrosesan data...
+
+    // Beri tahu frontend
+    app := application.Get()
+    app.Event.Emit("my-app:data-updated",
+        map[string]interface{}{
+            "timestamp": time.Now(),
+            "count": 42,
+        },
+	)
+}
+```
+
+### Mengirim Events (Frontend)
+
+Meskipun tidak seumum itu, Anda juga dapat mengirim events dari frontend yang dapat didengarkan kode Go:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Event tanpa data
+Events.Emit('myapp:close-window')
+
+// Event dengan data
+Events.Emit('myapp:disconnect-requested', 'id-123')
+```
+
+Jika Anda menggunakan TypeScript di frontend dan [mendaftarkan events bertipe](#event-bertipe-dengan-type-safety) di kode Go, Anda akan mendapatkan autocomplete/pemeriksaan nama event dan pemeriksaan tipe data.
+
+### Menghapus Event Listener
+
+Selalu bersihkan event listener saat sudah tidak diperlukan:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Simpan referensi handler
+const focusHandler = () => {
+    console.log('Window focused');
+};
+
+// Tambahkan listener — tangkap fungsi unsubscribe yang dikembalikan
+const unsubscribe = Events.On('common:WindowFocus', focusHandler);
+
+// Nanti, hapus listener spesifik ini melalui unsubscribe yang dikembalikan
+unsubscribe();
+
+// Atau hapus SEMUA listener untuk satu (atau lebih) nama event — Events.Off hanya menerima string nama event
+Events.Off('common:WindowFocus');
+// Events.Off('common:WindowFocus', 'common:WindowLostFocus'); // variadic
+// Events.OffAll(); // hapus setiap listener untuk setiap event (tanpa argumen)
+```
+
+## Kasus Penggunaan Umum
+
+### 1. Pause/Resume saat Window Fokus
+
+Banyak aplikasi perlu menjeda aktivitas tertentu saat window kehilangan fokus:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+let animationRunning = true;
+
+Events.On('common:WindowLostFocus', () => {
+    animationRunning = false;
+    pauseBackgroundTasks();
+});
+
+Events.On('common:WindowFocus', () => {
+    animationRunning = true;
+    resumeBackgroundTasks();
+});
+```
+
+### 2. Merespons Perubahan Tema
+
+Jaga aplikasi Anda selaras dengan tema sistem:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:ThemeChanged', (event) => {
+    const isDarkMode = event.data.isDarkMode;
+
+    if (isDarkMode) {
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+    } else {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+    }
+});
+```
+
+### 3. Menangani File Drop
+
+Buat aplikasi Anda menerima file yang di-drag:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowFilesDropped', (event) => {
+    const files = event.data.files;
+
+    files.forEach(file => {
+        console.log('File dropped:', file);
+        // Proses file yang di-drop
+        handleFileUpload(file);
+    });
+});
+```
+
+### 4. Manajemen Lifecycle Window
+
+Tanggapi perubahan state window:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+Events.On('common:WindowClosing', () => {
+    // Simpan data pengguna sebelum menutup
+    saveApplicationState();
+
+    // Anda juga bisa mencegah penutupan dengan mengembalikan false
+    // dari window close handler yang terdaftar
+});
+
+Events.On('common:WindowMaximise', () => {
+    // Sesuaikan UI untuk tampilan maksimal
+    adjustLayoutForMaximized();
+});
+
+Events.On('common:WindowRestore', () => {
+    // Kembalikan UI ke state normal
+    adjustLayoutForNormal();
+});
+```
+
+### 5. Fitur Khusus Platform
+
+Tangani events khusus platform saat diperlukan:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Manajemen daya khusus Windows
+Events.On('windows:APMSuspend', () => {
+    console.log('System is going to sleep');
+    saveState();
+});
+
+Events.On('windows:APMResumeSuspend', () => {
+    console.log('System woke up');
+    refreshData();
+});
+
+// Lifecycle aplikasi khusus macOS
+Events.On('mac:ApplicationWillTerminate', () => {
+    console.log('App is about to quit');
+    performCleanup();
+});
+```
+
+## Membuat Custom Events
+
+Anda dapat membuat events sendiri untuk kebutuhan spesifik aplikasi.
+
+### Backend (Go)
+
+```go
+// Kirim custom event saat data berubah
+
+func (s *Service) ProcessUserData(userData UserData) error {
+    // Proses data...
+
+    app := application.Get()
+    // Beri tahu semua listener
+    app.Event.Emit("user:data-processed",
+        map[string]interface{}{
+            "userId": userData.ID,
+            "status": "completed",
+            "timestamp": time.Now(),
+        },
+    )
+    return nil
+}
+
+// Kirim pembaruan berkala
+func (s *Service) StartMonitoring() {
+    app := application.Get()
+    ticker := time.NewTicker(5 * time.Second)
+    go func() {
+        for range ticker.C {
+            stats := s.collectStats()
+            app.Event.Emit("monitor:stats-updated", stats)
+        }
+    }()
+}
+```
+
+### Frontend (JavaScript)
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Dengarkan custom events Anda
+Events.On('user:data-processed', (event) => {
+    const { userId, status, timestamp } = event.data;
+
+    showNotification(`User ${userId} processing ${status}`);
+    updateUIWithNewData();
+});
+
+Events.On('monitor:stats-updated', (event) => {
+    updateDashboard(event.data);
+});
+```
+
+## Event Bertipe dengan Type Safety
+
+Wails v3 mendukung events bertipe dengan type safety TypeScript penuh melalui registrasi event dan pembuatan binding otomatis.
+
+### Mendaftarkan Custom Events
+
+Panggil `application.RegisterEvent` saat init untuk mendaftarkan nama custom event beserta tipe datanya:
+
+```go
+package main
+
+import "github.com/wailsapp/wails/v3/pkg/application"
+
+type UserLoginData struct {
+    UserID   string
+    Username string
+    LoginTime string
+}
+
+type MonitorStats struct {
+    CPUUsage    float64
+    MemoryUsage float64
+}
+
+func init() {
+    // Daftarkan events beserta tipe datanya
+    application.RegisterEvent[UserLoginData]("user:login")
+    application.RegisterEvent[MonitorStats]("monitor:stats")
+
+    // Daftarkan events tanpa data (void events)
+    application.RegisterEvent[application.Void]("app:ready")
+}
+```
+
+:::caution
+`RegisterEvent` dimaksudkan dipanggil saat init dan akan panic jika:
+- Argumen tidak valid
+- Nama event yang sama didaftarkan dua kali dengan tipe data berbeda
+:::
+
+:::note
+Aman mendaftarkan event yang sama beberapa kali selama tipe datanya selalu sama. Ini berguna untuk memastikan event terdaftar saat paket mana pun dari beberapa paket dimuat.
+:::
+
+### Manfaat Registrasi Event
+
+Setelah terdaftar, argumen data yang diteruskan ke `Event.Emit` diperiksa tipenya terhadap tipe yang ditentukan. Jika tidak cocok:
+- Error dikirim dan dicatat (atau diteruskan ke error handler yang terdaftar)
+- Event yang bermasalah tidak akan dipropagasi
+- Ini memastikan field data dari events terdaftar selalu dapat di-assign ke tipe yang dideklarasikan
+
+### Strict Mode
+
+Gunakan build tag `strictevents` untuk mengaktifkan peringatan event yang belum terdaftar saat development:
+
+```bash
+go build -tags strictevents
+```
+
+Dengan strict mode aktif, runtime mengirim paling banyak satu peringatan per nama event yang belum terdaftar untuk menghindari spam log.
+
+### Pembuatan Binding TypeScript
+
+Generator binding menghasilkan definisi TypeScript dan glue code untuk dukungan event bertipe transparan di frontend.
+
+#### 1. Siapkan Vite Plugin
+
+Di `vite.config.ts` Anda:
+
+```typescript
+import { defineConfig } from 'vite'
+import wails from '@wailsio/runtime/plugins/vite'
+
+export default defineConfig({
+  plugins: [wails()],
+})
+```
+
+#### 2. Generate Bindings
+
+Jalankan generator binding:
+
+```bash
+wails3 generate bindings
+```
+
+Ini membuat file TypeScript di direktori frontend Anda dengan event creator bertipe dan interface data.
+
+#### 3. Gunakan Event Bertipe di Frontend
+
+```typescript
+import { Events } from '@wailsio/runtime'
+import { UserLogin, MonitorStats } from './bindings/events'
+
+// Emisi event type-safe dengan autocomplete
+Events.Emit(UserLogin({
+    UserID: "123",
+    Username: "john_doe",
+    LoginTime: new Date().toISOString()
+}))
+
+// Pendengaran event type-safe
+Events.On(UserLogin, (event) => {
+    // event.data bertipe UserLoginData
+    console.log(`User ${event.data.Username} logged in`)
+})
+
+Events.On(MonitorStats, (event) => {
+    // event.data bertipe MonitorStats
+    updateDashboard({
+        cpu: event.data.CPUUsage,
+        memory: event.data.MemoryUsage
+    })
+})
+```
+
+Event bertipe menyediakan:
+- **Autocomplete** untuk nama event
+- **Type checking** untuk data event
+- **Compile-time errors** untuk tipe data yang tidak cocok
+- **IntelliSense** documentation
+
+## Referensi Event
+
+### Common Events (Lintas platform)
+
+Events ini berfungsi di semua platform:
+
+| Event | Deskripsi | Kapan Digunakan |
+|-------|-------------|-------------|
+| `common:ApplicationStarted` | Aplikasi telah sepenuhnya dimulai | Inisialisasi aplikasi, muat state tersimpan |
+| `common:WindowRuntimeReady` | Runtime Wails siap | Mulai memanggil Wails API |
+| `common:ThemeChanged` | Tema sistem berubah | Perbarui tampilan aplikasi |
+| `common:SystemWillSleep` | Sistem akan suspend | Flush state, tutup socket |
+| `common:SystemDidWake` | Sistem bangun dari suspend | Reconnect, refresh data yang sudah usang |
+| `common:WindowFocus` | Window mendapat fokus | Lanjutkan aktivitas, refresh data |
+| `common:WindowLostFocus` | Window kehilangan fokus | Jeda aktivitas, simpan state |
+| `common:WindowMinimise` | Window diminimalkan | Jeda rendering, kurangi penggunaan resource |
+| `common:WindowMaximise` | Window dimaksimalkan | Sesuaikan layout untuk layar penuh |
+| `common:WindowRestore` | Window dipulihkan dari min/max | Kembali ke layout normal |
+| `common:WindowClosing` | Window akan ditutup | Simpan data, bersihkan resource |
+| `common:WindowFilesDropped` | File di-drop ke window | Tangani impor file |
+| `common:WindowDidResize` | Window di-resize | Sesuaikan layout, render ulang chart |
+| `common:WindowDidMove` | Window dipindahkan | Perbarui fitur yang bergantung posisi |
+
+### Events Khusus Platform
+
+#### Windows Events
+
+Events penting untuk aplikasi Windows:
+
+| Event | Deskripsi | Kasus Penggunaan |
+|-------|-------------|----------|
+| `windows:SystemThemeChanged` | Tema Windows berubah | Perbarui warna aplikasi |
+| `windows:APMSuspend` | Sistem suspend | Simpan state, jeda operasi |
+| `windows:APMResumeAutomatic` | Sistem bangun (selalu fire saat resume) | Pulihkan state, refresh data |
+| `windows:APMResumeSuspend` | Sistem bangun via input pengguna (setelah `APMResumeAutomatic`) | Bedakan wake yang dipicu pengguna |
+| `windows:APMPowerStatusChange` | Status daya berubah | Sesuaikan pengaturan performa |
+
+#### macOS Events
+
+Events aplikasi macOS penting:
+
+| Event | Deskripsi | Kasus Penggunaan |
+|-------|-------------|----------|
+| `mac:ApplicationDidBecomeActive` | Aplikasi menjadi aktif | Lanjutkan operasi |
+| `mac:ApplicationDidResignActive` | Aplikasi menjadi tidak aktif | Jeda operasi |
+| `mac:ApplicationWillTerminate` | Aplikasi akan quit | Pembersihan akhir |
+| `mac:ApplicationWillSleep` | Sistem akan suspend | Simpan state, tutup socket |
+| `mac:ApplicationDidWake` | Sistem bangun | Reconnect, refresh |
+| `mac:ApplicationScreensDidSleep` | Display tidur | Jeda rendering (berbeda dari system sleep) |
+| `mac:ApplicationScreensDidWake` | Display bangun | Lanjutkan rendering |
+| `mac:WindowDidEnterFullScreen` | Masuk fullscreen | Sesuaikan UI untuk fullscreen |
+| `mac:WindowDidExitFullScreen` | Keluar fullscreen | Pulihkan UI normal |
+
+#### Linux Events
+
+Events window Linux inti:
+
+| Event | Deskripsi | Kasus Penggunaan |
+|-------|-------------|----------|
+| `linux:SystemThemeChanged` | Tema desktop berubah | Perbarui tema aplikasi |
+| `linux:SystemWillSleep` | Sistem akan suspend (logind) | Simpan state |
+| `linux:SystemDidWake` | Sistem bangun (logind) | Reconnect, refresh |
+| `linux:WindowFocusIn` | Window mendapat fokus | Lanjutkan aktivitas |
+| `linux:WindowFocusOut` | Window kehilangan fokus | Jeda aktivitas |
+| `linux:WindowLoadStarted` | WebView mulai loading | Tampilkan indikator loading |
+| `linux:WindowLoadRedirected` | WebView di-redirect | Lacak redirect navigasi |
+| `linux:WindowLoadCommitted` | WebView committed load | Konten sedang diterima |
+| `linux:WindowLoadFinished` | WebView selesai loading | Sembunyikan indikator loading, inject JS/CSS |
+
+## Praktik Terbaik
+
+### 1. Gunakan Event Namespace
+
+Saat membuat custom events, gunakan namespace untuk menghindari konflik:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Baik — events dengan namespace
+Events.Emit('myapp:user:login');
+Events.Emit('myapp:data:updated');
+Events.Emit('myapp:network:connected');
+
+// Hindari — nama generik yang mungkin konflik
+Events.Emit('login');
+Events.Emit('update');
+```
+
+### 2. Bersihkan Listener
+
+Selalu hapus event listener saat komponen unmount:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Contoh React
+useEffect(() => {
+    const handler = (event) => {
+        // Tangani event
+    };
+
+    const off = Events.On('common:WindowDidResize', handler);
+
+    // Cleanup — panggil unsubscribe yang dikembalikan Events.On
+    return () => {
+        off();
+    };
+}, []);
+```
+
+### 3. Tangani Perbedaan Platform
+
+Periksa ketersediaan platform saat menggunakan events khusus platform:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Events khusus platform dapat didaftarkan tanpa syarat;
+// mereka hanya tidak akan pernah fire di platform yang tidak didukung.
+Events.On('windows:APMSuspend', handleSuspend);
+Events.On('mac:ApplicationWillTerminate', handleTerminate);
+```
+
+### 4. Jangan Berlebihan Menggunakan Events
+
+Meskipun events sangat powerful, jangan gunakan untuk segalanya:
+
+- ✅ Gunakan events untuk: Notifikasi sistem, perubahan lifecycle, broadcast update
+- ❌ Hindari events untuk: Return fungsi langsung, update komponen tunggal, operasi sinkron
+
+## Debugging Events
+
+Untuk debug masalah event:
+
+```javascript
+import { Events } from '@wailsio/runtime';
+
+// Log semua events (development saja)
+if (isDevelopment) {
+    const originalOn = Events.On;
+    Events.On = function(eventName, handler) {
+        console.log(`[Event Registered] ${eventName}`);
+        return originalOn.call(this, eventName, function(event) {
+            console.log(`[Event Fired] ${eventName}`, event);
+            return handler(event);
+        });
+    };
+}
+```
+
+## Sumber Kebenaran
+
+Daftar lengkap events yang tersedia dapat ditemukan di source code Wails:
+- Frontend events: [`v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts`](https://github.com/wailsapp/wails/blob/main/v3/internal/runtime/desktop/@wailsio/runtime/src/event_types.ts)
+- Backend events: [`v3/pkg/events/events.go`](https://github.com/wailsapp/wails/blob/main/v3/pkg/events/events.go)
+
+Selalu rujuk file-file ini untuk nama event dan ketersediaan terbaru.
+
+## Ringkasan
+
+Events di Wails menyediakan cara yang powerful dan terdecouple untuk menangani komunikasi di aplikasi Anda. Dengan mengikuti pola dan praktik dalam panduan ini, Anda dapat membangun aplikasi responsif yang aware terhadap platform dan bereaksi mulus terhadap perubahan sistem serta interaksi pengguna.
+
+Ingat: mulai dengan common events untuk kompatibilitas lintas platform, tambahkan events khusus platform saat diperlukan, dan selalu bersihkan event listener untuk mencegah memory leak.

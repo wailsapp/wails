@@ -229,17 +229,19 @@ import wails_dev from '../../../../assets/wails_dev.mp4';
        git push -u origin main
        ```
 
-    これにより、Go モジュール名が Go のモジュール命名規則と一致し、コードを共有しやすくなります。:::tip[Pro Tip]
-プロジェクト作成時に `-git` フラグを使用することで、初期化の全ステップを自動化できます:
-```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
-```
-これは以下の各種 Git URL 形式に対応しています:
-- HTTPS: `https://github.com/username/project`
-- SSH: `git@github.com:username/project` または `ssh://git@github.com/username/project`
-- Git プロトコル: `git://github.com/username/project`
-- ファイルシステム: `file:///path/to/project.git`
-:::
+    これにより、Go モジュール名が Go のモジュール命名規則と一致し、コードを共有しやすくなります。
+
+    :::tip[Pro Tip]
+    プロジェクト作成時に `-git` フラグを使用することで、初期化の全ステップを自動化できます:
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    これは以下の各種 Git URL 形式に対応しています:
+    - HTTPS: `https://github.com/username/project`
+    - SSH: `git@github.com:username/project` または `ssh://git@github.com/username/project`
+    - Git プロトコル: `git://github.com/username/project`
+    - ファイルシステム: `file:///path/to/project.git`
+    :::
 
 </Steps>
 

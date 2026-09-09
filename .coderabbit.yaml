@@ -21,7 +21,7 @@ reviews:
     ignore_title_keywords: []
     labels: []
     drafts: false
-    base_branches: ['v3-alpha', 'master']
+    base_branches: ['master']
   tools:
     shellcheck:
       enabled: true

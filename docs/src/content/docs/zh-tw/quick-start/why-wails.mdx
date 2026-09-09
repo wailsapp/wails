@@ -76,34 +76,7 @@ Wails 驅動著成千上萬用戶使用的真實應用程式：
 Wails 應用程式由兩個主要部分組成，它們之間進行無縫通信：負責業務邏輯和系統操作的 Go 後端，以及用於用戶界面的基於 Web 的前端。作業系統提供的 WebView 渲染您的 UI，無需捆綁瀏覽器，而綁定層則提供 Go 和 JavaScript 之間類型安全的通信。
 
 <div style="display: flex; justify-content: center; align-items: center; margin: 2rem 0;">
-<div style="max-width: 600px;">
-
-```d2
-direction: down
-
-Application: {
-Go: "Go Backend" {
-  shape: rectangle
-  style.fill: "#00ADD8"
-}
-WebView: "Native WebView" {
-  shape: rectangle
-  style.fill: "#3B82F6"
-
-    Frontend: "Your UI\n(React/Vue/etc)" {
-      shape: rectangle
-      style.fill: "#8B5CF6"
-    }
-
-}
-Go <-> WebView: "Bindings & Events"
-}
-
-
-
-```
-
-</div>
+  <img src="/img/architecture.svg" alt="Wails architecture: a Go backend and your web UI compiled into one native binary, connected by generated bindings and rendered by the operating system's WebView" style="max-width: 640px; width: 100%;" />
 </div>
 
 這種簡單的架構允許 JavaScript 程式碼直接調用 Go 函數（通過自動生成的綁定），同時 Go 也可以向前端發送事件和數據。兩層之間通過高效的記憶體橋接進行通信，延遲低於一毫秒。

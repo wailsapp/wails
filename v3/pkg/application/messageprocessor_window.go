@@ -246,6 +246,17 @@ func (m *MessageProcessor) processWindowMethod(
 		}
 		window.SetFrameless(*frameless)
 		return unit, nil
+	case WindowSetFullscreenButtonEnabled:
+		enabled := args.Bool("enabled")
+		if enabled == nil {
+			return nil, errs.NewInvalidWindowCallErrorf("missing or invalid argument 'enabled'")
+		}
+		state := ButtonEnabled
+		if !*enabled {
+			state = ButtonDisabled
+		}
+		window.SetFullscreenButtonState(state)
+		return unit, nil
 	case WindowSetMaxSize:
 		width := args.Int("width")
 		if width == nil {

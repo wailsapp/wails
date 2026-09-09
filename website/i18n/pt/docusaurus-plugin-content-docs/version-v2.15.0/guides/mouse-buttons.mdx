@@ -1,0 +1,25 @@
+# Botões do Mouse
+
+As Wails runtime interceptam cliques do mouse para determinar se uma janela precisa ser redimensionada ou uma janela precisa ser movida. Foi perguntado como detectar quando um clique do mouse ocorreu, porque `window.onclick` não relata os botões do mouse corretamente. O código a seguir mostra como detectar cliques do mouse:
+
+```javascript
+window.addEventListener("mousedown", handleMouseButtonDown);
+
+function handleMouseButtonDown(event) {
+  if (event.button === 0) {
+    // left mouse button
+  } else if (event.button === 1) {
+    // middle mouse button
+  } else if (event.button === 2) {
+    // right mouse button
+  } else if (event.button === 3) {
+    // back mouse button
+  } else if (event.button === 4) {
+    // forward mouse button
+  } else {
+    // other mouse button
+  }
+}
+```
+
+Reference: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button

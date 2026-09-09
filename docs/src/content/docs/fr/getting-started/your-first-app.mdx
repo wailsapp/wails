@@ -231,17 +231,19 @@ Ce guide vous montre comment créer votre première application Wails v3, couvra
        git push -u origin main
        ```
 
-    Cela assure que le nom de votre module Go est aligné avec les conventions de nommage des modules Go et facilite le partage de votre code.:::tip[Conseil]
-Vous pouvez automatiser toutes les étapes d'initialisation en utilisant le drapeau `-git` lors de la création de votre projet :
-```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
-```
-Cela prend en charge différents formats d'URL Git :
-- HTTPS : `https://github.com/username/project`
-- SSH : `git@github.com:username/project` ou `ssh://git@github.com/username/project`
-- Protocole Git : `git://github.com/username/project`
-- Système de fichiers : `file:///path/to/project.git`
-:::
+    Cela assure que le nom de votre module Go est aligné avec les conventions de nommage des modules Go et facilite le partage de votre code.
+
+    :::tip[Conseil]
+    Vous pouvez automatiser toutes les étapes d'initialisation en utilisant le drapeau `-git` lors de la création de votre projet :
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    Cela prend en charge différents formats d'URL Git :
+    - HTTPS : `https://github.com/username/project`
+    - SSH : `git@github.com:username/project` ou `ssh://git@github.com/username/project`
+    - Protocole Git : `git://github.com/username/project`
+    - Système de fichiers : `file:///path/to/project.git`
+    :::
 
 </Steps>
 

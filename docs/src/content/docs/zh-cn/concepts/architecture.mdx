@@ -1,0 +1,291 @@
+---
+title: Wails 的工作原理
+description: 了解 Wails 的架构及其如何实现原生性能
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+Wails 是一个用于构建桌面应用程序的框架，它使用 **Go 作为后端** 和 **Web 技术作为前端**。但与 Electron 不同，Wails 并不捆绑浏览器——它使用**操作系统的原生 WebView**。
+
+```d2
+direction: left
+
+Wails App: {
+  shape: sequence_diagram
+  label: "Wails App"
+
+  frontend: 前端
+  backend: Go 后端
+  os: 操作系统
+
+  Initialisation: {
+    shape: sequence_diagram
+    backend."提供静态 Web 应用"
+    backend -> frontend: HTML / JS / CSS
+    frontend."通过 WebKit 渲染站点"
+  }
+  Regular Communication: {
+    shape: sequence_diagram
+    frontend."发起 API 调用"
+    frontend -> backend.a: JSON
+    backend.a."服务处理请求"
+    backend.a -> os: 调用系统 API
+    backend.a."生成响应"
+    backend.a -> frontend: JSON
+    frontend."处理响应"
+  }
+}
+```
+
+**与 Electron 的关键区别：**
+
+| 方面 | Wails | Electron |
+|--------|-------|----------|
+| **浏览器** | 操作系统提供的 WebView | 捆绑的 Chromium（约 100MB） |
+| **后端** | Go（编译型） | Node.js（解释型） |
+| **通信** | 内存桥接 | IPC（进程间通信） |
+| **包大小** | 约 15MB | 约 150MB |
+| **内存** | 约 10MB | 100MB+ |
+| **启动速度** | &lt;0.5s | 2-3s |
+
+## 核心组件
+
+### 1. 原生 WebView
+
+Wails 使用操作系统内置的 Web 渲染引擎：
+
+<Tabs syncKey="platform">
+  <TabItem label="Windows" icon="seti:windows">
+    **WebView2**（Microsoft Edge WebView2）
+    - 基于 Chromium（与 Edge 浏览器相同）
+    - 预装在 Windows 10/11 上
+    - 通过 Windows Update 自动更新
+    - 完整支持现代 Web 标准
+  </TabItem>
+
+  <TabItem label="macOS" icon="apple">
+    **WebKit**（Safari 的渲染引擎）
+    - 内置于 macOS
+    - 与 Safari 浏览器相同的引擎
+    - 出色的性能和电池续航
+    - 完整支持现代 Web 标准
+  </TabItem>
+
+  <TabItem label="Linux" icon="linux">
+    **WebKitGTK**（WebKit 的 GTK 端口）
+    - 通过包管理器安装
+    - 与 GNOME Web (Epiphany) 相同的引擎
+    - 良好的标准支持
+    - 轻量且高性能
+  </TabItem>
+</Tabs>
+
+**为什么这很重要：**
+- **无捆绑浏览器** → 应用体积更小
+- **操作系统原生** → 更好的集成和性能
+- **自动更新** → 从操作系统更新中获得安全补丁
+- **熟悉的渲染** → 与系统浏览器相同
+
+### 2. Wails 桥接层
+
+桥接层是 Wails 的核心——它实现了 Go 和 JavaScript 之间的**直接通信**。
+
+```d2
+direction: down
+
+Frontend: "Frontend (JavaScript)" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Bridge: "Wails Bridge" {
+  Encoder: "JSON Encoder" {
+    shape: rectangle
+  }
+  
+  Router: "Method Router" {
+    shape: diamond
+    style.fill: "#10B981"
+  }
+  
+  Decoder: "JSON Decoder" {
+    shape: rectangle
+  }
+}
+
+Backend: "Backend (Go)" {
+  Services: "Registered Services" {
+    shape: rectangle
+    style.fill: "#00ADD8"
+  }
+}
+
+Frontend -> Bridge.Encoder: "1. Call Go method\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. Encode to JSON\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. Route to service\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. Return result\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. Decode to JS\nPromise resolves"
+```
+
+**工作原理：**
+
+1. **前端调用 Go 方法**（通过自动生成的绑定）
+2. **桥接层将调用编码为 JSON**（方法名 + 参数）
+3. **路由器在已注册的服务中查找 Go 方法**
+4. **Go 方法执行并返回值**
+5. **桥接层解码结果并发送回前端**
+6. **JavaScript 中的 Promise 解析**并返回结果
+
+**性能特性：**
+- **内存中**：无网络开销，无 HTTP
+- **尽可能零拷贝**（针对大数据）
+- **默认异步**：两侧均非阻塞
+- **类型安全**：自动生成 TypeScript 定义
+
+### 3. 服务系统
+
+服务是将 Go 功能暴露给前端的推荐方式。
+
+```go
+// Define a service (just a regular Go struct)
+type GreetService struct {
+    prefix string
+}
+
+// Methods with exported names are automatically available
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+
+func (g *GreetService) GetTime() time.Time {
+    return time.Now()
+}
+
+// Register the service
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewService(&GreetService{prefix: "Hello, "}),
+    },
+})
+```
+
+**服务发现：**
+- Wails 在启动时**扫描你的结构体**
+- **导出的方法**可从前端调用
+- **类型信息**被提取用于 TypeScript 绑定
+- **错误处理**是自动的（Go 错误 → JS 异常）
+
+**生成的 TypeScript 绑定：**
+```typescript
+// Auto-generated in frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string>
+export function GetTime(): Promise<Date>
+```
+
+**为什么使用服务？**
+- **类型安全**：完整的 TypeScript 支持
+- **自动发现**：无需手动注册方法
+- **组织良好**：分组相关功能
+- **可测试**：服务只是 Go 结构体
+
+[了解更多关于服务的信息 →](/features/bindings/services)
+
+### 4. 事件系统
+
+事件启用组件之间的**发布/订阅通信**。
+
+```d2
+direction: right
+
+GoService: "Go Service" {
+  shape: rectangle
+  style.fill: "#00ADD8"
+}
+
+EventBus: "Event Bus" {
+  shape: cylinder
+  style.fill: "#10B981"
+}
+
+Frontend1: "Window 1" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+Frontend2: "Window 2" {
+  shape: rectangle
+  style.fill: "#8B5CF6"
+}
+
+GoService -> EventBus: "Emit('data-updated', data)"
+EventBus -> Frontend1: "Notify subscribers"
+EventBus -> Frontend2: "Notify subscribers"
+Frontend1 -> EventBus: "On('data-updated', handler)"
+Frontend2 -> EventBus: "On('data-updated', handler)"
+```
+
+**使用场景：**
+- **窗口通信**：一个窗口通知其他窗口
+- **后台任务**：Go 服务通知 UI 进度
+- **状态同步**：保持多个窗口同步
+- **松耦合**：组件不需要直接引用
+
+**示例：**
+```go
+// Go: Emit an event
+app.Event.Emit("user-logged-in", user)
+```
+
+```javascript
+// JavaScript: Listen for event
+import { Events } from '@wailsio/runtime'
+
+Events.On('user-logged-in', (user) => {
+    console.log('User logged in:', user)
+})
+```
+
+[了解更多关于事件的信息 →](/features/events/system)
+
+## 应用程序生命周期
+
+了解生命周期有助于你知道何时初始化资源和清理。
+
+```d2
+direction: down
+
+Start: "应用启动" {
+  shape: oval
+}
+
+Init: "初始化" {
+  Create: "创建应用"
+  Register: "注册服务"
+  Setup: "创建窗口和菜单"
+}
+
+Run: "事件循环" {
+  Events: "处理事件"
+  Messages: "处理消息"
+  Render: "更新界面"
+}
+
+Shutdown: "关闭" {
+  Cleanup: "清理资源"
+  Save: "保存状态"
+}
+
+End: "应用退出" {
+  shape: oval
+}
+
+Start -> Init -> Run -> Shutdown -> End
+```
+
+详细的生命周期文档请参阅 [生命周期指南](/concepts/lifecycle)。
+
+---
+
+**有关架构的问题？** 在 [Discord](https://discord.gg/JDdSxwjhGf) 上提问或查看 [API 参考](/reference/overview)。

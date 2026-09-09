@@ -1,0 +1,76 @@
+---
+title: Debugging
+description: Menyelidiki masalah dan profiling performa aplikasi
+sidebar:
+  order: 3
+---
+
+import { Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+
+
+Panduan ini mendemonstrasikan berbagai alat untuk memeriksa dan menyelidiki kemungkinan masalah performa dalam aplikasi Wails Anda menggunakan
+- [`runtime/trace`](https://pkg.go.dev/runtime/trace) untuk membuat graf performa dan memeriksanya di browser
+
+## Membuat trace performa
+
+<Steps>
+
+1. **Siapkan aplikasi Anda untuk Tracing**
+
+    Dekat entrypoint program Anda, pastikan kode seperti berikut ada
+
+    ```go
+    // Create the file to store our trace data within
+    traceFile, err := os.Create("trace.out")
+    if err != nil {
+      log.Fatalf("trace.out could not be created: %v", err)
+    }
+
+    // Start the trace
+    if err := trace.Start(traceFile); err != nil {
+      _ = traceFile.Close()
+      log.Fatalf("trace.start could not start: %v", err)
+    }
+
+    // Trace cleanup on exit. Alternatively,
+    defer func() {
+      trace.Stop()
+      _ = traceFile.Close()
+    }()
+
+    ...Start your wails app here...
+    ```
+
+    Output akan disimpan ke `trace.out` dalam working path Anda dengan metrik yang mencakup runtime lengkap aplikasi Anda. Trace default cukup mentah; disarankan membaca lebih lanjut tentang trace untuk menambahkan informasi kontekstual dan membatasi apa yang benar-benar direkam. Contoh: `WithRegion, NewTask, Log`
+
+2.  **Jalankan aplikasi Anda untuk membuat trace**
+
+    Dengan aplikasi berjalan, trace kontinu akan dihasilkan hingga titik exit, jadi lakukan beberapa aksi di aplikasi Anda dan exit saat selesai
+
+3. **Instal helper visualisasi**
+
+    Beberapa tampilan memerlukan [Graphviz](https://graphviz.org/). Anda dapat memverifikasi terinstal dengan menjalankan `dot -V`
+
+    ```bash
+    # macOS
+    brew install graphviz
+
+    # Ubuntu/Debian
+    sudo apt-get install graphviz
+
+    # Arch
+    sudo pacman -S graphviz
+    ```
+
+4. **Visualisasikan trace Anda**
+
+    Dengan data trace tersedia, kita dapat memulai antarmuka web
+
+    ```bash
+    go tool trace trace.out
+    ```
+
+    Ini seharusnya membuka browser default Anda (disarankan Chrome-based) dengan halaman utama trace event viewer.
+
+    Untuk pengguna pertama kali, layar `Syscall profile` mungkin paling berguna. Ini memberikan breakdown persis apa yang dilakukan program beserta waktunya
+</Steps>

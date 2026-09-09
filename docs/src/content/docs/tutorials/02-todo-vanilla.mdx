@@ -671,7 +671,7 @@ func (t *TodoService) ClearCompleted() int {
 
 ### Add Persistence
 
-For production apps, you'd typically add database persistence. See the [Database Integration](/guides/patterns/database) guide for examples with SQLite, PostgreSQL, etc.
+For production apps, add persistence using the storage solution that best fits your application, such as SQLite, PostgreSQL, or a hosted service.
 
 ## Build for Production
 
@@ -681,7 +681,7 @@ When you're ready to distribute your TODO app, build it for production:
 wails3 build
 ```
 
-This creates an optimized native executable in `build/bin/`:
+This creates an optimized native executable in `bin/`:
 - Compiles your Go code with optimizations
 - Builds your frontend for production
 - Bundles everything into a single executable
@@ -719,7 +719,7 @@ You just built a complete TODO application with:
 
 Now that you understand CRUD operations and state management, try:
 
-- **Add persistence:** Make todos survive app restarts with [SQLite](/guides/patterns/database)
+- **Add persistence:** Make todos survive app restarts with SQLite or another storage solution
 - **Add more features:** Filtering (all/active/completed), editing existing todos, bulk operations
 - **Explore the Notes tutorial:** See how file operations work in [Notes](/tutorials/03-notes-vanilla)
 - **Build something real:** Take these concepts and build your own app!

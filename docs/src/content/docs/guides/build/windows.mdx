@@ -33,7 +33,7 @@ wails3 package GOOS=windows FORMAT=msix
 Output: `bin/<AppName>-<arch>.msix`
 
 <Aside type="note">
-MSIX requires either `makeappx.exe` (Windows SDK) or the MSIX tool. Run `wails3 tool msix-install-tools` to set up.
+MSIX requires either `makeappx.exe` (Windows SDK) or the standalone MSIX tooling. The Windows Taskfile exposes the install task as `wails3 task install:msix:tools`.
 </Aside>
 
 ## Customizing the Installer

@@ -231,17 +231,19 @@ Dieser Leitfaden zeigt dir, wie du deine erste Wails v3-Anwendung erstellst, ein
        git push -u origin main
        ```
 
-    Dies stellt sicher, dass der Name deines Go-Moduls den Go-Modul-Namenskonventionen entspricht und das Teilen deines Codes erleichtert.:::tip[Profi-Tipp]
-Sie können alle Initialisierungsschritte automatisieren, indem Sie beim Erstellen Ihres Projekts das Flag `-git` verwenden:
-```bash
-wails3 init -n myfirstapp -git github.com/username/myfirstapp
-```
-Dies unterstützt verschiedene Git-URL-Formate:
-- HTTPS: `https://github.com/username/project`
-- SSH: `git@github.com:username/project` oder `ssh://git@github.com/username/project`
-- Git-Protokoll: `git://github.com/username/project`
-- Dateisystem: `file:///path/to/project.git`
-:::
+    Dies stellt sicher, dass der Name deines Go-Moduls den Go-Modul-Namenskonventionen entspricht und das Teilen deines Codes erleichtert.
+
+    :::tip[Profi-Tipp]
+    Sie können alle Initialisierungsschritte automatisieren, indem Sie beim Erstellen Ihres Projekts das Flag `-git` verwenden:
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    Dies unterstützt verschiedene Git-URL-Formate:
+    - HTTPS: `https://github.com/username/project`
+    - SSH: `git@github.com:username/project` oder `ssh://git@github.com/username/project`
+    - Git-Protokoll: `git://github.com/username/project`
+    - Dateisystem: `file:///path/to/project.git`
+    :::
 
 </Steps>
 

@@ -124,30 +124,39 @@ func (dn *darwinNotifier) CheckNotificationAuthorization() (bool, error) {
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (dn *darwinNotifier) SendNotification(options NotificationOptions) error {
+	return dn.dispatchNotification(options, false)
+}
+
+// SendNotificationWithActions sends a notification with additional actions and inputs.
+// A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
+// If a NotificationCategory is not registered a basic notification will be sent.
+func (dn *darwinNotifier) SendNotificationWithActions(options NotificationOptions) error {
+	return dn.dispatchNotification(options, true)
+}
+
+// dispatchNotification is the shared body of SendNotification and
+// SendNotificationWithActions. The whole NotificationOptions struct is
+// JSON-encoded and passed to Objective-C as a single string so future fields
+// (sound, attachments, threadId, interruptionLevel, schedule) can be added on
+// the Go side without changing C signatures.
+func (dn *darwinNotifier) dispatchNotification(options NotificationOptions, withActions bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cIdentifier := C.CString(options.ID)
-	cTitle := C.CString(options.Title)
-	cSubtitle := C.CString(options.Subtitle)
-	cBody := C.CString(options.Body)
-	defer C.free(unsafe.Pointer(cIdentifier))
-	defer C.free(unsafe.Pointer(cTitle))
-	defer C.free(unsafe.Pointer(cSubtitle))
-	defer C.free(unsafe.Pointer(cBody))
-
-	var cDataJSON *C.char
-	if options.Data != nil {
-		jsonData, err := json.Marshal(options.Data)
-		if err != nil {
-			return fmt.Errorf("failed to marshal notification data: %w", err)
-		}
-		cDataJSON = C.CString(string(jsonData))
-		defer C.free(unsafe.Pointer(cDataJSON))
+	jsonBytes, err := json.Marshal(options)
+	if err != nil {
+		return fmt.Errorf("failed to marshal notification options: %w", err)
 	}
 
+	cOptionsJSON := C.CString(string(jsonBytes))
+	defer C.free(unsafe.Pointer(cOptionsJSON))
+
 	id, resultCh := dn.registerChannel()
-	C.sendNotification(C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cDataJSON)
+	if withActions {
+		C.sendNotificationWithActions(C.int(id), cOptionsJSON)
+	} else {
+		C.sendNotification(C.int(id), cOptionsJSON)
+	}
 
 	select {
 	case result := <-resultCh:
@@ -164,50 +173,12 @@ func (dn *darwinNotifier) SendNotification(options NotificationOptions) error {
 	}
 }
 
-// SendNotificationWithActions sends a notification with additional actions and inputs.
-// A NotificationCategory must be registered with RegisterNotificationCategory first. The `CategoryID` must match the registered category.
-// If a NotificationCategory is not registered a basic notification will be sent.
-func (dn *darwinNotifier) SendNotificationWithActions(options NotificationOptions) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cIdentifier := C.CString(options.ID)
-	cTitle := C.CString(options.Title)
-	cSubtitle := C.CString(options.Subtitle)
-	cBody := C.CString(options.Body)
-	cCategoryID := C.CString(options.CategoryID)
-	defer C.free(unsafe.Pointer(cIdentifier))
-	defer C.free(unsafe.Pointer(cTitle))
-	defer C.free(unsafe.Pointer(cSubtitle))
-	defer C.free(unsafe.Pointer(cBody))
-	defer C.free(unsafe.Pointer(cCategoryID))
-
-	var cDataJSON *C.char
-	if options.Data != nil {
-		jsonData, err := json.Marshal(options.Data)
-		if err != nil {
-			return fmt.Errorf("failed to marshal notification data: %w", err)
-		}
-		cDataJSON = C.CString(string(jsonData))
-		defer C.free(unsafe.Pointer(cDataJSON))
-	}
-
-	id, resultCh := dn.registerChannel()
-	C.sendNotificationWithActions(C.int(id), cIdentifier, cTitle, cSubtitle, cBody, cCategoryID, cDataJSON)
-
-	select {
-	case result := <-resultCh:
-		if !result.Success {
-			if result.Error != nil {
-				return result.Error
-			}
-			return fmt.Errorf("sending notification failed")
-		}
-		return nil
-	case <-ctx.Done():
-		dn.cleanupChannel(id)
-		return fmt.Errorf("sending notification timed out: %w", ctx.Err())
-	}
+// UpdateNotification re-posts a notification with the same identifier.
+// UNUserNotificationCenter auto-replaces by identifier, so the existing
+// notification's content is updated in place (or freshly delivered if no
+// notification with that identifier is currently pending or delivered).
+func (dn *darwinNotifier) UpdateNotification(options NotificationOptions) error {
+	return dn.dispatchNotification(options, options.CategoryID != "")
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.

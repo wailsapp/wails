@@ -32,13 +32,15 @@ func (a *iosApp) dispatchOnMainThread(id uint) {
 
 //export dispatchOnMainThreadCallback
 func dispatchOnMainThreadCallback(callbackID C.uint) {
-	mainThreadFunctionStoreLock.RLock()
+	mainThreadFunctionStoreLock.Lock()
 	id := uint(callbackID)
 	fn := mainThreadFunctionStore[id]
 	if fn == nil {
+		mainThreadFunctionStoreLock.Unlock()
 		Fatal("dispatchCallback called with invalid id: %v", id)
+		return
 	}
 	delete(mainThreadFunctionStore, id)
-	mainThreadFunctionStoreLock.RUnlock()
+	mainThreadFunctionStoreLock.Unlock()
 	fn()
 }

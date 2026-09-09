@@ -1,0 +1,218 @@
+---
+title: Asset Server
+description: Cara Wails v3 melayani dan meng-embed asset web Anda di development dan production
+sidebar:
+  order: 4
+---
+
+## Ikhtisar
+
+Setiap aplikasi Wails mengirim **satu executable native** yang menggabungkan:
+
+1. Backend *Go* Anda
+2. Frontend *Web* (HTML + JS + CSS)
+
+**Asset Server** adalah lem yang membuat ini mungkin.
+Ia memiliki **dua mode operasi** yang dipilih saat compile-time via Go build
+tags:
+
+| Mode | Tag | Tujuan |
+|------|-----|---------|
+| **Development** | `//go:build !production` | Iterasi cepat dengan hot-reload |
+| **Production**  | `//go:build production`  | Zero-dependency, asset embedded |
+
+Implementasi ada di
+`v3/internal/assetserver/` dengan pemisahan file yang jelas:
+
+```
+build_dev.go              # ⬅️ entrypoint khusus dev (build tag !production)
+build_production.go       # ⬅️ entrypoint khusus production (build tag production)
+assetserver.go            # Inti bersama
+assetserver_dev.go        # Handler proxy/disk dev
+assetserver_webview.go    # Adapter sisi WebView
+assetserver_darwin.go     # Helper spesifik OS (juga varian linux/windows)
+asset_fileserver.go       # Logika file statis bersama
+content_type_sniffer.go   # Deteksi tipe MIME
+mimecache.go              # Lookup MIME cached
+ringqueue.go              # LRU in-memory kecil
+options.go                # Struct konfigurasi
+middleware.go             # Tipe middleware http.Handler
+bundled_assetserver.go    # Wrapper hand-written di sekitar bundle embedded
+bundledassets/            # Asset runtime JS embedded
+```
+
+---
+
+## Mode Development
+
+### Siklus Hidup
+
+1. `wails3 dev` boot dan **memunculkan dev server frontend Anda**
+   (Vite, SvelteKit, React-SWC …) dengan menjalankan task yang didefinisikan di
+   `build/Taskfile.yml` (biasanya `npm run dev`).
+2. CLI mengatur `WAILS_VITE_PORT` ke port dev Wails dan
+   `FRONTEND_DEVSERVER_URL` ke **URL lengkap** (`http://host:port` /
+   `https://host:port`) yang menunjuk ke dev server framework yang berjalan.
+   Lihat `internal/commands/dev.go`.
+3. Dev asset server (dikompilasi via `//go:build !production` di
+   `build_dev.go`) membaca `FRONTEND_DEVSERVER_URL` melalui `GetDevServerURL()`
+   dan reverse-proxy traffic non-runtime ke sana.
+4. File statis (`/assets/logo.svg`) dapat **dilayani langsung dari disk** via
+   `asset_fileserver.go` (untuk kecepatan) sementara yang tidak dikenal **di-proxy** ke
+   dev server framework, memberi Anda hot-module replacement *instan*.
+
+```
+┌─────────┐  /wails/runtime.js     ┌─────────────┐
+│ Browser │ ── embedded runtime ──▶│   Runtime   │
+├─────────┤                        └─────────────┘
+│   JS    │  / (index.html)        proxy / -> Vite via FRONTEND_DEVSERVER_URL
+└─────────┘ ◀─────────────┐
+              AssetServer │
+                          ▼
+                   ┌────────────┐
+                   │  Vite Dev  │
+                   │   Server   │
+                   └────────────┘
+```
+
+### Fitur
+
+* **Live Reload** — Vite/SvelteKit/dll. menyuntikkan HMR melalui WebSocket; dev
+  asset server secara transparan mem-proxy-nya.
+* **Dukungan Source Map** — karena asset tidak di-bundle, devtools browser
+  memetakan error kembali ke sumber asli.
+* **Tanpa Re-compile Go** — Hanya frontend yang di-rebuild; kode Go tetap berjalan
+  hingga Anda mengubah file `.go`.
+
+### Mengganti Framework
+
+Dev proxy **framework-agnostic**. CLI Wails menerbitkan dua env var
+saat meluncurkan dev task Anda:
+
+| Env var | Sumber | Arti |
+|---------|--------|---------|
+| `WAILS_VITE_PORT` | `internal/commands/dev.go` (konstanta `wailsVitePort`) | Port dev default (9245 kecuali `--port` diteruskan) — konfig Vite Anda harus menghormatinya |
+| `FRONTEND_DEVSERVER_URL` | `internal/commands/dev.go` | URL lengkap yang akan di-proxy Wails; dibaca di Go via `assetserver.GetDevServerURL()` (`build_dev.go`) |
+
+Tidak ada env var `VITE_PORT`, `FRONTEND_DEV_PORT` atau `WAILSDEV_VERBOSE` di
+pohon v3.
+
+Tambahkan template baru → definisikan dev task-nya → asset server langsung berfungsi.
+
+---
+
+## Mode Production
+
+Ketika Anda menjalankan `wails3 build` pipeline:
+
+1. Menjalankan **production build** frontend (`npm run build`) menghasilkan
+   `frontend/dist/**`.
+2. **Meng-embed** direktori tersebut ke aplikasi via `go:embed` di paket
+   aplikasi Anda sendiri (biasanya `//go:embed all:frontend/dist` di samping `main.go`).
+3. Mengompilasi binary Go dengan `-tags production` (diteruskan melalui
+   `EXTRA_TAGS` oleh wrapper Taskfile).
+
+`internal/assetserver/build_production.go` adalah stub build-tag yang menukar
+jalur kode production. `internal/assetserver/bundled_assetserver.go` **hand-written** — membungkus runtime JS di `bundledassets/` dan bukan
+file yang dihasilkan.
+
+### Penanganan Request
+
+Handler aktual adalah `internal/assetserver/assetserver.go` /
+`asset_fileserver.go`. Secara konseptual:
+
+1. Coba asset statis embedded di path yang diminta.
+2. Fallback ke `index.html` untuk routing SPA.
+3. Sniff content-type jika ekstensi tidak dikenal (`content_type_sniffer.go`).
+4. Set header cache yang masuk akal.
+
+* **Deteksi MIME** — file tanpa ekstensi memiliki content type di-sniff
+  dari ~512 byte pertama (`content_type_sniffer.go`) dan hasilnya
+  di-cache di `mimecache.go` / `ringqueue.go`.
+* **Security Headers** — melarang navigasi `file://` dan mengatur `nosniff`.
+
+Karena semuanya di-embed, binary yang dikirim **tidak memiliki dependensi eksternal**
+(bahkan di Windows).
+
+---
+
+## Menjembatani Dev ↔ Prod
+
+Kedua mode mengekspos **permukaan publik yang sama** dari sudut pandang `pkg/application`:
+struct `AssetOptions` dengan `Handler http.Handler`, plus middleware
+dan wiring lifecycle di dalam `internal/assetserver/`. Switch dev / production
+terjadi sepenuhnya melalui Go build tags, sehingga kode aplikasi identik
+di kedua mode.
+
+```go
+app := application.New(application.Options{
+    Assets: application.AssetOptions{
+        Handler: application.AssetFileServerFS(assetsFS),
+    },
+})
+```
+
+---
+
+## Bagaimana Framework Frontend Terintegrasi
+
+### Template
+
+Setiap template yang dikirim (React, Vue, Svelte, Solid, Vanilla, …) berisi:
+
+* `build/Taskfile.yml`
+* `frontend/vite.config.ts` (atau setara)
+
+Konfig Vite/setara mereka membaca `WAILS_VITE_PORT` dan mengikat dev server
+ke port tersebut. CLI kemudian menerbitkan `FRONTEND_DEVSERVER_URL` aktual untuk
+dikonsumsi proxy in-app.
+
+Framework tetap sepenuhnya terpisah dari Go:
+
+* Tidak perlu mengimpor Wails JS SDK saat build — `/wails/runtime.js` **dilayani**
+  oleh asset server saat runtime.
+* Framework apa pun dengan HTTP dev server dapat plug-in.
+
+---
+
+## Memperluas / Menyesuaikan
+
+Butuh header kustom, auth, atau gzip?
+
+1. Definisikan `middleware.Middleware` (alias untuk `func(http.Handler) http.Handler`,
+   dideklarasikan di `internal/assetserver/middleware.go`).
+2. Sambungkan ke `application.AssetOptions` Anda via konfigurasi
+   yang diekspos oleh `internal/assetserver/options.go`.
+3. Perilaku identik di dev dan prod — tidak ada daftar middleware
+   per-mode.
+
+---
+
+## File Sumber Kunci
+
+| File | Peran |
+|------|------|
+| `build_dev.go` / `build_production.go` | Wrapper build-tag memilih dev vs prod |
+| `assetserver.go` / `asset_fileserver.go` | HTTP handler inti |
+| `assetserver_dev.go` | Reverse proxy ke `FRONTEND_DEVSERVER_URL` |
+| `bundled_assetserver.go` | Wrapper hand-written di sekitar `bundledassets/` |
+| `options.go` | Konfig menghadap `application.AssetOptions` |
+| `mimecache.go` / `ringqueue.go` | Cache MIME + LRU kecil |
+
+---
+
+## Gotcha & Debugging
+
+* **Layar Putih di Prod** — biasanya routing SPA: pastikan dev server Anda
+  melayani `index.html` untuk path yang tidak dikenal dan fallback handler production embedded tercapai.
+* **404 di Dev** — konfig Vite Anda tidak terikat ke `WAILS_VITE_PORT`, atau
+  CLI tidak dapat mencapai dev server untuk mengisi `FRONTEND_DEVSERVER_URL`.
+* **Asset Besar** — embedding membengkakkan binary. Layani media besar dari
+  origin terpisah atau stream melalui `http.Handler` kustom.
+
+---
+
+Anda sekarang tahu bagaimana **Asset Server** Wails memberi makan kode web Anda ke
+window native baik di **development** maupun **production**.
+Kuasai lapisan ini dan Anda dapat debug masalah loading, menambahkan middleware, atau bahkan
+menukar tool-chain frontend yang sama sekali berbeda dengan percaya diri.

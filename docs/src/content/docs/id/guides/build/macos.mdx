@@ -1,0 +1,141 @@
+---
+title: Packaging macOS
+description: Package aplikasi Wails Anda untuk distribusi macOS
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Application Bundle
+
+Package aplikasi Anda sebagai bundle `.app` macOS standar:
+
+```bash
+wails3 package GOOS=darwin
+```
+
+Ini membuat `bin/<AppName>.app` yang berisi:
+- Binary terkompilasi di `Contents/MacOS/`
+- Ikon aplikasi di `Contents/Resources/` (dari `icons.icns` atau, jika ada, dari asset catalog `Assets.car`)
+- `Info.plist` dengan metadata aplikasi
+
+### Universal Binary
+
+Build untuk Apple Silicon dan Intel Mac:
+
+```bash
+wails3 task darwin:package:universal
+```
+
+Ini membuat satu `.app` yang berjalan native di kedua arsitektur. Universal binary dapat dibangun di platform mana pun — di Linux dan Windows, `wails3 tool lipo` digunakan otomatis.
+
+## Kustomisasi Bundle
+
+Edit `build/darwin/Info.plist` untuk menyesuaikan:
+
+- Bundle identifier (`CFBundleIdentifier`)
+- Nama dan versi aplikasi
+- Versi macOS minimum
+- Asosiasi file
+- URL scheme
+
+Ikon aplikasi dihasilkan dari asset di direktori `build/`. Gunakan task `generate:icons`:
+
+```bash
+wails3 task common:generate:icons
+```
+
+Ini menggunakan `build/appicon.png` untuk menghasilkan `darwin/icons.icns` dan `windows/icon.ico`. Di macOS Anda juga dapat menyediakan `build/appicon.icon` (format Icon Composer): task meneruskan `-iconcomposerinput appicon.icon -macassetdir darwin`, yang menghasilkan `Assets.car` dan `darwin/icons.icns` dari file `.icon` (dilewati di platform non-macOS). Saat `Assets.car` ada, jalankan task `update:build-assets` agar `Info.plist` dan `CFBundleIconName` diperbarui:
+
+```bash
+wails3 task common:update:build-assets
+```
+
+Untuk menjalankan perintah ikon secara manual dari direktori `build/`:
+
+```bash
+cd build
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+```
+
+## Code Signing
+
+Tandatangani aplikasi Anda untuk distribusi:
+
+```bash
+# Using the wrapper (auto-detects platform)
+wails3 sign GOOS=darwin
+
+# Or using the task directly
+wails3 task darwin:sign
+```
+
+Konfigurasi signing di `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  ENTITLEMENTS: "build/darwin/entitlements.plist"
+```
+
+### Notarisasi
+
+Untuk aplikasi yang didistribusikan di luar Mac App Store, Apple memerlukan notarisasi:
+
+```bash
+wails3 task darwin:sign:notarize
+```
+
+Pertama, simpan kredensial Anda. Jalankan wizard interaktif (`wails3 setup signing`) atau panggil `notarytool` langsung:
+
+```bash
+xcrun notarytool store-credentials "my-notarize-profile" \
+  --apple-id "you@email.com" \
+  --team-id "TEAMID" \
+  --password "app-specific-password"
+```
+
+Konfigurasi di `build/darwin/Taskfile.yml`:
+
+```yaml
+vars:
+  SIGN_IDENTITY: "Developer ID Application: Your Company (TEAMID)"
+  KEYCHAIN_PROFILE: "my-notarize-profile"
+```
+
+Lihat [Menandatangani Aplikasi](/id/guides/build/signing) untuk detail.
+
+## Installer DMG
+
+Tidak ada task `wails3 task darwin:create:dmg` di template Wails 3 bawaan. Untuk membuat DMG, gunakan alat seperti `create-dmg` atau `hdiutil` dari Taskfile Anda sendiri setelah menjalankan `wails3 task darwin:package` (atau `darwin:package:universal`) — bundle `.app` berada di `bin/`.
+
+```bash
+# After packaging the .app:
+hdiutil create -volname "MyApp" -srcfolder bin/MyApp.app -ov -format UDZO MyApp.dmg
+```
+
+## Troubleshooting
+
+### "App is damaged and can't be opened"
+
+Aplikasi belum ditandatangani. Tandatangani dengan sertifikat Developer ID, atau pengguna dapat melewati Gatekeeper:
+
+```bash
+xattr -cr /path/to/YourApp.app
+```
+
+### Notarisasi gagal
+
+Masalah umum:
+- **Kredensial tidak valid**: Jalankan ulang `xcrun notarytool store-credentials` (atau `wails3 setup signing`)
+- **Hardened runtime diperlukan**: Pastikan entitlements menyertakan `com.apple.security.cs.allow-unsigned-executable-memory` jika diperlukan
+- **Timestamp hilang**: Proses signing seharusnya menyertakan timestamp otomatis
+
+### Aplikasi cross-compile tidak berjalan
+
+Binary macOS cross-compile tidak ditandatangani. Transfer ke Mac dan tandatangani sebelum pengujian:
+
+```bash
+codesign --force --deep --sign - YourApp.app
+```

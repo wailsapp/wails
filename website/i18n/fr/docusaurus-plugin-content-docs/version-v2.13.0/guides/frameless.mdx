@@ -1,0 +1,87 @@
+# Applications sans cadre
+
+Wails prend en charge la création d'applications qui n'ont pas de cadres. Ceci peut être réalisé en utilisant le champ [frameless](../reference/options.mdx#frameless) dans [Application Options](../reference/options.mdx#application-options).
+
+Wails offre une solution simple pour faire glisser la fenêtre: N'importe quel élément HTML qui a le style CSS `--wails-draggable:drag` agira comme une "poignée de glisser". Cette propriété s'applique à tous les éléments enfants. Si vous devez indiquer qu'un élément imbriqué ne doit pas glisser, alors utilisez l'attribut '--wails-draggable:no-drag' sur cet élément.
+
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="/main.css" />
+  </head>
+
+  <body style="--wails-draggable:drag">
+    <div id="logo"></div>
+    <div id="input" style="--wails-draggable:no-drag">
+      <input id="name" type="text" />
+      <button onclick="greet()">Greet</button>
+    </div>
+    <div id="result"></div>
+
+    <script src="/main.js"></script>
+  </body>
+</html>
+```
+
+Pour certains projets, l'utilisation d'une variable CSS peut ne pas être possible en raison du style dynamique. Dans ce cas, vous pouvez utiliser les options `CSSDragProperty` et `CSSDragValue` pour définir une propriété et une valeur qui seront utilisées pour indiquer régions glissables :
+
+```go title=main.go
+package main
+
+import (
+    "embed"
+
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    // Create an instance of the app structure
+    app := NewApp()
+
+    // Create application with options
+    err := wails.Run(&options.App{
+        Title:  "alwaysontop",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+          Assets: assets,
+        },
+        Frameless:       true,
+        CSSDragProperty: "widows",
+        CSSDragValue:    "1",
+        Bind: []interface{}{
+          app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+```html title=index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>alwaysontop</title>
+  </head>
+  <body style="widows: 1">
+    <div id="app"></div>
+    <script src="./src/main.js" type="module"></script>
+  </body>
+</html>
+```
+
+:::info Plein écran
+
+Si vous autorisez votre application à être en plein écran, cette fonctionnalité de glissement sera désactivée.
+
+:::

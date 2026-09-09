@@ -5,7 +5,14 @@ sidebar:
   order: 1
 ---
 
+import { Image } from "astro:assets";
+import fileDropMacOS from "../../../../assets/screenshots/file-drop-macos.png";
+
 Wails lets users drag files from the operating system (file manager, desktop) into your application. Unlike HTML5 drag-and-drop which only works within the browser, this gives you access to actual file paths on disk.
+
+<Image src={fileDropMacOS} alt="A Wails drag-and-drop example with an external file-drop zone on macOS" style="max-width: 900px; margin: 1.5rem auto; display: block; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
+
+The external drop zone is part of the webview, while Wails supplies the native operating-system file drop events.
 
 ## Enable File Drop
 

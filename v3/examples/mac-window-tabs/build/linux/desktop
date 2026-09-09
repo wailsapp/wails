@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=My Product
+Comment=A mac-window-tabs application
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/mac-window-tabs %u
+Terminal=false
+Type=Application
+Icon=mac-window-tabs
+Categories=Utility;
+StartupWMClass=mac-window-tabs
+
+ 

@@ -1,0 +1,529 @@
+---
+title: Enum
+description: Pembuatan enum otomatis dari konstanta Go
+sidebar:
+  order: 4
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## Binding Enum
+
+Generator binding Wails v3 **secara otomatis mendeteksi tipe konstanta Go dan menghasilkan enum TypeScript atau const object JavaScript**. Tanpa registrasi, tanpa konfigurasi — cukup definisikan tipe dan konstanta di Go, dan generator menangani sisanya.
+
+:::note
+Berbeda dengan Wails v2, **tidak perlu memanggil `EnumBind`** atau mendaftarkan enum secara manual. Generator menemukannya secara otomatis dari source code Anda.
+:::
+
+## Memulai Cepat
+
+**Definisikan tipe bernama dengan konstanta di Go:**
+
+```go
+type Status string
+
+const (
+    StatusActive  Status = "active"
+    StatusPending Status = "pending"
+    StatusClosed  Status = "closed"
+)
+```
+
+**Gunakan tipe tersebut dalam struct atau metode service:**
+
+```go
+type Ticket struct {
+    ID     int    `json:"id"`
+    Title  string `json:"title"`
+    Status Status `json:"status"`
+}
+```
+
+**Hasilkan binding:**
+
+```bash
+wails3 generate bindings
+```
+
+Output generator akan melaporkan jumlah enum bersama model:
+
+```
+3 Enums, 5 Models
+```
+
+**Gunakan di frontend:**
+
+```javascript
+import { Ticket, Status } from './bindings/changeme/models'
+
+const ticket = new Ticket({
+    id: 1,
+    title: "Bug report",
+    status: Status.StatusActive
+})
+```
+
+**Itu saja!** Tipe enum ditegakkan di Go dan JavaScript/TypeScript.
+
+## Mendefinisikan Enum
+
+Enum di Wails adalah **tipe bernama** dengan tipe dasar primitif, dikombinasikan dengan **deklarasi const** dari tipe tersebut.
+
+### Enum String
+
+```go
+// Title is a title
+type Title string
+
+const (
+    // Mister is a title
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+    Mrs    Title = "Mrs"
+    Dr     Title = "Dr"
+)
+```
+
+**TypeScript yang Dihasilkan:**
+
+```typescript
+/**
+ * Title is a title
+ */
+export enum Title {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = "",
+
+    /**
+     * Mister is a title
+     */
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+    Mrs = "Mrs",
+    Dr = "Dr",
+}
+```
+
+**JavaScript yang Dihasilkan:**
+
+```javascript
+/**
+ * Title is a title
+ * @readonly
+ * @enum {string}
+ */
+export const Title = {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero: "",
+
+    /**
+     * Mister is a title
+     */
+    Mister: "Mr",
+    Miss: "Miss",
+    Ms: "Ms",
+    Mrs: "Mrs",
+    Dr: "Dr",
+};
+```
+
+### Enum Integer
+
+```go
+type Priority int
+
+const (
+    PriorityLow    Priority = 0
+    PriorityMedium Priority = 1
+    PriorityHigh   Priority = 2
+)
+```
+
+**TypeScript yang Dihasilkan:**
+
+```typescript
+export enum Priority {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    PriorityLow = 0,
+    PriorityMedium = 1,
+    PriorityHigh = 2,
+}
+```
+
+### Enum Type Alias
+
+Type alias Go (`=`) juga berfungsi, tetapi menghasilkan output sedikit berbeda — definisi tipe plus const object, alih-alih `enum` TypeScript native:
+
+```go
+// Age is an integer with some predefined values
+type Age = int
+
+const (
+    NewBorn    Age = 0
+    Teenager   Age = 12
+    YoungAdult Age = 18
+
+    // Oh no, some grey hair!
+    MiddleAged Age = 50
+    Mathusalem Age = 1000 // Unbelievable!
+)
+```
+
+**TypeScript yang Dihasilkan:**
+
+```typescript
+/**
+ * Age is an integer with some predefined values
+ */
+export type Age = number;
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+**JavaScript yang Dihasilkan:**
+
+```javascript
+/**
+ * Age is an integer with some predefined values
+ * @typedef {number} Age
+ */
+
+/**
+ * Predefined constants for type Age.
+ * @namespace
+ */
+export const Age = {
+    NewBorn: 0,
+    Teenager: 12,
+    YoungAdult: 18,
+
+    /**
+     * Oh no, some grey hair!
+     */
+    MiddleAged: 50,
+
+    /**
+     * Unbelievable!
+     */
+    Mathusalem: 1000,
+};
+```
+
+:::tip
+**Tipe bernama** (`type Title string`) menghasilkan deklarasi `enum` TypeScript native dengan anggota `$zero`.
+**Type alias** (`type Age = int`) menghasilkan pasangan `type` + `const` namespace tanpa `$zero`.
+:::
+
+## Nilai `$zero`
+
+Setiap enum tipe bernama menyertakan anggota khusus `$zero` yang mewakili **nilai nol Go** untuk tipe dasarnya:
+
+| Tipe Dasar | Nilai `$zero` |
+|----------------|---------------|
+| `string` | `""` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `0` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `0` |
+| `float32`, `float64` | `0` |
+| `bool` | `false` |
+
+Saat field struct menggunakan tipe enum dan tidak ada nilai yang diberikan, constructor default ke `$zero`:
+
+```typescript
+export class Person {
+    "Title": Title;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;  // defaults to ""
+        }
+        Object.assign(this, $$source);
+    }
+}
+```
+
+Ini memastikan inisialisasi type-safe saat menghasilkan class — field enum tidak pernah `undefined`. Saat menghasilkan interface TypeScript (menggunakan `-i`), tidak ada constructor dan field dapat tidak ada seperti biasa.
+
+## Menggunakan Enum dalam Struct
+
+Saat field struct memiliki tipe enum, kode yang dihasilkan **mempertahankan tipe tersebut** alih-alih fallback ke primitif:
+
+```go
+type Person struct {
+    Title Title
+    Name  string
+    Age   Age
+}
+```
+
+**TypeScript yang Dihasilkan:**
+
+```typescript
+export class Person {
+    "Title": Title;
+    "Name": string;
+    "Age": Age;
+
+    constructor($$source: Partial<Person> = {}) {
+        if (!("Title" in $$source)) {
+            this["Title"] = Title.$zero;
+        }
+        if (!("Name" in $$source)) {
+            this["Name"] = "";
+        }
+        if (!("Age" in $$source)) {
+            this["Age"] = 0;
+        }
+
+        Object.assign(this, $$source);
+    }
+}
+```
+
+Field `Title` bertipe `Title`, bukan `string`. Ini memberikan IDE Anda autocompletion dan type checking penuh pada nilai enum.
+
+## Enum dari Paket yang Diimpor
+
+Enum yang didefinisikan di paket terpisah sepenuhnya didukung. Enum dihasilkan ke direktori paket yang sesuai:
+
+```go
+// services/types.go
+package services
+
+type Title string
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+    Ms     Title = "Ms"
+)
+```
+
+```go
+// main.go
+package main
+
+import "myapp/services"
+
+func (*GreetService) Greet(name string, title services.Title) string {
+    return "Hello " + string(title) + " " + name
+}
+```
+
+Enum `Title` dihasilkan di file model `services`, dan path import diselesaikan secara otomatis:
+
+```typescript
+// bindings/changeme/services/models.ts
+export enum Title {
+    $zero = "",
+    Mister = "Mr",
+    Miss = "Miss",
+    Ms = "Ms",
+}
+```
+
+## Metode Enum
+
+Anda dapat menambahkan metode ke tipe enum di Go. Ini tidak memengaruhi pembuatan binding tetapi memberikan fungsionalitas server-side yang berguna:
+
+```go
+type Title string
+
+func (t Title) String() string {
+    return string(t)
+}
+
+const (
+    Mister Title = "Mr"
+    Miss   Title = "Miss"
+)
+```
+
+Enum yang dihasilkan identik apakah metode Go ada pada tipe atau tidak.
+
+## Komentar dan Dokumentasi
+
+Generator mempertahankan komentar Go sebagai JSDoc dalam output yang dihasilkan:
+
+- **Komentar tipe** menjadi doc comment enum
+- **Komentar grup const** menjadi pemisah section
+- **Komentar const individual** menjadi doc comment anggota
+- **Komentar inline** dipertahankan jika memungkinkan
+
+Artinya IDE Anda akan menampilkan dokumentasi untuk nilai enum saat hover.
+
+## Tipe Dasar yang Didukung
+
+Generator binding mendukung enum dengan tipe dasar Go berikut:
+
+| Tipe Go | Berfungsi sebagai Enum |
+|---------|:---:|
+| `string` | Ya |
+| `int`, `int8`, `int16`, `int32`, `int64` | Ya |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | Ya |
+| `float32`, `float64` | Ya |
+| `byte` (`uint8`) | Ya |
+| `rune` (`int32`) | Ya |
+| `bool` | Ya |
+| `complex64`, `complex128` | Tidak |
+
+## Keterbatasan
+
+Berikut **tidak** didukung untuk pembuatan enum:
+
+- **Tipe generik** — Parameter tipe mencegah deteksi konstanta
+- **Tipe dengan `json.Marshaler` atau `encoding.TextMarshaler` kustom** — Serialisasi kustom berarti nilai yang dihasilkan mungkin tidak cocok dengan perilaku runtime, sehingga generator melewatkannya
+- **Konstanta yang nilainya tidak dapat dievaluasi atau direpresentasikan secara statis** — Konstanta harus memiliki nilai yang diketahui dan dapat direpresentasikan dalam tipe dasarnya. Pola `iota` standar berfungsi dengan baik karena compiler menyelesaikannya ke nilai konkret
+- **Tipe bilangan kompleks** — `complex64` dan `complex128` tidak dapat menjadi tipe dasar enum
+
+## Contoh Lengkap
+
+**Go:**
+
+```go
+package main
+
+import (
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// BackgroundType defines the type of background
+type BackgroundType string
+
+const (
+    BackgroundSolid    BackgroundType = "solid"
+    BackgroundGradient BackgroundType = "gradient"
+    BackgroundImage    BackgroundType = "image"
+)
+
+type BackgroundConfig struct {
+    Type  BackgroundType `json:"type"`
+    Value string         `json:"value"`
+}
+
+type ThemeService struct{}
+
+func (*ThemeService) GetBackground() BackgroundConfig {
+    return BackgroundConfig{
+        Type:  BackgroundSolid,
+        Value: "#ffffff",
+    }
+}
+
+func (*ThemeService) SetBackground(config BackgroundConfig) error {
+    // Apply background
+    return nil
+}
+
+func main() {
+    app := application.New(application.Options{
+        Services: []application.Service{
+            application.NewService(&ThemeService{}),
+        },
+    })
+    app.Window.New()
+    app.Run()
+}
+```
+
+**Frontend (TypeScript):**
+
+```typescript
+import { GetBackground, SetBackground } from './bindings/changeme/themeservice'
+import { BackgroundConfig, BackgroundType } from './bindings/changeme/models'
+
+// Get current background
+const bg = await GetBackground()
+
+// Check the type using enum values
+if (bg.type === BackgroundType.BackgroundSolid) {
+    console.log("Solid background:", bg.value)
+}
+
+// Set a new background
+await SetBackground(new BackgroundConfig({
+    type: BackgroundType.BackgroundGradient,
+    value: "linear-gradient(to right, #000, #fff)"
+}))
+```
+
+**Frontend (JavaScript):**
+
+```javascript
+import { GetBackground, SetBackground } from './bindings/changeme/themeservice'
+import { BackgroundConfig, BackgroundType } from './bindings/changeme/models'
+
+// Use enum values for type-safe comparisons
+const bg = await GetBackground()
+
+switch (bg.type) {
+    case BackgroundType.BackgroundSolid:
+        applySolid(bg.value)
+        break
+    case BackgroundType.BackgroundGradient:
+        applyGradient(bg.value)
+        break
+    case BackgroundType.BackgroundImage:
+        applyImage(bg.value)
+        break
+}
+```
+
+## Langkah Selanjutnya
+
+<CardGrid>
+  <Card title="Model Data" icon="document">
+    Struct, pemetaan tipe, dan pembuatan model.
+
+    [Pelajari Lebih Lanjut →](/id/features/bindings/models)
+  </Card>
+
+  <Card title="Binding Metode" icon="rocket">
+    Bind metode Go ke frontend.
+
+    [Pelajari Lebih Lanjut →](/id/features/bindings/methods)
+  </Card>
+
+  <Card title="Binding Lanjutan" icon="setting">
+    Directive, injeksi kode, dan ID kustom.
+
+    [Pelajari Lebih Lanjut →](/id/features/bindings/advanced)
+  </Card>
+
+  <Card title="Praktik Terbaik" icon="approve-check">
+    Pola desain binding.
+
+    [Pelajari Lebih Lanjut →](/id/features/bindings/best-practices)
+  </Card>
+</CardGrid>
+
+---
+
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

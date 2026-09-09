@@ -1,0 +1,167 @@
+---
+title: Menggunakan Framework Frontend Lain
+description: Cara menggunakan framework yang belum memiliki template bawaan dengan menempatkan proyek Vite Anda sendiri ke direktori frontend
+sidebar:
+  order: 5
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+Wails menyediakan template starter bawaan untuk kumpulan framework yang sengaja dibuat kecil:
+
+| Template          | Bahasa     |
+| ----------------- | ---------- |
+| `vanilla`         | TypeScript (default) |
+| `vanilla-js`      | JavaScript |
+| `react`           | TypeScript |
+| `react-js`        | JavaScript |
+| `vue`             | TypeScript |
+| `svelte`          | TypeScript |
+
+Itu tidak berarti hanya itulah pilihan Anda. Frontend aplikasi Wails **hanyalah
+proyek web** — apa pun yang menghasilkan HTML/CSS/JS statis akan berfungsi. Jika framework
+pilihan Anda (Solid, Preact, Lit, Qwik, SvelteKit, Angular, …) belum memiliki template, Anda
+dapat membuat scaffold sendiri dalam beberapa menit.
+
+## Cara direktori `frontend/` digunakan
+
+Wails tidak peduli framework apa pun yang ada di `frontend/`. Wails hanya mengandalkan
+kontrak kecil yang agnostik terhadap framework:
+
+- **`frontend/dist/` adalah yang di-ship.** `main.go` meng-embed frontend yang sudah di-build dengan
+  `//go:embed all:frontend/dist` dan menyajikannya dari asset server. Build Anda harus
+  menghasilkan bundle statis ke `frontend/dist/` (direktori output default Vite).
+- **Build didorong oleh `frontend/package.json`.** Saat `wails3 build`, Wails menjalankan
+  skrip `build` frontend; saat `wails3 dev` ia menjalankan `dev` dan mem-proxy dev server Vite
+  untuk hot reload.
+- **Bindings di-generate ke `frontend/bindings/`.** Wails memeriksa layanan Go
+  yang Anda daftarkan dan menulis SDK type-safe di sana. Anda mengimpornya seperti modul lainnya:
+
+  ```js
+  import { GreetService } from "./bindings/changeme";
+  ```
+
+- **Dev server berjalan di port tetap.** `wails3 dev` mem-proxy Vite pada port di
+  `WAILS_VITE_PORT` (default `9245`), jadi atur `server.port` ke port tersebut dengan `strictPort: true`.
+  Ini adalah konfigurasi Vite biasa — tidak ada plugin Wails yang terlibat.
+- **Opsional — custom event bertipe.** Template bawaan juga mendaftarkan
+  plugin `@wailsio/runtime/plugins/vite`. Plugin ini hanya diperlukan jika Anda menggunakan custom event
+  *bertipe*: plugin ini menyuntikkan definisi tipe event yang di-generate ke runtime dan membuat
+  build gagal sampai bindings sudah di-generate. Jika Anda hanya menggunakan API berbasis string
+  `Events.On("time", …)`, Anda bisa melewatkannya.
+
+Semua yang lain — komponen, routing, state, styling — sepenuhnya terserah framework Anda.
+
+## Scaffold framework apa pun dengan Vite
+
+Jalur tercepat adalah memulai dari template bawaan (sehingga Anda mendapat `main.go`,
+`Taskfile`, build assets, dan layanan Go yang berfungsi), lalu mengganti `frontend/` dengan proyek
+Vite baru untuk framework Anda.
+
+<Steps>
+
+1. **Buat proyek dari template default**
+
+   ```bash
+   wails3 init -n myapp
+   cd myapp
+   ```
+
+2. **Ganti `frontend/` dengan aplikasi Vite untuk framework Anda**
+
+   Vite dapat membuat scaffold sebagian besar framework dengan satu perintah. Pilih template:
+
+   ```bash
+   # Dari root proyek — mis. Solid, Preact, Lit, Svelte, Vue, React, Vanilla
+   rm -rf frontend
+   npm create vite@latest frontend -- --template solid
+   ```
+
+   Ganti `solid` dengan template Vite apa pun: `preact`, `lit`, `svelte`, `vue`, `react`,
+   `vanilla`, atau varian `-ts`-nya (`solid-ts`, `preact-ts`, …).
+
+3. **Instal runtime dan arahkan Vite ke dev server Wails**
+
+   ```bash
+   cd frontend
+   npm install @wailsio/runtime
+   ```
+
+   `@wailsio/runtime` menyediakan API JS (`Events`, `Browser`, dialog, …). Satu-satunya
+   perubahan `vite.config` yang *wajib* adalah port dev server, agar `wails3 dev` dapat menemukannya:
+
+   ```ts title="frontend/vite.config.ts"
+   import { defineConfig } from "vite";
+
+   export default defineConfig({
+     server: {
+       host: "127.0.0.1",
+       port: Number(process.env.WAILS_VITE_PORT) || 9245,
+       strictPort: true,
+     },
+   });
+   ```
+
+   Hanya jika Anda berniat menggunakan **custom event bertipe**, tambahkan juga plugin — plugin ini menyuntikkan
+   tipe event yang di-generate dan mewajibkan bindings ada sebelum build:
+
+   ```ts title="frontend/vite.config.ts" {2,5}
+   import { defineConfig } from "vite";
+   import wails from "@wailsio/runtime/plugins/vite";
+
+   export default defineConfig({
+     plugins: [wails("./bindings")],
+     server: { host: "127.0.0.1", port: Number(process.env.WAILS_VITE_PORT) || 9245, strictPort: true },
+   });
+   ```
+
+4. **Panggil layanan Go Anda**
+
+   Generate bindings sekali, lalu impor di mana saja dalam komponen Anda:
+
+   ```bash
+   wails3 generate bindings
+   ```
+
+   ```js
+   import { GreetService } from "./bindings/changeme";
+
+   const greeting = await GreetService.Greet("World");
+   ```
+
+5. **Jalankan**
+
+   ```bash
+   wails3 dev
+   ```
+
+</Steps>
+
+:::tip[Generate proyek JavaScript murni]
+Perintah yang sama dapat membuat scaffold proyek tanpa TypeScript — cukup gunakan template Vite non-`-ts`:
+
+```bash
+npm create vite@latest frontend -- --template solid
+```
+:::
+
+## Framework dengan scaffolder sendiri
+
+Beberapa framework tidak dibuat melalui template `create` Vite dan memiliki
+tooling sendiri. Framework tersebut tetap berfungsi — cukup buat scaffold dengan perintah native-nya
+dan tambahkan plugin Wails setelahnya:
+
+- **SvelteKit:** `npx sv create frontend`. Gunakan static adapter
+  (`@sveltejs/adapter-static`) agar build menghasilkan bundle statis, dan nonaktifkan SSR.
+- **Qwik:** `npm create qwik@latest`. Gunakan adapter static (SSG).
+- **Angular:** scaffold dengan `ng new`, atur `outputPath` ke `dist`, dan arahkan skrip build
+  ke `ng build`.
+
+Aturannya selalu sama: hasilkan build statis di `frontend/dist/`, pertahankan
+plugin Vite `@wailsio/runtime` (atau impor runtime secara langsung), dan impor
+bindings Go Anda dari `frontend/bindings/`.
+
+:::note
+Jika Anda membangun setup yang rapi untuk suatu framework, pertimbangkan untuk menerbitkannya sebagai
+[custom template](/id/guides/advanced/custom-templates) agar orang lain dapat `wails3 init -t` langsung.
+:::

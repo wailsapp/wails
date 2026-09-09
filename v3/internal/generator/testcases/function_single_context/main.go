@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	_ "embed"
+
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"

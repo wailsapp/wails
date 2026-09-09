@@ -1,0 +1,273 @@
+---
+title: Aplikasi Pertama Anda
+description: Buat aplikasi desktop Wails pertama Anda langkah demi langkah
+sidebar:
+  order: 20
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Badge } from '@astrojs/starlight/components';
+import { Steps } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
+
+import wails_init from '../../../../assets/wails_init.mp4';
+import wails_build from '../../../../assets/wails_build.mp4';
+import wails_dev from '../../../../assets/wails_dev.mp4';
+
+
+Panduan ini menunjukkan cara membuat aplikasi Wails v3 pertama Anda, mencakup setup proyek, build, dan alur kerja pengembangan.
+
+<br/>
+<br/>
+
+<Steps>
+
+1.  ## Membuat Proyek Baru
+
+    Buka terminal Anda dan jalankan perintah berikut untuk membuat proyek Wails
+    baru:
+
+    ```bash
+    wails3 init -n myfirstapp
+    ```
+
+    Perintah ini membuat direktori baru bernama `myfirstapp` dengan semua
+    file yang diperlukan.
+
+      <video src={wails_init} controls></video> 
+
+2.  ## Menjelajahi Struktur Proyek
+
+    Masuk ke direktori `myfirstapp`. Anda akan menemukan beberapa file dan
+    folder:
+
+    <FileTree>
+    - build/           Berisi file yang digunakan proses build
+        - appicon.png  Ikon aplikasi
+        - config.yml   Konfigurasi build
+        - Taskfile.yml Tugas build
+        - darwin/      File build khusus macOS
+            - Info.dev.plist Konfigurasi development
+            - Info.plist    Konfigurasi production
+            - Taskfile.yml  Tugas build macOS
+            - icons.icns    Ikon aplikasi macOS
+        - linux/       File build khusus Linux
+            - Taskfile.yml  Tugas build Linux
+            - appimage/     Packaging AppImage
+                - build.sh  Skrip build AppImage
+            - nfpm/        Packaging NFPM
+                - nfpm.yaml Konfigurasi paket
+                - scripts/  Skrip build
+        - windows/     File build khusus Windows
+            - Taskfile.yml        Tugas build Windows
+            - icon.ico           Ikon aplikasi Windows
+            - info.json          Metadata aplikasi
+            - wails.exe.manifest File manifest Windows
+            - nsis/              File installer NSIS
+                - project.nsi                    File proyek NSIS
+                - wails_tools.nsh               Skrip helper NSIS
+    - frontend/        File aplikasi frontend
+        - index.html   File HTML utama
+        - main.js      File JavaScript utama
+        - package.json Konfigurasi paket NPM
+        - public/      Aset statis
+        - Inter Font License.txt Lisensi font
+    - .gitignore      File git ignore
+    - README.md       Dokumentasi proyek
+    - Taskfile.yml    Tugas proyek
+    - go.mod          File modul Go
+    - go.sum          Checksum modul Go
+    - greetservice.go Layanan greeting
+    - main.go         Kode aplikasi utama
+    </FileTree>
+
+    Luangkan waktu untuk menjelajahi file-file ini dan familiar dengan
+    strukturnya.
+
+    :::note
+    Meskipun Wails v3 menggunakan [Task](https://taskfile.dev/) sebagai
+    sistem build default, tidak ada yang mencegah Anda menggunakan `make` atau
+    sistem build alternatif lainnya.
+    :::
+
+3.  ## Mem-build Aplikasi Anda
+
+    Untuk mem-build aplikasi Anda, jalankan:
+
+    ```bash
+    wails3 build
+    ```
+
+    Perintah ini mengompilasi versi debug aplikasi Anda dan menyimpannya di
+    direktori `bin` yang baru.
+
+    :::note
+    `wails3 build` adalah shorthand untuk `wails3 task build` dan akan menjalankan tugas `build` di `Taskfile.yml`.
+    :::
+
+        <video src={wails_build} controls></video> 
+
+
+    Setelah di-build, Anda dapat menjalankannya seperti aplikasi biasa:
+
+
+    <Tabs syncKey="platform">
+
+      <TabItem label="Mac" icon="apple">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+      <TabItem label="Windows" icon="seti:windows">
+
+        ```sh
+        bin\myfirstapp.exe
+        ```
+
+          </TabItem>
+
+      <TabItem label="Linux" icon="linux">
+
+        ```sh
+        ./bin/myfirstapp
+        ```
+
+          </TabItem>
+
+    </Tabs>
+
+    Anda akan melihat UI sederhana, titik awal untuk aplikasi Anda. Karena ini
+    versi debug, Anda juga akan melihat log di jendela konsol. Ini
+    berguna untuk keperluan debugging.
+
+4.  ## Mode Dev
+
+    Kita juga dapat menjalankan aplikasi dalam mode development. Mode ini memungkinkan Anda
+    membuat perubahan pada kode frontend dan melihat perubahan tersebut tercermin di
+    aplikasi yang berjalan tanpa harus mem-build ulang seluruh aplikasi.
+
+    1. Buka jendela terminal baru.
+    2. Jalankan `wails3 dev`. Aplikasi akan dikompilasi dan dijalankan dalam mode debug.
+    3. Buka `frontend/index.html` di editor pilihan Anda.
+    4. Edit kode dan ubah `Please enter your name below` menjadi
+       `Please enter your name below!!!`.
+    5. Simpan file.
+
+    Perubahan ini akan langsung tercermin di aplikasi Anda.
+
+    Setiap perubahan pada kode backend akan memicu rebuild:
+
+    1. Buka `greetservice.go`.
+    2. Ubah baris yang berisi `return "Hello " + name + "!"` menjadi
+       `return "Hello there " + name + "!"`.
+    3. Simpan file.
+
+    Aplikasi akan diperbarui dalam hitungan detik.
+
+        <video src={wails_dev} controls></video>
+
+5.  ## Mengemas Aplikasi Anda
+
+        Setelah aplikasi Anda siap untuk didistribusikan, Anda dapat membuat
+        paket spesifik platform:
+
+          <Tabs syncKey="platform">
+
+    <TabItem label="Mac" icon="apple">
+
+              Untuk membuat bundle `.app`:
+
+              ```bash
+              wails3 package
+              ```
+
+              Ini akan membuat build production dan mengemasnya ke bundle `.app` di direktori `bin`.
+
+            </TabItem>
+            <TabItem label="Windows" icon="seti:windows">
+
+              Untuk membuat installer NSIS:
+
+              ```bash
+              wails3 package
+              ```
+
+              Ini akan membuat build production dan mengemasnya ke installer NSIS di direktori `bin`.
+
+            </TabItem>
+            <TabItem label="Linux" icon="linux">
+
+              Wails mendukung berbagai format paket untuk distribusi Linux:
+
+              ```bash
+              # Buat semua jenis paket (AppImage, deb, rpm, dan Arch Linux)
+              wails3 package
+
+              # Atau buat jenis paket spesifik
+              wails3 task linux:create:appimage  # Format AppImage
+              wails3 task linux:create:deb       # Paket Debian
+              wails3 task linux:create:rpm       # Paket Red Hat
+              wails3 task linux:create:aur       # Paket Arch Linux
+              ```
+
+            </TabItem>
+
+          </Tabs>
+
+        Untuk informasi lebih detail tentang opsi dan konfigurasi packaging,
+        lihat [Panduan Packaging](/guides/packaging).
+
+6.  ## Menyiapkan Version Control dan Nama Modul
+
+    Proyek Anda dibuat dengan nama modul placeholder `changeme`. Disarankan untuk memperbaruinya agar sesuai dengan URL repositori Anda:
+
+    1. Buat repositori baru di GitHub (atau Git host pilihan Anda)
+    2. Inisialisasi git di direktori proyek Anda:
+       ```bash
+       git init
+       git add .
+       git commit -m "Initial commit"
+       ```
+    3. Atur remote repository Anda (ganti dengan URL repositori Anda):
+       ```bash
+       git remote add origin https://github.com/username/myfirstapp.git
+       ```
+    4. Perbarui nama modul di `go.mod` agar sesuai dengan URL repositori Anda:
+       ```bash
+       go mod edit -module github.com/username/myfirstapp
+       ```
+    5. Push kode Anda:
+       ```bash
+       git push -u origin main
+       ```
+
+    Ini memastikan nama modul Go Anda selaras dengan konvensi penamaan modul Go dan memudahkan berbagi kode.
+
+    :::tip[Pro Tip]
+    Anda dapat mengotomatisasi semua langkah inisialisasi dengan menggunakan flag `-git` saat membuat proyek:
+    ```bash
+    wails3 init -n myfirstapp -git github.com/username/myfirstapp
+    ```
+    Ini mendukung berbagai format URL Git:
+    - HTTPS: `https://github.com/username/project`
+    - SSH: `git@github.com:username/project` atau `ssh://git@github.com/username/project`
+    - Git protocol: `git://github.com/username/project`
+    - Filesystem: `file:///path/to/project.git`
+    :::
+
+</Steps>
+
+## Selamat!
+
+Anda baru saja membuat, mengembangkan, dan mengemas aplikasi Wails pertama Anda.
+Ini baru permulaan dari apa yang dapat Anda capai dengan Wails v3.
+
+## Langkah Selanjutnya
+
+Jika Anda baru mengenal Wails, kami merekomendasikan membaca Tutorial kami selanjutnya yang akan menjadi panduan praktis melalui
+berbagai fitur Wails. Tutorial pertama adalah [Membuat Service](/id/tutorials/01-creating-a-service).
+
+Jika Anda pengguna yang lebih berpengalaman, lihat [Panduan](/guides) kami untuk informasi lebih detail tentang cara menggunakan Wails.

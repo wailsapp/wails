@@ -1,0 +1,152 @@
+---
+title: Konfigurasi UAC Windows
+description: Konfigurasi User Account Control (UAC) untuk aplikasi Wails Windows Anda
+sidebar:
+  order: 11
+---
+
+import {Badge} from '@astrojs/starlight/components';
+
+Platform Relevan: <Badge text="Windows" variant="note" />
+<br/>
+
+Windows User Account Control (UAC) menentukan hak eksekusi aplikasi Wails Anda. Secara default, aplikasi Wails v3 menyertakan konfigurasi UAC eksplisit di manifest Windows mereka, memastikan perilaku konsisten di mesin yang berbeda.
+
+## Level Eksekusi UAC
+
+Aplikasi Windows dapat meminta level eksekusi berbeda melalui file manifest. Wails v3 secara otomatis menyertakan konfigurasi UAC dengan level eksekusi default yang dapat Anda sesuaikan berdasarkan kebutuhan aplikasi.
+
+### Level Eksekusi yang Tersedia
+
+| Level | Deskripsi | Use Case |
+|-------|-------------|----------|
+| `asInvoker` | Berjalan dengan hak yang sama dengan proses induk | Default untuk sebagian besar aplikasi |
+| `highestAvailable` | Berjalan dengan hak tertinggi yang tersedia untuk pengguna | Aplikasi yang mungkin memerlukan akses elevated |
+| `requireAdministrator` | Selalu memerlukan hak administrator | Utilitas sistem, installer |
+
+### Konfigurasi Default
+
+Aplikasi Wails v3 menyertakan konfigurasi UAC default di manifest Windows mereka:
+
+```xml
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+Konfigurasi ini memastikan aplikasi Anda:
+- Berjalan dengan hak yang sama dengan proses peluncur
+- Tidak memerlukan elevation secara default
+- Bekerja konsisten di mesin yang berbeda
+- Tidak memicu prompt UAC untuk pengguna normal
+
+## Menyesuaikan Konfigurasi UAC
+
+Karena Wails v3 mendorong pengguna untuk menyesuaikan build assets, Anda dapat memodifikasi konfigurasi UAC dengan mengedit template manifest Windows secara langsung.
+
+### Menemukan Template Manifest
+
+Template manifest Windows berada di:
+```
+build/windows/wails.exe.manifest
+```
+
+### Memodifikasi Level Eksekusi
+
+Untuk mengubah level eksekusi, edit atribut `level` pada elemen `requestedExecutionLevel`:
+
+```xml title="build/windows/wails.exe.manifest"
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+        <requestedPrivileges>
+            <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+        </requestedPrivileges>
+    </security>
+</trustInfo>
+```
+
+### Contoh
+
+#### Aplikasi Standar (Default)
+Sebagian besar aplikasi harus menggunakan level `asInvoker` default:
+
+```xml
+<requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+```
+
+#### Utilitas Sistem
+Aplikasi yang memerlukan akses elevated saat tersedia:
+
+```xml
+<requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
+```
+
+#### Alat Administratif
+Aplikasi yang selalu memerlukan hak administrator:
+
+```xml
+<requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+```
+
+## UI Access
+
+Atribut `uiAccess` mengontrol apakah aplikasi Anda dapat berinteraksi dengan elemen UI berprivilege lebih tinggi. Dalam kebanyakan kasus, ini harus tetap `false`.
+
+Atur ke `true` hanya jika aplikasi Anda perlu:
+- Mengirim input ke aplikasi lain
+- Mengendalikan UI aplikasi lain
+- Mengakses elemen UI proses berprivilege lebih tinggi
+
+:::caution[Persyaratan UI Access]
+Mengatur `uiAccess="true"` memerlukan aplikasi Anda:
+- Ditandatangani secara digital dengan sertifikat dari otoritas sertifikat tepercaya
+- Diinstal di lokasi aman (Program Files atau Windows\System32)
+:::
+
+## Membangun dengan Pengaturan UAC Kustom
+
+Setelah memodifikasi template manifest, bangun aplikasi Anda seperti biasa:
+
+```bash
+wails3 build
+```
+
+Proses build akan secara otomatis menyematkan konfigurasi UAC kustom Anda ke executable.
+
+## Memverifikasi Konfigurasi UAC
+
+Anda dapat memverifikasi bahwa pengaturan UAC Anda tersemat dengan benar menggunakan alat `go-winres`:
+
+```bash
+go-winres extract --in your-app.exe --out extracted-resources/
+```
+
+Kemudian periksa file manifest yang diekstrak untuk memastikan konfigurasi UAC Anda ada.
+
+:::tip[Persistensi Manifest]
+Berbeda dengan beberapa framework lain, konfigurasi UAC Wails v3 disematkan langsung ke executable saat kompilasi, memastikan persistensi saat aplikasi disalin ke mesin lain.
+:::
+
+## Troubleshooting
+
+### Prompt UAC Tidak Muncul
+Jika Anda mengatur `requireAdministrator` tetapi tidak melihat prompt UAC:
+- Verifikasi manifest tersemat dengan benar di executable
+- Periksa apakah Anda tidak berjalan dari proses yang sudah elevated
+- Pastikan sintaks manifest adalah XML yang valid
+
+### Aplikasi Tidak Mulai
+Jika aplikasi gagal mulai setelah perubahan UAC:
+- Periksa sintaks manifest untuk error XML
+- Verifikasi nilai level eksekusi valid
+- Coba kembalikan ke `asInvoker` untuk mengisolasi masalah
+
+### Perilaku Tidak Konsisten Antar Mesin
+Jika perilaku UAC berbeda antar mesin:
+- Pastikan manifest tersemat di executable (bukan eksternal)
+- Periksa executable tidak dimodifikasi setelah build
+- Verifikasi pengaturan UAC Windows diaktifkan di mesin target

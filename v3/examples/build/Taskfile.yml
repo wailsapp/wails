@@ -21,7 +21,7 @@ tasks:
 
   generate:icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
-    dir: build
+    dir: assets
     cmds:
       # Generates both .ico and .icns files
       - wails3 generate icons -input appicon.png
@@ -29,7 +29,7 @@ tasks:
   build:production:darwin:
     summary: Creates a production build of the application
     cmds:
-      - GOOS=darwin GOARCH={{.GOARCH}} go build -tags production -ldflags="-w -s" -o build/bin/{{.APP_NAME}}
+      - GOOS=darwin GOARCH={{.GOARCH}} go build -tags production -ldflags="-w -s" -o assets/bin/{{.APP_NAME}}
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
@@ -39,7 +39,7 @@ tasks:
   build:production:linux:
     summary: Creates a production build of the application
     cmds:
-      - GOOS=linux GOARCH={{.GOARCH}} go build -tags production -ldflags="-w -s" -o build/bin/{{.APP_NAME}}
+      - GOOS=linux GOARCH={{.GOARCH}} go build -tags production -ldflags="-w -s" -o assets/bin/{{.APP_NAME}}
     env:
       GOARCH: '{{.GOARCH}}'
 
@@ -47,9 +47,9 @@ tasks:
     summary: Builds a `.app` bundle
     cmds:
       - mkdir -p {{.APP_NAME}}.app/Contents/{MacOS,Resources}
-      - cp build/icons.icns {{.APP_NAME}}.app/Contents/Resources
-      - cp build/bin/{{.APP_NAME}} {{.APP_NAME}}.app/Contents/MacOS
-      - cp build/Info.plist {{.APP_NAME}}.app/Contents
+      - cp assets/icons.icns {{.APP_NAME}}.app/Contents/Resources
+      - cp assets/bin/{{.APP_NAME}} {{.APP_NAME}}.app/Contents/MacOS
+      - cp assets/Info.plist {{.APP_NAME}}.app/Contents
 
   package:darwin:arm64:
     summary: Packages a production build of the application into a `.app` bundle
@@ -74,7 +74,7 @@ tasks:
       - task: generate:app_bundle
 
   generate:syso:
-    dir: build
+    dir: assets
     platforms:
       - windows
     cmds:

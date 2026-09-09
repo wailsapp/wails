@@ -116,17 +116,16 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### app.Window.GetByName()
 
-Gets a window by its name.
+Gets a window by its name. Returns the window and whether it was found.
 
 ```go
-func (wm *WindowManager) GetByName(name string) Window
+func (wm *WindowManager) GetByName(name string) (Window, bool)
 ```
 
 **Example:**
 
 ```go
-window := app.Window.GetByName("main")
-if window != nil {
+if window, ok := app.Window.GetByName("main"); ok {
     window.Show()
 }
 ```
@@ -153,15 +152,18 @@ for _, window := range windows {
 The Application provides access to various managers through properties:
 
 ```go
-app.Window      // Window management
-app.Menu        // Menu management
-app.Dialog      // dialog management
-app.Event       // Event management
-app.Clipboard   // Clipboard operations
-app.Screen      // Screen information
-app.SystemTray  // System tray
-app.Browser     // Browser operations
-app.Env         // Environment variables
+app.Window       // Window management
+app.Menu         // Menu management
+app.Dialog       // Dialog management
+app.Event        // Event management
+app.Clipboard    // Clipboard operations
+app.Screen       // Screen information
+app.SystemTray   // System tray
+app.Browser      // Browser operations
+app.Env          // Environment variables
+app.ContextMenu  // Context-menu management
+app.KeyBinding   // Global keyboard shortcuts
+app.Logger       // *slog.Logger
 ```
 
 ### Example Usage
@@ -187,17 +189,19 @@ screens := app.Screen.GetAll()
 Registers a service with the application.
 
 ```go
-func (a *App) RegisterService(service Service) error
+func (a *App) RegisterService(service Service)
 ```
+
+`RegisterService` returns nothing; service initialisation errors surface via `ServiceStartup` failures during `app.Run()`.
 
 **Example:**
 
 ```go
 type MyService struct {
-    app *application.Application
+    app *application.App
 }
 
-func NewMyService(app *application.Application) *MyService {
+func NewMyService(app *application.App) *MyService {
     return &MyService{app: app}
 }
 
@@ -209,10 +213,10 @@ app.RegisterService(application.NewService(NewMyService(app)))
 
 ### app.Event.Emit()
 
-Emits a custom event.
+Emits a custom event. Returns `true` if a hook cancelled the emit.
 
 ```go
-func (em *EventManager) Emit(name string, data ...interface{})
+func (em *EventManager) Emit(name string, data ...any) bool
 ```
 
 **Example:**
@@ -227,10 +231,10 @@ app.Event.Emit("user-logged-in", map[string]interface{}{
 
 ### app.Event.On()
 
-Listens for custom events.
+Listens for custom events. Returns an unsubscribe `func()`.
 
 ```go
-func (em *EventManager) On(name string, callback func(*CustomEvent))
+func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
 ```
 
 **Example:**
@@ -245,19 +249,28 @@ app.Event.On("user-logged-in", func(e *application.CustomEvent) {
 
 ### app.Event.OnApplicationEvent()
 
-Listens for application lifecycle events.
+Listens for application lifecycle events. The `eventType` parameter is `events.ApplicationEventType` (from the `events` package).
 
 ```go
-func (em *EventManager) OnApplicationEvent(eventType ApplicationEventType, callback func(*ApplicationEvent)) func()
+func (em *EventManager) OnApplicationEvent(
+    eventType events.ApplicationEventType,
+    callback func(*ApplicationEvent),
+) func()
 ```
 
 **Example:**
 
 ```go
-// Listen for shutdown
-app.Event.OnApplicationEvent(application.EventApplicationShutdown, func(e *application.ApplicationEvent) {
+import "github.com/wailsapp/wails/v3/pkg/events"
+
+// Listen for app-started
+app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *application.ApplicationEvent) {
+    fmt.Println("Application started")
+})
+
+// Application shutdown is NOT an event constant; register cleanup via:
+app.OnShutdown(func() {
     fmt.Println("Application shutting down")
-    // Cleanup
 })
 ```
 
@@ -372,20 +385,25 @@ Raw messages should only be used as a last resort. The standard binding system i
 
 ### RawMessageHandler
 
-The `RawMessageHandler` callback receives raw messages sent from the frontend using `System.invoke()`.
+`RawMessageHandler` is a field on `application.Options`, not a method. The runtime invokes it for every raw message sent from the frontend via `System.invoke()`.
 
 ```go
-func (a *App) RawMessageHandler(window Window, message string)
+type Options struct {
+    // ... other fields ...
+    RawMessageHandler func(window Window, message string, originInfo *OriginInfo)
+}
 ```
+
+`OriginInfo` carries `Origin`, `TopOrigin`, and `IsMainFrame` (platforms populate different subsets — see the [Raw Messages Guide](/guides/raw-messages) for the per-platform matrix).
 
 **Example:**
 
 ```go
 app := application.New(application.Options{
     Name: "My App",
-    RawMessageHandler: func(window application.Window, message string) {
+    RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
         // Handle the raw message
-        fmt.Printf("Received from %s: %s\n", window.Name(), message)
+        fmt.Printf("Received from %s (%s): %s\n", window.Name(), originInfo.Origin, message)
 
         // You can respond using events
         window.EmitEvent("response", processMessage(message))
@@ -480,7 +498,7 @@ func main() {
         URL:              "http://wails.localhost/",
     })
 
-    window.Centre()
+    window.Center()
     window.Show()
 
     app.Run()

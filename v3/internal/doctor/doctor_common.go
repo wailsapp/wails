@@ -2,7 +2,11 @@ package doctor
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -32,6 +36,94 @@ func checkCommonDependencies(result map[string]string, ok *bool) {
 
 	// Check for Docker (optional - used for macOS cross-compilation from Linux)
 	checkDocker(result)
+
+	// Android toolchain (optional - only needed for `wails3 task android:*`)
+	checkAndroid(result)
+}
+
+// androidSDKRoot resolves the Android SDK location from the standard
+// environment variables, falling back to the conventional install path.
+func androidSDKRoot() string {
+	for _, env := range []string{"ANDROID_HOME", "ANDROID_SDK_ROOT"} {
+		if v := os.Getenv(env); v != "" {
+			return v
+		}
+	}
+	if home, err := os.UserHomeDir(); err == nil {
+		// Conventional per-OS install locations
+		candidates := []string{
+			filepath.Join(home, "Library", "Android", "sdk"), // macOS
+			filepath.Join(home, "Android", "Sdk"),            // Linux
+		}
+		if localAppData := os.Getenv("LOCALAPPDATA"); localAppData != "" {
+			candidates = append(candidates, filepath.Join(localAppData, "Android", "Sdk")) // Windows
+		}
+		for _, def := range candidates {
+			if _, err := os.Stat(def); err == nil {
+				return def
+			}
+		}
+	}
+	return ""
+}
+
+// checkAndroid reports the Android SDK, NDK and Java state. All entries are
+// optional (prefixed with "*"): they are only required for Android builds.
+func checkAndroid(result map[string]string) {
+	sdk := androidSDKRoot()
+	if sdk == "" {
+		result["*Android SDK"] = "Not found. Set ANDROID_HOME (install via Android Studio or the command-line tools)."
+		return
+	}
+	result["*Android SDK"] = sdk
+
+	// adb (platform-tools); the binary is adb.exe on Windows
+	adbName := "adb"
+	if runtime.GOOS == "windows" {
+		adbName = "adb.exe"
+	}
+	adb := filepath.Join(sdk, "platform-tools", adbName)
+	if _, err := os.Stat(adb); err == nil {
+		result["*Android platform-tools"] = "Installed"
+	} else if _, err := exec.LookPath("adb"); err == nil {
+		result["*Android platform-tools"] = "Installed (on PATH)"
+	} else {
+		result["*Android platform-tools"] = "Not found. Install with: sdkmanager 'platform-tools'"
+	}
+
+	// NDK: prefer ANDROID_NDK_HOME, else newest under $SDK/ndk
+	ndk := os.Getenv("ANDROID_NDK_HOME")
+	if ndk == "" {
+		if entries, err := os.ReadDir(filepath.Join(sdk, "ndk")); err == nil {
+			var versions []string
+			for _, e := range entries {
+				if e.IsDir() {
+					versions = append(versions, e.Name())
+				}
+			}
+			if len(versions) > 0 {
+				sort.Strings(versions)
+				ndk = filepath.Join(sdk, "ndk", versions[len(versions)-1])
+			}
+		}
+	}
+	if ndk != "" {
+		result["*Android NDK"] = ndk
+	} else {
+		result["*Android NDK"] = "Not found. Install with: sdkmanager 'ndk;26.3.11579264'"
+	}
+
+	// Java (required by Gradle)
+	javaVersion := "Not found. Install a JDK (e.g. brew install openjdk@21) or set JAVA_HOME."
+	if out, err := exec.Command("java", "-version").CombinedOutput(); err == nil {
+		line := strings.SplitN(strings.TrimSpace(string(out)), "\n", 2)[0]
+		javaVersion = strings.TrimSpace(line)
+	} else if javaHome := os.Getenv("JAVA_HOME"); javaHome != "" {
+		if out, err := exec.Command(filepath.Join(javaHome, "bin", "java"), "-version").CombinedOutput(); err == nil {
+			javaVersion = strings.SplitN(strings.TrimSpace(string(out)), "\n", 2)[0]
+		}
+	}
+	result["*Java (Android)"] = javaVersion
 }
 
 func checkDocker(result map[string]string) {

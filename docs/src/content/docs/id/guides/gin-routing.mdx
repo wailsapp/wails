@@ -1,0 +1,263 @@
+---
+title: Menggunakan Gin untuk Routing
+description: Panduan lengkap untuk mengintegrasikan framework web Gin dengan aplikasi Wails v3
+---
+
+Panduan ini mendemonstrasikan cara mengintegrasikan [framework web Gin](https://github.com/gin-gonic/gin) dengan Wails v3. Gin adalah framework web HTTP berperforma tinggi yang ditulis dalam Go dan memudahkan pembuatan aplikasi web serta API.
+
+## Pengantar
+
+Wails v3 menyediakan sistem aset yang fleksibel sehingga Anda dapat menggunakan handler HTTP apa pun, termasuk framework web populer seperti Gin. Integrasi ini memungkinkan Anda untuk:
+
+- Menyajikan konten web menggunakan routing dan middleware Gin
+- Membuat RESTful API yang dapat diakses dari aplikasi Wails Anda
+- Menggunakan fitur Gin sambil mempertahankan integrasi desktop Wails
+
+## Menyiapkan Gin dengan Wails
+
+Untuk mengintegrasikan Gin dengan Wails, Anda perlu membuat router Gin dan mengonfigurasinya sebagai asset handler di aplikasi Wails Anda. Berikut panduan langkah demi langkah:
+
+### 1. Instal Dependensi
+
+Pertama, pastikan paket Gin sudah terinstal:
+
+```bash
+go get -u github.com/gin-gonic/gin
+```
+
+### 2. Buat Middleware untuk Gin
+
+Buat fungsi middleware yang menangani integrasi antara Wails dan Gin:
+
+```go
+// GinMiddleware creates a middleware that passes requests to Gin if they're not handled by Wails
+func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Let Wails handle the `/wails` route
+			if strings.HasPrefix(r.URL.Path, "/wails") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			// Let Gin handle everything else
+			ginEngine.ServeHTTP(w, r)
+		})
+	}
+}
+```
+
+Middleware ini meneruskan semua permintaan HTTP ke router Gin.
+
+### 3. Konfigurasi Router Gin Anda
+
+Siapkan router Gin dengan route, middleware, dan handler:
+
+```go
+// Create a new Gin router
+ginEngine := gin.New() // Using New() instead of Default() to add custom middleware
+
+// Add middlewares
+ginEngine.Use(gin.Recovery())
+ginEngine.Use(LoggingMiddleware()) // Your custom middleware
+
+// Define routes
+ginEngine.GET("/", func(c *gin.Context) {
+    // Serve your main page
+})
+
+ginEngine.GET("/api/hello", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Hello from Gin API!",
+        "time":    time.Now().Format(time.RFC3339),
+    })
+})
+```
+
+### 4. Integrasikan dengan Aplikasi Wails
+
+Konfigurasi aplikasi Wails Anda untuk menggunakan router Gin sebagai asset handler:
+
+```go
+// Create a new Wails application
+app := application.New(application.Options{
+    Name:        "Gin Example",
+    Description: "A demo of using Gin with Wails",
+    Mac: application.MacOptions{
+        ApplicationShouldTerminateAfterLastWindowClosed: true,
+    },
+    Assets: application.AssetOptions{
+        Handler:    ginEngine,
+        Middleware: GinMiddleware(ginEngine),
+    },
+})
+
+// Create window
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:    "Wails + Gin Example",
+    Width:    900,
+    Height:   700,
+    URL:      "/", // This will load the route handled by Gin
+})
+```
+
+## Menyajikan Konten Statis
+
+Gunakan paket `embed` Go untuk menyematkan file statis ke dalam binary:
+
+```go
+//go:embed static
+var staticFiles embed.FS
+
+ginEngine.StaticFS("/static", http.FS(staticFiles))
+ginEngine.GET("/", func(c *gin.Context) {
+    file, _ := staticFiles.ReadFile("static/index.html")
+    c.Data(http.StatusOK, "text/html; charset=utf-8", file)
+})
+```
+
+Untuk pengembangan, sajikan file langsung dari disk menggunakan `ginEngine.Static("/static", "./static")`.
+
+## Middleware Kustom
+
+Gin memungkinkan Anda membuat middleware kustom untuk berbagai keperluan. Berikut contoh middleware logging:
+
+```go
+// LoggingMiddleware is a Gin middleware that logs request details
+func LoggingMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        // Start timer
+        startTime := time.Now()
+
+        // Process request
+        c.Next()
+
+        // Calculate latency
+        latency := time.Since(startTime)
+
+        // Log request details
+        log.Printf("[GIN] %s | %s | %s | %d | %s",
+            c.Request.Method,
+            c.Request.URL.Path,
+            c.ClientIP(),
+            c.Writer.Status(),
+            latency,
+        )
+    }
+}
+```
+
+## Menangani Permintaan API
+
+Gin memudahkan pembuatan RESTful API. Berikut cara mendefinisikan endpoint API:
+
+```go
+// GET endpoint
+ginEngine.GET("/api/users", func(c *gin.Context) {
+    c.JSON(http.StatusOK, users)
+})
+
+// POST endpoint with JSON binding
+ginEngine.POST("/api/users", func(c *gin.Context) {
+    var newUser User
+    if err := c.ShouldBindJSON(&newUser); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    // Process the new user...
+    c.JSON(http.StatusCreated, newUser)
+})
+
+// Path parameters
+ginEngine.GET("/api/users/:id", func(c *gin.Context) {
+    id := c.Param("id")
+    // Find user by ID...
+    c.JSON(http.StatusOK, user)
+})
+
+// Query parameters
+ginEngine.GET("/api/search", func(c *gin.Context) {
+    query := c.DefaultQuery("q", "")
+    limit := c.DefaultQuery("limit", "10")
+    // Perform search...
+    c.JSON(http.StatusOK, results)
+})
+```
+
+## Menggunakan Fitur Wails
+
+Konten web yang disajikan Gin dapat berinteraksi dengan fitur Wails menggunakan paket `@wailsio/runtime`.
+
+### Penanganan Event
+
+Daftarkan event handler di Go:
+
+```go
+app.Event.On("my-event", func(event *application.CustomEvent) {
+    log.Printf("Received event: %v", event.Data)
+})
+```
+
+Panggil dari JavaScript menggunakan runtime:
+
+```html
+<script type="module">
+    import { Events } from '@wailsio/runtime';
+
+    Events.Emit("my-event", { message: "Hello from frontend" });
+    Events.On("response-event", (data) => console.log(data));
+</script>
+```
+
+## Konfigurasi Lanjutan
+
+### Menyesuaikan Mode Gin
+
+Atur Gin ke release mode untuk produksi:
+
+```go
+gin.SetMode(gin.ReleaseMode)  // Use gin.DebugMode for development
+ginEngine := gin.New()
+```
+
+### Menangani WebSocket
+
+Anda dapat mengintegrasikan WebSocket dengan Gin menggunakan library seperti Gorilla WebSocket:
+
+```go
+import "github.com/gorilla/websocket"
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func(r *http.Request) bool {
+        return true // Allow all connections
+    },
+}
+
+// In your route handler:
+ginEngine.GET("/ws", func(c *gin.Context) {
+    conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    defer conn.Close()
+    
+    // Handle WebSocket connection...
+})
+```
+
+## Praktik Terbaik
+
+- **Gunakan Paket embed Go:** Sematkan file statis ke dalam binary untuk distribusi yang lebih baik.
+- **Pisahkan Concern:** Pisahkan logika API dari logika UI.
+- **Penanganan Error:** Implementasikan penanganan error yang tepat di route Gin maupun kode frontend.
+- **Keamanan:** Perhatikan pertimbangan keamanan, terutama saat menangani input pengguna.
+- **Performa:** Gunakan release mode Gin di produksi untuk performa yang lebih baik.
+- **Testing:** Tulis tes untuk route Gin menggunakan utilitas testing Gin.
+
+## Kesimpulan
+
+Mengintegrasikan Gin dengan Wails memberikan kombinasi yang powerful untuk membangun aplikasi desktop dengan teknologi web. Performa dan fitur Gin melengkapi kemampuan integrasi desktop Wails, sehingga Anda dapat membuat aplikasi canggih yang memanfaatkan yang terbaik dari kedua dunia.
+
+Untuk informasi lebih lanjut, lihat [dokumentasi Gin](https://github.com/gin-gonic/gin) dan [dokumentasi Wails](https://wails.io).

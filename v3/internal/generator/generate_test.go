@@ -46,6 +46,12 @@ func TestGenerator(t *testing.T) {
 			TS:            i&tsBit != 0,
 			UseInterfaces: i&useInterfacesBit != 0,
 			UseNames:      i&useNamesBit != 0,
+
+			TimeType: "string",
+		}
+
+		if !options.UseInterfaces && !options.UseNames {
+			options.TimeType = "Date"
 		}
 
 		name := configString(options)
@@ -122,7 +128,7 @@ func TestGenerator(t *testing.T) {
 						for i, msg := range warnings {
 							// Handle both Unix and Windows path separators
 							msg = strings.ReplaceAll(msg, "\\", "/")
-							
+
 							// Check if this is a file path (contains line:column position)
 							// File paths look like: /path/to/file.go:123:45: message
 							// Package paths look like: package github.com/...: message

@@ -74,10 +74,16 @@ func (a *Application) Run() error {
 	return err
 }
 
-// Quit will shut down the application
+// Quit will shut down the application.
+//
+// Safe to call before Run, or after Run returns early (e.g. CreateApp failed).
+// Without the nil guard, Quit() in those situations dereferences an unset
+// a.application and crashes (#5452).
 func (a *Application) Quit() {
 	a.shutdown.Do(func() {
-		a.application.Shutdown()
+		if a.application != nil {
+			a.application.Shutdown()
+		}
 	})
 }
 

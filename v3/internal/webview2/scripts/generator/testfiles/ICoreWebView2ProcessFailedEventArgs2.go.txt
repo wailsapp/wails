@@ -1,0 +1,50 @@
+//go:build windows
+
+package webview2
+import (
+	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
+)
+
+type ICoreWebView2ProcessFailedEventArgs2Vtbl struct {
+	IUnknownVtbl
+	GetExitCode ComProc
+}
+
+type ICoreWebView2ProcessFailedEventArgs2 struct {
+	Vtbl *ICoreWebView2ProcessFailedEventArgs2Vtbl
+}
+
+func (i *ICoreWebView2ProcessFailedEventArgs2) AddRef() uintptr {
+	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return refCounter
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2ProcessFailedEventArgs2() *ICoreWebView2ProcessFailedEventArgs2 {
+	var result *ICoreWebView2ProcessFailedEventArgs2
+
+	iidICoreWebView2ProcessFailedEventArgs2 := NewGUID("{4dab9422-46fa-4c3e-a5d2-41d2071d3680}")
+	_, _, _ = i.Vtbl.QueryInterface.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(iidICoreWebView2ProcessFailedEventArgs2)),
+		uintptr(unsafe.Pointer(&result)))
+
+	return result
+}
+
+
+func (i *ICoreWebView2ProcessFailedEventArgs2) GetExitCode() (int, error) {
+
+	var exitCode int
+
+	hr, _, err := i.Vtbl.GetExitCode.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(exitCode),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return 0, syscall.Errno(hr)
+	}
+	return exitCode, err
+}

@@ -1,0 +1,176 @@
+---
+title: Wake
+description: An experimental, Wails-aware build runner that runs your existing Taskfiles with faster incremental builds, structured output and parallel execution by default.
+sidebar:
+    order: 1
+    badge:
+        text: Experimental
+        variant: caution
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Experimental Feature">
+Wake is opt-in behind `WAILS_USE_WAKE=true` and is **not** the default runner.
+With the variable unset, `wails3 build / package / sign / task` behave exactly
+as before. Feature coverage and behaviour may change between releases.
+</Aside>
+
+Wake is an **experimental alternative build runner** for `wails3`. It reads the
+same `Taskfile.yml` your project already has — the same task, dep, var,
+template, include and platform-namespace syntax — and runs it through a
+Wails-aware executor instead of the general-purpose [Task](https://taskfile.dev)
+runtime.
+
+The goal isn't to replace Task. It's to provide a runner that's purpose-built
+for the way Wails projects actually build, with semantics, output and defaults
+that match the rest of the `wails3` CLI. **If you only ever use Wake, your
+Taskfiles do not change.**
+
+## Why it exists
+
+Both Wake and the Task runtime are compiled into `wails3` — neither needs a
+separate binary install. The difference is that Wake **understands the domain**.
+A general-purpose runner executes whatever steps a Taskfile lists, in the order
+it's told. Wake knows what a Wails build actually *is* — the frontend bundle
+gets embedded into the binary, the binary gets packaged into platform-specific
+artefacts, icons and bindings are generated alongside — and uses that knowledge
+to optimise the build in ways a generic runner can't.
+
+- **It only does the work a build actually needs.** Wake tracks the real inputs
+  and outputs of each step itself. For a Go build that's the module graph plus
+  the outputs of the steps it depends on, so when nothing relevant has changed
+  it skips the compiler and linker entirely instead of re-running them. A
+  general-purpose runner can only skip a step when the Taskfile has spelled out,
+  up front, exactly which files to watch; Wake works it out from what it already
+  knows about the build. On a no-op rebuild that's roughly **~20 ms (Wake) vs
+  ~316 ms (Task)**. Cold builds land at the same wall time — they're dominated
+  by `npm install`, Vite and the Go compiler.
+
+- **It knows what can run at the same time.** Because Wake understands which
+  steps are independent, it runs them in parallel by default and the verdict
+  line reports the speedup it earned. Opt out with `WAKE_SERIAL=true` when
+  interleaved output from sibling steps would muddle an investigation.
+
+- **Structured output controlled by wails3.** Wake renders through wails3's own
+  reporter: one row per planned step, live status, a colour-coded phase
+  breakdown at the end, and clickable `file:line` links inside failure panels.
+  `NO_COLOR` and non-TTY environments (CI logs) degrade cleanly.
+
+- **Built in, so it can grow with Wails.** Because Wake is part of `wails3`
+  rather than a third-party tool, new build capabilities can be layered on
+  directly — there's no waiting on a separate project to implement them. That
+  also opens the door to running cross-platform scripts and tooling natively
+  where a Taskfile today shells out to the `wails3` binary (spawning a process
+  per call). Folding that work in-process trims the overhead and means more
+  speedups to come.
+
+## Enabling Wake
+
+Wake is gated entirely behind the `WAILS_USE_WAKE=true` environment variable.
+With it unset (or set to anything other than `true`), every `wails3` command
+uses the embedded Task runtime exactly as before.
+
+```bash
+# Default: Task runtime, no Wake involvement
+wails3 build
+
+# Opt in: Wake drives build / package / sign / task <name>
+WAILS_USE_WAKE=true wails3 build
+WAILS_USE_WAKE=true wails3 package
+WAILS_USE_WAKE=true wails3 task <some-task-name>
+```
+
+The flag covers `wails3 build`, `wails3 package`, `wails3 sign` and
+`wails3 task <name>`. `wails3 dev` is **not** affected yet — the dev watcher
+still uses its own pipeline.
+
+<Aside type="tip" title="Enabling Wake is safe">
+If Wake encounters a Taskfile feature it doesn't implement, it hands the whole
+run off to the embedded Task runtime in-process — there's no external `task`
+binary to install. At worst you get exactly the behaviour you'd have had without
+the flag.
+</Aside>
+
+## Layered local overrides
+
+Wake supports a **base Taskfile plus local overrides**. Drop a file next to your
+`Taskfile.yml` and its definitions take precedence:
+
+| File                                | Purpose                        | Precedence |
+| ----------------------------------- | ------------------------------ | ---------- |
+| `Taskfile.yml`                      | base, committed                | lowest     |
+| `Taskfile.override.yml` / `.yaml`   | committed team-wide overrides  | middle     |
+| `Taskfile.local.yml` / `.yaml`      | personal, usually git-ignored  | highest    |
+
+**Merge semantics (local wins):**
+
+- A task with the **same name** overrides the base task. List fields (`cmds`,
+  `deps`, `sources`, `generates`, `platforms`, `status`, `preconditions`,
+  `aliases`) **replace** the base when the override provides them; fields the
+  override omits are kept from the base.
+- `env` and `vars` **merge per key**, with the override winning on collisions.
+- A task that exists **only** in an override file is **added**.
+
+For example, if the committed `Taskfile.yml` builds with dev flags but your
+machine should always build production:
+
+```yaml
+# Taskfile.local.yml (git-ignored, yours)
+tasks:
+  build:
+    cmds:
+      - go build -tags production -o bin/app .
+  smoke:
+    cmds:
+      - ./bin/app --selftest
+```
+
+Now `build` runs your production command and `smoke` is available, with no
+changes to the committed Taskfile.
+
+<Aside type="note" title="Trust model">
+Override files are auto-discovered and applied with no prompt. This grants no
+new capability — a Taskfile already runs arbitrary shell commands, so an
+override can't do anything that editing `Taskfile.yml` couldn't. Committed
+`Taskfile.override.*` shows up in PR diffs; `Taskfile.local.*` is created on
+your own machine. A malformed override aborts the run rather than being
+silently skipped. Set `WAILS_NO_OVERRIDES=true` to skip override discovery
+entirely for deterministic CI builds.
+</Aside>
+
+## Automatic fallback
+
+If Wake hits a Taskfile feature it doesn't implement, it hands the entire run
+off to the embedded Task runtime. The following currently trigger that fallback:
+
+- `dotenv` at the taskfile level
+- `output` modes other than `interleaved`
+- a `requires` block
+- `interval` (taskfile or task level)
+- `run` modes other than `always`
+- `short` in a task
+- `defer` in a task
+
+## Environment variables
+
+| Variable             | Effect                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------- |
+| `WAILS_USE_WAKE`     | `true` enables Wake for the routable `wails3` verbs; anything else uses the Task runtime |
+| `WAILS_NO_OVERRIDES` | `true` skips `Taskfile.local.*` / `.override.*` discovery (deterministic builds)        |
+| `WAKE_VERBOSE`       | Stream subprocess stdout/stderr live instead of capturing it for failure-only display  |
+| `WAKE_SILENT`        | Suppress task output entirely                                                          |
+| `WAKE_SERIAL`        | `true` disables the parallel `deps:` fanout (parallel is the default)                  |
+| `WAKE_FORCE`         | `true` bypasses every cache for a true clean rebuild                                   |
+| `WAKE_DEBUG`         | Log resolver internals (DAG, deps, var refs, exec routing)                            |
+| `WAKE_NOTICE`        | `off` to silence the per-run "wake (experimental)" notice                             |
+
+The build cache lives in `.wake/cache.json` (Task uses `.task/`).
+
+## Feedback
+
+Wake is an experiment, and your feedback decides where it goes. If you try it,
+we'd love to hear whether it was faster, clearer, and whether anything broke —
+the most useful reports say what you ran, what you expected and what actually
+happened. Tell us in the
+[Wake feedback discussion](https://github.com/wailsapp/wails/discussions/5679).

@@ -1,0 +1,428 @@
+---
+title: 构建系统
+description: 了解 Wails 如何构建和打包您的应用程序
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## 统一构建系统
+
+Wails 提供了一个**统一的构建系统**，它编译 Go 代码、捆绑前端资源、将所有内容嵌入到单个可执行文件中，并处理特定平台的构建——只需一条命令。
+
+```bash
+wails3 build
+```
+
+**输出：** 包含所有内容的原生可执行文件。
+
+## 构建流程概览
+
+{/*
+TODO: 修复 D2 图表生成或将其作为图片嵌入。
+之前的 D2 代码块在构建管道中导致了 MDX 解析错误。
+*/}
+
+**[构建流程图表占位符]**
+
+
+## 构建阶段
+
+### 1. 分析阶段
+
+Wails 扫描您的 Go 代码以了解您的服务：
+
+```go
+type GreetService struct {
+    prefix string
+}
+
+func (g *GreetService) Greet(name string) string {
+    return g.prefix + name + "!"
+}
+```
+
+**Wails 提取的内容：**
+- 服务名称：`GreetService`
+- 方法名称：`Greet`
+- 参数类型：`string`
+- 返回类型：`string`
+
+**用途：** 生成 TypeScript 绑定
+
+### 2. 生成阶段
+
+#### TypeScript 绑定
+
+Wails 生成类型安全的绑定：
+
+```typescript
+// Auto-generated: frontend/bindings/GreetService.ts
+export function Greet(name: string): Promise<string> {
+    return window.wails.Call('GreetService.Greet', name)
+}
+```
+
+**优势：**
+- 完整的类型安全
+- IDE 自动补全
+- 编译时错误检查
+- JSDoc 注释
+
+#### 前端构建
+
+您的前端打包工具运行（Vite、webpack 等）：
+
+```bash
+# Vite 示例
+vite build --outDir dist
+```
+
+**发生的情况：**
+- JavaScript/TypeScript 编译
+- CSS 处理并压缩
+- 资源优化
+- 生成源映射（仅限开发环境）
+- 输出到 `frontend/dist/`
+
+### 3. 编译阶段
+
+#### Go 编译
+
+Go 代码使用优化进行编译：
+
+```bash
+go build -ldflags="-s -w" -o myapp.exe
+```
+
+**标志：**
+- `-s`：剥离符号表
+- `-w`：剥离 DWARF 调试信息
+- 结果：更小的二进制文件（减少约 30%）
+
+**特定于平台：**
+- Windows：嵌入图标的 `.exe`
+- macOS：`.app` 包结构
+- Linux：ELF 二进制文件
+
+#### 资源嵌入
+
+前端资源被嵌入到 Go 二进制文件中：
+
+```go
+//go:embed frontend/dist
+var assets embed.FS
+```
+
+**结果：** 包含所有内容的单个可执行文件。
+
+### 4. 输出
+
+**单个原生二进制文件：**
+- Windows：`myapp.exe`（约 15MB）
+- macOS：`myapp.app`（约 15MB）
+- Linux：`myapp`（约 15MB）
+
+**无依赖项**（除了系统 WebView）。
+
+## 开发与生产环境
+
+<Tabs syncKey="mode">
+  <TabItem label="开发环境 (wails3 dev)" icon="seti:config">
+    **针对速度优化：**
+    
+    ```bash
+    wails3 dev
+    ```
+    
+    **发生的情况：**
+    1. 启动前端开发服务器（Vite 在端口 5173 上）
+    2. 编译未优化的 Go 代码
+    3. 启动指向开发服务器的应用程序
+    4. 启用热重载
+    5. 包含源映射
+    
+    **特点：**
+    - **快速重建**（前端更改少于 1 秒）
+    - **不嵌入资源**（从开发服务器提供）
+    - **包含调试符号**
+    - **启用源映射**
+    - **详细日志记录**
+    
+    **文件大小：** 较大（包含调试符号约 50MB）
+  </TabItem>
+
+  <TabItem label="生产环境 (wails3 build)" icon="rocket">
+    **针对大小和性能优化：**
+    
+    ```bash
+    wails3 build
+    ```
+    
+    **发生的情况：**
+    1. 为生产环境构建前端（压缩）
+    2. 使用优化编译 Go 代码
+    3. 剥离调试符号
+    4. 嵌入资源
+    5. 创建单个二进制文件
+    
+    **特点：**
+    - **优化代码**（压缩、摇树优化）
+    - **资源嵌入**（无外部文件）
+    - **剥离调试符号**
+    - **无源映射**
+    - **最小化日志记录**
+    
+    **文件大小：** 较小（约 15MB）
+  </TabItem>
+</Tabs>
+
+## 构建命令
+
+### 基本构建
+
+```bash
+wails3 build
+```
+
+**输出：** `build/bin/myapp[.exe]`
+
+### 为特定平台构建
+
+```bash
+# 为 Windows 构建（从任何操作系统）
+wails3 build -platform windows/amd64
+
+# 为 macOS 构建
+wails3 build -platform darwin/amd64
+wails3 build -platform darwin/arm64
+
+# 为 Linux 构建
+wails3 build -platform linux/amd64
+```
+
+**交叉编译：** 从任何平台为任何平台构建。
+
+### 带选项的构建
+
+```bash
+# 自定义输出目录
+wails3 build -o ./dist/myapp
+
+# 跳过前端构建（使用现有的）
+wails3 build -skipbindings
+
+# 清理构建（移除缓存）
+wails3 build -clean
+
+# 详细输出
+wails3 build -v
+```
+
+### 构建模式
+
+```bash
+# 调试构建（包含符号）
+wails3 build -debug
+
+# 生产构建（默认，已优化）
+wails3 build
+
+# 开发构建（快速，未优化）
+wails3 build -devbuild
+```
+
+## 构建配置
+
+### Taskfile.yml
+
+Wails 使用 [Taskfile](https://taskfile.dev/) 进行构建配置：
+
+```yaml
+# Taskfile.yml
+version: '3'
+
+tasks:
+  build:
+    desc: 构建应用程序
+    cmds:
+      - wails3 build
+  
+  build:windows:
+    desc: 为 Windows 构建
+    cmds:
+      - wails3 build -platform windows/amd64
+  
+  build:macos:
+    desc: 为 macOS 构建（通用）
+    cmds:
+      - wails3 build -platform darwin/amd64
+      - wails3 build -platform darwin/arm64
+      - lipo -create -output build/bin/myapp.app build/bin/myapp-amd64.app build/bin/myapp-arm64.app
+  
+  build:linux:
+    desc: 为 Linux 构建
+    cmds:
+      - wails3 build -platform linux/amd64
+```
+
+**运行任务：**
+
+```bash
+task build:windows
+task build:macos
+task build:linux
+```
+
+### 构建选项文件
+
+创建 `build/build.json` 以进行持久化配置：
+
+```json
+{
+  "name": "My Application",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "description": "Application description",
+  "icon": "build/appicon.png",
+  "outputFilename": "myapp",
+  "platforms": ["windows/amd64", "darwin/amd64", "linux/amd64"],
+  "frontend": {
+    "dir": "./frontend",
+    "install": "npm install",
+    "build": "npm run build",
+    "dev": "npm run dev"
+  },
+  "go": {
+    "ldflags": "-s -w -X main.version={{.Version}}"
+  }
+}
+```
+
+## 资源嵌入
+
+### 工作原理
+
+Wails 使用 Go 的 `embed` 包：
+
+```go
+package main
+
+import (
+    "embed"
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    app := application.New(application.Options{
+        Name:   "My App",
+        Assets: application.AssetOptions{
+            Handler: application.AssetFileServerFS(assets),
+        },
+    })
+    
+    app.Window.New()
+    app.Run()
+}
+```
+
+**在构建时：**
+1. 前端构建到 `frontend/dist/`
+2. `//go:embed` 指令包含文件
+3. 文件编译到二进制文件中
+4. 二进制文件包含所有内容
+
+**在运行时：**
+1. 应用程序启动
+2. 从内存提供资源
+3. 资源无磁盘 I/O
+4. 加载速度快
+
+### 自定义资源
+
+嵌入其他文件：
+
+```go
+//go:embed frontend/dist
+var frontendAssets embed.FS
+
+//go:embed data/*.json
+var dataAssets embed.FS
+
+//go:embed templates/*.html
+var templateAssets embed.FS
+```
+
+## 构建优化
+
+### 前端优化
+
+**Vite（默认）：**
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // 移除 console.log
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],  // 分离供应商包
+        },
+      },
+    },
+  },
+}
+```
+
+**结果：**
+- JavaScript 压缩（减少约 70%）
+- CSS 压缩（减少约 60%）
+- 图像优化
+- 应用摇树优化
+
+### Go 优化
+
+**编译器标志：**
+
+```bash
+-ldflags="-s -w"
+```
+
+- `-s`：剥离符号表（减少约 10%）
+- `-w`：剥离 DWARF 调试信息（减少约 20%）
+
+**其他优化：**
+
+```bash
+-ldflags="-s -w -X main.version=1.0.0"
+```
+
+- `-X`：在构建时设置变量值
+- 适用于版本号、构建日期等
+
+### 二进制压缩
+
+**UPX（可选）：**
+
+```bash
+# 构建后
+upx --best build/bin/myapp.exe
+```
+
+**结果：**
+- 大小减少约 50%
+- 启动速度略慢（约 100ms）
+- 不建议在 macOS 上使用（代码签名问题）
+
+**有关构建的问题？** 请在 [Discord](https://discord.gg/JDdSxwjhGf) 提问或查看 [构建示例](https://github.com/wailsapp/wails/tree/master/v3/examples/build)。

@@ -1,0 +1,42 @@
+---
+title: Struktur Proyek
+description: Memahami tata letak file untuk proyek Wails tipikal
+sidebar:
+  order: 1
+---
+
+Halaman ini adalah referensi sederhana untuk file yang dibuat saat Anda memulai proyek baru menggunakan template Vanilla
+
+```
+/
+├── main.go                 # Titik masuk aplikasi
+├── greetservice.go         # Contoh service backend yang diekspos ke frontend
+├── go.mod                  # Definisi modul Go
+├── config.yml              # Konfigurasi Wails/proyek
+├── Taskfile.yml            # Task runner untuk perintah dev/build
+├── build/                  # Packaging dan aset khusus platform
+│   ├── appicon.png         # Ikon aplikasi default
+│   ├── appicon.icon/       # File sumber ikon
+│   ├── darwin/             # Konfigurasi build macOS
+│   ├── windows/            # Konfigurasi build Windows
+│   ├── linux/              # Konfigurasi build Linux
+│   ├── android/            # Konfigurasi build Android
+│   ├── ios/                # Konfigurasi build iOS
+│   └── docker/             # Lingkungan build containerized
+├── frontend/               # Frontend (Vite + React + TS)
+│   ├── index.html          # Titik masuk HTML
+│   ├── src/
+│   │   └── main.js         # Bootstrap frontend
+│   ├── public/             # Aset statis
+│   ├── dist/               # Output frontend yang dibangun
+│   ├── bindings/           # Binding Go yang dihasilkan otomatis
+│   ├── package.json        # Dependensi frontend
+│   ├── vite.config.ts      # Konfigurasi Vite
+│   └── tsconfig.json       # Konfigurasi TypeScript
+├── bin/                    # Binary yang dikompilasi
+└── .task/                  # Cache task runner
+  ```
+
+:::note[File proyek frontend]
+Jika Anda memilih starter template berbeda, isi `frontend/src` akan berbeda tergantung framework yang dipilih
+:::

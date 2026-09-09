@@ -45,27 +45,48 @@ When running on the native platform, Wails uses the native tools for maximum com
 
 ## Quick Start
 
-The easiest way to configure signing is using the interactive setup wizard:
+The fastest way to configure signing is the setup wizard:
 
 ```bash
-wails3 setup signing
+wails3 setup
 ```
 
-This command:
-- Walks you through configuring signing credentials for each platform
-- On macOS, lists available Developer ID certificates from your keychain
-- For Linux, can generate a new PGP key if you don't have one
-- **Stores passwords securely in your system keychain** (not in Taskfiles)
-- Updates the `vars` section in each platform's Taskfile with non-sensitive config
+This writes a shared signing configuration to `~/.config/wails/defaults.yaml` that is
+**honored at sign time on every platform** (see [Configuration precedence](#configuration-precedence)).
+Its signing step:
+- Detects which signing tools are installed for the platform you want to target —
+  **from any host** — and shows the install command for your OS (e.g.
+  `brew install gnupg`, `sudo apt install osslsigncode`, `winget install GnuPG.Gpg4win`).
+- On macOS, lists Developer ID certificates from your keychain.
+- For Linux, lists your GPG keys and can **generate and export** a new one.
+- For Windows, can **generate a self-signed certificate** (for testing) via OpenSSL.
+- **Stores passwords securely in your system keychain** (not in Taskfiles).
 
 <Aside type="tip">
 Passwords are stored in your system's native credential store (macOS Keychain, Windows Credential Manager, or Linux Secret Service). This means your signing configuration is secure and works across all your Wails projects.
 </Aside>
 
-To configure only specific platforms:
+## Configuration precedence
+
+When you run a sign task, each signing option is resolved in this order (first
+match wins):
+
+1. An explicit flag passed to `wails3 tool sign` (e.g. `--pgp-key`, `--certificate`, `--identity`).
+2. The matching **project Taskfile var** (`PGP_KEY`, `SIGN_CERTIFICATE`/`SIGN_THUMBPRINT`, `SIGN_IDENTITY`, …).
+3. The **global config** in `~/.config/wails/defaults.yaml` (written by `wails3 setup`).
+
+This means the Taskfile vars are **optional overrides**: if a var is unset, the
+globally configured key/certificate/identity is used. If none of the three provides
+a value, the sign command reports a clear error telling you how to configure it.
+
+## Per-project configuration
+
+To configure signing for a single project rather than globally, run the per-project
+wizard from inside the project — it writes the `vars` into that project's
+`build/<platform>/Taskfile.yml` files:
 
 ```bash
-wails3 setup signing --platform darwin
+wails3 setup signing                                   # all detected platforms
 wails3 setup signing --platform windows --platform linux
 ```
 
@@ -132,14 +153,20 @@ wails3 task linux:sign:packages  # Sign all packages
 </TabItem>
 </Tabs>
 
-You can also use the CLI directly:
+You can also inspect signing state from the system directly:
 
 ```bash
-# Check signing capabilities on your system
-wails3 signing info
+# List available macOS code-signing identities
+security find-identity -v -p codesigning
 
-# List available signing identities (macOS/Windows)
-wails3 signing list
+# List PGP keys (Linux package signing)
+gpg --list-keys
+```
+
+For interactive setup of every platform's signing configuration, use the wizard:
+
+```bash
+wails3 setup signing
 ```
 
 ## macOS Code Signing
@@ -155,7 +182,7 @@ wails3 signing list
 Check available signing identities:
 
 ```bash
-wails3 signing list
+security find-identity -v -p codesigning
 ```
 
 Output:
@@ -235,13 +262,12 @@ Then set `ENTITLEMENTS` in your Taskfile vars to point to the appropriate file.
 Apple requires all distributed apps to be notarized.
 
 <Steps>
-1. **Store your credentials in the keychain** (one-time setup):
+1. **Store your credentials in the keychain** (one-time setup). Either run `wails3 setup signing` (it prompts for these values and calls `notarytool` under the hood) or call `notarytool` directly:
    ```bash
-   wails3 signing credentials \
+   xcrun notarytool store-credentials "my-notarize-profile" \
      --apple-id "your@email.com" \
      --team-id "ABCD1234" \
-     --password "app-specific-password" \
-     --profile "my-notarize-profile"
+     --password "app-specific-password"
    ```
 
 2. **Set KEYCHAIN_PROFILE in your Taskfile** to match the profile name above.
@@ -266,8 +292,21 @@ Notarization typically takes 1-2 minutes. The ticket is automatically stapled to
 ### Prerequisites
 
 - Code signing certificate (from DigiCert, Sectigo, etc.)
-- For native signing: Windows SDK installed (for signtool.exe)
-- For cross-platform: Just the certificate file
+- For native signing on Windows: Windows SDK installed (for `signtool.exe`)
+- For cross-platform signing from macOS/Linux: [`osslsigncode`](https://github.com/mtrojnar/osslsigncode) (the `wails3 setup` signing step shows the host-specific install command)
+
+### Generating a self-signed certificate (testing)
+
+If you just need to test the signing pipeline, run `wails3 setup`, open the
+**Windows** tab of the signing step, and choose **Generate a self-signed
+certificate**. This uses OpenSSL to create a code-signing `.pfx` and records its
+path in the global config.
+
+<Aside type="caution">
+Self-signed certificates are for **testing and internal distribution only** — they
+trigger SmartScreen warnings for end users. Public releases need a certificate from
+a trusted CA.
+</Aside>
 
 ### Configuration
 
@@ -283,9 +322,14 @@ vars:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SIGN_CERTIFICATE` | One of these | Path to .pfx/.p12 certificate file |
-| `SIGN_THUMBPRINT` | One of these | Certificate thumbprint in Windows cert store |
+| `SIGN_CERTIFICATE` | Override | Path to .pfx/.p12 certificate file (falls back to global config if unset) |
+| `SIGN_THUMBPRINT` | Override | Certificate thumbprint in Windows cert store (alternative to `SIGN_CERTIFICATE`) |
 | `TIMESTAMP_SERVER` | No | Timestamp server URL (default: http://timestamp.digicert.com) |
+
+<Aside type="note">
+These vars are optional **overrides**. If unset, the certificate configured globally
+via `wails3 setup` is used. See [Configuration precedence](#configuration-precedence).
+</Aside>
 
 <Aside type="note">
 The certificate password is stored in your system keychain, not in the Taskfile. Run `wails3 setup signing` to configure it, or set the `WAILS_WINDOWS_CERT_PASSWORD` environment variable in CI.
@@ -320,21 +364,33 @@ Linux packages (DEB and RPM) are signed using PGP/GPG keys. Unlike Windows and m
 
 ### Generating a PGP Key
 
-If you don't have a PGP key, Wails can generate one for you:
+The easiest way is the setup wizard — run `wails3 setup`, open the **Linux** tab of
+the signing step, and choose **Create a new GPG key**. The wizard:
+- generates an RSA 4096 key in your GPG keyring (leave the passphrase blank for an
+  unattended, CI-friendly key),
+- **exports it to `~/.wails/signing/<keyid>.asc`** (the file a build signs with), and
+- records both the key ID and the exported path in `~/.config/wails/defaults.yaml`,
+  so it's used automatically at sign time.
+
+<Aside type="note">
+If a key was configured by **ID only** (e.g. created before the wizard exported keys
+automatically), the Linux tab exports it to a file on your next visit and fills in
+the path — no manual steps needed. Builds sign with a key *file*, so the path is
+what matters.
+</Aside>
+
+You can also do it by hand with `gpg`:
 
 ```bash
-wails3 signing generate-key \
-  --name "Your Name" \
-  --email "your@email.com" \
-  --comment "Package Signing Key" \
-  --output-private signing-key.asc \
-  --output-public signing-key.pub.asc
+# Interactive — the wizard will prompt for name, email, key size and expiry.
+gpg --full-generate-key
+
+# Export the key pair to ASCII-armoured files for the Taskfile to consume.
+gpg --armor --export-secret-keys "your@email.com" > signing-key.asc
+gpg --armor --export "your@email.com" > signing-key.pub.asc
 ```
 
-Options:
-- `--bits`: Key size (default: 4096)
-- `--expiry`: Key expiry duration (e.g., "1y", "6m", "0" for no expiry)
-- `--password`: Password to protect the private key
+Recommended settings: RSA 4096-bit, 1-year expiry, protected with a strong password.
 
 <Aside type="caution">
 Keep your private key secure! Store it encrypted and back it up safely.
@@ -352,7 +408,7 @@ vars:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `PGP_KEY` | Yes | Path to PGP private key file |
+| `PGP_KEY` | Override | Path to the exported PGP private key file (falls back to the key configured globally via `wails3 setup` if unset) |
 | `SIGN_ROLE` | No | DEB signing role (default: builder) |
 
 <Aside type="note">
@@ -383,20 +439,15 @@ Linux packages can be signed from any platform. The same Taskfile configuration 
 ### Viewing Key Information
 
 ```bash
-wails3 signing key-info --key signing-key.asc
+gpg --show-keys signing-key.asc
 ```
 
 Output:
 
 ```
-PGP Key Information:
-  Key ID:       ABC123DEF456
-  Fingerprint:  1234 5678 90AB CDEF ...
-  User IDs:     Your Name <your@email.com>
-  Created:      2024-01-15
-  Expires:      2025-01-15
-  Has Private:  Yes
-  Encrypted:    Yes
+pub   rsa4096 2024-01-15 [SC] [expires: 2025-01-15]
+      1234 5678 90AB CDEF 1234 5678 90AB CDEF 1234 5678
+uid                      Your Name <your@email.com>
 ```
 
 ### Verifying Linux Packages
@@ -415,7 +466,7 @@ Users need your public key to verify packages:
 
 ```bash
 # Export public key for distribution
-wails3 signing key-info --key signing-key.asc --export-public > myapp-signing.pub.asc
+gpg --armor --export "your@email.com" > myapp-signing.pub.asc
 
 # Users can import it:
 # For DEB (apt):
@@ -483,11 +534,10 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
         run: |
-          wails3 signing credentials \
+          xcrun notarytool store-credentials "notarize-profile" \
             --apple-id "$APPLE_ID" \
             --team-id "$APPLE_TEAM_ID" \
-            --password "$APPLE_APP_PASSWORD" \
-            --profile "notarize-profile"
+            --password "$APPLE_APP_PASSWORD"
 
       - name: Build, Sign, and Notarize
         env:
@@ -630,14 +680,14 @@ Interactive wizard to configure signing for your project.
 wails3 setup signing [flags]
 
 Flags:
-  --platform    Platform(s) to configure (darwin, windows, linux)
-                If not specified, configures all platforms
+  --platform    Platform to configure (darwin, windows, linux). Repeatable.
+                If omitted, auto-detects which platforms to configure from the build directory.
 ```
 
 The wizard guides you through:
-- **macOS**: Selecting a Developer ID certificate, configuring notarization profile
-- **Windows**: Choosing between certificate file or thumbprint, setting password and timestamp server
-- **Linux**: Using an existing PGP key or generating a new one, configuring signing role
+- **macOS**: Selecting a Developer ID certificate, configuring notarization credentials (calls `xcrun notarytool store-credentials`).
+- **Windows**: Choosing between certificate file or thumbprint, setting password and timestamp server.
+- **Linux**: Using an existing PGP key or generating a new one (calls `gpg`), configuring signing role.
 
 ### wails3 setup entitlements
 
@@ -647,7 +697,7 @@ Interactive wizard to configure macOS entitlements.
 wails3 setup entitlements [flags]
 
 Flags:
-  --output    Output directory (default: build/darwin)
+  --output    Output path for entitlements.plist (default: build/darwin/entitlements.plist)
 ```
 
 **Presets:**
@@ -705,8 +755,6 @@ wails3 tool sign [flags]
 | Flag | Description |
 |------|-------------|
 | `--thumbprint` | Certificate thumbprint in Windows store |
-| `--description` | Application description |
-| `--url` | Application URL |
 
 **Linux-Specific Flags:**
 | Flag | Description |
@@ -715,61 +763,17 @@ wails3 tool sign [flags]
 | `--pgp-password` | PGP key password |
 | `--role` | DEB signing role (origin/maint/archive/builder) |
 
-### wails3 signing info
+### Inspecting signing state (native tools)
 
-Display signing capabilities on the current system.
+There is **no** `wails3 signing` command in v3. To inspect signing state, use the native tooling directly:
 
-```bash
-wails3 signing info
-```
-
-### wails3 signing list
-
-List available signing identities.
-
-```bash
-wails3 signing list
-```
-
-### wails3 signing credentials
-
-Store notarization credentials in keychain (macOS only).
-
-```bash
-wails3 signing credentials [flags]
-
-Flags:
-  --apple-id      Apple ID email
-  --team-id       Apple Developer Team ID
-  --password      App-specific password
-  --profile       Keychain profile name
-```
-
-### wails3 signing generate-key
-
-Generate a PGP key pair for Linux package signing.
-
-```bash
-wails3 signing generate-key [flags]
-
-Flags:
-  --name            Name for the key (required)
-  --email           Email for the key (required)
-  --comment         Comment for the key
-  --bits            Key size in bits (default: 4096)
-  --expiry          Key expiry (e.g., "1y", "6m", "0" for never)
-  --password        Password to encrypt private key
-  --output-private  Path for private key output
-  --output-public   Path for public key output
-```
-
-### wails3 signing key-info
-
-Display information about a PGP key.
-
-```bash
-wails3 signing key-info --key <path-to-key>
-```
+| Task | Command |
+|------|---------|
+| List macOS code-signing identities | `security find-identity -v -p codesigning` |
+| Store notarization credentials | `xcrun notarytool store-credentials "<profile>" --apple-id … --team-id … --password …` |
+| Inspect a PGP key file | `gpg --show-keys <key.asc>` |
+| Generate a PGP key pair | `gpg --full-generate-key` |
+| Export a public key | `gpg --armor --export <email>` |
 
 ## Troubleshooting
 
@@ -777,7 +781,7 @@ wails3 signing key-info --key <path-to-key>
 
 **"No Developer ID certificate found"**
 - Ensure your certificate is installed in the Keychain
-- Check it hasn't expired with `wails3 signing list`
+- Check it hasn't expired with `security find-identity -v -p codesigning`
 - Make sure you have a "Developer ID Application" certificate (not just "Apple Development")
 
 **"Notarization failed"**
@@ -806,7 +810,7 @@ wails3 signing key-info --key <path-to-key>
 
 **"Invalid PGP key"**
 - Ensure the key file is in ASCII-armored format
-- Check the key hasn't expired with `wails3 signing key-info`
+- Check the key hasn't expired with `gpg --show-keys <key.asc>`
 - Verify the password is correct
 
 **"Signature verification failed"**

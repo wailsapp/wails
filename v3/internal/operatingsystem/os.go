@@ -2,10 +2,10 @@ package operatingsystem
 
 // OS contains information about the operating system
 type OS struct {
-	ID       string
-	Name     string
-	Version  string
-	Branding string
+	ID       string `json:"ID"`
+	Name     string `json:"Name"`
+	Version  string `json:"Version"`
+	Branding string `json:"Branding"`
 }
 
 func (o *OS) AsLogSlice() []any {

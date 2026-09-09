@@ -43,7 +43,7 @@
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
 [Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) ·
-[Türkçe](README.tr.md)
+[Türkçe](README.tr.md) · [Bahasa Indonesia](README.id.md)
 
 </samp>
 </strong>
@@ -86,8 +86,7 @@ make this easy for you by handling project creation, compilation and bundling. A
 
 ### Roadmap
 
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-it before creating an enhancement request.
+The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). New functionality and public behaviour changes use a [WEP (Wails Enhancement Proposal)](v3/wep/README.md), submitted as a draft pull request rather than a feature-request issue.
 
 ## Getting Started
 
@@ -96,7 +95,7 @@ Wails has two active versions:
 | Version | Status | Install | Docs |
 |---|---|---|---|
 | v2 | Stable | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
-| v3 | Alpha | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
+| v3 | Beta | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` | [v3.wails.io](https://v3.wails.io/) |
 
 Full installation instructions are available for [v2](https://wails.io/docs/gettingstarted/installation) and [v3](https://v3.wails.io).
 
@@ -130,12 +129,8 @@ This project is supported by these kind people / companies:
 
 ## Stargazers over time
 
-<a href="https://star-history.com/#wailsapp/wails&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-  </picture>
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Wails star history chart" src="website/static/img/star-history.svg" width="800" />
 </a>
 
 ## Contributors

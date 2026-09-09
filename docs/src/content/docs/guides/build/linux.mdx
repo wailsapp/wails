@@ -104,54 +104,54 @@ wails3 package GOOS=linux GOARCH=arm64
 ARM64 builds from x86_64 hosts use Docker for CGO cross-compilation.
 </Aside>
 
-## GTK4 Support (Experimental)
+## Legacy GTK3 Support
 
-Wails v3 includes experimental support for GTK4 with WebKitGTK 6.0. By default, Wails uses GTK3 with WebKit2GTK 4.1. GTK4 support is opt-in via a build tag.
+Wails v3 builds on **GTK4 with WebKitGTK 6.0** by default. A legacy GTK3 / WebKit2GTK 4.1 path is still available for distributions that don't yet ship WebKitGTK 6.0 (Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x). The legacy path is opt-in via a build tag and is scheduled for removal in v3.1.
 
-<Aside type="caution" title="Experimental">
-GTK4 support is experimental and may have issues. Please report problems to [GitHub issue #4957](https://github.com/wailsapp/wails/issues/4957).
+<Aside type="caution" title="Legacy path">
+The GTK3 / WebKit2GTK 4.1 path is supported through the v3.0.x line. Plan to migrate to GTK4 in coordination with your target distribution's GTK4 / WebKitGTK 6.0 availability — `-tags gtk3` will be removed in v3.1.
 </Aside>
 
 ### Dependencies
 
-Install GTK4 and WebKitGTK 6.0 development libraries:
+Install GTK3 and WebKit2GTK 4.1 development libraries:
 
 ```bash
 # Ubuntu/Debian
-sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
+sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev
 
 # Fedora
-sudo dnf install gtk4-devel webkitgtk6.0-devel
+sudo dnf install gtk3-devel webkit2gtk4.1-devel
 
 # Arch
-sudo pacman -S gtk4 webkitgtk-6.0
+sudo pacman -S gtk3 webkit2gtk-4.1
 ```
 
-The required pkg-config packages are `gtk4` and `webkitgtk-6.0`.
+The required pkg-config packages are `gtk+-3.0` and `webkit2gtk-4.1`.
 
-### Building with GTK4
+### Building with GTK3
 
-Use the `-tags gtk4` flag:
+Use the `-tags gtk3` flag:
 
 ```bash
-wails3 build -tags gtk4
+wails3 build -tags gtk3
 ```
 
 Or directly with Go:
 
 ```bash
-go build -tags gtk4 -o myapp .
+go build -tags gtk3 -o myapp .
 ```
 
-### Known Differences from GTK3
+### Known Differences from GTK4
 
-- **File dialogs**: GTK4 uses `xdg-desktop-portal` for file dialogs, which means some dialog options (like default directory, custom filters display) behave differently. See [Dialogs Reference - Linux GTK4 Limitations](/reference/dialogs#linux-gtk4-limitations) for details.
-- **Menu style**: GTK4 supports a `LinuxMenuStylePrimaryMenu` option that displays a hamburger button (☰) in the header bar, following GNOME HIG. See [Window API - Linux MenuStyle](/reference/window#linux).
+- **File dialogs**: GTK4 uses `xdg-desktop-portal` for file dialogs (the default), which means some dialog options (like default directory, custom filters display) behave differently from GTK3. See [Dialogs Reference - Linux Dialog Behavior](/reference/dialogs#linux-dialog-behavior) for details.
+- **Menu style**: GTK4 supports a `LinuxMenuStylePrimaryMenu` option that displays a hamburger button (☰) in the header bar, following GNOME HIG. This option has no effect on `-tags gtk3` builds. See [Window API - Linux MenuStyle](/reference/window#linux).
 - **DPI scaling**: GTK4 uses `gdk_monitor_get_scale` (GTK 4.14+) for fractional scaling support.
 
 ### Checking Your Build
 
-Run `wails3 doctor` to verify your setup. GTK4 dependencies will be shown as optional/experimental.
+Run `wails3 doctor` to verify your setup. With no flags it checks for GTK4 / WebKitGTK 6.0 (the default). The legacy GTK3 / WebKit2GTK 4.1 packages are listed as optional.
 
 ## Troubleshooting
 

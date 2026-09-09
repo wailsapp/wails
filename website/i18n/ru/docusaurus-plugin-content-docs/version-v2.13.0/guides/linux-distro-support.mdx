@@ -1,0 +1,103 @@
+# Поддержка Linux
+
+## Обзор
+
+Wails предлагает поддержку Linux, но составить инструкции по установке для всех доступных дистрибутивов - это невыполнимая задача. Вместо этого Wails пытается определить, доступны ли пакеты для разработки через системный менеджер пакетов. В настоящее время мы поддерживаем следующие менеджеры пакетов:
+
+- apt
+- dnf
+- emerge
+- eopkg
+- nixpkgs
+- pacman
+- zypper
+
+## Добавление имен пакетов
+
+Может возникнуть ситуация, когда ваш дистрибутив использует один из поддерживаемых менеджеров пакетов, но имя пакета отличается от названия. Например, вы можете использовать производную от Ubuntu систему, но имя пакета для gtk может быть другим. Wails пытается найти правильный пакет, ища по списку имен пакетов. Список пакетов хранится в файле (packagemanager) в каталоге `v2/internal/system/packagemanager`. В нашем примере это `v2/internal/system/packagemanager/apt.go`.
+
+В этом файле список пакетов определяется методом `Packages()`:
+
+```go
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+Предположим, что в нашем Linux-дистрибутиве `libgtk-3` упакован под именем `lib-gtk3-dev`. Мы могли бы добавить поддержку для этого, добавив следующую строку:
+
+```go {5}
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+            {Name: "lib-gtk3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+## Добавление новых менеджеров пакетов
+
+Чтобы добавить новый менеджер пакетов, выполните следующие действия:
+
+- Создайте новый файл в `v2/internal/system/packagemanager` под названием `<pm>.go`, где `<pm>` это имя менеджера пакетов.
+- Определите структуру, которая соответствует интерфейсу менеджера пакетов, определенному в `pm.go`:
+
+```go
+type PackageManager interface {
+    Name() string
+    Packages() packagemap
+    PackageInstalled(*Package) (bool, error)
+    PackageAvailable(*Package) (bool, error)
+    InstallCommand(*Package) string
+}
+```
+
+- `Name()` должен возвращать имя менеджера пакетов
+- `Packages()` должен возвращать `packagemap`, который предоставляет имена файлов для зависимостей
+- `PackageInstalled()` должен возвращать `true`, если данный пакет установлен
+- `PackageAvailable()` должен возвращать `true`, если данный пакет не установлен, но доступен для установки
+- `InstallCommand()` должен возвращать точную команду для установки данного пакета
+
+Взгляните на другие коды менеджеров пакетов, чтобы получить представление о том, как это работает.
+
+::info Помните
+
+Если вы добавите поддержку для нового менеджера пакетов, не забудьте также обновить эту страницу!
+
+:::

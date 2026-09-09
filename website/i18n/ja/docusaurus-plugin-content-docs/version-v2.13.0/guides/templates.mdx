@@ -1,0 +1,97 @@
+# テンプレート
+
+Wailsは、事前に作成されたテンプレートからプロジェクトを生成します。 v1では、テンプレートがメンテナンス困難なプロジェクトとなり、時代遅れとなってしまう可能性がありました。 v2では、コミュニティを強化するために、テンプレートにいくつかの新機能が追加されました:
+
+- [リモート点テンプレート](../reference/cli.mdx#remote-templates)からプロジェクトを生成する機能
+- 独自のテンプレートの作成に役立つツール
+
+## テンプレートの作成
+
+テンプレートを作成するには、`wails generate template`コマンドを使用します。 デフォルトのテンプレートを生成する場合は、次のコマンドを実行してください:
+
+`wails generate template -name mytemplate`
+
+これにより、デフォルトのファイルが含まれた"mytemplate"ディレクトリが作成されます:
+
+```shell title=mytemplate/
+.
+|-- NEXTSTEPS.md
+|-- README.md
+|-- app.tmpl.go
+|-- frontend
+|   `-- dist
+|       |-- assets
+|       |   |-- fonts
+|       |   |   |-- OFL.txt
+|       |   |   `-- nunito-v16-latin-regular.woff2
+|       |   `-- images
+|       |       `-- logo-dark.svg
+|       |-- index.html
+|       |-- main.css
+|       `-- main.js
+|-- go.mod.tmpl
+|-- main.tmpl.go
+|-- template.json
+`-- wails.tmpl.json
+```
+
+### テンプレートの概要
+
+デフォルトのテンプレートは、次のファイルおよびディレクトリで構成されています:
+
+| ファイル名 / ディレクトリ名 | 説明                      |
+| --------------- | ----------------------- |
+| NEXTSTEPS.md    | テンプレートを完成させる手順を記した説明    |
+| README.md       | テンプレートとともに公開されるREADME   |
+| app.tmpl.go     | `app.go`のテンプレートファイル     |
+| frontend/       | フロントエンドアセットを含むディレクトリ    |
+| go.mod.tmpl     | `go.mod`のテンプレートファイル     |
+| main.tmpl.go    | `main.go`のテンプレートファイル    |
+| template.json   | テンプレートのメタデータ            |
+| wails.tmpl.json | `wails.json`のテンプレートファイル |
+
+このあとは、`NEXTSTEPS.md`に記述されている手順に従うことを推奨します。
+
+## 既存プロジェクトからのテンプレート作成
+
+テンプレートの生成時にプロジェクトへのパスを渡すことで、既存のフロントエンドプロジェクトから、テンプレートを作成することができます。 ここでは、Vue3テンプレートの作成方法を説明します:
+
+- Vue Cliをインストールする: `npm install -g @vue/cli`
+- デフォルトのプロジェクトを作成する: `vue create vue3-base`
+  - その際、`Default (Vue 3) ([Vue 3] babel, eslint)`を選択します
+- プロジェクトが作成されたあとに、次のコマンドを実行する:
+
+```shell
+> wails generate template -name wails-vue3-template -frontend .\vue3-base\
+Extracting base template files...
+Migrating existing project files to frontend directory...
+Updating package.json data...
+Renaming package.json -> package.tmpl.json...
+Updating package-lock.json data...
+Renaming package-lock.json -> package-lock.tmpl.json...
+```
+
+- `NEXTSTEPS.md`ファイルに記述されているように、テンプレートをカスタマイズする
+- ファイルの準備ができたら、次のコマンドを実行してテストする: `wails init -n my-vue3-project -t .\wails-vue3-template\`
+- 新しいプロジェクトの動作をテストするために、次のコマンドを実行する: `cd my-vue3-project`および`wails build`
+- プロジェクトがコンパイルされたら、実行する: `.\build\bin\my-vue3-project.exe`
+- Vue3アプリケーションが完全に動作していることを確認する
+
+```mdx-code-block
+<div className="text--center">
+  <img
+    src={require("@site/static/img/vue3-template.png").default}
+    width="50%"
+  />
+</div>
+```
+
+## テンプレートの公開
+
+テンプレートを公開するためにすることは、ファイルをGitHubにプッシュすることだけです。 以下のベストプラクティスを実施することを推奨します:
+
+- 不要なファイルやディレクトリ(`.git`など)をフロントエンドディレクトリから削除する
+- `template.json`がきちんと記述されていること、とくに`helpurl`が記述されていることを確認する
+- ファイルをGitHubにプッシュする
+- [コミュニティのテンプレート](../community/templates.mdx)ページにプルリクエストを作成する
+- [Template Announcement](https://github.com/wailsapp/wails/discussions/825)のディスカッションボードでテンプレートをアナウンスする
