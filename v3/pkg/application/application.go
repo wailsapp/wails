@@ -375,6 +375,14 @@ func (r *webViewAssetRequest) Method() (string, error) {
 	return r.Request.Method()
 }
 
+// Context preserves native request cancellation through the header-injecting wrapper.
+func (r *webViewAssetRequest) Context() context.Context {
+	if contextual, ok := r.Request.(interface{ Context() context.Context }); ok {
+		return contextual.Context()
+	}
+	return nil
+}
+
 func (r *webViewAssetRequest) Header() (http.Header, error) {
 	h, err := r.Request.Header()
 	if err != nil {

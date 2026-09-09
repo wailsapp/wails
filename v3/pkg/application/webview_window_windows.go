@@ -22,9 +22,9 @@ import (
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{
@@ -39,6 +39,7 @@ var edgeMap = map[string]uintptr{
 }
 
 type windowsWebviewWindow struct {
+	requestCancellation      *windowsRequestCancellation
 	windowImpl               unsafe.Pointer
 	parent                   *WebviewWindow
 	hwnd                     w32.HWND
@@ -854,6 +855,7 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
+	w.requestCancellation.close()
 	// Re-enable parent window if this was a modal window
 	if w.parentHWND != 0 {
 		w32.EnableWindow(w.parentHWND, true)
@@ -1658,6 +1660,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}()
 
 		// Now do the actual close
+		w.requestCancellation.close()
 		w.chromium.ShuttingDown()
 		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
 	case w32.WM_SETCURSOR:
@@ -2359,6 +2362,9 @@ func (w *windowsWebviewWindow) processRequest(
 		return
 	}
 
+	if w.requestCancellation != nil && !w.requestCancellation.closed {
+		webviewRequest = w.requestCancellation.tracker.Wrap(webviewRequest)
+	}
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webviewRequest,
 		windowId:   w.parent.id,
@@ -2600,6 +2606,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	}
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
+
+	w.startRequestCancellation(w.navigateInitialPage)
+}
+
+func (w *windowsWebviewWindow) navigateInitialPage() {
+	chromium := w.chromium
 
 	if w.parent.options.HTML != "" {
 		var script string
