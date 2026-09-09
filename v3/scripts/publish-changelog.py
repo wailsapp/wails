@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -12,10 +13,12 @@ ARCHIVE = 'docs/src/content/docs/changelog.mdx'
 
 
 def git(cwd, *args):
+    """Run Git and return its output, retaining diagnostics on failure."""
     return subprocess.check_output(['git', *args], cwd=cwd, text=True).strip()
 
 
 def publish(root, number, title, attempts=5, delay=2):
+    """Publish the generated PR entry with bounded retries and duplicate detection."""
     if not re.fullmatch(r'[1-9][0-9]*', number):
         raise ValueError('PR_NUMBER must be a positive integer')
     repo = os.environ.get('GITHUB_REPOSITORY', 'wailsapp/wails')
@@ -43,12 +46,17 @@ def publish(root, number, title, attempts=5, delay=2):
     # other local changes intact, including on exhausted retries.
     with tempfile.TemporaryDirectory(prefix='wails-changelog-') as directory:
         work = Path(directory) / 'checkout'
-        git(root, 'fetch', 'origin', 'master')
-        git(root, 'worktree', 'add', '--detach', str(work), 'origin/master')
+        git(root, 'worktree', 'add', '--detach', str(work), 'HEAD')
         try:
             for attempt in range(attempts):
-                git(work, 'fetch', 'origin', 'master')
-                git(work, 'checkout', '--detach', 'origin/master')
+                try:
+                    git(work, 'fetch', 'origin', 'master')
+                    git(work, 'checkout', '--detach', 'origin/master')
+                except subprocess.CalledProcessError as error:
+                    print(f'Git refresh failed ({attempt + 1}/{attempts}): {error}', flush=True)
+                    if attempt + 1 < attempts:
+                        time.sleep(delay)
+                    continue
                 current = (work / CHANGELOG).read_text()
                 archive = work / ARCHIVE
                 if marker in current or (archive.exists() and marker in archive.read_text()):
@@ -72,7 +80,13 @@ def publish(root, number, title, attempts=5, delay=2):
                     time.sleep(delay)
             raise RuntimeError('Could not publish changelog; generated entry remains in the original checkout')
         finally:
-            git(root, 'worktree', 'remove', str(work))
+            original_error = sys.exc_info()[0]
+            try:
+                git(root, 'worktree', 'remove', '--force', str(work))
+            except subprocess.CalledProcessError:
+                if original_error is None:
+                    raise
+                print(f'Could not remove temporary worktree {work}; preserving original error.', file=sys.stderr)
 
 
 if __name__ == '__main__':
