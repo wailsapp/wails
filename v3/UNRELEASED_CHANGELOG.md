@@ -20,6 +20,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Update Clave showcase links to current website and repository in [PR](https://github.com/wailsapp/wails/pull/6082) by @01xR4in
 
 ## Fixed
 <!-- Bug fixes -->
