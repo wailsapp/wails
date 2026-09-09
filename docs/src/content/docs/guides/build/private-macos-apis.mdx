@@ -104,5 +104,3 @@ go build -tags production,devtools,private_mac_apis .
 ## Maintaining this list
 
 All private native calls are isolated in `v3/pkg/application/mac_private_api_darwin.go`; default builds select `mac_public_api_darwin.go`. This inventory covers transparency, webview background colour, glass styles, glass grouping, inspector opening, and legacy inspector enablement. Changes to those implementations should update this page and the affected option documentation together.
-
-The proposed `appstore` and `noprivateapis` tags are not used. There is no `PreferPageRenderingUpdatesNear60FPS` option in this change.
