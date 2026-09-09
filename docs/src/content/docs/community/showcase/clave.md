@@ -16,4 +16,5 @@ Key Features
 
 Try Clave Today!
 
-💻 [https://clave.rocks](https://clave.rocks)
+- 💻 Website: [https://clave.ssh-i.in](https://clave.ssh-i.in)
+- 🌐 Git Repository: [https://github.com/ansxuman/clave](https://github.com/ansxuman/clave)
