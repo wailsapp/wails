@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Preserve changelog entries across competing pushes with retries in [PR](https://github.com/wailsapp/wails/pull/6094) by @leaanthony
 - Fix `go mod vendor` failing with `pattern arm64/WebView2Loader.dll: no matching files found` on every platform, by removing the embeds that referenced binaries never shipped in the module, fixing [#5782](https://github.com/wailsapp/wails/issues/5782) and [#5376](https://github.com/wailsapp/wails/issues/5376), in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
 
 ## Deprecated
