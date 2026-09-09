@@ -104,7 +104,7 @@ void wailsPrivateOpenWebInspector(void *window) {
 		});
 	}
 #else
-	NSLog(@"Opening the inspector needs at least MacOS 12");
+	NSLog(@"Opening the inspector needs at least macOS 12");
 #endif
 }
 
