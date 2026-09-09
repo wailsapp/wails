@@ -28,6 +28,7 @@ import * as Create from "./create.js";
 import * as Dialogs from "./dialogs.js";
 import * as Events from "./events.js";
 import * as Flags from "./flags.js";
+import * as Media from "./media.js";
 import * as Screens from "./screens.js";
 import * as System from "./system.js";
 import * as IOS from "./ios.js";
@@ -45,6 +46,7 @@ export {
     Dialogs,
     Events,
     Flags,
+    Media,
     Screens,
     System,
     IOS,
