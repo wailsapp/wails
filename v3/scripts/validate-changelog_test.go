@@ -93,3 +93,28 @@ func TestPullRequestReferenceFromLineRejectsEmbeddedTrustedURL(t *testing.T) {
 		}
 	}
 }
+
+func TestPublishedBackfill(t *testing.T) {
+	bullet := "- Fix keyboard shortcuts in [PR](https://github.com/wailsapp/wails/pull/5902) by @julianstorer"
+	notes := map[string]string{"v3.0.0-beta.9": "## Fixed\n" + bullet + "\n"}
+	for _, tc := range []struct {
+		name, line, section string
+		want                bool
+	}{
+		{"same release exact entry", bullet, "v3.0.0-beta.9", true},
+		{"wrong release", bullet, "v3.0.0-beta.8", false},
+		{"altered description", "- New feature in [PR](https://github.com/wailsapp/wails/pull/5902) by @julianstorer", "v3.0.0-beta.9", false},
+		{"substring", bullet + " and another change", "v3.0.0-beta.9", false},
+		{"missing evidence", bullet, "v3.0.0-beta.10", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := isPublishedBackfill(tc.line, tc.section, notes); got != tc.want {
+				t.Fatalf("isPublishedBackfill() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+	sourceLess := "- Unverified note"
+	if isPublishedBackfill(sourceLess, "v3.0.0-beta.9", map[string]string{"v3.0.0-beta.9": sourceLess}) {
+		t.Fatal("accepted an entry without a canonical PR reference")
+	}
+}

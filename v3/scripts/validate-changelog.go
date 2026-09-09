@@ -2,11 +2,15 @@ package main
 
 import (
 	"bufio"
+	"context"
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -61,6 +65,7 @@ func main() {
 	// Find problematic entries - only check lines that were ADDED in this PR
 	var issues []Issue
 	currentSection := ""
+	publishedNotes := make(map[string]string)
 
 	for lineNum, line := range lines {
 		// Track current section
@@ -74,6 +79,18 @@ func main() {
 			wasAddedInThisPR(line, addedLines) {
 			if isSameSourceCorrection(line, currentSection, deletedEntries) {
 				fmt.Printf("✅ CORRECTION: Same-source replacement in %s: %s\n", currentSection, strings.TrimSpace(line))
+				continue
+			}
+
+			if _, loaded := publishedNotes[currentSection]; !loaded {
+				body, err := publishedReleaseNotes(currentSection)
+				if err != nil {
+					fmt.Printf("⚠️ Cannot verify published notes for %s: %v\n", currentSection, err)
+				}
+				publishedNotes[currentSection] = body
+			}
+			if isPublishedBackfill(line, currentSection, publishedNotes) {
+				fmt.Printf("✅ BACKFILL: Entry already published in %s: %s\n", currentSection, strings.TrimSpace(line))
 				continue
 			}
 
@@ -392,4 +409,46 @@ func writeFile(path, content string) error {
 	}
 
 	return os.WriteFile(path, []byte(content), 0644)
+}
+
+// publishedReleaseNotes reads maintainer-published evidence from the canonical
+// repository. Missing, draft, mismatched, or unavailable releases fail closed.
+func publishedReleaseNotes(section string) (string, error) {
+	if !regexp.MustCompile(`^v3\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$`).MatchString(section) {
+		return "", fmt.Errorf("invalid release tag %q", section)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	output, err := exec.CommandContext(ctx, "gh", "api", "--hostname", "github.com",
+		"repos/wailsapp/wails/releases/tags/"+section).Output()
+	if err != nil {
+		return "", fmt.Errorf("release lookup: %w", err)
+	}
+	var release struct {
+		TagName string `json:"tag_name"`
+		Body    string `json:"body"`
+		Draft   bool   `json:"draft"`
+	}
+	if err := json.Unmarshal(output, &release); err != nil {
+		return "", err
+	}
+	if release.Draft || release.TagName != section {
+		return "", fmt.Errorf("release is draft or tag does not match")
+	}
+	return release.Body, nil
+}
+
+// isPublishedBackfill accepts only an exact, PR-linked bullet in the published
+// notes for the same release; evidence from other releases cannot authorise it.
+func isPublishedBackfill(line, section string, notes map[string]string) bool {
+	line = strings.TrimSpace(line)
+	if !strings.HasPrefix(line, "- ") || pullRequestReferenceFromLine(line) == "" {
+		return false
+	}
+	for _, published := range strings.Split(notes[section], "\n") {
+		if strings.TrimSpace(published) == line {
+			return true
+		}
+	}
+	return false
 }

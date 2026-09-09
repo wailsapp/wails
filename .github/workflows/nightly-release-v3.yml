@@ -42,7 +42,7 @@ jobs:
         token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Setup Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: '1.25'
         cache: true
@@ -151,6 +151,17 @@ jobs:
           echo "🔨 FORCE RELEASE: Overriding change detection"
         fi
     
+    - name: Verify changelog workflow evidence
+      if: |
+        steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true' ||
+        inputs.release_version != ''
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        python3 -m unittest discover -s v3/scripts -p 'test_check_changelog_runs.py'
+        python3 v3/scripts/check-changelog-runs.py
+
     - name: Run release script
       id: release
       if: |
