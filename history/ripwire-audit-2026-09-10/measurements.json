@@ -1,0 +1,856 @@
+{
+  "reviewed_head": "6c556f0b9771a2c9cc6b35b74348a1202e2faa52",
+  "full_branch_base": "f38ae268344700a3f48dd1e95b716f2059f7269e",
+  "previous_review": "906a9aa2776f800137c8a476028059582e1b33c8",
+  "ripwire_version": "0.5.0",
+  "binary_sha256": "31595be94f9199a16dfd78b577fe95219366878b41dc5c7858eba2475ad61b14",
+  "release_archive_sha256": "f06e9d7e55032e8e5c397405ed72a19d6e70767d28c8c617a925de4401779f50",
+  "excludes": [
+    ".git",
+    "node_modules",
+    "history",
+    "dist",
+    ".wails",
+    "bin"
+  ],
+  "reports": {
+    "quality-panel-full": {
+      "attributes": {
+        "preset": "default",
+        "families": "6",
+        "enabled": "structural,lexical,confusion,historical,colocation,state",
+        "enabled_n": "6",
+        "cut": "2",
+        "cut_reachable": "1",
+        "eligible": "18313",
+        "ranked": "706",
+        "below_cut": "5889",
+        "no_family": "11718",
+        "bar_ccx": "15",
+        "bar_loc": "60",
+        "bar_nest": "4",
+        "bar_params": "5",
+        "rcut": "40",
+        "rmeasured": "18313",
+        "hcut": "40",
+        "hranked": "2537",
+        "window": "12mo",
+        "ccut": "40",
+        "cranked": "12796",
+        "cfiles": "59",
+        "cscope": "656",
+        "lscope": "18313",
+        "sfiles": "58",
+        "sscope": "523",
+        "cells": "67",
+        "tested_scope": "4127",
+        "deep_untested": "40",
+        "findings_capped": "1",
+        "floor_rules": "naming-confusable",
+        "counts_floor": "1",
+        "shown": "706",
+        "capped": "0",
+        "total": "706",
+        "has_more": "0",
+        "next_offset": "706",
+        "offset": "0",
+        "limit": "10000",
+        "root": ".",
+        "at": "6c556f0b9"
+      },
+      "first_rows": [
+        {
+          "p": "v3/pkg/application/webview_window_windows.go:385",
+          "n": "run",
+          "fam": "4",
+          "of": "6",
+          "fired": "structural,lexical,historical,colocation"
+        },
+        {
+          "p": "v2/internal/frontend/dispatcher/systemcalls.go:26",
+          "n": "processSystemCall",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,colocation"
+        },
+        {
+          "p": "v2/pkg/assetserver/assetserver_webview.go:65",
+          "n": "processWebViewRequestInternal",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,colocation"
+        },
+        {
+          "p": "v3/cmd/wails3/main.go:35",
+          "n": "main",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,historical,colocation"
+        },
+        {
+          "p": "v3/examples/window/main.go:73",
+          "n": "main",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,colocation"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "Bo",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical",
+          "join": "deep+untested"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "Dt",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "Ot",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "dt",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical",
+          "join": "deep+untested"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "ia",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "ko",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical",
+          "join": "deep+untested"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "me",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "ta",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js:1",
+          "n": "wo",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical",
+          "join": "deep+untested"
+        },
+        {
+          "p": "v3/internal/commands/manifest_dev.go:141",
+          "n": "runManifestDevContextWithOps",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        }
+      ]
+    },
+    "quality-delta": {
+      "attributes": {
+        "baseline": "ref-pair",
+        "regressions": "1451",
+        "minor": "6",
+        "acked": "0",
+        "stale": "0",
+        "preexisting-worse": "253",
+        "new-symbol": "1198",
+        "gating": "247",
+        "register-macro-excluded": "0",
+        "base_ref": "f38ae268344700a3f48dd1e95b716f2059f7269e",
+        "target_ref": "6c556f0b9771a2c9cc6b35b74348a1202e2faa52",
+        "churn": "unavailable"
+      }
+    },
+    "quality-delta-latest": {
+      "attributes": {
+        "baseline": "ref-pair",
+        "regressions": "170",
+        "minor": "15",
+        "acked": "0",
+        "stale": "0",
+        "preexisting-worse": "90",
+        "new-symbol": "80",
+        "gating": "75",
+        "register-macro-excluded": "0",
+        "base_ref": "906a9aa2776f800137c8a476028059582e1b33c8",
+        "target_ref": "6c556f0b9771a2c9cc6b35b74348a1202e2faa52",
+        "churn": "unavailable"
+      }
+    },
+    "lint": {
+      "attributes": {
+        "findings": "8292",
+        "shown": "8292",
+        "capped": "1",
+        "total": "8292",
+        "has_more": "0",
+        "next_offset": "8292",
+        "offset": "0",
+        "limit": "10000",
+        "counts_floor": "1",
+        "findings_capped": "1",
+        "root": "."
+      },
+      "rules": [
+        {
+          "name": "c-style-cast",
+          "count": "344",
+          "shown_rows": "344",
+          "rows_capped": "0"
+        },
+        {
+          "name": "goto",
+          "count": "4",
+          "shown_rows": "4",
+          "rows_capped": "0"
+        },
+        {
+          "name": "do-while",
+          "count": "10",
+          "shown_rows": "10",
+          "rows_capped": "0"
+        },
+        {
+          "name": "unsafe-c-fn",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "weak-crypto",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "redundant-parens",
+          "count": "14",
+          "shown_rows": "14",
+          "rows_capped": "0"
+        },
+        {
+          "name": "suspicious-semicolon",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "typedef-over-using",
+          "count": "16",
+          "shown_rows": "16",
+          "rows_capped": "0"
+        },
+        {
+          "name": "magic-number",
+          "count": "183",
+          "shown_rows": "183",
+          "rows_capped": "0"
+        },
+        {
+          "name": "empty-catch",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "self-assign",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "large-function",
+          "count": "2",
+          "shown_rows": "2",
+          "rows_capped": "0"
+        },
+        {
+          "name": "deep-nesting",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "inconsistent-return",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "unreachable-code",
+          "count": "1",
+          "shown_rows": "1",
+          "rows_capped": "0"
+        },
+        {
+          "name": "naming-short",
+          "count": "755",
+          "shown_rows": "755",
+          "rows_capped": "0"
+        },
+        {
+          "name": "naming-wordy",
+          "count": "2820",
+          "shown_rows": "2820",
+          "rows_capped": "0"
+        },
+        {
+          "name": "naming-series",
+          "count": "400",
+          "shown_rows": "400",
+          "rows_capped": "0"
+        },
+        {
+          "name": "naming-underscore",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "naming-case",
+          "count": "650",
+          "shown_rows": "650",
+          "rows_capped": "0"
+        },
+        {
+          "name": "naming-predicate",
+          "count": "4",
+          "shown_rows": "4",
+          "rows_capped": "0"
+        },
+        {
+          "name": "naming-setter",
+          "count": "2",
+          "shown_rows": "2",
+          "rows_capped": "0"
+        },
+        {
+          "name": "naming-confusable",
+          "count": "3071",
+          "shown_rows": "3071",
+          "rows_capped": "0",
+          "count_capped": "1"
+        },
+        {
+          "name": "naming-uninformative",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "atom-comma-operator",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "atom-embedded-crement",
+          "count": "4",
+          "shown_rows": "4",
+          "rows_capped": "0"
+        },
+        {
+          "name": "atom-assign-as-value",
+          "count": "11",
+          "shown_rows": "11",
+          "rows_capped": "0"
+        },
+        {
+          "name": "atom-nested-ternary",
+          "count": "1",
+          "shown_rows": "1",
+          "rows_capped": "0"
+        },
+        {
+          "name": "atom-implicit-predicate",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "atom-octal-literal",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "atom-reversed-subscript",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "cache-node-container",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "cache-vector-of-raw-ptr",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "cache-vector-of-indirect",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "cache-heap-alloc-in-loop",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "cache-pointer-chase-loop",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "cache-gather-subscript",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "cache-shared-ptr-by-value",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        },
+        {
+          "name": "cache-manual-prefetch",
+          "count": "0",
+          "shown_rows": "0",
+          "rows_capped": "0"
+        }
+      ]
+    },
+    "hotspots": {
+      "attributes": {
+        "window": "12mo@HEAD",
+        "files": "4548",
+        "ranked": "1130",
+        "unranked_no_churn": "2011",
+        "unranked_no_complexity": "1407",
+        "shown": "30",
+        "capped": "1",
+        "total": "1130",
+        "has_more": "1",
+        "next_offset": "30",
+        "offset": "0",
+        "limit": "30",
+        "root": ".",
+        "at": "6c556f0b9"
+      },
+      "first_rows": [
+        {
+          "p": "v3/pkg/application/webview_window_windows.go",
+          "churn": "50",
+          "ccx": "453",
+          "score": "22650",
+          "top": "WndProc",
+          "top_ccx": "124",
+          "top_l": "1595"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.debug.js",
+          "churn": "28",
+          "ccx": "773",
+          "score": "21644",
+          "top": "setupDropTargetListeners",
+          "top_ccx": "74",
+          "top_l": "1387"
+        },
+        {
+          "p": "v3/internal/assetserver/bundledassets/runtime.js",
+          "churn": "26",
+          "ccx": "774",
+          "score": "20124",
+          "top": "Bo",
+          "top_ccx": "68",
+          "top_l": "1"
+        },
+        {
+          "p": "v3/internal/commands/manifest_pipeline.go",
+          "churn": "18",
+          "ccx": "773",
+          "score": "13914",
+          "top": "packageIOS",
+          "top_ccx": "54",
+          "top_l": "2521"
+        },
+        {
+          "p": "v3/pkg/application/webview_window.go",
+          "churn": "31",
+          "ccx": "307",
+          "score": "9517",
+          "top": "SetSize",
+          "top_ccx": "14",
+          "top_l": "443"
+        },
+        {
+          "p": "v3/pkg/application/linux_cgo.go",
+          "churn": "36",
+          "ccx": "184",
+          "score": "6624",
+          "top": "runQuestionDialog",
+          "top_ccx": "18",
+          "top_l": "2073"
+        },
+        {
+          "p": "v3/pkg/application/webview_window_darwin.m",
+          "churn": "20",
+          "ccx": "282",
+          "score": "5640",
+          "top": "windowSetLiquidGlass",
+          "top_ccx": "73",
+          "top_l": "1190"
+        },
+        {
+          "p": "v3/internal/commands/manifest_migrate.go",
+          "churn": "14",
+          "ccx": "398",
+          "score": "5572",
+          "top": "analyseMigration",
+          "top_ccx": "123",
+          "top_l": "448"
+        },
+        {
+          "p": "v3/internal/wake/pipeline/planner.go",
+          "churn": "13",
+          "ccx": "351",
+          "score": "4563",
+          "top": "planTarget",
+          "top_ccx": "156",
+          "top_l": "126"
+        },
+        {
+          "p": "v3/internal/setupwizard/wizard.go",
+          "churn": "12",
+          "ccx": "311",
+          "score": "3732",
+          "top": "pullViaDockerAPI",
+          "top_ccx": "53",
+          "top_l": "808"
+        },
+        {
+          "p": "v3/internal/wake/manifest/load.go",
+          "churn": "11",
+          "ccx": "272",
+          "score": "2992",
+          "top": "validateHooks",
+          "top_ccx": "89",
+          "top_l": "314"
+        },
+        {
+          "p": "v2/internal/frontend/runtime/ipc_websocket.js",
+          "churn": "2",
+          "ccx": "1386",
+          "score": "2772",
+          "top": "Ze",
+          "top_ccx": "75",
+          "top_l": "32"
+        },
+        {
+          "p": "v3/internal/setupwizard/frontend/src/App.tsx",
+          "churn": "10",
+          "ccx": "277",
+          "score": "2770",
+          "top": "App",
+          "top_ccx": "75",
+          "top_l": "2126"
+        },
+        {
+          "p": "v3/pkg/application/application.go",
+          "churn": "23",
+          "ccx": "107",
+          "score": "2461",
+          "top": "New",
+          "top_ccx": "32",
+          "top_l": "42"
+        },
+        {
+          "p": "v3/pkg/application/linux_cgo_gtk3.go",
+          "churn": "14",
+          "ccx": "173",
+          "score": "2422",
+          "top": "runChooserDialog",
+          "top_ccx": "13",
+          "top_l": "2285"
+        }
+      ]
+    },
+    "dependencies": {
+      "attributes": {
+        "files": "2744",
+        "shown": "40",
+        "capped": "1",
+        "total": "2744",
+        "has_more": "1",
+        "next_offset": "40",
+        "offset": "0",
+        "limit": "0",
+        "root": "."
+      }
+    },
+    "clones": {
+      "attributes": {
+        "groups": "509",
+        "type3": "5430",
+        "exempt_groups": "0",
+        "idiom_groups": "0",
+        "demoted_groups": "0",
+        "clone_groups": "843",
+        "dup_loc": "57433",
+        "total_loc": "246258",
+        "dup_pct": "23.3",
+        "counts_floor": "1",
+        "shown": "50",
+        "capped": "1",
+        "total": "5939",
+        "has_more": "1",
+        "next_offset": "50",
+        "offset": "0",
+        "limit": "50",
+        "root": "."
+      }
+    },
+    "seams": {
+      "attributes": {
+        "modules": "1277",
+        "bridges": "8382",
+        "untested": "4765",
+        "test_files": "353",
+        "seam_pairs": "887",
+        "shown": "100",
+        "capped": "1",
+        "total": "887",
+        "has_more": "1",
+        "next_offset": "100",
+        "offset": "0",
+        "limit": "100",
+        "pr_iters": "46",
+        "root": ".",
+        "graph_ambiguous": "3621",
+        "graph_unresolved": "2608",
+        "counts_floor": "1"
+      }
+    },
+    "dead-code": {
+      "attributes": {
+        "count": "37",
+        "confidence": "high",
+        "evidence": "internal-linkage+zero-callers",
+        "register-macro-excluded": "0",
+        "shown": "37",
+        "capped": "0",
+        "total": "37",
+        "has_more": "0",
+        "next_offset": "37",
+        "offset": "0",
+        "limit": "10000",
+        "root": ".",
+        "graph_ambiguous": "3621",
+        "graph_unresolved": "2608",
+        "counts_floor": "1"
+      }
+    },
+    "pr-context-full": {
+      "attributes": {
+        "base": "f38ae268344700a3f48dd1e95b716f2059f7269e",
+        "root": ".",
+        "anchor": "merge-base",
+        "base_sha": "f38ae2683",
+        "base_moved": "0",
+        "direction": "head-since-fork",
+        "files": "219",
+        "skipped_mode_only": "0",
+        "budget_tokens": "100000",
+        "est_tokens": "43527",
+        "trim_level": "3",
+        "truncated": "per-symbol-rows+cochange-list+owner-list-dropped",
+        "at": "6c556f0b9",
+        "graph_ambiguous": "3621",
+        "graph_unresolved": "2608",
+        "counts_floor": "1"
+      }
+    },
+    "build-system-quality": {
+      "attributes": {
+        "preset": "default",
+        "families": "6",
+        "enabled": "structural,lexical,confusion,historical,colocation,state",
+        "enabled_n": "6",
+        "cut": "2",
+        "cut_reachable": "1",
+        "eligible": "2143",
+        "ranked": "306",
+        "below_cut": "886",
+        "no_family": "951",
+        "bar_ccx": "15",
+        "bar_loc": "60",
+        "bar_nest": "4",
+        "bar_params": "5",
+        "rcut": "40",
+        "rmeasured": "2143",
+        "hcut": "25",
+        "hranked": "243",
+        "window": "12mo",
+        "ccut": "40",
+        "cranked": "1376",
+        "cfiles": "1",
+        "cscope": "1",
+        "lscope": "2143",
+        "sfiles": "1",
+        "sscope": "1",
+        "cells": "0",
+        "tested_scope": "881",
+        "deep_untested": "4",
+        "shown": "40",
+        "capped": "1",
+        "total": "306",
+        "has_more": "1",
+        "next_offset": "40",
+        "offset": "0",
+        "limit": "40",
+        "at": "6c556f0b9"
+      },
+      "first_rows": [
+        {
+          "p": "commands/manifest_dev.go:141",
+          "n": "runManifestDevContextWithOps",
+          "fam": "4",
+          "of": "6",
+          "fired": "structural,lexical,historical,colocation"
+        },
+        {
+          "p": "commands/manifest_migrate_test.go:732",
+          "n": "TestMigrationExtractsLegacyProductionConfigurationFrontendAndAssets",
+          "fam": "4",
+          "of": "6",
+          "fired": "structural,lexical,historical,colocation"
+        },
+        {
+          "p": "commands/manifest_dev_test.go:95",
+          "n": "TestManifestDevValidatesBeforeStartingProcesses",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:85",
+          "n": "TestBuildJSONPlanIsDeterministicAndDescribesArtifacts",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:407",
+          "n": "TestHCLBuildExecutesFrontendAndRealGoCompile",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:668",
+          "n": "TestHCLDMGPackagingBuildsTheAppAndResolvesOptions",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:734",
+          "n": "TestHCLGeneratesAssetsForEverySupportedPlatform",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:1053",
+          "n": "TestHCLIOSSignedAppAndIPAUseDeclaredTargetSettings",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:1142",
+          "n": "TestHCLIOSSignedDefaultSimulatorAppUsesGeneratedInfoPlist",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:1255",
+          "n": "TestHCLCompileUsesConfiguredGoFlagsAndTargetMinimum",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:1342",
+          "n": "TestHCLAndroidCompileDiscoversNDKForEachHostToolchain",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:1717",
+          "n": "TestHCLMSIXPackagingUsesMakeAppxOnTheWindowsTarget",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_hcl_happy_path_test.go:1824",
+          "n": "TestHCLAndroidSigningProducesTheProductionAABArtifact",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        },
+        {
+          "p": "commands/manifest_migrate.go:448",
+          "n": "analyseMigration",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,historical,colocation"
+        },
+        {
+          "p": "commands/manifest_migrate_test.go:66",
+          "n": "TestMigrateCommandBoundaryFailuresAreObservable",
+          "fam": "3",
+          "of": "6",
+          "fired": "structural,lexical,historical"
+        }
+      ]
+    }
+  }
+}
