@@ -70,6 +70,9 @@ jobs:
       working-directory: v3
       run: go test scripts/auto-changelog.go scripts/auto-changelog_test.go
 
+    - name: Test changelog publication
+      run: python3 -m unittest discover -s v3/scripts -p 'test_publish_changelog.py'
+
     - name: Auto-fill changelog entry
       if: steps.check.outputs.skip == 'false'
       env:
@@ -87,12 +90,12 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add v3/UNRELEASED_CHANGELOG.md
-        # The auto-fill step intentionally writes nothing for internal-only PRs
-        # (ci/chore/build/test/style). Skip cleanly so the merge doesn't go red.
-        if git diff --cached --quiet; then
-          echo "ℹ️ No changelog entry to commit (internal PR or no change) — skipping."
-          exit 0
-        fi
-        git commit -m "chore(changelog): auto-add entry for PR #${PR_NUMBER} — ${PR_TITLE}"
-        git push https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git master
+        python3 v3/scripts/publish-changelog.py
+
+    - name: Preserve changelog after publication failure
+      if: failure() && steps.check.outputs.skip == 'false'
+      uses: actions/upload-artifact@v4
+      with:
+        name: changelog-pr-${{ steps.pr.outputs.number }}-${{ github.run_attempt }}
+        path: v3/UNRELEASED_CHANGELOG.md
+        retention-days: 14
