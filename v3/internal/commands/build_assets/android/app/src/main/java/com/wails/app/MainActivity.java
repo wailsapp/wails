@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int FILE_PICKER_REQUEST = 7001;
 
     private WebView webView;
+    private Uri devServer;
     private WailsBridge bridge;
     // Battery: system-event receivers are registered only while the activity is
     // in the foreground (onStart) and torn down in onStop, so background battery/
@@ -84,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        String devURL = WailsBridge.devServerURL(this);
+        if (devURL != null) devServer = Uri.parse(devURL);
 
         // Initialize the native Go library
         bridge = new WailsBridge(this);
@@ -129,7 +133,9 @@ public class MainActivity extends AppCompatActivity {
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 // Handle wails.localhost requests
                 if (request.getUrl().getHost() != null &&
-                        request.getUrl().getHost().equals(WAILS_HOST)) {
+                        (request.getUrl().getHost().equals(WAILS_HOST) ||
+                         (devServer != null && request.getUrl().getScheme().equals(devServer.getScheme()) &&
+                          request.getUrl().getAuthority().equals(devServer.getAuthority())))) {
 
                     // For wails API calls (runtime, capabilities, etc.) pass the
                     // full URL including the query string, because
@@ -177,6 +183,11 @@ public class MainActivity extends AppCompatActivity {
                         return serveCaptureFile(path.substring("/__capture__/".length()), request);
                     }
 
+                    // Vite serves its own HTTP headers and WebSocket endpoint.
+                    if (devServer != null && !request.getUrl().getHost().equals(WAILS_HOST)) {
+                        return super.shouldInterceptRequest(view, request);
+                    }
+
                     // For regular assets, use the asset loader
                     return assetLoader.shouldInterceptRequest(request.getUrl());
                 }
@@ -200,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadApplication() {
-        String url = WAILS_SCHEME + "://" + WAILS_HOST + "/";
+        String url = devServer != null ? devServer.toString() + "/" : WAILS_SCHEME + "://" + WAILS_HOST + "/";
         if (DEBUG) Log.d(TAG, "Loading URL: " + url);
         webView.loadUrl(url);
     }

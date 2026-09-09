@@ -102,6 +102,7 @@ public class WailsBridge {
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
+    private static native void nativeConfigureDev(String url, String ready, String token);
     private static native void nativeShutdown();
     private static native void nativeOnStart();
     private static native void nativeOnResume();
@@ -120,6 +121,22 @@ public class WailsBridge {
     private static native void nativeEmitSystemEvent(String name, String json);
     private static native void nativeEmitEvent(String name, String json);
 
+    /** The private CLI launch protocol is accepted only by debug apps over adb loopback. */
+    public static String devServerURL(Activity activity) {
+        if ((activity.getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) == 0) return null;
+        android.content.Intent intent = activity.getIntent();
+        String token = intent.getStringExtra("WAILS_INTERNAL_DEV_READY_TOKEN");
+        String server = intent.getStringExtra("FRONTEND_DEVSERVER_URL");
+        String ready = intent.getStringExtra("WAILS_INTERNAL_DEV_READY_URL");
+        return token != null && !token.isEmpty() && isDevLoopbackURL(server) && isDevLoopbackURL(ready) ? server : null;
+    }
+
+    private static boolean isDevLoopbackURL(String value) {
+        if (value == null) return false;
+        android.net.Uri uri = android.net.Uri.parse(value);
+        return "127.0.0.1".equals(uri.getHost()) && ("http".equals(uri.getScheme()) || "https".equals(uri.getScheme()));
+    }
+
     public WailsBridge(Activity activity) {
         this.activity = activity;
     }
@@ -132,6 +149,12 @@ public class WailsBridge {
             return;
         }
         try {
+            String server = devServerURL(activity);
+            if (server != null) {
+                nativeConfigureDev(server,
+                    activity.getIntent().getStringExtra("WAILS_INTERNAL_DEV_READY_URL"),
+                    activity.getIntent().getStringExtra("WAILS_INTERNAL_DEV_READY_TOKEN"));
+            }
             nativeInit(this);
             initialized = true;
             Log.i(TAG, "Wails bridge initialized");

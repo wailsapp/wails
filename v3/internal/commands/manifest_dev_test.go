@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/dev"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -317,13 +319,13 @@ func TestNewDirectoryDetectionFindsOnlyWatchedInputs(t *testing.T) {
 
 func TestFrontendSessionChanged(t *testing.T) {
 	base := manifest.Config{Frontend: manifest.Frontend{Directory: "frontend", PackageManager: "npm", DevCommand: "dev", Dev: []string{"npm", "run", "dev"}}}
-	assert.False(t, frontendSessionChanged(base, base))
+	assert.False(t, dev.FrontendSessionChanged(base, base))
 	next := base
 	next.Frontend.DevCommand = "serve"
-	assert.True(t, frontendSessionChanged(base, next))
+	assert.True(t, dev.FrontendSessionChanged(base, next))
 	next = base
 	next.Frontend.Dev = []string{"pnpm", "run", "serve"}
-	assert.True(t, frontendSessionChanged(base, next))
+	assert.True(t, dev.FrontendSessionChanged(base, next))
 }
 
 func TestFrontendDevArgsPinTheLoopbackHost(t *testing.T) {
@@ -500,16 +502,16 @@ func TestRestoreManifestFrontendReportsLaunchAndReadinessFailures(t *testing.T) 
 
 func TestDevWatchSessionChanged(t *testing.T) {
 	base := manifest.Config{Build: manifest.Build{OutputDirectory: "bin"}, Frontend: manifest.Frontend{Directory: "frontend"}, Dev: manifest.Dev{Watch: []string{"**/*.go"}, Exclude: []string{"tmp"}, UseGitIgnore: true}}
-	assert.False(t, devWatchSessionChanged(base, base))
+	assert.False(t, dev.WatchSessionChanged(base, base))
 	next := base
 	next.Dev.Watch = []string{"**/*.go", "wails.hcl"}
-	assert.True(t, devWatchSessionChanged(base, next))
+	assert.True(t, dev.WatchSessionChanged(base, next))
 	next = base
 	next.Frontend.Directory = "web"
-	assert.True(t, devWatchSessionChanged(base, next))
+	assert.True(t, dev.WatchSessionChanged(base, next))
 	next = base
 	next.Build.OutputDirectory = "release-output"
-	assert.False(t, devWatchSessionChanged(base, next), "finite build output is not Dev session policy")
+	assert.False(t, dev.WatchSessionChanged(base, next), "finite build output is not Dev session policy")
 }
 
 func TestManifestDevBinaryPathUsesTheCompilePlanOutput(t *testing.T) {
@@ -561,18 +563,6 @@ func TestManifestProcessesReceiveExplicitDevEnvironment(t *testing.T) {
 	data, err := os.ReadFile(output)
 	require.NoError(t, err)
 	assert.Equal(t, "http://localhost:7777\n7777", string(data))
-}
-
-func TestManifestSessionSuppressesOwnedExitAfterCancellation(t *testing.T) {
-	process := &manifestProcess{done: make(chan struct{})}
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-	assert.NoError(t, manifestSessionProcessExit(ctx, "frontend", process))
-	assert.EqualError(t, manifestSessionProcessExit(context.Background(), "frontend", process), "frontend process exited unexpectedly")
-}
-
-func TestManifestRebuildFailureReportsOrdinaryErrors(t *testing.T) {
-	reportManifestRebuildFailure(errors.New("ordinary rebuild failure"))
 }
 
 func TestManifestProcessReadinessWaitsForListeningFrontend(t *testing.T) {
@@ -730,7 +720,7 @@ func TestManifestReadinessHelper(t *testing.T) {
 			os.Exit(5)
 		}
 		defer listener.Close()
-		time.Sleep(5 * time.Minute)
+		_ = http.Serve(listener, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) }))
 	}
 }
 

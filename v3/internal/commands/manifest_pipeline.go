@@ -21,12 +21,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/wailsapp/wails/v3/internal/dev"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/report"
 	"github.com/wailsapp/wails/v3/internal/report/pulse"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
-	"github.com/wailsapp/wails/v3/internal/wake"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"github.com/wailsapp/wails/v3/internal/wake/packagetemplate"
 	"github.com/wailsapp/wails/v3/internal/wake/pipeline"
@@ -46,10 +46,7 @@ type manifestRunOptions struct {
 	GarbleArgs                          []string
 }
 
-type manifestPipelineRun struct {
-	Plan    pipeline.Plan
-	Results map[pipeline.NodeKey]pipeline.Result
-}
+type manifestPipelineRun = dev.BuildResult
 
 type manifestPlanOutput struct {
 	SchemaVersion int                     `json:"schema_version"`
@@ -117,10 +114,13 @@ func runManifestPipelineResult(options manifestRunOptions) (manifestPipelineRun,
 	if err != nil {
 		return manifestPipelineRun{}, err
 	}
-	reporter := pulse.New(os.Stdout, report.Normal)
-	term.Header(strings.ToUpper(options.Verb[:1]) + options.Verb[1:])
-	report.SetActive(reporter)
-	defer report.SetActive(nil)
+	var reporter report.Reporter
+	if output := dev.OutputFrom(options.Context); output != nil {
+		reporter = output.BuildReporter(dev.Generation(options.Context))
+	} else {
+		reporter = pulse.New(os.Stdout, report.Normal)
+		term.Header(strings.ToUpper(options.Verb[:1]) + options.Verb[1:])
+	}
 	reporter.BuildStart(options.Verb, plan.Target, len(plan.Nodes))
 	ctx := options.Context
 	if ctx == nil {
@@ -135,7 +135,7 @@ func runManifestPipelineResult(options manifestRunOptions) (manifestPipelineRun,
 			return manifestPipelineRun{Plan: plan, Results: results}, err
 		}
 		reporter.BuildEnd(time.Since(started), false)
-		return manifestPipelineRun{Plan: plan, Results: results}, wake.MarkReported(err)
+		return manifestPipelineRun{Plan: plan, Results: results}, report.MarkReported(err)
 	}
 	resultKeys := make([]string, 0, len(results))
 	for key := range results {
@@ -1885,6 +1885,9 @@ func (h *manifestHandler) packageWorkspace(s pipeline.PackageSpec, elements ...s
 	}
 	target := strings.ReplaceAll(s.TargetOS+"/"+s.TargetArch, "/", "-")
 	parts := []string{h.root, ".wails", "build", profile, target, "package", s.Format}
+	if s.Development {
+		parts = []string{h.root, ".wails", "dev", target, "package", s.Format}
+	}
 	return filepath.Join(append(parts, elements...)...)
 }
 
@@ -2462,6 +2465,11 @@ func (h *manifestHandler) packageAndroid(ctx context.Context, s pipeline.Package
 	if err := copyManifestPath(source, staged); err != nil {
 		return pipeline.RunResult{}, err
 	}
+	if s.Development {
+		if err := prepareAndroidDevNetwork(staged); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
 	binaries := s.Binaries
 	if len(binaries) == 0 {
 		binaries = []pipeline.ComponentBinary{{Arch: s.TargetArch, Path: s.Binary}}
@@ -2575,6 +2583,11 @@ func (h *manifestHandler) packageIOS(ctx context.Context, s pipeline.PackageSpec
 	info := filepath.Join(h.root, s.Assets, "ios", "xcode", "main", "Info.plist")
 	if err := copyManifestPath(info, filepath.Join(stagedApp, "Info.plist")); err != nil {
 		return pipeline.RunResult{}, err
+	}
+	if s.Development {
+		if err := prepareIOSDevNetwork(filepath.Join(stagedApp, "Info.plist")); err != nil {
+			return pipeline.RunResult{}, err
+		}
 	}
 	assetInput := filepath.Join(h.root, s.Assets, "ios", "xcode", "main", "Assets.xcassets")
 	assetTemp := filepath.Join(stagedWorkspace, "compiled-assets")

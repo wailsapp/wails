@@ -56,3 +56,30 @@ func mergeIOSPlistDefaults(info, defaults map[string]any) bool {
 	}
 	return changed
 }
+
+// Changes only the disposable HCL development bundle, before code signing.
+func prepareIOSDevNetwork(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var info map[string]any
+	if _, err = plist.Unmarshal(data, &info); err != nil {
+		return err
+	}
+	if _, exists := info["NSLocalNetworkUsageDescription"]; !exists {
+		info["NSLocalNetworkUsageDescription"] = "Connect to the Wails development server on your Mac."
+	}
+	ats, _ := info["NSAppTransportSecurity"].(map[string]any)
+	if ats == nil {
+		ats = map[string]any{}
+	}
+	ats["NSAllowsLocalNetworking"] = true
+	ats["NSAllowsArbitraryLoadsInWebContent"] = true
+	info["NSAppTransportSecurity"] = ats
+	data, err = plist.MarshalIndent(info, plist.XMLFormat, "\t")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0644)
+}

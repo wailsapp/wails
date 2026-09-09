@@ -252,6 +252,7 @@ type AssetsSpec struct {
 	Protocols                       []manifest.Protocol
 }
 type PackageSpec struct {
+	Development                                          bool
 	TargetOS, TargetArch, Format, Binary, Assets, Output string
 	Binaries                                             []ComponentBinary
 	Profile                                              string

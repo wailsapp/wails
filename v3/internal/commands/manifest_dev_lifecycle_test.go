@@ -5,6 +5,7 @@ package commands
 import (
 	"context"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/dev"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
@@ -33,6 +35,7 @@ func TestManifestDevSessionOwnsIncrementalLifecycle(t *testing.T) {
 import (
   "os"
   "os/signal"
+  "net/http"
   "strconv"
   "syscall"
 )
@@ -43,6 +46,11 @@ func main() {
     file, _ := os.OpenFile(log, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
     _, _ = file.WriteString(strconv.Itoa(os.Getpid()) + "\n")
     _ = file.Close()
+  }
+  if u := os.Getenv("WAILS_INTERNAL_DEV_READY_URL"); u != "" {
+    req, _ := http.NewRequest("POST", u, nil)
+    req.Header.Set("Authorization", "Bearer " + os.Getenv("WAILS_INTERNAL_DEV_READY_TOKEN"))
+    resp, err := http.DefaultClient.Do(req); if err == nil { resp.Body.Close() }
   }
   stopped := make(chan os.Signal, 1)
   signal.Notify(stopped, os.Interrupt, syscall.SIGTERM)
@@ -387,7 +395,14 @@ func TestManifestDevUsesDefaultSecureSessionAddress(t *testing.T) {
 	t.Setenv("WAILS_TEST_BACKEND_ENV", environmentOutput)
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan error, 1)
-	go func() { done <- runManifestDevContext(ctx, &DevOptions{Secure: true}) }()
+	options := &DevOptions{Secure: true}
+	ops := productionManifestDevOps(options)
+	// This fixture checks endpoint propagation; TLS validation is exercised by
+	// internal/dev's HTTP readiness tests. The process helper serves plain HTTP.
+	ops.waitTCP = func(c context.Context, p *manifestProcess, a string, d time.Duration) error {
+		return dev.WaitHTTP(c, p, "http://"+a, d)
+	}
+	go func() { done <- runManifestDevContextWithOps(ctx, options, ops) }()
 	waitForManifestDevStart(t, fixture.backendLog, done, 30*time.Second)
 	require.Equal(t, "https://127.0.0.1:9245\n9245", strings.TrimSpace(readTestFile(t, environmentOutput)))
 	cancel()
@@ -563,6 +578,7 @@ const manifestDevHoldingMain = `package main
 import (
   "os"
   "os/signal"
+  "net/http"
   "strconv"
   "syscall"
 )
@@ -572,6 +588,11 @@ func main() {
     file, _ := os.OpenFile(log, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
     _, _ = file.WriteString(strconv.Itoa(os.Getpid()) + "\n")
     _ = file.Close()
+  }
+  if u := os.Getenv("WAILS_INTERNAL_DEV_READY_URL"); u != "" {
+    req, _ := http.NewRequest("POST", u, nil)
+    req.Header.Set("Authorization", "Bearer " + os.Getenv("WAILS_INTERNAL_DEV_READY_TOKEN"))
+    resp, err := http.DefaultClient.Do(req); if err == nil { resp.Body.Close() }
   }
   stopped := make(chan os.Signal, 1)
   signal.Notify(stopped, os.Interrupt, syscall.SIGTERM)
@@ -658,13 +679,7 @@ func TestManifestDevFrontendHelper(t *testing.T) {
 	listener, err := net.Listen("tcp", net.JoinHostPort("127.0.0.1", port))
 	require.NoError(t, err)
 	defer listener.Close()
-	for {
-		connection, acceptErr := listener.Accept()
-		if acceptErr != nil {
-			return
-		}
-		_ = connection.Close()
-	}
+	_ = http.Serve(listener, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) }))
 }
 
 func reserveManifestDevPort(t *testing.T) int {

@@ -298,6 +298,7 @@ project {
 }
 
 func TestHCLSignCommandRunsTheCompleteProfilePipeline(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	if runtime.GOOS != "linux" {
 		t.Skip("Linux package signing integration requires a Linux host")
 	}
@@ -349,6 +350,7 @@ if [ "$1" = "run" ]; then mkdir -p dist; printf bundle > dist/index.html; fi
 }
 
 func TestHCLPackageCommandBuildsTheRequestedTargetAndFormat(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	if runtime.GOOS != "linux" {
 		t.Skip("Linux package integration requires a Linux host")
 	}

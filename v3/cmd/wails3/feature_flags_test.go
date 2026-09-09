@@ -66,6 +66,15 @@ func TestExperimentalCLICompatibility(t *testing.T) {
 				for _, command := range []string{"build", "dev", "package", "sign"} {
 					help, err := run(dir, value, command, "--help")
 					require.NoError(t, err, help)
+					if command == "dev" {
+						for _, flag := range []string{"-device", "-emulator", "-destination", "-host", "-quiet", "-verbose"} {
+							if enabled {
+								require.Contains(t, help, flag)
+							} else {
+								require.NotContains(t, help, flag)
+							}
+						}
+					}
 					if enabled {
 						require.Contains(t, help, "profile")
 					} else {

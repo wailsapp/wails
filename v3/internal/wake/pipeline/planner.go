@@ -405,7 +405,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			cachePolicy = CacheNever
 		}
 		lastRunnable = add(Node{Key: NodeKey("assemble:" + target), Kind: AssembleApplication, Label: "Assemble " + target + " application", Scope: TargetScope, Dependencies: assemblyDependencies,
-			Spec:   PackageSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: "app", Binary: binaryOut, Binaries: append([]ComponentBinary(nil), componentBinaries...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: packageConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
+			Spec:   PackageSpec{Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: "app", Binary: binaryOut, Binaries: append([]ComponentBinary(nil), componentBinaries...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: packageConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
 			Inputs: []InputSpec{{Label: "compiled-application", Files: []string{binaryOut, assetsOut}}}, Output: output, Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, "app")}, EstimateMS: 500, Artifact: ArtifactIdentity{Kind: ArtifactBundle, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: "app"}})
 	}
 
@@ -498,7 +498,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		finalOutput := packageOutput(config, request.TargetOS, request.TargetArch, format, multiTarget)
 		output := filepath.ToSlash(filepath.Join(generatedRoot, "artifacts", filepath.Base(finalOutput)))
 		if request.Development {
-			output = finalOutput
+			output = filepath.ToSlash(filepath.Join(generatedRoot, filepath.Base(finalOutput)))
 		}
 		packageOutputs = append(packageOutputs, output)
 	}
@@ -511,7 +511,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		finalOutput := packageOutput(config, request.TargetOS, request.TargetArch, format, multiTarget)
 		output := filepath.ToSlash(filepath.Join(generatedRoot, "artifacts", filepath.Base(finalOutput)))
 		if request.Development {
-			output = finalOutput
+			output = filepath.ToSlash(filepath.Join(generatedRoot, filepath.Base(finalOutput)))
 		}
 		key := NodeKey("package:" + target + ":" + format)
 		packageDeps := appendUniqueKeys(append([]NodeKey(nil), packageDependencies...), assets)
@@ -530,7 +530,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			packageBinary = plan.Nodes[lastRunnable].Output
 		}
 		pkg := add(Node{Key: key, Kind: PackageArtifact, Label: "Package " + format, Scope: PackageScope, Dependencies: packageDeps,
-			Spec:   PackageSpec{TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
+			Spec:   PackageSpec{Development: request.Development, TargetOS: request.TargetOS, TargetArch: request.TargetArch, Format: format, Binary: packageBinary, Binaries: append([]ComponentBinary(nil), componentBinaries...), Assets: assetsOut, Output: output, Profile: profileName, Destination: destination, MinimumVersion: targetSettings.MinimumVersion, Config: pkgConfig, Project: project, Capabilities: platformSettings.Capabilities, Associations: associations, Protocols: protocols},
 			Inputs: packageInputs(config.Root, request.TargetOS, format, pkgConfig), Output: output, Cache: packageCache, Claims: ResourceClaims{CPU: 1, MemoryMB: 1024, Exclusive: packageExclusive(request.TargetOS, format)}, EstimateMS: 1000, Artifact: ArtifactIdentity{Kind: ArtifactPackage, Target: Target{OS: request.TargetOS, Arch: request.TargetArch}, Format: format}})
 		packageRoots = append(packageRoots, pkg)
 		finalOutputs[pkg] = finalOutput

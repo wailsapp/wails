@@ -2,7 +2,6 @@ package wake
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -207,27 +206,11 @@ func countSteps(tf *ast.Taskfile, target string) int {
 	return len(steps)
 }
 
-// errReported marks an error whose failure has already been rendered by the
-// reporter, so the top-level CLI can avoid printing it a second time.
-type errReported struct{ err error }
+// IsReported reports whether a shared Wails reporter already rendered err.
+func IsReported(err error) bool { return report.IsReported(err) }
 
-func (e errReported) Error() string { return e.err.Error() }
-func (e errReported) Unwrap() error { return e.err }
-
-// IsReported reports whether err was already rendered to the build UI.
-func IsReported(err error) bool {
-	var r errReported
-	return errors.As(err, &r)
-}
-
-// MarkReported preserves an error for exit-status propagation while telling
-// the top-level CLI that a build reporter has already presented it.
-func MarkReported(err error) error {
-	if err == nil || IsReported(err) {
-		return err
-	}
-	return errReported{err}
-}
+// MarkReported preserves the legacy executor API for CLI callers.
+func MarkReported(err error) error { return report.MarkReported(err) }
 
 func discoverAndParse(dir string) (*ast.Taskfile, error) {
 	candidates := []string{

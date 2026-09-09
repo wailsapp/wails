@@ -4,6 +4,7 @@ package commands
 
 import (
 	"github.com/stretchr/testify/require"
+	"github.com/wailsapp/wails/v3/internal/dev"
 	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 	"os"
 	"path/filepath"
@@ -28,5 +29,5 @@ func TestManifestFrontendDevReceivesDeclaredEnvironment(t *testing.T) {
 	require.Equal(t, "configured-value", string(value))
 	next := config
 	next.Frontend.Environment = map[string]string{"WAILS_TEST_FRONTEND_VALUE": "changed"}
-	require.True(t, frontendSessionChanged(config, next), "environment-only reload must restart the frontend")
+	require.True(t, dev.FrontendSessionChanged(config, next), "environment-only reload must restart the frontend")
 }
