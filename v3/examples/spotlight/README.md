@@ -1,9 +1,19 @@
 # Spotlight Example
 
-> **macOS:** Run with `go run -tags private_mac_apis .` to enable private WebKit transparency and the existing private visual effects. Without the tag, the example still builds and runs, but the webview remains opaque; Liquid Glass grouping and programmatic inspector opening are no-ops.
-
 This example demonstrates how to create a Spotlight-like launcher using an
 opt-in macOS `NSPanel` together with `CollectionBehavior`.
+
+## Running on macOS with private APIs
+
+This example configures a translucent macOS backdrop. The webview transparency needed to reveal that backdrop requires the `private_mac_apis` build tag. Without it, the example runs with an opaque webview above the native backdrop.
+
+From this example directory, run:
+
+```bash
+go run -tags private_mac_apis .
+```
+
+Omit `-tags private_mac_apis` to run with public macOS APIs only. The tag has no effect on Windows, Linux, iOS, or Android. See the [shared private API guide](../README.md#private-macos-apis) for production builds and fallback details.
 
 ## Features
 
