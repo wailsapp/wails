@@ -54,6 +54,11 @@ dev_mode:
   executes:
     - cmd: wails3 build DEV=true
       type: blocking
+    # wails3 dev waits up to 60s for this standard frontend task to open the
+    # selected dev port before starting the app. Custom commands can opt in:
+    # readiness:
+    #   tcp: "localhost:5173"
+    #   timeout: "60s"
     - cmd: wails3 task common:dev:frontend
       type: background
     - cmd: wails3 task run
