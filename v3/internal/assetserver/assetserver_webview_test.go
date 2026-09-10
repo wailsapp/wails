@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"sync/atomic"
 	"testing"
@@ -12,6 +13,39 @@ import (
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 )
+
+// A webview request originates from the embedded webview on this machine, so a
+// handler that gates on request origin must see a loopback peer. The synthesized
+// RemoteAddr must therefore parse as a loopback IP.
+func TestWebViewRequestPeerIsLoopback(t *testing.T) {
+	var peer atomic.Value // string
+
+	srv, err := NewAssetServer(&Options{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			peer.Store(r.RemoteAddr)
+			w.WriteHeader(http.StatusOK)
+		}),
+		Logger: slog.Default(),
+	})
+	if err != nil {
+		t.Fatalf("NewAssetServer failed: %v", err)
+	}
+
+	req := &contextWebViewRequest{ctx: context.Background(), rw: &contextWebViewResponse{}}
+	srv.processWebViewRequest(req)
+
+	got, _ := peer.Load().(string)
+	if got == "" {
+		t.Fatal("handler was not reached")
+	}
+	host, _, err := net.SplitHostPort(got)
+	if err != nil {
+		t.Fatalf("RemoteAddr %q is not host:port: %v", got, err)
+	}
+	if ip := net.ParseIP(host); ip == nil || !ip.IsLoopback() {
+		t.Fatalf("webview request RemoteAddr = %q, want a loopback peer", got)
+	}
+}
 
 func TestWebViewRequestCancellationReachesHandler(t *testing.T) {
 	started := make(chan struct{})
