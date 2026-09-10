@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser(description='Native Wails dev acceptance agains
 parser.add_argument('--cli', required=True, type=Path)
 parser.add_argument('--output', required=True, type=Path)
 parser.add_argument('--repo', type=Path, default=Path(__file__).resolve().parents[3])
+parser.add_argument('--expected-app-args', type=json.loads, help='Expected application argument vector as JSON')
 parser.add_argument('dev_args', nargs=argparse.REMAINDER)
 options = parser.parse_args()
 base = options.output.resolve()
@@ -58,6 +59,9 @@ with log.open('w') as f:
         r['runtime_ready'] = wait('Backend built and started', timeout=600)
         r['binding_roundtrip'] = wait('HCL_BINDING_ROUNDTRIP', timeout=15) if r['runtime_ready'] else False
         r['stderr_logging'] = wait('HCL_STDERR_LOG_PASS', timeout=15) if r['runtime_ready'] else False
+        if options.expected_app_args is not None:
+            marker = 'HCL_APP_ARGS ' + json.dumps(options.expected_app_args, separators=(',', ':'), ensure_ascii=False)
+            r['initial_application_args'] = wait(marker, timeout=15) if r['runtime_ready'] else False
         if r['runtime_ready']:
             frontend.write_text(original_frontend + "\nCall.ByName('main.AcceptanceService.Confirm', 'HCL_HMR_PASS');\n")
             r['frontend_hmr'] = wait('HCL_BINDING_ROUNDTRIP HCL_HMR_PASS', timeout=30)
@@ -68,6 +72,8 @@ with log.open('w') as f:
             (root / 'main.go').write_text(original + '\nvar devAcceptanceGeneration = 2\n')
             r['rebuild_restart'] = wait('Backend rebuilt and restarted', timeout=300)
             r['second_binding_roundtrip'] = wait('HCL_BINDING_ROUNDTRIP', baseline + 1, 15)
+            if options.expected_app_args is not None:
+                r['restarted_application_args'] = wait(marker, count=2, timeout=15)
     finally:
         if p.poll() is None:
             p.send_signal(signal.CTRL_BREAK_EVENT if os.name == 'nt' else signal.SIGINT)

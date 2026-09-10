@@ -11,15 +11,15 @@ import (
 )
 
 func TestRunSeparatesApplicationFlagsBeforeCLIParsing(t *testing.T) {
-	cli, app := detachRunArguments([]string{"wails3", "run", "--tags", "devtools", "--", "--help", "space value", "--"})
+	cli, app := detachApplicationArguments([]string{"wails3", "run", "--tags", "devtools", "--", "--help", "space value", "--"})
 	require.Equal(t, []string{"wails3", "run", "--tags", "devtools"}, cli)
 	require.Equal(t, []string{"--help", "space value", "--"}, app)
-	_, app = detachRunArguments([]string{"wails3", "run", "--"})
+	_, app = detachApplicationArguments([]string{"wails3", "run", "--"})
 	require.NotNil(t, app)
 	require.Empty(t, app)
-	_, app = detachRunArguments([]string{"wails3", "run"})
+	_, app = detachApplicationArguments([]string{"wails3", "run"})
 	require.Nil(t, app)
-	cli, app = detachRunArguments([]string{"wails3", "dev", "--", "--help"})
+	cli, app = detachApplicationArguments([]string{"wails3", "build", "--", "--help"})
 	require.Len(t, cli, 4)
 	require.Nil(t, app)
 }
@@ -64,6 +64,8 @@ run { args = ["default", "space value"] }
 		{"defaults", nil, []string{"default", "space value"}},
 		{"replacement", []string{"--", "--help", "other value"}, []string{"--help", "other value"}},
 		{"clear", []string{"--"}, []string{}},
+		{"compatibility", []string{"--appargs", `--help "space value"`}, []string{"--help", "space value"}},
+		{"compatibility clear", []string{"--appargs="}, []string{}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			args := append([]string{"-test.run=^TestRunCLIProcess$", "--", "run"}, tc.flags...)
@@ -77,6 +79,55 @@ run { args = ["default", "space value"] }
 			var got []string
 			require.NoError(t, json.Unmarshal(data, &got))
 			require.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestDevCLIApplicationArguments(t *testing.T) {
+	root := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example.com/devcli\n\ngo 1.25\n"), 0600))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "main.go"), []byte("package main\nfunc main(){}\n"), 0600))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "wails.hcl"), []byte(`version = 3
+project {
+ name = "devcli"
+ product_name = "Dev CLI"
+ identifier = "com.example.devcli"
+ version = "1.0.0"
+}
+frontend { disabled = true }
+run { args = ["production"] }
+dev { args = ["--config-path", "testing.yaml"] }
+`), 0600))
+	for _, tc := range []struct {
+		name        string
+		flags, want []string
+		failure     string
+	}{
+		{name: "defaults", want: []string{"--config-path", "testing.yaml"}},
+		{name: "vector", flags: []string{"--", "--help", `C:\Users\Example User\testing.yaml`, ""}, want: []string{"--help", `C:\Users\Example User\testing.yaml`, ""}},
+		{name: "clear vector", flags: []string{"--"}, want: []string{}},
+		{name: "alias", flags: []string{"--appargs", `--config-path 'space value.yaml'`}, want: []string{"--config-path", "space value.yaml"}},
+		{name: "single dash alias", flags: []string{"-appargs=--help"}, want: []string{"--help"}},
+		{name: "clear alias", flags: []string{"--appargs="}, want: []string{}},
+		{name: "mixed", flags: []string{"--appargs=", "--"}, failure: "either --appargs"},
+		{name: "repeated", flags: []string{"--appargs=one", "--appargs=two"}, failure: "only once"},
+		{name: "malformed", flags: []string{`--appargs="unterminated`}, failure: "quoting"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			args := append([]string{"-test.run=^TestRunCLIProcess$", "--", "dev", "--plan"}, tc.flags...)
+			cmd := exec.Command(os.Args[0], args...)
+			cmd.Dir = root
+			cmd.Env = append(os.Environ(), "WAILS_RUN_CLI_TEST_CHILD=1", "WAILS_EXP_USE_WAKE=1", "GOWORK=off")
+			output, err := cmd.CombinedOutput()
+			if tc.failure != "" {
+				require.Error(t, err)
+				require.Contains(t, string(output), tc.failure)
+				return
+			}
+			require.NoError(t, err, string(output))
+			encoded, err := json.Marshal(tc.want)
+			require.NoError(t, err)
+			require.Contains(t, string(output), "Application arguments: "+string(encoded))
 		})
 	}
 }

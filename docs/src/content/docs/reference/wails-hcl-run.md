@@ -60,6 +60,7 @@ building, installing or launching. The plan lists environment override key names
 | `--emulator <name>` | Android Virtual Device to start or reuse; cannot be combined with `--device`. |
 | `--destination <kind>` | iOS destination: `simulator` (default) or `device`. |
 | `-- <args...>` | Replace configured application arguments. A bare `--` clears them. |
+| `--appargs <string>` | Compatibility spelling: parse one string using POSIX-style quoting. Cannot be repeated or combined with arguments after `--`. |
 
 Mobile selectors require a manifest and a matching mobile target.
 
@@ -190,3 +191,68 @@ without adding `production` or `devtools`. It follows Go's own exit-status behav
 Arguments after `--` go to the application, including flags such as `--help`.
 Runtime values shown by `--plan` are limited to environment key names; values are
 not printed. The fallback plan displays the Go command and working directory.
+
+## Development application arguments
+
+With an active HCL project, `wails3 dev` accepts application arguments independently
+of production `run` defaults. `dev.args` supplies shared defaults; a nested `dev`
+block in `target "<os>"` or `target "<os>/<arch>"` replaces them for that target.
+Architecture settings take precedence over OS-wide settings regardless of file
+order. Explicit `args = []` clears inherited arguments.
+
+```hcl
+dev {
+  args = ["--config-path", "config/testing.yaml"]
+}
+
+target "windows" {
+  dev {
+    args = ["--config-path", "config/testing-windows.yaml"]
+  }
+}
+```
+
+`run.args` and `run.tags` do not contribute to development launches. The existing
+`dev.tags` build policy is unchanged. Relative application paths are interpreted
+by the application from the manifest directory.
+
+```shell
+wails3 dev
+wails3 dev -- --config-path "profile with spaces.yaml"
+wails3 dev --appargs='--config-path "profile with spaces.yaml"'
+wails3 dev --
+wails3 dev --plan
+```
+
+Arguments after `--` replace configured arguments, including when the list is
+empty. `--help` after that delimiter belongs to the application. `--appargs=""`
+also clears defaults. The compatibility option accepts one quoted string; using
+it with `--`, positional application arguments, or a second `--appargs` is an
+error. Malformed quoting is rejected before starting a session.
+
+The compatibility parser uses the same POSIX-style quoting rules on every host.
+It does not execute shell commands or expand variables; the invoking shell may
+already have expanded text before passing it to Wails. Arguments after `--` are
+already separate values and undergo no additional tokenisation. This is the
+preferred form for Windows paths, for example in PowerShell:
+
+```powershell
+wails3 dev -- --config-path 'C:\Users\Example User\testing.yaml'
+```
+
+The session preserves the resolved argument vector through source rebuilds.
+Changing only `dev.args` or the selected target's arguments restarts the backend
+using the cached executable; it does not restart the frontend. CLI overrides
+remain in effect after manifest reloads. Failed replacements keep, or restore,
+the previous executable with its previous arguments. Application arguments are
+not compiler flags and do not enter compilation cache keys. `dev --plan` displays
+the effective arguments alongside the finite build plan without launching.
+
+Linux, Windows and macOS pass the vector directly to the executable. iOS passes
+it through the simulator or device launcher. Android rejects nonempty development
+application arguments before device discovery or building, because there is no
+supported equivalent argument channel. Desktop-only defaults can be placed in
+desktop target blocks, or cleared in `target "android"` with `dev { args = [] }`.
+
+These development options require an active `wails.hcl` and the HCL opt-in. They
+do not rewrite Taskfile or watcher shell commands in the legacy development path.

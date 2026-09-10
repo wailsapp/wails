@@ -212,6 +212,9 @@ var schemaAttributeExamples = map[string]string{
 }
 
 func schemaDescription(path, name string) string {
+	if path == "dev.args" || strings.HasSuffix(path, ".dev.args") {
+		return "Development application arguments passed without shell expansion; supported on desktop and iOS. Android requires an empty list."
+	}
 	if path == "version" {
 		return "Wails manifest schema version; this must be the first attribute."
 	}

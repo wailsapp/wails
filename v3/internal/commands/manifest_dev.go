@@ -73,7 +73,7 @@ type manifestDevOps struct {
 	startFrontend   func(string, manifest.Config, string, int, string) (*manifestProcess, error)
 	waitTCP         func(context.Context, *manifestProcess, string, time.Duration) error
 	binaryPath      func(string, manifestPipelineRun, string, string) (string, error)
-	startApp        func(string, string, string, int) (*manifestProcess, error)
+	startApp        func(string, string, string, int, []string) (*manifestProcess, error)
 	waitStable      func(context.Context, *manifestProcess, time.Duration) error
 	startWatches    func(string, manifest.Config) (*manifestWatchSet, error)
 	restartWatches  func(string, manifest.Config, *manifestWatchSet) (*manifestWatchSet, error)
@@ -108,8 +108,8 @@ func productionManifestDevOps(options ...*DevOptions) manifestDevOps {
 			return dev.WaitHTTP(c, p, scheme+"://"+a, t)
 		},
 		binaryPath: manifestDevBinaryPath,
-		startApp: func(r, b, u string, p int) (*manifestProcess, error) {
-			return startManifestReadyApp(r, b, u, p, output)
+		startApp: func(r, b, u string, p int, args []string) (*manifestProcess, error) {
+			return startManifestReadyApp(r, b, u, p, output, args...)
 		},
 		waitStable:     waitForManifestRuntime,
 		startWatches:   startManifestWatches,
@@ -145,8 +145,8 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 	}
 	operations := dev.Operations{
 		Getwd: ops.getwd, Load: ops.load, Target: splitTarget, CheckPort: ops.checkPort,
-		Plan: func(l *manifest.Loaded, o, a string) error {
-			return printManifestPlan(manifestRunOptions{Verb: "build", Loaded: l, TargetOS: o, TargetArch: a, Development: true, Tags: manifestDevTags(options)}, false)
+		Plan: func(l *manifest.Loaded, o, a string, args []string) error {
+			return printManifestDevPlan(manifestRunOptions{Verb: "build", Loaded: l, TargetOS: o, TargetArch: a, Development: true, Tags: manifestDevTags(options)}, args)
 		},
 		Build: func(c context.Context, l *manifest.Loaded, o, a, u string, p int) (manifestPipelineRun, error) {
 			return ops.build(dev.WithOutput(c, output), options, l, o, a, u, p)
@@ -162,8 +162,8 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 			return ops.waitTCP(c, p.(*manifestProcess), a, t)
 		},
 		BinaryPath: ops.binaryPath,
-		StartApp: func(r, b, u string, p int) (dev.Process, error) {
-			v, e := ops.startApp(r, b, u, p)
+		StartApp: func(r, b, u string, p int, args []string) (dev.Process, error) {
+			v, e := ops.startApp(r, b, u, p, args)
 			if e != nil {
 				return nil, e
 			}
@@ -211,7 +211,7 @@ func runManifestDevContextWithOps(ctx context.Context, options *DevOptions, ops 
 	} else if options.Device != "" || options.Emulator != "" || options.Destination != "" {
 		return fmt.Errorf("--device, --emulator and --destination require a mobile --target")
 	}
-	err := dev.Run(ctx, dev.Options{Profile: options.Profile, Target: options.Target, Plan: options.Plan, Secure: options.Secure, VitePort: options.VitePort, Host: options.Host, Output: output}, operations)
+	err := dev.Run(ctx, dev.Options{Profile: options.Profile, Target: options.Target, Plan: options.Plan, Secure: options.Secure, VitePort: options.VitePort, Host: options.Host, Output: output, Args: options.applicationArgs}, operations)
 	if err != nil {
 		output.Failure(0, "session", "failed", err, "")
 		return report.MarkReported(err)
@@ -526,6 +526,9 @@ func startManifestApp(root, binaryPath, frontendURL string, port int, output ...
 	return startManifestAppEnvironment(root, binaryPath, frontendURL, port, nil, output...)
 }
 func startManifestAppEnvironment(root, binaryPath, frontendURL string, port int, environment []string, output ...*dev.Output) (*manifestProcess, error) {
+	return startManifestAppWithArguments(root, binaryPath, frontendURL, port, environment, nil, output...)
+}
+func startManifestAppWithArguments(root, binaryPath, frontendURL string, port int, environment, args []string, output ...*dev.Output) (*manifestProcess, error) {
 	env := append([]string{wailsVitePort + "=" + strconv.Itoa(port), "FRONTEND_DEVSERVER_URL=" + frontendURL}, environment...)
 	var restartImage []byte
 	if runtime.GOOS == "windows" {
@@ -535,7 +538,7 @@ func startManifestAppEnvironment(root, binaryPath, frontendURL string, port int,
 			return nil, err
 		}
 	}
-	process, err := startManifestProcessOutput(output, root, binaryPath, env)
+	process, err := startManifestProcessOutput(output, root, binaryPath, env, args...)
 	if err == nil {
 		process.restartImage = restartImage
 	}
@@ -556,9 +559,9 @@ func restoreManifestWindowsApp(ctx context.Context, root string, previous *manif
 		if len(output) > 0 {
 			out = output[0]
 		}
-		process, err = startManifestReadyApp(root, binaryPath, frontendURL, port, out)
+		process, err = startManifestReadyApp(root, binaryPath, frontendURL, port, out, previous.cmd.Args[1:]...)
 	} else {
-		process, err = startManifestApp(root, binaryPath, frontendURL, port, output...)
+		process, err = startManifestAppWithArguments(root, binaryPath, frontendURL, port, nil, previous.cmd.Args[1:], output...)
 	}
 	if err != nil {
 		return nil, err
@@ -861,12 +864,12 @@ func (m devWatchMatcher) Match(value string) bool {
 	return false
 }
 
-func startManifestReadyApp(root, binaryPath, frontendURL string, port int, output *dev.Output) (*manifestProcess, error) {
+func startManifestReadyApp(root, binaryPath, frontendURL string, port int, output *dev.Output, args ...string) (*manifestProcess, error) {
 	ready, err := dev.NewReadiness()
 	if err != nil {
 		return nil, err
 	}
-	p, err := startManifestAppEnvironment(root, binaryPath, frontendURL, port, ready.Environment(), output)
+	p, err := startManifestAppWithArguments(root, binaryPath, frontendURL, port, ready.Environment(), args, output)
 	if err != nil {
 		ready.Close()
 		return nil, err
@@ -880,4 +883,16 @@ func waitForManifestRuntime(ctx context.Context, p *manifestProcess, timeout tim
 		return fmt.Errorf("backend launch is missing the Wails runtime readiness channel")
 	}
 	return p.readiness.Wait(ctx, p, timeout)
+}
+
+func printManifestDevPlan(options manifestRunOptions, args []string) error {
+	if err := printManifestPlan(options, false); err != nil {
+		return err
+	}
+	encoded, err := json.Marshal(args)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Application arguments: %s\n", encoded)
+	return nil
 }

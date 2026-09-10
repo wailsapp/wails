@@ -23,9 +23,10 @@ import (
 )
 
 type RunOptions struct {
-	Device      string `name:"device" description:"Android adb serial or iOS device/simulator identifier"`
-	Emulator    string `name:"emulator" description:"Android Virtual Device to start or reuse"`
-	Destination string `name:"destination" description:"iOS destination: simulator (default) or device"`
+	AppArgs     []string `name:"appargs" description:"Application arguments as one shell-quoted string; prefer -- followed by arguments"`
+	Device      string   `name:"device" description:"Android adb serial or iOS device/simulator identifier"`
+	Emulator    string   `name:"emulator" description:"Android Virtual Device to start or reuse"`
+	Destination string   `name:"destination" description:"iOS destination: simulator (default) or device"`
 
 	Tags   string `name:"tags" description:"Additional comma-separated Go build tags"`
 	Target string `name:"target" description:"One platform/architecture to run (defaults to the host)"`
@@ -35,6 +36,10 @@ type RunOptions struct {
 // RunApplication builds and launches the local application. Absence of a
 // manifest selects ordinary go run; invalid manifests never take that fallback.
 func RunApplication(options *RunOptions, args []string) (resultErr error) {
+	args, resultErr = resolveApplicationArguments(options.AppArgs, args)
+	if resultErr != nil {
+		return resultErr
+	}
 	var cancellation *runCancellation
 	defer func() {
 		if errors.Is(resultErr, context.Canceled) && cancellation != nil {

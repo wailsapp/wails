@@ -1,0 +1,16 @@
+{
+  "runtime_ready": true,
+  "binding_roundtrip": true,
+  "stderr_logging": true,
+  "initial_application_args": true,
+  "frontend_hmr": true,
+  "hmr_without_backend_restart": true,
+  "failed_build_keeps_app": true,
+  "rebuild_restart": true,
+  "second_binding_roundtrip": true,
+  "restarted_application_args": true,
+  "exit": 0,
+  "graceful_shutdown": true,
+  "production_unchanged": true,
+  "port_reusable": true
+}

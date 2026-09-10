@@ -216,7 +216,7 @@ func manifestDevBackendFailureOps(t *testing.T, restoreFails bool) (manifestDevO
 		return stagedWatches, nil
 	}
 	var appStarts atomic.Int32
-	ops.startApp = func(string, string, string, int) (*manifestProcess, error) {
+	ops.startApp = func(string, string, string, int, []string) (*manifestProcess, error) {
 		if appStarts.Add(1) == 1 {
 			return openManifestDevTestProcess(), nil
 		}
@@ -395,7 +395,9 @@ func newManifestDevTestOps(t *testing.T) (manifestDevOps, *manifestWatchSet) {
 		binaryPath: func(string, manifestPipelineRun, string, string) (string, error) {
 			return filepath.Join(root, "adapter"), nil
 		},
-		startApp:     func(string, string, string, int) (*manifestProcess, error) { return openManifestDevTestProcess(), nil },
+		startApp: func(string, string, string, int, []string) (*manifestProcess, error) {
+			return openManifestDevTestProcess(), nil
+		},
 		waitStable:   func(context.Context, *manifestProcess, time.Duration) error { return nil },
 		startWatches: func(string, manifest.Config) (*manifestWatchSet, error) { return watches, nil },
 		restartWatches: func(_ string, _ manifest.Config, current *manifestWatchSet) (*manifestWatchSet, error) {

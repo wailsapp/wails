@@ -4,6 +4,7 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"net"
 	"net/http"
 	"os"
@@ -35,6 +36,7 @@ func TestManifestDevSessionOwnsIncrementalLifecycle(t *testing.T) {
 import (
   "os"
   "os/signal"
+  "encoding/json"
   "net/http"
   "strconv"
   "syscall"
@@ -46,6 +48,11 @@ func main() {
     file, _ := os.OpenFile(log, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
     _, _ = file.WriteString(strconv.Itoa(os.Getpid()) + "\n")
     _ = file.Close()
+  }
+  if log := os.Getenv("WAILS_TEST_BACKEND_ARGS"); log != "" {
+    data,_ := json.Marshal(os.Args[1:])
+    file,_ := os.OpenFile(log,os.O_APPEND|os.O_CREATE|os.O_WRONLY,0600)
+    file.Write(append(data,'\n'));file.Close()
   }
   if u := os.Getenv("WAILS_INTERNAL_DEV_READY_URL"); u != "" {
     req, _ := http.NewRequest("POST", u, nil)
@@ -106,6 +113,7 @@ frontend {
 }
 
 dev {
+  args = ["--config-path", "profile with spaces.yaml", "--help"]
   debounce_ms = 25
   watch = ["**/*.go", "wails.hcl"]
   exclude = [".git", ".wails", "bin", "node_modules", "frontend"]
@@ -119,6 +127,8 @@ dev {
 	frontendLog := filepath.Join(root, "frontend.log")
 	npmLog := filepath.Join(root, "npm.log")
 	t.Setenv("WAILS_TEST_BACKEND_LOG", backendLog)
+	argumentLog := filepath.Join(root, "arguments.jsonl")
+	t.Setenv("WAILS_TEST_BACKEND_ARGS", argumentLog)
 	t.Setenv("WAILS_TEST_FRONTEND_LOG", frontendLog)
 	t.Setenv("WAILS_TEST_NPM_LOG", npmLog)
 	port := reserveManifestDevPort(t)
@@ -244,6 +254,37 @@ dev {
 	recoveryBackend := manifestDevLoggedPIDs(t, backendLog)[2]
 	waitForManifestDevCondition(t, 5*time.Second, func() bool { return !manifestDevProcessAlive(replacementBackend) })
 	assert.True(t, manifestDevProcessAlive(recoveryBackend))
+
+	// Initial launch and source rebuilds preserve the same literal argument vector.
+	readArgs := func() [][]string {
+		data, err := os.ReadFile(argumentLog)
+		require.NoError(t, err)
+		var result [][]string
+		for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+			var args []string
+			require.NoError(t, json.Unmarshal([]byte(line), &args))
+			result = append(result, args)
+		}
+		return result
+	}
+	require.Eventually(t, func() bool { return len(readArgs()) == 3 }, 5*time.Second, 10*time.Millisecond)
+	for _, args := range readArgs() {
+		require.Equal(t, []string{"--config-path", "profile with spaces.yaml", "--help"}, args)
+	}
+	binary := filepath.Join(root, ".wails", "dev", runtime.GOOS+"-"+runtime.GOARCH, "dev-session")
+	before, err := os.Stat(binary)
+	require.NoError(t, err)
+	argumentHCL := strings.Replace(watchServeHCL, "profile with spaces.yaml", "another profile.yaml", 1)
+	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), []byte(argumentHCL), 0644))
+	waitForManifestDevLinesOrExit(t, backendLog, 4, done, 10*time.Second)
+	waitForManifestDevCondition(t, 5*time.Second, func() bool { return !manifestDevProcessAlive(recoveryBackend) })
+	require.Eventually(t, func() bool { return len(readArgs()) == 4 }, 5*time.Second, 10*time.Millisecond)
+	require.Equal(t, []string{"--config-path", "another profile.yaml", "--help"}, readArgs()[3])
+	after, err := os.Stat(binary)
+	require.NoError(t, err)
+	require.Equal(t, before.ModTime(), after.ModTime(), "argument-only edit must reuse the compiled binary")
+	require.Len(t, manifestDevLoggedPIDs(t, frontendLog), 5, "application arguments must not restart the frontend")
+	recoveryBackend = manifestDevLoggedPIDs(t, backendLog)[3]
 
 	cancel()
 	require.NoError(t, <-done)

@@ -99,6 +99,7 @@ type hclBuild struct {
 }
 
 type hclDev struct {
+	Args         *[]string `hcl:"args,optional"`
 	Tags         *[]string `hcl:"tags,optional" default:"[]"`
 	DebounceMS   *int      `hcl:"debounce_ms,optional" default:"250"`
 	LogLevel     *string   `hcl:"log_level,optional" default:"warn"`
@@ -156,8 +157,13 @@ type hclRun struct {
 	Environment *map[string]string `hcl:"environment,optional"`
 }
 
+type hclTargetDev struct {
+	Args *[]string `hcl:"args,optional"`
+}
+
 type hclTarget struct {
-	Run *hclRun `hcl:"run,block"`
+	Dev *hclTargetDev `hcl:"dev,block"`
+	Run *hclRun       `hcl:"run,block"`
 
 	Name           string             `hcl:",label" schema_label:"target"`
 	Tags           *[]string          `hcl:"tags,optional"`
@@ -504,6 +510,10 @@ func applyBuild(target *Build, raw *hclBuild) {
 }
 
 func applyDev(target *Dev, raw *hclDev) {
+	if raw.Args != nil {
+		target.Args = append([]string{}, (*raw.Args)...)
+		target.ArgsSet = true
+	}
 	setStrings(&target.Tags, raw.Tags)
 	setInt(&target.DebounceMS, raw.DebounceMS)
 	setInt(&target.GracePeriodMS, raw.GracePeriod)
@@ -625,6 +635,10 @@ func applyTarget(targets *Targets, raw hclTarget) error {
 		target.Tags = appendUniqueRunTags(target.Tags, (*raw.Tags)...)
 	}
 	applyRun(&target.Run, raw.Run)
+	if raw.Dev != nil && raw.Dev.Args != nil {
+		target.Dev.Args = append([]string{}, (*raw.Dev.Args)...)
+		target.Dev.ArgsSet = true
+	}
 	setString(&target.MinimumVersion, raw.MinimumVersion)
 	setInt(&target.BuildNumber, raw.BuildNumber)
 	setString(&target.Toolchain, raw.Toolchain)
@@ -895,6 +909,7 @@ func encodeConfigHCL(config Config, header string) ([]byte, error) {
 	hclStrings(&output, "compiler_flags", config.Build.Go.CompilerFlags)
 	output.WriteString("}\n\ndev {\n")
 	hclStrings(&output, "tags", config.Dev.Tags)
+	hclStringsIndentedPresent(&output, "args", config.Dev.Args, "  ", config.Dev.ArgsSet)
 	hclIntIndented(&output, "debounce_ms", config.Dev.DebounceMS, "  ")
 	hclString(&output, "log_level", config.Dev.LogLevel)
 	hclStringsIndentedPresent(&output, "watch", config.Dev.Watch, "  ", manifestValueWasExplicit(config.Origins, "dev.watch"))
@@ -916,12 +931,17 @@ func encodeConfigHCL(config Config, header string) ([]byte, error) {
 	}{
 		{"windows/amd64", config.Targets.Windows.AMD64}, {"windows/arm64", config.Targets.Windows.ARM64}, {"darwin/amd64", config.Targets.Darwin.AMD64}, {"darwin/arm64", config.Targets.Darwin.ARM64}, {"darwin/universal", config.Targets.Darwin.Universal}, {"linux/amd64", config.Targets.Linux.AMD64}, {"linux/arm64", config.Targets.Linux.ARM64}, {"ios/arm64", config.Targets.IOS.ARM64}, {"android/amd64", config.Targets.Android.AMD64}, {"android/arm64", config.Targets.Android.ARM64}, {"android/universal", config.Targets.Android.Universal},
 	} {
-		if !target.value.Enabled && len(target.value.Tags) == 0 && target.value.MinimumVersion == "" && target.value.BuildNumber == 0 && target.value.Toolchain == "" && len(target.value.Environment) == 0 && len(target.value.LinkerFlags) == 0 && len(target.value.CompilerFlags) == 0 && len(target.value.GarbleArgs) == 0 && !target.value.ObfuscatedSet && !runConfigured(target.value.Run) {
+		if !target.value.Enabled && len(target.value.Tags) == 0 && target.value.MinimumVersion == "" && target.value.BuildNumber == 0 && target.value.Toolchain == "" && len(target.value.Environment) == 0 && len(target.value.LinkerFlags) == 0 && len(target.value.CompilerFlags) == 0 && len(target.value.GarbleArgs) == 0 && !target.value.ObfuscatedSet && !runConfigured(target.value.Run) && !target.value.Dev.ArgsSet {
 			continue
 		}
 		hclLabeledBlockStart(&output, "", "target", target.name)
 		hclStringsIndented(&output, "tags", target.value.Tags, "  ")
 		writeRunHCL(&output, target.value.Run, "  ")
+		if target.value.Dev.ArgsSet {
+			output.WriteString("  dev {\n")
+			hclStringsIndentedPresent(&output, "args", target.value.Dev.Args, "    ", true)
+			output.WriteString("  }\n")
+		}
 		hclStringIndented(&output, "minimum_version", target.value.MinimumVersion, "  ")
 		hclStringIndented(&output, "toolchain", target.value.Toolchain, "  ")
 		hclStringMapIndented(&output, "environment", target.value.Environment, "  ")
@@ -1306,4 +1326,17 @@ func (config Config) RunForTarget(goos, goarch string) (Run, error) {
 		result.Environment[k] = v
 	}
 	return result, nil
+}
+
+// DevArgsForTarget resolves application arguments independently of run/build policy.
+func (config Config) DevArgsForTarget(goos, goarch string) ([]string, error) {
+	if _, _, err := parseTargetName(goos + "/" + goarch); err != nil {
+		return nil, err
+	}
+	target := targetByName(platformByName(&config.Targets, goos), goarch).Dev
+	args := config.Dev.Args
+	if target.ArgsSet {
+		args = target.Args
+	}
+	return append([]string{}, args...), nil
 }

@@ -166,6 +166,9 @@ func validateProject(project Project) error {
 }
 
 func validateConfig(config Config) error {
+	if err := validateApplicationArgs("dev.args", config.Dev.Args); err != nil {
+		return err
+	}
 	paths, err := newProjectPathValidator(config.Root)
 	if err != nil {
 		return fmt.Errorf("resolve project root: %w", err)
@@ -237,6 +240,9 @@ func validateConfig(config Config) error {
 			arch, target := targetEntry.arch, targetEntry.value
 			if target.Toolchain != "" && !contains([]string{"auto", "native", "zig", "docker"}, target.Toolchain) {
 				return fieldValidationError(fmt.Sprintf(`target[%q].toolchain`, name+"/"+arch), "unsupported toolchain %q", target.Toolchain)
+			}
+			if err := validateApplicationArgs(fmt.Sprintf(`target[%q].dev.args`, name+"/"+arch), target.Dev.Args); err != nil {
+				return err
 			}
 			if err := validateEnvironment(fmt.Sprintf(`target[%q].run.environment`, name+"/"+arch), target.Run.Environment); err != nil {
 				return err
@@ -760,4 +766,13 @@ func deriveBinaryName(name string) string {
 		}
 	}
 	return strings.Trim(out.String(), "-")
+}
+
+func validateApplicationArgs(field string, args []string) error {
+	for _, arg := range args {
+		if strings.ContainsRune(arg, 0) {
+			return fieldValidationError(field, "arguments must not contain NUL")
+		}
+	}
+	return nil
 }

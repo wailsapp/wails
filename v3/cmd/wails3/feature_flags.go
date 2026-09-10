@@ -23,6 +23,7 @@ func addDevFlags(command *clir.Command, options *commands.DevOptions) {
 		command.AddFlags(options)
 		return
 	}
+	command.StringsFlag("appargs", "Application arguments (requires an active HCL project)", &options.AppArgs)
 	options.Config = "./build/config.yml"
 	command.AddFlags(&options.Common)
 	command.StringFlag("config", "The config file including path", &options.Config)

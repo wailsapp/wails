@@ -175,7 +175,15 @@ type GoBuild struct {
 	GarbleArgs    []string `json:"garble_args"`
 }
 
+// DevLaunch holds development-only application arguments.
+type DevLaunch struct {
+	Args    []string `json:"args,omitempty"`
+	ArgsSet bool     `json:"-"`
+}
+
 type Dev struct {
+	Args          []string `json:"args,omitempty"`
+	ArgsSet       bool     `json:"-"`
 	Port          int      `json:"port"`
 	Tags          []string `json:"tags,omitempty"`
 	DebounceMS    int      `json:"debounce_ms"`
@@ -222,7 +230,8 @@ type Platform struct {
 }
 
 type Target struct {
-	Run Run `json:"run"`
+	Dev DevLaunch `json:"dev"`
+	Run Run       `json:"run"`
 
 	Enabled        bool              `json:"enabled"`
 	MinimumVersion string            `json:"minimum_version,omitempty"`

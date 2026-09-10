@@ -50,7 +50,19 @@ are stopped. Mobile replacement retains only the current artifact and the
 candidate needed for rollback. Package workspaces and outputs stay under
 `.wails/dev/` and production artifacts remain untouched.
 
-`--plan` prints the finite development build without connecting to devices.
+`--plan` prints the finite development build and effective application arguments
+without connecting to devices. `dev.args` and target-specific `dev.args` provide
+defaults; CLI arguments after `--` replace them, with a bare `--` clearing them.
+`--appargs` is a compatibility spelling accepting one POSIX-quoted string.
+Production `run.args` never supplies development defaults.
+
+The session owns the active argument vector. Every rebuilt candidate gets the
+newly resolved vector; a failed candidate retains the previous one. A runtime-only
+argument edit restarts the backend while reusing its compile result and frontend.
+Windows rollback reads the previous process's argument vector; mobile rollback
+retains the arguments with the staged artifact. Android rejects nonempty vectors
+before device discovery. iOS forwards them through its native launcher. See the
+[argument reference](../../../docs/src/content/docs/reference/wails-hcl-run.md#development-application-arguments).
 For HTTPS, configure the frontend server and trust its certificate; readiness
 never silently disables certificate validation.
 

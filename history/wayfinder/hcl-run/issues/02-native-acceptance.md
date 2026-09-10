@@ -23,3 +23,7 @@ no Wails application was installed or launched on it. Windows/macOS CLI cross-
 compilation passes but does not prove native launch behaviour. GTK3 development
 libraries are absent; the build-tag selection test covers both GTK stacks, while
 native compilation and launch were verified only with GTK4 / WebKitGTK 6.0.
+
+2026-09-10: Also verify development application argument forwarding and rollback
+using [the development argument checks](../dev-arguments-verification.md). The
+physical iOS adapter now uses devicectl's JSON environment option for readiness.

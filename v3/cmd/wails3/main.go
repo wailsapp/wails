@@ -34,7 +34,7 @@ func init() {
 
 func main() {
 	var applicationArgs []string
-	os.Args, applicationArgs = detachRunArguments(os.Args)
+	os.Args, applicationArgs = detachApplicationArguments(os.Args)
 	if os.Getenv("WAILS_MCP_CHILD") == "1" {
 		commands.DisableFooter = true
 	}
@@ -66,7 +66,16 @@ func main() {
 	dev := app.NewSubCommand("dev", "Run in Dev mode")
 	var devOptions commands.DevOptions
 	addDevFlags(dev, &devOptions)
-	dev.Action(func() error { return commands.Dev(&devOptions) })
+	dev.Action(func() error {
+		args := dev.OtherArgs()
+		if len(args) == 0 {
+			args = nil
+		}
+		if applicationArgs != nil {
+			args = applicationArgs
+		}
+		return commands.Dev(&devOptions, args...)
+	})
 	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
 	if features.WakeEnabled() {
 		config := app.NewSubCommand("config", "Validate Wails configuration")
@@ -288,8 +297,8 @@ func openSponsor() error {
 
 // clir reparses arguments after --. Remove application arguments before giving
 // it the command line so application flags can never be interpreted as CLI flags.
-func detachRunArguments(args []string) ([]string, []string) {
-	if len(args) < 2 || args[1] != "run" {
+func detachApplicationArguments(args []string) ([]string, []string) {
+	if len(args) < 2 || (args[1] != "run" && args[1] != "dev") {
 		return args, nil
 	}
 	for i := 2; i < len(args); i++ {

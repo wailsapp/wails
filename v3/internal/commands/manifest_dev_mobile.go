@@ -24,6 +24,7 @@ import (
 type mobileDevProcess struct {
 	discard func()
 	dev.Process
+	args     []string
 	artifact string
 	ready    *dev.Readiness
 	stop     func(time.Duration)
@@ -96,8 +97,8 @@ func configureMobileDev(ctx context.Context, options *DevOptions, output *dev.Ou
 		}
 	}
 	ops.ValidateTarget = func(string, string) error { return nil }
-	ops.Plan = func(l *manifest.Loaded, o, a string) error {
-		return printManifestPlan(mobileDevBuildOptions(ctx, options, l, o, a, "", 0), false)
+	ops.Plan = func(l *manifest.Loaded, o, a string, args []string) error {
+		return printManifestDevPlan(mobileDevBuildOptions(ctx, options, l, o, a, "", 0), args)
 	}
 	ops.Build = func(c context.Context, l *manifest.Loaded, o, a, u string, p int) (manifestPipelineRun, error) {
 		return runManifestPipelineResult(mobileDevBuildOptions(dev.WithOutput(c, output), options, l, o, a, u, p))
@@ -121,24 +122,29 @@ func configureMobileDev(ctx context.Context, options *DevOptions, output *dev.Ou
 		return func() {}, nil
 	}
 	device := options.Device
-	if goos == "android" {
-		chosen, e := chooseAndroidDevice(ctx, AndroidRunOptions{Device: device, Emulator: options.Emulator}, realAndroidDeployOperations())
-		if e != nil {
-			return nil, e
+	// Device discovery happens after the session validates application arguments.
+	ops.ValidateTarget = func(string, string) error {
+		if goos == "android" {
+			chosen, e := chooseAndroidDevice(ctx, AndroidRunOptions{Device: device, Emulator: options.Emulator}, realAndroidDeployOperations())
+			if e != nil {
+				return e
+			}
+			device = chosen.Serial
+			actual, e := androidDeviceABI(ctx, device)
+			if e != nil {
+				return e
+			}
+			if actual != arch {
+				return fmt.Errorf("device architecture is %s; use --target android/%s", actual, actual)
+			}
+		} else if options.Destination != "device" {
+			device, err = selectIOSDevSimulator(ctx, device)
+			if err != nil {
+				return err
+			}
 		}
-		device = chosen.Serial
-		actual, e := androidDeviceABI(ctx, device)
-		if e != nil {
-			return nil, e
-		}
-		if actual != arch {
-			return nil, fmt.Errorf("device architecture is %s; use --target android/%s", actual, actual)
-		}
-	} else if options.Destination != "device" {
-		device, err = selectIOSDevSimulator(ctx, device)
-		if err != nil {
-			return nil, err
-		}
+
+		return nil
 	}
 	staged := map[string]bool{}
 	cleanup := func() {
@@ -146,7 +152,7 @@ func configureMobileDev(ctx context.Context, options *DevOptions, output *dev.Ou
 			os.RemoveAll(p)
 		}
 	}
-	launch := func(root, artifact, url string, port int) (dev.Process, error) {
+	launch := func(root, artifact, url string, port int, args []string) (dev.Process, error) {
 		stage, e := os.MkdirTemp(filepath.Join(root, ".wails", "dev"), "launch-")
 		if e != nil {
 			return nil, e
@@ -164,7 +170,7 @@ func configureMobileDev(ctx context.Context, options *DevOptions, output *dev.Ou
 		}
 		identifier := identifiers[artifact]
 		identifiers[saved] = identifier
-		child, err := launchMobileDev(ctx, options, output, device, root, saved, url, port, identifier)
+		child, err := launchMobileDev(ctx, options, output, device, root, saved, url, port, identifier, args)
 		if err != nil {
 			os.RemoveAll(stage)
 			delete(staged, stage)
@@ -179,7 +185,7 @@ func configureMobileDev(ctx context.Context, options *DevOptions, output *dev.Ou
 		return p.(*mobileDevProcess).ready.Wait(c, p, t)
 	}
 	ops.RestoreApp = func(c context.Context, root string, previous dev.Process, url string, port int) (dev.Process, error) {
-		p, e := launch(root, previous.(*mobileDevProcess).artifact, url, port)
+		p, e := launch(root, previous.(*mobileDevProcess).artifact, url, port, previous.(*mobileDevProcess).args)
 		if e != nil {
 			return nil, e
 		}
@@ -225,7 +231,7 @@ func selectIOSDevSimulator(ctx context.Context, device string) (string, error) {
 	_, err := runManifestTool(ctx, "", "xcrun", "simctl", "bootstatus", device, "-b")
 	return device, err
 }
-func launchMobileDev(ctx context.Context, options *DevOptions, output *dev.Output, device, root, artifact, url string, port int, applicationID string) (dev.Process, error) {
+func launchMobileDev(ctx context.Context, options *DevOptions, output *dev.Output, device, root, artifact, url string, port int, applicationID string, applicationArgs []string) (dev.Process, error) {
 	host := "127.0.0.1"
 	if strings.HasPrefix(options.Target, "ios/") && options.Destination == "device" {
 		host = options.Host
@@ -256,10 +262,12 @@ func launchMobileDev(ctx context.Context, options *DevOptions, output *dev.Outpu
 		if _, e = runManifestTool(ctx, root, "xcrun", "devicectl", "device", "install", "app", "--device", device, artifact); e != nil {
 			return nil, e
 		}
+		values := map[string]string{}
 		for _, value := range env {
-			childEnv = append(childEnv, "DEVICECTL_CHILD_"+value)
+			key, value, _ := strings.Cut(value, "=")
+			values[key] = value
 		}
-		args = []string{"devicectl", "device", "process", "launch", "--device", device, "--terminate-existing", "--console", identifier}
+		args = iosDeviceRunCommand(device, identifier, manifest.Run{Args: applicationArgs, Environment: values})
 	} else {
 		if _, e = runManifestTool(ctx, root, "xcrun", "simctl", "install", device, artifact); e != nil {
 			return nil, e
@@ -267,14 +275,14 @@ func launchMobileDev(ctx context.Context, options *DevOptions, output *dev.Outpu
 		for _, value := range env {
 			childEnv = append(childEnv, "SIMCTL_CHILD_"+value)
 		}
-		args = []string{"simctl", "launch", "--console", "--terminate-running-process", device, identifier}
+		args = append([]string{"simctl", "launch", "--console", "--terminate-running-process", device, identifier}, applicationArgs...)
 	}
 	child, e := startManifestProcessOutput([]*dev.Output{output}, root, "xcrun", childEnv, args...)
 	if e != nil {
 		return nil, e
 	}
 	var once sync.Once
-	p := &mobileDevProcess{Process: child, artifact: artifact, ready: ready}
+	p := &mobileDevProcess{Process: child, artifact: artifact, ready: ready, args: append([]string{}, applicationArgs...)}
 	p.stop = func(t time.Duration) {
 		once.Do(func() {
 			if options.Destination != "device" {

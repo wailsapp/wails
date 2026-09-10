@@ -55,6 +55,7 @@ Fields are listed using schema paths. Labelled blocks use placeholders such as `
 | `darwin.signing.provisioning_profile` | string | no |  | `"signing/app.mobileprovision"` |  | Project-relative Apple provisioning profile. |
 | `darwin.signing.thumbprint` | string | no |  | `"0123456789ABCDEF"` |  | Windows certificate thumbprint. |
 | `darwin.signing.timestamp_server` | string | no |  | `"https://timestamp.example.com"` |  | URL of the signing timestamp service. |
+| `dev.args` | list(string) | no |  | `["value"]` |  | Development application arguments passed without shell expansion; supported on desktop and iOS. Android requires an empty list. |
 | `dev.debounce_ms` | integer | no | `250` | `250` |  | Delay used to coalesce development file changes. |
 | `dev.exclude` | list(string) | no | `[".git",".wails","bin","node_modules","frontend/dist"]` | `["node_modules"]` |  | Development watcher exclusion patterns. |
 | `dev.grace_period_ms` | integer | no | `1500` | `1500` |  | Time allowed for a development process to stop cleanly. |
@@ -165,6 +166,7 @@ Fields are listed using schema paths. Labelled blocks use placeholders such as `
 | `run.tags` | list(string) | no |  | `["value"]` |  | Additional Go build tags. |
 | `target["target"].build_number` | integer | no |  | `1` |  | Platform build number. |
 | `target["target"].compiler_flags` | list(string) | no |  | `["all=-l"]` |  | Additional Go compiler flags. |
+| `target["target"].dev.args` | list(string) | no |  | `["value"]` |  | Development application arguments passed without shell expansion; supported on desktop and iOS. Android requires an empty list. |
 | `target["target"].environment` | map(string) | no |  | `{ RELEASE = "true" }` |  | Environment variables added to this operation. |
 | `target["target"].garble_args` | list(string) | no |  | `["-literals"]` |  | Additional arguments passed to garble. |
 | `target["target"].ldflags` | list(string) | no |  | `["-X example/build.version=1.0.0"]` |  | Additional Go linker flags. |

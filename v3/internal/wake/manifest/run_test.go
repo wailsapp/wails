@@ -142,3 +142,64 @@ func TestExampleRunManifestsCoverRunnableDirectories(t *testing.T) {
 	}
 	t.Logf("Validated %d independently discovered example entry directories", len(entries))
 }
+
+func TestDevArgumentsAreSeparateFromRunAndResolveBeforeEjection(t *testing.T) {
+	root := t.TempDir()
+	source := `version = 3
+project {
+ name = "devargs"
+ product_name = "Dev args"
+ identifier = "com.example.devargs"
+ version = "1.0.0"
+}
+run { args = ["production"] }
+dev { args = ["shared", "space value"] }
+target "linux/amd64" {
+ dev { args = [] }
+}
+target "linux" {
+ dev { args = ["linux"] }
+}
+target "darwin" {
+ dev { args = ["darwin"] }
+}
+target "windows" {
+ dev { args = ["windows"] }
+}
+target "android" {
+ dev { args = [] }
+}
+`
+	loaded, err := decodeHCL(root, filepath.Join(root, Filename), []byte(source), "")
+	require.NoError(t, err)
+	check := func(config Config) {
+		for _, tc := range []struct {
+			os, arch string
+			want     []string
+		}{
+			{"linux", "amd64", []string{}}, {"linux", "arm64", []string{"linux"}},
+			{"darwin", "arm64", []string{"darwin"}}, {"windows", "amd64", []string{"windows"}},
+			{"ios", "arm64", []string{"shared", "space value"}},
+			{"android", "arm64", []string{}},
+		} {
+			got, err := config.DevArgsForTarget(tc.os, tc.arch)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+			if len(got) > 0 {
+				got[0] = "mutated"
+				again, err := config.DevArgsForTarget(tc.os, tc.arch)
+				require.NoError(t, err)
+				require.Equal(t, tc.want, again)
+			}
+			run, err := config.RunForTarget(tc.os, tc.arch)
+			require.NoError(t, err)
+			require.Equal(t, []string{"production"}, run.Args)
+		}
+	}
+	check(loaded.Config)
+	encoded, err := EncodeEjectedHCL(loaded.Config, "test")
+	require.NoError(t, err)
+	restored, err := decodeHCL(root, filepath.Join(root, EjectedFilename), encoded, "")
+	require.NoError(t, err)
+	check(restored.Config)
+}

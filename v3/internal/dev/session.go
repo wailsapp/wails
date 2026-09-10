@@ -24,6 +24,7 @@ type Options struct {
 	Profile, Target string
 	Plan, Secure    bool
 	VitePort        int
+	Args            []string // nil inherits manifest defaults; empty clears them.
 	Output          *Output
 }
 type BuildResult struct {
@@ -33,6 +34,7 @@ type BuildResult struct {
 type rebuild struct {
 	generation uint64
 	loaded     *manifest.Loaded
+	args       []string
 	run        BuildResult
 	err        error
 }
@@ -64,13 +66,13 @@ type Operations struct {
 	Getwd             func() (string, error)
 	Load              func(string, string) (*manifest.Loaded, error)
 	Target            func(string) (string, string, error)
-	Plan              func(*manifest.Loaded, string, string) error
+	Plan              func(*manifest.Loaded, string, string, []string) error
 	CheckPort         func(string, int) error
 	Build             func(context.Context, *manifest.Loaded, string, string, string, int) (BuildResult, error)
 	StartFrontend     func(string, manifest.Config, string, int, string) (Process, error)
 	WaitFrontendReady func(context.Context, Process, string, time.Duration) error
 	BinaryPath        func(string, BuildResult, string, string) (string, error)
-	StartApp          func(string, string, string, int) (Process, error)
+	StartApp          func(string, string, string, int, []string) (Process, error)
 	WaitReady         func(context.Context, Process, time.Duration) error
 	StartWatches      func(string, manifest.Config) (WatchSet, error)
 	RestartWatches    func(string, manifest.Config, WatchSet) (WatchSet, error)
@@ -119,6 +121,10 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 	if goos == "" {
 		goos, goarch = runtime.GOOS, runtime.GOARCH
 	}
+	appArgs, err := applicationArguments(loaded.Config, goos, goarch, options.Args)
+	if err != nil {
+		return err
+	}
 	if ops.ValidateTarget != nil {
 		if err := ops.ValidateTarget(goos, goarch); err != nil {
 			return err
@@ -127,7 +133,7 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 		return fmt.Errorf("dev target must be the host %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
 	if options.Plan {
-		return ops.Plan(loaded, goos, goarch)
+		return ops.Plan(loaded, goos, goarch, appArgs)
 	}
 	port := options.VitePort
 	if port == 0 {
@@ -177,7 +183,7 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 		return err
 	}
 	component, phase = "backend", "start"
-	app, err := ops.StartApp(root, binaryPath, frontendURL, port)
+	app, err := ops.StartApp(root, binaryPath, frontendURL, port, appArgs)
 	if err != nil {
 		return err
 	}
@@ -242,10 +248,14 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 			}
 			nextLoaded, loadErr := ops.Load(root, "")
 			var run BuildResult
+			var nextArgs []string
+			if loadErr == nil {
+				nextArgs, loadErr = applicationArguments(nextLoaded.Config, goos, goarch, options.Args)
+			}
 			if loadErr == nil {
 				run, loadErr = ops.Build(WithGeneration(buildCtx, current), nextLoaded, goos, goarch, frontendURL, port)
 			}
-			result := rebuild{generation: current, loaded: nextLoaded, run: run, err: loadErr}
+			result := rebuild{generation: current, loaded: nextLoaded, args: nextArgs, run: run, err: loadErr}
 			select {
 			case results <- result:
 			case <-sessionCtx.Done():
@@ -330,7 +340,8 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 			}
 
 			frontendChanged := FrontendSessionChanged(loaded.Config, nextLoaded.Config)
-			backendChanged := ops.BackendChanged(result.run, goos, goarch)
+			binaryChanged := ops.BackendChanged(result.run, goos, goarch)
+			backendChanged := binaryChanged || !equalStrings(appArgs, result.args)
 			oldFrontend := frontend
 			var nextFrontend Process
 			if frontendChanged {
@@ -370,7 +381,7 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 						stoppedApp = app
 						stoppedApp.Stop(time.Duration(loaded.Config.Dev.GracePeriodMS) * time.Millisecond)
 					}
-					nextApp, err = ops.StartApp(root, binaryPath, frontendURL, port)
+					nextApp, err = ops.StartApp(root, binaryPath, frontendURL, port, result.args)
 				}
 				if err == nil {
 					err = ops.WaitReady(sessionCtx, nextApp, 30*time.Second)
@@ -422,11 +433,14 @@ func Run(ctx context.Context, options Options, ops Operations) (resultErr error)
 				oldWatches.Stop()
 			}
 			loaded = nextLoaded
+			appArgs = result.args
 			debounce = time.Duration(loaded.Config.Dev.DebounceMS) * time.Millisecond
 			if debounce <= 0 {
 				debounce = 250 * time.Millisecond
 			}
 			switch {
+			case backendChanged && !binaryChanged:
+				output.Status(generation, "session", "updated", "Backend restarted with updated arguments")
 			case backendChanged:
 				output.Status(generation, "session", "updated", "Backend rebuilt and restarted")
 			case frontendChanged:
@@ -465,4 +479,18 @@ func discard(p Process) {
 	if d, ok := p.(interface{ Discard() }); ok {
 		d.Discard()
 	}
+}
+
+func applicationArguments(config manifest.Config, goos, goarch string, override []string) ([]string, error) {
+	args, err := config.DevArgsForTarget(goos, goarch)
+	if err != nil {
+		return nil, err
+	}
+	if override != nil {
+		args = append([]string{}, override...)
+	}
+	if goos == "android" && len(args) != 0 {
+		return nil, fmt.Errorf("Android development does not support application arguments; use desktop or iOS target dev blocks")
+	}
+	return args, nil
 }
