@@ -57,16 +57,26 @@ func (a *darwinAutostart) enable(opts AutostartOptions) error {
 	}
 }
 
-func (a *darwinAutostart) disable() error {
-	// Try both paths and merge errors — a previous version may have used
-	// the other strategy.
+func (a *darwinAutostart) disable(opts AutostartOptions) error {
+	if err := validateAutostartIdentifier(opts.Identifier); err != nil {
+		return err
+	}
+	// With no identifier, try both paths and merge errors — a previous
+	// version may have used the other strategy. Identifier-targeted removal
+	// must not touch SMAppService: it is keyed by the app bundle, not by
+	// opts.Identifier, so unregistering it would disable the active
+	// registration while cleaning up a stale LaunchAgent.
 	var errs []error
-	if a.strategy() == AutostartStrategySMAppService {
+	if opts.Identifier == "" && a.strategy() == AutostartStrategySMAppService {
 		if err := smAppServiceUnregister(); err != nil && !errors.Is(err, errSMAppServiceUnavailable) && !errors.Is(err, errSMAppServiceNotRegistered) {
 			errs = append(errs, fmt.Errorf("SMAppService unregister: %w", err))
 		}
 	}
-	if err := a.disableLaunchAgent(); err != nil {
+	if opts.Identifier != "" {
+		if err := a.removeLaunchAgentNamed(opts.Identifier); err != nil {
+			errs = append(errs, err)
+		}
+	} else if err := a.disableLaunchAgent(); err != nil {
 		errs = append(errs, err)
 	}
 	return errors.Join(errs...)
@@ -162,6 +172,21 @@ func (a *darwinAutostart) disableLaunchAgent() error {
 	if !ok {
 		return nil
 	}
+	_ = launchctlBootout(path)
+	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("autostart: remove plist: %w", err)
+	}
+	return nil
+}
+
+// removeLaunchAgentNamed removes the plist with the exact label filename,
+// regardless of where its ProgramArguments points.
+func (a *darwinAutostart) removeLaunchAgentNamed(label string) error {
+	dir, err := a.launchAgentsDir()
+	if err != nil {
+		return err
+	}
+	path := filepath.Join(dir, label+".plist")
 	_ = launchctlBootout(path)
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("autostart: remove plist: %w", err)
