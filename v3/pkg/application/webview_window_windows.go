@@ -126,12 +126,15 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	if w.menubarTheme != nil {
 		globalApplication.debug("Applying menubar theme in setMenu", "window", w.parent.id)
 		w.menubarTheme.SetMenuBackground(w.menu.menu)
-		w32.DrawMenuBar(w.hwnd)
 		// Force a repaint of the menu area
 		w32.InvalidateRect(w.hwnd, nil, true)
 	} else {
 		globalApplication.debug("No menubar theme to apply in setMenu", "window", w.parent.id)
 	}
+
+	// Tell Windows the menu bar changed so it redraws, regardless of whether
+	// a menubar theme is configured.
+	w32.DrawMenuBar(w.hwnd)
 
 	// Check if using translucent background with Mica - this makes menubars invisible
 	if w.parent.options.BackgroundType == BackgroundTypeTranslucent &&
