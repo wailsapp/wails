@@ -20,21 +20,15 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update Clave showcase links to current website and repository in [PR](https://github.com/wailsapp/wails/pull/6082) by @01xR4in
 
 ## Fixed
-- Cancel aborted Windows asset requests, including worker requests, while preserving keepalive handlers across navigation. Forward native request contexts through the application wrapper on Apple platforms. (#5963, #5969)
 <!-- Bug fixes -->
-- Preserve changelog entries across competing pushes with retries in [PR](https://github.com/wailsapp/wails/pull/6094) by @leaanthony
-- Fix `go mod vendor` failing with `pattern arm64/WebView2Loader.dll: no matching files found` on every platform, by removing the embeds that referenced binaries never shipped in the module, fixing [#5782](https://github.com/wailsapp/wails/issues/5782) and [#5376](https://github.com/wailsapp/wails/issues/5376), in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove native WebView2 loader support, superseded by the pure Go loader. This drops the embedded `WebView2Loader.dll` binaries and the `github.com/jchv/go-winloader` dependency. The `native_webview2loader` build tag is still accepted and no longer errors, but has no effect on v3 builds, in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
-- Remove unused build tags and FPS option from macOS API guide in [PR](https://github.com/wailsapp/wails/pull/6097) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
