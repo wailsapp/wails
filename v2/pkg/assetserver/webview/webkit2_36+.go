@@ -1,9 +1,9 @@
-//go:build linux && (webkit2_36 || webkit2_40 || webkit2_41 )
+//go:build linux && (webkit2_36 || webkit2_40 || webkit2_41)
 
 package webview
 
 /*
-#cgo linux pkg-config: gtk+-3.0 
+#cgo linux pkg-config: gtk+-3.0
 #cgo !webkit2_41 pkg-config: webkit2gtk-4.0 libsoup-2.4
 #cgo webkit2_41 pkg-config: webkit2gtk-4.1 libsoup-3.0
 
