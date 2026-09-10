@@ -33,12 +33,28 @@ func init() {
 }
 
 func main() {
+	var applicationArgs []string
+	os.Args, applicationArgs = detachRunArguments(os.Args)
 	if os.Getenv("WAILS_MCP_CHILD") == "1" {
 		commands.DisableFooter = true
 	}
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
+
+	run := app.NewSubCommand("run", "Build and run the application; use go run . when no wails.hcl exists")
+	var runOptions commands.RunOptions
+	run.AddFlags(&runOptions)
+	run.Action(func() error {
+		args := run.OtherArgs()
+		if len(args) == 0 {
+			args = nil // flag.Args returns a non-nil empty slice; preserve manifest defaults.
+		}
+		if applicationArgs != nil {
+			args = applicationArgs
+		}
+		return commands.RunApplication(&runOptions, args)
+	})
 
 	build := app.NewSubCommand("build", "Build the project")
 	var buildFlags flags.Build
@@ -225,6 +241,9 @@ func main() {
 
 	err := app.Run()
 	if err != nil {
+		if code, ok := commands.ApplicationExitCode(err); ok {
+			os.Exit(code)
+		}
 		// A wake build failure is already rendered as a clean panel by the build
 		// reporter; printing the raw error again would duplicate it.
 		if !wake.IsReported(err) {
@@ -265,4 +284,18 @@ func openDocs() error {
 func openSponsor() error {
 	commands.DisableFooter = true
 	return browser.OpenURL("https://github.com/sponsors/leaanthony")
+}
+
+// clir reparses arguments after --. Remove application arguments before giving
+// it the command line so application flags can never be interpreted as CLI flags.
+func detachRunArguments(args []string) ([]string, []string) {
+	if len(args) < 2 || args[1] != "run" {
+		return args, nil
+	}
+	for i := 2; i < len(args); i++ {
+		if args[i] == "--" {
+			return args[:i], append([]string{}, args[i+1:]...)
+		}
+	}
+	return args, nil
 }

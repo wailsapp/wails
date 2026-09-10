@@ -1,0 +1,527 @@
+[
+  {
+    "example": "android",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "autostart",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "badge",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "badge-custom",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "binding",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "build",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "cancel-async",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "cancel-chaining",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "clipboard",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "contextmenus",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "custom-protocol-example",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "dev",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "dialogs",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "dialogs-basic",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "dock",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "drag-n-drop",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "environment",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "events",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "events-bug",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "file-association",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "file-input",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "frameless",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "gin-example",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "gin-routing",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "gin-service",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "global-shortcuts",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "hide-window",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "ignore-mouse",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "ios",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "ios-poc",
+    "status": "unsupported-host",
+    "exit": 1
+  },
+  {
+    "example": "keybindings",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "liquid-glass",
+    "status": "unsupported-host",
+    "exit": 1
+  },
+  {
+    "example": "mac-window-tabs",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "mcp",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "menu",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "mobile",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "notch-notification",
+    "status": "unsupported-host",
+    "exit": 1
+  },
+  {
+    "example": "notifications",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "panic-handling",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "plain",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "print",
+    "status": "unsupported-host",
+    "exit": 1
+  },
+  {
+    "example": "raw-message",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "screen",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "server",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "services",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "show-macos-toolbar",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "single-instance",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "single-instance-url-scheme",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "spotlight",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "streams",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "systray-basic",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "systray-clock",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "systray-custom",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "systray-menu",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "systray-stress",
+    "status": "unsupported-host",
+    "exit": 1
+  },
+  {
+    "example": "updater",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "video",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/beacon",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/blob",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/broadcast-channel",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/cache-api",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/canvas",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/clipboard",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/device-orientation",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/dialog",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/drag-drop",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/eventsource",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/fetch",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/file-api",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/fullscreen",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/gamepad",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/geolocation",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/history",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/indexeddb",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/intersection-observer",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/localstorage",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/mediadevices",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/mediarecorder",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/mutation-observer",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/notifications",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/page-visibility",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/performance",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/permissions",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/pointer-events",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/resize-observer",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/selection",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/sessionstorage",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/share",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/speech-synthesis",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/streams",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/vibration",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/web-components",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/webaudio",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/webcrypto",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/webgl",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/websocket",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/webworkers",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "web-apis/xmlhttprequest",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "websocket-transport",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "webview-api-check",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "window",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "window-api",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "window-call",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "window-menu",
+    "status": "launch-smoke",
+    "exit": 130
+  },
+  {
+    "example": "wml",
+    "status": "launch-smoke",
+    "exit": 130
+  }
+]

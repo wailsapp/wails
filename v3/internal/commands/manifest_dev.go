@@ -629,6 +629,10 @@ func (p *manifestProcess) waitError() error {
 }
 
 func (p *manifestProcess) stop(grace time.Duration) {
+	p.stopWithSignal(grace, os.Interrupt)
+}
+
+func (p *manifestProcess) stopWithSignal(grace time.Duration, termination os.Signal) {
 	if p == nil || p.cmd == nil || p.cmd.Process == nil {
 		return
 	}
@@ -637,7 +641,7 @@ func (p *manifestProcess) stop(grace time.Duration) {
 		return
 	default:
 	}
-	_ = signalManifestProcess(p.cmd.Process, os.Interrupt)
+	_ = signalManifestProcess(p.cmd.Process, termination)
 	if grace <= 0 {
 		grace = 1500 * time.Millisecond
 	}

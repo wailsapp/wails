@@ -12,7 +12,16 @@ const (
 	MigratedFilename = "wails.migrated.hcl"
 )
 
+type Run struct {
+	Tags        []string          `json:"tags,omitempty"`
+	Args        []string          `json:"args,omitempty"`
+	ArgsSet     bool              `json:"-"`
+	Environment map[string]string `json:"environment,omitempty"`
+}
+
 type Document struct {
+	Run Run
+
 	Project      Project
 	Frontend     Frontend
 	Build        Build
@@ -27,6 +36,8 @@ type Document struct {
 }
 
 type Config struct {
+	Run Run `json:"run"`
+
 	Root         string             `json:"root"`
 	Profile      string             `json:"profile,omitempty"`
 	Project      Project            `json:"project"`
@@ -88,6 +99,8 @@ type Origin struct {
 }
 
 type Project struct {
+	SupportedPlatforms []string `json:"supported_platforms,omitempty"`
+
 	Name        string `json:"name"`
 	ProductName string `json:"product_name"`
 	Identifier  string `json:"identifier"`
@@ -102,6 +115,8 @@ type Project struct {
 }
 
 type Frontend struct {
+	Disabled bool `json:"disabled"`
+
 	Directory       string            `json:"directory"`
 	PackageManager  string            `json:"package_manager"`
 	InstallCommand  string            `json:"install_command"`
@@ -207,6 +222,8 @@ type Platform struct {
 }
 
 type Target struct {
+	Run Run `json:"run"`
+
 	Enabled        bool              `json:"enabled"`
 	MinimumVersion string            `json:"minimum_version,omitempty"`
 	BuildNumber    int               `json:"build_number,omitempty"`

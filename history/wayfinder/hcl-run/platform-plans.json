@@ -1,0 +1,2627 @@
+[
+  {
+    "example": "android",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "android",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "android",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "android",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "android",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "autostart",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "autostart",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "autostart",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "autostart",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "autostart",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "badge",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "badge",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "badge",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "badge",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "badge",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "badge-custom",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "badge-custom",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "badge-custom",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "badge-custom",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "badge-custom",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "binding",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "binding",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "binding",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "binding",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "binding",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "build",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "build",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "build",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "build",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "build",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "cancel-async",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "cancel-async",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "cancel-async",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "cancel-async",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "cancel-async",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "cancel-chaining",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "cancel-chaining",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "cancel-chaining",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "cancel-chaining",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "cancel-chaining",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "clipboard",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "clipboard",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "clipboard",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "clipboard",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "clipboard",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "contextmenus",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "contextmenus",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "contextmenus",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "contextmenus",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "contextmenus",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "custom-protocol-example",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "custom-protocol-example",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "custom-protocol-example",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "custom-protocol-example",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "custom-protocol-example",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "dev",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dev",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dev",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "dev",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dev",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "dialogs",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dialogs",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dialogs",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "dialogs",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dialogs",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "dialogs-basic",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dialogs-basic",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dialogs-basic",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "dialogs-basic",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dialogs-basic",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "dock",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dock",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dock",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "dock",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "dock",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "drag-n-drop",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "drag-n-drop",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "drag-n-drop",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "drag-n-drop",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "drag-n-drop",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "environment",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "environment",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "environment",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "environment",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "environment",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "events",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "events",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "events",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "events",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "events",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "events-bug",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "events-bug",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "events-bug",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "events-bug",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "events-bug",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "file-association",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "file-association",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "file-association",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "file-association",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "file-association",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "file-input",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "file-input",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "file-input",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "file-input",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "file-input",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "frameless",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "frameless",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "frameless",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "frameless",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "frameless",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "gin-example",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-example",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-example",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-example",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-example",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "gin-routing",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-routing",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-routing",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-routing",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-routing",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "gin-service",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-service",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-service",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-service",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "gin-service",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "global-shortcuts",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "global-shortcuts",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "global-shortcuts",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "global-shortcuts",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "global-shortcuts",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "hide-window",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "hide-window",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "hide-window",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "hide-window",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "hide-window",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "ignore-mouse",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "ignore-mouse",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "ignore-mouse",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "ignore-mouse",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "ignore-mouse",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "ios",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "ios",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "ios",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "ios",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "ios",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "ios-poc",
+    "target": "linux/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "ios-poc",
+    "target": "windows/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "ios-poc",
+    "target": "darwin/arm64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "ios-poc",
+    "target": "android/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "ios-poc",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "keybindings",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "keybindings",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "keybindings",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "keybindings",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "keybindings",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "liquid-glass",
+    "target": "linux/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "liquid-glass",
+    "target": "windows/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "liquid-glass",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "liquid-glass",
+    "target": "android/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "liquid-glass",
+    "target": "ios/arm64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "mac-window-tabs",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mac-window-tabs",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mac-window-tabs",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "mac-window-tabs",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mac-window-tabs",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "mcp",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mcp",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mcp",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "mcp",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mcp",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "menu",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "menu",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "menu",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "menu",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "menu",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "mobile",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mobile",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mobile",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "mobile",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "mobile",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "notch-notification",
+    "target": "linux/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "notch-notification",
+    "target": "windows/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "notch-notification",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "notch-notification",
+    "target": "android/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "notch-notification",
+    "target": "ios/arm64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "notifications",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "notifications",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "notifications",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "notifications",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "notifications",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "panic-handling",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "panic-handling",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "panic-handling",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "panic-handling",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "panic-handling",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "plain",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "plain",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "plain",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "plain",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "plain",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "print",
+    "target": "linux/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "print",
+    "target": "windows/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "print",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "print",
+    "target": "android/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "print",
+    "target": "ios/arm64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "raw-message",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "raw-message",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "raw-message",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "raw-message",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "raw-message",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "screen",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "screen",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "screen",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "screen",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "screen",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "server",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "server",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "server",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "server",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "server",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "services",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "services",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "services",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "services",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "services",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "show-macos-toolbar",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "show-macos-toolbar",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "show-macos-toolbar",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "show-macos-toolbar",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "show-macos-toolbar",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "single-instance",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "single-instance",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "single-instance",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "single-instance",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "single-instance",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "single-instance-url-scheme",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "single-instance-url-scheme",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "single-instance-url-scheme",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "single-instance-url-scheme",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "single-instance-url-scheme",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "spotlight",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "spotlight",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "spotlight",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "spotlight",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "spotlight",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "streams",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "streams",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "streams",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "streams",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "streams",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "systray-basic",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-basic",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-basic",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-basic",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-basic",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "systray-clock",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-clock",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-clock",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-clock",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-clock",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "systray-custom",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-custom",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-custom",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-custom",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-custom",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "systray-menu",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-menu",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-menu",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-menu",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-menu",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "systray-stress",
+    "target": "linux/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "systray-stress",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "systray-stress",
+    "target": "darwin/arm64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "systray-stress",
+    "target": "android/amd64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "systray-stress",
+    "target": "ios/arm64",
+    "status": "unsupported-platform"
+  },
+  {
+    "example": "updater",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "updater",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "updater",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "updater",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "updater",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "video",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "video",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "video",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "video",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "video",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/beacon",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/beacon",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/beacon",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/beacon",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/beacon",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/blob",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/blob",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/blob",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/blob",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/blob",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/broadcast-channel",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/broadcast-channel",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/broadcast-channel",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/broadcast-channel",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/broadcast-channel",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/cache-api",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/cache-api",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/cache-api",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/cache-api",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/cache-api",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/canvas",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/canvas",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/canvas",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/canvas",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/canvas",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/clipboard",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/clipboard",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/clipboard",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/clipboard",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/clipboard",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/device-orientation",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/device-orientation",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/device-orientation",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/device-orientation",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/device-orientation",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/dialog",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/dialog",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/dialog",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/dialog",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/dialog",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/drag-drop",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/drag-drop",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/drag-drop",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/drag-drop",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/drag-drop",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/eventsource",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/eventsource",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/eventsource",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/eventsource",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/eventsource",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/fetch",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/fetch",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/fetch",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/fetch",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/fetch",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/file-api",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/file-api",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/file-api",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/file-api",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/file-api",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/fullscreen",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/fullscreen",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/fullscreen",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/fullscreen",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/fullscreen",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/gamepad",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/gamepad",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/gamepad",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/gamepad",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/gamepad",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/geolocation",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/geolocation",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/geolocation",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/geolocation",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/geolocation",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/history",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/history",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/history",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/history",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/history",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/indexeddb",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/indexeddb",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/indexeddb",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/indexeddb",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/indexeddb",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/intersection-observer",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/intersection-observer",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/intersection-observer",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/intersection-observer",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/intersection-observer",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/localstorage",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/localstorage",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/localstorage",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/localstorage",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/localstorage",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/mediadevices",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mediadevices",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mediadevices",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mediadevices",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mediadevices",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/mediarecorder",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mediarecorder",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mediarecorder",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mediarecorder",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mediarecorder",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/mutation-observer",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mutation-observer",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mutation-observer",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mutation-observer",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/mutation-observer",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/notifications",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/notifications",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/notifications",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/notifications",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/notifications",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/page-visibility",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/page-visibility",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/page-visibility",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/page-visibility",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/page-visibility",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/performance",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/performance",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/performance",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/performance",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/performance",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/permissions",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/permissions",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/permissions",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/permissions",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/permissions",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/pointer-events",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/pointer-events",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/pointer-events",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/pointer-events",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/pointer-events",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/resize-observer",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/resize-observer",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/resize-observer",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/resize-observer",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/resize-observer",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/selection",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/selection",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/selection",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/selection",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/selection",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/sessionstorage",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/sessionstorage",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/sessionstorage",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/sessionstorage",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/sessionstorage",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/share",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/share",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/share",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/share",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/share",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/speech-synthesis",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/speech-synthesis",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/speech-synthesis",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/speech-synthesis",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/speech-synthesis",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/streams",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/streams",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/streams",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/streams",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/streams",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/vibration",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/vibration",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/vibration",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/vibration",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/vibration",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/web-components",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/web-components",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/web-components",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/web-components",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/web-components",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/webaudio",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webaudio",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webaudio",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webaudio",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webaudio",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/webcrypto",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webcrypto",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webcrypto",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webcrypto",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webcrypto",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/webgl",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webgl",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webgl",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webgl",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webgl",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/websocket",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/websocket",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/websocket",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/websocket",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/websocket",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/webworkers",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webworkers",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webworkers",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webworkers",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/webworkers",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "web-apis/xmlhttprequest",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/xmlhttprequest",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/xmlhttprequest",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/xmlhttprequest",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "web-apis/xmlhttprequest",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "websocket-transport",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "websocket-transport",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "websocket-transport",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "websocket-transport",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "websocket-transport",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "webview-api-check",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "webview-api-check",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "webview-api-check",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "webview-api-check",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "webview-api-check",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "window",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "window",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "window-api",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-api",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-api",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "window-api",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-api",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "window-call",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-call",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-call",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "window-call",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-call",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "window-menu",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-menu",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-menu",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "window-menu",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "window-menu",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  },
+  {
+    "example": "wml",
+    "target": "linux/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "wml",
+    "target": "windows/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "wml",
+    "target": "darwin/arm64",
+    "status": "planned"
+  },
+  {
+    "example": "wml",
+    "target": "android/amd64",
+    "status": "planned"
+  },
+  {
+    "example": "wml",
+    "target": "ios/arm64",
+    "status": "requires-native-host"
+  }
+]

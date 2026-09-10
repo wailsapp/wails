@@ -165,11 +165,11 @@ platforms unsupported. `project.supported_platforms` restricts the platforms acc
 | Platform | Launch behaviour |
 | --- | --- |
 | Linux and Windows | Launch the executable with connected standard input/output, termination handling and application exit-status propagation. |
-| macOS | Assemble an app bundle and execute its `Contents/MacOS` binary with connected standard input/output. Bundle registration, signing and native lifecycle acceptance require macOS verification. |
+| macOS | Assemble an app bundle and execute its `Contents/MacOS` binary with connected standard input/output. Register the bundle with Launch Services for URL schemes and file associations. Signing and native lifecycle acceptance require macOS verification. |
 | Android | Build an APK, select a device or emulator, install and launch the application. Report build, installation and launch failures distinctly. |
 | iOS | Build an app bundle, select a simulator or device, satisfy signing and provisioning requirements, install and launch. Device builds require the appropriate credentials and Apple toolchain. |
 
-Android rejects application arguments and runtime environment overrides before deployment. Shared desktop-only settings belong in desktop target blocks when Android is also supported. Android runs attach application logs and stop the application when attachment ends. iOS passes arguments to the selected launcher and environment overrides through its child-environment mechanism. Mobile exit status describes the launcher or log-monitoring result, rather than a portable application exit code.
+Android rejects application arguments and runtime environment overrides before deployment. Shared desktop-only settings belong in desktop target blocks when Android is also supported. Android runs attach application logs and stop the application when attachment ends. iOS passes arguments to the selected launcher. Simulators receive environment overrides through `SIMCTL_CHILD_` variables; physical devices receive a JSON map through `devicectl --environment-variables`. Mobile exit status describes the launcher or log-monitoring result, rather than a portable application exit code.
 
 ## Go-only examples and fallback
 

@@ -28,6 +28,9 @@ func PlanBuild(config manifest.Config, request Request) (Plan, error) {
 	}
 	combined := Plan{Name: request.Verb, Intent: BuildIntent{Command: request.Verb, Profile: config.Profile}, Nodes: map[NodeKey]Node{}}
 	for _, outcome := range outcomes {
+		if len(config.Project.SupportedPlatforms) > 0 && !contains(config.Project.SupportedPlatforms, outcome.target.OS) {
+			return Plan{}, manifest.AnnotateValidationError(fmt.Errorf("project %s does not support %s", config.Project.Name, outcome.target.OS), config.Origins, "project.supported_platforms")
+		}
 		combined.Intent.Targets = append(combined.Intent.Targets, TargetIntent{Target: outcome.target, Formats: append([]string(nil), outcome.formats...), Sign: outcome.sign, Notarize: outcome.notarize, Destination: outcome.destination})
 		childConfig := config
 		if outcome.notarize {
@@ -234,15 +237,18 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 			Cache: cachePolicy, Claims: ResourceClaims{CPU: 1, MemoryMB: 128}, EstimateMS: 25, Artifact: node.Artifact})
 	}
 
-	install := add(Node{Key: "frontend:install", Kind: InstallFrontendDependencies, Label: "Install frontend dependencies", Scope: ProjectScope, Dependencies: projectHookDeps,
-		Spec:   InstallSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: config.Frontend.InstallCommand, Arguments: append([]string(nil), config.Frontend.Install...), Environment: cloneStringMap(config.Frontend.Environment)},
-		Inputs: []InputSpec{{Label: "frontend-install", Files: frontendInstallFiles(config)}}, Marker: filepath.ToSlash(filepath.Join(config.Frontend.Directory, "node_modules")), Cache: CacheReceipt, Claims: ResourceClaims{CPU: 1, MemoryMB: 512}, EstimateMS: 1800})
+	var install NodeKey
+	if !config.Frontend.Disabled {
+		install = add(Node{Key: "frontend:install", Kind: InstallFrontendDependencies, Label: "Install frontend dependencies", Scope: ProjectScope, Dependencies: projectHookDeps,
+			Spec:   InstallSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: config.Frontend.InstallCommand, Arguments: append([]string(nil), config.Frontend.Install...), Environment: cloneStringMap(config.Frontend.Environment)},
+			Inputs: []InputSpec{{Label: "frontend-install", Files: frontendInstallFiles(config)}}, Marker: filepath.ToSlash(filepath.Join(config.Frontend.Directory, "node_modules")), Cache: CacheReceipt, Claims: ResourceClaims{CPU: 1, MemoryMB: 512}, EstimateMS: 1800})
+	}
 	var tags []string
 	if request.Development {
-		tags = append(tags, config.Dev.Tags...)
+		tags = appendUnique(tags, config.Dev.Tags...)
 		tags = appendUnique(tags, request.ExtraTags...)
 	} else {
-		tags = append(tags, config.Build.Go.Tags...)
+		tags = appendUnique(tags, config.Build.Go.Tags...)
 		tags = appendUnique(tags, targetSettings.Tags...)
 		tags = appendUnique(tags, "production")
 		tags = appendUnique(tags, request.ExtraTags...)
@@ -260,6 +266,9 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	if obfuscated {
 		tags = appendUnique(tags, "wails_obfuscated")
 	}
+	if request.Verb == "run" && (request.TargetOS == "android" || request.TargetOS == "ios") {
+		tags = appendUnique(tags, request.TargetOS)
+	}
 	localInputs, err := goLocalSourceInputs(config.Root)
 	if err != nil {
 		return Plan{}, err
@@ -273,47 +282,58 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 	for index := range localInputs {
 		localRoots[index] = localInputs[index].Root
 	}
-	bindingsOut := filepath.ToSlash(filepath.Join(config.Frontend.Directory, config.Frontend.Bindings.OutputDirectory))
-	bindingInputs := []InputSpec{
-		{Label: "go-binding-api", Root: ".", SemanticGo: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: goSourceExtensions(), ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
-		{Label: "go-module", Files: goMetadataFiles(config.Root)},
+	var frontend NodeKey
+	if !config.Frontend.Disabled {
+		bindingsOut := filepath.ToSlash(filepath.Join(config.Frontend.Directory, config.Frontend.Bindings.OutputDirectory))
+		bindingInputs := []InputSpec{
+			{Label: "go-binding-api", Root: ".", SemanticGo: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: goSourceExtensions(), ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
+			{Label: "go-module", Files: goMetadataFiles(config.Root)},
+		}
+		for _, input := range localInputs {
+			bindingInputs = append(bindingInputs, InputSpec{Label: "go-binding-local-api", Root: input.Root, SemanticGo: true, IncludeNames: append([]string(nil), input.IncludeNames...), IncludeExtensions: append([]string(nil), input.IncludeExtensions...), ExcludeDirs: append([]string(nil), input.ExcludeDirs...), ExcludeSuffixes: append([]string(nil), input.ExcludeSuffixes...), UseGitIgnore: input.UseGitIgnore})
+		}
+		bindings := add(Node{Key: "frontend:bindings", Kind: GenerateBindings, Label: "Generate bindings", Scope: ProjectScope, Dependencies: projectHookDeps,
+			Spec:   BindingsSpec{Config: config.Frontend.Bindings, Tags: tags, Obfuscated: obfuscated},
+			Inputs: bindingInputs,
+			Output: bindingsOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 512, Exclusive: "legacy-command-adapter"}, EstimateMS: 1000})
+		frontendDeps := []NodeKey{install, bindings}
+		frontendOut := frontendOutputPath(config.Frontend.Directory, config.Frontend.OutputDirectory)
+		frontendExclude := filepath.ToSlash(filepath.Clean(config.Frontend.OutputDirectory))
+		if frontendExclude == config.Frontend.Directory || strings.HasPrefix(frontendExclude, config.Frontend.Directory+"/") {
+			frontendExclude = strings.TrimPrefix(strings.TrimPrefix(frontendExclude, config.Frontend.Directory), "/")
+		}
+		frontendInputs := []InputSpec{{Label: "frontend-source", Root: config.Frontend.Directory, IncludeAll: true, ExcludeDirs: []string{".git", ".wails", "node_modules", config.Frontend.Bindings.OutputDirectory, frontendExclude}}}
+		if request.Development {
+			// The persistent frontend Dev process owns source changes through HMR.
+			// The finite frontend Node only bootstraps an embeddable output for Go;
+			// keeping source out of its Action Key prevents a later backend edit from
+			// rebuilding the frontend merely because HMR already handled a UI edit.
+			frontendInputs = []InputSpec{{Label: "frontend-dev-bootstrap", Files: frontendInstallFiles(config)}}
+		}
+		frontend = add(Node{Key: "frontend:build", Kind: BuildFrontend, Label: "Build frontend", Scope: ProjectScope, Dependencies: frontendDeps,
+			Spec:   FrontendSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: choose(request.Development, config.Frontend.BuildCommand+":dev", config.Frontend.BuildCommand), Arguments: append([]string(nil), config.Frontend.Build...), Output: config.Frontend.OutputDirectory, Production: !request.Development, Environment: cloneStringMap(config.Frontend.Environment)},
+			Inputs: frontendInputs,
+			Output: frontendOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 2, MemoryMB: 1024}, EstimateMS: 900})
 	}
-	for _, input := range localInputs {
-		bindingInputs = append(bindingInputs, InputSpec{Label: "go-binding-local-api", Root: input.Root, SemanticGo: true, IncludeNames: append([]string(nil), input.IncludeNames...), IncludeExtensions: append([]string(nil), input.IncludeExtensions...), ExcludeDirs: append([]string(nil), input.ExcludeDirs...), ExcludeSuffixes: append([]string(nil), input.ExcludeSuffixes...), UseGitIgnore: input.UseGitIgnore})
-	}
-	bindings := add(Node{Key: "frontend:bindings", Kind: GenerateBindings, Label: "Generate bindings", Scope: ProjectScope, Dependencies: projectHookDeps,
-		Spec:   BindingsSpec{Config: config.Frontend.Bindings, Tags: tags, Obfuscated: obfuscated},
-		Inputs: bindingInputs,
-		Output: bindingsOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 1, MemoryMB: 512, Exclusive: "legacy-command-adapter"}, EstimateMS: 1000})
-	frontendDeps := []NodeKey{install, bindings}
-	frontendOut := frontendOutputPath(config.Frontend.Directory, config.Frontend.OutputDirectory)
-	frontendExclude := filepath.ToSlash(filepath.Clean(config.Frontend.OutputDirectory))
-	if frontendExclude == config.Frontend.Directory || strings.HasPrefix(frontendExclude, config.Frontend.Directory+"/") {
-		frontendExclude = strings.TrimPrefix(strings.TrimPrefix(frontendExclude, config.Frontend.Directory), "/")
-	}
-	frontendInputs := []InputSpec{{Label: "frontend-source", Root: config.Frontend.Directory, IncludeAll: true, ExcludeDirs: []string{".git", ".wails", "node_modules", config.Frontend.Bindings.OutputDirectory, frontendExclude}}}
-	if request.Development {
-		// The persistent frontend Dev process owns source changes through HMR.
-		// The finite frontend Node only bootstraps an embeddable output for Go;
-		// keeping source out of its Action Key prevents a later backend edit from
-		// rebuilding the frontend merely because HMR already handled a UI edit.
-		frontendInputs = []InputSpec{{Label: "frontend-dev-bootstrap", Files: frontendInstallFiles(config)}}
-	}
-	frontend := add(Node{Key: "frontend:build", Kind: BuildFrontend, Label: "Build frontend", Scope: ProjectScope, Dependencies: frontendDeps,
-		Spec:   FrontendSpec{Manager: config.Frontend.PackageManager, Directory: config.Frontend.Directory, Command: choose(request.Development, config.Frontend.BuildCommand+":dev", config.Frontend.BuildCommand), Arguments: append([]string(nil), config.Frontend.Build...), Output: config.Frontend.OutputDirectory, Production: !request.Development, Environment: cloneStringMap(config.Frontend.Environment)},
-		Inputs: frontendInputs,
-		Output: frontendOut, Cache: CacheArtifact, Claims: ResourceClaims{CPU: 2, MemoryMB: 1024}, EstimateMS: 900})
 	var assets NodeKey
 	if request.TargetOS == "windows" || request.TargetOS == "ios" || request.TargetOS == "android" {
 		assets = add(platformAssetsNode(config, request, target, assetsOut, projectHookDeps))
 	}
 
-	compileDeps := []NodeKey{frontend}
+	compileDeps := append([]NodeKey(nil), projectHookDeps...)
+	if frontend != "" {
+		compileDeps = []NodeKey{frontend}
+	}
 	if assets != "" {
 		compileDeps = append(compileDeps, assets)
 	}
+	compileExcludeDirs := []string{".git", ".wails", "bin", "build", "dist"}
+	if !config.Frontend.Disabled {
+		compileExcludeDirs = append(compileExcludeDirs, config.Frontend.Directory)
+	}
+	compileExcludeDirs = append(compileExcludeDirs, "node_modules")
 	compileInputs := []InputSpec{
-		{Label: "go-sources", Root: ".", IncludeGoEmbed: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: goSourceExtensions(), ExcludeDirs: []string{".git", ".wails", "bin", "build", "dist", config.Frontend.Directory, "node_modules"}, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
+		{Label: "go-sources", Root: ".", IncludeGoEmbed: true, IncludeNames: []string{"go.mod", "go.sum", "go.work", "go.work.sum"}, IncludeExtensions: goSourceExtensions(), ExcludeDirs: compileExcludeDirs, ExcludeSuffixes: []string{"_test.go"}, UseGitIgnore: request.Development && config.Dev.UseGitIgnore},
 		{Label: "go-module", Files: goMetadataFiles(config.Root)},
 	}
 	compileInputs = append(compileInputs, localInputs...)
@@ -479,7 +499,7 @@ func planTarget(config manifest.Config, request Request, multiTarget bool) (Plan
 		if !known {
 			return Plan{}, fmt.Errorf("unknown package format %q", format)
 		}
-		if !capability.SupportsFormat(format, request.Development) {
+		if !capability.SupportsFormat(format, request.Development || (request.Verb == "run" && format == "apk")) {
 			mode := "production"
 			if request.Development {
 				mode = "development"
@@ -800,6 +820,8 @@ func goLocalSourceInputsWithAbs(root string, abs func(string) (string, error)) (
 		base := filepath.Dir(metadata)
 		switch filepath.Base(metadata) {
 		case "go.mod":
+			// An example can share a parent module: sibling packages are build inputs too.
+			add(base, ".")
 			file, parseErr := modfile.Parse(metadata, data, nil)
 			if parseErr != nil {
 				return nil, parseErr

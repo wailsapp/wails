@@ -2,10 +2,17 @@
 
 ## Destination
 
-Implement the proposed [run reference](../../../docs/src/content/docs/reference/wails-hcl-run.md)
-with local defaults and platform-specific launch behaviour.
+Provide local run defaults and platform overrides through `wails.hcl`, with a
+`go run .` fallback when no manifest is discoverable.
 
 ## Decisions so far
 
-The reference records the proposed contract; implementation and native acceptance
-remain outstanding. This is feature work, separate from nightly bug-fix triage.
+[Implementation](issues/01-implement-run.md) is complete and tested on Linux.
+Run builds use the production pipeline; runtime arguments and environment remain
+outside compile cache identity. OS-wide and architecture-specific settings share
+one manifest. Android deploys an APK; iOS uses the native Apple launch tools.
+
+[Verification](verification.md) records the 105-example Linux sweep, automated
+regressions, Android APK checks and platform plans. [Review](review.md) records
+findings and fixes. Native acceptance remains separate from implementation and
+must be completed before claiming release readiness on the remaining platforms.

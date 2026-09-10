@@ -51,6 +51,52 @@ func TestCompileInputsTrackNativeSources(t *testing.T) {
 	}
 }
 
+func TestExampleCompileTracksParentModuleSources(t *testing.T) {
+	config := testConfig(t)
+	module := config.Root
+	config.Root = filepath.Join(module, "examples", "app")
+	require.NoError(t, os.MkdirAll(config.Root, 0700))
+	require.NoError(t, os.WriteFile(filepath.Join(module, "go.mod"), []byte("module example.com/parent\n"), 0600))
+	shared := filepath.Join(module, "shared.go")
+	require.NoError(t, os.WriteFile(shared, []byte("package parent\nconst Value = 1\n"), 0600))
+	config.Frontend.Disabled = true
+	plan, err := PlanBuild(config, Request{TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(t, err)
+	node := plan.Nodes["target:linux/amd64:compile"]
+	store, err := cache.OpenCache(config.Root)
+	require.NoError(t, err)
+	before, err := snapshotNodeInputs(store, node)
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(shared, []byte("package parent\nconst Value = 2\n"), 0600))
+	store.InvalidateObservations()
+	after, err := snapshotNodeInputs(store, node)
+	require.NoError(t, err)
+	require.NotEqual(t, before, after, "parent module source changes must invalidate an example's build")
+}
+
+func TestRunAndroidPlanUsesProductionTagsAndInstallableAPK(t *testing.T) {
+	config := testConfig(t)
+	config.Build.Go.Tags = []string{"devtools", "devtools"}
+	plan, err := PlanBuild(config, Request{Verb: "run", TargetOS: "android", TargetArch: "arm64"})
+	require.NoError(t, err)
+	apk := false
+	for _, node := range plan.Nodes {
+		switch spec := node.Spec.(type) {
+		case CompileSpec:
+			require.True(t, spec.Production)
+			require.Equal(t, []string{"devtools", "production", "android"}, spec.Tags)
+		case PackageSpec:
+			if spec.Format == "apk" {
+				apk = true
+				require.False(t, spec.Development)
+			}
+		}
+	}
+	require.True(t, apk, "run must produce an installable APK rather than an AAB")
+	_, err = PlanBuild(config, Request{Verb: "build", TargetOS: "android", TargetArch: "arm64", Formats: []string{"apk"}})
+	require.ErrorContains(t, err, "production APK")
+}
+
 // Exercise the planner's inputs through the executor's actual warm cache with
 // a real CGo binary, rather than only comparing snapshot hashes.
 func TestNativeSourceEditRebuildsWarmExecutable(t *testing.T) {
@@ -112,4 +158,26 @@ func (h nativeCompileHandler) Run(ctx context.Context, node Node) (RunResult, er
 	command.Env = append(os.Environ(), "CGO_ENABLED=1", "GOWORK=off")
 	output, err := command.CombinedOutput()
 	return RunResult{Detail: string(output)}, err
+}
+
+func TestDisabledFrontendStillTracksGoSourcesInFrontendDirectory(t *testing.T) {
+	config := testConfig(t)
+	config.Frontend.Disabled = true
+	require.NoError(t, os.WriteFile(filepath.Join(config.Root, "go.mod"), []byte("module example.com/disabled\n"), 0600))
+	directory := filepath.Join(config.Root, config.Frontend.Directory)
+	require.NoError(t, os.MkdirAll(directory, 0700))
+	source := filepath.Join(directory, "helper.go")
+	require.NoError(t, os.WriteFile(source, []byte("package frontend\nconst Value = 1\n"), 0600))
+	plan, err := PlanBuild(config, Request{Verb: "run", TargetOS: "linux", TargetArch: "amd64"})
+	require.NoError(t, err)
+	node := plan.Nodes["target:linux/amd64:compile"]
+	store, err := cache.OpenCache(config.Root)
+	require.NoError(t, err)
+	before, err := snapshotNodeInputs(store, node)
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(source, []byte("package frontend\nconst Value = 2\n"), 0600))
+	store.InvalidateObservations()
+	after, err := snapshotNodeInputs(store, node)
+	require.NoError(t, err)
+	require.NotEqual(t, before, after, "disabled frontend directory may contain imported Go packages")
 }

@@ -957,7 +957,7 @@ func (h *manifestHandler) bindings(s pipeline.BindingsSpec, output string) (pipe
 	if err != nil {
 		return pipeline.RunResult{}, fmt.Errorf("bindings output: %w", err)
 	}
-	err = GenerateBindings(&flags.GenerateBindingsOptions{BuildFlagsString: flagsString, OutputDirectory: outputDirectory, ModelsFilename: s.Config.ModelsFilename, IndexFilename: s.Config.IndexFilename, TimeType: s.Config.TimeType, TS: s.Config.TypeScript, UseInterfaces: s.Config.Interfaces, Clean: true, Silent: true, Obfuscated: s.Obfuscated}, nil)
+	err = GenerateBindings(&flags.GenerateBindingsOptions{PackageDirectory: h.root, BuildFlagsString: flagsString, OutputDirectory: outputDirectory, ModelsFilename: s.Config.ModelsFilename, IndexFilename: s.Config.IndexFilename, TimeType: s.Config.TimeType, TS: s.Config.TypeScript, UseInterfaces: s.Config.Interfaces, Clean: true, Silent: true, Obfuscated: s.Obfuscated}, nil)
 	return pipeline.RunResult{}, err
 }
 

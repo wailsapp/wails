@@ -102,7 +102,7 @@ func resolveAnonymousOutcomes(config manifest.Config, request Request) ([]buildO
 		return targets[left].OS+"/"+targets[left].Arch < targets[right].OS+"/"+targets[right].Arch
 	})
 	switch request.Verb {
-	case "", "build", "package", "sign":
+	case "", "build", "run", "package", "sign":
 	default:
 		return nil, fmt.Errorf("unsupported pipeline verb %q", request.Verb)
 	}
@@ -120,15 +120,15 @@ func resolveAnonymousOutcomes(config manifest.Config, request Request) ([]buildO
 			if _, ok := lookupFormat(format); !ok {
 				return nil, fmt.Errorf("unknown package format %q", format)
 			}
-			if format == "apk" && !request.Development {
-				return nil, fmt.Errorf("production APK is no longer supported; select aab (APK remains available only to the development deployment flow)")
+			if format == "apk" && !request.Development && request.Verb != "run" {
+				return nil, fmt.Errorf("production APK is no longer supported; select aab (APK remains available to run and development deployment flows)")
 			}
 		}
 		matched := make(map[string]bool, len(formats))
 		for index, target := range targets {
 			capability, _ := lookupTarget(target.OS, target.Arch)
 			for _, format := range formats {
-				if capability.SupportsFormat(format, request.Development) {
+				if capability.SupportsFormat(format, request.Development || (request.Verb == "run" && format == "apk")) {
 					result[index].formats = append(result[index].formats, format)
 					matched[format] = true
 				}
@@ -155,9 +155,12 @@ func resolveAnonymousOutcomes(config manifest.Config, request Request) ([]buildO
 					return nil, fmt.Errorf("target %s/%s: %w", target.OS, target.Arch, err)
 				}
 				result[index].formats = formats
-			case "", "build":
+			case "", "build", "run":
 				if capability.Runnable == runnableNone && !request.Development {
 					result[index].formats = []string{"aab"}
+					if request.Verb == "run" {
+						result[index].formats = []string{"apk"}
+					}
 				}
 			}
 		}
@@ -179,7 +182,7 @@ func resolveFormatsForTarget(target targetCapability, requested []string, develo
 			return nil, fmt.Errorf("unknown package format %q", format)
 		}
 		if format == "apk" && !development {
-			return nil, fmt.Errorf("production APK is no longer supported; select aab (APK remains available only to the development deployment flow)")
+			return nil, fmt.Errorf("production APK is no longer supported; select aab (APK remains available to run and development deployment flows)")
 		}
 		if !target.SupportsFormat(capability.Name, development) {
 			mode := "production"

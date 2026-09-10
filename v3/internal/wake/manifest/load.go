@@ -146,7 +146,7 @@ func defaultPlatform(architectures ...string) Platform {
 }
 
 func configFromDocument(root, profile string, doc Document) Config {
-	config := Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Hooks: doc.Hooks, Profiles: doc.Profiles, Origins: defaultOrigins()}
+	config := Config{Root: root, Profile: profile, Project: doc.Project, Frontend: doc.Frontend, Build: doc.Build, Dev: doc.Dev, Run: doc.Run, Targets: doc.Targets, Package: doc.Package, Signing: doc.Signing, Associations: doc.Associations, Protocols: doc.Protocols, Hooks: doc.Hooks, Profiles: doc.Profiles, Origins: defaultOrigins()}
 	if profile != "" {
 		config.Selected = doc.Profiles[profile]
 	}
@@ -154,6 +154,11 @@ func configFromDocument(root, profile string, doc Document) Config {
 }
 
 func validateProject(project Project) error {
+	for _, platform := range project.SupportedPlatforms {
+		if !contains([]string{"windows", "darwin", "linux", "ios", "android"}, platform) {
+			return fieldValidationError("project.supported_platforms", "unsupported platform %q", platform)
+		}
+	}
 	if project.Name == "" || project.ProductName == "" || project.Identifier == "" || project.Version == "" {
 		return fieldValidationError("project", "requires name, product_name, identifier, and version")
 	}
@@ -233,6 +238,9 @@ func validateConfig(config Config) error {
 			if target.Toolchain != "" && !contains([]string{"auto", "native", "zig", "docker"}, target.Toolchain) {
 				return fieldValidationError(fmt.Sprintf(`target[%q].toolchain`, name+"/"+arch), "unsupported toolchain %q", target.Toolchain)
 			}
+			if err := validateEnvironment(fmt.Sprintf(`target[%q].run.environment`, name+"/"+arch), target.Run.Environment); err != nil {
+				return err
+			}
 			if err := validateEnvironment(fmt.Sprintf(`target[%q].environment`, name+"/"+arch), target.Environment); err != nil {
 				return err
 			}
@@ -244,6 +252,9 @@ func validateConfig(config Config) error {
 		}
 	}
 	if err := validateEnvironment("frontend.environment", config.Frontend.Environment); err != nil {
+		return err
+	}
+	if err := validateEnvironment("run.environment", config.Run.Environment); err != nil {
 		return err
 	}
 	if err := validateEnvironment("build.environment", config.Build.Environment); err != nil {
@@ -697,7 +708,10 @@ func validateEnvironment(field string, environment map[string]string) error {
 	}
 	sort.Strings(names)
 	for _, name := range names {
-		if strings.TrimSpace(name) == "" || strings.Contains(name, "=") {
+		if strings.ContainsRune(environment[name], 0) {
+			return fieldValidationError(field, "contains NUL in variable %q", name)
+		}
+		if strings.TrimSpace(name) == "" || strings.ContainsAny(name, "=\x00") {
 			return fieldValidationError(field, "contains invalid variable name %q", name)
 		}
 	}

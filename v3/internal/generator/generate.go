@@ -135,7 +135,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	}
 
 	// Load initial packages.
-	pkgs, err := LoadPackages(buildFlags, patterns...)
+	pkgs, err := loadPackages(generator.options.PackageDirectory, buildFlags, patterns...)
 	if err == nil {
 		hasApplicationPackage := false
 		for _, pkg := range pkgs {
@@ -147,7 +147,7 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 		if !hasApplicationPackage {
 			// Preserve the previous diagnostics for non-Wails package patterns.
 			// This slow fallback is not used by normal application builds.
-			systemPaths, err = ResolveSystemPaths(buildFlags)
+			systemPaths, err = resolveSystemPaths(generator.options.PackageDirectory, buildFlags)
 		}
 	}
 

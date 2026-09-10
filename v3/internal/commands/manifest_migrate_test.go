@@ -265,6 +265,13 @@ func TestMigrateGoldenFixtures(t *testing.T) {
 			require.NoError(t, err)
 			root := filepath.Join(t.TempDir(), test.rootName)
 			require.NoError(t, copyMigrationFixture(source, root))
+			if test.name == "stock-generated" {
+				// The live example now has HCL; this fixture exercises its retained legacy Taskfiles.
+				for _, name := range []string{manifest.Filename, filepath.Join("frontend", "package-lock.json")} {
+					err := os.Remove(filepath.Join(root, name))
+					require.True(t, err == nil || errors.Is(err, fs.ErrNotExist))
+				}
+			}
 			legacy, err := snapshotMigrationInputs(root)
 			require.NoError(t, err)
 

@@ -19,6 +19,8 @@ import (
 // hclDocument is intentionally a closed schema. Keep the HCL surface small:
 // this is declarative build intent, never a programmable pipeline.
 type hclDocument struct {
+	Run *hclRun `hcl:"run,block"`
+
 	Version      int              `hcl:"version"`
 	Project      *hclProject      `hcl:"project,block" required:"true"`
 	Frontend     *hclFrontend     `hcl:"frontend,block"`
@@ -47,6 +49,8 @@ type hclHook struct {
 }
 
 type hclProject struct {
+	SupportedPlatforms *[]string `hcl:"supported_platforms,optional"`
+
 	Name        *string `hcl:"name,optional" required:"true" nonempty:"true"`
 	ProductName *string `hcl:"product_name,optional" required:"true" nonempty:"true"`
 	Identifier  *string `hcl:"identifier,optional" required:"true" nonempty:"true"`
@@ -61,6 +65,8 @@ type hclProject struct {
 }
 
 type hclFrontend struct {
+	Disabled *bool `hcl:"disabled,optional" default:"false"`
+
 	Directory   *string            `hcl:"directory,optional" default:"frontend"`
 	Install     *[]string          `hcl:"install,optional" default:"[\"npm\",\"install\"]"`
 	Build       *[]string          `hcl:"build,optional" default:"[\"npm\",\"run\",\"build\"]"`
@@ -144,7 +150,15 @@ type hclNotarization struct {
 	Credential *string `hcl:"credential,optional"`
 }
 
+type hclRun struct {
+	Tags        *[]string          `hcl:"tags,optional"`
+	Args        *[]string          `hcl:"args,optional"`
+	Environment *map[string]string `hcl:"environment,optional"`
+}
+
 type hclTarget struct {
+	Run *hclRun `hcl:"run,block"`
+
 	Name           string             `hcl:",label" schema_label:"target"`
 	Tags           *[]string          `hcl:"tags,optional"`
 	MinimumVersion *string            `hcl:"minimum_version,optional"`
@@ -281,6 +295,7 @@ func documentFromHCL(raw hclDocument) (Document, error) {
 		return Document{}, fieldValidationError("project", "block is required")
 	}
 	project := Project{}
+	setStrings(&project.SupportedPlatforms, raw.Project.SupportedPlatforms)
 	setString(&project.Name, raw.Project.Name)
 	setString(&project.ProductName, raw.Project.ProductName)
 	setString(&project.Identifier, raw.Project.Identifier)
@@ -296,6 +311,7 @@ func documentFromHCL(raw hclDocument) (Document, error) {
 		return Document{}, err
 	}
 	doc := defaults(project)
+	applyRun(&doc.Run, raw.Run)
 	if raw.Frontend != nil {
 		applyFrontend(&doc.Frontend, raw.Frontend)
 	}
@@ -313,6 +329,10 @@ func documentFromHCL(raw hclDocument) (Document, error) {
 			applyPlatform(&doc, item.name, item.body)
 		}
 	}
+	// OS-wide defaults are applied before architecture overrides regardless of file order.
+	sort.SliceStable(raw.Targets, func(i, j int) bool {
+		return !strings.Contains(raw.Targets[i].Name, "/") && strings.Contains(raw.Targets[j].Name, "/")
+	})
 	seenTargets := map[string]bool{}
 	for _, target := range raw.Targets {
 		field := `target[` + strconv.Quote(target.Name) + `]`
@@ -440,6 +460,7 @@ func containsHookPhase(want HookPhase) bool {
 }
 
 func applyFrontend(target *Frontend, raw *hclFrontend) {
+	setBool(&target.Disabled, raw.Disabled)
 	setString(&target.Directory, raw.Directory)
 	setString(&target.OutputDirectory, raw.Output)
 	setStrings(&target.Install, raw.Install)
@@ -536,7 +557,63 @@ func applyPlatform(doc *Document, name string, raw *hclPlatform) {
 	}
 }
 
+func applyRun(target *Run, raw *hclRun) {
+	if raw == nil {
+		return
+	}
+	if raw.Tags != nil {
+		target.Tags = appendUniqueRunTags(target.Tags, (*raw.Tags)...)
+	}
+	if raw.Args != nil {
+		target.Args = append([]string{}, (*raw.Args)...)
+		target.ArgsSet = true
+	}
+	if raw.Environment != nil {
+		if target.Environment == nil {
+			target.Environment = map[string]string{}
+		}
+		for k, v := range *raw.Environment {
+			target.Environment[k] = v
+		}
+	}
+}
+
+func appendUniqueRunTags(tags []string, extra ...string) []string {
+	result := append([]string(nil), tags...)
+	for _, tag := range extra {
+		found := false
+		for _, existing := range result {
+			if existing == tag {
+				found = true
+				break
+			}
+		}
+		if !found {
+			result = append(result, tag)
+		}
+	}
+	return result
+}
+
 func applyTarget(targets *Targets, raw hclTarget) error {
+	if !strings.Contains(raw.Name, "/") {
+		matched := false
+		for _, name := range buildinfo.SupportedTargetNames() {
+			if strings.HasPrefix(name, raw.Name+"/") {
+				matched = true
+				item := raw
+				item.Name = name
+				if err := applyTarget(targets, item); err != nil {
+					return err
+				}
+			}
+		}
+		if !matched {
+			return fmt.Errorf("unsupported platform %q", raw.Name)
+		}
+		return nil
+	}
+
 	platform, arch, err := parseTargetName(raw.Name)
 	if err != nil {
 		return err
@@ -544,16 +621,26 @@ func applyTarget(targets *Targets, raw hclTarget) error {
 	target := targetByName(platformByName(targets, platform), arch)
 	// parseTargetName accepts only registry targets, and every registry
 	// architecture has a concrete slot in Platform.
-	setStrings(&target.Tags, raw.Tags)
+	if raw.Tags != nil {
+		target.Tags = appendUniqueRunTags(target.Tags, (*raw.Tags)...)
+	}
+	applyRun(&target.Run, raw.Run)
 	setString(&target.MinimumVersion, raw.MinimumVersion)
 	setInt(&target.BuildNumber, raw.BuildNumber)
 	setString(&target.Toolchain, raw.Toolchain)
-	setStringMap(&target.Environment, raw.Environment)
+	if raw.Environment != nil {
+		if target.Environment == nil {
+			target.Environment = map[string]string{}
+		}
+		for key, value := range *raw.Environment {
+			target.Environment[key] = value
+		}
+	}
 	setStrings(&target.LinkerFlags, raw.LDFlags)
 	setStrings(&target.CompilerFlags, raw.CompilerFlags)
 	setStrings(&target.GarbleArgs, raw.GarbleArgs)
 	setBool(&target.Obfuscated, raw.Obfuscated)
-	target.ObfuscatedSet = raw.Obfuscated != nil
+	target.ObfuscatedSet = target.ObfuscatedSet || raw.Obfuscated != nil
 	return nil
 }
 
@@ -765,6 +852,7 @@ func encodeConfigHCL(config Config, header string) ([]byte, error) {
 	output.WriteString(header)
 	output.WriteString("version = 3\n\nproject {\n")
 	hclString(&output, "name", config.Project.Name)
+	hclStrings(&output, "supported_platforms", config.Project.SupportedPlatforms)
 	hclString(&output, "product_name", config.Project.ProductName)
 	hclString(&output, "identifier", config.Project.Identifier)
 	hclString(&output, "version", config.Project.Version)
@@ -778,6 +866,9 @@ func encodeConfigHCL(config Config, header string) ([]byte, error) {
 		hclIntIndented(&output, "build_number", config.Project.BuildNumber, "  ")
 	}
 	output.WriteString("}\n\nfrontend {\n")
+	if config.Frontend.Disabled {
+		hclBoolIndented(&output, "disabled", true, "  ")
+	}
 	hclString(&output, "directory", config.Frontend.Directory)
 	hclStrings(&output, "install", config.Frontend.Install)
 	hclStrings(&output, "build", config.Frontend.Build)
@@ -811,6 +902,7 @@ func encodeConfigHCL(config Config, header string) ([]byte, error) {
 	hclBoolIndented(&output, "use_git_ignore", config.Dev.UseGitIgnore, "  ")
 	hclIntIndented(&output, "grace_period_ms", config.Dev.GracePeriodMS, "  ")
 	output.WriteString("}\n\n")
+	writeRunHCL(&output, config.Run, "")
 	for _, platform := range []struct {
 		name    string
 		value   Platform
@@ -824,11 +916,12 @@ func encodeConfigHCL(config Config, header string) ([]byte, error) {
 	}{
 		{"windows/amd64", config.Targets.Windows.AMD64}, {"windows/arm64", config.Targets.Windows.ARM64}, {"darwin/amd64", config.Targets.Darwin.AMD64}, {"darwin/arm64", config.Targets.Darwin.ARM64}, {"darwin/universal", config.Targets.Darwin.Universal}, {"linux/amd64", config.Targets.Linux.AMD64}, {"linux/arm64", config.Targets.Linux.ARM64}, {"ios/arm64", config.Targets.IOS.ARM64}, {"android/amd64", config.Targets.Android.AMD64}, {"android/arm64", config.Targets.Android.ARM64}, {"android/universal", config.Targets.Android.Universal},
 	} {
-		if !target.value.Enabled && len(target.value.Tags) == 0 && target.value.MinimumVersion == "" && target.value.BuildNumber == 0 && target.value.Toolchain == "" && len(target.value.Environment) == 0 && len(target.value.LinkerFlags) == 0 && len(target.value.CompilerFlags) == 0 && len(target.value.GarbleArgs) == 0 && !target.value.ObfuscatedSet {
+		if !target.value.Enabled && len(target.value.Tags) == 0 && target.value.MinimumVersion == "" && target.value.BuildNumber == 0 && target.value.Toolchain == "" && len(target.value.Environment) == 0 && len(target.value.LinkerFlags) == 0 && len(target.value.CompilerFlags) == 0 && len(target.value.GarbleArgs) == 0 && !target.value.ObfuscatedSet && !runConfigured(target.value.Run) {
 			continue
 		}
 		hclLabeledBlockStart(&output, "", "target", target.name)
 		hclStringsIndented(&output, "tags", target.value.Tags, "  ")
+		writeRunHCL(&output, target.value.Run, "  ")
 		hclStringIndented(&output, "minimum_version", target.value.MinimumVersion, "  ")
 		hclStringIndented(&output, "toolchain", target.value.Toolchain, "  ")
 		hclStringMapIndented(&output, "environment", target.value.Environment, "  ")
@@ -1178,4 +1271,39 @@ func sortedProfiles(profiles map[string]Profile) []Profile {
 		result = append(result, profiles[key])
 	}
 	return result
+}
+
+func runConfigured(run Run) bool { return len(run.Tags) > 0 || run.ArgsSet || len(run.Environment) > 0 }
+func writeRunHCL(output *bytes.Buffer, run Run, indent string) {
+	if !runConfigured(run) {
+		return
+	}
+	output.WriteString(indent + "run {\n")
+	hclStringsIndented(output, "tags", run.Tags, indent+"  ")
+	hclStringsIndentedPresent(output, "args", run.Args, indent+"  ", run.ArgsSet)
+	hclStringMapIndented(output, "environment", run.Environment, indent+"  ")
+	output.WriteString(indent + "}\n\n")
+}
+
+// RunForTarget returns independent resolved launch defaults for one target.
+func (config Config) RunForTarget(goos, goarch string) (Run, error) {
+	if _, _, err := parseTargetName(goos + "/" + goarch); err != nil {
+		return Run{}, err
+	}
+	target := targetByName(platformByName(&config.Targets, goos), goarch).Run
+	result := config.Run
+	result.Tags = appendUniqueRunTags(config.Run.Tags, target.Tags...)
+	result.Args = append([]string(nil), config.Run.Args...)
+	if target.ArgsSet {
+		result.Args = append([]string{}, target.Args...)
+		result.ArgsSet = true
+	}
+	result.Environment = cloneStringMapValue(config.Run.Environment)
+	if result.Environment == nil {
+		result.Environment = map[string]string{}
+	}
+	for k, v := range target.Environment {
+		result.Environment[k] = v
+	}
+	return result, nil
 }

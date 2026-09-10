@@ -101,6 +101,9 @@ var schemaAttributeDescriptions = map[string]string{
 	"cache":                "Allow this hook to use the artifact cache; complete inputs and outputs are required.",
 	"build_number":         "Platform build number.",
 	"bundle_id":            "iOS bundle identifier.",
+	"supported_platforms":  "Platforms supported by this project; empty permits all platforms.",
+	"args":                 "Application arguments passed without shell expansion.",
+	"disabled":             "Disable frontend dependency installation, binding generation and frontend building for Go-only projects.",
 	"capabilities":         "Native platform capabilities requested by the application.",
 	"categories":           "Desktop menu categories.",
 	"certificate":          "Project-relative signing certificate file.",
@@ -184,7 +187,8 @@ var schemaAttributeDescriptions = map[string]string{
 }
 
 var schemaAttributeExamples = map[string]string{
-	"application_id": `"com.example.app"`, "assets_car": `"build/Assets.car"`, "background": `"assets/dmg-background.png"`,
+	"supported_platforms": `["linux"]`,
+	"application_id":      `"com.example.app"`, "assets_car": `"build/Assets.car"`, "background": `"assets/dmg-background.png"`,
 	"background_modes": `["fetch"]`, "bundle_id": `"com.example.app"`, "capabilities": `["internetClient"]`,
 	"certificate": `"signing/certificate.p12"`, "categories": `["Development"]`, "cf_bundle_icon_name": `"AppIcon"`,
 	"compiler_flags": `["all=-l"]`, "credential": `"release-signing"`, "dependencies": `["libgtk-4-1"]`,
