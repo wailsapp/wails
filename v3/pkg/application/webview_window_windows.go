@@ -114,6 +114,10 @@ type windowsWebviewWindow struct {
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	if menu == nil {
+		// Match macOS, where SetMenu(nil) is a no-op.
+		return
+	}
 	if w.parent.options.Windows.DisableMenu {
 		return
 	}

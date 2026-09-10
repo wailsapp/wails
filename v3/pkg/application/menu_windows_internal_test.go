@@ -201,3 +201,21 @@ func TestWin32MenuDestroyReleasesDetachedSubmenu(t *testing.T) {
 		t.Errorf("detached submenu remains valid after destroy: count=%d", count)
 	}
 }
+
+// TestWindowsSetMenuNilIsNoOp guards against a regression of
+// https://github.com/wailsapp/wails/issues/6104: windowsWebviewWindow.setMenu
+// used to dereference a nil *Menu via menu.Update() whenever the application
+// was running, panicking instead of behaving like the macOS no-op.
+func TestWindowsSetMenuNilIsNoOp(t *testing.T) {
+	previous := globalApplication
+	globalApplication = &App{running: true}
+	t.Cleanup(func() { globalApplication = previous })
+
+	w := &windowsWebviewWindow{parent: &WebviewWindow{}}
+
+	w.setMenu(nil)
+
+	if w.menu != nil {
+		t.Errorf("setMenu(nil) should not create a native menu, got %#v", w.menu)
+	}
+}
