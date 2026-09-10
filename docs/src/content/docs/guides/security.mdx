@@ -219,6 +219,87 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## Log Sanitization
+
+Wails automatically sanitizes sensitive data in IPC logs to prevent accidental exposure of secrets. This feature is **enabled by default** with sensible defaults.
+
+### Default Protection
+
+The following field names are automatically redacted (case-insensitive, substring matching):
+
+- **Authentication**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **Cryptographic**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **Session**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+Additionally, these patterns are detected in values:
+- JWT tokens (`eyJhbG...`)
+- Bearer tokens (`Bearer xxx`)
+- Common API key formats (`sk_live_xxx`, `pk_test_xxx`)
+
+### Custom Configuration
+
+Configure sanitization with all available options:
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### Configuration Options
+
+| Option | Description |
+|--------|-------------|
+| `RedactFields` | Additional field names to redact (merged with defaults) |
+| `RedactPatterns` | Additional regex patterns to match values |
+| `CustomSanitizeFunc` | Full control function; return `(value, true)` to override |
+| `DisableDefaults` | Only use explicitly specified fields/patterns |
+| `Replacement` | Custom replacement string (default: `***`) |
+| `Disabled` | Completely disable sanitization (use with caution) |
+
+### Public Sanitizer API
+
+Use the sanitizer for your own data:
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## Best Practices
 
 ### ✅ Do
@@ -238,9 +319,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - Don't store passwords in plain text
 - Don't hardcode secrets
 - Don't skip certificate verification
-- Don't expose sensitive data in logs
+- Don't expose sensitive data in logs (Wails sanitizes IPC logs by default)
 - Don't use weak encryption
 - Don't ignore security updates
+- Don't disable log sanitization in production
 
 ## Security Checklist
 
@@ -254,6 +336,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] Security logging enabled
 - [ ] Error messages don't leak info
 - [ ] Code reviewed for vulnerabilities
+- [ ] Log sanitization configured for app-specific fields
+- [ ] Sensitive fields not exposed in custom logging
 
 ## Next Steps
 
