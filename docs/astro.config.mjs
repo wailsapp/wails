@@ -393,7 +393,7 @@ export default defineConfig({
             { label: "Dialogs", link: "/reference/dialogs" },
             { label: "Frontend Runtime", link: "/reference/frontend-runtime" },
             { label: "CLI", link: "/reference/cli" },
-            { label: "HCL Run (Proposed)", link: "/reference/wails-hcl-run" },
+            { label: "HCL Run", link: "/reference/wails-hcl-run" },
             { label: "Update Manifest Protocol", link: "/reference/update-manifest" },
           ],
         },

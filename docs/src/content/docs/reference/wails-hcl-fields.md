@@ -78,6 +78,7 @@ Fields are listed using schema paths. Labelled blocks use placeholders such as `
 | `frontend.build` | list(string) | no | `["npm","run","build"]` | `["npm","run","build"]` |  | Frontend production build command and arguments. |
 | `frontend.dev` | list(string) | no | `["npm","run","dev"]` | `["npm","run","dev"]` |  | Frontend development-server command and arguments. |
 | `frontend.directory` | string | no | `frontend` | `"frontend"` |  | Project-relative frontend source directory. |
+| `frontend.disabled` | boolean | no | `false` | `false` |  | Disable frontend dependency installation, binding generation and frontend building for Go-only projects. |
 | `frontend.environment` | map(string) | no | `{}` | `{ RELEASE = "true" }` |  | Environment variables added to this operation. |
 | `frontend.install` | list(string) | no | `["npm","install"]` | `["npm","install"]` |  | Frontend dependency installation command and arguments. |
 | `frontend.output` | string | no | `dist` | `"dist"` |  | Project-relative output directory. |
@@ -155,9 +156,13 @@ Fields are listed using schema paths. Labelled blocks use placeholders such as `
 | `project.identifier` | string | yes |  | `"com.example.app"` |  | Reverse-domain application identifier. |
 | `project.name` | string | yes |  | `"value"` |  | Stable project or registration name. |
 | `project.product_name` | string | yes |  | `"value"` |  | Human-readable product name. |
+| `project.supported_platforms` | list(string) | no |  | `["linux"]` |  | Platforms supported by this project; empty permits all platforms. |
 | `project.version` | string | yes |  | `"value"` |  | Manifest or application version. |
 | `protocol["scheme"].description` | string | no |  | `"value"` |  | Human-readable description. |
 | `protocol["scheme"].platforms` | list(string) | no |  | `["windows", "darwin", "linux"]` |  | Platforms receiving this registration. |
+| `run.args` | list(string) | no |  | `["value"]` |  | Application arguments passed without shell expansion. |
+| `run.environment` | map(string) | no |  | `{ RELEASE = "true" }` |  | Environment variables added to this operation. |
+| `run.tags` | list(string) | no |  | `["value"]` |  | Additional Go build tags. |
 | `target["target"].build_number` | integer | no |  | `1` |  | Platform build number. |
 | `target["target"].compiler_flags` | list(string) | no |  | `["all=-l"]` |  | Additional Go compiler flags. |
 | `target["target"].environment` | map(string) | no |  | `{ RELEASE = "true" }` |  | Environment variables added to this operation. |
@@ -165,6 +170,9 @@ Fields are listed using schema paths. Labelled blocks use placeholders such as `
 | `target["target"].ldflags` | list(string) | no |  | `["-X example/build.version=1.0.0"]` |  | Additional Go linker flags. |
 | `target["target"].minimum_version` | string | no |  | `"12.0"` |  | Minimum supported operating-system version. |
 | `target["target"].obfuscated` | boolean | no |  | `true` |  | Obfuscate Go code with garble. |
+| `target["target"].run.args` | list(string) | no |  | `["value"]` |  | Application arguments passed without shell expansion. |
+| `target["target"].run.environment` | map(string) | no |  | `{ RELEASE = "true" }` |  | Environment variables added to this operation. |
+| `target["target"].run.tags` | list(string) | no |  | `["value"]` |  | Additional Go build tags. |
 | `target["target"].tags` | list(string) | no |  | `["value"]` |  | Additional Go build tags. |
 | `target["target"].toolchain` | string | no |  | `"auto"` |  | Compiler toolchain policy for this target. |
 | `version` | integer | yes |  | `3` |  | Wails manifest schema version; this must be the first attribute. |
