@@ -9,7 +9,7 @@
   
   <Identity 
     Name="{{.ProductIdentifier}}"
-    Publisher="{{.Publisher}}"
+    Publisher="{{.Publisher | html}}"
     Version="{{.ProductVersion}}.0" 
     ProcessorArchitecture="{{.ProcessorArchitecture}}" />
   

@@ -102,7 +102,7 @@ func checkMSIXTools(options *flags.ToolMSIX) error {
 	// The Packaging Tool is opt-in; MakeAppx is the default.
 	if options.UseMsixPackagingTool {
 		if _, err := exec.LookPath("MsixPackagingTool.exe"); err != nil {
-			return fmt.Errorf("Microsoft MSIX Packaging Tool is not found in PATH: %w", err)
+			return fmt.Errorf("cannot find Microsoft MSIX Packaging Tool in PATH: %w", err)
 		}
 	} else if _, err := findWindowsSDKTool("MakeAppx.exe"); err != nil {
 		return err
@@ -176,6 +176,12 @@ func validateMSIXOptions(options *MSIXOptions) error {
 	}
 
 	options.ProcessorArchitecture = archToMSIX(options.ProcessorArchitecture)
+	// Validate against the MSIX Identity schema after translating Go names.
+	switch options.ProcessorArchitecture {
+	case "x64", "x86", "arm", "arm64", "x86a64", "neutral":
+	default:
+		return fmt.Errorf("unsupported MSIX processor architecture %q: expected x64, x86, arm, arm64, x86a64, or neutral", options.ProcessorArchitecture)
+	}
 
 	// Set default publisher if not provided
 	if options.Publisher == "" {

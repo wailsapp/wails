@@ -15,7 +15,7 @@ type ToolMSIX struct {
 	CertificatePassword string `name:"cert-password" description:"Password for the certificate file" default:""`
 
 	// Build options
-	Arch           string `name:"arch" description:"Architecture of the package (x64, x86, arm64)" default:"x64"`
+	Arch           string `name:"arch" description:"Architecture of the package (x64, x86, arm, arm64, x86a64, neutral; Go aliases amd64 and 386 are accepted)" default:"x64"`
 	ExecutableName string `name:"name" description:"Name of the executable in the package" default:""`
 	ExecutablePath string `name:"executable" description:"Path to the executable file to package" default:""`
 	OutputPath     string `name:"out" description:"Path where the MSIX package will be saved" default:""`

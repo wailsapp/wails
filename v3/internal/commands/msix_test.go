@@ -133,3 +133,101 @@ func TestMSIXPackagingToolDoesNotRequireSDK(t *testing.T) {
 		t.Fatal("MakeAppx should require the SDK")
 	}
 }
+
+// TestMSIXArchitectureValidation covers native MSIX names, Go aliases and invalid targets.
+func TestMSIXArchitectureValidation(t *testing.T) {
+	for _, tt := range []struct{ input, want string }{
+		{"", archToMSIX(runtime.GOARCH)},
+		{"amd64", "x64"}, {"x64", "x64"}, {"386", "x86"}, {"x86", "x86"}, {"arm64", "arm64"},
+		{"arm", "arm"}, {"neutral", "neutral"}, {"x86a64", "x86a64"},
+		{"riscv64", ""}, {"invalid", ""}, {"AMD64", ""},
+	} {
+		t.Run(tt.input, func(t *testing.T) {
+			options := validMSIXTestOptions(t)
+			options.ProcessorArchitecture = tt.input
+			err := validateMSIXOptions(&options)
+			if tt.want == "" {
+				if err == nil || !strings.Contains(err.Error(), "unsupported MSIX processor architecture") {
+					t.Fatalf("architecture %q: expected validation error, got %v", tt.input, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if options.ProcessorArchitecture != tt.want {
+				t.Fatalf("architecture = %q, want %q", options.ProcessorArchitecture, tt.want)
+			}
+		})
+	}
+}
+
+// TestMSIXPackagingTemplatePublisher preserves explicit subjects and the company default.
+func TestMSIXPackagingTemplatePublisher(t *testing.T) {
+	for _, tt := range []struct{ name, publisher, want string }{
+		{"explicit", "CN=Custom Publisher, O=Example, C=GB", "CN=Custom Publisher, O=Example, C=GB"},
+		{"default", "", "CN=Example"},
+		{"xml escaping", `CN="Example & Sons"`, `CN="Example & Sons"`},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			options := validMSIXTestOptions(t)
+			options.Publisher = tt.publisher
+			if err := validateMSIXOptions(&options); err != nil {
+				t.Fatal(err)
+			}
+			path := filepath.Join(t.TempDir(), "template.xml")
+			if err := generateMSIXTemplate(&options, path); err != nil {
+				t.Fatal(err)
+			}
+			data, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var template struct {
+				PackageInformation struct {
+					Publisher string `xml:"PublisherName,attr"`
+				} `xml:"PackageInformation"`
+			}
+			if err := xml.Unmarshal(data, &template); err != nil {
+				t.Fatal(err)
+			}
+			if template.PackageInformation.Publisher != tt.want {
+				t.Fatalf("publisher = %q, want %q", template.PackageInformation.Publisher, tt.want)
+			}
+			if err := generateAppxManifest(&options, path); err != nil {
+				t.Fatal(err)
+			}
+			data, err = os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var manifest struct {
+				Identity struct {
+					Publisher string `xml:"Publisher,attr"`
+				} `xml:"Identity"`
+			}
+			if err := xml.Unmarshal(data, &manifest); err != nil {
+				t.Fatal(err)
+			}
+			if manifest.Identity.Publisher != tt.want {
+				t.Fatalf("manifest publisher = %q, want %q", manifest.Identity.Publisher, tt.want)
+			}
+
+		})
+	}
+}
+
+// validMSIXTestOptions supplies an executable and metadata for focused validation tests.
+func validMSIXTestOptions(t *testing.T) MSIXOptions {
+	t.Helper()
+	options := MSIXOptions{ExecutableName: "example.exe", ExecutablePath: filepath.Join(t.TempDir(), "example.exe")}
+	options.Info.CompanyName = "Example"
+	options.Info.ProductName = "Example App"
+	options.Info.ProductIdentifier = "com.example.app"
+	options.Info.Version = "1.2.3"
+	options.Info.Description = "Example description"
+	if err := os.WriteFile(options.ExecutablePath, []byte("executable payload"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	return options
+}
