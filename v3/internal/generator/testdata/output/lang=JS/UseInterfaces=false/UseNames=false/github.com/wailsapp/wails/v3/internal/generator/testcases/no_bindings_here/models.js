@@ -177,5 +177,10 @@ export const PrivatePerson = personImpl;
 // Private type creation functions
 const $$createType0 = /** @type {(...args: any[]) => any} */(($$createParamHow) => $Create.Map($Create.Any, $$createParamHow));
 const $$createType1 = /** @type {(...args: any[]) => any} */(($$createParamHow) => $Create.Array($$createType0($$createParamHow)));
-const $$createType2 = other$0.OtherPerson.createFrom($Create.Any);
+var $$createType2 = /** @type {(...args: any[]) => any} */(function $$initCreateType2(...args) {
+    if ($$createType2 === $$initCreateType2) {
+        $$createType2 = other$0.OtherPerson.createFrom($Create.Any);
+    }
+    return $$createType2(...args);
+});
 const $$createType3 = $Create.Array($$createType2);

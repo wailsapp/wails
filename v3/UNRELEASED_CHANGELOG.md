@@ -24,6 +24,8 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 
+- Fix generated JavaScript and TypeScript bindings failing to load when generic model creators reference later helper declarations (#6062)
+
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
