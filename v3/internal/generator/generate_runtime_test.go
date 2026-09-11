@@ -60,7 +60,7 @@ if (!($$instance.GenericType instanceof GenericType)) {
     throw new Error("generic model field was not created");
 }
 `
-	testModelsPath := filepath.Join(outputDir, "models.test.mjs")
+	testModelsPath := filepath.Join(filepath.Dir(modelsPath), "models.test.mjs")
 	if err := os.WriteFile(testModelsPath, []byte(testSource), 0600); err != nil {
 		t.Fatal(err)
 	}
