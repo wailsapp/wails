@@ -1,11 +1,13 @@
 package generator
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/generator/config"
@@ -65,7 +67,9 @@ if (!($$instance.GenericType instanceof GenericType)) {
 		t.Fatal(err)
 	}
 
-	command := exec.Command(node, testModelsPath)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	command := exec.CommandContext(ctx, node, testModelsPath)
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("generated JavaScript could not be imported: %v\n%s", err, output)
 	}
