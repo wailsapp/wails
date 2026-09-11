@@ -16,6 +16,7 @@ After processing, the content will be moved to the main changelog and this file 
 -->
 
 ## Added
+- Add support for `-appargs` to wails dev for extra runtime customisation
 <!-- New features, capabilities, or enhancements -->
 
 ## Changed
