@@ -20,6 +20,27 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Start the native application in `wails3 dev` only after the frontend development server is accepting connections. Existing alpha projects must add a `dev:wait` task to `build/Taskfile.yml`:
+
+  ```yaml
+  dev:wait:
+    summary: Waits for the frontend development server
+    vars:
+      TIMEOUT: 60
+    cmds:
+      - wails3 tool waitport --timeout {{.TIMEOUT}}
+  ```
+
+  Then insert the readiness step in `build/config.yml` after the background frontend task and before the primary application task:
+
+  ```yaml
+  - cmd: wails3 task common:dev:frontend
+    type: background
+  - cmd: wails3 task common:dev:wait
+    type: once
+  - cmd: wails3 task run
+    type: primary
+  ```
 
 ## Fixed
 <!-- Bug fixes -->

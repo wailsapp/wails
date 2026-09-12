@@ -210,6 +210,13 @@ tasks:
     cmds:
       - task: frontend:dev:{{.Opn}}.PACKAGE_MANAGER{{.Cls}}
 
+  dev:wait:
+    summary: Waits for the frontend development server
+    vars:
+      TIMEOUT: 60
+    cmds:
+      - wails3 tool waitport --timeout {{.Opn}}.TIMEOUT{{.Cls}}
+
   frontend:dev:npm:
     dir: frontend
     cmds:
