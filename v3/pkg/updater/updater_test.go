@@ -210,8 +210,8 @@ func TestInit_RejectsNilProvider(t *testing.T) {
 func TestInit_CheckInterval_TicksProviderAndStops(t *testing.T) {
 	host := &fakeHost{}
 	rel := &updater.Release{
-		Version:  "2.0.0",
-		Artifact: updater.Artifact{Filename: "app.bin"},
+		Version:      "2.0.0",
+		Artifact:     updater.Artifact{Filename: "app.bin"},
 		Verification: &updater.Verification{DigestAlgo: "sha256", Digest: sha256.New().Sum(nil)},
 	}
 	// Pre-compute matching digest so Check finds + DownloadAndInstall succeeds.
@@ -491,6 +491,9 @@ func TestRestart_QuitsAfterSpawn(t *testing.T) {
 	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
 		return exec.Command(path, "-test.run=^$")
 	}))
+	t.Cleanup(updater.SetWaitForHelperReadyForTest(func(string, time.Duration) error {
+		return nil
+	}))
 
 	host := &fakeHost{}
 	body := []byte("payload")
@@ -524,6 +527,37 @@ func TestRestart_QuitsAfterSpawn(t *testing.T) {
 	defer host.mu.Unlock()
 	if host.quits != 1 {
 		t.Errorf("Quit dispatch count: got %d, want 1", host.quits)
+	}
+}
+
+func TestRestart_DoesNotQuitBeforeHelperReady(t *testing.T) {
+	t.Cleanup(updater.SetSelfExecutableForTest(os.Executable))
+	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
+		return exec.Command(path, "-test.run=^$")
+	}))
+	t.Cleanup(updater.SetWaitForHelperReadyForTest(func(string, time.Duration) error {
+		return updater.ErrHelperNotReady
+	}))
+
+	host := &fakeHost{}
+	body := []byte("payload")
+	p := &fakeProvider{name: "p", rel: &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}, body: body}
+	u := newConfigured(t, host, p)
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+
+	if err := u.Restart(context.Background()); !errors.Is(err, updater.ErrHelperNotReady) {
+		t.Fatalf("Restart: want ErrHelperNotReady, got %v", err)
+	}
+	if host.quits != 0 {
+		t.Fatalf("Quit dispatched before helper readiness: %d", host.quits)
 	}
 }
 
@@ -993,4 +1027,4 @@ func slicesEqualIgnoringProgressRepeats(a, b []string) bool {
 }
 
 func osRemoveAll(p string) error { return removeAllOS(p) }
-func parentOf(p string) string  { return filepath.Dir(p) }
+func parentOf(p string) string   { return filepath.Dir(p) }

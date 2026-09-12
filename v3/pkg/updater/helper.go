@@ -31,6 +31,7 @@ const (
 	envHelperNew    = "WAILS_UPDATER_HELPER_NEW"    // path of the verified new artifact
 	envHelperPID    = "WAILS_UPDATER_HELPER_PID"    // parent PID to wait for
 	envHelperLog    = "WAILS_UPDATER_HELPER_LOG"    // optional log file path
+	envHelperReady  = "WAILS_UPDATER_HELPER_READY"  // readiness status file path
 )
 
 // HandleHelperMode returns immediately when the current process was not
@@ -46,14 +47,34 @@ func HandleHelperMode() {
 	}
 	target := os.Getenv(envHelperTarget)
 	newPath := os.Getenv(envHelperNew)
+	readyPath := os.Getenv(envHelperReady)
 	if target == "" || newPath == "" {
+		_ = signalHelperStatus(readyPath, "error: missing helper target or staged artifact")
 		os.Exit(2)
+	}
+	if _, err := os.Stat(target); err != nil {
+		_ = signalHelperStatus(readyPath, "error: target is unavailable: "+err.Error())
+		os.Exit(10)
+	}
+	if _, err := os.Stat(newPath); err != nil {
+		_ = signalHelperStatus(readyPath, "error: staged artifact is unavailable: "+err.Error())
+		os.Exit(11)
+	}
+	if err := signalHelperStatus(readyPath, "ready"); err != nil {
+		os.Exit(3)
 	}
 	pid, _ := strconv.Atoi(os.Getenv(envHelperPID))
 	logPath := os.Getenv(envHelperLog)
 
 	code := runHelperSwap(target, newPath, pid, logPath, waitForPID, osLauncher{})
 	os.Exit(code)
+}
+
+func signalHelperStatus(path, status string) error {
+	if path == "" {
+		return nil
+	}
+	return os.WriteFile(path, []byte(status), 0o600)
 }
 
 // processWaiter abstracts "wait until pid exits" so unit tests can drive the
@@ -348,7 +369,7 @@ func (h *helperLog) Close() {
 // binary so the launched process boots in normal mode instead of inheriting
 // our helper-mode sentinels.
 func clearHelperEnv() {
-	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog} {
+	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady} {
 		_ = os.Unsetenv(k)
 	}
 }
@@ -359,4 +380,10 @@ var (
 	// ErrNotReady is returned by Restart when there is no installed update
 	// staged for launch.
 	ErrNotReady = errors.New("updater: nothing to restart into (call DownloadAndInstall first)")
+	// ErrHelperNotReady is returned when the replacement helper does not
+	// acknowledge that it reached helper mode before the application exits.
+	ErrHelperNotReady = errors.New("updater: helper did not signal readiness")
+	// ErrJobBreakawayDenied is returned on Windows when the helper cannot be
+	// created outside a parent Job that may terminate it with the application.
+	ErrJobBreakawayDenied = errors.New("updater: helper could not break away from the parent Windows Job")
 )
