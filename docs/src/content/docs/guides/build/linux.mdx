@@ -153,7 +153,25 @@ go build -tags gtk3 -o myapp .
 
 Run `wails3 doctor` to verify your setup. With no flags it checks for GTK4 / WebKitGTK 6.0 (the default). The legacy GTK3 / WebKit2GTK 4.1 packages are listed as optional.
 
+## Audio and Video
+
+For bundled clips, use `Media.SetSource` and `Media.ClearSource` as described in
+[Play Local Audio and Video](/guides/linux-media/). The guide covers registering
+a media filesystem, cancelling loads, releasing blobs and setting size limits.
+Transfers use Wails streams without opening a listening socket; each clip is
+fully loaded before playback, with a 32 MiB default frontend limit.
+
+Include the GStreamer codecs required by your media formats in your distribution
+requirements. A successful transfer does not guarantee the target system can
+decode the file. Test playback on the Linux distributions you support.
+
 ## Troubleshooting
+
+### Local audio or video will not play
+
+If GStreamer reports **No URI handler implemented for "wails"**, follow the
+[local media playback guide](/guides/linux-media/). If the clip loads but playback
+fails, check its codec requirements and the player's `error` event.
 
 ### AppImage won't run
 
