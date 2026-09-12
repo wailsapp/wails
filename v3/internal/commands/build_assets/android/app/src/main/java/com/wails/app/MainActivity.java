@@ -22,6 +22,10 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.util.Log;
+import android.webkit.ConsoleMessage;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebChromeClient.FileChooserParams;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -68,6 +72,11 @@ public class MainActivity extends AppCompatActivity {
     private static final int PHOTO_CAPTURE_REQUEST = 7002;
     private static final int VIDEO_CAPTURE_REQUEST = 7003;
     private static final int CAMERA_PERMISSION_REQUEST = 7010;
+
+    // In-flight callback for an HTML <input type="file"> chooser opened by the
+    // WebView's WebChromeClient (null when idle).
+    private static final int WEBVIEW_FILE_CHOOSER_REQUEST = 7004;
+    private ValueCallback<Uri[]> webViewFileChooserCallback;
     private File pendingCaptureFile;
     private boolean pendingCaptureIsVideo;
 
@@ -197,6 +206,45 @@ public class MainActivity extends AppCompatActivity {
 
         // Add JavaScript interface for Go communication
         webView.addJavascriptInterface(new WailsJSBridge(bridge, webView), "wails");
+
+        // A WebChromeClient is required for HTML <input type="file"> elements to
+        // work; without onShowFileChooser the WebView silently ignores clicks on
+        // file inputs. It also forwards JS console messages to logcat for
+        // debugging. Note: in-page permission prompts (geolocation, getUserMedia)
+        // require an onPermissionRequest override which is not provided here;
+        // those requests will be denied by the default implementation until a
+        // scoped permissions handler is added.
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage msg) {
+                if (DEBUG) {
+                    Log.d(TAG, "[WebView] " + msg.messageLevel() + ": " + msg.message()
+                            + " (" + msg.sourceId() + ":" + msg.lineNumber() + ")");
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onShowFileChooser(WebView view,
+                                             ValueCallback<Uri[]> filePathCallback,
+                                             FileChooserParams fileChooserParams) {
+                // Cancel any previous, still-pending chooser before starting a new one.
+                if (webViewFileChooserCallback != null) {
+                    webViewFileChooserCallback.onReceiveValue(null);
+                }
+                webViewFileChooserCallback = filePathCallback;
+
+                Intent intent = fileChooserParams.createIntent();
+                try {
+                    startActivityForResult(intent, WEBVIEW_FILE_CHOOSER_REQUEST);
+                } catch (android.content.ActivityNotFoundException e) {
+                    webViewFileChooserCallback = null;
+                    filePathCallback.onReceiveValue(null);
+                    return false;
+                }
+                return true;
+            }
+        });
     }
 
     private void loadApplication() {
@@ -451,6 +499,41 @@ public class MainActivity extends AppCompatActivity {
             handleCaptureResult(resultCode, data);
             return;
         }
+        if (requestCode == WEBVIEW_FILE_CHOOSER_REQUEST) {
+            if (webViewFileChooserCallback == null) {
+                return;
+            }
+            Uri[] results = null;
+            if (resultCode == RESULT_OK && data != null) {
+                if (data.getClipData() != null) {
+                    // Multiple selection (<input type="file" multiple>) is
+                    // returned as ClipData. FileChooserParams.parseResult only
+                    // reads getData(), so it would drop all but one (and return
+                    // null when getData() is empty) — read every item explicitly.
+                    int count = data.getClipData().getItemCount();
+                    java.util.List<Uri> validated = new java.util.ArrayList<>(count);
+                    for (int i = 0; i < count; i++) {
+                        Uri uri = data.getClipData().getItemAt(i).getUri();
+                        if (isFileChooserUriSafe(uri)) validated.add(uri);
+                    }
+                    if (!validated.isEmpty()) {
+                        results = validated.toArray(new Uri[0]);
+                    }
+                } else if (data.getData() != null) {
+                    Uri uri = data.getData();
+                    if (isFileChooserUriSafe(uri)) {
+                        results = new Uri[]{ uri };
+                    }
+                }
+            }
+            if (results == null) {
+                // Fallback for pickers that report the result differently.
+                results = FileChooserParams.parseResult(resultCode, data);
+            }
+            webViewFileChooserCallback.onReceiveValue(results);
+            webViewFileChooserCallback = null;
+            return;
+        }
         if (requestCode != FILE_PICKER_REQUEST) {
             return;
         }
@@ -481,6 +564,23 @@ public class MainActivity extends AppCompatActivity {
             }
             bridge.filePickerDone(callbackID);
         }).start();
+    }
+
+    /**
+     * Validate that a file-chooser URI is safe to pass to the WebView.
+     * Rejects file:// URIs pointing at the app's own private data (a malicious
+     * third-party picker could return such URIs to exfiltrate sensitive files).
+     * Only content:// URIs (the standard document-picker output) are accepted.
+     */
+    private boolean isFileChooserUriSafe(Uri uri) {
+        if (uri == null) return false;
+        String scheme = uri.getScheme();
+        // content:// URIs are the standard, safe output of document pickers.
+        if ("content".equals(scheme)) return true;
+        // Reject file:// URIs — they can point at app-private data.
+        // Also reject anything else (null scheme, unknown schemes).
+        if (DEBUG) Log.w(TAG, "Rejected unsafe file-chooser URI: " + uri);
+        return false;
     }
 
     /**
