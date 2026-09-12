@@ -1,10 +1,13 @@
 package commands
 
 import (
+	"errors"
+	"log/slog"
 	"os"
+	"os/exec"
 
 	"github.com/atterpac/refresh/engine"
-	"github.com/wailsapp/wails/v3/internal/signal"
+	"github.com/atterpac/refresh/process"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,13 +20,25 @@ func ensureIgnored(list *[]string, pattern string) {
 	*list = append(*list, pattern)
 }
 
+func ensurePrimaryExitPolicy(executes []process.Execute) {
+	for index := range executes {
+		execute := &executes[index]
+		if execute.Type == process.Primary && execute.ExitPolicy == "" {
+			execute.ExitPolicy = process.ExitPolicyShutdown
+		}
+	}
+}
+
+func isInterruptError(err error) bool {
+	var exitErr *exec.ExitError
+	return errors.As(err, &exitErr) && isInterruptProcessState(exitErr.ProcessState)
+}
+
 type WatcherOptions struct {
 	Config string `description:"The config file including path" default:"."`
 }
 
 func Watcher(options *WatcherOptions) error {
-	stopChan := make(chan struct{})
-
 	// Parse the config file
 	type devConfig struct {
 		Config engine.Config `yaml:"dev_mode"`
@@ -42,36 +57,18 @@ func Watcher(options *WatcherOptions) error {
 	}
 
 	ensureIgnored(&devconfig.Config.Ignore.File, "*_test.go")
+	ensurePrimaryExitPolicy(devconfig.Config.ExecStruct)
 
 	watcherEngine, err := engine.NewEngineFromConfig(devconfig.Config)
 	if err != nil {
 		return err
 	}
-
-	// Setup cleanup function that stops the engine
-	cleanup := func() {
-		watcherEngine.Stop()
-	}
-	defer cleanup()
-
-	// Signal handler needs to notify when to stop
-	signalCleanup := func() {
-		cleanup()
-		stopChan <- struct{}{}
-	}
-
-	signalHandler := signal.NewSignalHandler(signalCleanup)
-	signalHandler.ExitMessage = func(sig os.Signal) string {
-		return ""
-	}
-	signalHandler.Start()
-
-	// Start the engine
-	err = watcherEngine.Start()
-	if err != nil {
+	if err := watcherEngine.Start(); err != nil {
+		if isInterruptError(err) {
+			slog.Warn("graceful exit requested", "signal", os.Interrupt)
+			return nil
+		}
 		return err
 	}
-
-	<-stopChan
 	return nil
 }
