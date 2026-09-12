@@ -143,10 +143,9 @@ func appName() string {
 	return C.GoString(name)
 }
 
-func appNew(name string) pointer {
+func appNew(appId string) pointer {
 	C.install_signal_handlers()
 
-	appId := fmt.Sprintf("org.wails.%s", name)
 	nameC := C.CString(appId)
 	defer C.free(unsafe.Pointer(nameC))
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
