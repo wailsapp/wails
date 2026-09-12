@@ -77,7 +77,12 @@ export function Greet($0: $models.EmptyAliasStruct, $1: $models.EmptyStruct): $C
 
 // Private type creation functions
 const $$createType0 = $models.Person.createFrom;
-const $$createType1 = $models.GenericPerson.createFrom($Create.Any);
+var $$createType1 = (function $$initCreateType1(...args: any[]): any {
+    if ($$createType1 === $$initCreateType1) {
+        $$createType1 = $models.GenericPerson.createFrom($Create.Any);
+    }
+    return $$createType1(...args);
+});
 const $$createType2 = nobindingshere$0.personImpl.createFrom;
 const $$createType3 = $models.AliasGroup.createFrom;
 const $$createType4 = subpkg$0.SubStruct.createFrom;
