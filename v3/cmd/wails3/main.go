@@ -98,6 +98,8 @@ func main() {
 	plugin.NewSubCommandFunction("init", "Initialise a new service", commands.ServiceInit)
 
 	tool := app.NewSubCommand("tool", "Various tools")
+	tool.NewSubCommandFunction("msix", "Create a Windows MSIX package", commands.ToolMSIX)
+	tool.NewSubCommand("msix-install-tools", "Install Windows MSIX packaging tools").Action(commands.InstallMSIXTools)
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
