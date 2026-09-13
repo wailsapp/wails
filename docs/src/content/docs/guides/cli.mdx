@@ -207,6 +207,41 @@ wails3 task -p task1 task2 task3
 wails3 task -w dev
 ```
 
+### `mcp`
+
+Starts the Wails project MCP server for agent-assisted project management. This is
+separate from the MCP server compiled into a running application: `wails3 mcp`
+manages project files and lifecycle commands, while the application MCP server
+controls the running WebView.
+
+```bash
+wails3 mcp [flags]
+```
+
+Transport is selected automatically:
+
+- When an MCP host launches Wails with piped stdin/stdout, the server uses **stdio**.
+- When run interactively in a terminal, the server uses **Streamable HTTP** on
+  `127.0.0.1` and asks the operating system for a free port.
+
+Use `--stdio` or `--http` to select a transport explicitly. Use `--port 0` to choose a
+free loopback port in HTTP mode.
+
+#### MCP flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--root` | Allowed project root. Paths and symlinks outside it are rejected. | Current directory |
+| `--token` | Session/bearer token for mutating and process-control tools. Falls back to `WAILS_MCP_TOKEN`. | Generated securely |
+| `--stdio` | Force stdio transport. | Automatic |
+| `--http` | Force Streamable HTTP transport. | Automatic |
+| `--port` | HTTP port; `0` selects a free loopback port. | `0` |
+
+In HTTP mode, Wails prints the endpoint and bearer token to stderr. In stdio mode,
+the token is included in the MCP initialization instructions. The server does not
+expose arbitrary shell execution. Remote templates and Git remotes require explicit
+approval through the tool's `allowExternal` input.
+
 ### `doctor`
 Performs a system check and displays a status report.
 

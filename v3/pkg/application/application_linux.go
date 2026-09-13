@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 
@@ -87,6 +88,28 @@ func (a *linuxApp) name() string {
 }
 
 func (a *linuxApp) run() error {
+	if len(os.Args) == 2 {
+		arg1 := os.Args[1]
+		if strings.Contains(arg1, "://") {
+			eventContext := newApplicationEventContext()
+			eventContext.setURL(arg1)
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
+				ctx: eventContext,
+			}
+		} else if a.parent.options.FileAssociations != nil {
+			ext := filepath.Ext(arg1)
+			if slices.Contains(a.parent.options.FileAssociations, ext) {
+				eventContext := newApplicationEventContext()
+				eventContext.setOpenedWithFile(arg1)
+				applicationEvents <- &ApplicationEvent{
+					Id:  uint(events.Common.ApplicationOpenedWithFile),
+					ctx: eventContext,
+				}
+			}
+		}
+	}
+
 	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		if err := a.processAndCacheScreens(); err != nil {
 			a.parent.handleError(err)

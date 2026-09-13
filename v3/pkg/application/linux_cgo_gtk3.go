@@ -3,6 +3,7 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -1029,6 +1030,8 @@ func menuRadioItemNew(group *GSList, label string) pointer {
 
 // screen related
 
+var errScreenDisplayUnavailable = errors.New("screen display unavailable")
+
 func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	monitor := C.gdk_display_get_monitor(display, C.int(index))
 
@@ -1101,16 +1104,37 @@ func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	}
 }
 
-func getScreens(app pointer) ([]*Screen, error) {
+func getScreensForDisplay(display pointer) ([]*Screen, error) {
+	if display == nil {
+		return nil, errScreenDisplayUnavailable
+	}
+
 	var screens []*Screen
-	window := C.gtk_application_get_active_window((*C.GtkApplication)(app))
-	gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(unsafe.Pointer(window)))
-	display := C.gdk_window_get_display(gdkWindow)
-	count := C.gdk_display_get_n_monitors(display)
+	gdkDisplay := (*C.GdkDisplay)(display)
+	count := C.gdk_display_get_n_monitors(gdkDisplay)
 	for i := 0; i < int(count); i++ {
-		screens = append(screens, getScreenByIndex(display, i))
+		screens = append(screens, getScreenByIndex(gdkDisplay, i))
 	}
 	return screens, nil
+}
+
+func getScreens(app pointer) ([]*Screen, error) {
+	// Service-only applications can reach screen discovery before GTK has an
+	// active (or realised) window. Prefer that window's display when available,
+	// but never pass a nil window/display through the GTK/GDK C API.
+	if app != nil {
+		window := C.gtk_application_get_active_window((*C.GtkApplication)(app))
+		if window != nil {
+			gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(unsafe.Pointer(window)))
+			if gdkWindow != nil {
+				if display := C.gdk_window_get_display(gdkWindow); display != nil {
+					return getScreensForDisplay(pointer(display))
+				}
+			}
+		}
+	}
+
+	return getScreensForDisplay(pointer(C.gdk_display_get_default()))
 }
 
 // widgets
@@ -1428,6 +1452,14 @@ func (w *linuxWebviewWindow) isMinimised() bool {
 }
 
 func (w *linuxWebviewWindow) isVisible() bool {
+	// The GTK widget is created lazily in run() (windowNew), so there is a
+	// startup window in which w.impl != nil (set at the top of WebviewWindow.Run)
+	// but w.window is still NULL. A window whose widget does not exist yet is, by
+	// definition, not visible; without this guard a visibility poll during that
+	// gap calls gtk_widget_is_visible(NULL), which trips a GTK-CRITICAL assertion.
+	if w.window == nil {
+		return false
+	}
 	if C.gtk_widget_is_visible(w.gtkWidget()) == 1 {
 		return true
 	}
@@ -1463,6 +1495,17 @@ func windowNewWebview(parentId uint, gpuPolicy WebviewGpuPolicy) pointer {
 	c := NewCalloc()
 	defer c.Free()
 	manager := C.webkit_user_content_manager_new()
+	linuxBlobBodyShimSource := C.CString(linuxBlobBodyFetchShimJS)
+	linuxBlobBodyShim := C.webkit_user_script_new(
+		linuxBlobBodyShimSource,
+		C.WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+		C.WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+		nil,
+		nil,
+	)
+	C.webkit_user_content_manager_add_script(manager, linuxBlobBodyShim)
+	C.webkit_user_script_unref(linuxBlobBodyShim)
+	C.free(unsafe.Pointer(linuxBlobBodyShimSource))
 	C.webkit_user_content_manager_register_script_message_handler(manager, c.String("external"))
 	webView := C.webkit_web_view_new_with_user_content_manager(manager)
 

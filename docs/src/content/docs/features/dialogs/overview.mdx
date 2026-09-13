@@ -6,10 +6,16 @@ sidebar:
 ---
 
 import { Tabs, TabItem, Card, CardGrid } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import dialogQuestionMacOS from "../../../../assets/screenshots/dialog-question-macos.png";
 
 ## Native dialogs
 
 Wails provides **native system dialogs** that work across all platforms: message dialogs (info, warning, error, question), file dialogs (open, save, folder), and custom dialog windows with platform-native appearance and behaviour.
+
+<Image src={dialogQuestionMacOS} alt="A Wails question dialog on macOS with Cancel and Discard buttons" style="max-width: 800px; margin: 1.5rem auto; display: block; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);" />
+
+The same API renders with the conventions of each supported platform. This macOS example shows a question dialog attached to its Wails window, including the default and cancel buttons.
 
 ## Quick Start
 

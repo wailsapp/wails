@@ -160,6 +160,17 @@ type ServerOptions struct {
 	// Default: 30 seconds
 	ShutdownTimeout time.Duration
 
+	// WebSocketOriginPatterns lists additional origins permitted to connect to
+	// the server's WebSocket endpoints. The request host is always permitted, so
+	// the default empty list enforces same-origin connections. Patterns follow
+	// path.Match syntax; include a scheme to match both scheme and host.
+	WebSocketOriginPatterns []string
+
+	// WebSocketAllowAllOrigins disables WebSocket origin verification. This is
+	// unsafe for servers reachable by untrusted browser content and should be
+	// enabled only when an application deliberately accepts that CSRF risk.
+	WebSocketAllowAllOrigins bool
+
 	// TLS configures HTTPS. If nil, HTTP is used.
 	TLS *TLSOptions
 }

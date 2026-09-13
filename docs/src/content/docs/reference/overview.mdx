@@ -218,7 +218,7 @@ Some APIs behave differently on different platforms:
 | **System Tray** | Notification area | Menu bar | System tray |
 | **Dock** | N/A | ✅ Available | N/A |
 | **File dialogs** | Native | Native | Native (GTK) |
-| **Transparency** | ✅ Full | ✅ Full | ⚠️ Limited |
+| **Transparency** | ✅ Full | Requires [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background) | ⚠️ Limited |
 
 Platform-specific behaviour is documented in each API section.
 
@@ -230,7 +230,7 @@ Wails v3 follows semantic versioning:
 - **Minor** (v3.x.x): New features, backwards-compatible
 - **Patch** (v3.x.x): Bug fixes, backwards-compatible
 
-**Current status:** Alpha (API stable, refinements ongoing)
+**Current status:** Beta (API stable, refinements ongoing)
 
 ## Deprecation Policy
 
