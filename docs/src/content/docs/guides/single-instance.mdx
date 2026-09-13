@@ -42,6 +42,8 @@ The `SingleInstanceOptions` struct has the following fields:
     - `WorkingDir`: The working directory of the second instance
     - `AdditionalData`: Any additional data passed from the second instance (if provided)
 - `AdditionalData`: Optional map of string key-value pairs that will be passed to the first instance when subsequent instances are launched
+- `ExitCode`: The exit code the second instance terminates with after notifying the first instance
+- `OnSecondInstanceExit`: A callback run in the second instance after it has notified the first instance and just before it exits. The exit uses `os.Exit`, so deferred functions in `main` never run; release or flush anything you opened before `application.New` here instead
 
 :::danger[Warning]
 The Single Instance feature implements an optional encryption protocol using AES-256-GCM. Without encryption enabled,
