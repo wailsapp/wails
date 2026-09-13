@@ -23,6 +23,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Windows menu handles nil menus, frees replaced resources, and redraws the menu bar in [PR](https://github.com/wailsapp/wails/pull/6112) by @taliesin-ai
+- Restore MSIX packaging for fresh projects using shared YAML configuration in [PR](https://github.com/wailsapp/wails/pull/6115) by @leaanthony
 
 - Fix generated JavaScript and TypeScript bindings failing to load when generic model creators reference later helper declarations (#6062)
 
