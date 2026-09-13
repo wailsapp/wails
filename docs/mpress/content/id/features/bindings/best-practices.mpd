@@ -3,21 +3,21 @@ schema = 1
 title = "Praktik Terbaik Binding"
 description = "Pola desain dan praktik terbaik untuk binding Go-JavaScript"
 slug = "features/bindings/best-practices"
-sourcePath = "id/features/bindings/best-practices.mpd"
+sourcePath = "features/bindings/best-practices.mpd"
 ---
 
 ## Praktik Terbaik Binding
 
-Ikuti *pola yang terbukti* untuk desain binding guna membuat binding yang bersih, performan, dan aman. Panduan ini mencakup prinsip desain API, optimasi performa, pola keamanan, penanganan error, dan strategi pengujian untuk aplikasi yang mudah dirawat.
+Ikuti *pola yang telah terbukti* saat merancang binding untuk menghasilkan binding yang rapi, berkinerja tinggi, dan aman. Panduan ini membahas prinsip desain API, pengoptimalan kinerja, pola keamanan, penanganan kesalahan, dan strategi pengujian untuk aplikasi yang mudah dipelihara.
 
 ## Prinsip Desain API
 
 ### 1. Tanggung Jawab Tunggal
 
-Setiap service harus memiliki satu tujuan yang jelas:
+Setiap layanan sebaiknya memiliki satu tujuan yang jelas:
 
 ```go
-// ❌ Buruk: God object
+// ❌ Bad: God object
 type AppService struct {
     // Does everything
 }
@@ -27,7 +27,7 @@ func (a *AppService) GetUser(id int) (*User, error)
 func (a *AppService) SendEmail(to, subject, body string) error
 func (a *AppService) ProcessPayment(amount float64) error
 
-// ✅ Baik: Service terfokus
+// ✅ Good: Focused services
 type FileService struct{}
 func (f *FileService) Save(path string, data []byte) error
 
@@ -43,30 +43,30 @@ func (p *PaymentService) Process(amount float64) error
 
 ### 2. Nama Metode yang Jelas
 
-Gunakan nama yang deskriptif dan berorientasi aksi:
+Gunakan nama yang deskriptif dan berorientasi pada tindakan:
 
 ```go
-// ❌ Buruk: Nama tidak jelas
+// ❌ Bad: Unclear names
 func (s *Service) Do(x string) error
 func (s *Service) Handle(data interface{}) interface{}
 func (s *Service) Process(input map[string]interface{}) bool
 
-// ✅ Baik: Nama jelas
+// ✅ Good: Clear names
 func (s *FileService) SaveDocument(path string, content string) error
 func (s *UserService) AuthenticateUser(email, password string) (*User, error)
 func (s *OrderService) CreateOrder(items []Item) (*Order, error)
 ```
 
-### 3. Tipe Return yang Konsisten
+### 3. Tipe Nilai Kembalian yang Konsisten
 
-Selalu kembalikan error secara eksplisit:
+Selalu kembalikan kesalahan secara eksplisit:
 
 ```go
-// ❌ Buruk: Penanganan error tidak konsisten
+// ❌ Bad: Inconsistent error handling
 func (s *Service) GetData() interface{}  // How to handle errors?
 func (s *Service) SaveData(data string)  // Silent failures?
 
-// ✅ Baik: Error eksplisit
+// ✅ Good: Explicit errors
 func (s *Service) GetData() (Data, error)
 func (s *Service) SaveData(data string) error
 ```
@@ -76,13 +76,13 @@ func (s *Service) SaveData(data string) error
 Validasi semua input di sisi Go:
 
 ```go
-// ❌ Buruk: Tanpa validasi
+// ❌ Bad: No validation
 func (s *UserService) CreateUser(email, password string) (*User, error) {
     user := &User{Email: email, Password: password}
     return s.db.Create(user)
 }
 
-// ✅ Baik: Validasi terlebih dahulu
+// ✅ Good: Validate first
 func (s *UserService) CreateUser(email, password string) (*User, error) {
     // Validate email
     if !isValidEmail(email) {
@@ -109,20 +109,20 @@ func (s *UserService) CreateUser(email, password string) (*User, error) {
 }
 ```
 
-## Pola Performa
+## Pola Kinerja
 
 ### 1. Operasi Batch
 
-Kurangi panggilan bridge dengan batching:
+Kurangi pemanggilan melalui bridge dengan memproses operasi secara batch:
 
 ```go
-// ❌ Buruk: N panggilan
+// ❌ Bad: N calls
 // JavaScript
 for (const item of items) {
     await ProcessItem(item)  // N bridge calls
 }
 
-// ✅ Baik: 1 panggilan
+// ✅ Good: 1 call
 // Go
 func (s *Service) ProcessItems(items []Item) ([]Result, error) {
     results := make([]Result, len(items))
@@ -138,15 +138,15 @@ const results = await ProcessItems(items)  // 1 bridge call
 
 ### 2. Paginasi
 
-Jangan kembalikan dataset besar:
+Jangan kembalikan set data yang sangat besar:
 
 ```go
-// ❌ Buruk: Mengembalikan semuanya
+// ❌ Bad: Returns everything
 func (s *Service) GetAllUsers() ([]User, error) {
     return s.db.FindAll()  // Could be millions
 }
 
-// ✅ Baik: Dipaginasi
+// ✅ Good: Paginated
 type PageRequest struct {
     Page     int `json:"page"`
     PageSize int `json:"pageSize"`
@@ -192,7 +192,7 @@ func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
 
 ### 3. Caching
 
-Cache operasi yang mahal:
+Simpan hasil operasi yang mahal dalam cache:
 
 ```go
 type CachedService struct {
@@ -235,10 +235,10 @@ func (s *CachedService) GetData(key string) (interface{}, error) {
 
 ### 4. Streaming dengan Event
 
-Gunakan event untuk streaming data:
+Gunakan event untuk melakukan streaming data:
 
 ```go
-// ❌ Buruk: Polling
+// ❌ Bad: Polling
 func (s *Service) GetProgress() int {
     return s.progress
 }
@@ -249,7 +249,7 @@ setInterval(async () => {
     updateUI(progress)
 }, 100)
 
-// ✅ Baik: Event
+// ✅ Good: Events
 // Service must hold a reference to *application.App to emit events / log:
 //
 //   type Service struct {
@@ -394,7 +394,7 @@ func (a *AuthService) DeleteAccount(token string) error {
 }
 ```
 
-### 3. Rate Limiting
+### 3. Pembatasan Laju
 
 Cegah penyalahgunaan:
 
@@ -443,19 +443,19 @@ func (s *Service) SendEmail(to, subject, body string) error {
 }
 ```
 
-## Pola Penanganan Error
+## Pola Penanganan Kesalahan
 
-### 1. Error Deskriptif
+### 1. Kesalahan yang Deskriptif
 
-Berikan konteks dalam error:
+Sertakan konteks dalam kesalahan:
 
 ```go
-// ❌ Buruk: Error generik
+// ❌ Bad: Generic errors
 func (s *Service) LoadFile(path string) ([]byte, error) {
     return os.ReadFile(path)  // "no such file or directory"
 }
 
-// ✅ Baik: Error kontekstual
+// ✅ Good: Contextual errors
 func (s *Service) LoadFile(path string) ([]byte, error) {
     data, err := os.ReadFile(path)
     if err != nil {
@@ -465,9 +465,9 @@ func (s *Service) LoadFile(path string) ([]byte, error) {
 }
 ```
 
-### 2. Tipe Error
+### 2. Tipe Kesalahan
 
-Gunakan error bertipe untuk penanganan spesifik:
+Gunakan kesalahan bertipe untuk penanganan khusus:
 
 ```go
 type ValidationError struct {
@@ -512,9 +512,9 @@ func (s *UserService) GetUser(id int) (*User, error) {
 }
 ```
 
-### 3. Pemulihan Error
+### 3. Pemulihan dari Kesalahan
 
-Tangani error dengan anggun:
+Tangani kesalahan dengan baik:
 
 ```go
 func (s *Service) ProcessWithRetry(data string) error {
@@ -548,9 +548,9 @@ func (s *Service) ProcessWithRetry(data string) error {
 
 ## Pola Pengujian
 
-### 1. Unit Testing
+### 1. Pengujian Unit
 
-Uji service secara terisolasi:
+Uji layanan secara terisolasi:
 
 ```go
 func TestUserService_CreateUser(t *testing.T) {
@@ -581,7 +581,7 @@ func TestUserService_CreateUser(t *testing.T) {
 }
 ```
 
-### 2. Integration Testing
+### 2. Pengujian Integrasi
 
 Uji dengan dependensi nyata:
 
@@ -619,9 +619,9 @@ func TestUserService_Integration(t *testing.T) {
 }
 ```
 
-### 3. Mock Service
+### 3. Layanan Mock
 
-Buat interface yang dapat diuji:
+Buat antarmuka yang dapat diuji:
 
 ```go
 type UserRepository interface {
@@ -670,34 +670,34 @@ func TestUserService_WithMock(t *testing.T) {
 
 ### ✅ Lakukan
 
-- *Tanggung jawab tunggal* - Satu service, satu tujuan
-- *Penamaan jelas* - Nama metode deskriptif
-- *Validasi input* - Selalu di sisi Go
-- *Kembalikan error* - Penanganan error eksplisit
-- *Operasi batch* - Kurangi panggilan bridge
+- *Tanggung jawab tunggal* - Satu layanan, satu tujuan
+- *Penamaan yang jelas* - Nama metode yang deskriptif
+- *Validasi input* - Selalu lakukan di sisi Go
+- *Kembalikan kesalahan* - Penanganan kesalahan secara eksplisit
+- *Proses operasi secara batch* - Kurangi pemanggilan melalui bridge
 - *Gunakan event* - Untuk streaming data
-- *Sanitasi input* - Cegah injection
-- *Uji secara menyeluruh* - Unit dan integration test
+- *Sanitasi input* - Cegah injeksi
+- *Lakukan pengujian secara menyeluruh* - Pengujian unit dan integrasi
 - *Dokumentasikan metode* - Komentar menjadi JSDoc
-- *Versioning API* - Rencanakan perubahan
+- *Beri versi pada API Anda* - Rencanakan perubahan
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan buat god object* - Jaga service tetap terfokus
-- *Jangan percaya frontend* - Validasi semuanya
-- *Jangan kembalikan dataset besar* - Gunakan paginasi
-- *Jangan block* - Gunakan goroutine untuk operasi panjang
-- *Jangan abaikan error* - Tangani semua kasus error
-- *Jangan lewatkan pengujian* - Uji sejak awal dan sering
-- *Jangan hardcode* - Gunakan konfigurasi
-- *Jangan ekspos internal* - Jaga implementasi tetap privat
+- *Jangan buat god object* - Jaga agar setiap layanan tetap terfokus
+- *Jangan percayai frontend* - Validasi semuanya
+- *Jangan kembalikan set data yang sangat besar* - Gunakan paginasi
+- *Jangan lakukan operasi yang memblokir* - Gunakan goroutine untuk operasi yang berlangsung lama
+- *Jangan abaikan kesalahan* - Tangani semua kasus kesalahan
+- *Jangan lewatkan pengujian* - Uji sejak dini dan sesering mungkin
+- *Jangan hardcode nilai* - Gunakan konfigurasi
+- *Jangan mengekspos detail internal* - Jaga agar implementasi tetap privat
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Metode](/id/features/bindings/methods/) - Pelajari dasar binding metode
-- [Services](/id/features/bindings/services/) - Pahami arsitektur service
-- [Models](/id/features/bindings/models/) - Bind struktur data kompleks
-- [Events](/id/features/events/system/) - Gunakan event untuk pub/sub
+- [Metode](/features/bindings/methods/) - Pelajari dasar-dasar binding metode
+- [Layanan](/features/bindings/services/) - Pahami arsitektur layanan
+- [Model](/features/bindings/models/) - Bind struktur data yang kompleks
+- [Peristiwa](/features/events/system/) - Gunakan peristiwa untuk pola pub/sub
 
 ---
 

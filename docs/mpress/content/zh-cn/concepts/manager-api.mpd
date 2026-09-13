@@ -1,265 +1,288 @@
 ---
 schema = 1
-title = "Manager API"
-description = "具有专注管理器接口的结构化 API"
+title = "管理器 API"
+description = "通过职责明确的管理器接口提供结构清晰的 API"
 slug = "concepts/manager-api"
-sourcePath = "zh-cn/concepts/manager-api.mpd"
+sourcePath = "concepts/manager-api.mpd"
 ---
 
-Wails v3 的 Manager API 提供了一种组织良好且易于发现的方式，通过专注的 Manager 结构体来访问应用程序功能。这种新的 API 结构将相关方法分组在一起，同时保持与传统 App API 的完全向后兼容。
+Wails v3 管理器 API 将各项应用功能划分到职责明确的管理器结构体中，并通过 `*application.App` 的公开字段提供访问方式，使 API 结构清晰且易于发现。Wails 3 与 v2 完全不同——它没有用于兼容旧式 `app.NewWebviewWindow(...)` API 的逐调用封装层，因此应使用以下管理器来操控应用。
 
 ## 概述
 
-Manager API 将应用程序功能组织为十一个专注领域：
+管理器 API 将应用功能划分为十二个职责明确的领域（一个日志记录器和十一个管理器）：
 
 - *`app.Window`* - 窗口创建、管理和回调
-- *`app.ContextMenu`* - 上下文菜单注册和管理
-- *`app.KeyBinding`* - 全局快捷键绑定管理
+- *`app.ContextMenu`* - 上下文菜单注册和管理\
+- *`app.KeyBinding`* - 全局按键绑定管理
 - *`app.Browser`* - 浏览器集成（打开 URL 和文件）
 - *`app.Env`* - 环境信息和系统状态
 - *`app.Dialog`* - 文件和消息对话框操作
-- *`app.Event`* - 自定义事件处理和应用程序事件
-- *`app.Menu`* - 应用程序菜单管理
+- *`app.Event`* - 自定义事件处理和应用事件
+- *`app.Menu`* - 应用菜单管理
 - *`app.Screen`* - 屏幕管理和坐标转换
 - *`app.Clipboard`* - 剪贴板文本操作
-- *`app.SystemTray`* - 系统托盘图标创建和管理
+- *`app.SystemTray`* - 系统托盘图标的创建和管理
+- *`app.Autostart`* - 注册应用，使其在用户登录时启动
 
 ## 优势
 
-- *更好的可发现性* - IDE 自动补全显示结构化的 API 表面
-- *改进的代码组织* - 相关方法分组在一起
-- *增强的可维护性* - 跨管理器的关注点分离
-- *未来可扩展性* - 更容易向特定领域添加新功能
+- *更易发现* - IDE 自动补全会显示结构清晰的 API 接口
+- *改进代码组织* - 将相关方法归为一组
+- *增强可维护性* - 在各管理器之间分离关注点
+- *便于未来扩展* - 更容易向特定领域添加新功能
 
 ## 用法
 
-Manager API 提供对所有应用程序功能的组织化访问：
+管理器 API 以结构清晰的方式提供对所有应用功能的访问：
 
 ```go
-// 事件和自定义事件处理
+// Events and custom event handling
 app.Event.Emit("custom", data)
 app.Event.On("custom", func(e *CustomEvent) { ... })
 
-// 窗口管理
+// Window management
 window, _ := app.Window.GetByName("main")
 app.Window.OnCreate(func(window Window) { ... })
 
-// 浏览器集成
+// Browser integration
 app.Browser.OpenURL("https://wails.io")
 
-// 菜单管理
+// Menu management
 menu := app.Menu.New()
 app.Menu.Set(menu)
 
-// 系统托盘
+// System tray
 systray := app.SystemTray.New()
 ```
 
-## Manager 参考
+## 管理器参考
 
 ### 窗口管理器
 
-管理窗口创建、检索和生命周期回调。
+管理窗口的创建、获取和生命周期回调。
 
 ```go
-// 创建窗口
+// Create windows
 window := app.Window.New()
 window := app.Window.NewWithOptions(options)
 current := app.Window.Current()
 
-// 查找窗口
+// Find windows
 window, exists := app.Window.GetByName("main")
 windows := app.Window.GetAll()
 
-// 窗口回调
+// Window callbacks
 app.Window.OnCreate(func(window Window) {
-    // 处理窗口创建
+    // Handle window creation
 })
 ```
 
 ### 事件管理器
 
-处理自定义事件和应用程序事件监听。
+处理自定义事件并监听应用事件。
 
 ```go
-// 自定义事件
+// Custom events
 app.Event.Emit("userAction", data)
 cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
-    // 处理事件
+    // Handle event
 })
 app.Event.Off("userAction")
-app.Event.Reset() // 移除所有监听器
+app.Event.Reset() // Remove all listeners
 
-// 应用程序事件
+// Application events
 app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
-    // 处理系统主题更改
+    // Handle system theme change
 })
 ```
 
 ### 浏览器管理器
 
-提供用于打开 URL 和文件的浏览器集成。
+提供用于打开 URL 和文件的浏览器集成功能。
 
 ```go
-// 在默认浏览器中打开 URL 和文件
+// Open URLs and files in default browser
 err := app.Browser.OpenURL("https://wails.io")
 err := app.Browser.OpenFile("/path/to/document.pdf")
 ```
 
 ### 环境管理器
 
-访问系统环境信息。
+提供对系统环境信息的访问。
 
 ```go
-// 获取环境信息
+// Get environment info
 env := app.Env.Info()
 fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
 
-// 检查系统主题
+// Check system theme
 if app.Env.IsDarkMode() {
-    // 深色模式已激活
+    // Dark mode is active
 }
 
-// 打开文件管理器
+// Open file manager
 err := app.Env.OpenFileManager("/path/to/folder", false)
 ```
 
 ### 对话框管理器
 
-组织化访问文件和消息对话框。
+以结构清晰的方式提供对文件和消息对话框的访问。
 
 ```go
-// 文件对话框
+// File dialogs
 result, err := app.Dialog.OpenFile().
     AddFilter("Text Files", "*.txt").
     PromptForSingleSelection()
 
 result, err = app.Dialog.SaveFile().
-    SetDefaultFilename("document.txt").
+    SetFilename("document.txt").
     PromptForSingleSelection()
 
-// 消息对话框
+// Message dialogs
 app.Dialog.Info().
     SetTitle("Information").
     SetMessage("Operation completed successfully").
     Show()
 
 app.Dialog.Error().
-    SetTitle("Error").  
+    SetTitle("Error").
     SetMessage("An error occurred").
     Show()
 ```
 
 ### 菜单管理器
 
-应用程序菜单创建和管理。
+创建和管理应用菜单。
 
 ```go
-// 创建并设置应用程序菜单
+// Create and set application menu
 menu := app.Menu.New()
 fileMenu := menu.AddSubmenu("File")
 fileMenu.Add("New").OnClick(func(ctx *Context) {
-    // 处理菜单点击
+    // Handle menu click
 })
 
 app.Menu.Set(menu)
 
-// 显示关于对话框
+// Show about dialog
 app.Menu.ShowAbout()
 ```
 
-### 快捷键绑定管理器
+### 按键绑定管理器
 
-动态管理全局快捷键绑定。
+动态管理全局按键绑定。
 
 ```go
-// 添加快捷键绑定
-app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
-    // 处理 Ctrl+N
+// Add key bindings
+app.KeyBinding.Add("ctrl+n", func(window application.Window) {
+    // Handle Ctrl+N
 })
 
-app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+q", func(window application.Window) {
     app.Quit()
 })
 
-// 移除快捷键绑定
+// Remove key bindings
 app.KeyBinding.Remove("ctrl+n")
 
-// 获取所有绑定
+// Get all bindings
 bindings := app.KeyBinding.GetAll()
 ```
 
 ### 上下文菜单管理器
 
-高级上下文菜单管理（适用于库作者）。
+高级上下文菜单管理（面向库作者）。
 
 ```go
-// 创建并注册上下文菜单
+// Create and register context menu
 menu := app.ContextMenu.New()
 app.ContextMenu.Add("myMenu", menu)
 
-// 检索上下文菜单
+// Retrieve context menu
 menu, exists := app.ContextMenu.Get("myMenu")
 
-// 移除上下文菜单
+// Remove context menu
 app.ContextMenu.Remove("myMenu")
 ```
 
 ### 屏幕管理器
 
-多显示器设置的屏幕管理和坐标转换。
+面向多显示器配置的屏幕管理和坐标转换。
 
 ```go
-// 获取屏幕信息
+// Get screen information
 screens := app.Screen.GetAll()
 primary := app.Screen.GetPrimary()
 
-// 坐标转换
+// Coordinate transformations
 physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
 logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
 
-// 屏幕检测
+// Screen detection
 screen := app.Screen.ScreenNearestDipPoint(point)
 screen = app.Screen.ScreenNearestDipRect(rect)
 ```
 
 ### 剪贴板管理器
 
-用于读写文本的剪贴板操作。
+用于读取和写入文本的剪贴板操作。
 
 ```go
-// 设置剪贴板文本
+// Set text to clipboard
 success := app.Clipboard.SetText("Hello World")
 if !success {
-    // 处理错误
+    // Handle error
 }
 
-// 从剪贴板获取文本
+// Get text from clipboard
 text, ok := app.Clipboard.Text()
 if !ok {
-    // 处理错误
+    // Handle error
 } else {
-    // 使用文本
+    // Use the text
 }
 ```
 
-### 系统托盘管理器
+### SystemTray 管理器
 
-系统托盘图标创建和管理。
+创建和管理系统托盘图标。
 
 ```go
-// 创建系统托盘
+// Create system tray
 systray := app.SystemTray.New()
 systray.SetLabel("My App")
 systray.SetIcon(iconBytes)
 
-// 向系统托盘添加菜单
+// Add menu to system tray
 menu := app.Menu.New()
 menu.Add("Open").OnClick(func(ctx *Context) {
-    // 处理点击
+    // Handle click
 })
 systray.SetMenu(menu)
 
-// 完成后销毁系统托盘
+// Destroy system tray when done
 systray.Destroy()
 ```
+
+### 自动启动管理器
+
+注册应用，使其在用户登录时启动。它会根据各平台选择合适的原生机制：macOS 上使用 SMAppService 或 LaunchAgent plist，Windows 上使用 `HKCU\…\Run` 注册表项，Linux 上使用 XDG `.desktop` 条目。
+
+```go
+// Register to launch at login
+err := app.Autostart.Enable()
+
+// With extra launch-time arguments and a custom identifier
+err = app.Autostart.EnableWithOptions(application.AutostartOptions{
+    Identifier: "com.example.myapp",
+    Arguments:  []string{"--hidden"},
+})
+
+// Check / remove
+enabled, err := app.Autostart.IsEnabled()
+status, err := app.Autostart.Status()  // includes Path + Strategy
+err = app.Autostart.Disable()
+```
+
+有关各平台的行为、标识符规则以及过期项检测保证，请参阅[自动启动功能页面](/features/autostart/basics/)。

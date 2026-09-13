@@ -1,14 +1,14 @@
 ---
 schema = 1
-title = "Operasi Clipboard"
-description = "Salin dan tempel teks dengan clipboard sistem"
+title = "Operasi Papan Klip"
+description = "Salin dan tempel teks menggunakan papan klip sistem"
 slug = "features/clipboard/basics"
-sourcePath = "id/features/clipboard/basics.mpd"
+sourcePath = "features/clipboard/basics.mpd"
 ---
 
-## Operasi Clipboard
+## Operasi Papan Klip
 
-Wails menyediakan *API clipboard terpadu* yang bekerja di semua platform. Salin dan tempel teks dengan metode sederhana dan konsisten di Windows, macOS, dan Linux.
+Wails menyediakan *API papan klip terpadu* yang berfungsi di semua platform. Salin dan tempel teks dengan metode yang sederhana dan konsisten di Windows, macOS, dan Linux.
 
 ## Mulai Cepat
 
@@ -23,11 +23,11 @@ if ok {
 }
 ```
 
-*Selesai!* Akses clipboard lintas platform.
+*Selesai!* Akses papan klip lintas platform.
 
 ## Menyalin Teks
 
-### Salin Dasar
+### Penyalinan Dasar
 
 ```go
 success := app.Clipboard.SetText("Text to copy")
@@ -36,9 +36,9 @@ if !success {
 }
 ```
 
-*Returns:* `bool` - `true` if successful, `false` otherwise
+*Mengembalikan:* `bool` - `true` jika berhasil, `false` jika tidak
 
-### Salin dari Service
+### Menyalin dari Layanan
 
 ```go
 type ClipboardService struct {
@@ -50,7 +50,7 @@ func (c *ClipboardService) CopyToClipboard(text string) bool {
 }
 ```
 
-*Call from JavaScript:*
+*Panggil dari JavaScript:*
 
 ```javascript
 import { CopyToClipboard } from './bindings/changeme/clipboardservice'
@@ -58,7 +58,7 @@ import { CopyToClipboard } from './bindings/changeme/clipboardservice'
 await CopyToClipboard("Text to copy")
 ```
 
-### Salin dengan Umpan Balik
+### Menyalin dengan Umpan Balik
 
 ```go
 func copyWithFeedback(text string) {
@@ -76,9 +76,9 @@ func copyWithFeedback(text string) {
 }
 ```
 
-## Menempel Teks
+## Menempelkan Teks
 
-### Tempel Dasar
+### Penempelan Dasar
 
 ```go
 text, ok := app.Clipboard.Text()
@@ -90,9 +90,9 @@ if !ok {
 fmt.Println("Clipboard text:", text)
 ```
 
-*Returns:* `(string, bool)` - Text and success flag
+*Mengembalikan:* `(string, bool)` - Teks dan penanda keberhasilan
 
-### Tempel dari Service
+### Menempelkan dari Layanan
 
 ```go
 func (c *ClipboardService) PasteFromClipboard() string {
@@ -104,7 +104,7 @@ func (c *ClipboardService) PasteFromClipboard() string {
 }
 ```
 
-*Call from JavaScript:*
+*Panggil dari JavaScript:*
 
 ```javascript
 import { PasteFromClipboard } from './bindings/changeme/clipboardservice'
@@ -113,7 +113,7 @@ const text = await PasteFromClipboard()
 console.log("Pasted:", text)
 ```
 
-### Tempel dengan Validasi
+### Menempelkan dengan Validasi
 
 ```go
 func pasteText() (string, error) {
@@ -214,7 +214,7 @@ async function pasteAndProcess() {
 }
 ```
 
-### Salin Beberapa Format
+### Menyalin Beberapa Format
 
 ```go
 type CopyService struct {
@@ -248,7 +248,7 @@ func (c *CopyService) CopyAsCSV(rows [][]string) bool {
 }
 ```
 
-### Monitor Clipboard
+### Pemantau Papan Klip
 
 ```go
 type ClipboardMonitor struct {
@@ -300,7 +300,7 @@ func (cm *ClipboardMonitor) checkClipboard() {
 }
 ```
 
-### Salin dengan Riwayat
+### Menyalin dengan Riwayat
 
 ```go
 type ClipboardHistory struct {
@@ -348,9 +348,9 @@ func (ch *ClipboardHistory) RestoreFromHistory(index int) bool {
 
 ## Integrasi Frontend
 
-### Menggunakan Browser Clipboard API
+### Menggunakan API Papan Klip Browser
 
-For simple text, you can use the browser's clipboard API:
+Untuk teks sederhana, Anda dapat menggunakan API papan klip browser:
 
 ```javascript
 // Copy
@@ -375,11 +375,11 @@ async function pasteText() {
 }
 ```
 
-*Note:* Browser clipboard API requires HTTPS or localhost, and user permission.
+*Catatan:* API papan klip browser memerlukan HTTPS atau localhost serta izin pengguna.
 
-### Menggunakan Clipboard Wails
+### Menggunakan Papan Klip Wails
 
-For system-wide clipboard access:
+Untuk mengakses papan klip di seluruh sistem:
 
 ```javascript
 import { CopyToClipboard, PasteFromClipboard } from './bindings/changeme/clipboardservice'
@@ -403,87 +403,87 @@ async function paste() {
 
 ### ✅ Lakukan
 
-- *Check return values* - Handle failures gracefully
-- *Provide feedback* - Let users know copy succeeded
-- *Validate pasted text* - Check format and size
-- *Use appropriate method* - Browser API vs Wails API
-- *Handle empty clipboard* - Check before using
-- *Trim whitespace* - Clean pasted text
+- *Periksa nilai kembalian* - Tangani kegagalan dengan baik
+- *Berikan umpan balik* - Beri tahu pengguna bahwa penyalinan berhasil
+- *Validasi teks yang ditempelkan* - Periksa format dan ukurannya
+- *Gunakan metode yang sesuai* - API browser atau API Wails
+- *Tangani papan klip kosong* - Periksa sebelum digunakan
+- *Hapus spasi kosong di awal dan akhir* - Bersihkan teks yang ditempelkan
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Don't ignore failures* - Always check success
-- *Don't copy sensitive data* - Clipboard is shared
-- *Don't assume format* - Validate pasted data
-- *Don't poll too frequently* - If monitoring clipboard
-- *Don't copy large data* - Use files instead
-- *Don't forget security* - Sanitise pasted content
+- *Jangan abaikan kegagalan* - Selalu periksa keberhasilan
+- *Jangan salin data sensitif* - Papan klip digunakan bersama
+- *Jangan berasumsi tentang format* - Validasi data yang ditempelkan
+- *Jangan lakukan polling terlalu sering* - Saat memantau papan klip
+- *Jangan salin data berukuran besar* - Gunakan file sebagai gantinya
+- *Jangan abaikan keamanan* - Sanitasi konten yang ditempelkan
 
-## Perbedaan Platform
+## Perbedaan Antarplatform
 
 ### macOS
 
-- Uses NSPasteboard
-- Supports rich text (future)
-- System-wide clipboard
-- Clipboard history (system feature)
+- Menggunakan NSPasteboard
+- Mendukung teks kaya (di masa mendatang)
+- Papan klip seluruh sistem
+- Riwayat papan klip (fitur sistem)
 
 ### Windows
 
-- Uses Windows Clipboard API
-- Supports multiple formats (future)
-- System-wide clipboard
-- Clipboard history (Windows 10+)
+- Menggunakan Windows Clipboard API
+- Mendukung beberapa format (di masa mendatang)
+- Papan klip seluruh sistem
+- Riwayat papan klip (Windows 10+)
 
 ### Linux
 
-- Uses X11/Wayland clipboard
-- Primary and clipboard selections
-- Varies by desktop environment
-- May require clipboard manager
+- Menggunakan papan klip X11/Wayland
+- Pilihan primer dan papan klip
+- Bervariasi menurut lingkungan desktop
+- Mungkin memerlukan pengelola papan klip
 
 ## Keterbatasan
 
 ### Versi Saat Ini
 
-- *Text only* - Images not yet supported
-- *No format detection* - Plain text only
-- *No clipboard events* - Must poll for changes
-- *No clipboard history* - Implement yourself
+- *Hanya teks* - Gambar belum didukung
+- *Tidak ada deteksi format* - Hanya teks biasa
+- *Tidak ada peristiwa papan klip* - Perubahan harus diperiksa secara berkala
+- *Tidak ada riwayat papan klip* - Implementasikan sendiri
 
 ### Fitur Mendatang
 
-- Image support
-- Rich text support
-- Multiple formats
-- Clipboard change events
-- Clipboard history API
+- Dukungan gambar
+- Dukungan teks kaya
+- Berbagai format
+- Peristiwa perubahan papan klip
+- API riwayat papan klip
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="🚀 Bindings"
-Call Go functions from JavaScript.
+@card title="🚀 Binding"
+Panggil fungsi Go dari JavaScript.
 
-[Pelajari Selengkapnya →](/id/features/bindings/methods/)
+[Pelajari Lebih Lanjut →](/features/bindings/methods/)
 @end
-@card title="★ Events"
-Use events for clipboard notifications.
+@card title="★ Peristiwa"
+Gunakan peristiwa untuk notifikasi papan klip.
 
-[Pelajari Selengkapnya →](/id/features/events/system/)
+[Pelajari Lebih Lanjut →](/features/events/system/)
 @end
-@card title="ℹ dialogs"
-Show copy/paste feedback.
+@card title="ℹ dialog"
+Tampilkan umpan balik penyalinan atau penempelan.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/message/)
+[Pelajari Lebih Lanjut →](/features/dialogs/message/)
 @end
-@card title="◆ Services"
-Organise clipboard code.
+@card title="◆ Layanan"
+Atur kode papan klip.
 
-[Pelajari Selengkapnya →](/id/features/bindings/services/)
+[Pelajari Lebih Lanjut →](/features/bindings/services/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [clipboard examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh papan klip](https://github.com/wailsapp/wails/tree/master/v3/examples).

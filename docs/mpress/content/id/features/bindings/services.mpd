@@ -1,16 +1,16 @@
 ---
 schema = 1
-title = "Services"
-description = "Bangun komponen aplikasi modular dan dapat digunakan ulang dengan service"
+title = "Layanan"
+description = "Bangun komponen aplikasi yang modular dan dapat digunakan kembali dengan layanan"
 slug = "features/bindings/services"
-sourcePath = "id/features/bindings/services.mpd"
+sourcePath = "features/bindings/services.mpd"
 ---
 
-## Arsitektur Service
+## Arsitektur Layanan
 
-*Service* Wails menyediakan cara terstruktur untuk mengorganisir logika aplikasi dengan komponen modular dan mandiri. Service aware terhadap lifecycle dengan hook startup dan shutdown, otomatis ter-bind ke frontend, dapat di-inject dependensinya, dan sepenuhnya dapat diuji secara terisolasi.
+*Layanan* Wails menyediakan cara terstruktur untuk mengatur logika aplikasi dengan komponen modular dan mandiri. Layanan mendukung siklus hidup melalui hook startup dan shutdown, secara otomatis diikat ke frontend, mendukung injeksi dependensi, dan dapat diuji sepenuhnya secara terpisah.
 
-## Memulai Cepat
+## Mulai Cepat
 
 ```go
 type GreetService struct {
@@ -33,7 +33,7 @@ app := application.New(application.Options{
 })
 ```
 
-*Itu saja!* `Greet` sekarang dapat dipanggil dari JavaScript:
+*Selesai!* `Greet` kini dapat dipanggil dari JavaScript:
 
 ```js
 import { Greet } from './bindings/changeme/GreetService';
@@ -42,9 +42,9 @@ const message = await Greet("World");
 console.log(message);  // "Hello, World!"
 ```
 
-## Membuat Service
+## Membuat Layanan
 
-### Service Dasar
+### Layanan Dasar
 
 ```go
 type CalculatorService struct{}
@@ -69,11 +69,11 @@ app := application.New(application.Options{
 ```
 
 *Poin penting:*
-- Hanya *metode yang diekspor* (PascalCase) yang ter-bind
-- Service adalah *singleton* (satu instance)
+- Hanya *metode yang diekspor* (PascalCase) yang diikat
+- Layanan merupakan *singleton* (satu instans)
 - Metode dapat mengembalikan `(value, error)`
 
-### Service dengan State
+### Layanan dengan State
 
 ```go
 type CounterService struct {
@@ -101,9 +101,9 @@ func (c *CounterService) Reset() {
 }
 ```
 
-*Penting:* Service dibagikan ke semua window. Selalu gunakan mutex untuk thread safety.
+*Penting:* Layanan digunakan bersama oleh semua jendela. Selalu gunakan mutex untuk keamanan thread.
 
-### Service dengan Dependensi
+### Layanan dengan Dependensi
 
 ```go
 type UserService struct {
@@ -144,7 +144,7 @@ app := application.New(application.Options{
 })
 ```
 
-## Lifecycle Service
+## Siklus Hidup Layanan
 
 ### ServiceStartup
 
@@ -172,15 +172,15 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 ```
 
 *Kasus penggunaan:*
-- Inisialisasi resource
+- Inisialisasi sumber daya
 - Validasi konfigurasi
 - Jalankan migrasi
-- Mulai task background
-- Hubungkan ke service eksternal
+- Mulai tugas latar belakang
+- Hubungkan ke layanan eksternal
 
 *Penting:*
-- Service dimulai dalam *urutan registrasi*
-- Kembalikan error untuk *mencegah startup aplikasi*
+- Layanan dimulai sesuai *urutan pendaftaran*
+- Kembalikan error untuk *mencegah aplikasi dimulai*
 - Gunakan `ctx` untuk pembatalan
 
 ### ServiceShutdown
@@ -206,16 +206,16 @@ func (u *UserService) ServiceShutdown() error {
 *Kasus penggunaan:*
 - Tutup koneksi
 - Simpan state
-- Bersihkan resource
-- Flush buffer
-- Batalkan task background
+- Bersihkan sumber daya
+- Tulis data yang masih tersimpan dalam buffer ke tujuannya
+- Batalkan tugas latar belakang
 
 *Penting:*
-- Service dimatikan dalam *urutan terbalik*
-- Context aplikasi sudah dibatalkan
-- Kembalikan error untuk *log peringatan* (tidak mencegah shutdown)
+- Layanan dimatikan dalam *urutan terbalik*
+- Konteks aplikasi sudah dibatalkan
+- Kembalikan error untuk *mencatat peringatan* (tidak mencegah proses shutdown)
 
-### Contoh Lifecycle Lengkap
+### Contoh Siklus Hidup Lengkap
 
 ```go
 type DatabaseService struct {
@@ -284,9 +284,9 @@ func (d *DatabaseService) periodicCleanup(ctx context.Context) {
 }
 ```
 
-## Opsi Service
+## Opsi Layanan
 
-### Nama Kustom
+### Nama Khusus
 
 ```go
 app := application.New(application.Options{
@@ -299,13 +299,13 @@ app := application.New(application.Options{
 ```
 
 *Kasus penggunaan:*
-- Beberapa instance dari tipe service yang sama
-- Logging yang lebih jelas
-- Debugging yang lebih baik
+- Beberapa instans dari tipe layanan yang sama
+- Pencatatan log yang lebih jelas
+- Debugging yang lebih mudah
 
 ### Rute HTTP
 
-Service dapat menangani request HTTP:
+Layanan dapat menangani permintaan HTTP:
 
 ```go
 type FileService struct {
@@ -331,11 +331,11 @@ app := application.New(application.Options{
 
 *Kasus penggunaan:*
 - Penyajian file
-- API kustom
+- API khusus
 - Endpoint WebSocket
 - Streaming media
 
-## Pola Service
+## Pola Layanan
 
 ### Pola Repository
 
@@ -361,7 +361,7 @@ func (r *UserRepository) Delete(id int) error {
 }
 ```
 
-### Pola Service Layer
+### Pola Lapisan Layanan
 
 ```go
 type UserService struct {
@@ -420,7 +420,7 @@ func (f *ServiceFactory) CreateOrderService() *OrderService {
 }
 ```
 
-### Pola Event-Driven
+### Pola Berbasis Peristiwa
 
 ```go
 type OrderService struct {
@@ -445,9 +445,9 @@ func (o *OrderService) CreateOrder(items []Item) (*Order, error) {
 }
 ```
 
-## Dependency Injection
+## Injeksi Dependensi
 
-### Constructor Injection
+### Injeksi Konstruktor
 
 ```go
 type EmailService struct {
@@ -473,7 +473,7 @@ app := application.New(application.Options{
 })
 ```
 
-### Application Injection
+### Injeksi Aplikasi
 
 ```go
 type NotificationService struct {
@@ -497,7 +497,7 @@ app := application.New(application.Options{})
 app.RegisterService(application.NewService(NewNotificationService(app)))
 ```
 
-### Dependensi Service-ke-Service
+### Dependensi Antarlayanan
 
 ```go
 type OrderService struct {
@@ -526,9 +526,9 @@ app := application.New(application.Options{
 })
 ```
 
-## Menguji Service
+## Menguji Layanan
 
-### Unit Testing
+### Pengujian Unit
 
 ```go
 func TestCalculatorService_Add(t *testing.T) {
@@ -570,7 +570,7 @@ func TestUserService_GetUser(t *testing.T) {
 }
 ```
 
-### Pengujian Lifecycle
+### Pengujian Siklus Hidup
 
 ```go
 func TestDatabaseService_Lifecycle(t *testing.T) {
@@ -598,21 +598,21 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 
 ### ✅ Lakukan
 
-- *Tanggung jawab tunggal* - Satu service, satu tujuan
-- *Constructor injection* - Teruskan dependensi secara eksplisit
-- *State thread-safe* - Gunakan mutex
-- *Kembalikan error* - Jangan panic
-- *Log event penting* - Gunakan structured logging
-- *Uji secara terisolasi* - Mock dependensi
+- *Tanggung jawab tunggal* - Satu layanan, satu tujuan
+- *Injeksi melalui konstruktor* - Teruskan dependensi secara eksplisit
+- *State yang aman untuk thread* - Gunakan mutex
+- *Kembalikan error* - Jangan memicu panic
+- *Catat peristiwa penting* - Gunakan pencatatan terstruktur
+- *Uji secara terisolasi* - Gunakan mock untuk dependensi
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan gunakan global state* - Teruskan dependensi
-- *Jangan block startup* - Jaga ServiceStartup tetap cepat
-- *Jangan abaikan shutdown* - Selalu bersihkan
-- *Jangan buat dependensi sirkular* - Desain dengan hati-hati
-- *Jangan ekspos metode internal* - Jaga tetap privat
-- *Jangan lupa thread safety* - Service dibagikan
+- *Jangan gunakan state global* - Teruskan dependensi
+- *Jangan hambat proses startup* - Pastikan ServiceStartup berjalan cepat
+- *Jangan abaikan proses shutdown* - Selalu lakukan pembersihan
+- *Jangan buat dependensi melingkar* - Rancang dengan cermat
+- *Jangan ekspos metode internal* - Pertahankan sebagai metode privat
+- *Jangan abaikan keamanan thread* - Layanan digunakan bersama
 
 ## Contoh Lengkap
 
@@ -786,13 +786,13 @@ func main() {
 }
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Binding Metode](/id/features/bindings/methods/) - Pelajari cara bind metode Go ke JavaScript
-- [Models](/id/features/bindings/models/) - Bind struktur data kompleks
-- [Events](/id/features/events/system/) - Gunakan event untuk komunikasi pub/sub
-- [Praktik Terbaik](/id/features/bindings/best-practices/) - Pola desain service dan praktik terbaik
+- [Binding Metode](/features/bindings/methods/) - Pelajari cara mengikat metode Go ke JavaScript
+- [Model](/features/bindings/models/) - Ikat struktur data yang kompleks
+- [Peristiwa](/features/events/system/) - Gunakan peristiwa untuk komunikasi publikasi/langganan
+- [Praktik Terbaik](/features/bindings/best-practices/) - Pola desain layanan dan praktik terbaik
 
 ---
 
-*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh service](https://github.com/wailsapp/wails/tree/master/v3/examples).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh layanan](https://github.com/wailsapp/wails/tree/master/v3/examples).

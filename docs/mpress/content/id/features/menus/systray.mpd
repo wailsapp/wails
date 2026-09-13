@@ -1,14 +1,18 @@
 ---
 schema = 1
-title = "Menu System Tray"
-description = "Tambahkan integrasi system tray ke aplikasi Anda"
+title = "Menu Baki Sistem"
+description = "Tambahkan integrasi baki sistem (area notifikasi) ke aplikasi Anda"
 slug = "features/menus/systray"
-sourcePath = "id/features/menus/systray.mpd"
+sourcePath = "features/menus/systray.mpd"
 ---
 
-## Menu System Tray
+## Menu Baki Sistem
 
-Wails menyediakan *API system tray terpadu* yang bekerja di semua platform. Buat ikon tray dengan menu, lampirkan window, dan tangani klik dengan perilaku platform native untuk aplikasi background, service, dan utilitas akses cepat.
+Wails menyediakan *API baki sistem terpadu* yang berfungsi di semua platform. Buat ikon baki dengan menu, lampirkan jendela, dan tangani klik dengan perilaku native platform untuk aplikasi latar belakang, layanan, dan utilitas akses cepat.
+
+![Menu baki sistem Wails yang dibuka dari bar menu macOS](/assets/screenshots/systray-menu-macos.png)
+
+Di macOS, item baki sistem Wails muncul di bar menu dan membuka menu native. Contoh ini mencakup item yang dinonaktifkan, kotak centang, tombol radio, submenu, dan tindakan.
 
 ## Mulai Cepat
 
@@ -51,11 +55,11 @@ func main() {
 }
 ```
 
-*Result:* System tray icon with menu on all platforms.
+*Hasil:* Ikon baki sistem dengan menu di semua platform.
 
-## Membuat System Tray
+## Membuat Baki Sistem
 
-### Basic System Tray
+### Baki Sistem Dasar
 
 ```go
 // Create system tray
@@ -68,9 +72,9 @@ systray.SetIcon(iconBytes)
 systray.SetLabel("My Application")
 ```
 
-### With Icon
+### Dengan Ikon
 
-Icons should be embedded:
+Ikon sebaiknya disematkan:
 
 ```go
 import _ "embed"
@@ -88,38 +92,38 @@ func main() {
 
     systray := app.SystemTray.New()
     systray.SetIcon(icon)
-    systray.SetDarkModeIcon(iconDark)  // macOS dark mode
+    systray.SetDarkModeIcon(iconDark)  // Windows and macOS dark mode
     
     app.Run()
 }
 ```
 
-*Icon requirements:*
+*Persyaratan ikon:*
 
 @table header=true
-| Platform | Size | Format | Notes |
-| *Windows* | 16x16 or 32x32 | PNG, ICO | Notification area |
-| *macOS* | 18x18 to 22x22 | PNG | Menu bar, template recommended |
-| *Linux* | 22x22 to 48x48 | PNG, SVG | Varies by DE |
+| Platform | Ukuran | Format | Catatan |
+| *Windows* | 16x16 atau 32x32 | PNG, ICO | Area notifikasi |
+| *macOS* | 18x18 hingga 22x22 | PNG | Bar menu, templat disarankan |
+| *Linux* | 22x22 hingga 48x48 | PNG, SVG | Bervariasi menurut DE |
 @end
 
-### Template Icons (macOS)
+### Ikon Templat (macOS)
 
-Template icons adapt to light/dark mode automatically:
+Ikon templat secara otomatis menyesuaikan dengan mode terang/gelap:
 
 ```go
 systray.SetTemplateIcon(iconBytes)
 ```
 
-*Template icon guidelines:*
-- Use black and clear (transparent) colours only
-- Black becomes white in dark mode
-- Name file with `Template` suffix: `iconTemplate.png`
-- [Design guide](https://bjango.com/articles/designingmenubarextras/)
+*Panduan ikon templat:*
+- Gunakan hanya warna hitam dan bening (transparan)
+- Warna hitam berubah menjadi putih dalam mode gelap
+- Beri nama file dengan akhiran `Template`: `iconTemplate.png`
+- [Panduan desain](https://bjango.com/articles/designingmenubarextras/)
 
 ## Menambahkan Menu
 
-System tray menus work like application menus:
+Menu baki sistem berfungsi seperti menu aplikasi:
 
 ```go
 menu := app.NewMenu()
@@ -146,11 +150,11 @@ menu.Add("Quit").OnClick(func(ctx *application.Context) {
 systray.SetMenu(menu)
 ```
 
-*For all menu item types*, see [Menu Reference](/id/features/menus/reference/).
+Untuk *semua jenis item menu*, lihat [Referensi Menu](/features/menus/reference/).
 
-## Melampirkan Window
+## Melampirkan Jendela
 
-Attach a window to the tray icon for automatic show/hide:
+Lampirkan jendela ke ikon baki agar ditampilkan/disembunyikan secara otomatis:
 
 ```go
 // Create window
@@ -164,30 +168,44 @@ systray.WindowOffset(10)                          // Pixels from tray icon
 systray.WindowDebounce(200 * time.Millisecond)    // Click debounce
 ```
 
-*Behaviour:*
-- Window starts hidden
-- *Left-click tray icon* → Toggle window visibility
-- *Right-click tray icon* → Show menu (if set)
-- Window positioned near tray icon
+*Perilaku:*
+- Jendela dimulai dalam keadaan tersembunyi
+- *Klik kiri ikon baki* → Alihkan visibilitas jendela
+- *Klik kanan ikon baki* → Tampilkan menu (jika ditetapkan)
+- Jendela ditempatkan di dekat ikon baki
 
-*Example: Popup window*
+*Contoh: Jendela popup*
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-    Title:  "Quick Access",
-    Width:  300,
-    Height: 400,
-    Frameless: true,  // No title bar
-    AlwaysOnTop: true,  // Stay on top
+    Title:           "Quick Access",
+    Width:           300,
+    Height:          400,
+    Frameless:       true, // No title bar
+    AlwaysOnTop:     true, // Stay on top
+    HideOnFocusLost: true, // Dismiss when another window receives focus
+    HideOnEscape:    true, // Dismiss when the user presses Escape
 })
 
 systray.AttachWindow(window)
 systray.WindowOffset(5)
 ```
 
+`HideOnFocusLost` berguna untuk popup baki pada Windows, macOS, dan\
+desktop Linux dengan fokus melalui klik. Wails menonaktifkan perilaku tersebut pada lingkungan Linux\
+yang menerapkan fokus mengikuti tetikus (termasuk konfigurasi umum Hyprland, Sway, dan i3),\
+karena meninggalkan popup dalam lingkungan tersebut dapat menyembunyikannya sebelum sempat digunakan.\
+`HideOnEscape` tetap tersedia dalam lingkungan tersebut.
+
+Perilaku klik kiri dan klik kanan di atas merupakan default cerdas. Handler\
+`OnClick` atau `OnRightClick` yang ditetapkan secara eksplisit menggantikan default terkait. Untuk\
+pemeriksaan platform dan kasus khusus, lihat\
+[rangkaian pengujian manual systray](https://github.com/wailsapp/wails/tree/master/v3/test/manual/systray)\
+dan [contoh pengujian beban systray](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-stress).
+
 ## Handler Klik
 
-Handle tray icon clicks:
+Tangani klik pada ikon baki:
 
 ```go
 systray := app.SystemTray.New()
@@ -217,22 +235,22 @@ systray.OnMouseLeave(func() {
 })
 ```
 
-*Platform support:*
+*Dukungan platform:*
 
 @table header=true
-| Event | Windows | macOS | Linux |
+| Peristiwa | Windows | macOS | Linux |
 | OnClick | ✅ | ✅ | ✅ |
 | OnRightClick | ✅ | ✅ | ✅ |
-| OnDoubleClick | ✅ | ✅ | ⚠️ Varies |
-| OnMouseEnter | ✅ | ✅ | ⚠️ Varies |
-| OnMouseLeave | ✅ | ✅ | ⚠️ Varies |
+| OnDoubleClick | ✅ | ✅ | ⚠️ Bervariasi |
+| OnMouseEnter | ✅ | ✅ | ⚠️ Bervariasi |
+| OnMouseLeave | ✅ | ✅ | ⚠️ Bervariasi |
 @end
 
 ## Pembaruan Dinamis
 
-Update tray icon and menu dynamically:
+Perbarui ikon dan menu baki secara dinamis:
 
-### Change Icon
+### Mengubah Ikon
 
 ```go
 var isActive bool
@@ -248,7 +266,7 @@ func updateTrayIcon() {
 }
 ```
 
-### Update Menu
+### Memperbarui Menu
 
 ```go
 var isPaused bool
@@ -268,13 +286,13 @@ pauseMenuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-@note type="caution" title="Always Call Update()"
-After changing menu state, *call `menu.Update()`*. See [Menu Reference](/id/features/menus/reference/#enabled-state).
+@note type="caution" title="Selalu Panggil Update()"
+Setelah mengubah status menu, *panggil `menu.Update()`*. Lihat [Referensi Menu](/features/menus/reference/#enabled-state).
 @end
 
-### Rebuild Menu
+### Membangun Ulang Menu
 
-For major changes, rebuild the entire menu:
+Untuk perubahan besar, buat ulang seluruh menu:
 
 ```go
 func rebuildTrayMenu(status string) {
@@ -302,12 +320,12 @@ func rebuildTrayMenu(status string) {
 }
 ```
 
-## Platform-Specific Features
+## Fitur Khusus Platform
 
 @tabs sync-key="platform"
 @tab label="macOS"
 
-*Menu bar integration:*
+*Integrasi bilah menu:*
 
 ```go
 // Set label (appears next to icon)
@@ -320,24 +338,24 @@ systray.SetTemplateIcon(iconBytes)
 systray.SetIconPosition(application.NSImageRight)
 ```
 
-*Icon positions* (mirroring `NSImagePosition`):
-- `application.NSImageLeft` - Icon left of label.
-- `application.NSImageRight` - Icon right of label.
-- `application.NSImageOnly` - Icon only, no label.
-- `application.NSImageNone` - Label only, no icon.
+*Posisi ikon* (mencerminkan `NSImagePosition`):
+- `application.NSImageLeft` - Ikon di sebelah kiri label.
+- `application.NSImageRight` - Ikon di sebelah kanan label.
+- `application.NSImageOnly` - Hanya ikon, tanpa label.
+- `application.NSImageNone` - Hanya label, tanpa ikon.
 
-*Best practices:*
-- Use template icons (black + transparent)
-- Keep labels short (3-5 characters)
-- 18x18 to 22x22 pixels for Retina displays
-- Test in both light and dark modes
+*Praktik terbaik:*
+- Gunakan ikon templat (hitam + transparan)
+- Gunakan label singkat (3-5 karakter)
+- 18x18 hingga 22x22 piksel untuk layar Retina
+- Uji dalam mode terang dan gelap
 
 
 
 @end
 @tab label="Windows"
 
-*Notification area integration:*
+*Integrasi area notifikasi:*
 
 ```go
 // Set tooltip (appears on hover)
@@ -351,53 +369,53 @@ systray.Show()  // Show tray icon
 systray.Hide()  // Hide tray icon
 ```
 
-*Icon requirements:*
-- 16x16 or 32x32 pixels
-- PNG or ICO format
-- Transparent background
+*Persyaratan ikon:*
+- 16x16 atau 32x32 piksel
+- Format PNG atau ICO
+- Latar belakang transparan
 
-*Tooltip limits:*
-- Maximum 127 UTF-16 characters
-- Longer tooltips will be truncated
-- Keep concise for best experience
+*Batas tooltip:*
+- Maksimum 127 karakter UTF-16
+- Tooltip yang lebih panjang akan dipotong
+- Buat tetap ringkas untuk pengalaman terbaik
 
-*Platform features:*
-- Tray icon survives Windows Explorer restarts
-- Show() and Hide() methods fully functional
-- Proper lifecycle management
+*Fitur platform:*
+- Ikon tray tetap tersedia setelah Windows Explorer dimulai ulang
+- Metode Show() dan Hide() berfungsi sepenuhnya
+- Pengelolaan siklus hidup yang tepat
 
-*Best practices:*
-- Use 32x32 for high-DPI displays
-- Keep tooltips under 127 characters
-- Test on different Windows versions
-- Consider notification area overflow
-- Use Show/Hide for conditional tray visibility
+*Praktik terbaik:*
+- Gunakan 32x32 untuk layar ber-DPI tinggi
+- Batasi tooltip hingga kurang dari 127 karakter
+- Uji pada berbagai versi Windows
+- Pertimbangkan luapan area notifikasi
+- Gunakan Show/Hide untuk mengatur visibilitas tray secara kondisional
 
 
 
 @end
 @tab label="Linux"
 
-*System tray integration:*
+*Integrasi tray sistem:*
 
-Uses StatusNotifierItem specification (most modern DEs).
+Menggunakan spesifikasi StatusNotifierItem (sebagian besar DE modern).
 
 ```go
 systray.SetIcon(iconBytes)
 systray.SetLabel("My App")
 ```
 
-*Desktop environment support:*
-- *GNOME*: Top bar (with extension)
-- *KDE Plasma*: System tray
-- *XFCE*: Notification area
-- *Others*: Varies
+*Dukungan lingkungan desktop:*
+- *GNOME*: Bilah atas (dengan ekstensi)
+- *KDE Plasma*: Tray sistem
+- *XFCE*: Area notifikasi
+- *Lainnya*: Bervariasi
 
-*Best practices:*
-- Use 22x22 or 24x24 pixels
-- SVG icons scale better
-- Test on target desktop environments
-- Provide fallback for unsupported DEs
+*Praktik terbaik:*
+- Gunakan ukuran 22x22 atau 24x24 piksel
+- Ikon SVG dapat diskalakan dengan lebih baik
+- Uji pada lingkungan desktop target
+- Sediakan opsi fallback untuk DE yang tidak didukung
 
 
 @end
@@ -405,7 +423,7 @@ systray.SetLabel("My App")
 
 ## Contoh Lengkap
 
-Here's a production-ready system tray application:
+Berikut adalah aplikasi tray sistem yang siap digunakan dalam produksi:
 
 ```go
 package main
@@ -551,7 +569,7 @@ func (t *TrayApp) setStartAtLogin(enabled bool) {
 
 ## Kontrol Visibilitas
 
-Show/hide the tray icon dynamically:
+Tampilkan atau sembunyikan ikon tray secara dinamis:
 
 ```go
 // Hide tray icon
@@ -561,23 +579,23 @@ systray.Hide()
 systray.Show()
 ```
 
-There is no `IsVisible()` getter — track visibility in your own application state if you need it.
+Tidak ada getter `IsVisible()` — jika diperlukan, lacak visibilitas dalam status aplikasi Anda sendiri.
 
-*Platform Support:*
+*Dukungan Platform:*
 
 @table header=true
-| Platform | Hide() | Show() | Notes |
-| *Windows* | ✅ | ✅ | Fully functional - icon appears/disappears from notification area |
-| *macOS* | ✅ | ✅ | Menu bar item shows/hides |
-| *Linux* | ✅ | ✅ | Varies by desktop environment |
+| Platform | Hide() | Show() | Catatan |
+| *Windows* | ✅ | ✅ | Berfungsi sepenuhnya - ikon muncul atau menghilang dari area notifikasi |
+| *macOS* | ✅ | ✅ | Item bilah menu ditampilkan atau disembunyikan |
+| *Linux* | ✅ | ✅ | Bervariasi menurut lingkungan desktop |
 @end
 
-*Kasus penggunaans:*
-- Temporarily hide tray icon based on user preference
-- Headless mode with tray icon appearing only when needed
-- Toggle visibility based on application state
+*Kasus penggunaan:*
+- Sembunyikan ikon tray untuk sementara berdasarkan preferensi pengguna
+- Mode headless dengan ikon tray yang hanya muncul saat diperlukan
+- Alihkan visibilitas berdasarkan status aplikasi
 
-*Example - Conditional Tray Visibility:*
+*Contoh - Visibilitas Tray Kondisional:*
 
 ```go
 func (t *TrayApp) setTrayVisibility(visible bool) {
@@ -601,7 +619,7 @@ func (t *TrayApp) checkForUpdates() {
 
 ## Pembersihan
 
-Destroy the tray icon when done:
+Hancurkan ikon tray setelah selesai:
 
 ```go
 // In OnShutdown
@@ -614,41 +632,41 @@ app := application.New(application.Options{
 })
 ```
 
-*Important:* Always destroy system tray on shutdown to release resources.
+*Penting:* Selalu hancurkan tray sistem saat aplikasi dimatikan untuk melepaskan sumber daya.
 
 ## Praktik Terbaik
 
 ### ✅ Lakukan
 
-- *Use template icons on macOS* - Adapts to dark mode
-- *Keep labels short* - 3-5 characters maximum
-- *Provide tooltips on Windows* - Helps users identify your app
-- *Test on all platforms* - Behaviour varies
-- *Handle clicks appropriately* - Left-click for main action, right-click for menu
-- *Update icon for status* - Visual feedback is important
-- *Destroy on shutdown* - Release resources
+- *Gunakan ikon templat di macOS* - Menyesuaikan dengan mode gelap
+- *Buat label tetap singkat* - Maksimum 3-5 karakter
+- *Sediakan tooltip di Windows* - Membantu pengguna mengenali aplikasi Anda
+- *Uji di semua platform* - Perilakunya berbeda-beda
+- *Tangani klik dengan tepat* - Klik kiri untuk tindakan utama, klik kanan untuk menu
+- *Perbarui ikon sesuai status* - Umpan balik visual itu penting
+- *Hancurkan saat aplikasi ditutup* - Bebaskan sumber daya
 
 ### ❌ Jangan
 
-- *Don't use large icons* - Follow platform guidelines
-- *Don't use long labels* - Gets truncated
-- *Don't forget dark mode* - Test on macOS dark mode
-- *Don't block click handlers* - Keep them fast
-- *Don't forget menu.Update()* - After changing menu state
-- *Don't assume tray support* - Some Linux DEs don't support it
+- *Jangan gunakan ikon berukuran besar* - Ikuti pedoman platform
+- *Jangan gunakan label panjang* - Label akan terpotong
+- *Jangan lupakan mode gelap* - Uji dalam mode gelap Windows dan macOS
+- *Jangan memblokir handler klik* - Pastikan handler tetap cepat
+- *Jangan lupa memanggil menu.Update()* - Setelah mengubah status menu
+- *Jangan berasumsi bahwa baki sistem didukung* - Beberapa lingkungan desktop Linux tidak mendukungnya
 
-## Troubleshooting
+## Pemecahan Masalah
 
-### Tray Icon Not Appearing
+### Ikon Baki Tidak Muncul
 
-*Possible causes:*
-1. Icon format not supported
-2. Icon size too large/small
-3. System tray not supported (Linux)
+*Kemungkinan penyebab:*
+1. Format ikon tidak didukung
+2. Ukuran ikon terlalu besar/kecil
+3. Baki sistem tidak didukung (Linux)
 
-*Solution:*
+*Solusi:*
 
-There is no `SystemTraySupported()` helper; instead create the tray, check the platform, and degrade gracefully:
+Tidak ada helper `SystemTraySupported()`; sebagai gantinya, buat baki, periksa platform, dan turunkan fungsionalitas secara wajar:
 
 ```go
 // Probe support: on Linux without a notification-area extension, the tray
@@ -658,11 +676,11 @@ systray := app.SystemTray.New()
 systray.SetIcon(iconBytes)
 ```
 
-### Icon Looks Wrong on macOS
+### Ikon Terlihat Tidak Tepat di macOS
 
-*Cause:* Not using template icon
+*Penyebab:* Tidak menggunakan ikon templat
 
-*Solution:*
+*Solusi:*
 
 ```go
 // Use template icon
@@ -671,42 +689,42 @@ systray.SetTemplateIcon(iconBytes)
 // Or design icon as template (black + transparent)
 ```
 
-### Menu Not Updating
+### Menu Tidak Diperbarui
 
-*Cause:* Forgot to call `menu.Update()`
+*Penyebab:* Lupa memanggil `menu.Update()`
 
-*Solution:*
+*Solusi:*
 
 ```go
 menuItem.SetLabel("New Label")
 menu.Update()  // Add this!
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="📖 Menu Reference"
-Complete reference for menu item types and properties.
+@card title="📖 Referensi Menu"
+Referensi lengkap untuk jenis dan properti item menu.
 
-[Pelajari Selengkapnya →](/id/features/menus/reference/)
+[Pelajari Lebih Lanjut →](/features/menus/reference/)
 @end
-@card title="☰ Application Menus"
-Create application menu bars.
+@card title="☰ Menu Aplikasi"
+Buat bilah menu aplikasi.
 
-[Pelajari Selengkapnya →](/id/features/menus/application/)
+[Pelajari Lebih Lanjut →](/features/menus/application/)
 @end
-@card title="◆ Context Menus"
-Create right-click context menus.
+@card title="◆ Menu Konteks"
+Buat menu konteks klik kanan.
 
-[Pelajari Selengkapnya →](/id/features/menus/context/)
+[Pelajari Lebih Lanjut →](/features/menus/context/)
 @end
-@card title="📖 System Tray Tutorial"
-Build a complete system tray application.
+@card title="📖 Contoh Baki Sistem"
+Jelajahi aplikasi baki sistem yang lengkap.
 
-[Pelajari Selengkapnya →](/features/menus/systray/)
+[Pelajari Lebih Lanjut →](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [system tray examples](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh baki sistem](https://github.com/wailsapp/wails/tree/master/v3/examples/systray-basic).

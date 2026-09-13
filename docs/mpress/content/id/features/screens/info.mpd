@@ -1,14 +1,14 @@
 ---
 schema = 1
 title = "Informasi Layar"
-description = "Dapatkan informasi tentang display dan monitor"
+description = "Dapatkan informasi tentang layar dan monitor"
 slug = "features/screens/info"
-sourcePath = "id/features/screens/info.mpd"
+sourcePath = "features/screens/info.mpd"
 ---
 
 ## Informasi Layar
 
-Wails menyediakan *API layar terpadu* yang bekerja di semua platform. Dapatkan informasi layar, deteksi beberapa monitor, query properti layar (ukuran, posisi, DPI), identifikasi display utama, dan tangani scaling DPI dengan kode konsisten.
+Wails menyediakan *API layar terpadu* yang berfungsi di semua platform. Dapatkan informasi layar, deteksi beberapa monitor, kueri properti layar (ukuran, posisi, DPI), identifikasi layar utama, dan tangani penskalaan DPI dengan kode yang konsisten.
 
 ## Mulai Cepat
 
@@ -58,7 +58,7 @@ fmt.Printf("Scale factor: %.2f\n", primary.ScaleFactor)
 
 ### Layar Saat Ini
 
-Get the screen containing a window:
+Dapatkan layar yang memuat sebuah jendela:
 
 ```go
 screen, err := window.GetScreen()
@@ -79,7 +79,7 @@ if screen != nil {
 
 ## Properti Layar
 
-### Struktur Screen
+### Struktur Layar
 
 ```go
 type Screen struct {
@@ -101,9 +101,9 @@ type Size struct{ Width, Height int }
 type Rect struct{ X, Y, Width, Height int }
 ```
 
-Read pixel sizes via `screen.Size.Width` / `screen.Size.Height` — there are no top-level `Width`/`Height` fields.
+Baca ukuran piksel melalui `screen.Size.Width` / `screen.Size.Height` — tidak ada field `Width`/`Height` di tingkat teratas.
 
-### Piksel Fisik vs Logis
+### Piksel Fisik vs. Logis
 
 ```go
 screen := app.Screen.GetPrimary()
@@ -121,16 +121,16 @@ fmt.Printf("Physical: %dx%d\n", physicalWidth, physicalHeight)
 fmt.Printf("Scale: %.2f\n", screen.ScaleFactor)
 ```
 
-*Common scale factors:*
-- `1.0` - Standard DPI (96 DPI)
-- `1.25` - 125% scaling (120 DPI)
-- `1.5` - 150% scaling (144 DPI)
-- `2.0` - 200% scaling (192 DPI) - Retina
-- `3.0` - 300% scaling (288 DPI) - 4K/5K
+*Faktor skala yang umum:*
+- `1.0` - DPI standar (96 DPI)
+- `1.25` - Penskalaan 125% (120 DPI)
+- `1.5` - Penskalaan 150% (144 DPI)
+- `2.0` - Penskalaan 200% (192 DPI) - Retina
+- `3.0` - Penskalaan 300% (288 DPI) - 4K/5K
 
-## Positioning Window
+## Penempatan Jendela
 
-### Pusatkan di Layar
+### Tengahkan di Layar
 
 ```go
 func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
@@ -143,7 +143,7 @@ func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
 }
 ```
 
-### Posisikan di Layar Tertentu
+### Tempatkan di Layar Tertentu
 
 ```go
 func moveToScreen(window *application.WebviewWindow, screenIndex int) {
@@ -160,7 +160,7 @@ func moveToScreen(window *application.WebviewWindow, screenIndex int) {
 }
 ```
 
-### Posisi Relatif terhadap Layar
+### Tempatkan secara Relatif terhadap Layar
 
 ```go
 // Top-left corner
@@ -198,7 +198,7 @@ func getMonitorCount() int {
 }
 ```
 
-### Daftar Semua Monitor
+### Cantumkan Semua Monitor
 
 ```go
 func listMonitors() {
@@ -251,7 +251,7 @@ func chooseMonitor() (*Screen, error) {
 
 ## Contoh Lengkap
 
-### Manajer Window Multi-Monitor
+### Pengelola Jendela Multi-Monitor
 
 ```go
 type MultiMonitorManager struct {
@@ -344,7 +344,7 @@ func (sm *ScreenMonitor) checkScreens() {
 }
 ```
 
-### Penyesuaian Ukuran Window Aware DPI
+### Ukuran Jendela yang Memperhitungkan DPI
 
 ```go
 func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
@@ -371,7 +371,7 @@ func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
 }
 ```
 
-### Visualiser Layout Layar
+### Visualisator Tata Letak Layar
 
 ```go
 func visualiseScreenLayout() string {
@@ -404,70 +404,70 @@ func visualiseScreenLayout() string {
 
 ### ✅ Lakukan
 
-- *Check screen count* - Handle single and multiple monitors
-- *Use logical pixels* - Wails handles DPI automatically
-- *Centre windows* - Better UX than fixed positions
-- *Validate positions* - Ensure windows are visible
-- *Handle screen changes* - Monitors can be added/removed
-- *Test on different DPI* - 100%, 125%, 150%, 200%
+- *Periksa jumlah layar* - Tangani satu maupun beberapa monitor
+- *Gunakan piksel logis* - Wails menangani DPI secara otomatis
+- *Tengahkan jendela* - Memberikan pengalaman pengguna yang lebih baik daripada posisi tetap
+- *Validasi posisi* - Pastikan jendela terlihat
+- *Tangani perubahan layar* - Monitor dapat ditambahkan atau dilepas
+- *Uji pada DPI yang berbeda* - 100%, 125%, 150%, 200%
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Don't hardcode positions* - Use screen dimensions
-- *Don't assume primary screen* - User might have multiple
-- *Don't ignore scale factor* - Important for DPI awareness
-- *Don't position off-screen* - Validate coordinates
-- *Don't forget screen changes* - Laptops dock/undock
-- *Don't use physical pixels* - Use logical pixels
+- *Jangan melakukan hardcode pada posisi* - Gunakan dimensi layar
+- *Jangan berasumsi layar utama selalu digunakan* - Pengguna mungkin memiliki beberapa layar
+- *Jangan mengabaikan faktor skala* - Penting untuk kesadaran DPI
+- *Jangan menempatkan jendela di luar layar* - Validasi koordinat
+- *Jangan melupakan perubahan layar* - Laptop dapat dipasang ke atau dilepas dari dok
+- *Jangan gunakan piksel fisik* - Gunakan piksel logis
 
-## Perbedaan Platform
+## Perbedaan Antarplatform
 
 ### macOS
 
-- Retina displays (2x scale factor)
-- Multiple displays common
-- Coordinate system: (0,0) at bottom-left
-- Spaces (virtual desktops) affect positioning
+- Layar Retina (faktor skala 2x)
+- Penggunaan beberapa layar lazim
+- Sistem koordinat: (0,0) di kiri bawah
+- Spaces (desktop virtual) memengaruhi penempatan
 
 ### Windows
 
-- Various DPI scaling (100%, 125%, 150%, 200%)
-- Multiple displays common
-- Coordinate system: (0,0) at top-left
-- Per-monitor DPI awareness
+- Beragam penskalaan DPI (100%, 125%, 150%, 200%)
+- Penggunaan beberapa layar lazim
+- Sistem koordinat: (0,0) di kiri atas
+- Kesadaran DPI per monitor
 
 ### Linux
 
-- Varies by desktop environment
-- X11 vs Wayland differences
-- DPI scaling support varies
-- Multiple displays supported
+- Bervariasi menurut lingkungan desktop
+- Perbedaan antara X11 dan Wayland
+- Dukungan penskalaan DPI bervariasi
+- Mendukung beberapa layar
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="▣ Windows"
-Learn about window management.
+@card title="▣ Jendela"
+Pelajari pengelolaan jendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/basics/)
+[Pelajari Selengkapnya →](/features/windows/basics/)
 @end
-@card title="⚙ Window Options"
-Configure window appearance.
+@card title="⚙ Opsi Jendela"
+Konfigurasikan tampilan jendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/options/)
+[Pelajari Selengkapnya →](/features/windows/options/)
 @end
-@card title="◆ Multiple Windows"
-Multi-window patterns.
+@card title="◆ Beberapa Jendela"
+Pola untuk beberapa jendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/multiple/)
+[Pelajari Selengkapnya →](/features/windows/multiple/)
 @end
-@card title="🚀 Bindings"
-Call Go functions from JavaScript.
+@card title="🚀 Binding"
+Panggil fungsi Go dari JavaScript.
 
-[Pelajari Selengkapnya →](/id/features/bindings/methods/)
+[Pelajari Selengkapnya →](/features/bindings/methods/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [screen examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh layar](https://github.com/wailsapp/wails/tree/master/v3/examples).

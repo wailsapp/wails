@@ -1,58 +1,48 @@
 ---
 schema = 1
-title = "Frontend Runtime"
+title = "Runtime Frontend"
 description = "Paket runtime JavaScript Wails untuk integrasi frontend"
 slug = "reference/frontend-runtime"
-sourcePath = "id/reference/frontend-runtime.mpd"
+sourcePath = "reference/frontend-runtime.mpd"
 ---
 
-Runtime frontend Wails adalah pustaka standar untuk aplikasi Wails. Runtime menyediakan\
-beberapa fitur yang dapat digunakan dalam aplikasi Anda, termasuk:
+Runtime frontend Wails adalah pustaka standar untuk aplikasi Wails. Runtime ini menyediakan sejumlah fitur yang dapat digunakan dalam aplikasi Anda, termasuk:
 
-- Pengelolaan window
+- Pengelolaan jendela
 - Dialog
 - Integrasi browser
-- Clipboard
+- Papan klip
 - Menu
 - Informasi sistem
-- Events
-- Context Menus
-- Screens
-- WML (Wails Markup Language)
+- Peristiwa
+- Menu konteks
+- Layar
+- WML (Bahasa Markah Wails)
 
-Runtime diperlukan untuk integrasi antara Go dan frontend. Ada 2\
-cara untuk mengintegrasikan runtime:
+Runtime diperlukan untuk integrasi antara Go dan frontend. Ada 2 cara untuk mengintegrasikan runtime:
 
 - Menggunakan paket `@wailsio/runtime`
-- Menggunakan bundle yang sudah di-build
+- Menggunakan bundel siap pakai
 
 ## Menggunakan paket npm
 
-Paket `@wailsio/runtime` adalah paket JavaScript yang menyediakan akses ke\
-runtime Wails dari frontend. Paket ini digunakan oleh semua template standar\
-dan merupakan cara yang direkomendasikan untuk mengintegrasikan runtime ke aplikasi Anda.\
-Dengan menggunakan paket `@wailsio/runtime`, Anda hanya akan menyertakan bagian runtime yang Anda gunakan.
+Paket `@wailsio/runtime` adalah paket JavaScript yang menyediakan akses ke runtime Wails dari frontend. Paket ini digunakan oleh semua templat standar dan merupakan cara yang disarankan untuk mengintegrasikan runtime ke dalam aplikasi Anda. Dengan menggunakan paket `@wailsio/runtime`, Anda hanya akan menyertakan bagian runtime yang digunakan.
 
-Paket tersedia di npm dan dapat diinstal menggunakan:
+Paket ini tersedia di npm dan dapat diinstal menggunakan:
 
 ```shell
 npm install --save @wailsio/runtime
 ```
 
-## Menggunakan bundle yang sudah di-build
+## Menggunakan bundel siap pakai
 
-Beberapa proyek tidak akan menggunakan bundler Javascript dan mungkin lebih memilih menggunakan\
-versi bundle runtime yang sudah di-build. Versi ini dapat dibuat secara lokal\
-menggunakan perintah berikut:
+Beberapa proyek tidak menggunakan bundler JavaScript dan mungkin lebih memilih versi runtime dalam bentuk bundel siap pakai. Versi ini dapat dibuat secara lokal menggunakan perintah berikut:
 
 ```shell
 wails3 generate runtime
 ```
 
-Perintah akan mengeluarkan file `runtime.js` (dan `runtime.debug.js`) di direktori saat ini.\
-File ini adalah modul ES yang dapat diimpor oleh skrip aplikasi Anda\
-sama seperti paket npm, tetapi API juga diekspor ke objek window global,\
-jadi untuk aplikasi yang lebih sederhana Anda dapat menggunakannya sebagai berikut:
+Perintah tersebut akan menghasilkan file `runtime.js` (dan `runtime.debug.js`) di direktori saat ini. File ini merupakan modul ES yang dapat diimpor oleh skrip aplikasi Anda seperti paket npm, tetapi API-nya juga diekspor ke objek window global. Jadi, untuk aplikasi yang lebih sederhana, Anda dapat menggunakannya sebagai berikut:
 
 ```html
 <html>
@@ -69,34 +59,28 @@ jadi untuk aplikasi yang lebih sederhana Anda dapat menggunakannya sebagai berik
 ```
 
 @note type="caution"
-Penting untuk menyertakan atribut `type="module"` pada tag `<script>` yang memuat runtime\
-dan menunggu halaman dimuat sepenuhnya sebelum memanggil API,\
-karena skrip dengan atribut `type="module"` berjalan secara asinkron.
+Penting untuk menyertakan atribut `type="module"` pada tag `<script>` yang memuat runtime dan menunggu hingga halaman dimuat sepenuhnya sebelum memanggil API karena skrip dengan atribut `type="module"` berjalan secara asinkron.
 @end
 
 ## Inisialisasi
 
-Selain fungsi API, runtime menyediakan dukungan untuk menu konteks dan window dragging.\
-Fitur ini hanya akan berfungsi seperti yang diharapkan setelah runtime diinisialisasi.\
-Meskipun Anda tidak menggunakan API, pastikan untuk menyertakan pernyataan impor side-effect\
-di suatu tempat dalam kode frontend Anda:
+Selain fungsi API, runtime menyediakan dukungan untuk menu konteks dan penyeretan jendela. Fitur-fitur ini hanya akan berfungsi sebagaimana mestinya setelah runtime diinisialisasi. Meskipun Anda tidak menggunakan API, pastikan untuk menyertakan pernyataan impor efek samping di suatu tempat dalam kode frontend Anda:
 
 ```javascript
 import "@wailsio/runtime";
 ```
 
-Bundler Anda harus mendeteksi keberadaan side-effect dan menyertakan\
-semua kode inisialisasi yang diperlukan dalam build.
+Bundler Anda seharusnya mendeteksi adanya efek samping dan menyertakan semua kode inisialisasi yang diperlukan dalam build.
 
 @note type="info"
-Jika Anda lebih memilih bundle yang sudah di-build, menambahkan tag script seperti di atas sudah cukup.
+Jika Anda lebih memilih bundel siap pakai, cukup tambahkan tag skrip seperti yang ditunjukkan di atas.
 @end
 
-## Plugin Vite untuk Event Bertipe
+## Plugin Vite untuk Peristiwa Bertipe
 
-Runtime menyertakan plugin Vite yang mengaktifkan dukungan HMR (Hot Module Replacement) untuk event bertipe selama pengembangan.
+Runtime menyertakan plugin Vite yang mengaktifkan dukungan HMR (Hot Module Replacement) untuk peristiwa bertipe selama pengembangan.
 
-### Setup
+### Penyiapan
 
 Tambahkan plugin ke `vite.config.ts` Anda:
 
@@ -111,13 +95,13 @@ export default defineConfig({
 
 ### Manfaat
 
-- *Pemuatan Ulang Otomatis*: Binding event dibuat ulang dan dimuat ulang secara otomatis saat Anda menjalankan `wails3 generate bindings`
-- *Mode Pengembangan*: Bekerja mulus dengan `wails3 dev` untuk pembaruan instan
-- *Type Safety*: Dukungan TypeScript penuh dengan autocomplete dan pengecekan tipe
+- *Pemuatan Ulang Otomatis*: Binding peristiwa dibuat ulang dan dimuat ulang secara otomatis saat Anda menjalankan `wails3 generate bindings`
+- *Mode Pengembangan*: Terintegrasi lancar dengan `wails3 dev` untuk pembaruan seketika
+- *Keamanan Tipe*: Dukungan penuh TypeScript dengan pelengkapan otomatis dan pemeriksaan tipe
 
-### Penggunaan dengan Registrasi Event
+### Penggunaan dengan Pendaftaran Peristiwa
 
-Daftarkan event Anda di Go:
+Daftarkan peristiwa Anda di Go:
 
 ```go
 type UserData struct {
@@ -135,20 +119,20 @@ Buat binding:
 ```bash
 wails3 generate bindings
 
-# Atau, untuk menyertakan definisi TypeScript
+# Or, to include TypeScript definitions
 wails3 generate bindings -ts
 
-# Untuk opsi lainnya, lihat:
+# For more options, see:
 wails3 generate bindings -help
 ```
 
-Gunakan event bertipe di frontend Anda:
+Gunakan peristiwa bertipe di frontend Anda:
 
 ```typescript
 import { Events } from '@wailsio/runtime'
 import { UserUpdated } from './bindings/events'
 
-// Event type-safe dengan autocomplete
+// Type-safe event with autocomplete
 Events.Emit(UserUpdated({
     ID: "123",
     Name: "John Doe"
@@ -157,51 +141,51 @@ Events.Emit(UserUpdated({
 
 ## Referensi API
 
-Runtime diorganisir ke dalam modul, masing-masing menyediakan fungsionalitas tertentu. Impor hanya yang Anda butuhkan:
+Runtime disusun dalam beberapa modul yang masing-masing menyediakan fungsi tertentu. Impor hanya yang Anda perlukan:
 
 ```javascript
 import { Events, Window, Clipboard } from '@wailsio/runtime'
 ```
 
-### Events
+### Peristiwa
 
-Sistem event untuk komunikasi antara Go dan JavaScript.
+Sistem peristiwa untuk komunikasi antara Go dan JavaScript.
 
 #### On()
 
-Mendaftarkan callback untuk event.
+Daftarkan callback untuk suatu peristiwa.
 
 ```typescript
 function On(eventName: string, callback: (event: WailsEvent) => void): () => void
 function On<T>(eventType: EventType<T>, callback: (event: WailsEvent<T>) => void): () => void
 ```
 
-*Mengembalikan:* Fungsi unsubscribe
+*Mengembalikan:* Fungsi untuk berhenti berlangganan
 
 *Contoh:*
 
 ```javascript
 import { Events } from '@wailsio/runtime'
 
-// Mendengarkan event dasar
+// Basic event listening
 const unsubscribe = Events.On('user-logged-in', (event) => {
     console.log('User:', event.data.username)
 })
 
-// Dengan event bertipe (TypeScript)
+// With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
 Events.On(UserLogin, (event) => {
-    // event.data bertipe sebagai UserLoginData
+    // event.data is typed as UserLoginData
     console.log('User:', event.data.username)
 })
 
-// Nanti: unsubscribe()
+// Later: unsubscribe()
 ```
 
 #### Once()
 
-Mendaftarkan callback yang hanya berjalan sekali.
+Daftarkan callback yang hanya dijalankan satu kali.
 
 ```typescript
 function Once(eventName: string, callback: (event: WailsEvent) => void): () => void
@@ -220,24 +204,24 @@ Events.Once('app-ready', () => {
 
 #### Emit()
 
-Mengirim event ke backend Go atau window lain.
+Pancarkan peristiwa ke backend Go atau jendela lain.
 
 ```typescript
 function Emit(name: string, data?: any): Promise<boolean>
 function Emit<T>(event: Event<T>): Promise<boolean>
 ```
 
-*Mengembalikan:* Promise yang resolve ke `true` jika event dibatalkan, `false` jika tidak
+*Mengembalikan:* Promise yang di-resolve menjadi `true` jika peristiwa dibatalkan, atau `false` jika tidak
 
 *Contoh:*
 
 ```javascript
 import { Events } from '@wailsio/runtime'
 
-// Pengiriman event dasar
+// Basic event emission
 const wasCancelled = await Events.Emit('button-clicked', { buttonId: 'submit' })
 
-// Dengan event bertipe (TypeScript)
+// With typed events (TypeScript)
 import { UserLogin } from './bindings/events'
 
 const cancelled = await Events.Emit(UserLogin({
@@ -252,12 +236,12 @@ if (cancelled) {
 ```
 
 @note type="info"
-Nilai kembalian menunjukkan apakah event dibatalkan oleh hook. Sebagian besar event tidak dapat dibatalkan dan akan selalu mengembalikan `false`.
+Nilai yang dikembalikan menunjukkan apakah peristiwa dibatalkan oleh hook. Sebagian besar peristiwa tidak dapat dibatalkan dan akan selalu mengembalikan `false`.
 @end
 
 #### Off()
 
-Menghapus event listener.
+Hapus listener peristiwa.
 
 ```typescript
 function Off(...eventNames: string[]): void
@@ -273,43 +257,43 @@ Events.Off('user-logged-in', 'user-logged-out')
 
 #### OffAll()
 
-Menghapus semua event listener.
+Hapus semua listener peristiwa.
 
 ```typescript
 function OffAll(): void
 ```
 
-### Window
+### Jendela
 
-Metode pengelolaan window. Ekspor default adalah window saat ini.
+Metode pengelolaan jendela. Ekspor default adalah jendela saat ini.
 
 ```javascript
 import { Window } from '@wailsio/runtime'
 
-// Window saat ini
+// Current window
 await Window.SetTitle('New Title')
 await Window.Center()
 
-// Dapatkan window lain
+// Get another window
 const otherWindow = Window.Get('secondary')
 await otherWindow.Show()
 ```
 
 #### Visibilitas
 
-*Show()* - Menampilkan window
+*Show()* - Menampilkan jendela
 
 ```typescript
 function Show(): Promise<void>
 ```
 
-*Hide()* - Menyembunyikan window
+*Hide()* - Menyembunyikan jendela
 
 ```typescript
 function Hide(): Promise<void>
 ```
 
-*Close()* - Menutup window
+*Close()* - Menutup jendela
 
 ```typescript
 function Close(): Promise<void>
@@ -317,13 +301,13 @@ function Close(): Promise<void>
 
 #### Ukuran dan Posisi
 
-*SetSize(width, height)* - Mengatur ukuran window
+*SetSize(width, height)* - Mengatur ukuran jendela
 
 ```typescript
 function SetSize(width: number, height: number): Promise<void>
 ```
 
-*Size()* - Mendapatkan ukuran window
+*Size()* - Mendapatkan ukuran jendela
 
 ```typescript
 function Size(): Promise<{ width: number, height: number }>
@@ -341,7 +325,7 @@ function SetPosition(x: number, y: number): Promise<void>
 function Position(): Promise<{ x: number, y: number }>
 ```
 
-*Center()* - Memusatkan window
+*Center()* - Menempatkan jendela di tengah
 
 ```typescript
 function Center(): Promise<void>
@@ -352,67 +336,67 @@ function Center(): Promise<void>
 ```javascript
 import { Window } from '@wailsio/runtime'
 
-// Ubah ukuran dan pusatkan
+// Resize and center
 await Window.SetSize(800, 600)
 await Window.Center()
 
-// Dapatkan ukuran saat ini
+// Get current size
 const { width, height } = await Window.Size()
 ```
 
-#### Status Window
+#### Status Jendela
 
-*Minimise()* - Meminimalkan window
+*Minimise()* - Meminimalkan jendela
 
 ```typescript
 function Minimise(): Promise<void>
 ```
 
-*Maximise()* - Memaksimalkan window
+*Maximise()* - Memaksimalkan jendela
 
 ```typescript
 function Maximise(): Promise<void>
 ```
 
-*Fullscreen()* - Memasuki fullscreen
+*Fullscreen()* - Beralih ke layar penuh
 
 ```typescript
 function Fullscreen(): Promise<void>
 ```
 
-*Restore()* - Memulihkan dari minimized/maximized/fullscreen
+*Restore()* - Memulihkan jendela dari keadaan diminimalkan, dimaksimalkan, atau layar penuh
 
 ```typescript
 function Restore(): Promise<void>
 ```
 
-*IsMinimised()* - Memeriksa apakah diminimalkan
+*IsMinimised()* - Memeriksa apakah jendela diminimalkan
 
 ```typescript
 function IsMinimised(): Promise<boolean>
 ```
 
-*IsMaximised()* - Memeriksa apakah dimaksimalkan
+*IsMaximised()* - Memeriksa apakah jendela dimaksimalkan
 
 ```typescript
 function IsMaximised(): Promise<boolean>
 ```
 
-*IsFullscreen()* - Memeriksa apakah fullscreen
+*IsFullscreen()* - Memeriksa apakah jendela dalam mode layar penuh
 
 ```typescript
 function IsFullscreen(): Promise<boolean>
 ```
 
-#### Properti Window
+#### Properti Jendela
 
-*SetTitle(title)* - Mengatur judul window
+*SetTitle(title)* - Mengatur judul jendela
 
 ```typescript
 function SetTitle(title: string): Promise<void>
 ```
 
-*Name()* - Mendapatkan nama window
+*Name()* - Mendapatkan nama jendela
 
 ```typescript
 function Name(): Promise<string>
@@ -424,13 +408,13 @@ function Name(): Promise<string>
 function SetBackgroundColour(r: number, g: number, b: number, a: number): Promise<void>
 ```
 
-*SetAlwaysOnTop(alwaysOnTop)* - Menjaga window tetap di atas
+*SetAlwaysOnTop(alwaysOnTop)* - Menjaga jendela tetap berada di atas
 
 ```typescript
 function SetAlwaysOnTop(alwaysOnTop: boolean): Promise<void>
 ```
 
-*SetResizable(resizable)* - Membuat window dapat diubah ukurannya
+*SetResizable(resizable)* - Memungkinkan ukuran jendela diubah
 
 ```typescript
 function SetResizable(resizable: boolean): Promise<void>
@@ -438,19 +422,19 @@ function SetResizable(resizable: boolean): Promise<void>
 
 #### Fokus dan Layar
 
-*Focus()* - Memfokuskan window
+*Focus()* - Memfokuskan jendela
 
 ```typescript
 function Focus(): Promise<void>
 ```
 
-*IsFocused()* - Memeriksa apakah terfokus
+*IsFocused()* - Memeriksa apakah jendela memiliki fokus
 
 ```typescript
 function IsFocused(): Promise<boolean>
 ```
 
-*GetScreen()* - Mendapatkan layar tempat window berada
+*GetScreen()* - Mendapatkan layar tempat jendela berada
 
 ```typescript
 function GetScreen(): Promise<Screen>
@@ -464,7 +448,7 @@ function GetScreen(): Promise<Screen>
 function Reload(): Promise<void>
 ```
 
-*ForceReload()* - Memaksa muat ulang halaman (membersihkan cache)
+*ForceReload()* - Memaksa halaman dimuat ulang (menghapus cache)
 
 ```typescript
 function ForceReload(): Promise<void>
@@ -472,31 +456,31 @@ function ForceReload(): Promise<void>
 
 #### Zoom
 
-*SetZoom(level)* - Mengatur level zoom
+*SetZoom(level)* - Mengatur tingkat zoom
 
 ```typescript
 function SetZoom(level: number): Promise<void>
 ```
 
-*GetZoom()* - Mendapatkan level zoom
+*GetZoom()* - Mendapatkan tingkat zoom
 
 ```typescript
 function GetZoom(): Promise<number>
 ```
 
-*ZoomIn()* - Meningkatkan zoom
+*ZoomIn()* - Memperbesar tampilan
 
 ```typescript
 function ZoomIn(): Promise<void>
 ```
 
-*ZoomOut()* - Mengurangi zoom
+*ZoomOut()* - Memperkecil tampilan
 
 ```typescript
 function ZoomOut(): Promise<void>
 ```
 
-*ZoomReset()* - Mereset zoom ke 100%
+*ZoomReset()* - Mengatur ulang zoom ke 100%
 
 ```typescript
 function ZoomReset(): Promise<void>
@@ -504,7 +488,7 @@ function ZoomReset(): Promise<void>
 
 #### Pencetakan
 
-*Print()* - Membuka dialog cetak native
+*Print()* - Membuka dialog pencetakan native
 
 ```typescript
 function Print(): Promise<void>
@@ -515,19 +499,19 @@ function Print(): Promise<void>
 ```javascript
 import { Window } from '@wailsio/runtime'
 
-// Buka dialog cetak untuk window saat ini
+// Open print dialog for current window
 await Window.Print()
 ```
 
-*Catatan:* Ini membuka dialog cetak OS native, memungkinkan pengguna memilih pengaturan printer dan mencetak konten window saat ini. Berbeda dengan `window.print()` yang mungkin tidak berfungsi di webview, ini menggunakan API pencetakan platform native.
+*Catatan:* Tindakan ini membuka dialog pencetakan native dari sistem operasi sehingga pengguna dapat memilih pengaturan printer dan mencetak konten jendela saat ini. Tidak seperti `window.print()` yang mungkin tidak berfungsi di webview, fungsi ini menggunakan API pencetakan native platform.
 
-### Clipboard
+### Papan Klip
 
-Operasi clipboard.
+Operasi papan klip.
 
 #### SetText()
 
-Mengatur teks clipboard.
+Mengatur teks papan klip.
 
 ```typescript
 function SetText(text: string): Promise<void>
@@ -543,7 +527,7 @@ await Clipboard.SetText('Hello from Wails!')
 
 #### Text()
 
-Mendapatkan teks clipboard.
+Mendapatkan teks papan klip.
 
 ```typescript
 function Text(): Promise<string>
@@ -558,13 +542,13 @@ const clipboardText = await Clipboard.Text()
 console.log('Clipboard:', clipboardText)
 ```
 
-### System
+### Sistem
 
-Metode sistem tingkat rendah untuk komunikasi langsung dengan backend.
+Metode sistem tingkat rendah untuk berkomunikasi langsung dengan backend.
 
 #### invoke()
 
-Mengirim pesan mentah langsung ke backend. Ini melewati sistem binding standar dan ditangani oleh `RawMessageHandler` dalam opsi aplikasi Anda.
+Mengirim pesan mentah langsung ke backend. Tindakan ini melewati sistem binding standar dan ditangani oleh `RawMessageHandler` dalam opsi aplikasi Anda.
 
 ```typescript
 function invoke(message: any): void
@@ -575,26 +559,26 @@ function invoke(message: any): void
 ```javascript
 import { System } from '@wailsio/runtime'
 
-// Kirim pesan mentah ke backend
+// Send a raw message to the backend
 System.invoke('my-custom-message')
 
-// Kirim data terstruktur sebagai JSON
+// Send structured data as JSON
 System.invoke(JSON.stringify({ action: 'update', value: 42 }))
 ```
 
 @note type="caution"
-Ini adalah fungsi fire-and-forget tanpa nilai kembalian. Gunakan event untuk menerima respons dari backend.
+Fungsi ini bersifat kirim-dan-lupakan tanpa nilai kembalian. Gunakan event untuk menerima respons dari backend.
 @end
 
-Untuk detail lebih lanjut, lihat [Panduan Raw Messages](/id/guides/raw-messages/).
+Untuk detail selengkapnya, lihat [Panduan Pesan Mentah](/guides/raw-messages/).
 
-### Application
+### Aplikasi
 
 Metode tingkat aplikasi.
 
 #### Show()
 
-Menampilkan semua window aplikasi.
+Menampilkan semua jendela aplikasi.
 
 ```typescript
 function Show(): Promise<void>
@@ -602,7 +586,7 @@ function Show(): Promise<void>
 
 #### Hide()
 
-Menyembunyikan semua window aplikasi.
+Menyembunyikan semua jendela aplikasi.
 
 ```typescript
 function Hide(): Promise<void>
@@ -621,7 +605,7 @@ function Quit(): Promise<void>
 ```javascript
 import { Application } from '@wailsio/runtime'
 
-// Tambahkan tombol quit
+// Add quit button
 document.getElementById('quit-btn').addEventListener('click', async () => {
     await Application.Quit()
 })
@@ -629,7 +613,7 @@ document.getElementById('quit-btn').addEventListener('click', async () => {
 
 ### Browser
 
-Membuka URL di browser default.
+Buka URL di browser default.
 
 #### OpenURL()
 
@@ -647,7 +631,7 @@ import { Browser } from '@wailsio/runtime'
 await Browser.OpenURL('https://wails.io')
 ```
 
-### Screens
+### Layar
 
 Informasi dan pengelolaan layar.
 
@@ -669,7 +653,7 @@ function GetPrimary(): Promise<Screen>
 
 #### GetCurrent()
 
-Mendapatkan layar aktif saat ini.
+Mendapatkan layar yang sedang aktif.
 
 ```typescript
 function GetCurrent(): Promise<Screen>
@@ -697,20 +681,20 @@ interface Screen {
 ```javascript
 import { Screens } from '@wailsio/runtime'
 
-// Daftar semua layar
+// List all screens
 const screens = await Screens.GetAll()
 screens.forEach(screen => {
     console.log(`${screen.Name}: ${screen.Size.Width}x${screen.Size.Height}`)
 })
 
-// Dapatkan layar utama
+// Get primary screen
 const primary = await Screens.GetPrimary()
 console.log('Primary screen:', primary.Name)
 ```
 
-### Dialogs
+### Dialog
 
-Dialog OS native dari JavaScript.
+Dialog bawaan sistem operasi dari JavaScript.
 
 #### Info()
 
@@ -733,7 +717,7 @@ await Dialogs.Info({
 
 #### Error()
 
-Menampilkan dialog error.
+Menampilkan dialog kesalahan.
 
 ```typescript
 function Error(options: MessageDialogOptions): Promise<string>
@@ -749,7 +733,7 @@ function Warning(options: MessageDialogOptions): Promise<string>
 
 #### Question()
 
-Menampilkan dialog pertanyaan dengan tombol kustom.
+Menampilkan dialog pertanyaan dengan tombol khusus.
 
 ```typescript
 function Question(options: MessageDialogOptions): Promise<string>
@@ -770,13 +754,13 @@ const result = await Dialogs.Question({
 })
 
 if (result === 'Delete') {
-    // Hapus file
+    // Delete the file
 }
 ```
 
 #### OpenFile()
 
-Menampilkan dialog buka file.
+Menampilkan dialog untuk membuka file.
 
 ```typescript
 function OpenFile(options: OpenFileDialogOptions): Promise<string | string[]>
@@ -802,7 +786,7 @@ if (file) {
 
 #### SaveFile()
 
-Menampilkan dialog simpan file.
+Menampilkan dialog untuk menyimpan file.
 
 ```typescript
 function SaveFile(options: SaveFileDialogOptions): Promise<string>
@@ -810,24 +794,24 @@ function SaveFile(options: SaveFileDialogOptions): Promise<string>
 
 ### WML (Wails Markup Language)
 
-WML menyediakan atribut deklaratif untuk aksi umum. Tambahkan atribut ke elemen HTML:
+WML menyediakan atribut deklaratif untuk tindakan umum. Tambahkan atribut ke elemen HTML:
 
 #### Atribut
 
-*wml-event* - Mengirim event saat diklik
+*wml-event* - Memancarkan peristiwa saat diklik
 
 ```html
 <button wml-event="save-clicked">Save</button>
 ```
 
-*wml-window* - Memanggil metode window
+*wml-window* - Memanggil metode jendela
 
 ```html
 <button wml-window="Close">Close Window</button>
 <button wml-window="Minimise">Minimize</button>
 ```
 
-*wml-target-window* - Menentukan window target untuk wml-window
+*wml-target-window* - Menentukan jendela target untuk wml-window
 
 ```html
 <button wml-window="Show" wml-target-window="settings">
@@ -841,7 +825,7 @@ WML menyediakan atribut deklaratif untuk aksi umum. Tambahkan atribut ke elemen 
 <a href="#" wml-openurl="https://wails.io">Visit Wails</a>
 ```
 
-*wml-confirm* - Menampilkan dialog konfirmasi sebelum aksi
+*wml-confirm* - Menampilkan dialog konfirmasi sebelum tindakan dijalankan
 
 ```html
 <button wml-window="Close" wml-confirm="Are you sure you want to close?">
@@ -865,13 +849,13 @@ WML menyediakan atribut deklaratif untuk aksi umum. Tambahkan atribut ke elemen 
 ```javascript
 import { Events, Window, Clipboard, Dialogs, Screens } from '@wailsio/runtime'
 
-// Dengarkan event dari Go
+// Listen for events from Go
 Events.On('data-updated', (event) => {
     console.log('Data:', event.data)
     updateUI(event.data)
 })
 
-// Pengelolaan window
+// Window management
 document.getElementById('center-btn').addEventListener('click', async () => {
     await Window.Center()
 })
@@ -885,12 +869,12 @@ document.getElementById('fullscreen-btn').addEventListener('click', async () => 
     }
 })
 
-// Operasi clipboard
+// Clipboard operations
 document.getElementById('copy-btn').addEventListener('click', async () => {
     await Clipboard.SetText('Copied from Wails!')
 })
 
-// Dialog dengan konfirmasi
+// Dialog with confirmation
 document.getElementById('delete-btn').addEventListener('click', async () => {
     const result = await Dialogs.Question({
         Title: 'Confirm',
@@ -906,7 +890,7 @@ document.getElementById('delete-btn').addEventListener('click', async () => {
     }
 })
 
-// Informasi layar
+// Screen information
 const screens = await Screens.GetAll()
 console.log(`Detected ${screens.length} screen(s)`)
 screens.forEach(screen => {
@@ -918,30 +902,30 @@ screens.forEach(screen => {
 
 ### ✅ Lakukan
 
-- *Impor secara selektif* - Hanya impor yang Anda butuhkan
+- *Impor secara selektif* - Impor hanya yang Anda perlukan
 - *Tangani promise* - Semua metode mengembalikan promise
-- *Gunakan WML untuk aksi sederhana* - Lebih bersih daripada JavaScript
+- *Gunakan WML untuk tindakan sederhana* - Lebih ringkas daripada JavaScript
 - *Periksa nilai kembalian* - Terutama untuk dialog
-- *Berhenti berlangganan event* - Bersihkan saat selesai
+- *Berhenti berlangganan peristiwa* - Bersihkan setelah selesai
 
 ### ❌ Jangan
 
-- *Jangan lupa await* - Sebagian besar metode bersifat async
+- *Jangan lupa menggunakan await* - Sebagian besar metode bersifat asinkron
 - *Jangan blokir UI* - Gunakan async/await dengan benar
-- *Jangan abaikan error* - Selalu tangani rejection
+- *Jangan abaikan kesalahan* - Selalu tangani penolakan promise
 
 ## Dukungan TypeScript
 
-Runtime menyertakan definisi TypeScript lengkap:
+Runtime menyertakan definisi TypeScript yang lengkap:
 
 ```typescript
 import { Events, Window } from '@wailsio/runtime'
 
 Events.On('custom-event', (event) => {
-    // TypeScript mengetahui event.data, event.name, event.sender
+    // TypeScript knows event.data, event.name, event.sender
     console.log(event.data)
 })
 
-// Semua metode sepenuhnya bertipe
+// All methods are fully typed
 const size: { width: number, height: number } = await Window.Size()
 ```

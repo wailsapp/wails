@@ -1,17 +1,17 @@
 ---
 schema = 1
-title = "Single Instance"
-description = "Membatasi aplikasi Anda hanya satu instance yang berjalan"
+title = "Instans Tunggal"
+description = "Membatasi aplikasi Anda agar hanya menjalankan satu instans"
 slug = "guides/single-instance"
-sourcePath = "id/guides/single-instance.mpd"
+sourcePath = "guides/single-instance.mpd"
 ---
 
-Single instance locking adalah mekanisme yang mencegah beberapa instance aplikasi Anda berjalan bersamaan.\
-Fitur ini berguna untuk aplikasi yang dirancang untuk membuka file dari command line atau dari file explorer OS.
+Penguncian instans tunggal adalah mekanisme yang mencegah beberapa instans aplikasi Anda berjalan secara bersamaan.\
+Mekanisme ini berguna untuk aplikasi yang dirancang untuk membuka file dari baris perintah atau penjelajah file OS.
 
 ## Penggunaan
 
-Untuk mengaktifkan fungsionalitas single instance di aplikasi Anda, berikan struct `SingleInstanceOptions` saat membuat aplikasi:
+Untuk mengaktifkan fungsi instans tunggal di aplikasi Anda, berikan struct `SingleInstanceOptions` saat membuat aplikasi:
 
 ```go
 app := application.New(application.Options{
@@ -31,26 +31,26 @@ app := application.New(application.Options{
 })
 ```
 
-Struct `SingleInstanceOptions` memiliki field berikut:
+Struct `SingleInstanceOptions` memiliki bidang berikut:
 
-- `UniqueID`: Pengidentifikasi unik untuk aplikasi Anda. Ini harus berupa string unik, biasanya dalam notasi reverse domain (misalnya, "com.company.appname").
-- `EncryptionKey`: Array 32-byte opsional untuk mengenkripsi data yang diteruskan antar instance menggunakan AES-256-GCM. Jika disediakan sebagai array non-zero, semua komunikasi antar instance akan dienkripsi.
-- `OnSecondInstanceLaunch`: Fungsi callback yang dipanggil ketika instance kedua aplikasi Anda diluncurkan. Callback menerima struct `SecondInstanceData` yang berisi:
-  - `Args`: Argumen command line yang diteruskan ke instance kedua
-  - `WorkingDir`: Working directory instance kedua
-  - `AdditionalData`: Data tambahan apa pun yang diteruskan dari instance kedua (jika disediakan)
-- `AdditionalData`: Map opsional pasangan key-value string yang akan diteruskan ke instance pertama ketika instance berikutnya diluncurkan
+- `UniqueID`: Pengidentifikasi unik untuk aplikasi Anda. Nilainya sebaiknya berupa string unik, biasanya dalam notasi domain terbalik (misalnya, "com.company.appname").
+- `EncryptionKey`: Array 32 byte opsional untuk mengenkripsi data yang diteruskan antarinstans menggunakan AES-256-GCM. Jika diberikan sebagai array yang tidak seluruh elemennya nol, semua komunikasi antarinstans akan dienkripsi.
+- `OnSecondInstanceLaunch`: Fungsi callback yang dipanggil saat instans kedua aplikasi Anda diluncurkan. Callback menerima struct `SecondInstanceData` yang berisi:
+  - `Args`: Argumen baris perintah yang diteruskan ke instans kedua
+  - `WorkingDir`: Direktori kerja instans kedua
+  - `AdditionalData`: Data tambahan apa pun yang diteruskan dari instans kedua (jika diberikan)
+- `AdditionalData`: Map opsional berisi pasangan kunci-nilai string yang akan diteruskan ke instans pertama saat instans berikutnya diluncurkan
 
-@note type="danger" title="Warning"
-Fitur Single Instance mengimplementasikan protokol enkripsi opsional menggunakan AES-256-GCM. Tanpa enkripsi yang diaktifkan,\
-data yang diteruskan antar instance tidak aman. Ketika menggunakan fitur single instance tanpa enkripsi,\
-aplikasi Anda harus memperlakukan data apa pun yang diteruskan ke callback instance kedua sebagai tidak tepercaya.\
-Anda harus memverifikasi bahwa argumen yang Anda terima valid dan tidak mengandung data berbahaya.
+@note type="danger" title="Peringatan"
+Fitur Instans Tunggal menerapkan protokol enkripsi opsional menggunakan AES-256-GCM. Jika enkripsi tidak diaktifkan,\
+data yang diteruskan antarinstans tidak aman. Saat menggunakan fitur instans tunggal tanpa enkripsi,\
+aplikasi Anda sebaiknya memperlakukan setiap data yang diteruskan kepadanya melalui callback instans kedua sebagai data yang tidak tepercaya.\
+Anda sebaiknya memverifikasi bahwa argumen yang diterima valid dan tidak mengandung data berbahaya.
 @end
 
 ### Komunikasi Aman
 
-Untuk mengaktifkan komunikasi aman antar instance, berikan encryption key 32-byte. Key ini harus sama untuk semua instance aplikasi Anda:
+Untuk mengaktifkan komunikasi aman antarinstans, berikan kunci enkripsi sepanjang 32 byte. Kunci ini harus sama untuk semua instans aplikasi Anda:
 
 ```go
 // Define your encryption key (must be exactly 32 bytes)
@@ -70,15 +70,15 @@ SingleInstance: &application.SingleInstanceOptions{
 }
 ```
 
-@note type="tip" title="Security Best Practices"
-- Gunakan key unik untuk aplikasi Anda
-- Simpan key dengan aman jika memuatnya dari konfigurasi
-- Jangan gunakan key contoh di atas — buat key Anda sendiri!
+@note type="tip" title="Praktik Terbaik Keamanan"
+- Gunakan kunci unik untuk aplikasi Anda
+- Simpan kunci dengan aman jika memuatnya dari konfigurasi
+- Jangan gunakan kunci contoh yang ditampilkan di atas—buat kunci Anda sendiri!
 @end
 
-### Manajemen Window
+### Pengelolaan Jendela
 
-Ketika menangani peluncuran instance kedua, Anda sering ingin membawa window aplikasi ke depan. Anda dapat melakukannya menggunakan method `Focus()` pada window. Jika window Anda diminimalkan, Anda mungkin perlu memulihkannya terlebih dahulu:
+Saat menangani peluncuran instans kedua, Anda sering kali ingin membawa jendela aplikasi ke depan. Anda dapat melakukannya menggunakan metode `Focus()` milik jendela. Jika jendela diminimalkan, Anda mungkin perlu memulihkannya terlebih dahulu:
 
 ```go
 
@@ -101,7 +101,7 @@ Ketika menangani peluncuran instance kedua, Anda sering ingin membawa window apl
 @tabs sync-key="platform"
 @tab label="Mac"
 
-Single instance lock menggunakan named mutex. Nama mutex dihasilkan dari unique id yang Anda berikan. Data diteruskan ke instance pertama melalui [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
+Penguncian instans tunggal menggunakan mutex bernama. Nama mutex dibuat dari ID unik yang Anda berikan. Data diteruskan ke instans pertama melalui [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
 
 
 
@@ -109,7 +109,7 @@ Single instance lock menggunakan named mutex. Nama mutex dihasilkan dari unique 
 @end
 @tab label="Windows"
 
-Single instance lock menggunakan named mutex. Nama mutex dihasilkan dari unique id yang Anda berikan. Data diteruskan ke instance pertama melalui shared window menggunakan [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+Penguncian instans tunggal menggunakan mutex bernama. Nama mutex dibuat dari ID unik yang Anda berikan. Data diteruskan ke instans pertama melalui jendela bersama menggunakan [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
 
 
 
@@ -117,7 +117,7 @@ Single instance lock menggunakan named mutex. Nama mutex dihasilkan dari unique 
 @end
 @tab label="Linux"
 
-Single instance lock menggunakan [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Nama dbus dihasilkan dari unique id yang Anda berikan. Data diteruskan ke instance pertama melalui [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+Penguncian instans tunggal menggunakan [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Nama dbus dibuat dari ID unik yang Anda berikan. Data diteruskan ke instans pertama melalui [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
 
 
 

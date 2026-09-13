@@ -21,9 +21,7 @@ This is the complete API reference for Wails v3. It documents every public type,
 
 ## API Conventions
 
-@rawHTML
-<details>
-<summary><strong>Go API Conventions</strong> - For developers new to Go</summary>
+@details title="Go API Conventions - For developers new to Go"
 
 ### Naming
 
@@ -71,7 +69,6 @@ app := application.New(application.Options{
 })
 ```
 
-</details>
 @end
 
 ### JavaScript API Conventions

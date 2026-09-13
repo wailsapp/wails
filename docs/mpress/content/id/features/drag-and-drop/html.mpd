@@ -1,26 +1,26 @@
 ---
 schema = 1
-title = "HTML Drag \u0026 Drop"
+title = "Seret \u0026 Lepas HTML"
 description = "Seret dan lepas elemen di dalam aplikasi Anda"
 slug = "features/drag-and-drop/html"
-sourcePath = "id/features/drag-and-drop/html.mpd"
+sourcePath = "features/drag-and-drop/html.mpd"
 ---
 
-HTML5 drag-and-drop memungkinkan pengguna menyeret elemen di dalam UI aplikasi Anda — misalnya, mengurutkan ulang daftar atau memindahkan item antar kolom. Ini adalah fungsionalitas web standar yang bekerja di Wails tanpa setup khusus.
+Fitur seret dan lepas HTML5 memungkinkan pengguna menyeret elemen di dalam UI aplikasi Anda—misalnya, untuk mengurutkan ulang daftar atau memindahkan item antarkolom. Ini adalah fungsionalitas web standar yang dapat digunakan di Wails tanpa penyiapan khusus.
 
-## Membuat Elemen Draggable
+## Membuat Elemen Dapat Diseret
 
-Secara default, sebagian besar elemen tidak dapat diseret. Untuk membuat elemen draggable, tambahkan `draggable="true"`:
+Secara default, sebagian besar elemen tidak dapat diseret. Agar elemen dapat diseret, tambahkan `draggable="true"`:
 
 ```html
 <div class="item" draggable="true">Drag me</div>
 ```
 
-Elemen sekarang akan menampilkan preview drag saat pengguna mengklik dan menyeretnya.
+Elemen tersebut kini akan menampilkan pratinjau penyeretan saat pengguna mengeklik lalu menyeretnya.
 
-## Tentukan Zona Drop
+## Menentukan Zona Pelepasan
 
-Elemen tidak menerima drop secara default. Agar elemen menerima drop, Anda perlu membatalkan perilaku default pada `dragover`:
+Secara default, elemen tidak menerima pelepasan. Agar elemen menerima pelepasan, Anda perlu membatalkan perilaku default pada `dragover`:
 
 ```html
 <div class="drop-zone" id="target">Drop here</div>
@@ -39,11 +39,11 @@ target.addEventListener('drop', (e) => {
 </script>
 ```
 
-Memanggil `preventDefault()` pada `dragover` diperlukan — ini menandakan elemen menerima drop. Tanpanya, event drop tidak akan terpicu.
+Anda wajib memanggil `preventDefault()` pada `dragover`—pemanggilan ini menandakan bahwa elemen tersebut menerima pelepasan. Tanpanya, peristiwa pelepasan tidak akan dipicu.
 
-## Gaya Hover Drag
+## Menata Tampilan Saat Seretan Melintas
 
-To show users where they can drop, add visual feedback when dragging over a drop zone. The `dragenter` event fires when something enters the zone, and `dragleave` fires when it leaves:
+Untuk menunjukkan tempat pengguna dapat melepaskan item, tambahkan umpan balik visual saat item diseret di atas zona pelepasan. Peristiwa `dragenter` dipicu saat sesuatu memasuki zona tersebut, sedangkan `dragleave` dipicu saat sesuatu meninggalkannya:
 
 ```css
 .drop-zone {
@@ -76,11 +76,11 @@ target.addEventListener('drop', (e) => {
 });
 ```
 
-Note: `dragleave` also fires when entering a child element, which can cause flickering. The complete example below shows how to handle this.
+Catatan: `dragleave` juga dipicu saat memasuki elemen turunan, yang dapat menyebabkan tampilan berkedip. Contoh lengkap di bawah menunjukkan cara menanganinya.
 
 ## Contoh Lengkap
 
-A task list where items can be dragged between priority columns. This tracks the dragged element in a variable, which is the simplest approach when everything is on the same page:
+Daftar tugas yang itemnya dapat diseret antarkolom prioritas. Contoh ini melacak elemen yang sedang diseret dalam sebuah variabel, yang merupakan pendekatan paling sederhana jika semuanya berada di halaman yang sama:
 
 ```html
 <div class="tasks">
@@ -175,9 +175,9 @@ document.querySelectorAll('.drop-zone').forEach(zone => {
 </style>
 ```
 
-## Menggabungkan dengan Drop File
+## Menggabungkan dengan Pelepasan File
 
-If your app uses both HTML drag-and-drop and [File Drop](/id/features/drag-and-drop/files/), your HTML drop zones will also receive events when users drag files from the operating system. To prevent confusion, filter out file drags in your handlers:
+Jika aplikasi Anda menggunakan fitur seret dan lepas HTML sekaligus [Pelepasan File](/features/drag-and-drop/files/), zona pelepasan HTML Anda juga akan menerima peristiwa saat pengguna menyeret file dari sistem operasi. Untuk menghindari kebingungan, saring penyeretan file dalam handler Anda:
 
 ```javascript
 zone.addEventListener('dragenter', (e) => {
@@ -204,11 +204,11 @@ zone.addEventListener('drop', (e) => {
 });
 ```
 
-The `dataTransfer.types` array contains `'Files'` when the user is dragging files from the OS, but contains types like `'text/plain'` for internal HTML drags. This lets you distinguish between the two.
+Array `dataTransfer.types` berisi `'Files'` saat pengguna menyeret file dari OS, tetapi berisi tipe seperti `'text/plain'` untuk penyeretan HTML internal. Dengan demikian, Anda dapat membedakan keduanya.
 
 ## Meneruskan Data dengan dataTransfer
 
-The example above tracks the dragged element in a JavaScript variable. This works well when everything is on the same page. But if you need to drag between iframes or pass data that isn't tied to a DOM element, use the `dataTransfer` API:
+Contoh di atas melacak elemen yang sedang diseret dalam sebuah variabel JavaScript. Cara ini efektif jika semuanya berada di halaman yang sama. Namun, jika Anda perlu menyeret antar-iframe atau meneruskan data yang tidak terikat pada elemen DOM, gunakan API `dataTransfer`:
 
 ```javascript
 // When drag starts, store data
@@ -225,9 +225,9 @@ target.addEventListener('drop', (e) => {
 });
 ```
 
-The data is stored as strings, so you'll need to serialize objects with `JSON.stringify()` if needed.
+Data disimpan sebagai string, jadi jika diperlukan, Anda harus melakukan serialisasi objek dengan `JSON.stringify()`.
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [File Drop](/id/features/drag-and-drop/files/) - Accept files from the operating system
-- [MDN Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API) - Full browser API reference
+- [Pelepasan File](/features/drag-and-drop/files/)—Terima file dari sistem operasi
+- [API Seret dan Lepas MDN](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API)—Referensi lengkap API browser

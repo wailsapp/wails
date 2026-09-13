@@ -1,57 +1,58 @@
 ---
 schema = 1
 title = "Manager-API"
-description = "Organisierte API-Struktur mit fokussierten Manager-Schnittstellen"
+description = "Strukturierte API mit spezialisierten Manager-Schnittstellen"
 slug = "concepts/manager-api"
-sourcePath = "de/concepts/manager-api.mpd"
+sourcePath = "concepts/manager-api.mpd"
 ---
 
-Die Wails v3 Manager-API bietet eine organisierte und gut auffindbare Möglichkeit, auf die Anwendungsfunktionalität über fokussierte Manager-Strukturen zuzugreifen. Diese neue API-Struktur gruppiert zusammengehörige Methoden zusammen und bewahrt dabei die volle Abwärtskompatibilität mit der traditionellen App-API.
+Die Manager-API von Wails v3 bietet einen strukturierten und leicht auffindbaren Zugriff auf Anwendungsfunktionen über spezialisierte Manager-Structs, die in öffentlichen Feldern von `*application.App` gruppiert sind. Wails 3 stellt einen klaren Bruch mit v2 dar – es gibt keine Wrapper-Schicht für einzelne Aufrufe, die die Kompatibilität mit der alten API im Stil von `app.NewWebviewWindow(...)` aufrechterhält. Verwenden Sie daher die folgenden Manager, um die Anwendung zu steuern.
 
-## Übersicht
+## Überblick
 
-Die Manager-API organisiert die Anwendungsfunktionalität in elf fokussierte Bereiche:
+Die Manager-API gliedert die Anwendungsfunktionen in zwölf spezialisierte Bereiche (einen Logger und elf Manager):
 
-- *`app.Window`* - Fenstererstellung, -verwaltung und Callbacks
-- *`app.ContextMenu`* - Registrierung und Verwaltung von Kontextmenüs
-- *`app.KeyBinding`* - Verwaltung globaler Tastenkürzel
-- *`app.Browser`* - Browserintegration (Öffnen von URLs und Dateien)
-- *`app.Env`* - Umgebungsinformationen und Systemstatus
-- *`app.Dialog`* - Datei- und Nachrichten-Dialoge
-- *`app.Event`* - Verarbeitung benutzerdefinierter Ereignisse und Anwendungsereignisse
-- *`app.Menu`* - Verwaltung des Anwendungsmenüs
-- *`app.Screen`* - Bildschirmverwaltung und Koordinatentransformationen
-- *`app.Clipboard`* - Zwischenablage-Textoperationen
-- *`app.SystemTray`* - Erstellung und Verwaltung von Systemablage-Symbolen
+- *`app.Window`* – Erstellen und Verwalten von Fenstern sowie Callbacks
+- *`app.ContextMenu`* – Registrieren und Verwalten von Kontextmenüs\
+- *`app.KeyBinding`* – Verwalten globaler Tastenbelegungen
+- *`app.Browser`* – Browser-Integration (Öffnen von URLs und Dateien)
+- *`app.Env`* – Informationen zur Umgebung und zum Systemzustand
+- *`app.Dialog`* – Datei- und Meldungsdialoge
+- *`app.Event`* – Verarbeiten benutzerdefinierter Ereignisse und Anwendungsereignisse
+- *`app.Menu`* – Verwalten des Anwendungsmenüs
+- *`app.Screen`* – Verwalten von Bildschirmen und Transformieren von Koordinaten
+- *`app.Clipboard`* – Textoperationen in der Zwischenablage
+- *`app.SystemTray`* – Erstellen und Verwalten von Symbolen im Infobereich
+- *`app.Autostart`* – Registrieren der Anwendung für den Start bei der Benutzeranmeldung
 
 ## Vorteile
 
-- *Bessere Auffindbarkeit* - Die IDE-Vervollständigung zeigt eine organisierte API-Oberfläche
-- *Verbesserte Codeorganisation* - Zusammengehörige Methoden sind gruppiert
-- *Verbesserte Wartbarkeit* - Trennung der Zuständigkeiten zwischen den Managern
-- *Zukünftige Erweiterbarkeit* - Einfacher, neue Funktionen in spezifische Bereiche hinzuzufügen
+- *Bessere Auffindbarkeit* – Die automatische IDE-Vervollständigung zeigt eine strukturierte API-Oberfläche an
+- *Verbesserte Codestruktur* – Zusammengehörige Methoden sind gruppiert
+- *Bessere Wartbarkeit* – Zuständigkeiten sind auf die Manager verteilt
+- *Künftige Erweiterbarkeit* – Neue Funktionen lassen sich einfacher zu bestimmten Bereichen hinzufügen
 
 ## Verwendung
 
-Die Manager-API bietet organisierten Zugriff auf alle Anwendungsfunktionalitäten:
+Die Manager-API bietet strukturierten Zugriff auf alle Anwendungsfunktionen:
 
 ```go
-// Ereignisse und benutzerdefinierte Ereignisverarbeitung
+// Events and custom event handling
 app.Event.Emit("custom", data)
 app.Event.On("custom", func(e *CustomEvent) { ... })
 
-// Fensterverwaltung
+// Window management
 window, _ := app.Window.GetByName("main")
 app.Window.OnCreate(func(window Window) { ... })
 
-// Browserintegration
+// Browser integration
 app.Browser.OpenURL("https://wails.io")
 
-// Menüverwaltung
+// Menu management
 menu := app.Menu.New()
 app.Menu.Set(menu)
 
-// Systemablage
+// System tray
 systray := app.SystemTray.New()
 ```
 
@@ -59,207 +60,229 @@ systray := app.SystemTray.New()
 
 ### Fenster-Manager
 
-Verwaltet die Fenstererstellung, -abruf und Lebenszyklus-Callbacks.
+Verwaltet das Erstellen und Abrufen von Fenstern sowie Callbacks für deren Lebenszyklus.
 
 ```go
-// Fenster erstellen
+// Create windows
 window := app.Window.New()
 window := app.Window.NewWithOptions(options)
 current := app.Window.Current()
 
-// Fenster finden
+// Find windows
 window, exists := app.Window.GetByName("main")
 windows := app.Window.GetAll()
 
-// Fenster-Callbacks
+// Window callbacks
 app.Window.OnCreate(func(window Window) {
-    // Fenstererstellung verarbeiten
+    // Handle window creation
 })
 ```
 
 ### Ereignis-Manager
 
-Verwaltet benutzerdefinierte Ereignisse und das Abhören von Anwendungsereignissen.
+Verarbeitet benutzerdefinierte Ereignisse und überwacht Anwendungsereignisse.
 
 ```go
-// Benutzerdefinierte Ereignisse
+// Custom events
 app.Event.Emit("userAction", data)
 cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
-    // Ereignis verarbeiten
+    // Handle event
 })
 app.Event.Off("userAction")
-app.Event.Reset() // Alle Listener entfernen
+app.Event.Reset() // Remove all listeners
 
-// Anwendungsereignisse
+// Application events
 app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
-    // System-Designänderung verarbeiten
+    // Handle system theme change
 })
 ```
 
 ### Browser-Manager
 
-Bietet Browserintegration zum Öffnen von URLs und Dateien.
+Stellt die Browser-Integration zum Öffnen von URLs und Dateien bereit.
 
 ```go
-// URLs und Dateien im Standardbrowser öffnen
+// Open URLs and files in default browser
 err := app.Browser.OpenURL("https://wails.io")
 err := app.Browser.OpenFile("/path/to/document.pdf")
 ```
 
 ### Umgebungs-Manager
 
-Zugriff auf Systemumgebungsinformationen.
+Ermöglicht den Zugriff auf Informationen zur Systemumgebung.
 
 ```go
-// Umgebungsinformationen abrufen
+// Get environment info
 env := app.Env.Info()
 fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
 
-// System-Design prüfen
+// Check system theme
 if app.Env.IsDarkMode() {
-    // Dunkles Design ist aktiv
+    // Dark mode is active
 }
 
-// Dateimanager öffnen
+// Open file manager
 err := app.Env.OpenFileManager("/path/to/folder", false)
 ```
 
 ### Dialog-Manager
 
-Organisierter Zugriff auf Datei- und Nachrichten-Dialoge.
+Bietet strukturierten Zugriff auf Datei- und Meldungsdialoge.
 
 ```go
-// Datei-Dialoge
+// File dialogs
 result, err := app.Dialog.OpenFile().
-    AddFilter("Textdateien", "*.txt").
+    AddFilter("Text Files", "*.txt").
     PromptForSingleSelection()
 
 result, err = app.Dialog.SaveFile().
-    SetDefaultFilename("document.txt").
+    SetFilename("document.txt").
     PromptForSingleSelection()
 
-// Nachrichten-Dialoge
+// Message dialogs
 app.Dialog.Info().
     SetTitle("Information").
-    SetMessage("Vorgang erfolgreich abgeschlossen").
+    SetMessage("Operation completed successfully").
     Show()
 
 app.Dialog.Error().
-    SetTitle("Fehler").  
-    SetMessage("Ein Fehler ist aufgetreten").
+    SetTitle("Error").
+    SetMessage("An error occurred").
     Show()
 ```
 
 ### Menü-Manager
 
-Erstellung und Verwaltung des Anwendungsmenüs.
+Erstellt und verwaltet das Anwendungsmenü.
 
 ```go
-// Anwendungsmenü erstellen und festlegen
+// Create and set application menu
 menu := app.Menu.New()
-fileMenu := menu.AddSubmenu("Datei")
-fileMenu.Add("Neu").OnClick(func(ctx *Context) {
-    // Menü-Klick verarbeiten
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("New").OnClick(func(ctx *Context) {
+    // Handle menu click
 })
 
 app.Menu.Set(menu)
 
-// Über-Dialog anzeigen
+// Show about dialog
 app.Menu.ShowAbout()
 ```
 
-### Tastenkürzel-Manager
+### Tastenbelegungs-Manager
 
-Dynamische Verwaltung globaler Tastenkürzel.
+Verwaltet globale Tastenbelegungen dynamisch.
 
 ```go
-// Tastenkürzel hinzufügen
-app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
-    // Strg+N verarbeiten
+// Add key bindings
+app.KeyBinding.Add("ctrl+n", func(window application.Window) {
+    // Handle Ctrl+N
 })
 
-app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+q", func(window application.Window) {
     app.Quit()
 })
 
-// Tastenkürzel entfernen
+// Remove key bindings
 app.KeyBinding.Remove("ctrl+n")
 
-// Alle Kürzel abrufen
+// Get all bindings
 bindings := app.KeyBinding.GetAll()
 ```
 
 ### Kontextmenü-Manager
 
-Erweiterte Kontextmenüverwaltung (für Bibliotheksautoren).
+Erweiterte Verwaltung von Kontextmenüs (für Bibliotheksautoren).
 
 ```go
-// Kontextmenü erstellen und registrieren
+// Create and register context menu
 menu := app.ContextMenu.New()
 app.ContextMenu.Add("myMenu", menu)
 
-// Kontextmenü abrufen
+// Retrieve context menu
 menu, exists := app.ContextMenu.Get("myMenu")
 
-// Kontextmenü entfernen
+// Remove context menu
 app.ContextMenu.Remove("myMenu")
 ```
 
 ### Bildschirm-Manager
 
-Bildschirmverwaltung und Koordinatentransformationen für Multi-Monitor-Setups.
+Verwaltet Bildschirme und transformiert Koordinaten für Konfigurationen mit mehreren Monitoren.
 
 ```go
-// Bildschirminformationen abrufen
+// Get screen information
 screens := app.Screen.GetAll()
 primary := app.Screen.GetPrimary()
 
-// Koordinatentransformationen
+// Coordinate transformations
 physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
 logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
 
-// Bildschirmerkennung
+// Screen detection
 screen := app.Screen.ScreenNearestDipPoint(point)
 screen = app.Screen.ScreenNearestDipRect(rect)
 ```
 
 ### Zwischenablage-Manager
 
-Zwischenablage-Operationen zum Lesen und Schreiben von Text.
+Operationen zum Lesen und Schreiben von Text in der Zwischenablage.
 
 ```go
-// Text in die Zwischenablage schreiben
+// Set text to clipboard
 success := app.Clipboard.SetText("Hello World")
 if !success {
-    // Fehler verarbeiten
+    // Handle error
 }
 
-// Text aus der Zwischenablage lesen
+// Get text from clipboard
 text, ok := app.Clipboard.Text()
 if !ok {
-    // Fehler verarbeiten
+    // Handle error
 } else {
-    // Text verwenden
+    // Use the text
 }
 ```
 
-### Systemablage-Manager
+### SystemTray-Manager
 
-Erstellung und Verwaltung von Systemablage-Symbolen.
+Erstellt und verwaltet Symbole im Infobereich.
 
 ```go
-// Systemablage erstellen
+// Create system tray
 systray := app.SystemTray.New()
-systray.SetLabel("Meine App")
+systray.SetLabel("My App")
 systray.SetIcon(iconBytes)
 
-// Menü zur Systemablage hinzufügen
+// Add menu to system tray
 menu := app.Menu.New()
-menu.Add("Öffnen").OnClick(func(ctx *Context) {
-    // Klick verarbeiten
+menu.Add("Open").OnClick(func(ctx *Context) {
+    // Handle click
 })
 systray.SetMenu(menu)
 
-// Systemablage zerstören, wenn fertig
+// Destroy system tray when done
 systray.Destroy()
 ```
+
+### Autostart-Manager
+
+Registriert die Anwendung für den Start bei der Benutzeranmeldung. Wählt für jede Plattform den geeigneten nativen Mechanismus aus: SMAppService oder eine LaunchAgent-plist-Datei unter macOS, den Registrierungsschlüssel `HKCU\…\Run` unter Windows und einen XDG-`.desktop`-Eintrag unter Linux.
+
+```go
+// Register to launch at login
+err := app.Autostart.Enable()
+
+// With extra launch-time arguments and a custom identifier
+err = app.Autostart.EnableWithOptions(application.AutostartOptions{
+    Identifier: "com.example.myapp",
+    Arguments:  []string{"--hidden"},
+})
+
+// Check / remove
+enabled, err := app.Autostart.IsEnabled()
+status, err := app.Autostart.Status()  // includes Path + Strategy
+err = app.Autostart.Disable()
+```
+
+Informationen zum plattformspezifischen Verhalten, zu den Regeln für Bezeichner und zur Garantie für die Erkennung veralteter Einträge finden Sie auf der Seite [Autostart-Funktion](/features/autostart/basics/).

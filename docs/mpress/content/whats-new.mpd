@@ -31,8 +31,7 @@ allowing for dynamic user interfaces that adapt to user needs and application\
 states.
 
 @note type="tip" title="Multiple Windows"
-@rawHTML
-<details><summary>Example</summary>
+@details title="Example"
 
 ```go
 package main
@@ -78,7 +77,6 @@ func main() {
    }
 }
 ```
-</details>
 @end
 
 @end
@@ -99,8 +97,7 @@ Key features of the Wails v3 system tray integration include:
 3. Adaptive Icon Display: Support for both light and dark mode icons ensures your application's system tray icon remains visible and aesthetically pleasing across different system themes. Template icons are also supported on macOS.
 
 @note type="tip" title="Systray"
-@rawHTML
-<details><summary>Example</summary>
+@details title="Example"
 
 ```go
 package main
@@ -161,7 +158,6 @@ func main() {
     }
 }
 ```
-</details>
 @end
 @end
 
@@ -179,8 +175,7 @@ The binding generation process has been simplified, requiring only a single\
 command: `wails3 generate bindings`.
 
 @note type="tip" title="Bindings"
-@rawHTML
-<details><summary>Example</summary>
+@details title="Example"
 
 ```js
 // @ts-check
@@ -209,7 +204,6 @@ export function GreetPerson($0) {
 }
 ```
 
-</details>
 @end
 
 @end
@@ -231,10 +225,9 @@ customise the build process to your needs.
 You can even use make if that's your thing!
 
 @note type="tip" title="Taskfile.yml"
-@rawHTML
-<details><summary>Example</summary>
+@details title="Example"
 
-```yaml "Snippet from build/Taskfile.darwin.yml"
+```yaml {title="build/Taskfile.darwin.yml"}
 darwin:build:
   summary: Builds the application for macOS
   platforms:
@@ -249,7 +242,6 @@ darwin:build:
     CGO_LDFLAGS: "-mmacosx-version-min=10.15"
     MACOSX_DEPLOYMENT_TARGET: "10.15"
 ```
-</details>
 @end
 
 @end
@@ -268,8 +260,7 @@ use case is displaying a confirmation dialog before closing a window. This gives
 you more control over the event flow and user experience.
 
 @note type="tip" title="Example of event handling"
-@rawHTML
-<details><summary>Example</summary>
+@details title="Example"
 
 ```go
 package main
@@ -343,7 +334,6 @@ func main() {
 }
 ```
 
-</details>
 @end
 
 @end
@@ -354,8 +344,7 @@ An experimental feature to call runtime methods using plain html, similar to\
 [htmx](https://htmx.org).
 
 @note type="tip" title="Example of wml"
-@rawHTML
-<details><summary>Example</summary>
+@details title="Example"
 
 ```html
 <!doctype html>
@@ -392,7 +381,6 @@ An experimental feature to call runtime methods using plain html, similar to\
 </html>
 ```
 
-</details>
 @end
 
 @end

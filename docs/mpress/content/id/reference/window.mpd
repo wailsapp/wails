@@ -1,29 +1,29 @@
 ---
 schema = 1
-title = "API Window"
-description = "Referensi lengkap untuk API Window"
+title = "API Jendela"
+description = "Referensi lengkap untuk API Jendela"
 slug = "reference/window"
-sourcePath = "id/reference/window.mpd"
+sourcePath = "reference/window.mpd"
 ---
 
-## Gambaran Umum
+## Ikhtisar
 
-API Window menyediakan metode untuk mengontrol tampilan, perilaku, dan lifecycle window. Akses melalui instance window atau manajer `app.Window`.
+API Jendela menyediakan berbagai metode untuk mengontrol tampilan, perilaku, dan siklus hidup jendela. Akses API ini melalui instans jendela atau pengelola `app.Window`.
 
-`Window` adalah antarmuka yang dipenuhi oleh `*application.WebviewWindow`; signature metode di bawah ini ada di `*WebviewWindow`. Banyak mutator mengembalikan `Window` untuk memungkinkan chaining — nilai kembalian didokumentasikan per metode.
+`Window` adalah antarmuka yang diimplementasikan oleh `*application.WebviewWindow`; tanda tangan metode di bawah ini terdapat pada `*WebviewWindow`. Banyak metode pengubah mengembalikan `Window` agar dapat dirangkai—nilai kembali didokumentasikan untuk setiap metode.
 
 *Operasi umum:*
-- Membuat dan menampilkan window
+- Membuat dan menampilkan jendela
 - Mengontrol ukuran, posisi, dan status
-- Menangani event window
-- Mengelola konten window
+- Menangani peristiwa jendela
+- Mengelola konten jendela
 - Mengonfigurasi tampilan dan perilaku
 
 ## Visibilitas
 
 ### Show()
 
-Menampilkan window. Jika window disembunyikan, window menjadi terlihat. Mengembalikan receiver untuk chaining.
+Menampilkan jendela. Jika sebelumnya disembunyikan, jendela akan terlihat. Mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) Show() Window
@@ -37,7 +37,7 @@ window.Show()
 
 ### Hide()
 
-Menyembunyikan window tanpa menutupnya. Window tetap di memori dan dapat ditampilkan lagi. Mengembalikan receiver untuk chaining.
+Menyembunyikan jendela tanpa menutupnya. Jendela tetap berada dalam memori dan dapat ditampilkan kembali. Mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) Hide() Window
@@ -45,21 +45,21 @@ func (w *WebviewWindow) Hide() Window
 
 *Contoh:*
 ```go
-// Sembunyikan window sementara
+// Hide window temporarily
 window.Hide()
 
-// Tampilkan lagi nanti
+// Show it again later
 window.Show()
 ```
 
 *Kasus penggunaan:*
-- Aplikasi system tray yang disembunyikan ke tray
-- Alur wizard di mana window digunakan kembali
-- Penyembunyian sementara selama operasi
+- Aplikasi baki sistem yang disembunyikan ke baki
+- Alur wizard yang menggunakan kembali jendela
+- Menyembunyikan jendela sementara selama operasi
 
 ### Close()
 
-Menutup window. Ini memicu event `WindowClosing`.
+Menutup jendela. Tindakan ini memicu peristiwa `WindowClosing`.
 
 ```go
 func (w *WebviewWindow) Close()
@@ -70,20 +70,20 @@ func (w *WebviewWindow) Close()
 window.Close()
 ```
 
-*Catatan:* Jika hook terdaftar memanggil `event.Cancel()`, penutupan akan dicegah.
+*Catatan:* Jika hook yang terdaftar memanggil `event.Cancel()`, penutupan akan dicegah.
 
-## Properti Window
+## Properti Jendela
 
 ### SetTitle()
 
-Mengatur teks title bar window. Mengembalikan receiver untuk chaining.
+Mengatur teks bilah judul jendela. Mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetTitle(title string) Window
 ```
 
 *Parameter:*
-- `title` - Judul window baru
+- `title` - Judul jendela baru
 
 *Contoh:*
 ```go
@@ -92,7 +92,7 @@ window.SetTitle("My Application - Document.txt")
 
 ### Name()
 
-Mengembalikan pengenal nama unik window.
+Mengembalikan pengenal nama unik jendela.
 
 ```go
 func (w *WebviewWindow) Name() string
@@ -103,7 +103,7 @@ func (w *WebviewWindow) Name() string
 name := window.Name()
 fmt.Println("Window name:", name)
 
-// Ambil window berdasarkan nama nanti
+// Retrieve window by name later
 if w, ok := app.Window.GetByName(name); ok {
     w.Focus()
 }
@@ -113,15 +113,15 @@ if w, ok := app.Window.GetByName(name); ok {
 
 ### SetSize()
 
-Mengatur dimensi window dalam piksel. Mengembalikan receiver untuk chaining.
+Mengatur dimensi jendela dalam piksel. Mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetSize(width, height int) Window
 ```
 
 *Parameter:*
-- `width` - Lebar window dalam piksel
-- `height` - Tinggi window dalam piksel
+- `width` - Lebar jendela dalam piksel
+- `height` - Tinggi jendela dalam piksel
 
 *Contoh:*
 ```go
@@ -130,7 +130,7 @@ window.SetSize(1024, 768)
 
 ### Size()
 
-Mengembalikan dimensi window saat ini.
+Mengembalikan dimensi jendela saat ini.
 
 ```go
 func (w *WebviewWindow) Size() (width, height int)
@@ -144,7 +144,7 @@ fmt.Printf("Window is %dx%d\n", width, height)
 
 ### SetMinSize() / SetMaxSize()
 
-Mengatur dimensi minimum dan maksimum window. Keduanya mengembalikan receiver untuk chaining.
+Mengatur dimensi minimum dan maksimum jendela. Keduanya mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetMinSize(width, height int) Window
@@ -153,16 +153,16 @@ func (w *WebviewWindow) SetMaxSize(width, height int) Window
 
 *Contoh:*
 ```go
-// Cegah window terlalu kecil
+// Prevent window from being too small
 window.SetMinSize(800, 600)
 
-// Cegah window terlalu besar
+// Prevent window from being too large
 window.SetMaxSize(1920, 1080)
 ```
 
 ### SetPosition()
 
-Mengatur posisi window relatif terhadap sudut kiri atas layar.
+Mengatur posisi jendela relatif terhadap sudut kiri atas layar.
 
 ```go
 func (w *WebviewWindow) SetPosition(x, y int)
@@ -174,16 +174,16 @@ func (w *WebviewWindow) SetPosition(x, y int)
 
 *Contoh:*
 ```go
-// Posisikan window di kiri atas
+// Position window at top-left
 window.SetPosition(0, 0)
 
-// Posisikan window 100px dari kiri atas
+// Position window 100px from top-left
 window.SetPosition(100, 100)
 ```
 
 ### Position()
 
-Mengembalikan posisi window saat ini.
+Mengembalikan posisi jendela saat ini.
 
 ```go
 func (w *WebviewWindow) Position() (x, y int)
@@ -197,7 +197,7 @@ fmt.Printf("Window is at (%d, %d)\n", x, y)
 
 ### Center()
 
-Memusatkan window di layar.
+Menempatkan jendela di tengah layar.
 
 ```go
 func (w *WebviewWindow) Center()
@@ -210,11 +210,11 @@ window.Center()
 window.Show()
 ```
 
-*Catatan:* Memusatkan di monitor utama. Untuk setup multi-monitor, lihat API screen.
+*Catatan:* Jendela ditempatkan di tengah monitor utama. Untuk konfigurasi multi-monitor, lihat API layar.
 
 ### Focus()
 
-Membawa window ke depan dan memberikan fokus keyboard.
+Membawa jendela ke depan dan memberinya fokus papan ketik.
 
 ```go
 func (w *WebviewWindow) Focus()
@@ -222,15 +222,15 @@ func (w *WebviewWindow) Focus()
 
 *Contoh:*
 ```go
-// Bawa window ke depan
+// Bring window to front
 window.Focus()
 ```
 
-## Status Window
+## Status Jendela
 
 ### Minimise() / UnMinimise()
 
-Meminimalkan window ke taskbar/dock atau memulihkannya. `Minimise()` mengembalikan receiver untuk chaining; `UnMinimise()` tidak mengembalikan nilai.
+Meminimalkan jendela ke bilah tugas/dock atau memulihkannya. `Minimise()` mengembalikan penerima agar dapat dirangkai; `UnMinimise()` tidak mengembalikan apa pun.
 
 ```go
 func (w *WebviewWindow) Minimise() Window
@@ -239,16 +239,16 @@ func (w *WebviewWindow) UnMinimise()
 
 *Contoh:*
 ```go
-// Minimalkan window
+// Minimise window
 window.Minimise()
 
-// Pulihkan dari status diminimalkan
+// Restore from minimised state
 window.UnMinimise()
 ```
 
 ### Maximise() / UnMaximise()
 
-Memaksimalkan window untuk mengisi layar atau memulihkan ke ukuran sebelumnya. `Maximise()` mengembalikan receiver untuk chaining; `UnMaximise()` tidak mengembalikan nilai.
+Memaksimalkan jendela hingga memenuhi layar atau memulihkannya ke ukuran sebelumnya. `Maximise()` mengembalikan penerima agar dapat dirangkai; `UnMaximise()` tidak mengembalikan apa pun.
 
 ```go
 func (w *WebviewWindow) Maximise() Window
@@ -257,16 +257,16 @@ func (w *WebviewWindow) UnMaximise()
 
 *Contoh:*
 ```go
-// Maksimalkan window
+// Maximise window
 window.Maximise()
 
-// Pulihkan ke ukuran sebelumnya
+// Restore to previous size
 window.UnMaximise()
 ```
 
 ### Fullscreen() / UnFullscreen() / ToggleFullscreen()
 
-Memasuki atau keluar dari mode fullscreen. `Fullscreen()` mengembalikan receiver untuk chaining.
+Memasuki atau keluar dari mode layar penuh. `Fullscreen()` mengembalikan penerima agar dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) Fullscreen() Window
@@ -276,13 +276,13 @@ func (w *WebviewWindow) ToggleFullscreen()
 
 *Contoh:*
 ```go
-// Masuk fullscreen
+// Enter fullscreen
 window.Fullscreen()
 
-// Keluar fullscreen
+// Exit fullscreen
 window.UnFullscreen()
 
-// Atau toggle
+// Or toggle
 window.ToggleFullscreen()
 ```
 
@@ -290,7 +290,7 @@ Tidak ada metode `SetFullscreen(bool)`.
 
 ### IsMinimised() / IsMaximised() / IsFullscreen()
 
-Memeriksa status window saat ini.
+Memeriksa status jendela saat ini.
 
 ```go
 func (w *WebviewWindow) IsMinimised() bool
@@ -313,38 +313,38 @@ if window.IsFullscreen() {
 }
 ```
 
-## Konten Window
+## Konten Jendela
 
 ### SetURL()
 
-Menavigasi ke URL tertentu dalam window. Mengembalikan receiver untuk chaining.
+Membuka URL tertentu di dalam jendela. Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetURL(url string) Window
 ```
 
 *Parameter:*
-- `url` - URL untuk dinavigasi (dapat berupa `http://wails.localhost/` untuk aset tertanam)
+- `url` - URL yang akan dibuka (dapat berupa `http://wails.localhost/` untuk aset tersemat)
 
 *Contoh:*
 ```go
-// Navigasi ke halaman tertanam
+// Navigate to embedded page
 window.SetURL("http://wails.localhost/settings.html")
 
-// Navigasi ke URL eksternal (jika diizinkan)
+// Navigate to external URL (if allowed)
 window.SetURL("https://wails.io")
 ```
 
 ### SetHTML()
 
-Mengatur konten window langsung dari string HTML. Mengembalikan receiver untuk chaining.
+Mengatur konten jendela secara langsung dari string HTML. Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetHTML(html string) Window
 ```
 
 *Parameter:*
-- `html` - Konten HTML untuk ditampilkan
+- `html` - Konten HTML yang akan ditampilkan
 
 *Contoh:*
 ```go
@@ -362,13 +362,13 @@ window.SetHTML(html)
 ```
 
 *Kasus penggunaan:*
-- Generasi konten dinamis
-- Window sederhana tanpa proses build frontend
-- Halaman error atau splash screen
+- Pembuatan konten dinamis
+- Jendela sederhana tanpa proses build frontend
+- Halaman kesalahan atau layar pembuka
 
 ### Reload()
 
-Memuat ulang konten window saat ini.
+Memuat ulang konten jendela saat ini.
 
 ```go
 func (w *WebviewWindow) Reload()
@@ -376,22 +376,22 @@ func (w *WebviewWindow) Reload()
 
 *Contoh:*
 ```go
-// Muat ulang halaman saat ini
+// Reload current page
 window.Reload()
 ```
 
-*Catatan:* Berguna selama pengembangan atau saat konten perlu diperbarui.
+*Catatan:* Berguna selama pengembangan atau ketika konten perlu dimuat ulang.
 
-## Event Window
+## Peristiwa Jendela
 
-Wails menyediakan dua metode untuk menangani event window:
+Wails menyediakan dua metode untuk menangani peristiwa jendela:
 
-- *OnWindowEvent()* - Mendengarkan event window (tidak dapat mencegahnya).
-- *RegisterHook()* - Hook ke event window (dapat mencegahnya dengan memanggil `event.Cancel()`).
+- *OnWindowEvent()* - Mendengarkan peristiwa jendela (tidak dapat mencegahnya).
+- *RegisterHook()* - Memasang hook pada peristiwa jendela (dapat mencegahnya dengan memanggil `event.Cancel()`).
 
 ### OnWindowEvent()
 
-Mendaftarkan callback untuk event window. Mengembalikan fungsi unsubscribe.
+Mendaftarkan callback untuk peristiwa jendela. Mengembalikan fungsi untuk berhenti berlangganan.
 
 ```go
 func (w *WebviewWindow) OnWindowEvent(
@@ -404,36 +404,36 @@ func (w *WebviewWindow) OnWindowEvent(
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
 
-// Dengarkan fokus window
+// Listen for window focus
 window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
     app.Logger.Info("Window gained focus")
 })
 
-// Dengarkan kehilangan fokus window
+// Listen for window lost focus
 window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
     app.Logger.Info("Window lost focus")
 })
 
-// Dengarkan resize window
+// Listen for window resize
 window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
     app.Logger.Info("Window resized")
 })
 ```
 
-*Event Window Umum:*
-- `events.Common.WindowClosing` - Window akan ditutup
-- `events.Common.WindowFocus` - Window mendapat fokus
-- `events.Common.WindowLostFocus` - Window kehilangan fokus
-- `events.Common.WindowDidMove` - Window dipindahkan
-- `events.Common.WindowDidResize` - Window diubah ukurannya
-- `events.Common.WindowMinimise` - Window diminimalkan
-- `events.Common.WindowMaximise` - Window dimaksimalkan
-- `events.Common.WindowFullscreen` - Window masuk fullscreen
-- `events.Common.WindowRuntimeReady` - Runtime dalam window diinisialisasi
+*Peristiwa Jendela yang Umum:*
+- `events.Common.WindowClosing` - Jendela akan ditutup
+- `events.Common.WindowFocus` - Jendela mendapatkan fokus
+- `events.Common.WindowLostFocus` - Jendela kehilangan fokus
+- `events.Common.WindowDidMove` - Jendela dipindahkan
+- `events.Common.WindowDidResize` - Ukuran jendela diubah
+- `events.Common.WindowMinimise` - Jendela diminimalkan
+- `events.Common.WindowMaximise` - Jendela dimaksimalkan
+- `events.Common.WindowFullscreen` - Jendela memasuki mode layar penuh
+- `events.Common.WindowRuntimeReady` - Runtime di dalam jendela diinisialisasi
 
 ### RegisterHook()
 
-Mendaftarkan hook untuk event window. Hook berjalan sebelum listener dan dapat mencegah event dengan memanggil `event.Cancel()`. Mengembalikan fungsi unsubscribe.
+Mendaftarkan hook untuk peristiwa jendela. Hook dijalankan sebelum listener dan dapat mencegah peristiwa dengan memanggil `event.Cancel()`. Mengembalikan fungsi untuk berhenti berlangganan.
 
 ```go
 func (w *WebviewWindow) RegisterHook(
@@ -442,7 +442,7 @@ func (w *WebviewWindow) RegisterHook(
 ) func()
 ```
 
-*Contoh - Cegah penutupan window:*
+*Contoh - Mencegah jendela ditutup:*
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
 
@@ -457,14 +457,14 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
     confirm.SetCancelButton(no)
 
     no.OnClick(func() {
-        e.Cancel() // Cegah window ditutup
+        e.Cancel() // Prevent window from closing
     })
 
     confirm.Show()
 })
 ```
 
-*Contoh - Simpan sebelum menutup:*
+*Contoh - Menyimpan sebelum menutup:*
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     if !hasUnsavedChanges {
@@ -483,7 +483,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
     save.OnClick(func() { saveData() })
     cancel.OnClick(func() { e.Cancel() })
-    _ = discard // izinkan penutupan
+    _ = discard // allow close
 
     dlg.Show()
 })
@@ -491,19 +491,19 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### EmitEvent()
 
-Mengirim event kustom ke frontend window. Mengembalikan `true` jika emit dibatalkan oleh hook.
+Memancarkan peristiwa khusus ke frontend jendela. Mengembalikan `true` jika pemancaran dibatalkan oleh hook.
 
 ```go
 func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
 ```
 
 *Parameter:*
-- `name` - Nama event
-- `data` - Data opsional untuk dikirim dengan event
+- `name` - Nama peristiwa
+- `data` - Data opsional yang akan dikirim bersama peristiwa
 
 *Contoh:*
 ```go
-// Kirim data ke window tertentu
+// Send data to specific window
 window.EmitEvent("data-updated", map[string]any{
     "count":  42,
     "status": "success",
@@ -524,7 +524,7 @@ Events.On('data-updated', (data) => {
 
 ### SetEnabled()
 
-Mengaktifkan atau menonaktifkan interaksi pengguna dengan window.
+Mengaktifkan atau menonaktifkan interaksi pengguna dengan jendela.
 
 ```go
 func (w *WebviewWindow) SetEnabled(enabled bool)
@@ -532,38 +532,38 @@ func (w *WebviewWindow) SetEnabled(enabled bool)
 
 *Contoh:*
 ```go
-// Nonaktifkan window selama operasi panjang
+// Disable window during long operation
 window.SetEnabled(false)
 
-// Lakukan operasi
+// Perform operation
 performLongOperation()
 
-// Aktifkan kembali window
+// Re-enable window
 window.SetEnabled(true)
 ```
 
 ### SetBackgroundColour()
 
-Mengatur warna latar belakang window (ditampilkan sebelum konten dimuat). Mengembalikan receiver untuk chaining.
+Mengatur warna latar belakang jendela (ditampilkan sebelum konten dimuat). Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
 ```
 
-`RGBA` adalah `application.RGBA{Red, Green, Blue, Alpha uint8}`. Gunakan helper `application.NewRGB(r, g, b)` (alpha 255) atau `application.NewRGBA(r, g, b, a)`.
+`RGBA` adalah `application.RGBA{Red, Green, Blue, Alpha uint8}`. Gunakan fungsi pembantu `application.NewRGB(r, g, b)` (alfa 255) atau `application.NewRGBA(r, g, b, a)`.
 
 *Contoh:*
 ```go
-// Latar belakang putih
+// White background
 window.SetBackgroundColour(application.NewRGB(255, 255, 255))
 
-// Latar belakang gelap dengan alpha penuh
+// Dark background with full alpha
 window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
 ```
 
 ### SetResizable()
 
-Mengontrol apakah window dapat diubah ukurannya oleh pengguna. Mengembalikan receiver untuk chaining.
+Mengatur apakah ukuran jendela dapat diubah oleh pengguna. Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetResizable(resizable bool) Window
@@ -571,13 +571,13 @@ func (w *WebviewWindow) SetResizable(resizable bool) Window
 
 *Contoh:*
 ```go
-// Buat window ukuran tetap
+// Make window fixed size
 window.SetResizable(false)
 ```
 
 ### SetAlwaysOnTop()
 
-Mengatur apakah window tetap di atas window lain. Mengembalikan receiver untuk chaining.
+Mengatur apakah jendela tetap berada di atas jendela lain. Mengembalikan receiver agar pemanggilan metode dapat dirangkai.
 
 ```go
 func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
@@ -585,13 +585,13 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 
 *Contoh:*
 ```go
-// Jaga window tetap di atas
+// Keep window on top
 window.SetAlwaysOnTop(true)
 ```
 
 ### Print()
 
-Membuka dialog cetak native untuk konten window.
+Membuka dialog cetak native untuk konten jendela.
 
 ```go
 func (w *WebviewWindow) Print() error
@@ -608,17 +608,17 @@ if err := window.Print(); err != nil {
 
 ### AttachModal()
 
-Melampirkan window kedua sebagai sheet modal.
+Melampirkan jendela kedua sebagai modal lembar.
 
 ```go
 func (w *WebviewWindow) AttachModal(modalWindow Window)
 ```
 
 *Parameter:*
-- `modalWindow` - Window yang dilampirkan sebagai modal
+- `modalWindow` - Jendela yang akan dilampirkan sebagai modal
 
 *Dukungan platform:*
-- *macOS*: Dukungan penuh (ditampilkan sebagai sheet)
+- *macOS*: Dukungan penuh (ditampilkan sebagai lembar)
 - *Windows*: Tidak didukung
 - *Linux*: Tidak didukung
 
@@ -632,16 +632,16 @@ window.AttachModal(modalWindow)
 
 ### Linux
 
-Window Linux mendukung opsi khusus platform berikut melalui `LinuxWindow`:
+Jendela Linux mendukung opsi khusus platform berikut melalui `LinuxWindow`:
 
 #### MenuStyle
 
-Mengontrol bagaimana menu aplikasi ditampilkan. Opsi ini tersedia pada build GTK4 default dan diabaikan pada build legacy `-tags gtk3`.
+Mengontrol cara menu aplikasi ditampilkan. Opsi ini tersedia pada build GTK4 default dan diabaikan pada build `-tags gtk3` lama.
 
 @table header=true
 | Nilai | Deskripsi |
-| `LinuxMenuStyleMenuBar` | Menu bar tradisional di bawah title bar (default) |
-| `LinuxMenuStylePrimaryMenu` | Tombol menu utama di header bar (gaya GNOME) |
+| `LinuxMenuStyleMenuBar` | Bilah menu tradisional di bawah bilah judul (default) |
+| `LinuxMenuStylePrimaryMenu` | Tombol menu utama pada bilah header (gaya GNOME) |
 @end
 
 *Contoh:*
@@ -655,7 +655,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-*Catatan:* Gaya menu utama menampilkan tombol hamburger (☰) di header bar, mengikuti GNOME Human Interface Guidelines. Ini adalah gaya yang direkomendasikan untuk aplikasi GNOME modern.
+*Catatan:* Gaya menu utama menampilkan tombol hamburger (☰) pada bilah header, sesuai dengan Panduan Antarmuka Manusia GNOME. Ini adalah gaya yang direkomendasikan untuk aplikasi GNOME modern.
 
 ## Contoh Lengkap
 
@@ -672,7 +672,7 @@ func main() {
         Name: "Window API Demo",
     })
 
-    // Buat window dengan opsi
+    // Create window with options
     window := app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:            "My Application",
         Width:            1024,
@@ -683,12 +683,12 @@ func main() {
         URL:              "http://wails.localhost/",
     })
 
-    // Konfigurasi perilaku window
+    // Configure window behaviour
     window.SetResizable(true)
     window.SetMinSize(800, 600)
     window.SetMaxSize(1920, 1080)
 
-    // Hook konfirmasi sebelum menutup
+    // Confirm-before-close hook
     window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
         dlg := app.Dialog.Question().
             SetTitle("Confirm Close").
@@ -703,7 +703,7 @@ func main() {
         dlg.Show()
     })
 
-    // Dengarkan event window
+    // Listen for window events
     window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
         window.SetTitle("My Application (Active)")
         app.Logger.Info("Window gained focus")
@@ -714,7 +714,7 @@ func main() {
         app.Logger.Info("Window lost focus")
     })
 
-    // Posisikan dan tampilkan window
+    // Position and show window
     window.Center()
     window.Show()
 

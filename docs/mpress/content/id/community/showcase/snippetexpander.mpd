@@ -1,37 +1,27 @@
 ---
 schema = 1
 title = "Snippet Expander"
-description = "Aplikasi desktop yang dibangun dengan Wails"
+description = "Aplikasi desktop yang dibuat dengan Wails"
 slug = "community/showcase/snippetexpander"
-sourcePath = "id/community/showcase/snippetexpander.mpd"
+sourcePath = "community/showcase/snippetexpander.mpd"
 ---
 
-![Screenshot Snippet Expander](/assets/showcase-images/snippetexpandergui-select-snippet.png)
+![Tangkapan Layar Snippet Expander](/assets/showcase-images/snippetexpandergui-select-snippet.png)
 
-Screenshot jendela Select Snippet Snippet Expander
+Tangkapan layar jendela Select Snippet di Snippet Expander
 
-![Screenshot Snippet Expander](/assets/showcase-images/snippetexpandergui-add-snippet.png)
+![Tangkapan Layar Snippet Expander](/assets/showcase-images/snippetexpandergui-add-snippet.png)
 
-Screenshot layar Add Snippet Snippet Expander
+Tangkapan layar halaman Add Snippet di Snippet Expander
 
-![Screenshot Snippet Expander](/assets/showcase-images/snippetexpandergui-search-and-paste.png)
+![Tangkapan Layar Snippet Expander](/assets/showcase-images/snippetexpandergui-search-and-paste.png)
 
-Screenshot jendela Search & Paste Snippet Expander
+Tangkapan layar jendela Search & Paste di Snippet Expander
 
-[Snippet Expander](https://snippetexpander.org) adalah "Asisten teks snippet kecil yang dapat diperluas", untuk Linux.
+[Snippet Expander](https://snippetexpander.org) adalah "Asisten kecil untuk cuplikan teks yang dapat diperluas" bagi Linux.
 
-Snippet Expander terdiri dari aplikasi GUI yang dibangun dengan Wails untuk mengelola\
-snippet dan pengaturan, dengan mode jendela Search & Paste untuk memilih dan\
-menempel snippet dengan cepat.
+Snippet Expander terdiri atas aplikasi GUI yang dibuat dengan Wails untuk mengelola cuplikan dan pengaturan, serta mode jendela Search & Paste untuk memilih dan menempelkan cuplikan dengan cepat.
 
-GUI berbasis Wails, CLI go-lang, dan daemon auto expander vala-lang semuanya\
-berkomunikasi dengan daemon go-lang melalui D-Bus. Daemon melakukan sebagian besar\
-pekerjaan, mengelola database snippet dan pengaturan umum, serta menyediakan\
-layanan untuk memperluas dan menempel snippet, dan lain-lain.
+GUI berbasis Wails, CLI go-lang, dan daemon perluasan otomatis vala-lang semuanya berkomunikasi dengan daemon go-lang melalui D-Bus. Daemon tersebut menangani sebagian besar pekerjaan, yaitu mengelola basis data cuplikan dan pengaturan umum, serta menyediakan layanan untuk memperluas dan menempelkan cuplikan, dan sebagainya.
 
-Lihat\
-[kode sumber](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38)\
-untuk melihat bagaimana aplikasi Wails mengirim pesan dari UI ke backend yang kemudian\
-dikirim ke daemon, dan berlangganan event D-Bus untuk memantau perubahan\
-snippet melalui instance aplikasi atau CLI lainnya dan menampilkannya secara instan di\
-UI melalui event Wails.
+Lihat [kode sumber](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38) untuk mengetahui cara aplikasi Wails mengirim pesan dari UI ke backend yang kemudian diteruskan ke daemon, serta berlangganan peristiwa D-Bus untuk memantau perubahan cuplikan yang dilakukan melalui instans lain aplikasi atau CLI dan langsung menampilkannya di UI melalui peristiwa Wails.

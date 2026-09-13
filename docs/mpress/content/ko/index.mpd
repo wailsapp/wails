@@ -1,46 +1,23 @@
 ---
 schema = 1
 title = "Go로 데스크톱 앱 빌드하기"
-description = "Go와 웹 기술을 사용한 네이티브 데스크톱 애플리케이션"
-banner = {"content":"Wails v3를 사용할 수 있습니다. \u003ca href=\"https://wails.io\"\u003ev2 문서\u003c/a\u003e\n"}
+description = "Go와 웹 기술을 사용하는 네이티브 데스크톱 애플리케이션"
+banner = {"content":"Wails v3는 현재 베타 버전입니다. \u003ca href=\"https://v2.wails.io\"\u003ev2 문서를 찾고 계신가요?\u003c/a\u003e\n"}
 template = "splash"
-hero = {"actions":[{"icon":"right-arrow","link":"/ko/getting-started/installation","text":"시작하기","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"튜토리얼 보기","variant":"secondary"}],"image":{"alt":"Wails 로고","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Go와 최신 웹 기술을 사용하여 아름답고 성능이 뛰어난 데스크톱 애플리케이션을 빌드하세요. 하나의 코드베이스, 세 가지 플랫폼, 브라우저 불필요."}
-sourcePath = "ko/index.mpd"
+hero = {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"시작하기","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"튜토리얼 보기","variant":"secondary"}],"image":{"alt":"Wails 로고","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Go와 최신 웹 기술로 아름답고 성능이 뛰어난 애플리케이션을 빌드하세요. 하나의 코드베이스. 세 가지 플랫폼. 브라우저 불필요.*"}
+sourcePath = "index.mpd"
 ---
 
 @rawHTML
 <style>
-  /* Row 1 - Fastest */
+  /* Hero background — the neon "digital Wales" mountain, full-bleed and fixed. */
   body::after {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 200%;
-    height: 33.33vh;
-    opacity: 0.08;
+    inset: 0;
     z-index: -1;
-    background:
-      url('/showcase-images/tiny-rdm1.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/scriptbar.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/minesweeper-xp.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/wailsterm.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/modalfilemanager.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/ytd.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/filehound.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/edex-ui.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/tiny-rdm1.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/scriptbar.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/minesweeper-xp.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/wailsterm.webp') 7150px center / auto 80% no-repeat,
-      url('/showcase-images/modalfilemanager.webp') 7700px center / auto 80% no-repeat,
-      url('/showcase-images/ytd.webp') 8250px center / auto 80% no-repeat,
-      url('/showcase-images/filehound.webp') 8800px center / auto 80% no-repeat,
-      url('/showcase-images/edex-ui.webp') 9350px center / auto 80% no-repeat;
-    animation: scroll-row1 40s linear infinite;
-    filter: blur(0.5px);
+    background: url('/digital_wales_master.webp') center center / cover no-repeat;
+    opacity: 0.35;
     pointer-events: none;
   }
   
@@ -59,87 +36,11 @@ sourcePath = "ko/index.mpd"
     pointer-events: none;
   }
   
-  /* Row 2 - Medium Speed */
-  html::after {
-    content: '';
-    position: fixed;
-    top: 33.33vh;
-    left: 0;
-    width: 200%;
-    height: 33.33vh;
-    opacity: 0.08;
-    z-index: -2;
-    background:
-      url('/showcase-images/tiny-rdm2.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/mollywallet.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/optimus.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/cfntracker.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/riftshare-main.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/minecraft-mod-updater.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/resizem.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/mchat.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/tiny-rdm2.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/mollywallet.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/optimus.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/cfntracker.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/riftshare-main.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/minecraft-mod-updater.webp') 7150px center / auto 80% no-repeat,
-      url('/showcase-images/resizem.webp') 7700px center / auto 80% no-repeat,
-      url('/showcase-images/mchat.webp') 8250px center / auto 80% no-repeat;
-    animation: scroll-row2 25s linear infinite;
-    filter: blur(0.5px);
-    pointer-events: none;
-  }
-  
-  /* Row 3 - Slowest */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 66.66vh;
-    left: 0;
-    width: 200%;
-    height: 33.34vh;
-    opacity: 0.08;
-    z-index: -2;
-    background:
-      url('/showcase-images/portfall.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/encrypteasy.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/varly2.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/hiposter.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/october.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/wombat.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/portfall.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/encrypteasy.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/varly2.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/hiposter.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/october.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/wombat.webp') 7150px center / auto 80% no-repeat;
-    animation: scroll-row3 50s linear infinite;
-    filter: blur(0.5px);
-    pointer-events: none;
-  }
   
   /* Hero padding */
   .hero {
     padding-top: 3rem !important;
     padding-bottom: 2rem !important;
-  }
-  
-  @keyframes scroll-row1 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  
-  @keyframes scroll-row2 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  
-  @keyframes scroll-row3 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
   }
   
   .small-buttons {
@@ -173,112 +74,131 @@ sourcePath = "ko/index.mpd"
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
+
 </style>
 @end
-
+@rawHTML
+<span class="browser-footnote" data-browser-footnote>* 정말 원한다면 사용할 수 있습니다</span>
+<script>
+(() => {
+  const words = ['Desktop', 'Server', 'Mobile'];
+  let index = 0;
+  const init = () => {
+    const tagline = document.querySelector('.mpress-frontmatter-hero-tagline');
+    const note = document.querySelector('[data-browser-footnote]');
+    if (tagline && note && !tagline.contains(note)) tagline.appendChild(note);
+    const title = document.querySelector('.mpress-frontmatter-hero-title');
+    if (!title || title.querySelector('.morph-word-title')) return;
+    if (title.textContent.trim() !== 'Build Desktop Apps with Go') return;
+    const titleLine = document.createElement('span');
+    titleLine.className = 'morph-title-line';
+    const prefix = document.createElement('span');
+    prefix.textContent = 'Build';
+    const wordWrap = document.createElement('span');
+    wordWrap.className = 'morph-word-title';
+    const activeWord = document.createElement('span');
+    activeWord.textContent = words[0];
+    wordWrap.append(activeWord);
+    titleLine.append(prefix, wordWrap);
+    title.replaceChildren(titleLine, document.createElement('br'), document.createTextNode('Apps with Go'));
+    const rotate = () => {
+      const word = title.querySelector('.morph-word-title span');
+      if (!word) return;
+      word.classList.add('morph-word-out');
+      setTimeout(() => {
+        index = (index + 1) % words.length;
+        word.textContent = words[index];
+        word.classList.remove('morph-word-out');
+        setTimeout(rotate, 3600);
+      }, 650);
+    };
+    setTimeout(rotate, 3600);
+  };
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
+})();
+</script>
+@end
 ## 빠른 시작
 
-@tabs sync-key="os"
-@tab label="macOS"
-
 @terminal frame="macos" prompt="none"
-# Wails 설치
+# 1. Install the Wails CLI
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
-# 애플리케이션 생성
-wails3 init -n myapp -t vanilla
+# 2. Run the setup wizard (experimental)
+wails3 setup
+@end
 
-# 핫 리로드와 함께 실행
+이제 첫 번째 프로젝트를 시작할 준비가 되었습니다.
+
+@terminal frame="macos" prompt="none"
+wails3 init -n myapp -t vanilla
 cd myapp && wails3 dev
 @end
 
+*이제 애플리케이션이 실행 중이며* 핫 리로드와 타입 안전성이 보장되는 Go-to-JS 바인딩을 사용할 수 있습니다.
 
+`wails3 setup`에 문제가 있나요? [수동 설치 가이드](/quick-start/installation/)를 참조하세요.
 
-
-@end
-@tab label="Windows"
-
-@terminal frame="macos" prompt="none"
-# Wails 설치
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
-
-# 애플리케이션 생성
-wails3 init -n myapp -t vanilla
-
-# 핫 리로드와 함께 실행
-cd myapp; wails3 dev
-@end
-
-
-
-
-@end
-@tab label="Linux"
+## 데스크톱 앱을 그대로 모바일 앱으로
 
 @terminal frame="macos" prompt="none"
-# Wails 설치
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
-
-# 애플리케이션 생성
-wails3 init -n myapp -t vanilla
-
-# 핫 리로드와 함께 실행
-cd myapp && wails3 dev
+wails3 task ios:run      # run your existing app on iOS Simulator
+wails3 task android:run  # run your existing app on Android Emulator
 @end
 
+*Go 코드를 전혀 변경할 필요가 없습니다.* 동일한 `main.go`, 동일한 서비스, 동일한 프런트엔드를 Wails가 iOS 및 Android용으로 자동 컴파일합니다. 플랫폼별 기능(햅틱, 네이티브 대화 상자, 안전 영역)은 필요할 때 사용할 수 있지만, 앱을 출시하는 데 반드시 필요한 것은 아닙니다.
 
-@end
-@end
+[모바일 문서 →](/guides/mobile/)
 
-*이제 핫 리로드와 타입 안전한 Go-JS 바인딩이 적용된 애플리케이션이 실행 중입니다.*
+---
 
-## 왜 Wails인가?
+## Wails를 선택해야 하는 이유
 
 @cards cols="2"
 @card title="🚀 사용자가 체감하는 성능"
-- ~15MB 바이너리 vs Electron의 150MB
-- ~10MB 기본 메모리 vs 100MB+
-- &lt;0.5초 시작 시간 vs 2-3초
+- Electron의 150MB에 비해 약 15MB인 바이너리
+- 100MB+에 비해 약 10MB인 기본 메모리 사용량
+- 2-3초에 비해 &lt;0.5초인 시작 시간
 - OS WebView를 사용한 네이티브 렌더링
-- 번들된 브라우저 오버헤드 없음
+- 번들 브라우저로 인한 오버헤드 없음
 @end
 @card title="⚙ 개발자 경험"
-- 모든 플랫폼을 위한 단일 Go 코드베이스
-- 모든 웹 프레임워크 지원 - React, Vue, Svelte
-- 개발 중 핫 리로드
-- Go에서 Javascript 호출을 쉽게 할 수 있는 자동 생성 바인딩
-- 인메모리 IPC. 네트워크 포트 불필요
+- 모든 플랫폼에서 하나의 Go 코드베이스 사용
+- React, Vue, Svelte 등 모든 웹 프레임워크 지원
+- 개발 중 핫 리로드 지원
+- Go를 Javascript에서 쉽게 호출할 수 있도록 바인딩 자동 생성
+- 메모리 내 IPC. 네트워크 포트를 사용하지 않음
 @end
-@card title="✓ 프로덕션 준비 완료"
-- 수명 주기가 있는 여러 창 지원
+@card title="✓ 데스크톱 앱 개발에 필요한 기능 완비"
+- 수명 주기를 지원하는 다중 창
 - 네이티브 메뉴 및 시스템 트레이
-- 플랫폼 네이티브 파일 다이얼로그
-- 시스템 통합 및 단축키
+- 플랫폼 네이티브 파일 대화 상자
+- 시스템 통합 및 바로 가기
 - 코드 서명 및 패키징 도구
 @end
-@card title="▣ 크로스 플랫폼 네이티브"
-- Windows, macOS, Linux를 위한 단일 코드베이스
-- 필요시 플랫폼별 기능 지원
-- 사용자 경험에 대한 타협 없음
-- 단일 빌드로 모든 플랫폼에 배포
-- 모바일 지원 곧 출시...
+@card title="▣ 데스크톱 및 모바일"
+- Windows, macOS, Linux, iOS, Android
+- 동일한 코드베이스, 재작성 불필요
+- 모든 플랫폼에서 네이티브 WebView 사용
+- 열린 포트 및 localhost 서버 없음
+- 필요할 때 플랫폼 기능 사용 가능
 @end
 @end
 
 ## 다음 단계
 
-다음: [다음 단계](/ko/quick-start/next-steps/), [예제 보기](https://github.com/wailsapp/wails/tree/master/v3/examples), 또는 [API 레퍼런스](/reference/application/) 확인하기. v2에서 마이그레이션 중이신가요? [업그레이드 가이드](/migration/v2-to-v3/)를 참고하세요.
+다음으로 [완전한 애플리케이션을 빌드](/tutorials/03-notes-vanilla/)하거나, [예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 살펴보거나, [API 레퍼런스](/reference/application/)를 확인하세요. v2에서 마이그레이션하시나요? [업그레이드 가이드](/migration/v2-to-v3/)를 참조하세요.
 
-@note type="info" title="프로덕션 준비 완료"
-Wails v3를 사용할 수 있습니다. API는 안정적이며, 실제 프로덕션 환경에서 애플리케이션이 구동 중입니다. 최종 릴리스 전에 문서와 도구를 다듬고 있습니다.
+@note type="info" title="Wails v3 베타"
+Wails v3는 안정적인 데스크톱 API를 제공하는 베타 소프트웨어입니다. 이미 여러 팀이 프로덕션 환경에서 사용하고 있지만, 3.0을 위한 최종 마무리 작업이 진행 중이므로 배포하기 전에 철저히 테스트하는 것이 좋습니다.
 @end
 
 @cards cols="1"
-@card title="♥ Wails 개발 지원하기"
-Wails는 개발자를 위해 개발자들이 만든 무료 오픈 소스 프로젝트입니다. Wails가 멋진 애플리케이션을 만드는 데 도움이 되었다면, 지속적인 개발을 지원해 주세요.
+@card title="♥ Wails 개발 후원하기"
+Wails는 개발자가 개발자를 위해 만든 무료 오픈 소스입니다. Wails로 훌륭한 애플리케이션을 빌드하는 데 도움을 받으셨다면 지속적인 개발을 후원해 주세요.
 
-여러분의 스폰서십은 프로젝트 유지 관리, 문서 개선, 커뮤니티 전체에 혜택을 주는 새로운 기능 개발에 도움이 됩니다.
+여러분의 후원은 프로젝트를 유지하고 문서를 개선하며 전체 커뮤니티에 도움이 되는 새로운 기능을 개발하는 데 보탬이 됩니다.
 
-[스폰서가 되기 →](https://github.com/sponsors/leaanthony)
+[후원자 되기 →](https://github.com/sponsors/leaanthony)
 @end
 @end

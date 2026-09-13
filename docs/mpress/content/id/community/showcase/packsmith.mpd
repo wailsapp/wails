@@ -1,16 +1,16 @@
 ---
 schema = 1
 title = "Packsmith"
-description = "Aplikasi desktop yang dibangun dengan Wails"
+description = "Aplikasi desktop yang dibuat dengan Wails"
 slug = "community/showcase/packsmith"
-sourcePath = "id/community/showcase/packsmith.mpd"
+sourcePath = "community/showcase/packsmith.mpd"
 ---
 
-![Packsmith Screenshot](/assets/showcase-images/packsmith-screenshot.webp)
+![Tangkapan Layar Packsmith](/assets/showcase-images/packsmith-screenshot.webp)
 
-[Packsmith](https://github.com/sqot0/packsmith) adalah aplikasi open source untuk mengelola modpack Minecraft yang memungkinkan Anda:
+[Packsmith](https://github.com/sqot0/packsmith) adalah aplikasi sumber terbuka untuk mengelola modpack Minecraft yang memungkinkan Anda:
 
-- Mengelola modpack dengan mod loader Forge, Fabric, Neoforge, atau Quilt.
+- Mengelola modpack dengan pemuat mod Forge, Fabric, Neoforge, atau Quilt.
 - Mencari dan mengunduh mod dari Modrinth dan CurseForge.
-- Memisahkan mod untuk client dan server.
+- Memisahkan mod untuk klien dan server.
 - Memperbarui, mengubah versi, atau menghapus mod dari modpack Anda.

@@ -1,57 +1,58 @@
 ---
 schema = 1
-title = "マネージャーAPI"
-description = "焦点を絞ったマネージャーインターフェースによる整理されたAPI構造"
+title = "マネージャー API"
+description = "目的別のマネージャーインターフェースで整理された API 構造"
 slug = "concepts/manager-api"
-sourcePath = "ja/concepts/manager-api.mpd"
+sourcePath = "concepts/manager-api.mpd"
 ---
 
-Wails v3のマネージャーAPIは、焦点を絞ったマネージャー構造体を通じてアプリケーションの機能にアクセスするための、整理されており発見しやすい方法を提供します。この新しいAPI構造は、従来のApp APIとの完全な後方互換性を維持しつつ、関連するメソッドをグループ化しています。
+Wails v3 のマネージャー API では、`*application.App` の公開フィールド下に目的別にまとめられたマネージャー構造体を通じて、アプリケーションの機能に整理された分かりやすい方法でアクセスできます。Wails 3 は v2 との互換性を完全に断っており、従来の `app.NewWebviewWindow(...)` 形式の API との互換性を維持するための呼び出し単位のラッパーレイヤーはありません。そのため、アプリの操作には以下のマネージャーを使用します。
 
 ## 概要
 
-マネージャーAPIは、アプリケーションの機能を11の焦点を絞った領域に整理しています：
+マネージャー API は、アプリケーションの機能を目的別の 12 の領域（1 つのロガーと 11 のマネージャー）に整理します。
 
-- *`app.Window`* - ウィンドウの作成、管理、およびコールバック
-- *`app.ContextMenu`* - コンテキストメニューの登録と管理
-- *`app.KeyBinding`* - グローバルキーバインディングの管理
-- *`app.Browser`* - ブラウザー統合（URLとファイルのオープン）
+- *`app.Window`* - ウィンドウの作成、管理、コールバック
+- *`app.ContextMenu`* - コンテキストメニューの登録と管理\
+- *`app.KeyBinding`* - グローバルキーバインドの管理
+- *`app.Browser`* - ブラウザー連携（URL とファイルを開く）
 - *`app.Env`* - 環境情報とシステム状態
-- *`app.Dialog`* - ファイルおよびメッセージダイアログ操作
-- *`app.Event`* - カスタムイベント処理とアプリケーションイベント
+- *`app.Dialog`* - ファイルダイアログとメッセージダイアログの操作
+- *`app.Event`* - カスタムイベントの処理とアプリケーションイベント
 - *`app.Menu`* - アプリケーションメニューの管理
-- *`app.Screen`* - スクリーン管理と座標変換
-- *`app.Clipboard`* - クリップボードテキスト操作
+- *`app.Screen`* - 画面の管理と座標変換
+- *`app.Clipboard`* - クリップボードのテキスト操作
 - *`app.SystemTray`* - システムトレイアイコンの作成と管理
+- *`app.Autostart`* - ユーザーログイン時にアプリケーションを起動するよう登録
 
-## メリット
+## 利点
 
-- *発見性の向上* - IDEのオートコンプリートが整理されたAPIサーフェスを表示
-- *コード組織の改善* - 関連するメソッドがグループ化される
-- *保守性の向上* - マネージャー間で関心の分離がなされる
-- *将来の拡張性* - 特定の領域に新機能を追加しやすくなる
+- *見つけやすさの向上* - IDE の自動補完に整理された API が表示されます
+- *コード構成の改善* - 関連するメソッドがまとめられています
+- *保守性の向上* - マネージャー間で関心事が分離されています
+- *将来の拡張性* - 特定の領域に新機能を追加しやすくなります
 
 ## 使用方法
 
-マネージャーAPIは、すべてのアプリケーション機能への整理されたアクセスを提供します：
+マネージャー API を使用すると、アプリケーションのすべての機能に整理された形でアクセスできます。
 
 ```go
-// イベントとカスタムイベント処理
+// Events and custom event handling
 app.Event.Emit("custom", data)
 app.Event.On("custom", func(e *CustomEvent) { ... })
 
-// ウィンドウ管理
+// Window management
 window, _ := app.Window.GetByName("main")
 app.Window.OnCreate(func(window Window) { ... })
 
-// ブラウザー統合
+// Browser integration
 app.Browser.OpenURL("https://wails.io")
 
-// メニュー管理
+// Menu management
 menu := app.Menu.New()
 app.Menu.Set(menu)
 
-// システムトレイ
+// System tray
 systray := app.SystemTray.New()
 ```
 
@@ -59,21 +60,21 @@ systray := app.SystemTray.New()
 
 ### ウィンドウマネージャー
 
-ウィンドウの作成、取得、およびライフサイクルコールバックを管理します。
+ウィンドウの作成、取得、ライフサイクルコールバックを管理します。
 
 ```go
-// ウィンドウの作成
+// Create windows
 window := app.Window.New()
 window := app.Window.NewWithOptions(options)
 current := app.Window.Current()
 
-// ウィンドウの検索
+// Find windows
 window, exists := app.Window.GetByName("main")
 windows := app.Window.GetAll()
 
-// ウィンドウコールバック
+// Window callbacks
 app.Window.OnCreate(func(window Window) {
-    // ウィンドウ作成の処理
+    // Handle window creation
 })
 ```
 
@@ -82,184 +83,206 @@ app.Window.OnCreate(func(window Window) {
 カスタムイベントとアプリケーションイベントのリスニングを処理します。
 
 ```go
-// カスタムイベント
+// Custom events
 app.Event.Emit("userAction", data)
 cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
-    // イベントの処理
+    // Handle event
 })
 app.Event.Off("userAction")
-app.Event.Reset() // すべてのリスナーを削除
+app.Event.Reset() // Remove all listeners
 
-// アプリケーションイベント
+// Application events
 app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
-    // システムテーマ変更の処理
+    // Handle system theme change
 })
 ```
 
 ### ブラウザーマネージャー
 
-URLとファイルを開くためのブラウザー統合を提供します。
+URL やファイルを開くためのブラウザー連携機能を提供します。
 
 ```go
-// デフォルトブラウザーでURLとファイルを開く
+// Open URLs and files in default browser
 err := app.Browser.OpenURL("https://wails.io")
 err := app.Browser.OpenFile("/path/to/document.pdf")
 ```
 
 ### 環境マネージャー
 
-システム環境情報へのアクセス。
+システム環境情報にアクセスできます。
 
 ```go
-// 環境情報の取得
+// Get environment info
 env := app.Env.Info()
 fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
 
-// システムテーマの確認
+// Check system theme
 if app.Env.IsDarkMode() {
-    // ダークモードが有効
+    // Dark mode is active
 }
 
-// ファイルマネージャーを開く
+// Open file manager
 err := app.Env.OpenFileManager("/path/to/folder", false)
 ```
 
 ### ダイアログマネージャー
 
-ファイルおよびメッセージダイアログへの整理されたアクセス。
+ファイルダイアログとメッセージダイアログに整理された形でアクセスできます。
 
 ```go
-// ファイルダイアログ
+// File dialogs
 result, err := app.Dialog.OpenFile().
     AddFilter("Text Files", "*.txt").
     PromptForSingleSelection()
 
 result, err = app.Dialog.SaveFile().
-    SetDefaultFilename("document.txt").
+    SetFilename("document.txt").
     PromptForSingleSelection()
 
-// メッセージダイアログ
+// Message dialogs
 app.Dialog.Info().
     SetTitle("Information").
     SetMessage("Operation completed successfully").
     Show()
 
 app.Dialog.Error().
-    SetTitle("Error").  
+    SetTitle("Error").
     SetMessage("An error occurred").
     Show()
 ```
 
 ### メニューマネージャー
 
-アプリケーションメニューの作成と管理。
+アプリケーションメニューを作成および管理します。
 
 ```go
-// アプリケーションメニューの作成と設定
+// Create and set application menu
 menu := app.Menu.New()
 fileMenu := menu.AddSubmenu("File")
 fileMenu.Add("New").OnClick(func(ctx *Context) {
-    // メニュークリックの処理
+    // Handle menu click
 })
 
 app.Menu.Set(menu)
 
-// アバウトダイアログを表示
+// Show about dialog
 app.Menu.ShowAbout()
 ```
 
-### キーバインディングマネージャー
+### キーバインドマネージャー
 
-グローバルキーバインディングの動的管理。
+グローバルキーバインドを動的に管理します。
 
 ```go
-// キーバインディングの追加
-app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
-    // Ctrl+Nの処理
+// Add key bindings
+app.KeyBinding.Add("ctrl+n", func(window application.Window) {
+    // Handle Ctrl+N
 })
 
-app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+q", func(window application.Window) {
     app.Quit()
 })
 
-// キーバインディングの削除
+// Remove key bindings
 app.KeyBinding.Remove("ctrl+n")
 
-// すべてのバインディングの取得
+// Get all bindings
 bindings := app.KeyBinding.GetAll()
 ```
 
 ### コンテキストメニューマネージャー
 
-高度なコンテキストメニューの管理（ライブラリ作者向け）。
+高度なコンテキストメニュー管理機能です（ライブラリ作者向け）。
 
 ```go
-// コンテキストメニューの作成と登録
+// Create and register context menu
 menu := app.ContextMenu.New()
 app.ContextMenu.Add("myMenu", menu)
 
-// コンテキストメニューの取得
+// Retrieve context menu
 menu, exists := app.ContextMenu.Get("myMenu")
 
-// コンテキストメニューの削除
+// Remove context menu
 app.ContextMenu.Remove("myMenu")
 ```
 
-### スクリーンマネージャー
+### 画面マネージャー
 
-マルチモニター環境向けのスクリーン管理と座標変換。
+マルチモニター構成における画面の管理と座標変換を行います。
 
 ```go
-// スクリーン情報の取得
+// Get screen information
 screens := app.Screen.GetAll()
 primary := app.Screen.GetPrimary()
 
-// 座標変換
+// Coordinate transformations
 physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
 logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
 
-// スクリーンの検出
+// Screen detection
 screen := app.Screen.ScreenNearestDipPoint(point)
 screen = app.Screen.ScreenNearestDipRect(rect)
 ```
 
 ### クリップボードマネージャー
 
-テキストの読み書きのためのクリップボード操作。
+クリップボードでテキストを読み書きするための操作を提供します。
 
 ```go
-// クリップボードにテキストを設定
+// Set text to clipboard
 success := app.Clipboard.SetText("Hello World")
 if !success {
-    // エラー処理
+    // Handle error
 }
 
-// クリップボードからテキストを取得
+// Get text from clipboard
 text, ok := app.Clipboard.Text()
 if !ok {
-    // エラー処理
+    // Handle error
 } else {
-    // テキストを使用
+    // Use the text
 }
 ```
 
-### システムトレイマネージャー
+### SystemTray マネージャー
 
-システムトレイアイコンの作成と管理。
+システムトレイアイコンを作成および管理します。
 
 ```go
-// システムトレイの作成
+// Create system tray
 systray := app.SystemTray.New()
 systray.SetLabel("My App")
 systray.SetIcon(iconBytes)
 
-// システムトレイにメニューを追加
+// Add menu to system tray
 menu := app.Menu.New()
 menu.Add("Open").OnClick(func(ctx *Context) {
-    // クリックの処理
+    // Handle click
 })
 systray.SetMenu(menu)
 
-// 完了時にシステムトレイを破棄
+// Destroy system tray when done
 systray.Destroy()
 ```
+
+### 自動起動マネージャー
+
+ユーザーログイン時にアプリケーションを起動するよう登録します。プラットフォームごとに適切なネイティブ機構を選択します。macOS では SMAppService または LaunchAgent plist、Windows では `HKCU\…\Run` レジストリキー、Linux では XDG `.desktop` エントリを使用します。
+
+```go
+// Register to launch at login
+err := app.Autostart.Enable()
+
+// With extra launch-time arguments and a custom identifier
+err = app.Autostart.EnableWithOptions(application.AutostartOptions{
+    Identifier: "com.example.myapp",
+    Arguments:  []string{"--hidden"},
+})
+
+// Check / remove
+enabled, err := app.Autostart.IsEnabled()
+status, err := app.Autostart.Status()  // includes Path + Strategy
+err = app.Autostart.Disable()
+```
+
+プラットフォームごとの動作、識別子の規則、古い登録を検出する保証については、[自動起動機能のページ](/features/autostart/basics/)を参照してください。

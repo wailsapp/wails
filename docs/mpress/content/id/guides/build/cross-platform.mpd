@@ -3,20 +3,20 @@ schema = 1
 title = "Build Lintas Platform"
 description = "Build untuk beberapa platform dari satu mesin"
 slug = "guides/build/cross-platform"
-sourcePath = "id/guides/build/cross-platform.mpd"
+sourcePath = "guides/build/cross-platform.mpd"
 ---
 
-## Memulai Cepat
+## Mulai Cepat
 
-Wails v3 mendukung build untuk Windows, macOS, dan Linux dari sistem operasi host mana pun. Sistem build secara otomatis mendeteksi lingkungan Anda dan memilih metode kompilasi yang tepat.
+Wails v3 mendukung build untuk Windows, macOS, dan Linux dari sistem operasi host apa pun. Sistem build secara otomatis mendeteksi lingkungan Anda dan memilih metode kompilasi yang tepat.
 
-*Ingin cross-compile ke macOS dan Linux?* Jalankan ini sekali untuk menyiapkan image Docker (~800MB unduhan):
+*Ingin melakukan kompilasi silang ke macOS dan Linux?* Jalankan perintah ini sekali untuk menyiapkan image Docker (unduhan sekitar 800 MB):
 
 ```bash
 wails3 task setup:docker
 ```
 
-Kemudian build untuk platform apa pun:
+Kemudian, lakukan build untuk platform apa pun:
 
 ```bash
 # Build for current platform (production by default)
@@ -38,15 +38,15 @@ GOOS=darwin GOARCH=arm64 wails3 build
 
 ### Windows
 
-Windows adalah target cross-compilation paling sederhana karena tidak memerlukan CGO secara default.
+Windows adalah target kompilasi silang yang paling sederhana karena secara default tidak memerlukan CGO.
 
 ```bash
 wails3 build GOOS=windows
 ```
 
-Ini berfungsi dari OS host mana pun tanpa setup tambahan. Cross-compilation bawaan Go menangani semuanya.
+Ini dapat dilakukan dari OS host apa pun tanpa penyiapan tambahan. Fitur kompilasi silang bawaan Go menangani semuanya.
 
-*Jika aplikasi Anda memerlukan CGO* (misalnya, Anda menggunakan library C atau paket yang bergantung pada CGO), Anda memerlukan Docker saat build dari macOS atau Linux:
+*Jika aplikasi Anda memerlukan CGO* (misalnya, Anda menggunakan pustaka C atau paket yang bergantung pada CGO), Anda memerlukan Docker saat melakukan build dari macOS atau Linux:
 
 ```bash
 # One-time setup
@@ -56,11 +56,11 @@ wails3 task setup:docker
 wails3 task windows:build CGO_ENABLED=1
 ```
 
-Taskfile mendeteksi `CGO_ENABLED=1` pada host non-Windows dan secara otomatis menggunakan image Docker.
+Taskfile mendeteksi `CGO_ENABLED=1` pada host selain Windows dan secara otomatis menggunakan image Docker.
 
 ### macOS
 
-Build macOS memerlukan CGO untuk integrasi WebView, yang berarti cross-compilation memerlukan tooling khusus.
+Build macOS memerlukan CGO untuk integrasi WebView, yang berarti kompilasi silang memerlukan alat khusus.
 
 ```bash
 # Build for Apple Silicon (arm64) - default
@@ -73,15 +73,15 @@ wails3 build GOOS=darwin GOARCH=amd64
 wails3 task darwin:build:universal
 ```
 
-*Dari Linux atau Windows*, Anda perlu menyiapkan Docker terlebih dahulu:
+*Dari Linux atau Windows*, Anda harus menyiapkan Docker terlebih dahulu:
 
 ```bash
 wails3 task setup:docker
 ```
 
-Setelah image dibangun, sistem build mendeteksi bahwa Anda tidak di macOS dan menggunakan Docker secara otomatis. Anda tidak perlu mengubah perintah build.
+Setelah image selesai dibuat, sistem build mendeteksi bahwa Anda tidak menggunakan macOS dan secara otomatis menggunakan Docker. Anda tidak perlu mengubah perintah build.
 
-Perhatikan bahwa binary macOS yang di-cross-compile tidak ditandatangani kode. Anda perlu menandatanganinya di macOS atau di CI sebelum distribusi.
+Perhatikan bahwa biner macOS hasil kompilasi silang belum memiliki tanda tangan digital kode. Anda harus menandatanganinya di macOS atau dalam CI sebelum didistribusikan.
 
 ### Linux
 
@@ -95,22 +95,22 @@ wails3 build GOOS=linux GOARCH=amd64
 wails3 build GOOS=linux GOARCH=arm64
 ```
 
-*Dari macOS atau Windows*, Anda perlu menyiapkan Docker terlebih dahulu:
+*Dari macOS atau Windows*, Anda harus menyiapkan Docker terlebih dahulu:
 
 ```bash
 wails3 task setup:docker
 ```
 
-Sistem build mendeteksi bahwa Anda tidak di Linux dan menggunakan Docker secara otomatis.
+Sistem build mendeteksi bahwa Anda tidak menggunakan Linux dan secara otomatis menggunakan Docker.
 
-*Di Linux tanpa C compiler*, sistem build memeriksa `gcc` atau `clang`. Jika keduanya tidak ditemukan, fallback ke Docker. Ini berguna untuk container minimal atau sistem tanpa alat build terinstal. Anda dapat:
+*Di Linux tanpa kompiler C*, sistem build memeriksa keberadaan `gcc` atau `clang`. Jika keduanya tidak ditemukan, sistem beralih menggunakan Docker. Ini berguna untuk kontainer minimal atau sistem yang tidak memiliki alat build terinstal. Anda dapat:
 
-1. Instal C compiler: `sudo apt install build-essential` (Debian/Ubuntu) atau `sudo pacman -S base-devel` (Arch)
-2. Build image Docker dan biarkan digunakan secara otomatis
+1. Menginstal kompiler C: `sudo apt install build-essential` (Debian/Ubuntu) atau `sudo pacman -S base-devel` (Arch)
+2. Membuat image Docker dan membiarkannya digunakan secara otomatis
 
 ### Arsitektur ARM
 
-Semua platform mendukung cross-compilation ARM64 menggunakan `GOARCH`:
+Semua platform mendukung kompilasi silang ARM64 menggunakan `GOARCH`:
 
 ```bash
 # Windows ARM64 (Surface Pro X, Windows on ARM)
@@ -126,52 +126,52 @@ wails3 build GOOS=darwin GOARCH=arm64
 wails3 build GOOS=darwin GOARCH=amd64
 ```
 
-Image Docker menyertakan target cross-compiler Zig untuk amd64 dan arm64 di semua platform, sehingga build ARM berfungsi dari host mana pun:
+Image Docker menyertakan target kompiler silang Zig untuk amd64 dan arm64 di semua platform, sehingga build ARM dapat dilakukan dari host apa pun:
 
 @table header=true
 | Build ARM64 untuk | Dari Windows | Dari macOS | Dari Linux |
-| *Windows ARM64* | Native Go | Native Go | Native Go |
+| *Windows ARM64* | Go Native | Go Native | Go Native |
 | *macOS ARM64* | Docker | Native | Docker |
 | *Linux ARM64* | Docker | Docker | Docker_ |
 @end
 
-_Linux ARM64 dari Linux x86_64 menggunakan Docker karena cross-compilation CGO memerlukan toolchain berbeda.
+_Linux ARM64 dari Linux x86_64 menggunakan Docker karena kompilasi silang CGO memerlukan toolchain yang berbeda.
 
 ## Cara Kerjanya
 
-### Matriks Cross-Compilation
+### Matriks Kompilasi Silang
 
 @table header=true
-| Host → Target | Windows | macOS | Linux |
+| Host → Sasaran | Windows | macOS | Linux |
 | *Windows*   | Native  | Docker | Docker |
-| *macOS*     | Native Go | Native | Docker |
-| *Linux*     | Native Go | Docker | Native |
+| *macOS*     | Go Native | Native | Docker |
+| *Linux*     | Go Native | Docker | Native |
 @end
 
-- *Native* = Toolchain native platform, tanpa setup tambahan
-- *Native Go* = Cross-compilation bawaan Go (`CGO_ENABLED=0`)
-- *Docker* = Image Docker dengan cross-compiler Zig
+- *Native* = Toolchain native platform, tanpa penyiapan tambahan
+- *Go Native* = Kompilasi silang bawaan Go (`CGO_ENABLED=0`)
+- *Docker* = Image Docker dengan kompiler silang Zig
 
 ### Persyaratan CGO
 
 @table header=true
-| Target | CGO Diperlukan | Metode Cross-Compilation |
-| Windows | Tidak (default) | Native Go. Docker hanya jika `CGO_ENABLED=1` |
-| macOS | Ya | Docker dengan macOS SDK |
-| Linux | Ya | Docker, atau native jika C compiler tersedia |
+| Target | Memerlukan CGO | Metode Kompilasi Silang |
+| Windows | Tidak (secara default) | Go Native. Docker hanya jika `CGO_ENABLED=1` |
+| macOS | Ya | Docker dengan SDK macOS |
+| Linux | Ya | Docker, atau secara native jika kompiler C tersedia |
 @end
 
 ### Deteksi Otomatis
 
 Taskfile secara otomatis memilih metode build yang tepat berdasarkan lingkungan Anda:
 
-- *Target Windows:* Menggunakan cross-compilation native Go secara default. Jika Anda secara eksplisit mengatur `CGO_ENABLED=1` pada host non-Windows, beralih ke Docker.
-- *Target macOS:* Menggunakan Docker secara otomatis saat tidak di macOS. Tidak perlu intervensi manual.
-- *Target Linux:* Memeriksa `gcc` atau `clang`. Menggunakan kompilasi native jika ditemukan, jika tidak fallback ke Docker.
+- *Target Windows:* Secara default menggunakan kompilasi silang Go native. Jika Anda secara eksplisit menetapkan `CGO_ENABLED=1` pada host non-Windows, metode akan beralih ke Docker.
+- *Target macOS:* Secara otomatis menggunakan Docker jika tidak dijalankan di macOS. Tidak diperlukan intervensi manual.
+- *Target Linux:* Memeriksa keberadaan `gcc` atau `clang`. Menggunakan kompilasi native jika ditemukan; jika tidak, beralih ke Docker.
 
 ### Image Docker
 
-Wails menggunakan satu image Docker (`wails-cross`) yang dapat build untuk semua platform. Menggunakan [Zig](https://ziglang.org/) sebagai cross-compiler, yang dapat menargetkan platform apa pun dari host mana pun. macOS SDK disertakan untuk target darwin.
+Wails menggunakan satu image Docker (`wails-cross`) yang dapat melakukan build untuk semua platform. Image ini menggunakan [Zig](https://ziglang.org/) sebagai kompiler silang, sehingga dapat menargetkan platform apa pun dari host apa pun. SDK macOS disertakan untuk target darwin.
 
 ```bash
 wails3 task setup:docker
@@ -179,15 +179,15 @@ wails3 task setup:docker
 
 Anda dapat memeriksa apakah image sudah siap dengan menjalankan `wails3 doctor`.
 
-### macOS SDK
+### SDK macOS
 
-Image Docker mengunduh macOS SDK dari [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks) selama proses build image. Ini diperlukan karena header macOS dibutuhkan untuk kompilasi CGO.
+Image Docker mengunduh SDK macOS dari [wailsapp/macosx-sdks](https://github.com/wailsapp/macosx-sdks) selama proses build image. SDK ini diperlukan karena header macOS dibutuhkan untuk kompilasi CGO.
 
-*Penting:* Wails tidak mendistribusikan macOS SDK. Pengguna bertanggung jawab meninjau ketentuan lisensi SDK Apple sebelum menggunakan fitur ini.
+*Penting:* Wails tidak mendistribusikan SDK macOS. Pengguna bertanggung jawab untuk meninjau ketentuan lisensi SDK Apple sebelum menggunakan fitur ini.
 
 ## Build Image Anda Sendiri
 
-Jika Anda perlu menyesuaikan image Docker (misalnya, menggunakan versi macOS SDK berbeda, menambahkan alat tambahan, atau menggunakan SDK sendiri), Anda dapat build image sendiri.
+Jika perlu menyesuaikan image Docker (misalnya, menggunakan versi SDK macOS yang berbeda, menambahkan alat lain, atau menggunakan SDK Anda sendiri), Anda dapat melakukan build image tersebut sendiri.
 
 ### Dockerfile
 
@@ -389,15 +389,15 @@ ENTRYPOINT ["/usr/local/bin/build.sh"]
 CMD ["darwin", "arm64"]
 ```
 
-### Membangun Image
+### Melakukan Build Image
 
-Simpan Dockerfile dan build image:
+Simpan Dockerfile, lalu lakukan build image:
 
 ```bash
 docker build -t wails-cross .
 ```
 
-### Menggunakan Versi SDK Berbeda
+### Menggunakan Versi SDK yang Berbeda
 
 Ubah argumen build `MACOS_SDK_VERSION`:
 
@@ -405,11 +405,11 @@ Ubah argumen build `MACOS_SDK_VERSION`:
 docker build -t wails-cross --build-arg MACOS_SDK_VERSION=15.0 .
 ```
 
-Lihat [versi SDK yang tersedia](https://github.com/wailsapp/macosx-sdks/releases) untuk opsi.
+Lihat [versi SDK yang tersedia](https://github.com/wailsapp/macosx-sdks/releases) untuk mengetahui pilihannya.
 
 ### Menggunakan SDK Anda Sendiri
 
-Jika Anda memiliki macOS SDK sendiri (misalnya, diekstrak dari Xcode), Anda dapat memodifikasi Dockerfile untuk menggunakan file lokal alih-alih mengunduh:
+Jika memiliki SDK macOS sendiri (misalnya, diekstrak dari Xcode), Anda dapat mengubah Dockerfile agar menggunakan file lokal alih-alih mengunduhnya:
 
 ```dockerfile
 # Replace the curl/tar SDK download section with:
@@ -420,11 +420,11 @@ RUN tar -xJf /tmp/sdk.tar.xz -C /opt \
     && rm /tmp/sdk.tar.xz
 ```
 
-Letakkan tarball SDK Anda di direktori yang sama dengan Dockerfile dan build.
+Tempatkan tarball SDK Anda di direktori yang sama dengan Dockerfile, lalu lakukan build.
 
 ## Integrasi CI/CD
 
-Untuk rilis produksi, kami merekomendasikan menggunakan CI/CD dengan runner native untuk setiap platform. Ini sepenuhnya menghindari cross-compilation dan memastikan Anda mendapatkan binary yang ditandatangani dengan benar.
+Untuk rilis produksi, sebaiknya gunakan CI/CD dengan runner native untuk setiap platform. Cara ini sepenuhnya menghindari kompilasi silang dan memastikan Anda memperoleh berkas biner yang ditandatangani dengan benar.
 
 ```yaml
 name: Build
@@ -481,47 +481,47 @@ jobs:
 Docker image 'wails-cross' not found.
 ```
 
-Jalankan `wails3 task setup:docker` untuk build image Docker. Anda hanya perlu melakukan ini sekali.
+Jalankan `wails3 task setup:docker` untuk melakukan build image Docker. Anda hanya perlu melakukannya sekali.
 
-### Docker daemon tidak berjalan
+### Daemon Docker tidak berjalan
 
 ```
 Docker is required for cross-compilation. Please install Docker.
 ```
 
-Jalankan Docker Desktop atau Docker daemon. Di Linux, Anda mungkin perlu menjalankan `sudo systemctl start docker`.
+Jalankan Docker Desktop atau daemon Docker. Di Linux, Anda mungkin perlu menjalankan `sudo systemctl start docker`.
 
-### Tidak ada C compiler di Linux
+### Tidak ada kompiler C di Linux
 
-Jika Anda melihat error terkait CGO saat build di Linux, Anda memiliki dua opsi:
+Jika Anda melihat kesalahan terkait CGO saat melakukan build di Linux, tersedia dua opsi:
 
-1. *Instal C compiler:*
+1. *Instal kompiler C:*
   - Debian/Ubuntu: `sudo apt install build-essential`
   - Arch Linux: `sudo pacman -S base-devel`
   - Fedora: `sudo dnf install gcc`
 
-2. *Gunakan Docker sebagai gantinya:* Jalankan `wails3 task setup:docker` dan Taskfile akan menggunakannya secara otomatis saat tidak ada compiler terdeteksi.
+2. *Gunakan Docker sebagai gantinya:* Jalankan `wails3 task setup:docker`; Taskfile akan menggunakannya secara otomatis jika tidak ada kompiler yang terdeteksi.
 
-### Binary macOS tidak ditandatangani
+### Berkas biner macOS tidak ditandatangani
 
-Binary macOS yang di-cross-compile tidak ditandatangani kode. Apple mewajibkan code signing untuk distribusi, jadi Anda perlu:
+Berkas biner macOS hasil kompilasi silang tidak ditandatangani dengan tanda tangan kode. Apple mewajibkan penandatanganan kode untuk distribusi, jadi Anda perlu:
 
-1. Menandatangani binary di mesin macOS, atau
-2. Menandatangani di CI menggunakan runner macOS
+1. Menandatangani berkas biner di mesin macOS, atau
+2. Menandatanganinya di CI menggunakan runner macOS
 
-Lihat [Menandatangani Aplikasi](/id/guides/build/signing/) untuk detail.
+Lihat [Menandatangani Aplikasi](/guides/build/signing/) untuk detailnya.
 
-### Pembuatan universal binary
+### Pembuatan berkas biner universal
 
-Universal binary (arm64 + amd64 digabung) dapat dibangun di platform apa pun:
+Berkas biner universal (gabungan arm64 + amd64) dapat dibuat di platform apa pun:
 
 ```bash
 wails3 task darwin:build:universal
 ```
 
-Di Linux dan Windows, Wails menggunakan perintah bawaan `wails3 tool lipo` (didukung oleh [konoui/lipo](https://github.com/konoui/lipo)) untuk menggabungkan binary. Ini membuat satu binary yang berjalan secara native di Apple Silicon dan Mac Intel.
+Di Linux dan Windows, Wails menggunakan perintah bawaan `wails3 tool lipo` (yang didukung oleh [konoui/lipo](https://github.com/konoui/lipo)) untuk menggabungkan berkas biner. Proses ini menghasilkan satu berkas biner yang berjalan secara native di Mac Apple Silicon maupun Intel.
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Membangun Aplikasi](/id/guides/build/building/) - Perintah dan opsi build dasar
-- [Menandatangani Aplikasi](/id/guides/build/signing/) - Code signing untuk distribusi
+- [Melakukan Build Aplikasi](/guides/build/building/) - Perintah dan opsi build dasar
+- [Menandatangani Aplikasi](/guides/build/signing/) - Penandatanganan kode untuk distribusi

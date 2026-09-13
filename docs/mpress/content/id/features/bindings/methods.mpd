@@ -1,18 +1,18 @@
 ---
 schema = 1
 title = "Binding Metode"
-description = "Panggil metode Go dari JavaScript dengan type safety"
+description = "Panggil metode Go dari JavaScript dengan keamanan tipe"
 slug = "features/bindings/methods"
-sourcePath = "id/features/bindings/methods.mpd"
+sourcePath = "features/bindings/methods.mpd"
 ---
 
-## Binding Go-JavaScript Type-Safe
+## Binding Go-JavaScript yang Aman secara Tipe
 
-Wails *secara otomatis menghasilkan binding JavaScript/TypeScript type-safe* untuk metode Go Anda. Tulis kode Go, jalankan satu perintah, dan dapatkan fungsi frontend bertipe penuh tanpa overhead HTTP, tanpa pekerjaan manual, dan tanpa boilerplate.
+Wails *secara otomatis menghasilkan binding JavaScript/TypeScript yang aman secara tipe* untuk metode Go Anda. Tulis kode Go, jalankan satu perintah, lalu dapatkan fungsi frontend dengan tipe lengkap tanpa overhead HTTP, tanpa pekerjaan manual, dan tanpa kode boilerplate.
 
-## Memulai Cepat
+## Mulai Cepat
 
-*1. Tulis service Go:*
+*1. Tulis layanan Go:*
 
 ```go
 type GreetService struct{}
@@ -22,7 +22,7 @@ func (g *GreetService) Greet(name string) string {
 }
 ```
 
-*2. Daftarkan service:*
+*2. Daftarkan layanan:*
 
 ```go
 app := application.New(application.Options{
@@ -47,11 +47,11 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-*Itu saja!* Panggilan Go-ke-JavaScript type-safe.
+*Selesai!* Panggilan dari Go ke JavaScript yang aman secara tipe.
 
-## Membuat Service
+## Membuat Layanan
 
-### Service Dasar
+### Layanan Dasar
 
 ```go
 package main
@@ -91,11 +91,11 @@ app := application.New(application.Options{
 ```
 
 *Poin penting:*
-- Hanya *metode yang diekspor* (PascalCase) yang di-bind
+- Hanya *metode yang diekspor* (PascalCase) yang dibuatkan binding
 - Metode dapat mengembalikan nilai atau `(value, error)`
-- Service adalah *singleton* (satu instance per aplikasi)
+- Layanan merupakan *singleton* (satu instans per aplikasi)
 
-### Service dengan State
+### Layanan dengan State
 
 ```go
 type CounterService struct {
@@ -130,9 +130,9 @@ func (c *CounterService) Reset() {
 }
 ```
 
-*Penting:* Service dibagikan ke semua window. Gunakan mutex untuk thread safety.
+*Penting:* Layanan digunakan bersama oleh semua jendela. Gunakan mutex untuk keamanan thread.
 
-### Service dengan Dependensi
+### Layanan dengan Dependensi
 
 ```go
 type DatabaseService struct {
@@ -164,7 +164,7 @@ app := application.New(application.Options{
 
 ## Menghasilkan Binding
 
-### Generasi Dasar
+### Pembuatan Dasar
 
 ```bash
 wails3 generate bindings
@@ -188,27 +188,27 @@ INFO  Output directory: /myproject/frontend/bindings
     - index.js
 @end
 
-### Generasi TypeScript
+### Pembuatan TypeScript
 
 ```bash
 wails3 generate bindings -ts
 ```
 
-*Menghasilkan file `.ts`* dengan tipe TypeScript penuh.
+*Menghasilkan file `.ts`* dengan tipe TypeScript lengkap.
 
-### Direktori Output Kustom
+### Direktori Output Khusus
 
 ```bash
 wails3 generate bindings -d ./src/bindings
 ```
 
-### Mode Watch (Development)
+### Mode Pemantauan (Pengembangan)
 
 ```bash
 wails3 dev
 ```
 
-*Secara otomatis meregenerasi binding* saat kode Go berubah.
+*Secara otomatis menghasilkan ulang binding* ketika kode Go berubah.
 
 ## Menggunakan Binding
 
@@ -281,14 +281,14 @@ try {
 ```
 
 *Manfaat:*
-- Pemeriksaan tipe penuh
-- Autocomplete IDE
-- Error compile-time
-- Refactoring lebih baik
+- Pemeriksaan tipe lengkap
+- Pelengkapan otomatis IDE
+- Kesalahan pada waktu kompilasi
+- Refactoring yang lebih baik
 
-### File Index
+### File Indeks
 
-*Index yang dihasilkan:*
+*Indeks yang dihasilkan:*
 
 ```javascript
 // frontend/bindings/changeme/index.js
@@ -298,7 +298,7 @@ export * as CounterService from './counterservice.js'
 export * as DatabaseService from './databaseservice.js'
 ```
 
-*Import yang disederhanakan:*
+*Impor yang disederhanakan:*
 
 ```javascript
 import { CalculatorService } from './bindings/myapp'
@@ -327,25 +327,25 @@ const sum = await CalculatorService.Add(5, 3)
 | Tipe Go               | JavaScript/TypeScript | Catatan                                                           |
 | `[]T`                 | `T[]`                 | -                                                               |
 | `[N]T`                | `T[]`                 | -                                                               |
-| `map[string]T`        | `{ [_: string]: T }`  | map dengan key string                                                |
-| `map[K]V`             | `{ [_ in K]?: V }`    | `K` non-string dirender sebagai mapped type, *bukan* JS `Map` |
-| `[]byte`              | `string`              | base64-encoded                                                  |
+| `map[string]T`        | `{ [_: string]: T }`  | map dengan kunci string                                                |
+| `map[K]V`             | `{ [_ in K]?: V }`    | `K` non-string dirender sebagai tipe terpetakan, *bukan* `Map` JS |
+| `[]byte`              | `string`              | dikodekan dengan base64                                                  |
 | `struct`              | `class` / `interface` | dengan field                                                     |
-| `time.Time`           | `any`                 | diserialisasi sebagai string RFC3339Nano di runtime                     |
-| `*T`                  | `T \| null`           | pointer berarti nullable                                          |
+| `time.Time`           | `any`                 | diserialisasi sebagai string RFC3339Nano saat runtime                     |
+| `*T`                  | `T \| null`           | pointer berarti dapat bernilai null                                          |
 | `any` / `interface{}` | `any`                 | -                                                               |
-| `error`               | `any` / `Exception`   | Exception jika sebagai return value, selain itu any                           |
+| `error`               | `any` / `Exception`   | Exception jika digunakan sebagai nilai kembalian; jika tidak, any                           |
 @end
 
 ### Tipe yang Tidak Didukung
 
-Tipe berikut *tidak dapat* dilewati jembatan:
+Tipe-tipe ini *tidak dapat* diteruskan melalui bridge:
 - `chan T` (channel)
 - `func()` (fungsi)
 - Interface kompleks (kecuali `interface{}`)
-- Field tidak diekspor (lowercase)
+- Field yang tidak diekspor (huruf kecil)
 
-*Solusi:* Gunakan ID atau handle:
+*Solusi alternatif:* Gunakan ID atau handle:
 
 ```go
 // ❌ Can't return file handle
@@ -401,6 +401,8 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 
 ### Sisi JavaScript
 
+Ketika metode yang terikat gagal, promise yang dikembalikan ditolak dengan objek `Error` JavaScript:
+
 ```javascript
 import { GetUser } from './bindings/changeme/databaseservice'
 
@@ -408,21 +410,111 @@ try {
     const user = await GetUser(123)
     console.log("User:", user)
 } catch (error) {
-    console.error("Error:", error)
-    // Error: "user 123 not found"
+    console.error(error.message)
+    // "user 123 not found"
 }
 ```
 
-*Tipe error:*
-- Go `error` → JavaScript exception
-- Pesan error dipertahankan
-- Stack trace tersedia
+Runtime melempar tipe error yang berbeda bergantung pada penyebab kegagalan:
+
+@table header=true
+| Tipe error     | Dilempar ketika                                                                                    |
+| `TypeError`    | Pemanggilan memiliki jumlah argumen yang salah, atau suatu argumen tidak dapat dikonversi ke tipe Go |
+| `RuntimeError` | Metode mengembalikan error atau mengalami panic saat dijalankan                                       |
+| `Error`        | Kegagalan lainnya, misalnya pemanggilan metode yang tidak ada                         |
+@end
+
+Setiap error menyediakan:
+- `name`: tipe error dari tabel di atas
+- `message`: pesan error Go
+- `cause`: error Go yang diserialisasi sebagai JSON, jika tersedia. Jika metode mengembalikan beberapa error, `cause` berupa array dengan satu entri untuk setiap error.
+
+Kelas `RuntimeError` diekspor oleh paket `@wailsio/runtime`, sehingga Anda dapat membedakan error yang dikembalikan oleh kode Go Anda dari kegagalan lainnya:
+
+```javascript
+import { Call } from '@wailsio/runtime'
+import { GetUser } from './bindings/changeme/databaseservice'
+
+try {
+    const user = await GetUser(123)
+} catch (error) {
+    if (error instanceof Call.RuntimeError) {
+        // GetUser returned an error
+    } else {
+        // The call itself failed
+    }
+}
+```
+
+@note type="info"
+Pada versi runtime sebelumnya, setiap pemanggilan yang gagal menolak promise dengan `Error` biasa yang pesannya berisi JSON mentah dari error yang mendasarinya.
+@end
+
+### Data Error Terstruktur
+
+Mengembalikan tipe error khusus dari Go membuat bentuk JSON-nya tersedia pada properti `cause` dari error yang dilempar:
+
+```go
+type ValidationError struct {
+    Field  string `json:"field"`
+    Reason string `json:"reason"`
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("%s: %s", e.Field, e.Reason)
+}
+
+func (s *UserService) UpdateEmail(id int, email string) error {
+    if !strings.Contains(email, "@") {
+        return &ValidationError{Field: "email", Reason: "invalid email address"}
+    }
+    // ...
+    return nil
+}
+```
+
+```javascript
+import { UpdateEmail } from './bindings/changeme/userservice'
+
+try {
+    await UpdateEmail(1, "not-an-email")
+} catch (error) {
+    console.log(error.message)  // "email: invalid email address"
+    console.log(error.cause)    // { field: "email", reason: "invalid email address" }
+}
+```
+
+Error diserialisasi dengan paket standar `encoding/json`, sehingga hanya field yang diekspor yang disertakan. Error yang dibuat dengan `errors.New` atau `fmt.Errorf` tidak memiliki field yang diekspor dan diserialisasi sebagai objek kosong.
+
+Untuk mengontrol sepenuhnya cara error diserialisasi, sediakan fungsi `MarshalError` dalam opsi layanan:
+
+```go
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceWithOptions(&UserService{}, application.ServiceOptions{
+            MarshalError: func(err error) []byte {
+                var validationErr *ValidationError
+                if errors.As(err, &validationErr) {
+                    data, _ := json.Marshal(map[string]string{
+                        "type":  "validation",
+                        "field": validationErr.Field,
+                    })
+                    return data
+                }
+                return nil // fall back to the default serialisation
+            },
+        }),
+    },
+})
+```
+
+`MarshalError` harus mengembalikan JSON yang valid, atau `nil` untuk kembali menggunakan serialisasi default.
 
 ## Performa
 
-### Overhead Panggilan
+### Overhead Pemanggilan
 
-*Panggilan tipikal:* &lt;1ms
+*Panggilan umum:* &lt;1ms
 
 ```
 JavaScript → Bridge → Go → Bridge → JavaScript
@@ -430,14 +522,14 @@ JavaScript → Bridge → Go → Bridge → JavaScript
   &lt;0.1ms    &lt;0.1ms  [varies] &lt;0.1ms    &lt;0.1ms
 ```
 
-*Dibandingkan alternatif:*
+*Dibandingkan dengan alternatif:*
 - HTTP/REST: 5-50ms
 - IPC: 1-10ms
 - Wails: &lt;1ms
 
 ### Tips Optimasi
 
-*✅ Operasi batch:*
+*✅ Kelompokkan operasi:*
 
 ```javascript
 // ❌ Slow: N calls
@@ -449,7 +541,7 @@ for (const item of items) {
 await ProcessItems(items)
 ```
 
-*✅ Cache hasil:*
+*✅ Simpan hasil dalam cache:*
 
 ```javascript
 // ❌ Repeated calls
@@ -601,46 +693,46 @@ app.loadTodos()
 
 ### ✅ Lakukan
 
-- *Jaga metode tetap sederhana* - Single responsibility
-- *Kembalikan error* - Jangan panic
-- *Gunakan state thread-safe* - Mutex untuk data bersama
-- *Operasi batch* - Kurangi panggilan jembatan
-- *Cache di sisi Go* - Hindari pekerjaan berulang
+- *Buat metode tetap sederhana* - Satu tanggung jawab
+- *Kembalikan error* - Jangan memicu panic
+- *Gunakan state yang aman untuk thread* - Gunakan mutex untuk data bersama
+- *Kelompokkan operasi* - Kurangi panggilan melalui bridge
+- *Simpan dalam cache di sisi Go* - Hindari pekerjaan berulang
 - *Dokumentasikan metode* - Komentar menjadi JSDoc
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan blokir* - Gunakan goroutine untuk operasi panjang
+- *Jangan memblokir* - Gunakan goroutine untuk operasi yang berlangsung lama
 - *Jangan kembalikan channel* - Gunakan event sebagai gantinya
 - *Jangan kembalikan fungsi* - Tidak didukung
-- *Jangan abaikan error* - Selalu tangani
-- *Jangan gunakan field tidak diekspor* - Tidak akan di-bind
+- *Jangan abaikan error* - Selalu tangani error tersebut
+- *Jangan gunakan field yang tidak diekspor* - Field tersebut tidak akan dibuatkan binding
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="◆ Service"
-Pelajari mendalam sistem service.
+@card title="◆ Layanan"
+Pelajari sistem layanan secara mendalam.
 
-[Pelajari Selengkapnya →](/id/features/bindings/services/)
+[Pelajari Lebih Lanjut →](/features/bindings/services/)
 @end
 @card title="📖 Model"
-Bind struktur data kompleks.
+Buat binding untuk struktur data yang kompleks.
 
-[Pelajari Selengkapnya →](/id/features/bindings/models/)
+[Pelajari Lebih Lanjut →](/features/bindings/models/)
 @end
-@card title="🚀 Jembatan Go-Frontend"
-Pahami mekanisme jembatan.
+@card title="🚀 Bridge Go-Frontend"
+Pahami mekanisme bridge.
 
-[Pelajari Selengkapnya →](/id/concepts/bridge/)
+[Pelajari Lebih Lanjut →](/concepts/bridge/)
 @end
 @card title="★ Event"
 Gunakan event untuk komunikasi pub/sub.
 
-[Pelajari Selengkapnya →](/id/features/events/system/)
+[Pelajari Lebih Lanjut →](/features/events/system/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

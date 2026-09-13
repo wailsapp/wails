@@ -1,14 +1,18 @@
 ---
 schema = 1
-title = "Ikhtisar Dialog"
+title = "Ringkasan dialog"
 description = "Tampilkan dialog sistem native di aplikasi Anda"
 slug = "features/dialogs/overview"
-sourcePath = "id/features/dialogs/overview.mpd"
+sourcePath = "features/dialogs/overview.mpd"
 ---
 
-## Dialog Native
+## Dialog native
 
-Wails menyediakan *dialog sistem native* yang bekerja di semua platform: dialog pesan (info, peringatan, error, pertanyaan), dialog file (buka, simpan, folder), dan window dialog kustom dengan tampilan dan perilaku platform-native.
+Wails menyediakan *dialog sistem native* yang berfungsi di semua platform: dialog pesan (informasi, peringatan, kesalahan, pertanyaan), dialog file (buka, simpan, folder), dan jendela dialog khusus dengan tampilan serta perilaku native platform.
+
+![Dialog pertanyaan Wails di macOS dengan tombol Batal dan Buang](/assets/screenshots/dialog-question-macos.png)
+
+API yang sama ditampilkan sesuai konvensi setiap platform yang didukung. Contoh macOS ini menunjukkan dialog pertanyaan yang ditautkan ke jendela Wails, termasuk tombol default dan tombol batal.
 
 ## Mulai Cepat
 
@@ -45,7 +49,7 @@ path, _ := app.Dialog.OpenFile().
 
 ## Mengakses Dialog
 
-Dialog diakses melalui `app.Dialog` manager:
+Dialog diakses melalui pengelola `app.Dialog`:
 
 ```go
 app.Dialog.Info()
@@ -56,11 +60,11 @@ app.Dialog.OpenFile()
 app.Dialog.SaveFile()
 ```
 
-## Tipe Dialog
+## Jenis Dialog
 
-### Dialog Informasi
+### Dialog informasi
 
-Display simple messages:
+Tampilkan pesan sederhana:
 
 ```go
 app.Dialog.Info().
@@ -69,12 +73,12 @@ app.Dialog.Info().
     Show()
 ```
 
-*Kasus penggunaans:*
-- Success messages
-- Informational notices
-- Completion confirmations
+*Kasus penggunaan:*
+- Pesan keberhasilan
+- Pemberitahuan informatif
+- Konfirmasi penyelesaian
 
-### Dialog Peringatan
+### Dialog peringatan
 
 Tampilkan peringatan:
 
@@ -85,14 +89,14 @@ app.Dialog.Warning().
     Show()
 ```
 
-*Kasus penggunaans:*
-- Non-critical warnings
-- Deprecation notices
-- Caution messages
+*Kasus penggunaan:*
+- Peringatan nonkritis
+- Pemberitahuan deprekasi
+- Pesan kehati-hatian
 
-### Dialog Error
+### Dialog kesalahan
 
-Tampilkan error:
+Tampilkan kesalahan:
 
 ```go
 app.Dialog.Error().
@@ -101,12 +105,12 @@ app.Dialog.Error().
     Show()
 ```
 
-*Kasus penggunaans:*
-- Error messages
-- Failure notifications
-- Exception handling
+*Kasus penggunaan:*
+- Pesan kesalahan
+- Notifikasi kegagalan
+- Penanganan pengecualian
 
-### Dialog Pertanyaan
+### Dialog pertanyaan
 
 Ajukan pertanyaan kepada pengguna dan tangani respons melalui callback tombol:
 
@@ -126,16 +130,16 @@ dialog.SetCancelButton(cancelBtn)
 dialog.Show()
 ```
 
-*Kasus penggunaans:*
-- Confirm actions
-- Yes/No questions
-- Multiple choice
+*Kasus penggunaan:*
+- Mengonfirmasi tindakan
+- Pertanyaan Ya/Tidak
+- Pilihan ganda
 
-## Dialog File
+## Dialog file
 
 ### Dialog Buka File
 
-Select files to open:
+Pilih file yang akan dibuka:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -149,7 +153,7 @@ if err == nil && path != "" {
 }
 ```
 
-*Pemilihan ganda:*
+*Pilihan jamak:*
 
 ```go
 paths, err := app.Dialog.OpenFile().
@@ -166,7 +170,7 @@ if err == nil {
 
 ### Dialog Simpan File
 
-Choose where to save:
+Pilih lokasi penyimpanan:
 
 ```go
 path, err := app.Dialog.SaveFile().
@@ -182,7 +186,7 @@ if err == nil && path != "" {
 
 ### Dialog Pilih Folder
 
-Choose a directory using the open file dialog with directory selection enabled:
+Pilih direktori menggunakan dialog buka file dengan pemilihan direktori diaktifkan:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -208,9 +212,9 @@ dialog := app.Dialog.Info().
 
 ### Tombol
 
-*Default button for simple dialogs:*
+*Tombol default untuk dialog sederhana:*
 
-Info, warning, and error dialogs display a default "OK" button:
+Dialog informasi, peringatan, dan kesalahan menampilkan tombol "OK" secara default:
 
 ```go
 app.Dialog.Info().
@@ -218,9 +222,9 @@ app.Dialog.Info().
     Show()
 ```
 
-*Custom buttons for question dialogs:*
+*Tombol khusus untuk dialog pertanyaan:*
 
-Use `AddButton()` to add buttons, which returns a `*Button` you can configure with callbacks:
+Gunakan `AddButton()` untuk menambahkan tombol. Metode ini mengembalikan `*Button` yang dapat Anda konfigurasi dengan callback:
 
 ```go
 dialog := app.Dialog.Question().
@@ -244,10 +248,10 @@ dialog.SetCancelButton(cancel)
 dialog.Show()
 ```
 
-*Tombol Default dan Cancel:*
+*Tombol default dan Batal:*
 
-Use `SetDefaultButton()` to specify which button is highlighted and triggered by Enter.\
-Use `SetCancelButton()` to specify which button is triggered by Escape.
+Gunakan `SetDefaultButton()` untuk menentukan tombol yang disorot dan dipicu oleh Enter.\
+Gunakan `SetCancelButton()` untuk menentukan tombol yang dipicu oleh Escape.
 
 ```go
 dialog := app.Dialog.Question().
@@ -264,9 +268,9 @@ dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
 dialog.Show()
 ```
 
-### Lampiran Window
+### Penautan ke Jendela
 
-Attach dialog to specific window:
+Tautkan dialog ke jendela tertentu:
 
 ```go
 dialog := app.Dialog.Info().
@@ -276,26 +280,26 @@ dialog := app.Dialog.Info().
 dialog.Show()
 ```
 
-*Behaviour:*
-- dialog appears centred on parent window
-- Parent window disabled whilst dialog shown
-- dialog moves with parent window (macOS)
+*Perilaku:*
+- Dialog muncul di tengah jendela induk
+- Jendela induk dinonaktifkan selama dialog ditampilkan
+- Dialog bergerak bersama jendela induk (macOS)
 
 ## Perilaku Platform
 
 @tabs sync-key="platform"
 @tab label="macOS"
 
-*macOS dialogs:*
+*Dialog macOS:*
 
-- Native NSAlert appearance
-- Follow system theme (light/dark)
-- Support keyboard navigation
-- Standard shortcuts (⌘. for Cancel)
-- Accessibility features built-in
-- Sheet-style when attached to window
+- Tampilan NSAlert native
+- Mengikuti tema sistem (terang/gelap)
+- Mendukung navigasi papan ketik
+- Pintasan standar (⌘. untuk Batal)
+- Fitur aksesibilitas bawaan
+- Bergaya lembar saat ditautkan ke jendela
 
-*Example:*
+*Contoh:*
 ```go
 // Appears as sheet on macOS
 dialog := app.Dialog.Question().
@@ -311,18 +315,18 @@ dialog.Show()
 @end
 @tab label="Windows"
 
-*Windows dialogs:*
+*Dialog Windows:*
 
-- Native TaskDialog appearance
-- Follow system theme
-- Support keyboard navigation
-- Standard shortcuts (Esc for Cancel)
-- Accessibility features built-in
-- Modal to parent window
+- Tampilan TaskDialog native
+- Mengikuti tema sistem
+- Mendukung navigasi papan ketik
+- Pintasan standar (Esc untuk Batal)
+- Fitur aksesibilitas bawaan
+- Modal terhadap jendela induk
 
-*Example:*
+*Contoh:*
 ```go
-// Dialog Modal on Windows
+// Modal dialog on Windows
 app.Dialog.Error().
     SetTitle("Error").
     SetMessage("Operation failed").
@@ -334,15 +338,15 @@ app.Dialog.Error().
 @end
 @tab label="Linux"
 
-*Linux dialogs:*
+*Dialog Linux:*
 
-- GTK dialog appearance
-- Follow desktop theme
-- Support keyboard navigation
-- Desktop environment integration
-- Varies by DE (GNOME, KDE, etc.)
+- Tampilan dialog GTK
+- Mengikuti tema desktop
+- Mendukung navigasi papan ketik
+- Integrasi dengan lingkungan desktop
+- Bervariasi menurut lingkungan desktop (GNOME, KDE, dan sebagainya)
 
-*Example:*
+*Contoh:*
 ```go
 // GTK dialog on Linux
 app.Dialog.Info().
@@ -356,7 +360,7 @@ app.Dialog.Info().
 
 ## Pola Umum
 
-### Konfirmasi Sebelum Aksi Destruktif
+### Konfirmasi Sebelum Tindakan Destruktif
 
 ```go
 func deleteFile(app *application.App, path string) {
@@ -381,7 +385,7 @@ func deleteFile(app *application.App, path string) {
 }
 ```
 
-### Penanganan Error dengan Dialog
+### Penanganan Kesalahan dengan Dialog
 
 ```go
 func saveDocument(app *application.App, path string, data []byte) {
@@ -430,7 +434,7 @@ func selectImageFile(app *application.App) (string, error) {
 }
 ```
 
-### Alur Dialog Multi-Langkah
+### Alur Dialog Bertahap
 
 ```go
 func exportData(app *application.App) {
@@ -477,47 +481,47 @@ func exportData(app *application.App) {
 
 ### ✅ Lakukan
 
-- *Use native dialogs* - Better UX than custom
-- *Provide clear messages* - Be specific
-- *Set appropriate titles* - Context matters
-- *Use default buttons wisely* - Safe option as default
-- *Handle cancellation* - User might cancel
-- *Validate file selections* - Check file types
+- *Gunakan dialog native* — UX lebih baik daripada dialog khusus
+- *Berikan pesan yang jelas* — Sampaikan secara spesifik
+- *Tetapkan judul yang sesuai* — Konteks itu penting
+- *Gunakan tombol default secara bijak* — Jadikan opsi aman sebagai default
+- *Tangani pembatalan* — Pengguna mungkin membatalkan
+- *Validasi file yang dipilih* — Periksa jenis file
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Don't overuse dialogs* - Interrupts workflow
-- *Don't use for frequent messages* - Use notifications
-- *Don't forget error handling* - User might cancel
-- *Don't block unnecessarily* - Consider alternatives
-- *Don't use generic messages* - Be specific
-- *Don't ignore platform differences* - Test on all platforms
+- *Jangan gunakan dialog secara berlebihan* — Mengganggu alur kerja
+- *Jangan gunakan dialog untuk pesan yang sering muncul* — Gunakan notifikasi
+- *Jangan lupa menangani kesalahan* — Pengguna mungkin membatalkan
+- *Jangan lakukan pemblokiran jika tidak diperlukan* — Pertimbangkan alternatif
+- *Jangan gunakan pesan generik* — Sampaikan secara spesifik
+- *Jangan abaikan perbedaan platform* — Uji di semua platform
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="ℹ Message dialogs"
-Info, warning, and error dialogs.
+@card title="ℹ Dialog pesan"
+Dialog informasi, peringatan, dan kesalahan.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/message/)
+[Pelajari Lebih Lanjut →](/features/dialogs/message/)
 @end
-@card title="📖 File dialogs"
-Open, save, and folder selection.
+@card title="📖 Dialog file"
+Membuka, menyimpan, dan memilih folder.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/file/)
+[Pelajari Lebih Lanjut →](/features/dialogs/file/)
 @end
-@card title="◆ Custom dialogs"
-Create custom dialog windows.
+@card title="◆ Dialog khusus"
+Buat jendela dialog khusus.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/custom/)
+[Pelajari Lebih Lanjut →](/features/dialogs/custom/)
 @end
-@card title="▣ Windows"
-Learn about window management.
+@card title="▣ Jendela"
+Pelajari pengelolaan jendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/basics/)
+[Pelajari Lebih Lanjut →](/features/windows/basics/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [dialog examples](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh dialog](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

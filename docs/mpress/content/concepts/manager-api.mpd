@@ -146,7 +146,7 @@ app.Dialog.Info().
     Show()
 
 app.Dialog.Error().
-    SetTitle("Error").  
+    SetTitle("Error").
     SetMessage("An error occurred").
     Show()
 ```

@@ -1,30 +1,30 @@
 ---
 schema = 1
-title = "Menggunakan Gin untuk Services"
-description = "Panduan mengintegrasikan framework web Gin dengan Wails v3 Services"
+title = "Menggunakan Gin untuk Layanan"
+description = "Panduan untuk mengintegrasikan framework web Gin dengan Layanan Wails v3"
 slug = "guides/gin-services"
-sourcePath = "id/guides/gin-services.mpd"
+sourcePath = "guides/gin-services.mpd"
 ---
 
-## Menggunakan Gin untuk Services
+## Menggunakan Gin untuk Layanan
 
-Framework web Gin adalah pilihan populer untuk membangun layanan HTTP di Go. Dengan Wails v3, Anda dapat dengan mudah mengintegrasikan service berbasis Gin ke dalam aplikasi Anda, memberikan cara yang powerful untuk menangani permintaan HTTP, mengimplementasikan RESTful API, dan menyajikan konten web.
+Framework web Gin merupakan pilihan populer untuk membangun layanan HTTP dalam Go. Dengan Wails v3, Anda dapat dengan mudah mengintegrasikan layanan berbasis Gin ke dalam aplikasi untuk menangani permintaan HTTP, mengimplementasikan RESTful API, dan menyajikan konten web secara andal.
 
-Panduan ini akan memandu Anda membuat service berbasis Gin yang dapat di-mount di route tertentu dalam aplikasi Wails Anda. Kami akan membangun contoh lengkap yang mendemonstrasikan cara:
+Panduan ini akan memandu Anda membuat layanan berbasis Gin yang dapat dipasang pada rute tertentu dalam aplikasi Wails. Kita akan membuat contoh lengkap yang menunjukkan cara:
 
-1. Membuat service berbasis Gin
-2. Mengimplementasikan antarmuka Wails Service
-3. Menyiapkan route dan middleware
-4. Mengintegrasikan dengan sistem event Wails
-5. Berinteraksi dengan service dari frontend
+1. Membuat layanan berbasis Gin
+2. Mengimplementasikan antarmuka Service Wails
+3. Menyiapkan rute dan middleware
+4. Mengintegrasikan layanan dengan sistem peristiwa Wails
+5. Berinteraksi dengan layanan dari frontend
 
 ## Prasyarat
 
 Sebelum memulai, pastikan Anda memiliki:
 
-- Wails v3 terinstal
-- Pengetahuan dasar Go dan framework Gin
-- Familiaritas dengan konsep HTTP dan RESTful API
+- Wails v3 yang telah terinstal
+- Pengetahuan dasar tentang Go dan framework Gin
+- Pemahaman tentang konsep HTTP dan RESTful API
 
 Anda perlu menambahkan framework Gin ke proyek:
 
@@ -32,13 +32,13 @@ Anda perlu menambahkan framework Gin ke proyek:
 go get github.com/gin-gonic/gin
 ```
 
-## Membuat Service Berbasis Gin
+## Membuat Layanan Berbasis Gin
 
-Mari mulai dengan membuat service Gin yang mengimplementasikan antarmuka Wails Service. Service kami akan mengelola koleksi pengguna dan menyediakan endpoint API untuk mengambil dan membuat record pengguna.
+Mari mulai dengan membuat layanan Gin yang mengimplementasikan antarmuka Service Wails. Layanan ini akan mengelola sekumpulan pengguna dan menyediakan endpoint API untuk mengambil serta membuat data pengguna.
 
-### 1. Definisikan Model Data Anda
+### 1. Tentukan Model Data Anda
 
-Pertama, definisikan struktur data yang akan digunakan service:
+Pertama, tentukan struktur data yang akan digunakan oleh layanan:
 
 ```go
 package services
@@ -69,9 +69,9 @@ type EventData struct {
 }
 ```
 
-### 2. Buat Struktur Service Anda
+### 2. Buat Struktur Layanan Anda
 
-Selanjutnya, definisikan struktur service yang akan menampung router Gin dan state yang perlu dipertahankan:
+Selanjutnya, tentukan struktur layanan yang akan menyimpan router Gin dan setiap status yang perlu dipertahankan oleh layanan:
 
 ```go
 // GinService implements a Wails service that uses Gin for HTTP handling
@@ -111,7 +111,7 @@ func NewGinService() *GinService {
 
 ### 3. Implementasikan Antarmuka Service
 
-Implementasikan method yang diperlukan untuk antarmuka Wails Service:
+Implementasikan metode yang diwajibkan oleh antarmuka Service Wails:
 
 ```go
 // ServiceName returns the name of the service
@@ -152,7 +152,7 @@ func (s *GinService) ServiceShutdown() error {
 
 ### 3. Implementasikan Antarmuka http.Handler
 
-Agar service dapat di-mount di route tertentu, implementasikan antarmuka `http.Handler`. Method tunggal `ServeHTTP` menjadi gateway untuk semua permintaan HTTP ke service Anda. Method ini mendelegasikan penanganan permintaan ke router Gin, sehingga Anda dapat menggunakan semua fitur powerful Gin untuk routing dan middleware.
+Agar layanan dapat dipasang pada rute tertentu, implementasikan antarmuka `http.Handler`. Metode tunggal ini, `ServeHTTP`, merupakan gerbang bagi semua permintaan HTTP ke layanan Anda. Metode tersebut mendelegasikan penanganan permintaan kepada router Gin sehingga Anda dapat menggunakan semua fitur canggih Gin untuk perutean dan middleware.
 
 ```go
 // ServeHTTP implements the http.Handler interface
@@ -162,9 +162,9 @@ func (s *GinService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-### 4. Siapkan Route Anda
+### 4. Siapkan Rute Anda
 
-Definisikan route API di method terpisah untuk organisasi yang lebih baik. Pendekatan ini menjaga kode tetap bersih dan memudahkan pemahaman struktur API. Router Gin menyediakan API fluent untuk mendefinisikan route, termasuk dukungan untuk route group yang membantu mengorganisir endpoint terkait.
+Tentukan rute API dalam metode terpisah agar lebih tertata. Pendekatan ini menjaga kode tetap rapi dan memudahkan pemahaman terhadap struktur API. Router Gin menyediakan API fluent untuk menentukan rute, termasuk dukungan bagi grup rute yang membantu menata endpoint terkait.
 
 ```go
 // setupRoutes configures the API routes
@@ -260,9 +260,9 @@ func (s *GinService) setupRoutes() {
 }
 ```
 
-### 5. Buat Middleware Kustom
+### 5. Buat Middleware Khusus
 
-Anda dapat membuat middleware Gin kustom untuk meningkatkan service. Fungsi middleware di Gin dieksekusi sesuai urutan penambahannya ke router dan dapat melakukan tugas seperti logging, autentikasi, dan penanganan error. Contoh ini menunjukkan middleware logging sederhana yang mencatat detail permintaan.
+Anda dapat membuat middleware Gin khusus untuk menyempurnakan layanan. Fungsi middleware dalam Gin dijalankan sesuai urutan penambahannya ke router dan dapat menjalankan tugas seperti pencatatan log, autentikasi, dan penanganan kesalahan. Contoh ini menunjukkan middleware pencatatan log sederhana yang mencatat detail permintaan.
 
 ```go
 // LoggingMiddleware is a Gin middleware that logs request details
@@ -283,9 +283,9 @@ func LoggingMiddleware() gin.HandlerFunc {
 }
 ```
 
-## Mendaftarkan Service Anda
+## Mendaftarkan Layanan Anda
 
-Untuk menggunakan service berbasis Gin di aplikasi Wails, daftarkan ke aplikasi dan tentukan route tempat service di-mount. Ini dilakukan saat membuat instance aplikasi Wails. Route yang Anda tentukan menjadi base path untuk semua endpoint yang didefinisikan di router Gin.
+Untuk menggunakan layanan berbasis Gin dalam aplikasi Wails, Anda perlu mendaftarkannya pada aplikasi dan menentukan rute tempat layanan tersebut akan dipasang. Hal ini dilakukan saat membuat instans aplikasi Wails. Rute yang Anda tentukan menjadi jalur dasar bagi semua endpoint yang ditetapkan dalam router Gin.
 
 ```go
 app := application.New(application.Options{
@@ -306,13 +306,13 @@ app := application.New(application.Options{
 })
 ```
 
-Dalam contoh ini, service Gin di-mount di route `/api`. Artinya jika router Gin memiliki endpoint `/info`, endpoint tersebut dapat diakses di `/api/info` dalam aplikasi Anda. Pendekatan ini memungkinkan Anda mengorganisir endpoint API secara logis dan menghindari konflik dengan bagian aplikasi lainnya.
+Dalam contoh ini, layanan Gin dipasang pada rute `/api`. Artinya, jika router Gin memiliki endpoint yang ditetapkan sebagai `/info`, endpoint tersebut dapat diakses melalui `/api/info` dalam aplikasi. Pendekatan ini memungkinkan Anda menata endpoint API secara logis dan menghindari konflik dengan bagian lain aplikasi.
 
-## Mengintegrasikan dengan Sistem Event Wails
+## Mengintegrasikan Layanan dengan Sistem Peristiwa Wails
 
-Salah satu fitur powerful menggunakan Gin dengan Wails Services adalah kemampuan mengintegrasikan dengan sistem event Wails secara mulus. Ini memungkinkan komunikasi real-time antara backend service dan frontend.
+Salah satu fitur canggih dari penggunaan Gin dengan Layanan Wails adalah kemampuannya untuk berintegrasi secara mulus dengan sistem peristiwa Wails. Integrasi ini memungkinkan komunikasi waktu nyata antara layanan backend dan frontend.
 
-Di method `ServiceStartup` service, Anda dapat mendaftarkan event handler untuk memproses event dari frontend:
+Dalam metode `ServiceStartup` milik layanan, Anda dapat mendaftarkan handler peristiwa untuk memproses peristiwa dari frontend:
 
 ```go
 s.app.Event.On("gin-api-event", func(event *application.CustomEvent) {
@@ -329,7 +329,7 @@ s.app.Event.On("gin-api-event", func(event *application.CustomEvent) {
 })
 ```
 
-Anda juga dapat memancarkan event ke frontend dari route Gin atau bagian lain service:
+Anda juga dapat memancarkan peristiwa ke frontend dari rute Gin atau bagian lain layanan:
 
 ```go
 // After creating a new user
@@ -338,16 +338,16 @@ s.app.Event.Emit("user-created", newUser)
 
 ## Integrasi Frontend
 
-Untuk berinteraksi dengan service Gin dari frontend, impor runtime Wails, lakukan permintaan HTTP ke endpoint API, dan gunakan sistem event Wails untuk komunikasi real-time.
+Untuk berinteraksi dengan layanan Gin dari frontend, Anda perlu mengimpor runtime Wails, mengirim permintaan HTTP ke endpoint API, dan menggunakan sistem peristiwa Wails untuk komunikasi waktu nyata.
 
-Untuk penggunaan produksi, disarankan menggunakan paket `@wailsio/runtime` alih-alih mengimpor langsung `/wails/runtime.js`. Ini memastikan type safety, dukungan IDE yang lebih baik, manajemen versi melalui npm, dan kompatibilitas dengan tooling JavaScript modern.
+Untuk penggunaan produksi, sebaiknya gunakan paket `@wailsio/runtime` alih-alih mengimpor `/wails/runtime.js` secara langsung. Hal ini memastikan keamanan tipe, dukungan IDE yang lebih baik, pengelolaan versi melalui npm, dan kompatibilitas dengan alat JavaScript modern.
 
 Instal paket:
 ```bash
 npm install @wailsio/runtime
 ```
 
-Kemudian gunakan di kode Anda:
+Kemudian, gunakan paket tersebut dalam kode Anda:
 ```javascript
 import * as wails from '@wailsio/runtime';
 
@@ -355,7 +355,7 @@ import * as wails from '@wailsio/runtime';
 wails.Events.Emit('gin-api-event', eventData);
 ```
 
-Berikut contoh pengaturan integrasi frontend:
+Berikut contoh cara menyiapkan integrasi frontend:
 
 ```html
 <!DOCTYPE html>
@@ -556,6 +556,6 @@ Berikut contoh pengaturan integrasi frontend:
 
 ## Penutup
 
-Mengintegrasikan framework web Gin dengan Wails v3 Services memberikan pendekatan yang powerful dan fleksibel untuk membangun aplikasi web modular dan mudah dirawat. Dengan memanfaatkan kemampuan routing dan middleware Gin bersama sistem event Wails, Anda dapat membuat aplikasi interaktif yang kaya dengan pemisahan concern yang bersih.
+Mengintegrasikan framework web Gin dengan Layanan Wails v3 menyediakan pendekatan yang andal dan fleksibel untuk membangun aplikasi web yang modular serta mudah dipelihara. Dengan memanfaatkan kemampuan perutean dan middleware Gin bersama sistem peristiwa Wails, Anda dapat membuat aplikasi interaktif yang kaya fitur dengan pemisahan tanggung jawab yang jelas.
 
-Kode contoh lengkap untuk panduan ini dapat ditemukan di repositori Wails di `v3/examples/gin-service`.
+Kode contoh lengkap untuk panduan ini tersedia di repositori Wails dalam `v3/examples/gin-service`.

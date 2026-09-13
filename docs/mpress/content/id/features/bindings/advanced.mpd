@@ -1,18 +1,18 @@
 ---
 schema = 1
-title = "Binding Lanjutan"
-description = "Teknik binding lanjutan termasuk directive, injeksi kode, dan ID kustom"
+title = "Binding Tingkat Lanjut"
+description = "Teknik binding tingkat lanjut, termasuk direktif, injeksi kode, dan ID khusus"
 slug = "features/bindings/advanced"
-sourcePath = "id/features/bindings/advanced.mpd"
+sourcePath = "features/bindings/advanced.mpd"
 ---
 
-Panduan ini membahas teknik lanjutan untuk menyesuaikan dan mengoptimalkan proses pembuatan binding di Wails v3.
+Panduan ini membahas teknik tingkat lanjut untuk menyesuaikan dan mengoptimalkan proses pembuatan binding di Wails v3.
 
-## Menyesuaikan Kode yang Dihasilkan dengan Directive
+## Menyesuaikan Kode yang Dihasilkan dengan Direktif
 
-### Menginjeksi Kode Kustom
+### Menginjeksikan Kode Khusus
 
-Directive `//wails:inject` memungkinkan Anda menginjeksi kode JavaScript/TypeScript kustom ke binding yang dihasilkan:
+Direktif `//wails:inject` memungkinkan Anda menginjeksikan kode JavaScript/TypeScript khusus ke dalam binding yang dihasilkan:
 
 ```go
 //wails:inject console.log("Hello from Wails!");
@@ -23,9 +23,9 @@ func (s *MyService) Greet(name string) string {
 }
 ```
 
-Ini akan menginjeksi kode yang ditentukan ke file JavaScript/TypeScript yang dihasilkan untuk service `MyService`.
+Tindakan ini akan menginjeksikan kode yang ditentukan ke dalam file JavaScript/TypeScript yang dihasilkan untuk layanan `MyService`.
 
-Anda juga dapat menggunakan injeksi kondisional untuk menargetkan format output tertentu:
+Anda juga dapat menggunakan injeksi kondisional untuk menargetkan format keluaran tertentu:
 
 ```go
 //wails:inject j*:console.log("Hello JS!");  // JavaScript only
@@ -34,18 +34,18 @@ Anda juga dapat menggunakan injeksi kondisional untuk menargetkan format output 
 
 ### Menyertakan File Tambahan
 
-Directive `//wails:include` memungkinkan Anda menyertakan file tambahan dengan binding yang dihasilkan:
+Direktif `//wails:include` memungkinkan Anda menyertakan file tambahan bersama binding yang dihasilkan:
 
 ```go
 //wails:include js/*.js
 package mypackage
 ```
 
-Directive ini biasanya digunakan dalam komentar dokumentasi paket untuk menyertakan file JavaScript/TypeScript tambahan dengan binding yang dihasilkan.
+Direktif ini biasanya digunakan dalam komentar dokumentasi paket untuk menyertakan file JavaScript/TypeScript tambahan bersama binding yang dihasilkan.
 
 ### Menandai Tipe dan Metode Internal
 
-Directive `//wails:internal` menandai tipe atau metode sebagai internal, mencegahnya diekspor ke frontend:
+Direktif `//wails:internal` menandai tipe atau metode sebagai internal agar tidak diekspor ke frontend:
 
 ```go
 //wails:internal
@@ -57,31 +57,31 @@ type InternalModel struct {
 func (s *MyService) InternalMethod() {}
 ```
 
-Ini berguna untuk tipe dan metode yang hanya digunakan secara internal oleh kode Go Anda dan tidak boleh diekspos ke frontend.
+Ini berguna untuk tipe dan metode yang hanya digunakan secara internal oleh kode Go Anda dan sebaiknya tidak diekspos ke frontend.
 
 ### Mengabaikan Metode
 
-Directive `//wails:ignore` sepenuhnya mengabaikan metode selama pembuatan binding:
+Direktif `//wails:ignore` sepenuhnya mengabaikan suatu metode selama pembuatan binding:
 
 ```go
 //wails:ignore
 func (s *MyService) IgnoredMethod() {}
 ```
 
-Ini mirip dengan `//wails:internal`, tetapi sepenuhnya mengabaikan metode alih-alih menandainya sebagai internal.
+Ini serupa dengan `//wails:internal`, tetapi sepenuhnya mengabaikan metode tersebut alih-alih menandainya sebagai internal.
 
-### ID Metode Kustom
+### ID Metode Khusus
 
-Directive `//wails:id` menentukan ID kustom untuk metode, menimpa ID berbasis hash default:
+Direktif `//wails:id` menentukan ID khusus untuk suatu metode, menggantikan ID bawaan berbasis hash:
 
 ```go
 //wails:id 42
 func (s *MyService) CustomIDMethod() {}
 ```
 
-Ini dapat berguna untuk menjaga kompatibilitas saat melakukan refactoring kode.
+Ini dapat berguna untuk mempertahankan kompatibilitas saat melakukan pemfaktoran ulang kode.
 
-## Bekerja dengan Tipe Kompleks
+## Menggunakan Tipe Kompleks
 
 ### Struct Bersarang
 
@@ -113,7 +113,7 @@ func (s *MyService) GetPerson() Person {
 }
 ```
 
-Kode JavaScript/TypeScript yang dihasilkan akan menyertakan class untuk `Person` dan `Address`.
+Kode JavaScript/TypeScript yang dihasilkan akan menyertakan kelas untuk `Person` dan `Address`.
 
 ### Map dan Slice
 
@@ -138,7 +138,7 @@ func (s *MyService) GetPerson() Person {
 }
 ```
 
-Di JavaScript, map direpresentasikan sebagai object dan slice sebagai array. Di TypeScript, map direpresentasikan sebagai `Record<K, V>` dan slice sebagai `T[]`.
+Dalam JavaScript, map direpresentasikan sebagai objek dan slice sebagai array. Dalam TypeScript, map direpresentasikan sebagai `Record<K, V>` dan slice sebagai `T[]`.
 
 ### Tipe Generik
 
@@ -158,7 +158,7 @@ func (s *MyService) GetResult() Result[string] {
 }
 ```
 
-Kode TypeScript yang dihasilkan akan menyertakan class generik untuk `Result`:
+Kode TypeScript yang dihasilkan akan menyertakan kelas generik untuk `Result`:
 
 ```typescript
 export class Result<T> {
@@ -183,15 +183,15 @@ export class Result<T> {
 }
 ```
 
-### Interface
+### Antarmuka
 
-Generator binding dapat menghasilkan interface TypeScript alih-alih class menggunakan flag `-i`:
+Generator binding dapat menghasilkan antarmuka TypeScript sebagai pengganti kelas dengan menggunakan flag `-i`:
 
 ```bash
 wails3 generate bindings -ts -i
 ```
 
-Ini akan menghasilkan interface TypeScript untuk semua model:
+Tindakan ini akan menghasilkan antarmuka TypeScript untuk semua model:
 
 ```typescript
 export interface Person {
@@ -203,15 +203,15 @@ export interface Person {
 
 ## Mengoptimalkan Pembuatan Binding
 
-### Menggunakan Nama Alih-alih ID
+### Menggunakan Nama sebagai Pengganti ID
 
-Secara default, generator binding menggunakan ID berbasis hash untuk panggilan metode. Anda dapat menggunakan flag `-names` untuk menggunakan nama:
+Secara bawaan, generator binding menggunakan ID berbasis hash untuk pemanggilan metode. Anda dapat menggunakan flag `-names` untuk menggunakan nama sebagai gantinya:
 
 ```bash
 wails3 generate bindings -names
 ```
 
-Ini akan menghasilkan kode yang memanggil metode terikat berdasarkan nama *fully-qualified* (`<package>.<Service>.<Method>`) dan menggunakan nama parameter posisional `$0`, `$1`, …:
+Tindakan ini akan menghasilkan kode yang memanggil metode terikat berdasarkan nama *lengkap* (`<package>.<Service>.<Method>`) dan menggunakan nama parameter posisional `$0`, `$1`, …:
 
 ```javascript
 export function Greet($0) {
@@ -222,31 +222,31 @@ export function Greet($0) {
 
 Ini dapat membuat kode yang dihasilkan lebih mudah dibaca dan di-debug, tetapi mungkin sedikit kurang efisien.
 
-### Bundling Runtime
+### Membundel Runtime
 
-Secara default, kode yang dihasilkan mengimpor runtime Wails dari paket npm `@wailsio/runtime`. Anda dapat menggunakan flag `-b` untuk membundel runtime dengan kode yang dihasilkan:
+Secara bawaan, kode yang dihasilkan mengimpor runtime Wails dari paket npm `@wailsio/runtime`. Anda dapat menggunakan flag `-b` untuk membundel runtime bersama kode yang dihasilkan:
 
 ```bash
 wails3 generate bindings -b
 ```
 
-Ini akan menyertakan kode runtime langsung di file yang dihasilkan, menghilangkan kebutuhan paket npm.
+Tindakan ini akan menyertakan kode runtime secara langsung dalam file yang dihasilkan sehingga paket npm tidak lagi diperlukan.
 
-### Menonaktifkan File Index
+### Menonaktifkan File Indeks
 
-Jika Anda tidak memerlukan file index, Anda dapat menggunakan flag `-noindex` untuk menonaktifkan pembuatannya:
+Jika tidak memerlukan file indeks, Anda dapat menggunakan flag `-noindex` untuk menonaktifkan pembuatannya:
 
 ```bash
 wails3 generate bindings -noindex
 ```
 
-Ini berguna jika Anda lebih suka mengimpor service dan model langsung dari file masing-masing.
+Ini dapat berguna jika Anda lebih memilih mengimpor layanan dan model secara langsung dari file masing-masing.
 
 ## Contoh Dunia Nyata
 
-### Service Autentikasi
+### Layanan Autentikasi
 
-Berikut contoh service autentikasi dengan directive kustom:
+Berikut adalah contoh layanan autentikasi dengan direktif khusus:
 
 ```go
 package auth
@@ -292,9 +292,9 @@ func (s *AuthService) validateCredentials(username, password string) bool {
 }
 ```
 
-### Service Pemrosesan Data
+### Layanan Pemrosesan Data
 
-Berikut contoh service pemrosesan data dengan tipe generik:
+Berikut adalah contoh layanan pemrosesan data dengan tipe generik:
 
 ```go
 package data
@@ -325,7 +325,7 @@ func (s *DataService) parseData(data string) (map[string]int, error) {
 
 ### Injeksi Kode Kondisional
 
-Berikut contoh injeksi kode kondisional untuk format output berbeda:
+Berikut adalah contoh injeksi kode kondisional untuk format keluaran yang berbeda:
 
 ```go
 //wails:inject j*:/**
@@ -339,4 +339,4 @@ Berikut contoh injeksi kode kondisional untuk format output berbeda:
 type Service struct{}
 ```
 
-Ini menginjeksi kode berbeda untuk output JavaScript dan TypeScript, memberikan anotasi tipe yang sesuai untuk setiap bahasa.
+Ini menyisipkan kode yang berbeda untuk keluaran JavaScript dan TypeScript, dengan menyediakan anotasi tipe yang sesuai untuk setiap bahasa.

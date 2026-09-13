@@ -3,14 +3,14 @@ schema = 1
 title = "Pola Arsitektur"
 description = "Pola desain untuk aplikasi Wails"
 slug = "guides/architecture"
-sourcePath = "id/guides/architecture.mpd"
+sourcePath = "guides/architecture.mpd"
 ---
 
-## Ikhtisar
+## Ringkasan
 
-Pola terbukti untuk mengorganisasi aplikasi Wails Anda.
+Pola teruji untuk menata aplikasi Wails Anda.
 
-## Pola Service Layer
+## Pola Lapisan Layanan
 
 ### Struktur
 
@@ -47,7 +47,7 @@ func NewUserService(app *application.App, db *sql.DB) UserService {
 }
 ```
 
-## Pola Repository
+## Pola Repositori
 
 ### Struktur
 
@@ -71,9 +71,9 @@ func (s *UserService) Create(email, password string) (*User, error) {
 }
 ```
 
-## Arsitektur Event-Driven
+## Arsitektur Berbasis Peristiwa
 
-### Event Bus
+### Bus Peristiwa
 
 ```go
 type EventBus struct {
@@ -112,9 +112,9 @@ eventBus.Subscribe("user.created", func(data interface{}) {
 eventBus.Publish("user.created", user)
 ```
 
-## Dependency Injection
+## Injeksi Dependensi
 
-### DI Manual
+### Injeksi Dependensi Manual
 
 ```go
 type App struct {
@@ -179,22 +179,22 @@ func (s *AppState) GetUser() *User {
 
 ### ✅ Lakukan
 
-- Pisahkan concern
-- Gunakan interface
-- Inject dependensi
+- Pisahkan tanggung jawab
+- Gunakan antarmuka
+- Injeksikan dependensi
 - Tangani error dengan benar
-- Jaga service tetap fokus
+- Pastikan layanan tetap terfokus
 - Dokumentasikan arsitektur
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- Jangan buat god object
-- Jangan coupling komponen terlalu ketat
-- Jangan lewatkan penanganan error
-- Jangan abaikan concurrency
-- Jangan over-engineer
+- Jangan buat objek serba bisa
+- Jangan hubungkan komponen secara terlalu erat
+- Jangan abaikan penanganan error
+- Jangan abaikan konkurensi
+- Jangan merancang secara berlebihan
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Keamanan](/id/guides/security/) - Praktik terbaik keamanan
-- [Praktik Terbaik](/id/features/bindings/best-practices/) - Praktik terbaik bindings
+- [Keamanan](/guides/security/) - Praktik terbaik keamanan
+- [Praktik Terbaik](/features/bindings/best-practices/) - Praktik terbaik binding

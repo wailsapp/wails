@@ -1,14 +1,14 @@
 ---
 schema = 1
-title = "Event Window"
-description = "Tangani event siklus hidup dan perubahan state window"
+title = "Peristiwa Jendela"
+description = "Menangani peristiwa siklus hidup dan perubahan status jendela"
 slug = "features/windows/events"
-sourcePath = "id/features/windows/events.mpd"
+sourcePath = "features/windows/events.mpd"
 ---
 
-## Event Window
+## Peristiwa Jendela
 
-Wails mengirim event siklus hidup dan perubahan state window melalui satu API: `OnWindowEvent` untuk listener pasif, dan `RegisterHook` untuk hook yang dapat dibatalkan yang mencegah aksi default.
+Wails mengirimkan peristiwa siklus hidup dan perubahan status jendela melalui satu API: `OnWindowEvent` untuk listener pasif dan `RegisterHook` untuk hook yang dapat dibatalkan guna mencegah tindakan bawaan.
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -24,15 +24,15 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-Both calls return an `unsubscribe func()` you can call to remove the handler.
+Kedua pemanggilan tersebut mengembalikan `unsubscribe func()` yang dapat Anda panggil untuk menghapus handler.
 
-Cross-platform events live in `events.Common.*`. Platform-specific events live in `events.Mac.*`, `events.Windows.*`, and `events.Linux.*`. The full list is generated in `v3/pkg/events/events.go`.
+Peristiwa lintas platform berada di `events.Common.*`. Peristiwa khusus platform berada di `events.Mac.*`, `events.Windows.*`, dan `events.Linux.*`. Daftar lengkapnya dibuat di `v3/pkg/events/events.go`.
 
-## Event Siklus Hidup
+## Peristiwa Siklus Hidup
 
-### Pembuatan Window
+### Pembuatan Jendela
 
-Run a callback every time a window is created using `app.Window.OnCreate`:
+Jalankan callback setiap kali jendela dibuat menggunakan `app.Window.OnCreate`:
 
 ```go
 app.Window.OnCreate(func(window application.Window) {
@@ -50,13 +50,13 @@ app.Window.OnCreate(func(window application.Window) {
 })
 ```
 
-The callback receives `application.Window` (an interface). The `OnCreate` callback is invoked once per window, after the window's runtime is initialised.
+Callback menerima `application.Window` (sebuah antarmuka). Callback `OnCreate` dipanggil sekali untuk setiap jendela, setelah runtime jendela diinisialisasi.
 
 ### WindowClosing
 
-Fires when the user attempts to close the window (clicking X, ⌘W, Alt+F4, etc.).
+Dipicu saat pengguna mencoba menutup jendela (mengeklik X, menekan ⌘W, Alt+F4, dan sebagainya).
 
-Use a *hook* (`RegisterHook`) — only hooks can cancel the close. Listeners observe the event but cannot prevent it.
+Gunakan *hook* (`RegisterHook`) — hanya hook yang dapat membatalkan penutupan. Listener mengamati peristiwa tersebut, tetapi tidak dapat mencegahnya.
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -67,16 +67,16 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-*Important:*
-- `WindowClosing` is dispatched on user-initiated close attempts.
-- A `RegisterHook` callback can call `e.Cancel()` to keep the window open.
-- `OnWindowEvent` callbacks for `WindowClosing` are observers — they fire but cannot cancel.
+*Penting:*
+- `WindowClosing` dikirim saat pengguna mencoba menutup jendela.
+- Callback `RegisterHook` dapat memanggil `e.Cancel()` agar jendela tetap terbuka.
+- Callback `OnWindowEvent` untuk `WindowClosing` berfungsi sebagai pengamat — callback tersebut dipicu, tetapi tidak dapat membatalkan.
 
-*Programmatic close:* call `window.Close()`. There is no `window.Destroy()`.
+*Penutupan terprogram:* panggil `window.Close()`. Tidak ada `window.Destroy()`.
 
 ### WindowRuntimeReady
 
-Fires once the in-window runtime has finished initialising — safe point to call into the window's JS context:
+Dipicu setelah runtime dalam jendela selesai diinisialisasi — ini adalah saat yang aman untuk memanggil konteks JS jendela:
 
 ```go
 window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
@@ -84,11 +84,11 @@ window.OnWindowEvent(events.Common.WindowRuntimeReady, func(e *application.Windo
 })
 ```
 
-## Event Fokus
+## Peristiwa Fokus
 
 ### WindowFocus
 
-Called when the window gains focus:
+Dipanggil saat jendela memperoleh fokus:
 
 ```go
 window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
@@ -100,7 +100,7 @@ window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent)
 
 ### WindowLostFocus
 
-Called when the window loses focus:
+Dipanggil saat jendela kehilangan fokus:
 
 ```go
 window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
@@ -110,7 +110,7 @@ window.OnWindowEvent(events.Common.WindowLostFocus, func(e *application.WindowEv
 })
 ```
 
-*Example: Focus-aware UI:*
+*Contoh: UI yang peka terhadap fokus:*
 
 ```go
 type FocusAwareWindow struct {
@@ -139,7 +139,7 @@ func (fw *FocusAwareWindow) updateAppearance() {
 }
 ```
 
-## Event Perubahan State
+## Peristiwa Perubahan Status
 
 ### WindowMinimise / WindowUnMinimise
 
@@ -181,9 +181,9 @@ window.OnWindowEvent(events.Common.WindowUnFullscreen, func(e *application.Windo
 })
 ```
 
-Enter/exit fullscreen programmatically with `window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` — there is no `SetFullscreen(bool)`. Query state with `window.IsFullscreen() bool`.
+Masuk/keluar dari layar penuh secara terprogram dengan `window.Fullscreen()` / `window.UnFullscreen()` / `window.ToggleFullscreen()` — tidak ada `SetFullscreen(bool)`. Periksa status dengan `window.IsFullscreen() bool`.
 
-## Event Posisi dan Ukuran
+## Peristiwa Posisi dan Ukuran
 
 ### WindowDidMove
 
@@ -209,9 +209,9 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 })
 ```
 
-`WindowDidResize` and `WindowDidMove` do not carry coordinates on the event itself — query the window via `window.Size()` / `window.Position()` inside the callback.
+`WindowDidResize` dan `WindowDidMove` tidak membawa koordinat pada peristiwanya sendiri — periksa jendela melalui `window.Size()` / `window.Position()` di dalam callback.
 
-*Example: Responsive layout:*
+*Contoh: Tata letak responsif:*
 
 ```go
 window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEvent) {
@@ -231,7 +231,7 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 ## Contoh Lengkap
 
-A production-ready window with full event handling:
+Jendela siap produksi dengan penanganan peristiwa lengkap:
 
 ```go
 package main
@@ -373,11 +373,11 @@ func (mw *ManagedWindow) SaveState() {
 }
 ```
 
-## Koordinasi Event
+## Koordinasi Peristiwa
 
-### Event Lintas Window
+### Peristiwa Lintas Jendela
 
-Coordinate between multiple windows using the application event bus:
+Koordinasikan beberapa jendela menggunakan bus peristiwa aplikasi:
 
 ```go
 // In main window
@@ -391,7 +391,7 @@ app.Event.On("main-window-focused", func(event *application.CustomEvent) {
 })
 ```
 
-### Rantai Event
+### Rantai Peristiwa
 
 ```go
 window.OnWindowEvent(events.Common.WindowMaximise, func(e *application.WindowEvent) {
@@ -401,7 +401,7 @@ window.OnWindowEvent(events.Common.WindowMaximise, func(e *application.WindowEve
 })
 ```
 
-### Event Debounced
+### Peristiwa dengan Debounce
 
 ```go
 var resizeTimer *time.Timer
@@ -422,28 +422,28 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 
 ### ✅ Lakukan
 
-- *Use hooks for cancellation* — only `RegisterHook` callbacks can call `e.Cancel()`.
-- *Save state on close* — restore window position/size next launch.
-- *Debounce frequent events* — `WindowDidResize` and `WindowDidMove` fire rapidly.
-- *Handle focus changes* — update UI appropriately.
-- *Coordinate via events* — `app.Event.Emit` for cross-window messaging.
-- *Unsubscribe* when handlers are no longer needed — `OnWindowEvent`/`RegisterHook` both return an unsubscribe `func()`.
+- *Gunakan hook untuk pembatalan* — hanya callback `RegisterHook` yang dapat memanggil `e.Cancel()`.
+- *Simpan status saat jendela ditutup* — pulihkan posisi/ukuran jendela saat aplikasi dijalankan berikutnya.
+- *Terapkan debounce pada peristiwa yang sering terjadi* — `WindowDidResize` dan `WindowDidMove` dipicu dengan cepat.
+- *Tangani perubahan fokus* — perbarui UI sebagaimana mestinya.
+- *Lakukan koordinasi melalui peristiwa* — gunakan `app.Event.Emit` untuk pengiriman pesan lintas jendela.
+- *Berhenti berlangganan* saat handler tidak lagi diperlukan — `OnWindowEvent`/`RegisterHook` sama-sama mengembalikan `func()` untuk berhenti berlangganan.
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Don't block event handlers* — keep them fast.
-- *Don't try to cancel from `OnWindowEvent`* — use `RegisterHook`.
-- *Don't use `window.Destroy()`* — it doesn't exist; use `window.Close()`.
-- *Don't save on every event* — debounce first.
-- *Don't assume coordinates on the event* — call `window.Position()` / `window.Size()`.
+- *Jangan memblokir handler peristiwa* — pastikan handler tetap berjalan cepat.
+- *Jangan mencoba membatalkan dari `OnWindowEvent`* — gunakan `RegisterHook`.
+- *Jangan gunakan `window.Destroy()`* — itu tidak ada; gunakan `window.Close()`.
+- *Jangan menyimpan pada setiap peristiwa* — terapkan debounce terlebih dahulu.
+- *Jangan menganggap koordinat tersedia pada peristiwa* — panggil `window.Position()` / `window.Size()`.
 
-## Troubleshooting
+## Pemecahan Masalah
 
-### WindowClosing Hook Doesn't Prevent Close
+### Hook WindowClosing Tidak Mencegah Penutupan
 
-*Cause:* You used `OnWindowEvent` instead of `RegisterHook`.
+*Penyebab:* Anda menggunakan `OnWindowEvent` alih-alih `RegisterHook`.
 
-*Solution:* Only `RegisterHook` callbacks can call `e.Cancel()`. `OnWindowEvent` callbacks observe; they cannot cancel.
+*Solusi:* Hanya callback `RegisterHook` yang dapat memanggil `e.Cancel()`. Callback `OnWindowEvent` hanya mengamati; callback tersebut tidak dapat membatalkan.
 
 ```go
 // ❌ Cannot cancel — this is a listener.
@@ -451,28 +451,28 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
     e.Cancel() // no effect
 })
 
-// ✅ Dapat dibatalkan — this is a hook.
+// ✅ Can cancel — this is a hook.
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
     e.Cancel()
 })
 ```
 
-### Events Not Firing
+### Peristiwa Tidak Dipicu
 
-*Cause:* Handler registered after the event occurred.
+*Penyebab:* Handler didaftarkan setelah peristiwa terjadi.
 
-*Solution:* Register handlers immediately after window creation (or in the `app.Window.OnCreate` callback).
+*Solusi:* Daftarkan handler segera setelah jendela dibuat (atau dalam callback `app.Window.OnCreate`).
 
 ```go
 window := app.Window.New()
 window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) { /* ... */ })
 ```
 
-### Memory Leaks
+### Kebocoran Memori
 
-*Cause:* Long-lived handlers held by short-lived state.
+*Penyebab:* Handler berumur panjang disimpan oleh state berumur pendek.
 
-*Solution:* Keep the unsubscribe `func()` returned by `OnWindowEvent`/`RegisterHook` and call it during cleanup.
+*Solusi:* Simpan fungsi berhenti berlangganan `func()` yang dikembalikan oleh `OnWindowEvent`/`RegisterHook`, lalu panggil fungsi tersebut saat pembersihan.
 
 ```go
 unsub := window.OnWindowEvent(events.Common.WindowDidResize, handler)
@@ -480,20 +480,20 @@ unsub := window.OnWindowEvent(events.Common.WindowDidResize, handler)
 unsub()
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-*Window Basics* - Learn the fundamentals of window management\
-[Pelajari Selengkapnya →](/id/features/windows/basics/)
+*Dasar-Dasar Jendela* - Pelajari dasar-dasar pengelolaan jendela\
+[Pelajari Selengkapnya →](/features/windows/basics/)
 
-*Multiple Windows* - Patterns for multi-window applications\
-[Pelajari Selengkapnya →](/id/features/windows/multiple/)
+*Beberapa Jendela* - Pola untuk aplikasi dengan beberapa jendela\
+[Pelajari Selengkapnya →](/features/windows/multiple/)
 
-*Events System* - Deep dive into the event system\
-[Pelajari Selengkapnya →](/id/features/events/system/)
+*Sistem Peristiwa* - Pelajari sistem peristiwa secara mendalam\
+[Pelajari Selengkapnya →](/features/events/system/)
 
-*Application Lifecycle* - Understand the application lifecycle\
-[Pelajari Selengkapnya →](/id/concepts/lifecycle/)
+*Siklus Hidup Aplikasi* - Pahami siklus hidup aplikasi\
+[Pelajari Selengkapnya →](/concepts/lifecycle/)
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples).

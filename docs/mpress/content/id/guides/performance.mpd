@@ -1,18 +1,18 @@
 ---
 schema = 1
 title = "Optimasi Performa"
-description = "Optimalkan aplikasi Wails Anda untuk performa maksimal"
+description = "Optimalkan aplikasi Wails Anda untuk performa maksimum"
 slug = "guides/performance"
-sourcePath = "id/guides/performance.mpd"
+sourcePath = "guides/performance.mpd"
 ---
 
-## Ringkasan
+## Ikhtisar
 
-Optimalkan aplikasi Wails Anda untuk kecepatan, efisiensi memori, dan responsivitas.
+Optimalkan aplikasi Wails Anda untuk meningkatkan kecepatan, efisiensi memori, dan daya tanggap.
 
 ## Optimasi Frontend
 
-### Ukuran Bundle
+### Ukuran Bundel
 
 ```javascript
 // vite.config.js
@@ -35,7 +35,7 @@ export default {
 }
 ```
 
-### Code Splitting
+### Pemisahan Kode
 
 ```javascript
 // Lazy load components
@@ -50,7 +50,7 @@ function App() {
 }
 ```
 
-### Optimasi Asset
+### Optimasi Aset
 
 ```javascript
 // Optimise images
@@ -70,7 +70,7 @@ export default defineConfig({
 
 ## Optimasi Backend
 
-### Bindings Efisien
+### Binding yang Efisien
 
 ```go
 // ❌ Bad: Return everything
@@ -109,7 +109,7 @@ func (s *CachedService) GetData(key string) (interface{}, error) {
 }
 ```
 
-### Goroutine untuk Operasi Panjang
+### Goroutine untuk Operasi Berdurasi Panjang
 
 ```go
 func (s *Service) ProcessLargeFile(path string) error {
@@ -129,7 +129,7 @@ func (s *Service) ProcessLargeFile(path string) error {
 
 ## Optimasi Memori
 
-### Hindari Memory Leak
+### Hindari Kebocoran Memori
 
 ```go
 // ❌ Bad: Goroutine leak
@@ -166,7 +166,7 @@ func (s *Service) StopPolling() {
 }
 ```
 
-### Pool Resource
+### Gunakan Pool Sumber Daya
 
 ```go
 var bufferPool = sync.Pool{
@@ -186,9 +186,9 @@ func processData(data []byte) []byte {
 }
 ```
 
-## Optimasi Event
+## Optimasi Peristiwa
 
-### Debounce Event
+### Debounce Peristiwa
 
 ```javascript
 // Debounce frequent events
@@ -201,7 +201,7 @@ function handleInput(value) {
 }
 ```
 
-### Batch Update
+### Pembaruan secara Batch
 
 ```go
 type BatchProcessor struct {
@@ -235,9 +235,9 @@ func (b *BatchProcessor) flush() {
 
 ## Optimasi Build
 
-### Ukuran Binary
+### Ukuran Biner
 
-`wails3 build` sendiri tidak memiliki flag `-ldflags` — Taskfile bawaan sudah meneruskan `-ldflags="-s -w"` ke `go build`. Untuk memperkecil binary lebih lanjut, edit task build atau panggil `go build` langsung:
+`wails3 build` sendiri tidak memiliki flag `-ldflags` — Taskfile yang disertakan sudah meneruskan `-ldflags="-s -w"` ke `go build`. Untuk lebih memperkecil biner, edit tugas build atau panggil `go build` secara langsung:
 
 ```bash
 # Strip debug symbols and trim file paths
@@ -254,9 +254,9 @@ go build -buildmode=default
 go build -p 8
 ```
 
-## Profiling
+## Pembuatan Profil
 
-### CPU Profiling
+### Pembuatan Profil CPU
 
 ```go
 import "runtime/pprof"
@@ -272,7 +272,7 @@ func profileCPU() {
 }
 ```
 
-### Memory Profiling
+### Pembuatan Profil Memori
 
 ```go
 import "runtime/pprof"
@@ -286,7 +286,7 @@ func profileMemory() {
 }
 ```
 
-### Analisis Profile
+### Analisis Profil
 
 ```bash
 # View CPU profile
@@ -303,39 +303,39 @@ go tool pprof -http=:8080 cpu.prof
 
 ### ✅ Lakukan
 
-- Profil sebelum mengoptimalkan
+- Buat profil sebelum melakukan optimasi
 - Cache operasi yang mahal
-- Gunakan pagination untuk dataset besar
-- Debounce event yang sering
-- Pool resource
+- Gunakan paginasi untuk set data berukuran besar
+- Terapkan debounce pada peristiwa yang sering terjadi
+- Gunakan pool sumber daya
 - Bersihkan goroutine
-- Optimalkan ukuran bundle
-- Gunakan lazy loading
+- Optimalkan ukuran bundel
+- Gunakan pemuatan lambat
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- Jangan optimasi terlalu dini
-- Jangan abaikan memory leak
-- Jangan blokir main thread
-- Jangan kembalikan dataset besar
-- Jangan lewati profiling
-- Jangan lupa cleanup
+- Jangan melakukan optimasi terlalu dini
+- Jangan mengabaikan kebocoran memori
+- Jangan memblokir thread utama
+- Jangan mengembalikan set data yang sangat besar
+- Jangan melewatkan pembuatan profil
+- Jangan lupa melakukan pembersihan
 
-## Checklist Performa
+## Daftar Periksa Performa
 
-- [ ] Bundle frontend dioptimalkan
-- [ ] Gambar dikompresi
-- [ ] Code splitting diimplementasikan
-- [ ] Method backend dipaginasi
-- [ ] Caching diimplementasikan
-- [ ] Goroutine dibersihkan
-- [ ] Event di-debounce
-- [ ] Ukuran binary dioptimalkan
-- [ ] Profiling dilakukan
-- [ ] Memory leak diperbaiki
+- [ ] Bundel frontend telah dioptimalkan
+- [ ] Gambar telah dikompresi
+- [ ] Pemisahan kode telah diterapkan
+- [ ] Metode backend telah menggunakan paginasi
+- [ ] Caching telah diterapkan
+- [ ] Goroutine telah dibersihkan
+- [ ] Debounce telah diterapkan pada peristiwa
+- [ ] Ukuran biner telah dioptimalkan
+- [ ] Pembuatan profil telah dilakukan
+- [ ] Kebocoran memori telah diperbaiki
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Architecture](/id/guides/architecture/) - Pola arsitektur aplikasi
-- [Testing](/id/guides/testing/) - Uji aplikasi Anda
-- [Building](/id/guides/build/building/) - Build binary yang dioptimalkan
+- [Arsitektur](/guides/architecture/) - Pola arsitektur aplikasi
+- [Pengujian](/guides/testing/) - Uji aplikasi Anda
+- [Build](/guides/build/building/) - Buat biner yang dioptimalkan
