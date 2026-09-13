@@ -123,8 +123,6 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	if menu == nil {
 		return
 	}
-	menu.Update()
-
 	// The menu being replaced owns an HMENU, the HBITMAPs SetMenuIcons
 	// allocated while building it, and the submenu handles detached for hidden
 	// rows. Win32Menu.Update frees those, but only for the same object, and
@@ -132,13 +130,25 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	// (#6102). Its runtime bitmaps are taken first, because building the
 	// replacement reassigns item.impl and would put them out of reach.
 	previous := w.menu
+	previousImpls := make(map[*MenuItem]menuItemImpl)
 	if previous != nil {
 		previous.takeRuntimeBitmaps()
+		for _, item := range previous.menuMapping {
+			previousImpls[item] = item.impl
+		}
 	}
+	menu.Update()
 
-	w.menu = NewApplicationMenu(w, menu)
-	w.menu.parentWindow = w
-	w32.SetMenu(w.hwnd, w.menu.menu)
+	replacement := NewApplicationMenu(w, menu)
+	if !w32.SetMenu(w.hwnd, replacement.menu) {
+		replacement.Destroy()
+		// Restore retained bindings and clear items from the rejected menu.
+		for _, item := range replacement.menuMapping {
+			item.impl = previousImpls[item]
+		}
+		return
+	}
+	w.menu = replacement
 
 	// Only once the window has been given the new menu: destroying one that is
 	// still assigned to a window leaves it pointing at a freed handle.
