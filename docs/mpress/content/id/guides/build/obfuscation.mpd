@@ -1,16 +1,16 @@
 ---
 schema = 1
-title = "Build Ter-obfuscate"
-description = "Build aplikasi Wails dengan Garble untuk melindungi source code dari reverse engineering"
+title = "Build Terobfuscasi"
+description = "Build aplikasi Wails Anda dengan Garble untuk melindungi kode sumber dari rekayasa balik"
 slug = "guides/build/obfuscation"
-sourcePath = "id/guides/build/obfuscation.mpd"
+sourcePath = "guides/build/obfuscation.mpd"
 ---
 
-[Garble](https://github.com/burrowers/garble) adalah alat build Go yang menggantikan `go build` untuk mengganti nama simbol, obfuscate konstanta, dan menghapus informasi debug dari binary hasil. Wails v3 memiliki dukungan first-class untuk Garble melalui dua perintah baru.
+[Garble](https://github.com/burrowers/garble) adalah alat build Go yang menggantikan `go build` untuk mengganti nama simbol, mengobfuscasi konstanta, dan menghapus informasi debug dari berkas biner yang dihasilkan. Wails v3 menyediakan dukungan kelas satu untuk Garble melalui dua perintah baru.
 
 ## Prasyarat
 
-- *Go 1.26.2 atau lebih baru* — diperlukan oleh Garble v0.16.0
+- *Go 1.26.2 atau yang lebih baru* — diperlukan oleh Garble v0.16.0
 - *Garble v0.16.0*
 
 ```bash
@@ -19,13 +19,13 @@ go install mvdan.cc/garble@v0.16.0
 
 @note type="tip"
 
-Versi Go minimum Garble berubah antar rilis. Jika Anda menggunakan toolchain Go lama, periksa [halaman rilis Garble](https://github.com/burrowers/garble/releases) untuk versi yang cocok dengan toolchain Anda sebelum menginstal.
+Versi minimum Go yang diperlukan Garble berubah di antara rilis. Jika Anda menggunakan toolchain Go yang lebih lama, sebelum menginstal, periksa [halaman rilis Garble](https://github.com/burrowers/garble/releases) untuk menemukan versi yang sesuai dengan toolchain Anda.
 
 @end
 
-## Wajib: tambahkan tag JSON ke tipe service Anda
+## Wajib: tambahkan tag JSON ke tipe layanan Anda
 
-Struct apa pun yang dikembalikan atau diterima metode service terikat harus memiliki tag JSON eksplisit di setiap field exported:
+Setiap struct yang dikembalikan atau diterima oleh metode layanan yang di-binding harus memiliki tag JSON eksplisit pada setiap field yang diekspor:
 
 ```go
 // Without tags — breaks under Garble
@@ -45,24 +45,24 @@ type OrderSummary struct {
 
 @note type="caution"
 
-Garble mengganti nama field struct exported, dan Wails meneruskan struct ini ke `json.Marshal` melalui parameter `interface{}` yang tidak dapat dilacak Garble secara statis. Build ter-obfuscate tanpa tag JSON akan berhasil dikompilasi tetapi frontend Anda akan menerima nama field acak atau kosong saat runtime. Tambahkan tag sebelum menjalankan build ter-obfuscate.
+Garble mengganti nama field struct yang diekspor, sedangkan Wails meneruskan struct tersebut ke `json.Marshal` melalui parameter `interface{}` yang tidak dapat dilacak secara statis oleh Garble. Build terobfuscasi tanpa tag JSON akan berhasil dikompilasi, tetapi frontend Anda akan menerima nama field yang kacau atau kosong saat runtime. Tambahkan tag sebelum menjalankan build terobfuscasi.
 
 @end
 
-Tipe Wails sendiri — `Screen`, `Rect`, `Point`, `Size`, `EnvironmentInfo`, `OSInfo`, `Capabilities` — sudah ditag. Anda hanya perlu men-tag tipe Anda sendiri.
+Tipe bawaan Wails — `Screen`, `Rect`, `Point`, `Size`, `EnvironmentInfo`, `OSInfo`, `Capabilities` — sudah memiliki tag. Anda hanya perlu menambahkan tag ke tipe Anda sendiri.
 
-## Build dengan obfuscation
+## Melakukan build dengan obfuscation
 
 @steps
-@step title="Hasilkan file ID stabil"
+@step title="Buat berkas ID stabil"
 
-Jalankan ini setiap kali Anda menambah, mengganti nama, atau menghapus metode service terikat:
+Jalankan perintah ini setiap kali Anda menambahkan, mengganti nama, atau menghapus metode layanan yang di-binding:
 
 ```bash
 wails3 generate bindings -obfuscated
 ```
 
-Ini membuat `wails_obfuscated.gen.go` di direktori paket main Anda — commit file ini.
+Perintah ini membuat `wails_obfuscated.gen.go` di direktori package utama Anda — commit berkas ini.
 
 @end
 @step title="Build dengan Garble"
@@ -71,14 +71,14 @@ Ini membuat `wails_obfuscated.gen.go` di direktori paket main Anda — commit fi
 wails3 build --obfuscated
 ```
 
-Membangun aplikasi menggunakan bindings ter-obfuscate.
+Mem-build aplikasi menggunakan binding yang terobfuscasi.
 
 @end
 @end
 
-## Meneruskan flag ekstra ke Garble
+## Meneruskan flag tambahan ke Garble
 
-Gunakan `--garbleargs` untuk meneruskan opsi langsung ke `garble`:
+Gunakan `--garbleargs` untuk meneruskan opsi secara langsung ke `garble`:
 
 ```bash
 # Obfuscate string literals and reduce binary size
@@ -88,11 +88,11 @@ wails3 build --obfuscated --garbleargs "-literals -tiny"
 wails3 build --obfuscated --garbleargs "-seed=deadbeef"
 ```
 
-Lihat [dokumentasi Garble](https://github.com/burrowers/garble#flags) untuk daftar lengkap flag yang didukung.
+Lihat [dokumentasi Garble](https://github.com/burrowers/garble#flags) untuk mengetahui daftar lengkap flag yang didukung.
 
-## Lanjutan: menulis file ID ke paket berbeda
+## Lanjutan: menulis berkas ID ke package lain
 
-Secara default `wails_obfuscated.gen.go` ditulis di samping paket `main` Anda. Jika proyek Anda menyimpan service di sub-paket yang diimpor oleh `main`, Anda dapat menulis file di sana dengan `-obfuscated-output`:
+Secara default, `wails_obfuscated.gen.go` ditulis di samping package `main` Anda. Jika proyek Anda menyimpan layanan dalam subpackage yang diimpor oleh `main`, Anda dapat menulis berkas tersebut di sana menggunakan `-obfuscated-output`:
 
 ```bash
 wails3 generate bindings -obfuscated -obfuscated-output ./internal/services
@@ -100,50 +100,50 @@ wails3 generate bindings -obfuscated -obfuscated-output ./internal/services
 
 @note type="caution"
 
-Paket tujuan harus diimpor — langsung atau transitif — oleh paket `main` Anda agar `init()`-nya berjalan saat startup. Jika paket tidak dapat dijangkau, ID stabil tidak pernah terdaftar dan panggilan binding akan gagal (misalnya, dengan error `binding not found` saat runtime).
+Package tujuan harus diimpor — secara langsung atau transitif — oleh package `main` Anda agar `init()` miliknya dijalankan saat startup. Jika package tersebut tidak dapat dijangkau, ID stabil tidak akan pernah didaftarkan dan pemanggilan binding akan gagal (misalnya, dengan error `binding not found` saat runtime).
 
 @end
 
-## Troubleshooting
+## Pemecahan masalah
 
 ### `garble: command not found`
 
-Garble belum terinstal atau `$(go env GOPATH)/bin` tidak ada di `PATH` Anda.
+Garble belum diinstal atau `$(go env GOPATH)/bin` tidak ada dalam `PATH` Anda.
 
 ```bash
 go install mvdan.cc/garble@v0.16.0
 export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
-### Frontend menerima nilai field salah atau kosong
+### Frontend menerima nilai field yang salah atau kosong
 
-Tipe return service Anda tidak memiliki tag `json:"..."`. Periksa setiap struct yang dikembalikan metode terikat dan tambahkan tag eksplisit ke setiap field exported.
+Tipe nilai kembalian layanan Anda tidak memiliki tag `json:"..."`. Periksa setiap struct yang dikembalikan oleh metode yang di-binding dan tambahkan tag eksplisit ke setiap field yang diekspor.
 
 ### Error `binding not found` di konsol browser
 
-File ID stabil hilang atau tidak dikompilasi. Periksa:
+Berkas ID stabil tidak ada atau tidak disertakan saat kompilasi. Periksa hal berikut:
 
-- `wails_obfuscated.gen.go` ada di direktori paket main (atau direktori yang Anda teruskan ke `-obfuscated-output`)
-- Anda menjalankan `wails3 build --obfuscated`, yang menambahkan build tag `wails_obfuscated`
-- Jika Anda menggunakan `-obfuscated-output`, paket tujuan diimpor oleh `main`
+- `wails_obfuscated.gen.go` tersedia di direktori package utama Anda (atau direktori yang Anda teruskan ke `-obfuscated-output`)
+- Anda menjalankan `wails3 build --obfuscated`, yang menambahkan tag build `wails_obfuscated`
+- Jika Anda menggunakan `-obfuscated-output`, package tujuan diimpor oleh `main`
 
-### Windows Defender menandai build sebagai virus
+### Windows Defender menandai hasil build sebagai virus
 
-Binary Go ter-obfuscate Garble ditandai secara heuristik oleh Windows Defender selama build karena tidak memiliki simbol debug dan menyerupai executable packed. Build gagal dengan:
+Berkas biner Go yang diobfuscasi dengan Garble ditandai secara heuristik oleh Windows Defender selama proses build karena tidak memiliki simbol debug dan menyerupai executable yang dikemas. Build gagal dengan pesan berikut:
 
 ```
 open C:\Users\...\AppData\Local\Temp\go-build...\a.out.exe: The file contains a virus or potentially unwanted software.
 ```
 
-Tambahkan direktori temp (tempat Go menulis artifact build intermediate) dan direktori proyek ke daftar exclusion Defender:
+Tambahkan direktori sementara Anda (tempat Go menulis artefak build perantara) dan direktori proyek Anda ke daftar pengecualian Defender:
 
 ```powershell
 Add-MpPreference -ExclusionPath "$env:TEMP"
 Add-MpPreference -ExclusionPath "C:\path\to\your\project"
 ```
 
-Exclusion ini hanya berlaku untuk path yang ditentukan dan tidak menonaktifkan Defender secara global.
+Pengecualian ini hanya berlaku untuk path yang ditentukan dan tidak menonaktifkan Defender secara global.
 
 ### Build gagal dengan `unsupported Go version`
 
-Garble v0.16.0 memerlukan Go 1.26.2 atau lebih baru. Upgrade Go, atau konsultasikan [halaman rilis Garble](https://github.com/burrowers/garble/releases) untuk versi yang kompatibel dengan toolchain Anda.
+Garble v0.16.0 memerlukan Go 1.26.2 atau yang lebih baru. Upgrade Go atau lihat [halaman rilis Garble](https://github.com/burrowers/garble/releases) untuk menemukan versi yang kompatibel dengan toolchain Anda.

@@ -1,31 +1,29 @@
 ---
 schema = 1
 title = "Feedback"
-description = "Como fornecer feedback e relatar problemas para o Wails v3"
+description = "Como enviar feedback e relatar problemas do Wails v3"
 slug = "feedback"
-sourcePath = "pt/feedback.mpd"
+sourcePath = "feedback.mpd"
 ---
 
-Agradecemos (e incentivamos) o seu feedback! Por favor, procure por issues ou\
-discussões existentes antes de criar novas. Aqui estão as diferentes formas de contribuir:
+Agradecemos (e incentivamos) seu feedback! Pesquise problemas ou discussões existentes antes de criar novos. Estas são as diferentes formas de contribuir:
 
 @tabs
 @tab label="Bugs"
 
-Se você encontrar um bug, por favor, [abra uma issue](https://github.com/wailsapp/wails/issues/new/choose) no GitHub usando o template de relatório de bug.
+Se você encontrar um bug, [abra uma issue](https://github.com/wailsapp/wails/issues/new/choose) no GitHub usando o modelo de relatório de bug.
 
-- Descreva claramente o bug com um exemplo simples e reproduzível. Se a documentação não estiver clara sobre o que _deveria_ acontecer, inclua isso no relatório.
-- Inclua a saída de `wails doctor` no relatório.
-- Se o bug for um comportamento que não está alinhado com a documentação atual, por favor, faça também o seguinte:
+- Descreva claramente o bug com um exemplo simples e reproduzível. Se a documentação não deixar claro o que _deveria_ acontecer, inclua essa informação no relatório.
+- Inclua a saída de `wails3 doctor` no relatório.
+- Se o bug for um comportamento que não está de acordo com a documentação atual, faça também o seguinte:
   - Atualize um exemplo existente no diretório `v3/examples` ou crie um novo exemplo que demonstre claramente o problema.
-  - Abra um [PR](https://github.com/wailsapp/wails/pulls) referenciando a issue relacionada.
+  - Abra um [PR](https://github.com/wailsapp/wails/pulls) que faça referência à issue.
 
 @note type="caution"
-_Lembre-se_, comportamento inesperado não é necessariamente um bug — pode ser apenas que ele não faça\
-o que você espera. Use `Suggestions` para isso.
+_Lembre-se_: um comportamento inesperado não é necessariamente um bug — talvez ele apenas não faça o que você espera. Para esses casos, use `Suggestions`.
 
 @end
-Você também é bem-vindo para discutir bugs no canal [#v3](https://discord.gg/bdj28QNHmT) no Discord.
+Você também pode discutir bugs no canal [#v3](https://discord.gg/bdj28QNHmT) do Discord.
 
 
 
@@ -33,31 +31,32 @@ Você também é bem-vindo para discutir bugs no canal [#v3](https://discord.gg/
 @end
 @tab label="Correções"
 
-Se você tem uma correção para um bug ou uma melhoria para a documentação, por favor:
+Se você tiver uma correção de bug ou uma melhoria para a documentação:
 
 - Abra um pull request no [repositório do Wails](https://github.com/wailsapp/wails) seguindo as [diretrizes de contribuição](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md).
-- Referencie quaisquer issues relacionadas na descrição do PR.
+- Faça referência a todas as issues relacionadas na descrição do PR.
 
 
 
 
 @end
-@tab label="Sugestões"
+@tab label="Aprimoramentos"
 
-Se você tem uma solicitação de funcionalidade ou sugestão, por favor, [inicie uma discussão](https://github.com/wailsapp/wails/discussions) no GitHub.
+Novas funcionalidades e alterações no comportamento público devem ser propostas por meio de um pull request de rascunho de uma *WEP (Proposta de Aprimoramento do Wails)*, e não por uma issue de solicitação de recurso.
 
-- Descreva claramente a funcionalidade e o problema que ela resolve.
-- Sinta-se à vontade para também discutir ideias no canal [#v3](https://discord.gg/bdj28QNHmT) no Discord.
+- Leia o [processo de WEP](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+- Copie o modelo e abra um PR de rascunho com o título `[WEP] <title>`, contendo apenas a WEP e o material de apoio.
+- Você pode primeiro discutir informalmente uma ideia nas [Discussões do GitHub](https://github.com/wailsapp/wails/discussions) ou no canal [#v3](https://discord.gg/bdj28QNHmT) do Discord, mas um PR de WEP é obrigatório para que um mantenedor tome uma decisão.
 
 
 
 
 @end
-@tab label="Votação positiva"
+@tab label="Votos positivos"
 
-- Demonstre apoio a issues e discussões usando a reação :thumbsup: no GitHub.
-- Por favor, _não_ adicione apenas comentários como "+1" ou "eu também".
-- Adicione um comentário se tiver algo significativo a contribuir, como "esse bug também afeta builds para ARM" ou "Outra abordagem seria...".
+- Demonstre apoio a bugs, WEPs e discussões usando a reação :thumbsup: no GitHub.
+- _Não_ adicione apenas comentários como "+1" ou "eu também".
+- Adicione um comentário se tiver algo relevante com que contribuir, como "esse bug também afeta compilações para ARM" ou "Outra abordagem seria...".
 
 
 

@@ -1,84 +1,84 @@
 ---
 schema = 1
-title = "Jembatan Go-Frontend"
-description = "Pelajari mendalam bagaimana Wails memungkinkan komunikasi langsung antara Go dan JavaScript"
+title = "Bridge Go-Frontend"
+description = "Pembahasan mendalam tentang cara Wails memungkinkan komunikasi langsung antara Go dan JavaScript"
 slug = "concepts/bridge"
-sourcePath = "id/concepts/bridge.mpd"
+sourcePath = "concepts/bridge.mpd"
 ---
 
-## Komunikasi Go-JavaScript Langsung
+## Komunikasi Langsung Go-JavaScript
 
-Wails menyediakan *jembatan in-memory langsung* antara Go dan JavaScript, memungkinkan komunikasi seamless tanpa overhead HTTP, batas proses, atau bottleneck serialisasi.
+Wails menyediakan *bridge langsung dalam memori* antara Go dan JavaScript, sehingga keduanya dapat berkomunikasi dengan lancar tanpa overhead HTTP, batas proses, atau hambatan serialisasi.
 
 ## Gambaran Besar
 
 ```d2
 direction: right
 
-Frontend: "Frontend (JavaScript)" {
-  UI: "React/Vue/Vanilla" {
+Frontend: Frontend (JavaScript) {
+  UI: React/Vue/Vanilla {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
-  
-  Bindings: "Auto-Generated Bindings" {
+
+  Bindings: Binding yang Dibuat Otomatis {
     shape: rectangle
     style.fill: "#A78BFA"
   }
 }
 
-Bridge: "Wails Bridge" {
-  Encoder: "JSON Encoder" {
+Bridge: Bridge Wails {
+  Encoder: Encoder JSON {
     shape: rectangle
     style.fill: "#10B981"
   }
-  
-  Router: "Method Router" {
+
+  Router: Router Metode {
     shape: diamond
     style.fill: "#10B981"
   }
-  
-  Decoder: "JSON Decoder" {
+
+  Decoder: Decoder JSON {
     shape: rectangle
     style.fill: "#10B981"
   }
-  
-  TypeGen: "Type Generator" {
+
+  TypeGen: Generator Tipe {
     shape: rectangle
     style.fill: "#10B981"
   }
 }
 
-Backend: "Backend (Go)" {
-  Services: "Your Services" {
+Backend: Backend (Go) {
+  Services: Layanan Anda {
     shape: rectangle
     style.fill: "#00ADD8"
   }
-  
-  Registry: "Service Registry" {
+
+  Registry: Registri Layanan {
     shape: rectangle
     style.fill: "#00ADD8"
   }
 }
 
 Frontend.UI -> Frontend.Bindings: "import { Method }"
-Frontend.Bindings -> Bridge.Encoder: "Call Method('arg')"
-Bridge.Encoder -> Bridge.Router: "Encode to JSON"
-Bridge.Router -> Backend.Registry: "Find service"
-Backend.Registry -> Backend.Services: "Invoke method"
-Backend.Services -> Bridge.Decoder: "Return result"
-Bridge.Decoder -> Frontend.Bindings: "Decode to JS"
-Frontend.Bindings -> Frontend.UI: "Promise resolves"
-Bridge.TypeGen -> Frontend.Bindings: "Generate types"
+Frontend.Bindings -> Bridge.Encoder: "Panggil Method('arg')"
+Bridge.Encoder -> Bridge.Router: Enkode ke JSON
+Bridge.Router -> Backend.Registry: Cari layanan
+Backend.Registry -> Backend.Services: Panggil metode
+Backend.Services -> Bridge.Decoder: Kembalikan hasil
+Bridge.Decoder -> Frontend.Bindings: Dekode ke JS
+Frontend.Bindings -> Frontend.UI: Promise diselesaikan
+Bridge.TypeGen -> Frontend.Bindings: Buat tipe
 ```
 
-*Wawasan kunci:* Tanpa HTTP, tanpa IPC, tanpa batas proses. Hanya *panggilan fungsi langsung* dengan *type safety*.
+*Inti penting:* Tanpa HTTP, tanpa IPC, tanpa batas proses. Hanya *pemanggilan fungsi langsung* dengan *keamanan tipe*.
 
 ## Cara Kerjanya: Langkah demi Langkah
 
-### 1. Registrasi Service (Startup)
+### 1. Pendaftaran Layanan (Saat Mulai)
 
-Ketika aplikasi Anda start, Wails memindai service Anda:
+Saat aplikasi dimulai, Wails memindai layanan Anda:
 
 ```go
 type GreetService struct {
@@ -102,14 +102,14 @@ app := application.New(application.Options{
 ```
 
 *Yang dilakukan Wails:*
-1. *Memindai struct* untuk metode yang diekspor
-2. *Mengekstrak informasi tipe* (parameter, tipe return)
-3. *Membangun registry* yang memetakan nama metode ke fungsi
-4. *Menghasilkan binding TypeScript* dengan definisi tipe lengkap
+1. *Memindai struct* untuk mencari metode yang diekspor
+2. *Mengekstrak informasi tipe* (parameter, tipe nilai kembalian)
+3. *Membuat registri* yang memetakan nama metode ke fungsi
+4. *Membuat binding TypeScript* dengan definisi tipe lengkap
 
-### 2. Generasi Binding (Waktu Build)
+### 2. Pembuatan Binding (Saat Build)
 
-Wails menghasilkan binding TypeScript secara otomatis:
+Wails membuat binding TypeScript secara otomatis:
 
 ```typescript
 // Auto-generated: frontend/bindings/GreetService.ts
@@ -129,10 +129,10 @@ export function Add(a: number, b: number): Promise<number>
 | `map[string]T` | `Record<string, T>` |
 | `struct` | `interface` |
 | `time.Time` | `Date` |
-| `error` | Exception (thrown) |
+| `error` | Pengecualian (dilempar) |
 @end
 
-### 3. Panggilan Frontend (Runtime)
+### 3. Pemanggilan Frontend (Runtime)
 
 Developer memanggil metode Go dari JavaScript:
 
@@ -150,72 +150,72 @@ console.log(sum)  // 8
 *Yang terjadi:*
 1. *Fungsi binding dipanggil* - `Greet("World")`
 2. *Pesan dibuat* - `{ service: "GreetService", method: "Greet", args: ["World"] }`
-3. *Dikirim ke bridge* - Via JavaScript bridge WebView
+3. *Dikirim ke bridge* - Melalui bridge JavaScript WebView
 4. *Promise dikembalikan* - Menunggu respons
 
 ### 4. Pemrosesan Bridge (Runtime)
 
-Bridge menerima pesan dan memprosesnya:
+Bridge menerima dan memproses pesan:
 
 ```d2
 direction: down
 
-Receive: "Receive Message" {
+Receive: Terima Pesan {
   shape: rectangle
   style.fill: "#10B981"
 }
 
-Parse: "Parse JSON" {
+Parse: Urai JSON {
   shape: rectangle
 }
 
-Validate: "Validate" {
-  Check: "Service exists?" {
+Validate: Validasi {
+  Check: Layanan tersedia? {
     shape: diamond
   }
-  
-  CheckMethod: "Method exists?" {
+
+  CheckMethod: Metode tersedia? {
     shape: diamond
   }
-  
-  CheckTypes: "Types correct?" {
+
+  CheckTypes: Tipe sudah benar? {
     shape: diamond
   }
 }
 
-Invoke: "Invoke Go Method" {
+Invoke: Panggil Metode Go {
   shape: rectangle
   style.fill: "#00ADD8"
 }
 
-Encode: "Encode Result" {
+Encode: Enkode Hasil {
   shape: rectangle
 }
 
-Send: "Send Response" {
+Send: Kirim Respons {
   shape: rectangle
   style.fill: "#10B981"
 }
 
-Error: "Send Error" {
+Error: Kirim Kesalahan {
   shape: rectangle
   style.fill: "#EF4444"
 }
 
 Receive -> Parse
 Parse -> Validate.Check
-Validate.Check -> Validate.CheckMethod: "Yes"
-Validate.Check -> Error: "No"
-Validate.CheckMethod -> Validate.CheckTypes: "Yes"
-Validate.CheckMethod -> Error: "No"
-Validate.CheckTypes -> Invoke: "Yes"
-Validate.CheckTypes -> Error: "No"
-Invoke -> Encode: "Success"
-Invoke -> Error: "Error"
+Validate.Check -> Validate.CheckMethod: Ya
+Validate.Check -> Error: Tidak
+Validate.CheckMethod -> Validate.CheckTypes: Ya
+Validate.CheckMethod -> Error: Tidak
+Validate.CheckTypes -> Invoke: Ya
+Validate.CheckTypes -> Error: Tidak
+Invoke -> Encode: Berhasil
+Invoke -> Error: Kesalahan
 Encode -> Send
 ```
 
-*Keamanan:* Hanya service terdaftar dan metode yang diekspor yang dapat dipanggil.
+*Keamanan:* Hanya layanan yang terdaftar dan metode yang diekspor yang dapat dipanggil.
 
 ### 5. Eksekusi Go (Runtime)
 
@@ -228,11 +228,11 @@ func (g *GreetService) Greet(name string) string {
 }
 ```
 
-*Context eksekusi:*
-- Berjalan di *goroutine* (non-blocking)
-- Memiliki akses ke *semua fitur Go* (file system, jaringan, database)
-- Dapat memanggil *kode Go lain* dengan bebas
-- Mengembalikan hasil atau error
+*Konteks eksekusi:*
+- Berjalan dalam sebuah *goroutine* (non-blocking)
+- Memiliki akses ke *semua fitur Go* (sistem berkas, jaringan, basis data)
+- Dapat memanggil *kode Go lainnya* secara bebas
+- Mengembalikan hasil atau galat
 
 ### 6. Respons (Runtime)
 
@@ -244,7 +244,7 @@ const greeting = await Greet("World")
 // greeting = "Hello, World!"
 ```
 
-*Penanganan error:*
+*Penanganan galat:*
 
 ```go
 func (g *GreetService) Divide(a, b float64) (float64, error) {
@@ -267,7 +267,7 @@ try {
 
 ### Kecepatan
 
-*Overhead panggilan tipikal:* &lt;1ms
+*Overhead panggilan pada umumnya:* &lt;1ms
 
 ```
 Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
@@ -275,23 +275,23 @@ Frontend Call → Bridge → Go Execution → Bridge → Frontend Response
    &lt;0.1ms      &lt;0.1ms      [varies]     &lt;0.1ms      &lt;0.1ms
 ```
 
-*Dibanding alternatif:*
-- *HTTP/REST:* 5-50ms (network stack, serialisasi)
+*Dibandingkan dengan alternatif:*
+- *HTTP/REST:* 5-50ms (tumpukan jaringan, serialisasi)
 - *IPC:* 1-10ms (batas proses, marshalling)
-- *Wails Bridge:* &lt;1ms (in-memory, panggilan langsung)
+- *Wails Bridge:* &lt;1ms (dalam memori, panggilan langsung)
 
 ### Memori
 
-*Overhead per-panggilan:* ~1KB (buffer pesan)
+*Overhead per panggilan:* ~1KB (buffer pesan)
 
-*Optimasi zero-copy:* Data besar (>1MB) menggunakan shared memory jika memungkinkan.
+*Optimasi tanpa penyalinan:* Data berukuran besar (>1MB) menggunakan memori bersama jika memungkinkan.
 
-### Concurrency
+### Konkurensi
 
-*Panggilan bersifat concurrent:*
-- Setiap panggilan berjalan di goroutine sendiri
-- Beberapa panggilan dapat dieksekusi secara simultan
-- Tidak ada blocking antar panggilan
+*Panggilan berlangsung secara konkuren:*
+- Setiap panggilan berjalan dalam goroutine tersendiri
+- Beberapa panggilan dapat dieksekusi secara bersamaan
+- Tidak ada pemblokiran antar-panggilan
 
 ```javascript
 // These run concurrently
@@ -306,7 +306,7 @@ const [result1, result2, result3] = await Promise.all([
 
 ### Tipe yang Didukung
 
-#### Primitif
+#### Tipe Primitif
 
 ```go
 // Go
@@ -407,9 +407,9 @@ const user = await GetUser(1)
 console.log(user.name)  // "Alice"
 ```
 
-*Tag JSON:* Gunakan tag `json:` untuk mengontrol nama field di TypeScript.
+*Tag JSON:* Gunakan tag `json:` untuk mengatur nama field di TypeScript.
 
-#### Time
+#### Waktu
 
 ```go
 // Go
@@ -427,7 +427,7 @@ const timestamp = await GetTimestamp()
 console.log(timestamp.toISOString())
 ```
 
-#### Error
+#### Galat
 
 ```go
 // Go
@@ -453,15 +453,15 @@ try {
 
 ### Tipe yang Tidak Didukung
 
-Tipe ini *tidak dapat* diteruskan melintasi bridge:
+Tipe-tipe ini *tidak dapat* diteruskan melalui bridge:
 
 - *Channel* (`chan T`)
 - *Fungsi* (`func()`)
-- *Interface* (kecuali `interface{}` / `any`)
-- *Pointer* (kecuali ke struct)
-- *Field tidak diekspor* (lowercase)
+- *Antarmuka* (kecuali `interface{}` / `any`)
+- *Pointer* (kecuali pointer ke struct)
+- *Field yang tidak diekspor* (huruf kecil)
 
-*Solusi:* Gunakan ID atau handle:
+*Solusi alternatif:* Gunakan ID atau handle:
 
 ```go
 // ❌ Can't pass file handle
@@ -494,11 +494,11 @@ func CloseFile(id string) error {
 }
 ```
 
-## Pola Lanjutan
+## Pola Tingkat Lanjut
 
-### Context Passing
+### Penerusan Context
 
-Service dapat mengakses context panggilan:
+Layanan dapat mengakses context panggilan:
 
 ```go
 type UserService struct{}
@@ -518,13 +518,13 @@ func (s *UserService) GetCurrentUser(ctx context.Context) (*User, error) {
 ```
 
 *Context menyediakan:*
-- Window yang melakukan panggilan
-- Instance aplikasi
-- Metadata request
+- Jendela yang melakukan panggilan
+- Instans aplikasi
+- Metadata permintaan
 
-### Streaming Data
+### Aliran data
 
-Untuk data besar, gunakan event alih-alih nilai return:
+Untuk data berukuran besar, gunakan event sebagai pengganti nilai kembalian:
 
 ```go
 func ProcessLargeFile(path string) error {
@@ -533,10 +533,10 @@ func ProcessLargeFile(path string) error {
         return err
     }
     defer file.Close()
-    
+
     scanner := bufio.NewScanner(file)
     lineNum := 0
-    
+
     for scanner.Scan() {
         lineNum++
         // Emit progress events
@@ -545,7 +545,7 @@ func ProcessLargeFile(path string) error {
             "text": scanner.Text(),
         })
     }
-    
+
     return scanner.Err()
 }
 ```
@@ -583,11 +583,11 @@ func LongRunningTask(ctx context.Context) error {
 }
 ```
 
-*Catatan:* Pembatalan context saat frontend disconnect otomatis.
+*Catatan:* Pembatalan context saat frontend terputus berlangsung secara otomatis.
 
 ### Operasi Batch
 
-Kurangi overhead bridge dengan batching:
+Kurangi overhead bridge dengan mengelompokkan operasi dalam batch:
 
 ```go
 // ❌ Inefficient: N bridge calls
@@ -609,9 +609,9 @@ func ProcessItems(items []Item) ([]Result, error) {
 }
 ```
 
-## Debugging Bridge
+## Men-debug Bridge
 
-### Aktifkan Debug Logging
+### Aktifkan Logging Debug
 
 ```go
 app := application.New(application.Options{
@@ -625,9 +625,9 @@ app := application.New(application.Options{
 *Output menampilkan:*
 - Panggilan metode
 - Parameter
-- Nilai return
+- Nilai kembalian
 - Error
-- Informasi timing
+- Informasi waktu eksekusi
 
 ### Periksa Binding yang Dihasilkan
 
@@ -642,9 +642,9 @@ export function MyMethod($0) {
 }
 ```
 
-### Uji Service Langsung
+### Uji Layanan Secara Langsung
 
-Uji service Go tanpa frontend:
+Uji layanan Go tanpa frontend:
 
 ```go
 func TestGreetService(t *testing.T) {
@@ -660,46 +660,46 @@ func TestGreetService(t *testing.T) {
 
 ### ✅ Lakukan
 
-- *Operasi batch* - Kurangi panggilan bridge
-- *Gunakan event untuk streaming* - Jangan return array besar
-- *Jaga metode tetap cepat* - &lt;100ms ideal
-- *Gunakan goroutine* - Untuk operasi panjang
-- *Cache di sisi Go* - Hindari perhitungan berulang
+- *Kelompokkan operasi dalam batch* - Kurangi panggilan bridge
+- *Gunakan event untuk streaming* - Jangan kembalikan array berukuran besar
+- *Pastikan metode berjalan cepat* - Idealnya &lt;100 ms
+- *Gunakan goroutine* - Untuk operasi yang berlangsung lama
+- *Gunakan cache di sisi Go* - Hindari perhitungan berulang
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan buat panggilan berlebihan* - Batch jika memungkinkan
-- *Jangan return data besar* - Gunakan pagination atau streaming
-- *Jangan block* - Gunakan goroutine untuk operasi panjang
-- *Jangan kirim tipe kompleks* - Jaga tetap sederhana
-- *Jangan abaikan error* - Selalu tangani error
+- *Jangan lakukan panggilan secara berlebihan* - Kelompokkan dalam batch jika memungkinkan
+- *Jangan kembalikan data berukuran sangat besar* - Gunakan paginasi atau streaming
+- *Jangan memblokir* - Gunakan goroutine untuk operasi yang berlangsung lama
+- *Jangan teruskan tipe kompleks* - Gunakan tipe yang sederhana
+- *Jangan abaikan error* - Selalu tangani error tersebut
 
 ## Keamanan
 
 Bridge aman secara default:
 
-1. *Whitelist saja* - Hanya service terdaftar yang dapat dipanggil
-2. *Validasi tipe* - Argumen dicek terhadap tipe Go
-3. *Tanpa eval()* - Frontend tidak dapat mengeksekusi kode Go sembarangan
-4. *Tanpa penyalahgunaan reflection* - Hanya metode yang diekspor yang dapat diakses
+1. *Hanya daftar yang diizinkan* - Hanya layanan terdaftar yang dapat dipanggil
+2. *Validasi tipe* - Argumen diperiksa berdasarkan tipe Go
+3. *Tanpa eval()* - Frontend tidak dapat mengeksekusi kode Go arbitrer
+4. *Tidak ada penyalahgunaan refleksi* - Hanya metode yang diekspor yang dapat diakses
 
 *Praktik terbaik:*
-- *Validasi input* di Go (jangan percaya frontend)
+- *Validasi input* di Go (jangan percayai frontend)
 - *Gunakan context* untuk autentikasi/otorisasi
-- *Rate limit* operasi yang mahal
+- *Batasi laju* operasi yang mahal
 - *Sanitasi* path file dan input pengguna
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-*Sistem Build* - Pelajari bagaimana Wails mem-build dan membundel aplikasi Anda\
-[Pelajari Selengkapnya →](/id/concepts/build-system/)
+*Sistem Build* - Pelajari cara Wails membangun dan membundel aplikasi Anda\
+[Pelajari Selengkapnya →](/concepts/build-system/)
 
-*Service* - Pelajari mendalam sistem service\
-[Pelajari Selengkapnya →](/id/features/bindings/services/)
+*Layanan* - Pelajari sistem layanan secara mendalam\
+[Pelajari Selengkapnya →](/features/bindings/services/)
 
-*Event* - Gunakan event untuk komunikasi pub/sub\
-[Pelajari Selengkapnya →](/id/features/events/system/)
+*Peristiwa* - Gunakan peristiwa untuk komunikasi publikasi/langganan\
+[Pelajari Lebih Lanjut →](/features/events/system/)
 
 ---
 
-*Pertanyaan tentang bridge?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).
+*Ada pertanyaan tentang bridge?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh binding](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

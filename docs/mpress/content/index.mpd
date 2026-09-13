@@ -78,11 +78,15 @@ sourcePath = "index.mpd"
 </style>
 @end
 @rawHTML
+<span class="browser-footnote" data-browser-footnote>* unless you really want to</span>
 <script>
 (() => {
   const words = ['Desktop', 'Server', 'Mobile'];
   let index = 0;
   const init = () => {
+    const tagline = document.querySelector('.mpress-frontmatter-hero-tagline');
+    const note = document.querySelector('[data-browser-footnote]');
+    if (tagline && note && !tagline.contains(note)) tagline.appendChild(note);
     const title = document.querySelector('.mpress-frontmatter-hero-title');
     if (!title || title.querySelector('.morph-word-title')) return;
     if (title.textContent.trim() !== 'Build Desktop Apps with Go') return;
@@ -97,13 +101,6 @@ sourcePath = "index.mpd"
     wordWrap.append(activeWord);
     titleLine.append(prefix, wordWrap);
     title.replaceChildren(titleLine, document.createElement('br'), document.createTextNode('Apps with Go'));
-    const tagline = document.querySelector('.mpress-frontmatter-hero-tagline');
-    if (tagline && !tagline.querySelector('.browser-footnote')) {
-      const note = document.createElement('span');
-      note.className = 'browser-footnote';
-      note.textContent = '* unless you really want to';
-      tagline.appendChild(note);
-    }
     const rotate = () => {
       const word = title.querySelector('.morph-word-title span');
       if (!word) return;
@@ -140,9 +137,7 @@ cd myapp && wails3 dev
 
 *Your application is now running* with hot reload and type-safe Go-to-JS bindings.
 
-@rawHTML
-<p style="font-size: 0.875rem; color: var(--sl-color-gray-3); margin-top: 0.5rem;">Having issues with <code>wails3 setup</code>? See the <a href="/quick-start/installation/">manual installation guide</a>.</p>
-@end
+Having issues with `wails3 setup`? See the [manual installation guide](/quick-start/installation/).
 
 ## Your desktop app is already a mobile app
 

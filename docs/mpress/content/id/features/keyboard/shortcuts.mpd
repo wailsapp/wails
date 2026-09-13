@@ -1,16 +1,16 @@
 ---
 schema = 1
 title = "Pintasan Keyboard"
-description = "Daftarkan pintasan keyboard global untuk akses cepat"
+description = "Daftarkan pintasan keyboard global untuk mengakses fungsionalitas dengan cepat"
 slug = "features/keyboard/shortcuts"
-sourcePath = "id/features/keyboard/shortcuts.mpd"
+sourcePath = "features/keyboard/shortcuts.mpd"
 ---
 
-Wails menyediakan sistem key binding yang powerful yang memungkinkan Anda mendaftarkan pintasan keyboard global yang bekerja di semua window aplikasi. Ini memungkinkan pengguna mengakses fungsionalitas dengan cepat tanpa navigasi menu.
+Wails menyediakan sistem pengikatan tombol yang canggih untuk mendaftarkan pintasan keyboard global yang berfungsi di semua jendela aplikasi Anda. Dengan demikian, pengguna dapat mengakses fungsionalitas dengan cepat tanpa menelusuri menu.
 
-## Mengakses Key Binding Manager
+## Mengakses Pengelola Pengikatan Tombol
 
-Key binding manager diakses melalui properti `KeyBinding` pada instance aplikasi Anda:
+Pengelola pengikatan tombol diakses melalui properti `KeyBindings` pada instans aplikasi Anda:
 
 ```go
 app := application.New(application.Options{
@@ -21,9 +21,9 @@ app := application.New(application.Options{
 keyBindings := app.KeyBinding
 ```
 
-## Menambahkan Key Binding
+## Menambahkan Pengikatan Tombol
 
-### Basic Key Binding
+### Pengikatan Tombol Dasar
 
 Daftarkan pintasan keyboard sederhana:
 
@@ -35,7 +35,7 @@ app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
 })
 ```
 
-### Multiple Key Bindings
+### Beberapa Pengikatan Tombol
 
 Daftarkan beberapa pintasan untuk operasi umum:
 
@@ -76,11 +76,11 @@ app.KeyBinding.Add("Cmd+Shift+Z", func(window application.Window) {
 })
 ```
 
-## Accelerator Key Binding
+## Akselerator Pengikatan Tombol
 
-### Accelerator Format
+### Format Akselerator
 
-Key bindings use a standard accelerator format with modifiers and keys:
+Pengikatan tombol menggunakan format akselerator standar yang terdiri dari tombol pengubah dan tombol:
 
 ```go
 // Modifier keys
@@ -108,9 +108,9 @@ Key bindings use a standard accelerator format with modifiers and keys:
 "Right"         // Right arrow
 ```
 
-### Platform-Specific Accelerators
+### Akselerator Khusus Platform
 
-Handle platform differences for common shortcuts:
+Tangani perbedaan antarplatform untuk pintasan umum:
 
 ```go
 import "runtime"
@@ -127,11 +127,11 @@ app.KeyBinding.Add("Ctrl+S", saveHandler)
 app.KeyBinding.Add("Cmd+S", saveHandler)
 ```
 
-## Mengelola Key Binding
+## Mengelola Pengikatan Tombol
 
-### Removing Key Bindings
+### Menghapus Pengikatan Tombol
 
-Hapus key binding saat tidak diperlukan lagi:
+Hapus pengikatan tombol saat tidak lagi diperlukan:
 
 ```go
 // Remove a specific key binding
@@ -146,9 +146,9 @@ app.KeyBinding.Add("Escape", func(window application.Window) {
 })
 ```
 
-### Getting All Key Bindings
+### Mendapatkan Semua Pengikatan Tombol
 
-Ambil semua key binding yang terdaftar:
+Ambil semua pengikatan tombol yang terdaftar:
 
 ```go
 allBindings := app.KeyBinding.GetAll()
@@ -157,11 +157,11 @@ for _, binding := range allBindings {
 }
 ```
 
-## Penggunaan Lanjutan
+## Penggunaan Tingkat Lanjut
 
-### Context-Aware Key Bindings
+### Pengikatan Tombol yang Peka Konteks
 
-Buat key binding context-aware dengan memeriksa state aplikasi:
+Buat pengikatan tombol peka terhadap konteks dengan memeriksa status aplikasi:
 
 ```go
 app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
@@ -178,9 +178,9 @@ app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
 })
 ```
 
-### Window-Specific Actions
+### Tindakan Khusus Jendela
 
-Key binding menerima window aktif, memungkinkan perilaku spesifik window:
+Pengikatan tombol menerima jendela aktif sehingga memungkinkan perilaku khusus untuk setiap jendela:
 
 ```go
 app.KeyBinding.Add("F11", func(window application.Window) {
@@ -194,9 +194,9 @@ app.KeyBinding.Add("Ctrl+W", func(window application.Window) {
 })
 ```
 
-### Dynamic Key Binding Management
+### Pengelolaan Pengikatan Tombol Dinamis
 
-Tambah dan hapus key binding secara dinamis berdasarkan state aplikasi:
+Tambahkan dan hapus pengikatan tombol secara dinamis berdasarkan status aplikasi:
 
 ```go
 func enableEditMode() {
@@ -222,21 +222,21 @@ func disableEditMode() {
 }
 ```
 
-## Platform Considerations
+## Pertimbangan Platform
 
 @tabs
 @tab label="macOS"
 
 
-On macOS:
+Di macOS:
 
-- Use `Cmd` instead of `Ctrl` for standard shortcuts
-- `Cmd+Q` is typically reserved for quitting the application
-- `Cmd+H` hides the application
-- `Cmd+M` minimizes windows
-- Consider standard macOS keyboard shortcuts
+- Gunakan `Cmd`, bukan `Ctrl`, untuk pintasan standar
+- `Cmd+Q` biasanya dikhususkan untuk keluar dari aplikasi
+- `Cmd+H` menyembunyikan aplikasi
+- `Cmd+M` meminimalkan jendela
+- Pertimbangkan pintasan keyboard standar macOS
 
-Common macOS patterns:
+Pola umum macOS:
 ```go
 app.KeyBinding.Add("Cmd+N", newFileHandler)      // New
 app.KeyBinding.Add("Cmd+O", openFileHandler)     // Open
@@ -255,14 +255,14 @@ app.KeyBinding.Add("Cmd+V", pasteHandler)        // Paste
 @tab label="Windows"
 
 
-On Windows:
+Di Windows:
 
-- Use `Ctrl` for standard shortcuts
-- `Alt+F4` closes applications
-- `F1` typically opens help
-- Consider Windows keyboard conventions
+- Gunakan `Ctrl` untuk pintasan standar
+- `Alt+F4` menutup aplikasi
+- `F1` biasanya membuka bantuan
+- Pertimbangkan konvensi keyboard Windows
 
-Common Windows patterns:
+Pola umum Windows:
 ```go
 app.KeyBinding.Add("Ctrl+N", newFileHandler)     // New
 app.KeyBinding.Add("Ctrl+O", openFileHandler)    // Open
@@ -282,14 +282,14 @@ app.KeyBinding.Add("F1", helpHandler)            // Help
 @tab label="Linux"
 
 
-On Linux:
+Di Linux:
 
-- Generally follows Windows conventions with `Ctrl`
-- May vary by desktop environment
-- Consider GNOME/KDE standard shortcuts
-- Some desktop environments reserve certain shortcuts
+- Umumnya mengikuti konvensi Windows dengan `Ctrl`
+- Dapat berbeda menurut lingkungan desktop
+- Pertimbangkan pintasan standar GNOME/KDE
+- Beberapa lingkungan desktop mencadangkan pintasan tertentu
 
-Common Linux patterns:
+Pola umum Linux:
 ```go
 app.KeyBinding.Add("Ctrl+N", newFileHandler)     // New
 app.KeyBinding.Add("Ctrl+O", openFileHandler)    // Open
@@ -307,7 +307,7 @@ app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Paste
 
 ## Praktik Terbaik
 
-1. *Use Standard Shortcuts*: Follow platform conventions for common operations:
+1. *Gunakan Pintasan Standar*: Ikuti konvensi platform untuk operasi umum:
   ```go
   // Cross-platform save
   if runtime.GOOS == "darwin" {
@@ -317,7 +317,7 @@ app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Paste
   }
   ```
 
-2. *Provide Visual Feedback*: Let users know when shortcuts are triggered:
+2. *Berikan Umpan Balik Visual*: Beri tahu pengguna saat pintasan dipicu:
   ```go
   app.KeyBinding.Add("Ctrl+S", func(window application.Window) {
       saveDocument()
@@ -326,7 +326,7 @@ app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Paste
   })
   ```
 
-3. *Handle Conflicts*: Be careful not to override important system shortcuts:
+3. *Tangani Konflik*: Berhati-hatilah agar tidak menimpa pintasan sistem yang penting:
   ```go
   // Avoid overriding system shortcuts like:
   // Ctrl+Alt+Del (Windows)
@@ -334,7 +334,7 @@ app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Paste
   // Alt+Tab (Window switching)
   ```
 
-4. *Document Shortcuts*: Provide help or documentation for available shortcuts:
+4. *Dokumentasikan Pintasan*: Sediakan bantuan atau dokumentasi untuk pintasan yang tersedia:
   ```go
   app.KeyBinding.Add("F1", func(window application.Window) {
       // Show help dialog with available shortcuts
@@ -342,7 +342,7 @@ app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Paste
   })
   ```
 
-5. *Clean Up*: Remove temporary key bindings when they're no longer needed:
+5. *Bersihkan*: Hapus pengikatan tombol sementara saat tidak lagi diperlukan:
   ```go
   func enterEditMode() {
       app.KeyBinding.Add("Escape", exitEditModeHandler)
@@ -356,7 +356,7 @@ app.KeyBinding.Add("Ctrl+V", pasteHandler)       // Paste
 
 ## Contoh Lengkap
 
-Here's a complete example of a text editor with keyboard shortcuts:
+Berikut contoh lengkap editor teks dengan pintasan keyboard:
 
 ```go
 package main
@@ -435,10 +435,10 @@ Keyboard Shortcuts:
 }
 ```
 
-@note type="tip" title="Pro Tip"
-Test your key bindings on all target platforms to ensure they work correctly and don't conflict with system shortcuts.
+@note type="tip" title="Kiat Praktis"
+Uji pengikatan tombol Anda di semua platform target untuk memastikan semuanya berfungsi dengan benar dan tidak berkonflik dengan pintasan sistem.
 @end
 
-@note type="danger" title="Warning"
-Be careful not to override critical system shortcuts. Some key combinations are reserved by the operating system and cannot be captured by applications.
+@note type="danger" title="Peringatan"
+Berhati-hatilah agar tidak menimpa pintasan sistem yang sangat penting. Beberapa kombinasi tombol dicadangkan oleh sistem operasi dan tidak dapat ditangkap oleh aplikasi.
 @end

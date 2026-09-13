@@ -3,26 +3,26 @@ schema = 1
 title = "Protokol URL Kustom"
 description = "Daftarkan skema URL kustom untuk meluncurkan aplikasi Anda dari tautan"
 slug = "guides/distribution/custom-protocols"
-sourcePath = "id/guides/distribution/custom-protocols.mpd"
+sourcePath = "guides/distribution/custom-protocols.mpd"
 ---
 
-Protokol URL kustom (juga disebut skema URL) memungkinkan aplikasi Anda diluncurkan saat pengguna mengklik tautan dengan protokol kustom Anda, seperti `myapp://action` atau `myapp://open/document`.
+Protokol URL kustom (juga disebut skema URL) memungkinkan aplikasi Anda diluncurkan saat pengguna mengeklik tautan dengan protokol kustom Anda, seperti `myapp://action` atau `myapp://open/document`.
 
-## Ringkasan
+## Ikhtisar
 
 Protokol kustom memungkinkan:
-- *Deep linking*: Meluncurkan aplikasi Anda dengan data spesifik
+- *Tautan dalam*: Meluncurkan aplikasi Anda dengan data tertentu
 - *Integrasi browser*: Menangani tautan dari halaman web
 - *Tautan email*: Membuka aplikasi Anda dari klien email
-- *Komunikasi antar aplikasi*: Meluncurkan dari aplikasi lain
+- *Komunikasi antar-aplikasi*: Meluncurkan aplikasi dari aplikasi lain
 
 *Contoh*: `myapp://open/document?id=123` meluncurkan aplikasi Anda dan membuka dokumen 123.
 
 ## Konfigurasi
 
-Definisikan protokol kustom di opsi aplikasi Anda:
+Tentukan protokol kustom dalam opsi aplikasi Anda:
 
-Protokol kustom dideklarasikan di `build/config.yml` (yang dikonsumsi oleh platform packager — macro NSIS di Windows, manifest MSIX, `CFBundleURLTypes` macOS, `.desktop`/`xdg-mime` Linux — saat waktu package). Tidak ada tipe `application.Protocol` dan tidak ada field `Protocols` pada `application.Options`.
+Protokol kustom dideklarasikan dalam `build/config.yml` (yang digunakan oleh pembuat paket platform—makro NSIS di Windows, manifes MSIX, `CFBundleURLTypes` di macOS, serta `.desktop`/`xdg-mime` di Linux—saat pembuatan paket). Tidak ada tipe `application.Protocol` maupun bidang `Protocols` pada `application.Options`.
 
 ```yaml
 # build/config.yml
@@ -31,7 +31,7 @@ protocols:
     description: "My Application Protocol"
 ```
 
-Di kode Go, dengarkan peluncuran dengan URL melalui event `ApplicationLaunchedWithUrl`:
+Dalam kode Go, pantau peluncuran dengan URL melalui peristiwa `ApplicationLaunchedWithUrl`:
 
 ```go
 package main
@@ -55,28 +55,28 @@ func main() {
 }
 
 func handleCustomURL(url string) {
-    // Parse dan tangani URL kustom
-    // Contoh: myapp://open/document?id=123
+    // Parse and handle the custom URL
+    // Example: myapp://open/document?id=123
     println("Received URL:", url)
 }
 ```
 
-## Protocol Handler
+## Penangan Protokol
 
-Dengarkan event protokol untuk menangani URL masuk:
+Pantau peristiwa protokol untuk menangani URL yang masuk:
 
 ```go
 app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
     url := e.Context().URL()
 
-    // Parse URL
+    // Parse the URL
     parsedURL, err := parseCustomURL(url)
     if err != nil {
         app.Logger.Error("Failed to parse URL:", err)
         return
     }
 
-    // Tangani aksi berbeda
+    // Handle different actions
     switch parsedURL.Action {
     case "open":
         openDocument(parsedURL.DocumentID)
@@ -92,56 +92,56 @@ app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *a
 
 ## Struktur URL
 
-Rancang struktur URL yang jelas dan hierarkis:
+Rancang struktur URL hierarkis yang jelas:
 
 ```
 myapp://action/resource?param=value
 
-Contoh:
+Examples:
 myapp://open/document?id=123
 myapp://settings/theme?mode=dark
 myapp://user/profile?username=john
 ```
 
 *Praktik terbaik:*
-- Gunakan nama skema huruf kecil
-- Buat skema pendek dan mudah diingat
-- Gunakan path hierarkis untuk resource
-- Sertakan parameter query untuk data opsional
-- Encode karakter khusus dalam URL
+- Gunakan nama skema dengan huruf kecil
+- Buat skema tetap singkat dan mudah diingat
+- Gunakan jalur hierarkis untuk sumber daya
+- Sertakan parameter kueri untuk data opsional
+- Enkodekan karakter khusus untuk URL
 
-## Registrasi Platform
+## Pendaftaran Platform
 
-Protokol kustom didaftarkan secara berbeda di setiap platform.
+Protokol kustom didaftarkan secara berbeda pada setiap platform.
 
 @tabs sync-key="platform"
 @tab label="Windows"
 
-### Installer NSIS Windows
+### Penginstal NSIS Windows
 
-*Wails v3 secara otomatis mendaftarkan protokol kustom* saat menggunakan installer NSIS.
+*Wails v3 secara otomatis mendaftarkan protokol kustom* saat menggunakan penginstal NSIS.
 
-#### Registrasi Otomatis
+#### Pendaftaran Otomatis
 
-Saat Anda membangun aplikasi dengan `wails3 build`, installer NSIS:
-1. Secara otomatis mendaftarkan semua protokol yang dideklarasikan di `build/config.yml` di bawah kunci `protocols:`
-2. Mengasosiasikan protokol dengan executable aplikasi Anda
-3. Menyiapkan entri registry yang benar
-4. Menghapus asosiasi protokol saat uninstall
+Saat Anda membangun aplikasi dengan `wails3 build`, penginstal NSIS akan:
+1. Secara otomatis mendaftarkan semua protokol yang dideklarasikan dalam `build/config.yml` di bawah kunci `protocols:`
+2. Mengaitkan protokol dengan berkas aplikasi Anda yang dapat dieksekusi
+3. Menyiapkan entri registri yang tepat
+4. Menghapus pengaitan protokol selama penghapusan instalasi
 
 *Tidak diperlukan konfigurasi tambahan!*
 
 #### Cara Kerjanya
 
-Template NSIS menyertakan macro bawaan:
-- `wails.associateCustomProtocols` - Mendaftarkan protokol saat instalasi
-- `wails.unassociateCustomProtocols` - Menghapus protokol saat uninstall
+Templat NSIS menyertakan makro bawaan:
+- `wails.associateCustomProtocols` - Mendaftarkan protokol selama instalasi
+- `wails.unassociateCustomProtocols` - Menghapus protokol selama penghapusan instalasi
 
-Macro ini secara otomatis dipanggil berdasarkan konfigurasi `Protocols` Anda.
+Makro ini dipanggil secara otomatis berdasarkan konfigurasi `Protocols` Anda.
 
-#### Registry Manual (Lanjutan)
+#### Registri Manual (Lanjutan)
 
-Jika Anda memerlukan registrasi manual (di luar NSIS):
+Jika Anda memerlukan pendaftaran manual (di luar NSIS):
 
 ```batch
 @echo off
@@ -153,25 +153,25 @@ REG ADD "HKEY_CURRENT_USER\SOFTWARE\Classes\myapp\shell\open\command" /ve /d "\"
 
 #### Pengujian
 
-Uji registrasi protokol Anda:
+Uji pendaftaran protokol Anda:
 
 ```powershell
-# Buka URL protokol dari PowerShell
+# Open protocol URL from PowerShell
 Start-Process "myapp://test/action"
 
-# Atau dari command prompt
+# Or from command prompt
 start myapp://test/action
 ```
 
 ### Paket MSIX Windows
 
-Protokol kustom juga secara otomatis didaftarkan saat menggunakan packaging MSIX.
+Protokol kustom juga didaftarkan secara otomatis saat menggunakan paket MSIX.
 
-#### Registrasi Otomatis
+#### Pendaftaran Otomatis
 
-Saat Anda membangun aplikasi dengan MSIX, manifest secara otomatis menyertakan registrasi protokol dari konfigurasi protokol `build/config.yml` Anda.
+Saat Anda membangun aplikasi dengan MSIX, manifes secara otomatis menyertakan pendaftaran protokol dari konfigurasi protokol `build/config.yml` Anda.
 
-Manifest yang di-generate menyertakan:
+Manifes yang dihasilkan mencakup:
 
 ```xml
 <uap:Extension Category="windows.protocol">
@@ -181,19 +181,19 @@ Manifest yang di-generate menyertakan:
 </uap:Extension>
 ```
 
-#### Universal Links (Web-to-App Linking)
+#### Universal Links (Penautan Web ke Aplikasi)
 
-Windows mendukung *Web-to-App linking*, yang bekerja serupa dengan Universal Links di macOS. Saat mendeploy aplikasi Anda sebagai paket MSIX, Anda dapat mengaktifkan tautan HTTPS untuk meluncurkan aplikasi Anda secara langsung.
+Windows mendukung *penautan Web ke Aplikasi*, yang bekerja serupa dengan Universal Links di macOS. Saat menerapkan aplikasi sebagai paket MSIX, Anda dapat mengaktifkan tautan HTTPS untuk meluncurkan aplikasi secara langsung.
 
 @note type="note"
 
-Web-to-App linking memerlukan konfigurasi manifest manual. Skema protokol kustom dikonfigurasi secara otomatis dari `build/config.yml`, tetapi domain terasosiasi harus ditambahkan secara manual ke manifest MSIX Anda.
+Penautan Web ke Aplikasi memerlukan konfigurasi manifes secara manual. Skema protokol kustom dikonfigurasi secara otomatis dari `build/config.yml`, tetapi domain terkait harus ditambahkan secara manual ke manifes MSIX Anda.
 
 @end
 
-Untuk mengaktifkan Web-to-App linking, ikuti [panduan Microsoft tentang web-to-app linking](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). Anda perlu:
+Untuk mengaktifkan penautan Web ke Aplikasi, ikuti [panduan Microsoft tentang penautan web ke aplikasi](https://learn.microsoft.com/en-us/windows/apps/develop/launch/web-to-app-linking). Anda perlu:
 
-1. *Tambahkan App URI Handler secara manual ke manifest MSIX Anda* (`build/windows/msix/app_manifest.xml`):
+1. *Menambahkan App URI Handler secara manual ke manifes MSIX Anda* (`build/windows/msix/app_manifest.xml`):
   ```xml
   <uap3:Extension Category="windows.appUriHandler">
     <uap3:AppUriHandler>
@@ -202,9 +202,9 @@ Untuk mengaktifkan Web-to-App linking, ikuti [panduan Microsoft tentang web-to-a
   </uap3:Extension>
   ```
 
-2. *Konfigurasi `windows-app-web-link` di website Anda:* Host file `windows-app-web-link` di `https://myawesomeapp.com/.well-known/windows-app-web-link`. File ini harus berisi informasi paket aplikasi Anda dan path yang ditangani.
+2. *Konfigurasikan `windows-app-web-link` di situs web Anda:* Sediakan berkas `windows-app-web-link` di `https://myawesomeapp.com/.well-known/windows-app-web-link`. Berkas ini sebaiknya berisi informasi paket aplikasi Anda dan jalur yang ditanganinya.
 
-Saat tautan Web-to-App meluncurkan aplikasi Anda, Anda akan menerima event `ApplicationLaunchedWithUrl` yang sama seperti dengan skema protokol kustom.
+Saat tautan Web ke Aplikasi meluncurkan aplikasi Anda, Anda akan menerima peristiwa `ApplicationLaunchedWithUrl` yang sama seperti pada skema protokol kustom.
 
 
 
@@ -214,13 +214,13 @@ Saat tautan Web-to-App meluncurkan aplikasi Anda, Anda akan menerima event `Appl
 
 ### Konfigurasi Info.plist
 
-Di macOS, protokol didaftarkan melalui file `Info.plist` Anda.
+Di macOS, protokol didaftarkan melalui berkas `Info.plist` Anda.
 
 #### Konfigurasi Otomatis
 
-Wails secara otomatis menghasilkan `Info.plist` dengan protokol Anda saat Anda build dengan `wails3 build`.
+Wails secara otomatis menghasilkan `Info.plist` yang berisi protokol Anda saat Anda membangun dengan `wails3 build`.
 
-Protokol yang dideklarasikan di `build/config.yml` ditambahkan ke:
+Protokol yang dideklarasikan dalam `build/config.yml` ditambahkan ke:
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -241,26 +241,26 @@ Protokol yang dideklarasikan di `build/config.yml` ditambahkan ke:
 #### Pengujian
 
 ```bash
-# Buka URL protokol dari terminal
+# Open protocol URL from terminal
 open "myapp://test/action"
 
-# Periksa handler yang terdaftar
+# Check registered handlers
 /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -dump | grep myapp
 ```
 
 #### Universal Links
 
-Selain skema protokol kustom, macOS juga mendukung *Universal Links*, yang memungkinkan aplikasi Anda diluncurkan oleh tautan HTTPS biasa (mis. `https://myawesomeapp.com/path`). Universal Links memberikan pengalaman pengguna yang mulus antara aplikasi web dan desktop Anda.
+Selain skema protokol khusus, macOS juga mendukung *Universal Links*, yang memungkinkan aplikasi Anda diluncurkan melalui tautan HTTPS biasa (misalnya, `https://myawesomeapp.com/path`). Universal Links menghadirkan pengalaman pengguna yang mulus antara aplikasi web dan aplikasi desktop Anda.
 
 @note type="caution"
 
-Universal Links memerlukan aplikasi macOS Anda *di-code-sign* dengan sertifikat Apple Developer yang valid dan provisioning profile. Build yang tidak ditandatangani atau ditandatangani ad-hoc tidak akan dapat membuka Universal Links. Pastikan aplikasi Anda ditandatangani dengan benar sebelum pengujian.
+Universal Links mengharuskan aplikasi macOS Anda *ditandatangani secara digital* dengan sertifikat Apple Developer dan profil penyediaan yang valid. Build yang tidak ditandatangani atau ditandatangani secara ad hoc tidak akan dapat membuka Universal Links. Pastikan aplikasi Anda ditandatangani dengan benar sebelum melakukan pengujian.
 
 @end
 
-Untuk mengaktifkan Universal Links, ikuti [panduan Apple tentang mendukung Universal Links di aplikasi Anda](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Anda perlu:
+Untuk mengaktifkan Universal Links, ikuti [panduan Apple tentang dukungan Universal Links di aplikasi Anda](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app). Anda perlu:
 
-1. *Tambahkan entitlements* di `entitlements.plist` Anda:
+1. *Tambahkan entitlement* dalam `entitlements.plist` Anda:
   ```xml
   <key>com.apple.developer.associated-domains</key>
   <array>
@@ -276,9 +276,9 @@ Untuk mengaktifkan Universal Links, ikuti [panduan Apple tentang mendukung Unive
   </array>
   ```
 
-3. *Konfigurasi `apple-app-site-association` di website Anda:* Host file `apple-app-site-association` di `https://myawesomeapp.com/.well-known/apple-app-site-association`.
+3. *Konfigurasikan `apple-app-site-association` di situs web Anda:* Sediakan file `apple-app-site-association` di `https://myawesomeapp.com/.well-known/apple-app-site-association`.
 
-Saat Universal Link memicu aplikasi Anda, Anda akan menerima event `ApplicationLaunchedWithUrl` yang sama, sehingga kode penanganannya identik dengan skema protokol kustom.
+Saat Universal Link memicu aplikasi Anda, Anda akan menerima peristiwa `ApplicationLaunchedWithUrl` yang sama, sehingga kode penanganannya identik dengan skema protokol khusus.
 
 
 
@@ -286,17 +286,17 @@ Saat Universal Link memicu aplikasi Anda, Anda akan menerima event `ApplicationL
 @end
 @tab label="Linux"
 
-### Desktop Entry
+### Entri Desktop
 
 Di Linux, protokol didaftarkan melalui file `.desktop`.
 
 #### Konfigurasi Otomatis
 
-Wails menghasilkan file desktop entry dengan protocol handler saat Anda build dengan `wails3 build`.
+Wails menghasilkan file entri desktop yang berisi penangan protokol saat Anda membangun dengan `wails3 build`.
 
-*Diperbaiki di v3*: Template desktop Linux sekarang secara benar menyertakan penanganan protokol.
+*Diperbaiki di v3*: Templat desktop Linux kini menyertakan penanganan protokol dengan benar.
 
-File desktop yang di-generate menyertakan:
+File desktop yang dihasilkan mencakup:
 
 ```ini
 [Desktop Entry]
@@ -306,28 +306,28 @@ Exec=/usr/bin/myapp %u
 MimeType=x-scheme-handler/myapp;
 ```
 
-#### Registrasi Manual
+#### Pendaftaran Manual
 
 Jika diperlukan, instal file desktop secara manual:
 
 ```bash
-# Salin file desktop
+# Copy desktop file
 cp myapp.desktop ~/.local/share/applications/
 
-# Perbarui database desktop
+# Update desktop database
 update-desktop-database ~/.local/share/applications/
 
-# Daftarkan protocol handler
+# Register protocol handler
 xdg-mime default myapp.desktop x-scheme-handler/myapp
 ```
 
 #### Pengujian
 
 ```bash
-# Buka URL protokol
+# Open protocol URL
 xdg-open "myapp://test/action"
 
-# Periksa handler yang terdaftar
+# Check registered handler
 xdg-mime query default x-scheme-handler/myapp
 ```
 
@@ -338,7 +338,7 @@ xdg-mime query default x-scheme-handler/myapp
 
 ## Contoh Lengkap
 
-Berikut contoh lengkap yang menangani beberapa aksi protokol:
+Berikut contoh lengkap untuk menangani beberapa tindakan protokol:
 
 ```go
 package main
@@ -358,8 +358,8 @@ type App struct {
 }
 
 func main() {
-    // Registrasi protokol ada di build/config.yml (platform packager
-    // mengonsumsinya); kode aplikasi hanya mendengarkan event peluncuran.
+    // Protocol registration lives in build/config.yml (the platform packagers
+    // consume it); the application code just listens for the launch event.
     app := application.New(application.Options{
         Name:        "DeepLink Demo",
         Description: "Custom protocol demonstration",
@@ -372,7 +372,7 @@ func main() {
 }
 
 func (a *App) setup() {
-    // Buat window
+    // Create window
     a.window = a.app.Window.NewWithOptions(application.WebviewWindowOptions{
         Title:  "DeepLink Demo",
         Width:  800,
@@ -380,7 +380,7 @@ func (a *App) setup() {
         URL:    "http://wails.localhost/",
     })
 
-    // Tangani URL protokol kustom
+    // Handle custom protocol URLs
     a.app.Event.OnApplicationEvent(events.Common.ApplicationLaunchedWithUrl, func(e *application.ApplicationEvent) {
         a.handleDeepLink(e.Context().URL())
     })
@@ -394,15 +394,15 @@ func (a *App) handleDeepLink(rawURL string) {
         return
     }
 
-    // Bawa window ke depan
+    // Bring window to front
     a.window.Show()
     a.window.Focus()
 
-    // Ekstrak path dan query
+    // Extract path and query
     path := strings.Trim(parsedURL.Path, "/")
     query := parsedURL.Query()
 
-    // Tangani aksi berbeda
+    // Handle different actions
     parts := strings.Split(path, "/")
     if len(parts) == 0 {
         return
@@ -438,7 +438,7 @@ func (a *App) handleDeepLink(rawURL string) {
 
 func (a *App) openResource(resourceType, id string) {
     fmt.Printf("Opening %s with ID: %s\n", resourceType, id)
-    // Emit event ke frontend
+    // Emit event to frontend
     a.app.Event.Emit("navigate", map[string]string{
         "type": resourceType,
         "id":   id,
@@ -464,23 +464,23 @@ func (a *App) openUserProfile(username string) {
 
 ## Integrasi Frontend
 
-Tangani event navigasi di frontend Anda:
+Tangani peristiwa navigasi di frontend Anda:
 
 ```javascript
 import { Events } from '@wailsio/runtime'
 
-// Dengarkan event navigasi dari protocol handler
+// Listen for navigation events from protocol handler
 Events.On('navigate', (event) => {
     const { type, id, page, section, user } = event.data
 
     if (type === 'document') {
-        // Buka dokumen dengan ID
+        // Open document with ID
         router.push(`/document/${id}`)
     } else if (page === 'settings') {
-        // Buka pengaturan
+        // Open settings
         router.push(`/settings/${section}`)
     } else if (page === 'user') {
-        // Buka profil pengguna
+        // Open user profile
         router.push(`/user/${user}`)
     }
 })
@@ -501,28 +501,28 @@ func (a *App) handleDeepLink(rawURL string) {
         return
     }
 
-    // Validasi skema
+    // Validate scheme
     if parsedURL.Scheme != "myapp" {
         a.app.Logger.Warn("Invalid scheme:", parsedURL.Scheme)
         return
     }
 
-    // Validasi path
+    // Validate path
     path := strings.Trim(parsedURL.Path, "/")
     if !isValidPath(path) {
         a.app.Logger.Warn("Invalid path:", path)
         return
     }
 
-    // Sanitasi parameter
+    // Sanitize parameters
     params := sanitizeQueryParams(parsedURL.Query())
 
-    // Proses URL yang sudah divalidasi
+    // Process validated URL
     a.processDeepLink(path, params)
 }
 
 func isValidPath(path string) bool {
-    // Hanya izinkan alfanumerik dan forward slash
+    // Only allow alphanumeric and forward slashes
     validPath := regexp.MustCompile(`^[a-zA-Z0-9/]+$`)
     return validPath.MatchString(path)
 }
@@ -531,7 +531,7 @@ func sanitizeQueryParams(query url.Values) map[string]string {
     sanitized := make(map[string]string)
     for key, values := range query {
         if len(values) > 0 {
-            // Ambil nilai pertama dan sanitasi
+            // Take first value and sanitize
             sanitized[key] = sanitizeString(values[0])
         }
     }
@@ -544,17 +544,17 @@ func sanitizeQueryParams(query url.Values) map[string]string {
 Jangan pernah mengeksekusi URL secara langsung sebagai kode atau SQL:
 
 ```go
-// ❌ JANGAN: Eksekusi konten URL
+// ❌ DON'T: Execute URL content
 func badHandler(url string) {
-    exec.Command("sh", "-c", url).Run() // BERBAHAYA!
+    exec.Command("sh", "-c", url).Run() // DANGEROUS!
 }
 
-// ✅ LAKUKAN: Parse dan validasi
+// ✅ DO: Parse and validate
 func goodHandler(url string) {
     parsed, _ := url.Parse(url)
     action := parsed.Query().Get("action")
 
-    // Whitelist aksi yang diizinkan
+    // Whitelist allowed actions
     allowed := map[string]bool{
         "open":     true,
         "settings": true,
@@ -571,7 +571,7 @@ func goodHandler(url string) {
 
 ### Pengujian Manual
 
-Uji protocol handler selama pengembangan:
+Uji penangan protokol selama pengembangan:
 
 *Windows:*
 ```powershell
@@ -590,7 +590,7 @@ xdg-open "myapp://test/action?id=123"
 
 ### Pengujian HTML
 
-Buat halaman HTML untuk pengujian:
+Buat halaman HTML pengujian:
 
 ```html
 <!DOCTYPE html>
@@ -615,21 +615,21 @@ Buat halaman HTML untuk pengujian:
 ### Protokol Tidak Terdaftar
 
 *Windows:*
-- Periksa registry: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
-- Instal ulang dengan installer NSIS
-- Verifikasi installer dijalankan dengan izin yang benar
+- Periksa registri: `HKEY_CURRENT_USER\SOFTWARE\Classes\<scheme>`
+- Instal ulang menggunakan penginstal NSIS
+- Pastikan penginstal dijalankan dengan izin yang sesuai
 
 *macOS:*
-- Build ulang aplikasi dengan `wails3 build`
-- Periksa `Info.plist` di app bundle: `MyApp.app/Contents/Info.plist`
-- Reset Launch Services: `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill`
+- Bangun ulang aplikasi dengan `wails3 build`
+- Periksa `Info.plist` dalam bundel aplikasi: `MyApp.app/Contents/Info.plist`
+- Atur ulang Launch Services: `/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill`
 
 *Linux:*
 - Periksa file desktop: `~/.local/share/applications/myapp.desktop`
-- Perbarui database: `update-desktop-database ~/.local/share/applications/`
-- Verifikasi handler: `xdg-mime query default x-scheme-handler/myapp`
+- Perbarui basis data: `update-desktop-database ~/.local/share/applications/`
+- Verifikasi penangan: `xdg-mime query default x-scheme-handler/myapp`
 
-### Aplikasi Tidak Meluncur
+### Aplikasi Tidak Dapat Diluncurkan
 
 *Periksa log:*
 ```go
@@ -640,34 +640,34 @@ app := application.New(application.Options{
 ```
 
 *Masalah umum:*
-- Aplikasi tidak terinstal di lokasi yang diharapkan
-- Path executable di registrasi tidak cocok dengan lokasi aktual
+- Aplikasi tidak terinstal di lokasi yang semestinya
+- Jalur berkas yang dapat dieksekusi dalam pendaftaran tidak sesuai dengan lokasi sebenarnya
 - Masalah izin
 
 ## Praktik Terbaik
 
 ### ✅ Lakukan
 
-- *Gunakan nama skema yang deskriptif* - `mycompany-myapp` alih-alih `mca`
-- *Validasi semua input* - Jangan pernah percaya URL dari sumber eksternal
-- *Tangani error dengan baik* - Log URL yang tidak valid, jangan crash
-- *Berikan umpan balik ke pengguna* - Tampilkan aksi apa yang dipicu
-- *Uji di semua platform* - Penanganan protokol bervariasi
+- *Gunakan nama skema yang deskriptif* — gunakan `mycompany-myapp`, bukan `mca`
+- *Validasi semua input* — Jangan pernah memercayai URL dari sumber eksternal
+- *Tangani kesalahan dengan baik* — Catat URL yang tidak valid ke log; jangan biarkan aplikasi mengalami crash
+- *Berikan umpan balik kepada pengguna* - Tampilkan tindakan yang dipicu
+- *Uji di semua platform* - Penanganan protokol berbeda-beda
 - *Dokumentasikan struktur URL Anda* - Bantu pengguna dan integrator
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan gunakan nama skema umum* - Hindari `http`, `file`, `app`, dll.
-- *Jangan eksekusi URL sebagai kode* - Risiko keamanan besar
-- *Jangan ekspos operasi sensitif* - Wajibkan konfirmasi untuk aksi destruktif
-- *Jangan asumsikan protokol bekerja di mana-mana* - Siapkan mekanisme fallback
-- *Jangan lupa URL encoding* - Tangani karakter khusus dengan benar
+- *Jangan gunakan nama skema yang umum* - Hindari `http`, `file`, `app`, dan sebagainya.
+- *Jangan jalankan URL sebagai kode* - Risikonya terhadap keamanan sangat besar
+- *Jangan ekspos operasi sensitif* - Wajibkan konfirmasi untuk tindakan destruktif
+- *Jangan berasumsi bahwa protokol berfungsi di semua lingkungan* - Sediakan mekanisme cadangan
+- *Jangan lupa melakukan pengodean URL* - Tangani karakter khusus dengan benar
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Windows Packaging](/id/guides/build/windows/) - Pelajari opsi installer NSIS
-- [Asosiasi File](/id/guides/file-associations/) - Buka file dengan aplikasi Anda
-- [Single Instance](/id/guides/single-instance/) - Cegah beberapa instance aplikasi
+- [Pemaketan Windows](/guides/build/windows/) - Pelajari opsi penginstal NSIS
+- [Asosiasi File](/guides/file-associations/) - Buka file dengan aplikasi Anda
+- [Instans Tunggal](/guides/single-instance/) - Cegah beberapa instans aplikasi berjalan sekaligus
 
 ---
 

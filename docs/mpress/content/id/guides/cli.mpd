@@ -1,99 +1,97 @@
 ---
 schema = 1
 title = "Referensi CLI"
-description = "Referensi lengkap perintah CLI Wails"
+description = "Referensi lengkap untuk perintah CLI Wails"
 slug = "guides/cli"
-sourcePath = "id/guides/cli.mpd"
+sourcePath = "guides/cli.mpd"
 ---
 
-CLI Wails menyediakan set perintah komprehensif untuk membantu Anda develop, build, dan maintain aplikasi Wails.
+CLI Wails menyediakan serangkaian perintah lengkap untuk membantu Anda mengembangkan, membangun, dan memelihara aplikasi Wails.
 
-## Perintah Inti
+## Perintah Utama
 
-Perintah inti adalah perintah utama untuk pembuatan proyek, development, dan build.
+Perintah utama adalah perintah yang digunakan untuk membuat, mengembangkan, dan membangun proyek.
 
-All CLI commands are of the following format: `wails3 <command>`.
+Semua perintah CLI menggunakan format berikut: `wails3 <command>`.
 
 ### `init`
-Inisialisasi proyek Wails baru. During this initialization, the `go mod tidy` command is run to bring the project packages up to date. This can be bypassed by using the `-skipgomodtidy` flag with the `init` command.
+Menginisialisasi proyek Wails baru. Selama inisialisasi ini, perintah `go mod tidy` dijalankan untuk memperbarui paket proyek. Langkah ini dapat dilewati dengan menggunakan flag `-skipgomodtidy` pada perintah `init`.
 
 ```bash
 wails3 init [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag                  | Description          | Default                  |
-| `-p`                  | Go package name      | `main`                   |
-| `-t`                  | Template name or URL | `vanilla`                |
-| `-n`                  | Project name         |                          |
-| `-d`                  | Project directory    | `.`                      |
-| `-q`                  | Suppress output      | `false`                  |
-| `-l`                  | List templates       | `false`                  |
-| `-mod`                | Go module path (computed from `-git` if omitted) | |
-| `-git`                | Git repository URL   |                          |
-| `-s`                  | Skip the warning when using a remote template    | `false` |
-| `-productname`        | Product name         | `My Product`             |
-| `-productdescription` | Product description  | `My Product Description` |
-| `-productversion`     | Product version      | `0.1.0`                  |
-| `-productcompany`     | Company name         | `My Company`             |
-| `-productcopyright`   | Copyright notice     | `© now, My Company`      |
-| `-productcomments`    | File comments        | `This is a comment`      |
-| `-productidentifier`  | Product identifier   |                          |
-| `-skipgomodtidy`      | Skip go mod tidy     | `false`                   |
+| Flag                  | Deskripsi          | Default                  |
+| `-p`                  | Nama paket Go      | `main`                   |
+| `-t`                  | Nama atau URL templat | `vanilla`                |
+| `-n`                  | Nama proyek         |                          |
+| `-d`                  | Direktori proyek    | `.`                      |
+| `-q`                  | Sembunyikan output      | `false`                  |
+| `-l`                  | Cantumkan templat       | `false`                  |
+| `-mod`                | Jalur modul Go (dihitung dari `-git` jika tidak ditentukan) | |
+| `-git`                | URL repositori Git   |                          |
+| `-s`                  | Lewati peringatan saat menggunakan templat jarak jauh    | `false` |
+| `-productname`        | Nama produk         | `My Product`             |
+| `-productdescription` | Deskripsi produk  | `My Product Description` |
+| `-productversion`     | Versi produk      | `0.1.0`                  |
+| `-productcompany`     | Nama perusahaan         | `My Company`             |
+| `-productcopyright`   | Pemberitahuan hak cipta     | `© now, My Company`      |
+| `-productcomments`    | Komentar berkas        | `This is a comment`      |
+| `-productidentifier`  | Pengidentifikasi produk   |                          |
+| `-skipgomodtidy`      | Lewati go mod tidy     | `false`                   |
 @end
 
-The `-git` flag accepts various Git URL formats:
+Flag `-git` menerima berbagai format URL Git:
 - HTTPS: `https://github.com/username/project`
-- SSH: `git@github.com:username/project` or `ssh://git@github.com/username/project`
-- Git protocol: `git://github.com/username/project`
-- Filesystem: `file:///path/to/project.git`
+- SSH: `git@github.com:username/project` atau `ssh://git@github.com/username/project`
+- Protokol Git: `git://github.com/username/project`
+- Sistem berkas: `file:///path/to/project.git`
 
-When provided, this flag will:
-1. Initialize a git repository in the project directory
-2. Set the specified URL as the remote origin
-3. Update the module name in `go.mod` to match the repository URL
-4. Add all files
+Jika diberikan, flag ini akan:
+1. Menginisialisasi repositori Git di direktori proyek
+2. Menetapkan URL yang ditentukan sebagai remote origin
+3. Memperbarui nama modul dalam `go.mod` agar sesuai dengan URL repositori
+4. Menambahkan semua berkas
 
 ### `dev`
-Jalankan aplikasi dalam mode development. This will give you a live view of your frontend code, and you can make changes and see them reflected\
-in the running application without having to rebuild the entire application. Changes to your Go code will also be detected and the application\
-will automatically rebuild and relaunch.
+Menjalankan aplikasi dalam mode pengembangan. Dengan mode ini, Anda dapat melihat kode frontend secara langsung serta membuat perubahan dan melihat hasilnya pada aplikasi yang sedang berjalan tanpa perlu membangun ulang seluruh aplikasi. Perubahan pada kode Go juga akan terdeteksi, lalu aplikasi akan otomatis dibangun ulang dan dijalankan kembali.
 
 ```bash
 wails3 dev [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag      | Description          | Default              |
-| `-config` | Config file path     | `./build/config.yml` |
-| `-port`   | Vite dev server port | `9245`               |
-| `-s`      | Enable HTTPS         | `false`              |
+| Flag      | Deskripsi          | Default              |
+| `-config` | Jalur berkas konfigurasi     | `./build/config.yml` |
+| `-port`   | Port server pengembangan Vite | `9245`               |
+| `-s`      | Aktifkan HTTPS         | `false`              |
 @end
 
 @note type="info"
-This is equivalent to running `wails3 task dev` and runs the `dev` task in the project's main Taskfile. You can customise this by editing the `Taskfile.yml` file.
+Ini setara dengan menjalankan `wails3 task dev` dan akan menjalankan task `dev` dalam Taskfile utama proyek. Anda dapat menyesuaikannya dengan mengedit berkas `Taskfile.yml`.
 @end
 ### `build`
-Build versi debug aplikasi Anda. It defaults to building for the current platform and architecture.
+Membangun versi debug aplikasi Anda. Secara default, aplikasi dibangun untuk platform dan arsitektur saat ini.
 
 ```bash
 wails3 build [flags] [CLI variables...]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag     | Description                                              | Default |
-| `-tags`  | Additional Go build tags (comma-separated)               |         |
+| Flag     | Deskripsi                                              | Default |
+| `-tags`  | Tag build Go tambahan (dipisahkan dengan koma)               |         |
 @end
 
-You can pass CLI variables to customize the build:
+Anda dapat meneruskan variabel CLI untuk menyesuaikan build:
 ```bash
 wails3 build PLATFORM=linux CONFIG=production
 ```
 
-Use the `-tags` flag to pass custom Go build tags:
+Gunakan flag `-tags` untuk meneruskan tag build Go khusus:
 ```bash
 # Build with legacy GTK3 + WebKit2GTK 4.1 on Linux (default is GTK4 + WebKitGTK 6.0)
 wails3 build -tags gtk3
@@ -105,53 +103,53 @@ wails3 build -tags server
 wails3 build -tags gtk3,customtag
 ```
 
-Tags are forwarded as `EXTRA_TAGS` to the underlying Taskfile.
+Tag diteruskan sebagai `EXTRA_TAGS` ke Taskfile yang mendasarinya.
 
 @note type="info"
-This is equivalent to running `wails3 task build` which runs the `build` task in the project's main Taskfile. Any CLI variables passed to `build` are forwarded to the underlying task. You can customise the build process by editing the `Taskfile.yml` file.
+Ini setara dengan menjalankan `wails3 task build`, yang menjalankan task `build` dalam Taskfile utama proyek. Setiap variabel CLI yang diteruskan ke `build` akan diteruskan ke task yang mendasarinya. Anda dapat menyesuaikan proses build dengan mengedit file `Taskfile.yml`.
 @end
 ### `package`
 
-Buat package spesifik platform untuk distribusi.
+Membuat paket khusus platform untuk didistribusikan.
 
 ```bash
 wails3 package [CLI variables...]
 ```
 
-You can pass CLI variables to customize the packaging:
+Anda dapat meneruskan variabel CLI untuk menyesuaikan pemaketan:
 ```bash
 wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
 ```
 
-#### Package Types
+#### Jenis Paket
 
-The following package types are available for each platform:
+Jenis paket berikut tersedia untuk setiap platform:
 
 @table header=true
-| Platform | Package Type                              |
+| Platform | Jenis Paket                              |
 | Windows  | `.exe`                                    |
 | macOS    | `.app`,                                   |
 | Linux    | `.AppImage`, `.deb`, `.rpm`, `.archlinux` |
 @end
 
 @note type="info"
-This is equivalent to `wails3 task package` which runs the `package` task in the project's main Taskfile. Any CLI variables passed to `package` are forwarded to the underlying task. You can customise the packaging process by editing the `Taskfile.yml` file.
+Ini setara dengan `wails3 task package`, yang menjalankan task `package` dalam Taskfile utama proyek. Setiap variabel CLI yang diteruskan ke `package` akan diteruskan ke task yang mendasarinya. Anda dapat menyesuaikan proses pemaketan dengan mengedit file `Taskfile.yml`.
 @end
 ### `task`
-Jalankan task yang didefinisikan di Taskfile.yml proyek Anda. This is an embedded version of [Taskfile](https://taskfile.dev) that allows you to define and run custom build, test, and deployment tasks.
+Menjalankan task yang ditentukan dalam Taskfile.yml proyek Anda. Ini adalah versi tersemat dari [Taskfile](https://taskfile.dev) yang memungkinkan Anda menentukan dan menjalankan task build, pengujian, dan deployment khusus.
 
 ```bash
 wails3 task [taskname] [CLI variables...] [flags]
 ```
 
-#### CLI Variables
-You can pass variables to tasks in the format `KEY=VALUE`:
+#### Variabel CLI
+Anda dapat meneruskan variabel ke task dalam format `KEY=VALUE`:
 ```bash
 wails3 task build PLATFORM=linux CONFIG=production
 wails3 task deploy ENV=staging VERSION=1.2.3
 ```
 
-These variables can be accessed in your Taskfile.yml using Go template syntax:
+Variabel ini dapat diakses dalam Taskfile.yml menggunakan sintaks templat Go:
 ```yaml
 tasks:
   build:
@@ -160,33 +158,33 @@ tasks:
       - echo "Config: {{.CONFIG | default "debug"}}"
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag         | Description                               | Default  |
-| `-h`         | Shows Task usage                          | `false`  |
-| `-i`         | Creates a new Taskfile.yml                | `false`  |
-| `-list`      | Lists tasks with descriptions             | `false`  |
-| `-list-all`  | Lists all tasks (with or without descriptions) | `false`  |
-| `-json`      | Formats task list as JSON                 | `false`  |
-| `-status`    | Exits with non-zero if task is not up-to-date | `false`  |
-| `-f`         | Forces execution even when task is up-to-date | `false`  |
-| `-w`         | Enables watch mode for the given task     | `false`  |
-| `-v`         | Enables verbose mode                      | `false`  |
-| `-version`   | Prints Task version                       | `false`  |
-| `-s`         | Disables echoing                          | `false`  |
-| `-p`         | Executes tasks in parallel                | `false`  |
-| `-dry`       | Compiles and prints tasks without executing | `false`  |
-| `-summary`   | Shows summary about a task                | `false`  |
-| `-x`         | Pass-through the exit code of the task    | `false`  |
-| `-dir`       | Sets directory of execution               |          |
-| `-taskfile`  | Choose which Taskfile to run              |          |
-| `-output`    | Sets output style: [interleaved\|group\|prefixed] |          |
-| `-c`         | Colored output (enabled by default)       | `true`   |
-| `-C`         | Limit number of tasks to run concurrently |          |
-| `-interval`  | Interval to watch for changes (in seconds) |          |
+| Flag         | Deskripsi                               | Default  |
+| `-h`         | Menampilkan cara penggunaan Task                          | `false`  |
+| `-i`         | Membuat Taskfile.yml baru                | `false`  |
+| `-list`      | Mencantumkan task beserta deskripsinya             | `false`  |
+| `-list-all`  | Mencantumkan semua task (dengan atau tanpa deskripsi) | `false`  |
+| `-json`      | Memformat daftar task sebagai JSON                 | `false`  |
+| `-status`    | Keluar dengan kode bukan nol jika task belum mutakhir | `false`  |
+| `-f`         | Memaksa eksekusi meskipun task sudah mutakhir | `false`  |
+| `-w`         | Mengaktifkan mode pemantauan untuk task yang diberikan     | `false`  |
+| `-v`         | Mengaktifkan mode verbose                      | `false`  |
+| `-version`   | Menampilkan versi Task                       | `false`  |
+| `-s`         | Menonaktifkan echo perintah                          | `false`  |
+| `-p`         | Menjalankan task secara paralel                | `false`  |
+| `-dry`       | Mengompilasi dan menampilkan task tanpa menjalankannya | `false`  |
+| `-summary`   | Menampilkan ringkasan tentang suatu task                | `false`  |
+| `-x`         | Meneruskan kode keluar dari task    | `false`  |
+| `-dir`       | Menetapkan direktori eksekusi               |          |
+| `-taskfile`  | Pilih Taskfile yang akan dijalankan              |          |
+| `-output`    | Mengatur gaya keluaran: [interleaved\|group\|prefixed] |          |
+| `-c`         | Keluaran berwarna (diaktifkan secara default)       | `true`   |
+| `-C`         | Membatasi jumlah tugas yang dijalankan secara bersamaan |          |
+| `-interval`  | Interval pemantauan perubahan (dalam detik) |          |
 @end
 
-#### Examples
+#### Contoh
 ```bash
 # Run the default task
 wails3 task
@@ -207,282 +205,317 @@ wails3 task -p task1 task2 task3
 wails3 task -w dev
 ```
 
+### `mcp`
+
+Memulai server MCP proyek Wails untuk pengelolaan proyek dengan bantuan agen. Server ini\
+terpisah dari server MCP yang dikompilasi ke dalam aplikasi yang sedang berjalan: `wails3 mcp`\
+mengelola berkas proyek dan perintah siklus hidup, sedangkan server MCP aplikasi\
+mengendalikan WebView yang sedang berjalan.
+
+```bash
+wails3 mcp [flags]
+```
+
+Transpor dipilih secara otomatis:
+
+- Saat host MCP menjalankan Wails dengan stdin/stdout yang disalurkan melalui pipe, server menggunakan *stdio*.
+- Saat dijalankan secara interaktif di terminal, server menggunakan *Streamable HTTP* pada `127.0.0.1` dan meminta port yang tersedia dari sistem operasi.
+
+Gunakan `--stdio` atau `--http` untuk memilih transpor secara eksplisit. Gunakan `--port 0` untuk memilih\
+port loopback yang tersedia dalam mode HTTP.
+
+#### Flag MCP
+
+@table header=true
+| Flag | Deskripsi | Default |
+| `--root` | Root proyek yang diizinkan. Path dan symlink di luarnya ditolak. | Direktori saat ini |
+| `--token` | Token sesi/bearer untuk alat yang melakukan perubahan dan mengendalikan proses. Jika tidak tersedia, menggunakan `WAILS_MCP_TOKEN`. | Dihasilkan secara aman |
+| `--stdio` | Paksa penggunaan transpor stdio. | Otomatis |
+| `--http` | Paksa penggunaan transpor Streamable HTTP. | Otomatis |
+| `--port` | Port HTTP; `0` memilih port loopback yang tersedia. | `0` |
+@end
+
+Dalam mode HTTP, Wails mencetak endpoint dan token bearer ke stderr. Dalam mode stdio,\
+token disertakan dalam instruksi inisialisasi MCP. Server tidak\
+menyediakan eksekusi shell arbitrer. Templat jarak jauh dan remote Git memerlukan\
+persetujuan eksplisit melalui masukan `allowExternal` milik alat.
+
 ### `doctor`
-Performs a system check and displays a status report.
+Melakukan pemeriksaan sistem dan menampilkan laporan status.
 
 ```bash
 wails3 doctor
 ```
 
-## Generate Commands
+## Perintah Generate
 
-Generate commands help create various project assets like bindings, icons, and build files. All generate commands use the base command: `wails3 generate <command>`.
+Perintah generate membantu membuat berbagai aset proyek seperti binding, ikon, dan berkas build. Semua perintah generate menggunakan perintah dasar: `wails3 generate <command>`.
 
 ### `generate bindings`
-Generates bindings and models for your Go code.
+Menghasilkan binding dan model untuk kode Go Anda.
 
 ```bash
 wails3 generate bindings [flags] [patterns...]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag        | Description               | Default             |
-| `-f`        | Additional Go build flags |                     |
-| `-d`        | Output directory          | `frontend/bindings` |
-| `-models`   | Models filename           | `models`            |
-| `-index`    | Index filename            | `index`             |
-| `-ts`       | Generate TypeScript       | `false`             |
-| `-i`        | Use TS interfaces         | `false`             |
-| `-b`        | Use bundled runtime       | `false`             |
-| `-names`    | Use names instead of IDs  | `false`             |
-| `-noindex`  | Skip index files          | `false`             |
-| `-noevents` | Skip generating event-related bindings | `false`  |
-| `-dry`      | Dry run                   | `false`             |
-| `-silent`   | Silent mode               | `false`             |
-| `-v`        | Debug output              | `false`             |
-| `-clean`    | Clean output directory before generating | `true` |
+| Flag        | Deskripsi               | Default             |
+| `-f`        | Flag build Go tambahan |                     |
+| `-d`        | Direktori keluaran          | `frontend/bindings` |
+| `-models`   | Nama berkas model           | `models`            |
+| `-index`    | Nama berkas indeks            | `index`             |
+| `-ts`       | Hasilkan TypeScript       | `false`             |
+| `-i`        | Gunakan antarmuka TS         | `false`             |
+| `-b`        | Gunakan runtime yang dibundel       | `false`             |
+| `-names`    | Gunakan nama sebagai pengganti ID  | `false`             |
+| `-noindex`  | Lewati berkas indeks          | `false`             |
+| `-noevents` | Lewati pembuatan binding terkait peristiwa | `false`  |
+| `-dry`      | Uji coba tanpa perubahan                   | `false`             |
+| `-silent`   | Mode senyap               | `false`             |
+| `-v`        | Keluaran debug              | `false`             |
+| `-clean`    | Bersihkan direktori keluaran sebelum membuat binding | `true` |
 @end
 
 ### `generate build-assets`
-Generates build assets for your application.
+Menghasilkan aset build untuk aplikasi Anda.
 
 ```bash
 wails3 generate build-assets [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag           | Description         | Default            |
-| `-name`        | Project name        |                    |
-| `-dir`         | Output directory    | `build`            |
-| `-silent`      | Suppress output     | `false`            |
-| `-company`     | Company name        |                    |
-| `-productname` | Product name        |                    |
-| `-description` | Product description |                    |
-| `-version`     | Product version     |                    |
-| `-identifier`  | Product identifier  | `com.wails.[name]` |
-| `-copyright`   | Copyright notice    |                    |
-| `-comments`    | File comments       |                    |
+| Flag           | Deskripsi         | Bawaan            |
+| `-name`        | Nama proyek        |                    |
+| `-dir`         | Direktori keluaran    | `build`            |
+| `-silent`      | Sembunyikan keluaran     | `false`            |
+| `-company`     | Nama perusahaan        |                    |
+| `-productname` | Nama produk        |                    |
+| `-description` | Deskripsi produk |                    |
+| `-version`     | Versi produk     |                    |
+| `-identifier`  | Pengidentifikasi produk  | `com.wails.[name]` |
+| `-copyright`   | Pemberitahuan hak cipta    |                    |
+| `-comments`    | Komentar berkas       |                    |
 @end
 
 ### `generate icons`
-Generates application icons.
+Menghasilkan ikon aplikasi.
 
 ```bash
 wails3 generate icons [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag                   | Description                                          | Default               |
-| `-input`               | Input PNG file                                       | Required              |
-| `-windowsfilename`     | Windows output filename                              |                       |
-| `-macfilename`         | macOS output filename                                |                       |
-| `-sizes`               | Icon sizes (comma-separated)                         | `256,128,64,48,32,16` |
-| `-example`             | Generate example icon                                | `false`               |
-| `-iconcomposerinput`   | Input Icon Composer file (`.icon`)                   |                       |
-| `-macassetdir`         | Output directory for Mac assets (Assets.car + icns)  |                       |
+| Flag                   | Deskripsi                                          | Bawaan               |
+| `-input`               | Berkas PNG masukan                                       | Wajib              |
+| `-windowsfilename`     | Nama berkas keluaran Windows                              |                       |
+| `-macfilename`         | Nama berkas keluaran macOS                                |                       |
+| `-sizes`               | Ukuran ikon (dipisahkan dengan koma)                         | `256,128,64,48,32,16` |
+| `-example`             | Buat ikon contoh                                | `false`               |
+| `-iconcomposerinput`   | Berkas Icon Composer masukan (`.icon`)                   |                       |
+| `-macassetdir`         | Direktori keluaran untuk aset Mac (Assets.car + icns)  |                       |
 @end
 
 #### Icon Composer (macOS)
 
-On macOS 26+, you can use Icon Composer `.icon` files to generate `Assets.car` and `icons.icns`:
+Di macOS 26+, Anda dapat menggunakan berkas `.icon` Icon Composer untuk menghasilkan `Assets.car` dan `icons.icns`:
 
 ```bash
 wails3 generate icons -iconcomposerinput build/appicon.icon -macassetdir build
 ```
 
-This compiles the `.icon` file using Apple's `actool` command. Requires Xcode with `actool` version 26 or later.
+Tindakan ini mengompilasi berkas `.icon` menggunakan perintah `actool` dari Apple. Memerlukan Xcode dengan `actool` versi 26 atau yang lebih baru.
 
-When using Icon Composer, set `cfBundleIconName` in your `build/config.yml` to match the `.icon` filename (without extension):
+Saat menggunakan Icon Composer, atur `cfBundleIconName` di `build/config.yml` agar sesuai dengan nama berkas `.icon` (tanpa ekstensi):
 
 ```yaml
 info:
   cfBundleIconName: "appicon"
 ```
 
-If not set and `Assets.car` exists, this defaults to `"appicon"`.
+Jika tidak diatur dan `Assets.car` tersedia, nilai bawaannya adalah `"appicon"`.
 
 ### `generate syso`
-Generates Windows .syso file.
+Menghasilkan file .syso Windows.
 
 ```bash
 wails3 generate syso [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag        | Description               | Default                    |
-| `-manifest` | Path to manifest file     | Required                   |
-| `-icon`     | Path to icon file         | Required                   |
-| `-info`     | Path to version info file |                            |
-| `-arch`     | Target architecture       | Current GOARCH             |
-| `-out`      | Output filename           | `rsrc_windows_[arch].syso` |
+| Flag        | Deskripsi               | Bawaan                    |
+| `-manifest` | Path ke file manifes     | Wajib                   |
+| `-icon`     | Path ke file ikon         | Wajib                   |
+| `-info`     | Path ke file informasi versi |                            |
+| `-arch`     | Arsitektur target       | GOARCH saat ini             |
+| `-out`      | Nama file keluaran           | `rsrc_windows_[arch].syso` |
 @end
 
 ### `generate .desktop`
-Generates a Linux .desktop file.
+Menghasilkan file .desktop Linux.
 
 ```bash
 wails3 generate .desktop [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag             | Description               | Default          |
-| `-name`          | Application name          | Required         |
-| `-exec`          | Executable path           | Required         |
-| `-icon`          | Icon path                 |                  |
-| `-categories`    | Application categories    | `Utility`        |
-| `-comment`       | Application comment       |                  |
-| `-terminal`      | Run in terminal           | `false`          |
-| `-keywords`      | Search keywords           |                  |
-| `-version`       | Application version       |                  |
-| `-genericname`   | Generic name              |                  |
-| `-startupnotify` | Show startup notification | `false`          |
-| `-mimetype`      | Supported MIME types      |                  |
-| `-output`        | Output filename           | `[name].desktop` |
+| Flag             | Deskripsi               | Bawaan          |
+| `-name`          | Nama aplikasi          | Wajib         |
+| `-exec`          | Path ke berkas yang dapat dieksekusi           | Wajib         |
+| `-icon`          | Path ikon                 |                  |
+| `-categories`    | Kategori aplikasi    | `Utility`        |
+| `-comment`       | Komentar aplikasi       |                  |
+| `-terminal`      | Jalankan di terminal           | `false`          |
+| `-keywords`      | Kata kunci pencarian           |                  |
+| `-version`       | Versi aplikasi       |                  |
+| `-genericname`   | Nama generik              |                  |
+| `-startupnotify` | Tampilkan notifikasi saat dimulai | `false`          |
+| `-mimetype`      | Jenis MIME yang didukung      |                  |
+| `-output`        | Nama file keluaran           | `[name].desktop` |
 @end
 
 ### `generate runtime`
-Generates the pre-built version of the runtime.
+Menghasilkan versi runtime yang telah dibuat sebelumnya.
 
 ```bash
 wails3 generate runtime
 ```
 
 ### `generate constants`
-Generates JavaScript constants from Go code.
+Menghasilkan konstanta JavaScript dari kode Go.
 
 ```bash
 wails3 generate constants
 ```
 
 ### `generate webview2bootstrapper`
-Generates a Windows WebView2 bootstrap installer for distribution.
+Menghasilkan penginstal bootstrap WebView2 Windows untuk didistribusikan.
 
 ```bash
 wails3 generate webview2bootstrapper [flags]
 ```
 
 ### `generate template`
-Scaffolds a new project template directory.
+Membuat kerangka direktori templat proyek baru.
 
 ```bash
 wails3 generate template [flags]
 ```
 
 ### `generate appimage`
-Generates a Linux AppImage.
+Menghasilkan AppImage Linux.
 
 ```bash
 wails3 generate appimage [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag        | Description           | Default        |
-| `-binary`   | Path to binary        | Required       |
-| `-icon`     | Path to icon file     | Required       |
-| `-desktop`  | Path to .desktop file | Required       |
-| `-builddir` | Build directory       | Temp directory |
-| `-output`   | Output directory      | `.`            |
+| Flag        | Deskripsi           | Bawaan        |
+| `-binary`   | Path ke file biner        | Wajib       |
+| `-icon`     | Path ke file ikon     | Wajib       |
+| `-desktop`  | Path ke file .desktop | Wajib       |
+| `-builddir` | Direktori build       | Direktori sementara |
+| `-output`   | Direktori keluaran      | `.`            |
 @end
 
-## Service Commands
+## Perintah Layanan
 
-Service commands help manage Wails services. All service commands use the base command: `wails3 service <command>`.
+Perintah layanan membantu mengelola layanan Wails. Semua perintah layanan menggunakan perintah dasar: `wails3 service <command>`.
 
 ### `service init`
-Initializes a new service.
+Menginisialisasi layanan baru.
 
 ```bash
 wails3 service init [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag | Description         | Default           |
-| `-n` | Service name        | `example_service` |
-| `-d` | Service description | `Example service` |
-| `-p` | Package name        |                   |
-| `-o` | Output directory    | `.`               |
-| `-q` | Suppress output     | `false`           |
-| `-a` | Author name         |                   |
-| `-v` | Version             |                   |
-| `-w` | Website URL         |                   |
-| `-r` | Repository URL      |                   |
-| `-l` | License             |                   |
+| Flag | Deskripsi         | Nilai bawaan           |
+| `-n` | Nama layanan        | `example_service` |
+| `-d` | Deskripsi layanan | `Example service` |
+| `-p` | Nama paket        |                   |
+| `-o` | Direktori keluaran    | `.`               |
+| `-q` | Jangan tampilkan keluaran     | `false`           |
+| `-a` | Nama penulis         |                   |
+| `-v` | Versi             |                   |
+| `-w` | URL situs web         |                   |
+| `-r` | URL repositori      |                   |
+| `-l` | Lisensi             |                   |
 @end
 
-## Tool Commands
+## Perintah Alat
 
-Tool commands provide utilities for development and debugging. All tool commands use the base command: `wails3 tool <command>`.
+Perintah alat menyediakan utilitas untuk pengembangan dan penelusuran kesalahan. Semua perintah alat menggunakan perintah dasar: `wails3 tool <command>`.
 
 ### `tool checkport`
-Checks if a port is open. Useful for testing if vite is running.
+Memeriksa apakah suatu port terbuka. Berguna untuk menguji apakah vite sedang berjalan.
 
 ```bash
 wails3 tool checkport [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag    | Description   | Default     |
-| `-port` | Port to check | `9245`      |
-| `-host` | Host to check | `localhost` |
+| Flag    | Deskripsi   | Nilai bawaan     |
+| `-port` | Port yang akan diperiksa | `9245`      |
+| `-host` | Host yang akan diperiksa | `localhost` |
 @end
 
 ### `tool watcher`
-Watches files and runs a command when they change.
+Memantau file dan menjalankan perintah ketika file berubah.
 
 ```bash
 wails3 tool watcher [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag       | Description         | Default              |
-| `-config`  | Config file path    | `./build/config.yml` |
-| `-ignore`  | Patterns to ignore  |                      |
-| `-include` | Patterns to include |                      |
+| Flag       | Deskripsi         | Nilai bawaan              |
+| `-config`  | Path file konfigurasi    | `./build/config.yml` |
+| `-ignore`  | Pola yang akan diabaikan  |                      |
+| `-include` | Pola yang akan disertakan |                      |
 @end
 
 ### `tool cp`
-Copies files.
+Menyalin file.
 
 ```bash
 wails3 tool cp
 ```
 
 ### `tool buildinfo`
-Shows build information about the application.
+Menampilkan informasi build aplikasi.
 
 ```bash
 wails3 tool buildinfo
 ```
 
 ### `tool version`
-Bumps a semantic version based on the provided flags.
+Menaikkan versi semantik berdasarkan flag yang diberikan.
 
 ```bash
 wails3 tool version [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag          | Description                                      | Default |
-| `-v`          | Current version to bump                          |         |
-| `-major`      | Bump major version                               | `false` |
-| `-minor`      | Bump minor version                               | `false` |
-| `-patch`      | Bump patch version                               | `false` |
-| `-prerelease` | Bump prerelease version (e.g., alpha.5 to alpha.6) | `false` |
+| Flag          | Deskripsi                                      | Nilai bawaan |
+| `-v`          | Versi saat ini yang akan dinaikkan                          |         |
+| `-major`      | Naikkan versi mayor                               | `false` |
+| `-minor`      | Naikkan versi minor                               | `false` |
+| `-patch`      | Naikkan versi patch                               | `false` |
+| `-prerelease` | Naikkan versi prarilis (misalnya, dari alpha.5 menjadi alpha.6) | `false` |
 @end
 
-The command follows the precedence order: major > minor > patch > prerelease. It preserves the "v" prefix if present in the input version, as well as any prerelease and metadata components.
+Perintah ini mengikuti urutan prioritas: mayor > minor > patch > prarilis. Perintah ini mempertahankan awalan "v" jika ada dalam versi masukan, serta semua komponen prarilis dan metadata.
 
-Example usage:
+Contoh penggunaan:
 ```bash
 wails3 tool version -v 1.2.3 -major      # Output: 2.0.0
 wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0
@@ -491,58 +524,58 @@ wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6
 ```
 
 ### `tool package`
-Generates Linux packages (deb, rpm, archlinux).
+Menghasilkan paket Linux (deb, rpm, archlinux).
 
 ```bash
 wails3 tool package [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag      | Description                          | Default |
-| `-format` | Package format (deb, rpm, archlinux) | `deb`   |
-| `-name`   | Executable name                      | `myapp` |
-| `-config` | Config file path                     |         |
-| `-out`    | Output directory                     | `.`     |
+| Flag      | Deskripsi                          | Default |
+| `-format` | Format paket (deb, rpm, archlinux) | `deb`   |
+| `-name`   | Nama berkas yang dapat dieksekusi                      | `myapp` |
+| `-config` | Lokasi berkas konfigurasi                     |         |
+| `-out`    | Direktori keluaran                     | `.`     |
 @end
 
 ### `tool lipo`
-Creates a macOS universal binary by combining architecture-specific binaries.
+Membuat biner universal macOS dengan menggabungkan biner khusus arsitektur.
 
 ```bash
 wails3 tool lipo [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag      | Description                         | Default |
-| `-output` | Output binary path                  |         |
+| Flag      | Deskripsi                         | Default |
+| `-output` | Lokasi biner keluaran                  |         |
 @end
 
 ### `tool capabilities`
-Checks system build capabilities (GTK4/GTK3 availability on Linux).
+Memeriksa kapabilitas build sistem (ketersediaan GTK4/GTK3 di Linux).
 
 ```bash
 wails3 tool capabilities
 ```
 
 ### `tool docker-mounts`
-Generates Docker volume mount flags for cross-compilation. Outputs `-v` flags for the Go module cache and any local `replace` directives in `go.mod`, for use in Taskfile `docker run` commands.
+Menghasilkan flag pemasangan volume Docker untuk kompilasi silang. Menghasilkan flag `-v` untuk cache modul Go dan semua direktif `replace` lokal dalam `go.mod`, untuk digunakan dalam perintah `docker run` Taskfile.
 
 ```bash
 wails3 tool docker-mounts
 ```
 
 ### `tool has`
-Checks whether a tool or capability is available, printing `true` or `false` to stdout. Designed for use in Taskfile `sh:` variables as a cross-platform alternative to `command -v`.
+Memeriksa apakah suatu alat atau kapabilitas tersedia, lalu mencetak `true` atau `false` ke stdout. Dirancang untuk digunakan dalam variabel `sh:` Taskfile sebagai alternatif lintas platform untuk `command -v`.
 
-Use `|` to check for any one of several alternatives.
+Gunakan `|` untuk memeriksa salah satu dari beberapa alternatif.
 
 ```bash
 wails3 tool has <tool>
 ```
 
-#### Examples
+#### Contoh
 ```bash
 # Check for a C compiler (gcc or clang)
 wails3 tool has gcc|clang
@@ -552,7 +585,7 @@ wails3 tool has git
 wails3 tool has node
 ```
 
-#### Usage in a Taskfile
+#### Penggunaan dalam Taskfile
 ```yaml
 vars:
   HAS_CC:
@@ -561,99 +594,99 @@ vars:
 
 ### `tool has-cc`
 
-@note type="caution" title="Deprecated"
-`wails3 tool has-cc` is deprecated. Update your Taskfile to use `wails3 tool has gcc|clang` instead.
+@note type="caution" title="Tidak digunakan lagi"
+`wails3 tool has-cc` tidak digunakan lagi. Perbarui Taskfile Anda agar menggunakan `wails3 tool has gcc|clang` sebagai gantinya.
 @end
 
-A backward-compatible alias for `wails3 tool has gcc|clang`. Checks whether `gcc` or `clang` is available in PATH and prints `true` or `false`.
+Alias yang kompatibel dengan versi sebelumnya untuk `wails3 tool has gcc|clang`. Memeriksa apakah `gcc` atau `clang` tersedia di PATH, lalu mencetak `true` atau `false`.
 
 ```bash
 wails3 tool has-cc
 ```
 
-## Update Commands
+## Perintah Pembaruan
 
-Update commands help manage and update project assets. All update commands use the base command: `wails3 update <command>`.
+Perintah pembaruan membantu mengelola dan memperbarui aset proyek. Semua perintah pembaruan menggunakan perintah dasar: `wails3 update <command>`.
 
 ### `update cli`
-Updates the Wails CLI to a new version.
+Memperbarui Wails CLI ke versi baru.
 
 ```bash
 wails3 update cli [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag        | Description                     | Default |
-| `-pre`      | Update to latest pre-release    | `false` |
-| `-version`  | Update to specific version      |         |
-| `-nocolour` | Disable colored output          | `false` |
+| Flag        | Deskripsi                     | Default |
+| `-pre`      | Perbarui ke prarilis terbaru    | `false` |
+| `-version`  | Perbarui ke versi tertentu      |         |
+| `-nocolour` | Nonaktifkan keluaran berwarna          | `false` |
 @end
 
-The update cli command allows you to update your Wails CLI installation. By default, it updates to the latest stable release.\
-You can use the `-pre` flag to update to the latest pre-release version, or specify a particular version using the `-version` flag.
+Perintah update cli memungkinkan Anda memperbarui instalasi Wails CLI. Secara default, perintah ini memperbaruinya ke rilis stabil terbaru.\
+Anda dapat menggunakan flag `-pre` untuk memperbarui ke versi prarilis terbaru, atau menentukan versi tertentu menggunakan flag `-version`.
 
-After updating, remember to update your project's go.mod file to use the same version:
+Setelah memperbarui, ingatlah untuk memperbarui berkas go.mod proyek Anda agar menggunakan versi yang sama:
 ```bash
 require github.com/wailsapp/wails/v3 v3.x.x
 ```
 
 ### `update build-assets`
-Updates the build assets using the given config file.
+Memperbarui aset build menggunakan berkas konfigurasi yang diberikan.
 
 ```bash
 wails3 update build-assets [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag           | Description         | Default |
-| `-config`      | Config file path    |         |
-| `-dir`         | Output directory    | `build` |
-| `-silent`      | Suppress output     | `false` |
-| `-company`     | Company name        |         |
-| `-productname` | Product name        |         |
-| `-description` | Product description |         |
-| `-version`     | Product version     |         |
-| `-identifier`  | Product identifier  |         |
-| `-copyright`   | Copyright notice    |         |
-| `-comments`    | File comments       |         |
+| Flag           | Deskripsi         | Bawaan |
+| `-config`      | Jalur file konfigurasi    |         |
+| `-dir`         | Direktori keluaran    | `build` |
+| `-silent`      | Sembunyikan keluaran     | `false` |
+| `-company`     | Nama perusahaan        |         |
+| `-productname` | Nama produk        |         |
+| `-description` | Deskripsi produk |         |
+| `-version`     | Versi produk     |         |
+| `-identifier`  | Pengidentifikasi produk  |         |
+| `-copyright`   | Pemberitahuan hak cipta    |         |
+| `-comments`    | Komentar file       |         |
 @end
 
-## Utility Commands
+## Perintah Utilitas
 
-Utility commands provide helpful shortcuts for common tasks. Use these commands directly with the base command: `wails3 <command>`.
+Perintah utilitas menyediakan pintasan praktis untuk tugas umum. Gunakan perintah ini secara langsung dengan perintah dasar: `wails3 <command>`.
 
 ### `docs`
-Opens the Wails documentation in your default browser.
+Membuka dokumentasi Wails di peramban bawaan Anda.
 
 ```bash
 wails3 docs
 ```
 
 ### `releasenotes`
-Shows the release notes for the current or specified version.
+Menampilkan catatan rilis untuk versi saat ini atau versi yang ditentukan.
 
 ```bash
 wails3 releasenotes [flags]
 ```
 
-#### Flags
+#### Flag
 @table header=true
-| Flag | Description                       | Default |
-| `-v` | Version to show release notes for |         |
-| `-n` | Disable colour output             | `false` |
+| Flag | Deskripsi                       | Bawaan |
+| `-v` | Versi yang catatan rilisnya akan ditampilkan |         |
+| `-n` | Nonaktifkan keluaran berwarna             | `false` |
 @end
 
 ### `version`
-Prints the current version of Wails.
+Mencetak versi Wails saat ini.
 
 ```bash
 wails3 version
 ```
 
 ### `sponsor`
-Opens the Wails sponsorship page in your default browser.
+Membuka halaman sponsor Wails di peramban bawaan Anda.
 
 ```bash
 wails3 sponsor

@@ -1,20 +1,20 @@
 ---
 schema = 1
 title = "Debugging"
-description = "Menyelidiki masalah dan profiling performa aplikasi"
+description = "Menyelidiki masalah dan membuat profil performa aplikasi"
 slug = "guides/dev/debugging"
-sourcePath = "id/guides/dev/debugging.mpd"
+sourcePath = "guides/dev/debugging.mpd"
 ---
 
-Panduan ini mendemonstrasikan berbagai alat untuk memeriksa dan menyelidiki kemungkinan masalah performa dalam aplikasi Wails Anda menggunakan
-- [`runtime/trace`](https://pkg.go.dev/runtime/trace) untuk membuat graf performa dan memeriksanya di browser
+Panduan ini menunjukkan berbagai alat untuk memeriksa dan menyelidiki kemungkinan masalah performa dalam aplikasi Wails Anda menggunakan
+- [`runtime/trace`](https://pkg.go.dev/runtime/trace) untuk membuat grafik performa dan memeriksanya di browser
 
 ## Membuat trace performa
 
 @steps
-@step title="Siapkan aplikasi Anda untuk Tracing"
+@step title="Siapkan aplikasi Anda untuk tracing"
 
-Dekat entrypoint program Anda, pastikan kode seperti berikut ada
+Di dekat titik masuk program Anda, pastikan terdapat kode seperti berikut
 
 ```go
 // Create the file to store our trace data within
@@ -38,17 +38,17 @@ defer func() {
 ...Start your wails app here...
 ```
 
-Output akan disimpan ke `trace.out` dalam working path Anda dengan metrik yang mencakup runtime lengkap aplikasi Anda. Trace default cukup mentah; disarankan membaca lebih lanjut tentang trace untuk menambahkan informasi kontekstual dan membatasi apa yang benar-benar direkam. Contoh: `WithRegion, NewTask, Log`
+Output akan disimpan ke `trace.out` dalam direktori kerja Anda, dengan metrik yang mencakup seluruh waktu berjalan aplikasi. Trace bawaan cukup mentah; Anda sangat disarankan untuk mempelajari trace lebih lanjut agar dapat menambahkan lebih banyak informasi kontekstual dan membatasi data yang benar-benar direkam. Contoh: `WithRegion, NewTask, Log`
 
 @end
 @step title="Jalankan aplikasi Anda untuk membuat trace"
 
-Dengan aplikasi berjalan, trace kontinu akan dihasilkan hingga titik exit, jadi lakukan beberapa aksi di aplikasi Anda dan exit saat selesai
+Saat aplikasi berjalan, trace akan direkam terus-menerus hingga aplikasi ditutup. Lakukan beberapa tindakan dalam aplikasi Anda, lalu tutup aplikasi setelah selesai
 
 @end
-@step title="Instal helper visualisasi"
+@step title="Instal alat bantu visualisasi"
 
-Beberapa tampilan memerlukan [Graphviz](https://graphviz.org/). Anda dapat memverifikasi terinstal dengan menjalankan `dot -V`
+Beberapa tampilan memerlukan [Graphviz](https://graphviz.org/). Anda dapat memverifikasi bahwa Graphviz telah terinstal dengan menjalankan `dot -V`
 
 ```bash
 # macOS
@@ -64,15 +64,15 @@ sudo pacman -S graphviz
 @end
 @step title="Visualisasikan trace Anda"
 
-Dengan data trace tersedia, kita dapat memulai antarmuka web
+Setelah data trace tersedia, kita dapat memulai antarmuka web
 
 ```bash
 go tool trace trace.out
 ```
 
-Ini seharusnya membuka browser default Anda (disarankan Chrome-based) dengan halaman utama trace event viewer.
+Tindakan ini seharusnya membuka browser bawaan Anda (disarankan menggunakan browser berbasis Chrome) dan menampilkan halaman beranda penampil peristiwa trace.
 
-Untuk pengguna pertama kali, layar `Syscall profile` mungkin paling berguna. Ini memberikan breakdown persis apa yang dilakukan program beserta waktunya
+Bagi pengguna baru, layar `Syscall profile` mungkin paling berguna. Layar ini memberikan perincian tentang apa yang dilakukan program secara tepat beserta informasi waktunya
 
 @end
 @end

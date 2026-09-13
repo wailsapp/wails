@@ -1,18 +1,18 @@
 ---
 schema = 1
-title = "Dialog Pesan"
-description = "Tampilkan informasi, peringatan, error, dan pertanyaan"
+title = "Dialog pesan"
+description = "Tampilkan informasi, peringatan, kesalahan, dan pertanyaan"
 slug = "features/dialogs/message"
-sourcePath = "id/features/dialogs/message.mpd"
+sourcePath = "features/dialogs/message.mpd"
 ---
 
-## Dialog Pesan
+## Dialog pesan
 
-Wails menyediakan *dialog pesan native* dengan tampilan sesuai platform: dialog info, peringatan, error, dan pertanyaan dengan judul, pesan, dan tombol yang dapat disesuaikan. API sederhana, perilaku native, accessible secara default.
+Wails menyediakan *dialog pesan native* dengan tampilan yang sesuai untuk setiap platform: dialog informasi, peringatan, kesalahan, dan pertanyaan dengan judul, pesan, serta tombol yang dapat disesuaikan. API sederhana, perilaku native, dan aksesibilitas aktif secara default.
 
 ## Membuat Dialog
 
-Dialog pesan diakses melalui `app.Dialog` manager:
+Dialog pesan diakses melalui pengelola `app.Dialog`:
 
 ```go
 app.Dialog.Info()
@@ -21,11 +21,11 @@ app.Dialog.Warning()
 app.Dialog.Error()
 ```
 
-Semua metode mengembalikan `*MessageDialog` that can be configured using method chaining.
+Semua metode mengembalikan `*MessageDialog` yang dapat dikonfigurasi menggunakan perangkaian metode.
 
-## Dialog Informasi
+## Dialog informasi
 
-Tampilkan pesan informasi:
+Tampilkan pesan informatif:
 
 ```go
 app.Dialog.Info().
@@ -34,13 +34,13 @@ app.Dialog.Info().
     Show()
 ```
 
-*Kasus penggunaans:*
-- Success confirmations
-- Completion notices
-- Informational messages
-- Status updates
+*Kasus penggunaan:*
+- Konfirmasi keberhasilan
+- Pemberitahuan penyelesaian
+- Pesan informatif
+- Pembaruan status
 
-*Example - Save confirmation:*
+*Contoh—konfirmasi penyimpanan:*
 
 ```go
 func saveFile(app *application.App, path string, data []byte) error {
@@ -57,7 +57,7 @@ func saveFile(app *application.App, path string, data []byte) error {
 }
 ```
 
-## Dialog Peringatan
+## Dialog peringatan
 
 Tampilkan peringatan:
 
@@ -68,13 +68,13 @@ app.Dialog.Warning().
     Show()
 ```
 
-*Kasus penggunaans:*
-- Non-critical warnings
-- Deprecation notices
-- Caution messages
-- Potential issues
+*Kasus penggunaan:*
+- Peringatan nonkritis
+- Pemberitahuan penghentian penggunaan
+- Pesan peringatan
+- Potensi masalah
 
-*Example - Disk space warning:*
+*Contoh—peringatan ruang disk:*
 
 ```go
 func checkDiskSpace(app *application.App) {
@@ -89,9 +89,9 @@ func checkDiskSpace(app *application.App) {
 }
 ```
 
-## Dialog Error
+## Dialog kesalahan
 
-Tampilkan error:
+Tampilkan kesalahan:
 
 ```go
 app.Dialog.Error().
@@ -100,13 +100,13 @@ app.Dialog.Error().
     Show()
 ```
 
-*Kasus penggunaans:*
-- Error messages
-- Failure notifications
-- Exception handling
-- Critical issues
+*Kasus penggunaan:*
+- Pesan kesalahan
+- Pemberitahuan kegagalan
+- Penanganan pengecualian
+- Masalah kritis
 
-*Example - Network error:*
+*Contoh—kesalahan jaringan:*
 
 ```go
 func fetchData(app *application.App, url string) ([]byte, error) {
@@ -124,9 +124,9 @@ func fetchData(app *application.App, url string) ([]byte, error) {
 }
 ```
 
-## Dialog Pertanyaan
+## Dialog pertanyaan
 
-Ajukan pertanyaan kepada pengguna dan tangani respons melalui callback tombol:
+Ajukan pertanyaan kepada pengguna dan tangani respons melalui fungsi callback tombol:
 
 ```go
 dialog := app.Dialog.Question().
@@ -153,13 +153,13 @@ dialog.SetCancelButton(cancel)
 dialog.Show()
 ```
 
-*Kasus penggunaans:*
-- Confirm actions
-- Yes/No questions
-- Multiple choice
-- User decisions
+*Kasus penggunaan:*
+- Mengonfirmasi tindakan
+- Pertanyaan Ya/Tidak
+- Pilihan ganda
+- Keputusan pengguna
 
-*Example - Unsaved changes:*
+*Contoh—perubahan yang belum disimpan:*
 
 ```go
 func closeDocument(app *application.App) {
@@ -193,7 +193,7 @@ func closeDocument(app *application.App) {
 }
 ```
 
-## Opsi Dialog
+## Opsi dialog
 
 ### Judul dan Pesan
 
@@ -203,16 +203,16 @@ dialog := app.Dialog.Info().
     SetMessage("All files have been processed successfully.")
 ```
 
-*Best practices:*
-- *Title:* Short, descriptive (2-5 words)
-- *Message:* Clear, specific, actionable
-- *Avoid jargon:* Use plain language
+*Praktik terbaik:*
+- *Judul:* Singkat dan deskriptif (2-5 kata)
+- *Pesan:* Jelas, spesifik, dan dapat ditindaklanjuti
+- *Hindari jargon:* Gunakan bahasa yang sederhana
 
 ### Tombol
 
-*Satu tombol (Info/Peringatan/Error):*
+*Satu tombol (Informasi/Peringatan/Kesalahan):*
 
-Info, warning, and error dialogs display a default "OK" button:
+Dialog informasi, peringatan, dan kesalahan menampilkan tombol "OK" secara default:
 
 ```go
 app.Dialog.Info().
@@ -220,7 +220,7 @@ app.Dialog.Info().
     Show()
 ```
 
-You can also add custom buttons:
+Anda juga dapat menambahkan tombol khusus:
 
 ```go
 dialog := app.Dialog.Info().
@@ -232,7 +232,7 @@ dialog.Show()
 
 *Beberapa tombol (Pertanyaan):*
 
-Use `AddButton()` to add buttons, which returns a `*Button` you can configure:
+Gunakan `AddButton()` untuk menambahkan tombol. Metode ini mengembalikan `*Button` yang dapat Anda konfigurasi:
 
 ```go
 dialog := app.Dialog.Question().
@@ -256,10 +256,10 @@ option3.OnClick(func() {
 dialog.Show()
 ```
 
-*Tombol Default dan Cancel:*
+*Tombol default dan Batal:*
 
-Use `SetDefaultButton()` to specify which button is highlighted and triggered by Enter.\
-Use `SetCancelButton()` to specify which button is triggered by Escape.
+Gunakan `SetDefaultButton()` untuk menentukan tombol yang disorot dan dipicu oleh Enter.\
+Gunakan `SetCancelButton()` untuk menentukan tombol yang dipicu oleh Escape.
 
 ```go
 dialog := app.Dialog.Question().
@@ -278,7 +278,7 @@ dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
 dialog.Show()
 ```
 
-You can also use the fluent `SetAsDefault()` and `SetAsCancel()` methods on buttons:
+Anda juga dapat menggunakan metode fluent `SetAsDefault()` dan `SetAsCancel()` pada tombol:
 
 ```go
 dialog := app.Dialog.Question().
@@ -293,27 +293,27 @@ dialog.AddButton("Cancel").SetAsDefault().SetAsCancel()
 dialog.Show()
 ```
 
-*Best practices:*
-- *1-3 buttons:* Don't overwhelm users
-- *Clear labels:* "Save" not "OK"
-- *Safe default:* Non-destructive action
-- *Order matters:* Most likely action first (except Cancel)
+*Praktik terbaik:*
+- *1-3 tombol:* Jangan membebani pengguna dengan terlalu banyak pilihan
+- *Label yang jelas:* "Simpan", bukan "OK"
+- *Pilihan default yang aman:* Tindakan yang tidak merusak
+- *Urutan itu penting:* Dahulukan tindakan yang paling mungkin dipilih (kecuali Batal)
 
-### Ikon Kustom
+### Ikon Khusus
 
-Set a custom icon for the dialog:
+Tetapkan ikon khusus untuk dialog:
 
 ```go
 app.Dialog.Info().
-    SetTitle("Ikon Kustom Example").
+    SetTitle("Custom Icon Example").
     SetMessage("Using a custom icon").
     SetIcon(myIconBytes).
     Show()
 ```
 
-### Lampiran Window
+### Penautan ke Jendela
 
-Attach to specific window:
+Tautkan ke jendela tertentu:
 
 ```go
 dialog := app.Dialog.Question().
@@ -324,14 +324,14 @@ dialog.AddButton("OK")
 dialog.Show()
 ```
 
-*Benefits:*
-- dialog appears on correct window
-- Parent window disabled whilst shown
-- Better multi-window UX
+*Manfaat:*
+- Dialog muncul di jendela yang tepat
+- Jendela induk dinonaktifkan selama dialog ditampilkan
+- Pengalaman pengguna yang lebih baik saat menggunakan beberapa jendela
 
 ## Contoh Lengkap
 
-### Konfirmasi Aksi Destruktif
+### Mengonfirmasi Tindakan Destruktif
 
 ```go
 func deleteFiles(app *application.App, paths []string) {
@@ -395,7 +395,7 @@ func confirmQuit(app *application.App) {
 }
 ```
 
-### Update Dialog with Download Option
+### Dialog Pembaruan dengan Opsi Unduh
 
 ```go
 func showUpdateDialog(app *application.App) {
@@ -416,12 +416,12 @@ func showUpdateDialog(app *application.App) {
 }
 ```
 
-### Ikon Kustom Question
+### Pertanyaan dengan Ikon Khusus
 
 ```go
 func showCustomIconQuestion(app *application.App, iconBytes []byte) {
     dialog := app.Dialog.Question().
-        SetTitle("Ikon Kustom Example").
+        SetTitle("Custom Icon Example").
         SetMessage("Using a custom icon").
         SetIcon(iconBytes)
 
@@ -444,70 +444,70 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ### ✅ Lakukan
 
-- *Be specific* - "File saved to Documents" not "Success"
-- *Use appropriate type* - Error for errors, Warning for warnings
-- *Provide context* - Include relevant details
-- *Use clear button labels* - "Delete" not "OK"
-- *Set safe defaults* - Non-destructive action
-- *Handle cancellation* - User might close dialog
+- *Berikan informasi spesifik* - "File disimpan ke Dokumen", bukan "Berhasil"
+- *Gunakan jenis yang sesuai* - Error untuk kesalahan, Warning untuk peringatan
+- *Berikan konteks* - Sertakan detail yang relevan
+- *Gunakan label tombol yang jelas* - "Hapus", bukan "OK"
+- *Tetapkan pilihan default yang aman* - Gunakan tindakan yang tidak merusak
+- *Tangani pembatalan* - Pengguna mungkin menutup dialog
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Don't overuse* - Interrupts workflow
-- *Don't use for frequent updates* - Use notifications instead
-- *Don't use generic messages* - "Error" tells nothing
-- *Don't ignore errors* - Handle dialog.Show() errors
-- *Don't block unnecessarily* - Consider async alternatives
-- *Don't use technical jargon* - Plain language
+- *Jangan gunakan secara berlebihan* - Mengganggu alur kerja
+- *Jangan gunakan untuk pembaruan yang sering* - Gunakan notifikasi sebagai gantinya
+- *Jangan gunakan pesan umum* - "Kesalahan" tidak memberikan informasi apa pun
+- *Jangan abaikan kesalahan* - Tangani kesalahan dari dialog.Show()
+- *Jangan memblokir tanpa perlu* - Pertimbangkan alternatif asinkron
+- *Jangan gunakan jargon teknis* - Gunakan bahasa yang mudah dipahami
 
-## Perbedaan Platform
+## Perbedaan Antarplatform
 
 ### macOS
 
-- Sheet-style when attached to window
-- Standard keyboard shortcuts (⌘. for Cancel)
-- Follows system theme automatically
-- Accessibility built-in
+- Bergaya sheet saat dilampirkan ke jendela
+- Pintasan papan ketik standar (⌘. untuk Batal)
+- Secara otomatis mengikuti tema sistem
+- Fitur aksesibilitas tersedia secara bawaan
 
 ### Windows
 
-- Dialog Modals
-- TaskDialog appearance
-- Esc for Cancel
-- Follows system theme
+- Dialog modal
+- Tampilan TaskDialog
+- Esc untuk Batal
+- Mengikuti tema sistem
 
 ### Linux
 
-- GTK dialogs
-- Varies by desktop environment
-- Follows desktop theme
-- Standard keyboard navigation
+- Dialog GTK
+- Bervariasi menurut lingkungan desktop
+- Mengikuti tema desktop
+- Navigasi papan ketik standar
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="📖 File dialogs"
-Open, save, and folder selection.
+@card title="📖 Dialog file"
+Membuka dan menyimpan file, serta memilih folder.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/file/)
+[Pelajari Selengkapnya →](/features/dialogs/file/)
 @end
-@card title="◆ Custom dialogs"
-Create custom dialog windows.
+@card title="◆ Dialog khusus"
+Buat jendela dialog khusus.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/custom/)
+[Pelajari Selengkapnya →](/features/dialogs/custom/)
 @end
-@card title="● Notifications"
-Non-intrusive notifications.
+@card title="● Notifikasi"
+Notifikasi yang tidak mengganggu.
 
-[Pelajari Selengkapnya →](/id/features/notifications/overview/)
+[Pelajari Selengkapnya →](/features/notifications/overview/)
 @end
-@card title="★ Events"
-Use events for non-blocking communication.
+@card title="★ Event"
+Gunakan event untuk komunikasi non-pemblokiran.
 
-[Pelajari Selengkapnya →](/id/features/events/system/)
+[Pelajari Selengkapnya →](/features/events/system/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [dialog examples](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh dialog](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

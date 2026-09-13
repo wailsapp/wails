@@ -1,29 +1,29 @@
 ---
 schema = 1
 title = "フィードバック"
-description = "Wails v3に対するフィードバックの提供方法と問題の報告方法"
+description = "Wails v3 に関するフィードバックの提供方法と問題の報告方法"
 slug = "feedback"
-sourcePath = "ja/feedback.mpd"
+sourcePath = "feedback.mpd"
 ---
 
-あなたのフィードバックを歓迎し、積極的に促しています！新しいIssueやディスカッションを作成する前に、既存のものを検索してください。フィードバックを提供する方法は以下の通りです。
+皆さんからのフィードバックを歓迎（そして推奨）します！新しい Issue やディスカッションを作成する前に、既存のものを検索してください。貢献する方法は次のとおりです。
 
 @tabs
 @tab label="バグ"
 
-バグを見つけた場合は、GitHubのバグレポートテンプレートを使用して[Issueを開いて](https://github.com/wailsapp/wails/issues/new/choose)ください。
+バグを見つけた場合は、バグ報告テンプレートを使用して GitHub で[Issue を作成](https://github.com/wailsapp/wails/issues/new/choose)してください。
 
-- バグの内容を明確に記述し、再現可能な簡単な例を含めてください。ドキュメントで_何が起こるべきか_が不明確な場合は、その旨をレポートに含めてください。
-- `wails doctor` の実行結果をレポートに含めてください。
-- バグが現在のドキュメントと一致しない動作（例：ウィンドウが適切にリサイズされない）である場合は、以下の手順に従ってください：
-  - `v3/examples` ディレクトリ内の既存の例を更新するか、問題が明確に示されるように新しい例を作成してください。
-  - 関連するIssueを参照した[PR](https://github.com/wailsapp/wails/pulls)を開いてください。
+- 簡潔で再現可能な例を添えて、バグを明確に説明してください。何が起こる_べきか_がドキュメントで不明確な場合は、その点も報告に含めてください。
+- `wails3 doctor` の出力を報告に含めてください。
+- 現在のドキュメントに記載された動作と一致しないことがバグである場合は、次の対応も行ってください。
+  - `v3/examples` ディレクトリにある既存のサンプルを更新するか、問題を明確に示す新しいサンプルを作成してください。
+  - その Issue を参照する[PR](https://github.com/wailsapp/wails/pulls)を作成してください。
 
 @note type="caution"
-_覚えておいてください_、予期せぬ動作が必ずしもバグであるとは限りません。単に期待通りに動作していないだけかもしれません。その場合は`Suggestions`を使用してください。
+_注意_：予期しない動作が必ずしもバグとは限りません。単に期待どおりに動作していないだけかもしれません。その場合は `Suggestions` を使用してください。
 
 @end
-バグについてDiscordの[#v3](https://discord.gg/bdj28QNHmT)チャンネルで気軽に議論することもできます。
+Discord の [#v3](https://discord.gg/bdj28QNHmT) チャンネルでバグについて話し合うこともできます。
 
 
 
@@ -31,35 +31,36 @@ _覚えておいてください_、予期せぬ動作が必ずしもバグであ
 @end
 @tab label="修正"
 
-バグの修正やドキュメントの改善がある場合は、以下の手順に従ってください：
+バグの修正やドキュメントの改善がある場合は、次の手順に従ってください。
 
-- [コントリビューションガイドライン](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md)に従って、[Wailsリポジトリ](https://github.com/wailsapp/wails)でプルリクエストを開いてください。
-- PRの説明に関連するIssueを参照してください。
-
-
-
-
-@end
-@tab label="提案"
-
-機能のリクエストや提案がある場合は、GitHubで[ディスカッションを開始](https://github.com/wailsapp/wails/discussions)してください。
-
-- 機能とそれが解決する問題を明確に記述してください。
-- Discordの[#v3](https://discord.gg/bdj28QNHmT)チャンネルでアイデアを議論することも歓迎します。
+- [コントリビューションガイドライン](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md)に従って、[Wails リポジトリ](https://github.com/wailsapp/wails)でプルリクエストを作成してください。
+- 関連する Issue がある場合は、PR の説明で参照してください。
 
 
 
 
 @end
-@tab label="高評価"
+@tab label="機能強化"
 
-- GitHubのIssueやディスカッションで :thumbsup: リアクションを使用してサポートを示してください。
-- 「+1」や「私も」といったコメントは_追加しないでください_。
-- 「このバグはARMビルドにも影響します」や「別のアプローチとしては...」など、意味のある追加情報がある場合はコメントしてください。
+新機能や公開されている動作の変更は、機能リクエストの Issue ではなく、*WEP（Wails Enhancement Proposal）*のドラフトプルリクエストを通じて提案します。
+
+- [WEP のプロセス](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)を確認してください。
+- テンプレートをコピーし、WEP と補足資料のみを含む、タイトルが `[WEP] <title>` のドラフト PR を作成してください。
+- 最初に [GitHub Discussions](https://github.com/wailsapp/wails/discussions) または Discord の [#v3](https://discord.gg/bdj28QNHmT) チャンネルでアイデアについて非公式に話し合うこともできますが、メンテナーが判断を下すには WEP の PR が必要です。
+
+
+
+
+@end
+@tab label="賛成票"
+
+- GitHub の :thumbsup: リアクションを使用して、バグ、WEP、ディスカッションへの支持を示してください。
+- 「+1」や「私もです」のようなコメントを追加するだけの行為は、_避けて_ください。
+- 「このバグは ARM ビルドにも影響します」や「別の方法としては……」など、有意義な情報を提供できる場合はコメントを追加してください。
 
 
 
 @end
 @end
 
-既知の問題のリストと進行中の作業は[こちら](https://github.com/orgs/wailsapp/projects/6)で確認できます。
+既知の問題と進行中の作業は[こちら](https://github.com/orgs/wailsapp/projects/6)で確認できます。

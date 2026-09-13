@@ -1,44 +1,40 @@
 ---
 schema = 1
 title = "Asosiasi File"
-description = "Konfigurasi asosiasi file untuk aplikasi Wails Anda"
+description = "Konfigurasikan asosiasi file untuk aplikasi Wails Anda"
 slug = "guides/file-associations"
-sourcePath = "id/guides/file-associations.mpd"
+sourcePath = "guides/file-associations.mpd"
 ---
 
-Platform Relevan: <span class="mpress-badge mpress-badge-note">Windows</span> <span class="mpress-badge mpress-badge-success">macOS</span>
+Platform yang Relevan: <span class="mpress-badge mpress-badge-note">Windows</span> <span class="mpress-badge mpress-badge-success">macOS</span>
 @rawHTML
 <br/>
 @end
 
-Asosiasi file memungkinkan aplikasi Anda menangani jenis file tertentu saat\
-pengguna membukanya. Ini sangat berguna untuk editor teks, penampil gambar, atau\
-aplikasi apa pun yang bekerja dengan format file tertentu. Panduan ini menjelaskan cara\
-mengimplementasikan asosiasi file di aplikasi Wails v3 Anda.
+Asosiasi file memungkinkan aplikasi Anda menangani jenis file tertentu saat pengguna membukanya. Fitur ini sangat berguna untuk editor teks, penampil gambar, atau aplikasi apa pun yang menangani format file tertentu. Panduan ini menjelaskan cara menerapkan asosiasi file dalam aplikasi Wails v3 Anda.
 
-## Ringkasan
+## Ikhtisar
 
 Dukungan asosiasi file di Wails v3 saat ini tersedia untuk:
 
-- Windows (paket installer NSIS)
-- macOS (application bundle)
+- Windows (paket penginstal NSIS)
+- macOS (bundel aplikasi)
 
 ## Konfigurasi
 
-Asosiasi file dikonfigurasi di file `config.yml` yang berada di\
-direktori `build` proyek Anda.
+Asosiasi file dikonfigurasikan dalam file `config.yml` yang berada di direktori `build` proyek Anda.
 
 ### Konfigurasi Dasar
 
 Untuk menyiapkan asosiasi file:
 
 1. Buka `build/config.yml`
-2. Tambahkan asosiasi file Anda di bawah bagian `fileAssociations`
-3. Jalankan `wails3 update build-assets` untuk memperbarui build assets
-4. Atur field `FileAssociations` di opsi aplikasi
-5. Package aplikasi Anda menggunakan `wails3 package`
+2. Tambahkan asosiasi file Anda di bagian `fileAssociations`
+3. Jalankan `wails3 update build-assets` untuk memperbarui aset build
+4. Atur bidang `FileAssociations` dalam opsi aplikasi
+5. Kemas aplikasi Anda menggunakan `wails3 package`
 
-Berikut contoh konfigurasi:
+Berikut contoh konfigurasinya:
 
 ```yaml
 fileAssociations:
@@ -57,19 +53,18 @@ fileAssociations:
 ### Properti Konfigurasi
 
 @table header=true
-| Properti    | Deskripsi                                                        | Platform |
-| ext         | Ekstensi file tanpa titik di depan (mis. `txt`)                  | Semua    |
-| name        | Nama tampilan untuk jenis file                                   | Semua    |
-| description | Deskripsi yang ditampilkan di properti file                      | Windows  |
-| iconName    | Nama file ikon (tanpa ekstensi) di folder build                  | Semua    |
-| role        | Peran aplikasi untuk jenis file ini (mis. `Editor`, `Viewer`)    | macOS    |
-| mimeType    | Tipe MIME untuk file (mis. `image/jpeg`)                         | macOS    |
+| Properti    | Deskripsi                                                      | Platform |
+| ext         | Ekstensi file tanpa tanda titik di awal (misalnya, `txt`)          | Semua      |
+| name        | Nama tampilan untuk jenis file                                   | Semua      |
+| description | Deskripsi yang ditampilkan dalam properti file                             | Windows  |
+| iconName    | Nama file ikon (tanpa ekstensi) dalam folder build    | Semua      |
+| role        | Peran aplikasi untuk jenis file ini (misalnya, `Editor`, `Viewer`) | macOS    |
+| mimeType    | Jenis MIME untuk file (misalnya, `image/jpeg`)                      | macOS    |
 @end
 
-## Mendengarkan Event Buka File
+## Mendengarkan Peristiwa Pembukaan File
 
-Untuk menangani event buka file di aplikasi Anda, Anda dapat mendengarkan\
-event `events.Common.ApplicationOpenedWithFile`:
+Untuk menangani peristiwa pembukaan file dalam aplikasi, Anda dapat mendengarkan peristiwa `events.Common.ApplicationOpenedWithFile`:
 
 ```go {title="main.go"}
 package main
@@ -82,39 +77,38 @@ import (
 func main() {
     app := application.New(application.Options{
         Name: "MyApp",
-        FileAssociations: []string{".txt", ".md"}, // Tentukan ekstensi yang didukung
+        FileAssociations: []string{".txt", ".md"}, // Specify supported extensions
     })
 
-    // Dengarkan file yang digunakan untuk membuka aplikasi
+    // Listen for files being used to open the application
     app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
         associatedFile := event.Context().Filename()
         app.Dialog.Info().SetMessage("Application opened with file: " + associatedFile).Show()
     })
 
-    // Buat window Anda dan jalankan aplikasi...
+    // Create your window and run the app...
 }
 
 ```
 
 ## Tutorial Langkah demi Langkah
 
-Mari kita telusuri penyiapan asosiasi file untuk editor teks sederhana:
+Mari siapkan asosiasi file untuk editor teks sederhana langkah demi langkah:
 
 @steps
 @step title="Buat Ikon"
 
 - Buat ikon untuk jenis file Anda (ukuran yang disarankan: 16x16, 32x32, 48x48, 256x256)
-- Simpan ikon di folder `build` proyek Anda
-- Beri nama sesuai konfigurasi `iconName` Anda (mis., `textFileIcon.png`)
+- Simpan ikon dalam folder `build` proyek Anda
+- Beri nama ikon sesuai dengan konfigurasi `iconName` Anda (misalnya, `textFileIcon.png`)
 
 @note type="tip"
-Anda dapat menggunakan `wails3 generate icons` untuk menghasilkan ikon yang diperlukan.\
-Jalankan `wails3 generate icons --help` untuk informasi lebih lanjut.
+Anda dapat menggunakan `wails3 generate icons` untuk menghasilkan ikon yang diperlukan. Jalankan `wails3 generate icons --help` untuk informasi selengkapnya.
 @end
-- Untuk macOS tambahkan pernyataan copy seperti `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources` di task `create:app:bundle:`.
+- Untuk macOS, tambahkan pernyataan penyalinan seperti `cp build/darwin/documenticon.icns {{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources` dalam tugas `create:app:bundle:`.
 
 @end
-@step title="Konfigurasi Asosiasi File"
+@step title="Konfigurasikan Asosiasi File"
 
 Edit file `build/config.yml` untuk menambahkan asosiasi file Anda:
 
@@ -129,51 +123,45 @@ fileAssociations:
 ```
 
 @end
-@step title="Perbarui Build Assets"
+@step title="Perbarui Aset Build"
 
-Jalankan perintah berikut untuk memperbarui build assets:
+Jalankan perintah berikut untuk memperbarui aset build:
 
 ```bash
 wails3 update build-assets
 ```
 
 @end
-@step title="Atur Asosiasi File di Opsi Aplikasi"
+@step title="Atur Asosiasi File dalam Opsi Aplikasi"
 
-Di file `main.go` Anda, atur field `FileAssociations` di opsi\
-aplikasi:
+Dalam file `main.go`, atur bidang `FileAssociations` dalam opsi aplikasi:
 
 ```go
 app := application.New(application.Options{
   Name: "MyApp",
-  FileAssociations: []string{".txt", ".md"}, // Tentukan ekstensi yang didukung
+  FileAssociations: []string{".txt", ".md"}, // Specify supported extensions
 })
 ```
 
-@note type="tip" title="Mengapa ekstensi file diperlukan di konfigurasi aplikasi dan config.yml?"
-Di Windows, saat file dibuka dengan asosiasi file, aplikasi\
-diluncurkan dengan nama file sebagai argumen pertama ke aplikasi. Aplikasi\
-tidak memiliki cara untuk mengetahui apakah argumen pertama adalah file atau argumen\
-baris perintah, jadi ia menggunakan field `FileAssociations` di opsi\
-aplikasi untuk menentukan apakah argumen pertama adalah file terasosiasi atau bukan.
+@note type="tip" title="Mengapa ekstensi file diperlukan dalam konfigurasi aplikasi dan config.yml?"
+Di Windows, ketika file dibuka melalui asosiasi file, aplikasi diluncurkan dengan nama file sebagai argumen pertama aplikasi. Aplikasi tidak dapat mengetahui apakah argumen pertama merupakan file atau argumen baris perintah. Oleh karena itu, aplikasi menggunakan bidang `FileAssociations` dalam opsi aplikasi untuk menentukan apakah argumen pertama merupakan file yang diasosiasikan.
 
 @end
 @end
-@step title="Package Aplikasi Anda"
+@step title="Kemas Aplikasi Anda"
 
-Package aplikasi Anda menggunakan perintah berikut:
+Kemas aplikasi Anda menggunakan perintah berikut:
 
 ```bash
 wails3 package
 ```
 
-Aplikasi yang di-package akan dibuat di direktori `bin`. Anda kemudian dapat\
-menginstal dan menguji aplikasi.
+Aplikasi yang telah dikemas akan dibuat dalam direktori `bin`. Setelah itu, Anda dapat menginstal dan menguji aplikasi tersebut.
 
 ## Catatan Tambahan
 
-- Ikon harus disediakan dalam format PNG di folder build
-- Menguji asosiasi file memerlukan penginstalan aplikasi yang sudah di-package
+- Ikon sebaiknya disediakan dalam format PNG di folder build
+- Pengujian asosiasi file mengharuskan aplikasi yang telah dikemas untuk diinstal
 
 @end
 @end

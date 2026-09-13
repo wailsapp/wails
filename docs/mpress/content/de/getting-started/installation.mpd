@@ -1,48 +1,54 @@
 ---
 schema = 1
 title = "Installation"
-description = "Installiere Wails und richte deine Entwicklungsumgebung ein"
+description = "Wails installieren und die Entwicklungsumgebung einrichten"
 slug = "getting-started/installation"
-sourcePath = "de/getting-started/installation.mpd"
+sourcePath = "getting-started/installation.mpd"
 ---
 
 ## Unterstützte Plattformen
 
-- Windows 10/11 AMD64/ARM64
+- Windows AMD64/ARM64
 - macOS 10.15+ AMD64 (Bereitstellung auf macOS 10.13+ möglich)
 - macOS 11.0+ ARM64
 - Ubuntu 24.04 AMD64/ARM64 (andere Linux-Distributionen funktionieren möglicherweise ebenfalls!)
 
 ## Abhängigkeiten
 
-Wails benötigt eine Reihe gemeinsamer Abhängigkeiten, die vor der Installation installiert sein müssen:
+Wails hat mehrere allgemeine Abhängigkeiten, die vor der Installation vorhanden sein müssen.
+
+@note type="tip"
+
+Nach der Installation der Wails-CLI können Sie `wails3 setup` ausführen, um diese Abhängigkeiten automatisch zu prüfen und Unterstützung bei ihrer Installation zu erhalten.
+
+@end
 
 @tabs
 @tab label="Go (mindestens 1.24)"
 
-Lade Go von der [Go Downloads-Seite](https://go.dev/dl/) herunter.
+Laden Sie Go von der [Go-Downloadseite](https://go.dev/dl/) herunter.
 
-Stelle sicher, dass du die offiziellen [Installationsanweisungen für Go](https://go.dev/doc/install) befolgst. Du musst außerdem sicherstellen, dass deine `PATH`-Umgebungsvariable auch den Pfad zu deinem `~/go/bin`-Verzeichnis enthält. Starte dein Terminal neu und führe die folgenden Überprüfungen durch:
+Befolgen Sie unbedingt die offiziellen [Installationsanweisungen für Go](https://go.dev/doc/install). Stellen Sie außerdem sicher, dass die Umgebungsvariable `PATH` auch den Pfad zu Ihrem Verzeichnis `~/go/bin` enthält. Starten Sie Ihr Terminal neu und führen Sie die folgenden Prüfungen durch:
 
-- Überprüfe, ob Go korrekt installiert ist: `go version`
-- Überprüfe, ob `~/go/bin` in deiner PATH-Variablen enthalten ist
-  - Mac / Linux: `echo $PATH | grep go/bin`
+- Prüfen Sie, ob Go ordnungsgemäß installiert ist: `go version`
+- Prüfen Sie, ob `~/go/bin` in Ihrer PATH-Variable enthalten ist
+  - Mac/Linux: `echo $PATH | grep go/bin`
   - Windows: `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
 
 
 
 
 @end
-@tab label="npm (Optional)"
+@tab label="npm (optional)"
 
-Obwohl Wails npm nicht zwingend erfordert, wird es von den meisten eingebundenen Vorlagen benötigt.
+Wails setzt keine Installation von npm voraus, die meisten mitgelieferten Vorlagen benötigen es jedoch.
 
-Lade den neuesten Node-Installer von der [Node Downloads-Seite](https://nodejs.org/en/download/) herunter. Es ist am besten, die neueste Version zu verwenden, da wir in der Regel damit testen.
+Laden Sie das neueste Node-Installationsprogramm von der [Node-Downloadseite](https://nodejs.org/en/download/) herunter. Verwenden Sie möglichst die neueste Version, da wir unsere Tests in der Regel damit durchführen.
 
-Führe `npm --version` aus, um die Installation zu überprüfen.
+Führen Sie zur Überprüfung `npm --version` aus.
 
 @note type="info"
-Wenn du einen anderen Paketmanager bevorzugst, kannst du diesen gerne verwenden. Du musst dann die Taskfiles im Projekt entsprechend anpassen.
+Wenn Sie einen anderen Paketmanager als npm bevorzugen, können Sie diesen verwenden. Sie müssen die Taskfiles des Projekts entsprechend anpassen.
 @end
 
 
@@ -51,18 +57,16 @@ Wenn du einen anderen Paketmanager bevorzugst, kannst du diesen gerne verwenden.
 
 ## Plattformspezifische Abhängigkeiten
 
-Du musst außerdem plattformspezifische Abhängigkeiten installieren:
+Sie müssen außerdem plattformspezifische Abhängigkeiten installieren:
 
 @tabs sync-key="platform"
 @tab label="Mac"
 
-Wails erfordert, dass die Xcode-Befehlszeilentools installiert sind. Dies kann durch Ausführen von:
+Für Wails müssen die Xcode-Befehlszeilentools installiert sein. Führen Sie dazu Folgendes aus:
 
 ```sh
 xcode-select --install
 ```
-
-erreicht werden.
 
 
 
@@ -70,7 +74,7 @@ erreicht werden.
 @end
 @tab label="Windows"
 
-Wails erfordert, dass die [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) installiert ist. Bei fast allen Windows-Installationen ist dies bereits vorhanden. Du kannst dies mit dem Befehl `wails doctor` überprüfen.
+Für Wails muss die [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) installiert sein. Bei fast allen Windows-Installationen ist sie bereits vorhanden. Sie können dies mit dem Befehl `wails doctor` prüfen.
 
 
 
@@ -78,7 +82,7 @@ Wails erfordert, dass die [WebView2 Runtime](https://developer.microsoft.com/en-
 @end
 @tab label="Linux"
 
-Linux benötigt die Standard-`gcc`-Build-Tools sowie `gtk3` und `webkit2gtk`. Führe nach der Installation <code>wails doctor</code> aus, um angezeigt zu bekommen, wie die Abhängigkeiten installiert werden können. Wenn deine Distribution oder dein Paketmanager nicht unterstützt wird, lass es uns bitte auf Discord wissen.
+Unter Linux sind die standardmäßigen `gcc`-Build-Werkzeuge sowie `gtk4` und `webkitgtk-6.0` erforderlich. Führen Sie nach der Installation <code>wails3 doctor</code> aus, um Anweisungen zur Installation der Abhängigkeiten zu erhalten. Der veraltete Stack aus GTK3 und WebKit2GTK 4.1 ist bis v3.1 weiterhin über `-tags gtk3` verfügbar (siehe [Linux-Paketierung – Unterstützung für das veraltete GTK3](/guides/build/linux/#legacy-gtk3-support)). Falls Ihre Distribution oder Ihr Paketmanager nicht unterstützt wird, teilen Sie uns dies bitte auf Discord mit.
 
 
 
@@ -87,14 +91,13 @@ Linux benötigt die Standard-`gcc`-Build-Tools sowie `gtk3` und `webkit2gtk`. F�
 
 ## Installation
 
-Um die Wails CLI über Go Modules zu installieren, führe die folgenden Befehle aus:
+Führen Sie die folgenden Befehle aus, um die Wails-CLI mit Go Modules zu installieren:
 
 ```shell
 go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
 ```
 
-Wenn du die neueste Entwicklungsversion installieren möchtest, führe die folgenden\
-Befehle aus:
+Führen Sie die folgenden Befehle aus, wenn Sie die neueste Entwicklungsversion installieren möchten:
 
 ```shell
 git clone https://github.com/wailsapp/wails.git
@@ -103,19 +106,43 @@ cd v3/cmd/wails3
 go install
 ```
 
-Bei Verwendung der Entwicklungsversion werden alle generierten Projekte Go's\
-[replace](https://go.dev/ref/mod#go-mod-file-replace)-Direktive verwenden, um sicherzustellen,\
-dass die Projekte die Entwicklungsversion von Wails nutzen.
+Bei Verwendung der Entwicklungsversion nutzen alle generierten Projekte die Go-Direktive [replace](https://go.dev/ref/mod#go-mod-file-replace), damit sie die Entwicklungsversion von Wails verwenden.
 
-## Systemprüfung
+## Nächste Schritte
 
-Das Ausführen von `wails3 doctor` überprüft, ob du die korrekten Abhängigkeiten\
-installiert hast. Falls nicht, wird es dir mitteilen, was fehlt, und dir helfen,\
-Probleme zu beheben.
+Führen Sie nach der Installation der CLI den Einrichtungsassistenten aus, um Ihre Entwicklungsumgebung zu konfigurieren:
+
+```shell
+wails3 setup
+```
+
+@note type="caution" title="Experimentell"
+
+Der Einrichtungsassistent ist neu und wurde hauptsächlich unter Linux getestet. Falls Probleme auftreten, [melden Sie diese bitte](https://github.com/wailsapp/wails/issues/4904) und führen Sie die unten beschriebenen Schritte zur manuellen Installation der Abhängigkeiten aus.
+
+@end
+
+Der Einrichtungsassistent führt folgende Aufgaben aus:
+- Plattformabhängigkeiten prüfen und bei ihrer Installation unterstützen
+- Projektstandardwerte konfigurieren (Autoreninformationen, Präfix der Bundle-ID)
+- Optional Docker für plattformübergreifende Builds einrichten
+- Codesignierung konfigurieren (falls erforderlich)
+
+Weitere Informationen finden Sie im [Einrichtungsleitfaden](/getting-started/setup/).
+
+## Manuelle Installation der Abhängigkeiten
+
+Wenn Sie die Abhängigkeiten lieber manuell installieren möchten oder der Einrichtungsassistent auf Ihrem System nicht funktioniert, befolgen Sie die obigen plattformspezifischen Anweisungen und führen Sie anschließend Folgendes aus:
+
+```shell
+wails3 doctor
+```
+
+Dadurch wird geprüft, ob die richtigen Abhängigkeiten installiert sind, und Sie erhalten Hinweise zu fehlenden Abhängigkeiten.
 
 ## Der Befehl `wails3` scheint zu fehlen?
 
-Wenn dein System meldet, dass der Befehl `wails3` fehlt, überprüfe Folgendes:
+Falls Ihr System meldet, dass der Befehl `wails3` fehlt, prüfen Sie Folgendes:
 
-- Stelle sicher, dass du die obige `Go-Installationsanleitung` korrekt befolgt hast und dass das Verzeichnis `go/bin` in der `PATH`-Umgebungsvariable enthalten ist.
-- Schließe/öffne deine aktuellen Terminals neu, damit die neue `PATH`-Variable übernommen wird.
+- Stellen Sie sicher, dass Sie die obige *Go-Installationsanleitung* korrekt befolgt haben und dass das Verzeichnis `go/bin` in der Umgebungsvariable `PATH` enthalten ist.
+- Schließen und öffnen Sie die aktuellen Terminals erneut, damit die neue Variable `PATH` übernommen wird.

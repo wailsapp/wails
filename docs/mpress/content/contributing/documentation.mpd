@@ -17,11 +17,11 @@ and create a branch from `master`.
 Install the pinned documentation generator:
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.3
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 ```
 
 You can also download a verified binary from the
-[M-Press v1.0.3 release](https://github.com/leaanthony/mpress/releases/tag/v1.0.3).
+[M-Press v1.0.17 release](https://github.com/leaanthony/mpress/releases/tag/v1.0.17).
 
 From the Wails repository root:
 
@@ -41,14 +41,22 @@ as text. Do not edit generated files in `docs/mpress/site/`.
 ## Check the correction
 
 ```sh
+python3 docs/mpress/scripts/check_translations.py
 mpress build --strict --no-purge-css
 mpress check
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 Check the changed page in the browser and run any code examples you modify.
-For translation corrections, compare with the English page. Missing translations
-link to English; an unrelated correction does not require translating the site.
+For translation corrections, compare the complete changed passage with English.
+Keep commands, API names, links, code samples and diagram connections intact.
+Use natural technical language, preserve requirements and caveats, and translate
+visible diagram labels, navigation labels and image descriptions as well as prose.
+
+Every published language must have a complete translation of every English page.
+Do not use English placeholders or fallback pages. A correction to one translation
+can change just that language. If you change English meaning, update the matching
+pages in the other published languages; unrelated pages do not need regeneration.
 
 ## Submit a pull request
 

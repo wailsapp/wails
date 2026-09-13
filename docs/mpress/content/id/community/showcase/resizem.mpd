@@ -1,13 +1,11 @@
 ---
 schema = 1
 title = "Resizem"
-description = "Aplikasi desktop yang dibangun dengan Wails"
+description = "Aplikasi desktop yang dibuat dengan Wails"
 slug = "community/showcase/resizem"
-sourcePath = "id/community/showcase/resizem.mpd"
+sourcePath = "community/showcase/resizem.mpd"
 ---
 
-![Resizem Screenshot](/assets/showcase-images/resizem.webp)
+![Tangkapan Layar Resizem](/assets/showcase-images/resizem.webp)
 
-[Resizem](https://github.com/barats/resizem) - adalah aplikasi yang dirancang untuk proses gambar\
-massal. Sangat berguna bagi pengguna yang perlu mengubah ukuran, mengonversi, dan\
-mengelola file gambar dalam jumlah besar sekaligus.
+[Resizem](https://github.com/barats/resizem) adalah aplikasi yang dirancang untuk memproses gambar secara massal. Aplikasi ini sangat berguna bagi pengguna yang perlu mengubah ukuran, mengonversi, dan mengelola banyak file gambar sekaligus.

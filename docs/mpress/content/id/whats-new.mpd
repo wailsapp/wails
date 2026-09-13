@@ -1,37 +1,25 @@
 ---
 schema = 1
-title = "Apa yang Baru di Wails v3"
+title = "Yang Baru di Wails v3"
 description = "Temukan peningkatan utama dan fitur baru di Wails v3"
 slug = "whats-new"
-sourcePath = "id/whats-new.mpd"
+sourcePath = "whats-new.mpd"
 ---
 
-Wails v3 memperkenalkan perubahan signifikan dari v2. Wails v3 menggantikan\
-API deklaratif single-window dengan pendekatan prosedural yang lebih fleksibel. Desain\
-API baru ini meningkatkan keterbacaan kode dan menyederhanakan development, terutama\
-untuk aplikasi multi-window yang kompleks.
+Wails v3 menghadirkan perubahan signifikan dibandingkan v2. API deklaratif berjendela tunggal digantikan dengan pendekatan prosedural yang lebih fleksibel. Desain API baru ini meningkatkan keterbacaan kode dan menyederhanakan pengembangan, terutama untuk aplikasi multijendela yang kompleks.
 
-Wails v3 mewakili evolusi substansial dalam cara aplikasi desktop\
-dapat dibangun menggunakan Go dan teknologi web.
+Wails v3 merupakan evolusi besar dalam cara membangun aplikasi desktop menggunakan Go dan teknologi web.
 
-## Multiple Windows
+## Beberapa Jendela
 
-Wails v3 memperkenalkan kemampuan untuk membuat dan mengelola banyak window dalam\
-satu aplikasi. Fitur ini memungkinkan developer merancang antarmuka pengguna yang lebih kompleks dan\
-serbaguna, melampaui keterbatasan aplikasi single-window.
+Wails v3 menghadirkan kemampuan untuk membuat dan mengelola beberapa jendela dalam satu aplikasi. Fitur ini memungkinkan pengembang merancang antarmuka pengguna yang lebih kompleks dan serbaguna, melampaui keterbatasan aplikasi berjendela tunggal.
 
-Setiap window dapat dikonfigurasi secara independen, memberikan fleksibilitas dalam hal\
-ukuran, posisi, konten, dan perilaku. Ini memungkinkan pembuatan aplikasi\
-dengan window terpisah untuk fungsionalitas berbeda, seperti antarmuka utama,\
-panel pengaturan, atau tampilan tambahan.
+Setiap jendela dapat dikonfigurasi secara independen, sehingga memberikan fleksibilitas dalam hal ukuran, posisi, konten, dan perilaku. Hal ini memungkinkan pembuatan aplikasi dengan jendela terpisah untuk berbagai fungsi, seperti antarmuka utama, panel pengaturan, atau tampilan tambahan.
 
-Developer dapat membuat, memanipulasi, dan mengelola window ini secara programatis,\
-memungkinkan antarmuka pengguna dinamis yang beradaptasi terhadap kebutuhan pengguna dan state\
-aplikasi.
+Pengembang dapat membuat, memanipulasi, dan mengelola jendela tersebut secara terprogram, sehingga memungkinkan antarmuka pengguna dinamis yang menyesuaikan diri dengan kebutuhan pengguna dan status aplikasi.
 
-@note type="tip" title="Multiple Windows"
-@rawHTML
-<details><summary>Contoh</summary>
+@note type="tip" title="Beberapa Jendela"
+@details title="Contoh"
 
 ```go
 package main
@@ -63,11 +51,11 @@ func main() {
        Title:  "Window 2",
    })
    
-   // muat html embedded dari embed.FS
+   // load the embedded html from the embed.FS
    window1.SetURL("/")
    window1.Center()
    
-   // Muat URL eksternal
+   // Load an external URL
    window2.SetURL("https://wails.io")
    
    err := app.Run()
@@ -77,29 +65,24 @@ func main() {
    }
 }
 ```
-</details>
 @end
 
 @end
 
-## Integrasi System Tray
+## Integrasi Baki Sistem
 
-Wails v3 memperkenalkan dukungan robust untuk fungsionalitas system tray, memungkinkan\
-aplikasi Anda mempertahankan kehadiran persisten di desktop pengguna. Fitur\
-ini sangat berguna untuk aplikasi yang perlu berjalan di\
-background atau menyediakan akses cepat ke fungsi utama.
+Wails v3 menghadirkan dukungan tangguh untuk fungsionalitas baki sistem, sehingga aplikasi Anda dapat terus hadir di desktop pengguna. Fitur ini sangat berguna bagi aplikasi yang perlu berjalan di latar belakang atau menyediakan akses cepat ke fungsi utama.
 
-Fitur utama integrasi system tray Wails v3 meliputi:
+Fitur utama integrasi baki sistem Wails v3 meliputi:
 
-1. Window Attachment: Anda dapat mengasosiasikan window dengan ikon system tray. Saat diaktifkan, window ini akan di-center relatif terhadap posisi ikon, memberikan cara bagus untuk mengakses aplikasi dengan cepat.
+1. Penautan Jendela: Anda dapat mengaitkan jendela dengan ikon baki sistem. Saat diaktifkan, jendela ini akan dipusatkan relatif terhadap posisi ikon, sehingga memberikan cara praktis untuk mengakses aplikasi Anda dengan cepat.
 
-2. Dukungan Menu Komprehensif: Buat menu kaya dan interaktif yang dapat diakses pengguna langsung dari ikon system tray. Ini memungkinkan aksi cepat tanpa perlu membuka window aplikasi penuh.
+2. Dukungan Menu Lengkap: Buat menu interaktif yang kaya dan dapat diakses pengguna langsung dari ikon baki sistem. Dengan demikian, tindakan cepat dapat dilakukan tanpa perlu membuka jendela aplikasi secara penuh.
 
-3. Tampilan Ikon Adaptif: Dukungan ikon light dan dark mode memastikan ikon system tray aplikasi tetap terlihat dan estetis di berbagai tema sistem. Template icon juga didukung di macOS.
+3. Tampilan Ikon Adaptif: Dukungan ikon untuk mode terang dan gelap memastikan ikon baki sistem aplikasi Anda tetap terlihat dan tampak menarik pada berbagai tema sistem. Ikon templat juga didukung di macOS.
 
-@note type="tip" title="Systray"
-@rawHTML
-<details><summary>Contoh</summary>
+@note type="tip" title="Baki Sistem"
+@details title="Contoh"
 
 ```go
 package main
@@ -133,25 +116,25 @@ func main() {
 
     systemTray := app.SystemTray.New()
 
-    // Dukungan template icon di macOS
+    // Support for template icons on macOS
     if runtime.GOOS == "darwin" {
         systemTray.SetTemplateIcon(icons.SystrayMacTemplate)
     } else {
-        // Dukungan ikon light/dark mode
+        // Support for light/dark mode icons
         systemTray.SetDarkModeIcon(icons.SystrayDark)
         systemTray.SetIcon(icons.SystrayLight)
     }
 
-    // Dukungan menu
+    // Support for menu
     myMenu := app.Menu.New()
     myMenu.Add("Hello World!").OnClick(func(_ *application.Context) {
         println("Hello World!")
     })
     systemTray.SetMenu(myMenu)
 
-    // Ini akan center window ke ikon systray dengan offset 5px
-    // Window otomatis ditampilkan saat ikon systray diklik
-    // dan disembunyikan saat window kehilangan fokus
+    // This will center the window to the systray icon with a 5px offset
+    // It will automatically be shown when the systray icon is clicked
+    // and hidden when the window loses focus
     systemTray.AttachWindow(window).WindowOffset(5)
 
     err := app.Run()
@@ -160,26 +143,19 @@ func main() {
     }
 }
 ```
-</details>
 @end
 @end
 
-## Pembuatan bindings yang ditingkatkan
+## Peningkatan Pembuatan Binding
 
-Wails v3 memperkenalkan peningkatan signifikan dalam cara bindings di-generate untuk\
-proyek Anda. Bindings adalah lem yang menghubungkan backend Go ke\
-frontend, memungkinkan komunikasi seamless antara keduanya.
+Wails v3 menghadirkan peningkatan signifikan pada cara binding dibuat untuk proyek Anda. Binding merupakan penghubung antara backend Go dan frontend Anda, yang memungkinkan komunikasi lancar di antara keduanya.
 
-Pembuatan binding sekarang dilakukan menggunakan static analyzer canggih yang\
-secara radikal meningkatkan proses pembuatan binding. Analyzer menawarkan kecepatan yang ditingkatkan dan\
-mempertahankan kualitas kode dengan mempertahankan komentar dan nama parameter.
+Pembuatan binding kini dilakukan menggunakan penganalisis statis canggih yang secara drastis meningkatkan proses tersebut. Penganalisis ini memberikan kecepatan yang lebih tinggi dan mempertahankan kualitas kode dengan menjaga komentar serta nama parameter.
 
-Proses pembuatan binding telah disederhanakan, hanya memerlukan satu\
-perintah: `wails3 generate bindings`.
+Proses pembuatan binding telah disederhanakan dan kini hanya memerlukan satu perintah: `wails3 generate bindings`.
 
-@note type="tip" title="Bindings"
-@rawHTML
-<details><summary>Contoh</summary>
+@note type="tip" title="Binding"
+@details title="Contoh"
 
 ```js
 // @ts-check
@@ -208,32 +184,22 @@ export function GreetPerson($0) {
 }
 ```
 
-</details>
 @end
 
 @end
 
-## Sistem build yang ditingkatkan
+## Peningkatan Sistem Build
 
-Wails v3 memperkenalkan sistem build yang lebih fleksibel dan transparan, mengatasi\
-keterbatasan pendahulunya. Di v2, proses build sebagian besar opaque dan\
-sulit dikustomisasi, yang bisa membuat frustrasi developer yang menginginkan lebih\
-kontrol atas proses build proyek mereka.
+Wails v3 menghadirkan sistem build yang lebih fleksibel dan transparan untuk mengatasi keterbatasan pendahulunya. Di v2, proses build sebagian besar tidak transparan dan sulit disesuaikan, sehingga dapat menyulitkan pengembang yang menginginkan kendali lebih besar atas proses build proyek mereka.
 
-Semua heavy lifting yang dilakukan sistem build v2, seperti pembuatan icon dan\
-pembuatan manifest, telah ditambahkan sebagai perintah tool di CLI. Kami\
-menggabungkan [Taskfile](https://taskfile.dev) ke CLI untuk mengorkestrasi\
-panggilan ini agar memberikan developer experience yang sama seperti v2. Namun, pendekatan ini\
-membawa keseimbangan ultimate fleksibilitas dan kemudahan penggunaan karena Anda sekarang\
-dapat menyesuaikan proses build sesuai kebutuhan.
+Semua pekerjaan berat yang sebelumnya dilakukan oleh sistem build v2, seperti pembuatan ikon dan manifes, telah ditambahkan sebagai perintah alat di CLI. Kami telah mengintegrasikan [Taskfile](https://taskfile.dev) ke dalam CLI untuk mengatur pemanggilan tersebut dan memberikan pengalaman pengembang yang sama seperti v2. Namun, pendekatan ini memberikan keseimbangan terbaik antara fleksibilitas dan kemudahan penggunaan karena kini Anda dapat menyesuaikan proses build dengan kebutuhan Anda.
 
-Anda bahkan bisa memakai make jika itu yang Anda suka!
+Anda bahkan dapat menggunakan make jika itu pilihan Anda!
 
 @note type="tip" title="Taskfile.yml"
-@rawHTML
-<details><summary>Contoh</summary>
+@details title="Contoh"
 
-```yaml "Snippet from build/Taskfile.darwin.yml"
+```yaml {title="build/Taskfile.darwin.yml"}
 darwin:build:
   summary: Builds the application for macOS
   platforms:
@@ -248,26 +214,25 @@ darwin:build:
     CGO_LDFLAGS: "-mmacosx-version-min=10.15"
     MACOSX_DEPLOYMENT_TARGET: "10.15"
 ```
-</details>
 @end
 
 @end
 
-## Events yang ditingkatkan
+## Peningkatan Peristiwa
 
-Wails sekarang mengirim events untuk berbagai operasi runtime dan aktivitas sistem.\
-Ini memungkinkan aplikasi Anda merespons events ini secara real-time.\
-Selain itu, events lintas platform (common) tersedia, memungkinkan Anda\
-menulis metode penanganan event konsisten yang berfungsi di sistem operasi berbeda.
+Wails kini memancarkan peristiwa untuk berbagai operasi runtime dan aktivitas sistem.\
+Hal ini memungkinkan aplikasi Anda merespons peristiwa tersebut secara real-time.\
+Selain itu, tersedia peristiwa lintas platform (umum), sehingga Anda dapat\
+menulis metode penanganan peristiwa yang konsisten dan berfungsi di berbagai\
+sistem operasi.
 
-Event hook dapat didaftarkan untuk menangani events spesifik secara sinkron. Berbeda dengan\
-method `On`, hook ini memungkinkan Anda membatalkan event jika diperlukan. Kasus penggunaan umum\
-adalah menampilkan dialog konfirmasi sebelum menutup window. Ini memberi\
-Anda lebih banyak kontrol atas alur event dan pengalaman pengguna.
+Hook peristiwa dapat didaftarkan untuk menangani peristiwa tertentu secara sinkron. Berbeda dengan\
+metode `On`, hook ini memungkinkan Anda membatalkan peristiwa jika diperlukan. Kasus penggunaan yang umum\
+adalah menampilkan dialog konfirmasi sebelum menutup jendela. Hal ini memberi\
+Anda kendali lebih besar atas alur peristiwa dan pengalaman pengguna.
 
-@note type="tip" title="Contoh penanganan event"
-@rawHTML
-<details><summary>Contoh</summary>
+@note type="tip" title="Contoh penanganan peristiwa"
+@details title="Contoh"
 
 ```go
 package main
@@ -297,17 +262,17 @@ func main() {
         },
     })
 
-    // Penanganan custom event — App.Event.On(name, func(e *CustomEvent))
+    // Custom event handling — App.Event.On(name, func(e *CustomEvent))
     app.Event.On("myevent", func(e *application.CustomEvent) {
         log.Printf("[Go] CustomEvent received: %+v\n", e)
     })
 
-    // Application events spesifik OS — App.Event.OnApplicationEvent(eventType, func(e *ApplicationEvent))
+    // OS-specific application events — App.Event.OnApplicationEvent(eventType, func(e *ApplicationEvent))
     app.Event.OnApplicationEvent(events.Mac.ApplicationDidFinishLaunching, func(event *application.ApplicationEvent) {
         println("events.Mac.ApplicationDidFinishLaunching fired!")
     })
 
-    // Events platform-agnostic
+    // Platform-agnostic events
     app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
         println("events.Common.ApplicationStarted fired!")
     })
@@ -318,7 +283,7 @@ func main() {
 
     var countdown = 3
 
-    // Daftarkan hook untuk membatalkan penutupan window
+    // Register a hook to cancel the window closing
     win1.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
         countdown--
         if countdown == 0 {
@@ -341,19 +306,17 @@ func main() {
 }
 ```
 
-</details>
 @end
 
 @end
 
 ## Wails Markup Language (wml)
 
-Fitur eksperimental untuk memanggil method runtime menggunakan plain html, mirip\
+Fitur eksperimental untuk memanggil metode runtime menggunakan HTML biasa, serupa dengan\
 [htmx](https://htmx.org).
 
 @note type="tip" title="Contoh wml"
-@rawHTML
-<details><summary>Contoh</summary>
+@details title="Contoh"
 
 ```html
 <!doctype html>
@@ -390,13 +353,12 @@ Fitur eksperimental untuk memanggil method runtime menggunakan plain html, mirip
 </html>
 ```
 
-</details>
 @end
 
 @end
 
 ## Contoh
 
-Lebih banyak contoh tersedia di direktori\
+Contoh lainnya tersedia di direktori\
 [examples](https://github.com/wailsapp/wails/tree/master/v3/examples).\
-Lihat mereka!
+Silakan lihat!

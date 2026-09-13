@@ -1,16 +1,16 @@
 ---
 schema = 1
-title = "API Application"
-description = "Referensi lengkap untuk API Application"
+title = "API Aplikasi"
+description = "Referensi lengkap untuk API Aplikasi"
 slug = "reference/application"
-sourcePath = "id/reference/application.mpd"
+sourcePath = "reference/application.mpd"
 ---
 
-## Gambaran Umum
+## Ikhtisar
 
-`Application` adalah inti aplikasi Wails Anda. Mengelola window, service, event, dan menyediakan akses ke semua fitur platform.
+`Application` merupakan inti aplikasi Wails Anda. Komponen ini mengelola jendela, layanan, dan peristiwa, serta menyediakan akses ke semua fitur platform.
 
-## Membuat Application
+## Membuat Aplikasi
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/application"
@@ -28,7 +28,7 @@ app := application.New(application.Options{
 
 ### Run()
 
-Memulai event loop aplikasi.
+Memulai loop peristiwa aplikasi.
 
 ```go
 func (a *App) Run() error
@@ -43,11 +43,11 @@ if err != nil {
 }
 ```
 
-*Mengembalikan:* Error jika startup gagal
+*Nilai kembalian:* Error jika proses awal gagal
 
 ### Quit()
 
-Menutup aplikasi dengan graceful.
+Menghentikan aplikasi dengan aman.
 
 ```go
 func (a *App) Quit()
@@ -77,11 +77,11 @@ config := app.Config()
 fmt.Println("App name:", config.Name)
 ```
 
-## Manajemen Window
+## Pengelolaan Jendela
 
 ### app.Window.New()
 
-Membuat webview window baru dengan opsi default.
+Membuat jendela webview baru dengan opsi default.
 
 ```go
 func (wm *WindowManager) New() *WebviewWindow
@@ -96,7 +96,7 @@ window.Show()
 
 ### app.Window.NewWithOptions()
 
-Membuat webview window baru dengan opsi kustom.
+Membuat jendela webview baru dengan opsi khusus.
 
 ```go
 func (wm *WindowManager) NewWithOptions(options WebviewWindowOptions) *WebviewWindow
@@ -115,7 +115,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### app.Window.GetByName()
 
-Mendapatkan window berdasarkan namanya. Mengembalikan window dan apakah ditemukan.
+Mengambil jendela berdasarkan namanya. Mengembalikan jendela tersebut dan status apakah jendela ditemukan.
 
 ```go
 func (wm *WindowManager) GetByName(name string) (Window, bool)
@@ -131,7 +131,7 @@ if window, ok := app.Window.GetByName("main"); ok {
 
 ### app.Window.GetAll()
 
-Mengembalikan semua window aplikasi.
+Mengembalikan semua jendela aplikasi.
 
 ```go
 func (wm *WindowManager) GetAll() []Window
@@ -146,9 +146,9 @@ for _, window := range windows {
 }
 ```
 
-## Manager
+## Pengelola
 
-Application menyediakan akses ke berbagai manager melalui properti:
+Application menyediakan akses ke berbagai pengelola melalui properti:
 
 ```go
 app.Window       // Window management
@@ -181,17 +181,17 @@ app.Clipboard.SetText("Copied text")
 screens := app.Screen.GetAll()
 ```
 
-## Manajemen Service
+## Pengelolaan Layanan
 
 ### RegisterService()
 
-Mendaftarkan service ke aplikasi.
+Mendaftarkan layanan pada aplikasi.
 
 ```go
 func (a *App) RegisterService(service Service)
 ```
 
-`RegisterService` tidak mengembalikan nilai; error inisialisasi service muncul via kegagalan `ServiceStartup` selama `app.Run()`.
+`RegisterService` tidak mengembalikan nilai; kesalahan inisialisasi layanan muncul melalui kegagalan `ServiceStartup` selama `app.Run()`.
 
 *Contoh:*
 
@@ -208,11 +208,11 @@ func NewMyService(app *application.App) *MyService {
 app.RegisterService(application.NewService(NewMyService(app)))
 ```
 
-## Manajemen Event
+## Pengelolaan Peristiwa
 
 ### app.Event.Emit()
 
-Memancarkan event kustom. Mengembalikan `true` jika hook membatalkan emit.
+Memancarkan peristiwa khusus. Mengembalikan `true` jika sebuah hook membatalkan pemancaran tersebut.
 
 ```go
 func (em *EventManager) Emit(name string, data ...any) bool
@@ -230,7 +230,7 @@ app.Event.Emit("user-logged-in", map[string]interface{}{
 
 ### app.Event.On()
 
-Mendengarkan event kustom. Mengembalikan `func()` unsubscribe.
+Memantau peristiwa khusus. Mengembalikan `func()` untuk berhenti berlangganan.
 
 ```go
 func (em *EventManager) On(name string, callback func(*CustomEvent)) func()
@@ -248,7 +248,7 @@ app.Event.On("user-logged-in", func(e *application.CustomEvent) {
 
 ### app.Event.OnApplicationEvent()
 
-Mendengarkan event siklus hidup aplikasi. Parameter `eventType` adalah `events.ApplicationEventType` (dari paket `events`).
+Memantau peristiwa siklus hidup aplikasi. Parameter `eventType` bertipe `events.ApplicationEventType` (dari paket `events`).
 
 ```go
 func (em *EventManager) OnApplicationEvent(
@@ -275,7 +275,7 @@ app.OnShutdown(func() {
 
 ## Metode Dialog
 
-Dialog diakses melalui manager `app.Dialog`. Lihat [API Dialog](/id/reference/dialogs/) untuk referensi lengkap.
+Dialog diakses melalui pengelola `app.Dialog`. Lihat [API Dialog](/reference/dialogs/) untuk referensi lengkap.
 
 ### Dialog Pesan
 
@@ -347,9 +347,9 @@ path, err := app.Dialog.OpenFile().
     PromptForSingleSelection()
 ```
 
-## Logger
+## Pencatat Log
 
-Aplikasi menyediakan structured logger:
+Aplikasi menyediakan pencatat log terstruktur:
 
 ```go
 app.Logger.Info("Message", "key", "value")
@@ -374,17 +374,17 @@ func (s *MyService) ProcessData(data string) error {
 }
 ```
 
-## Penanganan Raw Message
+## Penanganan Pesan Mentah
 
-Untuk aplikasi yang memerlukan kontrol langsung tingkat rendah atas komunikasi frontend-ke-backend, Wails menyediakan opsi `RawMessageHandler`. Ini melewati sistem binding standar.
+Untuk aplikasi yang memerlukan kontrol langsung tingkat rendah atas komunikasi dari frontend ke backend, Wails menyediakan opsi `RawMessageHandler`. Opsi ini melewati sistem binding standar.
 
 @note type="info"
-Raw message hanya boleh digunakan sebagai upaya terakhir. Sistem binding standar sangat dioptimalkan dan cukup untuk hampir semua aplikasi. Hanya gunakan raw message jika Anda telah memprofil aplikasi dan mengonfirmasi bahwa binding adalah bottleneck.
+Pesan mentah sebaiknya hanya digunakan sebagai pilihan terakhir. Sistem binding standar sangat dioptimalkan dan memadai untuk hampir semua aplikasi. Gunakan pesan mentah hanya jika Anda telah melakukan profiling terhadap aplikasi dan memastikan bahwa binding menjadi hambatan performa.
 @end
 
 ### RawMessageHandler
 
-`RawMessageHandler` adalah field pada `application.Options`, bukan metode. Runtime memanggilnya untuk setiap raw message yang dikirim dari frontend via `System.invoke()`.
+`RawMessageHandler` adalah field pada `application.Options`, bukan metode. Runtime memanggilnya untuk setiap pesan mentah yang dikirim dari frontend melalui `System.invoke()`.
 
 ```go
 type Options struct {
@@ -393,7 +393,7 @@ type Options struct {
 }
 ```
 
-`OriginInfo` membawa `Origin`, `TopOrigin`, dan `IsMainFrame` (platform mengisi subset berbeda — lihat [Panduan Raw Messages](/id/guides/raw-messages/) untuk matriks per platform).
+`OriginInfo` memuat `Origin`, `TopOrigin`, dan `IsMainFrame` (setiap platform mengisi subset yang berbeda—lihat [Panduan Pesan Mentah](/guides/raw-messages/) untuk matriks per platform).
 
 *Contoh:*
 
@@ -410,13 +410,13 @@ app := application.New(application.Options{
 })
 ```
 
-Untuk detail selengkapnya, lihat [Panduan Raw Messages](/id/guides/raw-messages/).
+Untuk detail selengkapnya, lihat [Panduan Pesan Mentah](/guides/raw-messages/).
 
-## Opsi Spesifik Platform
+## Opsi Khusus Platform
 
 ### Opsi Windows
 
-Konfigurasi perilaku khusus Windows di level aplikasi:
+Konfigurasikan perilaku khusus Windows pada tingkat aplikasi:
 
 ```go
 app := application.New(application.Options{
@@ -437,11 +437,11 @@ app := application.New(application.Options{
 ```
 
 *Flag Browser:*
-- `EnabledFeatures` - Feature flag WebView2 untuk diaktifkan
-- `DisabledFeatures` - Feature flag WebView2 untuk dinonaktifkan
-- `AdditionalBrowserArgs` - Argumen command-line Chromium
+- `EnabledFeatures` - Flag fitur WebView2 yang akan diaktifkan
+- `DisabledFeatures` - Flag fitur WebView2 yang akan dinonaktifkan
+- `AdditionalBrowserArgs` - Argumen baris perintah Chromium
 
-Lihat [Opsi Window - Opsi Windows Level Aplikasi](/id/features/windows/options/) untuk dokumentasi detail.
+Lihat [Opsi Jendela - Opsi Windows Tingkat Aplikasi](/features/windows/options/#application-level-windows-options) untuk dokumentasi terperinci.
 
 ### Opsi Mac
 
@@ -467,7 +467,7 @@ app := application.New(application.Options{
 })
 ```
 
-## Contoh Application Lengkap
+## Contoh Aplikasi Lengkap
 
 ```go
 package main

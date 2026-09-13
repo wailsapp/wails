@@ -638,7 +638,7 @@ _/
 ## v3.0.0-alpha.91 - 2026-05-12
 
 ## Changed
-- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5414) by @github-actions[bot]
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5414) by `@github-actions[bot]`
 - *BREAKING (macOS):* Normalise the macOS coordinate system so `GetScreens`, `Position`, and `SetPosition` all use the same space — logical points, Y-down, with `(0,0)` at the top-left of the primary screen. This matches Windows, GTK and the public APIs of Electron and the web. Screens physically above the primary now report negative `Bounds.Y` (previously positive), and `Position()`/`SetPosition()` values are now in logical points instead of `points × primaryScale`. Round-tripping `Position()` → `SetPosition()` is preserved; absolute values logged from earlier alpha builds or hand-computed workarounds (e.g. multiplying by `primaryScale` or flipping Y against a screen height) will need to be updated. Resolves [#5117](https://github.com/wailsapp/wails/issues/5117).
 
 ## Fixed
@@ -658,7 +658,7 @@ _/
 
 ## Changed
 - Consolidate build output into assets directory in [PR](https://github.com/wailsapp/wails/pull/5401) by @taliesin-ai
-- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5399) by @github-actions[bot]
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5399) by `@github-actions[bot]`
 
 ## Fixed
 - Use notification object for macOS single-instance message in [PR](https://github.com/wailsapp/wails/pull/5289) by @overlordtm
@@ -674,7 +674,7 @@ _/
 - Upgrade Vite from 5.x.x to 8.0.0 across all frontend templates in [PR](https://github.com/wailsapp/wails/pull/5386) by @leaanthony
 - Migrate Vite dev server port configuration to environment variables in [PR](https://github.com/wailsapp/wails/pull/5365) by @leaanthony
 - Configure Vite dev server to bind to 127.0.0.1 in all templates in [PR](https://github.com/wailsapp/wails/pull/5361) by @leaanthony
-- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5384) by @github-actions[bot]
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5384) by `@github-actions[bot]`
 
 ## Fixed
 - Sanitize Info.plist template stubs during build-assets update in [PR](https://github.com/wailsapp/wails/pull/5312) by @leaanthony
@@ -688,7 +688,7 @@ _/
 ## Changed
 - Switch HiddenOnTaskbar to use WS_EX_TOOLWINDOW in [PR](https://github.com/wailsapp/wails/pull/5371) by @leaanthony
 - Reorder dependencies and remove webview2 replace directive in go.mod in [PR](https://github.com/wailsapp/wails/pull/5370) by @atterpac
-- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5358) by @github-actions[bot]
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5358) by `@github-actions[bot]`
 
 ## Fixed
 - Remove generic indirection aliases and consolidate map key types in [PR](https://github.com/wailsapp/wails/pull/5331) by @fbbdev
@@ -731,7 +731,7 @@ _/
 - Adds Pausa community showcase documentation in [PR](https://github.com/wailsapp/wails/pull/5288) by @yuseferi
 
 ## Changed
-- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5308) by @github-actions[bot]
+- Update sponsors SVG in [PR](https://github.com/wailsapp/wails/pull/5308) by `@github-actions[bot]`
 - Update icon generation command to handle unsupported platforms in [PR](https://github.com/wailsapp/wails/pull/5309) by @leaanthony
 - Replace boolean fullscreen API with tri-state ButtonState, implement platform bindings in [PR](https://github.com/wailsapp/wails/pull/5224) by @leaanthony
 
@@ -805,7 +805,7 @@ _/
 - Add `internal/libpath` package for finding native library paths on Linux with parallel search, caching, and support for Flatpak/Snap/Nix
 - *WIP:* Add experimental WebKitGTK 6.0 / GTK4 support for Linux, available via `-tags gtk4` (GTK3/WebKit2GTK 4.1 remains the default)
 - Note: On tiling window managers (e.g., Hyprland, Sway), Minimize/Maximize operations may not work as expected since the WM controls window geometry
-- Added how to do `One Time Handlers` in the docs for `Listening to Events in JavaScript` by @AbdelhadiSeddar
+- Added how to do *One Time Handlers* in the docs for *Listening to Events in JavaScript* by @AbdelhadiSeddar
 - Add `UseApplicationMenu` option to `WebviewWindowOptions` allowing windows on Windows/Linux to inherit the application menu set via `app.Menu.Set()` by @leaanthony
 - Add support for using `.icon` files (Apple Icon Composer format) for generating Liquid Glass icons and asset catalogs (macOS) (#4934) by @wimaha
 - Add experimental server mode for headless/web deployments (`-tags server`). Enables running Wails apps as HTTP servers without native GUI dependencies. Build with `wails3 task build:server`. See `examples/server` for details.
@@ -968,7 +968,7 @@ _/
 - Fix system tray attached window appearing behind other windows on macOS - now uses proper popup window level (#4910)
 - Fix incorrect `@wailsio/runtime` import examples across documentation (#4989)
 - Fix frameless window cannot be minimized on darwin (#4294)
-- Fix 20-30 minute hangs during `wails3 build` and `wails3 dev` by excluding `node_modules/` from go-task's up-to-date checking. Previously, the `sources: "**/*"` glob caused go-task to enumerate and checksum every file in `node_modules/` (50-100k+ files with heavy dependencies like MUI), especially slow on Windows/NTFS (#4939)
+- Fix 20-30 minute hangs during `wails3 build` and `wails3 dev` by excluding `node_modules/` from go-task's up-to-date checking. Previously, the `sources: "**/*"` glob caused go-task to enumerate and checksum every file in `node_modules/` (50000-100000+ files with heavy dependencies like MUI), especially slow on Windows/NTFS (#4939)
 - Fix GTK4 build failure caused by C `Screen` typedef colliding with X11 Xlib.h (#4957)
 - Fix dock badge methods consistency on macOS
 - Fix `InvisibleTitleBarHeight` being applied to all macOS windows instead of only frameless or transparent title bar windows (#4960)

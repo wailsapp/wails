@@ -1,16 +1,16 @@
 ---
 schema = 1
 title = "Model Data"
-description = "Bind struktur data kompleks antara Go dan JavaScript"
+description = "Ikat struktur data kompleks antara Go dan JavaScript"
 slug = "features/bindings/models"
-sourcePath = "id/features/bindings/models.mpd"
+sourcePath = "features/bindings/models.mpd"
 ---
 
-## Binding Model Data
+## Pengikatan Model Data
 
-Wails *secara otomatis menghasilkan class JavaScript/TypeScript* dari struct Go, memberikan type safety penuh saat meneruskan data kompleks antara backend dan frontend. Tulis struct Go, hasilkan binding, dan dapatkan model frontend bertipe penuh lengkap dengan constructor, anotasi tipe, dan komentar JSDoc.
+Wails *secara otomatis menghasilkan kelas JavaScript/TypeScript* dari struct Go, sehingga memberikan keamanan tipe penuh saat meneruskan data kompleks antara backend dan frontend. Tulis struct Go, hasilkan pengikatan, lalu dapatkan model frontend bertipe lengkap beserta konstruktor, anotasi tipe, dan komentar JSDoc.
 
-## Memulai Cepat
+## Mulai Cepat
 
 *Struct Go:*
 
@@ -43,7 +43,7 @@ const user = await GetUser(1)
 console.log(user.Name)  // Type-safe!
 ```
 
-*Itu saja!* Type safety penuh melintasi bridge.
+*Selesai!* Keamanan tipe penuh di seluruh penghubung.
 
 ## Mendefinisikan Model
 
@@ -56,7 +56,7 @@ type Person struct {
 }
 ```
 
-*JavaScript yang Dihasilkan:*
+*JavaScript yang dihasilkan:*
 
 ```javascript
 export class Person {
@@ -87,7 +87,7 @@ type User struct {
 }
 ```
 
-*JavaScript yang Dihasilkan:*
+*JavaScript yang dihasilkan:*
 
 ```javascript
 export class User {
@@ -109,7 +109,30 @@ export class User {
 }
 ```
 
-*Tag JSON mengontrol nama field* di JavaScript.
+*Tag JSON mengendalikan nama field* dalam JavaScript.
+
+### Marshalling JSON Kustom
+
+Hasil metode yang diikat di-marshalling dengan paket standar `encoding/json` milik Go. Perhatikan bahwa metode `MarshalJSON` yang dideklarasikan pada receiver pointer hanya dipanggil jika nilai yang di-marshalling dapat dialamati. Artinya, marshaler kustom dapat dipanggil untuk elemen slice yang dikembalikan, tetapi tidak untuk struct yang dikembalikan sebagai nilai:
+
+```go
+func (n *Nullable[T]) MarshalJSON() ([]byte, error) {
+    if n.Valid {
+        return json.Marshal(n.V)
+    }
+    return []byte("null"), nil
+}
+
+func (s *UserService) GetUser() User {
+    return User{} // pointer receiver may not be called
+}
+
+func (s *UserService) GetUsers() []User {
+    return []User{{}} // pointer receiver is called for elements
+}
+```
+
+Untuk memastikan keluaran yang konsisten, definisikan `MarshalJSON` pada receiver nilai jika tipe tersebut dapat disalin dengan aman, atau kembalikan pointer ke struct (misalnya, `*User`). Ini merupakan perilaku `encoding/json` milik Go, bukan perbedaan dalam pembuatan pengikatan Wails.
 
 ### Dengan Komentar
 
@@ -127,7 +150,7 @@ type User struct {
 }
 ```
 
-*JavaScript yang Dihasilkan:*
+*JavaScript yang dihasilkan:*
 
 ```javascript
 /**
@@ -154,7 +177,7 @@ export class User {
 }
 ```
 
-*Komentar menjadi JSDoc!* IDE Anda menampilkannya.
+*Komentar menjadi JSDoc!* IDE Anda akan menampilkannya.
 
 ### Struct Bersarang
 
@@ -172,7 +195,7 @@ type User struct {
 }
 ```
 
-*JavaScript yang Dihasilkan:*
+*JavaScript yang dihasilkan:*
 
 ```javascript
 export class Address {
@@ -221,7 +244,7 @@ type Team struct {
 }
 ```
 
-*JavaScript yang Dihasilkan:*
+*JavaScript yang dihasilkan:*
 
 ```javascript
 export class Team {
@@ -250,7 +273,7 @@ type Config struct {
 }
 ```
 
-*JavaScript yang Dihasilkan:*
+*JavaScript yang dihasilkan:*
 
 ```javascript
 export class Config {
@@ -291,14 +314,14 @@ const config = new Config({
 | Tipe Go               | JavaScript/TypeScript | Catatan                                                           |
 | `[]T`                 | `T[]`                 | -                                                               |
 | `[N]T`                | `T[]`                 | -                                                               |
-| `map[string]T`        | `{ [_: string]: T }`  | map dengan key string                                                |
-| `map[K]V`             | `{ [_ in K]?: V }`    | `K` non-string dirender sebagai mapped type, *bukan* JS `Map` |
-| `[]byte`              | `string`              | base64-encoded                                                  |
+| `map[string]T`        | `{ [_: string]: T }`  | map dengan kunci string                                                |
+| `map[K]V`             | `{ [_ in K]?: V }`    | `K` non-string dirender sebagai tipe terpetakan, *bukan* `Map` JS |
+| `[]byte`              | `string`              | dikodekan dengan base64                                                  |
 | `struct`              | `class` / `interface` | dengan field                                                     |
-| `time.Time`           | `any`                 | diserialisasi sebagai string RFC3339Nano di runtime                     |
-| `*T`                  | `T \| null`           | pointer berarti nullable                                          |
+| `time.Time`           | `any`                 | diserialisasikan sebagai string RFC3339Nano saat runtime                     |
+| `*T`                  | `T \| null`           | pointer berarti dapat bernilai null                                          |
 | `any` / `interface{}` | `any`                 | -                                                               |
-| `error`               | `any` / `Exception`   | Exception jika sebagai nilai return, selain itu any                           |
+| `error`               | `any` / `Exception`   | Exception jika digunakan sebagai nilai kembalian; jika tidak, any                           |
 @end
 
 ### Tipe yang Tidak Didukung
@@ -306,11 +329,11 @@ const config = new Config({
 - `chan T` (channel)
 - `func()` (fungsi)
 - Interface kompleks (kecuali `interface{}`)
-- Field tidak diekspor (lowercase)
+- Field yang tidak diekspor (huruf kecil)
 
 ## Menggunakan Model
 
-### Membuat Instance
+### Membuat Instans
 
 ```javascript
 import { User } from './bindings/changeme/models'
@@ -384,7 +407,7 @@ await UpdateUser(user)
 wails3 generate bindings -ts
 ```
 
-*Yang Dihasilkan:*
+*Hasil pembuatan:*
 
 ```typescript
 /**
@@ -478,7 +501,7 @@ if (user.nickname) {
 
 ### Enum
 
-Generator binding secara otomatis mendeteksi tipe bernama Go dengan konstanta dan menghasilkan enum TypeScript atau const object JavaScript — termasuk anggota `$zero` untuk nilai nol Go dan preservasi JSDoc penuh.
+Generator binding secara otomatis mendeteksi tipe bernama Go yang memiliki konstanta dan menghasilkan enum TypeScript atau objek const JavaScript—termasuk anggota `$zero` untuk nilai nol Go serta mempertahankan JSDoc secara utuh.
 
 ```go
 type UserRole string
@@ -490,7 +513,7 @@ const (
 )
 ```
 
-*TypeScript yang Dihasilkan:*
+*TypeScript yang dihasilkan:*
 
 ```typescript
 export enum UserRole {
@@ -512,7 +535,7 @@ const admin = new User({
 })
 ```
 
-Untuk cakupan lengkap enum string, enum integer, type alias, enum paket yang diimpor, dan keterbatasan, lihat halaman khusus *[Enum](/id/features/bindings/enums/)*.
+Untuk pembahasan lengkap tentang enum string, enum bilangan bulat, alias tipe, enum dari package yang diimpor, dan batasannya, lihat halaman khusus *[Enum](/features/bindings/enums/)*.
 
 ### Validasi
 
@@ -561,7 +584,6 @@ const user2 = new User(obj)
 package main
 
 import (
-    "fmt"
     "time"
     "github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -686,43 +708,43 @@ manager.loadUsers()
 
 ### ✅ Lakukan
 
-- *Gunakan tag JSON* - Kontrol nama field
-- *Tambahkan komentar* - Menjadi JSDoc
-- *Gunakan time.Time* - Dikonversi ke Date
-- *Validasi di sisi Go* - Jangan percaya frontend
-- *Jaga model sederhana* - Hanya sebagai container data
-- *Gunakan pointer untuk opsional* - `*string` untuk nullable
+- *Gunakan tag JSON*—Kendalikan nama field
+- *Tambahkan komentar*—Komentar tersebut akan menjadi JSDoc
+- *Gunakan time.Time*—Dikonversi menjadi Date
+- *Lakukan validasi di sisi Go*—Jangan percayai frontend
+- *Pertahankan model tetap sederhana*—Gunakan hanya sebagai wadah data
+- *Gunakan pointer untuk field opsional*—Gunakan `*string` agar dapat bernilai null
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan tambahkan metode ke struct Go* - Jaga sebagai data
-- *Jangan gunakan field tidak diekspor* - Tidak akan ter-bind
-- *Jangan gunakan interface kompleks* - Tidak didukung
-- *Jangan lupa tag JSON* - Nama field penting
-- *Jangan nest terlalu dalam* - Jaga tetap sederhana
+- *Jangan tambahkan metode ke struct Go*—Pertahankan sebagai data
+- *Jangan gunakan field yang tidak diekspor*—Field tersebut tidak akan di-binding
+- *Jangan gunakan interface kompleks*—Tidak didukung
+- *Jangan lupakan tag JSON*—Nama field itu penting
+- *Jangan membuat struktur bersarang terlalu dalam*—Pertahankan tetap sederhana
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
 @card title="🚀 Binding Metode"
-Pelajari cara bind metode Go.
+Pelajari cara melakukan binding pada metode Go.
 
-[Pelajari Lebih Lanjut →](/id/features/bindings/methods/)
+[Pelajari Selengkapnya →](/features/bindings/methods/)
 @end
-@card title="◆ Services"
-Atur kode dengan service.
+@card title="◆ Layanan"
+Atur kode dengan layanan.
 
-[Pelajari Lebih Lanjut →](/id/features/bindings/services/)
+[Pelajari Selengkapnya →](/features/bindings/services/)
 @end
 @card title="✓ Praktik Terbaik"
 Pola desain binding.
 
-[Pelajari Lebih Lanjut →](/id/features/bindings/best-practices/)
+[Pelajari Selengkapnya →](/features/bindings/best-practices/)
 @end
-@card title="★ Bridge Go-Frontend"
-Pahami mekanisme bridge.
+@card title="★ Jembatan Go-Frontend"
+Pahami mekanisme jembatan.
 
-[Pelajari Lebih Lanjut →](/id/concepts/bridge/)
+[Pelajari Selengkapnya →](/concepts/bridge/)
 @end
 @end
 

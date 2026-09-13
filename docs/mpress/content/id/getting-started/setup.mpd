@@ -1,53 +1,53 @@
 ---
 schema = 1
-title = "Setup"
+title = "Penyiapan"
 slug = "getting-started/setup"
-sourcePath = "id/getting-started/setup.mpd"
+sourcePath = "getting-started/setup.mpd"
 ---
 
 @note type="caution" title="Eksperimental"
 
-Wizard setup masih baru dan terutama diuji di Linux. Jika Anda mengalami masalah, harap [laporkan](https://github.com/wailsapp/wails/issues/4904) dan ikuti [langkah instalasi manual](/id/getting-started/installation/).
+Wizard penyiapan ini masih baru dan terutama telah diuji di Linux. Jika Anda mengalami masalah, silakan [laporkan masalah tersebut](https://github.com/wailsapp/wails/issues/4904), lalu ikuti [langkah-langkah instalasi manual](/getting-started/installation/#platform-specific-dependencies) sebagai gantinya.
 
 @end
 
 ## Mulai Cepat
 
 ```bash
-# 1. Instal CLI Wails
+# 1. Install the Wails CLI
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
-# 2. Jalankan wizard setup
+# 2. Run the setup wizard
 wails3 setup
 ```
 
-Wizard terbuka di browser Anda dan memandu Anda melalui pemeriksaan dependensi, default proyek, dan setup build lintas platform opsional.
+Wizard akan terbuka di browser dan memandu Anda memeriksa dependensi, menentukan nilai default proyek, serta menyiapkan build lintas platform secara opsional.
 
-Kemudian Anda siap untuk proyek pertama:
+Setelah itu, Anda siap membuat proyek pertama:
 
 ```bash
 wails3 init -n myapp -t vanilla
 cd myapp && wails3 dev
 ```
 
-## Apa yang Dilakukannya
+## Fungsinya
 
-- *Memeriksa dependensi* - Memverifikasi Go, npm, dan tooling platform
-- *Mengonfigurasi default* - Info penulis, prefix bundle ID, template pilihan
-- *Build lintas platform* - Setup Docker opsional untuk build dari host mana pun
-- *Code signing* - Setup opsional untuk macOS, Windows, dan Linux
+- *Memeriksa dependensi* - Memverifikasi Go, npm, dan alat platform
+- *Mengonfigurasi nilai default* - Informasi pembuat, prefiks ID bundel, dan templat pilihan
+- *Build lintas platform* - Penyiapan Docker opsional untuk menjalankan build dari host apa pun
+- *Penandatanganan kode* - Penyiapan opsional untuk macOS, Windows, dan Linux
 
 Konfigurasi disimpan ke `~/.config/wails/config.yaml` dan digunakan oleh `wails3 init`.
 
-## Sub-Command
+## Subperintah
 
 ```bash
-wails3 setup signing      # Konfigurasi code signing
-wails3 setup entitlements # Konfigurasi entitlements macOS
+wails3 setup signing      # Configure code signing
+wails3 setup entitlements # Configure macOS entitlements
 ```
 
 ## Mengalami Masalah?
 
 1. Jalankan `wails3 doctor` untuk mendiagnosis masalah
-2. Ikuti [langkah instalasi manual](/id/getting-started/installation/)
-3. [Laporkan issue](https://github.com/wailsapp/wails/issues/4904) beserta output `wails3 doctor` Anda
+2. Ikuti [langkah-langkah instalasi manual](/getting-started/installation/#platform-specific-dependencies)
+3. [Laporkan masalah tersebut](https://github.com/wailsapp/wails/issues/4904) beserta output `wails3 doctor` Anda

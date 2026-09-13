@@ -1,27 +1,27 @@
 ---
 schema = 1
 title = "XenSQL"
-description = "Workbench SQL local-first dengan dukungan multi-database dan alat query lanjutan"
+description = "Workbench SQL yang mengutamakan penyimpanan lokal, dengan dukungan berbagai basis data dan alat kueri canggih"
 slug = "community/showcase/xensql"
-sourcePath = "id/community/showcase/xensql.mpd"
+sourcePath = "community/showcase/xensql.mpd"
 ---
 
-![Editor tabel XenSQL dengan pengeditan inline](/assets/showcase-images/xensql-1.png)\
-![Editor query XenSQL dengan saran tabel dan kolom](/assets/showcase-images/xensql-2.png)\
-![Beberapa query transaksi XenSQL](/assets/showcase-images/xensql-3.png)
+![Editor tabel XenSQL dengan pengeditan langsung](/assets/showcase-images/xensql-1.png)\
+![Editor kueri XenSQL dengan saran tabel dan kolom](/assets/showcase-images/xensql-2.png)\
+![Beberapa kueri transaksi di XenSQL](/assets/showcase-images/xensql-3.png)
 
-*[XenSQL](https://github.com/Bare7a/XenSQL)* adalah *workbench SQL desktop local-first yang cepat* dibangun dengan *Go, Wails, dan React*. Aplikasi ini menggabungkan PostgreSQL, MySQL/MariaDB, dan SQLite dalam satu antarmuka yang bersih dan terasa native — tanpa cloud, tanpa telemetri, dan tanpa akun.
+*[XenSQL](https://github.com/Bare7a/XenSQL)* adalah *workbench SQL desktop yang cepat dan mengutamakan penyimpanan lokal*, yang dibuat dengan *Go, Wails, dan React*. Aplikasi ini menyatukan PostgreSQL, MySQL/MariaDB, dan SQLite dalam satu antarmuka yang rapi dan terasa natif—tanpa cloud, telemetri, ataupun akun.
 
-## Sorotan Utama
+## Keunggulan Utama
 
-- *Editor SQL yang Powerful* — Berbasis Monaco dengan autocomplete cerdas yang aware schema, eksekusi multi-statement, hasil streaming, dan tab hasil per-statement
-- *Penampil Data Lanjutan* — Inspektor JSON interaktif, editor sel aware syntax (JSON, XML, HTML, teks), pengeditan inline, dan inspeksi record penuh
-- *Pengeditan Data Seamless* — Jelajahi tabel, stage perubahan inline, operasi bulk, dan `INSERT`/`UPDATE`/`DELETE` aman dengan dukungan `RETURNING`
-- *Fitur Produktivitas* — Penjelajah schema, query tersimpan, riwayat query, pencarian cepat (`Ctrl+P`), dan alur kerja keyboard-first
-- *Opsi Ekspor* — CSV, JSON, Markdown, SQL INSERTs
+- *Editor SQL yang Canggih*—berbasis Monaco dengan pelengkapan otomatis cerdas yang memahami skema, eksekusi beberapa pernyataan, hasil streaming, dan tab hasil untuk setiap pernyataan
+- *Penampil Data Tingkat Lanjut*—pemeriksa JSON interaktif, editor sel yang memahami sintaks (JSON, XML, HTML, teks), pengeditan langsung, dan pemeriksaan rekaman secara menyeluruh
+- *Pengeditan Data yang Mulus*—telusuri tabel, siapkan perubahan secara langsung, lakukan operasi massal, serta gunakan `INSERT`/`UPDATE`/`DELETE` dengan aman dan didukung oleh `RETURNING`
+- *Fitur Produktivitas*—penjelajah skema, kueri tersimpan, riwayat kueri, pencarian cepat (`Ctrl+P`), dan alur kerja yang mengutamakan keyboard
+- *Opsi Ekspor*—CSV, JSON, Markdown, SQL INSERT
 
-Sepenuhnya offline dan portabel. Semuanya disimpan secara lokal dalam satu folder `XenSQL-data/` yang ikut dengan aplikasi.
+Sepenuhnya luring dan portabel. Semuanya disimpan secara lokal dalam satu folder `XenSQL-data/` yang dapat dibawa bersama aplikasi.
 
-*Database yang Didukung*: PostgreSQL, MySQL, MariaDB, dan SQLite (dengan mode read-only dan opsi transport aman).
+*Basis Data yang Didukung*: PostgreSQL, MySQL, MariaDB, dan SQLite (dengan mode hanya-baca dan opsi koneksi aman).
 
-Dirancang untuk developer yang menginginkan kecepatan, kejelasan, dan kontrol tanpa bloat alat SQL tradisional.
+Dirancang bagi pengembang yang menginginkan kecepatan, kejelasan, dan kendali tanpa beban berlebihan dari alat SQL tradisional.

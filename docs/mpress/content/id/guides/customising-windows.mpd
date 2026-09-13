@@ -1,23 +1,21 @@
 ---
 schema = 1
-title = "Kustomisasi Window"
-description = "Sesuaikan tampilan dan perilaku window"
+title = "Menyesuaikan Jendela di Wails"
+description = "Sesuaikan tampilan dan perilaku jendela dalam aplikasi Wails Anda"
 slug = "guides/customising-windows"
-sourcePath = "id/guides/customising-windows.mpd"
+sourcePath = "guides/customising-windows.mpd"
 ---
 
-Relevant Platforms: <span class="mpress-badge mpress-badge-note">Windows</span> <span class="mpress-badge mpress-badge-success">macOS</span>
+Platform yang Relevan: <span class="mpress-badge mpress-badge-note">Windows</span> <span class="mpress-badge mpress-badge-success">macOS</span>
 @rawHTML
 <br/>
 @end
 
-Wails provides an API to control the appearance and functionality of the\
-controls of a window. This functionality is available on Windows and macOS, but\
-not on Linux.
+Wails menyediakan API untuk mengontrol tampilan dan fungsi kontrol jendela. Fungsionalitas ini tersedia di Windows dan macOS, tetapi tidak di Linux.
 
-## Setting the Window Button States
+## Mengatur Status Tombol Jendela
 
-The button states are defined by the `ButtonState` enum:
+Status tombol ditentukan oleh enum `ButtonState`:
 
 ```go
 type ButtonState int
@@ -29,16 +27,15 @@ const (
 )
 ```
 
-- `ButtonEnabled`: The button is enabled and visible.
-- `ButtonDisabled`: The button is visible but disabled (grayed out).
-- `ButtonHidden`: The button is hidden from the titlebar.
+- `ButtonEnabled`: Tombol diaktifkan dan terlihat.
+- `ButtonDisabled`: Tombol terlihat, tetapi dinonaktifkan (berwarna abu-abu).
+- `ButtonHidden`: Tombol disembunyikan dari bilah judul.
 
-The button states can be set during window creation or at runtime.
+Status tombol dapat diatur saat jendela dibuat atau pada saat runtime.
 
-### Setting Button States During Pembuatan Window
+### Mengatur Status Tombol Saat Membuat Jendela
 
-When creating a new window, you can set the initial state of the buttons using\
-the `WebviewWindowOptions` struct:
+Saat membuat jendela baru, Anda dapat mengatur status awal tombol menggunakan struct `WebviewWindowOptions`:
 
 ```go {title="main.go"}
 package main
@@ -63,13 +60,11 @@ func main() {
 }
 ```
 
-In the example above, the minimise button is hidden, the maximise button is\
-inactive (grayed out), and the close button is active.
+Dalam contoh di atas, tombol minimalkan disembunyikan, tombol maksimalkan tidak aktif (berwarna abu-abu), dan tombol tutup aktif.
 
-### Setting Button States at Runtime
+### Mengatur Status Tombol pada Saat Runtime
 
-You can also change the button states at runtime using the following methods on\
-the `Window` interface:
+Anda juga dapat mengubah status tombol pada saat runtime menggunakan metode berikut pada antarmuka `Window`:
 
 ```go
 window.SetMinimiseButtonState(wails.ButtonHidden)
@@ -78,52 +73,43 @@ window.SetCloseButtonState(wails.ButtonDisabled)
 window.SetFullscreenButtonState(wails.ButtonEnabled)
 ```
 
-### macOS: MaximiseButtonState and FullscreenButtonState share a button
+### macOS: MaximiseButtonState dan FullscreenButtonState Berbagi Tombol yang Sama
 
-On macOS the green traffic-light button (`NSWindowZoomButton`) is the same\
-physical control for both maximise and fullscreen. Setting\
-`MaximiseButtonState` and `FullscreenButtonState` to different values during\
-window creation would otherwise produce a silent last-writer-wins override.
+Di macOS, tombol lampu lalu lintas hijau (`NSWindowZoomButton`) merupakan kontrol fisik yang sama untuk fungsi maksimalkan dan layar penuh. Tanpa mekanisme pencegahan ini, jika `MaximiseButtonState` dan `FullscreenButtonState` diatur ke nilai yang berbeda saat membuat jendela, pengaturan terakhir akan menggantikan pengaturan sebelumnya tanpa pemberitahuan.
 
-To avoid this, Wails applies the *more restrictive* of the two states at\
-initialisation, in the order `ButtonEnabled` < `ButtonDisabled` < `ButtonHidden`.
+Untuk menghindari hal ini, saat inisialisasi Wails menerapkan status yang *lebih ketat* dari kedua status tersebut, dengan urutan `ButtonEnabled` < `ButtonDisabled` < `ButtonHidden`.
 
 @table header=true
-| `MaximiseButtonState` | `FullscreenButtonState` | Effective state on macOS |
+| `MaximiseButtonState` | `FullscreenButtonState` | Status efektif di macOS |
 | `ButtonEnabled`       | `ButtonEnabled`         | `ButtonEnabled`          |
 | `ButtonDisabled`      | `ButtonEnabled`         | `ButtonDisabled`         |
 | `ButtonEnabled`       | `ButtonHidden`          | `ButtonHidden`           |
 | `ButtonDisabled`      | `ButtonHidden`          | `ButtonHidden`           |
 @end
 
-At runtime, `SetMaximiseButtonState` and `SetFullscreenButtonState` both target\
-`NSWindowZoomButton` on macOS, so the last call wins.
+Pada saat runtime, `SetMaximiseButtonState` dan `SetFullscreenButtonState` sama-sama menargetkan `NSWindowZoomButton` di macOS, sehingga pemanggilan terakhir akan berlaku.
 
-### Perbedaan Platform
+### Perbedaan Antarplatform
 
-The button state functionality behaves slightly differently on Windows and\
-macOS:
+Fungsionalitas status tombol berperilaku sedikit berbeda di Windows dan macOS:
 
 @table header=true
 |                          | Windows                | Mac                            |
-| Disable Min/Max/Close    | Disables Min/Max/Close | Disables Min/Max/Close         |
-| Hide Min                 | Disables Min           | Hides Min button               |
-| Hide Max                 | Disables Max           | Hides Max button               |
-| Hide Close               | Hides all controls     | Hides Close                    |
-| `FullscreenButtonState`  | No-op                  | Targets the zoom (green) button |
+| Nonaktifkan Minimalkan/Maksimalkan/Tutup    | Menonaktifkan Minimalkan/Maksimalkan/Tutup | Menonaktifkan Minimalkan/Maksimalkan/Tutup         |
+| Sembunyikan Minimalkan                 | Menonaktifkan Minimalkan           | Menyembunyikan tombol Minimalkan               |
+| Sembunyikan Maksimalkan                 | Menonaktifkan Maksimalkan           | Menyembunyikan tombol Maksimalkan               |
+| Sembunyikan Tutup               | Menyembunyikan semua kontrol     | Menyembunyikan Tutup                    |
+| `FullscreenButtonState`  | Tidak melakukan apa pun                  | Menargetkan tombol zoom (hijau) |
 @end
 
-Note: On Windows, it is not possible to hide the Min/Max buttons individually.\
-However, disabling both will hide both of the controls and only show the close\
-button. Windows has no dedicated fullscreen button in the standard title bar,\
-so `FullscreenButtonState` is a no-op there.
+Catatan: Di Windows, tombol Min/Maks tidak dapat disembunyikan satu per satu.\
+Namun, menonaktifkan keduanya akan menyembunyikan kedua kontrol tersebut dan hanya menampilkan tombol tutup. Windows tidak memiliki tombol layar penuh khusus pada bilah judul standar, sehingga `FullscreenButtonState` tidak melakukan apa pun di sana.
 
-### Controlling Window Style (Windows)
+### Mengontrol Gaya Jendela (Windows)
 
-To control the style of the titlebar on Windows, you can use the `ExStyle` field\
-in the `WebviewWindowOptions` struct:
+Untuk mengontrol gaya bilah judul di Windows, Anda dapat menggunakan bidang `ExStyle` dalam struct `WebviewWindowOptions`:
 
-Example:
+Contoh:
 
 ```go {title="main.go"}
 package main
@@ -148,8 +134,7 @@ func main() {
 }
 ```
 
-Other options that affect the Extended Style of a window will be overridden by\
-this setting:
+Opsi lain yang memengaruhi Gaya Diperluas jendela akan ditimpa oleh pengaturan ini:
 
 - HiddenOnTaskbar
 - AlwaysOnTop

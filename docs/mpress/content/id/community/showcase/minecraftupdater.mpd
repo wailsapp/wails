@@ -1,14 +1,11 @@
 ---
 schema = 1
 title = "Minecraft Updater"
-description = "Aplikasi desktop yang dibangun dengan Wails"
+description = "Aplikasi desktop yang dibuat dengan Wails"
 slug = "community/showcase/minecraftupdater"
-sourcePath = "id/community/showcase/minecraftupdater.mpd"
+sourcePath = "community/showcase/minecraftupdater.mpd"
 ---
 
 ![Minecraft Updater](/assets/showcase-images/minecraft-mod-updater.webp)
 
-[Minecraft Updater](https://github.com/Gurkengewuerz/MinecraftModUpdater) adalah\
-tool utilitas untuk memperbarui dan mensinkronkan mod Minecraft untuk userbase Anda. Dibangun\
-menggunakan Wails2 dan React dengan [antd](https://ant.design/) sebagai frontend\
-framework.
+[Minecraft Updater](https://github.com/Gurkengewuerz/MinecraftModUpdater) adalah alat bantu untuk memperbarui dan menyinkronkan mod Minecraft bagi basis pengguna Anda. Alat ini dibuat menggunakan Wails2 dan React dengan [antd](https://ant.design/) sebagai framework frontend.

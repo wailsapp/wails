@@ -1,27 +1,27 @@
 ---
 schema = 1
-title = "Raw Messages"
-description = "Implementasikan komunikasi frontend-ke-backend kustom untuk aplikasi yang kritis terhadap performa"
+title = "Pesan Mentah"
+description = "Implementasikan komunikasi khusus dari frontend ke backend untuk aplikasi yang sangat mementingkan performa"
 slug = "guides/raw-messages"
-sourcePath = "id/guides/raw-messages.mpd"
+sourcePath = "guides/raw-messages.mpd"
 ---
 
-Raw messages menyediakan saluran komunikasi level rendah antara frontend dan backend Anda, melewati sistem binding standar. Ini menukar kenyamanan demi kecepatan.
+Pesan mentah menyediakan kanal komunikasi tingkat rendah antara frontend dan backend Anda dengan melewati sistem binding standar. Pendekatan ini mengorbankan kemudahan demi kecepatan.
 
-## Kapan Menggunakan Raw Messages
+## Kapan Menggunakan Pesan Mentah
 
-Raw messages paling cocok untuk kasus edge yang ekstrem:
+Pesan mentah paling sesuai untuk kasus ekstrem yang sangat jarang terjadi:
 
-- *Pembaruan frekuensi ultra-tinggi* - Ribuan pesan per detik di mana setiap mikrodetik penting
-- *Protokol pesan kustom* - Saat Anda memerlukan kontrol penuh atas format wire
+- *Pembaruan berfrekuensi sangat tinggi* - Ribuan pesan per detik ketika setiap mikrodetik sangat berarti
+- *Protokol pesan khusus* - Ketika Anda memerlukan kendali penuh atas format data yang ditransmisikan
 
 @note type="tip"
-Untuk hampir semua kasus penggunaan, [service bindings](/id/features/bindings/services/) standar direkomendasikan karena menyediakan type safety, serialisasi otomatis, dan pengalaman developer yang lebih baik dengan overhead yang dapat diabaikan.
+Untuk hampir semua kasus penggunaan, [binding layanan](/features/bindings/services/) standar direkomendasikan karena menyediakan keamanan tipe, serialisasi otomatis, dan pengalaman pengembangan yang lebih baik dengan overhead yang dapat diabaikan.
 @end
 
-## Setup Backend
+## Penyiapan Backend
 
-Konfigurasi `RawMessageHandler` di opsi aplikasi Anda:
+Konfigurasikan `RawMessageHandler` dalam opsi aplikasi Anda:
 
 ```go
 package main
@@ -42,7 +42,7 @@ func main() {
         RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
             fmt.Printf("Raw message from window '%s': %s (origin: %+v)\n", window.Name(), message, originInfo.Origin)
 
-            // Proses pesan dan respons via event
+            // Process the message and respond via events
             response := processMessage(message)
             window.EmitEvent("raw-response", response)
         },
@@ -57,7 +57,7 @@ func main() {
 }
 
 func processMessage(message string) map[string]any {
-    // Logika pemrosesan pesan kustom Anda
+    // Your custom message processing logic
     return map[string]any{
         "received": message,
         "status":   "processed",
@@ -73,9 +73,9 @@ RawMessageHandler func(window Window, message string, originInfo *application.Or
 
 @table header=true
 | Parameter | Tipe | Deskripsi |
-| `window` | `Window` | Window yang mengirim pesan |
+| `window` | `Window` | Jendela yang mengirim pesan |
 | `message` | `string` | Konten pesan mentah |
-| `originInfo` | `*application.OriginInfo` | Informasi origin tentang sumber pesan |
+| `originInfo` | `*application.OriginInfo` | Informasi asal tentang sumber pesan |
 @end
 
 #### Struktur OriginInfo
@@ -90,40 +90,40 @@ type OriginInfo struct {
 
 @table header=true
 | Field | Tipe | Deskripsi |
-| `Origin` | `string` | URL origin dokumen yang mengirim pesan |
-| `TopOrigin` | `string` | URL origin level atas (mungkin berbeda dari Origin di iframe) |
-| `IsMainFrame` | `bool` | Apakah pesan berasal dari main frame |
+| `Origin` | `string` | URL asal dokumen yang mengirim pesan |
+| `TopOrigin` | `string` | URL asal tingkat teratas (mungkin berbeda dari Origin dalam iframe) |
+| `IsMainFrame` | `bool` | Apakah pesan berasal dari frame utama |
 @end
 
-#### Ketersediaan Spesifik Platform
+#### Ketersediaan Khusus Platform
 
 - *macOS*: `Origin` dan `IsMainFrame` disediakan
 - *Windows*: `Origin` dan `TopOrigin` disediakan
 - *Linux*: Hanya `Origin` yang disediakan
 
-### Validasi Origin
+### Validasi Asal
 
 @note type="caution"
-Jangan pernah mengasumsikan pesan aman hanya karena pesan tiba di handler Anda. Informasi origin harus divalidasi sebelum memproses operasi sensitif atau operasi yang mengubah state.
+Jangan pernah menganggap pesan aman hanya karena pesan tersebut masuk ke handler Anda. Informasi asal harus divalidasi sebelum memproses operasi sensitif atau operasi yang mengubah status.
 @end
 
-*Selalu verifikasi origin pesan masuk sebelum memprosesnya.* Parameter `originInfo` menyediakan informasi keamanan kritis yang harus divalidasi untuk mencegah akses tidak sah.\
-Konten berbahaya, konten yang dikompromikan, atau skrip yang tidak diinginkan dapat mengirim raw message. Tanpa validasi origin, Anda mungkin memproses perintah dari sumber tidak tepercaya. Gunakan `originInfo` untuk memastikan pesan berasal dari sumber yang diharapkan.
+*Selalu verifikasi asal pesan masuk sebelum memprosesnya.* Parameter `originInfo` menyediakan informasi keamanan penting yang harus divalidasi untuk mencegah akses tanpa izin.\
+Konten berbahaya, konten yang telah disusupi, atau skrip yang tidak dimaksudkan dapat mengirim pesan mentah. Tanpa validasi asal, Anda mungkin memproses perintah dari sumber yang tidak tepercaya. Gunakan `originInfo` untuk memastikan pesan berasal dari sumber yang diharapkan.
 
 ### Poin Validasi Utama
 
-- *Selalu periksa `Origin`* - Verifikasi origin cocok dengan sumber tepercaya yang diharapkan (biasanya `wails://wails` atau `http://wails.localhost` untuk asset lokal atau origin spesifik aplikasi Anda)
-- *Validasi `IsMainFrame`* (macOS) - Waspadai jika pesan berasal dari iframe, karena ini mungkin menunjukkan konten tersemat dengan konteks keamanan berbeda
-- *Gunakan `TopOrigin`* (Windows) - Verifikasi origin level atas saat menangani konten ber-frame
-- *Tolak origin yang tidak diharapkan* - Gagal dengan aman dengan menolak pesan dari origin yang tidak Anda izinkan secara eksplisit
+- *Selalu periksa `Origin`* - Pastikan asal cocok dengan sumber tepercaya yang Anda harapkan (biasanya `wails://wails` atau `http://wails.localhost` untuk aset lokal atau asal khusus aplikasi Anda)
+- *Validasi `IsMainFrame`* (macOS) - Perhatikan jika pesan berasal dari iframe karena hal ini dapat menunjukkan konten tersemat dengan konteks keamanan yang berbeda
+- *Gunakan `TopOrigin`* (Windows) - Verifikasi asal tingkat teratas saat menangani konten dalam frame
+- *Tolak asal yang tidak diharapkan* - Terapkan kegagalan yang aman dengan menolak pesan dari asal yang tidak Anda izinkan secara eksplisit
 
 @note type="info"
-Pesan dengan awalan `wails:` dicadangkan untuk komunikasi internal Wails dan tidak akan diteruskan ke handler Anda.
+Pesan yang diawali dengan `wails:` dicadangkan untuk komunikasi internal Wails dan tidak akan diteruskan ke handler Anda.
 @end
 
-## Setup Frontend
+## Penyiapan Frontend
 
-Kirim raw message menggunakan `System.invoke()`:
+Kirim pesan mentah menggunakan `System.invoke()`:
 
 ```html
 <!DOCTYPE html>
@@ -132,13 +132,13 @@ Kirim raw message menggunakan `System.invoke()`:
     <script type="module">
         import { System, Events } from '@wailsio/runtime'
 
-        // Kirim raw message
+        // Send raw message
         document.getElementById('send').addEventListener('click', () => {
             const message = document.getElementById('input').value
             System.invoke(message)
         })
 
-        // Dengarkan respons
+        // Listen for response
         Events.On('raw-response', (event) => {
             console.log('Response:', event.data)
         })
@@ -168,7 +168,7 @@ Jika Anda tidak menggunakan npm, akses `invoke` melalui objek global `wails`:
 
 ## Pesan Terstruktur
 
-Untuk data kompleks, serialisasi ke JSON:
+Untuk data kompleks, lakukan serialisasi ke JSON:
 
 ### Frontend
 
@@ -205,7 +205,7 @@ RawMessageHandler: func(window application.Window, message string, originInfo *a
 
     switch cmd.Action {
     case "update":
-        // Tangani update
+        // Handle update
         result := handleUpdate(cmd.Payload.ID, cmd.Payload.Value)
         window.EmitEvent("update-complete", result)
     default:
@@ -217,19 +217,19 @@ RawMessageHandler: func(window application.Window, message string, originInfo *a
 ## Perbandingan Performa
 
 @table header=true
-| Pendekatan | Overhead | Type Safety | Kasus Penggunaan |
-| Service Bindings | Lebih tinggi | Penuh | Tujuan umum |
-| Raw Messages | Minimal | Manual | Frekuensi tinggi, kritis performa |
+| Pendekatan | Overhead | Keamanan Tipe | Kasus Penggunaan |
+| Binding Layanan | Lebih Tinggi | Penuh | Tujuan umum |
+| Pesan Mentah | Minimal | Manual | Frekuensi tinggi, kritis terhadap performa |
 @end
 
-### Contoh Benchmark
+### Contoh Tolok Ukur
 
-Raw messages dapat memproses jauh lebih banyak pesan per detik dibandingkan service bindings untuk payload sederhana:
+Untuk payload sederhana, pesan mentah dapat memproses jauh lebih banyak pesan per detik dibandingkan binding layanan:
 
 ```go
-// Raw message handler - overhead minimal
+// Raw message handler - minimal overhead
 RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
-    // Pemrosesan string langsung, tanpa reflection atau marshaling
+    // Direct string processing, no reflection or marshaling
     counter++
 }
 ```
@@ -358,39 +358,39 @@ func main() {
 
 ### Lakukan
 
-- Gunakan raw messages untuk jalur yang benar-benar kritis performa
-- Implementasikan penanganan error yang benar di handler Anda
+- Gunakan pesan mentah untuk jalur yang benar-benar kritis terhadap performa
+- Terapkan penanganan kesalahan yang tepat di handler Anda
 - Gunakan event untuk mengirim respons kembali ke frontend
 - Pertimbangkan JSON untuk data terstruktur
-- Jaga pemrosesan pesan tetap cepat agar tidak blocking
+- Pastikan pemrosesan pesan tetap cepat agar tidak memblokir
 
-### Jangan
+### Jangan Lakukan
 
-- Gunakan raw messages saat service bindings sudah cukup
-- Lupa memvalidasi pesan masuk
-- Blocking di handler dengan operasi berjalan lama (gunakan goroutine)
-- Abaikan parameter window saat respons perlu menarget window tertentu
+- Jangan gunakan pesan mentah jika binding layanan sudah memadai
+- Jangan lupa memvalidasi pesan yang masuk
+- Jangan memblokir handler dengan operasi yang berjalan lama (gunakan goroutine)
+- Jangan abaikan parameter window ketika respons perlu ditujukan ke window tertentu
 
 ## Pertimbangan Multi-Window
 
-Parameter `window` mengidentifikasi window mana yang mengirim pesan, memungkinkan Anda untuk:
+Parameter `window` mengidentifikasi window yang mengirim pesan, sehingga Anda dapat:
 
-- Mengirim respons ke window yang benar
-- Mengimplementasikan perilaku spesifik window
+- Mengirim respons ke window yang tepat
+- Menerapkan perilaku khusus untuk setiap window
 - Melacak sumber pesan untuk debugging
 
 ```go
 RawMessageHandler: func(window application.Window, message string, originInfo *application.OriginInfo) {
-    // Respons hanya ke window pengirim
+    // Respond only to the sending window
     window.EmitEvent("response", result)
 
-    // Atau broadcast ke semua window
+    // Or broadcast to all windows
     app.Event.Emit("broadcast", result)
 }
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Service Bindings](/id/features/bindings/services/) - Pendekatan standar untuk sebagian besar aplikasi
-- [Events](/id/guides/events-reference/) - Sistem event untuk komunikasi backend-ke-frontend
-- [Performance](/id/guides/performance/) - Optimasi performa umum
+- [Binding Layanan](/features/bindings/services/) - Pendekatan standar untuk sebagian besar aplikasi
+- [Event](/guides/events-reference/) - Sistem event untuk komunikasi dari backend ke frontend
+- [Performa](/guides/performance/) - Pengoptimalan performa secara umum

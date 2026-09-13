@@ -1,265 +1,288 @@
 ---
 schema = 1
-title = "매니저 API"
-description = "집중된 매니저 인터페이스로 구성된 API 구조"
+title = "관리자 API"
+description = "특정 기능에 집중하는 manager 인터페이스로 구성된 체계적인 API 구조"
 slug = "concepts/manager-api"
-sourcePath = "ko/concepts/manager-api.mpd"
+sourcePath = "concepts/manager-api.mpd"
 ---
 
-Wails v3 매니저 API는 집중된 매니저 구조체를 통해 애플리케이션 기능에 접근할 수 있는 조직적이고 탐색 가능한 방법을 제공합니다. 이 새로운 API 구조는 기존 App API와의 완전한 하위 호환성을 유지하면서 관련 메서드들을 그룹화합니다.
+Wails v3 관리자 API는 `*application.App`의 공개 필드 아래에 그룹화된, 특정 기능에 집중하는 manager 구조체를 통해 애플리케이션 기능에 체계적이고 쉽게 탐색할 수 있는 방식으로 접근하도록 합니다. Wails 3은 v2와의 호환성을 완전히 단절했습니다. 기존 `app.NewWebviewWindow(...)` 스타일 API와의 호환성을 유지하기 위한 호출별 래퍼 계층이 없으므로, 아래 manager를 사용하여 앱을 제어해야 합니다.
 
 ## 개요
 
-매니저 API는 애플리케이션 기능을 11개의 집중된 영역으로 조직화합니다:
+관리자 API는 애플리케이션 기능을 열두 가지 영역(로거 하나와 manager 열하나)으로 구성합니다.
 
 - *`app.Window`* - 창 생성, 관리 및 콜백
-- *`app.ContextMenu`* - 컨텍스트 메뉴 등록 및 관리
+- *`app.ContextMenu`* - 컨텍스트 메뉴 등록 및 관리\
 - *`app.KeyBinding`* - 전역 키 바인딩 관리
-- *`app.Browser`* - 브라우저 통합 (URL 및 파일 열기)
+- *`app.Browser`* - 브라우저 통합(URL 및 파일 열기)
 - *`app.Env`* - 환경 정보 및 시스템 상태
-- *`app.Dialog`* - 파일 및 메시지 대화상자 작업
-- *`app.Event`* - 사용자 정의 이벤트 처리 및 애플리케이션 이벤트
+- *`app.Dialog`* - 파일 및 메시지 대화 상자 작업
+- *`app.Event`* - 사용자 지정 이벤트 처리 및 애플리케이션 이벤트
 - *`app.Menu`* - 애플리케이션 메뉴 관리
 - *`app.Screen`* - 화면 관리 및 좌표 변환
 - *`app.Clipboard`* - 클립보드 텍스트 작업
 - *`app.SystemTray`* - 시스템 트레이 아이콘 생성 및 관리
+- *`app.Autostart`* - 사용자 로그인 시 애플리케이션이 실행되도록 등록
 
 ## 장점
 
-- *더 나은 탐색성* - IDE 자동 완성이 조직화된 API 표면 표시
-- *향상된 코드 조직화* - 관련 메서드 그룹화
-- *향상된 유지보수성* - 매니저 간 관심사 분리
-- *미래 확장성* - 특정 영역에 새 기능 추가 용이
+- *향상된 탐색성* - IDE 자동 완성에서 체계적으로 구성된 API 표면을 표시합니다.
+- *개선된 코드 구성* - 관련 메서드를 함께 그룹화합니다.
+- *향상된 유지보수성* - manager 간에 관심사를 분리합니다.
+- *향후 확장성* - 특정 영역에 새 기능을 더 쉽게 추가할 수 있습니다.
 
 ## 사용법
 
-매니저 API는 모든 애플리케이션 기능에 대한 조직화된 접근을 제공합니다:
+관리자 API를 사용하면 모든 애플리케이션 기능에 체계적으로 접근할 수 있습니다.
 
 ```go
-// 이벤트 및 사용자 정의 이벤트 처리
+// Events and custom event handling
 app.Event.Emit("custom", data)
 app.Event.On("custom", func(e *CustomEvent) { ... })
 
-// 창 관리
+// Window management
 window, _ := app.Window.GetByName("main")
 app.Window.OnCreate(func(window Window) { ... })
 
-// 브라우저 통합
+// Browser integration
 app.Browser.OpenURL("https://wails.io")
 
-// 메뉴 관리
+// Menu management
 menu := app.Menu.New()
 app.Menu.Set(menu)
 
-// 시스템 트레이
+// System tray
 systray := app.SystemTray.New()
 ```
 
-## 매니저 참조
+## Manager 참조
 
-### Window Manager
+### 창 관리자
 
-창 생성, 검색 및 수명 주기 콜백을 관리합니다.
+창 생성, 조회 및 수명 주기 콜백을 관리합니다.
 
 ```go
-// 창 생성
+// Create windows
 window := app.Window.New()
 window := app.Window.NewWithOptions(options)
 current := app.Window.Current()
 
-// 창 검색
+// Find windows
 window, exists := app.Window.GetByName("main")
 windows := app.Window.GetAll()
 
-// 창 콜백
+// Window callbacks
 app.Window.OnCreate(func(window Window) {
-    // 창 생성 처리
+    // Handle window creation
 })
 ```
 
-### Event Manager
+### 이벤트 관리자
 
-사용자 정의 이벤트 및 애플리케이션 이벤트 청취를 처리합니다.
+사용자 지정 이벤트와 애플리케이션 이벤트 수신을 처리합니다.
 
 ```go
-// 사용자 정의 이벤트
+// Custom events
 app.Event.Emit("userAction", data)
 cancelFunc := app.Event.On("userAction", func(e *CustomEvent) {
-    // 이벤트 처리
+    // Handle event
 })
 app.Event.Off("userAction")
-app.Event.Reset() // 모든 리스너 제거
+app.Event.Reset() // Remove all listeners
 
-// 애플리케이션 이벤트
+// Application events
 app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(e *ApplicationEvent) {
-    // 시스템 테마 변경 처리
+    // Handle system theme change
 })
 ```
 
-### Browser Manager
+### 브라우저 관리자
 
-URL 및 파일을 열기 위한 브라우저 통합을 제공합니다.
+URL과 파일을 열기 위한 브라우저 통합 기능을 제공합니다.
 
 ```go
-// 기본 브라우저에서 URL 및 파일 열기
+// Open URLs and files in default browser
 err := app.Browser.OpenURL("https://wails.io")
 err := app.Browser.OpenFile("/path/to/document.pdf")
 ```
 
-### Environment Manager
+### 환경 관리자
 
-시스템 환경 정보에 대한 접근.
+시스템 환경 정보에 접근할 수 있습니다.
 
 ```go
-// 환경 정보 가져오기
+// Get environment info
 env := app.Env.Info()
 fmt.Printf("OS: %s, Arch: %s\n", env.OS, env.Arch)
 
-// 시스템 테마 확인
+// Check system theme
 if app.Env.IsDarkMode() {
-    // 다크 모드 활성화됨
+    // Dark mode is active
 }
 
-// 파일 관리자 열기
+// Open file manager
 err := app.Env.OpenFileManager("/path/to/folder", false)
 ```
 
-### Dialog Manager
+### 대화 상자 관리자
 
-파일 및 메시지 대화상자에 대한 조직화된 접근.
+파일 및 메시지 대화 상자에 체계적으로 접근할 수 있습니다.
 
 ```go
-// 파일 대화상자
+// File dialogs
 result, err := app.Dialog.OpenFile().
     AddFilter("Text Files", "*.txt").
     PromptForSingleSelection()
 
 result, err = app.Dialog.SaveFile().
-    SetDefaultFilename("document.txt").
+    SetFilename("document.txt").
     PromptForSingleSelection()
 
-// 메시지 대화상자
+// Message dialogs
 app.Dialog.Info().
     SetTitle("Information").
     SetMessage("Operation completed successfully").
     Show()
 
 app.Dialog.Error().
-    SetTitle("Error").  
+    SetTitle("Error").
     SetMessage("An error occurred").
     Show()
 ```
 
-### Menu Manager
+### 메뉴 관리자
 
-애플리케이션 메뉴 생성 및 관리.
+애플리케이션 메뉴를 생성하고 관리합니다.
 
 ```go
-// 애플리케이션 메뉴 생성 및 설정
+// Create and set application menu
 menu := app.Menu.New()
 fileMenu := menu.AddSubmenu("File")
 fileMenu.Add("New").OnClick(func(ctx *Context) {
-    // 메뉴 클릭 처리
+    // Handle menu click
 })
 
 app.Menu.Set(menu)
 
-// 정보 대화상자 표시
+// Show about dialog
 app.Menu.ShowAbout()
 ```
 
-### Key Binding Manager
+### 키 바인딩 관리자
 
-전역 키 바인딩의 동적 관리.
+전역 키 바인딩을 동적으로 관리합니다.
 
 ```go
-// 키 바인딩 추가
-app.KeyBinding.Add("ctrl+n", func(window *WebviewWindow) {
-    // Ctrl+N 처리
+// Add key bindings
+app.KeyBinding.Add("ctrl+n", func(window application.Window) {
+    // Handle Ctrl+N
 })
 
-app.KeyBinding.Add("ctrl+q", func(window *WebviewWindow) {
+app.KeyBinding.Add("ctrl+q", func(window application.Window) {
     app.Quit()
 })
 
-// 키 바인딩 제거
+// Remove key bindings
 app.KeyBinding.Remove("ctrl+n")
 
-// 모든 바인딩 가져오기
+// Get all bindings
 bindings := app.KeyBinding.GetAll()
 ```
 
-### Context Menu Manager
+### 컨텍스트 메뉴 관리자
 
-고급 컨텍스트 메뉴 관리 (라이브러리 작성자용).
+고급 컨텍스트 메뉴 관리 기능입니다(라이브러리 작성자용).
 
 ```go
-// 컨텍스트 메뉴 생성 및 등록
+// Create and register context menu
 menu := app.ContextMenu.New()
 app.ContextMenu.Add("myMenu", menu)
 
-// 컨텍스트 메뉴 검색
+// Retrieve context menu
 menu, exists := app.ContextMenu.Get("myMenu")
 
-// 컨텍스트 메뉴 제거
+// Remove context menu
 app.ContextMenu.Remove("myMenu")
 ```
 
-### Screen Manager
+### 화면 관리자
 
-멀티 모니터 설정을 위한 화면 관리 및 좌표 변환.
+다중 모니터 구성에서 화면을 관리하고 좌표를 변환합니다.
 
 ```go
-// 화면 정보 가져오기
+// Get screen information
 screens := app.Screen.GetAll()
 primary := app.Screen.GetPrimary()
 
-// 좌표 변환
+// Coordinate transformations
 physicalPoint := app.Screen.DipToPhysicalPoint(logicalPoint)
 logicalPoint := app.Screen.PhysicalToDipPoint(physicalPoint)
 
-// 화면 감지
+// Screen detection
 screen := app.Screen.ScreenNearestDipPoint(point)
 screen = app.Screen.ScreenNearestDipRect(rect)
 ```
 
-### Clipboard Manager
+### 클립보드 관리자
 
-텍스트 읽기 및 쓰기를 위한 클립보드 작업.
+텍스트를 읽고 쓰는 클립보드 작업을 수행합니다.
 
 ```go
-// 클립보드에 텍스트 설정
+// Set text to clipboard
 success := app.Clipboard.SetText("Hello World")
 if !success {
-    // 오류 처리
+    // Handle error
 }
 
-// 클립보드에서 텍스트 가져오기
+// Get text from clipboard
 text, ok := app.Clipboard.Text()
 if !ok {
-    // 오류 처리
+    // Handle error
 } else {
-    // 텍스트 사용
+    // Use the text
 }
 ```
 
-### SystemTray Manager
+### 시스템 트레이 관리자
 
-시스템 트레이 아이콘 생성 및 관리.
+시스템 트레이 아이콘을 생성하고 관리합니다.
 
 ```go
-// 시스템 트레이 생성
+// Create system tray
 systray := app.SystemTray.New()
 systray.SetLabel("My App")
 systray.SetIcon(iconBytes)
 
-// 시스템 트레이에 메뉴 추가
+// Add menu to system tray
 menu := app.Menu.New()
 menu.Add("Open").OnClick(func(ctx *Context) {
-    // 클릭 처리
+    // Handle click
 })
 systray.SetMenu(menu)
 
-// 완료 시 시스템 트레이 파괴
+// Destroy system tray when done
 systray.Destroy()
 ```
+
+### 자동 시작 관리자
+
+사용자 로그인 시 애플리케이션이 실행되도록 등록합니다. 플랫폼별로 적합한 네이티브 메커니즘을 선택합니다. macOS에서는 SMAppService 또는 LaunchAgent plist, Windows에서는 `HKCU\…\Run` 레지스트리 키, Linux에서는 XDG `.desktop` 항목을 사용합니다.
+
+```go
+// Register to launch at login
+err := app.Autostart.Enable()
+
+// With extra launch-time arguments and a custom identifier
+err = app.Autostart.EnableWithOptions(application.AutostartOptions{
+    Identifier: "com.example.myapp",
+    Arguments:  []string{"--hidden"},
+})
+
+// Check / remove
+enabled, err := app.Autostart.IsEnabled()
+status, err := app.Autostart.Status()  // includes Path + Strategy
+err = app.Autostart.Disable()
+```
+
+플랫폼별 동작, 식별자 규칙 및 오래된 등록 감지 보장에 관한 자세한 내용은 [Autostart 기능 페이지](/features/autostart/basics/)를 참조하세요.

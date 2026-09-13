@@ -16,7 +16,7 @@ site:
     de: "Deutsch"
     id: "Bahasa Indonesia"
   defaultLanguageAtRoot: true
-  missingTranslation: link-to-default
+  missingTranslation: omit
   headerLinks:
     - label: "Blog"
       url: "/blog/"
@@ -57,5 +57,14 @@ deploy:
     cloudflare:
       provider: cloudflare-pages
       accountID: c9e2228ddc647134653521013b0ea7dc
-      project: wails-v3-docs
+      project: wails-v3-site
       productionBranch: master
+
+translation:
+  provider: codex
+  model: gpt-5.6-sol
+  command: codex
+  sourceLanguage: en
+  glossary: translation/glossary.yaml
+  styleGuide: translation/style-guide.md
+  stateDir: translation/state

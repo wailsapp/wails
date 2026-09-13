@@ -1,25 +1,29 @@
 ---
 schema = 1
 title = "Menu Aplikasi"
-description = "Buat menu bar native untuk aplikasi desktop Anda"
+description = "Buat bilah menu native untuk aplikasi desktop Anda"
 slug = "features/menus/application"
-sourcePath = "id/features/menus/application.mpd"
+sourcePath = "features/menus/application.mpd"
 ---
 
-## Masalahnya
+## Masalah
 
-Aplikasi desktop profesional memerlukan menu bar—File, Edit, View, Help. Namun menu bekerja berbeda di setiap platform:
-- *macOS*: Menu bar global di bagian atas layar
-- *Windows*: Menu bar di title bar window
-- *Linux*: Bervariasi menurut desktop environment
+Aplikasi desktop profesional memerlukan bilah menu—File, Edit, Tampilan, Bantuan. Namun, menu bekerja secara berbeda di setiap platform:
+- *macOS*: Bilah menu global di bagian atas layar
+- *Windows*: Bilah menu pada bilah judul jendela
+- *Linux*: Berbeda-beda menurut lingkungan desktop
 
-Membangun menu yang sesuai platform secara manual membosankan dan rentan error.
+Membuat menu yang sesuai untuk setiap platform secara manual itu merepotkan dan rawan kesalahan.
 
 ## Solusi Wails
 
-Wails menyediakan *API terpadu* yang membuat menu native platform secara otomatis. Tulis sekali, dapatkan perilaku native di semua platform.
+Wails menyediakan *API terpadu* yang secara otomatis membuat menu native untuk setiap platform. Tulis sekali dan dapatkan perilaku native di semua platform.
 
-## Memulai Cepat
+![Menu aplikasi Wails di macOS dengan item standar, kotak centang, tombol radio, dan submenu](/assets/screenshots/application-menu-macos.png)
+
+Di macOS, menu aplikasi ditempatkan pada bilah menu global. Tangkapan layar ini menampilkan menu native yang dirender oleh API menu Wails, termasuk item yang dinonaktifkan, kotak centang, tombol radio, dan submenu.
+
+## Mulai Cepat
 
 ```go
 package main
@@ -58,7 +62,7 @@ func main() {
 }
 ```
 
-*Itu saja!* Anda sekarang memiliki menu native platform dengan item standar. Opsi `UseApplicationMenu` memastikan window Windows dan Linux menampilkan menu tanpa kode tambahan.
+*Selesai!* Kini Anda memiliki menu native untuk setiap platform dengan item standar. Opsi `UseApplicationMenu` memastikan jendela Windows dan Linux menampilkan menu tanpa kode tambahan.
 
 ## Membuat Menu
 
@@ -89,7 +93,7 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 
 ### Mengatur Menu
 
-*Pendekatan yang direkomendasikan* — Gunakan `UseApplicationMenu` untuk konsistensi lintas platform:
+*Pendekatan yang disarankan* — Gunakan `UseApplicationMenu` untuk menjaga konsistensi lintas platform:
 
 ```go
 // Set the application menu once
@@ -101,29 +105,29 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Pendekatan ini:
+Pendekatan ini menghasilkan perilaku berikut:
 - Di *macOS*: Menu muncul di bagian atas layar (perilaku standar)
-- Di *Windows/Linux*: Setiap window dengan `UseApplicationMenu: true` menampilkan menu aplikasi
+- Di *Windows/Linux*: Setiap jendela dengan `UseApplicationMenu: true` menampilkan menu aplikasi
 
-*Detail spesifik platform:*
+*Detail khusus platform:*
 
 @tabs sync-key="platform"
 @tab label="macOS"
 
-*Menu bar global* (satu per aplikasi):
+*Bilah menu global* (satu per aplikasi):
 
 ```go
 app.Menu.Set(menu)
 ```
 
-Menu muncul di bagian atas layar dan tetap ada bahkan saat semua window ditutup. Opsi `UseApplicationMenu` tidak berpengaruh di macOS karena semua aplikasi menggunakan menu global.
+Menu muncul di bagian atas layar dan tetap ada meskipun semua jendela ditutup. Opsi `UseApplicationMenu` tidak berpengaruh di macOS karena semua aplikasi menggunakan menu global.
 
 
 
 @end
 @tab label="Windows"
 
-*Menu bar per window*:
+*Bilah menu per jendela*:
 
 ```go
 // Option 1: Use application menu (recommended)
@@ -136,14 +140,14 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-Setiap window dapat memiliki menu sendiri, atau mewarisi menu aplikasi. Menu muncul di title bar window.
+Setiap jendela dapat memiliki menu sendiri atau mewarisi menu aplikasi. Menu muncul pada bilah judul jendela.
 
 
 
 @end
 @tab label="Linux"
 
-*Menu bar per window* (biasanya):
+*Bilah menu per jendela* (biasanya):
 
 ```go
 // Option 1: Use application menu (recommended)
@@ -156,14 +160,14 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-Perilaku bervariasi menurut desktop environment. Beberapa (seperti Unity) mendukung menu global.
+Perilakunya berbeda-beda menurut lingkungan desktop. Beberapa lingkungan (seperti Unity) mendukung menu global.
 
 
 @end
 @end
 
 @note type="tip" title="Sederhanakan Menu Lintas Platform"
-Menggunakan `UseApplicationMenu: true` menghilangkan kebutuhan kode spesifik platform seperti:
+Penggunaan `UseApplicationMenu: true` meniadakan kebutuhan akan kode khusus platform seperti:
 ```go
 // Old approach - no longer needed
 if runtime.GOOS == "darwin" {
@@ -174,30 +178,30 @@ if runtime.GOOS == "darwin" {
 ```
 @end
 
-*Menu kustom per window:*
+*Menu khusus per jendela:*
 
-Jika window memerlukan menu berbeda dari menu aplikasi, atur langsung:
+Jika suatu jendela memerlukan menu yang berbeda dari menu aplikasi, atur menu tersebut secara langsung:
 
 ```go
 window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
 
-## Role Menu
+## Peran Menu
 
-Wails menyediakan *role menu yang telah ditentukan* yang membuat struktur menu sesuai platform secara otomatis.
+Wails menyediakan *peran menu bawaan* yang secara otomatis membuat struktur menu yang sesuai untuk setiap platform.
 
-### Role yang Tersedia
+### Peran yang Tersedia
 
 @table header=true
-| Role | Deskripsi | Catatan Platform |
-| `AppMenu` | Menu aplikasi dengan About, Preferences, Quit | *macOS saja* |
-| `FileMenu` | Operasi file (New, Open, Save, dll.) | Semua platform |
-| `EditMenu` | Pengeditan teks (Undo, Redo, Cut, Copy, Paste) | Semua platform |
-| `WindowMenu` | Manajemen window (Minimise, Zoom, dll.) | Semua platform |
+| Peran | Deskripsi | Catatan Platform |
+| `AppMenu` | Menu aplikasi dengan Tentang, Preferensi, Keluar | *Khusus macOS* |
+| `FileMenu` | Operasi file (Baru, Buka, Simpan, dan sebagainya) | Semua platform |
+| `EditMenu` | Penyuntingan teks (Urungkan, Ulangi, Potong, Salin, Tempel) | Semua platform |
+| `WindowMenu` | Pengelolaan jendela (Minimalkan, Perbesar, dan sebagainya) | Semua platform |
 | `HelpMenu` | Bantuan dan informasi | Semua platform |
 @end
 
-### Menggunakan Role
+### Menggunakan Peran
 
 ```go
 menu := app.NewMenu()
@@ -219,41 +223,41 @@ menu.AddRole(application.HelpMenu)
 @tabs sync-key="platform"
 @tab label="macOS"
 
-*AppMenu* (dengan nama app):
-- About [App Name]
-- Preferences... (⌘,)
+*AppMenu* (dengan nama aplikasi):
+- Tentang [Nama Aplikasi]
+- Preferensi... (⌘,)
 - ---
-- Services
+- Layanan
 - ---
-- Hide [App Name] (⌘H)
-- Hide Others (⌥⌘H)
-- Show All
+- Sembunyikan [Nama Aplikasi] (⌘H)
+- Sembunyikan Lainnya (⌥⌘H)
+- Tampilkan Semua
 - ---
-- Quit [App Name] (⌘Q)
+- Keluar dari [Nama Aplikasi] (⌘Q)
 
 *FileMenu*:
-- New (⌘N)
-- Open... (⌘O)
+- Baru (⌘N)
+- Buka... (⌘O)
 - ---
-- Close Window (⌘W)
+- Tutup Jendela (⌘W)
 
 *EditMenu*:
-- Undo (⌘Z)
-- Redo (⇧⌘Z)
+- Urungkan (⌘Z)
+- Ulangi (⇧⌘Z)
 - ---
-- Cut (⌘X)
-- Copy (⌘C)
-- Paste (⌘V)
-- Select All (⌘A)
+- Potong (⌘X)
+- Salin (⌘C)
+- Tempel (⌘V)
+- Pilih Semua (⌘A)
 
 *WindowMenu*:
-- Minimise (⌘M)
-- Zoom
+- Minimalkan (⌘M)
+- Perbesar
 - ---
-- Bring All to Front
+- Bawa Semua ke Depan
 
 *HelpMenu*:
-- [App Name] Help
+- Bantuan [Nama Aplikasi]
 
 
 
@@ -261,41 +265,41 @@ menu.AddRole(application.HelpMenu)
 @tab label="Windows"
 
 *FileMenu*:
-- New (Ctrl+N)
-- Open... (Ctrl+O)
+- Baru (Ctrl+N)
+- Buka... (Ctrl+O)
 - ---
-- Exit (Alt+F4)
+- Keluar (Alt+F4)
 
 *EditMenu*:
-- Undo (Ctrl+Z)
-- Redo (Ctrl+Y)
+- Urungkan (Ctrl+Z)
+- Ulangi (Ctrl+Y)
 - ---
-- Cut (Ctrl+X)
-- Copy (Ctrl+C)
-- Paste (Ctrl+V)
-- Select All (Ctrl+A)
+- Potong (Ctrl+X)
+- Salin (Ctrl+C)
+- Tempel (Ctrl+V)
+- Pilih Semua (Ctrl+A)
 
 *WindowMenu*:
-- Minimise
-- Maximise
+- Minimalkan
+- Maksimalkan
 
 *HelpMenu*:
-- About [App Name]
+- Tentang [Nama Aplikasi]
 
 
 
 @end
 @tab label="Linux"
 
-Mirip Windows, tetapi keyboard shortcut mungkin bervariasi menurut desktop environment.
+Serupa dengan Windows, tetapi pintasan keyboard dapat berbeda menurut lingkungan desktop.
 
 
 @end
 @end
 
-### Menyesuaikan Menu Role
+### Menyesuaikan Menu Peran
 
-`Menu.AddRole(role)` mengembalikan *menu receiver* (menu tingkat atas), *bukan* submenu role. Untuk menambahkan item ke submenu role, cari item role yang dimasukkan dengan `FindByRole` dan panggil `GetSubmenu()`:
+`Menu.AddRole(role)` mengembalikan menu *penerima* (menu tingkat teratas), *bukan* submenu peran. Untuk menambahkan item ke submenu peran, cari item peran yang disisipkan dengan `FindByRole`, lalu panggil `GetSubmenu()` pada item tersebut:
 
 ```go
 menu.AddRole(application.FileMenu)
@@ -305,9 +309,9 @@ fileMenu.Add("Import...").OnClick(handleImport)
 fileMenu.Add("Export...").OnClick(handleExport)
 ```
 
-## Menu Kustom
+## Menu Khusus
 
-Buat menu sendiri untuk fitur spesifik aplikasi:
+Buat menu sendiri untuk fitur khusus aplikasi:
 
 ```go
 // Add a custom top-level menu
@@ -336,13 +340,13 @@ advancedMenu := toolsMenu.AddSubmenu("Advanced")
 advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
 ```
 
-*Untuk tipe item menu lainnya*, lihat [Referensi Menu](/id/features/menus/reference/).
+*Untuk jenis item menu lainnya*, lihat [Referensi Menu](/features/menus/reference/).
 
 ## Menu Dinamis
 
 Perbarui menu berdasarkan status aplikasi:
 
-### Aktifkan/Nonaktifkan Item
+### Mengaktifkan/Menonaktifkan Item
 
 ```go
 var saveMenuItem *application.MenuItem
@@ -365,12 +369,12 @@ func onDocumentChanged() {
 ```
 
 @note type="caution" title="Selalu Panggil menu.Update()"
-Setelah mengubah status menu (enable/disable, label, checked), *selalu panggil `menu.Update()`*. Ini sangat kritis di Windows di mana menu direkonstruksi.
+Setelah mengubah status menu (aktif/nonaktif, label, status centang), *selalu panggil `menu.Update()`*. Hal ini sangat penting terutama di Windows, tempat menu direkonstruksi.
 
-Lihat [Referensi Menu](/id/features/menus/reference/#enabled-state) untuk detail.
+Lihat [Referensi Menu](/features/menus/reference/#enabled-state) untuk detailnya.
 @end
 
-### Ubah Label
+### Mengubah Label
 
 ```go
 updateMenuItem := menu.Add("Check for Updates")
@@ -386,9 +390,9 @@ updateMenuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-### Rebuild Menu
+### Membangun Ulang Menu
 
-Untuk perubahan besar, rebuild seluruh menu:
+Untuk perubahan besar, bangun ulang seluruh menu:
 
 ```go
 func rebuildFileMenu() {
@@ -420,9 +424,9 @@ func rebuildFileMenu() {
 }
 ```
 
-## Kontrol Window dari Menu
+## Mengontrol Jendela dari Menu
 
-Item menu dapat mengendalikan window:
+Item menu dapat mengontrol jendela:
 
 ```go
 viewMenu := menu.AddSubmenu("View")
@@ -448,7 +452,7 @@ viewMenu.Add("Reset Zoom").SetAccelerator("CmdOrCtrl+0").OnClick(func(ctx *appli
 })
 ```
 
-*Dapatkan window aktif:*
+*Dapatkan jendela aktif:*
 
 ```go
 menuItem.OnClick(func(ctx *application.Context) {
@@ -457,21 +461,21 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-## Pertimbangan Spesifik Platform
+## Pertimbangan Khusus Platform
 
 ### macOS
 
-*Perilaku menu bar:*
+*Perilaku bilah menu:*
 - Muncul di *bagian atas layar* (global)
-- Tetap ada saat semua window ditutup
-- Menu pertama *selalu menu aplikasi*
+- Tetap ada ketika semua jendela ditutup
+- Menu pertama *selalu merupakan menu aplikasi*
 - Gunakan `menu.AddRole(application.AppMenu)` untuk item standar
 
 *Lokasi standar:*
-- *About*: Menu aplikasi
-- *Preferences*: Menu aplikasi (⌘,)
-- *Quit*: Menu aplikasi (⌘Q)
-- *Help*: Menu Help
+- *Tentang*: Menu aplikasi
+- *Preferensi*: Menu aplikasi (⌘,)
+- *Keluar*: Menu aplikasi (⌘Q)
+- *Bantuan*: Menu Bantuan
 
 *Contoh:*
 
@@ -486,15 +490,15 @@ if runtime.GOOS == "darwin" {
 
 ### Windows
 
-*Perilaku menu bar:*
-- Muncul di *title bar window*
-- Setiap window memiliki menu sendiri
+*Perilaku bilah menu:*
+- Muncul di *bilah judul jendela*
+- Setiap jendela memiliki menu sendiri
 - Tidak ada menu aplikasi
 
 *Lokasi standar:*
-- *Exit*: Menu File (Alt+F4)
-- *Settings*: Menu Tools atau Edit
-- *About*: Menu Help
+- *Keluar*: Menu File (Alt+F4)
+- *Pengaturan*: Menu Alat atau Edit
+- *Tentang*: Menu Bantuan
 
 *Contoh:*
 
@@ -507,16 +511,16 @@ if runtime.GOOS == "windows" {
 
 ### Linux
 
-*Perilaku menu bar:*
-- Biasanya per-window (seperti Windows)
-- Beberapa DE mendukung menu global (Unity, GNOME dengan extension)
-- Tampilan bervariasi menurut desktop environment
+*Perilaku bilah menu:*
+- Biasanya tersedia per jendela (seperti Windows)
+- Beberapa DE mendukung menu global (Unity, GNOME dengan ekstensi)
+- Tampilan bervariasi menurut lingkungan desktop
 
-*Praktik terbaik:* Ikuti konvensi Windows, uji di DE target.
+*Praktik terbaik:* Ikuti konvensi Windows dan uji pada DE target.
 
 ## Contoh Lengkap
 
-Berikut struktur menu siap produksi:
+Berikut struktur menu yang siap digunakan dalam produksi:
 
 ```go
 package main
@@ -642,48 +646,48 @@ func showAbout(ctx *application.Context) {
 
 ### ✅ Lakukan
 
-- *Gunakan role menu* untuk menu standar (File, Edit, dll.)
+- *Gunakan peran menu* untuk menu standar (File, Edit, dan sebagainya)
 - *Ikuti konvensi platform* untuk struktur menu
-- *Tambahkan keyboard shortcut* ke aksi umum
+- *Tambahkan pintasan papan ketik* untuk tindakan yang umum digunakan
 - *Panggil menu.Update()* setelah mengubah status menu
-- *Uji di semua platform* - perilaku bervariasi
-- *Jaga menu dangkal* - maksimum 2-3 level
-- *Gunakan label jelas* - "Save Project" bukan "Save"
+- *Uji pada semua platform* — perilakunya bervariasi
+- *Jaga agar hierarki menu tetap dangkal* — maksimum 2-3 tingkat
+- *Gunakan label yang jelas* — "Simpan Proyek", bukan "Simpan"
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan hardcode shortcut platform* - Gunakan `CmdOrCtrl`
-- *Jangan taruh Quit di menu File di macOS* - Ada di menu Application
-- *Jangan taruh About di menu Help di macOS* - Ada di menu Application
-- *Jangan lupa menu.Update()* - Menu tidak akan berfungsi dengan benar
-- *Jangan nest terlalu dalam* - Pengguna akan tersesat
-- *Jangan gunakan jargon* - Jaga label ramah pengguna
+- *Jangan melakukan hardcode pada pintasan khusus platform* — Gunakan `CmdOrCtrl`
+- *Jangan menempatkan Keluar di menu File pada macOS* — Opsi tersebut berada di menu aplikasi
+- *Jangan menempatkan Tentang di menu Bantuan pada macOS* — Opsi tersebut berada di menu aplikasi
+- *Jangan lupa memanggil menu.Update()* — Menu tidak akan berfungsi dengan semestinya
+- *Jangan membuat menu bertingkat terlalu dalam* — Pengguna akan kebingungan
+- *Jangan gunakan jargon* — Gunakan label yang mudah dipahami pengguna
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
 @card title="📖 Referensi Menu"
-Referensi lengkap untuk tipe item menu dan properti.
+Referensi lengkap untuk jenis dan properti item menu.
 
-[Pelajari Selengkapnya →](/id/features/menus/reference/)
+[Pelajari Selengkapnya →](/features/menus/reference/)
 @end
-@card title="◆ Context Menu"
-Buat context menu klik kanan.
+@card title="◆ Menu Konteks"
+Buat menu konteks yang dibuka dengan klik kanan.
 
-[Pelajari Selengkapnya →](/id/features/menus/context/)
+[Pelajari Selengkapnya →](/features/menus/context/)
 @end
-@card title="★ Menu System Tray"
-Tambahkan integrasi system tray/menu bar.
+@card title="★ Menu Baki Sistem"
+Tambahkan integrasi dengan baki sistem/bilah menu.
 
-[Pelajari Selengkapnya →](/id/features/menus/systray/)
+[Pelajari Selengkapnya →](/features/menus/systray/)
 @end
 @card title="📖 Pola Menu"
 Pola menu umum dan praktik terbaik.
 
-[Pelajari Selengkapnya →](/id/guides/menus/)
+[Pelajari Selengkapnya →](/guides/menus/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh menu](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh menu](https://github.com/wailsapp/wails/tree/master/v3/examples/menu).

@@ -1,16 +1,16 @@
 ---
 schema = 1
-title = "Beberapa Window"
-description = "Pola dan praktik terbaik aplikasi multi-window"
+title = "Beberapa Jendela"
+description = "Pola dan praktik terbaik untuk aplikasi dengan beberapa jendela"
 slug = "features/windows/multiple"
-sourcePath = "id/features/windows/multiple.mpd"
+sourcePath = "features/windows/multiple.mpd"
 ---
 
-## Aplikasi Multi-Window
+## Aplikasi dengan Beberapa Jendela
 
-Wails v3 menyediakan *dukungan multi-window native* untuk membuat window pengaturan, window dokumen, tool palette, dan window inspector. Lacak window, aktifkan komunikasi antar window, dan kelola siklus hidupnya dengan API sederhana dan konsisten.
+Wails v3 menyediakan *dukungan bawaan untuk beberapa jendela* guna membuat jendela pengaturan, jendela dokumen, palet alat, dan jendela pemeriksa. Lacak jendela, aktifkan komunikasi antarjendela, dan kelola siklus hidupnya dengan API yang sederhana dan konsisten.
 
-### Window Utama + Pengaturan
+### Jendela Utama + Pengaturan
 
 ```go
 package main
@@ -59,15 +59,15 @@ func (a *App) ShowSettings() {
 }
 ```
 
-*Key points:*
-- Main window always visible
-- Settings window created but hidden
-- Show settings on demand
-- Reuse same window (don't create multiple)
+*Poin utama:*
+- Jendela utama selalu terlihat
+- Jendela pengaturan dibuat tetapi disembunyikan
+- Tampilkan pengaturan saat diperlukan
+- Gunakan kembali jendela yang sama (jangan buat beberapa jendela)
 
-## Pelacakan Window
+## Pelacakan Jendela
 
-### Dapatkan Semua Window
+### Mendapatkan Semua Jendela
 
 ```go
 windows := app.Window.GetAll()
@@ -78,7 +78,7 @@ for _, window := range windows {
 }
 ```
 
-### Temukan Window Tertentu
+### Menemukan Jendela Tertentu
 
 ```go
 // By name
@@ -95,9 +95,9 @@ if window, ok := app.Window.GetByID(123); ok {
 current := app.Window.Current()
 ```
 
-### Pola Registry Window
+### Pola Registri Jendela
 
-Track windows in your application:
+Lacak jendela dalam aplikasi Anda:
 
 ```go
 type WindowManager struct {
@@ -124,11 +124,11 @@ func (wm *WindowManager) Remove(name string) {
 }
 ```
 
-## Komunikasi Window
+## Komunikasi Antarjendela
 
-### Menggunakan Event
+### Menggunakan Peristiwa
 
-Windows communicate via the event system:
+Jendela berkomunikasi melalui sistem peristiwa:
 
 ```go
 // In main window - emit event
@@ -148,9 +148,9 @@ app.Event.On("settings-changed", func(event *application.CustomEvent) {
 })
 ```
 
-### Pola State Bersama
+### Pola Status Bersama
 
-Use a shared state manager:
+Gunakan pengelola status bersama:
 
 ```go
 type AppState struct {
@@ -180,9 +180,9 @@ func (s *AppState) GetTheme() string {
 }
 ```
 
-### Pesan Window-ke-Window
+### Pesan Antarjendela
 
-Send messages between specific windows:
+Kirim pesan di antara jendela tertentu:
 
 ```go
 // Get target window
@@ -194,9 +194,9 @@ if targetWindow, ok := app.Window.GetByName("preview"); ok {
 
 ## Pola Umum
 
-### Pola 1: Window Singleton
+### Pola 1: Jendela Singleton
 
-Ensure only one instance of a window exists:
+Pastikan hanya ada satu instans jendela:
 
 ```go
 var settingsWindow *application.WebviewWindow
@@ -223,9 +223,9 @@ func ShowSettings(app *application.App) {
 }
 ```
 
-### Pola 2: Window Dokumen
+### Pola 2: Jendela Dokumen
 
-Multiple instances of the same window type:
+Beberapa instans dari jenis jendela yang sama:
 
 ```go
 type DocumentWindow struct {
@@ -269,9 +269,9 @@ func OpenDocument(app *application.App, filePath string) {
 }
 ```
 
-### Pola 3: Tool Palette
+### Pola 3: Palet Alat
 
-Floating windows that stay on top:
+Jendela mengambang yang tetap berada di atas:
 
 ```go
 func CreateToolPalette(app *application.App) *application.WebviewWindow {
@@ -288,9 +288,9 @@ func CreateToolPalette(app *application.App) *application.WebviewWindow {
 }
 ```
 
-### Pattern 4: Dialog Modals (macOS only)
+### Pola 4: Dialog modal (khusus macOS)
 
-Child windows that block parent:
+Jendela anak yang memblokir jendela induk:
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
@@ -306,9 +306,9 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 }
 ```
 
-### Pola 5: Window Inspector/Preview
+### Pola 5: Jendela Pemeriksa/Pratinjau
 
-Linked windows that update together:
+Jendela tertaut yang diperbarui secara bersamaan:
 
 ```go
 type EditorApp struct {
@@ -344,9 +344,9 @@ func (e *EditorApp) TogglePreview() {
 }
 ```
 
-## Relasi Parent-Child
+## Hubungan Induk-Anak
 
-### Membuat Window Child
+### Membuat Jendela Anak
 
 ```go
 childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -356,12 +356,12 @@ childWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 parentWindow.AttachModal(childWindow)
 ```
 
-*Behaviour:*
-- Child stays above parent
-- Child moves with parent
-- Child blocks interaction to parent
+*Perilaku:*
+- Jendela anak tetap berada di atas jendela induk
+- Jendela anak bergerak bersama jendela induk
+- Jendela anak memblokir interaksi dengan jendela induk
 
-*Platform support:*
+*Dukungan platform:*
 
 @table header=true
 | macOS | Windows | Linux |
@@ -370,7 +370,7 @@ parentWindow.AttachModal(childWindow)
 
 ### Perilaku Modal
 
-Create modal-like behaviour:
+Buat perilaku menyerupai modal:
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) {
@@ -384,11 +384,11 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) {
 }
 ```
 
-## Manajemen Siklus Hidup Window
+## Pengelolaan Siklus Hidup Jendela
 
 ### Callback Pembuatan
 
-Be notified when windows are created:
+Dapatkan notifikasi saat jendela dibuat:
 
 ```go
 app.Window.OnCreate(func(window application.Window) {
@@ -401,7 +401,7 @@ app.Window.OnCreate(func(window application.Window) {
 
 ### Callback Penghancuran
 
-Cleanup when windows are destroyed:
+Lakukan pembersihan saat jendela dihancurkan:
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -415,9 +415,9 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 })
 ```
 
-### Perilaku Quit Aplikasi
+### Perilaku Keluar Aplikasi
 
-Control when application quits:
+Kendalikan kapan aplikasi ditutup:
 
 ```go
 app := application.New(application.Options{
@@ -428,16 +428,16 @@ app := application.New(application.Options{
 })
 ```
 
-*Kasus penggunaans:*
-- System tray applications
-- Background services
-- Menu bar applications (macOS)
+*Kasus penggunaan:*
+- Aplikasi baki sistem
+- Layanan latar belakang
+- Aplikasi bilah menu (macOS)
 
-## Manajemen Memori
+## Pengelolaan Memori
 
 ### Mencegah Kebocoran
 
-Always clean up window references:
+Selalu bersihkan referensi jendela:
 
 ```go
 var windows = make(map[string]*application.WebviewWindow)
@@ -453,16 +453,16 @@ func CreateWindow(name string) {
 }
 ```
 
-### Menutup Window
+### Menutup Jendela
 
 ```go
 // Close — dispatches WindowClosing; a RegisterHook can call e.Cancel().
 window.Close()
 ```
 
-There is no `window.Destroy()` in v3. To prevent closing, use `RegisterHook(events.Common.WindowClosing, ...)` and call `event.Cancel()`.
+Tidak ada `window.Destroy()` di v3. Untuk mencegah penutupan, gunakan `RegisterHook(events.Common.WindowClosing, ...)` dan panggil `event.Cancel()`.
 
-### Pembersihan Resource
+### Pembersihan Sumber Daya
 
 ```go
 type ManagedWindow struct {
@@ -483,9 +483,9 @@ func (mw *ManagedWindow) Destroy() {
 
 ## Pola Lanjutan
 
-### Pool Window
+### Pool Jendela
 
-Reuse windows instead of creating new ones:
+Gunakan kembali jendela alih-alih membuat yang baru:
 
 ```go
 type WindowPool struct {
@@ -522,9 +522,9 @@ func (wp *WindowPool) Release(window *application.WebviewWindow) {
 }
 ```
 
-### Grup Window
+### Grup Jendela
 
-Manage related windows together:
+Kelola jendela yang saling terkait secara bersamaan:
 
 ```go
 type WindowGroup struct {
@@ -555,9 +555,9 @@ func (wg *WindowGroup) CloseAll() {
 }
 ```
 
-### Manajemen Workspace
+### Pengelolaan Ruang Kerja
 
-Save and restore window layouts:
+Simpan dan pulihkan tata letak jendela:
 
 ```go
 type WindowLayout struct {
@@ -603,7 +603,7 @@ func RestoreLayout(layout *WindowLayout) {
 
 ## Contoh Lengkap
 
-Here's a production-ready multi-window application:
+Berikut adalah aplikasi multijendela yang siap digunakan dalam produksi:
 
 ```go
 package main
@@ -765,28 +765,28 @@ type WindowState struct {
 
 ### ✅ Lakukan
 
-- *Track windows* - Keep references for easy access
-- *Clean up on destroy* - Prevent memory leaks
-- *Use events for communication* - Decoupled architecture
-- *Reuse windows* - Don't create duplicates
-- *Save/restore layouts* - Better UX
-- *Handle window close* - Confirm before closing with unsaved data
+- *Lacak jendela* - Simpan referensi agar mudah diakses
+- *Bersihkan saat dihancurkan* - Cegah kebocoran memori
+- *Gunakan event untuk komunikasi* - Arsitektur yang tidak saling bergantung
+- *Gunakan kembali jendela* - Jangan buat duplikat
+- *Simpan/pulihkan tata letak* - UX yang lebih baik
+- *Tangani penutupan jendela* - Minta konfirmasi sebelum menutup jika ada data yang belum disimpan
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Don't create unlimited windows* - Memory and performance issues
-- *Don't forget to clean up* - Memory leaks
-- *Don't use global variables carelessly* - Thread-safety issues
-- *Don't block window creation* - Create asynchronously if needed
-- *Don't ignore platform differences* - Test on all platforms
+- *Jangan buat jendela tanpa batas* - Menimbulkan masalah memori dan performa
+- *Jangan lupa melakukan pembersihan* - Menyebabkan kebocoran memori
+- *Jangan gunakan variabel global secara sembarangan* - Menimbulkan masalah keamanan thread
+- *Jangan blokir pembuatan jendela* - Buat secara asinkron jika diperlukan
+- *Jangan abaikan perbedaan antarplatform* - Uji di semua platform
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Window Basics](/id/features/windows/basics/) - Learn the fundamentals of window management
-- [Window Events](/id/features/windows/events/) - Handle window lifecycle events
-- [Events System](/id/features/events/system/) - Deep dive into the event system
-- [Frameless Windows](/id/features/windows/frameless/) - Create custom window chrome
+- [Dasar-Dasar Jendela](/features/windows/basics/) - Pelajari dasar-dasar pengelolaan jendela
+- [Event Jendela](/features/windows/events/) - Tangani event siklus hidup jendela
+- [Sistem Event](/features/events/system/) - Pelajari sistem event secara mendalam
+- [Jendela Tanpa Bingkai](/features/windows/frameless/) - Buat dekorasi jendela khusus
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [multi-window example](https://github.com/wailsapp/wails/tree/master/v3/examples/multi-window).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh multijendela](https://github.com/wailsapp/wails/tree/master/v3/examples/multi-window).

@@ -1,88 +1,66 @@
 ---
 schema = 1
-title = "v3 反馈"
+title = "反馈"
 description = "如何为 Wails v3 提供反馈和报告问题"
 slug = "feedback"
-sourcePath = "zh-cn/feedback.mpd"
+sourcePath = "feedback.mpd"
 ---
 
-我们欢迎（并鼓励）您提供反馈！在创建新帖子之前，请先搜索现有的问题或帖子。以下是提供反馈的不同方式：
+我们欢迎（并鼓励）你提供反馈！创建新 issue 或讨论前，请先搜索已有内容。你可以通过以下不同方式参与贡献：
 
 @tabs
-@tab label="Bug 报告"
+@tab label="Bug"
 
-如果您发现了 Bug，请通过 [Discord](https://discord.gg/bdj28QNHmT) 上的 [v3 反馈](https://discord.gg/bdj28QNHmT) 频道发帖告知我们。
+如果发现 bug，请使用 bug 报告模板在 GitHub 上[创建 issue](https://github.com/wailsapp/wails/issues/new/choose)。
 
-- 帖子应清楚地说明 Bug 是什么，并提供一个简单的可复现示例。如果文档不清楚_应该_发生什么，请在帖子中包含该信息。
-- 帖子应添加 `Bug` 标签。
-- 请在帖子中包含 `wails3 doctor` 的输出结果。
-- 如果该行为与当前文档不符（例如窗口无法正确调整大小），请执行以下操作：
-  - 更新 `v3/examples` 目录中的现有示例，或在 `v3/examples` 文件夹中创建一个新的示例，以清楚地展示该问题。
-  - 提交一个标题为 `[v3 test] <Bug 描述>` 的 [PR](https://github.com/wailsapp/wails/pulls)。
-  - 请在帖子中包含 PR 的链接。
+- 请通过简单且可复现的示例清楚描述 bug。如果文档未明确说明_预期_行为，也请在报告中指出。
+- 请在报告中包含`wails3 doctor`的输出。
+- 如果该 bug 表现为与当前文档不一致的行为，还请执行以下操作：
+  - 更新`v3/examples`目录中的现有示例，或创建一个能清楚展示该问题的新示例。
+  - 创建一个引用该 issue 的[PR](https://github.com/wailsapp/wails/pulls)。
 
 @note type="caution"
-_请记住_，意外行为不一定是 Bug——它可能只是没有按您的预期工作。对此类情况请使用 `建议` 标签。
+_请注意_，意外行为不一定是 bug——它可能只是没有按你的预期运行。此类情况请使用`Suggestions`。
 
 @end
-
-
-
-@end
-@tab label="修复方案"
-
-如果您有针对 Bug 的修复方案或对文档的更新，请执行以下操作：
-
-- 在 [Wails 仓库](https://github.com/wailsapp/wails) 上提交拉取请求。PR 的标题应以 `[v3]` 开头。
-- 在 [v3 反馈](https://discord.gg/bdj28QNHmT) 频道发布帖子。
-- 帖子应添加 `PR` 标签。
-- 请在帖子中包含 PR 的链接。
+也欢迎你在 Discord 的[#v3](https://discord.gg/bdj28QNHmT)频道中讨论 bug。
 
 
 
 
 @end
-@tab label="建议"
+@tab label="修复"
 
-如果您有建议，请通过 [Discord](https://discord.gg/bdj28QNHmT) 上的 [v3 反馈](https://discord.gg/bdj28QNHmT) 频道发帖告知我们：
+如果你修复了 bug 或改进了文档，请：
 
-- 帖子应添加 `Suggestion` 标签。
+- 按照[贡献指南](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md)在[Wails 仓库](https://github.com/wailsapp/wails)中创建 pull request。
+- 在 PR 描述中引用所有相关 issue。
 
-如果您有任何问题，请随时在 [Discord](https://discord.gg/bdj28QNHmT) 上联系我们。
+
+
+
+@end
+@tab label="增强功能"
+
+新功能和公共行为变更应通过*WEP（Wails Enhancement Proposal）*草案 pull request 提出，而不是创建功能请求 issue。
+
+- 阅读[WEP 流程](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)。
+- 复制模板，然后创建一个标题为`[WEP] <title>`的 PR 草案，其中只能包含 WEP 及其支持材料。
+- 你可以先在[GitHub Discussions](https://github.com/wailsapp/wails/discussions)或 Discord 的[#v3](https://discord.gg/bdj28QNHmT)频道中非正式地讨论想法，但维护者必须基于 WEP PR 作出决定。
 
 
 
 
 @end
-@tab label="点赞"
+@tab label="点赞支持"
 
-- 帖子可以通过使用 :thumbsup: 表情符号进行“点赞”。请对您认为优先的事项进行点赞。
-- 请_不要_仅添加“+1”或“我也是”之类的评论。
-- 如果帖子中有更多内容需要补充，例如“此 Bug 也影响 ARM 构建”或“另一种选择是……”，请随时发表评论。
+- 使用 GitHub 上的 :thumbsup: 表情回应来支持 bug、WEP 和讨论。
+- 请_不要_只添加“+1”或“我也是”之类的评论。
+- 如果你有实质性内容要补充，请添加评论，例如“这个 bug 也会影响 ARM 构建”或“另一种方法是……”。
 
 
 
 @end
 @end
 
-已知问题列表及正在进行的工作可以在[这里](https://github.com/orgs/wailsapp/projects/6)找到。
-
-## 我们希望您提供反馈的方面
-
-- API
-  - 是否易于使用？
-  - 是否符合您的预期？
-  - 是否缺少任何功能？
-  - 是否有需要移除的部分？
-  - Go 和 JS 之间是否保持一致？
-- 构建系统
-  - 是否易于使用？
-  - 我们能否改进它？
-- 示例
-  - 是否清晰？
-  - 是否涵盖了基础知识？
-- 功能
-  - 缺少哪些功能？
-  - 哪些功能是不需要的？
-- 文档
-  - 哪些部分可以更清晰？
+可以在[此处](https://github.com/orgs/wailsapp/projects/6)查看已知问题和正在进行的工作。

@@ -3,14 +3,14 @@ schema = 1
 title = "Integrasi Browser"
 description = "Buka URL dan file di browser web default pengguna"
 slug = "features/browser/integration"
-sourcePath = "id/features/browser/integration.mpd"
+sourcePath = "features/browser/integration.mpd"
 ---
 
-Wails menyediakan integrasi browser sederhana melalui API BrowserManager, memungkinkan aplikasi Anda membuka URL dan file di browser web default pengguna. Ini berguna untuk membuka tautan eksternal, dokumentasi, atau file yang seharusnya ditangani oleh browser.
+Wails menyediakan integrasi browser sederhana melalui API BrowserManager, sehingga aplikasi Anda dapat membuka URL dan file di browser web default pengguna. Fitur ini berguna untuk membuka tautan eksternal, dokumentasi, atau file yang sebaiknya ditangani oleh browser.
 
 ## Mengakses Browser Manager
 
-Browser manager diakses melalui properti `Browser` pada instance aplikasi Anda:
+Browser Manager diakses melalui properti `Browser` pada instans aplikasi Anda:
 
 ```go
 app := application.New(application.Options{
@@ -23,7 +23,7 @@ browser := app.Browser
 
 ## Membuka URL
 
-### Buka URL Web
+### Membuka URL Web
 
 Buka URL di browser web default pengguna:
 
@@ -41,9 +41,9 @@ if err != nil {
 }
 ```
 
-### Buka URL Lokal
+### Membuka URL Lokal
 
-Buka server development lokal atau resource jaringan lokal:
+Buka server pengembangan lokal atau sumber daya jaringan lokal:
 
 ```go
 // Open local development server
@@ -61,7 +61,7 @@ if err != nil {
 
 ## Membuka File
 
-### Buka File HTML
+### Membuka File HTML
 
 Buka file HTML lokal di browser:
 
@@ -80,9 +80,9 @@ if err != nil {
 }
 ```
 
-### Buka Tipe File Lain
+### Membuka Jenis File Lain
 
-Buka berbagai tipe file yang dapat ditangani browser:
+Buka berbagai jenis file yang dapat ditangani oleh browser:
 
 ```go
 // Open PDF files
@@ -108,7 +108,7 @@ if err != nil {
 
 ### Bantuan dan Dokumentasi
 
-Sediakan akses mudah ke resource bantuan:
+Sediakan akses mudah ke sumber daya bantuan:
 
 ```go
 // Create help menu
@@ -164,13 +164,13 @@ func handleExternalLink(app *application.App, url string) {
     dialog.Show()
 }
 
-func isValidURL(rawURL string) bool {
-    parsed, err := url.Parse(rawURL)
+func isValidURL(url string) bool {
+    parsed, err := url.Parse(url)
     return err == nil && (parsed.Scheme == "http" || parsed.Scheme == "https")
 }
 ```
 
-### Ekspor dan Lihat Laporan
+### Mengekspor dan Melihat Laporan
 
 Buat dan buka laporan di browser:
 
@@ -234,9 +234,9 @@ func generateAndOpenReport(app *application.App, data interface{}) error {
 }
 ```
 
-### Alat Development
+### Alat Pengembangan
 
-Buka resource development selama development:
+Buka sumber daya pengembangan selama proses pengembangan:
 
 ```go
 func setupDevelopmentMenu(app *application.App) {
@@ -267,11 +267,13 @@ func setupDevelopmentMenu(app *application.App) {
 }
 ```
 
-## Penanganan Error
+*API privat di macOS:* `OpenDevTools()` memerlukan `private_mac_apis`; jika tidak, pemanggilan tidak melakukan apa pun. Build produksi juga memerlukan `devtools`. Lihat [matriks build Web Inspector](/guides/build/private-macos-apis/#web-inspector).
 
-### Penanganan Error yang Graceful
+## Penanganan Kesalahan
 
-Selalu tangani error potensial saat membuka URL atau file:
+### Penanganan Kesalahan yang Baik
+
+Selalu tangani potensi kesalahan saat membuka URL atau file:
 
 ```go
 func openURLWithFallback(app *application.App, url string, fallbackMessage string) {
@@ -321,10 +323,10 @@ func openURLWithFeedback(app *application.App, url string) {
 
 Di macOS:
 
-- Menggunakan perintah `open` untuk meluncurkan browser default
-- Menghormati pengaturan browser default pengguna di System Preferences
-- Dapat meminta permission jika aplikasi di-sandbox
-- Menangani URL `file://` dengan benar untuk file lokal
+- Menggunakan perintah `open` untuk menjalankan browser default
+- Mengikuti pengaturan browser default pengguna di System Preferences
+- Dapat meminta izin jika aplikasi berjalan dalam sandbox
+- Menangani URL `file://` untuk file lokal dengan benar
 
 
 
@@ -337,9 +339,9 @@ Di macOS:
 Di Windows:
 
 - Menggunakan Windows Shell API untuk membuka URL
-- Menghormati pengaturan browser default di Windows Settings
-- Menangani format path Windows dengan benar
-- Dapat menampilkan peringatan keamanan untuk URL tidak tepercaya
+- Mengikuti pengaturan browser default di Windows Settings
+- Menangani format jalur Windows dengan benar
+- Dapat menampilkan peringatan keamanan untuk URL yang tidak tepercaya
 
 
 
@@ -351,10 +353,10 @@ Di Windows:
 
 Di Linux:
 
-- Mencoba menggunakan `xdg-open` terlebih dahulu, fallback ke metode lain
-- Perilaku bervariasi menurut desktop environment
-- Menghormati variabel environment `BROWSER` jika disetel
-- Dapat memerlukan paket tambahan di instalasi minimal
+- Mencoba menggunakan `xdg-open` terlebih dahulu, lalu beralih ke metode lain jika gagal
+- Perilaku bervariasi menurut lingkungan desktop
+- Mengikuti variabel lingkungan `BROWSER` jika ditetapkan
+- Mungkin memerlukan paket tambahan pada instalasi minimal
 
 
 
@@ -363,7 +365,7 @@ Di Linux:
 
 ## Praktik Terbaik
 
-1. *Selalu Tangani Error*: Operasi browser dapat gagal karena berbagai alasan:
+1. *Selalu Tangani Kesalahan*: Operasi browser dapat gagal karena berbagai alasan:
   ```go
   if err := app.Browser.OpenURL(url); err != nil {
       app.Logger.Error("Failed to open browser", "error", err)
@@ -371,7 +373,7 @@ Di Linux:
   }
   ```
 
-2. *Validate URLs*: Ensure URLs are well-formed before opening:
+2. *Validasi URL*: Pastikan format URL valid sebelum membukanya:
   ```go
   func isValidHTTPURL(str string) bool {
       u, err := url.Parse(str)
@@ -379,13 +381,13 @@ Di Linux:
   }
   ```
 
-3. *User Confirmation*: For external links, consider asking user permission:
+3. *Konfirmasi Pengguna*: Untuk tautan eksternal, pertimbangkan untuk meminta izin pengguna:
   ```go
   // Show confirmation dialog before opening external links
   confirmAndOpen(app, "https://external-site.com")
   ```
 
-4. *Secure File Paths*: When opening files, ensure paths are safe:
+4. *Jalur File yang Aman*: Saat membuka file, pastikan jalurnya aman:
   ```go
   func openSafeFile(app *application.App, filename string) error {
       // Ensure file exists and is readable
@@ -396,9 +398,9 @@ Di Linux:
   }
   ```
 
-## Complete Example
+## Contoh Lengkap
 
-Here's a complete example showing various browser integration patterns:
+Berikut contoh lengkap yang menunjukkan berbagai pola integrasi browser:
 
 ```go
 package main
@@ -512,10 +514,10 @@ func showError(app *application.App, message string, err error) {
 }
 ```
 
-@note type="tip" title="Pro Tip"
-Pertimbangkan menyediakan mekanisme fallback saat operasi browser gagal, seperti menyalin URL ke clipboard atau menampilkannya di dialog untuk dibuka manual.
+@note type="tip" title="Tips Profesional"
+Pertimbangkan untuk menyediakan mekanisme alternatif ketika operasi browser gagal, seperti menyalin URL ke papan klip atau menampilkannya dalam dialog agar dapat dibuka secara manual.
 @end
 
 @note type="danger" title="Peringatan"
-Selalu validasi URL dan path file sebelum membukanya untuk mencegah masalah keamanan. Berhati-hatilah membuka URL dari pengguna tanpa validasi.
+Selalu validasi URL dan jalur file sebelum membukanya untuk mencegah masalah keamanan. Berhati-hatilah saat membuka URL yang diberikan pengguna tanpa validasi.
 @end

@@ -1,31 +1,25 @@
 ---
 schema = 1
-title = "FileHound Export Utility"
-description = "Aplikasi desktop yang dibangun dengan Wails"
+title = "Utilitas Ekspor FileHound"
+description = "Aplikasi desktop yang dibuat dengan Wails"
 slug = "community/showcase/filehound"
-sourcePath = "id/community/showcase/filehound.mpd"
+sourcePath = "community/showcase/filehound.mpd"
 ---
 
-![FileHound Export Utility](/assets/showcase-images/filehound.webp)
+![Utilitas Ekspor FileHound](/assets/showcase-images/filehound.webp)
 
-[FileHound Export Utility](https://www.filehound.co.uk/) FileHound adalah platform\
-manajemen dokumen cloud yang dibuat untuk retensi file yang aman, otomasi proses bisnis\
-dan kemampuan SmartCapture.
+[Utilitas Ekspor FileHound](https://www.filehound.co.uk/) FileHound adalah platform manajemen dokumen berbasis cloud yang dirancang untuk penyimpanan file yang aman, otomatisasi proses bisnis, dan kemampuan SmartCapture.
 
-FileHound Export Utility memungkinkan Administrator FileHound menjalankan\
-tugas ekstraksi dokumen dan data yang aman untuk tujuan back-up dan recovery\
-alternatif. Aplikasi ini akan mengunduh semua dokumen dan/atau metadata yang disimpan di\
-FileHound berdasarkan filter yang Anda pilih. Metadata akan diekspor dalam format\
-JSON dan XML.
+Utilitas Ekspor FileHound memungkinkan Administrator FileHound menjalankan tugas ekstraksi dokumen dan data secara aman untuk keperluan pencadangan dan pemulihan alternatif. Aplikasi ini akan mengunduh semua dokumen dan/atau metadata yang disimpan di FileHound berdasarkan filter yang Anda pilih. Metadata tersebut akan diekspor dalam format JSON dan XML.
 
-Backend dibangun dengan:
+Backend dibuat dengan:
 
 - Go 1.15
 - Wails 1.11.0
 - go-sqlite3 1.14.6
 - go-linq 3.2
 
-Frontend dengan:
+Frontend menggunakan:
 
 - Vue 2.6.11
 - Vuex 3.4.0

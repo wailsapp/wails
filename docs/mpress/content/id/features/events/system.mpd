@@ -1,18 +1,18 @@
 ---
 schema = 1
-title = "Sistem Event"
-description = "Berkomunikasi antar komponen dengan sistem event"
+title = "Sistem Peristiwa"
+description = "Berkomunikasi antar komponen dengan sistem peristiwa"
 slug = "features/events/system"
-sourcePath = "id/features/events/system.mpd"
+sourcePath = "features/events/system.mpd"
 ---
 
-## Sistem Event
+## Sistem Peristiwa
 
-Wails menyediakan *sistem event terpadu* untuk komunikasi pub/sub. Emit event dari mana saja, dengarkan dari mana saja — Go ke JavaScript, JavaScript ke Go, window ke window — memungkinkan arsitektur decoupled dengan event bertipe dan lifecycle hook.
+Wails menyediakan *sistem peristiwa terpadu* untuk komunikasi pub/sub. Pancarkan peristiwa dari mana saja dan dengarkan dari mana saja—dari Go ke JavaScript, JavaScript ke Go, maupun satu jendela ke jendela lain—sehingga memungkinkan arsitektur yang terpisah dengan peristiwa bertipe dan hook siklus hidup.
 
 ## Mulai Cepat
 
-*Go (emit):*
+*Go (memancarkan):*
 
 ```go
 app.Event.Emit("user-logged-in", map[string]interface{}{
@@ -21,7 +21,7 @@ app.Event.Emit("user-logged-in", map[string]interface{}{
 })
 ```
 
-*JavaScript (listen):*
+*JavaScript (mendengarkan):*
 
 ```javascript
 import { Events } from '@wailsio/runtime'
@@ -33,11 +33,11 @@ Events.On("user-logged-in", (event) => {
 
 *Selesai!* Pub/sub lintas bahasa.
 
-## Tipe Event
+## Jenis Peristiwa
 
-### Event Kustom
+### Peristiwa Kustom
 
-Your application-specific events:
+Peristiwa khusus aplikasi Anda:
 
 ```go
 // Emit from Go
@@ -53,9 +53,9 @@ Events.On("payment-processed", handlePayment)
 Events.On("notification", showNotification)
 ```
 
-### Event Sistem
+### Peristiwa Sistem
 
-Built-in OS and application events:
+Peristiwa bawaan OS dan aplikasi:
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -73,9 +73,9 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *applicati
 })
 ```
 
-### Event Window
+### Peristiwa Jendela
 
-Window-specific events:
+Peristiwa khusus jendela:
 
 ```go
 window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
@@ -87,17 +87,17 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 })
 ```
 
-## Mengirim Event
+## Memancarkan Peristiwa
 
-### From Go
+### Dari Go
 
-*Basic emit:*
+*Pemancaran dasar:*
 
 ```go
 app.Event.Emit("event-name", data)
 ```
 
-*With different data types:*
+*Dengan berbagai jenis data:*
 
 ```go
 // String
@@ -119,13 +119,13 @@ app.Event.Emit("config", map[string]interface{}{
 app.Event.Emit("items", []string{"a", "b", "c"})
 ```
 
-*To specific window:*
+*Ke jendela tertentu:*
 
 ```go
 window.EmitEvent("window-specific-event", data)
 ```
 
-### From JavaScript
+### Dari JavaScript
 
 ```javascript
 import { Events } from '@wailsio/runtime'
@@ -137,11 +137,11 @@ Events.Emit("button-clicked", { buttonId: "submit" })
 Events.Emit("broadcast-message", "Hello everyone")
 ```
 
-## Mendengarkan Event
+## Mendengarkan Peristiwa
 
-### In Go
+### Di Go
 
-*Application events:*
+*Peristiwa aplikasi:*
 
 ```go
 app.Event.On("custom-event", func(e *application.CustomEvent) {
@@ -150,7 +150,7 @@ app.Event.On("custom-event", func(e *application.CustomEvent) {
 })
 ```
 
-*Dengan type assertion:*
+*Dengan penegasan tipe:*
 
 ```go
 app.Event.On("user-updated", func(e *application.CustomEvent) {
@@ -168,9 +168,9 @@ app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
 
-### In JavaScript
+### Di JavaScript
 
-*Basic listener:*
+*Listener dasar:*
 
 ```javascript
 import { Events } from '@wailsio/runtime'
@@ -180,7 +180,7 @@ Events.On("event-name", (event) => {
 })
 ```
 
-*Dengan cleanup:*
+*Dengan pembersihan:*
 
 ```javascript
 const unsubscribe = Events.On("event-name", handleEvent)
@@ -203,11 +203,11 @@ Events.On("data-updated", logChange)
 Events.Once("data-updated", updateVariable)
 ```
 
-## Event Sistem
+## Peristiwa Sistem
 
-### Event Aplikasi
+### Peristiwa Aplikasi
 
-*Event umum (lintas platform):*
+*Peristiwa umum (lintas platform):*
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -243,7 +243,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(e *ap
 })
 ```
 
-*Event spesifik platform:*
+*Peristiwa khusus platform:*
 
 @tabs sync-key="platform"
 @tab label="macOS"
@@ -333,9 +333,9 @@ app.Event.OnApplicationEvent(events.Linux.SystemDidWake, func(e *application.App
 @end
 @end
 
-### Event Window
+### Peristiwa Jendela
 
-*Event window umum:*
+*Peristiwa jendela yang umum:*
 
 ```go
 // Window focus
@@ -361,9 +361,9 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 })
 ```
 
-## Hook Event
+## Hook Peristiwa
 
-Hook run *before* standard listeners and can *cancel* events:
+Hook dijalankan *sebelum* listener standar dan dapat *membatalkan* peristiwa:
 
 ```go
 // Hook - runs first, can cancel
@@ -385,14 +385,14 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 *Perbedaan utama:*
 
 @table header=true
-| Feature | Hook | Listener Standar |
-| Urutan eksekusi | First, in registration order | After hooks, no guaranteed order |
-| Blocking | Synchronous, blocks next hook | Asynchronous, non-blocking |
-| Dapat dibatalkan | Yes | No (already propagated) |
-| Kasus penggunaan | Control flow, validation | Logging, side effects |
+| Fitur | Hook | Listener Standar |
+| Urutan eksekusi | Pertama, sesuai urutan pendaftaran | Setelah hook, tanpa jaminan urutan |
+| Pemblokiran | Sinkron, memblokir hook berikutnya | Asinkron, tanpa pemblokiran |
+| Dapat membatalkan | Ya | Tidak (sudah disebarkan) |
+| Kasus penggunaan | Kontrol alur, validasi | Pencatatan log, efek samping |
 @end
 
-## Pola Event
+## Pola Peristiwa
 
 ### Pola Pub/Sub
 
@@ -432,7 +432,7 @@ app.Event.On("order-created", func(e *application.CustomEvent) {
 })
 ```
 
-### Pola Request/Response
+### Pola Permintaan/Respons
 
 ```go
 // Frontend requests data
@@ -458,9 +458,9 @@ Events.On("user-data-response", (event) => {
 })
 ```
 
-*Note:* For request/response, *bindings are better*. Use events for notifications.
+*Catatan:* Untuk permintaan/respons, *binding lebih sesuai*. Gunakan peristiwa untuk notifikasi.
 
-### Pola Broadcast
+### Pola Siaran
 
 ```go
 // Broadcast to all windows
@@ -473,7 +473,7 @@ Events.On("global-notification", (event) => {
 })
 ```
 
-### Agregasi Event
+### Agregasi Peristiwa
 
 ```go
 type EventAggregator struct {
@@ -599,47 +599,47 @@ document.getElementById('button').addEventListener('click', () => {
 
 ### ✅ Lakukan
 
-- *Use events for notifications* - One-way communication
-- *Use bindings for requests* - Two-way communication
-- *Keep event names consistent* - Use kebab-case
-- *Document event data* - What fields are included?
-- *Unsubscribe when done* - Prevent memory leaks
-- *Use hooks for validation* - Control event flow
+- *Gunakan peristiwa untuk notifikasi* - Komunikasi satu arah
+- *Gunakan binding untuk permintaan* - Komunikasi dua arah
+- *Pertahankan konsistensi nama peristiwa* - Gunakan kebab-case
+- *Dokumentasikan data peristiwa* - Kolom apa saja yang disertakan?
+- *Hentikan langganan setelah selesai* - Cegah kebocoran memori
+- *Gunakan hook untuk validasi* - Kendalikan alur peristiwa
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Don't use events for RPC* - Use bindings instead
-- *Don't emit too frequently* - Batch if needed
-- *Don't block in handlers* - Keep them fast
-- *Don't forget to unsubscribe* - Memory leaks
-- *Don't use events for large data* - Use bindings
-- *Don't create event loops* - A emits B, B emits A
+- *Jangan gunakan peristiwa untuk RPC* - Gunakan binding sebagai gantinya
+- *Jangan memancarkan event terlalu sering* - Kelompokkan jika diperlukan
+- *Jangan memblokir di dalam handler* - Pastikan handler tetap cepat
+- *Jangan lupa berhenti berlangganan* - Dapat menyebabkan kebocoran memori
+- *Jangan gunakan event untuk data berukuran besar* - Gunakan binding
+- *Jangan membuat perulangan event* - A memancarkan B, B memancarkan A
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="★ Event Kustom"
-Create your own event types.
+@card title="★ Panduan Event"
+Pelajari pola event dan pembuatan event yang aman terhadap tipe.
 
-[Pelajari Selengkapnya →](/features/events/custom/)
+[Pelajari Selengkapnya →](/guides/events-reference/)
 @end
-@card title="◆ Event Patterns"
-Common event patterns and best practices.
+@card title="◆ API Event"
+Pelajari API event aplikasi dan jendela secara lengkap.
 
-[Pelajari Selengkapnya →](/features/events/system/)
+[Pelajari Selengkapnya →](/reference/events/)
 @end
-@card title="🚀 Bindings"
-Use bindings for request/response.
+@card title="🚀 Binding"
+Gunakan binding untuk permintaan/respons.
 
-[Pelajari Selengkapnya →](/id/features/bindings/methods/)
+[Pelajari Selengkapnya →](/features/bindings/methods/)
 @end
-@card title="▣ Window Events"
-Handle window lifecycle events.
+@card title="▣ Event Jendela"
+Tangani event siklus hidup jendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/events/)
+[Pelajari Selengkapnya →](/features/windows/events/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [event examples](https://github.com/wailsapp/wails/tree/master/v3/examples/events).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh event](https://github.com/wailsapp/wails/tree/master/v3/examples/events).

@@ -3,169 +3,198 @@ schema = 1
 title = "Berkontribusi"
 description = "Berkontribusi pada Wails"
 slug = "contributing"
-sourcePath = "id/contributing/index.mpd"
+sourcePath = "contributing/index.mpd"
 ---
 
-## Selamat Datang, Kontributor!
+## Selamat Datang, Para Kontributor!
 
-Kami menyambut kontribusi pada Wails! Baik Anda memperbaiki bug, menambahkan fitur, atau meningkatkan dokumentasi, bantuan Anda sangat dihargai.
+Kami menyambut kontribusi untuk Wails! Baik Anda memperbaiki bug, menambahkan fitur, maupun menyempurnakan dokumentasi, bantuan Anda sangat kami hargai.
 
 ## Cara Berkontribusi
 
-### 1. Laporkan Issue
+### 1. Laporkan Masalah
 
-Menemukan bug? [Buka issue](https://github.com/wailsapp/wails/issues/new) dengan:
+Menemukan bug? [Buka issue](https://github.com/wailsapp/wails/issues/new) yang menyertakan:
 - Deskripsi yang jelas
-- Langkah reproduksi
-- Perilaku yang diharapkan vs aktual
+- Langkah-langkah untuk mereproduksi masalah
+- Perilaku yang diharapkan dan perilaku aktual
 - Informasi sistem
 - Contoh kode
 
-### 2. Tingkatkan Dokumentasi
+### 2. Sempurnakan Dokumentasi
 
-Peningkatan dokumentasi selalu disambut:
-- Perbaiki typo dan kesalahan
+PR perbaikan dokumentasi dapat diajukan tanpa issue sebelumnya atau pengujian kode yang gagal.
+Ikuti [Perbaiki dokumentasi](/contributing/documentation/) untuk melihat pratinjau dan memvalidasi perubahan dengan M-Press.
+
+Penyempurnaan dokumentasi selalu kami sambut:
+- Perbaiki kesalahan ketik dan kekeliruan
 - Tambahkan contoh
 - Perjelas penjelasan
 - Terjemahkan konten
 
-### 3. Kirim Kode
+### 3. Kirimkan Kode
 
-Kontribusi kode melalui pull request:
+Kontribusikan kode melalui pull request:
 - Perbaikan bug
 - Fitur baru
 - Peningkatan performa
-- Tes
+- Pengujian
+
+### 4. Ajukan Penyempurnaan (WEP)
+
+Fungsionalitas baru dan perubahan pada perilaku publik menggunakan proses Wails Enhancement Proposal (WEP). Proses ini menjaga transparansi pengembangan fitur dan memastikan setiap proposal yang diterima memiliki pelaksana. Jangan buka issue permintaan fitur.
+
+1. Jika ingin, sampaikan terlebih dahulu ide Anda dalam kategori [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) di GitHub Discussions atau di [Discord](https://discord.gg/JDdSxwjhGf) untuk mengukur minat.
+2. Salin [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) ke `v3/wep/proposals/<proposal name>/proposal.md`, lalu isi setiap bagiannya.
+3. Buka draft pull request berjudul `[WEP] <title>` yang hanya berisi proposal tersebut. PR itu merupakan tempat resmi untuk membahasnya.
+4. Kumpulkan masukan dan dukungan (komentar dan reaksi jempol pada PR). Berikan waktu setidaknya dua minggu untuk berdiskusi dan sepakati siapa yang akan mengimplementasikan proposal tersebut.
+5. Tandai PR sebagai siap ditinjau. Maintainer mengambil keputusan akhir: proposal yang diterima akan diberi nomor WEP dan digabungkan.
+
+Proses lengkapnya didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
 
 ## Memulai
 
-### Fork dan Clone
+### Fork dan Kloning
 
 ```bash
-# Fork repositori di GitHub
-# Lalu clone fork Anda
+# Fork the repository on GitHub
+# Then clone your fork
 git clone https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
-# Tambahkan remote upstream
+# Add upstream remote
 git remote add upstream https://github.com/wailsapp/wails.git
 ```
 
-### Build dari Sumber
+### Build dari Kode Sumber
 
 ```bash
-# Instal dependensi
-go mod download
+# Build the v3 CLI. Go downloads any required modules automatically.
+cd v3
+go build -o ../wails3 ./cmd/wails3
 
-# Build Wails CLI
-cd v3/cmd/wails3
-go build
-
-# Uji build Anda
-./wails3 version
+# Confirm the built CLI runs and reports its version.
+../wails3 version
 ```
 
-### Jalankan Tes
+### Jalankan Pengujian
+
+Pengujian merupakan bagian dari perubahan, bukan sekadar pemeriksaan dasar di tahap akhir untuk memastikan perangkat lunak berfungsi. Tempatkan unit test di dekat\
+kode yang diuji dan utamakan pengujian berbasis tabel setiap kali satu perilaku\
+diuji dengan beberapa input atau kasus ekstrem. Beri nama setiap kasus agar kegagalan\
+menjelaskan skenarionya.
+
+Logika baru dan yang diubah sebaiknya tercakup sepenuhnya. Targetkan cakupan statement Go sebesar 100%\
+untuk kode yang ditambahkan atau diubah oleh PR Anda; jangan gunakan persentase cakupan seluruh repositori\
+sebagai pengganti pengujian perubahan tersebut. Kekurangan cakupan dapat dibenarkan—misalnya,\
+jalur kesalahan yang hanya berlaku pada OS tertentu atau kondisi yang tidak praktis untuk direproduksi\
+tanpa perangkat keras nyata—tetapi jelaskan kekurangan itu dan alasan hal tersebut tidak dapat diuji secara wajar\
+dalam deskripsi PR.
 
 ```bash
-# Jalankan semua tes
+# Run all v3 tests
+cd v3
 go test ./...
 
-# Jalankan tes paket tertentu
-go test ./v3/pkg/application
+# Run specific package tests
+go test ./pkg/application
 
-# Jalankan dengan coverage
-go test -cover ./...
+# Inspect coverage for the packages you changed
+go test ./pkg/application -coverprofile=coverage.out
+go tool cover -func=coverage.out
 ```
+
+Untuk rangkaian pengujian integrasi, deteksi race condition, dan perintah lengkap yang setara dengan CI,\
+lihat [Pengujian & Integrasi Berkelanjutan](/contributing/testing-ci/).
 
 ## Membuat Perubahan
 
 ### Buat Branch
 
 ```bash
-# Perbarui main
-git checkout main
-git pull upstream main
+# Update master
+git checkout master
+git pull upstream master
 
-# Buat branch fitur
+# Create feature branch
 git checkout -b feature/my-feature
 ```
 
 ### Buat Perubahan Anda
 
-1. *Tulis kode* mengikuti konvensi Go
-2. *Tambahkan tes* untuk fungsionalitas baru
+1. *Tulis kode* sesuai konvensi Go
+2. *Tambahkan pengujian* untuk fungsionalitas baru
 3. *Perbarui dokumentasi* jika diperlukan
-4. *Jalankan tes* untuk memastikan tidak ada yang rusak
+4. *Jalankan pengujian* untuk memastikan tidak ada yang rusak
 5. *Commit perubahan* dengan pesan yang jelas
 
-### Panduan Commit
+### Pedoman Commit
 
 ```bash
-# Pesan commit yang baik
+# Good commit messages
 git commit -m "fix: resolve window focus issue on macOS"
 git commit -m "feat: add support for custom window chrome"
 git commit -m "docs: improve bindings documentation"
 
-# Gunakan conventional commits:
-# - feat: Fitur baru
-# - fix: Perbaikan bug
-# - docs: Dokumentasi
-# - test: Tes
-# - refactor: Refactoring kode
+# Use conventional commits:
+# - feat: New feature
+# - fix: Bug fix
+# - docs: Documentation
+# - test: Tests
+# - refactor: Code refactoring
 # - chore: Maintenance
 ```
 
-### Kirim Pull Request
+### Kirimkan Pull Request
 
 ```bash
-# Push ke fork Anda
+# Push to your fork
 git push origin feature/my-feature
 
-# Buka pull request di GitHub
-# Berikan deskripsi yang jelas
-# Referensikan issue terkait
+# Open pull request on GitHub
+# Provide clear description
+# Reference related issues
 ```
 
-## Panduan Pull Request
+## Pedoman Pull Request
 
 ### Deskripsi PR yang Baik
 
 ```markdown
 ## Description
-Deskripsi singkat perubahan
+Brief description of changes
 
 ## Changes
-- Menambahkan fitur X
-- Memperbaiki bug Y
-- Memperbarui dokumentasi
+- Added feature X
+- Fixed bug Y
+- Updated documentation
 
 ## Testing
-- Diuji di macOS 14
-- Diuji di Windows 11
-- Semua tes lulus
+- Tested on macOS 14
+- Tested on Windows 11
+- All tests passing
 
 ## Related Issues
 Fixes #123
 ```
 
-### Checklist PR
+### Daftar Periksa PR
 
 - [ ] Kode mengikuti konvensi Go
-- [ ] Tes ditambahkan/diperbarui
+- [ ] Pengujian ditambahkan atau diperbarui
 - [ ] Dokumentasi diperbarui
-- [ ] Semua tes lulus
-- [ ] Tidak ada breaking changes (atau didokumentasikan)
+- [ ] Semua pengujian lulus
+- [ ] Tidak ada breaking change (atau sudah didokumentasikan)
 - [ ] Pesan commit jelas
 
-## Panduan Kode
+## Pedoman Kode
 
 ### Gaya Kode Go
 
 ```go
-// ✅ Baik: Jelas, terdokumentasi, teruji
-// ProcessData memproses data input dan mengembalikan hasil.
-// Mengembalikan error jika data tidak valid.
+// ✅ Good: Clear, documented, tested
+// ProcessData processes the input data and returns the result.
+// It returns an error if the data is invalid.
 func ProcessData(data string) (string, error) {
     if data == "" {
         return "", errors.New("data cannot be empty")
@@ -175,7 +204,7 @@ func ProcessData(data string) (string, error) {
     return result, nil
 }
 
-// ❌ Buruk: Tanpa docs, tanpa penanganan error
+// ❌ Bad: No docs, no error handling
 func ProcessData(data string) string {
     return process(data)
 }
@@ -212,7 +241,7 @@ func TestProcessData(t *testing.T) {
 
 ## Dokumentasi
 
-### Menulis Docs
+### Menulis Dokumentasi
 
 Dokumentasi menggunakan Starlight (Astro):
 
@@ -224,34 +253,34 @@ npm run dev
 
 ### Gaya Dokumentasi
 
-- Gunakan ejaan International English
-- Mulai dengan masalahnya
-- Sediakan contoh yang berfungsi
-- Sertakan troubleshooting
-- Referensikan konten terkait
+- Gunakan ejaan bahasa Inggris internasional
+- Mulailah dengan masalah yang akan diselesaikan
+- Berikan contoh yang dapat dijalankan
+- Sertakan panduan pemecahan masalah
+- Cantumkan referensi silang ke konten terkait
 
 ## Komunitas
 
 ### Dapatkan Bantuan
 
-- *Discord:* [Bergabung dengan komunitas kami](https://discord.gg/JDdSxwjhGf)
+- *Discord:* [Bergabunglah dengan komunitas kami](https://discord.gg/JDdSxwjhGf)
 - *GitHub Discussions:* Ajukan pertanyaan
 - *GitHub Issues:* Laporkan bug
 
 ### Kode Etik
 
-Bersikaplah hormat, inklusif, dan profesional. Kita semua di sini untuk membangun perangkat lunak hebat bersama.
+Bersikaplah saling menghormati, inklusif, dan profesional. Kita semua berada di sini untuk bersama-sama membangun perangkat lunak yang hebat. Lihat [Kode Etik](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md) untuk detail selengkapnya.
 
 ## Pengakuan
 
-Kontributor diakui dalam:
+Kontributor mendapat pengakuan dalam:
 - Catatan rilis
 - Daftar kontributor
-- GitHub insights
+- Insight GitHub
 
 Terima kasih telah berkontribusi pada Wails! 🎉
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
 @card title="◆ Repositori GitHub"
@@ -260,13 +289,13 @@ Kunjungi repositori Wails.
 [Lihat di GitHub →](https://github.com/wailsapp/wails)
 @end
 @card title="◆ Komunitas Discord"
-Bergabung dengan komunitas.
+Bergabunglah dengan komunitas.
 
-[Gabung Discord →](https://discord.gg/JDdSxwjhGf)
+[Bergabung ke Discord →](https://discord.gg/JDdSxwjhGf)
 @end
 @card title="📖 Dokumentasi"
 Baca dokumentasi.
 
-[Jelajahi Docs →](/id/quick-start/why-wails/)
+[Jelajahi Dokumentasi →](/quick-start/why-wails/)
 @end
 @end

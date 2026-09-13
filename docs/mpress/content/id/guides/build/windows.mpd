@@ -1,49 +1,49 @@
 ---
 schema = 1
-title = "Packaging Windows"
-description = "Package aplikasi Wails Anda untuk distribusi Windows"
+title = "Pemaketan Windows"
+description = "Paketkan aplikasi Wails Anda untuk didistribusikan di Windows"
 slug = "guides/build/windows"
-sourcePath = "id/guides/build/windows.mpd"
+sourcePath = "guides/build/windows.mpd"
 ---
 
-## Installer NSIS
+## Penginstal NSIS
 
-Format packaging default membuat installer NSIS:
+Format pemaketan default membuat penginstal NSIS:
 
 ```bash
 wails3 package GOOS=windows
 ```
 
-Ini menjalankan `wails3 task windows:package` yang:
+Ini menjalankan `wails3 task windows:package`, yang:
 1. Membangun aplikasi
 2. Menghasilkan bootstrapper WebView2
-3. Membuat installer NSIS
+3. Membuat penginstal NSIS
 
-Output: `build/windows/nsis/<AppName>-installer.exe`
+Keluaran: `build/windows/nsis/<AppName>-installer.exe`
 
 ### Paket MSIX
 
-Untuk distribusi Microsoft Store atau deployment Windows modern:
+Untuk distribusi melalui Microsoft Store atau deployment Windows modern:
 
 ```bash
 wails3 package GOOS=windows FORMAT=msix
 ```
 
-Output: `bin/<AppName>-<arch>.msix`
+Keluaran: `bin/<AppName>-<arch>.msix`
 
 @note type="note"
 
-MSIX memerlukan `makeappx.exe` (Windows SDK) atau tooling MSIX standalone. Taskfile Windows mengekspos task instalasi sebagai `wails3 task install:msix:tools`.
+MSIX memerlukan `makeappx.exe` (Windows SDK) atau perangkat MSIX mandiri. Taskfile Windows menyediakan tugas penginstalan sebagai `wails3 task install:msix:tools`.
 
 @end
 
-## Kustomisasi Installer
+## Menyesuaikan Penginstal
 
-Konfigurasi NSIS ada di `build/windows/nsis/project.nsi`. Edit file ini untuk menyesuaikan:
+Konfigurasi NSIS terdapat di `build/windows/nsis/project.nsi`. Edit file ini untuk menyesuaikan:
 
-- UI dan branding installer
-- Direktori instalasi
-- Shortcut Start menu dan desktop
+- Antarmuka pengguna dan branding penginstal
+- Direktori penginstalan
+- Pintasan menu Mulai dan desktop
 - Asosiasi file
 - Perjanjian lisensi
 
@@ -65,9 +65,9 @@ Metadata aplikasi berasal dari `build/windows/info.json`:
 }
 ```
 
-## Code Signing
+## Penandatanganan Kode
 
-Tandatangani executable dan installer Anda untuk menghindari peringatan SmartScreen:
+Tandatangani file executable dan penginstal Anda untuk menghindari peringatan SmartScreen:
 
 ```bash
 # Using the wrapper (auto-detects platform)
@@ -78,7 +78,7 @@ wails3 task windows:sign
 wails3 task windows:sign:installer
 ```
 
-Konfigurasi signing di `build/windows/Taskfile.yml`:
+Konfigurasikan penandatanganan di `build/windows/Taskfile.yml`:
 
 ```yaml
 vars:
@@ -88,24 +88,24 @@ vars:
   TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-Simpan password sertifikat Anda dengan aman:
+Simpan kata sandi sertifikat Anda dengan aman:
 
 ```bash
 wails3 setup signing
 ```
 
-Lihat [Menandatangani Aplikasi](/id/guides/build/signing/) untuk detail.
+Lihat [Menandatangani Aplikasi](/guides/build/signing/) untuk detailnya.
 
-## Build untuk ARM
+## Membangun untuk ARM
 
 ```bash
 wails3 build GOOS=windows GOARCH=arm64
 wails3 package GOOS=windows GOARCH=arm64
 ```
 
-## Troubleshooting
+## Pemecahan Masalah
 
-### makensis not found
+### makensis tidak ditemukan
 
 Instal NSIS:
 
@@ -118,8 +118,8 @@ winget install NSIS.NSIS
 
 ### Peringatan SmartScreen
 
-Executable Anda belum ditandatangani. Lihat [Code Signing](#code-signing) di atas.
+File executable Anda belum ditandatangani. Lihat [Penandatanganan Kode](#penandatanganan-kode) di atas.
 
-### WebView2 hilang
+### WebView2 tidak ditemukan
 
-Installer menyertakan bootstrapper WebView2 yang mengunduh runtime jika diperlukan. Jika Anda memerlukan instalasi offline, unduh Evergreen Standalone Installer dari Microsoft.
+Penginstal menyertakan bootstrapper WebView2 yang mengunduh runtime jika diperlukan. Jika Anda memerlukan penginstalan offline, unduh Evergreen Standalone Installer dari Microsoft.

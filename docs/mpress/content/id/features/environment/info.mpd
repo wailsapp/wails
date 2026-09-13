@@ -1,16 +1,16 @@
 ---
 schema = 1
-title = "Environment"
-description = "Akses informasi environment sistem di aplikasi Wails Anda"
+title = "Lingkungan"
+description = "Akses informasi lingkungan sistem di aplikasi Wails Anda"
 slug = "features/environment/info"
-sourcePath = "id/features/environment/info.mpd"
+sourcePath = "features/environment/info.mpd"
 ---
 
-Wails menyediakan informasi environment komprehensif melalui API EnvironmentManager. Ini memungkinkan aplikasi Anda mendeteksi properti sistem, preferensi tema, dan terintegrasi dengan file manager sistem operasi.
+Wails menyediakan informasi lingkungan yang lengkap melalui API EnvironmentManager. Dengan API ini, aplikasi Anda dapat mendeteksi properti sistem dan preferensi tema, serta terintegrasi dengan pengelola file sistem operasi.
 
-## Accessing the Environment Manager
+## Mengakses Pengelola Lingkungan
 
-Environment manager diakses melalui properti `Env` pada instance aplikasi Anda:
+Pengelola lingkungan diakses melalui properti `Env` pada instans aplikasi Anda:
 
 ```go
 app := application.New(application.Options{
@@ -23,9 +23,9 @@ env := app.Env
 
 ## Informasi Sistem
 
-### Get Environment Information
+### Mendapatkan Informasi Lingkungan
 
-Ambil informasi komprehensif tentang environment runtime:
+Dapatkan informasi lengkap tentang lingkungan runtime:
 
 ```go
 envInfo := app.Env.Info()
@@ -50,9 +50,9 @@ for key, value := range envInfo.PlatformInfo {
 }
 ```
 
-### Environment Structure
+### Struktur Lingkungan
 
-The environment information includes several important fields:
+Informasi lingkungan mencakup beberapa bidang penting:
 
 ```go
 type EnvironmentInfo struct {
@@ -66,9 +66,9 @@ type EnvironmentInfo struct {
 
 ## Deteksi Tema
 
-### Dark Mode Detection
+### Deteksi Mode Gelap
 
-Deteksi apakah sistem menggunakan dark mode:
+Deteksi apakah sistem menggunakan mode gelap:
 
 ```go
 if app.Env.IsDarkMode() {
@@ -82,9 +82,9 @@ if app.Env.IsDarkMode() {
 }
 ```
 
-### Theme Change Monitoring
+### Pemantauan Perubahan Tema
 
-Dengarkan perubahan tema untuk memperbarui aplikasi secara dinamis:
+Pantau perubahan tema untuk memperbarui aplikasi Anda secara dinamis:
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -107,11 +107,11 @@ func updateApplicationTheme(theme string) {
 }
 ```
 
-## Integrasi File Manager
+## Integrasi Pengelola File
 
-### Open File Manager
+### Membuka Pengelola File
 
-Buka file manager sistem di lokasi tertentu:
+Buka pengelola file sistem di lokasi tertentu:
 
 ```go
 // Open file manager at a directory
@@ -127,9 +127,9 @@ if err != nil {
 }
 ```
 
-### Common Use Cases
+### Kasus Penggunaan Umum
 
-Show files or folders in the file manager from your application:
+Tampilkan file atau folder di pengelola file dari aplikasi Anda:
 
 ```go
 func showInFileManager(app *application.App, path string) {
@@ -169,11 +169,11 @@ func setupFileMenu(app *application.App) {
 }
 ```
 
-## Platform-Specific Behavior
+## Perilaku Khusus Platform
 
-### Adaptive Application Behavior
+### Perilaku Aplikasi Adaptif
 
-Gunakan informasi environment untuk menyesuaikan perilaku aplikasi:
+Gunakan informasi lingkungan untuk menyesuaikan perilaku aplikasi Anda:
 
 ```go
 func configureForPlatform(app *application.App) {
@@ -225,9 +225,9 @@ func configureLinux(app *application.App) {
 
 ## Penanganan Mode Debug
 
-### Development vs Production
+### Pengembangan vs Produksi
 
-Gunakan informasi mode debug untuk mengaktifkan fitur development:
+Gunakan informasi mode debug untuk mengaktifkan fitur pengembangan:
 
 ```go
 func setupApplicationMode(app *application.App) {
@@ -274,11 +274,13 @@ func setupProductionFeatures(app *application.App) {
 }
 ```
 
-## Environment Information Dialog
+*API privat di macOS:* `OpenDevTools()` memerlukan `private_mac_apis`; jika tidak, pemanggilan tersebut tidak melakukan apa pun. Build produksi juga memerlukan `devtools`. Lihat [matriks build Web Inspector](/guides/build/private-macos-apis/#web-inspector).
 
-### Display System Information
+## Dialog Informasi Lingkungan
 
-Buat dialog yang menampilkan informasi environment:
+### Menampilkan Informasi Sistem
+
+Buat dialog yang menampilkan informasi lingkungan:
 
 ```go
 func showEnvironmentDialog(app *application.App) {
@@ -316,18 +318,18 @@ Platform Information:`,
 }
 ```
 
-## Platform Considerations
+## Pertimbangan Platform
 
 @tabs
 @tab label="macOS"
 
 
-On macOS:
+Di macOS:
 
-- Dark mode detection uses system appearance settings
-- File manager operations use Finder
-- Platform info includes macOS version details
-- Architecture may be "arm64" on Apple Silicon Macs
+- Deteksi mode gelap menggunakan pengaturan tampilan sistem
+- Operasi pengelola file menggunakan Finder
+- Informasi platform mencakup detail versi macOS
+- Arsitektur dapat berupa "arm64" pada Mac dengan Apple Silicon
 
 ```go
 if envInfo.OS == "darwin" {
@@ -346,12 +348,12 @@ if envInfo.OS == "darwin" {
 @tab label="Windows"
 
 
-On Windows:
+Di Windows:
 
-- Dark mode detection uses Windows theme settings
-- File manager operations use Windows Explorer
-- Platform info includes Windows version details
-- May include additional Windows-specific information
+- Deteksi mode gelap menggunakan pengaturan tema Windows
+- Operasi pengelola file menggunakan Windows Explorer
+- Informasi platform mencakup detail versi Windows
+- Dapat mencakup informasi tambahan khusus Windows
 
 ```go
 if envInfo.OS == "windows" {
@@ -372,12 +374,12 @@ if envInfo.OS == "windows" {
 @tab label="Linux"
 
 
-On Linux:
+Di Linux:
 
-- Dark mode detection varies by desktop environment
-- File manager operations use system default file manager
-- Platform info includes distribution details
-- Behavior may vary between different Linux distributions
+- Deteksi mode gelap berbeda-beda menurut lingkungan desktop
+- Operasi pengelola file menggunakan pengelola file default sistem
+- Informasi platform mencakup detail distribusi
+- Perilaku dapat berbeda di antara berbagai distribusi Linux
 
 ```go
 if envInfo.OS == "linux" {
@@ -395,7 +397,7 @@ if envInfo.OS == "linux" {
 
 ## Praktik Terbaik
 
-1. *Cache Environment Information*: Environment info rarely changes during runtime:
+1. *Simpan Informasi Lingkungan dalam Cache*: Informasi lingkungan jarang berubah selama runtime:
   ```go
   type App struct {
       envInfo *application.EnvironmentInfo
@@ -410,14 +412,14 @@ if envInfo.OS == "linux" {
   }
   ```
 
-2. *Handle Theme Changes*: Listen for system theme changes:
+2. *Tangani Perubahan Tema*: Pantau perubahan tema sistem:
   ```go
   app.Event.OnApplicationEvent(events.Common.ThemeChanged, func(event *application.ApplicationEvent) {
       updateTheme(app.Env.IsDarkMode())
   })
   ```
 
-3. *Graceful File Manager Failures*: Always handle file manager errors:
+3. *Tangani Kegagalan Pengelola File dengan Baik*: Selalu tangani kesalahan pengelola file:
   ```go
   func openFileManagerSafely(app *application.App, path string) {
       err := app.Env.OpenFileManager(path, false)
@@ -428,7 +430,7 @@ if envInfo.OS == "linux" {
   }
   ```
 
-4. *Platform-Specific Features*: Use environment info to enable platform features:
+4. *Fitur Khusus Platform*: Gunakan informasi lingkungan untuk mengaktifkan fitur platform:
   ```go
   envInfo := app.Env.Info()
   if envInfo.OS == "darwin" {
@@ -438,7 +440,7 @@ if envInfo.OS == "linux" {
 
 ## Contoh Lengkap
 
-Here's a complete example demonstrating environment management:
+Berikut contoh lengkap yang mendemonstrasikan pengelolaan lingkungan:
 
 ```go
 package main
@@ -622,10 +624,10 @@ func toggleTheme(app *application.App) {
 }
 ```
 
-@note type="tip" title="Pro Tip"
-Use environment information to provide platform-appropriate user experiences. For example, use Command key shortcuts on macOS and Control key shortcuts on Windows/Linux.
+@note type="tip" title="Kiat Pro"
+Gunakan informasi lingkungan untuk memberikan pengalaman pengguna yang sesuai dengan platform. Misalnya, gunakan pintasan dengan tombol Command di macOS dan pintasan dengan tombol Control di Windows/Linux.
 @end
 
-@note type="danger" title="Warning"
-Environment information is generally stable during application runtime, but theme preferences can change. Always listen for theme change events to keep your UI synchronized.
+@note type="danger" title="Peringatan"
+Informasi lingkungan umumnya tetap stabil selama runtime aplikasi, tetapi preferensi tema dapat berubah. Selalu pantau peristiwa perubahan tema agar UI Anda tetap tersinkronisasi.
 @end
