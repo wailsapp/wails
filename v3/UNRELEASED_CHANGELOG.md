@@ -20,17 +20,19 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Changed
 <!-- Changes in existing functionality -->
-- Update Clave showcase links to current website and repository in [PR](https://github.com/wailsapp/wails/pull/6082) by @01xR4in
 
 ## Fixed
 <!-- Bug fixes -->
+- Windows menu handles nil menus, frees replaced resources, and redraws the menu bar in [PR](https://github.com/wailsapp/wails/pull/6112) by @taliesin-ai
+- Restore MSIX packaging for fresh projects using shared YAML configuration in [PR](https://github.com/wailsapp/wails/pull/6115) by @leaanthony
+
+- Fix generated JavaScript and TypeScript bindings failing to load when generic model creators reference later helper declarations, and prevent stack overflows when creating mutually dependent generic models (#6062)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
 <!-- Features removed in this release -->
-- Remove unused build tags and FPS option from macOS API guide in [PR](https://github.com/wailsapp/wails/pull/6097) by @leaanthony
 
 ## Security
 <!-- Security-related changes -->
