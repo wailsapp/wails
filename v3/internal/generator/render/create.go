@@ -259,7 +259,8 @@ func (m *module) PostponedCreates() []string {
 
 		case *types.Named:
 			var builder strings.Builder
-			if collect.IsClass(key) {
+			isClass := collect.IsClass(key)
+			if isClass {
 				if t.Obj().Pkg().Path() == m.Imports.Self {
 					if m.Imports.ImportModels {
 						builder.WriteString("$models.")
@@ -285,9 +286,27 @@ func (m *module) PostponedCreates() []string {
 				builder.WriteString(m.JSCreateWithParams(t.Underlying(), pp.params))
 			}
 
-			if !collect.IsClass(key) || t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
-				// Creation functions for non-struct named types and instantiated
-				// generic classes require an indirect assignment to break cycles.
+			if isClass && pp.params != "" {
+				// Resolve recursive generic classes on first use, with a separate
+				// cached creator for each set of type-parameter converters.
+				declaration, sourceParam := "/** @type {((source: any) => any) | undefined} */ let $$create;", "/** @type {any} */ $$source"
+				if m.TS {
+					declaration, sourceParam = "let $$create: ((source: any) => any) | undefined;", "$$source: any"
+				}
+				result[pp.index] = fmt.Sprintf(`%s{
+    %s
+    return (%s) => {
+        $$create ??= %s;
+        return $$create($$source);
+    };
+}%s`, pre, declaration, sourceParam, builder.String(), post)
+				break
+			}
+
+			if !isClass || t.TypeArgs() != nil && t.TypeArgs().Len() > 0 &&
+				t.Obj().Pkg().Path() == m.Imports.Self && !m.Imports.ImportModels {
+				// Non-struct named types and concrete generic classes declared in
+				// this module require an indirect assignment to break cycles.
 
 				// Typescript cannot infer the return type on its own: add hints.
 				cast, argType, returnType := "", "", ""

@@ -53,9 +53,4 @@ export class SomeClass {
 }
 
 // Private type creation functions
-var $$createType0 = /** @type {(...args: any[]) => any} */(function $$initCreateType0(...args) {
-    if ($$createType0 === $$initCreateType0) {
-        $$createType0 = nobindingshere$0.HowDifferent.createFrom($Create.Any);
-    }
-    return $$createType0(...args);
-});
+const $$createType0 = nobindingshere$0.HowDifferent.createFrom($Create.Any);
