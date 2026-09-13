@@ -1,0 +1,12 @@
+---
+schema = 1
+title = "Mchat"
+description = "Aplikasi desktop yang dibangun dengan Wails"
+slug = "community/showcase/mchat"
+sourcePath = "id/community/showcase/mchat.mpd"
+---
+
+![Mchat](/assets/showcase-images/mchat.png)
+
+[Halaman resmi](https://marcio199226.github.io/mchat-site/public/) Chat end2end terenkripsi\
+sepenuhnya anonim.

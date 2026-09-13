@@ -9,7 +9,7 @@ import tempfile
 import time
 
 CHANGELOG = 'v3/UNRELEASED_CHANGELOG.md'
-ARCHIVE = 'docs/src/content/docs/changelog.mdx'
+ARCHIVE = 'docs/mpress/content/changelog.mpd'
 
 
 def git(cwd, *args):

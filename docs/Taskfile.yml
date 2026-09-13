@@ -1,36 +1,22 @@
 # https://taskfile.dev
-
 version: '3'
 
-vars:
-  # Change this to switch package managers: bun, npm, pnpm, yarn
-  PKG_MANAGER: npm
-
 tasks:
-
   setup:
-    summary: Setup the project (including D2 diagram tool)
-    preconditions:
-      - sh: '{{.PKG_MANAGER}} --version'
-        msg: "Looks like {{.PKG_MANAGER}} isn't installed."
-      - sh: 'go version'
-        msg: "Go is not installed. Install from https://go.dev/dl/"
+    summary: Install the pinned M-Press CLI with embedded D2
     cmds:
-      - '{{.PKG_MANAGER}} install'
-      - go install oss.terrastruct.com/d2@latest
-      - echo "✓ Setup complete. D2 installed to $(go env GOPATH)/bin/d2"
+      - go install github.com/leaanthony/mpress/cmd/mpress@v1.0.3
 
   dev:
-    summary: Run the dev server
-    deps: [setup]
+    summary: Preview the Wails v3 documentation
+    dir: ..
     cmds:
-      - '{{.PKG_MANAGER}} run dev'
+      - mpress dev
 
   build:
-    summary: Build the docs
-    preconditions:
-      - sh: '{{.PKG_MANAGER}} --version'
-        msg: "Looks like {{.PKG_MANAGER}} isn't installed."
+    summary: Build and validate the Wails v3 documentation
+    dir: ..
     cmds:
-      - '{{.PKG_MANAGER}} run build'
-
+      - mpress build --strict --no-purge-css
+      - mpress check
+      - python3 docs/mpress/scripts/check_site.py docs/mpress/site

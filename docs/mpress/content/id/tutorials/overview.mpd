@@ -1,0 +1,108 @@
+---
+schema = 1
+title = "Tutorial"
+description = "Pelajari Wails dengan membangun aplikasi"
+slug = "tutorials/overview"
+sourcePath = "id/tutorials/overview.mpd"
+---
+
+Tutorial langkah demi langkah yang mengajarkan konsep Wails dengan membangun aplikasi lengkap. Setiap tutorial mencakup kode yang berfungsi, penjelasan, dan pola praktis.
+
+@note type="tip" title="Baru mengenal Go?"
+Selesaikan [Go Tour](https://go.dev/tour/) sebelum memulai tutorial.
+@end
+
+## Layanan QR Code
+
+![Contoh QR Code](/assets/qr1.png)
+
+Pelajari dasar-dasar layanan Wails dengan membangun generator QR code. Tutorial ini memperkenalkan konsep inti mengorganisasi logika aplikasi ke dalam layanan yang dapat digunakan kembali.
+
+*Yang akan Anda pelajari:*
+- Cara membuat dan menyusun layanan Wails
+- Mengelola dependensi Go eksternal
+- Mengikat metode Go ke frontend Anda
+- Meneruskan data antara Go dan JavaScript
+- Mengorganisasi kode agar mudah dirawat
+
+*Cocok untuk:* Pengguna Wails pertama kali yang ingin memahami arsitektur layanan
+
+@rawHTML
+<div style="text-align: center; margin-top: 1rem;">
+<a class="mpress-link-button mpress-link-button-secondary" href="/id/tutorials/01-creating-a-service/"><span>Mulai</span><span class="mpress-link-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 1 0 1.42 1.42l5-5a1 1 0 0 0 .21-1.09Z"/></svg></span></a>
+</div>
+@end
+
+---
+
+### Daftar TODO
+
+![Aplikasi Daftar TODO](/assets/todo-app.png)
+
+Bangun aplikasi daftar TODO lengkap dengan antarmuka modern yang indah. Tutorial praktis ini mengajarkan pola inti Wails melalui aplikasi nyata menggunakan vanilla JavaScript.
+
+*Yang akan Anda pelajari:*
+- Arsitektur berbasis layanan dengan manajemen state thread-safe
+- Operasi CRUD (Create, Read, Update, Delete)
+- Binding type-safe antara Go dan JavaScript
+- Membangun UI modern tanpa kompleksitas framework
+- Pola penanganan error dan validasi yang tepat
+
+*Waktu penyelesaian:* ~20 menit
+
+*Cocok untuk:* Aplikasi Wails lengkap pertama Anda — sempurna untuk memahami dasar-dasar sebelum menambah kompleksitas framework
+
+@rawHTML
+<div style="text-align: center; margin-top: 1rem;">
+<a class="mpress-link-button mpress-link-button-secondary" href="/id/tutorials/02-todo-vanilla/"><span>Mulai</span><span class="mpress-link-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 1 0 1.42 1.42l5-5a1 1 0 0 0 .21-1.09Z"/></svg></span></a>
+</div>
+@end
+
+---
+
+### Catatan
+
+![Aplikasi Catatan](/assets/notes-app.png)
+
+Bangun aplikasi bergaya Apple Notes dengan dialog file native dan fungsi auto-save. Tutorial ini mendemonstrasikan fitur khusus desktop seperti operasi file, dialog native, dan pola UI profesional.
+
+*Yang akan Anda pelajari:*
+- Dialog file native (Save, Open, Info)
+- Persistensi data berbasis JSON
+- Pola auto-save dengan debounce
+- Tata letak desktop dua kolom yang profesional
+- Bekerja dengan operasi sistem file di Go
+
+*Waktu penyelesaian:* ~30 menit
+
+*Cocok untuk:* Mempelajari fitur khusus desktop seperti operasi file dan dialog OS native
+
+@rawHTML
+<div style="text-align: center; margin-top: 1rem;">
+<a class="mpress-link-button mpress-link-button-secondary" href="/id/tutorials/03-notes-vanilla/"><span>Mulai</span><span class="mpress-link-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 1 0 1.42 1.42l5-5a1 1 0 0 0 .21-1.09Z"/></svg></span></a>
+</div>
+@end
+
+---
+
+### Aplikasi Wails dengan Self-Update
+
+Tambahkan self-update dalam aplikasi ke aplikasi Wails, dari `wails3 init` baru hingga verifikasi rilis yang ditandatangani dan pertukaran biner mode helper. Menggunakan GitHub Releases sebagai sumber update.
+
+*Yang akan Anda pelajari:*
+- Cara `app.Updater` terintegrasi ke aplikasi Wails
+- Mengonfigurasi provider GitHub Releases
+- Menerbitkan rilis dengan `SHA256SUMS` untuk verifikasi digest
+- Menambahkan penandatanganan Ed25519 untuk ketahanan terhadap perubahan
+- Menyesuaikan jendela default via CSS, HTML kustom, atau BYO
+- Pengecekan latar belakang berkala dengan `CheckInterval`
+
+*Waktu penyelesaian:* ~25 menit
+
+*Cocok untuk:* Mengirim aplikasi desktop yang dapat diperbarui — mencakup pipeline rilis lengkap, bukan hanya API
+
+@rawHTML
+<div style="text-align: center; margin-top: 1rem;">
+<a class="mpress-link-button mpress-link-button-secondary" href="/id/tutorials/04-self-update-a-wails-app/"><span>Mulai</span><span class="mpress-link-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 1 0 1.42 1.42l5-5a1 1 0 0 0 .21-1.09Z"/></svg></span></a>
+</div>
+@end
