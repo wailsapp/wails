@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"os/exec"
 	"syscall"
+	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 // applyDetachAttrs marks the child as detached and asks Windows to keep it
@@ -32,4 +35,20 @@ func wrapHelperSpawnError(err error) error {
 		return fmt.Errorf("%w: %v", ErrJobBreakawayDenied, err)
 	}
 	return fmt.Errorf("updater: spawn helper: %w", err)
+}
+
+// startHelper preserves normal child creation for jobs that neither permit
+// breakaway nor kill their processes on close. Querying a null job handle
+// reports the immediate job; outer jobs can still impose their own limits.
+// If the query fails (including when there is no job), keep requesting breakaway.
+func startHelper(cmd *exec.Cmd) error {
+	var info windows.JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+	err := windows.QueryInformationJobObject(0, windows.JobObjectExtendedLimitInformation,
+		uintptr(unsafe.Pointer(&info)), uint32(unsafe.Sizeof(info)), nil)
+	const needsBreakaway = windows.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE |
+		windows.JOB_OBJECT_LIMIT_BREAKAWAY_OK | windows.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK
+	if err == nil && info.BasicLimitInformation.LimitFlags&needsBreakaway == 0 && cmd.SysProcAttr != nil {
+		cmd.SysProcAttr.CreationFlags &^= windows.CREATE_BREAKAWAY_FROM_JOB
+	}
+	return cmd.Start()
 }

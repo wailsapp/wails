@@ -395,6 +395,10 @@ func (u *Updater) CheckAndInstall(ctx context.Context) error {
 func (u *Updater) Restart(_ context.Context) error {
 	u.mu.RLock()
 	staged := u.resolved
+	timeout := helperReadyTimeout
+	if u.cfg != nil && u.cfg.HelperReadyTimeout > 0 {
+		timeout = u.cfg.HelperReadyTimeout
+	}
 	u.mu.RUnlock()
 	if staged == "" {
 		return ErrNotReady
@@ -423,10 +427,10 @@ func (u *Updater) Restart(_ context.Context) error {
 
 	cmd := newDetachedCommand(self)
 	cmd.Env = env
-	if err := cmd.Start(); err != nil {
+	if err := startHelper(cmd); err != nil {
 		return wrapHelperSpawnError(err)
 	}
-	if err := waitForHelperReady(readyPath, helperReadyTimeout); err != nil {
+	if err := waitForHelperReady(readyPath, timeout); err != nil {
 		_ = cmd.Process.Kill()
 		_ = cmd.Wait()
 		return err

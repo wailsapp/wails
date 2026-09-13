@@ -20,3 +20,7 @@ func applyDetachAttrs(cmd *exec.Cmd) {
 func wrapHelperSpawnError(err error) error {
 	return fmt.Errorf("updater: spawn helper: %w", err)
 }
+
+func startHelper(cmd *exec.Cmd) error {
+	return cmd.Start()
+}

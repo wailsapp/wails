@@ -30,7 +30,7 @@ var newDetachedCommand = func(path string) *exec.Cmd {
 	return cmd
 }
 
-const helperReadyTimeout = 5 * time.Second
+const helperReadyTimeout = 30 * time.Second
 
 var waitForHelperReady = func(readyPath string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
