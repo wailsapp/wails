@@ -1,0 +1,12 @@
+---
+schema = 1
+title = "hiposter"
+description = "Aplikasi desktop yang dibangun dengan Wails"
+slug = "community/showcase/hiposter"
+sourcePath = "id/community/showcase/hiposter.mpd"
+---
+
+![hiposter](/assets/showcase-images/hiposter.webp)
+
+[hiposter](https://github.com/obity/hiposter) adalah tool klien pengujian http API\
+yang sederhana dan efisien. Berbasis Wails, Go dan sveltejs.

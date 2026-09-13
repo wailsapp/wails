@@ -1,0 +1,61 @@
+site:
+  title: "Wails"
+  description: "Build beautiful desktop applications using Go and modern web technologies."
+  baseURL: "https://v3.wails.io"
+  defaultLanguage: en
+  languages: [en, zh-cn, zh-tw, ja, ko, ru, fr, pt, de, id]
+  languageLabels:
+    en: "English"
+    zh-cn: "简体中文"
+    zh-tw: "繁體中文"
+    ja: "日本語"
+    ko: "한국어"
+    ru: "Русский"
+    fr: "Français"
+    pt: "Português (Brasil)"
+    de: "Deutsch"
+    id: "Bahasa Indonesia"
+  defaultLanguageAtRoot: true
+  missingTranslation: link-to-default
+  headerLinks:
+    - label: "Blog"
+      url: "/blog/"
+  logoLight: "assets/wails-logo-horizontal-light.svg"
+  logoDark: "assets/wails-logo-horizontal-dark.svg"
+  favicon: "favicon.svg"
+social:
+  github: "https://github.com/wailsapp/wails"
+  discord: "https://discord.gg/JDdSxwjhGf"
+  reddit: "https://www.reddit.com/r/wails/"
+  x: "https://x.com/wailsapp"
+  rss: "/blog/rss.xml"
+  sponsor: "https://github.com/sponsors/leaanthony"
+  editURL: "https://github.com/wailsapp/wails/edit/master/docs/mpress/content"
+contribution:
+  enabled: false
+  repository: "https://github.com/wailsapp/wails.git"
+  branch: "master"
+  quickEdit: false
+  guide: CONTRIBUTING.md
+theme:
+  accentColor: "#5375F6"
+  layout:
+    preset: starlight
+build:
+  contentDir: content
+  staticDir: static
+  outputDir: site
+  navFile: _nav.yaml
+  customCSS: custom.css
+search:
+  enabled: true
+accessibility:
+  enabled: true
+deploy:
+  default: cloudflare
+  targets:
+    cloudflare:
+      provider: cloudflare-pages
+      accountID: c9e2228ddc647134653521013b0ea7dc
+      project: wails-v3-docs
+      productionBranch: master

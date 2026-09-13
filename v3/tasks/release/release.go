@@ -20,7 +20,7 @@ import (
 
 const (
 	versionFile          = "../../internal/version/version.txt"
-	changelogFile        = "../../../docs/src/content/docs/changelog.mdx"
+	changelogFile        = "../../../docs/mpress/content/changelog.mpd"
 	defaultReleaseBranch = "master"
 	defaultReleaseTitle  = "Wails %s"
 	defaultReleaseTarget = "master"
@@ -661,7 +661,7 @@ func runRelease(opts releaseOptions) error {
 		"v3/internal/version/version.txt",
 		runtimePackageJSON,
 		runtimePackageLock,
-		"docs/src/content/docs/changelog.mdx",
+		"docs/mpress/content/changelog.mpd",
 		"v3/UNRELEASED_CHANGELOG.md",
 	}
 	if err := git.add(filesToAdd...); err != nil {
@@ -786,12 +786,12 @@ func validateToken(token, repoSlug string) error {
 func applyChangelogUpdates(newVersion, changelogContent string) error {
 	changelogData, err := os.ReadFile(changelogFile)
 	if err != nil {
-		return fmt.Errorf("failed to read changelog.mdx: %w", err)
+		return fmt.Errorf("failed to read changelog.mpd: %w", err)
 	}
 	changelog := string(changelogData)
 	split := strings.Split(changelog, "## [Unreleased]")
 	if len(split) != 2 {
-		return fmt.Errorf("could not find '## [Unreleased]' section in changelog.mdx")
+		return fmt.Errorf("could not find '## [Unreleased]' section in changelog.mpd")
 	}
 
 	today := time.Now().Format("2006-01-02")
@@ -800,7 +800,7 @@ func applyChangelogUpdates(newVersion, changelogContent string) error {
 	if err := safeFileOperation(changelogFile, func() error {
 		return os.WriteFile(changelogFile, []byte(newChangelog), 0o644)
 	}); err != nil {
-		return fmt.Errorf("failed to update changelog.mdx: %w", err)
+		return fmt.Errorf("failed to update changelog.mpd: %w", err)
 	}
 	fmt.Println("📝 Updated docs changelog with new release entry.")
 

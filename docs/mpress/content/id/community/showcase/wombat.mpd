@@ -1,0 +1,11 @@
+---
+schema = 1
+title = "Wombat"
+description = "Aplikasi desktop yang dibangun dengan Wails"
+slug = "community/showcase/wombat"
+sourcePath = "id/community/showcase/wombat.mpd"
+---
+
+![Screenshot Wombat](/assets/showcase-images/wombat.webp)
+
+[Wombat](https://github.com/rogchap/wombat) adalah klien gRPC lintas platform.

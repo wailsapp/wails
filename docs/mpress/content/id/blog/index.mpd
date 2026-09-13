@@ -1,0 +1,15 @@
+---
+schema = 1
+title = "Blog"
+description = "News, releases, and project updates."
+layout = "blog-index"
+generated = true
+slug = "blog"
+---
+
+- [Article](/id/blog/wails-v2-released/)
+- [Article](/id/blog/wails-v2-beta-for-windows/)
+- [Article](/id/blog/wails-v2-beta-for-mac/)
+- [Article](/id/blog/wails-v2-beta-for-linux/)
+- [Article](/id/blog/the-road-to-wails-v3/)
+- [Article](/id/blog/2024-12-03-alpha10-and-new-release-strategy/)

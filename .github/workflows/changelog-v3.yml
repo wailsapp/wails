@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-      - 'docs/src/content/docs/changelog.mdx'
+      - 'docs/mpress/content/changelog.mpd'
   workflow_dispatch:
     inputs:
       pr_number:
@@ -74,7 +74,10 @@ jobs:
         echo "Checking PR #${{ steps.pr_info.outputs.pr_number }} for changelog changes"
         git fetch origin ${{ steps.pr_info.outputs.base_ref }}
         
-        if git diff --name-only origin/${{ steps.pr_info.outputs.base_ref }}..HEAD | grep -q "docs/src/content/docs/changelog.mdx"; then
+        # Initial imports have no MPD baseline. Historical source preservation
+        # is reviewed with the migration; later changes use this guard.
+        if git cat-file -e origin/${{ steps.pr_info.outputs.base_ref }}:docs/mpress/content/changelog.mpd 2>/dev/null &&
+           git diff --name-only origin/${{ steps.pr_info.outputs.base_ref }}..HEAD | grep -q "docs/mpress/content/changelog.mpd"; then
           echo "changelog_modified=true" >> $GITHUB_OUTPUT
           echo "✅ Changelog was modified in this PR"
         else
@@ -87,10 +90,10 @@ jobs:
       if: steps.changelog_check.outputs.changelog_modified == 'true'
       run: |
         echo "Getting diff for changelog changes..."
-        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/src/content/docs/changelog.mdx > /tmp/pr_changelog.diff
+        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/mpress/content/changelog.mpd > /tmp/pr_changelog.diff
+        git show origin/${{ steps.pr_info.outputs.base_ref }}:docs/mpress/content/changelog.mpd > /tmp/base_changelog.mpd
         awk '/^\+\+\+/ { next } /^\+/ { sub(/^\+/, ""); print }' /tmp/pr_changelog.diff > /tmp/pr_added_lines.txt
         awk '/^---/ { next } /^-/ { sub(/^-/, ""); print }' /tmp/pr_changelog.diff > /tmp/pr_deleted_lines.txt
-        git show origin/${{ steps.pr_info.outputs.base_ref }}:docs/src/content/docs/changelog.mdx > /tmp/base_changelog.mdx
         
         echo "Lines added in this PR:"
         cat /tmp/pr_added_lines.txt
@@ -107,8 +110,9 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         echo "Running changelog validation..."
+        cp docs/mpress/content/changelog.mpd /tmp/changelog.mpd
         cd v3/scripts
-        if ! OUTPUT=$(go run validate-changelog.go ../../docs/src/content/docs/changelog.mdx /tmp/pr_added_lines.txt /tmp/pr_deleted_lines.txt /tmp/base_changelog.mdx 2>&1); then
+        if ! OUTPUT=$(go run validate-changelog.go /tmp/changelog.mpd /tmp/pr_added_lines.txt /tmp/pr_deleted_lines.txt /tmp/base_changelog.mpd 2>&1); then
           echo "$OUTPUT"
           exit 1
         fi

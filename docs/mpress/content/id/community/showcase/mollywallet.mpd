@@ -1,0 +1,13 @@
+---
+schema = 1
+title = "Molly Wallet"
+description = "Aplikasi desktop yang dibangun dengan Wails"
+slug = "community/showcase/mollywallet"
+sourcePath = "id/community/showcase/mollywallet.mpd"
+---
+
+![Molly Wallet](/assets/showcase-images/mollywallet.webp)
+
+[Molly Wallet](https://github.com/grvlle/constellation_wallet/) wallet $DAG resmi\
+Constellation Network. Memungkinkan pengguna berinteraksi dengan\
+Hypergraph Network dalam berbagai cara, tidak terbatas pada produksi transaksi $DAG.

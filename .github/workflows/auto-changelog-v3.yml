@@ -65,10 +65,12 @@ jobs:
       with:
         go-version: '1.25'
 
-    - name: Test changelog URL generation
+    - name: Test and build changelog helper
       if: steps.check.outputs.skip == 'false'
       working-directory: v3
-      run: go test scripts/auto-changelog.go scripts/auto-changelog_test.go
+      run: |
+        go test scripts/auto-changelog.go scripts/auto-changelog_test.go
+        go build -o "$RUNNER_TEMP/wails-auto-changelog" scripts/auto-changelog.go
 
     - name: Test changelog publication
       run: python3 -m unittest discover -s v3/scripts -p 'test_publish_changelog.py'
@@ -80,7 +82,7 @@ jobs:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ steps.pr.outputs.number }}
-      run: go run v3/scripts/auto-changelog.go
+      run: '"$RUNNER_TEMP/wails-auto-changelog"'
 
     - name: Commit and push
       if: steps.check.outputs.skip == 'false'
