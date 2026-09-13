@@ -14,8 +14,8 @@ const wailsVitePort = "WAILS_VITE_PORT"
 
 type DevOptions struct {
 	flags.Common
-
 	Config   string `description:"The config file including path" default:"./build/config.yml"`
+	AppArgs  string `name:"appargs" description:"Extra arguments to postfix to the run command"`
 	VitePort int    `name:"port" description:"Specify the vite dev server port"`
 	Secure   bool   `name:"s" description:"Enable HTTPS"`
 }
@@ -59,6 +59,7 @@ func Dev(options *DevOptions) error {
 	}
 
 	return Watcher(&WatcherOptions{
-		Config: options.Config,
+		AppArgs: options.AppArgs,
+		Config:  options.Config,
 	})
 }
