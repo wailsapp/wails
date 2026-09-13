@@ -322,7 +322,7 @@ func (s *windowsSystemTray) run() {
 
 func (s *windowsSystemTray) updateIcon() {
 	var newIcon w32.HICON
-	if w32.IsCurrentlyDarkMode() {
+	if w32.IsSystemCurrentlyDarkMode() {
 		newIcon = s.darkModeIcon
 	} else {
 		newIcon = s.lightModeIcon
