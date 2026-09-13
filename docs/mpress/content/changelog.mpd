@@ -33,6 +33,19 @@ _/
 _/
 ## [Unreleased]
 
+## v3.0.0-beta.21 - 2026-09-13
+
+## Added
+- Serve Wails v3 documentation with M-Press in [PR](https://github.com/wailsapp/wails/pull/6116) by @leaanthony
+
+## Fixed
+- Parse JSON slug values from MPD frontmatter for changelog generation in [PR](https://github.com/wailsapp/wails/pull/6118) by @leaanthony
+- Updater clears helper env vars and relaunches original target after backup failures in [PR](https://github.com/wailsapp/wails/pull/6080) by @cnmax
+- Start default signal handler during App.Run in [PR](https://github.com/wailsapp/wails/pull/6098) by @leaanthony
+- Windows menu handles nil menus, frees replaced resources, and redraws the menu bar in [PR](https://github.com/wailsapp/wails/pull/6112) by @taliesin-ai
+- Restore MSIX packaging for fresh projects using shared YAML configuration in [PR](https://github.com/wailsapp/wails/pull/6115) by @leaanthony
+- Fix generated JavaScript and TypeScript bindings failing to load when generic model creators reference later helper declarations, and prevent stack overflows when creating mutually dependent generic models (#6062)
+
 ## v3.0.0-beta.20 - 2026-09-10
 
 ## Changed
