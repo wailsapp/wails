@@ -47,7 +47,7 @@ jobs:
         ls -la v3/scripts/
         
     - name: Setup Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: '1.25'
 
@@ -103,6 +103,8 @@ jobs:
     - name: Validate changelog
       id: validate
       if: steps.changelog_check.outputs.changelog_modified == 'true'
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         echo "Running changelog validation..."
         cd v3/scripts

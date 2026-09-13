@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a memory leak in the macOS and Linux frontends where `Calloc` never freed the C strings it allocated for dialogs, menus and window setup by @4RH1T3CT0R7
+
 ## v2.15.0 - 2026-08-17
 
 ### Added
