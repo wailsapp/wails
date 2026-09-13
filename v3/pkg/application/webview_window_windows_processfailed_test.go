@@ -135,3 +135,13 @@ func TestResetWebviewRecoveryBudget(t *testing.T) {
 		t.Error("recovery still refused after the budget was reset")
 	}
 }
+
+func TestProcessFailedDoesNotQueueOverlappingRecovery(t *testing.T) {
+	w := &windowsWebviewWindow{webviewRecoveryPending: true, webviewRecoveryAttempts: 1}
+	// A nested pump may dispatch another process failure while rebuilding.
+	// Ignore it before consulting event args or spending another attempt.
+	w.processFailed(nil, nil)
+	if w.webviewRecoveryAttempts != 1 {
+		t.Fatal("overlapping failure spent another recovery attempt")
+	}
+}
