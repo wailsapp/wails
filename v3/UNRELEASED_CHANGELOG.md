@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `ui-builder` template: a drag & drop UI builder (TypeScript + Vite) with a component palette, inspector, layers panel, undo/redo, device previews and light/dark artboards. Layouts are saved, opened and exported as standalone HTML through a Go `LayoutService` using native dialogs. Scaffold it with `wails3 init -t ui-builder`
 
 ## Changed
 <!-- Changes in existing functionality -->

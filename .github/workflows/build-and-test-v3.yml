@@ -216,6 +216,7 @@ jobs:
           - vue-js
           - svelte
           - svelte-js
+          - ui-builder
         go-version: [1.25]
     steps:
       - name: Checkout

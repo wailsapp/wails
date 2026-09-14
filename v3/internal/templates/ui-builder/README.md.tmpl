@@ -1,0 +1,65 @@
+# {{.ProjectName}}
+
+A drag & drop UI builder, generated from the Wails `ui-builder` template.
+
+Drag components from the palette onto the artboard, tune them in the inspector,
+rearrange them in the layers panel, then save the layout or export it as a
+standalone HTML page — all through native dialogs provided by the Go backend.
+
+## Getting started
+
+```
+wails3 dev      # run with hot reload
+wails3 build    # produce a production binary in bin/
+```
+
+## What's inside
+
+| Path | Purpose |
+| --- | --- |
+| `main.go` | Creates the Wails app and the builder window |
+| `layoutservice.go` | `LayoutService` — save / open layouts and export HTML via native dialogs |
+| `greetservice.go` | The stock greeter from the base template; safe to delete |
+| `frontend/src/components.ts` | The component registry: defaults, inspector fields and renderers |
+| `frontend/src/theme.ts` | Stylesheet for the components you build (shared with the export) |
+| `frontend/src/store.ts` | Document state, selection and undo/redo history |
+| `frontend/src/canvas.ts` | Artboard rendering, selection and drag & drop |
+| `frontend/src/palette.ts` · `inspector.ts` · `layers.ts` | The three panels |
+| `frontend/src/exporter.ts` | Turns a layout into a standalone HTML page |
+| `frontend/public/style.css` | The builder's own chrome (panels, toolbar, indicators) |
+
+Layouts are plain JSON (`*.uib.json`). The builder autosaves the current design
+to the browser's local storage, so closing the app never loses work.
+
+## Adding a component
+
+Append an entry to the `components` array in `frontend/src/components.ts`:
+
+```ts
+{
+    type: 'callout', label: 'Callout', category: 'Content', icon: 'quote',
+    defaults: {text: 'Heads up!'},
+    fields: [{key: 'text', label: 'Text', kind: 'textarea', group: 'Content'}],
+    render(node) {
+        const div = document.createElement('div');
+        div.className = 'ub-callout';
+        div.textContent = String(node.props.text ?? '');
+        return div;
+    },
+},
+```
+
+Add its styles to `componentStyles` in `frontend/src/theme.ts` and it will show
+up in the palette, render on the canvas and be included in exports. Set
+`container: true` (plus `direction`) for components that accept children.
+
+## Keyboard shortcuts
+
+Press `?` in the app for the full list. The essentials: `⌘Z` / `⇧⌘Z` undo and
+redo, `⌘D` duplicate, `⌫` delete, `⌘S` save, `⌘O` open, `⌘E` export, `⌘P`
+preview. On Windows and Linux use `Ctrl` in place of `⌘`.
+
+## Learn more
+
+- [Wails v3 documentation](https://v3.wails.io/)
+- [Wails Discord](https://discord.gg/JDdSxwjhGf)
