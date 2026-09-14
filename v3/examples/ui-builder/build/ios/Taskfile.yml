@@ -1,0 +1,365 @@
+version: '3'
+
+includes:
+  common: ../Taskfile.yml
+
+# Platform selection:
+#   task ios:package                          -> simulator bundle (ad-hoc signed)
+#   task ios:package IOS_PLATFORM=device CODESIGN_IDENTITY="Apple Development: ..." \
+#        [PROVISIONING_PROFILE=path.mobileprovision]
+#                                             -> device bundle (real signing)
+#   task ios:package:ipa IOS_PLATFORM=device ... -> .ipa for distribution/install
+# For automatically managed signing & provisioning, use `task ios:xcode` and
+# build from the generated Xcode project instead.
+vars:
+  BUNDLE_ID: '{{.BUNDLE_ID | default "com.wails.app"}}'
+  IOS_PLATFORM: '{{.IOS_PLATFORM | default "simulator"}}'
+  MIN_IOS_VERSION: '{{.MIN_IOS_VERSION | default "15.0"}}'
+  IOS_SDK: '{{if eq .IOS_PLATFORM "device"}}iphoneos{{else}}iphonesimulator{{end}}'
+  IOS_TARGET: 'arm64-apple-ios{{.MIN_IOS_VERSION}}{{if ne .IOS_PLATFORM "device"}}-simulator{{end}}'
+  IOS_VERSION_MIN_FLAG: '{{if eq .IOS_PLATFORM "device"}}-miphoneos-version-min={{.MIN_IOS_VERSION}}{{else}}-mios-simulator-version-min={{.MIN_IOS_VERSION}}{{end}}'
+  # "-" is ad-hoc signing: fine for the simulator, rejected by real devices.
+  CODESIGN_IDENTITY: '{{.CODESIGN_IDENTITY | default "-"}}'
+  # Optional path to a .mobileprovision embedded into device bundles
+  PROVISIONING_PROFILE: '{{.PROVISIONING_PROFILE | default ""}}'
+  # Optional entitlements applied at codesign time (generated default below)
+  ENTITLEMENTS_FILE: '{{.ENTITLEMENTS_FILE | default "build/ios/entitlements.plist"}}'
+  # SDK_PATH is computed lazily at task-level to avoid errors on non-macOS systems
+
+tasks:
+  install:deps:
+    summary: Check and install iOS development dependencies
+    cmds:
+      - go run build/ios/scripts/deps/install_deps.go
+    env:
+      TASK_FORCE_YES: '{{if .YES}}true{{else}}false{{end}}'
+    prompt: This will check and install iOS development dependencies. Continue?
+
+  # Note: Bindings generation may show CGO warnings for iOS C imports.
+  # These warnings are harmless and don't affect the generated bindings,
+  # as the generator only needs to parse Go types, not C implementations.
+  build:
+    summary: Creates a build of the application for iOS
+    deps:
+      - task: generate:ios:overlay
+      - task: generate:ios:xcode
+      - task: common:go:mod:tidy
+      - task: common:build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          PRODUCTION:
+            ref: .PRODUCTION
+    cmds:
+      - echo "Building iOS app {{.APP_NAME}} ({{.IOS_PLATFORM}})..."
+      - go build -buildmode=c-archive -overlay build/ios/xcode/overlay.json {{.BUILD_FLAGS}} -o {{.OUTPUT}}.a
+    vars:
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,ios -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags ios,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+      DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
+      OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
+      SDK_PATH:
+        sh: xcrun --sdk {{.IOS_SDK}} --show-sdk-path
+    env:
+      GOOS: ios
+      CGO_ENABLED: 1
+      GOARCH: '{{.ARCH | default "arm64"}}'
+      PRODUCTION: '{{.PRODUCTION | default "false"}}'
+      CGO_CFLAGS: '-isysroot {{.SDK_PATH}} -target {{.IOS_TARGET}} {{.IOS_VERSION_MIN_FLAG}}'
+      CGO_LDFLAGS: '-isysroot {{.SDK_PATH}} -target {{.IOS_TARGET}}'
+
+  package:
+    summary: Packages a production build of the application into a `.app` bundle
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+    cmds:
+      - task: compile:ios:link
+      - task: create:app:bundle
+
+  package:ipa:
+    summary: Packages a production build into an .ipa (requires IOS_PLATFORM=device and a real CODESIGN_IDENTITY)
+    deps:
+      - task: package
+    cmds:
+      - rm -rf "{{.BIN_DIR}}/Payload" "{{.BIN_DIR}}/{{.APP_NAME}}.ipa"
+      - mkdir -p "{{.BIN_DIR}}/Payload"
+      - cp -R "{{.BIN_DIR}}/{{.APP_NAME}}.app" "{{.BIN_DIR}}/Payload/"
+      - cd "{{.BIN_DIR}}" && zip -qry "{{.APP_NAME}}.ipa" Payload
+      - rm -rf "{{.BIN_DIR}}/Payload"
+      - echo "Created {{.BIN_DIR}}/{{.APP_NAME}}.ipa"
+
+  # Link the Go c-archive with main.m into the final executable.
+  # Used by both the dev `run` flow and `package`.
+  compile:ios:link:
+    internal: true
+    summary: Link the iOS executable from the Go archive and main.m
+    vars:
+      SDK_PATH:
+        sh: xcrun --sdk {{.IOS_SDK}} --show-sdk-path
+    cmds:
+      - |
+        MAIN_M=build/ios/xcode/main/main.m
+        if [ ! -f "$MAIN_M" ]; then
+          MAIN_M=build/ios/main.m
+        fi
+        xcrun -sdk {{.IOS_SDK}} clang \
+          -target {{.IOS_TARGET}} \
+          -isysroot {{.SDK_PATH}} \
+          -framework Foundation -framework UIKit -framework WebKit \
+          -framework Security -framework CoreFoundation \
+          -framework UniformTypeIdentifiers \
+          -framework LocalAuthentication -framework UserNotifications \
+          -framework AVFoundation \
+          -framework CoreLocation -framework CoreMotion -framework SystemConfiguration \
+          -lresolv \
+          -o "{{.BIN_DIR}}/{{.APP_NAME | lower}}" \
+          "$MAIN_M" -Wl,-force_load,"{{.BIN_DIR}}/{{.APP_NAME}}.a"
+
+  create:app:bundle:
+    summary: Creates an iOS `.app` bundle
+    cmds:
+      - rm -rf "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+      - cp "{{.BIN_DIR}}/{{.APP_NAME | lower}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app/"
+      - cp build/ios/Info.plist "{{.BIN_DIR}}/{{.APP_NAME}}.app/"
+      - |
+        # Embed the provisioning profile for device builds when provided
+        if [ "{{.IOS_PLATFORM}}" = "device" ] && [ -n "{{.PROVISIONING_PROFILE}}" ]; then
+          cp "{{.PROVISIONING_PROFILE}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app/embedded.mobileprovision"
+        fi
+      - |
+        # Compile asset catalog and embed icons in the app bundle
+        APP_BUNDLE="{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        AC_IN="build/ios/xcode/main/Assets.xcassets"
+        if [ -d "$AC_IN" ]; then
+          TMP_AC=$(mktemp -d)
+          xcrun actool \
+            --compile "$TMP_AC" \
+            --app-icon AppIcon \
+            --platform {{.IOS_SDK}} \
+            --minimum-deployment-target {{.MIN_IOS_VERSION}} \
+            --product-type com.apple.product-type.application \
+            --target-device iphone \
+            --target-device ipad \
+            --output-partial-info-plist "$APP_BUNDLE/assetcatalog_generated_info.plist" \
+            "$AC_IN"
+          if [ -f "$TMP_AC/Assets.car" ]; then
+            cp -f "$TMP_AC/Assets.car" "$APP_BUNDLE/Assets.car"
+          fi
+          rm -rf "$TMP_AC"
+          if [ -f "$APP_BUNDLE/assetcatalog_generated_info.plist" ]; then
+            /usr/libexec/PlistBuddy -c "Merge $APP_BUNDLE/assetcatalog_generated_info.plist" "$APP_BUNDLE/Info.plist" || true
+          fi
+        fi
+      - |
+        # Sign the bundle. Ad-hoc ("-") works on the simulator only; device
+        # builds need a real identity (and usually entitlements + profile).
+        # Entitlements are only applied to device builds - simulator bundles
+        # must not carry them (SpringBoard refuses to launch the app).
+        if [ "{{.IOS_PLATFORM}}" = "device" ] && [ -f "{{.ENTITLEMENTS_FILE}}" ]; then
+          codesign --force --sign "{{.CODESIGN_IDENTITY}}" --entitlements "{{.ENTITLEMENTS_FILE}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        else
+          codesign --force --sign "{{.CODESIGN_IDENTITY}}" "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        fi
+
+  deploy-simulator:
+    summary: Deploy to iOS Simulator
+    deps: [package]
+    cmds:
+      - |
+        # Read the real bundle id from the built bundle (it comes from
+        # build/config.yml, not the BUNDLE_ID var, so it varies per project).
+        APP="{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist")
+        xcrun simctl terminate booted "$BUNDLE_ID" 2>/dev/null || true
+        xcrun simctl uninstall booted "$BUNDLE_ID" 2>/dev/null || true
+        xcrun simctl install booted "$APP"
+        xcrun simctl launch booted "$BUNDLE_ID"
+
+  deploy-device:
+    summary: Install and launch on a connected device (requires IOS_PLATFORM=device build and real signing)
+    cmds:
+      - |
+        DEVICE="{{.DEVICE_ID}}"
+        if [ -z "$DEVICE" ]; then
+          DEVICE=$(xcrun devicectl list devices --hide-headers 2>/dev/null | awk 'NR==1 {print $3}')
+        fi
+        if [ -z "$DEVICE" ]; then
+          echo "No connected device found. Pass DEVICE_ID=<identifier> (see: xcrun devicectl list devices)"
+          exit 1
+        fi
+        xcrun devicectl device install app --device "$DEVICE" "{{.BIN_DIR}}/{{.APP_NAME}}.app"
+        BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "{{.BIN_DIR}}/{{.APP_NAME}}.app/Info.plist")
+        xcrun devicectl device process launch --device "$DEVICE" "$BUNDLE_ID"
+
+  compile:ios:
+    summary: Compile the iOS executable from Go archive and main.m
+    deps:
+      - task: build
+    cmds:
+      - task: compile:ios:link
+
+  generate:ios:bindings:
+    internal: true
+    summary: Generates bindings for iOS with proper CGO flags
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    generates:
+      - frontend/bindings/**/*
+    vars:
+      SDK_PATH:
+        sh: xcrun --sdk {{.IOS_SDK}} --show-sdk-path
+    cmds:
+      - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true
+    env:
+      GOOS: ios
+      CGO_ENABLED: 1
+      GOARCH: '{{.ARCH | default "arm64"}}'
+      CGO_CFLAGS: '-isysroot {{.SDK_PATH}} -target {{.IOS_TARGET}} {{.IOS_VERSION_MIN_FLAG}}'
+      CGO_LDFLAGS: '-isysroot {{.SDK_PATH}} -target {{.IOS_TARGET}}'
+
+  ensure-simulator:
+    internal: true
+    summary: Ensure iOS Simulator is running and booted
+    silent: true
+    cmds:
+      - |
+        if ! xcrun simctl list devices booted | grep -q "Booted"; then
+          echo "Starting iOS Simulator..."
+          # Get first available iPhone device
+          DEVICE_ID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -o "[A-F0-9-]\{36\}" || true)
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No iPhone simulator found. Creating one..."
+            RUNTIME=$(xcrun simctl list runtimes | grep iOS | tail -1 | awk '{print $NF}')
+            # Use the newest iPhone device type this Xcode knows about
+            DEVICE_TYPE=$(xcrun simctl list devicetypes | grep -oE "iPhone [0-9][^(]*" | tail -1 | xargs)
+            DEVICE_ID=$(xcrun simctl create "Wails iPhone" "${DEVICE_TYPE:-iPhone 15}" "$RUNTIME")
+          fi
+          # Boot the device
+          echo "Booting device $DEVICE_ID..."
+          xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
+          # Open Simulator app
+          open -a Simulator
+          # Wait for boot (max 30 seconds)
+          for i in {1..30}; do
+            if xcrun simctl list devices booted | grep -q "Booted"; then
+              echo "Simulator booted successfully"
+              break
+            fi
+            sleep 1
+          done
+          # Final check
+          if ! xcrun simctl list devices booted | grep -q "Booted"; then
+            echo "Failed to boot simulator after 30 seconds"
+            exit 1
+          fi
+        fi
+    preconditions:
+      - sh: command -v xcrun
+        msg: "xcrun not found. Please run 'wails3 task ios:install:deps' to install iOS development dependencies"
+
+  generate:ios:overlay:
+    internal: true
+    summary: Generate Go build overlay and iOS shim
+    sources:
+      - build/config.yml
+    generates:
+      - build/ios/xcode/overlay.json
+      - build/ios/xcode/gen/main_ios.gen.go
+    cmds:
+      - wails3 ios overlay:gen -out build/ios/xcode/overlay.json -config build/config.yml
+
+  generate:ios:xcode:
+    internal: true
+    summary: Generate iOS Xcode project structure and assets
+    sources:
+      - build/config.yml
+      - build/appicon.png
+    generates:
+      - build/ios/xcode/main/main.m
+      - build/ios/xcode/main/Assets.xcassets/**/*
+      - build/ios/xcode/project.pbxproj
+    cmds:
+      - wails3 ios xcode:gen -outdir build/ios/xcode -config build/config.yml
+
+  run:
+    summary: Run the application in iOS Simulator
+    deps:
+      - task: ensure-simulator
+      - task: compile:ios
+    cmds:
+      - rm -rf "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - cp "{{.BIN_DIR}}/{{.APP_NAME | lower}}" "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/{{.APP_NAME | lower}}"
+      - cp build/ios/Info.dev.plist "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app/Info.plist"
+      - |
+        # Compile asset catalog and embed icons for dev bundle
+        APP_BUNDLE="{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+        AC_IN="build/ios/xcode/main/Assets.xcassets"
+        if [ -d "$AC_IN" ]; then
+          TMP_AC=$(mktemp -d)
+          xcrun actool \
+            --compile "$TMP_AC" \
+            --app-icon AppIcon \
+            --platform iphonesimulator \
+            --minimum-deployment-target {{.MIN_IOS_VERSION}} \
+            --product-type com.apple.product-type.application \
+            --target-device iphone \
+            --target-device ipad \
+            --output-partial-info-plist "$APP_BUNDLE/assetcatalog_generated_info.plist" \
+            "$AC_IN"
+          if [ -f "$TMP_AC/Assets.car" ]; then
+            cp -f "$TMP_AC/Assets.car" "$APP_BUNDLE/Assets.car"
+          fi
+          rm -rf "$TMP_AC"
+          if [ -f "$APP_BUNDLE/assetcatalog_generated_info.plist" ]; then
+            /usr/libexec/PlistBuddy -c "Merge $APP_BUNDLE/assetcatalog_generated_info.plist" "$APP_BUNDLE/Info.plist" || true
+          fi
+        fi
+      - codesign --force --sign - "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+      - |
+        # The dev bundle id comes from build/ios/Info.dev.plist (derived from
+        # build/config.yml), so read it from the built bundle rather than
+        # assuming a com.wails.* prefix.
+        DEV_APP="{{.BIN_DIR}}/{{.APP_NAME}}.dev.app"
+        BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$DEV_APP/Info.plist")
+        xcrun simctl terminate booted "$BUNDLE_ID" 2>/dev/null || true
+        xcrun simctl uninstall booted "$BUNDLE_ID" 2>/dev/null || true
+        xcrun simctl install booted "$DEV_APP"
+        xcrun simctl launch booted "$BUNDLE_ID"
+
+  xcode:
+    summary: Open the generated Xcode project for this app
+    cmds:
+      - task: generate:ios:xcode
+      - open build/ios/xcode/main.xcodeproj
+
+  logs:
+    summary: Stream iOS Simulator logs filtered to this app
+    cmds:
+      - |
+        xcrun simctl spawn booted log stream \
+          --level debug \
+          --style compact \
+          --predicate 'senderImagePath CONTAINS[c] "{{.APP_NAME | lower}}.app/" OR composedMessage CONTAINS[c] "{{.APP_NAME | lower}}" OR eventMessage CONTAINS[c] "{{.APP_NAME | lower}}" OR process == "{{.APP_NAME | lower}}" OR category CONTAINS[c] "{{.APP_NAME | lower}}"'
+
+  logs:dev:
+    summary: Stream logs for the dev bundle (used by `task ios:run`)
+    cmds:
+      - |
+        xcrun simctl spawn booted log stream \
+          --level debug \
+          --style compact \
+          --predicate 'senderImagePath CONTAINS[c] ".dev.app/" OR subsystem == "com.wails.{{.APP_NAME | lower}}.dev" OR process == "{{.APP_NAME | lower}}"'
+
+  logs:wide:
+    summary: Wide log stream to help discover the exact process/bundle identifiers
+    cmds:
+      - |
+        xcrun simctl spawn booted log stream \
+          --level debug \
+          --style compact \
+          --predicate 'senderImagePath CONTAINS[c] ".app/"'

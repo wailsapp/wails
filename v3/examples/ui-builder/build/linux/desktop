@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=My Product
+Comment=A ui-builder application
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/ui-builder %u
+Terminal=false
+Type=Application
+Icon=ui-builder
+Categories=Utility;
+StartupWMClass=ui-builder
+
+ 

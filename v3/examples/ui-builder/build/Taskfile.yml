@@ -1,0 +1,398 @@
+version: '3'
+
+tasks:
+  go:mod:tidy:
+    summary: Runs `go mod tidy`
+    internal: true
+    # Universal/multi-arch builds invoke this concurrently from parallel deps;
+    # two `go mod tidy` processes racing on go.mod can corrupt it (#4637).
+    run: once
+    cmds:
+      - go mod tidy
+
+  install:frontend:deps:
+    summary: Install frontend dependencies
+    run: once
+    cmds:
+      - task: install:frontend:deps:{{.PACKAGE_MANAGER}}
+
+  install:frontend:deps:npm:
+    dir: frontend
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules
+    preconditions:
+      - sh: npm version
+        msg: "Looks like npm isn't installed. Npm is part of the Node installer: https://nodejs.org/en/download/"
+    cmds:
+      - npm install
+
+  install:frontend:deps:bun:
+    dir: frontend
+    sources:
+      - package.json
+      - bun.lock
+      - bun.lockb
+    generates:
+      - node_modules
+    preconditions:
+      - sh: bun --version
+        msg: "bun not found"
+    cmds:
+      - bun install
+
+  install:frontend:deps:pnpm:
+    dir: frontend
+    sources:
+      - package.json
+      - pnpm-lock.yaml
+    generates:
+      - node_modules
+    preconditions:
+      - sh: pnpm --version
+        msg: "pnpm not found"
+    cmds:
+      - pnpm install
+
+  install:frontend:deps:yarn:
+    dir: frontend
+    sources:
+      - package.json
+      - yarn.lock
+    status:
+      - test -d node_modules || test -f .pnp.cjs
+    preconditions:
+      - sh: yarn --version
+        msg: "yarn not found"
+    cmds:
+      - yarn install
+
+  build:frontend:
+    label: build:frontend (DEV={{.DEV}} RUNNER={{.PACKAGE_MANAGER}})
+    summary: Build the frontend project
+    # darwin:build:universal runs its per-arch builds as parallel deps, each of
+    # which depends on this task. Without run:once the two executions race:
+    # one regenerates frontend/bindings (-clean deletes it first) while the
+    # other's bundler is reading it, failing intermittently with
+    # 'Could not resolve "./bindings/<pkg>"' (#4637).
+    run: once
+    dir: frontend
+    sources:
+      - "**/*"
+      - exclude: node_modules/**/*
+    generates:
+      - dist/**/*
+    deps:
+      - task: install:frontend:deps
+      - task: generate:bindings
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          OBFUSCATED:
+            ref: .OBFUSCATED
+    cmds:
+      - task: frontend:run
+        vars:
+          SCRIPT: '{{if eq .DEV "true"}}build:dev{{else}}build{{end}}'
+    env:
+      PRODUCTION: '{{if eq .DEV "true"}}false{{else}}true{{end}}'
+
+  frontend:run:
+    summary: Run a frontend script with selected runner
+    cmds:
+      - task: frontend:run:{{.PACKAGE_MANAGER}}
+        vars:
+          SCRIPT: "{{.SCRIPT}}"
+    vars:
+      SCRIPT: "{{.SCRIPT}}"
+
+  frontend:run:npm:
+    dir: frontend
+    cmds:
+      - npm run {{.SCRIPT}} -q
+    vars:
+      SCRIPT: "{{.SCRIPT}}"
+
+  frontend:run:yarn:
+    dir: frontend
+    cmds:
+      - yarn {{.SCRIPT}}
+    vars:
+      SCRIPT: "{{.SCRIPT}}"
+
+  frontend:run:pnpm:
+    dir: frontend
+    cmds:
+      - pnpm run {{.SCRIPT}}
+    vars:
+      SCRIPT: "{{.SCRIPT}}"
+
+  frontend:run:bun:
+    dir: frontend
+    cmds:
+      - bun run {{.SCRIPT}}
+    vars:
+      SCRIPT: "{{.SCRIPT}}"
+
+  frontend:vendor:puppertino:
+    summary: Fetches Puppertino CSS into frontend/public for consistent mobile styling
+    sources:
+      - frontend/public/puppertino/puppertino.css
+    generates:
+      - frontend/public/puppertino/puppertino.css
+    cmds:
+      - |
+        set -euo pipefail
+        mkdir -p frontend/public/puppertino
+        # If bundled Puppertino exists, prefer it. Otherwise, try to fetch, but don't fail build on error.
+        if [ ! -f frontend/public/puppertino/puppertino.css ]; then
+          echo "No bundled Puppertino found. Attempting to fetch from GitHub..."
+          if curl -fsSL https://raw.githubusercontent.com/codedgar/Puppertino/main/dist/css/full.css -o frontend/public/puppertino/puppertino.css; then
+            curl -fsSL https://raw.githubusercontent.com/codedgar/Puppertino/main/LICENSE -o frontend/public/puppertino/LICENSE || true
+            echo "Puppertino CSS downloaded to frontend/public/puppertino/puppertino.css"
+          else
+            echo "Warning: Could not fetch Puppertino CSS. Proceeding without download since template may bundle it."
+          fi
+        else
+          echo "Using bundled Puppertino at frontend/public/puppertino/puppertino.css"
+        fi
+        # Ensure index.html includes Puppertino CSS and button classes
+        INDEX_HTML=frontend/index.html
+        if [ -f "$INDEX_HTML" ]; then
+          if ! grep -q 'href="/puppertino/puppertino.css"' "$INDEX_HTML"; then
+            # Insert Puppertino link tag after style.css link
+            awk '
+              /href="\/style.css"\/?/ && !x { print; print "    <link rel=\"stylesheet\" href=\"/puppertino/puppertino.css\"/>"; x=1; next }1
+            ' "$INDEX_HTML" > "$INDEX_HTML.tmp" && mv "$INDEX_HTML.tmp" "$INDEX_HTML"
+          fi
+          # Replace default .btn with Puppertino primary button classes if present
+          sed -E -i'' 's/class=\"btn\"/class=\"p-btn p-prim-col\"/g' "$INDEX_HTML" || true
+        fi
+
+
+
+  generate:bindings:
+    summary: Generates bindings for the frontend
+    run: once
+    deps:
+      - task: go:mod:tidy
+    sources:
+      - "**/*.[jt]s"
+      - exclude: frontend/**/*
+      - frontend/bindings/**/*  # Rerun when switching between dev/production mode causes changes in output
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    generates:
+      - frontend/bindings/**/*
+    cmds:
+      - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true{{if eq .OBFUSCATED "true"}} -obfuscated{{end}} -ts -i
+
+  generate:icons:
+    summary: Generates Windows `.ico` and Mac `.icns` from an image; on macOS, `-iconcomposerinput appicon.icon -macassetdir darwin` also produces `Assets.car` from a `.icon` file (skipped on other platforms).
+    run: once
+    dir: build
+    sources:
+      - "appicon.png"
+      - "appicon.icon"
+    generates:
+      - "darwin/icons.icns"
+      - "windows/icon.ico"
+    cmds:
+      - wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+
+  dev:frontend:
+    summary: Runs the frontend in development mode
+    deps:
+      - task: install:frontend:deps
+    cmds:
+      - task: frontend:dev:{{.PACKAGE_MANAGER}}
+
+  frontend:dev:npm:
+    dir: frontend
+    cmds:
+      - npm run dev -- --port {{.VITE_PORT}} --strictPort
+
+  frontend:dev:yarn:
+    dir: frontend
+    cmds:
+      - yarn dev --port {{.VITE_PORT}} --strictPort
+
+  frontend:dev:pnpm:
+    dir: frontend
+    cmds:
+      - pnpm dev --port {{.VITE_PORT}} --strictPort
+
+  frontend:dev:bun:
+    dir: frontend
+    cmds:
+      - bun run dev --port {{.VITE_PORT}} --strictPort
+
+  update:build-assets:
+    summary: Updates the build assets
+    dir: build
+    cmds:
+      - wails3 update build-assets -name "{{.APP_NAME}}" -binaryname "{{.APP_NAME}}" -config config.yml -dir .
+
+  build:server:
+    summary: Builds the application in server mode (no GUI, HTTP server only)
+    desc: |
+      Builds a production server binary by default: -tags server,production,
+      -trimpath and a stripped binary, mirroring the desktop `build` task.
+      Server mode runs as a pure HTTP server without native GUI dependencies.
+
+      Usage: task build:server [DEV=true] [OBFUSCATED=true] [EXTRA_TAGS=tag1,tag2]
+        DEV=true        development server (-tags server, no strip, inlining kept)
+        OBFUSCATED=true obfuscated build via garble (requires garble installed)
+        EXTRA_TAGS      additional comma-separated build tags
+    deps:
+      - task: build:frontend
+        vars:
+          DEV:
+            ref: .DEV
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          OBFUSCATED:
+            ref: .OBFUSCATED
+    preconditions:
+      - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
+        msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
+    cmds:
+      - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.BIN_DIR}}/{{.APP_NAME}}-server{{exeExt}}"'
+    vars:
+      BUILD_FLAGS: '-tags server{{if eq .DEV "true"}}{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -buildvcs=false -gcflags=all="-l"{{else}},production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+
+  run:server:
+    summary: Builds and runs a development server (DEV=true)
+    deps:
+      - task: build:server
+        vars:
+          DEV: "true"
+    cmds:
+      - '"./{{.BIN_DIR}}/{{.APP_NAME}}-server{{exeExt}}"'
+
+  build:docker:
+    summary: Builds a Docker image for server mode deployment
+    desc: |
+      Creates a minimal Docker image containing the production server binary.
+      Defaults to a pure-Go static binary on a distroless/static base. The
+      production frontend is built first so the embedded assets are current.
+
+      Usage: task build:docker [TAG=myapp:latest] [CGO_ENABLED=1] [GO_IMAGE=...] [RUNTIME_IMAGE=...]
+      For CGO apps, set CGO_ENABLED=1 with libc-compatible builder/runtime images, e.g.:
+        task build:docker CGO_ENABLED=1 GO_IMAGE=golang:bookworm RUNTIME_IMAGE=gcr.io/distroless/base-debian12
+    deps:
+      # Build the production frontend so frontend/dist (embedded by the Go build
+      # inside the image) is present and current in the Docker build context.
+      # Pass the server,production tags so binding generation analyses the same
+      # build the Docker image compiles, not the default-tag build.
+      - task: build:frontend
+        vars:
+          BUILD_FLAGS: "-tags server,production"
+    cmds:
+      - >-
+        docker build
+        --build-arg CGO_ENABLED={{.CGO_ENABLED | default "0"}}
+        --build-arg GO_IMAGE={{.GO_IMAGE | default "golang:alpine"}}
+        --build-arg RUNTIME_IMAGE={{.RUNTIME_IMAGE | default "gcr.io/distroless/static-debian12"}}
+        -t {{.TAG | default (printf "%s:latest" .APP_NAME)}}
+        -f build/docker/Dockerfile.server .
+    vars:
+      TAG: "{{.TAG}}"
+    preconditions:
+      - sh: docker info > /dev/null 2>&1
+        msg: "Docker is required. Please install Docker first."
+      - sh: test -f build/docker/Dockerfile.server
+        msg: "Dockerfile.server not found. Run 'wails3 update build-assets' to generate it."
+
+  run:docker:
+    summary: Builds and runs the Docker image
+    desc: |
+      Builds the Docker image and runs it, exposing port 8080.
+      Usage: task run:docker [TAG=myapp:latest] [PORT=8080]
+      Note: The internal container port is always 8080. The PORT variable
+      only changes the host port mapping. Ensure your app uses port 8080
+      or modify the Dockerfile to match your ServerOptions.Port setting.
+    deps:
+      - task: build:docker
+        vars:
+          TAG:
+            ref: .TAG
+    cmds:
+      - docker run --rm -p {{.PORT | default "8080"}}:8080 {{.TAG | default (printf "%s:latest" .APP_NAME)}}
+    vars:
+      TAG: "{{.TAG}}"
+      PORT: "{{.PORT}}"
+
+  setup:docker:
+    summary: Builds Docker image for cross-compilation (~800MB download)
+    desc: |
+      Builds the Docker image needed for cross-compiling to any platform.
+      Run this once to enable cross-platform builds from any OS.
+    cmds:
+      - docker build -t wails-cross -f build/docker/Dockerfile.cross build/docker/
+    preconditions:
+      - sh: docker info > /dev/null 2>&1
+        msg: "Docker is required. Please install Docker first."
+
+  ios:device:list:
+    summary: Lists connected iOS devices (UDIDs)
+    cmds:
+      - xcrun xcdevice list
+
+  ios:run:device:
+    summary: Build, install, and launch on a physical iPhone using Apple tools (xcodebuild/devicectl)
+    vars:
+      PROJECT: '{{.PROJECT}}'   # e.g., build/ios/xcode/<YourProject>.xcodeproj
+      SCHEME: '{{.SCHEME}}'     # e.g., ios.dev
+      CONFIG: '{{.CONFIG | default "Debug"}}'
+      DERIVED: '{{.DERIVED | default "build/ios/DerivedData"}}'
+      UDID: '{{.UDID}}'         # from `task ios:device:list`
+      BUNDLE_ID: '{{.BUNDLE_ID}}' # e.g., com.yourco.wails.ios.dev
+      TEAM_ID: '{{.TEAM_ID}}'   # optional, if your project is not already set up for signing
+    preconditions:
+      - sh: xcrun -f xcodebuild
+        msg: "xcodebuild not found. Please install Xcode."
+      - sh: xcrun -f devicectl
+        msg: "devicectl not found. Please update to Xcode 15+ (which includes devicectl)."
+      - sh: test -n '{{.PROJECT}}'
+        msg: "Set PROJECT to your .xcodeproj path (e.g., PROJECT=build/ios/xcode/App.xcodeproj)."
+      - sh: test -n '{{.SCHEME}}'
+        msg: "Set SCHEME to your app scheme (e.g., SCHEME=ios.dev)."
+      - sh: test -n '{{.UDID}}'
+        msg: "Set UDID to your device UDID (see: task ios:device:list)."
+      - sh: test -n '{{.BUNDLE_ID}}'
+        msg: "Set BUNDLE_ID to your app's bundle identifier (e.g., com.yourco.wails.ios.dev)."
+    cmds:
+      - |
+        set -euo pipefail
+        echo "Building for device: UDID={{.UDID}} SCHEME={{.SCHEME}} PROJECT={{.PROJECT}}"
+        XCB_ARGS=(
+          -project "{{.PROJECT}}"
+          -scheme "{{.SCHEME}}"
+          -configuration "{{.CONFIG}}"
+          -destination "id={{.UDID}}"
+          -derivedDataPath "{{.DERIVED}}"
+          -allowProvisioningUpdates
+          -allowProvisioningDeviceRegistration
+        )
+        # Optionally inject signing identifiers if provided
+        if [ -n '{{.TEAM_ID}}' ]; then XCB_ARGS+=(DEVELOPMENT_TEAM={{.TEAM_ID}}); fi
+        if [ -n '{{.BUNDLE_ID}}' ]; then XCB_ARGS+=(PRODUCT_BUNDLE_IDENTIFIER={{.BUNDLE_ID}}); fi
+        xcodebuild "${XCB_ARGS[@]}" build | xcpretty || true
+        # If xcpretty isn't installed, run without it
+        if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+          xcodebuild "${XCB_ARGS[@]}" build
+        fi
+        # Find built .app
+        APP_PATH=$(find "{{.DERIVED}}/Build/Products" -type d -name "*.app" -maxdepth 3 | head -n 1)
+        if [ -z "$APP_PATH" ]; then
+          echo "Could not locate built .app under {{.DERIVED}}/Build/Products" >&2
+          exit 1
+        fi
+        echo "Installing: $APP_PATH"
+        xcrun devicectl device install app --device "{{.UDID}}" "$APP_PATH"
+        echo "Launching: {{.BUNDLE_ID}}"
+        xcrun devicectl device process launch --device "{{.UDID}}" --stderr console --stdout console "{{.BUNDLE_ID}}"
