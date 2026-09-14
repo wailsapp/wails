@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "Шаблоны"
       link: "/community/templates/"
+    - label: "Медиаматериалы"
+      link: "/community/media/"
     - label: "Галерея"
       collapsed: true
       items:

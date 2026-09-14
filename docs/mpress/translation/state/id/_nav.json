@@ -333,9 +333,9 @@
       "sourceHash": "1df2ca9dbb47b664de320a0f6c10fa917ec3818aeebc2eadc09b138cc0b3df6c",
       "targetHash": "08d2ac42297176c99e9658243e5c210be65981f542f8ed114ed64a98a45019b0",
       "machineHash": "08d2ac42297176c99e9658243e5c210be65981f542f8ed114ed64a98a45019b0",
-      "machineText": "Binding \u0026 Layanan",
+      "machineText": "Binding & Layanan",
       "status": "final",
-      "sourcePreview": "Bindings \u0026 Services",
+      "sourcePreview": "Bindings & Services",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
@@ -561,9 +561,9 @@
       "sourceHash": "e9d7ea9fd591679a9902fe32c9cd85431ce72dee5e0922395e5299815bde53c3",
       "targetHash": "f7fc48fd1bf2a08e92db1502d075e49ad7b0122007268c15b13d0f329b3c1590",
       "machineHash": "f7fc48fd1bf2a08e92db1502d075e49ad7b0122007268c15b13d0f329b3c1590",
-      "machineText": "Seret \u0026 Lepas",
+      "machineText": "Seret & Lepas",
       "status": "final",
-      "sourcePreview": "Drag \u0026 Drop",
+      "sourcePreview": "Drag & Drop",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
@@ -837,9 +837,9 @@
       "sourceHash": "6dd6a8ad26723a8c243b39288db617d2e855ee9daed14ea0fb7d7c266715787e",
       "targetHash": "092c138ed840fb8a03e9e11b37bb0cf0fa0afa161f20ab4e3c2d21697038c767",
       "machineHash": "092c138ed840fb8a03e9e11b37bb0cf0fa0afa161f20ab4e3c2d21697038c767",
-      "machineText": "Build \u0026 Pemaketan",
+      "machineText": "Build & Pemaketan",
       "status": "final",
-      "sourcePreview": "Building \u0026 Packaging",
+      "sourcePreview": "Building & Packaging",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
@@ -1494,6 +1494,14 @@
       "updatedAt": "2026-09-13T23:13:28Z"
     },
     "nav-label-125": {
+      "sourceHash": "d357175cfe8978d39b0f86552dcd9404973493e2816101d9ff6c05ee248ef6bd",
+      "targetHash": "d357175cfe8978d39b0f86552dcd9404973493e2816101d9ff6c05ee248ef6bd",
+      "status": "final",
+      "sourcePreview": "Media",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:26Z"
+    },
+    "nav-label-126": {
       "sourceHash": "9a15dc9c62db5943b6f133495878c7cbd7e8ab5dab86c87c4eebd595613c748e",
       "targetHash": "41533b6d0d098341d7c50d7d561c0a877f64a7e7a19180bb2b36d955c9c9c4db",
       "machineHash": "41533b6d0d098341d7c50d7d561c0a877f64a7e7a19180bb2b36d955c9c9c4db",
@@ -1505,7 +1513,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "nav-label-126": {
+    "nav-label-127": {
       "sourceHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100",
       "targetHash": "58e81c548cccfa0496b0330d3ceb15d34b985285bc9bce5ba53c41b3d96baf59",
       "machineHash": "58e81c548cccfa0496b0330d3ceb15d34b985285bc9bce5ba53c41b3d96baf59",
@@ -1517,7 +1525,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "nav-label-127": {
+    "nav-label-128": {
       "sourceHash": "98e33b0f3104fcf1b812ba2c679c0f15a94f583559b731d6580df2d8307d3edf",
       "targetHash": "1bda999966de35d688a60356191baec7a097d3a162c0c5c05e8c7a5d38253605",
       "machineHash": "1bda999966de35d688a60356191baec7a097d3a162c0c5c05e8c7a5d38253605",
@@ -1529,7 +1537,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "nav-label-128": {
+    "nav-label-129": {
       "sourceHash": "561b17edc33d80fa40813252d0c44c05d4e009e6c15bbf86cabe5b7a5193fa97",
       "targetHash": "bdb102d5199fd97a94505328423e8d741eb1d0b6e069a5643d1d5d4f4773c409",
       "machineHash": "bdb102d5199fd97a94505328423e8d741eb1d0b6e069a5643d1d5d4f4773c409",
@@ -1541,7 +1549,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "nav-label-129": {
+    "nav-label-130": {
       "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355",
       "targetHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355",
       "machineHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355",
@@ -1553,7 +1561,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "nav-label-130": {
+    "nav-label-131": {
       "sourceHash": "ead07c84baac57a9542f388a07a2a5209456ce790b04251bc9bd7d179ea85cb1",
       "targetHash": "96c4b65693ed656f9e1b358273b1447a375038ddeb84b4c1fb4deb28fd55974e",
       "machineHash": "96c4b65693ed656f9e1b358273b1447a375038ddeb84b4c1fb4deb28fd55974e",
@@ -1565,7 +1573,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "nav-label-131": {
+    "nav-label-132": {
       "sourceHash": "fd6e874f43f84791735073557ac711f75fc46b06a1d54009727d9f7017aee043",
       "targetHash": "fd6e874f43f84791735073557ac711f75fc46b06a1d54009727d9f7017aee043",
       "machineHash": "fd6e874f43f84791735073557ac711f75fc46b06a1d54009727d9f7017aee043",
@@ -1577,7 +1585,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "nav-label-132": {
+    "nav-label-133": {
       "sourceHash": "2a6b24ad287220345e96eb8021fe29d42b0785766c8df658827e7251da2d36dc",
       "targetHash": "a4457bef81066b5e370510663ce521824dd7b53bd21adbfc88cb4d3b2cd8e6f5",
       "machineHash": "a4457bef81066b5e370510663ce521824dd7b53bd21adbfc88cb4d3b2cd8e6f5",

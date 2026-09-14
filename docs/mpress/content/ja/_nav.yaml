@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "テンプレート"
       link: "/community/templates/"
+    - label: "メディア"
+      link: "/community/media/"
     - label: "ショーケース"
       collapsed: true
       items:

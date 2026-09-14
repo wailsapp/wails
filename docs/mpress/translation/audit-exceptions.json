@@ -4,8 +4,8 @@
     "file": "_nav.yaml",
     "segment": "nav-label-095",
     "code": "untranslated",
-    "sourceSHA256": "09c5fb45152be8b2deb992f0ff52266431997ce56e1c0534d0d50f31a74e9412",
-    "targetSHA256": "326104899c6b36b12476f23618c838caef825b92ee0e3d5718505d9b48524ef5",
+    "sourceSHA256": "f1f7722f293f0504510c1012f9ddd1e511af23c9d30bcf3cae2a9a9bde6fc32b",
+    "targetSHA256": "a0b98328d95e3bb34dbf58a6e093f8887cf7324d0cb41db68cb6e48367d17e48",
     "reason": "Reviewed unchanged text: WML (Wails Markup). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {

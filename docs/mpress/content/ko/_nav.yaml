@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "템플릿"
       link: "/community/templates/"
+    - label: "미디어"
+      link: "/community/media/"
     - label: "쇼케이스"
       collapsed: true
       items:

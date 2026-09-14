@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "Modelos"
       link: "/community/templates/"
+    - label: "Mídia"
+      link: "/community/media/"
     - label: "Vitrine"
       collapsed: true
       items:

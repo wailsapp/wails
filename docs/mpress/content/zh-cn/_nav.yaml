@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "模板"
       link: "/community/templates/"
+    - label: "媒体素材"
+      link: "/community/media/"
     - label: "案例展示"
       collapsed: true
       items:

@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "範本"
       link: "/community/templates/"
+    - label: "媒體素材"
+      link: "/community/media/"
     - label: "成果展示"
       collapsed: true
       items:

@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "Templat"
       link: "/community/templates/"
+    - label: "Media"
+      link: "/community/media/"
     - label: "Galeri"
       collapsed: true
       items:
