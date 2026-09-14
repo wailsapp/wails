@@ -19,8 +19,8 @@ import (
 	"errors"
 
 	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/debug"
+	"github.com/wailsapp/wails/v3/internal/git"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
@@ -78,9 +78,11 @@ func GetDefaultTemplates() []TemplateData {
 //
 // Built-in templates declare this explicitly via `typescript:` in their
 // template.yaml (TypeScript now owns the bare framework name, e.g. `react`,
-// while JavaScript variants carry a `-js` suffix, e.g. `react-js`). For local
-// and remote templates that predate the flag we fall back to the historical
-// `-ts` suffix convention so community templates keep working.
+// while JavaScript variants carry a `-js` suffix, e.g. `react-js`). Templates
+// given as a path on disk (e.g. one produced by `wails3 generate template
+// -typescript`) are read the same way. For remote templates, and for local
+// ones that predate the flag, we fall back to the historical `-ts` suffix
+// convention so community templates keep working.
 func IsTypescript(name string) bool {
 	if strings.HasSuffix(name, "-ts") {
 		return true
@@ -92,6 +94,10 @@ func IsTypescript(name string) bool {
 		if tmpl, err := getInternalTemplate(name); err == nil {
 			return tmpl.Typescript
 		}
+		return false
+	}
+	if tmpl, err := getLocalTemplate(name); err == nil && tmpl != nil {
+		return tmpl.Typescript
 	}
 	return false
 }
@@ -460,49 +466,49 @@ func Install(options *flags.Init) error {
 	case sourceLocal, sourceRemote:
 		publisher := fmt.Sprintf("CN=%s", options.ProductCompany)
 		data := struct {
-		TemplateOptions
-		Dir                   string
-		Name                  string
-		BinaryName            string
-		ProductName           string
-		ProductDescription    string
-		ProductVersion        string
-		ProductCompany        string
-		ProductCopyright      string
-		ProductComments       string
-		ProductIdentifier     string
-		Publisher             string
-		ProcessorArchitecture string
-		ExecutableName        string
-		ExecutablePath        string
-		OutputPath            string
-		CertificatePath       string
-		FileAssociations      []FileAssociation
-		Protocols             []ProtocolConfig
-		Silent                bool
-		Typescript            bool
-	}{
-		Name:                  options.ProjectName,
-		BinaryName:            NormalizeBinaryName(options.ProjectName),
-		Silent:                true,
-		ProductCompany:        options.ProductCompany,
-		ProductName:           options.ProductName,
-		ProductDescription:    options.ProductDescription,
-		ProductVersion:        options.ProductVersion,
-		ProductIdentifier:     options.ProductIdentifier,
-		ProductCopyright:      options.ProductCopyright,
-		ProductComments:       options.ProductComments,
-		Publisher:             publisher,
-		ProcessorArchitecture: "x64",
-		ExecutableName:        options.ProjectName,
-		ExecutablePath:        options.ProjectName,
-		OutputPath:            fmt.Sprintf("%s.msix", options.ProjectName),
-		CertificatePath:       "",
-		FileAssociations:      []FileAssociation{},
-		Protocols:             []ProtocolConfig{},
-		Typescript:            templateData.UseTypescript,
-		TemplateOptions:       templateData,
-	}
+			TemplateOptions
+			Dir                   string
+			Name                  string
+			BinaryName            string
+			ProductName           string
+			ProductDescription    string
+			ProductVersion        string
+			ProductCompany        string
+			ProductCopyright      string
+			ProductComments       string
+			ProductIdentifier     string
+			Publisher             string
+			ProcessorArchitecture string
+			ExecutableName        string
+			ExecutablePath        string
+			OutputPath            string
+			CertificatePath       string
+			FileAssociations      []FileAssociation
+			Protocols             []ProtocolConfig
+			Silent                bool
+			Typescript            bool
+		}{
+			Name:                  options.ProjectName,
+			BinaryName:            NormalizeBinaryName(options.ProjectName),
+			Silent:                true,
+			ProductCompany:        options.ProductCompany,
+			ProductName:           options.ProductName,
+			ProductDescription:    options.ProductDescription,
+			ProductVersion:        options.ProductVersion,
+			ProductIdentifier:     options.ProductIdentifier,
+			ProductCopyright:      options.ProductCopyright,
+			ProductComments:       options.ProductComments,
+			Publisher:             publisher,
+			ProcessorArchitecture: "x64",
+			ExecutableName:        options.ProjectName,
+			ExecutablePath:        options.ProjectName,
+			OutputPath:            fmt.Sprintf("%s.msix", options.ProjectName),
+			CertificatePath:       "",
+			FileAssociations:      []FileAssociation{},
+			Protocols:             []ProtocolConfig{},
+			Typescript:            templateData.UseTypescript,
+			TemplateOptions:       templateData,
+		}
 		// If options.ProjectDir does not exist, create it
 		if _, err := os.Stat(options.ProjectDir); os.IsNotExist(err) {
 			err = os.Mkdir(options.ProjectDir, 0755)

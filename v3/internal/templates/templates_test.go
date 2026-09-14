@@ -281,3 +281,43 @@ func TestGenerateTemplate_GeneratedTemplateCanBeInstalled(t *testing.T) {
 	}
 }
 
+// --- IsTypescript ---
+
+func TestIsTypescript_LocalTemplateHonoursYAMLFlag(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name, yaml string) string {
+		path := filepath.Join(dir, name)
+		if err := os.MkdirAll(path, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(path, "template.yaml"), []byte(yaml), 0644); err != nil {
+			t.Fatal(err)
+		}
+		return path
+	}
+	ts := write("mytemplate", "name: TS\nwailsVersion: 3\ntypescript: true\n")
+	js := write("plain", "name: JS\nwailsVersion: 3\n")
+
+	if !IsTypescript(ts) {
+		t.Errorf("IsTypescript(%q) = false, want true (template.yaml declares typescript: true)", ts)
+	}
+	if IsTypescript(js) {
+		t.Errorf("IsTypescript(%q) = true, want false (no typescript flag)", js)
+	}
+	// The legacy suffix conventions still win for paths that use them.
+	if !IsTypescript(write("legacy-ts", "name: Legacy\nwailsVersion: 3\n")) {
+		t.Error("IsTypescript of a '-ts' suffixed local template should be true")
+	}
+	if IsTypescript(write("react-js", "name: RJS\nwailsVersion: 3\ntypescript: true\n")) {
+		t.Error("IsTypescript of a '-js' suffixed local template should be false")
+	}
+}
+
+func TestIsTypescript_BuiltinAndUnknown(t *testing.T) {
+	if !IsTypescript("vanilla") || !IsTypescript("ui-builder") {
+		t.Error("built-in TypeScript templates should report true")
+	}
+	if IsTypescript("vanilla-js") || IsTypescript("does-not-exist") {
+		t.Error("JavaScript and unknown templates should report false")
+	}
+}

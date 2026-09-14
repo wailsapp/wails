@@ -172,6 +172,16 @@ Check that:
 - Go code changes rebuild and relaunch the app
 - The production binary in `bin/` runs correctly
 
+:::note
+A local template must be self-contained: unlike the built-in names, a path is
+not merged with the CLI's common files (Taskfile, `go.mod`, build assets). That
+is exactly what `wails3 generate template` produces, so start from it rather
+than copying a directory out of the Wails repository. If your template is
+TypeScript, keep `typescript: true` in `template.yaml` (the `-typescript` flag
+sets it); `wails3 init` reads it for local paths, and generates TypeScript
+bindings and build tasks accordingly.
+:::
+
 ## Publish on GitHub
 
 <Steps>

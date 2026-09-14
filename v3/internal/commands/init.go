@@ -259,10 +259,15 @@ func Init(options *flags.Init) error {
 		return err
 	}
 
-	// Rename gitignore to .gitignore
-	err = os.Rename(filepath.Join(options.ProjectDir, "gitignore"), filepath.Join(options.ProjectDir, ".gitignore"))
-	if err != nil {
-		return err
+	// Rename gitignore to .gitignore. Dotfiles can't be embedded, so built-in
+	// templates ship it without the leading dot. Local and remote templates may
+	// not include one at all, so a missing file is not an error.
+	gitignoreSrc := filepath.Join(options.ProjectDir, "gitignore")
+	if _, statErr := os.Stat(gitignoreSrc); statErr == nil {
+		err = os.Rename(gitignoreSrc, filepath.Join(options.ProjectDir, ".gitignore"))
+		if err != nil {
+			return err
+		}
 	}
 
 	// Rename frontend/npmrc to frontend/.npmrc. Dotfiles can't be embedded, so

@@ -24,6 +24,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- `wails3 init -t <path>` now honours `typescript: true` in a local template's `template.yaml` (as written by `wails3 generate template -typescript`), so bindings and build tasks are generated for TypeScript instead of falling back to the `-ts` name suffix
+- `wails3 init` no longer reports an error after creating a project from a local or remote template that ships without a `gitignore` file
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
