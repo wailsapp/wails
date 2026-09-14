@@ -12,6 +12,10 @@ hide animations. Your web content occupies only the requested inner rectangle.
 Moving the pointer into the window makes its webview key immediately without
 activating the application.
 
+<Aside type="caution" title="Webview transparency uses a private API">
+  `NewNotchWindow` requires `-tags private_mac_apis` for transparent web content to reveal the native notch shape. Without the tag, the panel, placement, and animations still work, but the webview stays opaque. See [Private macOS APIs](/guides/build/private-macos-apis/#webview-transparency-and-background).
+</Aside>
+
 <figure>
   <img
     src="/images/notch-notification.gif"

@@ -1,0 +1,108 @@
+---
+schema = 1
+title = "Tutorials"
+description = "Learn Wails by building applications"
+slug = "tutorials/overview"
+sourcePath = "tutorials/overview.mpd"
+---
+
+Step-by-step tutorials that teach Wails concepts by building complete applications. Each tutorial includes working code, explanations, and practical patterns.
+
+@note type="tip" title="New to Go?"
+Complete the [Go Tour](https://go.dev/tour/) before starting tutorials.
+@end
+
+## QR Code Service
+
+![QR Code Example](/assets/qr1.png)
+
+Learn the fundamentals of Wails services by building a QR code generator. This tutorial introduces you to the core concepts of organizing your application logic into reusable services.
+
+*What you'll learn:*
+- How to create and structure a Wails service
+- Managing external Go dependencies
+- Binding Go methods to your frontend
+- Passing data between Go and JavaScript
+- Organizing code for maintainability
+
+*Best for:* First-time Wails users who want to understand the service architecture
+
+@rawHTML
+<div style="text-align: center; margin-top: 1rem;">
+<a class="mpress-link-button mpress-link-button-secondary" href="/tutorials/01-creating-a-service/"><span>Get Started</span><span class="mpress-link-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 1 0 1.42 1.42l5-5a1 1 0 0 0 .21-1.09Z"/></svg></span></a>
+</div>
+@end
+
+---
+
+### TODO List
+
+![TODO List Application](/assets/todo-app.png)
+
+Build a complete TODO list application with a beautiful, modern interface. This hands-on tutorial teaches you core Wails patterns through a practical, real-world application using vanilla JavaScript.
+
+*What you'll learn:*
+- Service-based architecture with thread-safe state management
+- CRUD operations (Create, Read, Update, Delete)
+- Type-safe bindings between Go and JavaScript
+- Building modern UIs without framework complexity
+- Proper error handling and validation patterns
+
+*Time to complete:* ~20 minutes
+
+*Best for:* Your first complete Wails application - perfect for understanding the fundamentals before adding framework complexity
+
+@rawHTML
+<div style="text-align: center; margin-top: 1rem;">
+<a class="mpress-link-button mpress-link-button-secondary" href="/tutorials/02-todo-vanilla/"><span>Get Started</span><span class="mpress-link-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 1 0 1.42 1.42l5-5a1 1 0 0 0 .21-1.09Z"/></svg></span></a>
+</div>
+@end
+
+---
+
+### Notes
+
+![Notes Application](/assets/notes-app.png)
+
+Build an Apple Notes-style application with native file dialogs and auto-save functionality. This tutorial demonstrates desktop-specific features like file operations, native dialogs, and professional UI patterns.
+
+*What you'll learn:*
+- Native file dialogs (Save, Open, Info)
+- JSON-based data persistence
+- Debounced auto-save patterns
+- Professional two-column desktop layouts
+- Working with file system operations in Go
+
+*Time to complete:* ~30 minutes
+
+*Best for:* Learning desktop-specific features like file operations and native OS dialogs
+
+@rawHTML
+<div style="text-align: center; margin-top: 1rem;">
+<a class="mpress-link-button mpress-link-button-secondary" href="/tutorials/03-notes-vanilla/"><span>Get Started</span><span class="mpress-link-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 1 0 1.42 1.42l5-5a1 1 0 0 0 .21-1.09Z"/></svg></span></a>
+</div>
+@end
+
+---
+
+### Self-Updating Wails App
+
+Add in-app self-updates to a Wails application from a fresh `wails3 init` through signed release verification and the helper-mode binary swap. Uses GitHub Releases as the update source.
+
+*What you'll learn:*
+- How `app.Updater` plugs into a Wails app
+- Configuring the GitHub Releases provider
+- Publishing releases with `SHA256SUMS` for digest verification
+- Adding Ed25519 signing for tamper-resistance
+- Customising the default window via CSS, custom HTML, or BYO
+- Periodic background checks with `CheckInterval`
+
+*Time to complete:* ~25 minutes
+
+*Best for:* Shipping an updateable desktop app — covers the full release pipeline, not just the API
+
+@rawHTML
+<div style="text-align: center; margin-top: 1rem;">
+<a class="mpress-link-button mpress-link-button-secondary" href="/tutorials/04-self-update-a-wails-app/"><span>Get Started</span><span class="mpress-link-button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 1 0 1.42 1.42l5-5a1 1 0 0 0 .21-1.09Z"/></svg></span></a>
+</div>
+@end

@@ -444,7 +444,7 @@ BackgroundType: application.BackgroundTypeTranslucent,
 - `BackgroundTypeTranslucent` - Semi-transparent blur
 
 **Platform support:**
-- **macOS:** All types supported
+- **macOS:** Configure `Mac.Backdrop`; webview transparency requires [`private_mac_apis`](/guides/build/private-macos-apis/#webview-transparency-and-background). Without it, the webview remains opaque.
 - **Windows:** Transparent and Translucent (Windows 11+)
 - **Linux:** Solid only
 
@@ -456,6 +456,10 @@ Mac: application.MacWindow{
     Backdrop: application.MacBackdropTranslucent,
 },
 ```
+
+### OpenInspectorOnStartup and OpenDevTools
+
+**Private API on macOS:** `OpenInspectorOnStartup: true`, Go `window.OpenDevTools()`, and JavaScript `Window.OpenDevTools()` require `private_mac_apis` to open the inspector programmatically. Without it, these operations are no-ops. Production builds also need `devtools`. Public Safari inspection on macOS 13.3+ does not need private APIs; older macOS inspector enablement does. See the [Web Inspector build matrix](/guides/build/private-macos-apis/#web-inspector).
 
 ## Content Options
 
@@ -824,10 +828,27 @@ Mac: application.MacWindow{
 - `HideTitle` - Hides only the title text
 - `FullSizeContent` - Extends content to full window size
 
+On macOS, webview transparency and programmatic inspector opening require the `private_mac_apis` build tag. Without it, the same options remain valid but private-only operations are no-ops. Liquid Glass grouping is also ignored, and styles use public alternatives. See [Private macOS APIs](/guides/build/private-macos-apis/) for build commands and exact behavior.
+
 **Backdrop** (`MacBackdrop`)
 - `MacBackdropNormal` - Standard opaque background
-- `MacBackdropTranslucent` - Blurred translucent background
-- `MacBackdropTransparent` - Fully transparent background
+- `MacBackdropTranslucent` - **Private API required for webview transparency.** Native blur remains behind an opaque webview without the tag.
+- `MacBackdropTransparent` - **Private API required for webview transparency.** The webview remains opaque without the tag.
+- `MacBackdropLiquidGlass` - **Private API required for webview transparency.** The glass layer remains behind an opaque webview without the tag; styles use public alternatives.
+
+**LiquidGlass** (`MacLiquidGlass`)
+
+| Field or value | Private API dependency on macOS |
+| --- | --- |
+| `Style: LiquidGlassStyleAutomatic` | Native regular style is public; backdrop webview transparency requires `private_mac_apis`. |
+| `Style: LiquidGlassStyleLight` | The tag preserves the existing native clear-style mapping; without it, Wails uses regular glass with Aqua appearance. |
+| `Style: LiquidGlassStyleDark` | **Private API:** undocumented native style value `2`; without the tag, regular glass with Dark Aqua appearance. |
+| `Style: LiquidGlassStyleVibrant` | Native clear-style mapping is public; backdrop webview transparency requires the tag. |
+| `GroupID` | **Private API:** non-empty values request grouping; ignored without the tag. |
+| `GroupSpacing` | **Private API:** positive values request group spacing; ignored without the tag. |
+| `Material`, `CornerRadius`, `TintColor` | No private API dependency of their own. |
+
+See [Liquid Glass values](/guides/build/private-macos-apis/#liquid-glass-values) for native style values and OS availability.
 
 **InvisibleTitleBarHeight** (`int`)
 - Height of invisible title bar area (for dragging)
