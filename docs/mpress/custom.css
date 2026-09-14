@@ -426,3 +426,20 @@ html[data-theme="light"] .docs-page .mpress-admonition-danger { --notice: hsl(33
   --mp-accent: #5278ff;
   --mp-success: #35c77a;
 }
+
+/* Keep both official button variants legible in either reader theme. */
+.wails-media-preview {
+  padding: 16px;
+  border: 1px solid #71717a;
+  border-radius: 8px;
+}
+.wails-media-preview-light { background: #fff; color: #18181b; }
+.wails-media-preview-dark { background: #18181b; color: #fff; }
+.docs-page article .wails-media-preview p { color: inherit; }
+.docs-page article .wails-media-preview code { background: transparent; color: inherit; }
+.wails-media-preview img {
+  display: block;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}

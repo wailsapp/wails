@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "Vorlagen"
       link: "/community/templates/"
+    - label: "Medien"
+      link: "/community/media/"
     - label: "Galerie"
       collapsed: true
       items:
