@@ -328,6 +328,7 @@ export default defineConfig({
                 { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
                 { label: "Testing", link: "/guides/testing" },
+                { label: "Local Audio and Video", link: "/guides/linux-media" },
               ],
             },
             {

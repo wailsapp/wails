@@ -1,0 +1,183 @@
+---
+title: Play Local Audio and Video
+description: Play bundled media on Linux using bounded blob URLs and release it when finished.
+sidebar:
+  order: 12
+---
+
+Use `Media.SetSource` to play short local clips in a Wails v3 application. On
+Linux, WebKitGTK delegates media playback to GStreamer, which cannot load
+`wails://` URLs directly. The helper receives the clip over a Wails stream and
+assigns a blob URL to your player.
+
+Desktop transfers use the existing Wails asset transport without opening a
+listening socket. The API works with audio and video elements. Ordinary
+HTTP/HTTPS media can use the player's `src` directly.
+
+## Register your media files
+
+Expose a filesystem containing the clips your frontend may play, then register
+the media handler on a named stream:
+
+```go
+import (
+    "embed"
+    "io/fs"
+    "log"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+    "github.com/wailsapp/wails/v3/pkg/services/media"
+)
+
+//go:embed clips
+var clips embed.FS
+
+func registerMedia(app *application.App) {
+    mediaFiles, err := fs.Sub(clips, "clips")
+    if err != nil {
+        log.Fatal(err)
+    }
+    handler, err := media.NewHandler(mediaFiles, 32 << 20) // 32 MiB per file
+    if err != nil {
+        log.Fatal(err)
+    }
+    app.HandleStream("media", handler)
+}
+```
+
+Call `registerMedia(app)` after creating the app and before calling `app.Run()`.
+
+For files on disk, use `os.OpenRoot(directory)` and pass `root.FS()` to
+`media.NewHandler`. Keep the root open until `app.Run()` returns, then close it.
+Choose a directory containing only files the frontend may read; `os.Root`
+confines access even if a symlink points outside that directory.
+
+## Load a clip
+
+Create a player:
+
+```html
+<video id="player" controls></video>
+```
+
+For a frontend using the npm runtime:
+
+```javascript
+import { Media } from '@wailsio/runtime';
+
+const player = document.getElementById('player');
+
+try {
+    await Media.SetSource(player, 'media', 'welcome.mp4');
+} catch (error) {
+    if (error.name !== 'AbortError') {
+        console.error('Could not load the clip:', error);
+    }
+}
+```
+
+For an application using the bundled runtime, change the import to:
+
+```javascript
+import { Media } from '/wails/runtime.js';
+```
+
+The second argument is the registered stream name. The third is a slash-separated
+file path relative to its filesystem root, such as `welcome.mp4` or
+`tutorials/intro.mp4`. It is not a URL or an operating-system path.
+
+The promise resolves when the source is assigned. The player then decodes it.
+Handle the player's `error` event to detect unsupported codecs, and call
+`player.play()` from a user interaction if you need to start playback yourself.
+
+## Replace or release a clip
+
+Call `Media.SetSource` again to change the clip. It cancels an earlier pending
+load for that player, so a slow response cannot overwrite the latest selection.
+The previous clip remains available until its replacement loads successfully.
+Its blob URL is then revoked.
+
+Call `Media.ClearSource(player)` when closing a player or unmounting its component:
+
+```javascript
+Media.ClearSource(player);
+```
+
+This cancels a pending load, resets the player and releases the blob URL. Call it
+before removing the element from the document. A framework component should call
+it in its unmount or disposal hook. Removing the element alone does not release
+the blob URL. Use these helpers consistently for the player's source.
+
+For `<video><source ...></video>` markup, pass the chosen file name to
+`Media.SetSource(video, "media", name)`. The helper sets the parent player's `src`, which
+takes precedence over its `<source>` children. Clearing that attribute lets the
+browser consider those children again; use an empty player when managing all
+sources through this API.
+
+Detached audio objects work too:
+
+```javascript
+const sound = new Audio();
+await Media.SetSource(sound, 'media', 'notification.mp3');
+sound.addEventListener('ended', () => Media.ClearSource(sound), { once: true });
+// Call sound.play() from an appropriate user interaction.
+// Also clear it if playback is cancelled or the owning component is disposed.
+```
+
+## Limit downloads and cancel loading
+
+The default limit is **32 MiB per source**. You can choose a smaller or larger
+positive integer limit in bytes, within the limit configured in Go:
+
+```javascript
+const controller = new AbortController();
+const loading = Media.SetSource(player, 'media', 'welcome.mp4', {
+    maxBytes: 8 * 1024 * 1024,
+    signal: controller.signal,
+});
+
+// Call controller.abort() to cancel this load.
+await loading;
+```
+
+An oversized file rejects with `RangeError`. The Go handler checks the file size
+before reading its contents and transfers at most the smaller of its configured
+limit and the frontend limit. The frontend checks the received size too and
+rejects incomplete transfers. Cancellation rejects with `AbortError`, or the
+reason passed to `AbortController.abort(reason)`.
+
+Files travel in 64 KiB frames. Wails' desktop stream transport limits poll
+responses to 1 MiB, so WebView2's buffering of complete responses does not buffer
+the entire media file in one response. Stream queues have their own bounded
+backpressure. These transport limits do not change the complete-blob behaviour
+of the player helper.
+
+**The entire file downloads before playback.** The byte limit is per file,
+not a total application memory limit. Multiple players, the previous clip during
+replacement, blob construction and decoded media can use additional memory.
+The helper transfers when called, regardless of the player's `preload` setting.
+Call it when the user chooses to load a clip.
+
+For large local files, this helper is not a streaming solution. Raising the limit
+also raises memory use. Media already hosted over HTTP/HTTPS should use native
+media loading so the browser can stream and seek using range requests.
+
+## Troubleshoot playback on Linux
+
+- If direct local playback reports **No URI handler implemented for "wails"**,
+  load that clip with `Media.SetSource`. This affects both the default GTK4 stack
+  and the legacy `-tags gtk3` stack.
+- If loading succeeds but decoding fails, check the GStreamer codecs installed
+  on the target system. MP4 commonly requires H.264 video and AAC audio support;
+  MP3 needs an MP3 decoder. Test the formats you ship on supported distributions.
+- If transfer fails, check the registered stream name, relative file name and
+  filesystem permissions. Changing a file while it is being transferred can
+  cause an incomplete transfer; retry after the file has finished being written.
+- If your app sets a Content Security Policy, allow the Wails asset origin in
+  `connect-src` and `blob:` in `media-src`. For a local-only policy these directives
+  can be `connect-src 'self'; media-src 'self' blob:`. Preserve your other directives.
+- If a file exceeds the limit, choose a shorter or smaller clip, or set an explicit
+  limit that suits your application's memory budget.
+
+Run the [audio-video example](https://github.com/wailsapp/wails/tree/master/v3/examples/audio-video)
+with `go run .` to check the bundled MP3 and MP4 samples on your machine.
