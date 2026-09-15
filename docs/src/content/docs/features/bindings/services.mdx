@@ -72,6 +72,53 @@ app := application.New(application.Options{
 - Services are **singletons** (one instance)
 - Methods can return `(value, error)`
 
+### Exposing a Frontend-Safe Interface
+
+By default, every exported method on a service is callable from the frontend. If a service also has backend-only methods, register it through a named interface with `NewServiceAs`:
+
+```go
+type FrontendAuth interface {
+    Login() wailspkceflow.AuthResult
+    Logout() wailspkceflow.AuthResult
+    AuthStatus() pkceflow.AuthStatusResult
+    IsAuthenticated() bool
+    Claims() (wailspkceflow.ClaimsDTO, wailspkceflow.AuthResult)
+    RestoreStatus() wailspkceflow.RestoreStatus
+}
+
+authService, err := wailspkceflow.New(options)
+if err != nil {
+    return err
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceAs[FrontendAuth](authService),
+    },
+})
+
+// Go keeps the full concrete API. Client is not callable from JavaScript.
+tokenFn := authService.Client().TokenFn(context.Background())
+```
+
+Wails generates bindings only for methods in `FrontendAuth`, and the runtime enforces the same allowlist for low-level calls by both method name and method ID. Exported methods such as `Client`, `Pause`, or `Resume` remain available to Go but are not registered with the frontend bridge.
+
+This is a fail-closed boundary: adding another exported method to `AuthService` does not expose it unless the method is also added to `FrontendAuth`. The compiler verifies that the concrete service implements the interface.
+
+:::caution
+Generator directives such as `//wails:ignore` control generated JavaScript and TypeScript, but do not prevent a low-level runtime call. Use an interface projection when method visibility is a security or trust boundary.
+:::
+
+Projection requirements and tradeoffs:
+
+- Supply the named interface type explicitly: `NewServiceAs[FrontendAuth](authService)`.
+- Pass the concrete service pointer directly so the binding generator can identify its package and type. Binding generation reports an error if it is first stored in an interface-typed variable or passed through a generic wrapper.
+- The generated module and method IDs retain the concrete service identity, preserving the normal Wails binding layout and obfuscated-build support.
+- Lifecycle hooks, HTTP routing, service naming, and backend access still use the concrete instance; only frontend method registration is filtered.
+- The interface is an additional API declaration, but it replaces forwarding facade structs and makes the exposed surface easy to review and mock.
+
+Use `NewServiceAsWithOptions[FrontendAuth](authService, options)` when the projected service also needs [service options](#service-options).
+
 ### Service with State
 
 ```go
