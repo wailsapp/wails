@@ -426,8 +426,11 @@ mainWindow.AttachModal(childWindow)
 
     **Backdrop types:**
     - `MacBackdropNormal` - Standard window
-    - `MacBackdropTranslucent` - Translucent background
-    - `MacBackdropTransparent` - Fully transparent
+    - `MacBackdropTranslucent` - Translucent background; **private API required** for webview transparency.
+    - `MacBackdropTransparent` - Fully transparent; **private API required** for webview transparency.
+    - `MacBackdropLiquidGlass` - Glass backdrop; **private API required** for webview transparency.
+
+    Build with `-tags private_mac_apis` for these effects to show through the webview. Without it, the webview stays opaque. `TitleBar.AppearsTransparent` itself uses public APIs. See [Private macOS APIs](/guides/build/private-macos-apis/).
 
     **Collection behavior:**
     Control how windows behave across Spaces:

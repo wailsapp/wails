@@ -1,0 +1,310 @@
+- label: "Startseite"
+  link: "/"
+- label: "Warum Wails?"
+  link: "/quick-start/why-wails/"
+- label: "Schnelleinstieg"
+  collapsed: false
+  items:
+    - label: "Installation"
+      link: "/quick-start/installation/"
+    - label: "Ihre erste App"
+      link: "/quick-start/first-app/"
+    - label: "Nächste Schritte"
+      link: "/quick-start/next-steps/"
+- label: "Tutorials"
+  collapsed: true
+  autogenerate:
+    directory: "tutorials"
+- label: "Grundkonzepte"
+  collapsed: true
+  items:
+    - label: "Funktionsweise von Wails"
+      link: "/concepts/architecture/"
+    - label: "Manager-API"
+      link: "/concepts/manager-api/"
+    - label: "Anwendungslebenszyklus"
+      link: "/concepts/lifecycle/"
+    - label: "Go-Frontend-Bridge"
+      link: "/concepts/bridge/"
+    - label: "Buildsystem"
+      link: "/concepts/build-system/"
+- label: "Funktionen"
+  collapsed: true
+  items:
+    - label: "Fenster"
+      collapsed: true
+      items:
+        - label: "Fenstergrundlagen"
+          link: "/features/windows/basics/"
+        - label: "Fensteroptionen"
+          link: "/features/windows/options/"
+        - label: "Fenster mit Aussparung"
+          link: "/features/windows/notch-windows/"
+        - label: "Berechtigungen"
+          link: "/features/windows/permissions/"
+        - label: "Mehrere Fenster"
+          link: "/features/windows/multiple/"
+        - label: "Rahmenlose Fenster"
+          link: "/features/windows/frameless/"
+        - label: "Fensterereignisse"
+          link: "/features/windows/events/"
+    - label: "Menüs"
+      collapsed: true
+      items:
+        - label: "Anwendungsmenüs"
+          link: "/features/menus/application/"
+        - label: "Kontextmenüs"
+          link: "/features/menus/context/"
+        - label: "Infobereichsmenüs"
+          link: "/features/menus/systray/"
+        - label: "Menüreferenz"
+          link: "/features/menus/reference/"
+    - label: "Bindings & Dienste"
+      collapsed: true
+      items:
+        - label: "Methodenbindung"
+          link: "/features/bindings/methods/"
+        - label: "Dienste"
+          link: "/features/bindings/services/"
+        - label: "Datenmodelle"
+          link: "/features/bindings/models/"
+        - label: "Aufzählungstypen"
+          link: "/features/bindings/enums/"
+        - label: "Erweiterte Bindings"
+          link: "/features/bindings/advanced/"
+        - label: "Bewährte Verfahren"
+          link: "/features/bindings/best-practices/"
+    - label: "Ereignisse"
+      collapsed: true
+      items:
+        - label: "Ereignissystem"
+          link: "/features/events/system/"
+        - label: "Anwendungsereignisse"
+          link: "/features/events/application/"
+        - label: "Fensterereignisse"
+          link: "/features/events/window/"
+        - label: "Benutzerdefinierte Ereignisse"
+          link: "/features/events/custom/"
+    - label: "Dialoge"
+      collapsed: true
+      items:
+        - label: "Dateidialoge"
+          link: "/features/dialogs/file/"
+        - label: "Meldungsdialoge"
+          link: "/features/dialogs/message/"
+        - label: "Benutzerdefinierte Dialoge"
+          link: "/features/dialogs/custom/"
+    - label: "Autostart"
+      collapsed: true
+      autogenerate:
+        directory: "features/autostart"
+    - label: "Zwischenablage"
+      collapsed: true
+      autogenerate:
+        directory: "features/clipboard"
+    - label: "Browser"
+      collapsed: true
+      autogenerate:
+        directory: "features/browser"
+    - label: "Drag-and-drop"
+      collapsed: true
+      autogenerate:
+        directory: "features/drag-and-drop"
+    - label: "Tastatur"
+      collapsed: true
+      autogenerate:
+        directory: "features/keyboard"
+    - label: "Benachrichtigungen"
+      collapsed: true
+      autogenerate:
+        directory: "features/notifications"
+    - label: "Bildschirme"
+      collapsed: true
+      autogenerate:
+        directory: "features/screens"
+    - label: "Umgebung"
+      collapsed: true
+      autogenerate:
+        directory: "features/environment"
+    - label: "Plattformspezifisches"
+      collapsed: true
+      autogenerate:
+        directory: "features/platform"
+- label: "Mobilgeräte"
+  collapsed: true
+  items:
+    - label: "Übersicht"
+      link: "/guides/mobile/"
+    - label: "Ihre erste mobile App"
+      link: "/guides/mobile/first-mobile-app/"
+    - label: "iOS"
+      link: "/guides/mobile/ios/"
+    - label: "Android"
+      link: "/guides/mobile/android/"
+    - label: "Mobilgeräte-API"
+      link: "/guides/mobile/mobile-api/"
+- label: "Experimentell"
+  collapsed: true
+  items:
+    - label: "Übersicht"
+      link: "/experimental/"
+    - label: "Wake"
+      link: "/experimental/wake/"
+    - label: "LLM-Steuerung (MCP)"
+      link: "/guides/mcp-service/"
+- label: "Anleitungen"
+  collapsed: true
+  items:
+    - label: "Entwicklung"
+      collapsed: true
+      items:
+        - label: "Projektstruktur"
+          link: "/guides/dev/project-structure/"
+        - label: "Entwicklungsworkflow"
+          link: "/guides/dev/workflow/"
+        - label: "Andere Frameworks"
+          link: "/guides/dev/frontend-frameworks/"
+        - label: "Debugging"
+          link: "/guides/dev/debugging/"
+        - label: "Tests"
+          link: "/guides/testing/"
+    - label: "Build und Paketierung"
+      collapsed: true
+      items:
+        - label: "Anwendungen erstellen"
+          link: "/guides/build/building/"
+        - label: "Build-Anpassung"
+          link: "/guides/build/customization/"
+        - label: "Plattformübergreifende Builds"
+          link: "/guides/build/cross-platform/"
+        - label: "Codesignierung"
+          link: "/guides/build/signing/"
+        - label: "Windows-Paketierung"
+          link: "/guides/build/windows/"
+        - label: "macOS-Paketierung"
+          link: "/guides/build/macos/"
+        - label: "Private macOS-APIs"
+          link: "/guides/build/private-macos-apis/"
+        - label: "Linux-Paketierung"
+          link: "/guides/build/linux/"
+        - label: "MSIX-Paketierung"
+          link: "/guides/build/msix/"
+        - label: "Verschleierte Builds"
+          link: "/guides/build/obfuscation/"
+    - label: "Distribution"
+      collapsed: true
+      items:
+        - label: "In-App-Updater"
+          link: "/guides/updater/"
+        - label: "Dateizuordnungen"
+          link: "/guides/file-associations/"
+        - label: "Benutzerdefinierte Protokolle"
+          link: "/guides/distribution/custom-protocols/"
+        - label: "Einzelinstanz"
+          link: "/guides/single-instance/"
+    - label: "Integrationsmuster"
+      collapsed: true
+      items:
+        - label: "Frontend-Routing"
+          link: "/guides/routing/"
+        - label: "Gin Router verwenden"
+          link: "/guides/gin-routing/"
+        - label: "Gin-Dienste"
+          link: "/guides/gin-services/"
+        - label: "Datenbankintegration"
+          link: "/guides/patterns/database/"
+        - label: "REST-APIs"
+          link: "/guides/patterns/rest-api/"
+    - label: "Fortgeschrittene Themen"
+      collapsed: true
+      items:
+        - label: "Server-Build"
+          link: "/guides/server-build/"
+        - label: "Benutzerdefinierte Vorlagen"
+          link: "/guides/advanced/custom-templates/"
+        - label: "WML (Wails Markup)"
+          link: "/guides/advanced/wml/"
+        - label: "Panic-Behandlung"
+          link: "/guides/panic-handling/"
+        - label: "Bewährte Sicherheitsverfahren"
+          link: "/guides/security/"
+- label: "API-Referenz"
+  collapsed: true
+  items:
+    - label: "Übersicht"
+      link: "/reference/overview/"
+    - label: "Anwendung"
+      link: "/reference/application/"
+    - label: "Fenster"
+      link: "/reference/window/"
+    - label: "Menü"
+      link: "/reference/menu/"
+    - label: "Ereignisse"
+      link: "/reference/events/"
+    - label: "Dialoge"
+      link: "/reference/dialogs/"
+    - label: "Frontend-Laufzeit"
+      link: "/reference/frontend-runtime/"
+    - label: "CLI"
+      link: "/reference/cli/"
+    - label: "Protokoll für Update-Manifeste"
+      link: "/reference/update-manifest/"
+- label: "Mitwirken"
+  collapsed: true
+  items:
+    - label: "Dokumentation korrigieren"
+      link: "/contributing/documentation/"
+    - label: "Leitfaden zum Mitwirken"
+      link: "/contributing/"
+    - label: "Technische Übersicht"
+      link: "/contributing/overview/"
+    - label: "Erste Schritte"
+      link: "/contributing/getting-started/"
+    - label: "Entwicklungsumgebung einrichten"
+      link: "/contributing/setup/"
+    - label: "Programmierrichtlinien"
+      link: "/contributing/standards/"
+- label: "Migration"
+  collapsed: true
+  items:
+    - label: "Von v2 zu v3"
+      link: "/migration/v2-to-v3/"
+    - label: "Von Electron"
+      link: "/migration/from-electron/"
+- label: "Fehlerbehebung"
+  collapsed: true
+  items:
+    - label: "Syso-Dateien unter macOS"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "RDP-Probleme"
+          link: "/troubleshooting/windows/rdp/"
+- label: "Community"
+  collapsed: true
+  items:
+    - label: "Links"
+      link: "/community/links/"
+    - label: "Vorlagen"
+      link: "/community/templates/"
+    - label: "Medien"
+      link: "/community/media/"
+    - label: "Galerie"
+      collapsed: true
+      items:
+        - label: "Übersicht"
+          link: "/community/showcase/"
+        - label: "Anwendungen"
+          autogenerate:
+            directory: "community/showcase"
+- label: "Neuigkeiten"
+  link: "/whats-new/"
+- label: "Status"
+  link: "/status/"
+- label: "Änderungsprotokoll"
+  link: "/changelog/"
+- label: "Sponsor"
+  link: "https://github.com/sponsors/leaanthony"
+- label: "Danksagungen"
+  link: "/credits/"
