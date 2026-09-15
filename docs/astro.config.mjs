@@ -48,6 +48,7 @@ export default defineConfig({
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/wailsapp/wails' },
         { icon: 'discord', label: 'Discord', href: 'https://discord.gg/JDdSxwjhGf' },
+        { icon: 'reddit', label: 'Reddit', href: 'https://www.reddit.com/r/wails/' },
         { icon: 'x.com', label: 'X', href: 'https://x.com/wailsapp' },
       ],
       head: [
@@ -111,6 +112,7 @@ export default defineConfig({
               'https://github.com/wailsapp/wails',
               'https://x.com/wailsapp',
               'https://discord.gg/JDdSxwjhGf',
+              'https://www.reddit.com/r/wails/',
             ],
           }),
         },
@@ -133,21 +135,16 @@ export default defineConfig({
       ],
       defaultLocale: "root",
       locales: {
-        root:    { label: "English",             lang: "en",    dir: "ltr" },
-        "zh-cn": { label: "简体中文",             lang: "zh-CN", dir: "ltr" },
-        "zh-tw": { label: "繁體中文",             lang: "zh-TW", dir: "ltr" },
-        ja:      { label: "日本語",               lang: "ja",    dir: "ltr" },
-        ko:      { label: "한국어",               lang: "ko",    dir: "ltr" },
-        ru:      { label: "Русский",             lang: "ru",    dir: "ltr" },
-        fr:      { label: "Français",            lang: "fr",    dir: "ltr" },
-        pt:      { label: "Português (Brasil)",  lang: "pt-BR", dir: "ltr" },
-        de:      { label: "Deutsch",             lang: "de",    dir: "ltr" },
-        id:      { label: "Bahasa Indonesia",      lang: "id",    dir: "ltr" },
+        root: { label: "English", lang: "en", dir: "ltr" },
       },
       plugins: [
         starlightImageZoom(),
+        starlightLinksValidator({
+          errorOnLocalLinks: false,
+          errorOnRelativeLinks: false,
+        }),
         starlightBlog({
-          title: "Wails Blog",
+          title: "Blog",
           authors: authors,
         }),
       ],
@@ -171,7 +168,7 @@ export default defineConfig({
         {
           label: "Tutorials",
           collapsed: true,
-          autogenerate: { directory: "tutorials" },
+          items: [{ autogenerate: { directory: "tutorials" } }],
         },
 
         // Core Concepts
@@ -197,6 +194,7 @@ export default defineConfig({
               items: [
                 { label: "Window Basics", link: "/features/windows/basics" },
                 { label: "Window Options", link: "/features/windows/options" },
+                { label: "Notch Windows", link: "/features/windows/notch-windows" },
                 { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
@@ -247,47 +245,47 @@ export default defineConfig({
             {
               label: "Autostart",
               collapsed: true,
-              autogenerate: { directory: "features/autostart" },
+              items: [{ autogenerate: { directory: "features/autostart" } }],
             },
             {
               label: "Clipboard",
               collapsed: true,
-              autogenerate: { directory: "features/clipboard" },
+              items: [{ autogenerate: { directory: "features/clipboard" } }],
             },
             {
               label: "Browser",
               collapsed: true,
-              autogenerate: { directory: "features/browser" },
+              items: [{ autogenerate: { directory: "features/browser" } }],
             },
             {
               label: "Drag & Drop",
               collapsed: true,
-              autogenerate: { directory: "features/drag-and-drop" },
+              items: [{ autogenerate: { directory: "features/drag-and-drop" } }],
             },
             {
               label: "Keyboard",
               collapsed: true,
-              autogenerate: { directory: "features/keyboard" },
+              items: [{ autogenerate: { directory: "features/keyboard" } }],
             },
             {
               label: "Notifications",
               collapsed: true,
-              autogenerate: { directory: "features/notifications" },
+              items: [{ autogenerate: { directory: "features/notifications" } }],
             },
             {
               label: "Screens",
               collapsed: true,
-              autogenerate: { directory: "features/screens" },
+              items: [{ autogenerate: { directory: "features/screens" } }],
             },
             {
               label: "Environment",
               collapsed: true,
-              autogenerate: { directory: "features/environment" },
+              items: [{ autogenerate: { directory: "features/environment" } }],
             },
             {
               label: "Platform-Specific",
               collapsed: true,
-              autogenerate: { directory: "features/platform" },
+              items: [{ autogenerate: { directory: "features/platform" } }],
             },
           ],
         },
@@ -329,7 +327,7 @@ export default defineConfig({
                 { label: "Development Workflow", link: "/guides/dev/workflow" },
                 { label: "Other Frameworks", link: "/guides/dev/frontend-frameworks" },
                 { label: "Debugging", link: "/guides/dev/debugging" },
-                { label: "Testing", link: "/guides/dev/testing" },
+                { label: "Testing", link: "/guides/testing" },
               ],
             },
             {
@@ -342,6 +340,7 @@ export default defineConfig({
                 { label: "Code Signing", link: "/guides/build/signing" },
                 { label: "Windows Packaging", link: "/guides/build/windows" },
                 { label: "macOS Packaging", link: "/guides/build/macos" },
+                { label: "Private macOS APIs", link: "/guides/build/private-macos-apis" },
                 { label: "Linux Packaging", link: "/guides/build/linux" },
                 { label: "MSIX Packaging", link: "/guides/build/msix" },
                 { label: "Obfuscated Builds", link: "/guides/build/obfuscation" },
@@ -352,9 +351,9 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: "In-App Updater", link: "/guides/updater" },
-                { label: "File Associations", link: "/guides/distribution/file-associations" },
+                { label: "File Associations", link: "/guides/file-associations" },
                 { label: "Custom Protocols", link: "/guides/distribution/custom-protocols" },
-                { label: "Single Instance", link: "/guides/distribution/single-instance" },
+                { label: "Single Instance", link: "/guides/single-instance" },
               ],
             },
             {
@@ -362,8 +361,8 @@ export default defineConfig({
               collapsed: true,
               items: [
                 { label: "Frontend Routing", link: "/guides/routing" },
-                { label: "Using Gin Router", link: "/guides/patterns/gin-routing" },
-                { label: "Gin Services", link: "/guides/patterns/gin-services" },
+                { label: "Using Gin Router", link: "/guides/gin-routing" },
+                { label: "Gin Services", link: "/guides/gin-services" },
                 { label: "Database Integration", link: "/guides/patterns/database" },
                 { label: "REST APIs", link: "/guides/patterns/rest-api" },
               ],
@@ -375,8 +374,8 @@ export default defineConfig({
                 { label: "Server Build", link: "/guides/server-build" },
                 { label: "Custom Templates", link: "/guides/advanced/custom-templates" },
                 { label: "WML (Wails Markup)", link: "/guides/advanced/wml" },
-                { label: "Panic Handling", link: "/guides/advanced/panic-handling" },
-                { label: "Security Best Practices", link: "/guides/advanced/security" },
+                { label: "Panic Handling", link: "/guides/panic-handling" },
+                { label: "Security Best Practices", link: "/guides/security" },
               ],
             },
           ],
@@ -449,10 +448,14 @@ export default defineConfig({
                 { label: "Overview", link: "/community/showcase" },
                 {
                   label: "Applications",
-                  autogenerate: {
-                    directory: "community/showcase",
-                    collapsed: true,
-                  },
+                  items: [
+                    {
+                      autogenerate: {
+                        directory: "community/showcase",
+                        collapsed: true,
+                      },
+                    },
+                  ],
                 },
               ],
             },

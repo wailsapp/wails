@@ -1,7 +1,7 @@
 # Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3 alpha release.
+This file is used to collect changelog entries for the next v3 release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Cancel aborted custom-scheme requests on Linux in [PR](https://github.com/wailsapp/wails/pull/6126) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

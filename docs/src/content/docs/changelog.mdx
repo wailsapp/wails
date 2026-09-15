@@ -31,6 +31,256 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 */
 ## [Unreleased]
 
+## v3.0.0-beta.20 - 2026-09-10
+
+## Changed
+- Update Clave showcase links to current website and repository in [PR](https://github.com/wailsapp/wails/pull/6082) by @01xR4in
+
+## Fixed
+- Cancel aborted Windows asset requests, including worker requests, while preserving keepalive handlers across navigation. Forward native request contexts through the application wrapper on Apple platforms. (#5963, #5969)
+- Preserve changelog entries across competing pushes with retries in [PR](https://github.com/wailsapp/wails/pull/6094) by @leaanthony
+- Fix `go mod vendor` failing with `pattern arm64/WebView2Loader.dll: no matching files found` on every platform, by removing the embeds that referenced binaries never shipped in the module, fixing [#5782](https://github.com/wailsapp/wails/issues/5782) and [#5376](https://github.com/wailsapp/wails/issues/5376), in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
+
+## Removed
+- Remove native WebView2 loader support, superseded by the pure Go loader. This drops the embedded `WebView2Loader.dll` binaries and the `github.com/jchv/go-winloader` dependency. The `native_webview2loader` build tag is still accepted and no longer errors, but has no effect on v3 builds, in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
+- Remove unused build tags and FPS option from macOS API guide in [PR](https://github.com/wailsapp/wails/pull/6097) by @leaanthony
+
+## v3.0.0-beta.19 - 2026-09-09
+
+## Added
+- Gate private macOS APIs behind build tags for opt-in usage — see [documentation](https://v3.wails.io/features/browser/integration) and [documentation](https://v3.wails.io/features/environment/info) and [documentation](https://v3.wails.io/features/windows/basics) and [documentation](https://v3.wails.io/features/windows/frameless) and [documentation](https://v3.wails.io/features/windows/notch-windows) and [documentation](https://v3.wails.io/features/windows/options) and [documentation](https://v3.wails.io/guides/build/macos) and [documentation](https://v3.wails.io/guides/build/private-macos-apis) and [documentation](https://v3.wails.io/reference/overview) in [PR](https://github.com/wailsapp/wails/pull/6087) by @leaanthony
+
+## Fixed
+- Reject runtime requests over 64 MiB with HTTP 413 in [PR](https://github.com/wailsapp/wails/pull/6091) by @leaanthony
+
+## Security
+- Harden MCP origins and remote access with token authentication in [PR](https://github.com/wailsapp/wails/pull/6092) by @leaanthony
+
+## v3.0.0-beta.18 - 2026-09-08
+
+## Fixed
+- Fix Calloc memory leak on Linux and Darwin by using pointer receivers in [PR](https://github.com/wailsapp/wails/pull/6083) by @4RH1T3CT0R7
+
+## v3.0.0-beta.17 - 2026-09-06
+
+## Fixed
+- Windows: a failed or nil `GetRequest` in the WebResourceRequested handler no longer kills the process (`log.Fatal` / nil-dereference panic) — the request is dropped and logged instead in [PR](https://github.com/wailsapp/wails/pull/6006) by @midagedev
+
+## v3.0.0-beta.16 - 2026-08-29
+
+## Changed
+- Prompt for notarization password in a new terminal window in [PR](https://github.com/wailsapp/wails/pull/6029) by @leaanthony
+
+## Fixed
+- Correctly handle systray click types on macOS in [PR](https://github.com/wailsapp/wails/pull/5919) by @ChewbaccaCookie
+- CI removes unused Microsoft apt repos before updating in [PR](https://github.com/wailsapp/wails/pull/6041) by @Grantmartin2002
+
+## v3.0.0-beta.15 - 2026-08-27
+
+## Fixed
+- Increase WebView2 embed timeout to 60 seconds in [PR](https://github.com/wailsapp/wails/pull/6043) by @Grantmartin2002
+
+## v3.0.0-beta.14 - 2026-08-26
+
+## Fixed
+- Name Control-letter key presses correctly on macOS in [PR](https://github.com/wailsapp/wails/pull/6032) by @taliesin-ai
+- Fix ICO tray icons and follow taskbar theme on Windows in [PR](https://github.com/wailsapp/wails/pull/6016) by @nik9play
+
+## v3.0.0-beta.13 - 2026-08-25
+
+## Fixed
+- Keep serving main thread work on macOS while a modal loop runs in [PR](https://github.com/wailsapp/wails/pull/6026) by @leaanthony
+- Make mobile secure storage fallible and fail-closed in [PR](https://github.com/wailsapp/wails/pull/5923) by @mortenolsrud
+- Run application event hooks even when no listener is registered in [PR](https://github.com/wailsapp/wails/pull/5999) by @archy-rock3t-cloud
+- Correct typos in comments and localized documentation in [PR](https://github.com/wailsapp/wails/pull/6023) by @haoku123
+- Remove the precompiled macOS binaries committed under `v3/examples` in [PR](https://github.com/wailsapp/wails/pull/6025) by @4RH1T3CT0R7
+
+## v3.0.0-beta.12 - 2026-08-21
+
+## Added
+- Add macOS notch notification windows with lifecycle and telemetry example — see [documentation](https://v3.wails.io/features/windows/notch-windows) in [PR](https://github.com/wailsapp/wails/pull/6010) by @leaanthony
+- Add macOS NSPanel window support with new options and native integration — see [documentation](https://v3.wails.io/features/windows/options) in [PR](https://github.com/wailsapp/wails/pull/6008) by @leaanthony
+
+## Fixed
+- Prevent SQLite Prepare from hanging under concurrent calls in [PR](https://github.com/wailsapp/wails/pull/5998) by @archy-rock3t-cloud
+
+## v3.0.0-beta.11 - 2026-08-20
+
+## Removed
+- Remove obsolete implementation tracker from docs in [PR](https://github.com/wailsapp/wails/pull/6005) by @leaanthony
+
+## v3.0.0-beta.10 - 2026-08-19
+
+## Fixed
+- Fix GTK4 Linux host dropping custom-protocol and file-association launch arguments in [PR](https://github.com/wailsapp/wails/pull/6000) by @midagedev
+- Correctly handle deleted lines and same-source corrections in changelog validation in [PR](https://github.com/wailsapp/wails/pull/5993) by @taliesin-ai
+
+## v3.0.0-beta.9 - 2026-08-16
+
+## Added
+- Add the secure wails3 mcp server for agent-assisted project management in [PR](https://github.com/wailsapp/wails/pull/5896) by @leaanthony
+- Add documentation for models in bindings — see [documentation](https://v3.wails.io/features/bindings/models) in [PR](https://github.com/wailsapp/wails/pull/5988) by @taliesin-ai
+- Support rpm-ostree installation for atomic Linux systems in [PR](https://github.com/wailsapp/wails/pull/5987) by @leaanthony
+- Add native weekly star-history chart generation and publication — see [documentation](https://v3.wails.io/credits) and [documentation](https://v3.wails.io/de/credits) and [documentation](https://v3.wails.io/fr/credits) and [documentation](https://v3.wails.io/id/credits) and [documentation](https://v3.wails.io/ja/credits) and [documentation](https://v3.wails.io/ko/credits) and [documentation](https://v3.wails.io/pt/credits) and [documentation](https://v3.wails.io/ru/credits) and [documentation](https://v3.wails.io/zh-cn/credits) and [documentation](https://v3.wails.io/zh-tw/credits) in [PR](https://github.com/wailsapp/wails/pull/5986) by @leaanthony
+- Add Darwin-only mac package for resolving application bundle resources — see [documentation](https://v3.wails.io/guides/build/macos) in [PR](https://github.com/wailsapp/wails/pull/5965) by @leaanthony
+- Add Condui showcase page and index entry — see [documentation](https://v3.wails.io/community/showcase/condui) and [documentation](https://v3.wails.io/community/showcase) in [PR](https://github.com/wailsapp/wails/pull/5962) by @mgueregath
+- Add Redis Viewer showcase page with screenshots and project link — see [documentation](https://v3.wails.io/community/showcase) and [documentation](https://v3.wails.io/community/showcase/redisviewer) in [PR](https://github.com/wailsapp/wails/pull/5984) by @redisviewer
+
+## Changed
+- Update GTK application flags to G_APPLICATION_NON_UNIQUE for Linux in [PR](https://github.com/wailsapp/wails/pull/5971) by @overlordtm
+- Log missing window events at debug level instead of warning in [PR](https://github.com/wailsapp/wails/pull/5914) by @julianstorer
+
+## Fixed
+- Allow registered macOS keyboard shortcuts to take precedence over the webview in [PR](https://github.com/wailsapp/wails/pull/5902) by @julianstorer
+- Repair broken documentation sidebar links in [PR](https://github.com/wailsapp/wails/pull/5937) by @northes
+- Cancel macOS and iOS asset request contexts when WebKit aborts the matching custom-scheme task (#5963)
+- Handle WindowSetFullscreenButtonEnabled message in [PR](https://github.com/wailsapp/wails/pull/5976) by @archy-rock3t-cloud
+- Import Fragment in preact-ts template to resolve build failure in [PR](https://github.com/wailsapp/wails/pull/5979) by @haoku123
+- Prevent legacy GTK3 service-only applications from crashing when screen
+  discovery runs before an active window or display is available (#5966)
+- Allow explicit-version release runs to proceed when the unreleased changelog is empty (#5977)
+
+## Security
+- Update website nanoid lockfiles to patched 3.3.18 to resolve security advisories in [PR](https://github.com/wailsapp/wails/pull/5985) by @taliesin-ai
+
+## v3.0.0-beta.8 - 2026-08-12
+
+## Added
+- Add documentation URL generation to automatic changelog entries in [PR](https://github.com/wailsapp/wails/pull/5957) by @taliesin-ai
+- Add Streams: bidirectional byte streams between Go and JavaScript with the WebSocket
+  programming model and no listening socket. Declare a stream in Go with
+  `app.HandleStream(name, handler)` and connect from the frontend with `Stream(name)`,
+  which returns a `WebSocket`-shaped object. Go→JS is carried by one held poll per
+  window over the asset server, JS→Go by a normal POST; nothing binds a TCP port and
+  nothing goes through `evaluateJavaScript`. In server builds (`-tags server`) the same
+  handler is served over a real WebSocket instead, so application code is identical
+  across builds. by @leaanthony
+- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
+
+## Changed
+- Update docs sidebar autogeneration and blog author type derivation in [PR](https://github.com/wailsapp/wails/pull/5938) by @leaanthony
+
+## Fixed
+- WebView2 initialization uses a deadline and message pump in [PR](https://github.com/wailsapp/wails/pull/5952) by @leaanthony
+- WebView2 cookie test skips in CI unless opt-in and locks execution to current OS thread in [PR](https://github.com/wailsapp/wails/pull/5951) by @leaanthony
+- Windows menu builders restore command IDs for submenu parent items in [PR](https://github.com/wailsapp/wails/pull/5944) by @gilad-ch
+- Align the official cross-compilation image with the GTK 4.14+ Linux support baseline (#5928)
+- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
+- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
+- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
+
+## Removed
+- Remove the desktop binary release pipeline: v3 releases are tag-only and the `wails3` CLI is installed with `go install`. Deletes `release-v3.yml` and the nightly step that dispatched it in [PR](https://github.com/wailsapp/wails/pull/5946) by @leaanthony
+
+## v3.0.0-beta.7 - 2026-08-11
+
+## Added
+- Add macOS autoplay preference to disable user action requirement for media playback in [PR](https://github.com/wailsapp/wails/pull/5512) by @Eyalm321
+- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
+
+## Changed
+- macOS zoom animation uses CADisplayLink or NSTimer for smoother performance in [PR](https://github.com/wailsapp/wails/pull/5945) by @savely-krasovsky
+
+## Fixed
+- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
+- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
+- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
+
+
+### Added
+
+- Implement generic asynchronous FIFO mailbox for ordered event delivery in [PR](https://github.com/wailsapp/wails/pull/5851) by @savely-krasovsky and @DevLumuz
+## v3.0.0-beta.6 - 2026-08-09
+
+## Added
+- Implement bounded host-side storage for oversized events and ordered JavaScript delivery in [PR](https://github.com/wailsapp/wails/pull/5930) by @leaanthony
+- Implement macOS Dock bounce for window flashing in [PR](https://github.com/wailsapp/wails/pull/5921) by @julianstorer
+
+## Fixed
+- Asset server preserves content-type sniffer errors and unwritten prefixes during flushing in [PR](https://github.com/wailsapp/wails/pull/5931) by @leaanthony
+- Prevent macOS applications from crashing when replacing the application menu from a Wails callback
+- Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
+- Fix `w32.GetStockObject` calling `GetDeviceCaps` instead of `GetStockObject`, which made it return 0 for every stock object.
+- Improve WebView2 bootstrapper download error handling and reporting in [PR](https://github.com/wailsapp/wails/pull/5924) by @jannskiee
+
+## v3.0.0-beta.5 - 2026-08-07
+
+## Fixed
+- macOS app activation now respects activation policy for regular apps only in [PR](https://github.com/wailsapp/wails/pull/5897) by @julianstorer
+- Guard uninitialized GTK windows in Linux builds in [PR](https://github.com/wailsapp/wails/pull/5898) by @julianstorer
+- Set explicit opaque background color for Linux WebKit windows before URL load in [PR](https://github.com/wailsapp/wails/pull/5899) by @julianstorer
+
+## v3.0.0-beta.4 - 2026-08-05
+
+## Changed
+- Android build tasks default to arm64 and deploy-emulator selects host architecture in [PR](https://github.com/wailsapp/wails/pull/5890) by @mortenolsrud
+
+## Fixed
+- Preserve macOS window zoom state during drag and reduce motion in [PR](https://github.com/wailsapp/wails/pull/5900) by @leaanthony
+- Fix Windows server-mode build by adding `!server` to `webview_window_windows_nonclient.go` build constraint
+
+## v3.0.0-beta.3 - 2026-08-03
+
+## Added
+- Document Phase 10 beta verification completion in implementation details in [PR](https://github.com/wailsapp/wails/pull/5881) by @leaanthony
+
+## Fixed
+- Pass window handle to Windows dark-mode API and validate arguments in [PR](https://github.com/wailsapp/wails/pull/5877) by @leaanthony
+- Centralize macOS title-bar button state resolution for frameless windows in [PR](https://github.com/wailsapp/wails/pull/5870) by @taliesin-ai
+- Prevent unreadable native menu text when a Windows application requests dark mode while the Windows app theme is light. The menu now uses the matching light native background until Windows can render dark menu text.
+- Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
+
+## v3.0.0-beta.2 - 2026-08-02
+
+## Changed
+- Promote v3 from alpha to beta
+- Document system tray smart defaults and popup auto-hide behaviour, with regression coverage for click-handler selection (#5840).
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
+- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
+
+## Fixed
+- Report live GTK4 window sizes and emit resize, maximise, minimise, and fullscreen state events from the configured surface (#5830).
+- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
+
+## v3.0.0-alpha2.122 - 2026-08-01
+
+## Added
+
+## Changed
+- Add support for rounded, square, and custom radius corners on macOS frameless windows in [PR](https://github.com/wailsapp/wails/pull/5866) by @leaanthony
+
+## Fixed
+- Fetch shim passes undefined for missing Blob/FormData headers in [PR](https://github.com/wailsapp/wails/pull/5865) by @leaanthony
+
+## v3.0.0-alpha2.121 - 2026-07-31
+
+## Added
+- Add macOS DMG packaging support with new options and build tasks in [PR](https://github.com/wailsapp/wails/pull/5857) by @leaanthony
+
+## Changed
+- GitHub updater excludes Windows installer assets by default in [PR](https://github.com/wailsapp/wails/pull/5861) by @leaanthony
+
+## Fixed
+- Fix Linux WebKit crash when sending Blob or FormData in fetch requests in [PR](https://github.com/wailsapp/wails/pull/5854) by @taliesin-ai
+
+## v3.0.0-alpha2.120 - 2026-07-31
+
+## Added
+- Implement macOS title-bar double-click actions for maximize or minimize in [PR](https://github.com/wailsapp/wails/pull/5853) by @taliesin-ai
+
+## Changed
+- Update QR service tutorial to use NewServiceWithOptions and add spacing in [PR](https://github.com/wailsapp/wails/pull/5849) by @jeongkyu
+
+## Fixed
+- Keep WKWebView responsive during macOS zoom in [PR](https://github.com/wailsapp/wails/pull/5856) by @leaanthony
+- Fix GTK4 window size queries and emit resize, maximise, minimise, and fullscreen state events from the configured `GdkSurface`.
+
+## v3.0.0-alpha2.119 - 2026-07-27
+
+## Fixed
+- Update documentation for multiple languages to include architecture diagrams in [PR](https://github.com/wailsapp/wails/pull/5833) by @taliesin-ai
+
 ## v3.0.0-alpha2.118 - 2026-07-26
 
 ## Added

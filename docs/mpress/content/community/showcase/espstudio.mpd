@@ -1,0 +1,13 @@
+---
+schema = 1
+title = "ESP Studio"
+description = "A desktop application built with Wails"
+slug = "community/showcase/espstudio"
+sourcePath = "community/showcase/espstudio.mpd"
+---
+
+![ESP Studio](/assets/showcase-images/esp-studio.png)
+
+[ESP Studio](https://github.com/torabian/esp-studio) - Cross platform, Desktop,\
+Cloud, and Embedded software for controlling ESP/Arduino devices, and building\
+complex IOT workflows and control systems

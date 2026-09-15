@@ -1,0 +1,302 @@
+---
+schema = 1
+title = "Contributing"
+description = "Contribute to Wails"
+slug = "contributing"
+sourcePath = "contributing/index.mpd"
+---
+
+## Welcome Contributors!
+
+We welcome contributions to Wails! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
+
+## Ways to Contribute
+
+### 1. Report Issues
+
+Found a bug? [Open an issue](https://github.com/wailsapp/wails/issues/new) with:
+- Clear description
+- Steps to reproduce
+- Expected vs actual behaviour
+- System information
+- Code samples
+
+### 2. Improve Documentation
+
+Correction PRs are welcome without a prior issue or a failing code test.
+Follow [Correct the documentation](/contributing/documentation/) to preview
+and validate a change with M-Press.
+
+Documentation improvements are always welcome:
+- Fix typos and errors
+- Add examples
+- Clarify explanations
+- Translate content
+
+### 3. Submit Code
+
+Contribute code through pull requests:
+- Bug fixes
+- New features
+- Performance improvements
+- Tests
+
+### 4. Propose an Enhancement (WEP)
+
+New functionality and changes to public behaviour use the Wails Enhancement Proposal (WEP) process. It keeps feature development transparent and ensures every accepted proposal has an implementor. Do not open a feature-request issue.
+
+1. Optionally float your idea in the [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) category on GitHub Discussions or on [Discord](https://discord.gg/JDdSxwjhGf) to gauge interest.
+2. Copy [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) to `v3/wep/proposals/<proposal name>/proposal.md` and fill in every section.
+3. Open a draft pull request titled `[WEP] <title>` containing only the proposal. The PR is the official place to discuss it.
+4. Gather feedback and support (comments and thumbs-up reactions on the PR). Allow at least two weeks for discussion, and agree on who will implement the proposal.
+5. Mark the PR ready for review. The maintainers make the final decision: accepted proposals are assigned a WEP number and merged.
+
+The full process is documented in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+
+## Getting Started
+
+### Fork and Clone
+
+```bash
+# Fork the repository on GitHub
+# Then clone your fork
+git clone https://github.com/YOUR_USERNAME/wails.git
+cd wails
+
+# Add upstream remote
+git remote add upstream https://github.com/wailsapp/wails.git
+```
+
+### Build from Source
+
+```bash
+# Build the v3 CLI. Go downloads any required modules automatically.
+cd v3
+go build -o ../wails3 ./cmd/wails3
+
+# Confirm the built CLI runs and reports its version.
+../wails3 version
+```
+
+### Run Tests
+
+Tests are part of the change, not a final smoke check. Keep unit tests next to\
+the code they exercise and prefer table-driven tests whenever one behaviour is\
+being checked with several inputs or edge cases. Name each case so a failure\
+explains the scenario.
+
+New and changed logic should be fully covered. Aim for 100% Go statement\
+coverage of the code your PR adds or changes; do not treat a repository-wide\
+percentage as a substitute for testing the change. A gap can be valid—for\
+example, an OS-only error path or a condition that is impractical to reproduce\
+without real hardware—but explain the gap and why it cannot reasonably be\
+tested in the PR description.
+
+```bash
+# Run all v3 tests
+cd v3
+go test ./...
+
+# Run specific package tests
+go test ./pkg/application
+
+# Inspect coverage for the packages you changed
+go test ./pkg/application -coverprofile=coverage.out
+go tool cover -func=coverage.out
+```
+
+For integration suites, race detection, and the full CI-equivalent commands,\
+see [Testing & Continuous Integration](/contributing/testing-ci/).
+
+## Making Changes
+
+### Create a Branch
+
+```bash
+# Update master
+git checkout master
+git pull upstream master
+
+# Create feature branch
+git checkout -b feature/my-feature
+```
+
+### Make Your Changes
+
+1. *Write code* following Go conventions
+2. *Add tests* for new functionality
+3. *Update documentation* if needed
+4. *Run tests* to ensure nothing breaks
+5. *Commit changes* with clear messages
+
+### Commit Guidelines
+
+```bash
+# Good commit messages
+git commit -m "fix: resolve window focus issue on macOS"
+git commit -m "feat: add support for custom window chrome"
+git commit -m "docs: improve bindings documentation"
+
+# Use conventional commits:
+# - feat: New feature
+# - fix: Bug fix
+# - docs: Documentation
+# - test: Tests
+# - refactor: Code refactoring
+# - chore: Maintenance
+```
+
+### Submit Pull Request
+
+```bash
+# Push to your fork
+git push origin feature/my-feature
+
+# Open pull request on GitHub
+# Provide clear description
+# Reference related issues
+```
+
+## Pull Request Guidelines
+
+### Good PR Description
+
+```markdown
+## Description
+Brief description of changes
+
+## Changes
+- Added feature X
+- Fixed bug Y
+- Updated documentation
+
+## Testing
+- Tested on macOS 14
+- Tested on Windows 11
+- All tests passing
+
+## Related Issues
+Fixes #123
+```
+
+### PR Checklist
+
+- [ ] Code follows Go conventions
+- [ ] Tests added/updated
+- [ ] Documentation updated
+- [ ] All tests passing
+- [ ] No breaking changes (or documented)
+- [ ] Commit messages clear
+
+## Code Guidelines
+
+### Go Code Style
+
+```go
+// ✅ Good: Clear, documented, tested
+// ProcessData processes the input data and returns the result.
+// It returns an error if the data is invalid.
+func ProcessData(data string) (string, error) {
+    if data == "" {
+        return "", errors.New("data cannot be empty")
+    }
+    
+    result := process(data)
+    return result, nil
+}
+
+// ❌ Bad: No docs, no error handling
+func ProcessData(data string) string {
+    return process(data)
+}
+```
+
+### Testing
+
+```go
+func TestProcessData(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        want    string
+        wantErr bool
+    }{
+        {"valid input", "test", "processed", false},
+        {"empty input", "", "", true},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            got, err := ProcessData(tt.input)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("ProcessData() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if got != tt.want {
+                t.Errorf("ProcessData() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+## Documentation
+
+### Writing Docs
+
+Documentation uses Starlight (Astro):
+
+```bash
+cd docs
+npm install
+npm run dev
+```
+
+### Documentation Style
+
+- Use International English spelling
+- Start with the problem
+- Provide working examples
+- Include troubleshooting
+- Cross-reference related content
+
+## Community
+
+### Get Help
+
+- *Discord:* [Join our community](https://discord.gg/JDdSxwjhGf)
+- *GitHub Discussions:* Ask questions
+- *GitHub Issues:* Report bugs
+
+### Code of Conduct
+
+Be respectful, inclusive, and professional. We're all here to build great software together. See the [Code of Conduct](https://github.com/wailsapp/wails/blob/master/CODE_OF_CONDUCT.md) for details.
+
+## Recognition
+
+Contributors are recognised in:
+- Release notes
+- Contributors list
+- GitHub insights
+
+Thank you for contributing to Wails! 🎉
+
+## Next Steps
+
+@cards cols="2"
+@card title="◆ GitHub Repository"
+Visit the Wails repository.
+
+[View on GitHub →](https://github.com/wailsapp/wails)
+@end
+@card title="◆ Discord Community"
+Join the community.
+
+[Join Discord →](https://discord.gg/JDdSxwjhGf)
+@end
+@card title="📖 Documentation"
+Read the docs.
+
+[Browse Docs →](/quick-start/why-wails/)
+@end
+@end

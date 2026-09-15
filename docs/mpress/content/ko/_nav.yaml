@@ -1,0 +1,310 @@
+- label: "홈"
+  link: "/"
+- label: "Wails를 선택하는 이유"
+  link: "/quick-start/why-wails/"
+- label: "빠른 시작"
+  collapsed: false
+  items:
+    - label: "설치"
+      link: "/quick-start/installation/"
+    - label: "첫 번째 앱"
+      link: "/quick-start/first-app/"
+    - label: "다음 단계"
+      link: "/quick-start/next-steps/"
+- label: "튜토리얼"
+  collapsed: true
+  autogenerate:
+    directory: "tutorials"
+- label: "핵심 개념"
+  collapsed: true
+  items:
+    - label: "Wails 작동 방식"
+      link: "/concepts/architecture/"
+    - label: "관리자 API"
+      link: "/concepts/manager-api/"
+    - label: "애플리케이션 수명 주기"
+      link: "/concepts/lifecycle/"
+    - label: "Go-프런트엔드 브리지"
+      link: "/concepts/bridge/"
+    - label: "빌드 시스템"
+      link: "/concepts/build-system/"
+- label: "기능"
+  collapsed: true
+  items:
+    - label: "창"
+      collapsed: true
+      items:
+        - label: "창 기본 사항"
+          link: "/features/windows/basics/"
+        - label: "창 옵션"
+          link: "/features/windows/options/"
+        - label: "노치 창"
+          link: "/features/windows/notch-windows/"
+        - label: "권한"
+          link: "/features/windows/permissions/"
+        - label: "다중 창"
+          link: "/features/windows/multiple/"
+        - label: "프레임 없는 창"
+          link: "/features/windows/frameless/"
+        - label: "창 이벤트"
+          link: "/features/windows/events/"
+    - label: "메뉴"
+      collapsed: true
+      items:
+        - label: "애플리케이션 메뉴"
+          link: "/features/menus/application/"
+        - label: "컨텍스트 메뉴"
+          link: "/features/menus/context/"
+        - label: "시스템 트레이 메뉴"
+          link: "/features/menus/systray/"
+        - label: "메뉴 참조"
+          link: "/features/menus/reference/"
+    - label: "바인딩 & 서비스"
+      collapsed: true
+      items:
+        - label: "메서드 바인딩"
+          link: "/features/bindings/methods/"
+        - label: "서비스"
+          link: "/features/bindings/services/"
+        - label: "데이터 모델"
+          link: "/features/bindings/models/"
+        - label: "열거형"
+          link: "/features/bindings/enums/"
+        - label: "고급 바인딩"
+          link: "/features/bindings/advanced/"
+        - label: "모범 사례"
+          link: "/features/bindings/best-practices/"
+    - label: "이벤트"
+      collapsed: true
+      items:
+        - label: "이벤트 시스템"
+          link: "/features/events/system/"
+        - label: "애플리케이션 이벤트"
+          link: "/features/events/application/"
+        - label: "창 이벤트"
+          link: "/features/events/window/"
+        - label: "사용자 정의 이벤트"
+          link: "/features/events/custom/"
+    - label: "대화 상자"
+      collapsed: true
+      items:
+        - label: "파일 대화 상자"
+          link: "/features/dialogs/file/"
+        - label: "메시지 대화 상자"
+          link: "/features/dialogs/message/"
+        - label: "사용자 정의 대화 상자"
+          link: "/features/dialogs/custom/"
+    - label: "자동 시작"
+      collapsed: true
+      autogenerate:
+        directory: "features/autostart"
+    - label: "클립보드"
+      collapsed: true
+      autogenerate:
+        directory: "features/clipboard"
+    - label: "브라우저"
+      collapsed: true
+      autogenerate:
+        directory: "features/browser"
+    - label: "드래그 & 드롭"
+      collapsed: true
+      autogenerate:
+        directory: "features/drag-and-drop"
+    - label: "키보드"
+      collapsed: true
+      autogenerate:
+        directory: "features/keyboard"
+    - label: "알림"
+      collapsed: true
+      autogenerate:
+        directory: "features/notifications"
+    - label: "화면"
+      collapsed: true
+      autogenerate:
+        directory: "features/screens"
+    - label: "환경"
+      collapsed: true
+      autogenerate:
+        directory: "features/environment"
+    - label: "플랫폼별 기능"
+      collapsed: true
+      autogenerate:
+        directory: "features/platform"
+- label: "모바일"
+  collapsed: true
+  items:
+    - label: "개요"
+      link: "/guides/mobile/"
+    - label: "첫 번째 모바일 앱"
+      link: "/guides/mobile/first-mobile-app/"
+    - label: "iOS"
+      link: "/guides/mobile/ios/"
+    - label: "Android"
+      link: "/guides/mobile/android/"
+    - label: "모바일 API"
+      link: "/guides/mobile/mobile-api/"
+- label: "실험적 기능"
+  collapsed: true
+  items:
+    - label: "개요"
+      link: "/experimental/"
+    - label: "Wake"
+      link: "/experimental/wake/"
+    - label: "LLM 제어(MCP)"
+      link: "/guides/mcp-service/"
+- label: "가이드"
+  collapsed: true
+  items:
+    - label: "개발"
+      collapsed: true
+      items:
+        - label: "프로젝트 구조"
+          link: "/guides/dev/project-structure/"
+        - label: "개발 워크플로"
+          link: "/guides/dev/workflow/"
+        - label: "기타 프레임워크"
+          link: "/guides/dev/frontend-frameworks/"
+        - label: "디버깅"
+          link: "/guides/dev/debugging/"
+        - label: "테스트"
+          link: "/guides/testing/"
+    - label: "빌드 & 패키징"
+      collapsed: true
+      items:
+        - label: "애플리케이션 빌드"
+          link: "/guides/build/building/"
+        - label: "빌드 사용자 정의"
+          link: "/guides/build/customization/"
+        - label: "크로스 플랫폼 빌드"
+          link: "/guides/build/cross-platform/"
+        - label: "코드 서명"
+          link: "/guides/build/signing/"
+        - label: "Windows 패키징"
+          link: "/guides/build/windows/"
+        - label: "macOS 패키징"
+          link: "/guides/build/macos/"
+        - label: "비공개 macOS API"
+          link: "/guides/build/private-macos-apis/"
+        - label: "Linux 패키징"
+          link: "/guides/build/linux/"
+        - label: "MSIX 패키징"
+          link: "/guides/build/msix/"
+        - label: "난독화 빌드"
+          link: "/guides/build/obfuscation/"
+    - label: "배포"
+      collapsed: true
+      items:
+        - label: "앱 내 업데이터"
+          link: "/guides/updater/"
+        - label: "파일 연결"
+          link: "/guides/file-associations/"
+        - label: "사용자 정의 프로토콜"
+          link: "/guides/distribution/custom-protocols/"
+        - label: "단일 인스턴스"
+          link: "/guides/single-instance/"
+    - label: "통합 패턴"
+      collapsed: true
+      items:
+        - label: "프런트엔드 라우팅"
+          link: "/guides/routing/"
+        - label: "Gin Router 사용"
+          link: "/guides/gin-routing/"
+        - label: "Gin 서비스"
+          link: "/guides/gin-services/"
+        - label: "데이터베이스 통합"
+          link: "/guides/patterns/database/"
+        - label: "REST API"
+          link: "/guides/patterns/rest-api/"
+    - label: "고급 주제"
+      collapsed: true
+      items:
+        - label: "서버 빌드"
+          link: "/guides/server-build/"
+        - label: "사용자 정의 템플릿"
+          link: "/guides/advanced/custom-templates/"
+        - label: "WML(Wails Markup)"
+          link: "/guides/advanced/wml/"
+        - label: "패닉 처리"
+          link: "/guides/panic-handling/"
+        - label: "보안 모범 사례"
+          link: "/guides/security/"
+- label: "API 참조"
+  collapsed: true
+  items:
+    - label: "개요"
+      link: "/reference/overview/"
+    - label: "애플리케이션"
+      link: "/reference/application/"
+    - label: "창"
+      link: "/reference/window/"
+    - label: "메뉴"
+      link: "/reference/menu/"
+    - label: "이벤트"
+      link: "/reference/events/"
+    - label: "대화 상자"
+      link: "/reference/dialogs/"
+    - label: "프런트엔드 런타임"
+      link: "/reference/frontend-runtime/"
+    - label: "CLI"
+      link: "/reference/cli/"
+    - label: "업데이트 매니페스트 프로토콜"
+      link: "/reference/update-manifest/"
+- label: "기여"
+  collapsed: true
+  items:
+    - label: "문서 수정"
+      link: "/contributing/documentation/"
+    - label: "기여 가이드"
+      link: "/contributing/"
+    - label: "기술 개요"
+      link: "/contributing/overview/"
+    - label: "시작하기"
+      link: "/contributing/getting-started/"
+    - label: "개발 환경 설정"
+      link: "/contributing/setup/"
+    - label: "코딩 표준"
+      link: "/contributing/standards/"
+- label: "마이그레이션"
+  collapsed: true
+  items:
+    - label: "v2에서 v3로"
+      link: "/migration/v2-to-v3/"
+    - label: "Electron에서 이전"
+      link: "/migration/from-electron/"
+- label: "문제 해결"
+  collapsed: true
+  items:
+    - label: "macOS의 Syso 파일"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "RDP 문제"
+          link: "/troubleshooting/windows/rdp/"
+- label: "커뮤니티"
+  collapsed: true
+  items:
+    - label: "링크"
+      link: "/community/links/"
+    - label: "템플릿"
+      link: "/community/templates/"
+    - label: "미디어"
+      link: "/community/media/"
+    - label: "쇼케이스"
+      collapsed: true
+      items:
+        - label: "개요"
+          link: "/community/showcase/"
+        - label: "애플리케이션"
+          autogenerate:
+            directory: "community/showcase"
+- label: "새로운 기능"
+  link: "/whats-new/"
+- label: "상태"
+  link: "/status/"
+- label: "변경 내역"
+  link: "/changelog/"
+- label: "후원"
+  link: "https://github.com/sponsors/leaanthony"
+- label: "기여자"
+  link: "/credits/"

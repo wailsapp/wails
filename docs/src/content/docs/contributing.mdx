@@ -40,7 +40,7 @@ Contribute code through pull requests:
 
 ### 4. Propose an Enhancement (WEP)
 
-Substantial new functionality goes through the Wails Enhancement Proposal (WEP) process. It keeps feature development transparent and ensures every accepted proposal has community support and an implementor. In short:
+New functionality and changes to public behaviour use the Wails Enhancement Proposal (WEP) process. It keeps feature development transparent and ensures every accepted proposal has an implementor. Do not open a feature-request issue.
 
 1. Optionally float your idea in the [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) category on GitHub Discussions or on [Discord](https://discord.gg/JDdSxwjhGf) to gauge interest.
 2. Copy [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) to `v3/wep/proposals/<proposal name>/proposal.md` and fill in every section.
@@ -67,38 +67,52 @@ git remote add upstream https://github.com/wailsapp/wails.git
 ### Build from Source
 
 ```bash
-# Install dependencies
-go mod download
+# Build the v3 CLI. Go downloads any required modules automatically.
+cd v3
+go build -o ../wails3 ./cmd/wails3
 
-# Build Wails CLI
-cd v3/cmd/wails3
-go build
-
-# Test your build
-./wails3 version
+# Confirm the built CLI runs and reports its version.
+../wails3 version
 ```
 
 ### Run Tests
 
+Tests are part of the change, not a final smoke check. Keep unit tests next to
+the code they exercise and prefer table-driven tests whenever one behaviour is
+being checked with several inputs or edge cases. Name each case so a failure
+explains the scenario.
+
+New and changed logic should be fully covered. Aim for 100% Go statement
+coverage of the code your PR adds or changes; do not treat a repository-wide
+percentage as a substitute for testing the change. A gap can be valid—for
+example, an OS-only error path or a condition that is impractical to reproduce
+without real hardware—but explain the gap and why it cannot reasonably be
+tested in the PR description.
+
 ```bash
-# Run all tests
+# Run all v3 tests
+cd v3
 go test ./...
 
 # Run specific package tests
-go test ./v3/pkg/application
+go test ./pkg/application
 
-# Run with coverage
-go test -cover ./...
+# Inspect coverage for the packages you changed
+go test ./pkg/application -coverprofile=coverage.out
+go tool cover -func=coverage.out
 ```
+
+For integration suites, race detection, and the full CI-equivalent commands,
+see [Testing & Continuous Integration](/contributing/testing-ci/).
 
 ## Making Changes
 
 ### Create a Branch
 
 ```bash
-# Update main
-git checkout main
-git pull upstream main
+# Update master
+git checkout master
+git pull upstream master
 
 # Create feature branch
 git checkout -b feature/my-feature
