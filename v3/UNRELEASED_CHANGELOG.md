@@ -17,12 +17,15 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Allow overriding the GTK application ID on Linux in [PR](https://github.com/wailsapp/wails/pull/5972) by @overlordtm
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Linux single-instance claims bus name under app's own ID in [PR](https://github.com/wailsapp/wails/pull/5973) by @overlordtm
+- Cancel aborted custom-scheme requests on Linux in [PR](https://github.com/wailsapp/wails/pull/6126) by @leaanthony
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

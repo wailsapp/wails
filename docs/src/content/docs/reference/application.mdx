@@ -463,11 +463,58 @@ app := application.New(application.Options{
 app := application.New(application.Options{
     Name: "My App",
     Linux: application.LinuxOptions{
+        ApplicationID:                 "com.myapp.myapplication",
         ProgramName:                   "my-app",
         DisableQuitOnLastWindowClosed: false,
     },
 })
 ```
+
+- `ApplicationID` - The GTK application id. Defaults to `org.wails.` followed by a sanitised `Name`.
+- `ProgramName` - Sets the program name for the window manager via `g_set_prgname()`. Defaults to `ApplicationID` when that is set.
+- `DisableQuitOnLastWindowClosed` - Keeps the application running after its last window closes.
+
+Set `ApplicationID` to match the identity your packaging declares. It should be
+the same reverse-DNS id you use for the `.desktop` file, so the desktop
+environment can associate the application's windows with its launcher.
+
+The id has to satisfy [`g_application_id_is_valid()`](https://docs.gtk.org/gio/type_func.Application.id_is_valid.html):
+two or more non-empty elements separated by a `.`, each holding only the ASCII
+characters `A-Z`, `a-z`, `0-9`, `_` and `-`, none of them starting with a digit,
+and at most 255 characters in total. So `com.example.MyApp` is fine, while
+`MyApp`, `com.example.2ndApp` and `com.example.My App` are not. An id that GTK
+would reject is reported through the application's error handler and replaced
+with the derived default, because GTK only asserts on the id and would otherwise
+abort the process during startup.
+
+On Wayland, GTK takes the surface `app_id` from the program name rather than the
+application id, so `ProgramName` defaults to `ApplicationID` when you set one.
+Setting the same string twice is not needed, and setting `ProgramName`
+explicitly still wins:
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Linux: application.LinuxOptions{
+        ApplicationID: "com.example.MyApp", // also becomes the program name
+    },
+})
+```
+
+:::note
+Sandboxed builds must set this. A flatpak may only own D-Bus names prefixed with
+its own app id, and WebKit asks the portal to own
+`<application id>.Sandboxed.WebProcess-<uuid>` for the accessibility bus. With
+the default id that request is refused and the web process aborts, taking the
+application down during startup:
+
+```
+Portal call failed: Invalid sandbox a11y own name:
+  'org.wails.myapp.Sandboxed.WebProcess-<uuid>' doesn't match app id
+```
+
+Setting `ApplicationID` to the `app-id` in your flatpak manifest resolves it.
+:::
 
 ## Complete Application Example
 
