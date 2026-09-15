@@ -594,9 +594,9 @@ func TestCopyFile_NonexistentSource(t *testing.T) {
 // out-ranking the stray tag.
 func TestAlpha2OutranksStrayTuiTag(t *testing.T) {
 	const (
-		strayTag    = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
+		strayTag     = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
 		legacyLatest = "v3.0.0-alpha.102"    // highest legacy numeric alpha
-		nextTag     = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
+		nextTag      = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
 	)
 
 	for _, v := range []string{strayTag, legacyLatest, nextTag} {
@@ -1329,5 +1329,35 @@ func TestSyncRuntimePackageVersion(t *testing.T) {
 	}
 	if got := lockMetadata.Packages["node_modules/example"].Version; got != "1.2.3" {
 		t.Fatalf("dependency version = %q, want %q", got, "1.2.3")
+	}
+}
+
+func TestReleasePublishesMPDChangelog(t *testing.T) {
+	cleanup, root := setupTestEnvironment(t)
+	defer cleanup()
+	archive := filepath.Join(root, "docs/mpress/content/changelog.mpd")
+	if err := os.MkdirAll(filepath.Dir(archive), 0755); err != nil {
+		t.Fatal(err)
+	}
+	original := "---\nschema = 1\ntitle = \"Changelog\"\n---\n\n## [Unreleased]\n\n## v3.0.0-beta.8\nOld notes\n"
+	if err := os.WriteFile(archive, []byte(original), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(unreleasedChangelogFile, []byte("## Fixed\n- A fix\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := applyChangelogUpdates("v3.0.0-beta.9", "### Fixed\n- A fix\n"); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(archive)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(string(data), strings.Split(original, "## [Unreleased]")[0]) || !strings.Contains(string(data), "## v3.0.0-beta.9") || !strings.Contains(string(data), "Old notes") {
+		t.Fatalf("Invalid published MPD: %s", data)
+	}
+	remaining, err := os.ReadFile(unreleasedChangelogFile)
+	if err != nil || strings.Contains(string(remaining), "- A fix") {
+		t.Fatalf("Unreleased changelog was not reset: %s, %v", remaining, err)
 	}
 }

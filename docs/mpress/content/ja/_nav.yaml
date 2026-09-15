@@ -1,0 +1,310 @@
+- label: "ホーム"
+  link: "/"
+- label: "Wails を選ぶ理由"
+  link: "/quick-start/why-wails/"
+- label: "クイックスタート"
+  collapsed: false
+  items:
+    - label: "インストール"
+      link: "/quick-start/installation/"
+    - label: "最初のアプリ"
+      link: "/quick-start/first-app/"
+    - label: "次のステップ"
+      link: "/quick-start/next-steps/"
+- label: "チュートリアル"
+  collapsed: true
+  autogenerate:
+    directory: "tutorials"
+- label: "基本概念"
+  collapsed: true
+  items:
+    - label: "Wails の仕組み"
+      link: "/concepts/architecture/"
+    - label: "マネージャー API"
+      link: "/concepts/manager-api/"
+    - label: "アプリケーションのライフサイクル"
+      link: "/concepts/lifecycle/"
+    - label: "Go・フロントエンド間ブリッジ"
+      link: "/concepts/bridge/"
+    - label: "ビルドシステム"
+      link: "/concepts/build-system/"
+- label: "機能"
+  collapsed: true
+  items:
+    - label: "ウィンドウ"
+      collapsed: true
+      items:
+        - label: "ウィンドウの基本"
+          link: "/features/windows/basics/"
+        - label: "ウィンドウオプション"
+          link: "/features/windows/options/"
+        - label: "ノッチウィンドウ"
+          link: "/features/windows/notch-windows/"
+        - label: "権限"
+          link: "/features/windows/permissions/"
+        - label: "複数ウィンドウ"
+          link: "/features/windows/multiple/"
+        - label: "フレームレスウィンドウ"
+          link: "/features/windows/frameless/"
+        - label: "ウィンドウイベント"
+          link: "/features/windows/events/"
+    - label: "メニュー"
+      collapsed: true
+      items:
+        - label: "アプリケーションメニュー"
+          link: "/features/menus/application/"
+        - label: "コンテキストメニュー"
+          link: "/features/menus/context/"
+        - label: "システムトレイメニュー"
+          link: "/features/menus/systray/"
+        - label: "メニューリファレンス"
+          link: "/features/menus/reference/"
+    - label: "バインディングとサービス"
+      collapsed: true
+      items:
+        - label: "メソッドバインディング"
+          link: "/features/bindings/methods/"
+        - label: "サービス"
+          link: "/features/bindings/services/"
+        - label: "データモデル"
+          link: "/features/bindings/models/"
+        - label: "列挙型"
+          link: "/features/bindings/enums/"
+        - label: "高度なバインディング"
+          link: "/features/bindings/advanced/"
+        - label: "ベストプラクティス"
+          link: "/features/bindings/best-practices/"
+    - label: "イベント"
+      collapsed: true
+      items:
+        - label: "イベントシステム"
+          link: "/features/events/system/"
+        - label: "アプリケーションイベント"
+          link: "/features/events/application/"
+        - label: "ウィンドウイベント"
+          link: "/features/events/window/"
+        - label: "カスタムイベント"
+          link: "/features/events/custom/"
+    - label: "ダイアログ"
+      collapsed: true
+      items:
+        - label: "ファイルダイアログ"
+          link: "/features/dialogs/file/"
+        - label: "メッセージダイアログ"
+          link: "/features/dialogs/message/"
+        - label: "カスタムダイアログ"
+          link: "/features/dialogs/custom/"
+    - label: "自動起動"
+      collapsed: true
+      autogenerate:
+        directory: "features/autostart"
+    - label: "クリップボード"
+      collapsed: true
+      autogenerate:
+        directory: "features/clipboard"
+    - label: "ブラウザー"
+      collapsed: true
+      autogenerate:
+        directory: "features/browser"
+    - label: "ドラッグ＆ドロップ"
+      collapsed: true
+      autogenerate:
+        directory: "features/drag-and-drop"
+    - label: "キーボード"
+      collapsed: true
+      autogenerate:
+        directory: "features/keyboard"
+    - label: "通知"
+      collapsed: true
+      autogenerate:
+        directory: "features/notifications"
+    - label: "画面"
+      collapsed: true
+      autogenerate:
+        directory: "features/screens"
+    - label: "環境"
+      collapsed: true
+      autogenerate:
+        directory: "features/environment"
+    - label: "プラットフォーム固有機能"
+      collapsed: true
+      autogenerate:
+        directory: "features/platform"
+- label: "モバイル"
+  collapsed: true
+  items:
+    - label: "概要"
+      link: "/guides/mobile/"
+    - label: "最初のモバイルアプリ"
+      link: "/guides/mobile/first-mobile-app/"
+    - label: "iOS"
+      link: "/guides/mobile/ios/"
+    - label: "Android"
+      link: "/guides/mobile/android/"
+    - label: "モバイル API"
+      link: "/guides/mobile/mobile-api/"
+- label: "実験的機能"
+  collapsed: true
+  items:
+    - label: "概要"
+      link: "/experimental/"
+    - label: "Wake"
+      link: "/experimental/wake/"
+    - label: "LLM 制御（MCP）"
+      link: "/guides/mcp-service/"
+- label: "ガイド"
+  collapsed: true
+  items:
+    - label: "開発"
+      collapsed: true
+      items:
+        - label: "プロジェクト構成"
+          link: "/guides/dev/project-structure/"
+        - label: "開発ワークフロー"
+          link: "/guides/dev/workflow/"
+        - label: "その他のフレームワーク"
+          link: "/guides/dev/frontend-frameworks/"
+        - label: "デバッグ"
+          link: "/guides/dev/debugging/"
+        - label: "テスト"
+          link: "/guides/testing/"
+    - label: "ビルドとパッケージ化"
+      collapsed: true
+      items:
+        - label: "アプリケーションのビルド"
+          link: "/guides/build/building/"
+        - label: "ビルドのカスタマイズ"
+          link: "/guides/build/customization/"
+        - label: "クロスプラットフォームビルド"
+          link: "/guides/build/cross-platform/"
+        - label: "コード署名"
+          link: "/guides/build/signing/"
+        - label: "Windows 向けパッケージ化"
+          link: "/guides/build/windows/"
+        - label: "macOS 向けパッケージ化"
+          link: "/guides/build/macos/"
+        - label: "非公開の macOS API"
+          link: "/guides/build/private-macos-apis/"
+        - label: "Linux 向けパッケージ化"
+          link: "/guides/build/linux/"
+        - label: "MSIX パッケージ化"
+          link: "/guides/build/msix/"
+        - label: "難読化ビルド"
+          link: "/guides/build/obfuscation/"
+    - label: "配布"
+      collapsed: true
+      items:
+        - label: "アプリ内アップデーター"
+          link: "/guides/updater/"
+        - label: "ファイルの関連付け"
+          link: "/guides/file-associations/"
+        - label: "カスタムプロトコル"
+          link: "/guides/distribution/custom-protocols/"
+        - label: "単一インスタンス"
+          link: "/guides/single-instance/"
+    - label: "統合パターン"
+      collapsed: true
+      items:
+        - label: "フロントエンドルーティング"
+          link: "/guides/routing/"
+        - label: "Gin Router の使用"
+          link: "/guides/gin-routing/"
+        - label: "Gin サービス"
+          link: "/guides/gin-services/"
+        - label: "データベース統合"
+          link: "/guides/patterns/database/"
+        - label: "REST API"
+          link: "/guides/patterns/rest-api/"
+    - label: "高度なトピック"
+      collapsed: true
+      items:
+        - label: "サーバービルド"
+          link: "/guides/server-build/"
+        - label: "カスタムテンプレート"
+          link: "/guides/advanced/custom-templates/"
+        - label: "WML（Wails Markup）"
+          link: "/guides/advanced/wml/"
+        - label: "パニック処理"
+          link: "/guides/panic-handling/"
+        - label: "セキュリティのベストプラクティス"
+          link: "/guides/security/"
+- label: "API リファレンス"
+  collapsed: true
+  items:
+    - label: "概要"
+      link: "/reference/overview/"
+    - label: "アプリケーション"
+      link: "/reference/application/"
+    - label: "ウィンドウ"
+      link: "/reference/window/"
+    - label: "メニュー"
+      link: "/reference/menu/"
+    - label: "イベント"
+      link: "/reference/events/"
+    - label: "ダイアログ"
+      link: "/reference/dialogs/"
+    - label: "フロントエンドランタイム"
+      link: "/reference/frontend-runtime/"
+    - label: "CLI"
+      link: "/reference/cli/"
+    - label: "更新マニフェストプロトコル"
+      link: "/reference/update-manifest/"
+- label: "コントリビューション"
+  collapsed: true
+  items:
+    - label: "ドキュメントの修正"
+      link: "/contributing/documentation/"
+    - label: "コントリビューションガイド"
+      link: "/contributing/"
+    - label: "技術概要"
+      link: "/contributing/overview/"
+    - label: "はじめに"
+      link: "/contributing/getting-started/"
+    - label: "開発環境のセットアップ"
+      link: "/contributing/setup/"
+    - label: "コーディング規約"
+      link: "/contributing/standards/"
+- label: "移行"
+  collapsed: true
+  items:
+    - label: "v2 から v3 への移行"
+      link: "/migration/v2-to-v3/"
+    - label: "Electron からの移行"
+      link: "/migration/from-electron/"
+- label: "トラブルシューティング"
+  collapsed: true
+  items:
+    - label: "macOS 上の Syso ファイル"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "RDP の問題"
+          link: "/troubleshooting/windows/rdp/"
+- label: "コミュニティ"
+  collapsed: true
+  items:
+    - label: "リンク"
+      link: "/community/links/"
+    - label: "テンプレート"
+      link: "/community/templates/"
+    - label: "メディア"
+      link: "/community/media/"
+    - label: "ショーケース"
+      collapsed: true
+      items:
+        - label: "概要"
+          link: "/community/showcase/"
+        - label: "アプリケーション"
+          autogenerate:
+            directory: "community/showcase"
+- label: "新機能"
+  link: "/whats-new/"
+- label: "ステータス"
+  link: "/status/"
+- label: "変更履歴"
+  link: "/changelog/"
+- label: "スポンサー"
+  link: "https://github.com/sponsors/leaanthony"
+- label: "クレジット"
+  link: "/credits/"

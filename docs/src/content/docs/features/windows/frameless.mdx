@@ -103,10 +103,15 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### With Transparent Background
 
+**Private API on macOS:** set `Mac.Backdrop: application.MacBackdropTransparent` and build with `-tags private_mac_apis` for webview transparency. Without the tag, the native webview remains opaque even if the HTML/CSS background is transparent. `Frameless` and `TitleBar.AppearsTransparent` themselves use public APIs. See [Private macOS APIs](/guides/build/private-macos-apis/#webview-transparency-and-background).
+
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     BackgroundType: application.BackgroundTypeTransparent,
+    Mac: application.MacWindow{
+        Backdrop: application.MacBackdropTransparent, // Requires -tags private_mac_apis.
+    },
 })
 ```
 
@@ -688,6 +693,9 @@ splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     AlwaysOnTop:    true,
     BackgroundType: application.BackgroundTypeTransparent,
+    Mac: application.MacWindow{
+        Backdrop: application.MacBackdropTransparent, // Requires -tags private_mac_apis.
+    },
 })
 ```
 
@@ -714,6 +722,9 @@ body {
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     BackgroundType: application.BackgroundTypeTransparent,
+    Mac: application.MacWindow{
+        Backdrop: application.MacBackdropTransparent, // Requires -tags private_mac_apis.
+    },
 })
 ```
 
@@ -745,6 +756,9 @@ overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Frameless:      true,
     AlwaysOnTop:    true,
     BackgroundType: application.BackgroundTypeTransparent,
+    Mac: application.MacWindow{
+        Backdrop: application.MacBackdropTransparent, // Requires -tags private_mac_apis.
+    },
 })
 ```
 

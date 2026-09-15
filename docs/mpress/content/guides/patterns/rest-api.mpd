@@ -1,0 +1,13 @@
+---
+schema = 1
+title = "REST APIs"
+description = "Exposing RESTful APIs from your Wails v3 application"
+slug = "guides/patterns/rest-api"
+sourcePath = "guides/patterns/rest-api.mpd"
+---
+
+@note type="info"
+This page is a placeholder. Full REST API content is coming soon.
+@end
+
+You can expose RESTful APIs from your Wails v3 application using standard Go `net/http` handlers or a framework such as [Gin](/guides/gin-routing/). Because Wails serves your frontend through an asset handler, any HTTP handler can be mounted and reached from your UI or other clients.

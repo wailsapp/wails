@@ -21,7 +21,7 @@ import (
 const changelogPath = "v3/UNRELEASED_CHANGELOG.md"
 
 const (
-	docsContentPrefix = "docs/src/content/docs/"
+	docsContentPrefix = "docs/mpress/content/"
 	docsSiteURL       = "https://v3.wails.io"
 )
 
@@ -254,7 +254,7 @@ func isDocumentationPage(file string) bool {
 		return false
 	}
 	base := path.Base(file)
-	return base != "changelog.md" && base != "changelog.mdx"
+	return path.Ext(base) == ".mpd" && base != "changelog.mpd"
 }
 
 func documentationURLForFile(file string) (string, error) {
@@ -282,7 +282,15 @@ func documentationURLFromPath(file, slug string) (string, error) {
 
 	relative := strings.TrimPrefix(file, docsContentPrefix)
 	if slug != "" {
+		localized := strings.SplitN(relative, "/", 2)[0]
 		relative = strings.TrimPrefix(slug, "/")
+		// These locale prefixes match the published M-Press configuration.
+		switch localized {
+		case "zh-cn", "zh-tw", "ja", "ko", "ru", "fr", "pt", "de", "id":
+			if relative != localized && !strings.HasPrefix(relative, localized+"/") {
+				relative = localized + "/" + relative
+			}
+		}
 	} else {
 		ext := path.Ext(relative)
 		relative = strings.TrimSuffix(relative, ext)
@@ -299,6 +307,8 @@ func documentationURLFromPath(file, slug string) (string, error) {
 	return (&url.URL{Scheme: "https", Host: strings.TrimPrefix(docsSiteURL, "https://"), Path: relative}).String(), nil
 }
 
+var mpdSlugField = regexp.MustCompile(`(?m)^[\t ]*slug[\t ]*=[\t ]*(.*)$`)
+
 func readFrontmatterSlug(file string) (string, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
@@ -313,11 +323,17 @@ func readFrontmatterSlug(file string) (string, error) {
 		return "", nil
 	}
 	frontmatter := content[3 : end+3]
-	match := regexp.MustCompile(`(?m)^slug:\s*["']?([^"'\n]+?)["']?\s*$`).FindStringSubmatch(frontmatter)
-	if len(match) == 2 {
-		return strings.TrimSpace(match[1]), nil
+	// MPD uses key = JSON-value fields, including nested objects that are not
+	// TOML. Only the slug field affects the public route.
+	field := mpdSlugField.FindStringSubmatch(frontmatter)
+	if field == nil {
+		return "", nil
 	}
-	return "", nil
+	var slug string
+	if err := json.Unmarshal([]byte(field[1]), &slug); err != nil {
+		return "", fmt.Errorf("parse MPD metadata in %s: %w", file, err)
+	}
+	return slug, nil
 }
 
 func appendDocumentationLinks(entry string, docURLs []string) string {
