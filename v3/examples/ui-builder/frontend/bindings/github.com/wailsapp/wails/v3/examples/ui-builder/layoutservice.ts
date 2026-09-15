@@ -4,8 +4,8 @@
 /**
  * LayoutService is the Go side of the UI builder. The frontend keeps the
  * design in memory and calls these methods to persist it, reopen it and export
- * it as a standalone HTML page. All file access goes through native dialogs so
- * the user always picks where their files live.
+ * it as a Wails frontend. All file access goes through native dialogs so the
+ * user always picks where their files live.
  * @module
  */
 
@@ -18,11 +18,12 @@ import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wails
 import * as $models from "./models.js";
 
 /**
- * ExportHTML prompts for a destination and writes the exported page to it.
- * Returns the path written, or an empty string if the user cancelled.
+ * ExportFrontend asks for a destination folder and writes the generated
+ * frontend into a new "<name>-frontend" directory inside it. Returns the
+ * directory written, or an empty string if the user cancelled.
  */
-export function ExportHTML(name: string, html: string): $CancellablePromise<string> {
-    return $Call.ByID(2368910956, name, html);
+export function ExportFrontend(name: string, files: $models.ExportFile[] | null): $CancellablePromise<string> {
+    return $Call.ByID(2763826297, name, files);
 }
 
 /**

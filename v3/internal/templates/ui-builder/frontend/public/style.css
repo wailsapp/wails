@@ -35,7 +35,9 @@
     --status-h: 30px;
     --left-w: 256px;
     --right-w: 304px;
-    --artboard-w: 1200px;
+    --artboard-w: 1024px;
+    --artboard-h: 680px;
+    --chrome-h: 34px;
 
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 13px;
@@ -221,29 +223,49 @@ body.is-mac .topbar { padding-left: 84px; }
     background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
     background-size: 22px 22px;
 }
-.stage-scroll { position: absolute; inset: 0; overflow: auto; padding: 36px 40px 80px; }
+.stage-scroll { position: absolute; inset: 0; overflow: auto; padding: 36px 40px 60px; }
 .artboard {
-    width: min(var(--artboard-w), 100%);
+    width: var(--artboard-w);
+    height: calc(var(--artboard-h) + var(--chrome-h));
+    max-width: 100%;
     margin: 0 auto;
-    border-radius: var(--radius-lg);
-    background: #fff;
-    box-shadow: var(--shadow), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    display: flex; flex-direction: column;
+    border-radius: 12px;
+    background: #f5f5f8;
+    box-shadow: var(--shadow), 0 0 0 1px rgba(255, 255, 255, 0.08);
     overflow: hidden;
-    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.artboard[data-theme="dark"] { background: #0b0d16; }
-.artboard[data-device="tablet"] { --artboard-w: 820px; }
-.artboard[data-device="phone"] { --artboard-w: 390px; }
+.artboard[data-theme="dark"] { background: #1e1f26; }
+.artboard[data-device="compact"] { --artboard-w: 800px; --artboard-h: 560px; }
+.artboard[data-device="wide"] { --artboard-w: 1280px; --artboard-h: 800px; }
+/* Window frame: macOS traffic lights on the left, or Windows caption buttons on the right. */
 .artboard-chrome {
-    display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px;
-    background: #1a1e2e; color: var(--muted-2); font-size: 10.5px;
+    display: grid; grid-template-columns: 64px 1fr auto 64px; align-items: center;
+    height: var(--chrome-h); flex: 0 0 auto; padding: 0 12px;
+    background: #e9e9ee; color: #5d6072; font-size: 11px; border-bottom: 1px solid #d5d5dd;
 }
-.artboard-chrome span { width: 9px; height: 9px; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
-.artboard-chrome span:nth-child(1) { background: #ff5f57; }
-.artboard-chrome span:nth-child(2) { background: #febc2e; }
-.artboard-chrome span:nth-child(3) { background: #28c840; }
-.artboard-chrome em { margin-left: auto; font-style: normal; font-variant-numeric: tabular-nums; }
-.canvas { min-height: 480px; display: flex; flex-direction: column; }
+.artboard[data-theme="dark"] .artboard-chrome { background: #2b2c36; color: #9a9eb0; border-bottom-color: #3a3b47; }
+.artboard-chrome b { font-weight: 600; font-size: 12px; color: #1c1d24; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.artboard[data-theme="dark"] .artboard-chrome b { color: #f1f2f7; }
+.artboard-chrome em { font-style: normal; font-variant-numeric: tabular-nums; padding-right: 8px; }
+.artboard-chrome .lights { display: flex; gap: 7px; }
+.artboard-chrome .lights i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+.artboard-chrome .lights i:nth-child(2) { background: #febc2e; }
+.artboard-chrome .lights i:nth-child(3) { background: #28c840; }
+.artboard-chrome .captions { display: none; gap: 14px; justify-content: flex-end; }
+.artboard-chrome .captions i { width: 10px; height: 10px; border: 1.5px solid currentColor; opacity: 0.7; }
+.artboard-chrome .captions i:first-child { height: 0; border-width: 0 0 1.5px; align-self: end; margin-bottom: 1px; }
+.artboard-chrome .captions i:last-child { border: 0; position: relative; }
+.artboard-chrome .captions i:last-child::before, .artboard-chrome .captions i:last-child::after {
+    content: ""; position: absolute; left: -1px; top: 4px; width: 13px; height: 1.5px; background: currentColor; transform: rotate(45deg);
+}
+.artboard-chrome .captions i:last-child::after { transform: rotate(-45deg); }
+.artboard[data-chrome="windows"] .artboard-chrome { grid-template-columns: 64px 1fr auto 64px; }
+.artboard[data-chrome="windows"] .artboard-chrome .lights { visibility: hidden; }
+.artboard[data-chrome="windows"] .artboard-chrome .captions { display: flex; }
+.artboard[data-chrome="windows"] .artboard-chrome b { text-align: left; }
+.canvas { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 .canvas > .ub-root { flex: 1; }
 
 /* Empty-canvas hint (sits over the artboard, so it follows the artboard theme). */
@@ -281,20 +303,23 @@ body.is-mac .topbar { padding-left: 84px; }
 .canvas .uib-node.is-drag-source { opacity: 0.35; }
 
 /* Empty containers get a visible landing pad. */
-.canvas .uib-empty { min-height: 64px; }
+.canvas .uib-empty { min-height: 56px; min-width: 56px; }
 .canvas .uib-empty::after {
-    content: "Drop components here";
+    content: "Drop here";
     position: absolute; inset: 6px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     border: 1.5px dashed rgba(255, 77, 77, 0.45); background: rgba(255, 77, 77, 0.05);
     color: rgba(255, 77, 77, 0.8); font: 600 11.5px/1 "Inter", system-ui, sans-serif;
     pointer-events: none;
 }
-.canvas .ub-section.uib-empty > .ub-inner { min-height: 52px; }
 
 /* Form controls inside the design are inert while editing so clicks select. */
-.canvas input, .canvas textarea, .canvas select, .canvas .ub-toggle .ub-switch { pointer-events: none; }
-body.is-preview .canvas input, body.is-preview .canvas textarea, body.is-preview .canvas select { pointer-events: auto; }
+.canvas input, .canvas textarea, .canvas select, .canvas .ub-toggle, .canvas .ub-check, .canvas .ub-tabs > button, .canvas .ub-btn { pointer-events: none; }
+body.is-preview .canvas input, body.is-preview .canvas textarea, body.is-preview .canvas select,
+body.is-preview .canvas .ub-toggle, body.is-preview .canvas .ub-check, body.is-preview .canvas .ub-tabs > button, body.is-preview .canvas .ub-btn { pointer-events: auto; }
+/* Buttons, tabs and toggles are still selectable in design mode: clicks land on them via the wrapper hit-test. */
+.canvas .uib-node.ub-btn, .canvas .uib-node.ub-toggle, .canvas .uib-node.ub-check, .canvas .uib-node.ub-tabs { pointer-events: auto; }
+.canvas .uib-node.ub-tabs > button { pointer-events: none; }
 .canvas.is-dragging * { cursor: grabbing !important; }
 /* While dragging, children of nodes shouldn't steal dragover from the node itself. */
 .canvas.is-dragging .uib-node > :not(.uib-node) { pointer-events: none; }
@@ -305,6 +330,7 @@ body.is-preview .canvas .uib-node.is-selected { outline: none; }
 body.is-preview .canvas .uib-node.is-selected::before,
 body.is-preview .canvas .uib-empty::after { display: none; }
 body.is-preview .stage-scroll { padding: 24px; }
+body.is-preview .artboard { box-shadow: var(--shadow), 0 0 0 2px rgba(255, 77, 77, 0.55); }
 
 /* Drop indicator: a glowing line (or a soft fill for "into"). */
 .drop-indicator {
@@ -357,7 +383,13 @@ body.is-preview .stage-scroll { padding: 24px; }
 .insp-actions { display: flex; gap: 2px; }
 .insp-actions .icon-btn { width: 28px; height: 28px; }
 .insp-group { margin-top: 14px; }
-.insp-group h4 { margin: 0 0 8px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-2); }
+.insp-group h4 { margin: 0 0 8px; display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-2); }
+.insp-group h4 svg { width: 13px; height: 13px; }
+.insp-group-wails { margin-top: 14px; padding: 10px 10px 4px; border-radius: 10px; background: rgba(0, 173, 216, 0.07); border: 1px solid rgba(0, 173, 216, 0.22); }
+.insp-group-wails h4 { color: #57c7e8; }
+.field-hint { font-size: 11px; line-height: 1.4; color: var(--muted-2); }
+.field-inline .field-hint { flex-basis: 100%; }
+.field-inline { flex-wrap: wrap; }
 .insp-reset {
     width: 100%; margin-top: 18px; padding: 8px; border-radius: 8px;
     background: transparent; border: 1px dashed var(--glass-border); color: var(--muted); cursor: pointer; font-size: 12px;

@@ -3,12 +3,8 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import type { Events } from "@wailsio/runtime";
+import { Call as $Call, CancellablePromise as $CancellablePromise } from "@wailsio/runtime";
 
-declare module "@wailsio/runtime" {
-    namespace Events {
-        interface CustomEvents {
-            "time": string;
-        }
-    }
+export function Greet(name: string): $CancellablePromise<string> {
+    return $Call.ByID(1411160069, name);
 }

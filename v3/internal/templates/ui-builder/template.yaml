@@ -2,7 +2,7 @@
 name: "UI Builder + Vite (TypeScript)"
 shortname: ui-builder
 author: Lea Anthony
-description: "Drag & drop UI builder — TypeScript + Vite, layouts saved and exported through Go"
+description: "Drag & drop builder for Wails app UIs — TypeScript + Vite; wire buttons to Go, run it live, export a frontend"
 helpurl: https://wails.io
 version: v0.0.1
 wailsVersion: 3

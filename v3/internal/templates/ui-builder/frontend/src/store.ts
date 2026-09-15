@@ -3,12 +3,13 @@
 // methods below so every edit is undoable.
 
 import {
-    type ArtboardTheme, type NodeId, type UIDocument, type UINode,
+    type ArtboardTheme, type NodeId, type UIDocument, type UINode, type WindowChrome,
     ROOT_ID, cloneNode, emptyDocument, findNode, findParent, isWithin,
 } from './model';
 import {createNode, getDef} from './components';
 
-export type Device = 'desktop' | 'tablet' | 'phone';
+/** Preset window sizes for the artboard. */
+export type Device = 'compact' | 'default' | 'wide';
 
 export type ChangeKind = 'doc' | 'selection' | 'device' | 'preview' | 'file';
 
@@ -26,7 +27,7 @@ const COALESCE_MS = 700;
 export class Store {
     doc: UIDocument = emptyDocument();
     selectedId: NodeId | null = null;
-    device: Device = 'desktop';
+    device: Device = 'default';
     preview = false;
     /** Path of the file the layout was last saved to / opened from (via Go). */
     filePath = '';
@@ -154,6 +155,12 @@ export class Store {
     setTheme(theme: ArtboardTheme): void {
         this.checkpoint();
         this.doc.theme = theme;
+        this.commit('toolbar');
+    }
+
+    setChrome(chrome: WindowChrome): void {
+        this.checkpoint();
+        this.doc.chrome = chrome;
         this.commit('toolbar');
     }
 

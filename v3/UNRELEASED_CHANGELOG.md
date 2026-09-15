@@ -17,7 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add `ui-builder` template: a drag & drop UI builder (TypeScript + Vite) with a component palette, inspector, layers panel, undo/redo, device previews and light/dark artboards. Layouts are saved, opened and exported as standalone HTML through a Go `LayoutService` using native dialogs. Scaffold it with `wails3 init -t ui-builder`
+- Add `ui-builder` template: a drag & drop builder for Wails application UIs (TypeScript + Vite). Compose a window from desktop building blocks — toolbar, sidebar, content, tables, forms, status bar — in a window-sized artboard with macOS or Windows chrome; wire buttons to Go methods, events, window actions and URLs; bind text, badges, metrics, progress bars and consoles to Go events; press Run to use the design against the real backend; and export it as a drop-in Wails frontend. Includes undo/redo, a layers panel and light/dark themes. Scaffold it with `wails3 init -t ui-builder`
 
 ## Changed
 <!-- Changes in existing functionality -->

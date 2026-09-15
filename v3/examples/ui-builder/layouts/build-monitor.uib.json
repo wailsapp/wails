@@ -1,0 +1,359 @@
+{
+  "version": 1,
+  "name": "Build Monitor",
+  "theme": "dark",
+  "chrome": "windows",
+  "root": {
+    "id": "root",
+    "type": "root",
+    "props": {},
+    "children": [
+      {
+        "id": "d035",
+        "type": "toolbar",
+        "props": {
+          "height": 44,
+          "gap": 8,
+          "drag": true,
+          "background": ""
+        },
+        "children": [
+          {
+            "id": "d029",
+            "type": "heading",
+            "props": {
+              "text": "Build Monitor",
+              "level": "window",
+              "align": "left",
+              "color": ""
+            }
+          },
+          {
+            "id": "d030",
+            "type": "badge",
+            "props": {
+              "text": "Idle",
+              "tone": "neutral",
+              "bind": "build:state"
+            }
+          },
+          {
+            "id": "d031",
+            "type": "spacer",
+            "props": {
+              "size": 0,
+              "fill": true
+            }
+          },
+          {
+            "id": "d032",
+            "type": "button",
+            "props": {
+              "label": "Start build",
+              "variant": "primary",
+              "size": "sm",
+              "full": false,
+              "action": "call",
+              "service": "BuildService",
+              "method": "Start",
+              "args": "$target\n$clean",
+              "resultTo": "build:log",
+              "event": "",
+              "url": "",
+              "windowAction": "Minimise"
+            }
+          },
+          {
+            "id": "d033",
+            "type": "button",
+            "props": {
+              "label": "Cancel",
+              "variant": "default",
+              "size": "sm",
+              "full": false,
+              "action": "event",
+              "service": "",
+              "method": "",
+              "args": "",
+              "resultTo": "",
+              "event": "build:cancel",
+              "url": "",
+              "windowAction": "Minimise"
+            }
+          },
+          {
+            "id": "d034",
+            "type": "button",
+            "props": {
+              "label": "Minimise",
+              "variant": "ghost",
+              "size": "sm",
+              "full": false,
+              "action": "window",
+              "service": "",
+              "method": "",
+              "args": "",
+              "resultTo": "",
+              "event": "",
+              "url": "",
+              "windowAction": "Minimise"
+            }
+          }
+        ]
+      },
+      {
+        "id": "d055",
+        "type": "hstack",
+        "props": {
+          "gap": 0,
+          "padding": 0,
+          "items": "stretch",
+          "justify": "start",
+          "fill": true,
+          "scroll": false,
+          "background": ""
+        },
+        "children": [
+          {
+            "id": "d045",
+            "type": "sidebar",
+            "props": {
+              "width": 230,
+              "side": "left",
+              "padding": 12,
+              "gap": 10,
+              "background": ""
+            },
+            "children": [
+              {
+                "id": "d036",
+                "type": "heading",
+                "props": {
+                  "text": "Target",
+                  "level": "label",
+                  "align": "left",
+                  "color": ""
+                }
+              },
+              {
+                "id": "d037",
+                "type": "select",
+                "props": {
+                  "label": "Platform",
+                  "name": "target",
+                  "options": "darwin/arm64\ndarwin/amd64\nwindows/amd64\nlinux/amd64",
+                  "help": "",
+                  "fill": false,
+                  "inline": false
+                }
+              },
+              {
+                "id": "d038",
+                "type": "checkbox",
+                "props": {
+                  "label": "Clean build",
+                  "name": "clean",
+                  "on": false
+                }
+              },
+              {
+                "id": "d039",
+                "type": "checkbox",
+                "props": {
+                  "label": "Sign & notarise",
+                  "name": "sign",
+                  "on": true
+                }
+              },
+              {
+                "id": "d040",
+                "type": "divider",
+                "props": {}
+              },
+              {
+                "id": "d041",
+                "type": "heading",
+                "props": {
+                  "text": "Progress",
+                  "level": "label",
+                  "align": "left",
+                  "color": ""
+                }
+              },
+              {
+                "id": "d042",
+                "type": "progress",
+                "props": {
+                  "label": "Compiling",
+                  "value": 35,
+                  "bind": "build:progress"
+                }
+              },
+              {
+                "id": "d043",
+                "type": "spacer",
+                "props": {
+                  "size": 0,
+                  "fill": true
+                }
+              },
+              {
+                "id": "d044",
+                "type": "keyvalue",
+                "props": {
+                  "pairs": "Go: 1.25\nNode: 22.22\nTask: 3.x"
+                }
+              }
+            ]
+          },
+          {
+            "id": "d054",
+            "type": "content",
+            "props": {
+              "padding": 16,
+              "gap": 12,
+              "scroll": false,
+              "background": ""
+            },
+            "children": [
+              {
+                "id": "d050",
+                "type": "hstack",
+                "props": {
+                  "gap": 12,
+                  "padding": 0,
+                  "items": "stretch",
+                  "justify": "start",
+                  "fill": false,
+                  "scroll": false,
+                  "background": ""
+                },
+                "children": [
+                  {
+                    "id": "d046",
+                    "type": "metric",
+                    "props": {
+                      "label": "Queued",
+                      "value": "2",
+                      "note": "windows, linux",
+                      "fill": true,
+                      "bind": ""
+                    }
+                  },
+                  {
+                    "id": "d047",
+                    "type": "metric",
+                    "props": {
+                      "label": "Succeeded",
+                      "value": "41",
+                      "note": "last 7 days",
+                      "fill": true,
+                      "bind": ""
+                    }
+                  },
+                  {
+                    "id": "d048",
+                    "type": "metric",
+                    "props": {
+                      "label": "Failed",
+                      "value": "3",
+                      "note": "last 7 days",
+                      "fill": true,
+                      "bind": ""
+                    }
+                  },
+                  {
+                    "id": "d049",
+                    "type": "metric",
+                    "props": {
+                      "label": "Avg. duration",
+                      "value": "1m 48s",
+                      "note": "−12s vs last week",
+                      "fill": true,
+                      "bind": "build:avg"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "d051",
+                "type": "table",
+                "props": {
+                  "columns": "Started | Target | Result | Duration",
+                  "rows": "09:41 | darwin/arm64 | Succeeded | 1m 32s\n09:12 | windows/amd64 | Failed | 0m 47s\n08:55 | linux/amd64 | Succeeded | 2m 03s\nYesterday | darwin/amd64 | Succeeded | 1m 51s",
+                  "striped": true,
+                  "selected": -1,
+                  "fill": false
+                }
+              },
+              {
+                "id": "d052",
+                "type": "heading",
+                "props": {
+                  "text": "Output",
+                  "level": "label",
+                  "align": "left",
+                  "color": ""
+                }
+              },
+              {
+                "id": "d053",
+                "type": "log",
+                "props": {
+                  "text": "$ wails3 build\n  → generating bindings\n  → building frontend\n  ✓ vite built in 312ms\n  → compiling darwin/arm64",
+                  "rows": 8,
+                  "fill": true,
+                  "bind": "build:log"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "d059",
+        "type": "statusbar",
+        "props": {
+          "gap": 14,
+          "background": ""
+        },
+        "children": [
+          {
+            "id": "d056",
+            "type": "text",
+            "props": {
+              "text": "Ready",
+              "size": "sm",
+              "tone": "muted",
+              "mono": false,
+              "align": "left",
+              "color": "",
+              "bind": "status"
+            }
+          },
+          {
+            "id": "d057",
+            "type": "spacer",
+            "props": {
+              "size": 0,
+              "fill": true
+            }
+          },
+          {
+            "id": "d058",
+            "type": "text",
+            "props": {
+              "text": "",
+              "size": "sm",
+              "tone": "muted",
+              "mono": false,
+              "align": "left",
+              "color": "",
+              "bind": "time"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

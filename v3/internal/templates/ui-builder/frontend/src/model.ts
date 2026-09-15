@@ -13,10 +13,14 @@ export interface UINode {
 
 export type ArtboardTheme = 'light' | 'dark';
 
+/** How the artboard draws the window frame around the design. */
+export type WindowChrome = 'mac' | 'windows';
+
 export interface UIDocument {
     version: 1;
     name: string;
     theme: ArtboardTheme;
+    chrome?: WindowChrome;
     root: UINode;
 }
 
@@ -35,6 +39,7 @@ export function emptyDocument(name = 'Untitled'): UIDocument {
         version: 1,
         name,
         theme: 'light',
+        chrome: 'mac',
         root: {id: ROOT_ID, type: 'root', props: {}, children: []},
     };
 }

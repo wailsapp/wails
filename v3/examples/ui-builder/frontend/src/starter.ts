@@ -1,6 +1,6 @@
-// The design that greets a first-time user: a small landing page that shows
-// off nesting, rows, cards and the form controls. It's just a document — edit
-// or delete anything.
+// The design that greets a first-time user: a typical desktop application —
+// toolbar, sidebar navigation, a content area with a table and metrics, a form
+// that calls the Go backend, and a status bar bound to a Go event.
 
 import {type UIDocument, type UINode, newId} from './model';
 
@@ -9,55 +9,53 @@ const n = (type: string, props: Record<string, unknown>, children?: UINode[]): U
 export function starterDocument(): UIDocument {
     return {
         version: 1,
-        name: 'Launch page',
+        name: 'Project Manager',
         theme: 'light',
+        chrome: 'mac',
         root: {
             id: 'root', type: 'root', props: {},
             children: [
-                n('navbar', {brand: 'Nimbus', links: 'Features\nPricing\nDocs\nChangelog', cta: 'Download'}),
-                n('section', {padding: 88, gap: 20, maxWidth: 820, background: 'transparent', align: 'center', items: 'center'}, [
-                    n('badge', {text: 'Now with Wails v3', tone: 'accent'}),
-                    n('heading', {text: 'Ship native desktop apps with the web stack you love', level: 'h1', align: 'center', gradient: false, color: ''}),
-                    n('text', {text: 'Nimbus pairs a Go backend with a modern frontend, wraps it in a real native window, and builds a single binary for macOS, Windows and Linux.', size: 'lg', muted: true, align: 'center', color: ''}),
-                    n('row', {gap: 12, justify: 'center', items: 'center', equal: false, stack: true, padding: 0}, [
-                        n('button', {label: 'Get started', variant: 'primary', size: 'lg', full: false, href: '#'}),
-                        n('button', {label: 'Read the docs', variant: 'secondary', size: 'lg', full: false, href: '#'}),
+                n('toolbar', {height: 44, gap: 8, drag: true, background: ''}, [
+                    n('heading', {text: 'Project Manager', level: 'window', align: 'left', color: ''}),
+                    n('spacer', {size: 0, fill: true}),
+                    n('input', {label: '', name: 'query', placeholder: 'Search projects', type: 'search', help: '', fill: false, inline: false}),
+                    n('button', {label: 'New project', variant: 'primary', size: 'sm', full: false, action: 'event', event: 'project:new', service: '', method: '', args: '', resultTo: '', url: '', windowAction: 'Minimise'}),
+                ]),
+                n('hstack', {gap: 0, padding: 0, items: 'stretch', justify: 'start', fill: true, scroll: false, background: ''}, [
+                    n('sidebar', {width: 200, side: 'left', padding: 8, gap: 4, background: ''}, [
+                        n('nav', {items: 'Overview\nProjects\nBuilds\nReleases\n# Settings\nGeneral\nAccount', active: 1, style: 'accent'}),
+                        n('spacer', {size: 0, fill: true}),
+                        n('badge', {text: 'Connected', tone: 'ok', bind: ''}),
+                    ]),
+                    n('content', {padding: 16, gap: 14, scroll: true, background: ''}, [
+                        n('hstack', {gap: 12, padding: 0, items: 'center', justify: 'between', fill: false, scroll: false, background: ''}, [
+                            n('heading', {text: 'Projects', level: 'title', align: 'left', color: ''}),
+                            n('tabs', {items: 'All\nActive\nArchived', active: 0, style: 'segmented'}),
+                        ]),
+                        n('hstack', {gap: 12, padding: 0, items: 'stretch', justify: 'start', fill: false, scroll: false, background: ''}, [
+                            n('metric', {label: 'Projects', value: '14', note: '3 building now', fill: true, bind: ''}),
+                            n('metric', {label: 'Builds today', value: '27', note: '2 failed', fill: true, bind: ''}),
+                            n('metric', {label: 'Disk used', value: '3.8 GB', note: 'of 20 GB', fill: true, bind: ''}),
+                        ]),
+                        n('table', {
+                            columns: 'Name | Platform | Status | Last build',
+                            rows: 'wails-app | darwin/arm64 | Building | 2 min ago\nrelease-notes | windows/amd64 | Ready | 1 h ago\nwebsite | linux/amd64 | Ready | yesterday\ninternal-tools | darwin/arm64 | Failed | 3 days ago',
+                            striped: true, selected: 0, fill: false,
+                        }),
+                        n('group', {title: 'Talk to Go', gap: 10, padding: 14, fill: false, background: ''}, [
+                            n('text', {text: 'This form calls GreetService.Greet on the Go side and shows what comes back. Press Run to try it.', size: 'sm', tone: 'muted', mono: false, align: 'left', color: '', bind: ''}),
+                            n('hstack', {gap: 8, padding: 0, items: 'end', justify: 'start', fill: false, scroll: false, background: ''}, [
+                                n('input', {label: 'Name', name: 'name', placeholder: 'Your name', type: 'text', help: '', fill: true, inline: false}),
+                                n('button', {label: 'Greet', variant: 'primary', size: 'md', full: false, action: 'call', service: 'GreetService', method: 'Greet', args: '$name', resultTo: 'greeting', event: '', url: '', windowAction: 'Minimise'}),
+                            ]),
+                            n('text', {text: 'The reply from Go appears here.', size: 'md', tone: 'default', mono: true, align: 'left', color: '', bind: 'greeting'}),
+                        ]),
                     ]),
                 ]),
-                n('section', {padding: 24, gap: 16, maxWidth: 1040, background: 'transparent', align: 'left', items: 'stretch'}, [
-                    n('row', {gap: 16, justify: 'start', items: 'stretch', equal: true, stack: true, padding: 0}, [
-                        n('card', {padding: 24, gap: 10, radius: 16, elevated: true, background: '', align: 'left'}, [
-                            n('metric', {label: 'Binary size', value: '9.4 MB', delta: '−38% vs Electron', trend: 'up', align: 'left'}),
-                        ]),
-                        n('card', {padding: 24, gap: 10, radius: 16, elevated: true, background: '', align: 'left'}, [
-                            n('metric', {label: 'Cold start', value: '120 ms', delta: '+ instant window', trend: 'up', align: 'left'}),
-                        ]),
-                        n('card', {padding: 24, gap: 10, radius: 16, elevated: true, background: '', align: 'left'}, [
-                            n('metric', {label: 'Platforms', value: '3', delta: 'one codebase', trend: 'flat', align: 'left'}),
-                        ]),
-                    ]),
-                ]),
-                n('section', {padding: 64, gap: 24, maxWidth: 1040, background: '', align: 'left', items: 'stretch'}, [
-                    n('row', {gap: 48, justify: 'start', items: 'center', equal: true, stack: true, padding: 0}, [
-                        n('section', {padding: 0, gap: 14, maxWidth: 520, background: 'transparent', align: 'left', items: 'start'}, [
-                            n('heading', {text: 'Everything you need, nothing you don’t', level: 'h2', align: 'left', gradient: true, color: ''}),
-                            n('text', {text: 'Bind Go methods, call them from TypeScript with full type safety, and let the runtime handle windows, menus, dialogs and events.', size: 'md', muted: true, align: 'left', color: ''}),
-                            n('list', {items: 'Type-safe Go ↔ TS bindings\nNative menus, dialogs and tray\nHot reload in development', style: 'check'}),
-                        ]),
-                        n('image', {src: '', alt: 'Product screenshot', height: 300, radius: 18, fit: 'cover'}),
-                    ]),
-                ]),
-                n('section', {padding: 64, gap: 16, maxWidth: 520, background: 'transparent', align: 'center', items: 'stretch'}, [
-                    n('card', {padding: 28, gap: 14, radius: 18, elevated: true, background: '', align: 'left'}, [
-                        n('heading', {text: 'Join the beta', level: 'h3', align: 'left', gradient: false, color: ''}),
-                        n('input', {label: 'Email address', placeholder: 'you@example.com', type: 'email', help: 'We send one email a month. No spam.'}),
-                        n('toggle', {label: 'Notify me about releases', on: true}),
-                        n('button', {label: 'Request access', variant: 'primary', size: 'md', full: true, href: '#'}),
-                    ]),
-                ]),
-                n('divider', {}),
-                n('section', {padding: 28, gap: 8, maxWidth: 1040, background: 'transparent', align: 'center', items: 'center'}, [
-                    n('text', {text: '© 2026 Nimbus Labs · Built with Wails', size: 'sm', muted: true, align: 'center', color: ''}),
+                n('statusbar', {gap: 14, background: ''}, [
+                    n('text', {text: 'Ready', size: 'sm', tone: 'muted', mono: false, align: 'left', color: '', bind: 'status'}),
+                    n('spacer', {size: 0, fill: true}),
+                    n('text', {text: 'Waiting for the time event from Go…', size: 'sm', tone: 'muted', mono: false, align: 'left', color: '', bind: 'time'}),
                 ]),
             ],
         },

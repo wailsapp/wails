@@ -13,8 +13,8 @@ import (
 
 // LayoutService is the Go side of the UI builder. The frontend keeps the
 // design in memory and calls these methods to persist it, reopen it and export
-// it as a standalone HTML page. All file access goes through native dialogs so
-// the user always picks where their files live.
+// it as a Wails frontend. All file access goes through native dialogs so the
+// user always picks where their files live.
 type LayoutService struct{}
 
 // LayoutFile is what OpenLayout hands back to the frontend: the path the file
@@ -22,6 +22,13 @@ type LayoutService struct{}
 type LayoutFile struct {
 	Path string `json:"path"`
 	Data string `json:"data"`
+}
+
+// ExportFile is one file of an exported frontend, with a path relative to the
+// export directory (e.g. "src/main.js").
+type ExportFile struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
 }
 
 // SaveLayout writes the layout JSON to disk. If path is empty a native "Save
@@ -78,25 +85,41 @@ func (s *LayoutService) OpenLayout() (*LayoutFile, error) {
 	return &LayoutFile{Path: path, Data: string(raw)}, nil
 }
 
-// ExportHTML prompts for a destination and writes the exported page to it.
-// Returns the path written, or an empty string if the user cancelled.
-func (s *LayoutService) ExportHTML(name string, html string) (string, error) {
-	path, err := application.Get().Dialog.
-		SaveFileWithOptions(&application.SaveFileDialogOptions{Title: "Export HTML"}).
-		SetFilename(safeFilename(name, "page")+".html").
-		AddFilter("HTML page", "*.html;*.htm").
+// ExportFrontend asks for a destination folder and writes the generated
+// frontend into a new "<name>-frontend" directory inside it. Returns the
+// directory written, or an empty string if the user cancelled.
+func (s *LayoutService) ExportFrontend(name string, files []ExportFile) (string, error) {
+	if len(files) == 0 {
+		return "", errors.New("nothing to export")
+	}
+	parent, err := application.Get().Dialog.OpenFile().
+		SetTitle("Choose where to export the frontend").
+		SetButtonText("Export here").
+		CanChooseDirectories(true).
+		CanChooseFiles(false).
 		CanCreateDirectories(true).
 		PromptForSingleSelection()
 	if err != nil {
 		return "", err
 	}
-	if path == "" {
+	if parent == "" {
 		return "", nil
 	}
-	if err := os.WriteFile(path, []byte(html), 0o644); err != nil {
-		return "", fmt.Errorf("could not write %s: %w", filepath.Base(path), err)
+	dir := filepath.Join(parent, safeFilename(name, "app")+"-frontend")
+	for _, f := range files {
+		rel := filepath.Clean(filepath.FromSlash(f.Path))
+		if rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
+			return "", fmt.Errorf("refusing to write outside the export directory: %q", f.Path)
+		}
+		target := filepath.Join(dir, rel)
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			return "", err
+		}
+		if err := os.WriteFile(target, []byte(f.Content), 0o644); err != nil {
+			return "", fmt.Errorf("could not write %s: %w", rel, err)
+		}
 	}
-	return path, nil
+	return dir, nil
 }
 
 // safeFilename turns a free-form design name into something every filesystem

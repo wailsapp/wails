@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"log"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -15,15 +16,26 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+func init() {
+	// Register a custom event whose associated data type is string. The
+	// builder's status bar binds to it, and the binding generator picks up
+	// registered events to provide a typed JS/TS API for them.
+	application.RegisterEvent[string]("time")
+}
+
 // main is the application's entry point. It creates the Wails application,
-// registers the LayoutService (save / open / export through native dialogs)
-// and opens the builder window.
+// registers the services the builder talks to and opens the builder window.
+//
+//   - LayoutService saves / opens layouts and exports frontends via native dialogs.
+//   - GreetService is the stock example service: designs can wire a button to
+//     GreetService.Greet and see the reply while running.
 func main() {
 	app := application.New(application.Options{
 		Name:        "ui-builder",
-		Description: "A drag & drop UI builder built with Wails",
+		Description: "A drag & drop UI builder for Wails applications",
 		Services: []application.Service{
 			application.NewService(&LayoutService{}),
+			application.NewService(&GreetService{}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -38,8 +50,8 @@ func main() {
 	// where the panes stop being usable.
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:     "ui-builder",
-		Width:     1320,
-		Height:    840,
+		Width:     1360,
+		Height:    860,
 		MinWidth:  960,
 		MinHeight: 600,
 		Mac: application.MacWindow{
@@ -50,6 +62,16 @@ func main() {
 		BackgroundColour: application.NewRGB(6, 7, 15),
 		URL:              "/",
 	})
+
+	// Emit the current time every second. Anything in a design bound to the
+	// "time" channel shows it live while running, and so will exported apps
+	// whose Go side keeps this loop.
+	go func() {
+		for {
+			app.Event.Emit("time", time.Now().Format(time.Kitchen+" 05s"))
+			time.Sleep(time.Second)
+		}
+	}()
 
 	// Run the application. This blocks until the application has been exited.
 	if err := app.Run(); err != nil {

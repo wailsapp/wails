@@ -7,7 +7,7 @@ import {icon} from './icons';
 import {pathTo} from './model';
 import {store} from './store';
 
-const GROUPS: NonNullable<PropField['group']>[] = ['Content', 'Style', 'Layout'];
+const GROUPS: NonNullable<PropField['group']>[] = ['Content', 'Wails', 'Style', 'Layout'];
 
 export function initInspector(): void {
     store.subscribe((change) => {
@@ -69,14 +69,17 @@ export function renderInspector(): void {
     }
 
     for (const group of GROUPS) {
-        const fields = def.fields.filter((f) => (f.group ?? 'Content') === group);
+        const fields = def.fields.filter((f) => (f.group ?? 'Content') === group && (!f.when || f.when(node.props)));
         if (fields.length === 0) {
             continue;
         }
         const section = document.createElement('section');
         section.className = 'insp-group';
+        if (group === 'Wails') {
+            section.classList.add('insp-group-wails');
+        }
         const h = document.createElement('h4');
-        h.textContent = group;
+        h.innerHTML = group === 'Wails' ? `${icon('go')}<span>Go backend</span>` : `<span>${group}</span>`;
         section.append(h);
         for (const field of fields) {
             section.append(renderField(node.id, field, node.props[field.key]));
@@ -126,7 +129,12 @@ function renderField(id: string, field: PropField, value: unknown): HTMLElement 
     label.textContent = field.label;
     row.append(label);
 
-    const set = (v: unknown): void => store.setProp(id, field.key, v);
+    const set = (v: unknown): void => {
+        store.setProp(id, field.key, v);
+        if (field.rerender) {
+            renderInspector();
+        }
+    };
 
     switch (field.kind) {
         case 'text': {
@@ -251,6 +259,12 @@ function renderField(id: string, field: PropField, value: unknown): HTMLElement 
             row.append(input, track);
             break;
         }
+    }
+    if (field.hint) {
+        const hint = document.createElement('span');
+        hint.className = 'field-hint';
+        hint.textContent = field.hint;
+        row.append(hint);
     }
     return row;
 }

@@ -1,10 +1,14 @@
 # {{.ProjectName}}
 
-A drag & drop UI builder, generated from the Wails `ui-builder` template.
+A drag & drop builder for Wails application UIs, generated from the Wails
+`ui-builder` template.
 
-Drag components from the palette onto the artboard, tune them in the inspector,
-rearrange them in the layers panel, then save the layout or export it as a
-standalone HTML page — all through native dialogs provided by the Go backend.
+Compose a window from desktop building blocks — toolbar, sidebar, content area,
+tables, forms, status bar — tune each one in the inspector, then press **Run**
+to use it against this app's Go backend: buttons call bound Go methods or emit
+events, and text, badges, metrics, progress bars and consoles display the data
+of Go events. **Export frontend** writes the design out as the frontend of a
+Wails project.
 
 ## Getting started
 
@@ -13,20 +17,42 @@ wails3 dev      # run with hot reload
 wails3 build    # produce a production binary in bin/
 ```
 
+## Wiring a design to Go
+
+| In the builder | What it does | Go side |
+| --- | --- | --- |
+| Button → *Call a Go method* | `Call.ByName("main.GreetService.Greet", args)`; the result is published to a channel | `application.NewService(&GreetService{})` |
+| Button → *Emit an event to Go* | `data-wml-event` | `app.Event.On("name", …)` |
+| Button → *Window action* | `data-wml-window="Minimise"` and friends | — |
+| Button → *Open a URL* | `data-wml-openurl` | — |
+| *Bind to Go event* on text, badge, metric, progress, console | Shows the payload of every event with that name | `app.Event.Emit("name", data)` |
+| Toolbar → *Window drag region* | `--wails-draggable: drag` | Hidden / frameless title bars |
+
+Arguments for a Go call are one per line; `$name` reads the control whose
+*Field name* is `name`. Numbers and `true` / `false` are sent typed.
+
+## Exporting
+
+**Export frontend** asks for a folder and writes `<name>-frontend/` containing
+`index.html`, `public/style.css`, `src/main.js`, a README with the backend
+expectations, and the layout itself. Those files drop straight into the
+`frontend/` directory of a project created with `wails3 init -t vanilla-js`.
+
 ## What's inside
 
 | Path | Purpose |
 | --- | --- |
-| `main.go` | Creates the Wails app and the builder window |
-| `layoutservice.go` | `LayoutService` — save / open layouts and export HTML via native dialogs |
-| `greetservice.go` | The stock greeter from the base template; safe to delete |
+| `main.go` | Creates the Wails app, registers the services and emits the `time` event |
+| `layoutservice.go` | `LayoutService` — save / open layouts and export frontends via native dialogs |
+| `greetservice.go` | `GreetService.Greet`, the method the starter design calls |
 | `frontend/src/components.ts` | The component registry: defaults, inspector fields and renderers |
-| `frontend/src/theme.ts` | Stylesheet for the components you build (shared with the export) |
+| `frontend/src/theme.ts` | Stylesheet for the app UI you build (shared with the export) |
+| `frontend/src/runtime.ts` | Run mode: wires buttons and bindings to the Go backend |
+| `frontend/src/exporter.ts` | Generates the exported frontend files |
 | `frontend/src/store.ts` | Document state, selection and undo/redo history |
 | `frontend/src/canvas.ts` | Artboard rendering, selection and drag & drop |
 | `frontend/src/palette.ts` · `inspector.ts` · `layers.ts` | The three panels |
-| `frontend/src/exporter.ts` | Turns a layout into a standalone HTML page |
-| `frontend/public/style.css` | The builder's own chrome (panels, toolbar, indicators) |
+| `frontend/public/style.css` | The builder's own chrome (panels, toolbar, window frame) |
 
 Layouts are plain JSON (`*.uib.json`). The builder autosaves the current design
 to the browser's local storage, so closing the app never loses work.
@@ -37,27 +63,31 @@ Append an entry to the `components` array in `frontend/src/components.ts`:
 
 ```ts
 {
-    type: 'callout', label: 'Callout', category: 'Content', icon: 'quote',
-    defaults: {text: 'Heads up!'},
-    fields: [{key: 'text', label: 'Text', kind: 'textarea', group: 'Content'}],
+    type: 'callout', label: 'Callout', category: 'Content', icon: 'text',
+    defaults: {text: 'Heads up!', bind: ''},
+    fields: [
+        {key: 'text', label: 'Text', kind: 'textarea', group: 'Content'},
+        {key: 'bind', label: 'Bind to Go event', kind: 'text', group: 'Wails'},
+    ],
     render(node) {
         const div = document.createElement('div');
         div.className = 'ub-callout';
         div.textContent = String(node.props.text ?? '');
+        if (node.props.bind) div.dataset.bind = String(node.props.bind);
         return div;
     },
 },
 ```
 
-Add its styles to `componentStyles` in `frontend/src/theme.ts` and it will show
-up in the palette, render on the canvas and be included in exports. Set
+Add its styles to `componentStyles` in `frontend/src/theme.ts` and it shows up
+in the palette, renders on the canvas and is included in exports. Set
 `container: true` (plus `direction`) for components that accept children.
 
 ## Keyboard shortcuts
 
 Press `?` in the app for the full list. The essentials: `⌘Z` / `⇧⌘Z` undo and
 redo, `⌘D` duplicate, `⌫` delete, `⌘S` save, `⌘O` open, `⌘E` export, `⌘P`
-preview. On Windows and Linux use `Ctrl` in place of `⌘`.
+run. On Windows and Linux use `Ctrl` in place of `⌘`.
 
 ## Learn more
 

@@ -8,7 +8,7 @@ info:
   companyName: "Wails" # The name of the company
   productName: "UI Builder" # The name of the application
   productIdentifier: "io.wails.examples.uibuilder" # The unique product identifier
-  description: "A drag & drop UI builder built with Wails" # The application description
+  description: "A drag & drop builder for Wails application UIs" # The application description
   copyright: "(c) 2026, Wails" # Copyright text
   comments: "Wails v3 example" # Comments
   version: "0.0.1" # The application version

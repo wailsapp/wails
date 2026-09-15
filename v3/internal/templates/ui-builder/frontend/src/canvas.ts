@@ -6,6 +6,7 @@ import {type NodeId, type UINode, ROOT_ID, findParent, isWithin} from './model';
 import {getDef} from './components';
 import {componentStyles} from './theme';
 import {store} from './store';
+import {type Cleanup, wireRuntime} from './runtime';
 
 interface DragState {
     kind: 'new' | 'move';
@@ -52,6 +53,7 @@ const emptyEl = (): HTMLElement => document.getElementById('stage-empty')!;
 // Rendering
 
 let styleTag: HTMLStyleElement | null = null;
+let unwire: Cleanup | null = null;
 
 export function renderCanvas(): void {
     const canvas = canvasEl();
@@ -60,15 +62,21 @@ export function renderCanvas(): void {
         styleTag.textContent = componentStyles;
         document.head.append(styleTag);
     }
-    const scroll = document.getElementById('stage-scroll')!;
-    const scrollTop = scroll.scrollTop;
+    unwire?.();
+    unwire = null;
     canvas.replaceChildren(renderNode(store.doc.root));
     const root = canvas.firstElementChild as HTMLElement;
     root.dataset.theme = store.doc.theme;
-    document.getElementById('artboard')!.dataset.theme = store.doc.theme;
-    scroll.scrollTop = scrollTop;
+    const artboard = document.getElementById('artboard')!;
+    artboard.dataset.theme = store.doc.theme;
+    artboard.dataset.chrome = store.doc.chrome ?? 'mac';
+    document.getElementById('artboard-title')!.textContent = store.doc.name || 'Untitled';
     emptyEl().hidden = (store.doc.root.children?.length ?? 0) > 0;
     applySelection();
+    if (store.preview) {
+        // Run mode: buttons call Go, bound elements listen for Go events.
+        unwire = wireRuntime(root);
+    }
 }
 
 function renderNode(node: UINode): HTMLElement {

@@ -1,0 +1,330 @@
+{
+  "version": 1,
+  "name": "Preferences",
+  "theme": "light",
+  "chrome": "mac",
+  "root": {
+    "id": "root",
+    "type": "root",
+    "props": {},
+    "children": [
+      {
+        "id": "d005",
+        "type": "toolbar",
+        "props": {
+          "height": 44,
+          "gap": 8,
+          "drag": true,
+          "background": ""
+        },
+        "children": [
+          {
+            "id": "d001",
+            "type": "heading",
+            "props": {
+              "text": "Preferences",
+              "level": "window",
+              "align": "left",
+              "color": ""
+            }
+          },
+          {
+            "id": "d002",
+            "type": "spacer",
+            "props": {
+              "size": 0,
+              "fill": true
+            }
+          },
+          {
+            "id": "d003",
+            "type": "button",
+            "props": {
+              "label": "Reset to defaults",
+              "variant": "ghost",
+              "size": "sm",
+              "full": false,
+              "action": "none",
+              "service": "",
+              "method": "",
+              "args": "",
+              "resultTo": "",
+              "event": "",
+              "url": "",
+              "windowAction": "Minimise"
+            }
+          },
+          {
+            "id": "d004",
+            "type": "button",
+            "props": {
+              "label": "Apply",
+              "variant": "primary",
+              "size": "sm",
+              "full": false,
+              "action": "call",
+              "service": "SettingsService",
+              "method": "Apply",
+              "args": "$theme\n$autostart\n$volume",
+              "resultTo": "status",
+              "event": "",
+              "url": "",
+              "windowAction": "Minimise"
+            }
+          }
+        ]
+      },
+      {
+        "id": "d024",
+        "type": "hstack",
+        "props": {
+          "gap": 0,
+          "padding": 0,
+          "items": "stretch",
+          "justify": "start",
+          "fill": true,
+          "scroll": false,
+          "background": ""
+        },
+        "children": [
+          {
+            "id": "d007",
+            "type": "sidebar",
+            "props": {
+              "width": 180,
+              "side": "left",
+              "padding": 8,
+              "gap": 4,
+              "background": ""
+            },
+            "children": [
+              {
+                "id": "d006",
+                "type": "nav",
+                "props": {
+                  "items": "General\nAppearance\nNotifications\nShortcuts\n# Account\nProfile\nSync",
+                  "active": 1,
+                  "style": "plain"
+                }
+              }
+            ]
+          },
+          {
+            "id": "d023",
+            "type": "content",
+            "props": {
+              "padding": 20,
+              "gap": 16,
+              "scroll": true,
+              "background": ""
+            },
+            "children": [
+              {
+                "id": "d008",
+                "type": "heading",
+                "props": {
+                  "text": "Appearance",
+                  "level": "title",
+                  "align": "left",
+                  "color": ""
+                }
+              },
+              {
+                "id": "d009",
+                "type": "tabs",
+                "props": {
+                  "items": "Theme\nWindow\nFonts",
+                  "active": 0,
+                  "style": "underline"
+                }
+              },
+              {
+                "id": "d014",
+                "type": "group",
+                "props": {
+                  "title": "Theme",
+                  "gap": 10,
+                  "padding": 14,
+                  "fill": false,
+                  "background": ""
+                },
+                "children": [
+                  {
+                    "id": "d010",
+                    "type": "select",
+                    "props": {
+                      "label": "Appearance",
+                      "name": "theme",
+                      "options": "System\nLight\nDark",
+                      "help": "",
+                      "fill": false,
+                      "inline": true
+                    }
+                  },
+                  {
+                    "id": "d011",
+                    "type": "select",
+                    "props": {
+                      "label": "Accent colour",
+                      "name": "accent",
+                      "options": "Wails red\nBlue\nGreen\nGraphite",
+                      "help": "",
+                      "fill": false,
+                      "inline": true
+                    }
+                  },
+                  {
+                    "id": "d012",
+                    "type": "toggle",
+                    "props": {
+                      "label": "Use translucent sidebar",
+                      "name": "translucent",
+                      "on": true
+                    }
+                  },
+                  {
+                    "id": "d013",
+                    "type": "checkbox",
+                    "props": {
+                      "label": "Reduce motion",
+                      "name": "reduceMotion",
+                      "on": false
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "d018",
+                "type": "group",
+                "props": {
+                  "title": "Startup",
+                  "gap": 10,
+                  "padding": 14,
+                  "fill": false,
+                  "background": ""
+                },
+                "children": [
+                  {
+                    "id": "d015",
+                    "type": "toggle",
+                    "props": {
+                      "label": "Launch at login",
+                      "name": "autostart",
+                      "on": true
+                    }
+                  },
+                  {
+                    "id": "d016",
+                    "type": "toggle",
+                    "props": {
+                      "label": "Reopen last project",
+                      "name": "reopen",
+                      "on": true
+                    }
+                  },
+                  {
+                    "id": "d017",
+                    "type": "text",
+                    "props": {
+                      "text": "Windows are restored to their previous size and position.",
+                      "size": "sm",
+                      "tone": "muted",
+                      "mono": false,
+                      "align": "left",
+                      "color": "",
+                      "bind": ""
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "d021",
+                "type": "group",
+                "props": {
+                  "title": "Sound",
+                  "gap": 10,
+                  "padding": 14,
+                  "fill": false,
+                  "background": ""
+                },
+                "children": [
+                  {
+                    "id": "d019",
+                    "type": "slider",
+                    "props": {
+                      "label": "Notification volume",
+                      "name": "volume",
+                      "value": 60,
+                      "min": 0,
+                      "max": 100
+                    }
+                  },
+                  {
+                    "id": "d020",
+                    "type": "checkbox",
+                    "props": {
+                      "label": "Play sound when a build finishes",
+                      "name": "buildSound",
+                      "on": true
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "d022",
+                "type": "keyvalue",
+                "props": {
+                  "pairs": "Version: 1.4.2\nBuild: 2026.09.14\nWails: v3\nPlatform: darwin/arm64"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "d028",
+        "type": "statusbar",
+        "props": {
+          "gap": 14,
+          "background": ""
+        },
+        "children": [
+          {
+            "id": "d025",
+            "type": "text",
+            "props": {
+              "text": "Changes are saved when you press Apply.",
+              "size": "sm",
+              "tone": "muted",
+              "mono": false,
+              "align": "left",
+              "color": "",
+              "bind": "status"
+            }
+          },
+          {
+            "id": "d026",
+            "type": "spacer",
+            "props": {
+              "size": 0,
+              "fill": true
+            }
+          },
+          {
+            "id": "d027",
+            "type": "text",
+            "props": {
+              "text": "",
+              "size": "sm",
+              "tone": "muted",
+              "mono": false,
+              "align": "left",
+              "color": "",
+              "bind": "time"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

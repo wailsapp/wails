@@ -5,13 +5,13 @@ import {initCanvas, renderCanvas, applySelection, scrollNodeIntoView} from './ca
 import {initPalette} from './palette';
 import {initInspector} from './inspector';
 import {initLayers} from './layers';
-import {renderToHTML} from './exporter';
+import {exportFrontend} from './exporter';
 import {starterDocument} from './starter';
 import {type UIDocument, countNodes} from './model';
 import {type Device, store} from './store';
 
 const AUTOSAVE_KEY = 'uib:autosave';
-const DEVICE_WIDTHS: Record<Device, number> = {desktop: 1200, tablet: 820, phone: 390};
+const WINDOW_SIZES: Record<Device, [number, number]> = {compact: [800, 560], default: [1024, 680], wide: [1280, 800]};
 
 // Wire up data-wml-openURL links (logo + footer "Docs" link).
 WML.Enable();
@@ -44,7 +44,8 @@ function toast(message: string, label = 'From Go', tone: 'ok' | 'error' = 'ok'):
 function refreshStatus(): void {
     const n = countNodes(store.doc.root);
     const file = store.filePath ? store.filePath.split(/[\\/]/).pop() : 'not saved to disk';
-    $('status-text').textContent = `${n} component${n === 1 ? '' : 's'} · ${file}${store.dirty && store.filePath ? ' · edited' : ''}`;
+    const mode = store.preview ? ' · running against Go' : '';
+    $('status-text').textContent = `${n} component${n === 1 ? '' : 's'} · ${file}${store.dirty && store.filePath ? ' · edited' : ''}${mode}`;
     $('doc-status').classList.toggle('is-dirty', store.dirty);
     $<HTMLButtonElement>('undo').disabled = !store.canUndo;
     $<HTMLButtonElement>('redo').disabled = !store.canRedo;
@@ -113,19 +114,19 @@ async function open(): Promise<void> {
     }
 }
 
-async function exportHTML(): Promise<void> {
-    const html = renderToHTML(store.doc);
+async function exportApp(): Promise<void> {
+    const files = exportFrontend(store.doc);
     try {
-        const path = await LayoutService.ExportHTML(store.doc.name, html);
-        if (path) {
-            toast(`Exported ${path.split(/[\\/]/).pop()}`);
+        const dir = await LayoutService.ExportFrontend(store.doc.name, files);
+        if (dir) {
+            toast(`Exported ${files.length} files to ${dir}`);
         }
     } catch (err) {
         // Outside the desktop app (plain `vite dev` in a browser) the Go side
         // isn't there — fall back to the clipboard so the export is still usable.
         try {
-            await navigator.clipboard.writeText(html);
-            toast('Go backend unavailable — HTML copied to the clipboard instead.', 'Export', 'error');
+            await navigator.clipboard.writeText(files.map((f) => `// ===== ${f.path} =====\n${f.content}`).join('\n\n'));
+            toast('Go backend unavailable — the frontend files were copied to the clipboard instead.', 'Export', 'error');
         } catch {
             toast(String(err), 'Export failed', 'error');
         }
@@ -148,11 +149,12 @@ function initToolbar(): void {
         btn.addEventListener('click', () => store.setDevice(btn.dataset.device as Device));
     }
     $('theme-toggle').addEventListener('click', () => store.setTheme(store.doc.theme === 'light' ? 'dark' : 'light'));
+    $('chrome-toggle').addEventListener('click', () => store.setChrome((store.doc.chrome ?? 'mac') === 'mac' ? 'windows' : 'mac'));
     $('undo').addEventListener('click', () => store.undo());
     $('redo').addEventListener('click', () => store.redo());
     $('open').addEventListener('click', () => void open());
     $('save').addEventListener('click', () => void save());
-    $('export').addEventListener('click', () => void exportHTML());
+    $('export').addEventListener('click', () => void exportApp());
     $('preview').addEventListener('click', () => store.setPreview(!store.preview));
 
     for (const tab of document.querySelectorAll<HTMLButtonElement>('.panel-tabs .tab')) {
@@ -178,7 +180,8 @@ function initToolbar(): void {
 function applyDevice(): void {
     const artboard = $('artboard');
     artboard.dataset.device = store.device;
-    $('artboard-size').textContent = `${DEVICE_WIDTHS[store.device]} × auto`;
+    const [w, h] = WINDOW_SIZES[store.device];
+    $('artboard-size').textContent = `${w} × ${h}`;
     for (const btn of $('device-switch').querySelectorAll<HTMLButtonElement>('[data-device]')) {
         const active = btn.dataset.device === store.device;
         btn.classList.toggle('is-active', active);
@@ -202,7 +205,7 @@ function initKeyboard(): void {
 
         if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); void save(e.shiftKey); return; }
         if (mod && e.key.toLowerCase() === 'o') { e.preventDefault(); void open(); return; }
-        if (mod && e.key.toLowerCase() === 'e') { e.preventDefault(); void exportHTML(); return; }
+        if (mod && e.key.toLowerCase() === 'e') { e.preventDefault(); void exportApp(); return; }
         if (mod && e.key.toLowerCase() === 'p') { e.preventDefault(); store.setPreview(!store.preview); return; }
         if (e.key === 'Escape') {
             if (!$('shortcuts').hidden) { $('shortcuts').hidden = true; return; }
