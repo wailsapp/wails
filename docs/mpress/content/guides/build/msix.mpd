@@ -1,0 +1,11 @@
+---
+schema = 1
+title = "MSIX Packaging"
+description = "Packaging your Wails v3 application as an MSIX package"
+slug = "guides/build/msix"
+sourcePath = "guides/build/msix.mpd"
+---
+
+MSIX is the modern Windows application packaging format. Wails can generate an MSIX package as part of your Windows build.
+
+Instructions for MSIX packaging are documented in the [Windows Packaging](/guides/build/windows/#msix-package) guide.

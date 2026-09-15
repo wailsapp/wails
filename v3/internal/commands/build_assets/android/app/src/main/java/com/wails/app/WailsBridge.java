@@ -85,6 +85,8 @@ public class WailsBridge {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private WebView webView;
     private volatile boolean initialized = false;
+    private SharedPreferences cachedSecurePrefs;
+    private boolean securePrefsResolved = false;
 
     // Phase D state: sensor listeners, speech engine and keyboard watcher are
     // retained so they can be registered and torn down on demand.
@@ -742,49 +744,107 @@ public class WailsBridge {
 
     /**
      * Backing store for secure storage. Uses EncryptedSharedPreferences (AES via
-     * the Android Keystore) on API 23+, falling back to plain prefs below that.
+     * the Android Keystore). Requires API 23+. Returns null if secure storage
+     * cannot be initialized — callers MUST check for null and report the error.
+     * The result is cached after the first call.
      */
     private SharedPreferences securePrefs() {
+        if (securePrefsResolved) {
+            return cachedSecurePrefs;
+        }
+        securePrefsResolved = true;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return null;
+        }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                MasterKey key = new MasterKey.Builder(activity)
-                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                        .build();
-                return EncryptedSharedPreferences.create(activity, "wails_secure", key,
-                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+            MasterKey key = new MasterKey.Builder(activity)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+            cachedSecurePrefs = EncryptedSharedPreferences.create(activity, "wails_secure", key,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+        } catch (Exception e) {
+            Log.e(TAG, "securePrefs initialization failed", e);
+        }
+        return cachedSecurePrefs;
+    }
+
+    /** Build a JSON error envelope, safely handling null messages. */
+    private String secureError(String msg) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("ok", false);
+            o.put("error", msg != null ? msg : "unknown error");
+            return o.toString();
+        } catch (Exception ignored) {
+            return "{\"ok\":false,\"error\":\"unknown error\"}";
+        }
+    }
+
+    /** Store a value in secure storage. json: {"key":"...","value":"..."}. Returns JSON envelope. */
+    public String secureSet(final String json) {
+        try {
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
             }
-        } catch (Exception e) {
-            Log.e(TAG, "securePrefs failed, using plain prefs", e);
-        }
-        return activity.getSharedPreferences("wails_secure_plain", Context.MODE_PRIVATE);
-    }
-
-    /** Store a value in secure storage. json: {"key","value"}. */
-    public void secureSet(final String json) {
-        try {
             JSONObject o = new JSONObject(json);
-            securePrefs().edit().putString(o.optString("key"), o.optString("value")).apply();
+            String k = o.optString("key", "");
+            if (k.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            boolean ok = prefs.edit().putString(k, o.optString("value", "")).commit();
+            if (!ok) {
+                return "{\"ok\":false,\"error\":\"commit failed\"}";
+            }
+            return "{\"ok\":true}";
         } catch (Exception e) {
-            Log.e(TAG, "secureSet failed", e);
+            return secureError(e.getMessage());
         }
     }
 
-    /** Read a value from secure storage (empty if absent). */
+    /** Read a value from secure storage. Returns JSON envelope with found/value. */
     public String secureGet(final String key) {
         try {
-            return securePrefs().getString(key, "");
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
+            }
+            if (key == null || key.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            if (!prefs.contains(key)) {
+                return "{\"ok\":true,\"found\":false}";
+            }
+            String value = prefs.getString(key, "");
+            // JSON-encode value to prevent injection.
+            JSONObject result = new JSONObject();
+            result.put("ok", true);
+            result.put("found", true);
+            result.put("value", value);
+            return result.toString();
         } catch (Exception e) {
-            return "";
+            return secureError(e.getMessage());
         }
     }
 
-    /** Remove a value from secure storage. */
-    public void secureDelete(final String key) {
+    /** Remove a value from secure storage. Returns JSON envelope. */
+    public String secureDelete(final String key) {
         try {
-            securePrefs().edit().remove(key).apply();
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
+            }
+            if (key == null || key.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            boolean ok = prefs.edit().remove(key).commit();
+            if (!ok) {
+                return "{\"ok\":false,\"error\":\"commit failed\"}";
+            }
+            return "{\"ok\":true}";
         } catch (Exception e) {
-            Log.e(TAG, "secureDelete failed", e);
+            return secureError(e.getMessage());
         }
     }
 

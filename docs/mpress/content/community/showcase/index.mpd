@@ -1,0 +1,76 @@
+---
+schema = 1
+title = "Overview"
+description = "Discover applications built with Wails"
+slug = "community/showcase"
+sourcePath = "community/showcase/index.mpd"
+---
+
+@note type="tip" title="See how to add your project"
+Check out the\
+[How to add my project in showcase](#how-to-add-my-project-in-showcase) section.
+
+@end
+
+@rawHTML
+<div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="BulletinBoard screenshot" loading="lazy"><span>BulletinBoard</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="CFN Tracker screenshot" loading="lazy"><span>CFN Tracker</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Clave screenshot" loading="lazy"><span>Clave</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/emailit/"><img src="/assets/showcase-images/emailit.webp" alt="EmailIt screenshot" loading="lazy"><span>EmailIt</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/encrypteasy/"><img src="/assets/showcase-images/encrypteasy.webp" alt="EncryptEasy screenshot" loading="lazy"><span>EncryptEasy</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/espstudio/"><img src="/assets/showcase-images/esp-studio.png" alt="ESP Studio screenshot" loading="lazy"><span>ESP Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/filehound/"><img src="/assets/showcase-images/filehound.webp" alt="FileHound Export Utility screenshot" loading="lazy"><span>FileHound Export Utility</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/hiposter/"><img src="/assets/showcase-images/hiposter.webp" alt="hiposter screenshot" loading="lazy"><span>hiposter</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/kira/"><img src="/assets/showcase-images/kira_screenshot_1.png" alt="Kira screenshot" loading="lazy"><span>Kira</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/ltools/"><img src="/assets/showcase-images/ltools.webp" alt="LTools screenshot" loading="lazy"><span>LTools</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mchat/"><img src="/assets/showcase-images/mchat.png" alt="Mchat screenshot" loading="lazy"><span>Mchat</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/minecraftupdater/"><img src="/assets/showcase-images/minecraft-mod-updater.webp" alt="Minecraft Updater screenshot" loading="lazy"><span>Minecraft Updater</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/minesweeper-xp/"><img src="/assets/showcase-images/minesweeper-xp.webp" alt="Minesweeper XP screenshot" loading="lazy"><span>Minesweeper XP</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/modalfilemanager/"><img src="/assets/showcase-images/modalfilemanager.webp" alt="Modal File Manager screenshot" loading="lazy"><span>Modal File Manager</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mollywallet/"><img src="/assets/showcase-images/mollywallet.webp" alt="Molly Wallet screenshot" loading="lazy"><span>Molly Wallet</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/october/"><img src="/assets/showcase-images/october.webp" alt="October screenshot" loading="lazy"><span>October</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/optimus/"><img src="/assets/showcase-images/optimus.webp" alt="Optimus screenshot" loading="lazy"><span>Optimus</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/portfall/"><img src="/assets/showcase-images/portfall.webp" alt="Portfall screenshot" loading="lazy"><span>Portfall</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/redisviewer/"><img src="/assets/showcase-images/redisviewer-overview1.webp" alt="Redis Viewer screenshot" loading="lazy"><span>Redis Viewer</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/resizem/"><img src="/assets/showcase-images/resizem.webp" alt="Resizem screenshot" loading="lazy"><span>Resizem</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/restic-browser/"><img src="/assets/showcase-images/restic-browser-2.png" alt="Restic Browser screenshot" loading="lazy"><span>Restic Browser</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/riftshare/"><img src="/assets/showcase-images/riftshare-main.webp" alt="RiftShare screenshot" loading="lazy"><span>RiftShare</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/scriptbar/"><img src="/assets/showcase-images/scriptbar.webp" alt="ScriptBar screenshot" loading="lazy"><span>ScriptBar</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/snippetexpander/"><img src="/assets/showcase-images/snippetexpandergui-search-and-paste.png" alt="Snippet Expander screenshot" loading="lazy"><span>Snippet Expander</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/surge/"><img src="/assets/showcase-images/surge.png" alt="Surge screenshot" loading="lazy"><span>Surge</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/tinyrdm/"><img src="/assets/showcase-images/tiny-rdm1.webp" alt="Tiny RDM screenshot" loading="lazy"><span>Tiny RDM</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/wailsterm/"><img src="/assets/showcase-images/wailsterm.webp" alt="WailsTerm screenshot" loading="lazy"><span>WailsTerm</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/wally/"><img src="/assets/showcase-images/wally.webp" alt="Wally screenshot" loading="lazy"><span>Wally</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/warmine/"><img src="/assets/showcase-images/warmine1.png" alt="WarMine screenshot" loading="lazy"><span>WarMine</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/wombat/"><img src="/assets/showcase-images/wombat.webp" alt="Wombat screenshot" loading="lazy"><span>Wombat</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/xensql/"><img src="/assets/showcase-images/xensql-1.png" alt="XenSQL screenshot" loading="lazy"><span>XenSQL</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/ytd/"><img src="/assets/showcase-images/ytd.webp" alt="Ytd screenshot" loading="lazy"><span>Ytd</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="HappyTools screenshot" loading="lazy"><span>HappyTools</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Packsmith screenshot" loading="lazy"><span>Packsmith</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui screenshot" loading="lazy"><span>Condui</span></a>
+</div>
+@end
+
+## How to add my project in showcase
+
+@steps
+@step title="Make a fork of the repository."
+@end
+@step title="Add the image(s) under `docs/src/assets/showcase-images` folder."
+@end
+@step title="Make a copy of the `_template.md` file under"
+`docs/src/content/docs/community/showcase` folder.
+@end
+@step title="Rename the copied file to the name of your project. (Name should not start"
+with `_`))
+@end
+@step title="Update the title, image, link and content of the file."
+@end
+@step title="Add it on the above list in"
+`docs/src/content/docs/community/showcase/index.mdx`.
+@end
+@step title="Submit a PR."
+
+@end
+@end
