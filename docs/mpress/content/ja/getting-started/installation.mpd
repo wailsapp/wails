@@ -1,48 +1,54 @@
 ---
 schema = 1
 title = "インストール"
-description = "Wailsのインストールと開発環境のセットアップ"
+description = "Wails をインストールして開発環境をセットアップする"
 slug = "getting-started/installation"
-sourcePath = "ja/getting-started/installation.mpd"
+sourcePath = "getting-started/installation.mpd"
 ---
 
-## 対応プラットフォーム
+## サポート対象プラットフォーム
 
-- Windows 10/11 AMD64/ARM64
-- macOS 10.15+ AMD64 (macOS 10.13以降にデプロイ可能)
-- macOS 11.0+ ARM64
-- Ubuntu 24.04 AMD64/ARM64 (他のLinuxでも動作する可能性があります)
+- Windows AMD64/ARM64
+- macOS 10.15 以降 AMD64（macOS 10.13 以降にデプロイ可能）
+- macOS 11.0 以降 ARM64
+- Ubuntu 24.04 AMD64/ARM64（その他の Linux でも動作する可能性があります）
 
 ## 依存関係
 
-Wailsをインストールする前に、以下の共通の依存関係をインストールする必要があります。
+Wails をインストールする前に、いくつかの共通の依存関係を用意する必要があります。
+
+@note type="tip"
+
+Wails CLI のインストール後に `wails3 setup` を実行すると、これらの依存関係を自動的に確認し、インストールを支援できます。
+
+@end
 
 @tabs
-@tab label="Go (1.24以降)"
+@tab label="Go（1.24 以上）"
 
-[Go ダウンロードページ](https://go.dev/dl/)からGoをダウンロードしてください。
+[Go ダウンロードページ](https://go.dev/dl/)から Go をダウンロードしてください。
 
-公式の[Goインストール手順](https://go.dev/doc/install)に従ってください。また、`PATH`環境変数に`~/go/bin`ディレクトリのパスが含まれていることを確認する必要があります。ターミナルを再起動し、以下のチェックを行ってください。
+必ず公式の[Go インストール手順](https://go.dev/doc/install)に従ってください。また、`PATH` 環境変数に `~/go/bin` ディレクトリへのパスが含まれていることも確認してください。ターミナルを再起動し、次の項目を確認します。
 
-- Goが正しくインストールされているか確認: `go version`
-- `~/go/bin`がPATH変数に含まれているか確認
-  - Mac / Linux: `echo $PATH | grep go/bin`
-  - Windows: `$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
+- Go が正しくインストールされていることを確認：`go version`
+- `~/go/bin` が PATH 環境変数に含まれていることを確認
+  - Mac / Linux：`echo $PATH | grep go/bin`
+  - Windows：`$env:PATH -split ';' | Where-Object { $_ -like '*\go\bin' }`
 
 
 
 
 @end
-@tab label="npm (オプション)"
+@tab label="npm（任意）"
 
-Wails自体はnpmのインストールを必要としませんが、バンドルされているテンプレートのほとんどで必要となります。
+Wails 自体は npm を必要としませんが、同梱されているほとんどのテンプレートでは npm が必要です。
 
-[Node ダウンロードページ](https://nodejs.org/en/download/)から最新のNodeインストーラーをダウンロードしてください。一般的にテスト対象となる最新リリースを使用することをお勧めします。
+[Node ダウンロードページ](https://nodejs.org/en/download/)から最新の Node インストーラーをダウンロードしてください。通常は最新リリースを対象にテストしているため、最新リリースの使用を推奨します。
 
-`npm --version`を実行して確認してください。
+確認するには `npm --version` を実行します。
 
 @note type="info"
-npm以外のパッケージマネージャーをお使いの場合は、それをご利用ください。プロジェクトのTaskfilesを更新して使用する必要があります。
+npm 以外のパッケージマネージャーを使用したい場合は、自由に使用できます。そのパッケージマネージャーを使用するように、プロジェクトの Taskfile を更新する必要があります。
 @end
 
 
@@ -51,12 +57,12 @@ npm以外のパッケージマネージャーをお使いの場合は、それ�
 
 ## プラットフォーム固有の依存関係
 
-さらに、プラットフォーム固有の依存関係もインストールする必要があります。
+プラットフォーム固有の依存関係もインストールする必要があります。
 
 @tabs sync-key="platform"
 @tab label="Mac"
 
-Wailsではxcodeコマンドラインツールがインストールされている必要があります。これは以下を実行することでインストールできます。
+Wails では、Xcode コマンドラインツールがインストールされている必要があります。次のコマンドを実行してインストールできます。
 
 ```sh
 xcode-select --install
@@ -68,7 +74,7 @@ xcode-select --install
 @end
 @tab label="Windows"
 
-Wailsでは[WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)がインストールされている必要があります。ほとんどのWindowsインストールでは既にインストールされています。`wails doctor`コマンドを使用して確認できます。
+Wails では、[WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) がインストールされている必要があります。ほぼすべての Windows 環境には、すでにインストールされています。`wails doctor` コマンドで確認できます。
 
 
 
@@ -76,7 +82,7 @@ Wailsでは[WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-ed
 @end
 @tab label="Linux"
 
-Linuxでは標準の`gcc`ビルドツールに加えて`gtk3`と`webkit2gtk`が必要です。インストール後に<code>wails doctor</code>を実行すると、依存関係のインストール方法が表示されます。お使いのディストリビューションやパッケージマネージャーがサポートされていない場合は、Discordでお知らせください。
+Linux では、標準の `gcc` ビルドツールに加えて、`gtk4` と `webkitgtk-6.0` が必要です。インストール後に <code>wails3 doctor</code> を実行すると、依存関係のインストール方法が表示されます。従来の GTK3 / WebKit2GTK 4.1 スタックも、v3.1 までは `-tags gtk3` で引き続き利用できます（[Linux パッケージング - 従来の GTK3 サポート](/guides/build/linux/#legacy-gtk3-support)を参照）。お使いのディストリビューションまたはパッケージマネージャーがサポートされていない場合は、Discord でお知らせください。
 
 
 
@@ -85,13 +91,13 @@ Linuxでは標準の`gcc`ビルドツールに加えて`gtk3`と`webkit2gtk`が�
 
 ## インストール
 
-Go Modulesを使用してWails CLIをインストールするには、以下のコマンドを実行してください。
+Go Modules を使用して Wails CLI をインストールするには、次のコマンドを実行します。
 
 ```shell
 go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
 ```
 
-最新の開発版をインストールしたい場合は、以下のコマンドを実行してください。
+最新の開発版をインストールする場合は、次のコマンドを実行します。
 
 ```shell
 git clone https://github.com/wailsapp/wails.git
@@ -100,15 +106,43 @@ cd v3/cmd/wails3
 go install
 ```
 
-開発版を使用する場合、生成されるすべてのプロジェクトはGoの[replace](https://go.dev/ref/mod#go-mod-file-replace)ディレクティブを使用して、プロジェクトが開発版のWailsを使用するようにします。
+開発版を使用する場合、生成されるすべてのプロジェクトでは、開発版の Wails が使用されるように Go の [replace](https://go.dev/ref/mod#go-mod-file-replace) ディレクティブが使用されます。
 
-## システムチェック
+## 次のステップ
 
-`wails3 doctor`を実行すると、必要な依存関係が正しくインストールされているか確認できます。不足しているものがある場合は、何が不足しているか、および問題を解決する方法を案内します。
+CLI のインストール後、セットアップウィザードを実行して開発環境を構成します。
 
-## `wails3`コマンドが見つからない場合？
+```shell
+wails3 setup
+```
 
-システムが`wails3`コマンドが見つからないと報告している場合は、以下を確認してください。
+@note type="caution" title="試験的機能"
 
-- 上記の`Goインストールガイド`を正しく従っていること、および`go/bin`ディレクトリが`PATH`環境変数に含まれていることを確認してください。
-- 新しい`PATH`変数を反映させるために、現在のターミナルを閉じて再度開いてください。
+セットアップウィザードは新しい機能であり、主に Linux でテストされています。問題が発生した場合は、[問題を報告](https://github.com/wailsapp/wails/issues/4904)し、以下の手動による依存関係のインストール手順を使用してください。
+
+@end
+
+セットアップウィザードでは、次の処理を行います。
+- プラットフォーム固有の依存関係を確認し、インストールを支援する
+- プロジェクトのデフォルト設定（作成者情報、バンドル ID のプレフィックス）を構成する
+- 必要に応じて、クロスプラットフォームビルド用に Docker をセットアップする
+- 必要に応じてコード署名を構成する
+
+詳細については、[セットアップガイド](/getting-started/setup/)を参照してください。
+
+## 依存関係の手動インストール
+
+依存関係を手動でインストールする場合、またはお使いのシステムでセットアップウィザードが動作しない場合は、上記のプラットフォーム固有の手順に従ってから、次のコマンドを実行します。
+
+```shell
+wails3 doctor
+```
+
+必要な依存関係が正しくインストールされているかを確認し、不足しているものを通知します。
+
+## `wails3` コマンドが見つからない場合
+
+`wails3` コマンドが見つからないとシステムから報告された場合は、次の項目を確認してください。
+
+- 上記の*Go インストールガイド*に正しく従っていること、および `go/bin` ディレクトリが `PATH` 環境変数に含まれていることを確認してください。
+- 新しい `PATH` 環境変数を反映するため、現在開いているターミナルを閉じてから再度開いてください。

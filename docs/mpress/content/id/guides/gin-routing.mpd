@@ -1,28 +1,28 @@
 ---
 schema = 1
-title = "Menggunakan Gin untuk Routing"
-description = "Panduan lengkap untuk mengintegrasikan framework web Gin dengan aplikasi Wails v3"
+title = "Menggunakan Gin untuk Perutean"
+description = "Panduan lengkap untuk mengintegrasikan kerangka kerja web Gin dengan aplikasi Wails v3"
 slug = "guides/gin-routing"
-sourcePath = "id/guides/gin-routing.mpd"
+sourcePath = "guides/gin-routing.mpd"
 ---
 
-Panduan ini mendemonstrasikan cara mengintegrasikan [framework web Gin](https://github.com/gin-gonic/gin) dengan Wails v3. Gin adalah framework web HTTP berperforma tinggi yang ditulis dalam Go dan memudahkan pembuatan aplikasi web serta API.
+Panduan ini menunjukkan cara mengintegrasikan [kerangka kerja web Gin](https://github.com/gin-gonic/gin) dengan Wails v3. Gin adalah kerangka kerja web HTTP berperforma tinggi yang ditulis dalam Go dan memudahkan pembuatan aplikasi web serta API.
 
-## Pengantar
+## Pendahuluan
 
-Wails v3 menyediakan sistem aset yang fleksibel sehingga Anda dapat menggunakan handler HTTP apa pun, termasuk framework web populer seperti Gin. Integrasi ini memungkinkan Anda untuk:
+Wails v3 menyediakan sistem aset fleksibel yang memungkinkan Anda menggunakan handler HTTP apa pun, termasuk kerangka kerja web populer seperti Gin. Integrasi ini memungkinkan Anda untuk:
 
-- Menyajikan konten web menggunakan routing dan middleware Gin
-- Membuat RESTful API yang dapat diakses dari aplikasi Wails Anda
+- Menyajikan konten web menggunakan perutean dan middleware Gin
+- Membuat API RESTful yang dapat diakses dari aplikasi Wails Anda
 - Menggunakan fitur Gin sambil mempertahankan integrasi desktop Wails
 
 ## Menyiapkan Gin dengan Wails
 
-Untuk mengintegrasikan Gin dengan Wails, Anda perlu membuat router Gin dan mengonfigurasinya sebagai asset handler di aplikasi Wails Anda. Berikut panduan langkah demi langkah:
+Untuk mengintegrasikan Gin dengan Wails, Anda perlu membuat router Gin dan mengonfigurasinya sebagai handler aset dalam aplikasi Wails Anda. Berikut panduan langkah demi langkahnya:
 
 ### 1. Instal Dependensi
 
-Pertama, pastikan paket Gin sudah terinstal:
+Pertama, pastikan paket Gin telah terinstal:
 
 ```bash
 go get -u github.com/gin-gonic/gin
@@ -30,7 +30,7 @@ go get -u github.com/gin-gonic/gin
 
 ### 2. Buat Middleware untuk Gin
 
-Buat fungsi middleware yang menangani integrasi antara Wails dan Gin:
+Buat fungsi middleware yang akan menangani integrasi antara Wails dan Gin:
 
 ```go
 // GinMiddleware creates a middleware that passes requests to Gin if they're not handled by Wails
@@ -51,9 +51,9 @@ func GinMiddleware(ginEngine *gin.Engine) application.Middleware {
 
 Middleware ini meneruskan semua permintaan HTTP ke router Gin.
 
-### 3. Konfigurasi Router Gin Anda
+### 3. Konfigurasikan Router Gin Anda
 
-Siapkan router Gin dengan route, middleware, dan handler:
+Siapkan router Gin Anda dengan rute, middleware, dan handler:
 
 ```go
 // Create a new Gin router
@@ -78,7 +78,7 @@ ginEngine.GET("/api/hello", func(c *gin.Context) {
 
 ### 4. Integrasikan dengan Aplikasi Wails
 
-Konfigurasi aplikasi Wails Anda untuk menggunakan router Gin sebagai asset handler:
+Konfigurasikan aplikasi Wails Anda agar menggunakan router Gin sebagai handler asetnya:
 
 ```go
 // Create a new Wails application
@@ -105,7 +105,7 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ## Menyajikan Konten Statis
 
-Gunakan paket `embed` Go untuk menyematkan file statis ke dalam binary:
+Gunakan paket `embed` milik Go untuk menyematkan berkas statis ke dalam biner Anda:
 
 ```go
 //go:embed static
@@ -118,11 +118,11 @@ ginEngine.GET("/", func(c *gin.Context) {
 })
 ```
 
-Untuk pengembangan, sajikan file langsung dari disk menggunakan `ginEngine.Static("/static", "./static")`.
+Untuk pengembangan, sajikan berkas langsung dari disk menggunakan `ginEngine.Static("/static", "./static")`.
 
 ## Middleware Kustom
 
-Gin memungkinkan Anda membuat middleware kustom untuk berbagai keperluan. Berikut contoh middleware logging:
+Gin memungkinkan Anda membuat middleware kustom untuk berbagai keperluan. Berikut contoh middleware pencatatan log:
 
 ```go
 // LoggingMiddleware is a Gin middleware that logs request details
@@ -151,7 +151,7 @@ func LoggingMiddleware() gin.HandlerFunc {
 
 ## Menangani Permintaan API
 
-Gin memudahkan pembuatan RESTful API. Berikut cara mendefinisikan endpoint API:
+Gin memudahkan pembuatan API RESTful. Berikut cara mendefinisikan endpoint API:
 
 ```go
 // GET endpoint
@@ -188,11 +188,11 @@ ginEngine.GET("/api/search", func(c *gin.Context) {
 
 ## Menggunakan Fitur Wails
 
-Konten web yang disajikan Gin dapat berinteraksi dengan fitur Wails menggunakan paket `@wailsio/runtime`.
+Konten web yang disajikan oleh Gin dapat berinteraksi dengan fitur Wails menggunakan paket `@wailsio/runtime`.
 
-### Penanganan Event
+### Menangani Peristiwa
 
-Daftarkan event handler di Go:
+Daftarkan handler peristiwa di Go:
 
 ```go
 app.Event.On("my-event", func(event *application.CustomEvent) {
@@ -215,7 +215,7 @@ Panggil dari JavaScript menggunakan runtime:
 
 ### Menyesuaikan Mode Gin
 
-Atur Gin ke release mode untuk produksi:
+Atur Gin ke mode rilis untuk produksi:
 
 ```go
 gin.SetMode(gin.ReleaseMode)  // Use gin.DebugMode for development
@@ -224,7 +224,7 @@ ginEngine := gin.New()
 
 ### Menangani WebSocket
 
-Anda dapat mengintegrasikan WebSocket dengan Gin menggunakan library seperti Gorilla WebSocket:
+Anda dapat mengintegrasikan WebSocket dengan Gin menggunakan pustaka seperti Gorilla WebSocket:
 
 ```go
 import "github.com/gorilla/websocket"
@@ -252,15 +252,15 @@ ginEngine.GET("/ws", func(c *gin.Context) {
 
 ## Praktik Terbaik
 
-- *Gunakan Paket embed Go:* Sematkan file statis ke dalam binary untuk distribusi yang lebih baik.
-- *Pisahkan Concern:* Pisahkan logika API dari logika UI.
-- *Penanganan Error:* Implementasikan penanganan error yang tepat di route Gin maupun kode frontend.
-- *Keamanan:* Perhatikan pertimbangan keamanan, terutama saat menangani input pengguna.
-- *Performa:* Gunakan release mode Gin di produksi untuk performa yang lebih baik.
-- *Testing:* Tulis tes untuk route Gin menggunakan utilitas testing Gin.
+- *Gunakan Paket embed Go:* Sematkan berkas statis ke dalam biner Anda agar lebih mudah didistribusikan.
+- *Pisahkan Tanggung Jawab:* Pisahkan logika API dari logika antarmuka pengguna Anda.
+- *Penanganan Kesalahan:* Terapkan penanganan kesalahan yang tepat pada rute Gin dan kode frontend.
+- *Keamanan:* Perhatikan aspek keamanan, terutama saat menangani input pengguna.
+- *Performa:* Gunakan mode rilis Gin dalam produksi untuk meningkatkan performa.
+- *Pengujian:* Tulis pengujian untuk rute Gin menggunakan utilitas pengujian Gin.
 
 ## Kesimpulan
 
-Mengintegrasikan Gin dengan Wails memberikan kombinasi yang powerful untuk membangun aplikasi desktop dengan teknologi web. Performa dan fitur Gin melengkapi kemampuan integrasi desktop Wails, sehingga Anda dapat membuat aplikasi canggih yang memanfaatkan yang terbaik dari kedua dunia.
+Mengintegrasikan Gin dengan Wails menghasilkan kombinasi yang tangguh untuk membangun aplikasi desktop dengan teknologi web. Performa dan rangkaian fitur Gin melengkapi kemampuan integrasi desktop Wails, sehingga Anda dapat membuat aplikasi canggih yang memanfaatkan keunggulan keduanya.
 
-Untuk informasi lebih lanjut, lihat [dokumentasi Gin](https://github.com/gin-gonic/gin) dan [dokumentasi Wails](https://wails.io).
+Untuk informasi selengkapnya, lihat [dokumentasi Gin](https://github.com/gin-gonic/gin) dan [dokumentasi Wails](https://wails.io).

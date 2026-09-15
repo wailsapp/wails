@@ -1,23 +1,23 @@
 ---
 schema = 1
-title = "Layanan QR Code"
-description = "Buat layanan QR code untuk mempelajari layanan Wails"
+title = "Layanan Kode QR"
+description = "Buat layanan kode QR untuk mempelajari layanan Wails"
 slug = "tutorials/01-creating-a-service"
-sourcePath = "id/tutorials/01-creating-a-service.mpd"
+sourcePath = "tutorials/01-creating-a-service.mpd"
 ---
 
-*Service* di Wails adalah struct Go yang berisi logika bisnis yang ingin Anda sediakan ke frontend. Service menjaga kode tetap terorganisir dengan mengelompokkan fungsionalitas terkait.
+*Layanan* di Wails adalah struct Go yang berisi logika bisnis yang ingin Anda sediakan untuk frontend. Layanan membantu menjaga kode tetap terorganisasi dengan mengelompokkan fungsionalitas terkait.
 
-Anggap service sebagai kumpulan metode yang dapat dipanggil oleh kode JavaScript Anda. Setiap metode publik pada service menjadi dapat dipanggil dari frontend setelah binding dibuat.
+Anggap layanan sebagai kumpulan metode yang dapat dipanggil oleh kode JavaScript Anda. Setiap metode publik pada layanan dapat dipanggil dari frontend setelah binding dibuat.
 
-Dalam tutorial ini, kita akan membuat layanan generator QR code untuk mendemonstrasikan konsep-konsep ini. Di akhir tutorial, Anda akan memahami cara membuat service, mengelola dependensi, dan menghubungkan kode Go ke frontend.
+Dalam tutorial ini, kita akan membuat layanan pembuat kode QR untuk mendemonstrasikan konsep-konsep tersebut. Setelah selesai, Anda akan memahami cara membuat layanan, mengelola dependensi, dan menghubungkan kode Go ke frontend.
 
 @rawHTML
 <br/>
 @end
 
 @steps
-@step title="Buat file QR Service"
+@step title="Buat File Layanan QR"
 
 Buat file baru bernama `qrservice.go` di direktori aplikasi Anda:
 
@@ -56,24 +56,24 @@ func (s *QRService) Generate(text string, size int) ([]byte, error) {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- `QRService` adalah struct kosong yang akan menampung metode pembuatan QR code kita
-- `NewQRService()` adalah fungsi konstruktor yang membuat instance baru dari service kita
-- `Generate()` adalah metode yang menerima teks dan ukuran, lalu mengembalikan QR code sebagai array byte PNG
-- Metode mengembalikan `([]byte, error)` mengikuti konvensi Go yang mengembalikan error sebagai nilai terakhir
-- Kita menggunakan paket `github.com/skip2/go-qrcode` untuk menangani pembuatan QR code
+- `QRService` adalah struct kosong yang akan menampung metode pembuatan kode QR kita
+- `NewQRService()` adalah fungsi konstruktor yang membuat instans baru layanan kita
+- `Generate()` adalah metode yang menerima teks dan ukuran, lalu mengembalikan kode QR sebagai array byte PNG
+- Metode tersebut mengembalikan `([]byte, error)` sesuai konvensi Go yang menempatkan error sebagai nilai terakhir yang dikembalikan
+- Kita menggunakan paket `github.com/skip2/go-qrcode` untuk menangani proses pembuatan kode QR
 
 @rawHTML
  <br/>
 @end
 
 @end
-@step title="Daftarkan Service"
+@step title="Daftarkan Layanan"
 
-Membuat service saja tidak cukup — kita perlu *mendaftarkannya* ke aplikasi Wails agar aplikasi mengetahui service tersebut ada dan dapat membuat binding untuknya.
+Membuat layanan saja tidak cukup—kita perlu *mendaftarkannya* ke aplikasi Wails agar aplikasi mengetahui keberadaan layanan tersebut dan dapat membuat binding untuknya.
 
-Pendaftaran dilakukan di `main.go` saat Anda membuat aplikasi. Anda meneruskan instance service ke opsi `Services`:
+Pendaftaran dilakukan di `main.go` saat Anda membuat aplikasi. Teruskan instans layanan Anda ke opsi `Services`:
 
 ```go {title="main.go" ins="7-9"}
  func main() {
@@ -109,12 +109,12 @@ Pendaftaran dilakukan di `main.go` saat Anda membuat aplikasi. Anda meneruskan i
  }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- `application.NewService()` membungkus service Anda agar Wails dapat mengelolanya
-- Kita memanggil `NewQRService()` untuk membuat instance service kita
-- Service ditambahkan ke slice `Services` dalam opsi aplikasi
-- Wails akan memindai service ini untuk metode publik yang tersedia di frontend
+- `application.NewService()` membungkus layanan Anda agar dapat dikelola oleh Wails
+- Kita memanggil `NewQRService()` untuk membuat instans layanan kita
+- Layanan ditambahkan ke slice `Services` dalam opsi aplikasi
+- Wails sekarang akan memindai metode publik dalam layanan ini agar tersedia untuk frontend
 
 @rawHTML
  <br/>
@@ -123,7 +123,7 @@ Pendaftaran dilakukan di `main.go` saat Anda membuat aplikasi. Anda meneruskan i
 @end
 @step title="Instal Dependensi"
 
-Kita mereferensikan paket `github.com/skip2/go-qrcode` di kode kita, tetapi belum mengunduhnya. Go perlu mengetahui dependensi ini dan mengunduhnya ke proyek Anda.
+Kita telah merujuk paket `github.com/skip2/go-qrcode` dalam kode, tetapi belum benar-benar mengunduhnya. Go perlu mengetahui dependensi ini dan mengunduhnya ke proyek Anda.
 
 Jalankan perintah ini di terminal dari direktori proyek Anda:
 
@@ -131,14 +131,14 @@ Jalankan perintah ini di terminal dari direktori proyek Anda:
 go mod tidy
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- `go mod tidy` memindai file Go Anda untuk pernyataan import
-- Perintah ini mengunduh paket yang hilang (seperti `go-qrcode`) dan menambahkannya ke `go.mod`
-- Juga menghapus dependensi yang tidak lagi digunakan
-- Ini memastikan proyek Anda memiliki semua kode yang diperlukan untuk kompilasi berhasil
+- `go mod tidy` memindai file Go Anda untuk mencari pernyataan import
+- Perintah tersebut mengunduh paket yang belum tersedia (seperti `go-qrcode`) dan menambahkannya ke `go.mod`
+- Perintah tersebut juga menghapus dependensi yang tidak lagi digunakan
+- Hal ini memastikan proyek Anda memiliki semua kode yang diperlukan agar berhasil dikompilasi
 
-Anda seharusnya melihat output yang menunjukkan paket QR code telah diunduh dan ditambahkan ke proyek.
+Anda seharusnya melihat output yang menunjukkan bahwa paket kode QR telah diunduh dan ditambahkan ke proyek Anda.
 
 @rawHTML
  <br/>
@@ -147,13 +147,13 @@ Anda seharusnya melihat output yang menunjukkan paket QR code telah diunduh dan 
 @end
 @step title="Buat Binding"
 
-Untuk memanggil metode ini dari frontend, kita perlu membuat binding.\
-Anda dapat melakukannya dengan menjalankan `wails generate bindings` di direktori root proyek.
+Agar metode ini dapat dipanggil dari frontend, kita perlu membuat binding.\
+Anda dapat melakukannya dengan menjalankan `wails generate bindings` di direktori root proyek Anda.
 
 @note type="info"
-Pertama kali Anda menjalankan perintah ini di proyek, generator binding melakukan analisis menyeluruh terhadap kode dan dependensi Anda. Ini terkadang membutuhkan waktu lebih lama dari yang diharapkan, namun eksekusi berikutnya akan jauh lebih cepat.
+Saat pertama kali menjalankannya dalam suatu proyek, generator binding akan menganalisis kode dan dependensi Anda secara menyeluruh. Proses ini terkadang memerlukan waktu sedikit lebih lama dari perkiraan, tetapi proses berikutnya akan jauh lebih cepat.
 @end
-Setelah dijalankan, Anda seharusnya melihat output serupa berikut di terminal:
+Setelah menjalankannya, Anda seharusnya melihat output yang mirip dengan berikut ini di terminal:
 
 ```bash
  % wails3 generate bindings
@@ -161,7 +161,7 @@ Setelah dijalankan, Anda seharusnya melihat output serupa berikut di terminal:
  INFO  Output directory: /Users/leaanthony/myproject/frontend/bindings
 ```
 
-Perhatikan bahwa di direktori frontend, ada direktori baru bernama `bindings`:
+Di dalam direktori frontend, kini akan ada direktori baru bernama `bindings`:
 
 ```bash
 frontend/
@@ -171,8 +171,8 @@ frontend/
         └── qrservice.js
 ```
 
-@note type="tip" title="Pro Tip"
-Saat Anda membangun aplikasi menggunakan `wails3 build`, binding akan dibuat otomatis dan tetap mutakhir.
+@note type="tip" title="Kiat Profesional"
+Saat membangun aplikasi menggunakan `wails3 build`, binding akan dibuat secara otomatis dan selalu diperbarui.
 @end
 @rawHTML
  <br/>
@@ -181,7 +181,7 @@ Saat Anda membangun aplikasi menggunakan `wails3 build`, binding akan dibuat oto
 @end
 @step title="Memahami Binding"
 
-Mari lihat binding yang dihasilkan di `bindings/changeme/qrservice.js`:
+Mari kita lihat binding yang dibuat di `bindings/changeme/qrservice.js`:
 
 ```js {title="bindings/changeme/qrservice.js"}
  // @ts-check
@@ -213,22 +213,22 @@ Mari lihat binding yang dihasilkan di `bindings/changeme/qrservice.js`:
  }
 ```
 
-Kita dapat melihat binding dibuat untuk metode `Generate`. Nama parameter dipertahankan,\
-begitu pula komentar. JSDoc juga dihasilkan untuk metode guna memberikan informasi tipe ke IDE Anda.
+Kita dapat melihat bahwa binding dibuat untuk metode `Generate`. Nama parameter dipertahankan,\
+begitu pula komentarnya. JSDoc juga dibuat untuk metode tersebut guna menyediakan informasi tipe bagi IDE Anda.
 
 @note type="info"
-Tidak perlu memahami binding yang dihasilkan secara penuh, tetapi penting untuk memahami cara kerjanya.
+Anda tidak perlu memahami binding yang dibuat secara menyeluruh, tetapi penting untuk memahami cara kerjanya.
 @end
 Binding menyediakan:
 - Fungsi yang setara dengan metode Go Anda
 - Konversi otomatis antara tipe Go dan JavaScript
-- Operasi async berbasis Promise
-- Informasi tipe sebagai komentar JSDoc
+- Operasi asinkron berbasis Promise
+- Informasi tipe dalam bentuk komentar JSDoc
 
-@note type="tip" title="Typescript"
-Generator binding juga mendukung pembuatan binding Typescript. Anda dapat menjalankan `wails3 generate bindings -ts`.
+@note type="tip" title="TypeScript"
+Generator binding juga mendukung pembuatan binding TypeScript. Anda dapat melakukannya dengan menjalankan `wails3 generate bindings -ts`.
 @end
-Service yang dihasilkan diekspor ulang oleh file `index.js`:
+Layanan yang dibuat diekspor ulang oleh file `index.js`:
 
 ```js {title="bindings/changeme/index.js"}
  // @ts-check
@@ -241,13 +241,13 @@ Service yang dihasilkan diekspor ulang oleh file `index.js`:
  };
 ```
 
-Anda kemudian dapat mengaksesnya melalui path import yang disederhanakan\
-`./bindings/changeme` yang hanya terdiri dari path paket Go Anda,\
-tanpa perlu menentukan nama file.
+Selanjutnya, Anda dapat mengaksesnya melalui jalur import sederhana\
+`./bindings/changeme` yang hanya terdiri dari jalur paket Go Anda,\
+tanpa menentukan nama file apa pun.
 
 @note type="info"
-Path import yang disederhanakan hanya tersedia saat menggunakan frontend bundler.\
-Jika Anda lebih suka frontend vanilla tanpa bundler,\
+Jalur import sederhana hanya tersedia saat menggunakan bundler frontend.\
+Jika Anda lebih memilih frontend vanilla yang tidak menggunakan bundler,\
 Anda harus mengimpor `index.js` atau `qrservice.js` secara manual.
 @end
 @rawHTML
@@ -257,9 +257,9 @@ Anda harus mengimpor `index.js` atau `qrservice.js` secara manual.
 @end
 @step title="Gunakan Binding di Frontend"
 
-Sekarang kita dapat memanggil service Go dari JavaScript! Binding yang dihasilkan membuat ini mudah dan type-safe.
+Sekarang kita dapat memanggil layanan Go dari JavaScript! Binding yang dibuat memudahkan hal ini sekaligus menjaga keamanan tipe.
 
-Perbarui `frontend/src/main.js` untuk menggunakan binding baru:
+Perbarui `frontend/src/main.js` agar menggunakan binding baru:
 
 ```js {title="frontend/src/main.js"}
  import { QRService } from './bindings/changeme';
@@ -291,16 +291,16 @@ Perbarui `frontend/src/main.js` untuk menggunakan binding baru:
  }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- Kita mengimpor `QRService` dari binding yang dihasilkan
-- `QRService.Generate()` memanggil metode Go kita — mengembalikan Promise, jadi kita gunakan `await`
-- Metode Go mengembalikan `[]byte`, yang Wails otomatis konversi ke string base64 untuk JavaScript
-- Kita membuat data URL dengan string base64 untuk menampilkan gambar PNG
-- Blok `try/catch` menangani error dari sisi Go (seperti input tidak valid)
-- Jika kode Go kita mengembalikan error, Promise ditolak dan kita tangkap di sini
+- Kita mengimpor `QRService` dari binding yang dibuat
+- `QRService.Generate()` memanggil metode Go kita—pemanggilan ini mengembalikan Promise, sehingga kita menggunakan `await`
+- Metode Go mengembalikan `[]byte`, yang secara otomatis dikonversi oleh Wails menjadi string base64 untuk JavaScript
+- Kita membuat URL data dengan string base64 untuk menampilkan gambar PNG
+- Blok `try/catch` menangani setiap error dari sisi Go (seperti input yang tidak valid)
+- Jika kode Go kita mengembalikan error, Promise akan ditolak dan kita menangkapnya di sini
 
-Sekarang perbarui `index.html` untuk menggunakan binding baru di fungsi `initializeQRGenerator`:
+Sekarang perbarui `index.html` agar menggunakan binding baru dalam fungsi `initializeQRGenerator`:
 
 ```html {title="frontend/src/index.html"}
 <!DOCTYPE html>
@@ -355,11 +355,11 @@ Sekarang perbarui `index.html` untuk menggunakan binding baru di fungsi `initial
 </html>
 ```
 
-Jalankan `wails3 dev` untuk memulai dev server. Setelah beberapa detik, aplikasi seharusnya terbuka.
+Jalankan `wails3 dev` untuk memulai server pengembangan. Setelah beberapa detik, aplikasi seharusnya terbuka.
 
-Ketik teks dan klik tombol "Generate QR Code". Anda seharusnya melihat QR code di tengah halaman:
+Masukkan teks, lalu klik tombol "Buat Kode QR". Anda seharusnya melihat kode QR di bagian tengah halaman:
 
-![QR Code](/assets/qr1.png)
+![Kode QR](/assets/qr1.png)
 
 @rawHTML
  <br/>
@@ -369,23 +369,23 @@ Ketik teks dan klik tombol "Generate QR Code". Anda seharusnya melihat QR code d
 @end
 
 @end
-@step title="Pendekatan Alternatif: HTTP Handler"
+@step title="Pendekatan Alternatif: Handler HTTP"
 
 Sejauh ini, kita telah membahas area berikut:
-- Membuat Service baru
+- Membuat Layanan baru
 - Membuat Binding
-- Menggunakan Binding di kode Frontend kita
+- Menggunakan Binding dalam kode Frontend kita
 
-*Mengapa menggunakan HTTP handler?*
+*Mengapa menggunakan handler HTTP?*
 
-Method binding bekerja dengan baik untuk operasi data, tetapi ada pendekatan alternatif untuk menyajikan file, gambar, atau media lainnya. Alih-alih mengonversi semuanya ke base64 dan mengirimkannya melalui binding, Anda dapat membuat service bertindak seperti mini web server.
+Binding metode sangat cocok untuk operasi data, tetapi ada pendekatan alternatif untuk menyajikan file, gambar, atau media lainnya. Alih-alih mengonversi semuanya ke base64 dan mengirimkannya melalui binding, Anda dapat membuat layanan bertindak seperti server web mini.
 
 Ini berguna ketika:
-- Anda menyajikan gambar, video, atau file besar
-- Anda ingin menggunakan tag HTML standar `<img>` atau `<video>` dengan atribut `src`
-- Anda memerlukan akses URL langsung ke resource
+- Anda menyajikan gambar, video, atau file berukuran besar
+- Anda ingin menggunakan tag HTML `<img>` atau `<video>` standar dengan atribut `src`
+- Anda memerlukan akses URL langsung ke sumber daya
 
-Jika service Anda mengimplementasikan metode standar Go `ServeHTTP(w http.ResponseWriter, r *http.Request)`, Wails dapat menjadikannya dapat diakses sebagai endpoint HTTP. Mari perluas layanan QR code kita untuk mendukung ini:
+Jika layanan Anda mengimplementasikan metode `ServeHTTP(w http.ResponseWriter, r *http.Request)` standar Go, Wails dapat membuatnya dapat diakses sebagai endpoint HTTP. Mari perluas layanan kode QR kita agar mendukung hal ini:
 
 ```go {title="qrservice.go" ins="4-5,37-65"}
 package main
@@ -455,15 +455,15 @@ func (s *QRService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- `ServeHTTP` adalah interface standar Go untuk menangani permintaan HTTP
-- Kita mem-parsing parameter query dari URL (`?text=hello&size=256`)
-- Kita memanggil metode `Generate()` yang sudah ada untuk membuat QR code
-- Kita set content type ke `image/png` agar browser tahu ini gambar
-- Kita menulis byte PNG mentah langsung ke response — tidak perlu base64!
+- `ServeHTTP` adalah antarmuka standar Go untuk menangani permintaan HTTP
+- Kita mengurai parameter kueri dari URL (`?text=hello&size=256`)
+- Kita memanggil metode `Generate()` yang sudah ada untuk membuat kode QR
+- Kita menetapkan jenis konten ke `image/png` agar browser mengetahui bahwa konten tersebut adalah gambar
+- Kita menulis byte PNG mentah langsung ke respons—tanpa memerlukan base64!
 
-Sekarang perbarui `main.go` untuk menentukan route tempat layanan QR code dapat diakses:
+Sekarang perbarui `main.go` untuk menentukan rute tempat layanan kode QR dapat diakses:
 
 ```go {title="main.go" ins="8-10"}
  func main() {
@@ -473,7 +473,7 @@ Sekarang perbarui `main.go` untuk menentukan route tempat layanan QR code dapat 
          Description: "A demo of using raw HTML & CSS",
          LogLevel:    slog.LevelDebug,
          Services: []application.Service{
-             application.NewService(NewQRService(), application.ServiceOptions{
+             application.NewServiceWithOptions(NewQRService(), application.ServiceOptions{
                  Route: "/qrservice",
              }),
          },
@@ -501,18 +501,18 @@ Sekarang perbarui `main.go` untuk menentukan route tempat layanan QR code dapat 
  }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- Kita menambahkan `application.ServiceOptions` untuk mengonfigurasi cara service diekspos
-- `Route: "/qrservice"` membuat HTTP handler dapat diakses di `/qrservice`
-- Sekarang permintaan ke `/qrservice?text=hello` akan memanggil metode `ServeHTTP` kita
-- Tanpa mengatur `Route`, fungsionalitas HTTP handler dinonaktifkan
+- Kita menambahkan `application.ServiceOptions` untuk mengonfigurasi cara layanan diekspos
+- `Route: "/qrservice"` membuat handler HTTP dapat diakses di `/qrservice`
+- Sekarang setiap permintaan ke `/qrservice?text=hello` akan memanggil metode `ServeHTTP` kita
+- Tanpa menetapkan `Route`, fungsi handler HTTP dinonaktifkan
 
 @note type="info"
-Jika Anda tidak mengatur opsi `Route` secara eksplisit,\
-HTTP handler tidak akan dapat diakses dari frontend.
+Jika Anda tidak menetapkan opsi `Route` secara eksplisit,\
+handler HTTP tidak akan dapat diakses dari frontend.
 @end
-Terakhir, perbarui `main.js` untuk menggunakan `src` gambar sederhana alih-alih encoding base64:
+Terakhir, perbarui `main.js` agar menggunakan `src` gambar sederhana, bukan pengodean base64:
 
 ```js {title="frontend/src/main.js"}
 async function generateQR() {
@@ -537,17 +537,20 @@ export function initializeQRGenerator() {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- Kita menghapus import dan pemanggilan `await QRService.Generate()`
-- Sebagai gantinya, kita cukup set `img.src` ke endpoint HTTP kita
-- `encodeURIComponent()` meng-escape karakter khusus dengan aman di URL
-- Browser otomatis membuat permintaan HTTP GET saat kita set `src`
-- Ini lebih sederhana dan efisien untuk gambar — tidak perlu konversi base64!
+- Kita menghapus impor dan pemanggilan `await QRService.Generate()`
+- Sebagai gantinya, kita cukup menetapkan `img.src` agar mengarah ke endpoint HTTP kita
+- `encodeURIComponent()` meng-escape karakter khusus dalam URL dengan aman
+- Browser secara otomatis membuat permintaan HTTP GET saat kita menetapkan `src`
+- Cara ini lebih sederhana dan efisien untuk gambar—tanpa memerlukan konversi base64!
 
-Menjalankan aplikasi lagi seharusnya menghasilkan QR code yang sama:
+Menjalankan aplikasi kembali seharusnya menghasilkan kode QR yang sama:
 
-![QR Code](/assets/qr1.png)
+![Kode QR](/assets/qr1.png)
+@rawHTML
+ <br/>
+@end
 @rawHTML
  <br/>
 @end
@@ -555,35 +558,35 @@ Menjalankan aplikasi lagi seharusnya menghasilkan QR code yang sama:
 @end
 @step title="Mendukung Konfigurasi Dinamis"
 
-*Masalah dengan route hardcoded:*
+*Masalah pada rute yang di-hardcode:*
 
-Pada contoh di atas kita menggunakan route hardcoded `/qrservice` di kode JavaScript.\
-Ini menciptakan coupling ketat antara konfigurasi Go dan kode frontend Anda.
+Dalam contoh di atas, kita menggunakan rute `/qrservice` yang di-hardcode dalam kode JavaScript.\
+Hal ini menciptakan keterikatan yang erat antara konfigurasi Go dan kode frontend Anda.
 
 Jika Anda mengedit `main.go` dan mengubah opsi `Route` tanpa memperbarui `main.js`,\
-aplikasi akan rusak:
+aplikasi akan berhenti berfungsi:
 
 ```go {title="main.go" ins="3"}
         // ...
-            application.NewService(NewQRService(), application.ServiceOptions{
+            application.NewServiceWithOptions(NewQRService(), application.ServiceOptions{
                 Route: "/services/qr",
             }),
         // ...
 ```
 
-Route hardcoded bekerja untuk aplikasi sederhana, tetapi membuat kode rapuh dan sulit dirawat.
+Rute yang di-hardcode dapat digunakan untuk aplikasi sederhana, tetapi membuat kode Anda rapuh dan lebih sulit dipelihara.
 
 *Solusinya: Konfigurasi dinamis*
 
-Method binding dan HTTP handler dapat bekerja bersama! Kita dapat menggunakan binding untuk memberi tahu frontend route mana yang digunakan, sehingga konfigurasi menjadi dinamis dan menghilangkan path hardcoded.
+Binding metode dan handler HTTP dapat digunakan bersama! Kita dapat menggunakan binding untuk memberi tahu frontend rute yang harus digunakan, sehingga konfigurasi menjadi dinamis dan jalur yang di-hardcode dapat dihilangkan.
 
-Cara kerjanya:
-1. Metode lifecycle `ServiceStartup` berjalan saat aplikasi dimulai
-2. Kita menyimpan route yang dikonfigurasi dari opsi
-3. Kita menambahkan metode `URL()` yang dapat dipanggil frontend untuk mendapatkan route yang benar
-4. Sekarang frontend meminta route ke service Go alih-alih menebak
+Berikut cara kerjanya:
+1. Metode siklus hidup `ServiceStartup` dijalankan saat aplikasi Anda dimulai
+2. Kita menyimpan rute yang dikonfigurasi dari opsi
+3. Kita menambahkan metode `URL()` yang dapat dipanggil frontend untuk mendapatkan rute yang benar
+4. Sekarang frontend meminta rutenya kepada layanan Go, bukan menebaknya
 
-Pertama, implementasikan interface `ServiceStartup` dan tambahkan metode `URL` baru:
+Pertama, implementasikan antarmuka `ServiceStartup` dan tambahkan metode `URL` baru:
 
 ```go {title="qrservice.go" ins="4,6,10,15,23-27,46-55"}
 package main
@@ -673,16 +676,16 @@ func (s *QRService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- Kita menambahkan field `route` untuk menyimpan route yang dikonfigurasi dari `ServiceStartup`
-- `ServiceStartup(ctx, options)` dipanggil saat aplikasi dimulai — kita simpan route di sini
-- Metode `URL()` membangun URL lengkap dengan parameter query
-- Jika tidak ada route yang dikonfigurasi (route kosong), kita kembalikan error
-- `url.QueryEscape()` meng-encode teks dengan aman untuk digunakan di URL
-- Metode ini akan tersedia di frontend melalui binding
+- Kita menambahkan field `route` untuk menyimpan rute yang dikonfigurasi dari `ServiceStartup`
+- `ServiceStartup(ctx, options)` dipanggil saat aplikasi dimulai—kita menyimpan rute di sini
+- Metode `URL()` menyusun URL lengkap beserta parameter kueri
+- Jika tidak ada rute yang dikonfigurasi (rute kosong), kita mengembalikan error
+- `url.QueryEscape()` mengodekan teks dengan aman untuk digunakan dalam URL
+- Metode ini akan tersedia bagi frontend melalui binding
 
-Sekarang perbarui `main.js` untuk menggunakan metode `URL` alih-alih path hardcoded:
+Sekarang perbarui `main.js` agar menggunakan metode `URL` sebagai pengganti jalur yang di-hardcode:
 
 ```js {title="frontend/src/main.js" ins="1,11-12"}
 import { QRService } from "./bindings/changeme";
@@ -709,22 +712,22 @@ export function initializeQRGenerator() {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- Kita mengimpor `QRService` untuk menggunakan binding lagi
-- Alih-alih hardcode `/qrservice`, kita panggil `await QRService.URL(text, 256)`
-- Service Go membangun URL dengan route dan parameter yang benar
-- Sekarang jika Anda mengubah route di `main.go`, frontend otomatis menggunakan route baru
-- Tidak perlu sinkronisasi manual antara konfigurasi Go dan kode frontend!
+- Kita mengimpor `QRService` agar dapat menggunakan binding kembali
+- Alih-alih melakukan hardcode terhadap `/qrservice`, kita memanggil `await QRService.URL(text, 256)`
+- Layanan Go menyusun URL dengan rute dan parameter yang benar
+- Sekarang, jika Anda mengubah rute di `main.go`, frontend otomatis menggunakan rute baru
+- Tidak perlu lagi melakukan sinkronisasi manual antara konfigurasi Go dan kode frontend!
 
-Seharusnya bekerja seperti contoh sebelumnya,\
-tetapi mengubah route service di `main.go`\
-tidak akan merusak frontend lagi.
+Semua seharusnya berfungsi seperti pada contoh sebelumnya,\
+namun mengubah rute layanan di `main.go`\
+tidak akan lagi menyebabkan frontend berhenti berfungsi.
 
 @note type="info"
-Jika metode Go mengembalikan error non-nil,\
+Jika metode Go mengembalikan error yang bukan nil,\
 promise di sisi JS akan ditolak\
-dan pernyataan await akan melempar exception.
+dan pernyataan await akan melempar pengecualian.
 @end
 @rawHTML
  <br/>

@@ -1,14 +1,14 @@
 ---
 schema = 1
-title = "Pengujian End-to-End"
+title = "Pengujian Menyeluruh"
 description = "Uji alur kerja pengguna secara lengkap"
 slug = "guides/e2e-testing"
-sourcePath = "id/guides/e2e-testing.mpd"
+sourcePath = "guides/e2e-testing.mpd"
 ---
 
-## Ringkasan
+## Ikhtisar
 
-Pengujian end-to-end memvalidasi alur kerja pengguna secara lengkap di aplikasi Anda.
+Pengujian menyeluruh memvalidasi alur kerja pengguna secara lengkap dalam aplikasi Anda.
 
 ## Menggunakan Playwright
 
@@ -18,7 +18,7 @@ Pengujian end-to-end memvalidasi alur kerja pengguna secara lengkap di aplikasi 
 # Install Playwright
 npm install -D @playwright/test
 
-# Inisialisasi
+# Initialize
 npx playwright install
 ```
 
@@ -36,7 +36,7 @@ export default defineConfig({
 })
 ```
 
-### Menulis Tes
+### Menulis Pengujian
 
 ```javascript
 // e2e/app.spec.js
@@ -95,7 +95,7 @@ test('file save dialog', async ({ page }) => {
 })
 ```
 
-## Menguji Perilaku Window
+## Menguji Perilaku Jendela
 
 ```javascript
 test('window state', async ({ page }) => {
@@ -115,22 +115,22 @@ test('window state', async ({ page }) => {
 
 ### ✅ Lakukan
 
-- Uji alur pengguna yang kritis
+- Uji alur pengguna yang penting
 - Gunakan atribut data-testid
-- Bersihkan data tes
-- Jalankan tes di CI/CD
-- Uji skenario error
-- Jaga agar tes tetap independen
+- Bersihkan data pengujian
+- Jalankan pengujian dalam CI/CD
+- Uji skenario kesalahan
+- Pastikan setiap pengujian tetap independen
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- Jangan uji detail implementasi
-- Jangan tulis selector yang rapuh
-- Jangan lewati pembersihan
-- Jangan abaikan tes yang tidak stabil
-- Jangan uji semuanya
+- Jangan menguji detail implementasi
+- Jangan menulis pemilih yang rapuh
+- Jangan melewatkan pembersihan
+- Jangan mengabaikan pengujian yang tidak stabil
+- Jangan menguji semuanya
 
-## Menjalankan Tes E2E
+## Menjalankan Pengujian E2E
 
 ```bash
 # Run all tests
@@ -168,7 +168,7 @@ jobs:
         run: npx playwright test
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Testing](/id/guides/testing/) - Pelajari unit testing
-- [Building](/id/guides/build/building/) - Build aplikasi Anda
+- [Pengujian](/guides/testing/) - Pelajari pengujian unit
+- [Membangun](/guides/build/building/) - Bangun aplikasi Anda

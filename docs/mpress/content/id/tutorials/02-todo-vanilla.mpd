@@ -1,24 +1,24 @@
 ---
 schema = 1
 title = "Daftar TODO"
-description = "Bangun aplikasi daftar TODO lengkap dengan operasi CRUD"
+description = "Buat aplikasi daftar TODO lengkap dengan operasi CRUD"
 slug = "tutorials/02-todo-vanilla"
-sourcePath = "id/tutorials/02-todo-vanilla.mpd"
+sourcePath = "tutorials/02-todo-vanilla.mpd"
 ---
 
-Dalam tutorial ini, Anda akan membangun aplikasi daftar TODO yang sepenuhnya fungsional. Ini langkah lebih lanjut dari tutorial Layanan QR Code — Anda akan belajar mengelola state, menangani banyak operasi, dan membuat antarmuka pengguna yang rapi.
+Dalam tutorial ini, Anda akan membuat aplikasi daftar TODO yang berfungsi sepenuhnya. Tutorial ini merupakan lanjutan dari tutorial Layanan Kode QR—Anda akan mempelajari cara mengelola state, menangani beberapa operasi, dan membuat antarmuka pengguna yang tampak profesional.
 
-*Yang akan Anda bangun:*
-- Aplikasi TODO lengkap dengan fungsi tambah, selesai, dan hapus
-- Manajemen state thread-safe (penting untuk aplikasi desktop)
-- Desain UI glassmorphic modern
-- Semua menggunakan vanilla JavaScript — tidak perlu framework
+*Yang akan Anda buat:*
+- Aplikasi TODO lengkap dengan fungsi untuk menambahkan, menyelesaikan, dan menghapus item
+- Pengelolaan state yang aman untuk thread (penting bagi aplikasi desktop)
+- Desain UI glassmorphism yang modern
+- Semuanya menggunakan JavaScript murni—tanpa memerlukan framework
 
 *Yang akan Anda pelajari:*
-- Operasi CRUD (Create, Read, Update, Delete)
-- Mengelola state mutable dengan aman di Go
+- Operasi CRUD (Buat, Baca, Perbarui, Hapus)
+- Mengelola state yang dapat diubah secara aman di Go
 - Menangani input pengguna dan validasi
-- Membangun UI responsif yang terasa native
+- Membuat UI responsif yang terasa seperti aplikasi native
 
 ![Aplikasi Daftar TODO](/assets/todo-app.png)
 
@@ -29,21 +29,21 @@ Dalam tutorial ini, Anda akan membangun aplikasi daftar TODO yang sepenuhnya fun
 @steps
 @step title="Buat proyek"
 
-Pertama, buat proyek Wails baru. Kita akan menggunakan template vanilla default yang memberikan titik awal bersih:
+Pertama, buat proyek Wails baru. Kita akan menggunakan templat vanilla bawaan yang menyediakan titik awal yang bersih:
 
 ```bash
 wails3 init -n todo-app
 cd todo-app
 ```
 
-Ini membuat proyek baru dengan struktur dasar: backend Go di root, kode frontend di direktori `frontend/`.
+Tindakan ini membuat proyek baru dengan struktur dasar: backend Go di direktori root dan kode frontend di direktori `frontend/`.
 
 @end
 @step title="Buat layanan TODO"
 
-Layanan TODO akan mengelola state aplikasi kita dan menyediakan metode untuk operasi CRUD. Berbeda dengan web server di mana setiap permintaan terisolasi, aplikasi desktop dapat memiliki banyak operasi konkuren, jadi kita perlu manajemen state thread-safe.
+Layanan TODO akan mengelola state aplikasi kita dan menyediakan berbagai metode untuk operasi CRUD. Tidak seperti server web yang mengisolasi setiap permintaan, aplikasi desktop dapat menjalankan beberapa operasi secara bersamaan sehingga kita memerlukan pengelolaan state yang aman untuk thread.
 
-Hapus `greetservice.go` dan buat file baru `todoservice.go`:
+Hapus `greetservice.go`, lalu buat file baru `todoservice.go`:
 
 ```go {title="todoservice.go"}
 package main
@@ -124,40 +124,40 @@ func (t *TodoService) Delete(id int) error {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
 *Struct `Todo`:*
-- Mendefinisikan bentuk data dengan field ID, Title, dan Completed
-- Tag `json:` memberi tahu Go cara mengonversi struct ini ke JSON untuk frontend
-- Setiap field diekspor (kapital) agar generator binding dapat melihatnya
+- Menentukan struktur data kita dengan field ID, Title, dan Completed
+- Tag `json:` memberi tahu Go cara mengonversi struct ini menjadi JSON untuk frontend
+- Setiap field diekspor (diawali huruf kapital) agar generator binding dapat mendeteksinya
 
 *Struct `TodoService`:*
-- `todos []Todo` — slice yang menampung semua item TODO
-- `nextID int` — melacak ID berikutnya yang akan ditetapkan (mensimulasikan auto-increment)
-- `mu sync.RWMutex` — read/write mutex untuk akses thread-safe
+- `todos []Todo`—slice yang menyimpan semua item TODO kita
+- `nextID int`—melacak ID berikutnya yang akan ditetapkan (menyimulasikan penambahan otomatis)
+- `mu sync.RWMutex`—mutex baca/tulis untuk akses yang aman bagi thread
 
-*Thread safety dengan `sync.RWMutex`:*
-- Aplikasi desktop dapat memiliki banyak operasi konkuren dari UI
-- `RLock()` memungkinkan banyak reader sekaligus (mis. beberapa pemanggilan `GetAll`)
-- `Lock()` memberikan akses eksklusif untuk write (mis. `Add`, `Toggle`, `Delete`)
-- `defer` memastikan lock dilepas meskipun fungsi return lebih awal atau panic
+*Keamanan thread dengan `sync.RWMutex`:*
+- Aplikasi desktop dapat menjalankan beberapa operasi secara bersamaan dari UI
+- `RLock()` memungkinkan beberapa pembaca mengakses data secara bersamaan (misalnya, beberapa pemanggilan `GetAll`)
+- `Lock()` memberikan akses eksklusif untuk penulisan (misalnya, `Add`, `Toggle`, `Delete`)
+- `defer` memastikan penguncian dilepas meskipun fungsi selesai lebih awal atau mengalami panic
 
-*Metode:*
-- `GetAll()` — Mengembalikan semua todo (menggunakan read lock karena tidak memodifikasi data)
-- `Add(title)` — Membuat todo baru, memvalidasi input, menaikkan ID
-- `Toggle(id)` — Membalik status completed todo
-- `Delete(id)` — Menghapus todo dari slice
+*Metode-metodenya:*
+- `GetAll()`—Mengembalikan semua item TODO (menggunakan penguncian baca karena kita tidak mengubah data)
+- `Add(title)`—Membuat item TODO baru, memvalidasi input, dan menaikkan ID
+- `Toggle(id)`—Membalik status selesai suatu item TODO
+- `Delete(id)`—Menghapus item TODO dari slice
 
-*Penanganan error:*
-- Kita mengembalikan `error` sebagai nilai terakhir mengikuti konvensi Go
+*Penanganan kesalahan:*
+- Kita mengembalikan `error` sebagai nilai terakhir sesuai konvensi Go
 - Judul kosong ditolak
-- Operasi pada todo yang tidak ada mengembalikan error
-- Error ini menjadi exception JavaScript di frontend
+- Operasi pada item TODO yang tidak ada akan mengembalikan kesalahan
+- Kesalahan ini menjadi exception JavaScript di frontend
 
 @end
 @step title="Perbarui main.go"
 
-Daftarkan layanan TODO ke aplikasi Wails Anda. Temukan bagian `Services` di `main.go` dan ganti GreetService dengan TodoService kita:
+Daftarkan layanan TODO ke aplikasi Wails Anda. Temukan bagian `Services` di `main.go`, lalu ganti GreetService dengan TodoService kita:
 
 ```go {title="main.go" highlight="5"}
 Services: []application.Service{
@@ -165,15 +165,15 @@ Services: []application.Service{
 },
 ```
 
-*Apa yang terjadi di sini:*
-- Kita menghapus GreetService default dan menambahkan TodoService kita
-- `application.NewService()` membungkus service agar Wails dapat mengelolanya
-- Wails akan otomatis membuat binding JavaScript untuk semua metode publik pada service ini
+*Yang terjadi di sini:*
+- Kita menghapus GreetService bawaan dan menggantinya dengan TodoService kita
+- `application.NewService()` membungkus layanan kita agar Wails dapat mengelolanya
+- Wails akan otomatis menghasilkan binding JavaScript untuk semua metode publik pada layanan ini
 
 @end
 @step title="Buat UI frontend"
 
-Sekarang mari bangun frontend. Di sini kita akan memanggil metode Go dan menampilkan UI. Kita menggunakan vanilla JavaScript agar sederhana dan menunjukkan cara kerja binding secara langsung.
+Sekarang mari kita buat frontend. Di sinilah kita akan memanggil metode Go dan menampilkan UI. Kita menggunakan JavaScript murni agar semuanya tetap sederhana dan Anda dapat melihat secara langsung cara kerja binding.
 
 Ganti `frontend/src/main.js`:
 
@@ -220,39 +220,39 @@ window.deleteTodo = async (id) => {
 loadTodos();
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
 *Mengimpor binding:*
-- `import {TodoService} from "../bindings/changeme"` — membawa binding Go yang dibuat otomatis
-- Catatan: `changeme` akan menjadi nama modul aktual Anda dari `go.mod`
+- `import {TodoService} from "../bindings/changeme"`—mengimpor binding Go yang dibuat secara otomatis
+- Catatan: `changeme` akan menjadi nama modul Anda yang sebenarnya dari `go.mod`
 
 *Fungsi `loadTodos()`:*
-- Memanggil `TodoService.GetAll()` untuk mengambil semua todo dari Go
-- Membangun HTML untuk setiap todo menggunakan template literal
-- Menambah/menghapus class `completed` secara dinamis untuk styling
+- Memanggil `TodoService.GetAll()` untuk mengambil semua item TODO dari Go
+- Membuat HTML untuk setiap item TODO menggunakan literal templat
+- Menambahkan atau menghapus class `completed` secara dinamis untuk mengatur tampilan
 - Menggunakan atribut `onclick` untuk menghubungkan tombol ke fungsi kita
-- Menggabungkan semua HTML dan menyuntikkannya ke DOM
+- Menggabungkan seluruh HTML dan menyisipkannya ke DOM
 
 *Fungsi CRUD:*
-- `addTodo()` — Memvalidasi input, memanggil metode Go `Add`, me-refresh daftar
-- `toggleTodo(id)` — Memanggil metode Go `Toggle`, me-refresh daftar
-- `deleteTodo(id)` — Memanggil metode Go `Delete`, me-refresh daftar
-- Semua fungsi async karena pemanggilan Go mengembalikan Promise
+- `addTodo()`—Memvalidasi input, memanggil metode Go `Add`, lalu memuat ulang daftar
+- `toggleTodo(id)`—Memanggil metode `Toggle` milik Go, lalu memuat ulang daftar
+- `deleteTodo(id)`—Memanggil metode `Delete` milik Go, lalu memuat ulang daftar
+- Semua fungsi bersifat asinkron karena pemanggilan Go mengembalikan Promise
 
-*Mengapa attach ke window:*
+*Mengapa dilampirkan ke window:*
 - `window.addTodo = ...` membuat fungsi dapat diakses dari atribut `onclick` HTML
-- Ini pola sederhana untuk vanilla JS (framework menanganinya berbeda)
-- Di produksi, Anda mungkin menggunakan event delegation yang proper
+- Ini adalah pola sederhana untuk JavaScript murni (framework menanganinya secara berbeda)
+- Dalam lingkungan produksi, Anda dapat menggunakan delegasi event yang tepat sebagai gantinya
 
 *Pola refresh:*
-- Setelah setiap mutasi (add/toggle/delete), kita panggil `loadTodos()` lagi
-- Ini memastikan UI tetap sinkron dengan state Go
-- Alternatif: Buat metode Go mengembalikan state baru untuk menghindari pemanggilan kedua
+- Setelah setiap mutasi (tambah/ubah status/hapus), kita memanggil `loadTodos()` lagi
+- Ini memastikan antarmuka pengguna tetap sinkron dengan state Go
+- Alternatif: Buat metode Go mengembalikan state baru agar panggilan kedua tidak diperlukan
 
 @end
 @step title="Perbarui HTML"
 
-HTML menyediakan struktur untuk aplikasi TODO kita. Minimal dan semantik — keajaiban terjadi di JavaScript dan CSS.
+HTML menyediakan struktur untuk aplikasi TODO kita. Strukturnya minimal dan semantik—proses utamanya berlangsung di JavaScript dan CSS.
 
 Ganti `frontend/index.html`:
 
@@ -285,27 +285,27 @@ Ganti `frontend/index.html`:
 </html>
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
 *Struktur:*
-- `container` — menengahkan aplikasi dan membatasi lebar
-- `card` — kartu putih utama yang menampung semuanya
-- `input-box` — container flex untuk input dan tombol Add
-- `todo-list` — tempat todo individual disuntikkan oleh JavaScript
+- `container`—menempatkan aplikasi kita di tengah dan membatasi lebarnya
+- `card`—kartu putih utama yang menampung semuanya
+- `input-box`—kontainer flex untuk kolom input dan tombol Tambah
+- `todo-list`—tempat setiap tugas akan disisipkan oleh JavaScript
 
 *Penanganan event:*
-- `onkeypress="if(event.key==='Enter') addTodo()"` — tambah todo saat Enter ditekan
-- `onclick="addTodo()"` — tambah todo saat tombol diklik
-- Inline event handler bekerja baik untuk aplikasi vanilla JS sederhana
+- `onkeypress="if(event.key==='Enter') addTodo()"`—menambahkan tugas saat Enter ditekan
+- `onclick="addTodo()"`—menambahkan tugas saat tombol diklik
+- Event handler inline cocok digunakan untuk aplikasi JavaScript murni yang sederhana
 
-*Module script:*
-- `<script type="module">` memungkinkan kita menggunakan import ES6
+*Skrip modul:*
+- `<script type="module">` memungkinkan kita menggunakan impor ES6
 - File `main.js` kita dapat mengimpor binding dan menggunakan JavaScript modern
 
 @end
-@step title="Style aplikasi"
+@step title="Tata gaya aplikasi"
 
-CSS membuat desain glassmorphic modern dengan transisi halus. Kita menargetkan nuansa rapi yang membuat aplikasi menyenangkan digunakan.
+CSS menghasilkan desain glassmorphism modern dengan transisi yang mulus. Kita ingin memberikan kesan apik agar aplikasi terasa menyenangkan saat digunakan.
 
 Ganti `frontend/public/style.css`:
 
@@ -493,53 +493,53 @@ h1 {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-*Desain glassmorphic:*
-- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)` — latar belakang gradien ungu
-- `backdrop-filter: blur(10px)` — efek kaca buram pada kartu
-- `rgba(255, 255, 255, 0.95)` — putih semi-transparan untuk efek kaca
+*Desain glassmorphism:*
+- `background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)`—latar belakang gradien ungu
+- `backdrop-filter: blur(10px)`—menghasilkan efek kaca buram pada kartu
+- `rgba(255, 255, 255, 0.95)`—warna putih semitransparan untuk efek kaca
 
-*Styling checkbox kustom:*
-- `appearance: none` menghapus checkbox browser default
-- Kita membuat kotak bulat kustom dengan centang menggunakan `::after`
-- Centang muncul saat `checked` menggunakan karakter unicode ✓
+*Gaya kotak centang kustom:*
+- `appearance: none` menghapus tampilan kotak centang bawaan browser
+- Kita membuat kotak bersudut membulat khusus dengan tanda centang menggunakan `::after`
+- Tanda centang muncul saat `checked` menggunakan karakter Unicode ✓
 
-*Interaksi hover:*
-- Todo bergeser ke kanan saat hover (`transform: translateX(4px)`)
-- Tombol hapus tersembunyi sampai hover (`opacity: 0` → `opacity: 1`)
-- Tombol sedikit membesar saat hover untuk feedback taktil
+*Interaksi saat penunjuk diarahkan:*
+- Tugas bergeser ke kanan saat penunjuk diarahkan ke atasnya (`transform: translateX(4px)`)
+- Tombol hapus disembunyikan hingga penunjuk diarahkan ke atasnya (`opacity: 0` → `opacity: 1`)
+- Ukuran tombol sedikit membesar saat penunjuk diarahkan ke atasnya untuk memberikan umpan balik taktil
 
-*Empty state:*
-- `#todo-list:empty::before` menampilkan pesan saat tidak ada todo
-- Solusi CSS-only — tidak perlu JavaScript
+*State kosong:*
+- `#todo-list:empty::before` menampilkan pesan saat tidak ada tugas
+- Solusi yang hanya menggunakan CSS—JavaScript tidak diperlukan
 
 @end
 @step title="Jalankan aplikasi"
 
-Mari lihat hasilnya! Jalankan development server:
+Mari lihat cara kerjanya! Jalankan server pengembangan:
 
 ```bash
 wails3 dev
 ```
 
-Aplikasi akan dikompilasi dan terbuka. Coba:
-- Ketik todo dan tekan Enter atau klik Add
-- Klik checkbox untuk menandai selesai
-- Arahkan kursor ke todo untuk melihat tombol hapus muncul
-- Perhatikan UI diperbarui instan — itu pola refresh kita bekerja
+Aplikasi akan dikompilasi dan dibuka. Cobalah:
+- Ketik tugas, lalu tekan Enter atau klik Tambah
+- Klik kotak centang untuk menandainya sebagai selesai
+- Arahkan penunjuk ke tugas untuk menampilkan tombol hapus
+- Perhatikan bahwa antarmuka pengguna langsung diperbarui—ini menunjukkan pola refresh kita sedang bekerja
 
-*Apa yang terjadi:*
-- Wails otomatis membuat binding untuk metode TodoService Anda
-- Mode dev termasuk hot reload — coba ubah CSS dan lihat pembaruannya
-- Kode Go Anda berjalan secara native — tidak perlu translasi atau interpretasi
+*Yang terjadi:*
+- Wails secara otomatis menghasilkan binding untuk metode TodoService Anda
+- Mode pengembangan menyertakan hot reload—coba ubah CSS dan perhatikan pembaruannya
+- Kode Go Anda berjalan secara native—tidak perlu translasi atau interpretasi
 
 @end
 @end
 
 ## Cara Kerjanya
 
-### Manajemen State Thread-Safe
+### Pengelolaan State yang Aman untuk Thread
 
 `sync.RWMutex` menyediakan akses konkuren yang aman:
 
@@ -558,14 +558,14 @@ func (t *TodoService) Add(title string) (*Todo, error) {
 ```
 
 *Mengapa ini penting:*
-- Beberapa pemanggilan frontend dapat terjadi secara konkuren
+- Beberapa panggilan frontend dapat berlangsung secara bersamaan
 - Operasi baca tidak saling memblokir
-- Operasi tulis mendapat akses eksklusif
-- `defer` memastikan lock selalu dilepas
+- Operasi tulis memperoleh akses eksklusif
+- `defer` memastikan lock selalu dilepaskan
 
 ### Penanganan Error
 
-Service mengembalikan error untuk operasi tidak valid:
+Layanan mengembalikan error untuk operasi yang tidak valid:
 
 ```go
 func (t *TodoService) Add(title string) (*Todo, error) {
@@ -576,7 +576,7 @@ func (t *TodoService) Add(title string) (*Todo, error) {
 }
 ```
 
-Di frontend, Anda dapat menangkapnya:
+Di frontend, Anda dapat menangkap error tersebut:
 
 ```javascript
 try {
@@ -588,7 +588,7 @@ try {
 
 ### Sinkronisasi State
 
-Setelah setiap mutasi, kita muat ulang daftar lengkap:
+Setelah setiap mutasi, kita memuat ulang seluruh daftar:
 
 ```javascript
 window.addTodo = async () => {
@@ -597,13 +597,13 @@ window.addTodo = async () => {
 }
 ```
 
-*Pendekatan alternatif:* Kembalikan daftar yang diperbarui dari setiap metode untuk menghindari pemanggilan kedua.
+*Pendekatan alternatif:* Kembalikan daftar yang telah diperbarui dari setiap metode agar panggilan kedua tidak diperlukan.
 
-## Peningkatan
+## Penyempurnaan
 
 ### Tambahkan Statistik
 
-Tambahkan ini ke `todoservice.go`:
+Tambahkan kode berikut ke `todoservice.go`:
 
 ```go
 type TodoStats struct {
@@ -649,7 +649,7 @@ async function loadTodos() {
 }
 ```
 
-### Tambahkan "Clear Completed"
+### Tambahkan "Hapus yang Selesai"
 
 ```go
 func (t *TodoService) ClearCompleted() int {
@@ -674,55 +674,55 @@ func (t *TodoService) ClearCompleted() int {
 
 ### Tambahkan Persistensi
 
-Untuk aplikasi produksi, Anda biasanya menambahkan persistensi database. Lihat panduan [Integrasi Database](/guides/patterns/database/) untuk contoh dengan SQLite, PostgreSQL, dll.
+Untuk aplikasi produksi, tambahkan persistensi menggunakan solusi penyimpanan yang paling sesuai dengan aplikasi Anda, seperti SQLite, PostgreSQL, atau layanan yang dihosting.
 
 ## Build untuk Produksi
 
-Saat siap mendistribusikan aplikasi TODO Anda, build untuk produksi:
+Saat Anda siap mendistribusikan aplikasi TODO, build aplikasi tersebut untuk produksi:
 
 ```bash
 wails3 build
 ```
 
-Ini membuat executable native yang dioptimalkan di `bin/`:
-- Mengompilasi kode Go dengan optimasi
-- Membangun frontend untuk produksi
-- Mengemas semuanya ke satu executable
-- Aplikasi hasilnya biasanya 10-20MB (bandingkan dengan Electron 150MB+)
+Proses ini membuat executable native yang dioptimalkan di `bin/`:
+- Mengompilasi kode Go Anda dengan pengoptimalan
+- Mem-build frontend Anda untuk produksi
+- Mengemas semuanya ke dalam satu executable
+- Ukuran aplikasi yang dihasilkan biasanya 10-20 MB (bandingkan dengan Electron yang berukuran 150 MB+)
 
-Anda dapat menjalankan executable langsung — tidak perlu runtime, tidak perlu server. Ini aplikasi native sejati.
+Anda dapat menjalankan executable secara langsung—tanpa memerlukan runtime dan tanpa server yang harus dijalankan. Ini benar-benar aplikasi native.
 
-## Yang Anda Bangun
+## Yang Telah Anda Buat
 
-Anda baru saja membangun aplikasi TODO lengkap dengan:
+Anda baru saja membuat aplikasi TODO lengkap dengan:
 
-*Implementasi CRUD penuh:*
-- Membuat service dengan operasi Create, Read, Update, dan Delete
-- Menambahkan validasi input dan penanganan error
-- Memahami bagaimana error Go menjadi exception JavaScript
+*Implementasi CRUD lengkap:*
+- Membuat layanan dengan operasi Create, Read, Update, dan Delete
+- Menambahkan validasi input dan penanganan kesalahan
+- Mempelajari bagaimana kesalahan Go menjadi exception JavaScript
 
-*Manajemen state thread-safe:*
-- Menggunakan `sync.RWMutex` untuk menangani akses konkuren dengan aman
+*Pengelolaan state yang aman untuk thread:*
+- Menggunakan `sync.RWMutex` untuk menangani akses serentak dengan aman
 - Memahami perbedaan antara read lock (RLock) dan write lock (Lock)
-- Melihat bagaimana `defer` mencegah deadlock dengan menjamin cleanup
+- Melihat bagaimana `defer` mencegah deadlock dengan menjamin pembersihan
 
-*UI modern dan rapi:*
-- Membangun antarmuka glassmorphic dengan gradien dan efek blur
-- Membuat checkbox bergaya kustom tanpa framework
-- Menambahkan interaksi hover dan transisi untuk nuansa native
-- Mengimplementasikan empty state dengan CSS murni
+*UI modern dan berkelas:*
+- Membuat antarmuka glassmorphism dengan gradien dan efek blur
+- Membuat kotak centang dengan gaya khusus tanpa framework apa pun
+- Menambahkan interaksi saat kursor diarahkan dan transisi untuk menghadirkan nuansa native
+- Mengimplementasikan tampilan keadaan kosong hanya dengan CSS
 
 *Dasar-dasar Wails:*
-- Pendaftaran service dan pembuatan binding otomatis
+- Pendaftaran layanan dan pembuatan binding otomatis
 - Memanggil metode Go dari JavaScript dengan async/await
 - Sinkronisasi state antara Go dan frontend
-- Membangun dan mengemas aplikasi desktop native
+- Mem-build dan mengemas aplikasi desktop native
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-Setelah memahami operasi CRUD dan manajemen state, coba:
+Setelah memahami operasi CRUD dan pengelolaan state, cobalah:
 
-- *Tambahkan persistensi:* Buat todo bertahan setelah restart aplikasi dengan [SQLite](/guides/patterns/database/)
-- *Tambahkan fitur lain:* Filtering (all/active/completed), mengedit todo yang ada, operasi bulk
-- *Jelajahi tutorial Notes:* Lihat cara kerja operasi file di [Notes](/id/tutorials/03-notes-vanilla/)
-- *Bangun sesuatu yang nyata:* Ambil konsep ini dan bangun aplikasi Anda sendiri!
+- *Tambahkan persistensi:* Pertahankan data todo setelah aplikasi dimulai ulang dengan SQLite atau solusi penyimpanan lainnya
+- *Tambahkan lebih banyak fitur:* Pemfilteran (semua/aktif/selesai), pengeditan todo yang sudah ada, dan operasi massal
+- *Pelajari tutorial Notes:* Lihat cara kerja operasi file dalam [Notes](/tutorials/03-notes-vanilla/)
+- *Buat sesuatu yang nyata:* Gunakan konsep-konsep ini untuk membuat aplikasi Anda sendiri!

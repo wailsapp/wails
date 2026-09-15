@@ -1,10 +1,11 @@
 """Regression tests for failures a successful static build can miss."""
 
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from check_site import Page, check_links, check_page
+from check_site import Page, check_links, check_page, check_translation_routes, check_knowledge_assets
 
 
 class SiteChecks(unittest.TestCase):
@@ -64,6 +65,53 @@ class SiteChecks(unittest.TestCase):
         errors = []
         check_page(page, self.site, self.repository, errors)
         self.assertEqual(errors, ["index.html: D2 diagram was displayed as source code"])
+
+    def test_raw_html_cannot_hide_unrendered_markdown_code(self):
+        page = self.page("index.html", '<html lang="en">'
+                         '<link rel="canonical" href="https://v3.wails.io/">'
+                         '<details><summary>Example</summary>```go\nfunc main() {}\n```</details>')
+        errors = []
+        check_page(page, self.site, self.repository, errors)
+        self.assertEqual(errors, ["index.html: Markdown code fence was displayed as prose"])
+        literal = self.page("literal.html", '<pre><code>```go</code></pre><script>"```"</script>')
+        self.assertFalse(literal.unrendered_fence)
+
+    def test_every_english_route_requires_all_translations(self):
+        page = self.page("guide/index.html", '<html lang="en"><p>English</p>')
+        errors = []
+        check_translation_routes(self.site, {page.path: page}, errors)
+        self.assertEqual(len(errors), 9)
+        self.assertIn("fr/guide/index.html: missing translated page", errors)
+
+    def test_knowledge_artifacts_follow_manifest_paths(self):
+        directory = self.site / "knowledge"
+        directory.mkdir()
+        names = {"pages": "pages.json", "chunks": "chunks.json.gz", "index": "index.json.gz"}
+        (directory / "manifest.json").write_text(json.dumps({"artifacts": names}))
+        for name in names.values():
+            (directory / name).write_bytes(b"data")
+        errors = []
+        check_knowledge_assets(self.site, errors)
+        self.assertEqual(errors, [])
+        (directory / "index.json.gz").unlink()
+        check_knowledge_assets(self.site, errors)
+        self.assertEqual(errors, ["Missing or invalid knowledge artifact: index.json.gz"])
+
+    def test_knowledge_manifest_rejects_path_escape(self):
+        directory = self.site / "knowledge"
+        directory.mkdir()
+        (self.site / "outside.json").write_text("[]")
+        (directory / "manifest.json").write_text(json.dumps({"artifacts": {
+            "pages": "../outside.json", "chunks": "../outside.json", "index": "../outside.json"}}))
+        errors = []
+        check_knowledge_assets(self.site, errors)
+        self.assertEqual(len(errors), 3)
+
+    def test_english_fallback_is_rejected(self):
+        page = self.page("fr/guide/index.html", '<html lang="en"><p>English</p>')
+        errors = []
+        check_translation_routes(self.site, {page.path: page}, errors)
+        self.assertEqual(errors, ["fr/guide/index.html: English fallback in a translated route"])
 
 
 if __name__ == "__main__":

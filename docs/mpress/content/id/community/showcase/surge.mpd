@@ -1,13 +1,13 @@
 ---
 schema = 1
 title = "Surge"
-description = "Aplikasi desktop yang dibangun dengan Wails"
+description = "Aplikasi desktop yang dibuat dengan Wails"
 slug = "community/showcase/surge"
-sourcePath = "id/community/showcase/surge.mpd"
+sourcePath = "community/showcase/surge.mpd"
 ---
 
-![Screenshot Surge](/assets/showcase-images/surge.png)
+![Tangkapan Layar Surge](/assets/showcase-images/surge.png)
 
-[Surge](https://getsurge.io/) adalah aplikasi berbagi file p2p yang dirancang untuk memanfaatkan\
-teknologi blockchain guna memungkinkan transfer file 100% anonim. Surge\
-dienkripsi end-to-end, terdesentralisasi, dan open source.
+[Surge](https://getsurge.io/) adalah aplikasi berbagi berkas p2p yang dirancang untuk memanfaatkan\
+teknologi blockchain guna memungkinkan transfer berkas yang 100% anonim. Surge\
+menggunakan enkripsi ujung ke ujung, terdesentralisasi, dan bersumber terbuka.

@@ -1,31 +1,31 @@
 ---
 schema = 1
 title = "Catatan"
-description = "Bangun aplikasi catatan dengan operasi file dan dialog native"
+description = "Buat aplikasi catatan dengan operasi file dan dialog native"
 slug = "tutorials/03-notes-vanilla"
-sourcePath = "id/tutorials/03-notes-vanilla.mpd"
+sourcePath = "tutorials/03-notes-vanilla.mpd"
 ---
 
-Dalam tutorial ini, Anda akan membangun aplikasi catatan yang mendemonstrasikan operasi file, dialog native, dan pola aplikasi desktop modern menggunakan Wails v3.
+Dalam tutorial ini, Anda akan membuat aplikasi catatan yang mendemonstrasikan operasi file, dialog native, dan pola aplikasi desktop modern menggunakan Wails v3.
 
-![Screenshot Aplikasi Catatan](/assets/notes-app.png)
+![Tangkapan Layar Aplikasi Catatan](/assets/notes-app.png)
 
-## Yang Akan Anda Bangun
+## Yang Akan Anda Buat
 
-- Aplikasi catatan lengkap dengan fungsi buat, edit, dan hapus
-- Dialog save/open file native untuk impor dan ekspor catatan
-- Auto-save saat mengetik dengan debounce untuk mengurangi pembaruan yang tidak perlu
-- Tata letak dua kolom profesional (sidebar + editor) meniru Apple Notes
+- Aplikasi catatan lengkap dengan fungsi untuk membuat, mengedit, dan menghapus catatan
+- Dialog native untuk menyimpan/membuka file guna mengimpor dan mengekspor catatan
+- Penyimpanan otomatis saat mengetik dengan debounce untuk mengurangi pembaruan yang tidak perlu
+- Tata letak dua kolom profesional (bilah samping + editor) yang menyerupai Apple Notes
 
 ## Yang Akan Anda Pelajari
 
 - Menggunakan dialog file native di Wails (`SaveFileDialog`, `OpenFileDialog`, `InfoDialog`)
-- Bekerja dengan file JSON untuk persistensi data
-- Mengimplementasikan pola auto-save dengan debounce
-- Membangun UI desktop profesional dengan CSS modern
-- Serialisasi JSON struct Go yang proper
+- Menggunakan file JSON untuk persistensi data
+- Menerapkan pola penyimpanan otomatis dengan debounce
+- Membuat antarmuka pengguna desktop profesional dengan CSS modern
+- Serialisasi JSON yang tepat untuk struct Go
 
-## Setup Proyek
+## Penyiapan Proyek
 
 @steps
 @step title="Buat proyek Wails baru"
@@ -38,7 +38,7 @@ cd notes-app
 @end
 @step title="Buat NotesService"
 
-Buat file baru `notesservice.go` di root proyek:
+Buat file baru `notesservice.go` di direktori root proyek:
 
 ```go
 package main
@@ -175,13 +175,13 @@ func generateID() string {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- *Struct Note*: Mendefinisikan struktur data dengan tag JSON (lowercase) untuk serialisasi yang proper
-- *Operasi CRUD*: GetAll, Create, Update, dan Delete untuk mengelola catatan di memori
+- *Struct Note*: Menentukan struktur data dengan tag JSON (huruf kecil) agar serialisasi dilakukan dengan benar
+- *Operasi CRUD*: GetAll, Create, Update, dan Delete untuk mengelola catatan dalam memori
 - *Dialog file*: Menggunakan `application.Get().Dialog.SaveFile()` dan `application.Get().Dialog.OpenFile()` untuk mengakses dialog native
-- *Dialog info*: Menampilkan pesan sukses menggunakan `application.Get().Dialog.Info()`
-- *Pembuatan ID*: Generator ID sederhana berbasis timestamp
+- *Dialog informasi*: Menampilkan pesan keberhasilan menggunakan `application.Get().Dialog.Info()`
+- *Pembuatan ID*: Generator ID sederhana berbasis stempel waktu
 
 @end
 @step title="Perbarui main.go"
@@ -232,11 +232,11 @@ func main() {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
 - Mendaftarkan `NotesService` ke aplikasi
-- Membuat jendela dengan dimensi (1000x700) meniru Apple Notes
-- Mengatur perilaku macOS yang proper untuk keluar saat jendela terakhir ditutup
+- Membuat jendela berdimensi (1000x700) yang menyerupai Apple Notes
+- Menyiapkan perilaku macOS yang tepat agar aplikasi berhenti ketika jendela terakhir ditutup
 
 @end
 @step title="Buat struktur HTML"
@@ -290,14 +290,14 @@ Ganti `frontend/index.html`:
 </html>
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- *Tata letak dua kolom*: Sidebar untuk daftar catatan, area utama untuk editor
-- *Empty state*: Ditampilkan saat tidak ada catatan yang dipilih
-- *Wails runtime*: Harus dimuat sebelum module script
+- *Tata letak dua kolom*: Bilah samping untuk daftar catatan dan area utama untuk editor
+- *Status kosong*: Ditampilkan saat tidak ada catatan yang dipilih
+- *Runtime Wails*: Harus dimuat sebelum skrip modul
 
 @end
-@step title="Tambahkan styling CSS"
+@step title="Tambahkan gaya CSS"
 
 Ganti `frontend/public/style.css`:
 
@@ -481,12 +481,12 @@ body {
 }
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- Desain bergaya Apple dengan tipografi dan warna bersih
-- Tata letak Flexbox untuk sidebar dan editor responsif
-- Highlight catatan aktif dengan latar belakang biru
-- Transisi hover halus
+- Desain bergaya Apple dengan tipografi dan warna yang bersih
+- Tata letak Flexbox untuk bilah samping dan editor yang responsif
+- Sorotan catatan aktif dengan latar belakang biru
+- Transisi halus saat penunjuk diarahkan ke elemen
 
 @end
 @step title="Implementasikan logika JavaScript"
@@ -627,13 +627,13 @@ document.getElementById('load-btn').addEventListener('click', async () => {
 loadNotes()
 ```
 
-*Apa yang terjadi di sini:*
+*Yang terjadi di sini:*
 
-- *Auto-save*: Debounce 500ms mencegah pemanggilan backend berlebihan saat mengetik
-- *Akses properti*: Menggunakan nama properti lowercase (`.id`, `.title`) sesuai tag JSON Go
-- *Manajemen fokus*: Auto-fokus dan select judul saat membuat catatan baru
-- *Hapus tanpa konfirmasi*: `confirm()` browser tidak bekerja di webview Wails
-- *Operasi file*: Dialog native menangani save/load dengan penanganan error yang proper
+- *Penyimpanan otomatis*: Debounce 500 milidetik mencegah panggilan backend yang berlebihan saat mengetik
+- *Akses properti*: Menggunakan nama properti dengan huruf kecil (`.id`, `.title`) yang sesuai dengan tag JSON Go
+- *Pengelolaan fokus*: Secara otomatis memfokuskan dan memilih judul saat membuat catatan baru
+- *Menghapus tanpa konfirmasi*: `confirm()` milik browser tidak berfungsi di webview Wails
+- *Operasi file*: Dialog native menangani penyimpanan/pemuatan dengan penanganan kesalahan yang tepat
 
 @end
 @step title="Jalankan aplikasi"
@@ -644,8 +644,8 @@ wails3 dev
 
 Aplikasi akan dimulai dan Anda dapat:
 - Klik "+ New Note" untuk membuat catatan
-- Edit judul dan konten (auto-save setelah 500ms)
-- Klik catatan di sidebar untuk beralih antar catatan
+- Edit judul dan isi (disimpan secara otomatis setelah 500 milidetik)
+- Klik catatan di bilah samping untuk beralih antarcatatan
 - Klik "Delete" untuk menghapus catatan saat ini
 - Klik "Save" untuk mengekspor catatan sebagai JSON
 - Klik "Load" untuk mengimpor catatan yang sebelumnya disimpan
@@ -653,11 +653,11 @@ Aplikasi akan dimulai dan Anda dapat:
 @end
 @end
 
-## Konsep Kunci
+## Konsep Utama
 
 ### Dialog File dan Pesan
 
-Di Wails v3 *tidak ada* konstruktor dialog tingkat paket — setiap dialog dibuat melalui manager `app.Dialog`. Dari service, dapatkan app via `application.Get()` (mengembalikan `*application.App` yang sedang berjalan):
+Di Wails v3, *tidak ada* konstruktor dialog tingkat paket—setiap dialog dibuat melalui pengelola `app.Dialog`. Dari sebuah service, dapatkan aplikasi melalui `application.Get()` (fungsi ini mengembalikan `*application.App` yang sedang berjalan):
 
 ```go
 // Correct — manager-based dialogs.
@@ -668,11 +668,11 @@ path, err := app.Dialog.SaveFile().
     PromptForSingleSelection()
 ```
 
-Metode yang sesuai adalah `app.Dialog.Info() / Question() / Warning() / Error()` untuk dialog pesan dan `app.Dialog.OpenFile() / SaveFile()` (plus varian `*WithOptions`) untuk dialog file.
+Metode yang sesuai adalah `app.Dialog.Info() / Question() / Warning() / Error()` untuk dialog pesan dan `app.Dialog.OpenFile() / SaveFile()` (beserta varian `*WithOptions`) untuk dialog file.
 
 ### Pemetaan Tag JSON
 
-Tag JSON struct Go harus lowercase agar sesuai dengan akses properti JavaScript:
+Tag JSON pada struct Go harus menggunakan huruf kecil agar sesuai dengan akses properti JavaScript:
 
 ```go
 type Note struct {
@@ -686,9 +686,9 @@ const noteId = note.id // Correct
 const noteId = note.ID // Would be undefined
 ```
 
-### Auto-Save dengan Debounce
+### Penyimpanan Otomatis dengan Debounce
 
-Debounce 500ms mengurangi pemanggilan backend yang tidak perlu:
+Debounce 500 milidetik mengurangi panggilan backend yang tidak perlu:
 
 ```javascript
 let updateTimeout
@@ -701,10 +701,10 @@ function scheduleUpdate() {
 }
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- Tambahkan kategori atau tag untuk mengorganisasi catatan
-- Implementasikan pencarian dan filtering
-- Tambahkan rich text editing dengan editor WYSIWYG
-- Sinkronkan catatan ke cloud storage
-- Tambahkan keyboard shortcut untuk operasi umum
+- Tambahkan kategori atau tag untuk mengatur catatan
+- Implementasikan pencarian dan pemfilteran
+- Tambahkan pengeditan teks kaya dengan editor WYSIWYG
+- Sinkronkan catatan ke penyimpanan cloud
+- Tambahkan pintasan papan ketik untuk operasi umum

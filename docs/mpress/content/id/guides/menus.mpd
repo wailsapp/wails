@@ -1,16 +1,16 @@
 ---
 schema = 1
 title = "Menu"
-description = "Panduan membuat dan menyesuaikan menu di Wails v3"
+description = "Panduan untuk membuat dan menyesuaikan menu di Wails v3"
 slug = "guides/menus"
-sourcePath = "id/guides/menus.mpd"
+sourcePath = "guides/menus.mpd"
 ---
 
-Wails v3 menyediakan sistem menu yang powerful yang memungkinkan Anda membuat menu aplikasi dan menu konteks. Panduan ini akan memandu Anda melalui berbagai fitur dan kemampuan sistem menu.
+Wails v3 menyediakan sistem menu canggih yang memungkinkan Anda membuat menu aplikasi dan menu konteks. Panduan ini akan menjelaskan berbagai fitur dan kemampuan sistem menu tersebut.
 
 ## Membuat Menu
 
-Untuk membuat menu baru, gunakan method `New()` dari manager Menus:
+Untuk membuat menu baru, gunakan metode `New()` dari pengelola Menus:
 
 ```go
 menu := app.Menu.New()
@@ -18,24 +18,24 @@ menu := app.Menu.New()
 
 ### Menambahkan Item Menu
 
-Wails mendukung beberapa tipe item menu, masing-masing dengan tujuan spesifik:
+Wails mendukung beberapa jenis item menu, masing-masing dengan kegunaan tertentu:
 
-#### Item Menu Reguler
-Item menu reguler adalah blok dasar menu. Item ini menampilkan teks dan dapat memicu aksi saat diklik:
+#### Item Menu Biasa
+Item menu biasa merupakan komponen dasar menu. Item ini menampilkan teks dan dapat memicu tindakan saat diklik:
 
 ```go
 menuItem := menu.Add("Click Me")
 ```
 
-#### Checkbox
-Item menu checkbox menyediakan state yang dapat di-toggle, berguna untuk mengaktifkan/menonaktifkan fitur atau pengaturan:
+#### Kotak Centang
+Item menu kotak centang menyediakan status yang dapat diaktifkan atau dinonaktifkan, sehingga berguna untuk mengaktifkan atau menonaktifkan fitur maupun pengaturan:
 
 ```go
 checkbox := menu.AddCheckbox("My checkbox", true)  // true = initially checked
 ```
 
-#### Grup Radio
-Grup radio memungkinkan pengguna memilih satu opsi dari sekumpulan pilihan yang saling eksklusif. Grup dibuat otomatis saat item radio ditempatkan berdampingan:
+#### Grup Tombol Radio
+Grup tombol radio memungkinkan pengguna memilih satu opsi dari sekumpulan pilihan yang saling eksklusif. Grup ini dibuat secara otomatis ketika item tombol radio ditempatkan bersebelahan:
 
 ```go
 menu.AddRadio("Option 1", true)   // true = initially selected
@@ -43,15 +43,15 @@ menu.AddRadio("Option 2", false)
 menu.AddRadio("Option 3", false)
 ```
 
-#### Separator
-Separator adalah garis horizontal yang membantu mengorganisir item menu ke dalam grup logis:
+#### Pemisah
+Pemisah adalah garis horizontal yang membantu mengelompokkan item menu secara logis:
 
 ```go
 menu.AddSeparator()
 ```
 
 #### Submenu
-Submenu adalah menu bersarang yang muncul saat hover atau klik item menu. Berguna untuk mengorganisir struktur menu yang kompleks:
+Submenu adalah menu bertingkat yang muncul saat penunjuk diarahkan ke item menu atau item tersebut diklik. Submenu berguna untuk menata struktur menu yang kompleks:
 
 ```go
 submenu := menu.AddSubmenu("File")
@@ -60,7 +60,7 @@ submenu.Add("Save")
 ```
 
 #### Menggabungkan menu
-Menu dapat ditambahkan ke menu lain dengan append atau prepend.
+Menu dapat ditambahkan ke menu lain dengan menempatkannya di akhir atau di awal.
 ```go
 menu := app.Menu.New()
 menu.Add("First Menu")
@@ -79,16 +79,16 @@ menu.Update()
 ```
 
 @note type="info"
-Secara default, `prepend` dan `append` akan berbagi state dengan menu asli. Jika Anda ingin membuat menu baru dengan state sendiri,\
-Anda dapat memanggil `.Clone()` pada menu.
+Secara default, `prepend` dan `append` akan berbagi status dengan menu asli. Jika ingin membuat menu baru dengan statusnya sendiri,\
+Anda dapat memanggil `.Clone()` pada menu tersebut.
 
 Contoh: `menu.Append(secondaryMenu.Clone())`
 @end
 
-#### Membersihkan menu
-Dalam beberapa kasus, lebih baik membangun menu baru jika Anda bekerja dengan jumlah item menu yang bervariasi.
+#### Mengosongkan menu
+Dalam beberapa kasus, sebaiknya buat menu yang sepenuhnya baru jika Anda menangani jumlah item menu yang berubah-ubah.
 
-Ini akan membersihkan semua item pada menu yang ada dan memungkinkan Anda menambahkan item lagi.
+Tindakan ini akan menghapus semua item dari menu yang ada dan memungkinkan Anda menambahkan item kembali.
 
 ```go
 menu := app.Menu.New()
@@ -101,13 +101,13 @@ menu.Update()
 ```
 
 @note type="info"
-Membersihkan menu hanya menghapus item menu di level teratas. Submenu tidak akan terlihat, tetapi masih menempati memori\
-jadi pastikan mengelola menu dengan hati-hati.
+Mengosongkan menu hanya menghapus item menu pada tingkat teratas. Meskipun submenu tidak akan terlihat, submenu tersebut tetap menggunakan memori,\
+jadi pastikan Anda mengelola menu dengan cermat.
 @end
 
-#### Menghancurkan menu
+#### Memusnahkan menu
 
-Jika Anda ingin membersihkan dan melepaskan menu, gunakan method `Destroy()`:
+Jika ingin mengosongkan dan melepaskan menu, gunakan metode `Destroy()`:
 
 ```go
 menu := app.Menu.New()
@@ -122,22 +122,22 @@ menu.Destroy()
 Item menu memiliki beberapa properti yang dapat dikonfigurasi:
 
 @table header=true
-| Properti    | Method                   | Deskripsi                                           |
-| Label       | `SetLabel(string)`       | Mengatur teks tampilan                              |
-| Enabled     | `SetEnabled(bool)`       | Mengaktifkan/menonaktifkan item                     |
-| Checked     | `SetChecked(bool)`       | Mengatur state checked (untuk checkbox/radio)       |
-| Tooltip     | `SetTooltip(string)`     | Mengatur teks tooltip                               |
-| Hidden      | `SetHidden(bool)`        | Menampilkan/menyembunyikan item                     |
-| Accelerator | `SetAccelerator(string)` | Mengatur keyboard shortcut                          |
+| Properti    | Metode                   | Deskripsi                                         |
+| Label       | `SetLabel(string)`       | Mengatur teks yang ditampilkan                               |
+| Diaktifkan     | `SetEnabled(bool)`       | Mengaktifkan atau menonaktifkan item                           |
+| Dicentang     | `SetChecked(bool)`       | Mengatur status centang (untuk kotak centang atau item tombol radio) |
+| Keterangan alat     | `SetTooltip(string)`     | Mengatur teks keterangan alat                               |
+| Disembunyikan      | `SetHidden(bool)`        | Menampilkan atau menyembunyikan item                                |
+| Akselerator | `SetAccelerator(string)` | Mengatur pintasan papan ketik                          |
 @end
 
-### State Item Menu
+### Status Item Menu
 
-Item menu dapat berada dalam state berbeda yang mengontrol visibilitas dan interaktivitas:
+Item menu dapat memiliki berbagai status yang mengatur visibilitas dan interaktivitasnya:
 
 #### Visibilitas
 
-Item menu dapat ditampilkan atau disembunyikan secara dinamis menggunakan method `SetHidden()`:
+Item menu dapat ditampilkan atau disembunyikan secara dinamis menggunakan metode `SetHidden()`:
 
 ```go
 menuItem := menu.Add("Dynamic Item")
@@ -152,11 +152,11 @@ menuItem.SetHidden(false)
 isHidden := menuItem.Hidden()
 ```
 
-Item menu yang disembunyikan sepenuhnya dihapus dari menu hingga ditampilkan kembali. Berguna untuk item menu kontekstual yang hanya muncul dalam state aplikasi tertentu.
+Item menu yang disembunyikan akan dihapus sepenuhnya dari menu hingga ditampilkan kembali. Hal ini berguna untuk item menu kontekstual yang sebaiknya hanya muncul pada status aplikasi tertentu.
 
-#### State Enabled
+#### Status Aktif
 
-Item menu dapat diaktifkan atau dinonaktifkan menggunakan method `SetEnabled()`:
+Item menu dapat diaktifkan atau dinonaktifkan menggunakan metode `SetEnabled()`:
 
 ```go
 menuItem := menu.Add("Save")
@@ -171,14 +171,14 @@ menuItem.SetEnabled(true)   // Item becomes clickable again
 isEnabled := menuItem.Enabled()
 ```
 
-Item menu yang dinonaktifkan tetap terlihat tetapi tampak abu-abu dan tidak dapat diklik. Umum digunakan untuk menandakan aksi saat ini tidak tersedia, seperti:
-- Menonaktifkan "Save" saat tidak ada perubahan untuk disimpan
-- Menonaktifkan "Copy" saat tidak ada yang dipilih
-- Menonaktifkan "Undo" saat tidak ada aksi untuk di-undo
+Item menu yang dinonaktifkan tetap terlihat, tetapi tampak berwarna abu-abu dan tidak dapat diklik. Hal ini umumnya digunakan untuk menunjukkan bahwa suatu tindakan sedang tidak tersedia, misalnya:
+- Menonaktifkan "Simpan" ketika tidak ada perubahan yang perlu disimpan
+- Menonaktifkan "Salin" ketika tidak ada yang dipilih
+- Menonaktifkan "Urungkan" ketika tidak ada tindakan yang dapat diurungkan
 
-#### Manajemen State Dinamis
+#### Pengelolaan Status Dinamis
 
-Anda dapat menggabungkan state ini dengan event handler untuk membuat menu dinamis:
+Anda dapat menggabungkan status-status ini dengan penangan peristiwa untuk membuat menu dinamis:
 
 ```go
 saveMenuItem := menu.Add("Save")
@@ -199,9 +199,9 @@ documentSaved := func() {
 }
 ```
 
-### Penanganan Event
+### Penanganan Peristiwa
 
-Item menu dapat merespons event klik menggunakan method `OnClick`:
+Item menu dapat merespons peristiwa klik menggunakan metode `OnClick`:
 
 ```go
 menuItem.OnClick(func(ctx *application.Context) {
@@ -210,7 +210,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-Context menyediakan informasi tentang item menu yang diklik:
+Konteks menyediakan informasi tentang item menu yang diklik:
 
 ```go
 menuItem.OnClick(func(ctx *application.Context) {
@@ -221,53 +221,53 @@ menuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-### Item Menu Berbasis Role
+### Item Menu Berbasis Peran
 
-Wails menyediakan sekumpulan role menu yang telah didefinisikan yang secara otomatis membuat item menu dengan fungsionalitas standar. Berikut role menu yang didukung:
+Wails menyediakan sekumpulan peran menu bawaan yang secara otomatis membuat item menu dengan fungsionalitas standar. Berikut adalah peran menu yang didukung:
 
 #### Struktur Menu Lengkap
-Role ini membuat struktur menu lengkap dengan fungsionalitas umum:
+Peran-peran ini membuat struktur menu lengkap dengan fungsionalitas umum:
 
 @table header=true
-| Role | Deskripsi | Catatan Platform |
-| `AppMenu` | Menu aplikasi dengan About, Services, Hide/Show, dan Quit | macOS saja |
-| `EditMenu` | Menu Edit standar dengan Undo, Redo, Cut, Copy, Paste, dll. | Semua platform |
-| `ViewMenu` | Menu View dengan kontrol Reload, Zoom, dan Fullscreen | Semua platform |
-| `WindowMenu` | Kontrol window (Minimise, Zoom, dll.) | Semua platform |
-| `HelpMenu` | Menu Help dengan tautan "Learn More" ke situs Wails | Semua platform |
+| Peran | Deskripsi | Catatan Platform |
+| `AppMenu` | Menu aplikasi dengan Tentang, Layanan, Sembunyikan/Tampilkan, dan Keluar | Khusus macOS |
+| `EditMenu` | Menu Edit standar dengan Urungkan, Ulangi, Potong, Salin, Tempel, dan lain-lain | Semua platform |
+| `ViewMenu` | Menu Tampilan dengan kontrol Muat Ulang, Zoom, dan Layar Penuh | Semua platform |
+| `WindowMenu` | Kontrol jendela (Minimalkan, Zoom, dan lain-lain) | Semua platform |
+| `HelpMenu` | Menu Bantuan dengan tautan "Pelajari Lebih Lanjut" ke situs web Wails | Semua platform |
 @end
 
 #### Item Menu Individual
-Role ini dapat digunakan untuk menambahkan item menu individual:
+Peran-peran ini dapat digunakan untuk menambahkan item menu individual:
 
 @table header=true
-| Role | Deskripsi | Catatan Platform |
-| `About` | Menampilkan dialog About aplikasi | Semua platform |
-| `Hide` | Menyembunyikan aplikasi | macOS saja |
-| `HideOthers` | Menyembunyikan aplikasi lain | macOS saja |
-| `UnHide` | Menampilkan aplikasi yang disembunyikan | macOS saja |
-| `CloseWindow` | Menutup window saat ini | Semua platform |
-| `Minimise` | Meminimalkan window | Semua platform |
-| `Zoom` | Zoom window | macOS saja |
-| `Front` | Membawa window ke depan | macOS saja |
+| Peran | Deskripsi | Catatan Platform |
+| `About` | Tampilkan dialog Tentang aplikasi | Semua platform |
+| `Hide` | Sembunyikan aplikasi | Khusus macOS |
+| `HideOthers` | Sembunyikan aplikasi lain | Khusus macOS |
+| `UnHide` | Tampilkan aplikasi yang disembunyikan | Khusus macOS |
+| `CloseWindow` | Tutup jendela saat ini | Semua platform |
+| `Minimise` | Minimalkan jendela | Semua platform |
+| `Zoom` | Zoom jendela | Khusus macOS |
+| `Front` | Bawa jendela ke depan | Khusus macOS |
 | `Quit` | Keluar dari aplikasi | Semua platform |
-| `Undo` | Undo aksi terakhir | Semua platform |
-| `Redo` | Redo aksi terakhir | Semua platform |
-| `Cut` | Cut seleksi | Semua platform |
-| `Copy` | Copy seleksi | Semua platform |
-| `Paste` | Paste dari clipboard | Semua platform |
-| `PasteAndMatchStyle` | Paste dan cocokkan style | macOS saja |
+| `Undo` | Urungkan tindakan terakhir | Semua platform |
+| `Redo` | Ulangi tindakan terakhir | Semua platform |
+| `Cut` | Potong pilihan | Semua platform |
+| `Copy` | Salin pilihan | Semua platform |
+| `Paste` | Tempel dari papan klip | Semua platform |
+| `PasteAndMatchStyle` | Tempel dan sesuaikan gaya | Khusus macOS |
 | `SelectAll` | Pilih semua | Semua platform |
-| `Delete` | Hapus seleksi | Semua platform |
-| `Reload` | Reload halaman saat ini | Semua platform |
-| `ForceReload` | Force reload halaman saat ini | Semua platform |
-| `ToggleFullscreen` | Toggle mode fullscreen | Semua platform |
-| `ResetZoom` | Reset level zoom | Semua platform |
-| `ZoomIn` | Perbesar zoom | Semua platform |
-| `ZoomOut` | Perkecil zoom | Semua platform |
+| `Delete` | Hapus pilihan | Semua platform |
+| `Reload` | Muat ulang halaman saat ini | Semua platform |
+| `ForceReload` | Paksa muat ulang halaman saat ini | Semua platform |
+| `ToggleFullscreen` | Alihkan mode layar penuh | Semua platform |
+| `ResetZoom` | Atur ulang tingkat zoom | Semua platform |
+| `ZoomIn` | Perbesar tampilan | Semua platform |
+| `ZoomOut` | Perkecil tampilan | Semua platform |
 @end
 
-Berikut contoh penggunaan menu lengkap dan role individual:
+Berikut adalah contoh yang menunjukkan cara menggunakan menu lengkap dan peran individual:
 
 ```go
 menu := app.Menu.New()
@@ -287,12 +287,12 @@ fileMenu.AddRole(application.Quit)
 
 ## Menu Aplikasi
 
-Menu aplikasi adalah menu yang muncul di bagian atas window aplikasi (Windows/Linux) atau di bagian atas layar (macOS).
+Menu aplikasi adalah menu yang muncul di bagian atas jendela aplikasi Anda (Windows/Linux) atau di bagian atas layar (macOS).
 
 ### Perilaku Menu Aplikasi
 
-Saat Anda mengatur menu aplikasi menggunakan `app.Menu.Set()`, menu tersebut menjadi menu utama di macOS.\
-Menu diatur per window untuk Windows/Linux.
+Saat Anda menetapkan menu aplikasi menggunakan `app.Menu.Set()`, menu tersebut menjadi menu utama di macOS.\
+Di Windows/Linux, menu ditetapkan untuk setiap jendela.
 
 ```go
 app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -303,7 +303,7 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Berikut contoh lengkap yang menunjukkan perilaku menu berbeda:
+Berikut adalah contoh lengkap yang menunjukkan berbagai perilaku menu tersebut:
 
 ```go
 func main() {
@@ -337,18 +337,18 @@ func main() {
 
 ## Menu Konteks
 
-Menu konteks adalah menu popup yang muncul saat klik kanan elemen di aplikasi Anda. Menu ini memberikan akses cepat ke aksi yang relevan untuk elemen yang diklik.
+Menu konteks adalah menu pop-up yang muncul saat Anda mengeklik kanan elemen dalam aplikasi. Menu ini memberikan akses cepat ke tindakan yang relevan untuk elemen yang diklik.
 
-### Menu Konteks Default
+### Menu Konteks Bawaan
 
-Menu konteks default adalah menu konteks bawaan webview yang menyediakan operasi level sistem seperti:
-- Copy, Cut, dan Paste untuk manipulasi teks
-- Kontrol seleksi teks
-- Opsi spell checking
+Menu konteks bawaan adalah menu konteks bawaan webview yang menyediakan operasi tingkat sistem seperti:
+- Salin, Potong, dan Tempel untuk memanipulasi teks
+- Kontrol pemilihan teks
+- Opsi pemeriksaan ejaan
 
-#### Mengontrol Menu Konteks Default
+#### Mengontrol Menu Konteks Bawaan
 
-Anda dapat mengontrol kapan menu konteks default muncul menggunakan properti CSS `--default-contextmenu`:
+Anda dapat mengontrol kapan menu konteks bawaan muncul menggunakan properti CSS `--default-contextmenu`:
 
 ```html
 <!-- Always show default context menu -->
@@ -371,18 +371,18 @@ Anda dapat mengontrol kapan menu konteks default muncul menggunakan properti CSS
 ```
 
 @note type="info"
-Fitur ini hanya bekerja seperti yang diharapkan setelah runtime [telah diinisialisasi](/reference/frontend-runtime/#initialisation).
+Fitur ini hanya akan berfungsi sesuai harapan setelah [runtime frontend siap](/reference/frontend-runtime/).
 @end
 
-#### Perilaku Menu Konteks Bersarang
+#### Perilaku Menu Konteks Bertingkat
 
-Saat menggunakan properti `--default-contextmenu` pada elemen bersarang, aturan berikut berlaku:
+Saat menggunakan properti `--default-contextmenu` pada elemen bertingkat, aturan berikut berlaku:
 
-1. Elemen anak mewarisi pengaturan menu konteks induk kecuali secara eksplisit di-override
-2. Pengaturan paling spesifik (terdekat) yang diutamakan
-3. Nilai `auto` dapat digunakan untuk reset ke perilaku default
+1. Elemen anak mewarisi pengaturan menu konteks induknya kecuali jika ditimpa secara eksplisit
+2. Pengaturan yang paling spesifik (paling dekat) akan diprioritaskan
+3. Nilai `auto` dapat digunakan untuk mengatur ulang ke perilaku bawaan
 
-Contoh perilaku menu konteks bersarang:
+Contoh perilaku menu konteks bertingkat:
 
 ```html
 <!-- Parent sets hide -->
@@ -407,15 +407,15 @@ Contoh perilaku menu konteks bersarang:
 
 ### Menu Konteks Kustom
 
-Menu konteks kustom memungkinkan Anda menyediakan aksi spesifik aplikasi yang relevan dengan elemen yang diklik. Sangat berguna untuk:
-- Operasi file di document manager
+Menu konteks kustom memungkinkan Anda menyediakan tindakan khusus aplikasi yang relevan dengan elemen yang diklik. Menu ini sangat berguna untuk:
+- Operasi file dalam pengelola dokumen
 - Alat manipulasi gambar
-- Aksi kustom di data grid
-- Operasi spesifik komponen
+- Tindakan kustom dalam kisi data
+- Operasi khusus komponen
 
 #### Membuat Menu Konteks Kustom
 
-Saat membuat menu konteks kustom, Anda menyediakan identifier unik (nama) yang menghubungkan menu ke elemen HTML:
+Saat membuat menu konteks kustom, Anda memberikan pengenal unik (nama) yang menghubungkan menu tersebut dengan elemen HTML:
 
 ```go
 // Create a context menu with identifier "imageMenu"
@@ -423,14 +423,14 @@ contextMenu := app.ContextMenu.New()
 app.ContextMenu.Add("imageMenu", contextMenu)
 ```
 
-Parameter name ("imageMenu" dalam contoh ini) berfungsi sebagai identifier unik yang akan digunakan untuk:
-1. Menghubungkan elemen HTML ke menu konteks spesifik ini
-2. Mengidentifikasi menu mana yang ditampilkan saat klik kanan
+Parameter nama ("imageMenu" dalam contoh ini) berfungsi sebagai pengenal unik yang akan digunakan untuk:
+1. Menghubungkan elemen HTML ke menu konteks khusus ini
+2. Menentukan menu yang harus ditampilkan saat pengguna mengeklik kanan
 3. Memungkinkan pembaruan dan pembersihan menu
 
 #### Data Konteks
 
-Saat menangani event menu konteks, Anda dapat mengakses item menu yang diklik dan data konteks terkait:
+Saat menangani peristiwa menu konteks, Anda dapat mengakses item menu yang diklik beserta data konteks yang terkait dengannya:
 
 ```go
 contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
@@ -450,32 +450,32 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 })
 ```
 
-Data konteks diteruskan dari properti `--custom-contextmenu-data` elemen HTML dan tersedia di click handler melalui `ctx.ContextMenuData()`. Sangat berguna saat:
+Data konteks diteruskan dari properti `--custom-contextmenu-data` milik elemen HTML dan tersedia di pengendali klik melalui `ctx.ContextMenuData()`. Hal ini sangat berguna saat:
 
-- Bekerja dengan list atau grid di mana setiap item membutuhkan identifikasi unik
-- Menangani operasi pada komponen atau elemen spesifik
-- Meneruskan state atau metadata dari frontend ke backend
+- Menggunakan daftar atau grid yang setiap itemnya memerlukan identifikasi unik
+- Menangani operasi pada komponen atau elemen tertentu
+- Meneruskan status atau metadata dari frontend ke backend
 
-#### Manajemen Menu Konteks
+#### Pengelolaan Menu Konteks
 
-Setelah melakukan perubahan pada menu konteks, panggil method `Update()` untuk menerapkan perubahan:
+Setelah mengubah menu konteks, panggil metode `Update()` untuk menerapkan perubahan tersebut:
 
 ```go
 contextMenu.Update()
 ```
 
-Saat menu konteks tidak lagi diperlukan, Anda dapat menghancurkannya:
+Jika menu konteks tidak lagi diperlukan, Anda dapat memusnahkannya:
 
 ```go
 contextMenu.Destroy()
 ```
 @note type="danger" title="Peringatan"
-Setelah memanggil `Destroy()`, menggunakan referensi menu konteks lagi akan menyebabkan panic.
+Setelah memanggil `Destroy()`, penggunaan kembali referensi menu konteks akan menyebabkan panic.
 @end
 
 ### Contoh Dunia Nyata: Galeri Gambar
 
-Berikut contoh lengkap implementasi menu konteks kustom untuk galeri gambar:
+Berikut adalah contoh lengkap penerapan menu konteks kustom untuk galeri gambar:
 
 ```go
 // Backend: Create the context menu
@@ -522,14 +522,14 @@ imageMenu.Add("Share").OnClick(func(ctx *application.Context) {
 ```
 
 Dalam contoh ini:
-1. Menu konteks dibuat dengan identifier "imageMenu"
-2. Setiap container gambar dihubungkan ke menu menggunakan `--custom-contextmenu: imageMenu`
-3. Setiap container menyediakan ID gambar sebagai data konteks menggunakan `--custom-contextmenu-data`
-4. Backend menerima ID gambar di click handler dan dapat melakukan operasi spesifik
-5. Menu yang sama digunakan ulang untuk semua gambar, tetapi data konteks memberi tahu gambar mana yang dioperasikan
+1. Menu konteks dibuat dengan pengenal "imageMenu"
+2. Setiap kontainer gambar dihubungkan ke menu menggunakan `--custom-contextmenu: imageMenu`
+3. Setiap kontainer menyediakan ID gambarnya sebagai data konteks menggunakan `--custom-contextmenu-data`
+4. Backend menerima ID gambar di pengendali klik dan dapat menjalankan operasi tertentu
+5. Menu yang sama digunakan kembali untuk semua gambar, tetapi data konteks menunjukkan gambar yang akan dioperasikan
 
-Pola ini sangat powerful untuk:
-- Data grid di mana baris membutuhkan operasi spesifik
-- File manager di mana file membutuhkan aksi spesifik konteks
-- Alat desain di mana elemen berbeda membutuhkan operasi berbeda
-- Komponen apa pun di mana operasi yang sama berlaku untuk banyak instance
+Pola ini sangat efektif untuk:
+- Grid data yang baris-barisnya memerlukan operasi tertentu
+- Pengelola file yang file-filenya memerlukan tindakan sesuai konteks
+- Alat desain yang elemen-elemennya memerlukan operasi berbeda
+- Komponen apa pun yang menerapkan operasi yang sama pada beberapa instans

@@ -1,18 +1,18 @@
 ---
 schema = 1
-title = "Testing"
+title = "Pengujian"
 description = "Uji aplikasi Wails Anda"
 slug = "guides/testing"
-sourcePath = "id/guides/testing.mpd"
+sourcePath = "guides/testing.mpd"
 ---
 
-## Ringkasan
+## Ikhtisar
 
-Testing memastikan aplikasi Anda berfungsi dengan benar dan mencegah regresi.
+Pengujian memastikan aplikasi Anda berfungsi dengan benar dan mencegah regresi.
 
-## Unit Testing
+## Pengujian Unit
 
-### Menguji Services
+### Pengujian Layanan
 
 ```go
 func TestUserService_Create(t *testing.T) {
@@ -31,7 +31,7 @@ func TestUserService_Create(t *testing.T) {
 }
 ```
 
-### Testing dengan Mock
+### Pengujian dengan Mock
 
 ```go
 type MockDB struct {
@@ -58,9 +58,9 @@ func TestUserService_WithMock(t *testing.T) {
 }
 ```
 
-## Integration Testing
+## Pengujian Integrasi
 
-### Testing dengan Dependensi Nyata
+### Pengujian dengan Dependensi Nyata
 
 ```go
 func TestIntegration(t *testing.T) {
@@ -93,9 +93,9 @@ func TestIntegration(t *testing.T) {
 }
 ```
 
-## Frontend Testing
+## Pengujian Frontend
 
-### Unit Test JavaScript
+### Pengujian Unit JavaScript
 
 ```javascript
 // Using Vitest
@@ -110,7 +110,7 @@ describe('formatDate', () => {
 })
 ```
 
-### Menguji Bindings
+### Pengujian Binding
 
 ```javascript
 import { vi } from 'vitest'
@@ -136,22 +136,22 @@ describe('User Component', () => {
 
 ### ✅ Lakukan
 
-- Tulis tes sebelum memperbaiki bug
-- Uji edge case
-- Gunakan table-driven tests
-- Mock dependensi eksternal
-- Uji error handling
-- Jaga agar tes tetap cepat
+- Tulis pengujian sebelum memperbaiki bug
+- Uji kasus ekstrem
+- Gunakan pengujian berbasis tabel
+- Gunakan mock untuk dependensi eksternal
+- Uji penanganan kesalahan
+- Pastikan pengujian tetap cepat
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- Jangan lewati kasus error
-- Jangan uji detail implementasi
-- Jangan tulis tes yang tidak stabil
-- Jangan abaikan kegagalan tes
-- Jangan lewati integration test
+- Jangan lewatkan kasus kesalahan
+- Jangan menguji detail implementasi
+- Jangan menulis pengujian yang tidak stabil
+- Jangan abaikan kegagalan pengujian
+- Jangan lewatkan pengujian integrasi
 
-## Menjalankan Tes
+## Menjalankan Pengujian
 
 ```bash
 # Run Go tests
@@ -170,7 +170,7 @@ cd frontend && npm test
 cd frontend && npm test -- --watch
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [End-to-End Testing](/id/guides/e2e-testing/) - Uji alur pengguna secara lengkap
-- [Best Practices](/id/features/bindings/best-practices/) - Pelajari praktik terbaik
+- [Pengujian Menyeluruh](/guides/e2e-testing/) - Uji alur pengguna secara lengkap
+- [Praktik Terbaik](/features/bindings/best-practices/) - Pelajari praktik terbaik

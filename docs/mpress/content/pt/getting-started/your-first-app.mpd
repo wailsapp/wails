@@ -1,12 +1,12 @@
 ---
 schema = 1
-title = "Seu Primeiro Aplicativo"
-description = "Crie seu primeiro aplicativo de desktop com Wails passo a passo"
+title = "Seu primeiro aplicativo"
+description = "Crie seu primeiro aplicativo desktop com Wails passo a passo"
 slug = "getting-started/your-first-app"
-sourcePath = "pt/getting-started/your-first-app.mpd"
+sourcePath = "getting-started/your-first-app.mpd"
 ---
 
-Este guia mostra como criar seu primeiro aplicativo Wails v3, cobrindo a configuração do projeto, a compilação e o fluxo de trabalho de desenvolvimento.
+Este guia mostra como criar seu primeiro aplicativo com Wails v3, desde a configuração do projeto até a compilação e o fluxo de trabalho de desenvolvimento.
 
 @rawHTML
 <br/>
@@ -16,77 +16,72 @@ Este guia mostra como criar seu primeiro aplicativo Wails v3, cobrindo a configu
 @end
 
 @steps
-@step title="Criando um Novo Projeto"
+@step title="Como criar um novo projeto"
 
-Abra seu terminal e execute o seguinte comando para criar um novo projeto Wails:
+Abra o terminal e execute o seguinte comando para criar um novo projeto Wails:
 
 ```bash
 wails3 init -n myfirstapp
 ```
 
-Este comando cria um novo diretório chamado `myfirstapp` com todos os\
-arquivos necessários.
+Esse comando cria um novo diretório chamado `myfirstapp` com todos os arquivos necessários.
 
   @rawHTML
    <video src="/assets/wails_init.mp4" controls></video>
   @end
 
 @end
-@step title="Explorando a Estrutura do Projeto"
+@step title="Como explorar a estrutura do projeto"
 
-Navegue até o diretório `myfirstapp`. Você encontrará vários arquivos e\
-pastas:
+Acesse o diretório `myfirstapp`. Você encontrará vários arquivos e diretórios:
 
 @filetree
-- build/           Contém arquivos usados pelo processo de compilação
-  - appicon.png  O ícone do aplicativo
+- build/           Contém os arquivos usados pelo processo de compilação
+  - appicon.png  Ícone do aplicativo
   - config.yml   Configuração de compilação
-  - Taskfile.yml Tarefas de compilação
-  - darwin/      Arquivos de compilação específicos para macOS
-    - Info.dev.plist Configuração de desenvolvimento
+  - Taskfile.yml Build tasks
+  - darwin/      Arquivos de compilação específicos do macOS
+    - Info.dev.plist Development configuration
     - Info.plist    Configuração de produção
-    - Taskfile.yml  Tarefas de compilação para macOS
+    - Taskfile.yml  Tarefas de compilação do macOS
     - icons.icns    Ícone do aplicativo para macOS
-  - linux/       Arquivos de compilação específicos para Linux
-    - Taskfile.yml  Tarefas de compilação para Linux
-    - appimage/     Empacotamento AppImage
+  - linux/       Arquivos de compilação específicos do Linux
+    - Taskfile.yml  Tarefas de compilação do Linux
+    - appimage/     Empacotamento em AppImage
       - build.sh  Script de compilação do AppImage
-    - nfpm/        Empacotamento NFPM
-      - nfpm.yaml Configuração do pacote
+    - nfpm/        Empacotamento com NFPM
+      - nfpm.yaml Package configuration
       - scripts/  Scripts de compilação
-  - windows/     Arquivos de compilação específicos para Windows
-    - Taskfile.yml        Tarefas de compilação para Windows
+  - windows/     Arquivos de compilação específicos do Windows
+    - Taskfile.yml        Tarefas de compilação do Windows
     - icon.ico           Ícone do aplicativo para Windows
     - info.json          Metadados do aplicativo
-    - wails.exe.manifest Arquivo de manifesto do Windows
+    - wails.exe.manifest Windows manifest file
     - nsis/              Arquivos do instalador NSIS
-      - project.nsi                    Arquivo do projeto NSIS
+      - project.nsi                    Arquivo de projeto do NSIS
       - wails_tools.nsh               Scripts auxiliares do NSIS
-- frontend/        Arquivos do aplicativo frontend
+- frontend/        Arquivos do frontend do aplicativo
   - index.html   Arquivo HTML principal
   - main.js      Arquivo JavaScript principal
-  - package.json Configuração do pacote NPM
-  - public/      Ativos estáticos
-  - Inter Font License.txt Licença da fonte
-- .gitignore      Arquivo de ignorar do Git
+  - package.json NPM package configuration
+  - public/      Recursos estáticos
+  - Inter Font License.txt Font license
+- .gitignore      Arquivo de exclusões do Git
 - README.md       Documentação do projeto
 - Taskfile.yml    Tarefas do projeto
-- go.mod          Arquivo do módulo Go
-- go.sum          Somas de verificação do módulo Go
-- greetservice.go Serviço de saudação
+- go.mod          Arquivo de módulo Go
+- go.sum          Somas de verificação dos módulos Go
+- greetservice.go Greeting service
 - main.go         Código principal do aplicativo
 @end
 
-Reserve um momento para explorar esses arquivos e se familiarizar com a\
-estrutura.
+Reserve um momento para explorar esses arquivos e se familiarizar com a estrutura.
 
 @note type="info"
-Embora o Wails v3 use [Task](https://taskfile.dev/) como seu\
-sistema de compilação padrão, nada impede você de usar `make` ou qualquer outro\
-sistema de compilação alternativo.
+Embora o Wails v3 use [Task](https://taskfile.dev/) como sistema de compilação padrão, nada impede que você use `make` ou qualquer outro sistema de compilação alternativo.
 @end
 @end
-@step title="Compilando Seu Aplicativo"
+@step title="Como compilar seu aplicativo"
 
 Para compilar seu aplicativo, execute:
 
@@ -94,17 +89,16 @@ Para compilar seu aplicativo, execute:
 wails3 build
 ```
 
-Este comando compila uma versão de depuração do seu aplicativo e a salva em um\
-novo diretório `bin`.
+Esse comando compila uma versão de depuração do aplicativo e a salva em um novo diretório `bin`.
 
 @note type="info"
-`wails3 build` é uma abreviação para `wails3 task build` e executará a tarefa `build` em `Taskfile.yml`.
+`wails3 build` é uma forma abreviada de `wails3 task build` e executará a tarefa `build` em `Taskfile.yml`.
 @end
     @rawHTML
      <video src="/assets/wails_build.mp4" controls></video>
     @end
 
-Uma vez compilado, você pode executá-lo como faria com qualquer aplicativo normal:
+Após a compilação, você poderá executá-lo como qualquer aplicativo comum:
 
 @tabs sync-key="platform"
 @tab label="Mac"
@@ -139,29 +133,25 @@ bin\myfirstapp.exe
 @end
 @end
 
-Você verá uma interface simples, o ponto de partida para o seu aplicativo. Como é\
-a versão de depuração, você também verá logs na janela do console. Isso é\
-útil para fins de depuração.
+Você verá uma interface simples, que será o ponto de partida do seu aplicativo. Como essa é a versão de depuração, você também verá logs na janela do console. Isso é útil para fins de depuração.
 
 @end
-@step title="Modo de Desenvolvimento"
+@step title="Modo de desenvolvimento"
 
-Também podemos executar o aplicativo no modo de desenvolvimento. Este modo permite que você\
-faça alterações no seu código frontend e veja as alterações refletidas no\
-aplicativo em execução sem precisar recompilar todo o aplicativo.
+Também podemos executar o aplicativo no modo de desenvolvimento. Esse modo permite alterar o código do frontend e ver as mudanças refletidas no aplicativo em execução sem precisar recompilar o aplicativo inteiro.
 
-1. Abra uma nova janela de terminal.
+1. Abra uma nova janela do terminal.
 2. Execute `wails3 dev`. O aplicativo será compilado e executado no modo de depuração.
-3. Abra `frontend/index.html` no editor de sua escolha.
-4. Edite o código e altere `Please enter your name below` para `Please enter your name below!!!`.
+3. Abra `frontend/index.html` no editor de sua preferência.
+4. Edite o código e substitua `Please enter your name below` por `Please enter your name below!!!`.
 5. Salve o arquivo.
 
-Essa alteração será refletida no seu aplicativo imediatamente.
+Essa alteração será refletida imediatamente no aplicativo.
 
-Quaisquer alterações no código do backend acionarão uma recompilação:
+Qualquer alteração no código do backend acionará uma nova compilação:
 
 1. Abra `greetservice.go`.
-2. Altere a linha que contém `return "Hello " + name + "!"` para `return "Hello there " + name + "!"`.
+2. Na linha que contém `return "Hello " + name + "!"`, substitua-o por `return "Hello there " + name + "!"`.
 3. Salve o arquivo.
 
 O aplicativo será atualizado em questão de segundos.
@@ -171,21 +161,20 @@ O aplicativo será atualizado em questão de segundos.
     @end
 
 @end
-@step title="Empacotando Seu Aplicativo"
+@step title="Como empacotar seu aplicativo"
 
-    Quando seu aplicativo estiver pronto para distribuição, você pode criar\
-    pacotes específicos para cada plataforma:
+    Quando o aplicativo estiver pronto para distribuição, você poderá criar pacotes específicos para cada plataforma:
 
     @tabs sync-key="platform"
     @tab label="Mac"
 
-Para criar um bundle `.app`:
+Para criar um pacote `.app`:
 
 ```bash
 wails3 package
 ```
 
-Isso criará uma compilação de produção e a empacotará em um bundle `.app` no diretório `bin`.
+Isso criará uma compilação de produção e a empacotará em um pacote `.app` no diretório `bin`.
 
 
 
@@ -207,17 +196,17 @@ Isso criará uma compilação de produção e a empacotará em um instalador NSI
     @end
     @tab label="Linux"
 
-O Wails suporta vários formatos de pacote para distribuição no Linux:
+O Wails oferece suporte a vários formatos de pacote para distribuição no Linux:
 
 ```bash
-# Cria todos os tipos de pacote (AppImage, deb, rpm e Arch Linux)
+# Create all package types (AppImage, deb, rpm, and Arch Linux)
 wails3 package
 
-# Ou cria tipos de pacote específicos
-wails3 task linux:create:appimage  # Formato AppImage
-wails3 task linux:create:deb       # Pacote Debian
-wails3 task linux:create:rpm       # Pacote Red Hat
-wails3 task linux:create:aur       # Pacote Arch Linux
+# Or create specific package types
+wails3 task linux:create:appimage  # AppImage format
+wails3 task linux:create:deb       # Debian package
+wails3 task linux:create:rpm       # Red Hat package
+wails3 task linux:create:aur       # Arch Linux package
 ```
 
 
@@ -226,16 +215,15 @@ wails3 task linux:create:aur       # Pacote Arch Linux
     @end
     @end
 
-    Para informações mais detalhadas sobre opções de empacotamento e configuração,\
-    confira nosso [Guia de Empacotamento](/guides/installers/).
+    Para obter informações mais detalhadas sobre as opções e a configuração de empacotamento, consulte nosso [Guia de compilação e empacotamento](/guides/build/building/).
 
 @end
-@step title="Configurando Controle de Versão e Nome do Módulo"
+@step title="Como configurar o controle de versão e o nome do módulo"
 
-Seu projeto é criado com o nome de módulo placeholder `changeme`. É recomendável atualizá-lo para corresponder à URL do seu repositório:
+Seu projeto é criado com o nome de módulo provisório `changeme`. Recomendamos atualizá-lo para corresponder à URL do seu repositório:
 
-1. Crie um novo repositório no GitHub (ou em seu serviço Git preferido)
-2. Inicialize o git no diretório do seu projeto:
+1. Crie um novo repositório no GitHub (ou no serviço de hospedagem Git de sua preferência)
+2. Inicialize o Git no diretório do projeto:
   ```bash
   git init
   git add .
@@ -254,14 +242,14 @@ Seu projeto é criado com o nome de módulo placeholder `changeme`. É recomend�
   git push -u origin main
   ```
 
-Isso garante que o nome do seu módulo Go esteja alinhado com as convenções de nomenclagem de módulos do Go e facilita o compartilhamento do seu código.
+Isso garante que o nome do seu módulo Go siga as convenções de nomenclatura de módulos do Go e facilita o compartilhamento do código.
 
-@note type="tip" title="Dica"
-Você pode automatizar todas as etapas de inicialização usando a flag `-git` ao criar seu projeto:
+@note type="tip" title="Dica profissional"
+Você pode automatizar todas as etapas de inicialização usando a opção `-git` ao criar seu projeto:
 ```bash
 wails3 init -n myfirstapp -git github.com/username/myfirstapp
 ```
-Isso suporta vários formatos de URL do Git:
+Há suporte para vários formatos de URL do Git:
 - HTTPS: `https://github.com/username/project`
 - SSH: `git@github.com:username/project` ou `ssh://git@github.com/username/project`
 - Protocolo Git: `git://github.com/username/project`
@@ -273,12 +261,11 @@ Isso suporta vários formatos de URL do Git:
 
 ## Parabéns!
 
-Você acabou de criar, desenvolver e empacotar seu primeiro aplicativo Wails.\
-Este é apenas o início do que você pode realizar com o Wails v3.
+Você acabou de criar, desenvolver e empacotar seu primeiro aplicativo Wails. Isso é apenas o começo do que você pode fazer com o Wails v3.
 
-## Próximos Passos
+## Próximas etapas
 
-Se você é novo no Wails, recomendamos ler nossos Tutoriais a seguir, que serão um guia prático através\
-das várias funcionalidades do Wails. O primeiro tutorial é [Criando um Serviço](/tutorials/01-creating-a-service/).
+Se você está começando a usar o Wails, recomendamos que leia a seguir nossos Tutoriais, que oferecem um guia prático sobre\
+os diversos recursos do Wails. O primeiro tutorial é [Como criar um serviço](/tutorials/01-creating-a-service/).
 
-Se você é um usuário mais avançado, confira nossos [Guias](/guides/) para obter informações mais detalhadas sobre como usar o Wails.
+Se você tem mais experiência, consulte o [Guia de compilação e empacotamento](/guides/build/building/) para obter informações mais detalhadas sobre como usar o Wails.

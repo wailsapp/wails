@@ -1,18 +1,22 @@
 ---
 schema = 1
-title = "Dialog File"
-description = "Dialog buka, simpan, dan pilih folder"
+title = "Dialog file"
+description = "Dialog untuk membuka, menyimpan, dan memilih folder"
 slug = "features/dialogs/file"
-sourcePath = "id/features/dialogs/file.mpd"
+sourcePath = "features/dialogs/file.mpd"
 ---
 
-## Dialog File
+## Dialog file
 
-Wails menyediakan *dialog file native* dengan tampilan sesuai platform untuk membuka file, menyimpan file, dan memilih folder. API sederhana dengan filter tipe file, dukungan pemilihan ganda, dan lokasi default.
+Wails menyediakan *dialog file native* dengan tampilan yang sesuai untuk setiap platform guna membuka file, menyimpan file, dan memilih folder. API sederhana dengan pemfilteran jenis file, dukungan pemilihan beberapa file, dan lokasi default.
+
+![Pemilih file native macOS yang dibuka oleh aplikasi Wails](/assets/screenshots/file-dialog-macos.png)
+
+API Wails mendelegasikan tugas kepada pemilih milik sistem operasi sehingga perilaku navigasi, pemfilteran, dan pemilihan yang familier tetap dipertahankan.
 
 ## Membuat Dialog File
 
-Dialog file diakses melalui manager `app.Dialog`:
+Dialog file diakses melalui pengelola `app.Dialog`:
 
 ```go
 app.Dialog.OpenFile()
@@ -21,7 +25,7 @@ app.Dialog.SaveFile()
 
 ## Dialog Buka File
 
-Pilih file untuk dibuka:
+Pilih file yang akan dibuka:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -38,12 +42,12 @@ openFile(path)
 ```
 
 *Kasus penggunaan:*
-- Buka dokumen
-- Impor file
-- Muat gambar
-- Pilih file konfigurasi
+- Membuka dokumen
+- Mengimpor file
+- Memuat gambar
+- Memilih file konfigurasi
 
-### Pemilihan File Tunggal
+### Pemilihan Satu File
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -107,10 +111,10 @@ saveFile(path, data)
 ```
 
 *Kasus penggunaan:*
-- Simpan dokumen
-- Ekspor data
-- Buat file baru
-- Simpan sebagai...
+- Menyimpan dokumen
+- Mengekspor data
+- Membuat file baru
+- Menyimpan sebagai...
 
 ### Dengan Nama File Default
 
@@ -130,7 +134,7 @@ path, err := app.Dialog.SaveFile().
     PromptForSingleSelection()
 ```
 
-### Konfirmasi Timpa
+### Konfirmasi Penimpaan
 
 ```go
 path, err := app.Dialog.SaveFile().
@@ -164,7 +168,7 @@ saveFile(path, data)
 
 ## Dialog Pilih Folder
 
-Pilih direktori menggunakan dialog buka file dengan pemilihan direktori diaktifkan:
+Pilih direktori menggunakan dialog buka file dengan pemilihan direktori yang diaktifkan:
 
 ```go
 path, err := app.Dialog.OpenFile().
@@ -181,10 +185,10 @@ exportToFolder(path)
 ```
 
 *Kasus penggunaan:*
-- Pilih direktori output
-- Pilih workspace
-- Pilih lokasi backup
-- Pilih direktori instalasi
+- Memilih direktori keluaran
+- Memilih ruang kerja
+- Memilih lokasi cadangan
+- Memilih direktori instalasi
 
 ### Dengan Direktori Default
 
@@ -199,7 +203,7 @@ path, err := app.Dialog.OpenFile().
 
 ## Filter File
 
-Gunakan metode `AddFilter()` untuk menambahkan filter tipe file ke dialog. Setiap panggilan menambahkan opsi filter baru.
+Gunakan metode `AddFilter()` untuk menambahkan filter jenis file ke dialog. Setiap pemanggilan menambahkan opsi filter baru.
 
 ### Filter Dasar
 
@@ -232,7 +236,7 @@ AddFilter("Images", "*.png;*.jpg;*.gif")
 
 ## Contoh Lengkap
 
-### Buka File Gambar
+### Membuka File Gambar
 
 ```go
 func openImage(app *application.App) (image.Image, error) {
@@ -273,7 +277,7 @@ func openImage(app *application.App) (image.Image, error) {
 }
 ```
 
-### Simpan Dokumen dengan Validasi
+### Menyimpan Dokumen dengan Validasi
 
 ```go
 func saveDocument(app *application.App, content string) {
@@ -326,7 +330,7 @@ func doSave(app *application.App, path, content string) {
 }
 ```
 
-### Pemrosesan File Batch
+### Pemrosesan File secara Batch
 
 ```go
 func processMultipleFiles(app *application.App) {
@@ -382,7 +386,7 @@ func processMultipleFiles(app *application.App) {
 }
 ```
 
-### Ekspor dengan Pemilihan Folder
+### Mengekspor dengan Pemilihan Folder
 
 ```go
 func exportData(app *application.App, data []byte) {
@@ -427,7 +431,7 @@ func exportData(app *application.App, data []byte) {
 }
 ```
 
-### Impor dengan Validasi
+### Mengimpor dengan Validasi
 
 ```go
 func importConfiguration(app *application.App) {
@@ -494,71 +498,71 @@ func importConfiguration(app *application.App) {
 ### ✅ Lakukan
 
 - *Sediakan filter file* - Bantu pengguna menemukan file
-- *Atur judul yang sesuai* - Konteks yang jelas
-- *Gunakan direktori default* - Mulai di lokasi yang logis
-- *Validasi pilihan* - Periksa tipe file
+- *Tetapkan judul yang sesuai* - Berikan konteks yang jelas
+- *Gunakan direktori default* - Mulai dari lokasi yang logis
+- *Validasi pilihan* - Periksa jenis file
 - *Tangani pembatalan* - Pengguna mungkin membatalkan
-- *Tampilkan konfirmasi* - Untuk aksi destruktif
-- *Berikan umpan balik* - Pesan sukses/error
+- *Tampilkan konfirmasi* - Untuk tindakan destruktif
+- *Berikan umpan balik* - Pesan keberhasilan/kesalahan
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan lewati validasi* - Periksa tipe file
-- *Jangan abaikan error* - Tangani pembatalan
-- *Jangan gunakan filter generik* - Spesifik
-- *Jangan lupa "All Files"* - Selalu sertakan sebagai opsi
-- *Jangan hardcode path* - Gunakan home directory pengguna
-- *Jangan asumsikan file ada* - Periksa sebelum membuka
+- *Jangan lewati validasi* - Periksa jenis file
+- *Jangan abaikan kesalahan* - Tangani pembatalan
+- *Jangan gunakan filter generik* - Gunakan filter yang spesifik
+- *Jangan lupakan "Semua File"* - Selalu sertakan sebagai opsi
+- *Jangan tulis jalur secara hardcode* - Gunakan direktori beranda pengguna
+- *Jangan berasumsi bahwa file tersedia* - Periksa sebelum membukanya
 
-## Perbedaan Platform
+## Perbedaan Antarplatform
 
 ### macOS
 
 - NSOpenPanel/NSSavePanel native
-- Gaya sheet saat dilampirkan ke window
+- Bergaya sheet saat dilampirkan ke jendela
 - Mengikuti tema sistem
-- Mendukung preview Quick Look
-- Integrasi tag dan favorit
+- Mendukung pratinjau Quick Look
+- Integrasi dengan tag dan favorit
 
 ### Windows
 
-- Dialog File Open/Save native
+- Dialog Buka/Simpan File native
 - Mengikuti tema sistem
-- Integrasi file recent
+- Integrasi file terbaru
 - Dukungan lokasi jaringan
 
 ### Linux
 
-- GTK file chooser
-- Bervariasi menurut desktop environment
+- Pemilih file GTK
+- Bervariasi menurut lingkungan desktop
 - Mengikuti tema desktop
-- Dukungan file recent
+- Dukungan file terbaru
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="ℹ Dialog Pesan"
-Dialog info, peringatan, dan error.
+@card title="ℹ Dialog pesan"
+Dialog informasi, peringatan, dan kesalahan.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/message/)
+[Pelajari Selengkapnya →](/features/dialogs/message/)
 @end
-@card title="◆ Dialog Kustom"
-Buat window dialog kustom.
+@card title="◆ Dialog khusus"
+Buat jendela dialog khusus.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/custom/)
+[Pelajari Selengkapnya →](/features/dialogs/custom/)
 @end
 @card title="🚀 Binding"
 Panggil fungsi Go dari JavaScript.
 
-[Pelajari Selengkapnya →](/id/features/bindings/methods/)
+[Pelajari Selengkapnya →](/features/bindings/methods/)
 @end
-@card title="★ Event"
-Gunakan event untuk pembaruan progress.
+@card title="★ Peristiwa"
+Gunakan peristiwa untuk memperbarui progres.
 
-[Pelajari Selengkapnya →](/id/features/events/system/)
+[Pelajari Selengkapnya →](/features/events/system/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh dialog file](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh dialog file](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

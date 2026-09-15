@@ -20,7 +20,7 @@ Frontend: "Frontend (JavaScript)" {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
-  
+
   Bindings: "Auto-Generated Bindings" {
     shape: rectangle
     style.fill: "#A78BFA"
@@ -32,17 +32,17 @@ Bridge: "Wails Bridge" {
     shape: rectangle
     style.fill: "#10B981"
   }
-  
+
   Router: "Method Router" {
     shape: diamond
     style.fill: "#10B981"
   }
-  
+
   Decoder: "JSON Decoder" {
     shape: rectangle
     style.fill: "#10B981"
   }
-  
+
   TypeGen: "Type Generator" {
     shape: rectangle
     style.fill: "#10B981"
@@ -54,7 +54,7 @@ Backend: "Backend (Go)" {
     shape: rectangle
     style.fill: "#00ADD8"
   }
-  
+
   Registry: "Service Registry" {
     shape: rectangle
     style.fill: "#00ADD8"
@@ -173,11 +173,11 @@ Validate: "Validate" {
   Check: "Service exists?" {
     shape: diamond
   }
-  
+
   CheckMethod: "Method exists?" {
     shape: diamond
   }
-  
+
   CheckTypes: "Types correct?" {
     shape: diamond
   }
@@ -533,10 +533,10 @@ func ProcessLargeFile(path string) error {
         return err
     }
     defer file.Close()
-    
+
     scanner := bufio.NewScanner(file)
     lineNum := 0
-    
+
     for scanner.Scan() {
         lineNum++
         // Emit progress events
@@ -545,7 +545,7 @@ func ProcessLargeFile(path string) error {
             "text": scanner.Text(),
         })
     }
-    
+
     return scanner.Err()
 }
 ```

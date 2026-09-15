@@ -1,34 +1,34 @@
 ---
 schema = 1
 title = "Konfigurasi UAC Windows"
-description = "Konfigurasi User Account Control (UAC) untuk aplikasi Wails Windows Anda"
+description = "Konfigurasikan Kontrol Akun Pengguna (UAC) untuk aplikasi Wails Windows Anda"
 slug = "guides/windows-uac"
-sourcePath = "id/guides/windows-uac.mpd"
+sourcePath = "guides/windows-uac.mpd"
 ---
 
-Platform Relevan: <span class="mpress-badge mpress-badge-note">Windows</span>
+Platform yang Relevan: <span class="mpress-badge mpress-badge-note">Windows</span>
 @rawHTML
 <br/>
 @end
 
-Windows User Account Control (UAC) menentukan hak eksekusi aplikasi Wails Anda. Secara default, aplikasi Wails v3 menyertakan konfigurasi UAC eksplisit di manifest Windows mereka, memastikan perilaku konsisten di mesin yang berbeda.
+Kontrol Akun Pengguna (UAC) Windows menentukan hak istimewa eksekusi aplikasi Wails Anda. Secara default, aplikasi Wails v3 menyertakan konfigurasi UAC eksplisit dalam manifes Windows-nya, sehingga memastikan perilaku yang konsisten di berbagai komputer.
 
-## Level Eksekusi UAC
+## Tingkat Eksekusi UAC
 
-Aplikasi Windows dapat meminta level eksekusi berbeda melalui file manifest. Wails v3 secara otomatis menyertakan konfigurasi UAC dengan level eksekusi default yang dapat Anda sesuaikan berdasarkan kebutuhan aplikasi.
+Aplikasi Windows dapat meminta tingkat eksekusi yang berbeda melalui file manifesnya. Wails v3 secara otomatis menyertakan konfigurasi UAC dengan tingkat eksekusi default yang dapat Anda sesuaikan berdasarkan kebutuhan aplikasi Anda.
 
-### Level Eksekusi yang Tersedia
+### Tingkat Eksekusi yang Tersedia
 
 @table header=true
-| Level | Deskripsi | Use Case |
-| `asInvoker` | Berjalan dengan hak yang sama dengan proses induk | Default untuk sebagian besar aplikasi |
-| `highestAvailable` | Berjalan dengan hak tertinggi yang tersedia untuk pengguna | Aplikasi yang mungkin memerlukan akses elevated |
-| `requireAdministrator` | Selalu memerlukan hak administrator | Utilitas sistem, installer |
+| Tingkat | Deskripsi | Kasus Penggunaan |
+| `asInvoker` | Berjalan dengan hak istimewa yang sama seperti proses induk | Default untuk sebagian besar aplikasi |
+| `highestAvailable` | Berjalan dengan hak istimewa tertinggi yang tersedia bagi pengguna | Aplikasi yang mungkin memerlukan akses dengan hak istimewa lebih tinggi |
+| `requireAdministrator` | Selalu memerlukan hak istimewa administrator | Utilitas sistem, penginstal |
 @end
 
 ### Konfigurasi Default
 
-Aplikasi Wails v3 menyertakan konfigurasi UAC default di manifest Windows mereka:
+Aplikasi Wails v3 menyertakan konfigurasi UAC default dalam manifes Windows-nya:
 
 ```xml
 <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
@@ -41,25 +41,25 @@ Aplikasi Wails v3 menyertakan konfigurasi UAC default di manifest Windows mereka
 ```
 
 Konfigurasi ini memastikan aplikasi Anda:
-- Berjalan dengan hak yang sama dengan proses peluncur
-- Tidak memerlukan elevation secara default
-- Bekerja konsisten di mesin yang berbeda
-- Tidak memicu prompt UAC untuk pengguna normal
+- Berjalan dengan hak istimewa yang sama seperti proses yang menjalankannya
+- Secara default tidak memerlukan peningkatan hak istimewa
+- Berfungsi secara konsisten di berbagai komputer
+- Tidak memicu dialog UAC bagi pengguna biasa
 
 ## Menyesuaikan Konfigurasi UAC
 
-Karena Wails v3 mendorong pengguna untuk menyesuaikan build assets, Anda dapat memodifikasi konfigurasi UAC dengan mengedit template manifest Windows secara langsung.
+Karena Wails v3 mendorong pengguna untuk menyesuaikan aset build mereka, Anda dapat mengubah konfigurasi UAC dengan mengedit templat manifes Windows secara langsung.
 
-### Menemukan Template Manifest
+### Menemukan Templat Manifes
 
-Template manifest Windows berada di:
+Templat manifes Windows berada di:
 ```
 build/windows/wails.exe.manifest
 ```
 
-### Memodifikasi Level Eksekusi
+### Mengubah Tingkat Eksekusi
 
-Untuk mengubah level eksekusi, edit atribut `level` pada elemen `requestedExecutionLevel`:
+Untuk mengubah tingkat eksekusi, edit atribut `level` dalam elemen `requestedExecutionLevel`:
 
 ```xml {title="build/windows/wails.exe.manifest"}
 <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
@@ -74,81 +74,81 @@ Untuk mengubah level eksekusi, edit atribut `level` pada elemen `requestedExecut
 ### Contoh
 
 #### Aplikasi Standar (Default)
-Sebagian besar aplikasi harus menggunakan level `asInvoker` default:
+Sebagian besar aplikasi sebaiknya menggunakan tingkat `asInvoker` default:
 
 ```xml
 <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
 ```
 
 #### Utilitas Sistem
-Aplikasi yang memerlukan akses elevated saat tersedia:
+Aplikasi yang memerlukan akses dengan hak istimewa lebih tinggi jika tersedia:
 
 ```xml
 <requestedExecutionLevel level="highestAvailable" uiAccess="false"/>
 ```
 
 #### Alat Administratif
-Aplikasi yang selalu memerlukan hak administrator:
+Aplikasi yang selalu memerlukan hak istimewa administrator:
 
 ```xml
 <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
 ```
 
-## UI Access
+## Akses UI
 
-Atribut `uiAccess` mengontrol apakah aplikasi Anda dapat berinteraksi dengan elemen UI berprivilege lebih tinggi. Dalam kebanyakan kasus, ini harus tetap `false`.
+Atribut `uiAccess` mengontrol apakah aplikasi Anda dapat berinteraksi dengan elemen UI yang memiliki hak istimewa lebih tinggi. Dalam sebagian besar kasus, nilainya sebaiknya tetap `false`.
 
 Atur ke `true` hanya jika aplikasi Anda perlu:
 - Mengirim input ke aplikasi lain
 - Mengendalikan UI aplikasi lain
-- Mengakses elemen UI proses berprivilege lebih tinggi
+- Mengakses elemen UI milik proses dengan hak istimewa lebih tinggi
 
-@note type="caution" title="Persyaratan UI Access"
-Mengatur `uiAccess="true"` memerlukan aplikasi Anda:
+@note type="caution" title="Persyaratan Akses UI"
+Jika diatur ke `uiAccess="true"`, aplikasi Anda harus:
 - Ditandatangani secara digital dengan sertifikat dari otoritas sertifikat tepercaya
 - Diinstal di lokasi aman (Program Files atau Windows\System32)
 @end
 
-## Membangun dengan Pengaturan UAC Kustom
+## Mem-build dengan Pengaturan UAC Khusus
 
-Setelah memodifikasi template manifest, bangun aplikasi Anda seperti biasa:
+Setelah mengubah templat manifes, build aplikasi Anda seperti biasa:
 
 ```bash
 wails3 build
 ```
 
-Proses build akan secara otomatis menyematkan konfigurasi UAC kustom Anda ke executable.
+Proses build akan secara otomatis menyematkan konfigurasi UAC khusus Anda ke dalam file yang dapat dieksekusi.
 
 ## Memverifikasi Konfigurasi UAC
 
-Anda dapat memverifikasi bahwa pengaturan UAC Anda tersemat dengan benar menggunakan alat `go-winres`:
+Anda dapat memverifikasi bahwa pengaturan UAC telah disematkan dengan benar menggunakan alat `go-winres`:
 
 ```bash
 go-winres extract --in your-app.exe --out extracted-resources/
 ```
 
-Kemudian periksa file manifest yang diekstrak untuk memastikan konfigurasi UAC Anda ada.
+Kemudian, periksa file manifes yang diekstrak untuk memastikan konfigurasi UAC Anda tercantum di dalamnya.
 
-@note type="tip" title="Persistensi Manifest"
-Berbeda dengan beberapa framework lain, konfigurasi UAC Wails v3 disematkan langsung ke executable saat kompilasi, memastikan persistensi saat aplikasi disalin ke mesin lain.
+@note type="tip" title="Persistensi Manifes"
+Tidak seperti beberapa framework lain, konfigurasi UAC Wails v3 disematkan langsung ke dalam file yang dapat dieksekusi saat kompilasi, sehingga konfigurasi tersebut tetap ada ketika aplikasi disalin ke komputer lain.
 @end
 
-## Troubleshooting
+## Pemecahan Masalah
 
-### Prompt UAC Tidak Muncul
-Jika Anda mengatur `requireAdministrator` tetapi tidak melihat prompt UAC:
-- Verifikasi manifest tersemat dengan benar di executable
-- Periksa apakah Anda tidak berjalan dari proses yang sudah elevated
-- Pastikan sintaks manifest adalah XML yang valid
+### Dialog UAC Tidak Muncul
+Jika Anda mengatur `requireAdministrator` tetapi dialog UAC tidak muncul:
+- Pastikan manifes disematkan dengan benar ke dalam file yang dapat dieksekusi
+- Pastikan Anda tidak menjalankannya dari proses yang hak istimewanya sudah ditingkatkan
+- Pastikan sintaks manifes merupakan XML yang valid
 
-### Aplikasi Tidak Mulai
-Jika aplikasi gagal mulai setelah perubahan UAC:
-- Periksa sintaks manifest untuk error XML
-- Verifikasi nilai level eksekusi valid
+### Aplikasi Tidak Dapat Dimulai
+Jika aplikasi Anda gagal dimulai setelah perubahan UAC:
+- Periksa apakah sintaks manifes mengandung kesalahan XML
+- Pastikan nilai tingkat eksekusi valid
 - Coba kembalikan ke `asInvoker` untuk mengisolasi masalah
 
-### Perilaku Tidak Konsisten Antar Mesin
-Jika perilaku UAC berbeda antar mesin:
-- Pastikan manifest tersemat di executable (bukan eksternal)
-- Periksa executable tidak dimodifikasi setelah build
-- Verifikasi pengaturan UAC Windows diaktifkan di mesin target
+### Perilaku yang Tidak Konsisten di Berbagai Komputer
+Jika perilaku UAC berbeda di antara komputer:
+- Pastikan manifes disematkan dalam berkas yang dapat dieksekusi (bukan sebagai berkas eksternal)
+- Pastikan berkas yang dapat dieksekusi tidak dimodifikasi setelah proses build
+- Pastikan pengaturan UAC Windows diaktifkan pada komputer target

@@ -1,51 +1,51 @@
 ---
 schema = 1
 title = "Memulai"
-description = "Cara mulai berkontribusi ke Wails v3"
+description = "Cara mulai berkontribusi pada Wails v3"
 slug = "contributing/getting-started"
-sourcePath = "id/contributing/getting-started.mpd"
+sourcePath = "contributing/getting-started.mpd"
 ---
 
 ## Selamat Datang, Kontributor!
 
-Terima kasih atas minat Anda untuk berkontribusi ke Wails! Panduan ini akan membantu Anda membuat kontribusi pertama.
+Terima kasih atas minat Anda untuk berkontribusi pada Wails! Panduan ini akan membantu Anda memberikan kontribusi pertama.
 
 ## Prasyarat
 
 Sebelum memulai, pastikan Anda memiliki:
 
-- *Go 1.25+* terinstal ([unduh](https://go.dev/dl/))
+- *Go 1.25+* yang telah terinstal ([unduh](https://go.dev/dl/))
 - *Node.js 20+* dan *npm* ([unduh](https://nodejs.org/))
-- *Git* dikonfigurasi dengan akun GitHub Anda
-- Familiaritas dasar dengan Go dan JavaScript/TypeScript
+- *Git* yang telah dikonfigurasi dengan akun GitHub Anda
+- Pemahaman dasar tentang Go dan JavaScript/TypeScript
 
-### Persyaratan Spesifik Platform
+### Persyaratan Khusus Platform
 
 *macOS:*
 - Xcode Command Line Tools: `xcode-select --install`
 
 *Windows:*
-- MSYS2 atau lingkungan mirip Unix direkomendasikan
+- Disarankan menggunakan MSYS2 atau lingkungan serupa Unix lainnya
 - Runtime WebView2 (biasanya sudah terinstal di Windows 11)
 
 *Linux:*
-- `gcc`, `pkg-config`, `libgtk-4-dev`, `libwebkitgtk-6.0-dev` (stack GTK4 default)
-- Instal via: `sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev` (Debian/Ubuntu)
-- Untuk jalur build legacy `-tags gtk3`, juga instal `libgtk-3-dev` dan `libwebkit2gtk-4.1-dev`
+- `gcc`, `pkg-config`, `libgtk-4-dev`, `libwebkitgtk-6.0-dev` (tumpukan GTK4 bawaan)
+- Instal melalui: `sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev` (Debian/Ubuntu)
+- Untuk jalur build `-tags gtk3` lama, instal juga `libgtk-3-dev` dan `libwebkit2gtk-4.1-dev`
 
 ## Ikhtisar Proses Kontribusi
 
-Alur kerja kontribusi tipikal mengikuti langkah-langkah berikut:
+Alur kerja kontribusi umumnya mengikuti langkah-langkah berikut:
 
-1. *Fork & Clone* - Buat salinan repository Wails Anda sendiri
-2. *Setup* - Build CLI Wails dan verifikasi lingkungan Anda
-3. *Branch* - Buat feature branch untuk perubahan Anda
-4. *Develop* - Lakukan perubahan mengikuti standar coding kami
-5. *Test* - Jalankan tes untuk memastikan semuanya berfungsi
-6. *Commit* - Commit dengan pesan conventional commit yang jelas
-7. *Submit* - Buka pull request untuk review
-8. *Iterate* - Tanggapi feedback dan lakukan penyesuaian
-9. *Merge* - Setelah disetujui, perubahan Anda menjadi bagian dari Wails!
+1. *Fork & Klona* - Buat salinan repositori Wails milik Anda sendiri
+2. *Siapkan* - Build CLI Wails dan verifikasi lingkungan Anda
+3. *Buat Branch* - Buat branch fitur untuk perubahan Anda
+4. *Kembangkan* - Buat perubahan sesuai standar pengodean kami
+5. *Uji* - Jalankan pengujian untuk memastikan semuanya berfungsi
+6. *Commit* - Lakukan commit dengan pesan commit konvensional yang jelas
+7. *Kirim* - Buka pull request untuk ditinjau
+8. *Iterasikan* - Tanggapi umpan balik dan lakukan penyesuaian
+9. *Gabungkan* - Setelah disetujui, perubahan Anda menjadi bagian dari Wails!
 
 ## Panduan Langkah demi Langkah
 
@@ -57,16 +57,16 @@ Pilih jenis kontribusi Anda:
 @steps
 @step title="Temukan atau Laporkan Bug"
 
-- Periksa apakah bug sudah dilaporkan di [GitHub Issues](https://github.com/wailsapp/wails/issues)
-- Jika belum, buat issue baru dengan langkah reproduksi
-- Tunggu konfirmasi sebelum mulai mengerjakan
+- Periksa apakah bug tersebut sudah dilaporkan di [GitHub Issues](https://github.com/wailsapp/wails/issues)
+- Jika belum, buat issue baru yang menyertakan langkah-langkah untuk mereproduksinya
+- Tunggu konfirmasi sebelum mulai mengerjakannya
 
 @end
-@step title="Fork dan Clone"
+@step title="Fork dan Klona"
 
-Fork repository di [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
+Fork repositori di [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
 
-Clone fork Anda:
+Klona fork Anda:
 ```bash
 git clone https://github.com/YOUR_USERNAME/wails.git
 cd wails
@@ -76,12 +76,12 @@ git remote add upstream https://github.com/wailsapp/wails.git
 @end
 @step title="Build dan Verifikasi"
 
-Build Wails dan verifikasi Anda dapat mereproduksi bug:
+Build Wails dan verifikasi bahwa Anda dapat mereproduksi bug tersebut:
 ```bash
 cd v3
 go build -o ../wails3 ./cmd/wails3
 
-# Reproduksi bug untuk memahaminya
+# Reproduce the bug to understand it
 ```
 
 @end
@@ -95,33 +95,33 @@ git checkout -b fix/issue-123-window-crash
 @end
 @step title="Perbaiki Bug"
 
-- Lakukan perubahan minimal yang diperlukan untuk memperbaiki bug
-- Jangan refactor kode yang tidak terkait
-- Tambah atau perbarui tes untuk mencegah regresi
+- Buat perubahan seminimal mungkin yang diperlukan untuk memperbaiki bug
+- Jangan merefaktor kode yang tidak terkait
+- Tambahkan atau perbarui pengujian untuk mencegah regresi
 
 ```bash
-# Lakukan perubahan Anda
-# Tambahkan tes di file *_test.go
+# Make your changes
+# Add tests in *_test.go files
 ```
 
 @end
-@step title="Tes Perbaikan Anda"
+@step title="Uji Perbaikan Anda"
 
-Jalankan tes untuk memastikan perbaikan berfungsi:
+Jalankan pengujian untuk memastikan perbaikan berfungsi:
 ```bash
 go test ./...
 
-# Tes paket spesifik
+# Test the specific package
 go test ./pkg/application -v
 
-# Jalankan dengan race detector
+# Run with race detector
 go test ./... -race
 ```
 
 @end
 @step title="Commit Perbaikan Anda"
 
-Commit dengan pesan yang jelas:
+Lakukan commit dengan pesan yang jelas:
 ```bash
 git commit -m "fix: prevent window crash when closing during initialization
 
@@ -129,44 +129,44 @@ Fixes #123"
 ```
 
 @end
-@step title="Submit Pull Request"
+@step title="Kirim Pull Request"
 
-Push dan buat PR:
+Lakukan push dan buat PR:
 ```bash
 git push origin fix/issue-123-window-crash
 ```
 
-Di deskripsi PR Anda:
-- Jelaskan bug dan akar masalah
-- Deskripsikan perbaikan Anda
-- Referensikan issue: "Fixes #123"
-- Sertakan perilaku sebelum/sesudah
+Dalam deskripsi PR Anda:
+- Jelaskan bug dan akar penyebabnya
+- Jelaskan perbaikan Anda
+- Cantumkan referensi issue: "Fixes #123"
+- Sertakan perilaku sebelum dan sesudah perbaikan
 
 @end
-@step title="Tanggapi Feedback"
+@step title="Tanggapi Umpan Balik"
 
-Tangani komentar review dan perbarui PR Anda sesuai kebutuhan.
-
-@end
-@end
+Tindak lanjuti komentar tinjauan dan perbarui PR Anda sesuai kebutuhan.
 
 @end
-@tab label="Peningkatan"
+@end
+
+@end
+@tab label="WEP (Peningkatan)"
 
 @steps
-@step title="Diskusikan Fitur"
+@step title="Tulis WEP"
 
-- Buka [GitHub Discussion](https://github.com/wailsapp/wails/discussions) atau issue
-- Deskripsikan apa yang ingin Anda tambahkan dan alasannya
-- Tunggu feedback maintainer sebelum mengimplementasikan
-- Pastikan selaras dengan tujuan Wails
+- Baca [proses WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)
+- Salin templat WEP ke `v3/wep/proposals/<name>/proposal.md`
+- Buka draf PR berjudul `[WEP] <title>` yang hanya berisi WEP
+- Tunggu keputusan pengelola sebelum mengimplementasikannya
 
 @end
-@step title="Fork dan Clone"
+@step title="Fork dan Klona"
 
-Fork repository di [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
+Fork repositori di [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
 
-Clone fork Anda:
+Klona fork Anda:
 ```bash
 git clone https://github.com/YOUR_USERNAME/wails.git
 cd wails
@@ -174,21 +174,21 @@ git remote add upstream https://github.com/wailsapp/wails.git
 ```
 
 @end
-@step title="Setup Lingkungan Development"
+@step title="Siapkan Lingkungan Pengembangan"
 
 Build Wails dan verifikasi lingkungan Anda:
 ```bash
 cd v3
 go build -o ../wails3 ./cmd/wails3
 
-# Jalankan tes untuk memastikan semuanya berfungsi
+# Run tests to ensure everything works
 go test ./...
 ```
 
 @end
-@step title="Buat Feature Branch"
+@step title="Buat Branch Fitur"
 
-Buat branch yang deskriptif:
+Buat branch dengan nama yang deskriptif:
 ```bash
 git checkout -b feat/window-transparency-support
 ```
@@ -196,32 +196,32 @@ git checkout -b feat/window-transparency-support
 @end
 @step title="Implementasikan Fitur"
 
-- Ikuti [Standar Coding](/id/contributing/standards/) kami
-- Fokuskan perubahan pada fitur tersebut
-- Tulis kode yang bersih dan terdokumentasi
-- Tambahkan tes yang komprehensif
+- Ikuti [Standar Penulisan Kode](/contributing/standards/) kami
+- Pastikan perubahan tetap berfokus pada fitur tersebut
+- Tulis kode yang rapi dan terdokumentasi
+- Tambahkan pengujian yang menyeluruh
 
 ```bash
-# Contoh: Menambahkan method window baru
-# 1. Tambahkan ke interface window.go
-# 2. Implementasikan di file platform (darwin, windows, linux)
-# 3. Tambahkan tes
-# 4. Perbarui dokumentasi
+# Example: Adding a new window method
+# 1. Add to window.go interface
+# 2. Implement in platform files (darwin, windows, linux)
+# 3. Add tests
+# 4. Update documentation
 ```
 
 @end
-@step title="Tes Secara Menyeluruh"
+@step title="Uji Secara Menyeluruh"
 
-Tes fitur Anda:
+Uji fitur Anda:
 ```bash
-# Unit test
+# Unit tests
 go test ./pkg/application -v
 
-# Integration test - buat aplikasi tes
+# Integration test - create a test app
 cd ..
 ./wails3 init -n feature-test
 cd feature-test
-# Tambahkan kode menggunakan fitur baru Anda
+# Add code using your new feature
 ../wails3 dev
 ```
 
@@ -229,13 +229,13 @@ cd feature-test
 @step title="Dokumentasikan Fitur Anda"
 
 - Tambahkan docstring ke semua API publik
-- Perbarui dokumentasi relevan di `/docs/src/content/docs/`
-- Tambahkan contoh jika applicable
+- Perbarui dokumentasi yang relevan di `/docs/mpress/content/`
+- Tambahkan contoh jika relevan
 
 @end
-@step title="Commit dengan Konvensi"
+@step title="Buat Commit Sesuai Konvensi"
 
-Gunakan conventional commits:
+Gunakan conventional commit:
 ```bash
 git commit -m "feat: add window transparency support
 
@@ -247,23 +247,23 @@ Closes #456"
 ```
 
 @end
-@step title="Submit Pull Request"
+@step title="Kirim Pull Request"
 
-Push dan buat PR:
+Lakukan push dan buat PR:
 ```bash
 git push origin feat/window-transparency-support
 ```
 
-Di PR Anda:
-- Deskripsikan fitur dan use case
-- Tampilkan contoh atau screenshot
-- Daftarkan breaking change jika ada
-- Referensikan diskusi/issue
+Dalam PR Anda:
+- Jelaskan fitur dan kasus penggunaannya
+- Tampilkan contoh atau tangkapan layar
+- Cantumkan setiap breaking change
+- Referensikan PR WEP yang telah diterima
 
 @end
-@step title="Iterasi Berdasarkan Review"
+@step title="Lakukan Iterasi Berdasarkan Hasil Tinjauan"
 
-Maintainer mungkin meminta perubahan. Bersabarlah dan kolaboratif.
+Maintainer mungkin meminta perubahan. Bersabarlah dan bekerjalah secara kolaboratif.
 
 @end
 @end
@@ -271,126 +271,29 @@ Maintainer mungkin meminta perubahan. Bersabarlah dan kolaboratif.
 @end
 @tab label="Dokumentasi"
 
-@steps
-@step title="Identifikasi Kebutuhan Dokumentasi"
-
-- Menemukan docs yang outdated saat menggunakan Wails?
-- Menyadari contoh atau penjelasan yang hilang?
-- Ingin memperbaiki typo atau meningkatkan kejelasan?
-- Periksa [issue dokumentasi](https://github.com/wailsapp/wails/labels/documentation)
-
-@end
-@step title="Fork dan Clone"
-
-Fork repository di [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
-
-Clone fork Anda:
-```bash
-git clone https://github.com/YOUR_USERNAME/wails.git
-cd wails
-git remote add upstream https://github.com/wailsapp/wails.git
-```
-
-@end
-@step title="Setup Lingkungan Dokumentasi"
-
-Dokumentasi ada di `/docs/src/content/docs/` dan dibangun dengan Astro:
-```bash
-cd docs
-npm install
-npm run dev
-```
-
-Buka http://localhost:4321/ untuk pratinjau perubahan secara live.
-
-@end
-@step title="Buat Branch Dokumentasi"
-
-Buat branch untuk perubahan Anda:
-```bash
-git checkout -b docs/improve-window-api-examples
-```
-
-@end
-@step title="Lakukan Perubahan Anda"
-
-File dokumentasi ada di `/docs/src/content/docs/`:
-```bash
-# Edit file MDX
-# Periksa pratinjau di browser Anda
-# Pastikan format benar
-```
-
-*Praktik Terbaik:*
-- Gunakan bahasa yang jelas dan ringkas
-- Sertakan contoh kode praktis
-- Tambahkan tautan ke bagian terkait
-- Periksa ejaan dan tata bahasa
-- Tes semua contoh kode
-
-@end
-@step title="Verifikasi Perubahan Anda"
-
-Periksa pratinjau live dan pastikan:
-- Tautan berfungsi dengan benar
-- Contoh kode akurat
-- Format dirender dengan benar
-- Tidak ada gambar atau referensi yang rusak
-
-@end
-@step title="Commit Perubahan Dokumentasi"
-
-Commit dengan pesan yang jelas:
-```bash
-git commit -m "docs: add practical examples to Window API guide
-
-- Add window positioning examples
-- Include common patterns section
-- Fix broken links to Event API"
-```
-
-@end
-@step title="Submit Pull Request"
-
-Push dan buat PR:
-```bash
-git push origin docs/improve-window-api-examples
-```
-
-Di PR Anda:
-- Deskripsikan docs apa yang Anda perbaiki
-- Jelaskan mengapa perubahan membantu pengguna
-- Sertakan screenshot jika ada perubahan visual
-
-@end
-@step title="Tanggapi Feedback Review"
-
-PR dokumentasi biasanya cepat direview dan di-merge!
+PR koreksi dapat langsung diajukan tanpa perlu membuka issue terlebih dahulu. Koreksi yang hanya menyangkut dokumentasi tidak memerlukan pengujian kode yang gagal. Ikuti [Perbaiki dokumentasi](/contributing/documentation/) untuk langkah-langkah instalasi M-Press, path sumber, pratinjau, validasi, dan PR.
 
 @end
 @end
 
-@end
-@end
-
-## Mencari Issue untuk Dikerjakan
+## Menemukan Issue untuk Dikerjakan
 
 - Cari label [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue)
 - Periksa issue [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted)
-- Jelajahi [issue terbuka](https://github.com/wailsapp/wails/issues) dan minta untuk ditugaskan
+- Telusuri [issue yang terbuka](https://github.com/wailsapp/wails/issues) dan mintalah agar issue tersebut ditugaskan kepada Anda
 
 ## Mendapatkan Bantuan
 
-- *Discord:* Bergabung dengan [Wails Discord](https://discord.gg/JDdSxwjhGf)
-- *Discussions:* Posting di [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
-- *Issues:* Buka issue jika menemukan bug atau punya pertanyaan
+- *Discord:* Bergabunglah dengan [Discord Wails](https://discord.gg/JDdSxwjhGf)
+- *Diskusi:* Buat postingan di [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
+- *Issue:* Buka issue untuk bug yang dapat direproduksi; gunakan Discussions untuk pertanyaan dan PR WEP untuk peningkatan
 
 ## Kode Etik
 
-Bersikaplah hormat, konstruktif, dan ramah. Kami membangun komunitas yang ramah yang fokus menciptakan perangkat lunak hebat bersama-sama.
+Bersikaplah penuh hormat, konstruktif, dan ramah. Kita membangun komunitas yang bersahabat dengan fokus menciptakan perangkat lunak hebat bersama-sama.
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- Siapkan [Lingkungan Development](/id/contributing/setup/) Anda
-- Tinjau [Standar Coding](/id/contributing/standards/) kami
-- Jelajahi [Dokumentasi Teknis](/id/contributing/)
+- Siapkan [Lingkungan Pengembangan](/contributing/setup/) Anda
+- Tinjau [Standar Penulisan Kode](/contributing/standards/) kami
+- Jelajahi [Dokumentasi Teknis](/contributing/overview/)

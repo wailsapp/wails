@@ -1,82 +1,101 @@
 ---
 schema = 1
-title = "Menandatangani Aplikasi"
-description = "Tandatangani aplikasi untuk distribusi"
+title = "Penandatanganan Kode"
+description = "Panduan untuk menandatangani aplikasi Wails Anda di semua platform"
 slug = "guides/build/signing"
-sourcePath = "id/guides/build/signing.mpd"
+sourcePath = "guides/build/signing.mpd"
 ---
 
-## Code Signing Your Application
+## Menandatangani Kode Aplikasi Anda
 
-This guide covers how to sign your Wails applications for macOS, Windows, and Linux. Wails v3 provides built-in CLI tools for code signing, notarization, and PGP key management.
+Panduan ini menjelaskan cara menandatangani aplikasi Wails Anda untuk macOS, Windows, dan Linux. Wails v3 menyediakan alat CLI bawaan untuk penandatanganan kode, notarisasi, dan pengelolaan kunci PGP.
 
-- *macOS* - Sign and notarize your macOS applications
-- *Windows* - Sign your Windows executables and packages
-- *Linux* - Sign DEB and RPM packages with PGP keys
+- *macOS* - Tandatangani dan notarisasikan aplikasi macOS Anda
+- *Windows* - Tandatangani berkas yang dapat dieksekusi dan paket Windows Anda
+- *Linux* - Tandatangani paket DEB dan RPM dengan kunci PGP
 
-## Cross-Platform Signing Matrix
+## Matriks Penandatanganan Lintas Platform
 
-This matrix shows what you can sign from each source platform:
+Matriks ini menunjukkan format yang dapat Anda tandatangani dari setiap platform sumber:
 
 @table header=true align=["default","center","center","center"]
-| Target Format | From Windows | From macOS | From Linux |
-| Windows EXE/MSI | ✅ | ✅ | ✅ |
-| macOS .app bundle | ❌ | ✅ | ❌ |
-| macOS notarization | ❌ | ✅ | ❌ |
-| Linux DEB | ✅ | ✅ | ✅ |
-| Linux RPM | ✅ | ✅ | ✅ |
+| Format Target | Dari Windows | Dari macOS | Dari Linux |
+| EXE/MSI Windows | ✅ | ✅ | ✅ |
+| Bundel .app macOS | ❌ | ✅ | ❌ |
+| Notarisasi macOS | ❌ | ✅ | ❌ |
+| DEB Linux | ✅ | ✅ | ✅ |
+| RPM Linux | ✅ | ✅ | ✅ |
 @end
 
 @note type="tip"
 
-Windows and Linux packages can be signed from *any platform*. macOS signing requires a Mac due to Apple's tooling requirements.
+Paket Windows dan Linux dapat ditandatangani dari *platform apa pun*. Penandatanganan macOS memerlukan Mac karena persyaratan alat dari Apple.
 
 @end
 
-### Signing Backends
+### Backend Penandatanganan
 
-Wails automatically selects the best available signing backend:
+Wails secara otomatis memilih backend penandatanganan terbaik yang tersedia:
 
 @table header=true
-| Platform | Native Backend | Cross-Platform Backend |
-| Windows | `signtool.exe` (Windows SDK) | Built-in |
-| macOS | `codesign` (Xcode) | Not available |
-| Linux | N/A | Built-in |
+| Platform | Backend Native | Backend Lintas Platform |
+| Windows | `signtool.exe` (Windows SDK) | Bawaan |
+| macOS | `codesign` (Xcode) | Tidak tersedia |
+| Linux | Tidak berlaku | Bawaan |
 @end
 
-When running on the native platform, Wails uses the native tools for maximum compatibility. When cross-compiling, it uses the built-in signing support.
+Saat dijalankan di platform native, Wails menggunakan alat native untuk kompatibilitas maksimum. Saat melakukan kompilasi silang, Wails menggunakan dukungan penandatanganan bawaan.
 
 ## Mulai Cepat
 
-The easiest way to configure signing is using the interactive setup wizard:
+Cara tercepat untuk mengonfigurasi penandatanganan adalah menggunakan wizard penyiapan:
 
 ```bash
-wails3 setup signing
+wails3 setup
 ```
 
-This command:
-- Walks you through configuring signing credentials for each platform
-- On macOS, lists available Developer ID certificates from your keychain
-- For Linux, can generate a new PGP key if you don't have one
-- *Stores passwords securely in your system keychain* (not in Taskfiles)
-- Updates the `vars` section in each platform's Taskfile with non-sensitive config
+Tindakan ini menulis konfigurasi penandatanganan bersama ke `~/.config/wails/defaults.yaml` yang akan\
+*digunakan pada saat penandatanganan di setiap platform* (lihat [Prioritas konfigurasi](#prioritas-konfigurasi)).\
+Langkah penandatanganannya:
+- Mendeteksi alat penandatanganan yang terinstal untuk platform target Anda — *dari host apa pun* — dan menampilkan perintah instalasi untuk OS Anda (misalnya `brew install gnupg`, `sudo apt install osslsigncode`, `winget install GnuPG.Gpg4win`).
+- Di macOS, menampilkan daftar sertifikat Developer ID dari rantai kunci Anda.
+- Untuk Linux, menampilkan daftar kunci GPG Anda dan dapat *membuat serta mengekspor* kunci baru.
+- Untuk Windows, dapat *membuat sertifikat yang ditandatangani sendiri* (untuk pengujian) melalui OpenSSL.
+- *Menyimpan kata sandi dengan aman di penyimpanan kredensial sistem Anda* (bukan di Taskfile).
 
 @note type="tip"
 
-Passwords are stored in your system's native credential store (macOS Keychain, Windows Credential Manager, or Linux Secret Service). This means your signing configuration is secure and works across all your Wails projects.
+Kata sandi disimpan di penyimpanan kredensial native sistem Anda (macOS Keychain, Windows Credential Manager, atau Linux Secret Service). Dengan demikian, konfigurasi penandatanganan Anda aman dan berfungsi di semua proyek Wails Anda.
 
 @end
 
-To configure only specific platforms:
+## Prioritas konfigurasi
+
+Saat Anda menjalankan tugas penandatanganan, setiap opsi penandatanganan ditentukan dengan urutan berikut (kecocokan\
+pertama yang digunakan):
+
+1. Flag eksplisit yang diteruskan ke `wails3 tool sign` (misalnya `--pgp-key`, `--certificate`, `--identity`).
+2. *Variabel Taskfile proyek* yang sesuai (`PGP_KEY`, `SIGN_CERTIFICATE`/`SIGN_THUMBPRINT`, `SIGN_IDENTITY`, …).
+3. *Konfigurasi global* di `~/.config/wails/defaults.yaml` (ditulis oleh `wails3 setup`).
+
+Artinya, variabel Taskfile merupakan *penggantian opsional*: jika suatu variabel tidak ditetapkan,\
+kunci/sertifikat/identitas yang dikonfigurasi secara global akan digunakan. Jika tidak satu pun dari ketiganya memberikan\
+nilai, perintah penandatanganan akan melaporkan kesalahan yang jelas dan memberi tahu Anda cara mengonfigurasinya.
+
+## Konfigurasi per proyek
+
+Untuk mengonfigurasi penandatanganan bagi satu proyek alih-alih secara global, jalankan wizard\
+per proyek dari dalam proyek tersebut—wizard ini menulis `vars` ke berkas\
+`build/<platform>/Taskfile.yml` proyek tersebut:
 
 ```bash
-wails3 setup signing --platform darwin
+wails3 setup signing                                   # all detected platforms
 wails3 setup signing --platform windows --platform linux
 ```
 
-### Manual Configuration
+### Konfigurasi Manual
 
-Alternatively, you can manually edit the platform-specific Taskfiles. Edit the `vars` section at the top of each file:
+Sebagai alternatif, Anda dapat mengedit Taskfile khusus platform secara manual. Edit bagian `vars` di bagian atas setiap berkas:
 
 @tabs
 @tab label="macOS"
@@ -90,7 +109,7 @@ vars:
   # ENTITLEMENTS: "build/darwin/entitlements.plist"
 ```
 
-Then run:
+Kemudian jalankan:
 
 ```bash
 wails3 task darwin:sign           # Sign only
@@ -110,9 +129,9 @@ vars:
   # TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-Password is retrieved from system keychain (run `wails3 setup signing` to configure).
+Kata sandi diambil dari rantai kunci sistem (jalankan `wails3 setup signing` untuk mengonfigurasinya).
 
-Then run:
+Kemudian jalankan:
 
 ```bash
 wails3 task windows:sign           # Sign executable
@@ -130,9 +149,9 @@ vars:
   # SIGN_ROLE: "builder"  # Options: origin, maint, archive, builder
 ```
 
-Password is retrieved from system keychain (run `wails3 setup signing` to configure).
+Kata sandi diambil dari rantai kunci sistem (jalankan `wails3 setup signing` untuk mengonfigurasinya).
 
-Then run:
+Kemudian jalankan:
 
 ```bash
 wails3 task linux:sign:deb       # Sign DEB package
@@ -143,7 +162,7 @@ wails3 task linux:sign:packages  # Sign all packages
 @end
 @end
 
-You can also inspect signing state from the system directly:
+Anda juga dapat memeriksa status penandatanganan secara langsung dari sistem:
 
 ```bash
 # List available macOS code-signing identities
@@ -153,29 +172,29 @@ security find-identity -v -p codesigning
 gpg --list-keys
 ```
 
-For interactive setup of every platform's signing configuration, use the wizard:
+Untuk menyiapkan konfigurasi penandatanganan setiap platform secara interaktif, gunakan wizard:
 
 ```bash
 wails3 setup signing
 ```
 
-## macOS Code Signing
+## Penandatanganan Kode macOS
 
-### Prerequisites
+### Prasyarat
 
-- Apple Developer Account ($99/year)
-- Developer ID Application certificate
-- Xcode Command Line Tools installed
+- Akun Apple Developer ($99/tahun)
+- Sertifikat Developer ID Application
+- Xcode Command Line Tools telah terinstal
 
-### Signing Identities
+### Identitas Penandatanganan
 
-Check available signing identities:
+Periksa identitas penandatanganan yang tersedia:
 
 ```bash
 security find-identity -v -p codesigning
 ```
 
-Output:
+Keluaran:
 
 ```
 Found 2 signing identities:
@@ -189,13 +208,13 @@ Found 2 signing identities:
 
 @note type="tip"
 
-For distribution outside the App Store, you need a *Developer ID Application* certificate.
+Untuk distribusi di luar App Store, Anda memerlukan sertifikat *Developer ID Application*.
 
 @end
 
-### Configuration
+### Konfigurasi
 
-Edit `build/darwin/Taskfile.yml` and set the signing variables:
+Edit `build/darwin/Taskfile.yml` dan tetapkan variabel penandatanganan:
 
 ```yaml
 vars:
@@ -205,60 +224,60 @@ vars:
 ```
 
 @table header=true
-| Variable | Required | Description |
-| `SIGN_IDENTITY` | Yes | Your Developer ID (e.g., "Developer ID Application: Your Company (TEAMID)") |
-| `KEYCHAIN_PROFILE` | For notarization | Keychain profile name with stored credentials |
-| `ENTITLEMENTS` | No | Path to entitlements file |
+| Variabel | Wajib | Deskripsi |
+| `SIGN_IDENTITY` | Ya | Developer ID Anda (misalnya, "Developer ID Application: Perusahaan Anda (TEAMID)") |
+| `KEYCHAIN_PROFILE` | Untuk notarisasi | Nama profil rantai kunci yang menyimpan kredensial |
+| `ENTITLEMENTS` | Tidak | Path ke file entitlement |
 @end
 
-Then run:
+Kemudian jalankan:
 
 ```bash
 wails3 task darwin:sign           # Build, package, and sign
 wails3 task darwin:sign:notarize  # Build, package, sign, and notarize
 ```
 
-### Entitlements
+### Entitlement
 
-Entitlements control what capabilities your app has access to. Wails apps typically need different entitlements for development vs production:
+Entitlement mengontrol kapabilitas yang dapat diakses aplikasi Anda. Aplikasi Wails biasanya memerlukan entitlement yang berbeda untuk pengembangan dan produksi:
 
-- *Development*: Requires JIT, unsigned memory, and debugging entitlements
-- *Production*: Minimal entitlements (just network access)
+- *Pengembangan*: Memerlukan entitlement JIT, memori tanpa tanda tangan, dan debugging
+- *Produksi*: Entitlement minimal (hanya akses jaringan)
 
-Use the interactive setup wizard to generate both files:
+Gunakan wizard penyiapan interaktif untuk membuat kedua file:
 
 ```bash
 wails3 setup entitlements
 ```
 
-This creates:
-- `build/darwin/entitlements.dev.plist` - For development builds
-- `build/darwin/entitlements.plist` - For production/signed builds
+Tindakan ini membuat:
+- `build/darwin/entitlements.dev.plist` - Untuk build pengembangan
+- `build/darwin/entitlements.plist` - Untuk build produksi/bertanda tangan
 
-*Presets available:*\
+*Preset yang tersedia:*\
 @table header=true
-| Preset | Description |
-| Development | JIT, unsigned memory, debugging, network |
-| Production | Network only (minimal, most secure) |
-| Both | Creates both dev and production files (recommended) |
-| App Store | Sandbox enabled with network and file access |
-| Custom | Choose individual entitlements |
+| Preset | Deskripsi |
+| Pengembangan | JIT, memori tanpa tanda tangan, debugging, jaringan |
+| Produksi | Hanya jaringan (minimal, paling aman) |
+| Keduanya | Membuat file pengembangan dan produksi (direkomendasikan) |
+| App Store | Sandbox diaktifkan dengan akses jaringan dan file |
+| Kustom | Pilih entitlement satu per satu |
 @end
 
 @note type="note"
 
-The `run` task in the darwin Taskfile uses `entitlements.dev.plist` automatically. The `sign` tasks use `entitlements.plist` for production builds.
+Tugas `run` dalam Taskfile darwin menggunakan `entitlements.dev.plist` secara otomatis. Tugas `sign` menggunakan `entitlements.plist` untuk build produksi.
 
 @end
 
-Then set `ENTITLEMENTS` in your Taskfile vars to point to the appropriate file.
+Kemudian tetapkan `ENTITLEMENTS` dalam variabel Taskfile Anda agar mengarah ke file yang sesuai.
 
-### Notarization
+### Notarisasi
 
-Apple requires all distributed apps to be notarized.
+Apple mewajibkan semua aplikasi yang didistribusikan untuk dinotarisasi.
 
 @steps
-@step title="**Store your credentials in the keychain** (one-time setup). Either run `wails3 setup signing` (it prompts for these values and calls `notarytool` under the hood) or call `notarytool` directly:"
+@step title="**Simpan kredensial Anda di rantai kunci** (penyiapan satu kali). Jalankan `wails3 setup signing` (perintah ini meminta nilai-nilai tersebut dan memanggil `notarytool` di balik layar), atau panggil `notarytool` secara langsung:"
 ```bash
 xcrun notarytool store-credentials "my-notarize-profile" \
   --apple-id "your@email.com" \
@@ -267,16 +286,16 @@ xcrun notarytool store-credentials "my-notarize-profile" \
 ```
 
 @end
-@step title="**Set KEYCHAIN_PROFILE in your Taskfile** to match the profile name above."
+@step title="**Tetapkan KEYCHAIN_PROFILE dalam Taskfile Anda** agar sesuai dengan nama profil di atas."
 
 @end
-@step title="**Sign and notarize your app**:"
+@step title="**Tandatangani dan notarisasikan aplikasi Anda**:"
 ```bash
 wails3 task darwin:sign:notarize
 ```
 
 @end
-@step title="**Verify notarization**:"
+@step title="**Verifikasi notarisasi**:"
 ```bash
 spctl --assess --verbose=2 bin/MyApp.app
 ```
@@ -286,21 +305,31 @@ spctl --assess --verbose=2 bin/MyApp.app
 
 @note type="note"
 
-Notarization typically takes 1-2 minutes. The ticket is automatically stapled to your app.
+Notarisasi biasanya memerlukan waktu 1-2 menit. Tiket secara otomatis dilampirkan ke aplikasi Anda.
 
 @end
 
-## Windows Code Signing
+## Penandatanganan Kode Windows
 
-### Prerequisites
+### Prasyarat
 
-- Code signing certificate (from DigiCert, Sectigo, etc.)
-- For native signing: Windows SDK installed (for signtool.exe)
-- For cross-platform: Just the certificate file
+- Sertifikat penandatanganan kode (dari DigiCert, Sectigo, dan sebagainya)
+- Untuk penandatanganan native di Windows: Windows SDK telah terinstal (untuk `signtool.exe`)
+- Untuk penandatanganan lintas platform dari macOS/Linux: [`osslsigncode`](https://github.com/mtrojnar/osslsigncode) (langkah penandatanganan `wails3 setup` menampilkan perintah instalasi khusus untuk host tersebut)
 
-### Configuration
+### Membuat sertifikat yang ditandatangani sendiri (pengujian)
 
-Edit `build/windows/Taskfile.yml` and set the signing variables:
+Jika Anda hanya perlu menguji alur penandatanganan, jalankan `wails3 setup`, buka tab *Windows* pada langkah penandatanganan, lalu pilih *Buat sertifikat yang ditandatangani sendiri*. Tindakan ini menggunakan OpenSSL untuk membuat `.pfx` penandatanganan kode dan mencatat lokasinya dalam konfigurasi global.
+
+@note type="caution"
+
+Sertifikat yang ditandatangani sendiri hanya untuk *pengujian dan distribusi internal*—sertifikat tersebut memicu peringatan SmartScreen bagi pengguna akhir. Rilis publik memerlukan sertifikat dari CA tepercaya.
+
+@end
+
+### Konfigurasi
+
+Edit `build/windows/Taskfile.yml` dan tetapkan variabel penandatanganan:
 
 ```yaml
 vars:
@@ -311,49 +340,66 @@ vars:
 ```
 
 @table header=true
-| Variable | Required | Description |
-| `SIGN_CERTIFICATE` | One of these | Path to .pfx/.p12 certificate file |
-| `SIGN_THUMBPRINT` | One of these | Certificate thumbprint in Windows cert store |
-| `TIMESTAMP_SERVER` | No | Timestamp server URL (default: http://timestamp.digicert.com) |
+| Variabel | Wajib | Deskripsi |
+| `SIGN_CERTIFICATE` | Penggantian | Lokasi file sertifikat .pfx/.p12 (menggunakan konfigurasi global jika tidak ditetapkan) |
+| `SIGN_THUMBPRINT` | Penggantian | Sidik jari sertifikat dalam penyimpanan sertifikat Windows (alternatif untuk `SIGN_CERTIFICATE`) |
+| `TIMESTAMP_SERVER` | Tidak | URL server stempel waktu (bawaan: http://timestamp.digicert.com) |
 @end
 
 @note type="note"
 
-The certificate password is stored in your system keychain, not in the Taskfile. Run `wails3 setup signing` to configure it, or set the `WAILS_WINDOWS_CERT_PASSWORD` environment variable in CI.
+Variabel-variabel ini adalah *penggantian* opsional. Jika tidak ditetapkan, sertifikat yang dikonfigurasi secara global melalui `wails3 setup` akan digunakan. Lihat [Prioritas konfigurasi](#prioritas-konfigurasi).
 
 @end
 
-Then run:
+@note type="note"
+
+Kata sandi sertifikat disimpan dalam gantungan kunci sistem Anda, bukan dalam Taskfile. Jalankan `wails3 setup signing` untuk mengonfigurasinya, atau tetapkan variabel lingkungan `WAILS_WINDOWS_CERT_PASSWORD` di CI.
+
+@end
+
+Kemudian jalankan:
 
 ```bash
 wails3 task windows:sign           # Build and sign executable
 wails3 task windows:sign:installer # Build and sign NSIS installer
 ```
 
-### Cross-Platform Signing
+### Penandatanganan Lintas Platform
 
-Windows executables can be signed from any platform. The same Taskfile configuration and commands work on macOS and Linux.
+File yang dapat dieksekusi Windows dapat ditandatangani dari platform apa pun. Konfigurasi Taskfile dan perintah yang sama dapat digunakan di macOS dan Linux.
 
-### Supported Windows Formats
+### Format Windows yang Didukung
 
 @table header=true
-| Format | Extension | Notes |
-| Executables | .exe | Standard PE signing |
-| Installers | .msi | Windows Installer packages |
-| App Packages | .msix, .appx | Modern Windows apps |
+| Format | Ekstensi | Catatan |
+| File yang dapat dieksekusi | .exe | Penandatanganan PE standar |
+| Penginstal | .msi | Paket Windows Installer |
+| Paket Aplikasi | .msix, .appx | Aplikasi Windows modern |
 @end
 
-## Linux Package Signing
+## Penandatanganan Paket Linux
 
-Linux packages (DEB and RPM) are signed using PGP/GPG keys. Unlike Windows and macOS code signing, Linux package signing proves the package came from a trusted source rather than that the code is trusted by the OS.
+Paket Linux (DEB dan RPM) ditandatangani menggunakan kunci PGP/GPG. Tidak seperti penandatanganan kode Windows dan macOS, penandatanganan paket Linux membuktikan bahwa paket berasal dari sumber tepercaya, bukan bahwa kode tersebut dipercaya oleh OS.
 
-### Prerequisites
+### Prasyarat
 
-- PGP key pair (can be generated with Wails)
+- Pasangan kunci PGP (dapat dibuat dengan Wails)
 
-### Generating a PGP Key
+### Membuat Kunci PGP
 
-If you don't have a PGP key, generate one with `gpg` (the `wails3 setup signing` wizard offers to do this for you and asks the same questions):
+Cara termudah adalah menggunakan wisaya penyiapan—jalankan `wails3 setup`, buka tab *Linux* pada langkah penandatanganan, lalu pilih *Buat kunci GPG baru*. Wisaya tersebut:
+- membuat kunci RSA 4096 dalam keyring GPG Anda (biarkan frasa sandi kosong untuk kunci yang dapat digunakan tanpa pengawasan dan cocok untuk CI),
+- *mengekspornya ke `~/.wails/signing/<keyid>.asc`* (file yang digunakan build untuk menandatangani), dan
+- mencatat ID kunci dan lokasi hasil ekspor dalam `~/.config/wails/defaults.yaml` agar kunci tersebut digunakan secara otomatis saat penandatanganan.
+
+@note type="note"
+
+Jika sebuah kunci dikonfigurasi *hanya berdasarkan ID* (misalnya, dibuat sebelum wisaya mengekspor kunci secara otomatis), tab Linux akan mengekspornya ke sebuah file saat Anda membukanya lagi dan mengisi lokasinya—tidak diperlukan langkah manual. Build melakukan penandatanganan dengan _file_ kunci, sehingga lokasinyalah yang penting.
+
+@end
+
+Anda juga dapat melakukannya secara manual dengan `gpg`:
 
 ```bash
 # Interactive — the wizard will prompt for name, email, key size and expiry.
@@ -364,17 +410,17 @@ gpg --armor --export-secret-keys "your@email.com" > signing-key.asc
 gpg --armor --export "your@email.com" > signing-key.pub.asc
 ```
 
-Recommended settings: RSA 4096-bit, 1-year expiry, protected with a strong password.
+Pengaturan yang disarankan: RSA 4096-bit, masa berlaku 1 tahun, dan dilindungi dengan kata sandi yang kuat.
 
 @note type="caution"
 
-Keep your private key secure! Store it encrypted and back it up safely.
+Jaga keamanan kunci privat Anda! Simpan dalam bentuk terenkripsi dan buat cadangannya dengan aman.
 
 @end
 
-### Configuration
+### Konfigurasi
 
-Edit `build/linux/Taskfile.yml` and set the signing variables:
+Edit `build/linux/Taskfile.yml` dan tetapkan variabel penandatanganan:
 
 ```yaml
 vars:
@@ -383,18 +429,18 @@ vars:
 ```
 
 @table header=true
-| Variable | Required | Description |
-| `PGP_KEY` | Yes | Path to PGP private key file |
-| `SIGN_ROLE` | No | DEB signing role (default: builder) |
+| Variabel | Wajib | Deskripsi |
+| `PGP_KEY` | Penimpaan | Jalur ke file kunci privat PGP yang diekspor (menggunakan kunci yang dikonfigurasi secara global melalui `wails3 setup` jika tidak ditetapkan) |
+| `SIGN_ROLE` | Tidak | Peran penandatanganan DEB (default: builder) |
 @end
 
 @note type="note"
 
-The PGP key password is stored in your system keychain, not in the Taskfile. Run `wails3 setup signing` to configure it, or set the `WAILS_PGP_PASSWORD` environment variable in CI.
+Kata sandi kunci PGP disimpan di keychain sistem Anda, bukan di Taskfile. Jalankan `wails3 setup signing` untuk mengonfigurasinya, atau tetapkan variabel lingkungan `WAILS_PGP_PASSWORD` di CI.
 
 @end
 
-Then run:
+Kemudian jalankan:
 
 ```bash
 wails3 task linux:sign:deb       # Build and sign DEB package
@@ -402,26 +448,26 @@ wails3 task linux:sign:rpm       # Build and sign RPM package
 wails3 task linux:sign:packages  # Build and sign all packages
 ```
 
-### DEB Signing Roles
+### Peran Penandatanganan DEB
 
-For DEB packages, you can specify the signing role via `SIGN_ROLE`:
+Untuk paket DEB, Anda dapat menentukan peran penandatanganan melalui `SIGN_ROLE`:
 
-- `origin`: Signature from the package origin
-- `maint`: Signature from the package maintainer
-- `archive`: Signature from the archive maintainer
-- `builder`: Signature from the package builder (default)
+- `origin`: Tanda tangan dari sumber asal paket
+- `maint`: Tanda tangan dari pemelihara paket
+- `archive`: Tanda tangan dari pemelihara arsip
+- `builder`: Tanda tangan dari pembuat paket (default)
 
-### Cross-Platform Signing
+### Penandatanganan Lintas Platform
 
-Linux packages can be signed from any platform. The same Taskfile configuration and commands work on Windows and macOS.
+Paket Linux dapat ditandatangani dari platform apa pun. Konfigurasi dan perintah Taskfile yang sama dapat digunakan di Windows dan macOS.
 
-### Viewing Key Information
+### Melihat Informasi Kunci
 
 ```bash
 gpg --show-keys signing-key.asc
 ```
 
-Output:
+Keluaran:
 
 ```
 pub   rsa4096 2024-01-15 [SC] [expires: 2025-01-15]
@@ -429,7 +475,7 @@ pub   rsa4096 2024-01-15 [SC] [expires: 2025-01-15]
 uid                      Your Name <your@email.com>
 ```
 
-### Verifying Linux Packages
+### Memverifikasi Paket Linux
 
 ```bash
 # Verify DEB signature
@@ -439,9 +485,9 @@ dpkg-sig --verify myapp_1.0.0_amd64.deb
 rpm --checksig myapp-1.0.0.x86_64.rpm
 ```
 
-### Distributing Your Public Key
+### Mendistribusikan Kunci Publik Anda
 
-Users need your public key to verify packages:
+Pengguna memerlukan kunci publik Anda untuk memverifikasi paket:
 
 ```bash
 # Export public key for distribution
@@ -457,23 +503,23 @@ sudo cp myapp-signing.pub.asc /etc/apt/trusted.gpg.d/
 sudo rpm --import myapp-signing.pub.asc
 ```
 
-## GitHub Actions Integration
+## Integrasi GitHub Actions
 
-In CI environments, passwords are provided via environment variables instead of the system keychain:
+Di lingkungan CI, kata sandi diberikan melalui variabel lingkungan, bukan keychain sistem:
 
 @table header=true
-| Environment Variable | Description |
-| `WAILS_WINDOWS_CERT_PASSWORD` | Windows certificate password |
-| `WAILS_PGP_PASSWORD` | PGP key password for Linux packages |
+| Variabel Lingkungan | Deskripsi |
+| `WAILS_WINDOWS_CERT_PASSWORD` | Kata sandi sertifikat Windows |
+| `WAILS_PGP_PASSWORD` | Kata sandi kunci PGP untuk paket Linux |
 @end
 
-You can also pass Taskfile variables directly:
+Anda juga dapat meneruskan variabel Taskfile secara langsung:
 
 ```bash
 wails3 task darwin:sign SIGN_IDENTITY="$SIGN_IDENTITY" KEYCHAIN_PROFILE="$KEYCHAIN_PROFILE"
 ```
 
-### macOS Workflow
+### Alur Kerja macOS
 
 ```yaml
 name: Build and Sign macOS
@@ -534,7 +580,7 @@ jobs:
           path: bin/*.app
 ```
 
-### Windows Workflow
+### Alur Kerja Windows
 
 ```yaml
 name: Build and Sign Windows
@@ -577,9 +623,9 @@ jobs:
           path: bin/*.exe
 ```
 
-### Cross-Platform Workflow (Linux Runner)
+### Alur Kerja Lintas Platform (Runner Linux)
 
-Sign Windows and Linux packages from a single Linux runner:
+Tandatangani paket Windows dan Linux dari satu runner Linux:
 
 ```yaml
 name: Build and Sign (Cross-Platform)
@@ -648,15 +694,15 @@ jobs:
 
 @note type="note"
 
-Using a Linux runner for cross-platform signing simplifies CI/CD by eliminating the need for separate Windows runners. macOS still requires a macOS runner for signing due to Apple's native tooling requirements.
+Menggunakan runner Linux untuk penandatanganan lintas platform menyederhanakan CI/CD karena tidak memerlukan runner Windows terpisah. Penandatanganan macOS tetap memerlukan runner macOS karena persyaratan alat native Apple.
 
 @end
 
-## CLI Reference
+## Referensi CLI
 
 ### wails3 setup signing
 
-Interactive wizard to configure signing for your project.
+Wizard interaktif untuk mengonfigurasi penandatanganan proyek Anda.
 
 ```bash
 wails3 setup signing [flags]
@@ -666,14 +712,14 @@ Flags:
                 If omitted, auto-detects which platforms to configure from the build directory.
 ```
 
-The wizard guides you through:
-- *macOS*: Selecting a Developer ID certificate, configuring notarization credentials (calls `xcrun notarytool store-credentials`).
-- *Windows*: Choosing between certificate file or thumbprint, setting password and timestamp server.
-- *Linux*: Using an existing PGP key or generating a new one (calls `gpg`), configuring signing role.
+Wizard akan memandu Anda untuk:
+- *macOS*: Memilih sertifikat Developer ID dan mengonfigurasi kredensial notarisasi (memanggil `xcrun notarytool store-credentials`).
+- *Windows*: Memilih antara file sertifikat atau thumbprint, serta menetapkan kata sandi dan server stempel waktu.
+- *Linux*: Menggunakan kunci PGP yang ada atau membuat kunci baru (memanggil `gpg`), serta mengonfigurasi peran penandatanganan.
 
 ### wails3 setup entitlements
 
-Interactive wizard to configure macOS entitlements.
+Wizard interaktif untuk mengonfigurasi entitlement macOS.
 
 ```bash
 wails3 setup entitlements [flags]
@@ -682,16 +728,16 @@ Flags:
   --output    Output path for entitlements.plist (default: build/darwin/entitlements.plist)
 ```
 
-*Presets:*
-- *Development*: Creates `entitlements.dev.plist` with JIT, debugging, and network
-- *Production*: Creates `entitlements.plist` with minimal entitlements
-- *Both*: Creates both files (recommended)
-- *App Store*: Creates sandboxed entitlements for Mac App Store
-- *Custom*: Choose individual entitlements and target file
+*Preset:*
+- *Pengembangan*: Membuat `entitlements.dev.plist` dengan JIT, debugging, dan jaringan
+- *Produksi*: Membuat `entitlements.plist` dengan entitlement minimal
+- *Keduanya*: Membuat kedua file (disarankan)
+- *App Store*: Membuat entitlement dengan sandbox untuk Mac App Store
+- *Kustom*: Pilih setiap entitlement dan file target
 
 ### wails3 sign
 
-Sign binaries and packages for the current or specified platform. This is a wrapper that calls the appropriate platform-specific signing task.
+Tandatangani biner dan paket untuk platform saat ini atau platform yang ditentukan. Perintah ini merupakan wrapper yang memanggil tugas penandatanganan khusus platform yang sesuai.
 
 ```bash
 wails3 sign
@@ -700,116 +746,116 @@ wails3 sign GOOS=windows
 wails3 sign GOOS=linux
 ```
 
-This runs the corresponding `<platform>:sign` task which uses the signing configuration from your Taskfile.
+Perintah ini menjalankan tugas `<platform>:sign` yang sesuai, yang menggunakan konfigurasi penandatanganan dari Taskfile Anda.
 
 ### wails3 tool sign
 
-Low-level command to sign a specific file directly. Used internally by the Taskfiles.
+Perintah tingkat rendah untuk menandatangani file tertentu secara langsung. Digunakan secara internal oleh Taskfile.
 
 ```bash
 wails3 tool sign [flags]
 ```
 
-*Common Flags:*\
+*Flag Umum:*\
 @table header=true
-| Flag | Description |
-| `--input` | Path to the file to sign |
-| `--output` | Output path (optional, defaults to in-place) |
-| `--verbose` | Enable verbose output |
+| Flag | Deskripsi |
+| `--input` | Jalur ke file yang akan ditandatangani |
+| `--output` | Jalur keluaran (opsional, secara default menimpa di lokasi yang sama) |
+| `--verbose` | Aktifkan keluaran mendetail |
 @end
 
-*Windows/macOS Flags:*\
+*Flag Windows/macOS:*\
 @table header=true
-| Flag | Description |
-| `--certificate` | Path to PKCS#12 (.pfx/.p12) certificate |
-| `--password` | Certificate password |
-| `--timestamp` | Timestamp server URL |
+| Flag | Deskripsi |
+| `--certificate` | Jalur ke sertifikat PKCS#12 (.pfx/.p12) |
+| `--password` | Kata sandi sertifikat |
+| `--timestamp` | URL server stempel waktu |
 @end
 
-*macOS-Specific Flags:*\
+*Flag Khusus macOS:*\
 @table header=true
-| Flag | Description |
-| `--identity` | Signing identity (use '-' for ad-hoc) |
-| `--entitlements` | Path to entitlements plist |
-| `--hardened-runtime` | Enable hardened runtime (default: true) |
-| `--notarize` | Submit for notarization |
-| `--keychain-profile` | Keychain profile for notarization |
+| Flag | Deskripsi |
+| `--identity` | Identitas penandatanganan (gunakan '-' untuk ad hoc) |
+| `--entitlements` | Jalur ke plist hak akses |
+| `--hardened-runtime` | Aktifkan runtime yang diperkuat (default: true) |
+| `--notarize` | Kirim untuk notarisasi |
+| `--keychain-profile` | Profil Keychain untuk notarisasi |
 @end
 
-*Windows-Specific Flags:*\
+*Flag Khusus Windows:*\
 @table header=true
-| Flag | Description |
-| `--thumbprint` | Certificate thumbprint in Windows store |
+| Flag | Deskripsi |
+| `--thumbprint` | Thumbprint sertifikat di penyimpanan Windows |
 @end
 
-*Linux-Specific Flags:*\
+*Flag Khusus Linux:*\
 @table header=true
-| Flag | Description |
-| `--pgp-key` | Path to PGP private key |
-| `--pgp-password` | PGP key password |
-| `--role` | DEB signing role (origin/maint/archive/builder) |
+| Flag | Deskripsi |
+| `--pgp-key` | Jalur ke kunci privat PGP |
+| `--pgp-password` | Kata sandi kunci PGP |
+| `--role` | Peran penandatanganan DEB (origin/maint/archive/builder) |
 @end
 
-### Inspecting signing state (native tools)
+### Memeriksa status penandatanganan (alat native)
 
-There is *no* `wails3 signing` command in v3. To inspect signing state, use the native tooling directly:
+Di v3, *tidak ada* perintah `wails3 signing`. Untuk memeriksa status penandatanganan, gunakan alat native secara langsung:
 
 @table header=true
-| Task | Command |
-| List macOS code-signing identities | `security find-identity -v -p codesigning` |
-| Store notarization credentials | `xcrun notarytool store-credentials "<profile>" --apple-id … --team-id … --password …` |
-| Inspect a PGP key file | `gpg --show-keys <key.asc>` |
-| Generate a PGP key pair | `gpg --full-generate-key` |
-| Export a public key | `gpg --armor --export <email>` |
+| Tugas | Perintah |
+| Cantumkan identitas penandatanganan kode macOS | `security find-identity -v -p codesigning` |
+| Simpan kredensial notarisasi | `xcrun notarytool store-credentials "<profile>" --apple-id … --team-id … --password …` |
+| Periksa file kunci PGP | `gpg --show-keys <key.asc>` |
+| Buat pasangan kunci PGP | `gpg --full-generate-key` |
+| Ekspor kunci publik | `gpg --armor --export <email>` |
 @end
 
-## Troubleshooting
+## Pemecahan Masalah
 
-### macOS Issues
+### Masalah macOS
 
-*"No Developer ID certificate found"*
-- Ensure your certificate is installed in the Keychain
-- Check it hasn't expired with `security find-identity -v -p codesigning`
-- Make sure you have a "Developer ID Application" certificate (not just "Apple Development")
+*"Sertifikat Developer ID tidak ditemukan"*
+- Pastikan sertifikat Anda terpasang di Keychain
+- Pastikan sertifikat belum kedaluwarsa dengan `security find-identity -v -p codesigning`
+- Pastikan Anda memiliki sertifikat "Developer ID Application" (bukan hanya "Apple Development")
 
-*"Notarization failed"*
-- Check the notarization log: `xcrun notarytool log <submission-id> --keychain-profile <profile>`
-- Ensure hardened runtime is enabled
-- Verify your app doesn't include unsigned binaries
+*"Notarisasi gagal"*
+- Periksa log notarisasi: `xcrun notarytool log <submission-id> --keychain-profile <profile>`
+- Pastikan runtime yang diperkuat telah diaktifkan
+- Pastikan aplikasi Anda tidak menyertakan biner yang belum ditandatangani
 
-*"Codesign failed"*
-- Make sure the keychain is unlocked: `security unlock-keychain`
-- Check file permissions on the app bundle
+*"Codesign gagal"*
+- Pastikan keychain tidak terkunci: `security unlock-keychain`
+- Periksa izin file pada bundel aplikasi
 
-### Windows Issues
+### Masalah Windows
 
-*"Certificate not found"*
-- Verify the certificate path is correct
-- Check the certificate password
-- Ensure the certificate is valid (not expired or revoked)
+*"Sertifikat tidak ditemukan"*
+- Pastikan jalur sertifikat sudah benar
+- Periksa kata sandi sertifikat
+- Pastikan sertifikat masih valid (belum kedaluwarsa atau dicabut)
 
-*"Timestamp server error"*
-- Try a different timestamp server:
+*"Kesalahan server stempel waktu"*
+- Coba server stempel waktu lain:
   - `http://timestamp.digicert.com`
   - `http://timestamp.sectigo.com`
   - `http://timestamp.comodoca.com`
 
-### Linux Issues
+### Masalah Linux
 
-*"Invalid PGP key"*
-- Ensure the key file is in ASCII-armored format
-- Check the key hasn't expired with `gpg --show-keys <key.asc>`
-- Verify the password is correct
+*"Kunci PGP tidak valid"*
+- Pastikan file kunci menggunakan format ASCII-armored
+- Periksa dengan `gpg --show-keys <key.asc>` bahwa kunci belum kedaluwarsa
+- Pastikan kata sandi sudah benar
 
-*"Signature verification failed"*
-- Ensure the public key is properly imported
-- Check that the package wasn't modified after signing
+*"Verifikasi tanda tangan gagal"*
+- Pastikan kunci publik telah diimpor dengan benar
+- Pastikan paket tidak diubah setelah ditandatangani
 
-## Additional Resources
+## Sumber Daya Tambahan
 
-### Official Documentation
-- [Apple Code Signing Guide](https://developer.apple.com/support/code-signing/)
-- [Apple Notarization Documentation](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
-- [Microsoft Code Signing](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
-- [Debian Package Signing](https://wiki.debian.org/SecureApt)
-- [RPM Package Signing](https://rpm-software-management.github.io/rpm/manual/signatures.html)
+### Dokumentasi Resmi
+- [Panduan Penandatanganan Kode Apple](https://developer.apple.com/support/code-signing/)
+- [Dokumentasi Notarisasi Apple](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
+- [Penandatanganan Kode Microsoft](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate)
+- [Penandatanganan Paket Debian](https://wiki.debian.org/SecureApt)
+- [Penandatanganan Paket RPM](https://rpm-software-management.github.io/rpm/manual/signatures.html)

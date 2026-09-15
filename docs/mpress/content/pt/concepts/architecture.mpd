@@ -1,58 +1,59 @@
 ---
 schema = 1
 title = "Como o Wails funciona"
-description = "Entendendo a arquitetura do Wails e como ele alcança desempenho nativo"
+description = "Entenda a arquitetura do Wails e como ela alcança desempenho nativo"
 slug = "concepts/architecture"
-sourcePath = "pt/concepts/architecture.mpd"
+sourcePath = "concepts/architecture.mpd"
 ---
 
-O Wails é um framework para construir aplicativos de desktop usando *Go para o backend* e *tecnologias web para o frontend*. Mas, ao contrário do Electron, o Wails não empacota um navegador; ele usa o *WebView nativo do sistema operacional*.
+Wails é um framework para criar aplicativos desktop usando *Go no backend* e *tecnologias web no frontend*. Porém, ao contrário do Electron, o Wails não inclui um navegador no pacote — ele usa a *WebView nativa do sistema operacional*.
 
 ```d2
 direction: left
 
 Wails App: {
   shape: sequence_diagram
-  label: "Wails App"
+  label: Aplicativo Wails
 
   frontend: Frontend
-  backend: Go Backend
-  os: Operating System
+  backend: Backend em Go
+  os: Sistema operacional
 
-  Initialisation: {
+  Initialisation: Inicialização {
     shape: sequence_diagram
-    backend."Serves Static Web App"
+    backend."Serves Static Web App": Serve o aplicativo web estático
     backend -> frontend: HTML / JS / CSS
-    frontend."Render Site via OS-native WebView"
+    frontend."Render Site via OS-native WebView": Renderiza o site pela WebView nativa do sistema operacional
   }
-  Regular Communication: {
+  Regular Communication: Comunicação regular {
     shape: sequence_diagram
-    frontend."Make API-style call"
+    frontend."Make API-style call": Faz uma chamada no estilo de API
     frontend -> backend.a: JSON
-    backend.a."Service processes request"
-    backend.a -> os: Call System APIs
-    backend.a."Generate Response"
+    backend.a."Service processes request": O serviço processa a solicitação
+    backend.a -> os: Chama APIs do sistema
+    backend.a."Generate Response": Gera a resposta
     backend.a -> frontend: JSON
-    frontend."Process response"
+    frontend."Process response": Processa a resposta
   }
+  backend.a.label: a
 }
 ```
 
-*Diferenças principais em relação ao Electron:*
+*Principais diferenças em relação ao Electron:*
 
 @table header=true
 | Aspecto | Wails | Electron |
-| *Navegador* | WebView fornecido pelo SO | Chromium empacotado (~100MB) |
+| *Navegador* | WebView fornecida pelo sistema operacional | Chromium incluído no pacote (~100 MB) |
 | *Backend* | Go (compilado) | Node.js (interpretado) |
-| *Comunicação* | Bridge em memória | IPC (inter-processo) |
-| *Tamanho do pacote* | ~15MB | ~150MB |
-| *Memória* | ~10MB | ~100MB+ |
-| *Inicialização* | &lt;0,5s | 2-3s |
+| *Comunicação* | Ponte em memória | IPC (entre processos) |
+| *Tamanho do pacote* | ~15 MB | ~150 MB |
+| *Memória* | ~10 MB | ~100 MB+ |
+| *Inicialização* | &lt;0.5s | 2-3 s |
 @end
 
-## Componentes Principais
+## Componentes principais
 
-### 1. WebView Nativo
+### 1. WebView nativa
 
 O Wails usa o mecanismo de renderização web integrado ao sistema operacional:
 
@@ -60,10 +61,10 @@ O Wails usa o mecanismo de renderização web integrado ao sistema operacional:
 @tab label="Windows"
 
 *WebView2* (Microsoft Edge WebView2)
-- Baseado no Chromium (mesmo do navegador Edge)
-- Pré-instalado no Windows 10/11
-- Atualizações automáticas via Windows Update
-- Suporte completo aos padrões web modernos
+- Baseada no Chromium (o mesmo mecanismo do navegador Edge)
+- Pré-instalada no Windows 10/11
+- Atualizações automáticas pelo Windows Update
+- Compatibilidade total com os padrões web modernos
 
 
 
@@ -72,90 +73,90 @@ O Wails usa o mecanismo de renderização web integrado ao sistema operacional:
 
 *WebKit* (mecanismo de renderização do Safari)
 - Integrado ao macOS
-- Mesmo motor do navegador Safari
-- Excelente desempenho e eficiência energética
-- Suporte completo aos padrões web modernos
+- O mesmo mecanismo do navegador Safari
+- Excelente desempenho e duração da bateria
+- Compatibilidade total com os padrões web modernos
 
 
 
 @end
 @tab label="Linux"
 
-*WebKitGTK* (porta GTK do WebKit)
-- Instalado via gerenciador de pacotes
-- Mesmo motor do GNOME Web (Epiphany)
-- Bom suporte aos padrões
-- Leve e performático
+*WebKitGTK* (port do WebKit para GTK)
+- Instalado pelo gerenciador de pacotes
+- O mesmo mecanismo do GNOME Web (Epiphany)
+- Boa compatibilidade com os padrões
+- Leve e eficiente
 
 
 @end
 @end
 
-*Por que isso importa:*
-- *Sem navegador empacotado* → Tamanho do aplicativo menor
-- *Nativo do SO* → Melhor integração e desempenho
-- *Atualizações automáticas* → Correções de segurança via atualizações do SO
-- *Renderização familiar* → Igual ao navegador do sistema
+*Por que isso é importante:*
+- *Nenhum navegador incluído no pacote* → Aplicativo menor
+- *Nativo do sistema operacional* → Melhor integração e desempenho
+- *Atualizações automáticas* → Correções de segurança fornecidas pelas atualizações do sistema operacional
+- *Renderização familiar* → A mesma do navegador do sistema
 
-### 2. O Bridge do Wails
+### 2. A ponte do Wails
 
-O bridge é o coração do Wails; ele permite *comunicação direta* entre Go e JavaScript.
+A ponte é o núcleo do Wails — ela permite a *comunicação direta* entre Go e JavaScript.
 
 ```d2
 direction: down
 
-Frontend: "Frontend (JavaScript)" {
+Frontend: Frontend (JavaScript) {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
-Bridge: "Wails Bridge" {
-  Encoder: "JSON Encoder" {
+Bridge: Ponte do Wails {
+  Encoder: Codificador JSON {
     shape: rectangle
   }
-  
-  Router: "Method Router" {
+
+  Router: Roteador de métodos {
     shape: diamond
     style.fill: "#10B981"
   }
-  
-  Decoder: "JSON Decoder" {
+
+  Decoder: Decodificador JSON {
     shape: rectangle
   }
 }
 
-Backend: "Backend (Go)" {
-  Services: "Registered Services" {
+Backend: Backend (Go) {
+  Services: Serviços registrados {
     shape: rectangle
     style.fill: "#00ADD8"
   }
 }
 
-Frontend -> Bridge.Encoder: "1. Call Go method\nGreet('Alice')"
-Bridge.Encoder -> Bridge.Router: "2. Encode to JSON\n{method: 'Greet', args: ['Alice']}"
-Bridge.Router -> Backend.Services: "3. Route to service\nGreetService.Greet('Alice')"
-Backend.Services -> Bridge.Decoder: "4. Return result\n'Hello, Alice!'"
-Bridge.Decoder -> Frontend: "5. Decode to JS\nPromise resolves"
+Frontend -> Bridge.Encoder: "1. Chama o método Go\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. Codifica como JSON\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. Encaminha ao serviço\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. Retorna o resultado\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. Decodifica para JS\nA Promise é resolvida"
 ```
 
 *Como funciona:*
 
-1. *Frontend chama um método Go* (via binding auto-gerado)
-2. *Bridge codifica a chamada* para JSON (nome do método + argumentos)
-3. *Router encontra o método Go* nos serviços registrados
-4. *Método Go executa* e retorna um valor
-5. *Bridge decodifica o resultado* e envia de volta ao frontend
-6. *Promise é resolvida* no JavaScript com o resultado
+1. *O frontend chama um método Go* (por meio de um binding gerado automaticamente)
+2. *A ponte codifica a chamada* em JSON (nome do método + argumentos)
+3. *O roteador localiza o método Go* nos serviços registrados
+4. *O método Go é executado* e retorna um valor
+5. *A ponte decodifica o resultado* e o envia de volta ao frontend
+6. *A Promise é resolvida* no JavaScript com o resultado
 
 *Características de desempenho:*
-- *Em memória*: Sem sobrecarga de rede, sem HTTP
-- *Zero-copy* quando possível (para grandes volumes de dados)
-- *Assíncrono por padrão*: Não bloqueante em ambos os lados
-- *Tipado com segurança*: Definições de TypeScript geradas automaticamente
+- *Em memória*: sem sobrecarga de rede e sem HTTP
+- *Sem cópias* quando possível (para grandes volumes de dados)
+- *Assíncrona por padrão*: não bloqueia nenhum dos lados
+- *Com segurança de tipos*: definições TypeScript geradas automaticamente
 
-### 3. Sistema de Serviços
+### 3. Sistema de serviços
 
-Os serviços são a maneira recomendada de expor funcionalidade do Go para o frontend.
+Os serviços são a maneira recomendada de expor funcionalidades Go ao frontend.
 
 ```go
 // Define a service (just a regular Go struct)
@@ -181,58 +182,60 @@ app := application.New(application.Options{
 ```
 
 *Descoberta de serviços:*
-- O Wails *varre sua struct* na inicialização
-- *Métodos exportados* tornam-se chamáveis do frontend
-- *Informações de tipo* são extraídas para bindings de TypeScript
-- *Tratamento de erros* é automático (erros do Go → exceções JS)
+- O Wails *inspeciona sua struct* durante a inicialização
+- *Os métodos exportados* podem ser chamados pelo frontend
+- *As informações de tipos* são extraídas para os bindings TypeScript
+- *O tratamento de erros* é automático (erros Go → exceções JS)
 
-*Binding de TypeScript gerado:*
+*Binding TypeScript gerado:*
 ```typescript
 // Auto-generated in frontend/bindings/GreetService.ts
 export function Greet(name: string): Promise<string>
 export function GetTime(): Promise<Date>
 ```
 
-*Por que serviços?*
-- *Tipado com segurança*: Suporte completo ao TypeScript
-- *Descoberta automática*: Sem registro manual de métodos
-- *Organizado*: Agrupe funcionalidades relacionadas
-- *Testável*: Serviços são apenas structs Go
+*Por que usar serviços?*
+- *Tipagem segura*: suporte completo ao TypeScript
+- *Descoberta automática*: não é necessário registrar métodos manualmente
+- *Organização*: agrupe funcionalidades relacionadas
+- *Testabilidade*: os serviços são apenas structs Go
 
-[Mais informações sobre serviços →](/features/bindings/services/)
+[Saiba mais sobre serviços →](/features/bindings/services/)
 
-### 4. Sistema de Eventos
+### 4. Sistema de eventos
 
-Os eventos permitem *comunicação pub/sub* entre componentes.
+Os eventos permitem a *comunicação por publicação/assinatura* entre componentes.
 
 ```d2
 direction: left
 
-Wails Event System: {
+Wails Event System: Sistema de eventos do Wails {
   shape: sequence_diagram
 
-  window1: Window 1
-  window2: Window 2
-  backend: Go Backend
+  window1: Janela 1
+  window2: Janela 2
+  backend: Backend em Go
 
-  Event Driver: {
+  Event Driver: Gerenciador de eventos {
     shape: sequence_diagram
-    window1."Subscribe to 'data-updated' events"
-    window2."Subscribe to 'data-updated' events"
-    backend.a."App Emit('data-updated', data)"
-    backend.a -> window1.a:"JSON Event Bus"
-    backend.a -> window2:"JSON Event Bus"
-    window1.a."Subscriber processes On('data-updated', handler)"
-    window2."Subscriber processes On('data-updated', handler)"
+    window1."Subscribe to 'data-updated' events": "Assina os eventos 'data-updated'"
+    window2."Subscribe to 'data-updated' events": "Assina os eventos 'data-updated'"
+    backend.a."App Emit('data-updated', data)": "O aplicativo emite Emit('data-updated', data)"
+    backend.a -> window1.a: Barramento de eventos JSON
+    backend.a -> window2: Barramento de eventos JSON
+    window1.a."Subscriber processes On('data-updated', handler)": "O assinante processa On('data-updated', handler)"
+    window2."Subscriber processes On('data-updated', handler)": "O assinante processa On('data-updated', handler)"
   }
+  backend.a.label: a
+  window1.a.label: a
 }
 ```
 
 *Casos de uso:*
-- *Comunicação entre janelas*: Uma janela notifica as outras
-- *Tarefas em segundo plano*: Serviço Go notifica a UI sobre o progresso
-- *Sincronização de estado*: Mantém múltiplas janelas sincronizadas
-- *Acoplamento fraco*: Componentes não precisam de referências diretas
+- *Comunicação entre janelas*: uma janela notifica as demais
+- *Tarefas em segundo plano*: o serviço Go notifica a interface sobre o progresso
+- *Sincronização de estado*: mantenha várias janelas sincronizadas
+- *Baixo acoplamento*: os componentes não precisam de referências diretas
 
 *Exemplo:*
 ```go
@@ -249,59 +252,59 @@ Events.On('user-logged-in', (user) => {
 })
 ```
 
-[Mais informações sobre eventos →](/features/events/system/)
+[Saiba mais sobre eventos →](/features/events/system/)
 
-## Ciclo de Vida do Aplicativo
+## Ciclo de vida da aplicação
 
-Entender o ciclo de vida ajuda você a saber quando inicializar recursos e fazer a limpeza.
+Compreender o ciclo de vida ajuda você a saber quando inicializar e liberar recursos.
 
 ```d2
 direction: down
 
-Start: "Application Start" {
+Start: Início do aplicativo {
   shape: oval
   style.fill: "#10B981"
 }
 
-Init: "Initialisation" {
-  Create: "Create Application" {
+Init: Inicialização {
+  Create: Cria o aplicativo {
     shape: rectangle
   }
-  
-  Register: "Register Services" {
+
+  Register: Registra os serviços {
     shape: rectangle
   }
-  
-  Setup: "Setup Windows/Menus" {
+
+  Setup: Configura janelas e menus {
     shape: rectangle
   }
 }
 
-Run: "Event Loop" {
-  Events: "Process Events" {
+Run: Loop de eventos {
+  Events: Processa eventos {
     shape: rectangle
   }
-  
-  Messages: "Handle Messages" {
+
+  Messages: Trata mensagens {
     shape: rectangle
   }
-  
-  Render: "Update UI" {
+
+  Render: Atualiza a interface {
     shape: rectangle
   }
 }
 
-Shutdown: "Shutdown" {
-  Cleanup: "Cleanup Resources" {
+Shutdown: Encerramento {
+  Cleanup: Libera recursos {
     shape: rectangle
   }
-  
-  Save: "Save State" {
+
+  Save: Salva o estado {
     shape: rectangle
   }
 }
 
-End: "Application End" {
+End: Fim do aplicativo {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -312,312 +315,310 @@ Init.Register -> Init.Setup
 Init.Setup -> Run.Events
 Run.Events -> Run.Messages
 Run.Messages -> Run.Render
-Run.Render -> Run.Events: "Loop"
-Run.Events -> Shutdown.Cleanup: "Quit signal"
+Run.Render -> Run.Events: Loop
+Run.Events -> Shutdown.Cleanup: Sinal de encerramento
 Shutdown.Cleanup -> Shutdown.Save
 Shutdown.Save -> End
 ```
 
-*Lifecycle hooks:*
+*Hooks do ciclo de vida:*
 
 ```go
 app := application.New(application.Options{
     Name: "My App",
-    
-    // Called before windows are created
-    OnStartup: func(ctx context.Context) {
-        // Initialise database, load config, etc.
-    },
-    
-    // Called when app is about to quit
-    OnShutdown: func() {
-        // Save state, close connections, etc.
-    },
+
+    // Cleanly intercept quit requests (e.g. unsaved changes).
+    ShouldQuit: func() bool { return true },
+
+    // Called when the app is confirmed to be quitting — save state, close connections, etc.
+    OnShutdown: func() {},
 })
 ```
 
-[Learn more about lifecycle →](/concepts/lifecycle/)
+Não existe um campo `OnStartup` em `application.Options`. O trabalho de inicialização deve ficar no `ServiceStartup(ctx, options)` de um serviço, em um callback registrado por meio de `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)` ou simplesmente antes de `app.Run()`.
 
-## Build Process
+[Saiba mais sobre o ciclo de vida →](/concepts/lifecycle/)
 
-Understanding how Wails builds your application:
+## Processo de build
+
+Entenda como o Wails faz o build da sua aplicação:
 
 ```d2
 direction: down
 
-Source: "Source Code" {
-  Go: "Go Code\n(main.go, services)" {
+Source: Código-fonte {
+  Go: "Código Go\n(main.go, serviços)" {
     shape: rectangle
     style.fill: "#00ADD8"
   }
-  
-  Frontend: "Frontend Code\n(HTML/CSS/JS)" {
+
+  Frontend: "Código do frontend\n(HTML/CSS/JS)" {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
 }
 
-Build: "Build Process" {
-  AnalyseGo: "Analyse Go Code" {
+Build: Processo de build {
+  AnalyseGo: Analisa o código Go {
     shape: rectangle
   }
-  
-  GenerateBindings: "Generate Bindings" {
+
+  GenerateBindings: Gera os bindings {
     shape: rectangle
   }
-  
-  BuildFrontend: "Build Frontend" {
+
+  BuildFrontend: Faz o build do frontend {
     shape: rectangle
   }
-  
-  CompileGo: "Compile Go" {
+
+  CompileGo: Compila o código Go {
     shape: rectangle
   }
-  
-  Embed: "Embed Assets" {
+
+  Embed: Incorpora os recursos {
     shape: rectangle
   }
 }
 
-Output: "Output" {
-  Binary: "Native Binary\n(myapp.exe/.app)" {
+Output: Saída {
+  Binary: "Binário nativo\n(myapp.exe/.app)" {
     shape: rectangle
     style.fill: "#10B981"
   }
 }
 
 Source.Go -> Build.AnalyseGo
-Build.AnalyseGo -> Build.GenerateBindings: "Extract types"
-Build.GenerateBindings -> Source.Frontend: "TypeScript bindings"
-Source.Frontend -> Build.BuildFrontend: "Compile (Vite/webpack)"
-Build.BuildFrontend -> Build.Embed: "Bundled assets"
+Build.AnalyseGo -> Build.GenerateBindings: Extrai os tipos
+Build.GenerateBindings -> Source.Frontend: Bindings TypeScript
+Source.Frontend -> Build.BuildFrontend: Compila (Vite/webpack)
+Build.BuildFrontend -> Build.Embed: Recursos empacotados
 Source.Go -> Build.CompileGo
 Build.CompileGo -> Build.Embed
 Build.Embed -> Output.Binary
 ```
 
-*Build steps:*
+*Etapas do build:*
 
-1. *Analyse Go code*
-  - Scan services for exported methods
-  - Extract parameter and return types
-  - Generate method signatures
+1. *Analisar o código Go*
+  - Examinar os serviços em busca de métodos exportados
+  - Extrair os tipos dos parâmetros e dos valores de retorno
+  - Gerar assinaturas de métodos
 
-2. *Generate TypeScript bindings*
-  - Create `.ts` files for each service
-  - Include full type definitions
-  - Add JSDoc comments
+2. *Gerar bindings TypeScript*
+  - Criar arquivos `.ts` para cada serviço
+  - Incluir definições completas de tipos
+  - Adicionar comentários JSDoc
 
-3. *Build frontend*
-  - Run your bundler (Vite, webpack, etc.)
-  - Minify and optimise
-  - Output to `frontend/dist/`
+3. *Fazer o build do frontend*
+  - Executar seu empacotador (Vite, webpack etc.)
+  - Minificar e otimizar
+  - Gerar a saída em `frontend/dist/`
 
-4. *Compile Go*
-  - Compile with optimisations (`-ldflags="-s -w"`)
-  - Include build metadata
-  - Platform-specific compilation
+4. *Compilar o código Go*
+  - Compilar com otimizações (`-ldflags="-s -w"`)
+  - Incluir metadados do build
+  - Compilar especificamente para cada plataforma
 
-5. *Embed assets*
-  - Embed frontend files into Go binary
-  - Compress assets
-  - Create single executable
+5. *Incorporar os recursos*
+  - Incorporar os arquivos do frontend ao binário Go
+  - Compactar os recursos
+  - Criar um único executável
 
-*Result:* A single native executable with everything embedded.
+*Resultado:* um único executável nativo com tudo incorporado.
 
-[Learn more about building →](/guides/build/building/)
+[Saiba mais sobre o processo de build →](/guides/build/building/)
 
-## Development vs Production
+## Desenvolvimento vs. produção
 
-Wails behaves differently in development and production:
+O Wails se comporta de maneira diferente nos ambientes de desenvolvimento e produção:
 
 @tabs sync-key="mode"
-@tab label="Development (wails3 dev)"
+@tab label="Desenvolvimento (wails3 dev)"
 
-*Characteristics:*
-- *Hot reload*: Frontend changes reload instantly
-- *Source maps*: Debug with original source
-- *DevTools*: Browser DevTools available
-- *Logging*: Verbose logging enabled
-- *External frontend*: Served from dev server (Vite)
+*Características:*
+- *Recarregamento automático*: as alterações no frontend são recarregadas imediatamente
+- *Mapas de código-fonte*: depuração com o código-fonte original
+- *DevTools*: as ferramentas de desenvolvimento do navegador ficam disponíveis
+- *Logs*: logs detalhados ficam habilitados
+- *Frontend externo*: servido pelo servidor de desenvolvimento (Vite)
 
-*How it works:*
+*Como funciona:*
 ```d2
 direction: right
 
-WailsApp: "Wails App" {
+WailsApp: Aplicativo Wails {
   shape: rectangle
   style.fill: "#00ADD8"
 }
 
-DevServer: "Vite Dev Server\n(localhost:5173)" {
+DevServer: "Servidor de desenvolvimento do Vite\n(localhost:5173)" {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
-WebView: "WebView" {
+WebView: WebView {
   shape: rectangle
   style.fill: "#6B7280"
 }
 
-WailsApp -> DevServer: "Proxy requests"
-DevServer -> WebView: "Serve with HMR"
-WebView -> WailsApp: "Call Go methods"
+WailsApp -> DevServer: Encaminha solicitações por proxy
+DevServer -> WebView: Serve com HMR
+WebView -> WailsApp: Chama métodos Go
 ```
 
-*Benefits:*
-- Instant feedback on changes
-- Full debugging capabilities
-- Faster iteration
+*Benefícios:*
+- Retorno imediato sobre as alterações
+- Recursos completos de depuração
+- Iterações mais rápidas
 
 
 
 @end
-@tab label="Production (wails3 build)"
+@tab label="Produção (wails3 build)"
 
-*Characteristics:*
-- *Embedded assets*: Frontend built into binary
-- *Optimised*: Minified, compressed
-- *No DevTools*: Disabled by default
-- *Minimal logging*: Errors only
-- *Single file*: Everything in one executable
+*Características:*
+- *Recursos incorporados*: o frontend é incluído no binário durante o build
+- *Otimizado*: minificado e compactado
+- *Sem DevTools*: desabilitadas por padrão
+- *Logs mínimos*: somente erros
+- *Arquivo único*: tudo em um único executável
 
-*How it works:*
+*Como funciona:*
 ```d2
 direction: right
 
-Binary: "Single Binary\n(myapp.exe)" {
-  GoCode: "Compiled Go" {
+Binary: "Binário único\n(myapp.exe)" {
+  GoCode: Código Go compilado {
     shape: rectangle
     style.fill: "#00ADD8"
   }
-  
-  Assets: "Embedded Assets\n(HTML/CSS/JS)" {
+
+  Assets: "Recursos incorporados\n(HTML/CSS/JS)" {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
 }
 
-WebView: "WebView" {
+WebView: WebView {
   shape: rectangle
   style.fill: "#6B7280"
 }
 
-Binary.Assets -> WebView: "Serve from memory"
-WebView -> Binary.GoCode: "Call Go methods"
+Binary.Assets -> WebView: Serve a partir da memória
+WebView -> Binary.GoCode: Chama métodos Go
 ```
 
-*Benefits:*
-- Single file distribution
-- Smaller size (minified)
-- Better performance
-- No external dependencies
+*Benefícios:*
+- Distribuição em um único arquivo
+- Tamanho menor (minificado)
+- Melhor desempenho
+- Sem dependências externas
 
 
 @end
 @end
 
-## Memory Model
+## Modelo de memória
 
-Understanding memory usage helps you build efficient applications.
+Entender o uso da memória ajuda você a criar aplicações eficientes.
 
-*Memory regions:*
+*Regiões da memória:*
 
-1. *Go Heap*
-  - Your services and application state
-  - Managed by Go garbage collector
-  - Typically 5-10MB for simple apps
+1. *Heap do Go*
+  - Seus serviços e o estado da aplicação
+  - Gerenciado pelo coletor de lixo do Go
+  - Normalmente 5-10MB para aplicações simples
 
-2. *WebView Memory*
-  - DOM, JavaScript heap, CSS
-  - Managed by WebView's engine
-  - Typically 10-20MB for simple apps
+2. *Memória do WebView*
+  - DOM, heap do JavaScript e CSS
+  - Gerenciada pelo mecanismo do WebView
+  - Normalmente 10-20MB para aplicações simples
 
-3. *Bridge Memory*
-  - Message buffers for communication
-  - Minimal overhead (\<1MB)
-  - Zero-copy for large data where possible
+3. *Memória da ponte*
+  - Buffers de mensagens para comunicação
+  - Sobrecarga mínima (\<1MB)
+  - Cópia zero para grandes volumes de dados, quando possível
 
-*Optimisation tips:*
-- *Avoid large data transfers*: Pass IDs, fetch details on demand
-- *Use events for updates*: Don't poll from frontend
-- *Stream large files*: Don't load entirely into memory
-- *Clean up listeners*: Remove event listeners when done
+*Dicas de otimização:*
+- *Evite transferir grandes volumes de dados*: passe IDs e busque os detalhes sob demanda
+- *Use eventos para atualizações*: não faça polling no frontend
+- *Transmita arquivos grandes por streaming*: não os carregue por completo na memória
+- *Remova os listeners*: remova os listeners de eventos quando não forem mais necessários
 
-[Learn more about performance →](/guides/performance/)
+[Saiba mais sobre desempenho →](/guides/performance/)
 
-## Security Model
+## Modelo de segurança
 
-Wails provides a secure-by-default architecture:
+O Wails oferece uma arquitetura segura por padrão:
 
 ```d2
 direction: down
 
-Frontend: "Frontend (Untrusted)" {
+Frontend: Frontend (não confiável) {
   shape: rectangle
   style.fill: "#EF4444"
 }
 
-Bridge: "Wails Bridge (Validation)" {
+Bridge: Ponte do Wails (validação) {
   shape: diamond
   style.fill: "#F59E0B"
 }
 
-Backend: "Backend (Trusted)" {
+Backend: Backend (confiável) {
   shape: rectangle
   style.fill: "#10B981"
 }
 
-Frontend -> Bridge: "Call method"
-Bridge -> Bridge: "Validate:\n- Method exists?\n- Types correct?\n- Access allowed?"
-Bridge -> Backend: "Execute if valid"
-Backend -> Bridge: "Return result"
-Bridge -> Frontend: "Send response"
+Frontend -> Bridge: Chama o método
+Bridge -> Bridge: "Validar:\n- O método existe?\n- Os tipos estão corretos?\n- O acesso é permitido?"
+Bridge -> Backend: Executar se for válido
+Backend -> Bridge: Retornar o resultado
+Bridge -> Frontend: Enviar a resposta
 ```
 
-*Security features:*
+*Recursos de segurança:*
 
-1. *Method whitelisting*
-  - Only exported methods are callable
-  - Private methods are inaccessible
-  - Explicit service registration required
+1. *Lista de métodos permitidos*
+  - Somente métodos exportados podem ser chamados
+  - Métodos privados são inacessíveis
+  - É necessário registrar explicitamente os serviços
 
-2. *Type validation*
-  - Arguments checked against Go types
-  - Invalid types rejected
-  - Prevents injection attacks
+2. *Validação de tipos*
+  - Os argumentos são verificados em relação aos tipos do Go
+  - Tipos inválidos são rejeitados
+  - Impede ataques de injeção
 
-3. *No eval()*
-  - Frontend can't execute arbitrary Go code
-  - Only predefined methods callable
-  - No dynamic code execution
+3. *Sem eval()*
+  - O frontend não pode executar código Go arbitrário
+  - Somente métodos predefinidos podem ser chamados
+  - Sem execução dinâmica de código
 
-4. *Context isolation*
-  - Each window has its own context
-  - Services can check caller context
-  - Permissions per window possible
+4. *Isolamento de contexto*
+  - Cada janela tem seu próprio contexto
+  - Os serviços podem verificar o contexto do chamador
+  - É possível definir permissões por janela
 
-*Best practices:*
-- *Validate user input* in Go (don't trust frontend)
-- *Use context* for authentication/authorisation
-- *Sanitise file paths* before file operations
-- *Rate limit* expensive operations
+*Práticas recomendadas:*
+- *Valide a entrada do usuário* no Go (não confie no frontend)
+- *Use o contexto* para autenticação e autorização
+- *Sanitize os caminhos de arquivos* antes das operações com arquivos
+- *Limite a frequência* de operações custosas
 
-[Learn more about security →](/guides/security/)
+[Saiba mais sobre segurança →](/guides/security/)
 
-## Next Steps
+## Próximos passos
 
-*Application Lifecycle* - Understand startup, shutdown, and lifecycle hooks\
-[Learn More →](/concepts/lifecycle/)
+*Ciclo de vida da aplicação* - Entenda a inicialização, o encerramento e os hooks do ciclo de vida\
+[Saiba mais →](/concepts/lifecycle/)
 
-*Go-Frontend Bridge* - Deep dive into how the bridge works\
-[Learn More →](/concepts/bridge/)
+*Ponte entre Go e frontend* - Explore em detalhes como a ponte funciona\
+[Saiba mais →](/concepts/bridge/)
 
-*Build System* - Understand how Wails builds your application\
-[Learn More →](/concepts/build-system/)
+*Sistema de build* - Entenda como o Wails compila sua aplicação\
+[Saiba mais →](/concepts/build-system/)
 
-*Start Building* - Apply what you've learned in a tutorial\
-[Tutorials →](/tutorials/03-notes-vanilla/)
+*Comece a desenvolver* - Aplique em um tutorial o que você aprendeu\
+[Tutoriais →](/tutorials/03-notes-vanilla/)
 
 ---
 

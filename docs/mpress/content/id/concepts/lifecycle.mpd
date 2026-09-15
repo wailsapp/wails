@@ -1,89 +1,89 @@
 ---
 schema = 1
 title = "Siklus Hidup Aplikasi"
-description = "Memahami siklus hidup aplikasi Wails dari startup hingga shutdown"
+description = "Memahami siklus hidup aplikasi Wails dari mulai dijalankan hingga dihentikan"
 slug = "concepts/lifecycle"
-sourcePath = "id/concepts/lifecycle.mpd"
+sourcePath = "concepts/lifecycle.mpd"
 ---
 
 ## Memahami Siklus Hidup Aplikasi
 
-Aplikasi desktop memiliki siklus hidup dari startup hingga shutdown. Wails v3 menyediakan *service*, *event*, dan *hook* untuk mengelola siklus hidup ini secara efektif.
+Aplikasi desktop memiliki siklus hidup dari mulai dijalankan hingga dihentikan. Wails v3 menyediakan *layanan*, *peristiwa*, dan *hook* untuk mengelola siklus hidup ini secara efektif.
 
-## Tahap Siklus Hidup
+## Tahapan Siklus Hidup
 
 ```d2
 direction: down
 
-Start: "Application Start" {
+Start: Aplikasi Dimulai {
   shape: oval
   style.fill: "#10B981"
 }
 
-Init: "Initialisation" {
-  Parse: "Parse Options" {
+Init: Inisialisasi {
+  Parse: Uraikan Opsi {
     shape: rectangle
   }
-  Register: "Register Services" {
+  Register: Daftarkan Layanan {
     shape: rectangle
   }
-  Setup: "Setup Runtime" {
+  Setup: Siapkan Runtime {
     shape: rectangle
   }
 }
 
-AppRun: "app.Run()" {
+AppRun: app.Run() {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
-ServiceStartup: "Service Startup" {
+ServiceStartup: Layanan Dimulai {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
-EventLoop: "Event Loop" {
-  Process: "Process Events" {
+EventLoop: Perulangan Peristiwa {
+  Process: Proses Peristiwa {
     shape: rectangle
   }
-  Handle: "Handle Messages" {
+  Handle: Tangani Pesan {
     shape: rectangle
   }
-  Update: "Update UI" {
+  Update: Perbarui UI {
     shape: rectangle
   }
 }
 
-QuitSignal: "Quit Signal" {
+QuitSignal: Sinyal Keluar {
   shape: diamond
   style.fill: "#F59E0B"
 }
 
-ShouldQuit: "ShouldQuit Check" {
+ShouldQuit: Pemeriksaan ShouldQuit {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
-OnShutdown: "OnShutdown Callbacks" {
+OnShutdown: Callback OnShutdown {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
-ServiceShutdown: "Service Shutdown" {
+ServiceShutdown: Penghentian Layanan {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
-Cleanup: "Cleanup" {
-  Close: "Close Windows" {
+Cleanup: Pembersihan {
+  Close: Tutup Jendela {
     shape: rectangle
   }
-  Release: "Release Resources" {
+  Release: Lepaskan Sumber Daya {
     shape: rectangle
   }
 }
 
-End: "Application End" {
+End: Aplikasi Berakhir {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -96,11 +96,11 @@ AppRun -> ServiceStartup
 ServiceStartup -> EventLoop.Process
 EventLoop.Process -> EventLoop.Handle
 EventLoop.Handle -> EventLoop.Update
-EventLoop.Update -> EventLoop.Process: "Loop"
-EventLoop.Process -> QuitSignal: "User quits"
-QuitSignal -> ShouldQuit: "Check allowed?"
-ShouldQuit -> EventLoop.Process: "Denied"
-ShouldQuit -> OnShutdown: "Allowed"
+EventLoop.Update -> EventLoop.Process: Ulangi
+EventLoop.Process -> QuitSignal: Pengguna keluar
+QuitSignal -> ShouldQuit: Periksa apakah diizinkan
+ShouldQuit -> EventLoop.Process: Ditolak
+ShouldQuit -> OnShutdown: Diizinkan
 OnShutdown -> ServiceShutdown
 ServiceShutdown -> Cleanup.Close
 Cleanup.Close -> Cleanup.Release
@@ -125,9 +125,9 @@ app := application.New(application.Options{
 ```
 
 *Yang terjadi:*
-1. Options di-parse dan divalidasi
-2. Service didaftarkan (tetapi belum dijalankan)
-3. Asset server dikonfigurasi
+1. Opsi diuraikan dan divalidasi
+2. Layanan didaftarkan (tetapi belum dimulai)
+3. Server aset dikonfigurasi
 4. Runtime disiapkan
 
 ### 2. Menjalankan Aplikasi
@@ -142,35 +142,35 @@ if err != nil {
 ```
 
 *Yang terjadi:*
-1. Service dijalankan sesuai urutan registrasi
-2. Event listener diaktifkan
-3. Window dapat dibuat
-4. Event loop dimulai
+1. Layanan dimulai sesuai urutan pendaftaran
+2. Listener peristiwa diaktifkan
+3. Jendela dapat dibuat
+4. Perulangan peristiwa dimulai
 
-### 3. Event Loop
+### 3. Perulangan Peristiwa
 
-Aplikasi memasuki event loop di mana ia menghabiskan sebagian besar waktunya:
+Aplikasi memasuki perulangan peristiwa, tempat aplikasi menghabiskan sebagian besar waktunya:
 
-- Event OS diproses (mouse, keyboard, event window)
-- Pesan Go-ke-JS ditangani
-- Panggilan JS-ke-Go dieksekusi
+- Peristiwa OS diproses (peristiwa mouse, papan ketik, dan jendela)
+- Pesan dari Go ke JS ditangani
+- Panggilan dari JS ke Go dijalankan
 - Pembaruan UI dirender
 
-### 4. Shutdown
+### 4. Penghentian
 
-Ketika aplikasi keluar:
+Saat aplikasi dihentikan:
 
-1. Callback `ShouldQuit` diperiksa (jika diset)
-2. Callback `OnShutdown` dieksekusi
-3. Service di-shutdown dalam urutan terbalik
-4. Window ditutup
-5. Resource dilepas
+1. Callback `ShouldQuit` diperiksa (jika ditetapkan)
+2. Callback `OnShutdown` dijalankan
+3. Layanan dihentikan dalam urutan terbalik
+4. Jendela ditutup
+5. Sumber daya dilepaskan
 
-## Siklus Hidup Service
+## Siklus Hidup Layanan
 
-Service adalah cara utama mengelola siklus hidup di Wails v3. Mereka menyediakan hook startup dan shutdown melalui interface. Untuk dokumentasi lengkap tentang service, lihat [Panduan Service](/id/features/bindings/services/).
+Layanan merupakan cara utama untuk mengelola siklus hidup di Wails v3. Layanan menyediakan hook yang dipanggil saat proses mulai dan penghentian melalui antarmuka. Untuk dokumentasi lengkap tentang layanan, lihat [panduan Layanan](/features/bindings/services/).
 
-### Membuat Service
+### Membuat Layanan
 
 ```go
 type MyService struct {
@@ -202,7 +202,7 @@ func (s *MyService) ServiceShutdown() error {
 }
 ```
 
-### Mendaftarkan Service
+### Mendaftarkan Layanan
 
 ```go
 app := application.New(application.Options{
@@ -213,15 +213,15 @@ app := application.New(application.Options{
 })
 ```
 
-*Poin penting:*
-- Service dimulai sesuai urutan registrasi
-- Service di-shutdown dalam urutan registrasi *terbalik*
-- Jika `ServiceStartup` service mengembalikan error, aplikasi dibatalkan
-- `ctx` yang diteruskan ke `ServiceStartup` dibatalkan saat shutdown dimulai
+*Poin utama:*
+- Layanan dimulai sesuai urutan pendaftaran
+- Layanan dihentikan dalam urutan pendaftaran *terbalik*
+- Jika `ServiceStartup` milik suatu layanan mengembalikan kesalahan, aplikasi dibatalkan
+- `ctx` yang diteruskan ke `ServiceStartup` dibatalkan saat proses penghentian dimulai
 
-### Menggunakan Application Context
+### Menggunakan Konteks Aplikasi
 
-Context yang diteruskan ke `ServiceStartup` valid selama masa hidup aplikasi:
+Konteks yang diteruskan ke `ServiceStartup` berlaku selama masa aktif aplikasi:
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -245,7 +245,7 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-Anda juga dapat mengakses context dari instance aplikasi:
+Anda juga dapat mengakses konteks dari instans aplikasi:
 
 ```go
 app := application.Get()
@@ -254,19 +254,19 @@ ctx := app.Context()
 
 ## Hook Tingkat Aplikasi
 
-Ini adalah callback kemudahan di `application.Options` yang memungkinkan Anda terhubung ke siklus hidup aplikasi tanpa membuat service penuh. Berguna untuk tugas cleanup sederhana, konfirmasi quit, atau ketika Anda perlu menjalankan kode pada titik tertentu dalam urutan shutdown.
+Callback praktis dalam `application.Options` ini memungkinkan Anda mengaitkan kode ke siklus hidup aplikasi tanpa membuat layanan lengkap. Callback ini berguna untuk tugas pembersihan sederhana, konfirmasi keluar, atau saat Anda perlu menjalankan kode pada titik tertentu dalam urutan penonaktifan.
 
-Untuk manajemen siklus hidup yang lebih kompleks dengan logika startup, dependency injection, atau resource stateful, gunakan [Service](#siklus-hidup-service).
+Untuk pengelolaan siklus hidup yang lebih kompleks dengan logika pengaktifan, injeksi dependensi, atau sumber daya berstatus, gunakan [Layanan](#siklus-hidup-layanan) sebagai gantinya.
 
 ### ShouldQuit
 
-Callback `ShouldQuit` dipanggil setiap kali quit diminta—baik oleh pengguna menutup window terakhir, menekan Cmd+Q (macOS) / Alt+F4 (Windows), atau memanggil `app.Quit()` secara programatik.
+Callback `ShouldQuit` dipanggil setiap kali ada permintaan keluar—baik karena pengguna menutup jendela terakhir, menekan Cmd+Q (macOS) / Alt+F4 (Windows), maupun memanggil `app.Quit()` secara terprogram.
 
-*Nilai return:*
-- Return `true` untuk mengizinkan quit melanjutkan (aplikasi akan shutdown)
-- Return `false` untuk membatalkan quit (aplikasi tetap berjalan)
+*Nilai kembalian:*
+- Kembalikan `true` untuk mengizinkan proses keluar dilanjutkan (aplikasi akan dinonaktifkan)
+- Kembalikan `false` untuk membatalkan proses keluar (aplikasi tetap berjalan)
 
-Ini kesempatan Anda untuk mencegat permintaan quit dan opsional mencegahnya, misalnya untuk memprompt pengguna tentang perubahan yang belum disimpan:
+Pada tahap ini, Anda dapat mencegat dan, bila diperlukan, membatalkan permintaan keluar, misalnya untuk memberi tahu pengguna tentang perubahan yang belum disimpan:
 
 ```go
 app := application.New(application.Options{
@@ -296,21 +296,21 @@ app := application.New(application.Options{
 })
 ```
 
-Jika `ShouldQuit` tidak diset, aplikasi akan langsung quit saat diminta.
+Jika `ShouldQuit` tidak ditetapkan, aplikasi akan langsung keluar saat diminta.
 
 *Kapan ShouldQuit dipanggil:*
-- Pengguna menutup window terakhir (kecuali `DisableQuitOnLastWindowClosed` diset)
+- Pengguna menutup jendela terakhir (kecuali jika `DisableQuitOnLastWindowClosed` ditetapkan)
 - Pengguna menekan Cmd+Q di macOS
-- Pengguna menekan Alt+F4 di Windows (saat fokus pada window terakhir)
+- Pengguna menekan Alt+F4 di Windows (saat fokus berada pada jendela terakhir)
 - Kode memanggil `app.Quit()`
 
 *Kapan ShouldQuit TIDAK dipanggil:*
-- Proses di-kill (SIGKILL, force-quit Task Manager)
-- `os.Exit()` dipanggil langsung
+- Proses dihentikan secara paksa (SIGKILL, penghentian paksa melalui Task Manager)
+- `os.Exit()` dipanggil secara langsung
 
 ### OnShutdown
 
-Callback `OnShutdown` dipanggil ketika aplikasi dikonfirmasi akan quit (setelah `ShouldQuit` return `true`, jika diset). Gunakan ini untuk tugas cleanup seperti menyimpan state, menutup koneksi database, atau melepaskan resource.
+Callback `OnShutdown` dipanggil setelah dipastikan bahwa aplikasi akan keluar (setelah `ShouldQuit` mengembalikan `true`, jika ditetapkan). Gunakan callback ini untuk tugas pembersihan seperti menyimpan status, menutup koneksi basis data, atau melepaskan sumber daya.
 
 ```go
 app := application.New(application.Options{
@@ -324,7 +324,7 @@ app := application.New(application.Options{
 })
 ```
 
-Anda juga dapat mendaftarkan callback shutdown tambahan secara programatik kapan saja selama siklus hidup aplikasi:
+Anda juga dapat mendaftarkan callback penonaktifan tambahan secara terprogram kapan saja selama masa aktif aplikasi:
 
 ```go
 app.OnShutdown(func() {
@@ -332,18 +332,18 @@ app.OnShutdown(func() {
 })
 ```
 
-Beberapa callback dieksekusi sesuai urutan pendaftaran. Proses shutdown memblokir hingga semua callback selesai.
+Beberapa callback dijalankan sesuai urutan pendaftarannya. Proses penonaktifan akan terblokir hingga semua callback selesai.
 
-*Penting:* Jaga callback shutdown tetap cepat (di bawah 1 detik). Sistem operasi dapat memaksa terminasi aplikasi yang terlalu lama quit, yang dapat menginterupsi cleanup dan menyebabkan kehilangan data.
+*Penting:* Pastikan callback penonaktifan berjalan cepat (kurang dari 1 detik). Sistem operasi dapat menghentikan paksa aplikasi yang memerlukan waktu terlalu lama untuk keluar, sehingga dapat menginterupsi proses pembersihan dan menyebabkan kehilangan data.
 
 ### PostShutdown
 
-Callback `PostShutdown` dipanggil setelah semua tugas shutdown selesai, tepat sebelum proses terminasi. Pada titik ini, instance aplikasi tidak lagi dapat digunakan—window ditutup, service di-shutdown, dan resource dilepas.
+Callback `PostShutdown` dipanggil setelah semua tugas penonaktifan selesai, tepat sebelum proses berakhir. Pada tahap ini, instans aplikasi tidak dapat digunakan lagi—semua jendela telah ditutup, layanan telah dinonaktifkan, dan sumber daya telah dilepaskan.
 
-Ini terutama berguna untuk:
-- Logging akhir yang harus terjadi setelah semua cleanup lain
-- Testing dan debugging perilaku shutdown
-- Platform di mana `app.Run()` tidak return (callback memastikan kode Anda berjalan)
+Callback ini terutama berguna untuk:
+- Pencatatan log akhir yang harus dilakukan setelah semua pembersihan lainnya
+- Pengujian dan penelusuran kesalahan perilaku penonaktifan
+- Platform tempat `app.Run()` tidak mengembalikan kontrol (callback memastikan kode Anda dijalankan)
 
 ```go
 app := application.New(application.Options{
@@ -357,19 +357,19 @@ app := application.New(application.Options{
 })
 ```
 
-*Catatan:* Jangan mencoba menggunakan fitur aplikasi (window, dialog, dll.) di `PostShutdown`—fitur tersebut tidak lagi tersedia.
+*Catatan:* Jangan mencoba menggunakan fitur aplikasi (jendela, dialog, dan sebagainya) dalam `PostShutdown`—fitur tersebut sudah tidak tersedia.
 
-## Siklus Hidup Berbasis Event
+## Siklus Hidup Berbasis Peristiwa
 
-Wails menyediakan sistem event yang memberi tahu Anda ketika sesuatu terjadi di aplikasi—window terbuka, aplikasi dimulai, perubahan tema, dan lainnya. Anda dapat mendengarkan event ini untuk bereaksi terhadap perubahan siklus hidup tanpa memblokir atau mencegatnya.
+Wails menyediakan sistem peristiwa yang memberi tahu Anda saat sesuatu terjadi dalam aplikasi—jendela dibuka, aplikasi dimulai, tema berubah, dan lainnya. Anda dapat memantau peristiwa ini untuk merespons perubahan siklus hidup tanpa memblokir atau mencegatnya.
 
-Untuk event window, Anda juga dapat menggunakan `RegisterHook` alih-alih `OnWindowEvent` untuk mencegat dan membatalkan aksi—misalnya, mencegah window ditutup. Lihat [Window Hook]() di bawah.
+Untuk peristiwa jendela, Anda juga dapat menggunakan `RegisterHook` sebagai pengganti `OnWindowEvent` guna mencegat dan membatalkan tindakan—misalnya, mencegah jendela ditutup. Lihat [Hook Jendela](#hook-jendela-peristiwa-yang-dapat-dibatalkan) di bawah ini.
 
-Untuk dokumentasi lengkap tentang sistem event, lihat [Panduan Event](/id/features/events/system/).
+Untuk dokumentasi lengkap tentang sistem peristiwa, lihat [panduan Peristiwa](/features/events/system/).
 
-### Event Aplikasi
+### Peristiwa Aplikasi
 
-Dengarkan event siklus hidup aplikasi:
+Pantau peristiwa siklus hidup aplikasi:
 
 ```go
 app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
@@ -377,7 +377,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *appli
 })
 ```
 
-Event spesifik platform juga tersedia:
+Peristiwa khusus platform juga tersedia:
 
 ```go
 // macOS
@@ -395,9 +395,9 @@ app.Event.OnApplicationEvent(events.Windows.ApplicationStarted, func(event *appl
 })
 ```
 
-### Event Window
+### Peristiwa Jendela
 
-Dengarkan event siklus hidup window:
+Pantau peristiwa siklus hidup jendela:
 
 ```go
 window := app.Window.New()
@@ -411,9 +411,9 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 })
 ```
 
-### Window Hook (Event yang Dapat Dibatalkan)
+### Hook Jendela (Peristiwa yang Dapat Dibatalkan)
 
-Gunakan `RegisterHook` alih-alih `OnWindowEvent` ketika Anda perlu *membatalkan* event:
+Gunakan `RegisterHook` sebagai pengganti `OnWindowEvent` saat Anda perlu *membatalkan* suatu peristiwa:
 
 ```go
 window := app.Window.New()
@@ -432,52 +432,52 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 ```
 
 *Perbedaan antara OnWindowEvent dan RegisterHook:*
-- `OnWindowEvent`: Memberi tahu Anda ketika event terjadi (tidak dapat dibatalkan)
-- `RegisterHook`: Memungkinkan Anda mencegat dan potensial membatalkan event
+- `OnWindowEvent`: Memberi tahu Anda saat suatu peristiwa terjadi (tidak dapat dibatalkan)
+- `RegisterHook`: Memungkinkan Anda mencegat dan, bila diperlukan, membatalkan peristiwa
 
-## Siklus Hidup Window
+## Siklus Hidup Jendela
 
-Window memiliki siklus hidup sendiri, dari pembuatan hingga penghancuran. Setiap window memuat konten frontend-nya secara independen dan dapat ditampilkan, disembunyikan, atau ditutup kapan saja. Ketika pengguna mencoba menutup window, Anda dapat mencegatnya dengan `RegisterHook` untuk memprompt konfirmasi atau menyembunyikan window alih-alih menghancurkannya.
+Jendela memiliki siklus hidupnya sendiri, mulai dari pembuatan hingga penghancuran. Setiap jendela memuat konten frontend-nya secara independen dan dapat ditampilkan, disembunyikan, atau ditutup kapan saja. Saat pengguna mencoba menutup jendela, Anda dapat mencegat tindakan ini dengan `RegisterHook` untuk meminta konfirmasi atau menyembunyikan jendela alih-alih menghancurkannya.
 
-Untuk dokumentasi window lengkap, lihat [Panduan Window](/id/features/windows/basics/).
+Untuk dokumentasi lengkap tentang jendela, lihat [panduan Jendela](/features/windows/basics/).
 
 ```d2
 direction: down
 
-Create: "Create Window" {
+Create: Buat Jendela {
   shape: oval
   style.fill: "#10B981"
 }
 
-Load: "Load Frontend" {
+Load: Muat Frontend {
   shape: rectangle
 }
 
-Show: "Show Window" {
+Show: Tampilkan Jendela {
   shape: rectangle
 }
 
-Active: "Window Active" {
-  Events: "Handle Events" {
+Active: Jendela Aktif {
+  Events: Tangani Peristiwa {
     shape: rectangle
   }
 }
 
-CloseRequest: "Close Request" {
+CloseRequest: Permintaan Penutupan {
   shape: diamond
   style.fill: "#F59E0B"
 }
 
-Hook: "WindowClosing Hook" {
+Hook: Hook WindowClosing {
   shape: rectangle
   style.fill: "#3B82F6"
 }
 
-Destroy: "Destroy Window" {
+Destroy: Hancurkan Jendela {
   shape: rectangle
 }
 
-End: "Window Closed" {
+End: Jendela Ditutup {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -485,15 +485,15 @@ End: "Window Closed" {
 Create -> Load
 Load -> Show
 Show -> Active.Events
-Active.Events -> Active.Events: "Loop"
-Active.Events -> CloseRequest: "User closes"
+Active.Events -> Active.Events: Ulangi
+Active.Events -> CloseRequest: Pengguna menutup
 CloseRequest -> Hook
-Hook -> Active.Events: "Cancelled"
-Hook -> Destroy: "Allowed"
+Hook -> Active.Events: Dibatalkan
+Hook -> Destroy: Diizinkan
 Destroy -> End
 ```
 
-### Membuat Window
+### Membuat Jendela
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -503,7 +503,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-### Mencegah Penutupan Window
+### Mencegah Jendela Ditutup
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -530,9 +530,9 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-### Sembunyikan Alih-alih Tutup
+### Menyembunyikan Alih-alih Menutup
 
-Pola umum untuk aplikasi system tray:
+Pola yang umum untuk aplikasi baki sistem:
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
@@ -541,9 +541,9 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 })
 ```
 
-## Siklus Hidup Multi-Window
+## Siklus Hidup Multi-Jendela
 
-Dengan beberapa window:
+Dengan beberapa jendela:
 
 ```go
 mainWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -558,18 +558,18 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-*Perilaku default bervariasi per platform:*
+*Perilaku default berbeda-beda menurut platform:*
 
 @table header=true
-| Platform | Default saat window terakhir ditutup |
-| macOS | App tetap berjalan (menu bar tetap ada) |
-| Windows | App quit |
-| Linux | App quit |
+| Platform | Perilaku default saat jendela terakhir ditutup |
+| macOS | Aplikasi tetap berjalan (bilah menu tetap ada) |
+| Windows | Aplikasi berhenti |
+| Linux | Aplikasi berhenti |
 @end
 
-macOS mengikuti konvensi platform native di mana aplikasi biasanya tetap aktif di menu bar meskipun tanpa window. Windows dan Linux quit secara default.
+macOS mengikuti konvensi bawaan platform, yaitu aplikasi biasanya tetap aktif di bilah menu meskipun tidak ada jendela. Secara default, aplikasi berhenti di Windows dan Linux.
 
-*Buat semua platform quit saat window terakhir ditutup:*
+*Buat aplikasi berhenti di semua platform saat jendela terakhir ditutup:*
 
 ```go
 app := application.New(application.Options{
@@ -579,9 +579,9 @@ app := application.New(application.Options{
 })
 ```
 
-*Buat semua platform tetap berjalan saat window terakhir ditutup:*
+*Buat aplikasi tetap berjalan di semua platform saat jendela terakhir ditutup:*
 
-Ini berguna untuk aplikasi system tray atau app yang harus tetap berjalan di background.
+Ini berguna untuk aplikasi baki sistem atau aplikasi yang sebaiknya tetap berjalan di latar belakang.
 
 ```go
 app := application.New(application.Options{
@@ -596,7 +596,7 @@ app := application.New(application.Options{
 
 ## Pola Umum
 
-### Pola 1: Database Service
+### Pola 1: Layanan Basis Data
 
 ```go
 type DatabaseService struct {
@@ -630,7 +630,7 @@ func (s *DatabaseService) GetUsers() ([]User, error) {
 }
 ```
 
-### Pola 2: Configuration Service
+### Pola 2: Layanan Konfigurasi
 
 ```go
 type ConfigService struct {
@@ -662,7 +662,7 @@ func (s *ConfigService) ServiceShutdown() error {
 }
 ```
 
-### Pola 3: Background Worker
+### Pola 3: Pekerja Latar Belakang
 
 ```go
 type WorkerService struct {
@@ -703,44 +703,44 @@ func (s *WorkerService) runWorker(ctx context.Context) {
 ## Referensi Siklus Hidup
 
 @table header=true
-| Hook/Interface | Kapan Dipanggil | Dapat Dibatalkan? | Digunakan Untuk |
-| `ServiceStartup` | Selama `app.Run()`, sebelum event loop | Tidak (return error untuk abort) | Inisialisasi |
-| `ServiceShutdown` | Selama shutdown, setelah `OnShutdown` | Tidak | Cleanup |
-| `OnShutdown` | Ketika quit dikonfirmasi | Tidak | Cleanup aplikasi |
-| `ShouldQuit` | Ketika quit diminta | Ya (return false) | Konfirmasi quit |
-| `RegisterHook(WindowClosing)` | Ketika penutupan window diminta | Ya (`e.Cancel()`) | Cegah penutupan window |
-| `OnWindowEvent` | Ketika event terjadi | Tidak | Bereaksi terhadap event |
-| `OnApplicationEvent` | Ketika event terjadi | Tidak | Bereaksi terhadap event |
+| Hook/Antarmuka | Waktu Dipanggil | Dapat Membatalkan? | Kegunaan |
+| `ServiceStartup` | Selama `app.Run()`, sebelum perulangan peristiwa | Tidak (kembalikan galat untuk membatalkan) | Inisialisasi |
+| `ServiceShutdown` | Selama proses penghentian, setelah `OnShutdown` | Tidak | Pembersihan |
+| `OnShutdown` | Saat keluar dikonfirmasi | Tidak | Pembersihan aplikasi |
+| `ShouldQuit` | Saat keluar diminta | Ya (kembalikan false) | Konfirmasi keluar |
+| `RegisterHook(WindowClosing)` | Saat penutupan jendela diminta | Ya (`e.Cancel()`) | Mencegah jendela ditutup |
+| `OnWindowEvent` | Saat peristiwa terjadi | Tidak | Menanggapi peristiwa |
+| `OnApplicationEvent` | Saat peristiwa terjadi | Tidak | Menanggapi peristiwa |
 @end
 
 ## Perbedaan Platform
 
 ### macOS
 
-- *Menu aplikasi* tetap ada meskipun tanpa window
-- *Cmd+Q* memicu quit (melalui `ShouldQuit`)
-- *Ikon Dock* tetap kecuali disembunyikan
-- Gunakan `ApplicationShouldTerminateAfterLastWindowClosed` untuk mengontrol perilaku quit
+- *Menu aplikasi* tetap tersedia meskipun tidak ada jendela
+- *Cmd+Q* memicu aplikasi untuk berhenti (melalui `ShouldQuit`)
+- *Ikon Dock* tetap ditampilkan kecuali disembunyikan
+- Gunakan `ApplicationShouldTerminateAfterLastWindowClosed` untuk mengendalikan perilaku saat aplikasi berhenti
 
 ### Windows
 
-- *Tanpa menu aplikasi* tanpa window
-- *Alt+F4* menutup window (dapat dicegah dengan `RegisterHook`)
-- *System tray* dapat menjaga app tetap berjalan
+- *Tidak ada menu aplikasi* tanpa jendela
+- *Alt+F4* menutup jendela (dapat dicegah dengan `RegisterHook`)
+- *Baki sistem* dapat membuat aplikasi tetap berjalan
 
 ### Linux
 
-- *Perilaku bervariasi* menurut desktop environment
-- *Umumnya mirip Windows*
+- *Perilaku bervariasi* menurut lingkungan desktop
+- *Secara umum mirip dengan Windows*
 
-## Debugging Masalah Siklus Hidup
+## Men-debug Masalah Siklus Hidup
 
-### Masalah: Aplikasi Tidak Mau Quit
+### Masalah: Aplikasi Tidak Dapat Berhenti
 
 *Penyebab:*
-1. `ShouldQuit` return `false`
-2. `OnShutdown` terlalu lama
-3. Goroutine background tidak berhenti
+1. `ShouldQuit` mengembalikan `false`
+2. `OnShutdown` memerlukan waktu terlalu lama
+3. Goroutine latar belakang tidak berhenti
 
 *Solusi:*
 
@@ -768,9 +768,9 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-### Masalah: Service Startup Gagal
+### Masalah: Proses Memulai Layanan Gagal
 
-*Solusi:* Return error yang deskriptif:
+*Solusi:* Kembalikan pesan kesalahan yang deskriptif:
 
 ```go
 func (s *MyService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
@@ -781,36 +781,36 @@ func (s *MyService) ServiceStartup(ctx context.Context, options application.Serv
 }
 ```
 
-Error akan dicatat dan aplikasi tidak akan start.
+Kesalahan akan dicatat dan aplikasi tidak akan dimulai.
 
 ## Praktik Terbaik
 
 ### Lakukan
 
-- *Gunakan service untuk manajemen siklus hidup* - Mereka menyediakan hook startup/shutdown yang tepat
-- *Jaga shutdown tetap cepat* - Target di bawah 1 detik untuk semua cleanup
-- *Gunakan context untuk pembatalan* - Hentikan tugas background dengan benar
-- *Tangani error di startup* - Return error untuk abort dengan bersih
-- *Log event siklus hidup* - Membantu debugging
+- *Gunakan layanan untuk mengelola siklus hidup* — Layanan menyediakan hook yang tepat untuk memulai dan menghentikan aplikasi
+- *Pastikan proses penghentian berlangsung cepat* — Targetkan kurang dari 1 detik untuk seluruh pembersihan
+- *Gunakan context untuk pembatalan* — Hentikan tugas latar belakang dengan benar
+- *Tangani kesalahan saat memulai aplikasi* — Kembalikan kesalahan agar proses dapat dibatalkan dengan aman
+- *Catat peristiwa siklus hidup* — Hal ini membantu proses debugging
 
-### Jangan
+### Jangan Lakukan
 
-- *Jangan block di service startup* - Jaga inisialisasi tetap cepat (di bawah 2 detik)
-- *Jangan tampilkan dialog di shutdown* - App sedang quit, UI mungkin tidak berfungsi
-- *Jangan abaikan context* - Selalu periksa `ctx.Done()` di goroutine
-- *Jangan bocorkan resource* - Selalu implementasikan `ServiceShutdown`
+- *Jangan lakukan operasi yang memblokir saat layanan dimulai* — Pastikan inisialisasi berlangsung cepat (kurang dari 2 detik)
+- *Jangan tampilkan dialog saat aplikasi dihentikan* — Aplikasi sedang berhenti sehingga UI mungkin tidak berfungsi
+- *Jangan abaikan context* — Selalu periksa `ctx.Done()` dalam goroutine
+- *Jangan biarkan sumber daya bocor* — Selalu implementasikan `ServiceShutdown`
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-*Service* - Pelajari selengkapnya tentang sistem service\
-[Pelajari Selengkapnya →](/id/features/bindings/services/)
+*Layanan* — Pelajari lebih lanjut tentang sistem layanan\
+[Pelajari Selengkapnya →](/features/bindings/services/)
 
-*Sistem Event* - Gunakan event untuk komunikasi\
-[Pelajari Selengkapnya →](/id/features/events/system/)
+*Sistem Peristiwa* — Gunakan peristiwa untuk berkomunikasi\
+[Pelajari Selengkapnya →](/features/events/system/)
 
-*Manajemen Window* - Buat dan kelola window\
-[Pelajari Selengkapnya →](/id/features/windows/basics/)
+*Pengelolaan Jendela* — Buat dan kelola jendela\
+[Pelajari Selengkapnya →](/features/windows/basics/)
 
 ---
 
-*Pertanyaan tentang siklus hidup?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples).
+*Ada pertanyaan tentang siklus hidup?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples).

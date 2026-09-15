@@ -1,80 +1,83 @@
 ---
 schema = 1
 title = "初めてのアプリ"
-description = "10分で動作するWailsアプリケーションを構築します"
+description = "10 分で動作する Wails アプリケーションを構築する"
 slug = "quick-start/first-app"
-sourcePath = "ja/quick-start/first-app.mpd"
+sourcePath = "quick-start/first-app.mpd"
 ---
 
-ここでは、Wailsのコアコンセプトを示すシンプルな挨拶アプリケーションを構築します。
-- ロジックを管理するGoバックエンド
-- Go関数を呼び出すフロントエンド
+Wails の中核となる次の概念を示す、シンプルな挨拶アプリケーションを構築します。
+- ロジックを管理する Go バックエンド
+- Go 関数を呼び出すフロントエンド
 - 型安全なバインディング
 - 開発中のホットリロード
 
-*所要時間:* 10分
+*所要時間：*10 分
 
-@note type="tip" title="Windows 11ユーザー向けのパフォーマンスヒント"
-プロジェクトを保存するために [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) の使用を検討してください。Dev Driveは開発者向けワークロードに最適化されており、通常のNTFSドライブと比較してビルド時間とディスクアクセス速度を最大30%向上させることができます。
+@note type="tip" title="Windows 11 ユーザー向けのパフォーマンスに関するヒント"
+プロジェクトの保存先として [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) の使用を検討してください。Dev Drive は開発者のワークロード向けに最適化されており、通常の NTFS ドライブと比べて、ビルド時間とディスクアクセス速度を最大 30% 改善できます。
 @end
 
-## プロジェクトの作成
+## プロジェクトを作成する
 
 @steps
-@step title="プロジェクトの生成"
+@step title="プロジェクトを生成する"
 
 ```bash
 wails3 init -n myapp
 cd myapp
 ```
 
-これにより、デフォルトのVanilla + Viteテンプレート（Viteバンドラーを使用したプレーンなHTML/CSS/JS）で新しいプロジェクトが作成されます。
+これにより、デフォルトの Vanilla + Vite テンプレート（Vite バンドラーを使用する HTML/CSS/TypeScript）で新しいプロジェクトが作成されます。
 
-@note type="tip" title="他のテンプレート"
-お好みのフレームワークには `-t react`、`-t vue`、または `-t svelte` を試してみてください。\
-利用可能なすべてのテンプレートを表示するには `wails3 init -l` を実行してください。
+@note type="tip" title="その他のテンプレート"
+好みのフレームワークに応じて、`-t react`、`-t vue`、または `-t svelte` を試してください。これらは\
+デフォルトでは TypeScript を使用します。プレーン JavaScript を使用する場合は、`-t vanilla-js` または `-t react-js` を使用してください。\
+利用可能なすべてのテンプレートを確認するには `wails3 init -l` を実行します。または、\
+[独自のフロントエンドフレームワークを使用](/guides/dev/frontend-frameworks/)できます。
 @end
 @end
-@step title="プロジェクト構造の理解"
+@step title="プロジェクト構造を理解する"
 
 ```
 myapp/
-├── main.go              # アプリケーションのエントリポイント
-├── greetservice.go      # 挨拶サービス
-├── frontend/            # UIコード
-│   ├── index.html       # HTMLエントリポイント
+├── main.go              # Application entry point
+├── greetservice.go      # Greet service
+├── frontend/            # Your UI code
+│   ├── index.html       # HTML entry point
 │   ├── src/
-│   │   └── main.js      # フロントエンドJavaScript
+│   │   └── main.ts      # Frontend TypeScript
 │   ├── public/
-│   │   └── style.css    # スタイル
-│   ├── package.json     # フロントエンドの依存関係
-│   └── vite.config.js   # Viteバンドラー設定
-├── build/               # ビルド設定
-└── Taskfile.yml         # ビルドタスク
+│   │   └── style.css    # Styles
+│   ├── package.json     # Frontend dependencies
+│   ├── tsconfig.json    # TypeScript configuration
+│   └── vite.config.ts   # Vite bundler config
+├── build/               # Build configuration
+└── Taskfile.yml         # Build tasks
 ```
 
 @end
-@step title="アプリの実行"
+@step title="アプリを実行する"
 
 ```bash
 wails3 dev
 ```
 
 @note type="info" title="初回実行"
-初回実行では、フロントエンドの依存関係のインストール、バインディングの生成などを行うため、予想よりも時間がかかる場合があります。2回目以降の実行ははるかに高速です。
+初回実行時は、フロントエンドの依存関係のインストールやバインディングの生成などが行われるため、予想より時間がかかることがあります。2 回目以降は大幅に速くなります。
 @end
-アプリが挨拶インターフェースを表示して開きます。名前を入力して「挨拶」をクリックすると、Goバックエンドが入力を処理して挨拶を返します。
+アプリが開き、挨拶用のインターフェースが表示されます。名前を入力して「Greet」をクリックすると、Go バックエンドが入力を処理して挨拶を返します。
 
 @end
 @end
 
-## 仕組みの理解
+## 仕組み
 
-これがどのように動作しているのか、コードを見てみましょう。
+この仕組みを実現するコードを見ていきましょう。
 
-### Goバックエンド
+### Go バックエンド
 
-`greetservice.go` を開きます：
+`greetservice.go` を開きます。
 
 ```go {title="greetservice.go"}
 package main
@@ -90,24 +93,24 @@ func (g *GreetService) Greet(name string) string {
 }
 ```
 
-*重要なコンセプト：*
+*主要な概念：*
 
-1. *サービス* - エクスポートされたメソッドを持つGoの構造体
-2. *エクスポートされたメソッド* - `Greet` は大文字で始まるため、フロントエンドから利用可能
-3. *シンプルなロジック* - 名前を受け取り、挨拶を返す
-4. *型安全性* - 入力と出力の型が定義されている
+1. *サービス* — エクスポートされたメソッドを持つ Go 構造体
+2. *エクスポートされたメソッド* — `Greet` は先頭が大文字であるため、フロントエンドから利用可能
+3. *シンプルなロジック* — 名前を受け取り、挨拶を返す
+4. *型安全性* — 入力型と出力型が定義されている
 
-@note type="tip" title="サービスとバインディングの理解"
-*サービス*は、フロントエンドに機能を公開する自己完結型のGoモジュールです。これらは、アプリケーション設定の `Services` フィールドに登録する、エクスポートされたメソッドを持つ通常のGo構造体です。
+@note type="tip" title="サービスとバインディングについて"
+*サービス*は、フロントエンドに機能を公開する自己完結型の Go モジュールです。実体は通常の Go 構造体であり、エクスポートされたメソッドを持ち、アプリケーション設定の `Services` フィールドに登録します。
 
-*バインディング*は、フロントエンドがこれらのサービスを呼び出せるようにする自動生成されたTypeScript/JavaScript SDKです。`wails3 dev` または `wails3 build` を実行すると、Wailsは登録されたサービスを解析し、`frontend/bindings/` に型安全なバインディングを生成します。
+*バインディング*は、フロントエンドからこれらのサービスを呼び出せるようにする、自動生成された TypeScript/JavaScript SDK です。`wails3 dev` または `wails3 build` を実行すると、Wails は登録済みのサービスを解析し、型安全なバインディングを `frontend/bindings/` に生成します。
 
-サービスをバックエンドAPI、バインディングをそれと通信するクライアントライブラリと考えると良いでしょう。
+サービスはバックエンド API、バインディングはそれと通信するクライアントライブラリと考えてください。
 @end
 
-### サービスの登録
+### サービスを登録する
 
-`main.go` を開き、サービスの登録箇所を探します：
+`main.go` を開き、サービスの登録箇所を探します。
 
 ```go {title="main.go" highlight="4-6"}
 err := application.New(application.Options{
@@ -119,11 +122,11 @@ err := application.New(application.Options{
 })
 ```
 
-これにより、`GreetService` がWailsに登録され、そのすべてのエクスポートされたメソッドがフロントエンドから利用可能になります。
+これにより `GreetService` が Wails に登録され、エクスポートされたすべてのメソッドをフロントエンドから利用できるようになります。
 
 ### フロントエンド
 
-`frontend/src/main.js` を開きます：
+`frontend/src/main.js` を開きます。
 
 ```javascript {title="frontend/src/main.js"}
 import {GreetService} from "../bindings/changeme";
@@ -146,29 +149,29 @@ window.greet = async () => {
 };
 ```
 
-*重要なコンセプト：*
+*主要な概念：*
 
-1. *自動生成されたバインディング* - `GreetService` は生成されたコードからインポートされます
-2. *型安全な呼び出し* - メソッド名とシグネチャはGoのコードと一致します
-3. *デフォルトで非同期* - すべてのGo呼び出しはPromiseを返します
-4. *エラーハンドリング* - Goからのエラーはtry/catchでキャッチされます
+1. *自動生成されたバインディング* — `GreetService` は生成されたコードからインポートされる
+2. *型安全な呼び出し* — メソッド名とシグネチャが Go コードと一致する
+3. *デフォルトで非同期* — すべての Go 呼び出しが Promise を返す
+4. *エラー処理* — Go からのエラーは try/catch で捕捉される
 
-@note type="info" title="バインディングはどこにある？"
-生成されたバインディングは `frontend/bindings/` にあります。これらは `wails3 dev` または `wails3 build` を実行すると自動的に作成されます。
+@note type="info" title="バインディングの場所"
+生成されたバインディングは `frontend/bindings/` にあります。`wails3 dev` または `wails3 build` を実行すると、自動的に作成されます。
 
-*これらのファイルを手動で編集しないでください* - これらはビルドのたびに再生成されます。
+*これらのファイルは絶対に手動で編集しないでください*。ビルドするたびに再生成されます。
 @end
 
-## アプリのカスタマイズ
+## アプリをカスタマイズする
 
-ワークフローを理解するために、新しい機能を追加してみましょう。
+ワークフローを理解するため、新しい機能を追加してみましょう。
 
-### 「複数挨拶」機能を追加
+### 「Greet Many」機能を追加する
 
 @steps
-@step title="GreetServiceにメソッドを追加"
+@step title="GreetService にメソッドを追加する"
 
-これを `greetservice.go` に追加します：
+次の内容を `greetservice.go` に追加します。
 
 ```go {title="greetservice.go"}
 func (g *GreetService) GreetMany(names []string) []string {
@@ -181,17 +184,17 @@ func (g *GreetService) GreetMany(names []string) []string {
 ```
 
 @end
-@step title="アプリが自動的に再ビルドされます"
+@step title="アプリは自動的に再ビルドされる"
 
-ファイルを保存すると、`wails3 dev` がGoコードを自動的に再ビルドし、アプリを再起動します。
+ファイルを保存すると、`wails3 dev` が Go コードを自動的に再ビルドし、アプリを再起動します。
 
 @note type="info" title="自動再ビルド"
-Goコードの変更は自動再ビルドと再起動をトリガーします。フロントエンドの変更は再起動なしでホットリロードされます。
+Go コードを変更すると、自動的に再ビルドと再起動が行われます。フロントエンドの変更は、再起動せずにホットリロードされます。
 @end
 @end
-@step title="フロントエンドで使用"
+@step title="フロントエンドで使用する"
 
-これを `frontend/src/main.js` に追加します：
+次の内容を `frontend/src/main.js` に追加します。
 
 ```javascript {title="frontend/src/main.js"}
 window.greetMany = async () => {
@@ -201,79 +204,79 @@ window.greetMany = async () => {
 };
 ```
 
-ブラウザのコンソールを開き、`greetMany()` を呼び出します - 挨拶の配列が表示されます。
+ブラウザーコンソールを開いて `greetMany()` を呼び出すと、挨拶の配列が表示されます。
 
 @end
 @end
 
-## 本番用ビルド
+## 本番環境向けにビルドする
 
-アプリを配布する準備ができたら：
+アプリを配布する準備ができたら、次を実行します。
 
 ```bash
 wails3 build
 ```
 
-*これが行うこと：*
-- Goコードを最適化してコンパイル
-- 本番用のフロントエンドをビルド（ミニファイ）
-- `build/bin/` にネイティブ実行ファイルを生成
+*実行される処理：*
+- 最適化を有効にして Go コードをコンパイルする
+- フロントエンドを本番環境向けにビルドする（ミニファイを実施）
+- `bin/` にネイティブ実行ファイルを作成する
 
 @tabs sync-key="os"
 @tab label="Windows"
 
-*出力:* `build/bin/myapp.exe`
+*出力：* `bin/myapp.exe`
 
-ダブルクリックして実行。依存関係は不要です（WebView2はWindowsの一部です）。
+ダブルクリックして実行します。依存関係は必要ありません（WebView2 は Windows に含まれています）。
 
 
 
 @end
 @tab label="macOS"
 
-*出力:* `build/bin/myapp.app`
+*出力：* `bin/myapp.app`
 
-アプリケーションフォルダにドラッグするか、ダブルクリックして実行します。
+Applications フォルダーにドラッグするか、ダブルクリックして実行します。
 
 
 
 @end
 @tab label="Linux"
 
-*出力:* `build/bin/myapp`
+*出力：* `bin/myapp`
 
-`./build/bin/myapp` で実行するか、ランチャー用の `.desktop` ファイルを作成します。
+`./bin/myapp` で実行するか、ランチャー用の `.desktop` ファイルを作成します。
 
 
 @end
 @end
 
 @note type="tip" title="クロスプラットフォームビルド"
-他のプラットフォーム向けにビルドしたいですか？[クロスプラットフォームビルド →](/guides/build/cross-platform/) を参照してください
+ほかのプラットフォーム向けにビルドする場合は、[クロスプラットフォームビルド →](/guides/build/cross-platform/) を参照してください。
 @end
 
-## 学んだこと
+## ここまでに学んだこと
 
-*プロジェクト構造*
-- Goバックエンド用 `main.go`
-- UIコード用 `frontend/`
-- ビルドタスク用 `Taskfile.yml`
+*プロジェクト構成*
+- Go バックエンド用の `main.go`
+- UI コード用の `frontend/`
+- ビルドタスク用の `Taskfile.yml`
 
 *サービス*
-- エクスポートされたメソッドを持つGo構造体の作成
+- エクスポートされたメソッドを持つ Go の構造体を作成
 - `application.NewService()` で登録
-- メソッドは自動的にフロントエンドで利用可能
+- メソッドをフロントエンドから自動的に利用可能
 
 *バインディング*
-- 自動生成されたTypeScript定義
+- TypeScript 定義を自動生成
 - 型安全な関数呼び出し
 - デフォルトで非同期（Promise）
 
 *開発ワークフロー*
-- ホットリロード用 `wails3 dev`
-- Goの変更は自動再ビルドと再起動
-- フロントエンドの変更は即時ホットリロード
+- ホットリロード用の `wails3 dev`
+- Go の変更時に自動で再ビルドして再起動
+- フロントエンドの変更を即座にホットリロード
 
 ---
 
-*ご質問がありますか？* [Discord](https://discord.gg/JDdSxwjhGf) に参加してコミュニティに質問してください。
+*質問がありますか？* [Discord](https://discord.gg/JDdSxwjhGf) に参加して、コミュニティに質問してください。

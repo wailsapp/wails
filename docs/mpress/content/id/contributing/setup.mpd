@@ -1,28 +1,28 @@
 ---
 schema = 1
-title = "Setup Development"
-description = "Siapkan lingkungan development Anda untuk pengembangan Wails v3"
+title = "Penyiapan Pengembangan"
+description = "Siapkan lingkungan pengembangan Anda untuk pengembangan Wails v3"
 slug = "contributing/setup"
-sourcePath = "id/contributing/setup.mpd"
+sourcePath = "contributing/setup.mpd"
 ---
 
-## Setup Lingkungan Development
+## Penyiapan Lingkungan Pengembangan
 
-Panduan ini memandu Anda menyiapkan lingkungan development lengkap untuk bekerja pada Wails v3.
+Panduan ini memandu Anda menyiapkan lingkungan pengembangan lengkap untuk mengerjakan Wails v3.
 
 ## Alat yang Diperlukan
 
-### Development Go
+### Pengembangan Go
 
-1. *Instal Go 1.25 atau lebih baru:*
+1. *Instal Go 1.25 atau versi yang lebih baru:*
   ```bash
-  # Unduh dari https://go.dev/dl/
-  go version  # Verifikasi instalasi
+  # Download from https://go.dev/dl/
+  go version  # Verify installation
   ```
 
-2. *Konfigurasi lingkungan Go:*
+2. *Konfigurasikan lingkungan Go:*
   ```bash
-  # Tambahkan ke shell profile Anda (.bashrc, .zshrc, dll.)
+  # Add to your shell profile (.bashrc, .zshrc, etc.)
   export GOPATH=$HOME/go
   export PATH=$PATH:$GOPATH/bin
   ```
@@ -38,26 +38,26 @@ Panduan ini memandu Anda menyiapkan lingkungan development lengkap untuk bekerja
 Diperlukan untuk membangun dokumentasi dan menguji integrasi frontend.
 
 ```bash
-# Instal Node.js 20+ dan npm
-node --version  # Harus 20+
+# Install Node.js 20+ and npm
+node --version  # Should be 20+
 npm --version
 ```
 
-### Dependensi Spesifik Platform
+### Dependensi Khusus Platform
 
 *macOS:*
 
 ```bash
-# Instal Xcode Command Line Tools
+# Install Xcode Command Line Tools
 xcode-select --install
 
-# Verifikasi instalasi
-xcode-select -p  # Harus menampilkan path
+# Verify installation
+xcode-select -p  # Should output a path
 ```
 
 *Windows:*
 
-1. Instal [MSYS2](https://www.msys2.org/) untuk lingkungan mirip Unix
+1. Instal [MSYS2](https://www.msys2.org/) untuk mendapatkan lingkungan menyerupai Unix
 2. WebView2 Runtime (sudah terinstal di Windows 11, [unduh](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) untuk Windows 10)
 3. Opsional: Instal [Git for Windows](https://git-scm.com/download/win)
 
@@ -65,56 +65,56 @@ xcode-select -p  # Harus menampilkan path
 
 ```bash
 sudo apt update
-# Stack default GTK4 + WebKitGTK 6.0 (Ubuntu 24.04+ / Debian 13+)
+# Default GTK4 + WebKitGTK 6.0 stack (Ubuntu 24.04+ / Debian 13+)
 sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev
-# Untuk jalur legacy -tags gtk3:
+# For the legacy -tags gtk3 path:
 sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev
 ```
 
 *Linux (Fedora/RHEL):*
 
 ```bash
-# Stack GTK4 default
+# Default GTK4 stack
 sudo dnf install gcc pkg-config gtk4-devel webkitgtk6.0-devel
-# Jalur GTK3 legacy:
+# Legacy GTK3 path:
 sudo dnf install gtk3-devel webkit2gtk4.1-devel
 ```
 
 *Linux (Arch):*
 
 ```bash
-# Stack GTK4 default
+# Default GTK4 stack
 sudo pacman -S base-devel gtk4 webkitgtk-6.0
-# Jalur GTK3 legacy:
+# Legacy GTK3 path:
 sudo pacman -S gtk3 webkit2gtk-4.1
 ```
 
-## Setup Repository
+## Penyiapan Repositori
 
-### Clone dan Konfigurasi
+### Kloning dan Konfigurasi
 
 ```bash
-# Clone fork Anda
+# Clone your fork
 git clone https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
-# Tambahkan remote upstream
+# Add upstream remote
 git remote add upstream https://github.com/wailsapp/wails.git
 
-# Verifikasi remote
+# Verify remotes
 git remote -v
 ```
 
-### Build CLI Wails
+### Bangun CLI Wails
 
 ```bash
-# Navigasi ke direktori v3
+# Navigate to v3 directory
 cd v3
 
-# Build CLI
+# Build the CLI
 go build -o ../wails3 ./cmd/wails3
 
-# Tes build
+# Test the build
 cd ..
 ./wails3 version
 ```
@@ -124,7 +124,7 @@ cd ..
 *Linux/macOS:*
 
 ```bash
-# Tambahkan ke ~/.bashrc atau ~/.zshrc
+# Add to ~/.bashrc or ~/.zshrc
 export PATH=$PATH:/path/to/wails
 ```
 
@@ -132,19 +132,19 @@ export PATH=$PATH:/path/to/wails
 
 Tambahkan direktori Wails ke variabel lingkungan PATH melalui System Properties.
 
-## Setup IDE
+## Penyiapan IDE
 
-### VS Code (Direkomendasikan)
+### VS Code (Disarankan)
 
 1. *Instal VS Code:* [Unduh](https://code.visualstudio.com/)
 
 2. *Instal ekstensi:*
-  - Go (by Go Team at Google)
+  - Go (oleh Go Team di Google)
   - ESLint
   - Prettier
   - MDX (untuk dokumentasi)
 
-3. *Konfigurasi workspace settings* (`.vscode/settings.json`):
+3. *Konfigurasikan pengaturan ruang kerja* (`.vscode/settings.json`):
   ```json
   {
     "go.useLanguageServer": true,
@@ -159,78 +159,78 @@ Tambahkan direktori Wails ke variabel lingkungan PATH melalui System Properties.
 
 1. *Instal GoLand:* [Unduh](https://www.jetbrains.com/go/)
 
-2. *Konfigurasi:*
-  - Aktifkan dukungan Go modules
-  - Siapkan file watchers untuk `goimports`
-  - Konfigurasi code style agar sesuai konvensi proyek
+2. *Konfigurasikan:*
+  - Aktifkan dukungan modul Go
+  - Siapkan pemantau file untuk `goimports`
+  - Konfigurasikan gaya kode agar sesuai dengan konvensi proyek
 
-## Verifikasi Setup Anda
+## Verifikasi Penyiapan Anda
 
-Jalankan perintah berikut untuk memverifikasi semuanya berfungsi:
+Jalankan perintah berikut untuk memastikan semuanya berfungsi:
 
 ```bash
-# Cek versi Go
+# Go version check
 go version
 
 # Build Wails
 cd v3
 go build ./cmd/wails3
 
-# Jalankan tes
+# Run tests
 go test ./pkg/...
 
-# Buat aplikasi tes
+# Create a test app
 cd ..
 ./wails3 init -n mytest -t vanilla
 cd mytest
 ../wails3 dev
 ```
 
-Jika aplikasi tes berhasil di-build dan berjalan, lingkungan Anda siap!
+Jika aplikasi pengujian berhasil dibangun dan dijalankan, lingkungan Anda sudah siap!
 
-## Menjalankan Tes
+## Menjalankan Pengujian
 
-### Unit Test
+### Pengujian Unit
 
 ```bash
 cd v3
 go test ./...
 ```
 
-### Tes Paket Spesifik
+### Pengujian Paket Tertentu
 
 ```bash
 go test ./pkg/application
-go test ./pkg/events -v  # Output verbose
+go test ./pkg/events -v  # Verbose output
 ```
 
-### Jalankan dengan Coverage
+### Jalankan dengan Cakupan Kode
 
 ```bash
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
 
-### Jalankan dengan Race Detector
+### Jalankan dengan Pendeteksi Race Condition
 
 ```bash
 go test ./... -race
 ```
 
-## Bekerja dengan Dokumentasi
+## Mengelola Dokumentasi
 
 Dokumentasi Wails dibangun dengan Astro dan Starlight.
 
 ```bash
 cd docs
 
-# Instal dependensi
+# Install dependencies
 npm install
 
-# Mulai dev server
+# Start dev server
 npm run dev
 
-# Build untuk production
+# Build for production
 npm run build
 ```
 
@@ -238,7 +238,7 @@ Dokumentasi akan tersedia di `http://localhost:4321/`
 
 ## Debugging
 
-### Debugging Kode Go
+### Men-debug Kode Go
 
 *VS Code:*
 
@@ -260,17 +260,17 @@ Buat `.vscode/launch.json`:
 }
 ```
 
-*Command Line:*
+*Baris Perintah:*
 
 ```bash
-# Gunakan debugger Delve
+# Use Delve debugger
 go install github.com/go-delve/delve/cmd/dlv@latest
 dlv debug ./cmd/wails3 -- dev
 ```
 
-### Debugging Kode Platform
+### Men-debug Kode Platform
 
-Debugging spesifik platform memerlukan alat platform:
+Debugging khusus platform memerlukan alat platform:
 
 - *macOS:* Xcode Instruments
 - *Windows:* Visual Studio Debugger
@@ -280,21 +280,21 @@ Debugging spesifik platform memerlukan alat platform:
 
 ### "command not found: wails3"
 
-Tambahkan direktori Wails ke PATH Anda atau gunakan `./wails3` dari root proyek.
+Tambahkan direktori Wails ke PATH Anda atau gunakan `./wails3` dari direktori utama proyek.
 
-### "webkitgtk-6.0 not found" atau "webkit2gtk not found" (Linux)
+### "webkitgtk-6.0 tidak ditemukan" atau "webkit2gtk tidak ditemukan" (Linux)
 
-Instal paket development untuk stack yang Anda build:
+Instal paket pengembangan untuk stack yang Anda gunakan dalam proses build:
 
 ```bash
-# Stack GTK4 default (Debian/Ubuntu):
+# Default GTK4 stack (Debian/Ubuntu):
 sudo apt install libwebkitgtk-6.0-dev
 
-# Jalur GTK3 legacy:
+# Legacy GTK3 path:
 sudo apt install libwebkit2gtk-4.1-dev
 ```
 
-### Build gagal dengan error Go module
+### Build gagal karena kesalahan modul Go
 
 ```bash
 cd v3
@@ -302,12 +302,12 @@ go mod tidy
 go mod download
 ```
 
-### Error "CGO_ENABLED" di Windows
+### Kesalahan "CGO_ENABLED" di Windows
 
-Pastikan Anda memiliki kompiler C (MinGW-w64 via MSYS2) di PATH Anda.
+Pastikan compiler C (MinGW-w64 melalui MSYS2) tersedia di PATH Anda.
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- Tinjau [Standar Coding](/id/contributing/standards/)
-- Jelajahi [Dokumentasi Teknis](/id/contributing/)
-- Temukan issue untuk dikerjakan: [Good First Issues](https://github.com/wailsapp/wails/labels/good%20first%20issue)
+- Tinjau [Standar Penulisan Kode](/contributing/standards/)
+- Jelajahi [Dokumentasi Teknis](/contributing/)
+- Temukan masalah untuk dikerjakan: [Masalah yang Cocok untuk Kontributor Pemula](https://github.com/wailsapp/wails/labels/good%20first%20issue)

@@ -43,8 +43,8 @@ no polling interval and nothing adaptive, deliberately: the server holds until a
 exists, so delivery latency is already ~0, and any client-side interval could only add to\
 it. Frames that arrive while a response is in flight accumulate and ride the next one,\
 which makes the round trip itself the batching window — it widens as load rises without\
-anything measuring it. Measured: 1.0 frames per response at 100/s, still 1.0 at 5,000/s,\
-3.4 at 20,000/s, and p99 latency _falls_ as the rate climbs.
+anything measuring it. Measured: 1.0 frames per response at 100/s, still 1.0 at 5000/s,\
+3.4 at 20000/s, and p99 latency _falls_ as the rate climbs.
 
 *JS→Go uses ordinary POSTs.* Sends are serialised per connection with a promise chain,\
 because concurrent `fetch` calls do not preserve order and Go relies on send order being\
@@ -99,16 +99,16 @@ All in `stream.go`. *They are compile-time constants, not options* — there is 
 | constant | value | what it bounds |
 | `streamOutQueueBytes` | 8 MB | bytes buffered per window awaiting collection |
 | `streamOutQueueDepth` | 256 | frames buffered per window |
-| `streamOutQueueBytesGlobal` / `streamOutQueueDepthGlobal` | 256 MB / 8,192 | outbound data buffered across the application |
-| `streamInQueueBytesGlobal` / `streamInQueueDepthGlobal` | 256 MB / 8,192 | inbound data awaiting `Receive` across the application |
+| `streamOutQueueBytesGlobal` / `streamOutQueueDepthGlobal` | 256 MB / 8192 | outbound data buffered across the application |
+| `streamInQueueBytesGlobal` / `streamInQueueDepthGlobal` | 256 MB / 8192 | inbound data awaiting `Receive` across the application |
 | `streamMaxConnections` | 256 | live connections plus queued closes in one session |
-| `streamMaxConnectionsGlobal` | 4,096 | live connections across the application |
-| `streamOutCloseDepthGlobal` | 4,096 | undelivered close notifications across the application |
+| `streamMaxConnectionsGlobal` | 4096 | live connections across the application |
+| `streamOutCloseDepthGlobal` | 4096 | undelivered close notifications across the application |
 | `streamMaxSessionsPerWindow` | 16 | sessions one window may hold before a newer generation must supersede an older one |
-| `streamMaxSessions` | 1,024 | sessions across the application |
-| `streamOutControlDepth` / `streamOutControlDepthGlobal` | 256 / 4,096 | queued non-close control frames, per session and across the application |
-| `streamMaxChunkSets` / `streamMaxChunkTotal` | 256 / 4,096 | incomplete uploads per session, and parts in one upload |
-| `streamMaxChunkBytesGlobal` / `streamMaxChunkPartsGlobal` | 128 MB / 4,096 | chunk payload and part metadata across the application |
+| `streamMaxSessions` | 1024 | sessions across the application |
+| `streamOutControlDepth` / `streamOutControlDepthGlobal` | 256 / 4096 | queued non-close control frames, per session and across the application |
+| `streamMaxChunkSets` / `streamMaxChunkTotal` | 256 / 4096 | incomplete uploads per session, and parts in one upload |
+| `streamMaxChunkBytesGlobal` / `streamMaxChunkPartsGlobal` | 128 MB / 4096 | chunk payload and part metadata across the application |
 | `streamMaxChunkIDLen` | 64 bytes | one client-supplied chunk-set identifier |
 | `streamMaxResponseBytes` | 1 MB | one poll response |
 | `streamHoldTimeout` | 20 s | how long an empty poll parks |
@@ -125,7 +125,7 @@ All in `stream.go`. *They are compile-time constants, not options* — there is 
 *`streamOutQueueDepth` is deliberately not `eventQueueCapacity` (64).* That constant was\
 measured for a queue drained one eval at a time, where depth bought nothing but tail\
 latency. A poll drains in batches, so depth here has to cover one round trip of\
-production — at 5,000 frames/s and a 5 ms round trip, ~25 frames. 256 leaves room for a\
+production — at 5000 frames/s and a 5 ms round trip, ~25 frames. 256 leaves room for a\
 burst without stalling the producer.
 
 *`streamOutQueueBytes` is the bound that actually matters*, because 256 frames of 1 MB is\
@@ -160,8 +160,8 @@ before it is registered.
 
 *Per-session bounds also have application-wide counterparts.* Without them, every\
 admitted session or connection could retain its full local allowance at once. Outbound\
-and inbound data therefore share separate 256 MiB / 8,192-frame budgets across desktop\
-and server transports. Live connections have a 4,096-entry budget, and undelivered close\
+and inbound data therefore share separate 256 MiB / 8192-frame budgets across desktop\
+and server transports. Live connections have a 4096-entry budget, and undelivered close\
 notifications have a second one of the same size. Reaching a shared allowance applies the\
 same blocking `Send` or non-blocking `TrySend` behaviour as reaching a local allowance,\
 and every drain, receive, close, failed write, and shutdown path returns its reservation.
@@ -194,7 +194,7 @@ single frame up to 64 MiB, but that allowance must not be multiplied by every ad
 session. Incomplete and retryable chunk sets therefore share a 128 MiB admitted-payload\
 budget. Completing a set briefly retains both its parts and its contiguous assembled\
 frame, so doubling that logical allowance still stays within the 256 MiB effective memory\
-ceiling. Retained parts also share a 4,096-entry metadata allowance, so tiny or empty\
+ceiling. Retained parts also share a 4096-entry metadata allowance, so tiny or empty\
 chunks cannot grow maps and slice bookkeeping without approaching the byte limit. A\
 request that would cross either allowance receives retryable backpressure; delivery,\
 rejection, expiry, or session shutdown returns both bytes and part entries to the shared\
@@ -213,7 +213,7 @@ be reaped while its own poll is legitimately parked.
 
 If you are tuning for a workload of many small messages, the depth cap binds first; for\
 large payloads, the byte cap does. Neither needs changing for a typical app — on macOS the\
-defaults sustain 634,000 frames/s and 2.1 GB/s.
+defaults sustain 634000 frames/s and 2100 MB/s.
 
 ## Connection and session lifecycle
 

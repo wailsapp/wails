@@ -3,16 +3,16 @@ schema = 1
 title = "Praktik Terbaik Keamanan"
 description = "Amankan aplikasi Wails Anda"
 slug = "guides/security"
-sourcePath = "id/guides/security.mpd"
+sourcePath = "guides/security.mpd"
 ---
 
-## Ringkasan
+## Ikhtisar
 
-Keamanan sangat penting untuk aplikasi desktop. Ikuti praktik ini untuk menjaga aplikasi Anda tetap aman.
+Keamanan sangat penting untuk aplikasi desktop. Ikuti praktik berikut untuk menjaga keamanan aplikasi Anda.
 
 ## Validasi Input
 
-### Selalu Validasi
+### Selalu Lakukan Validasi
 
 ```go
 func (s *UserService) CreateUser(email, password string) (*User, error) {
@@ -54,7 +54,7 @@ func (s *Service) SaveComment(text string) error {
 
 ## Autentikasi
 
-### Penyimpanan Password Aman
+### Penyimpanan Kata Sandi yang Aman
 
 ```go
 import "golang.org/x/crypto/bcrypt"
@@ -70,7 +70,7 @@ func verifyPassword(hash, password string) bool {
 }
 ```
 
-### Manajemen Session
+### Manajemen Sesi
 
 ```go
 type Session struct {
@@ -164,7 +164,7 @@ func secureClient() *http.Client {
 
 ## Operasi File
 
-### Validasi Path
+### Validasi Jalur File
 
 ```go
 func readFile(path string) ([]byte, error) {
@@ -187,7 +187,7 @@ func readFile(path string) ([]byte, error) {
 }
 ```
 
-## Rate Limiting
+## Pembatasan Laju
 
 ```go
 type RateLimiter struct {
@@ -227,36 +227,36 @@ func (r *RateLimiter) Allow(key string) bool {
 - Validasi semua input
 - Gunakan HTTPS untuk panggilan jaringan
 - Enkripsi data sensitif
-- Gunakan password hashing yang aman
-- Implementasikan rate limiting
-- Jaga dependensi tetap diperbarui
-- Log event keamanan
-- Gunakan OS keychain
+- Gunakan hashing kata sandi yang aman
+- Terapkan pembatasan laju
+- Selalu perbarui dependensi
+- Catat peristiwa keamanan dalam log
+- Gunakan keychain sistem operasi
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- Jangan percaya input pengguna
-- Jangan simpan password dalam plain text
-- Jangan hardcode secret
-- Jangan lewati verifikasi sertifikat
-- Jangan ekspos data sensitif di log
-- Jangan gunakan enkripsi lemah
+- Jangan percayai input pengguna
+- Jangan simpan kata sandi sebagai teks biasa
+- Jangan tanamkan rahasia langsung dalam kode
+- Jangan lewatkan verifikasi sertifikat
+- Jangan tampilkan data sensitif dalam log
+- Jangan gunakan enkripsi yang lemah
 - Jangan abaikan pembaruan keamanan
 
-## Checklist Keamanan
+## Daftar Periksa Keamanan
 
-- [ ] Semua input pengguna divalidasi
-- [ ] Password di-hash dengan bcrypt
-- [ ] Data sensitif dienkripsi
+- [ ] Semua input pengguna telah divalidasi
+- [ ] Kata sandi di-hash dengan bcrypt
+- [ ] Data sensitif telah dienkripsi
 - [ ] HTTPS digunakan untuk semua panggilan jaringan
-- [ ] Rate limiting diimplementasikan
-- [ ] Path file divalidasi
-- [ ] Dependensi diperbarui
-- [ ] Logging keamanan diaktifkan
-- [ ] Pesan error tidak bocorkan info
-- [ ] Kode direview untuk kerentanan
+- [ ] Pembatasan laju telah diterapkan
+- [ ] Jalur file telah divalidasi
+- [ ] Dependensi telah diperbarui
+- [ ] Pencatatan log keamanan telah diaktifkan
+- [ ] Pesan kesalahan tidak membocorkan informasi
+- [ ] Kode telah ditinjau untuk menemukan kerentanan
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [Architecture](/id/guides/architecture/) - Pola arsitektur aplikasi
-- [Best Practices](/id/features/bindings/best-practices/) - Praktik terbaik bindings
+- [Arsitektur](/guides/architecture/) - Pola arsitektur aplikasi
+- [Praktik Terbaik](/features/bindings/best-practices/) - Praktik terbaik binding

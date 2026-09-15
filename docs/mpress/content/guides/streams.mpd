@@ -204,16 +204,16 @@ Measured with `v3/tests/stream-performance`, unthrottled, 0 drops and 0 reorders
 
 @table header=true align=["default","right","right"]
 | | Go→JS peak | JS→Go peak |
-| macOS / WebKit-Cocoa | *3,117 MB/s* | 2,793 MB/s |
+| macOS / WebKit-Cocoa | *3117 MB/s* | 2793 MB/s |
 | Linux / WebKitGTK | 226 MB/s | 727 MB/s |
 | Windows / WebView2 | 100 MB/s | 99 MB/s |
 @end
 
 Shape matters more than the peaks:
 
-- *Go→JS is much faster for small frames* — 634,000 frames/s on macOS against ~6,200/s the other way. A single response coalesces up to 256 frames; JS→Go also batches frames that accumulate behind an in-flight request, but each connection still serialises its own POST chain. If you are sending many small messages, prefer Go→JS, or batch them at the application level before sending up.
+- *Go→JS is much faster for small frames* — 634000 frames/s on macOS against ~6200/s the other way. A single response coalesces up to 256 frames; JS→Go also batches frames that accumulate behind an in-flight request, but each connection still serialises its own POST chain. If you are sending many small messages, prefer Go→JS, or batch them at the application level before sending up.
 - *On Windows, 512 KB is the sweet spot for uploads.* Frames larger than that are split into several requests, and a 4 MB frame measures _slower_ than a 512 KB one.
-- *Latency is low and stays low*: ~1–2 ms p99 on macOS, and it does not degrade with load — 20,000 frames/s measured a _lower_ p99 than 100 frames/s.
+- *Latency is low and stays low*: ~1–2 ms p99 on macOS, and it does not degrade with load — 20000 frames/s measured a _lower_ p99 than 100 frames/s.
 
 Full per-platform tables and method are in the measurement record that accompanies this\
 feature.
@@ -223,11 +223,11 @@ feature.
 @table header=true
 | | limit | what happens when you reach it |
 | Buffered per window, awaiting collection | 8 MB or 256 frames, whichever first | `Send` blocks; `TrySend` returns `ErrStreamFull` |
-| Buffered across the application, awaiting collection/write | 256 MB or 8,192 data frames | same |
+| Buffered across the application, awaiting collection/write | 256 MB or 8192 data frames | same |
 | Received per connection, awaiting `Receive` | 8 MB or 256 frames | the frontend's `send()` is retried for you until the handler catches up |
-| Received across the application, awaiting `Receive` | 256 MB or 8,192 frames | same |
+| Received across the application, awaiting `Receive` | 256 MB or 8192 frames | same |
 | Connections per window | 256 | the open is retried for you until a slot frees |
-| Live connections across the application | 4,096 | same |
+| Live connections across the application | 4096 | same |
 | Sessions per window | 16 | a reload supersedes its own older session; otherwise the open is retried |
 | A single frame, either direction | 64 MB | Go returns `ErrStreamTooLarge`; from JS the stream raises `error` and closes |
 | A stream name | 256 UTF-8 bytes | the open is rejected and the stream raises `error` |

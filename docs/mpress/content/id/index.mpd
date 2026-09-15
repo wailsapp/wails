@@ -2,10 +2,10 @@
 schema = 1
 title = "Bangun Aplikasi Desktop dengan Go"
 description = "Aplikasi desktop native menggunakan Go dan teknologi web"
-banner = {"content":"Wails v3 Beta tersedia. \u003ca href=\"https://wails.io\"\u003edokumentasi v2\u003c/a\u003e\n"}
+banner = {"content":"Wails v3 saat ini masih dalam versi beta. \u003ca href=\"https://v2.wails.io\"\u003eMencari dokumentasi v2?\u003c/a\u003e\n"}
 template = "splash"
-hero = {"actions":[{"icon":"right-arrow","link":"/id/quick-start/installation","text":"Memulai","variant":"primary"},{"icon":"open-book","link":"/id/tutorials/03-notes-vanilla","text":"Lihat Tutorial","variant":"secondary"}],"image":{"alt":"Logo Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Bangun aplikasi yang indah dan performa tinggi menggunakan Go dan teknologi web modern. Satu codebase. Tiga platform. Tanpa browser.*"}
-sourcePath = "id/index.mpd"
+hero = {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Mulai","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Lihat Tutorial","variant":"secondary"}],"image":{"alt":"Logo Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Bangun aplikasi yang indah dan berperforma tinggi menggunakan Go serta teknologi web modern. Satu basis kode. Tiga platform. Tanpa browser.*"}
+sourcePath = "index.mpd"
 ---
 
 @rawHTML
@@ -78,11 +78,15 @@ sourcePath = "id/index.mpd"
 </style>
 @end
 @rawHTML
+<span class="browser-footnote" data-browser-footnote>* kecuali jika Anda memang menginginkannya</span>
 <script>
 (() => {
   const words = ['Desktop', 'Server', 'Mobile'];
   let index = 0;
   const init = () => {
+    const tagline = document.querySelector('.mpress-frontmatter-hero-tagline');
+    const note = document.querySelector('[data-browser-footnote]');
+    if (tagline && note && !tagline.contains(note)) tagline.appendChild(note);
     const title = document.querySelector('.mpress-frontmatter-hero-title');
     if (!title || title.querySelector('.morph-word-title')) return;
     if (title.textContent.trim() !== 'Build Desktop Apps with Go') return;
@@ -97,13 +101,6 @@ sourcePath = "id/index.mpd"
     wordWrap.append(activeWord);
     titleLine.append(prefix, wordWrap);
     title.replaceChildren(titleLine, document.createElement('br'), document.createTextNode('Apps with Go'));
-    const tagline = document.querySelector('.mpress-frontmatter-hero-tagline');
-    if (tagline && !tagline.querySelector('.browser-footnote')) {
-      const note = document.createElement('span');
-      note.className = 'browser-footnote';
-      note.textContent = '* unless you really want to';
-      tagline.appendChild(note);
-    }
     const rotate = () => {
       const word = title.querySelector('.morph-word-title span');
       if (!word) return;
@@ -121,39 +118,37 @@ sourcePath = "id/index.mpd"
 })();
 </script>
 @end
-## Memulai Cepat
+## Mulai Cepat
 
 @terminal frame="macos" prompt="none"
-# 1. Instal Wails CLI
+# 1. Install the Wails CLI
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
-# 2. Jalankan wizard setup (eksperimental)
+# 2. Run the setup wizard (experimental)
 wails3 setup
 @end
 
-Kemudian Anda siap untuk proyek pertama:
+Setelah itu, Anda siap membuat proyek pertama:
 
 @terminal frame="macos" prompt="none"
 wails3 init -n myapp -t vanilla
 cd myapp && wails3 dev
 @end
 
-*Aplikasi Anda sekarang berjalan* dengan hot reload dan binding Go-ke-JS yang type-safe.
+*Aplikasi Anda kini berjalan* dengan hot reload dan binding Go-ke-JS yang aman secara tipe.
 
-@rawHTML
-<p style="font-size: 0.875rem; color: var(--sl-color-gray-3); margin-top: 0.5rem;">Mengalami masalah dengan <code>wails3 setup</code>? Lihat <a href="/id/quick-start/installation/">panduan instalasi manual</a>.</p>
-@end
+Mengalami masalah dengan `wails3 setup`? Lihat [panduan instalasi manual](/quick-start/installation/).
 
-## Aplikasi desktop Anda sudah menjadi aplikasi mobile
+## Aplikasi desktop Anda sudah menjadi aplikasi seluler
 
 @terminal frame="macos" prompt="none"
-wails3 task ios:run      # jalankan aplikasi Anda di iOS Simulator
-wails3 task android:run  # jalankan aplikasi Anda di Android Emulator
+wails3 task ios:run      # run your existing app on iOS Simulator
+wails3 task android:run  # run your existing app on Android Emulator
 @end
 
-*Tanpa perubahan pada kode Go Anda.* `main.go` yang sama, layanan yang sama, frontend yang sama — Wails mengompilasinya untuk iOS dan Android secara otomatis. Fitur spesifik platform (haptik, dialog native, safe area) tersedia saat Anda membutuhkannya, tetapi Anda tidak memerlukannya untuk rilis.
+*Tidak perlu mengubah kode Go Anda.* `main.go` yang sama, layanan yang sama, frontend yang sama — Wails secara otomatis mengompilasinya untuk iOS dan Android. Fitur khusus platform (haptik, dialog native, area aman) tersedia saat Anda menginginkannya, tetapi Anda tidak memerlukannya untuk merilis aplikasi.
 
-[Dokumentasi mobile →](/id/guides/mobile/)
+[Dokumentasi seluler →](/guides/mobile/)
 
 ---
 
@@ -161,49 +156,51 @@ wails3 task android:run  # jalankan aplikasi Anda di Android Emulator
 
 @cards cols="2"
 @card title="🚀 Performa yang Dirasakan Pengguna"
-- ~15MB binary vs 150MB Electron
-- ~10MB memori baseline vs 100MB+
-- &lt;0,5s waktu startup vs 2-3s
+- Biner ~15MB dibandingkan dengan 150MB pada Electron
+- Memori dasar ~10MB dibandingkan dengan 100MB+
+- Waktu mulai &lt;0.5 detik dibandingkan dengan 2-3 detik
 - Rendering native menggunakan WebView OS
 - Tanpa overhead browser yang dibundel
 @end
-@card title="⚙ Pengalaman Pengembang"
-- Satu codebase Go untuk semua platform
-- Framework web apa pun — React, Vue, Svelte
+@card title="⚙ Pengalaman Developer"
+- Satu basis kode Go untuk semua platform
+- Framework web apa pun - React, Vue, Svelte
 - Hot reload selama pengembangan
-- Binding otomatis untuk memanggil Go dari JavaScript dengan mudah
-- IPC in-memory. Tanpa port jaringan
+- Binding yang dibuat otomatis untuk memanggil Go dengan mudah dari Javascript
+- IPC dalam memori. Tanpa port jaringan
 @end
-@card title="✓ Siap Produksi"
-- Beberapa jendela dengan lifecycle
-- Menu native dan system tray
+@card title="✓ Siap untuk Desktop"
+- Beberapa jendela dengan siklus hidup masing-masing
+- Menu native dan baki sistem
 - Dialog file native platform
-- Integrasi sistem dan shortcut
-- Alat code signing dan packaging
+- Integrasi sistem dan pintasan
+- Alat untuk penandatanganan kode dan pengemasan
 @end
-@card title="▣ Desktop & Mobile"
+@card title="▣ Desktop \u0026 Seluler"
 - Windows, macOS, Linux, iOS, Android
-- Codebase yang sama, tanpa penulisan ulang
+- Basis kode yang sama, tanpa penulisan ulang
 - WebView native di setiap platform
 - Tanpa port terbuka, tanpa server localhost
-- Fitur platform tersedia saat dibutuhkan
+- Fitur platform tersedia saat diperlukan
 @end
 @end
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-Selanjutnya: [Bangun aplikasi lengkap](/id/tutorials/03-notes-vanilla/), jelajahi [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples), atau lihat [referensi API](/id/reference/application/). Migrasi dari v2? Lihat [panduan upgrade](/id/migration/v2-to-v3/).
+Berikutnya: [bangun aplikasi lengkap](/tutorials/03-notes-vanilla/), telusuri [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples), atau lihat [referensi API](/reference/application/). Bermigrasi dari v2? Lihat [panduan peningkatan versi](/migration/v2-to-v3/).
 
-@note type="info" title="Siap Produksi"
-Wails v3 Beta tersedia. API stabil, dan aplikasi sudah berjalan di produksi. Kami menyempurnakan dokumentasi dan tooling sebelum rilis final.
+@note type="info" title="Wails v3 Beta"
+Wails v3 adalah perangkat lunak beta dengan API desktop yang stabil. Sejumlah tim telah menggunakannya\
+di lingkungan produksi, tetapi sebaiknya melakukan pengujian menyeluruh sebelum penerapan selagi kami menyelesaikan\
+penyempurnaan akhir untuk 3.0.
 @end
 
 @cards cols="1"
 @card title="♥ Dukung Pengembangan Wails"
-Wails gratis dan open source, dibangun oleh developer untuk developer. Jika Wails membantu Anda membangun aplikasi yang luar biasa, pertimbangkan untuk mendukung pengembangannya.
+Wails gratis dan bersumber terbuka, dibuat oleh developer untuk developer. Jika Wails membantu Anda membangun aplikasi yang luar biasa, pertimbangkan untuk mendukung pengembangannya secara berkelanjutan.
 
-Sponsorship Anda membantu memelihara proyek, meningkatkan dokumentasi, dan mengembangkan fitur baru yang bermanfaat bagi seluruh komunitas.
+Sponsor Anda membantu memelihara proyek, meningkatkan dokumentasi, dan mengembangkan fitur baru yang bermanfaat bagi seluruh komunitas.
 
-[Jadi Sponsor →](https://github.com/sponsors/leaanthony)
+[Jadilah Sponsor →](https://github.com/sponsors/leaanthony)
 @end
 @end

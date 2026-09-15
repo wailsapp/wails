@@ -1,15 +1,17 @@
 ---
 schema = 1
-title = "RedisViewer"
-description = "GUI Redis desktop yang dibangun dengan Wails"
+title = "Redis Viewer"
+description = "GUI Redis desktop yang dibuat dengan Wails"
 slug = "community/showcase/redisviewer"
-sourcePath = "id/community/showcase/redisviewer.mpd"
+sourcePath = "community/showcase/redisviewer.mpd"
 ---
 
-![Screenshot RedisViewer](/assets/showcase-images/redisviewer-overview1.webp)
+![Tangkapan layar RedisViewer](/assets/showcase-images/redisviewer-overview1.webp)
 
-![Screenshot RedisViewer](/assets/showcase-images/redisviewer-overview2.webp)
+![Tangkapan layar RedisViewer](/assets/showcase-images/redisviewer-overview2.webp)
 
-[RedisViewer](https://redisviewer.com/) adalah GUI desktop Redis modern yang dibangun dengan Wails. Dengan interaksi UI yang cermat, aplikasi ini membantu developer menelusuri keyspace yang besar, memeriksa nilai yang kompleks, menjalankan perintah, dan menganalisis masalah performa Redis dalam aplikasi desktop native yang terfokus.
+[RedisViewer](https://redisviewer.com/) adalah GUI Redis desktop modern yang dibuat dengan Wails. Gunakan aplikasi ini untuk memeriksa nilai yang kompleks, menjalankan perintah, dan menganalisis performa Redis tanpa mengorbankan kualitas interaksi.
 
-[Kunjungi Website Proyek](https://redisviewer.com/)
+Dirancang berdasarkan arsitektur WebView + Go milik Wails, aplikasi ini menangani keyspace besar dan payload berat di backend Go, alih-alih mengirimkan semuanya ke frontend—dengan memanfaatkan model memori Go serta menghindari tekanan heap dan risiko kebocoran memori yang umum terjadi pada klien yang sangat bergantung pada JS. Antarmuka pengguna disesuaikan agar hanya merender konten yang tampil di layar, sehingga penelusuran set data berukuran sangat besar tetap responsif dan terasa menyerupai aplikasi desktop native.
+
+[Kunjungi Situs Web Proyek](https://redisviewer.com/)

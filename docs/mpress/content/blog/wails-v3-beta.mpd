@@ -147,9 +147,9 @@ The first v3 alpha tag was published on 18 January 2023. That is a long time\
 to be in alpha, and it deserves more than a vague acknowledgement.
 
 The project has changed enormously during that time. When the first Wails v2\
-beta shipped for Windows in September 2021, the repository had roughly 4,000\
-stars. By the v2 release in September 2022, it had roughly 10,300. Today it has\
-more than 35,000. That growth is a privilege, but it also changes what good\
+beta shipped for Windows in September 2021, the repository had roughly 4000\
+stars. By the v2 release in September 2022, it had roughly 10300. Today it has\
+more than 35000. That growth is a privilege, but it also changes what good\
 stewardship looks like: more users depend on release decisions, more\
 contributors need clear routes to participate, and more of the work is about\
 making the project predictable rather than simply adding the next feature.

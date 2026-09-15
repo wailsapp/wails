@@ -1,161 +1,162 @@
 ---
 schema = 1
-title = "Wailsの仕組み"
-description = "Wailsのアーキテクチャとネイティブパフォーマンスを実現する方法を理解する"
+title = "Wails の仕組み"
+description = "Wails のアーキテクチャと、ネイティブパフォーマンスを実現する仕組みを理解する"
 slug = "concepts/architecture"
-sourcePath = "ja/concepts/architecture.mpd"
+sourcePath = "concepts/architecture.mpd"
 ---
 
-Wailsは、*バックエンドにGo*、*フロントエンドにWeb技術*を使用してデスクトップアプリケーションを構築するためのフレームワークです。しかし、Electronとは異なり、Wailsはブラウザをバンドルしません。代わりに*OSのネイティブWebView*を使用します。
+Wails は、*バックエンドに Go*、*フロントエンドに Web 技術*を使用してデスクトップアプリケーションを構築するためのフレームワークです。ただし Electron とは異なり、ブラウザーを同梱せず、*オペレーティングシステムのネイティブ WebView*を使用します。
 
 ```d2
 direction: left
 
 Wails App: {
   shape: sequence_diagram
-  label: "Wails App"
+  label: Wails アプリ
 
-  frontend: Frontend
-  backend: Go Backend
-  os: Operating System
+  frontend: フロントエンド
+  backend: Go バックエンド
+  os: オペレーティングシステム
 
-  Initialisation: {
+  Initialisation: 初期化 {
     shape: sequence_diagram
-    backend."Serves Static Web App"
+    backend."Serves Static Web App": 静的 Web アプリを配信
     backend -> frontend: HTML / JS / CSS
-    frontend."Render Site via OS-native WebView"
+    frontend."Render Site via OS-native WebView": OS ネイティブの WebView でサイトをレンダリング
   }
-  Regular Communication: {
+  Regular Communication: 通常の通信 {
     shape: sequence_diagram
-    frontend."Make API-style call"
+    frontend."Make API-style call": API 形式で呼び出す
     frontend -> backend.a: JSON
-    backend.a."Service processes request"
-    backend.a -> os: Call System APIs
-    backend.a."Generate Response"
+    backend.a."Service processes request": サービスがリクエストを処理
+    backend.a -> os: システム API を呼び出す
+    backend.a."Generate Response": レスポンスを生成
     backend.a -> frontend: JSON
-    frontend."Process response"
+    frontend."Process response": レスポンスを処理
   }
+  backend.a.label: a
 }
 ```
 
-*Electronとの主な違い:*
+*Electron との主な違い：*
 
 @table header=true
 | 項目 | Wails | Electron |
-| *ブラウザ* | OS提供のWebView | バンドルされたChromium (~100MB) |
-| *バックエンド* | Go (コンパイル済み) | Node.js (インタプリタ) |
-| *通信* | メモリ内ブリッジ | IPC (プロセス間通信) |
-| *バンドルサイズ* | ~15MB | ~150MB |
-| *メモリ使用量* | ~10MB | ~100MB+ |
-| *起動時間* | &lt;0.5秒 | 2-3秒 |
+| *ブラウザー* | OS が提供する WebView | 同梱の Chromium（約 100MB） |
+| *バックエンド* | Go（コンパイル済み） | Node.js（インタープリター実行） |
+| *通信* | インメモリブリッジ | IPC（プロセス間通信） |
+| *バンドルサイズ* | 約 15MB | 約 150MB |
+| *メモリ* | 約 10MB | 約 100MB 以上 |
+| *起動時間* | &lt;0.5s | 2-3s |
 @end
 
 ## コアコンポーネント
 
-### 1. ネイティブWebView
+### 1. ネイティブ WebView
 
-Wailsは、OSに組み込まれたウェブレンダリングエンジンを使用します。
+Wails は、オペレーティングシステムに組み込まれた Web レンダリングエンジンを使用します。
 
 @tabs sync-key="platform"
 @tab label="Windows"
 
-*WebView2* (Microsoft Edge WebView2)
-- Chromiumベース (Edgeブラウザと同じ)
-- Windows 10/11にプリインストール
-- Windows Updateによる自動更新
-- 最新のウェブ標準を完全にサポート
+*WebView2*（Microsoft Edge WebView2）
+- Chromium ベース（Edge ブラウザーと同じ）
+- Windows 10/11 にプリインストール済み
+- Windows Update による自動更新
+- 最新の Web 標準を完全にサポート
 
 
 
 @end
 @tab label="macOS"
 
-*WebKit* (Safariのレンダリングエンジン)
-- macOSに組み込み
-- Safariブラウザと同じエンジン
-- 優れたパフォーマンスとバッテリー寿命
-- 最新のウェブ標準を完全にサポート
+*WebKit*（Safari のレンダリングエンジン）
+- macOS に組み込み済み
+- Safari ブラウザーと同じエンジン
+- 優れたパフォーマンスとバッテリー駆動時間
+- 最新の Web 標準を完全にサポート
 
 
 
 @end
 @tab label="Linux"
 
-*WebKitGTK* (WebKitのGTKポート)
-- パッケージマネージャー経由でインストール
-- GNOME Web (Epiphany)と同じエンジン
-- 良好な標準サポート
-- 軽量でパフォーマンスが高い
+*WebKitGTK*（WebKit の GTK 移植版）
+- パッケージマネージャーでインストール
+- GNOME Web（Epiphany）と同じエンジン
+- Web 標準を十分にサポート
+- 軽量で高性能
 
 
 @end
 @end
 
-*これが重要な理由:*
-- *バンドルされたブラウザがない* → アプリのサイズが小さい
-- *OSネイティブ* → より良い統合とパフォーマンス
-- *自動更新* → OSの更新からのセキュリティパッチ
-- *馴染みのあるレンダリング* → システムブラウザと同じ
+*これが重要な理由：*
+- *ブラウザーを同梱しない* → アプリのサイズを縮小
+- *OS ネイティブ* → 統合性とパフォーマンスが向上
+- *自動更新* → OS の更新によってセキュリティパッチを適用
+- *使い慣れたレンダリング* → システムブラウザーと同じ
 
-### 2. Wailsブリッジ
+### 2. Wails ブリッジ
 
-ブリッジはWailsの心臓部であり、GoとJavaScript間の*直接通信*を可能にします。
+ブリッジは Wails の中核であり、Go と JavaScript の間の*直接通信*を可能にします。
 
 ```d2
 direction: down
 
-Frontend: "Frontend (JavaScript)" {
+Frontend: フロントエンド（JavaScript） {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
-Bridge: "Wails Bridge" {
-  Encoder: "JSON Encoder" {
+Bridge: Wails ブリッジ {
+  Encoder: JSON エンコーダー {
     shape: rectangle
   }
-  
-  Router: "Method Router" {
+
+  Router: メソッドルーター {
     shape: diamond
     style.fill: "#10B981"
   }
-  
-  Decoder: "JSON Decoder" {
+
+  Decoder: JSON デコーダー {
     shape: rectangle
   }
 }
 
-Backend: "Backend (Go)" {
-  Services: "Registered Services" {
+Backend: バックエンド（Go） {
+  Services: 登録済みサービス {
     shape: rectangle
     style.fill: "#00ADD8"
   }
 }
 
-Frontend -> Bridge.Encoder: "1. Call Go method\nGreet('Alice')"
-Bridge.Encoder -> Bridge.Router: "2. Encode to JSON\n{method: 'Greet', args: ['Alice']}"
-Bridge.Router -> Backend.Services: "3. Route to service\nGreetService.Greet('Alice')"
-Backend.Services -> Bridge.Decoder: "4. Return result\n'Hello, Alice!'"
-Bridge.Decoder -> Frontend: "5. Decode to JS\nPromise resolves"
+Frontend -> Bridge.Encoder: "1. Go メソッドを呼び出す\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. JSON にエンコード\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. サービスにルーティング\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. 結果を返す\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. JS にデコード\nPromise が解決される"
 ```
 
-*動作原理:*
+*仕組み：*
 
-1. *フロントエンドがGoメソッドを呼び出す* (自動生成されたバインディング経由)
-2. *ブリッジが呼び出しをJSONにエンコード* (メソッド名 + 引数)
-3. *ルーターが登録されたサービスからGoメソッドを検索*
-4. *Goメソッドが実行され、値を返す*
-5. *ブリッジが結果をデコードし、フロントエンドに送信*
-6. *JavaScriptでPromiseが解決され、結果を受け取る*
+1. *フロントエンドが Go メソッドを呼び出す*（自動生成されたバインディング経由）
+2. *ブリッジが呼び出しを* JSON にエンコードする（メソッド名と引数）
+3. *ルーターが登録済みサービス内から Go メソッドを見つける*
+4. *Go メソッドが実行され*、値を返す
+5. *ブリッジが結果をデコードし*、フロントエンドに返す
+6. JavaScript で*結果を受け取って Promise が解決される*
 
-*パフォーマンス特性:*
-- *メモリ内*: ネットワークオーバーヘッドなし、HTTPなし
-- *可能な限りゼロコピー* (大量データの場合)
-- *デフォルトで非同期*: 両側でブロッキングしない
-- *型安全*: TypeScript定義が自動生成される
+*パフォーマンス特性：*
+- *インメモリ*：ネットワークのオーバーヘッドも HTTP もなし
+- 可能な場合は*ゼロコピー*（大容量データ向け）
+- *デフォルトで非同期*：どちら側もブロックしない
+- *型安全*：TypeScript の型定義を自動生成
 
 ### 3. サービスシステム
 
-サービスは、Goの機能をフロントエンドに公開するための推奨される方法です。
+フロントエンドに Go の機能を公開するには、サービスの使用を推奨します。
 
 ```go
 // Define a service (just a regular Go struct)
@@ -180,61 +181,63 @@ app := application.New(application.Options{
 })
 ```
 
-*サービス検出:*
-- Wailsは起動時に*構造体をスキャン*
-- *エクスポートされたメソッド*がフロントエンドから呼び出し可能になる
-- *型情報*が抽出され、TypeScriptバインディングに使用される
-- *エラー処理*は自動 (Goのエラー → JSの例外)
+*サービスの検出：*
+- Wails は起動時に*構造体をスキャンします*
+- *エクスポートされたメソッド*をフロントエンドから呼び出せるようになります
+- TypeScript バインディング用に*型情報*が抽出されます
+- *エラー処理*は自動です（Go のエラー → JS の例外）
 
-*生成されたTypeScriptバインディング:*
+*生成された TypeScript バインディング：*
 ```typescript
 // Auto-generated in frontend/bindings/GreetService.ts
 export function Greet(name: string): Promise<string>
 export function GetTime(): Promise<Date>
 ```
 
-*サービスの利点:*
-- *型安全*: 完全なTypeScriptサポート
-- *自動検出*: メソッドの手動登録不要
-- *整理された*: 関連する機能をグループ化
-- *テスト可能*: サービスは通常のGo構造体
+*サービスを使用する理由：*
+- *型安全*：TypeScriptを完全にサポート
+- *自動検出*：メソッドを手動で登録する必要はありません
+- *体系的な整理*：関連する機能をグループ化
+- *テスト可能*：サービスは単なるGo構造体です
 
-[サービスについて詳しく学ぶ →](/features/bindings/services/)
+[サービスの詳細 →](/features/bindings/services/)
 
 ### 4. イベントシステム
 
-イベントは、コンポーネント間の*pub/sub通信*を可能にします。
+イベントにより、コンポーネント間で*パブリッシュ／サブスクライブ通信*を行えます。
 
 ```d2
 direction: left
 
-Wails Event System: {
+Wails Event System: Wails イベントシステム {
   shape: sequence_diagram
 
-  window1: Window 1
-  window2: Window 2
-  backend: Go Backend
+  window1: ウィンドウ 1
+  window2: ウィンドウ 2
+  backend: Go バックエンド
 
-  Event Driver: {
+  Event Driver: イベントドライバー {
     shape: sequence_diagram
-    window1."Subscribe to 'data-updated' events"
-    window2."Subscribe to 'data-updated' events"
-    backend.a."App Emit('data-updated', data)"
-    backend.a -> window1.a:"JSON Event Bus"
-    backend.a -> window2:"JSON Event Bus"
-    window1.a."Subscriber processes On('data-updated', handler)"
-    window2."Subscriber processes On('data-updated', handler)"
+    window1."Subscribe to 'data-updated' events": "'data-updated' イベントを購読"
+    window2."Subscribe to 'data-updated' events": "'data-updated' イベントを購読"
+    backend.a."App Emit('data-updated', data)": "アプリが Emit('data-updated', data) を実行"
+    backend.a -> window1.a: JSON イベントバス
+    backend.a -> window2: JSON イベントバス
+    window1.a."Subscriber processes On('data-updated', handler)": "購読側が On('data-updated', handler) で処理"
+    window2."Subscriber processes On('data-updated', handler)": "購読側が On('data-updated', handler) で処理"
   }
+  backend.a.label: a
+  window1.a.label: a
 }
 ```
 
-*使用例:*
-- *ウィンドウ間通信*: 1つのウィンドウが他のウィンドウに通知
-- *バックグラウンドタスク*: GoサービスがUIに進捗を通知
-- *状態同期*: 複数のウィンドウを同期状態に保つ
-- *緩結合*: コンポーネントは直接参照を必要としない
+*ユースケース：*
+- *ウィンドウ間通信*：あるウィンドウから別のウィンドウへ通知
+- *バックグラウンドタスク*：GoサービスからUIへ進捗を通知
+- *状態の同期*：複数のウィンドウを同期した状態に維持
+- *疎結合*：コンポーネント間の直接参照が不要
 
-*例:*
+*例：*
 ```go
 // Go: Emit an event
 app.Event.Emit("user-logged-in", user)
@@ -249,59 +252,59 @@ Events.On('user-logged-in', (user) => {
 })
 ```
 
-[イベントについて詳しく学ぶ →](/features/events/system/)
+[イベントの詳細 →](/features/events/system/)
 
 ## アプリケーションのライフサイクル
 
-ライフサイクルを理解することで、リソースの初期化とクリーンアップのタイミングを知ることができます。
+ライフサイクルを理解すると、リソースを初期化するタイミングとクリーンアップするタイミングが分かります。
 
 ```d2
 direction: down
 
-Start: "Application Start" {
+Start: アプリケーションの起動 {
   shape: oval
   style.fill: "#10B981"
 }
 
-Init: "Initialisation" {
-  Create: "Create Application" {
+Init: 初期化 {
+  Create: アプリケーションを作成 {
     shape: rectangle
   }
-  
-  Register: "Register Services" {
+
+  Register: サービスを登録 {
     shape: rectangle
   }
-  
-  Setup: "Setup Windows/Menus" {
+
+  Setup: ウィンドウ／メニューを設定 {
     shape: rectangle
   }
 }
 
-Run: "Event Loop" {
-  Events: "Process Events" {
+Run: イベントループ {
+  Events: イベントを処理 {
     shape: rectangle
   }
-  
-  Messages: "Handle Messages" {
+
+  Messages: メッセージを処理 {
     shape: rectangle
   }
-  
-  Render: "Update UI" {
+
+  Render: UI を更新 {
     shape: rectangle
   }
 }
 
-Shutdown: "Shutdown" {
-  Cleanup: "Cleanup Resources" {
+Shutdown: シャットダウン {
+  Cleanup: リソースを解放 {
     shape: rectangle
   }
-  
-  Save: "Save State" {
+
+  Save: 状態を保存 {
     shape: rectangle
   }
 }
 
-End: "Application End" {
+End: アプリケーションの終了 {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -312,313 +315,311 @@ Init.Register -> Init.Setup
 Init.Setup -> Run.Events
 Run.Events -> Run.Messages
 Run.Messages -> Run.Render
-Run.Render -> Run.Events: "Loop"
-Run.Events -> Shutdown.Cleanup: "Quit signal"
+Run.Render -> Run.Events: ループ
+Run.Events -> Shutdown.Cleanup: 終了シグナル
 Shutdown.Cleanup -> Shutdown.Save
 Shutdown.Save -> End
 ```
 
-*Lifecycle hooks:*
+*ライフサイクルフック：*
 
 ```go
 app := application.New(application.Options{
     Name: "My App",
-    
-    // Called before windows are created
-    OnStartup: func(ctx context.Context) {
-        // Initialise database, load config, etc.
-    },
-    
-    // Called when app is about to quit
-    OnShutdown: func() {
-        // Save state, close connections, etc.
-    },
+
+    // Cleanly intercept quit requests (e.g. unsaved changes).
+    ShouldQuit: func() bool { return true },
+
+    // Called when the app is confirmed to be quitting — save state, close connections, etc.
+    OnShutdown: func() {},
 })
 ```
 
-[Learn more about lifecycle →](/concepts/lifecycle/)
+`application.Options`には`OnStartup`フィールドはありません。起動時の処理は、サービスの`ServiceStartup(ctx, options)`、`app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`で登録したコールバック、または単に`app.Run()`より前に配置します。
 
-## Build Process
+[ライフサイクルの詳細 →](/concepts/lifecycle/)
 
-Understanding how Wails builds your application:
+## ビルドプロセス
+
+Wailsがアプリケーションをビルドする仕組みを見てみましょう。
 
 ```d2
 direction: down
 
-Source: "Source Code" {
-  Go: "Go Code\n(main.go, services)" {
+Source: ソースコード {
+  Go: "Go コード\n(main.go, サービス)" {
     shape: rectangle
     style.fill: "#00ADD8"
   }
-  
-  Frontend: "Frontend Code\n(HTML/CSS/JS)" {
+
+  Frontend: "フロントエンドコード\n(HTML/CSS/JS)" {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
 }
 
-Build: "Build Process" {
-  AnalyseGo: "Analyse Go Code" {
+Build: ビルドプロセス {
+  AnalyseGo: Go コードを解析 {
     shape: rectangle
   }
-  
-  GenerateBindings: "Generate Bindings" {
+
+  GenerateBindings: バインディングを生成 {
     shape: rectangle
   }
-  
-  BuildFrontend: "Build Frontend" {
+
+  BuildFrontend: フロントエンドをビルド {
     shape: rectangle
   }
-  
-  CompileGo: "Compile Go" {
+
+  CompileGo: Go をコンパイル {
     shape: rectangle
   }
-  
-  Embed: "Embed Assets" {
+
+  Embed: アセットを埋め込む {
     shape: rectangle
   }
 }
 
-Output: "Output" {
-  Binary: "Native Binary\n(myapp.exe/.app)" {
+Output: 出力 {
+  Binary: "ネイティブバイナリ\n(myapp.exe/.app)" {
     shape: rectangle
     style.fill: "#10B981"
   }
 }
 
 Source.Go -> Build.AnalyseGo
-Build.AnalyseGo -> Build.GenerateBindings: "Extract types"
-Build.GenerateBindings -> Source.Frontend: "TypeScript bindings"
-Source.Frontend -> Build.BuildFrontend: "Compile (Vite/webpack)"
-Build.BuildFrontend -> Build.Embed: "Bundled assets"
+Build.AnalyseGo -> Build.GenerateBindings: 型を抽出
+Build.GenerateBindings -> Source.Frontend: TypeScript バインディング
+Source.Frontend -> Build.BuildFrontend: コンパイル（Vite/webpack）
+Build.BuildFrontend -> Build.Embed: バンドル済みアセット
 Source.Go -> Build.CompileGo
 Build.CompileGo -> Build.Embed
 Build.Embed -> Output.Binary
 ```
 
-*Build steps:*
+*ビルド手順：*
 
-1. *Analyse Go code*
-  - Scan services for exported methods
-  - Extract parameter and return types
-  - Generate method signatures
+1. *Goコードを解析*
+  - サービスを走査してエクスポート済みメソッドを検出
+  - パラメーターと戻り値の型を抽出
+  - メソッドシグネチャを生成
 
-2. *Generate TypeScript bindings*
-  - Create `.ts` files for each service
-  - Include full type definitions
-  - Add JSDoc comments
+2. *TypeScriptバインディングを生成*
+  - サービスごとに`.ts`ファイルを作成
+  - 完全な型定義を含める
+  - JSDocコメントを追加
 
-3. *Build frontend*
-  - Run your bundler (Vite, webpack, etc.)
-  - Minify and optimise
-  - Output to `frontend/dist/`
+3. *フロントエンドをビルド*
+  - バンドラー（Vite、webpackなど）を実行
+  - ミニファイして最適化
+  - `frontend/dist/`に出力
 
-4. *Compile Go*
-  - Compile with optimisations (`-ldflags="-s -w"`)
-  - Include build metadata
-  - Platform-specific compilation
+4. *Goをコンパイル*
+  - 最適化を有効にしてコンパイル（`-ldflags="-s -w"`）
+  - ビルドメタデータを含める
+  - プラットフォーム固有のコンパイルを実行
 
-5. *Embed assets*
-  - Embed frontend files into Go binary
-  - Compress assets
-  - Create single executable
+5. *アセットを埋め込む*
+  - フロントエンドファイルをGoバイナリに埋め込む
+  - アセットを圧縮
+  - 単一の実行可能ファイルを作成
 
-*Result:* A single native executable with everything embedded.
+*結果：*すべてが埋め込まれた単一のネイティブ実行可能ファイル。
 
-[Learn more about building →](/guides/build/building/)
+[ビルドの詳細 →](/guides/build/building/)
 
-## Development vs Production
+## 開発環境と本番環境
 
-Wails behaves differently in development and production:
+Wailsの動作は、開発環境と本番環境で異なります。
 
 @tabs sync-key="mode"
-@tab label="Development (wails3 dev)"
+@tab label="開発環境（wails3 dev）"
 
-*Characteristics:*
-- *Hot reload*: Frontend changes reload instantly
-- *Source maps*: Debug with original source
-- *DevTools*: Browser DevTools available
-- *Logging*: Verbose logging enabled
-- *External frontend*: Served from dev server (Vite)
+*特性：*
+- *ホットリロード*：フロントエンドの変更を即座に再読み込み
+- *ソースマップ*：元のソースコードを使用してデバッグ
+- *DevTools*：ブラウザーのDevToolsを使用可能
+- *ログ出力*：詳細なログ出力を有効化
+- *外部フロントエンド*：開発サーバー（Vite）から配信
 
-*How it works:*
+*仕組み：*
 ```d2
 direction: right
 
-WailsApp: "Wails App" {
+WailsApp: Wails アプリ {
   shape: rectangle
   style.fill: "#00ADD8"
 }
 
-DevServer: "Vite Dev Server\n(localhost:5173)" {
+DevServer: "Vite 開発サーバー\n(localhost:5173)" {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
-WebView: "WebView" {
+WebView: WebView {
   shape: rectangle
   style.fill: "#6B7280"
 }
 
-WailsApp -> DevServer: "Proxy requests"
-DevServer -> WebView: "Serve with HMR"
-WebView -> WailsApp: "Call Go methods"
+WailsApp -> DevServer: リクエストをプロキシ
+DevServer -> WebView: HMR で配信
+WebView -> WailsApp: Go メソッドを呼び出す
 ```
 
-*Benefits:*
-- Instant feedback on changes
-- Full debugging capabilities
-- Faster iteration
+*利点：*
+- 変更結果を即座に確認
+- すべてのデバッグ機能を利用可能
+- 反復作業を高速化
 
 
 
 @end
-@tab label="Production (wails3 build)"
+@tab label="本番環境（wails3 build）"
 
-*Characteristics:*
-- *Embedded assets*: Frontend built into binary
-- *Optimised*: Minified, compressed
-- *No DevTools*: Disabled by default
-- *Minimal logging*: Errors only
-- *Single file*: Everything in one executable
+*特性：*
+- *埋め込みアセット*：フロントエンドをバイナリに組み込み
+- *最適化済み*：ミニファイおよび圧縮済み
+- *DevToolsなし*：デフォルトで無効
+- *最小限のログ出力*：エラーのみ
+- *単一ファイル*：すべてを1つの実行可能ファイルに格納
 
-*How it works:*
+*仕組み：*
 ```d2
 direction: right
 
-Binary: "Single Binary\n(myapp.exe)" {
-  GoCode: "Compiled Go" {
+Binary: "単一バイナリ\n(myapp.exe)" {
+  GoCode: コンパイル済み Go コード {
     shape: rectangle
     style.fill: "#00ADD8"
   }
-  
-  Assets: "Embedded Assets\n(HTML/CSS/JS)" {
+
+  Assets: "埋め込みアセット\n(HTML/CSS/JS)" {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
 }
 
-WebView: "WebView" {
+WebView: WebView {
   shape: rectangle
   style.fill: "#6B7280"
 }
 
-Binary.Assets -> WebView: "Serve from memory"
-WebView -> Binary.GoCode: "Call Go methods"
+Binary.Assets -> WebView: メモリから配信
+WebView -> Binary.GoCode: Go メソッドを呼び出す
 ```
 
-*Benefits:*
-- Single file distribution
-- Smaller size (minified)
-- Better performance
-- No external dependencies
+*利点：*
+- 単一ファイルで配布
+- サイズを縮小（ミニファイ済み）
+- パフォーマンスの向上
+- 外部依存関係なし
 
 
 @end
 @end
 
-## Memory Model
+## メモリモデル
 
-Understanding memory usage helps you build efficient applications.
+メモリ使用量を理解すると、効率的なアプリケーションを構築できます。
 
-*Memory regions:*
+*メモリ領域：*
 
-1. *Go Heap*
-  - Your services and application state
-  - Managed by Go garbage collector
-  - Typically 5-10MB for simple apps
+1. *Goヒープ*
+  - サービスとアプリケーションの状態
+  - Goのガベージコレクターによって管理
+  - 単純なアプリでは通常5-10MB
 
-2. *WebView Memory*
-  - DOM, JavaScript heap, CSS
-  - Managed by WebView's engine
-  - Typically 10-20MB for simple apps
+2. *WebViewのメモリ*
+  - DOM、JavaScriptヒープ、CSS
+  - WebViewのエンジンによって管理
+  - 単純なアプリでは通常10-20MB
 
-3. *Bridge Memory*
-  - Message buffers for communication
-  - Minimal overhead (\<1MB)
-  - Zero-copy for large data where possible
+3. *ブリッジのメモリ*
+  - 通信用のメッセージバッファ
+  - 最小限のオーバーヘッド（\<1MB）
+  - 可能な場合は大容量データをゼロコピーで処理
 
-*Optimisation tips:*
-- *Avoid large data transfers*: Pass IDs, fetch details on demand
-- *Use events for updates*: Don't poll from frontend
-- *Stream large files*: Don't load entirely into memory
-- *Clean up listeners*: Remove event listeners when done
+*最適化のヒント：*
+- *大容量データの転送を避ける*：IDを渡し、詳細は必要に応じて取得します
+- *更新にはイベントを使用する*：フロントエンドからポーリングしないでください
+- *大きなファイルをストリーミングする*：ファイル全体をメモリに読み込まないでください
+- *リスナーをクリーンアップする*：不要になったイベントリスナーは削除してください
 
-[Learn more about performance →](/guides/performance/)
+[パフォーマンスについて詳しく見る →](/guides/performance/)
 
-## Security Model
+## セキュリティモデル
 
-Wails provides a secure-by-default architecture:
+Wailsは、デフォルトで安全なアーキテクチャを提供します：
 
 ```d2
 direction: down
 
-Frontend: "Frontend (Untrusted)" {
+Frontend: フロントエンド（信頼されていない） {
   shape: rectangle
   style.fill: "#EF4444"
 }
 
-Bridge: "Wails Bridge (Validation)" {
+Bridge: Wails ブリッジ（検証） {
   shape: diamond
   style.fill: "#F59E0B"
 }
 
-Backend: "Backend (Trusted)" {
+Backend: バックエンド（信頼されている） {
   shape: rectangle
   style.fill: "#10B981"
 }
 
-Frontend -> Bridge: "Call method"
-Bridge -> Bridge: "Validate:\n- Method exists?\n- Types correct?\n- Access allowed?"
-Bridge -> Backend: "Execute if valid"
-Backend -> Bridge: "Return result"
-Bridge -> Frontend: "Send response"
+Frontend -> Bridge: メソッドを呼び出す
+Bridge -> Bridge: "検証：\n- メソッドは存在するか？\n- 型は正しいか？\n- アクセスは許可されているか？"
+Bridge -> Backend: 有効な場合に実行
+Backend -> Bridge: 結果を返す
+Bridge -> Frontend: レスポンスを送信
 ```
 
-*Security features:*
+*セキュリティ機能：*
 
-1. *Method whitelisting*
-  - Only exported methods are callable
-  - Private methods are inaccessible
-  - Explicit service registration required
+1. *メソッドの許可リスト*
+  - 呼び出せるのはエクスポートされたメソッドのみ
+  - 非公開メソッドにはアクセス不可
+  - サービスの明示的な登録が必要
 
-2. *Type validation*
-  - Arguments checked against Go types
-  - Invalid types rejected
-  - Prevents injection attacks
+2. *型の検証*
+  - 引数をGoの型と照合
+  - 無効な型を拒否
+  - インジェクション攻撃を防止
 
-3. *No eval()*
-  - Frontend can't execute arbitrary Go code
-  - Only predefined methods callable
-  - No dynamic code execution
+3. *eval()を使用しない*
+  - フロントエンドから任意のGoコードを実行することは不可
+  - 呼び出せるのは事前定義されたメソッドのみ
+  - 動的なコード実行なし
 
-4. *Context isolation*
-  - Each window has its own context
-  - Services can check caller context
-  - Permissions per window possible
+4. *コンテキストの分離*
+  - 各ウィンドウが独自のコンテキストを保持
+  - サービスで呼び出し元のコンテキストを確認可能
+  - ウィンドウごとの権限設定が可能
 
-*Best practices:*
-- *Validate user input* in Go (don't trust frontend)
-- *Use context* for authentication/authorisation
-- *Sanitise file paths* before file operations
-- *Rate limit* expensive operations
+*ベストプラクティス：*
+- Goで*ユーザー入力を検証する*（フロントエンドを信頼しないでください）
+- 認証と認可には*コンテキストを使用する*
+- ファイル操作の前に*ファイルパスをサニタイズする*
+- 高コストな処理を*レート制限する*
 
-[Learn more about security →](/guides/security/)
+[セキュリティについて詳しく見る →](/guides/security/)
 
-## Next Steps
+## 次のステップ
 
-*Application Lifecycle* - Understand startup, shutdown, and lifecycle hooks\
-[Learn More →](/concepts/lifecycle/)
+*アプリケーションのライフサイクル* - 起動、終了、ライフサイクルフックについて理解します\
+[詳しく見る →](/concepts/lifecycle/)
 
-*Go-Frontend Bridge* - Deep dive into how the bridge works\
-[Learn More →](/concepts/bridge/)
+*Goとフロントエンド間のブリッジ* - ブリッジの仕組みを詳しく掘り下げます\
+[詳しく見る →](/concepts/bridge/)
 
-*Build System* - Understand how Wails builds your application\
-[Learn More →](/concepts/build-system/)
+*ビルドシステム* - Wailsがアプリケーションをビルドする仕組みを理解します\
+[詳しく見る →](/concepts/build-system/)
 
-*Start Building* - Apply what you've learned in a tutorial\
-[Tutorials →](/tutorials/03-notes-vanilla/)
+*構築を始める* - ここまでに学んだことをチュートリアルで実践します\
+[チュートリアル →](/tutorials/03-notes-vanilla/)
 
 ---
 
-*アーキテクチャについて質問がありますか？* [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[API リファレンス](/reference/overview/) を参照してください。
+*アーキテクチャについて質問がありますか？* [Discord](https://discord.gg/JDdSxwjhGf)で質問するか、[APIリファレンス](/reference/overview/)を確認してください。

@@ -1,28 +1,28 @@
 ---
 schema = 1
-title = "Packaging Linux"
-description = "Package aplikasi Wails Anda untuk distribusi Linux"
+title = "Pemaketan Linux"
+description = "Paketkan aplikasi Wails Anda untuk distribusi Linux"
 slug = "guides/build/linux"
-sourcePath = "id/guides/build/linux.mpd"
+sourcePath = "guides/build/linux.mpd"
 ---
 
-## Format Package
+## Format Paket
 
-Package aplikasi Anda untuk distribusi Linux:
+Paketkan aplikasi Anda untuk distribusi Linux:
 
 ```bash
 wails3 package GOOS=linux
 ```
 
-Ini membuat beberapa format di direktori `bin/`:
-- *AppImage*: Portable, berjalan di distribusi Linux mana pun
+Tindakan ini membuat beberapa format di direktori `bin/`:
+- *AppImage*: Portabel, dapat dijalankan pada distribusi Linux apa pun
 - *DEB*: Untuk Debian, Ubuntu, dan turunannya
 - *RPM*: Untuk Fedora, RHEL, dan turunannya
 - *Arch*: Untuk Arch Linux dan turunannya
 
 ### Format Individual
 
-Build format tertentu:
+Buat format tertentu:
 
 ```bash
 wails3 task linux:create:appimage
@@ -31,11 +31,11 @@ wails3 task linux:create:rpm
 wails3 task linux:create:aur
 ```
 
-## Kustomisasi Package
+## Menyesuaikan Paket
 
-### Desktop Entry
+### Entri Desktop
 
-File `.desktop` mengontrol bagaimana aplikasi Anda muncul di menu aplikasi. Dihasilkan dari nilai di `build/linux/Taskfile.yml`:
+File `.desktop` mengatur tampilan aplikasi Anda dalam menu aplikasi. File ini dibuat dari nilai-nilai di `build/linux/Taskfile.yml`:
 
 ```yaml
 vars:
@@ -45,9 +45,9 @@ vars:
   CATEGORIES: 'Development;'
 ```
 
-### Metadata Package
+### Metadata Paket
 
-Edit `build/linux/nfpm/nfpm.yaml` untuk menyesuaikan package DEB dan RPM:
+Edit `build/linux/nfpm/nfpm.yaml` untuk menyesuaikan paket DEB dan RPM:
 
 ```yaml
 name: myapp
@@ -60,11 +60,11 @@ license: MIT
 
 ### AppImage
 
-Konfigurasi AppImage ada di `build/linux/appimage/`. Ikon aplikasi berasal dari `build/appicon.png`.
+Konfigurasi AppImage berada di `build/linux/appimage/`. Ikon aplikasi berasal dari `build/appicon.png`.
 
-## Menandatangani Package
+## Menandatangani Paket
 
-Tandatangani package DEB dan RPM dengan kunci PGP:
+Tandatangani paket DEB dan RPM dengan kunci PGP:
 
 ```bash
 # Using the wrapper (auto-detects platform)
@@ -76,7 +76,7 @@ wails3 task linux:sign:rpm
 wails3 task linux:sign:packages  # Both
 ```
 
-Konfigurasi signing di `build/linux/Taskfile.yml`:
+Konfigurasikan penandatanganan di `build/linux/Taskfile.yml`:
 
 ```yaml
 vars:
@@ -84,15 +84,15 @@ vars:
   SIGN_ROLE: "builder"  # origin, maint, archive, or builder
 ```
 
-Simpan password kunci Anda:
+Simpan kata sandi kunci Anda:
 
 ```bash
 wails3 setup signing
 ```
 
-Lihat [Menandatangani Aplikasi](/id/guides/build/signing/) untuk detail.
+Lihat [Menandatangani Aplikasi](/guides/build/signing/) untuk detailnya.
 
-## Build untuk ARM
+## Membangun untuk ARM
 
 ```bash
 wails3 build GOOS=linux GOARCH=arm64
@@ -101,23 +101,23 @@ wails3 package GOOS=linux GOARCH=arm64
 
 @note type="note"
 
-Build ARM64 dari host x86_64 menggunakan Docker untuk cross-compilation CGO.
+Build ARM64 dari host x86_64 menggunakan Docker untuk kompilasi silang CGO.
 
 @end
 
-## Dukungan Legacy GTK3
+## Dukungan GTK3 Lama
 
-Wails v3 build pada *GTK4 dengan WebKitGTK 6.0* secara default. Path legacy GTK3 / WebKit2GTK 4.1 masih tersedia untuk distribusi yang belum menyediakan WebKitGTK 6.0 (Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x). Path legacy opt-in via build tag dan dijadwalkan dihapus di v3.1.
+Secara default, Wails v3 dibangun dengan *GTK4 dan WebKitGTK 6.0*. Jalur GTK3 / WebKit2GTK 4.1 lama masih tersedia untuk distribusi yang belum menyediakan WebKitGTK 6.0 (Ubuntu 22.04 LTS, Debian 12, Fedora ≤ 39, RHEL 9.x). Jalur lama ini harus diaktifkan secara eksplisit melalui tag build dan dijadwalkan untuk dihapus pada v3.1.
 
-@note type="caution" title="Path legacy"
+@note type="caution" title="Jalur lama"
 
-Path GTK3 / WebKit2GTK 4.1 didukung melalui line v3.0.x. Rencanakan migrasi ke GTK4 sesuai ketersediaan GTK4 / WebKitGTK 6.0 di distribusi target — `-tags gtk3` akan dihapus di v3.1.
+Jalur GTK3 / WebKit2GTK 4.1 didukung sepanjang lini v3.0.x. Rencanakan migrasi ke GTK4 sesuai dengan ketersediaan GTK4 / WebKitGTK 6.0 pada distribusi target Anda — `-tags gtk3` akan dihapus pada v3.1.
 
 @end
 
 ### Dependensi
 
-Instal library development GTK3 dan WebKit2GTK 4.1:
+Instal pustaka pengembangan GTK3 dan WebKit2GTK 4.1:
 
 ```bash
 # Ubuntu/Debian
@@ -132,7 +132,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 Paket pkg-config yang diperlukan adalah `gtk+-3.0` dan `webkit2gtk-4.1`.
 
-### Build dengan GTK3
+### Membangun dengan GTK3
 
 Gunakan flag `-tags gtk3`:
 
@@ -146,29 +146,29 @@ Atau langsung dengan Go:
 go build -tags gtk3 -o myapp .
 ```
 
-### Perbedaan Diketahui dari GTK4
+### Perbedaan yang Diketahui dari GTK4
 
-- *Dialog file*: GTK4 menggunakan `xdg-desktop-portal` untuk dialog file (default), sehingga beberapa opsi dialog (seperti direktori default, tampilan filter kustom) berperilaku berbeda dari GTK3. Lihat [Referensi Dialog - Perilaku Dialog Linux](/id/reference/dialogs/) untuk detail.
-- *Gaya menu*: GTK4 mendukung opsi `LinuxMenuStylePrimaryMenu` yang menampilkan tombol hamburger (☰) di header bar, mengikuti GNOME HIG. Opsi ini tidak berpengaruh pada build `-tags gtk3`. Lihat [API Window - Linux MenuStyle](/id/reference/window/#linux).
-- *Scaling DPI*: GTK4 menggunakan `gdk_monitor_get_scale` (GTK 4.14+) untuk dukungan fractional scaling.
+- *Dialog file*: GTK4 menggunakan `xdg-desktop-portal` untuk dialog file (secara default), sehingga beberapa opsi dialog (seperti direktori default dan tampilan filter khusus) berperilaku berbeda dari GTK3. Lihat [Referensi Dialog - Perilaku Dialog Linux](/reference/dialogs/#linux-dialog-behavior) untuk detailnya.
+- *Gaya menu*: GTK4 mendukung opsi `LinuxMenuStylePrimaryMenu` yang menampilkan tombol hamburger (☰) di bilah header, sesuai dengan GNOME HIG. Opsi ini tidak berpengaruh pada build `-tags gtk3`. Lihat [API Window - MenuStyle Linux](/reference/window/#linux).
+- *Penskalaan DPI*: GTK4 menggunakan `gdk_monitor_get_scale` (GTK 4.14+) untuk mendukung penskalaan pecahan.
 
 ### Memeriksa Build Anda
 
-Jalankan `wails3 doctor` untuk memverifikasi setup. Tanpa flag, ini memeriksa GTK4 / WebKitGTK 6.0 (default). Paket legacy GTK3 / WebKit2GTK 4.1 tercantum sebagai opsional.
+Jalankan `wails3 doctor` untuk memverifikasi penyiapan Anda. Tanpa flag, perintah ini memeriksa GTK4 / WebKitGTK 6.0 (default). Paket GTK3 / WebKit2GTK 4.1 lama dicantumkan sebagai opsional.
 
-## Troubleshooting
+## Pemecahan Masalah
 
-### AppImage tidak berjalan
+### AppImage tidak dapat dijalankan
 
-Buat executable:
+Jadikan file tersebut dapat dieksekusi:
 
 ```bash
 chmod +x MyApp-x86_64.AppImage
 ```
 
-### Dependensi hilang
+### Dependensi tidak ditemukan
 
-Jika aplikasi gagal start, periksa dependensi WebKit yang hilang:
+Jika aplikasi gagal dimulai, periksa dependensi WebKit yang tidak tersedia:
 
 ```bash
 # Debian/Ubuntu
@@ -181,7 +181,7 @@ sudo dnf install webkit2gtk4.1
 sudo pacman -S webkit2gtk-4.1
 ```
 
-### C compiler tidak ditemukan
+### Kompilator C tidak ditemukan
 
 Sistem build memerlukan GCC atau Clang untuk CGO:
 
@@ -196,15 +196,15 @@ sudo dnf install gcc
 sudo pacman -S base-devel
 ```
 
-Alternatifnya, jalankan `wails3 task setup:docker` dan sistem build akan menggunakan Docker otomatis.
+Sebagai alternatif, jalankan `wails3 task setup:docker` dan sistem build akan menggunakan Docker secara otomatis.
 
-### Window kosong atau putih di GPU NVIDIA
+### Jendela kosong atau putih pada GPU NVIDIA
 
-Di Linux dengan driver proprietary NVIDIA, aplikasi Wails dapat menampilkan window kosong atau putih saat startup. Ini disebabkan bug WebKitGTK di mana renderer DMA-BUF gagal dengan `gbm_bo_map()` terhadap driver proprietary NVIDIA (memengaruhi X11 dan Wayland, versi driver 377–580+, GPU dari seri 10 dan GT 710 yang lebih lama).
+Di Linux dengan driver proprietari NVIDIA, aplikasi Wails mungkin menampilkan jendela kosong atau putih saat dimulai. Hal ini disebabkan oleh bug WebKitGTK yang membuat perender DMA-BUF gagal saat menggunakan `gbm_bo_map()` dengan driver proprietari NVIDIA (memengaruhi X11 dan Wayland, driver versi 377–580+, GPU seri 10 dan GT 710 yang lebih lama).
 
-*Wails menerapkan `WEBKIT_DISABLE_DMABUF_RENDERER=1` otomatis* saat mendeteksi modul kernel NVIDIA (`/sys/module/nvidia`), sehingga sebagian besar pengguna tidak perlu melakukan apa pun.
+*Wails menerapkan `WEBKIT_DISABLE_DMABUF_RENDERER=1` secara otomatis* saat mendeteksi modul kernel NVIDIA (`/sys/module/nvidia`), sehingga sebagian besar pengguna tidak perlu melakukan apa pun.
 
-Jika Anda masih melihat window kosong (misalnya di container di mana path modul tidak terlihat), set variabel environment secara manual sebelum meluncurkan aplikasi:
+Jika jendela tetap kosong (misalnya, dalam kontainer yang jalur modulnya tidak terlihat), atur variabel lingkungan secara manual sebelum menjalankan aplikasi Anda:
 
 ```bash
 WEBKIT_DISABLE_DMABUF_RENDERER=1 ./myapp
@@ -214,13 +214,13 @@ Bug upstream terkait: [WebKit #262607](https://bugs.webkit.org/show_bug.cgi?id=2
 
 ### Kompatibilitas strip AppImage
 
-Di distribusi Linux modern (Arch Linux, Fedora 39+, Ubuntu 24.04+), library sistem dikompilasi dengan section ELF `.relr.dyn` untuk relocasi lebih efisien. Alat `linuxdeploy` yang digunakan membuat AppImage membundel binary `strip` lama yang tidak dapat memproses section modern ini.
+Pada distribusi Linux modern (Arch Linux, Fedora 39+, Ubuntu 24.04+), pustaka sistem dikompilasi dengan bagian ELF `.relr.dyn` agar relokasi lebih efisien. Alat `linuxdeploy` yang digunakan untuk membuat AppImage menyertakan biner `strip` lama yang tidak dapat memproses bagian modern ini.
 
-Wails mendeteksi situasi ini otomatis dengan memeriksa library GTK sistem sebelum build AppImage. Saat terdeteksi, stripping dinonaktifkan (`NO_STRIP=1`) untuk memastikan kompatibilitas.
+Wails secara otomatis mendeteksi situasi ini dengan memeriksa pustaka GTK sistem sebelum membangun AppImage. Jika terdeteksi, proses stripping dinonaktifkan (`NO_STRIP=1`) untuk memastikan kompatibilitas.
 
 *Artinya:*
-- AppImage akan sedikit lebih besar (~20-40%) di sistem yang terpengaruh
+- Ukuran AppImage akan sedikit lebih besar (~20-40%) pada sistem yang terdampak
 - Fungsionalitas aplikasi tidak terpengaruh
-- Ditangani otomatis — tidak perlu tindakan
+- Hal ini ditangani secara otomatis—tidak diperlukan tindakan apa pun
 
-Jika Anda memerlukan AppImage lebih kecil di sistem modern, instal binary `strip` yang lebih baru dan konfigurasi `linuxdeploy` untuk menggunakannya.
+Jika memerlukan AppImage yang lebih kecil pada sistem modern, Anda dapat menginstal biner `strip` yang lebih baru dan mengonfigurasi `linuxdeploy` agar menggunakannya sebagai pengganti versi bawaannya.

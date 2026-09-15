@@ -1,23 +1,23 @@
 ---
 schema = 1
-title = "Dock \u0026 Taskbar"
-description = "Kelola ikon dock dan tampilkan badge di macOS dan Windows"
+title = "Dock \u0026 Bilah Tugas"
+description = "Kelola visibilitas ikon dock dan tampilkan lencana di macOS dan Windows"
 slug = "features/platform/dock"
-sourcePath = "id/features/platform/dock.mpd"
+sourcePath = "features/platform/dock.mpd"
 ---
 
 ## Pendahuluan
 
-Wails menyediakan service Dock lintas platform untuk aplikasi desktop. Service ini memungkinkan Anda:
+Wails menyediakan layanan Dock lintas platform untuk aplikasi desktop. Layanan ini memungkinkan Anda untuk:
 
-- Hide and show the application icon in the macOS Dock
-- Display badges on your application tile or dock/taskbar icon (macOS and Windows)
+- Menyembunyikan dan menampilkan ikon aplikasi di Dock macOS
+- Menampilkan lencana pada ubin aplikasi atau ikon dock/bilah tugas (macOS dan Windows)
 
 ## Penggunaan Dasar
 
-### Creating the Service
+### Membuat Layanan
 
-Pertama, inisialisasi service dock:
+Pertama, inisialisasikan layanan dock:
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/application"
@@ -34,9 +34,9 @@ app := application.New(application.Options{
 })
 ```
 
-### Creating the Service with Custom Badge Options (Windows Only)
+### Membuat Layanan dengan Opsi Lencana Khusus (Khusus Windows)
 
-Di Windows, Anda dapat menyesuaikan tampilan badge dengan berbagai opsi:
+Di Windows, Anda dapat menyesuaikan tampilan lencana dengan berbagai opsi:
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/application"
@@ -64,7 +64,7 @@ app := application.New(application.Options{
 
 ## Operasi Dock
 
-### Hiding the dock app icon
+### Menyembunyikan ikon aplikasi di dock
 
 Sembunyikan ikon aplikasi dari Dock macOS:
 
@@ -73,7 +73,7 @@ Sembunyikan ikon aplikasi dari Dock macOS:
 dockService.HideAppIcon()
 ```
 
-### Showing the dock app icon
+### Menampilkan ikon aplikasi di dock
 
 Tampilkan ikon aplikasi di Dock macOS:
 
@@ -82,11 +82,11 @@ Tampilkan ikon aplikasi di Dock macOS:
 dockService.ShowAppIcon()
 ```
 
-## Operasi Badge
+## Operasi Lencana
 
-### Setting a Badge
+### Menetapkan Lencana
 
-Set badge pada tile aplikasi/ikon dock:
+Tetapkan lencana pada ubin aplikasi/ikon dock:
 
 ```go
 // Set a default badge
@@ -99,9 +99,9 @@ dockService.SetBadge("3")
 dockService.SetBadge("New")
 ```
 
-### Setting a Custom Badge (Windows Only)
+### Menetapkan Lencana Khusus (Khusus Windows)
 
-Set badge dengan opsi sekali pakai:
+Tetapkan lencana dengan opsi sekali pakai yang diterapkan:
 
 ```go
 options := dock.BadgeOptions{
@@ -122,33 +122,33 @@ dockService.SetCustomBadge("3", options)
 dockService.SetCustomBadge("New", options)
 ```
 
-### Removing a Badge
+### Menghapus Lencana
 
-Hapus badge dari ikon aplikasi:
+Hapus lencana dari ikon aplikasi:
 
 ```go
 dockService.RemoveBadge()
 ```
 
-### Mendapatkan badge yang disetel
+### Mendapatkan lencana yang ditetapkan
 ```go
 dockService.GetBadge()
 ```
 
-## Platform Considerations
+## Pertimbangan Platform
 
 @tabs
 @tab label="macOS"
 
 
-On macOS:
+Di macOS:
 
-- The dock icon can be *hidden* and *shown*
-- Badges are displayed directly on the dock icon
-- Badge options are *not customizable* (any options passed to `NewWithOptions`/`SetCustomBadge` are ignored)
-- The standard macOS dock badge styling is used and automatically adapts to appearance
-- Label overflow is handled by the system
-- Providing an empty label displays a default badge of "●"
+- Ikon dock dapat *disembunyikan* dan *ditampilkan*
+- Lencana ditampilkan langsung pada ikon dock
+- Opsi lencana *tidak dapat disesuaikan* (semua opsi yang diteruskan ke `NewWithOptions`/`SetCustomBadge` akan diabaikan)
+- Gaya lencana dock standar macOS digunakan dan secara otomatis menyesuaikan dengan tampilan
+- Teks label yang meluap ditangani oleh sistem
+- Memberikan label kosong akan menampilkan lencana default "●"
 
 
 
@@ -158,21 +158,21 @@ On macOS:
 @tab label="Windows"
 
 
-On Windows:
+Di Windows:
 
-- Hiding/showing the taskbar icon is not currently supported by this service
-- Badges are displayed as an overlay icon in the taskbar
-- Badges support text values
-- Badge appearance can be customized via `BadgeOptions`
-- The application must have a window for badges to display
-- A smaller font size is automatically used for multi-character labels
-- Label overflow is not handled
-- Customization options:
-  - *TextColour*: Text color (default: white)
-  - *BackgroundColour*: Badge background color (default: red)
-  - *FontName*: Font file name (default: "segoeuib.ttf")
-  - *FontSize*: Font size for single character (default: 18)
-  - *SmallFontSize*: Font size for multiple characters (default: 14)
+- Layanan ini saat ini tidak mendukung penyembunyian/penampilan ikon bilah tugas
+- Lencana ditampilkan sebagai ikon overlay di bilah tugas
+- Lencana mendukung nilai teks
+- Tampilan lencana dapat disesuaikan melalui `BadgeOptions`
+- Aplikasi harus memiliki jendela agar lencana dapat ditampilkan
+- Ukuran font yang lebih kecil digunakan secara otomatis untuk label dengan beberapa karakter
+- Teks label yang meluap tidak ditangani
+- Opsi penyesuaian:
+  - *TextColour*: Warna teks (default: putih)
+  - *BackgroundColour*: Warna latar belakang lencana (default: merah)
+  - *FontName*: Nama file font (default: "segoeuib.ttf")
+  - *FontSize*: Ukuran font untuk satu karakter (default: 18)
+  - *SmallFontSize*: Ukuran font untuk beberapa karakter (default: 14)
 
 
 
@@ -182,9 +182,9 @@ On Windows:
 @tab label="Linux"
 
 
-On Linux:
+Di Linux:
 
-- Dock icon visibility and badge functionality are not available
+- Fungsi visibilitas ikon dock dan lencana tidak tersedia
 
 
 
@@ -193,53 +193,53 @@ On Linux:
 
 ## Praktik Terbaik
 
-1. *When hiding the dock icon (macOS):*
-  - Ensure users can still access your app (e.g., via [system tray](/features/menus/systray/))
-  - Include a "Quit" option in your alternative UI
-  - The app won't appear in Command+Tab switcher
-  - Open windows remain visible and functional
-  - Closing all windows may not quit the app (macOS behavior varies)
-  - Users lose the standard way to quit via Dock right-click
+1. *Saat menyembunyikan ikon dock (macOS):*
+  - Pastikan pengguna tetap dapat mengakses aplikasi Anda (misalnya melalui [baki sistem](/features/menus/systray/))
+  - Sertakan opsi "Keluar" dalam antarmuka alternatif Anda
+  - Aplikasi tidak akan muncul di pengalih Command+Tab
+  - Jendela yang terbuka tetap terlihat dan berfungsi
+  - Menutup semua jendela mungkin tidak menghentikan aplikasi (perilaku macOS bervariasi)
+  - Pengguna kehilangan cara standar untuk keluar melalui klik kanan pada Dock
 
-2. *Use badges sparingly:*
-  - Too many badge updates can distract users
-  - Reserve badges for important notifications
+2. *Gunakan lencana secukupnya:*
+  - Terlalu banyak pembaruan lencana dapat mengganggu pengguna
+  - Gunakan lencana hanya untuk notifikasi penting
 
-3. *Keep badge text short:*
-  - Numeric badges are most effective
-  - On macOS, text badges should be brief
+3. *Gunakan teks lencana yang singkat:*
+  - Lencana numerik paling efektif
+  - Di macOS, teks lencana sebaiknya singkat
 
-4. *For Windows badge customization:*
-  - Ensure high contrast between text and background colors
-  - Test with different text lengths as font size decreases with length
-  - Use common system fonts to ensure availability
+4. *Untuk penyesuaian lencana Windows:*
+  - Pastikan kontras yang tinggi antara warna teks dan latar belakang
+  - Uji dengan panjang teks yang berbeda karena ukuran font mengecil seiring bertambahnya panjang teks
+  - Gunakan font sistem yang umum untuk memastikan ketersediaannya
 
-## API Reference
+## Referensi API
 
-### Service Management
+### Pengelolaan Layanan
 @table header=true
-| Method                                     | Description                                           |
-| `New()`                                    | Creates a new dock service                            |
-| `NewWithOptions(options BadgeOptions)`     | Creates a new dock service with custom badge options (Windows only; options are ignored on macOS and Linux) |
+| Metode                                     | Deskripsi                                           |
+| `New()`                                    | Membuat layanan Dock baru                            |
+| `NewWithOptions(options BadgeOptions)`     | Membuat layanan Dock baru dengan opsi badge khusus (khusus Windows; opsi diabaikan di macOS dan Linux) |
 @end
 
 ### Operasi Dock
 @table header=true
-| Method                                       | Description                                                |
-| `HideAppIcon()`                | Hides the app icon from the macOS Dock (macOS only)         |
-| `ShowAppIcon()`                | Shows the app icon in the macOS Dock (macOS only)           |
+| Metode                                       | Deskripsi                                                |
+| `HideAppIcon()`                | Menyembunyikan ikon aplikasi dari Dock macOS (khusus macOS)         |
+| `ShowAppIcon()`                | Menampilkan ikon aplikasi di Dock macOS (khusus macOS)           |
 @end
 
 ### Operasi Badge
 @table header=true
-| Method                                            | Description                                                |
-| `SetBadge(label string) error`                    | Sets a badge with the specified label                      |
-| `SetCustomBadge(label string, options BadgeOptions) error` | Sets a badge with the specified label and custom styling options (Windows only) |
-| `RemoveBadge() error`                             | Removes the badge from the application icon                |
-| `GetBadge() *string`                             | Gets the current badge                |
+| Metode                                            | Deskripsi                                                |
+| `SetBadge(label string) error`                    | Menetapkan badge dengan label yang ditentukan                      |
+| `SetCustomBadge(label string, options BadgeOptions) error` | Menetapkan badge dengan label dan opsi gaya khusus yang ditentukan (khusus Windows) |
+| `RemoveBadge() error`                             | Menghapus badge dari ikon aplikasi                |
+| `GetBadge() *string`                             | Mendapatkan badge saat ini                |
 @end
 
-### Structs and Types
+### Struct dan Tipe
 
 ```go
 // Options for customizing badge appearance (Windows only)

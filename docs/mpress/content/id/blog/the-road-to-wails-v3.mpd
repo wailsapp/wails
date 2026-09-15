@@ -1,93 +1,72 @@
 ---
 schema = 1
-title = "Jalan Menuju Wails v3"
+title = "Perjalanan Menuju Wails v3"
 description = "Catatan rilis dan pengumuman untuk Wails"
 authors = ["leaanthony"]
 tags = ["wails","v3"]
 date = "2023-01-17"
 slug = "blog/the-road-to-wails-v3"
-sourcePath = "id/blog/the-road-to-wails-v3.mpd"
+image = "/assets/blog-images/multiwindow.webp"
+sourcePath = "blog/the-road-to-wails-v3.mpd"
 ---
 
-![multiwindow screenshot](/assets/blog-images/multiwindow.webp)
+![tangkapan layar multi-jendela](/assets/blog-images/multiwindow.webp)
 
 ## Pendahuluan
 
-Wails adalah proyek yang menyederhanakan kemampuan menulis aplikasi desktop cross-platform\
-menggunakan Go. Proyek ini menggunakan komponen webview native untuk frontend (bukan\
-embedded browser), membawa kekuatan sistem UI paling populer di dunia ke\
-Go, sambil tetap ringan.
+Wails adalah proyek yang mempermudah pembuatan aplikasi desktop lintas platform menggunakan Go. Wails menggunakan komponen webview native untuk frontend (bukan browser tersemat), sehingga menghadirkan kemampuan sistem UI paling populer di dunia ke Go sekaligus tetap ringan.
 
-Versi 2 dirilis pada 22 September 2022 dan membawa banyak\
-peningkatan termasuk:
+Versi 2 dirilis pada 22 September 2022 dan menghadirkan banyak penyempurnaan, termasuk:
 
-- Live development, memanfaatkan proyek Vite yang populer
-- Fungsionalitas kaya untuk mengelola window dan membuat menu
-- Komponen WebView2 Microsoft
-- Generasi model Typescript yang mirror struct Go Anda
-- Pembuatan NSIS Installer
-- Build terobfuscasi
+- Pengembangan langsung dengan memanfaatkan proyek Vite yang populer
+- Fungsionalitas lengkap untuk mengelola jendela dan membuat menu
+- Komponen WebView2 dari Microsoft
+- Pembuatan model TypeScript yang mencerminkan struct Go Anda
+- Pembuatan penginstal NSIS
+- Build yang diobfusikasi
 
-Saat ini, Wails v2 menyediakan tooling yang powerful untuk membuat aplikasi desktop\
-cross-platform yang kaya.
+Saat ini, Wails v2 menyediakan alat canggih untuk membuat aplikasi desktop lintas platform yang kaya fitur.
 
-Posting blog ini bertujuan melihat posisi proyek saat ini dan apa yang dapat\
-kita perbaiki ke depan.
+Tulisan blog ini bertujuan meninjau kondisi proyek saat ini dan hal-hal yang dapat kita tingkatkan ke depannya.
 
-## Di mana kita sekarang?
+## Di mana posisi kita sekarang?
 
-Luar biasa melihat popularitas Wails meningkat sejak rilis v2.\
-Saya terus kagum dengan kreativitas komunitas dan hal-hal\
-wonderful yang dibangun dengannya. Dengan popularitas lebih, datang lebih banyak mata pada\
-proyek. Dan dengan itu, lebih banyak permintaan fitur dan laporan bug.
+Luar biasa melihat popularitas Wails terus meningkat sejak rilis v2. Saya selalu takjub melihat kreativitas komunitas dan berbagai hal mengagumkan yang dibuat dengannya. Seiring meningkatnya popularitas, semakin banyak orang memperhatikan proyek ini. Akibatnya, semakin banyak pula permintaan fitur dan laporan bug.
 
-Seiring waktu, saya dapat mengidentifikasi beberapa masalah paling mendesak yang dihadapi\
-proyek. Saya juga dapat mengidentifikasi beberapa hal yang menahan\
-proyek.
+Seiring waktu, saya berhasil mengidentifikasi beberapa masalah paling mendesak yang dihadapi proyek ini. Saya juga berhasil mengidentifikasi beberapa hal yang menghambat kemajuannya.
 
 ## Masalah saat ini
 
-Saya telah mengidentifikasi area berikut yang menurut saya menahan proyek:
+Saya telah mengidentifikasi beberapa area berikut yang menurut saya menghambat kemajuan proyek ini:
 
 - API
-- Generasi bindings
-- Build System
+- Pembuatan binding
+- Sistem Build
 
 ### API
 
-API untuk membangun aplikasi Wails saat ini terdiri dari 2 bagian:
+API untuk membuat aplikasi Wails saat ini terdiri atas 2 bagian:
 
-- Application API
-- Runtime API
+- API Aplikasi
+- API Runtime
 
-Application API terkenal hanya memiliki 1 fungsi: `Run()` yang menerima banyak\
-opsi yang mengatur cara aplikasi bekerja. Meskipun ini sangat sederhana\
-digunakan, ini juga sangat membatasi. Ini adalah pendekatan "declarative" yang menyembunyikan\
-banyak kompleksitas underlying. Misalnya, tidak ada handle ke main\
-window, jadi Anda tidak dapat berinteraksi langsung dengannya. Untuk itu, Anda perlu menggunakan\
-Runtime API. Ini menjadi masalah ketika Anda mulai ingin melakukan hal lebih kompleks\
-seperti membuat multiple window.
+API Aplikasi dikenal hanya memiliki 1 fungsi: `Run()`, yang menerima banyak opsi untuk mengatur cara kerja aplikasi. Meskipun sangat mudah digunakan, pendekatan ini juga sangat membatasi. Ini adalah pendekatan "deklaratif" yang menyembunyikan banyak kompleksitas yang mendasarinya. Misalnya, tidak ada handle untuk jendela utama sehingga Anda tidak dapat berinteraksi langsung dengannya. Untuk itu, Anda harus menggunakan API Runtime. Hal ini menjadi masalah ketika Anda ingin melakukan hal yang lebih kompleks, seperti membuat beberapa jendela.
 
-Runtime API menyediakan banyak fungsi utility untuk developer. Ini\
-mencakup:
+API Runtime menyediakan banyak fungsi utilitas bagi pengembang. Ini mencakup:
 
-- Manajemen window
+- Pengelolaan jendela
 - Dialog
 - Menu
-- Event
+- Peristiwa
 - Log
 
-Ada beberapa hal yang tidak saya sukai dengan Runtime API. Pertama adalah\
-bahwa API ini memerlukan "context" untuk dilewatkan. Ini frustrasi dan\
-membingungkan developer baru yang melewatkan context dan kemudian mendapat runtime error.
+Ada sejumlah hal yang tidak saya sukai dari API Runtime. Pertama, API ini mengharuskan "context" untuk diteruskan dari satu tempat ke tempat lain. Hal ini membuat frustrasi sekaligus membingungkan bagi pengembang baru yang meneruskan context, tetapi kemudian mendapatkan error runtime.
 
-Masalah terbesar dengan Runtime API adalah API ini dirancang untuk aplikasi\
-yang hanya menggunakan single window. Seiring waktu, permintaan untuk multiple window\
-terus tumbuh dan API tidak cocok untuk ini.
+Masalah terbesar pada API Runtime adalah bahwa API ini dirancang untuk aplikasi yang hanya menggunakan satu jendela. Seiring waktu, kebutuhan akan beberapa jendela meningkat, dan API ini tidak cocok untuk kebutuhan tersebut.
 
 ### Pemikiran tentang API v3
 
-Bukankah bagus jika kita bisa melakukan sesuatu seperti ini?
+Bukankah akan sangat baik jika kita dapat melakukan sesuatu seperti ini?
 
 ```go
 func main() {
@@ -101,10 +80,7 @@ func main() {
 }
 ```
 
-Pendekatan programmatic ini jauh lebih intuitif dan memungkinkan developer\
-berinteraksi langsung dengan elemen aplikasi. Semua method runtime saat ini untuk\
-window akan menjadi method pada objek window. Untuk method runtime\
-lainnya, kita bisa memindahkannya ke objek aplikasi seperti ini:
+Pendekatan programatik ini jauh lebih intuitif dan memungkinkan pengembang berinteraksi langsung dengan elemen aplikasi. Semua metode runtime yang ada saat ini untuk jendela cukup dijadikan metode pada objek jendela. Untuk metode runtime lainnya, kita dapat memindahkannya ke objek aplikasi seperti berikut:
 
 ```go
 app := wails.NewApplication(options.App{})
@@ -112,9 +88,7 @@ app.NewInfoDialog(options.InfoDialog{})
 app.Log.Info("Hello World")
 ```
 
-Ini adalah API yang jauh lebih powerful yang akan memungkinkan aplikasi lebih kompleks\
-dibangun. Ini juga memungkinkan pembuatan multiple window,\
-[fitur paling up-voted di GitHub](https://github.com/wailsapp/wails/issues/1480):
+Ini adalah API yang jauh lebih canggih dan memungkinkan pembuatan aplikasi yang lebih kompleks. API ini juga memungkinkan pembuatan beberapa jendela, [fitur dengan suara terbanyak di GitHub](https://github.com/wailsapp/wails/issues/1480):
 
 ```go
 func main() {
@@ -133,113 +107,74 @@ func main() {
 }
 ```
 
-### Generasi bindings
+### Pembuatan binding
 
-Salah satu fitur kunci Wails adalah menghasilkan bindings untuk method Go Anda sehingga\
-dapat dipanggil dari Javascript. Method saat ini untuk melakukan ini agak\
-hack. Ini melibatkan build aplikasi dengan flag khusus dan kemudian\
-menjalankan binary hasil yang menggunakan reflection untuk menentukan apa yang telah\
-di-bind. Ini menyebabkan situasi chicken and egg: Anda tidak dapat build\
-aplikasi tanpa bindings dan Anda tidak dapat generate bindings tanpa\
-build aplikasi. Ada banyak cara mengatasi ini tetapi yang terbaik adalah\
-tidak menggunakan pendekatan ini sama sekali.
+Salah satu fitur utama Wails adalah membuat binding untuk metode Go Anda agar dapat dipanggil dari JavaScript. Metode yang digunakan saat ini untuk melakukannya agak bersifat tambal sulam. Prosesnya mencakup pembuatan build aplikasi dengan flag khusus, lalu menjalankan biner hasilnya, yang menggunakan refleksi untuk menentukan apa saja yang telah di-binding. Hal ini menimbulkan situasi seperti ayam dan telur: Anda tidak dapat membuat build aplikasi tanpa binding, dan Anda tidak dapat membuat binding tanpa membuat build aplikasi. Ada banyak cara untuk mengatasinya, tetapi cara terbaik adalah tidak menggunakan pendekatan ini sama sekali.
 
-Ada sejumlah upaya menulis static analyser untuk proyek Wails\
-tetapi tidak berjalan jauh. Dalam waktu lebih baru, menjadi sedikit\
-lebih mudah melakukan ini dengan lebih banyak materi tersedia tentang subjek.
+Ada sejumlah upaya untuk menulis penganalisis statis bagi proyek Wails, tetapi upaya tersebut tidak berkembang jauh. Belakangan ini, hal itu menjadi sedikit lebih mudah dilakukan karena tersedia lebih banyak materi mengenai topik tersebut.
 
-Dibandingkan reflection, pendekatan AST jauh lebih cepat namun\
-signifikan lebih rumit. Untuk memulai, kita mungkin perlu menerapkan constraint tertentu\
-tentang cara menentukan bindings dalam kode. Tujuannya adalah mendukung\
-use case paling umum dan kemudian memperluasnya nanti.
+Dibandingkan dengan refleksi, pendekatan AST jauh lebih cepat, tetapi juga jauh lebih rumit. Sebagai langkah awal, kita mungkin perlu menetapkan batasan tertentu pada cara menentukan binding di dalam kode. Tujuannya adalah mendukung kasus penggunaan yang paling umum, lalu memperluas dukungannya nanti.
 
-### Build System
+### Sistem Build
 
-Seperti pendekatan declarative ke API, build system dibuat untuk menyembunyikan\
-kompleksitas build aplikasi desktop. Ketika Anda menjalankan `wails build`,\
-banyak hal terjadi di balik layar:
+Seperti pendekatan deklaratif pada API, sistem build dibuat untuk menyembunyikan kerumitan pembuatan build aplikasi desktop. Saat Anda menjalankan `wails build`, sistem ini melakukan banyak hal di balik layar:
 
-- Build backend binary untuk bindings dan generate bindings
-- Install frontend dependencies
-- Build aset frontend
-- Tentukan apakah icon aplikasi ada dan jika ya, embed
-- Build binary final
-- Jika build untuk `darwin/universal` build 2 binary, satu untuk `darwin/amd64` dan satu untuk `darwin/arm64` lalu buat fat binary menggunakan `lipo`
-- Jika kompresi diperlukan, kompres binary dengan UPX
-- Tentukan apakah binary ini akan di-package dan jika ya:
-  - Pastikan icon dan application manifest dikompilasi ke binary (Windows)
-  - Build application bundle, generate icon bundle dan salin, binary dan Info.plist ke application bundle (Mac)
-- Jika NSIS installer diperlukan, build
+- Membuat biner backend untuk binding dan menghasilkan binding
+- Menginstal dependensi frontend
+- Membuat aset frontend
+- Memeriksa apakah ikon aplikasi tersedia dan, jika tersedia, menyematkannya
+- Membuat biner akhir
+- Jika build ditujukan untuk `darwin/universal`, sistem membuat 2 biner, satu untuk `darwin/amd64` dan satu untuk `darwin/arm64`, lalu membuat fat binary menggunakan `lipo`
+- Jika kompresi diperlukan, sistem mengompresi biner dengan UPX
+- Memeriksa apakah biner ini akan dikemas dan, jika ya:
+  - Memastikan ikon dan manifes aplikasi dikompilasi ke dalam biner (Windows)
+  - Membuat bundel aplikasi, menghasilkan bundel ikon dan menyalinnya beserta biner dan Info.plist ke bundel aplikasi (Mac)
+- Jika penginstal NSIS diperlukan, sistem membuatnya
 
-Seluruh proses ini, meskipun sangat powerful, juga sangat opaque. Sangat\
-sulit untuk mengkustomisasinya dan sangat sulit untuk debug.
+Seluruh proses ini, meskipun sangat andal, juga sangat tidak transparan. Proses ini sangat sulit disesuaikan dan sangat sulit di-debug.
 
-Untuk mengatasi ini di v3, saya ingin pindah ke build system yang ada\
-di luar Wails. Setelah menggunakan [Task](https://taskfile.dev/) untuk sementara, saya\
-penggemar besar. Ini tool hebat untuk mengkonfigurasi build system dan seharusnya\
-cukup familiar bagi siapapun yang pernah menggunakan Makefiles.
+Untuk mengatasi hal ini di v3, saya ingin beralih ke sistem build yang berada di luar Wails. Setelah menggunakan [Task](https://taskfile.dev/) selama beberapa waktu, saya menjadi penggemar beratnya. Ini adalah alat yang sangat baik untuk mengonfigurasi sistem build dan seharusnya cukup familier bagi siapa pun yang pernah menggunakan Makefile.
 
-Build system akan dikonfigurasi menggunakan file `Taskfile.yml` yang akan\
-dihasilkan secara default dengan template yang didukung. Ini akan memiliki semua\
-langkah yang diperlukan untuk melakukan semua task saat ini, seperti build atau packaging\
-aplikasi, memungkinkan kustomisasi mudah.
+Sistem build akan dikonfigurasi menggunakan sebuah file `Taskfile.yml` yang secara default akan dibuat bersama setiap templat yang didukung. File ini akan memuat semua langkah yang diperlukan untuk menjalankan seluruh tugas yang tersedia saat ini, seperti mem-build atau mengemas aplikasi, sehingga mudah disesuaikan.
 
-Tidak akan ada persyaratan eksternal untuk tooling ini karena akan menjadi bagian dari\
-Wails CLI. Ini berarti Anda masih dapat menggunakan `wails build` dan akan melakukan\
-semua hal yang dilakukannya hari ini. Namun, jika Anda ingin mengkustomisasi proses build,\
-Anda dapat melakukannya dengan mengedit file `Taskfile.yml`. Ini juga berarti Anda dapat\
-mudah memahami langkah build dan menggunakan build system sendiri jika diinginkan.
+Tidak akan ada persyaratan eksternal untuk alat ini karena alat tersebut akan menjadi bagian dari Wails CLI. Artinya, Anda tetap dapat menggunakan `wails build` dan perintah tersebut akan melakukan semua yang dilakukannya saat ini. Namun, jika ingin menyesuaikan proses build, Anda dapat melakukannya dengan mengedit file `Taskfile.yml`. Ini juga berarti Anda dapat dengan mudah memahami langkah-langkah build dan menggunakan sistem build sendiri jika menginginkannya.
 
-Bagian yang hilang dalam puzzle build adalah operasi atomik dalam proses build,\
-seperti generasi icon, kompresi dan packaging. Memerlukan banyak\
-tooling eksternal bukan pengalaman bagus untuk developer. Untuk\
-mengatasi ini, Wails CLI akan menyediakan semua kemampuan ini sebagai bagian dari\
-CLI. Ini berarti build tetap berfungsi seperti yang diharapkan, tanpa tooling eksternal\
-tambahan, namun Anda dapat mengganti langkah build apapun dengan tool apapun yang Anda suka.
+Bagian yang masih belum tersedia dalam rangkaian proses build adalah operasi atomik dalam proses tersebut, seperti pembuatan ikon, kompresi, dan pengemasan. Mengharuskan penggunaan sekumpulan alat eksternal bukanlah pengalaman yang baik bagi pengembang. Untuk mengatasinya, Wails CLI akan menyediakan semua kemampuan tersebut sebagai bagian dari CLI. Artinya, proses build tetap berjalan sebagaimana mestinya tanpa alat eksternal tambahan, tetapi Anda dapat mengganti langkah mana pun dalam proses build dengan alat apa pun yang Anda inginkan.
 
-Ini akan menjadi build system yang jauh lebih transparan yang memungkinkan kustomisasi\
-lebih mudah dan mengatasi banyak masalah yang telah diangkat seputarnya.
+Sistem build ini akan jauh lebih transparan, lebih mudah disesuaikan, dan mengatasi banyak masalah yang telah dilaporkan terkait sistem tersebut.
 
-## Payoff
+## Hasilnya
 
-Perubahan positif ini akan menjadi manfaat besar untuk proyek:
+Perubahan positif ini akan memberikan manfaat besar bagi proyek:
 
-- API baru akan jauh lebih intuitif dan memungkinkan aplikasi lebih kompleks dibangun.
-- Menggunakan static analysis untuk generasi bindings akan jauh lebih cepat dan mengurangi banyak kompleksitas seputar proses saat ini.
-- Menggunakan build system eksternal yang mapan akan membuat proses build sepenuhnya transparan, memungkinkan kustomisasi powerful.
+- API baru akan jauh lebih intuitif dan memungkinkan pembuatan aplikasi yang lebih kompleks.
+- Penggunaan analisis statis untuk menghasilkan binding akan jauh lebih cepat dan mengurangi banyak kerumitan dalam proses saat ini.
+- Penggunaan sistem build eksternal yang telah mapan akan membuat proses build sepenuhnya transparan sehingga dapat disesuaikan secara luas.
 
-Manfaat untuk maintainer proyek:
+Manfaat bagi pengelola proyek meliputi:
 
-- API baru akan jauh lebih mudah di-maintain dan diadaptasi ke fitur dan platform baru.
-- Build system baru akan jauh lebih mudah di-maintain dan diperluas. Saya harap ini akan mengarah ke ekosistem baru community driven build pipelines.
-- Pemisahan concern yang lebih baik dalam proyek. Ini akan memudahkan menambahkan fitur dan platform baru.
+- API baru akan jauh lebih mudah dipelihara dan diadaptasi untuk fitur serta platform baru.
+- Sistem build baru akan jauh lebih mudah dipelihara dan diperluas. Saya berharap hal ini akan menghasilkan ekosistem baru berupa pipeline build yang digerakkan oleh komunitas.
+- Pemisahan tanggung jawab yang lebih baik di dalam proyek. Hal ini akan memudahkan penambahan fitur dan platform baru.
 
 ## Rencana
 
-Banyak eksperimen untuk ini sudah dilakukan dan terlihat\
-bagus. Tidak ada timeline saat ini untuk pekerjaan ini tetapi saya berharap pada akhir Q1\
-2023, akan ada rilis alpha untuk Mac agar komunitas dapat test,\
-eksperimen dan memberikan feedback.
+Banyak eksperimen untuk hal ini telah dilakukan dan hasilnya terlihat baik. Saat ini belum ada jadwal untuk pekerjaan ini, tetapi saya berharap pada akhir Q1 2023 akan tersedia rilis alfa untuk Mac agar komunitas dapat menguji, bereksperimen, dan memberikan masukan.
 
 ## Ringkasan
 
-- API v2 bersifat declarative, menyembunyikan banyak hal dari developer dan tidak cocok untuk fitur seperti multiple window. API baru akan dibuat yang akan lebih sederhana, intuitif dan lebih powerful.
-- Build system opaque dan sulit dikustomisasi jadi kami akan pindah ke build system eksternal yang akan membuka semuanya.
-- Generasi bindings lambat dan kompleks jadi kami akan pindah ke static analysis yang akan menghilangkan banyak kompleksitas method saat ini.
+- API v2 bersifat deklaratif, menyembunyikan banyak hal dari pengembang, dan tidak cocok untuk fitur seperti beberapa jendela. API baru akan dibuat dengan desain yang lebih sederhana, intuitif, dan kemampuan yang lebih besar.
+- Sistem build tidak transparan dan sulit disesuaikan, sehingga kami akan beralih ke sistem build eksternal yang akan membuat seluruh prosesnya terbuka.
+- Pembuatan binding berlangsung lambat dan rumit, sehingga kami akan beralih ke analisis statis yang akan menghilangkan banyak kerumitan pada metode saat ini.
 
-Banyak pekerjaan telah dilakukan pada inti v2 dan intinya solid. Sekarang\
-waktunya mengatasi layer di atasnya dan membuatnya pengalaman jauh lebih baik untuk\
-developer.
+Banyak upaya telah dicurahkan pada bagian inti v2 dan fondasinya sudah kokoh. Kini saatnya membenahi lapisan di atasnya dan memberikan pengalaman yang jauh lebih baik bagi pengembang.
 
-Saya harap Anda seantusias saya. Saya menantikan mendengar\
-pikiran dan feedback Anda.
+Saya harap Anda sama antusiasnya dengan saya mengenai hal ini. Saya menantikan pendapat dan masukan Anda.
 
 Salam,
 
 &dash; Lea
 
-PS: Jika Anda atau perusahaan Anda merasa Wails berguna, pertimbangkan\
-[menyponsori proyek ini](https://github.com/sponsors/leaanthony). Terima kasih!
+PS: Jika Anda atau perusahaan Anda merasakan manfaat Wails, harap pertimbangkan untuk [mensponsori proyek ini](https://github.com/sponsors/leaanthony). Terima kasih!
 
-PPS: Ya, itu screenshot asli aplikasi multi-window yang dibangun dengan\
-Wails. Bukan mockup. Nyata. Keren. Segera hadir.
+PPS: Ya, itu benar-benar tangkapan layar aplikasi berjendela majemuk yang dibuat dengan Wails. Itu bukan mockup. Itu nyata. Itu luar biasa. Segera hadir.

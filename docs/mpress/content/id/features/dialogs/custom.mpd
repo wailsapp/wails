@@ -1,14 +1,14 @@
 ---
 schema = 1
-title = "Dialog Kustom"
-description = "Buat dialog kustom di aplikasi Wails Anda"
+title = "Dialog khusus"
+description = "Buat dialog khusus di aplikasi Wails Anda"
 slug = "features/dialogs/custom"
-sourcePath = "id/features/dialogs/custom.mpd"
+sourcePath = "features/dialogs/custom.mpd"
 ---
 
-## Dialog Kustom
+## Dialog khusus
 
-Buat *window dialog kustom* menggunakan window Wails biasa dengan perilaku seperti dialog. Bangun form kustom, validasi input kompleks, tampilan bermerek, dan konten kaya (gambar, video) sambil mempertahankan pola dialog yang familiar.
+Buat *jendela dialog khusus* menggunakan jendela Wails biasa dengan perilaku seperti dialog. Buat formulir khusus, validasi input yang kompleks, tampilan sesuai merek, dan konten kaya (gambar, video), sekaligus mempertahankan pola dialog yang familier.
 
 ## Mulai Cepat
 
@@ -31,11 +31,11 @@ dialog.Show()
 dialog.Focus()
 ```
 
-*Selesai!* UI kustom dengan perilaku dialog.
+*Selesai!* Antarmuka pengguna khusus dengan perilaku dialog.
 
-## Membuat Dialog Kustom
+## Membuat dialog khusus
 
-### Dialog Kustom Dasar
+### Dialog khusus dasar
 
 ```go
 type Customdialog struct {
@@ -74,7 +74,7 @@ func (d *Customdialog) Close(result string) {
 }
 ```
 
-### Dialog Modal
+### Dialog modal
 
 ```go
 func ShowModaldialog(parent *application.WebviewWindow, title string) string {
@@ -106,7 +106,7 @@ func ShowModaldialog(parent *application.WebviewWindow, title string) string {
 }
 ```
 
-### Dialog Form
+### Dialog formulir
 
 ```go
 type Formdialog struct {
@@ -152,9 +152,9 @@ func (fd *Formdialog) Cancel() {
 }
 ```
 
-## Pola Dialog
+## Pola dialog
 
-### Dialog Konfirmasi
+### Dialog konfirmasi
 
 ```go
 func ShowConfirmdialog(message string) bool {
@@ -213,7 +213,7 @@ function confirm(result) {
 </script>
 ```
 
-### Dialog Input
+### Dialog input
 
 ```go
 func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
@@ -258,7 +258,7 @@ func ShowInputdialog(prompt string, defaultValue string) (string, bool) {
 }
 ```
 
-### Dialog Progress
+### Dialog progres
 
 ```go
 type Progressdialog struct {
@@ -295,7 +295,7 @@ func (pd *Progressdialog) Close() {
 }
 ```
 
-*Usage:*
+*Penggunaan:*
 
 ```go
 func processFiles(files []string) {
@@ -313,9 +313,9 @@ func processFiles(files []string) {
 }
 ```
 
-## Contoh Lengkap
+## Contoh lengkap
 
-### Dialog Login
+### Dialog login
 
 *Go:*
 
@@ -406,7 +406,7 @@ function cancel() {
 </script>
 ```
 
-### Dialog Pengaturan
+### Dialog pengaturan
 
 *Go:*
 
@@ -455,7 +455,7 @@ func (sd *Settingsdialog) Cancel() {
 }
 ```
 
-### Dialog Wizard
+### Dialog panduan langkah demi langkah
 
 ```go
 type Wizarddialog struct {
@@ -521,29 +521,29 @@ func (wd *Wizarddialog) Cancel() {
 }
 ```
 
-## Praktik Terbaik
+## Praktik terbaik
 
 ### ✅ Lakukan
 
-- *Use appropriate window options* - AlwaysOnTop, Frameless, etc.
-- *Handle cancellation* - Always provide a way to cancel
-- *Validate input* - Check data before accepting
-- *Provide feedback* - Loading states, errors
-- *Use events for communication* - Clean separation
-- *Clean up resources* - Close windows, remove listeners
+- *Gunakan opsi jendela yang sesuai* — AlwaysOnTop, Frameless, dan sebagainya.
+- *Tangani pembatalan* — Selalu sediakan cara untuk membatalkan
+- *Validasi input* — Periksa data sebelum menerimanya
+- *Berikan umpan balik* — Status pemuatan, kesalahan
+- *Gunakan event untuk komunikasi* — Pemisahan yang jelas
+- *Bersihkan sumber daya* — Tutup jendela, hapus listener
 
-### ❌ Jangan
+### ❌ Jangan lakukan
 
-- *Don't block the main thread* - Use channels for results
-- *Don't forget to close* - Memory leaks
-- *Don't skip validation* - Always validate input
-- *Don't ignore errors* - Handle all error cases
-- *Don't make it too complex* - Keep dialogs simple
-- *Don't forget accessibility* - Keyboard navigation
+- *Jangan blokir thread utama* — Gunakan channel untuk hasil
+- *Jangan lupa menutup* — Kebocoran memori
+- *Jangan lewati validasi* — Selalu validasi input
+- *Jangan abaikan kesalahan* — Tangani semua kasus kesalahan
+- *Jangan membuatnya terlalu kompleks* — Pertahankan kesederhanaan dialog
+- *Jangan lupakan aksesibilitas* — Navigasi papan ketik
 
-## Styling Dialog Kustom
+## Menata gaya dialog khusus
 
-### Gaya Dialog Modern
+### Gaya dialog modern
 
 ```css
 .dialog {
@@ -595,31 +595,31 @@ button.secondary {
 }
 ```
 
-## Langkah Selanjutnya
+## Langkah berikutnya
 
 @cards cols="2"
-@card title="ℹ Message dialogs"
-Standard info, warning, error dialogs.
+@card title="ℹ Dialog pesan"
+Dialog informasi, peringatan, dan kesalahan standar.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/message/)
+[Pelajari Lebih Lanjut →](/features/dialogs/message/)
 @end
-@card title="📖 File dialogs"
-Open, save, folder selection.
+@card title="📖 Dialog file"
+Membuka, menyimpan, dan memilih folder.
 
-[Pelajari Selengkapnya →](/id/features/dialogs/file/)
+[Pelajari Lebih Lanjut →](/features/dialogs/file/)
 @end
-@card title="▣ Windows"
-Learn about window management.
+@card title="▣ Jendela"
+Pelajari pengelolaan jendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/basics/)
+[Pelajari Lebih Lanjut →](/features/windows/basics/)
 @end
-@card title="★ Events"
-Use events for dialog communication.
+@card title="★ Event"
+Gunakan event untuk komunikasi dialog.
 
-[Pelajari Selengkapnya →](/id/features/events/system/)
+[Pelajari Lebih Lanjut →](/features/events/system/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [custom dialog examples](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh dialog khusus](https://github.com/wailsapp/wails/tree/master/v3/examples/dialogs).

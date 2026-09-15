@@ -1,27 +1,31 @@
 ---
 schema = 1
 title = "Menu Konteks"
-description = "Buat menu klik kanan untuk aplikasi Anda"
+description = "Buat menu konteks klik kanan untuk aplikasi Anda"
 slug = "features/menus/context"
-sourcePath = "id/features/menus/context.mpd"
+sourcePath = "features/menus/context.mpd"
 ---
 
-## Masalahnya
+## Masalah
 
-Pengguna mengharapkan menu klik kanan dengan aksi spesifik konteks. Elemen berbeda membutuhkan menu berbeda:
-- *Text*: Cut, Copy, Paste
-- *Images*: Save, Copy, Open
-- *Custom elements*: Application-specific actions
+Pengguna mengharapkan menu klik kanan dengan tindakan yang sesuai dengan konteks. Elemen yang berbeda memerlukan menu yang berbeda:
+- *Teks*: Potong, Salin, Tempel
+- *Gambar*: Simpan, Salin, Buka
+- *Elemen khusus*: Tindakan khusus aplikasi
 
-Membangun menu konteks secara manual berarti menangani event mouse, positioning, dan perbedaan platform.
+Membuat menu konteks secara manual berarti harus menangani peristiwa mouse, pemosisian, dan perbedaan antarplatform.
 
 ## Solusi Wails
 
-Wails menyediakan *menu konteks deklaratif* menggunakan properti CSS. Asosiasikan menu dengan elemen HTML, teruskan data, dan tangani klik — semua dengan perilaku platform native.
+Wails menyediakan *menu konteks deklaratif* menggunakan properti CSS. Kaitkan menu dengan elemen HTML, teruskan data, dan tangani klik—semuanya dengan perilaku native platform.
+
+![Menu konteks khusus Wails yang ditampilkan di atas webview pada macOS](/assets/screenshots/context-menu-macos.png)
+
+Menu tersebut bersifat native bagi platform, sedangkan elemen yang membukanya tetap menjadi bagian dari webview Anda. Tangkapan layar macOS ini menggunakan pendaftaran menu konteks khusus dari contoh di bawah.
 
 ## Mulai Cepat
 
-*Go code:*
+*Kode Go:*
 
 ```go
 // Create context menu
@@ -42,11 +46,11 @@ app.ContextMenu.Add("editor-menu", contextMenu)
 </textarea>
 ```
 
-*That's it!* Right-clicking the textarea shows your custom menu.
+*Selesai!* Mengklik kanan area teks akan menampilkan menu khusus Anda.
 
 ## Membuat Menu Konteks
 
-### Basic Context Menu
+### Menu Konteks Dasar
 
 ```go
 // Create menu
@@ -69,9 +73,9 @@ contextMenu.Add("Paste").SetAccelerator("CmdOrCtrl+V").OnClick(func(ctx *applica
 app.ContextMenu.Add("text-menu", contextMenu)
 ```
 
-*Menu ID:* Must be unique. Used to associate menu with HTML elements.
+*ID menu:* Harus unik. Digunakan untuk mengaitkan menu dengan elemen HTML.
 
-### With Submenus
+### Dengan Submenu
 
 ```go
 contextMenu := app.ContextMenu.New()
@@ -91,7 +95,7 @@ exportMenu.Add("SVG").OnClick(exportSVG)
 app.ContextMenu.Add("image-menu", contextMenu)
 ```
 
-### With Checkboxes and Radio Groups
+### Dengan Kotak Centang dan Grup Tombol Radio
 
 ```go
 contextMenu := app.ContextMenu.New()
@@ -112,13 +116,13 @@ contextMenu.AddRadio("Large", false).OnClick(handleSize)
 app.ContextMenu.Add("view-menu", contextMenu)
 ```
 
-*For all menu item types*, see [Menu Reference](/id/features/menus/reference/).
+Untuk *semua jenis item menu*, lihat [Referensi Menu](/features/menus/reference/).
 
-## Mengasosiasikan dengan Elemen HTML
+## Mengaitkan dengan Elemen HTML
 
-Use CSS custom properties to attach context menus:
+Gunakan properti khusus CSS untuk memasang menu konteks:
 
-### Basic Association
+### Pengaitan Dasar
 
 ```html
 <div style="--custom-contextmenu: menu-id">
@@ -126,11 +130,11 @@ Use CSS custom properties to attach context menus:
 </div>
 ```
 
-*CSS property:* `--custom-contextmenu: <menu-id>`
+*Properti CSS:* `--custom-contextmenu: <menu-id>`
 
-### With Context Data
+### Dengan Data Konteks
 
-Pass data from HTML to Go:
+Teruskan data dari HTML ke Go:
 
 ```html
 <div style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-123">
@@ -138,7 +142,7 @@ Pass data from HTML to Go:
 </div>
 ```
 
-*Go handler:*
+*Handler Go:*
 
 ```go
 contextMenu := app.ContextMenu.New()
@@ -150,13 +154,13 @@ contextMenu.Add("Open").OnClick(func(ctx *application.Context) {
 app.ContextMenu.Add("file-menu", contextMenu)
 ```
 
-*CSS properties:*
-- `--custom-contextmenu: <menu-id>` - Which menu to show
-- `--custom-contextmenu-data: <data>` - Data to pass to handlers
+*Properti CSS:*
+- `--custom-contextmenu: <menu-id>` - Menu yang akan ditampilkan
+- `--custom-contextmenu-data: <data>` - Data yang akan diteruskan ke handler
 
-### Dynamic Data
+### Data Dinamis
 
-Generate data dynamically in JavaScript:
+Buat data secara dinamis dalam JavaScript:
 
 ```html
 <div id="file-item" style="--custom-contextmenu: file-menu">
@@ -170,7 +174,7 @@ fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
 </script>
 ```
 
-### Multiple Elements, Same Menu
+### Beberapa Elemen, Menu yang Sama
 
 ```html
 <div class="file-item" style="--custom-contextmenu: file-menu; --custom-contextmenu-data: file-1">
@@ -186,11 +190,11 @@ fileItem.style.setProperty('--custom-contextmenu-data', 'file-' + fileId)
 </div>
 ```
 
-*One menu, different data for each element.*
+*Satu menu, data berbeda untuk setiap elemen.*
 
 ## Data Konteks
 
-### Accessing Context Data
+### Mengakses Data Konteks
 
 ```go
 contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
@@ -201,11 +205,11 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 })
 ```
 
-*Data type:* Always `string`. Parse as needed.
+*Jenis data:* Selalu `string`. Uraikan sesuai kebutuhan.
 
-### Passing Complex Data
+### Meneruskan Data Kompleks
 
-Use JSON for complex data:
+Gunakan JSON untuk data kompleks:
 
 ```html
 <div style="--custom-contextmenu: item-menu; --custom-contextmenu-data: {&quot;id&quot;:123,&quot;type&quot;:&quot;image&quot;}">
@@ -213,7 +217,7 @@ Use JSON for complex data:
 </div>
 ```
 
-*Go handler:*
+*Handler Go:*
 
 ```go
 import "encoding/json"
@@ -236,11 +240,11 @@ contextMenu.Add("Process").OnClick(func(ctx *application.Context) {
 })
 ```
 
-@note type="caution" title="Security"
-*Always validate context data* from the frontend. Users can manipulate CSS properties, so treat data as untrusted input.
+@note type="caution" title="Keamanan"
+*Selalu validasi data konteks* dari frontend. Pengguna dapat memanipulasi properti CSS, jadi perlakukan data sebagai input yang tidak tepercaya.
 @end
 
-### Validation Example
+### Contoh Validasi
 
 ```go
 contextMenu.Add("Delete").OnClick(func(ctx *application.Context) {
@@ -263,11 +267,11 @@ contextMenu.Add("Delete").OnClick(func(ctx *application.Context) {
 })
 ```
 
-## Menu Konteks Default
+## Menu Konteks Bawaan
 
-The WebView provides a built-in context menu for standard operations (copy, paste, inspect). Control it with `--default-contextmenu`:
+WebView menyediakan menu konteks bawaan untuk operasi standar (salin, tempel, inspeksi). Kendalikan dengan `--default-contextmenu`:
 
-### Hide Default Menu
+### Sembunyikan Menu Bawaan
 
 ```html
 <div style="--default-contextmenu: hide">
@@ -275,9 +279,9 @@ The WebView provides a built-in context menu for standard operations (copy, past
 </div>
 ```
 
-*Kasus penggunaan:* Custom UI elements where default menu doesn't make sense.
+*Kasus penggunaan:* Elemen UI khusus yang tidak cocok menggunakan menu bawaan.
 
-### Show Default Menu
+### Tampilkan Menu Bawaan
 
 ```html
 <div style="--default-contextmenu: show">
@@ -285,9 +289,9 @@ The WebView provides a built-in context menu for standard operations (copy, past
 </div>
 ```
 
-*Kasus penggunaan:* Text areas, input fields, editable content.
+*Kasus penggunaan:* Area teks, bidang input, dan konten yang dapat diedit.
 
-### Auto (Smart) Mode
+### Mode Otomatis (Cerdas)
 
 ```html
 <div style="--default-contextmenu: auto">
@@ -295,14 +299,14 @@ The WebView provides a built-in context menu for standard operations (copy, past
 </div>
 ```
 
-*Default behaviour.* Shows default menu when:
-- Text is selected
-- In text input fields
-- In editable content (`contenteditable`)
+*Perilaku bawaan.* Menampilkan menu bawaan ketika:
+- Teks dipilih
+- Berada dalam bidang input teks
+- Berada dalam konten yang dapat diedit (`contenteditable`)
 
-Hides default menu otherwise.
+Dalam kondisi lain, menu bawaan disembunyikan.
 
-### Combining Custom and Default
+### Menggabungkan Menu Khusus dan Bawaan
 
 ```html
 <!-- Custom menu + default menu -->
@@ -311,16 +315,16 @@ Hides default menu otherwise.
 </textarea>
 ```
 
-*Behaviour:*
-1. Custom menu shows first
-2. If custom menu is empty or not found, default menu shows
-3. Both can coexist (platform-dependent)
+*Perilaku:*
+1. Menu khusus ditampilkan terlebih dahulu
+2. Jika menu khusus kosong atau tidak ditemukan, menu bawaan ditampilkan
+3. Keduanya dapat digunakan secara bersamaan (bergantung pada platform)
 
 ## Menu Konteks Dinamis
 
-Update menus based on application state:
+Perbarui menu berdasarkan status aplikasi:
 
-### Enable/Disable Items
+### Mengaktifkan/Menonaktifkan Item
 
 ```go
 var cutMenuItem *application.MenuItem
@@ -347,13 +351,13 @@ func onSelectionChanged(hasSelection bool) {
 }
 ```
 
-@note type="caution" title="Always Call Update()"
-After changing menu state, *call `contextMenu.Update()`*. This is critical on Windows.
+@note type="caution" title="Selalu Panggil Update()"
+Setelah mengubah status menu, *panggil `contextMenu.Update()`*. Hal ini sangat penting pada Windows.
 
-See [Menu Reference](/id/features/menus/reference/#enabled-state) for details.
+Lihat [Referensi Menu](/features/menus/reference/#enabled-state) untuk detail selengkapnya.
 @end
 
-### Change Labels
+### Mengubah Label
 
 ```go
 playMenuItem := contextMenu.Add("Play")
@@ -368,9 +372,9 @@ playMenuItem.OnClick(func(ctx *application.Context) {
 })
 ```
 
-### Rebuild Menus
+### Membuat Ulang Menu
 
-For major changes, rebuild the entire menu:
+Untuk perubahan besar, buat ulang seluruh menu:
 
 ```go
 func rebuildContextMenu(fileType string) {
@@ -401,54 +405,54 @@ func rebuildContextMenu(fileType string) {
 
 ## Perilaku Platform
 
-Context menus are *platform-native*:
+Menu konteks bersifat *native pada setiap platform*:
 
 @tabs sync-key="platform"
 @tab label="macOS"
 
-*Native macOS context menus:*
-- System animations and transitions
-- Right-click = Control+Click (automatic)
-- Adapts to system appearance (light/dark)
-- Standard text operations in default menu
-- Native scrolling for long menus
+*Menu konteks native macOS:*
+- Animasi dan transisi sistem
+- Klik kanan = Control+Klik (otomatis)
+- Menyesuaikan dengan tampilan sistem (terang/gelap)
+- Operasi teks standar dalam menu default
+- Pengguliran native untuk menu panjang
 
-*macOS conventions:*
-- Use sentence case for menu items
-- Use ellipsis (...) for items that open dialogs
-- Common shortcuts: ⌘C (Copy), ⌘V (Paste)
+*Konvensi macOS:*
+- Gunakan kapitalisasi kalimat untuk item menu
+- Gunakan elipsis (...) untuk item yang membuka dialog
+- Pintasan umum: ⌘C (Salin), ⌘V (Tempel)
 
 
 
 @end
 @tab label="Windows"
 
-*Native Windows context menus:*
-- Windows native style
-- Follows Windows theme
-- Standard Windows operations in default menu
-- Touch and pen input support
+*Menu konteks native Windows:*
+- Gaya native Windows
+- Mengikuti tema Windows
+- Operasi standar Windows dalam menu default
+- Dukungan input sentuh dan pena
 
-*Windows conventions:*
-- Use title case for menu items
-- Use ellipsis (...) for items that open dialogs
-- Common shortcuts: Ctrl+C (Copy), Ctrl+V (Paste)
+*Konvensi Windows:*
+- Gunakan kapitalisasi judul untuk item menu
+- Gunakan elipsis (...) untuk item yang membuka dialog
+- Pintasan umum: Ctrl+C (Salin), Ctrl+V (Tempel)
 
 
 
 @end
 @tab label="Linux"
 
-*Desktop environment integration:*
-- Adapts to desktop theme (GTK, Qt, etc.)
-- Right-click behaviour follows system settings
-- Default menu content varies by environment
-- Positioning follows DE conventions
+*Integrasi lingkungan desktop:*
+- Menyesuaikan dengan tema desktop (GTK, Qt, dan sebagainya)
+- Perilaku klik kanan mengikuti pengaturan sistem
+- Isi menu default berbeda-beda menurut lingkungan
+- Penempatan mengikuti konvensi lingkungan desktop
 
-*Linux considerations:*
-- Test on target desktop environments
-- GTK and Qt have different behaviours
-- Some DEs customise context menus
+*Pertimbangan untuk Linux:*
+- Uji pada lingkungan desktop target
+- GTK dan Qt memiliki perilaku yang berbeda
+- Beberapa lingkungan desktop menyesuaikan menu konteks
 
 
 @end
@@ -456,7 +460,7 @@ Context menus are *platform-native*:
 
 ## Contoh Lengkap
 
-*Go code:*
+*Kode Go:*
 
 ```go
 package main
@@ -635,33 +639,33 @@ func handlePaste(ctx *application.Context) { /* ... */ }
 
 ### ✅ Lakukan
 
-- *Keep menus focused* - Only relevant actions for the element
-- *Validate context data* - Treat as untrusted input
-- *Use clear labels* - "Delete File" not "Delete"
-- *Call menu.Update()* - After changing menu state
-- *Test on all platforms* - Behaviour varies
-- *Provide keyboard shortcuts* - For common actions
-- *Group related items* - Use separators
+- *Jaga agar menu tetap terfokus* - Hanya tampilkan tindakan yang relevan bagi elemen tersebut
+- *Validasi data konteks* - Perlakukan sebagai input yang tidak tepercaya
+- *Gunakan label yang jelas* - Gunakan "Hapus File", bukan "Hapus"
+- *Panggil menu.Update()* - Setelah mengubah status menu
+- *Uji pada semua platform* - Perilakunya berbeda-beda
+- *Sediakan pintasan papan ketik* - Untuk tindakan umum
+- *Kelompokkan item terkait* - Gunakan pemisah
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Don't trust context data* - Always validate
-- *Don't make menus too long* - 7-10 items maximum
-- *Don't forget menu.Update()* - Menus won't work properly
-- *Don't nest too deeply* - 2 levels maximum
-- *Don't use jargon* - Keep labels user-friendly
-- *Don't block handlers* - Keep them fast
+- *Jangan memercayai data konteks* - Selalu lakukan validasi
+- *Jangan membuat menu terlalu panjang* - Maksimum 7-10 item
+- *Jangan lupa memanggil menu.Update()* - Menu tidak akan berfungsi dengan benar
+- *Jangan membuat submenu terlalu bertingkat* - Maksimum 2 tingkat
+- *Jangan gunakan jargon* - Pastikan label mudah dipahami pengguna
+- *Jangan memblokir handler* - Pastikan handler tetap cepat
 
-## Troubleshooting
+## Pemecahan Masalah
 
-### Context Menu Not Appearing
+### Menu Konteks Tidak Muncul
 
-*Possible causes:*
-1. Menu ID mismatch
-2. CSS property typo
-3. Runtime not initialised
+*Kemungkinan penyebab:*
+1. ID menu tidak cocok
+2. Kesalahan pengetikan pada properti CSS
+3. Runtime belum diinisialisasi
 
-*Solution:*
+*Solusi:*
 
 ```go
 // Check menu is registered
@@ -673,30 +677,30 @@ app.ContextMenu.Add("my-menu", contextMenu)
 <div style="--custom-contextmenu: my-menu">
 ```
 
-### Data Konteks Not Received
+### Data Konteks Tidak Diterima
 
-*Possible causes:*
-1. CSS property not set
-2. Data contains special characters
+*Kemungkinan penyebab:*
+1. Properti CSS belum ditetapkan
+2. Data berisi karakter khusus
 
-*Solution:*
+*Solusi:*
 
 ```html
 <!-- Escape quotes in JSON -->
 <div style="--custom-contextmenu-data: {&quot;id&quot;:123}">
 ```
 
-Or use JavaScript:
+Atau gunakan JavaScript:
 
 ```javascript
 element.style.setProperty('--custom-contextmenu-data', JSON.stringify(data))
 ```
 
-### Menu Items Not Responding
+### Item Menu Tidak Merespons
 
-*Cause:* Forgot to call `menu.Update()` after enabling
+*Penyebab:* Lupa memanggil `menu.Update()` setelah mengaktifkan
 
-*Solution:*
+*Solusi:*
 
 ```go
 menuItem.SetEnabled(true)
@@ -706,28 +710,28 @@ contextMenu.Update()  // Add this!
 ## Langkah Selanjutnya
 
 @cards cols="2"
-@card title="📖 Menu Reference"
-Complete reference for menu item types and properties.
+@card title="📖 Referensi Menu"
+Referensi lengkap untuk jenis dan properti item menu.
 
-[Pelajari Selengkapnya →](/id/features/menus/reference/)
+[Pelajari Selengkapnya →](/features/menus/reference/)
 @end
-@card title="☰ Application Menus"
-Create application menu bars.
+@card title="☰ Menu Aplikasi"
+Buat bilah menu aplikasi.
 
-[Pelajari Selengkapnya →](/id/features/menus/application/)
+[Pelajari Selengkapnya →](/features/menus/application/)
 @end
-@card title="★ System Tray Menus"
-Add system tray/menu bar integration.
+@card title="★ Menu Baki Sistem"
+Tambahkan integrasi dengan baki sistem/bilah menu.
 
-[Pelajari Selengkapnya →](/id/features/menus/systray/)
+[Pelajari Selengkapnya →](/features/menus/systray/)
 @end
-@card title="📖 Menu Patterns"
-Common menu patterns and best practices.
+@card title="📖 Pola Menu"
+Pola menu umum dan praktik terbaik.
 
-[Pelajari Selengkapnya →](/id/guides/menus/)
+[Pelajari Selengkapnya →](/guides/menus/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) or lihat [context menu example](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh menu konteks](https://github.com/wailsapp/wails/tree/master/v3/examples/contextmenus).

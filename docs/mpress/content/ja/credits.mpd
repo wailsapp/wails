@@ -1,27 +1,27 @@
 ---
 schema = 1
 title = "クレジット"
-description = "Wailsを支える貢献者およびプロジェクトへの謝辞"
+description = "Wailsを支えるコントリビューターとプロジェクトへの謝辞"
 slug = "credits"
-sourcePath = "ja/credits.mpd"
+sourcePath = "credits.mpd"
 ---
 
 - [Lea Anthony](https://github.com/leaanthony) - プロジェクトオーナー、リード開発者
-- [Stffabi](https://github.com/stffabi) - テクニカルリード、開発者およびメンテナー
-- [Travis McLane](https://github.com/tmclane) - クロスコンパイル作業、MacOS テスト
-- [Atterpac](https://github.com/atterpac) - 開発者、サポートの達人、要員
+- [Stffabi](https://github.com/stffabi) - テクニカルリード、開発者、メンテナー
+- [Travis McLane](https://github.com/tmclane) - クロスコンパイル対応、MacOSでのテスト
+- [Atterpac](https://github.com/atterpac) - 開発者、サポートの達人、原動力となる存在
 - [Simon Thomas](mailto:enquiries@wails.io) - グロースハッカー
-- [Lyimmi](https://github.com/Lyimmi) - Linux 関連全般
-- [fbbdev](https://github.com/fbbdev) - バインディングジェネレーター達人およびコア貢献者
+- [Lyimmi](https://github.com/Lyimmi) - Linux全般
+- [fbbdev](https://github.com/fbbdev) - バインディングジェネレーターの達人、コアコントリビューター
 
 ## スポンサー
 
 @rawHTML
-<object type="image/svg+xml" data="https://wails.io/img/sponsors.svg" aria-label="Sponsors" style="margin: auto; width: 100%; max-width: 800px" >
-  <img src="https://wails.io/img/sponsors.svg" alt="Sponsors" style="width: 100%" />
+<object type="image/svg+xml" data="https://wails.io/img/sponsors.svg" aria-label="スポンサー" style="margin: auto; width: 100%; max-width: 800px" >
+  <img src="https://wails.io/img/sponsors.svg" alt="スポンサー" style="width: 100%" />
 </object>
 @end
-特別感謝:
+特に感謝を申し上げます：
 @rawHTML
 <div style="display: flex; justify-content: center; align-items: center; gap: 2rem">
   <img
@@ -35,21 +35,21 @@ sourcePath = "ja/credits.mpd"
 </div>
 @end
 
-## 貢献者
+## コントリビューター
 
 @rawHTML
-<object type="image/svg+xml" data="https://wails.io/img/contributors.svg" aria-label="Wails contributors" style="margin: auto; width: 100%; max-width: 800px" >
-  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style="width: 100%" />
+<object type="image/svg+xml" data="https://wails.io/img/contributors.svg" aria-label="Wailsのコントリビューター" style="margin: auto; width: 100%; max-width: 800px" >
+  <img src="https://wails.io/img/contributors.svg" alt="Wailsのコントリビューター" style="width: 100%" />
 </object>
 @end
 
-## 特別言及
+## 特別謝辞
 
-- [John Chadwick](https://github.com/jchv) - [go-webview2](https://github.com/jchv/go-webview2) および [go-winloader](https://github.com/jchv/go-winloader) に対する彼の素晴らしい仕事が、Windows 版を可能にしました。
-- [Tad Vizbaras](https://github.com/tadvi) - 彼の winc プロジェクトは、純粋な Go による Wails への道のりの第一歩でした。
-- [Mat Ryer](https://github.com/matryer) - アドバイス、サポート、そして楽しい会話に感謝。
-- [Byron Chris](https://github.com/bh90210) - このプロジェクトに対する長期的な貢献に感謝。
-- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 彼のサポートとフィードバックは非常に貴重でした。
-- [Justen Walker](https://github.com/justenwalker/) - v2 を完成させるために COM の問題の整理を手伝ってくれたことに感謝。
-- [Wang, Chi](https://github.com/patr0nus/) - DeskGap プロジェクトは Wails v2 の方向性に大きな影響を与えました。
-- [Serge Zaitsev](https://github.com/zserge) - Wails は Webview プロジェクトを使用していませんが、それは依然としてインスピレーションの源です。
+- [John Chadwick](https://github.com/jchv) - [go-webview2](https://github.com/jchv/go-webview2)と[go-winloader](https://github.com/jchv/go-winloader)における氏の素晴らしい成果により、Windows版の実現が可能になりました。
+- [Tad Vizbaras](https://github.com/tadvi) - 氏のwincプロジェクトは、純粋なGoによるWailsへの道を歩み始める第一歩となりました。
+- [Mat Ryer](https://github.com/matryer) - アドバイス、支援、そして楽しいやり取りに感謝します。
+- [Byron Chris](https://github.com/bh90210) - このプロジェクトへの長年にわたる貢献に感謝します。
+- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 氏の支援とフィードバックは計り知れないほど貴重なものでした。
+- [Justen Walker](https://github.com/justenwalker/) - COMの問題解決に尽力し、v2の完成を後押ししてくれたことに感謝します。
+- [Wang, Chi](https://github.com/patr0nus/) - DeskGapプロジェクトは、Wails v2の方向性に非常に大きな影響を与えました。
+- [Serge Zaitsev](https://github.com/zserge) - WailsはWebviewプロジェクトを使用していませんが、今もなお着想の源となっています。

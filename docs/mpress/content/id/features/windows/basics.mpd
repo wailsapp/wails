@@ -1,16 +1,16 @@
 ---
 schema = 1
-title = "Dasar-dasar Window"
-description = "Membuat dan mengelola window aplikasi di Wails"
+title = "Dasar-Dasar Jendela"
+description = "Membuat dan mengelola jendela aplikasi di Wails"
 slug = "features/windows/basics"
-sourcePath = "id/features/windows/basics.mpd"
+sourcePath = "features/windows/basics.mpd"
 ---
 
-## Manajemen Window
+## Pengelolaan Jendela
 
-Wails menyediakan *API manajemen window terpadu* yang berfungsi di semua platform. Buat window, kendalikan perilakunya, dan kelola beberapa window dengan kontrol penuh atas pembuatan, tampilan, perilaku, dan siklus hidup.
+Wails menyediakan *API pengelolaan jendela terpadu* yang berfungsi di semua platform. Buat jendela, kendalikan perilakunya, dan kelola beberapa jendela dengan kendali penuh atas pembuatan, tampilan, perilaku, dan siklus hidupnya.
 
-## Memulai Cepat
+## Mulai Cepat
 
 ```go
 package main
@@ -37,13 +37,13 @@ func main() {
 }
 ```
 
-*Itu saja!* Anda sudah memiliki window lintas platform.
+*Selesai!* Anda kini memiliki jendela lintas platform.
 
-## Membuat Window
+## Membuat Jendela
 
-### Window Dasar
+### Jendela Dasar
 
-Cara paling sederhana untuk membuat window:
+Cara paling sederhana untuk membuat jendela:
 
 ```go
 window := app.Window.New()
@@ -52,12 +52,12 @@ window := app.Window.New()
 *Yang Anda dapatkan:*
 - Ukuran default (800x600)
 - Judul default (nama aplikasi)
-- WebView siap untuk frontend Anda
+- WebView yang siap digunakan oleh frontend Anda
 - Tampilan native platform
 
-### Window dengan Opsi
+### Jendela dengan Opsi
 
-Buat window dengan konfigurasi kustom:
+Buat jendela dengan konfigurasi khusus:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -80,13 +80,13 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 @table header=true
 | Opsi | Tipe | Deskripsi |
-| `Title` | `string` | Judul window |
-| `Width` | `int` | Lebar window dalam piksel |
-| `Height` | `int` | Tinggi window dalam piksel |
+| `Title` | `string` | Judul jendela |
+| `Width` | `int` | Lebar jendela dalam piksel |
+| `Height` | `int` | Tinggi jendela dalam piksel |
 | `X` | `int` | Posisi X (dari kiri) |
 | `Y` | `int` | Posisi Y (dari atas) |
-| `AlwaysOnTop` | `bool` | Jaga window di atas window lain |
-| `Frameless` | `bool` | Hapus title bar dan border |
+| `AlwaysOnTop` | `bool` | Pertahankan jendela di atas jendela lain |
+| `Frameless` | `bool` | Hapus bilah judul dan bingkai |
 | `Hidden` | `bool` | Mulai dalam keadaan tersembunyi |
 | `MinWidth` | `int` | Lebar minimum |
 | `MinHeight` | `int` | Tinggi minimum |
@@ -94,11 +94,11 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 | `MaxHeight` | `int` | Tinggi maksimum |
 @end
 
-*Lihat [Opsi Window](/id/features/windows/options/) untuk daftar lengkap.*
+*Lihat [Opsi Jendela](/features/windows/options/) untuk daftar lengkap.*
 
-### Window Bernama
+### Jendela Bernama
 
-Berikan nama pada window agar mudah diambil kembali:
+Beri nama pada jendela agar mudah ditemukan kembali:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -113,13 +113,13 @@ if mainWindow, ok := app.Window.GetByName("main-window"); ok {
 ```
 
 *Kasus penggunaan:*
-- Beberapa window (main, settings, about)
-- Mencari window dari bagian kode yang berbeda
-- Komunikasi antar window
+- Beberapa jendela (utama, pengaturan, tentang)
+- Menemukan jendela dari berbagai bagian kode Anda
+- Komunikasi antarjendela
 
-## Mengendalikan Window
+## Mengendalikan Jendela
 
-### Tampilkan dan Sembunyikan
+### Menampilkan dan Menyembunyikan
 
 ```go
 // Show window
@@ -135,9 +135,9 @@ if window.IsVisible() {
 ```
 
 *Kasus penggunaan:*
-- Splash screen (tampilkan, lalu sembunyikan)
-- Window pengaturan (sembunyikan saat tidak diperlukan)
-- Window popup (tampilkan sesuai permintaan)
+- Layar pembuka (tampilkan, lalu sembunyikan)
+- Jendela pengaturan (sembunyikan saat tidak diperlukan)
+- Jendela pop-up (tampilkan sesuai kebutuhan)
 
 ### Posisi dan Ukuran
 
@@ -160,10 +160,10 @@ x, y := window.Position()
 
 *Sistem koordinat:*
 - (0, 0) adalah sudut kiri atas layar utama
-- X positif ke kanan
-- Y positif ke bawah
+- Nilai X positif mengarah ke kanan
+- Nilai Y positif mengarah ke bawah
 
-### Status Window
+### Status Jendela
 
 ```go
 // Minimise
@@ -216,16 +216,16 @@ window.SetAlwaysOnTop(true)
 window.SetResizable(false)
 ```
 
-### Menutup Window
+### Menutup Jendela
 
 ```go
 // Close window — dispatches WindowClosing; a RegisterHook can call e.Cancel().
 window.Close()
 ```
 
-Tidak ada metode `window.Destroy()` di v3 — gunakan `Close()` dan dengarkan dengan `OnWindowEvent` (tidak dapat dibatalkan) atau hook dengan `RegisterHook` (dapat memanggil `e.Cancel()` untuk menjaga window tetap terbuka).
+Tidak ada metode `window.Destroy()` di v3 — gunakan `Close()` dan dengarkan dengan `OnWindowEvent` (tidak dapat membatalkan penutupan) atau pasang hook dengan `RegisterHook` (dapat memanggil `e.Cancel()` agar jendela tetap terbuka).
 
-## Mencari Window
+## Menemukan Jendela
 
 ### Berdasarkan Nama
 
@@ -237,7 +237,7 @@ if window, ok := app.Window.GetByName("settings"); ok {
 
 ### Berdasarkan ID
 
-Setiap window memiliki ID unik:
+Setiap jendela memiliki ID unik:
 
 ```go
 id := window.ID()
@@ -249,9 +249,9 @@ if found, ok := app.Window.GetByID(id); ok {
 }
 ```
 
-### Window Saat Ini
+### Jendela Saat Ini
 
-Dapatkan window yang sedang fokus:
+Dapatkan jendela yang sedang memiliki fokus:
 
 ```go
 current := app.Window.Current()
@@ -260,9 +260,9 @@ if current != nil {
 }
 ```
 
-### Semua Window
+### Semua Jendela
 
-Dapatkan semua window:
+Dapatkan semua jendela:
 
 ```go
 windows := app.Window.GetAll()
@@ -273,7 +273,7 @@ for _, w := range windows {
 }
 ```
 
-## Siklus Hidup Window
+## Siklus Hidup Jendela
 
 ### Pembuatan
 
@@ -288,7 +288,7 @@ app.Window.OnCreate(func(window application.Window) {
 
 ### Penutupan
 
-Untuk mencegah window ditutup, gunakan `RegisterHook` dengan event `WindowClosing`:
+Untuk mencegah jendela ditutup, gunakan `RegisterHook` dengan peristiwa `WindowClosing`:
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -303,11 +303,11 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 })
 ```
 
-*Penting:* `RegisterHook` mencegat event close sebelum terjadi. Panggil `event.Cancel()` untuk mencegah window ditutup. Ini berfungsi untuk penutupan yang dipicu pengguna (mengklik tombol X).
+*Penting:* `RegisterHook` mencegat peristiwa penutupan sebelum terjadi. Panggil `event.Cancel()` untuk mencegah jendela ditutup. Ini berlaku untuk penutupan yang dimulai oleh pengguna (mengeklik tombol X).
 
-### Penghancuran
+### Pemusnahan
 
-Untuk melakukan cleanup saat window ditutup, gunakan `OnWindowEvent` dengan event `WindowClosing`:
+Untuk melakukan pembersihan saat jendela ditutup, gunakan `OnWindowEvent` dengan peristiwa `WindowClosing`:
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -316,9 +316,9 @@ window.OnWindowEvent(events.Common.WindowClosing, func(event *application.Window
 })
 ```
 
-## Beberapa Window
+## Beberapa Jendela
 
-### Membuat Beberapa Window
+### Membuat Beberapa Jendela
 
 ```go
 // Main window
@@ -342,9 +342,9 @@ settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 settingsWindow.Show()
 ```
 
-### Komunikasi Antar Window
+### Komunikasi Antarjendela
 
-Window dapat berkomunikasi via event:
+Jendela dapat berkomunikasi melalui peristiwa:
 
 ```go
 // In main window
@@ -360,11 +360,11 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 })
 ```
 
-*Lihat [Event](/id/features/events/system/) untuk selengkapnya.*
+*Lihat [Peristiwa](/features/events/system/) untuk informasi selengkapnya.*
 
-### Window Parent-Child
+### Jendela Induk-Anak
 
-`WebviewWindowOptions` tidak memiliki field `Parent`. Buat child sebagai window normal dan lampirkan ke parent sebagai sheet modal:
+`WebviewWindowOptions` tidak memiliki bidang `Parent`. Buat jendela anak sebagai jendela biasa, lalu kaitkan ke induk sebagai lembar modal:
 
 ```go
 // Create child window
@@ -377,15 +377,15 @@ mainWindow.AttachModal(childWindow)
 ```
 
 *Perilaku:*
-- Child tetap di atas parent.
-- Child bersifat modal — memblokir interaksi dengan parent.
+- Jendela anak tetap berada di atas jendela induk.
+- Jendela anak bersifat modal — memblokir interaksi dengan jendela induk.
 
 *Dukungan platform:*
-- *macOS:* Dukungan penuh (ditampilkan sebagai sheet).
+- *macOS:* Dukungan penuh (ditampilkan sebagai lembar).
 - *Windows:* Tidak didukung.
 - *Linux:* Tidak didukung.
 
-## Fitur Spesifik Platform
+## Fitur Khusus Platform
 
 @tabs sync-key="platform"
 @tab label="Windows"
@@ -401,13 +401,13 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-Tidak ada `SetIcon` per-window — ikon aplikasi diatur pada app via `app.SetIcon([]byte)` (atau untuk ikon window khusus Linux, field `application.LinuxWindow.Icon` saat pembuatan window).
+Tidak ada `SetIcon` per jendela — ikon aplikasi ditetapkan pada aplikasi melalui `app.SetIcon([]byte)` (atau, untuk ikon jendela khusus Linux, melalui bidang `application.LinuxWindow.Icon` saat jendela dibuat).
 
 *Snap Assist:*\
-Menampilkan opsi layout snap Windows 11 untuk window.
+Menampilkan opsi tata letak snap Windows 11 melalui jalur pintasan sistem. Untuk tombol maksimalkan HTML khusus dengan Snap Layouts native saat penunjuk diarahkan ke atasnya, gunakan [Wilayah Nonklien Native di Windows](/features/windows/frameless/#native-non-client-regions-on-windows) sebagai gantinya.
 
-*Kedip taskbar:*\
-Berguna untuk notifikasi saat window diminimalkan.
+*Kedipan bilah tugas:*\
+Berguna untuk notifikasi saat jendela diminimalkan.
 
 
 
@@ -428,18 +428,21 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-*Tipe backdrop:*
-- `MacBackdropNormal` - Window standar
-- `MacBackdropTranslucent` - Latar belakang transparan
-- `MacBackdropTransparent` - Sepenuhnya transparan
+*Jenis latar belakang:*
+- `MacBackdropNormal` - Jendela standar
+- `MacBackdropTranslucent` - Latar belakang tembus cahaya; *memerlukan API privat* agar webview transparan.
+- `MacBackdropTransparent` - Sepenuhnya transparan; *memerlukan API privat* agar webview transparan.
+- `MacBackdropLiquidGlass` - Latar belakang kaca; *memerlukan API privat* agar webview transparan.
 
-*Collection behavior:*\
-Kendalikan bagaimana window berperilaku di seluruh Spaces:
-- `MacWindowCollectionBehaviorCanJoinAllSpaces` - Terlihat di semua Spaces
-- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Dapat menutupi aplikasi fullscreen
+Lakukan build dengan `-tags private_mac_apis` agar efek ini terlihat melalui webview. Tanpanya, webview tetap tidak transparan. `TitleBar.AppearsTransparent` sendiri menggunakan API publik. Lihat [API macOS Privat](/guides/build/private-macos-apis/).
 
-*Fullscreen native:*\
-Fullscreen macOS membuat Space baru (virtual desktop).
+*Perilaku koleksi:*\
+Atur perilaku jendela di berbagai Space:
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - Terlihat di semua Space
+- `MacWindowCollectionBehaviorFullScreenAuxiliary` - Dapat ditampilkan di atas aplikasi layar penuh
+
+*Layar penuh native:*\
+Mode layar penuh macOS membuat Space (desktop virtual) baru.
 
 
 
@@ -457,17 +460,17 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-*Catatan desktop environment:*
+*Catatan lingkungan desktop:*
 - GNOME: Dukungan penuh
 - KDE Plasma: Dukungan penuh
-- XFCE: Dukungan parsial
+- XFCE: Dukungan sebagian
 - Lainnya: Bervariasi
 
-*Tiling window manager (Hyprland, Sway, i3, dll.):*
-- `Minimise()` dan `Maximise()` mungkin tidak berfungsi seperti yang diharapkan — WM mengontrol geometri window
-- Permintaan `SetSize()` dan `SetPosition()` bersifat advisory dan mungkin diabaikan
-- `Fullscreen()` umumnya berfungsi seperti yang diharapkan
-- Beberapa WM tidak mendukung always-on-top
+*Pengelola jendela tiling (Hyprland, Sway, i3, dan sebagainya):*
+- `Minimise()` dan `Maximise()` mungkin tidak berfungsi sebagaimana mestinya — WM mengendalikan geometri jendela
+- Permintaan `SetSize()` dan `SetPosition()` hanya bersifat saran dan dapat diabaikan
+- `Fullscreen()` biasanya berfungsi sesuai harapan
+- Beberapa WM tidak mendukung mode selalu di atas
 
 
 @end
@@ -475,7 +478,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ## Pola Umum
 
-### Splash Screen
+### Layar Pembuka
 
 ```go
 // Create splash screen
@@ -498,7 +501,7 @@ splash.Close()
 mainWindow.Show()
 ```
 
-### Window Pengaturan
+### Jendela Pengaturan
 
 ```go
 var settingsWindow *application.WebviewWindow
@@ -537,29 +540,29 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 ### ✅ Lakukan
 
-- *Beri nama window penting* - Lebih mudah ditemukan nanti
-- *Atur ukuran minimum* - Cegah layout yang tidak dapat digunakan
-- *Pusatkan window* - UX lebih baik daripada posisi acak
-- *Tangani event close* - Cegah kehilangan data
-- *Uji di semua platform* - Perilaku bervariasi
-- *Gunakan ukuran yang sesuai* - Pertimbangkan berbagai ukuran layar
+- *Beri nama pada jendela penting* — Agar lebih mudah ditemukan nanti
+- *Tetapkan ukuran minimum* — Mencegah tata letak yang tidak dapat digunakan
+- *Posisikan jendela di tengah* — Memberikan pengalaman pengguna yang lebih baik daripada posisi acak
+- *Tangani peristiwa penutupan* — Mencegah kehilangan data
+- *Uji di semua platform* — Perilakunya berbeda-beda
+- *Gunakan ukuran yang sesuai* — Pertimbangkan berbagai ukuran layar
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- *Jangan buat terlalu banyak window* - Membingungkan pengguna
-- *Jangan lupa menutup window* - Memory leak
-- *Jangan hardcode posisi* - Ukuran layar berbeda-beda
-- *Jangan abaikan perbedaan platform* - Uji secara menyeluruh
-- *Jangan blokir UI thread* - Gunakan goroutine untuk operasi panjang
+- *Jangan membuat terlalu banyak jendela* — Membingungkan pengguna
+- *Jangan lupa menutup jendela* — Menyebabkan kebocoran memori
+- *Jangan menetapkan posisi secara hardcode* — Ukuran layar berbeda-beda
+- *Jangan abaikan perbedaan antarplatform* — Uji secara menyeluruh
+- *Jangan memblokir thread UI* — Gunakan goroutine untuk operasi yang berlangsung lama
 
 ## Pemecahan Masalah
 
-### Window Tidak Muncul
+### Jendela Tidak Muncul
 
 *Kemungkinan penyebab:*
-1. Window dibuat dalam keadaan tersembunyi
-2. Window di luar layar
-3. Window berada di belakang window lain
+1. Jendela dibuat dalam keadaan tersembunyi
+2. Jendela berada di luar layar
+3. Jendela berada di belakang jendela lain
 
 *Solusi:*
 
@@ -569,9 +572,9 @@ window.Center()
 window.Focus()
 ```
 
-### Ukuran Window Salah
+### Ukuran Jendela Salah
 
-*Penyebab:* Skala DPI di Windows/Linux
+*Penyebab:* penskalaan DPI di Windows/Linux
 
 *Solusi:*
 
@@ -581,9 +584,9 @@ window.Focus()
 window.SetSize(800, 600)
 ```
 
-### Window Langsung Tertutup
+### Jendela Langsung Tertutup
 
-*Penyebab:* Aplikasi keluar saat window terakhir ditutup
+*Penyebab:* aplikasi berhenti ketika jendela terakhir ditutup
 
 *Solusi:*
 
@@ -595,31 +598,31 @@ app := application.New(application.Options{
 })
 ```
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
 @cards cols="2"
-@card title="⚙ Opsi Window"
-Referensi lengkap untuk semua opsi window.
+@card title="⚙ Opsi Jendela"
+Referensi lengkap untuk semua opsi jendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/options/)
+[Pelajari Selengkapnya →](/features/windows/options/)
 @end
-@card title="▣ Beberapa Window"
-Pola untuk aplikasi multi-window.
+@card title="▣ Beberapa Jendela"
+Pola untuk aplikasi multijendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/multiple/)
+[Pelajari Selengkapnya →](/features/windows/multiple/)
 @end
-@card title="★ Window Tanpa Frame"
-Buat chrome window kustom.
+@card title="★ Jendela Tanpa Bingkai"
+Buat bingkai jendela khusus.
 
-[Pelajari Selengkapnya →](/id/features/windows/frameless/)
+[Pelajari Selengkapnya →](/features/windows/frameless/)
 @end
-@card title="🚀 Event Window"
-Tangani event siklus hidup window.
+@card title="🚀 Peristiwa Jendela"
+Tangani peristiwa siklus hidup jendela.
 
-[Pelajari Selengkapnya →](/id/features/windows/events/)
+[Pelajari Selengkapnya →](/features/windows/events/)
 @end
 @end
 
 ---
 
-*Pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh window](https://github.com/wailsapp/wails/tree/master/v3/examples).
+*Ada pertanyaan?* Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh jendela](https://github.com/wailsapp/wails/tree/master/v3/examples).

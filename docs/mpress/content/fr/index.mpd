@@ -1,46 +1,23 @@
 ---
 schema = 1
-title = "Créer des applications de bureau avec Go"
+title = "Créez des applications de bureau avec Go"
 description = "Applications de bureau natives utilisant Go et les technologies web"
-banner = {"content":"La bêta de Wails v3 est disponible. \u003ca href=\"https://wails.io\"\u003eDocumentation v2\u003c/a\u003e\n"}
+banner = {"content":"Wails v3 est actuellement en version bêta. \u003ca href=\"https://v2.wails.io\"\u003eVous recherchez la documentation de la v2 ?\u003c/a\u003e\n"}
 template = "splash"
-hero = {"actions":[{"icon":"right-arrow","link":"/fr/getting-started/installation","text":"Commencer","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Voir le tutoriel","variant":"secondary"}],"image":{"alt":"Logo Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Créez de belles applications de bureau performantes en utilisant Go et les technologies web modernes. Un seul codebase. Trois plateformes. Aucun navigateur."}
-sourcePath = "fr/index.mpd"
+hero = {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"Bien démarrer","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"Voir le tutoriel","variant":"secondary"}],"image":{"alt":"Logo de Wails","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Créez de belles applications performantes avec Go et les technologies web modernes. Une seule base de code. Trois plateformes. Aucun navigateur.*"}
+sourcePath = "index.mpd"
 ---
 
 @rawHTML
 <style>
-  /* Row 1 - Fastest */
+  /* Hero background — the neon "digital Wales" mountain, full-bleed and fixed. */
   body::after {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 200%;
-    height: 33.33vh;
-    opacity: 0.08;
+    inset: 0;
     z-index: -1;
-    background:
-      url('/showcase-images/tiny-rdm1.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/scriptbar.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/minesweeper-xp.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/wailsterm.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/modalfilemanager.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/ytd.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/filehound.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/edex-ui.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/tiny-rdm1.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/scriptbar.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/minesweeper-xp.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/wailsterm.webp') 7150px center / auto 80% no-repeat,
-      url('/showcase-images/modalfilemanager.webp') 7700px center / auto 80% no-repeat,
-      url('/showcase-images/ytd.webp') 8250px center / auto 80% no-repeat,
-      url('/showcase-images/filehound.webp') 8800px center / auto 80% no-repeat,
-      url('/showcase-images/edex-ui.webp') 9350px center / auto 80% no-repeat;
-    animation: scroll-row1 40s linear infinite;
-    filter: blur(0.5px);
+    background: url('/digital_wales_master.webp') center center / cover no-repeat;
+    opacity: 0.35;
     pointer-events: none;
   }
   
@@ -59,87 +36,11 @@ sourcePath = "fr/index.mpd"
     pointer-events: none;
   }
   
-  /* Row 2 - Medium Speed */
-  html::after {
-    content: '';
-    position: fixed;
-    top: 33.33vh;
-    left: 0;
-    width: 200%;
-    height: 33.33vh;
-    opacity: 0.08;
-    z-index: -2;
-    background:
-      url('/showcase-images/tiny-rdm2.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/mollywallet.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/optimus.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/cfntracker.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/riftshare-main.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/minecraft-mod-updater.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/resizem.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/mchat.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/tiny-rdm2.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/mollywallet.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/optimus.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/cfntracker.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/riftshare-main.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/minecraft-mod-updater.webp') 7150px center / auto 80% no-repeat,
-      url('/showcase-images/resizem.webp') 7700px center / auto 80% no-repeat,
-      url('/showcase-images/mchat.webp') 8250px center / auto 80% no-repeat;
-    animation: scroll-row2 25s linear infinite;
-    filter: blur(0.5px);
-    pointer-events: none;
-  }
-  
-  /* Row 3 - Slowest */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 66.66vh;
-    left: 0;
-    width: 200%;
-    height: 33.34vh;
-    opacity: 0.08;
-    z-index: -2;
-    background:
-      url('/showcase-images/portfall.webp') 0px center / auto 80% no-repeat,
-      url('/showcase-images/encrypteasy.webp') 550px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 1100px center / auto 80% no-repeat,
-      url('/showcase-images/varly2.webp') 1650px center / auto 80% no-repeat,
-      url('/showcase-images/hiposter.webp') 2200px center / auto 80% no-repeat,
-      url('/showcase-images/october.webp') 2750px center / auto 80% no-repeat,
-      url('/showcase-images/wombat.webp') 3300px center / auto 80% no-repeat,
-      url('/showcase-images/portfall.webp') 3850px center / auto 80% no-repeat,
-      url('/showcase-images/encrypteasy.webp') 4400px center / auto 80% no-repeat,
-      url('/showcase-images/gamestacker.webp') 4950px center / auto 80% no-repeat,
-      url('/showcase-images/varly2.webp') 5500px center / auto 80% no-repeat,
-      url('/showcase-images/hiposter.webp') 6050px center / auto 80% no-repeat,
-      url('/showcase-images/october.webp') 6600px center / auto 80% no-repeat,
-      url('/showcase-images/wombat.webp') 7150px center / auto 80% no-repeat;
-    animation: scroll-row3 50s linear infinite;
-    filter: blur(0.5px);
-    pointer-events: none;
-  }
   
   /* Hero padding */
   .hero {
     padding-top: 3rem !important;
     padding-bottom: 2rem !important;
-  }
-  
-  @keyframes scroll-row1 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  
-  @keyframes scroll-row2 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  
-  @keyframes scroll-row3 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
   }
   
   .small-buttons {
@@ -173,112 +74,133 @@ sourcePath = "fr/index.mpd"
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
+
 </style>
 @end
-
+@rawHTML
+<span class="browser-footnote" data-browser-footnote>* sauf si vous y tenez vraiment</span>
+<script>
+(() => {
+  const words = ['Desktop', 'Server', 'Mobile'];
+  let index = 0;
+  const init = () => {
+    const tagline = document.querySelector('.mpress-frontmatter-hero-tagline');
+    const note = document.querySelector('[data-browser-footnote]');
+    if (tagline && note && !tagline.contains(note)) tagline.appendChild(note);
+    const title = document.querySelector('.mpress-frontmatter-hero-title');
+    if (!title || title.querySelector('.morph-word-title')) return;
+    if (title.textContent.trim() !== 'Build Desktop Apps with Go') return;
+    const titleLine = document.createElement('span');
+    titleLine.className = 'morph-title-line';
+    const prefix = document.createElement('span');
+    prefix.textContent = 'Build';
+    const wordWrap = document.createElement('span');
+    wordWrap.className = 'morph-word-title';
+    const activeWord = document.createElement('span');
+    activeWord.textContent = words[0];
+    wordWrap.append(activeWord);
+    titleLine.append(prefix, wordWrap);
+    title.replaceChildren(titleLine, document.createElement('br'), document.createTextNode('Apps with Go'));
+    const rotate = () => {
+      const word = title.querySelector('.morph-word-title span');
+      if (!word) return;
+      word.classList.add('morph-word-out');
+      setTimeout(() => {
+        index = (index + 1) % words.length;
+        word.textContent = words[index];
+        word.classList.remove('morph-word-out');
+        setTimeout(rotate, 3600);
+      }, 650);
+    };
+    setTimeout(rotate, 3600);
+  };
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
+})();
+</script>
+@end
 ## Démarrage rapide
 
-@tabs sync-key="os"
-@tab label="macOS"
-
 @terminal frame="macos" prompt="none"
-# Installer Wails
+# 1. Install the Wails CLI
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
-# Créer votre application
-wails3 init -n myapp -t vanilla
+# 2. Run the setup wizard (experimental)
+wails3 setup
+@end
 
-# Lancer avec rechargement à chaud
+Vous êtes alors prêt à créer votre premier projet :
+
+@terminal frame="macos" prompt="none"
+wails3 init -n myapp -t vanilla
 cd myapp && wails3 dev
 @end
 
+*Votre application est maintenant en cours d’exécution* avec le rechargement à chaud et des liaisons Go vers JS à typage sûr.
 
+Vous rencontrez des problèmes avec `wails3 setup` ? Consultez le [guide d’installation manuelle](/quick-start/installation/).
 
-
-@end
-@tab label="Windows"
-
-@terminal frame="macos" prompt="none"
-# Installer Wails
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
-
-# Créer votre application
-wails3 init -n myapp -t vanilla
-
-# Lancer avec rechargement à chaud
-cd myapp; wails3 dev
-@end
-
-
-
-
-@end
-@tab label="Linux"
+## Votre application de bureau est déjà une application mobile
 
 @terminal frame="macos" prompt="none"
-# Installer Wails
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
-
-# Créer votre application
-wails3 init -n myapp -t vanilla
-
-# Lancer avec rechargement à chaud
-cd myapp && wails3 dev
+wails3 task ios:run      # run your existing app on iOS Simulator
+wails3 task android:run  # run your existing app on Android Emulator
 @end
 
+*Aucune modification de votre code Go.* Le même `main.go`, les mêmes services, le même frontend : Wails compile automatiquement le tout pour iOS et Android. Les fonctionnalités propres à chaque plateforme (retour haptique, boîtes de dialogue natives, zones sûres) sont disponibles lorsque vous en avez besoin, mais ne sont pas nécessaires pour publier votre application.
 
-@end
-@end
+[Documentation mobile →](/guides/mobile/)
 
-*Votre application est maintenant en cours d'exécution* avec le rechargement à chaud et des liaisons Go-to-JS typées en toute sécurité.
+---
 
-## Pourquoi Wails ?
+## Pourquoi Wails ?
 
 @cards cols="2"
-@card title="🚀 Des performances que les utilisateurs remarquent"
-- Binaires d'environ 15 Mo contre 150 Mo pour Electron
-- Mémoire de base d'environ 10 Mo contre 100 Mo+
-- Temps de démarrage < 0,5 s contre 2-3 s
-- Rendu natif utilisant le WebView du système d'exploitation
-- Aucun surcoût de navigateur intégré
+@card title="🚀 Des performances perceptibles par les utilisateurs"
+- Binaires d’environ 15 Mo contre 150 Mo pour Electron
+- Environ 10 Mo de mémoire au repos contre plus de 100 Mo
+- Démarrage en &lt;0.5 s contre 2-3 s
+- Rendu natif à l’aide de la WebView du système d’exploitation
+- Aucune surcharge due à un navigateur intégré
 @end
-@card title="⚙ Expérience développeur"
-- Un seul codebase Go pour toutes les plateformes
-- N'importe quel framework web - React, Vue, Svelte
+@card title="⚙ Expérience de développement"
+- Une seule base de code Go pour toutes les plateformes
+- N’importe quel framework web — React, Vue, Svelte
 - Rechargement à chaud pendant le développement
-- Liaisons générées automatiquement pour appeler facilement Go depuis Javascript
+- Liaisons générées automatiquement pour appeler facilement Go depuis JavaScript
 - IPC en mémoire. Aucun port réseau
 @end
-@card title="✓ Prêt pour la production"
-- Fenêtres multiples avec cycles de vie
+@card title="✓ Prêt pour les applications de bureau"
+- Plusieurs fenêtres avec gestion de leur cycle de vie
 - Menus natifs et zone de notification système
-- Boîtes de dialogue de fichiers natives à la plateforme
-- Intégration système et raccourcis
-- Outils de signature de code et de packaging
+- Boîtes de dialogue de fichiers natives de la plateforme
+- Intégration au système et raccourcis
+- Outils de signature du code et de création de paquets
 @end
-@card title="▣ Natif multi-plateforme"
-- Un seul codebase pour Windows, macOS, Linux
-- Fonctionnalités spécifiques à la plateforme si nécessaire
-- Aucun compromis sur l'expérience utilisateur
-- Déploiement sur toutes les plateformes depuis un seul build
-- Support mobile bientôt disponible...
+@card title="▣ Bureau et mobile"
+- Windows, macOS, Linux, iOS, Android
+- Même base de code, aucune réécriture
+- WebView native sur chaque plateforme
+- Aucun port ouvert, aucun serveur localhost
+- Fonctionnalités de la plateforme disponibles selon les besoins
 @end
 @end
 
 ## Étapes suivantes
 
-Étape suivante : [Étapes suivantes](/fr/quick-start/next-steps/), parcourir les [exemples](https://github.com/wailsapp/wails/tree/master/v3/examples) ou consulter la [référence de l'API](/reference/application/). Vous migrez depuis la v2 ? Consultez le [guide de mise à niveau](/migration/v2-to-v3/).
+Ensuite : [créez une application complète](/tutorials/03-notes-vanilla/), parcourez les [exemples](https://github.com/wailsapp/wails/tree/master/v3/examples) ou consultez la [référence de l’API](/reference/application/). Vous migrez depuis la v2 ? Consultez le [guide de mise à niveau](/migration/v2-to-v3/).
 
-@note type="info" title="Prêt pour la production"
-La bêta de Wails v3 est disponible. L'API est stable et des applications fonctionnent déjà en production. Nous affinons la documentation et les outils avant la version finale.
+@note type="info" title="Wails v3 bêta"
+Wails v3 est un logiciel en version bêta doté d’une API de bureau stable. Des équipes l’utilisent déjà\
+en production, mais devraient effectuer des tests approfondis avant le déploiement pendant que nous apportons\
+les dernières finitions pour 3.0.
 @end
 
 @cards cols="1"
-@card title="♥ Soutenir le développement de Wails"
-Wails est gratuit et open source, construit par des développeurs pour des développeurs. Si Wails vous aide à créer des applications incroyables, envisagez de soutenir son développement continu.
+@card title="♥ Soutenez le développement de Wails"
+Wails est un logiciel libre et gratuit, créé par des développeurs pour des développeurs. Si Wails vous aide à créer des applications exceptionnelles, envisagez de soutenir la poursuite de son développement.
 
-Votre sponsorship aide à maintenir le projet, améliorer la documentation et développer de nouvelles fonctionnalités qui profitent à toute la communauté.
+Votre parrainage contribue à maintenir le projet, à améliorer la documentation et à développer de nouvelles fonctionnalités qui profitent à toute la communauté.
 
-[Devenir Sponsor →](https://github.com/sponsors/leaanthony)
+[Devenir sponsor →](https://github.com/sponsors/leaanthony)
 @end
 @end

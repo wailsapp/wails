@@ -1,20 +1,20 @@
 ---
 schema = 1
 title = "Ikhtisar Teknis"
-description = "Arsitektur tingkat tinggi dan peta jalan ke codebase Wails v3"
+description = "Arsitektur tingkat tinggi dan peta jalan untuk memahami basis kode Wails v3"
 slug = "contributing/overview"
-sourcePath = "id/contributing/overview.mpd"
+sourcePath = "contributing/overview.mpd"
 ---
 
 ## Selamat Datang di Dokumentasi Teknis Wails v3
 
-Bagian ini *bukan* tentang panduan komunitas atau cara membuka pull-request.\
-Sebaliknya, bagian ini membahas *bagaimana Wails v3 dibangun* agar Anda dapat\
-dengan cepat berorientasi di codebase dan mulai hacking dengan percaya diri.
+Bagian ini *bukan* tentang pedoman komunitas atau cara membuka pull request.\
+Sebaliknya, bagian ini membahas secara mendalam *cara Wails v3 dibangun* agar Anda dapat dengan cepat memahami\
+basis kode dan mulai mengutak-atiknya dengan percaya diri.
 
-Baik Anda berencana mem-patch runtime, memperluas CLI, membuat template baru, atau\
-sekadar memahami internal, halaman-halaman berikut memberikan konteks teknis\
-yang Anda butuhkan.
+Baik Anda berencana memperbaiki runtime, memperluas CLI, membuat templat baru, maupun\
+sekadar memahami cara kerja internalnya, halaman-halaman berikut menyediakan konteks\
+teknis yang Anda perlukan.
 
 ---
 
@@ -22,65 +22,65 @@ yang Anda butuhkan.
 
 @cards cols="2"
 @card title="◇ Backend Go"
-Jantung setiap aplikasi Wails adalah kode Go yang dikompilasi menjadi executable native.\
-Backend ini memiliki logika aplikasi, integrasi sistem, dan operasi\
-kritis performa.
+Inti setiap aplikasi Wails adalah kode Go yang dikompilasi menjadi berkas executable native.\
+Kode ini menangani logika aplikasi, integrasi sistem, dan operasi yang\
+kritis terhadap performa.
 @end
 @card title="▤ Frontend Web"
 UI ditulis dengan teknologi web standar (React, Vue, Svelte, Vanilla, …)\
-dirender oleh WebView sistem yang ringan (WebKit di Linux/macOS, WebView2 di\
+dan dirender oleh WebView sistem yang ringan (WebKit di Linux/macOS, WebView2 di\
 Windows).
 @end
-@card title="◆ Lapisan Bridge"
-Bridge zero-copy in-memory memungkinkan panggilan *Go⇄JavaScript* dengan konversi\
-tipe otomatis, propagasi event, dan penerusan error.
+@card title="◆ Lapisan Penghubung"
+Bridge dalam memori tanpa penyalinan memungkinkan pemanggilan *Go⇄JavaScript* dengan\
+konversi tipe otomatis, propagasi event, dan penerusan error.
 @end
-@card title="▸ CLI & Tooling"
-`wails3` mengorkestrasi pembuatan proyek, dev server live-reload, bundling asset,\
-cross-compilation, dan packaging (deb, rpm, AppImage, msi, dmg…).
+@card title="▸ CLI \u0026 Peralatan"
+`wails3` mengatur pembuatan proyek, server pengembangan dengan pemuatan ulang otomatis, bundling\
+aset, kompilasi silang, dan pengemasan (deb, rpm, AppImage, msi, dmg…).
 @end
 @end
 
 ---
 
-## Ikhtisar Arsitektural
+## Ikhtisar Arsitektur
 
-*Wails v3 – Alur End-to-End*
+*Wails v3 – Alur Menyeluruh*
 
-*[Placeholder Diagram Alur End-to-End]*
+*[Placeholder Diagram Alur Menyeluruh]*
 
-Diagram menunjukkan *alur end-to-end*:
+Diagram tersebut menunjukkan *alur menyeluruh*:
 
-1. *CLI* menggerakkan generasi, dev server, kompilasi, dan packaging.\
-2. *Binding System* menghasilkan kode glue yang memungkinkan *Web Frontend* memanggil *Go Backend*.\
-3. Selama development *Asset Server* mem-proxy ke dev server framework; di production melayani file yang di-embed.\
-4. Saat runtime *Desktop Runtime* mengelola window dan API OS, sementara *Bridge* mengantar pesan antara Go dan JavaScript.
+1. *CLI* mengendalikan pembuatan kode, server pengembangan, kompilasi, dan pengemasan.\
+2. *Sistem Binding* menghasilkan kode penghubung yang memungkinkan *Frontend Web* memanggil *Backend Go*.\
+3. Selama pengembangan, *Server Aset* meneruskan permintaan ke server pengembangan framework; dalam produksi, server ini menyajikan berkas yang disematkan.\
+4. Saat runtime, *Runtime Desktop* mengelola jendela dan API sistem operasi, sedangkan *Bridge* mengirimkan pesan antara Go dan JavaScript.
 
 ---
 
-## Apa yang Dicakup Dokumentasi Ini
+## Cakupan Dokumentasi Ini
 
 @table header=true
-| Topik | Mengapa Penting |
-| *Tata Letak Codebase* | Peta direktori `/v3` dan interaksi modul. |
-| *Internal Runtime* | Manajemen window, API sistem, message processor, dan shim platform. |
-| *Asset & Dev Server* | Cara asset web dilayani di dev dan di-embed di production. |
-| *Pipeline Build & Packaging* | Alur kerja berbasis Taskfile, kompilasi lintas platform, dan generasi installer. |
-| *Binding System* | Pipeline analisis statis yang menghasilkan binding Go⇄TS type-safe. |
-| *Template System* | Arsitektur generator yang menggerakkan `wails3 init -t <framework>`. |
-| *Testing & CI* | Harness tes unit/integrasi, GitHub Actions, panduan race detector. |
-| *Memperluas Wails* | Menambahkan service, template, atau sub-perintah CLI. |
+| Topik | Mengapa Ini Penting |
+| *Tata Letak Basis Kode* | Peta direktori `/v3` dan cara modul berinteraksi. |
+| *Cara Kerja Internal Runtime* | Pengelolaan jendela, API sistem, pemroses pesan, dan shim platform. |
+| *Aset & Server Pengembangan* | Cara aset web disajikan saat pengembangan dan disematkan dalam produksi. |
+| *Pipeline Build & Pengemasan* | Alur kerja berbasis Taskfile, kompilasi lintas platform, dan pembuatan installer. |
+| *Sistem Binding* | Pipeline analisis statis yang menghasilkan binding Go⇄TS yang aman terhadap tipe. |
+| *Sistem Templat* | Arsitektur generator yang mendukung `wails3 init -t <framework>`. |
+| *Pengujian & CI* | Kerangka pengujian unit/integrasi, GitHub Actions, dan panduan race detector. |
+| *Memperluas Wails* | Menambahkan layanan, templat, atau subperintah CLI. |
 @end
 
-Setiap halaman berikutnya membahas area-area ini dengan contoh kode konkret,\
-diagram, dan referensi ke file sumber yang relevan.
+Setiap halaman berikutnya membahas area-area ini secara mendalam dengan contoh kode konkret,\
+diagram, dan referensi ke berkas sumber yang relevan.
 
 ---
 
 @note type="info"
-Prasyarat: Anda harus nyaman dengan *Go 1.25+*, TypeScript dasar,\
-dan alat build frontend modern. Jika Anda baru mengenal Go, pertimbangkan untuk\
-membaca tour resmi terlebih dahulu.
+Prasyarat: Anda sebaiknya memahami *Go 1.25+*, TypeScript dasar,\
+dan alat build frontend modern. Jika Anda baru mengenal Go, pertimbangkan untuk membaca sekilas\
+tur resminya terlebih dahulu.
 @end
 
-Selamat menjelajah — dan selamat datang di internal Wails v3!
+Selamat menjelajah—dan selamat datang di cara kerja internal Wails v3!

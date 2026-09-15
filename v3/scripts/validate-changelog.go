@@ -135,6 +135,11 @@ func main() {
 }
 
 var pullRequestReference = regexp.MustCompile(`^https://github\.com/wailsapp/wails/pull/[0-9]+$`)
+var shortIssueReference = regexp.MustCompile(`\(#([0-9]+)\)$`)
+
+// Multiword prose titles may move out of code spans so they can be translated.
+// Preserve every letter and space; do not strip punctuation from code or URLs.
+var inlineProseCode = regexp.MustCompile("`([A-Za-z]+(?: [A-Za-z]+)+)`")
 
 func pullRequestReferenceFromLine(line string) string {
 	const linkPrefix = "[PR]("
@@ -152,6 +157,16 @@ func pullRequestReferenceFromLine(line string) string {
 		return ""
 	}
 	return destination
+}
+
+func changelogReferenceFromLine(line string) string {
+	if strings.Contains(line, "[PR](") {
+		return pullRequestReferenceFromLine(line)
+	}
+	if match := shortIssueReference.FindStringSubmatch(strings.TrimSpace(line)); match != nil {
+		return "https://github.com/wailsapp/wails/issues/" + match[1]
+	}
+	return ""
 }
 
 type changelogEntry struct {
@@ -222,20 +237,20 @@ func releaseSection(line string) string {
 
 // isSameSourceCorrection distinguishes a historical correction from a new
 // entry added to a released section. Both lines must be changelog bullets in
-// the same released section and cite the same immutable Wails pull request.
+// the same released section and either cite the same immutable Wails issue or
+// pull request, or differ only in code-span versus emphasis markup around prose titles.
 func isSameSourceCorrection(addedLine, addedSection string, deletedEntries []changelogEntry) bool {
 	addedLine = strings.TrimSpace(addedLine)
 	if !strings.HasPrefix(addedLine, "- ") {
 		return false
 	}
-	reference := pullRequestReferenceFromLine(addedLine)
-	if reference == "" {
-		return false
-	}
+	reference := changelogReferenceFromLine(addedLine)
 	for _, deletedEntry := range deletedEntries {
-		if deletedEntry.Section == addedSection &&
-			deletedEntry.Line != addedLine &&
-			pullRequestReferenceFromLine(deletedEntry.Line) == reference {
+		if deletedEntry.Section != addedSection || deletedEntry.Line == addedLine {
+			continue
+		}
+		if reference != "" && changelogReferenceFromLine(deletedEntry.Line) == reference ||
+			inlineProseCode.ReplaceAllString(deletedEntry.Line, "*$1*") == addedLine {
 			return true
 		}
 	}

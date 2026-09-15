@@ -1,21 +1,21 @@
 ---
 schema = 1
-title = "Membuat Installer"
-description = "Kemas aplikasi Anda untuk distribusi"
+title = "Membuat Penginstal"
+description = "Kemas aplikasi Anda untuk didistribusikan"
 slug = "guides/installers"
-sourcePath = "id/guides/installers.mpd"
+sourcePath = "guides/installers.mpd"
 ---
 
-## Ringkasan
+## Gambaran Umum
 
-Buat installer profesional untuk aplikasi Wails Anda di semua platform.
+Buat penginstal profesional untuk aplikasi Wails Anda di semua platform.
 
-## Installer per Platform
+## Penginstal Platform
 
 @tabs sync-key="platform"
 @tab label="Windows"
 
-### NSIS Installer
+### Penginstal NSIS
 
 ```bash
 # Install NSIS
@@ -43,7 +43,7 @@ SectionEnd
 
 ### WiX Toolset
 
-Alternatif untuk installer MSI.
+Alternatif untuk penginstal MSI.
 
 
 
@@ -57,7 +57,7 @@ Alternatif untuk installer MSI.
 hdiutil create -volname "MyApp" -srcfolder bin/MyApp.app -ov -format UDZO MyApp.dmg
 ```
 
-### Code Signing
+### Penandatanganan Kode
 
 ```bash
 # Sign application
@@ -69,7 +69,7 @@ xcrun notarytool submit MyApp.dmg --apple-id "email" --password "app-password"
 
 ### App Store
 
-Gunakan Xcode untuk distribusi App Store.
+Gunakan Xcode untuk distribusi melalui App Store.
 
 
 
@@ -149,20 +149,20 @@ nfpms:
 
 ### ✅ Lakukan
 
-- Code sign di semua platform
+- Tandatangani kode di semua platform
 - Sertakan informasi versi
-- Buat uninstaller
+- Buat program penghapus instalasi
 - Uji proses instalasi
 - Sediakan dokumentasi yang jelas
 
-### ❌ Jangan
+### ❌ Jangan Lakukan
 
-- Jangan lewati code signing
-- Jangan lupa asosiasi file
-- Jangan hardcode path
-- Jangan lewati pengujian
+- Jangan lewatkan penandatanganan kode
+- Jangan lupakan asosiasi file
+- Jangan menulis jalur secara langsung dalam kode
+- Jangan lewatkan pengujian
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [In-App Updater](/id/guides/updater/) - Tambahkan self-update ke aplikasi Anda
-- [Cross-Platform Building](/id/guides/build/cross-platform/) - Build untuk banyak platform
+- [Pembaruan Dalam Aplikasi](/guides/updater/) - Tambahkan kemampuan agar aplikasi Anda dapat memperbarui dirinya sendiri
+- [Build Lintas Platform](/guides/build/cross-platform/) - Lakukan build untuk beberapa platform

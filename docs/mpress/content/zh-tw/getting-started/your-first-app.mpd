@@ -1,12 +1,12 @@
 ---
 schema = 1
-title = "你的第一個應用程式"
-description = "逐步建立你的第一個 Wails 桌面應用程式"
+title = "您的第一個應用程式"
+description = "逐步建立您的第一個 Wails 桌面應用程式"
 slug = "getting-started/your-first-app"
-sourcePath = "zh-tw/getting-started/your-first-app.mpd"
+sourcePath = "getting-started/your-first-app.mpd"
 ---
 
-本指南將展示如何建立你的第一個 Wails v3 應用程式，涵蓋專案設定、建置與開發工作流程。
+本指南將說明如何建立您的第一個 Wails v3 應用程式，涵蓋專案設定、建置及開發工作流程。
 
 @rawHTML
 <br/>
@@ -18,13 +18,15 @@ sourcePath = "zh-tw/getting-started/your-first-app.mpd"
 @steps
 @step title="建立新專案"
 
-開啟終端機並執行以下指令來建立新的 Wails 專案：
+開啟終端機並執行下列命令，以建立新的 Wails\
+專案：
 
 ```bash
 wails3 init -n myfirstapp
 ```
 
-此指令會建立一個名為 `myfirstapp` 的新目錄，其中包含所有必要的檔案。
+此命令會建立名為`myfirstapp`的新目錄，其中包含所有\
+必要檔案。
 
   @rawHTML
    <video src="/assets/wails_init.mp4" controls></video>
@@ -33,72 +35,77 @@ wails3 init -n myfirstapp
 @end
 @step title="探索專案結構"
 
-進入 `myfirstapp` 目錄。你會看到多個檔案與資料夾：
+前往`myfirstapp`目錄。您會看到數個檔案和\
+資料夾：
 
 @filetree
-- build/           包含建置流程所使用的檔案
+- build/           包含建置程序使用的檔案
   - appicon.png  應用程式圖示
   - config.yml   建置設定
-  - Taskfile.yml 建置任務
-  - darwin/      macOS 專屬建置檔案
-    - Info.dev.plist 開發環境設定
-    - Info.plist    生產環境設定
-    - Taskfile.yml  macOS 建置任務
+  - Taskfile.yml Build tasks
+  - darwin/      macOS 專用建置檔案
+    - Info.dev.plist Development configuration
+    - Info.plist    正式環境設定
+    - Taskfile.yml  macOS 建置工作
     - icons.icns    macOS 應用程式圖示
-  - linux/       Linux 專屬建置檔案
-    - Taskfile.yml  Linux 建置任務
+  - linux/       Linux 專用建置檔案
+    - Taskfile.yml  Linux 建置工作
     - appimage/     AppImage 封裝
-      - build.sh  AppImage 建置腳本
+      - build.sh  AppImage 建置指令碼
     - nfpm/        NFPM 封裝
-      - nfpm.yaml 套件設定
-      - scripts/  建置腳本
-  - windows/     Windows 專屬建置檔案
-    - Taskfile.yml        Windows 建置任務
+      - nfpm.yaml Package configuration
+      - scripts/  建置指令碼
+  - windows/     Windows 專用建置檔案
+    - Taskfile.yml        Windows 建置工作
     - icon.ico           Windows 應用程式圖示
     - info.json          應用程式中繼資料
-    - wails.exe.manifest Windows 設定檔
+    - wails.exe.manifest Windows manifest file
     - nsis/              NSIS 安裝程式檔案
       - project.nsi                    NSIS 專案檔案
-      - wails_tools.nsh               NSIS 輔助腳本
+      - wails_tools.nsh               NSIS 輔助指令碼
 - frontend/        前端應用程式檔案
   - index.html   主要 HTML 檔案
   - main.js      主要 JavaScript 檔案
-  - package.json NPM 套件設定
+  - package.json NPM package configuration
   - public/      靜態資源
-  - Inter Font License.txt 字型授權
-- .gitignore      Git 忽略檔案
+  - Inter Font License.txt Font license
+- .gitignore      Git 忽略規則檔案
 - README.md       專案文件
-- Taskfile.yml    專案任務
+- Taskfile.yml    專案工作
 - go.mod          Go 模組檔案
-- go.sum          Go 模組校驗和
-- greetservice.go 問候服務
+- go.sum          Go 模組總和檢查碼
+- greetservice.go Greeting service
 - main.go         主要應用程式程式碼
 @end
 
-花點時間探索這些檔案，並熟悉其結構。
+花點時間探索這些檔案，並熟悉其\
+結構。
 
 @note type="info"
-雖然 Wails v3 使用 [Task](https://taskfile.dev/) 作為預設的建置系統，但你也可以使用 `make` 或其他替代建置系統。
+雖然 Wails v3 預設使用[Task](https://taskfile.dev/)作為\
+建置系統，但您仍可使用`make`或任何其他\
+替代建置系統。
 @end
 @end
-@step title="建置你的應用程式"
+@step title="建置應用程式"
 
-要建置你的應用程式，請執行：
+若要建置應用程式，請執行：
 
 ```bash
 wails3 build
 ```
 
-此指令會編譯你的應用程式的除錯版本，並將其儲存至新的 `bin` 目錄中。
+此命令會編譯應用程式的偵錯版本，並將其儲存在\
+新的`bin`目錄中。
 
 @note type="info"
-`wails3 build` 是 `wails3 task build` 的縮寫，會執行 `Taskfile.yml` 中的 `build` 任務。
+`wails3 build`是`wails3 task build`的簡寫，會執行`Taskfile.yml`中的`build`工作。
 @end
     @rawHTML
      <video src="/assets/wails_build.mp4" controls></video>
     @end
 
-建置完成後，你可以像執行一般應用程式一樣執行它：
+建置完成後，您可以像執行一般應用程式一樣執行它：
 
 @tabs sync-key="platform"
 @tab label="Mac"
@@ -133,48 +140,53 @@ bin\myfirstapp.exe
 @end
 @end
 
-你會看到一個簡單的介面，這是你的應用程式的起點。由於這是除錯版本，你也會在控制台視窗中看到記錄。這對於除錯非常有用。
+您會看到一個簡單的使用者介面，這是應用程式的起點。由於這是\
+偵錯版本，您也會在主控台視窗中看到日誌。這對\
+偵錯很有幫助。
 
 @end
 @step title="開發模式"
 
-我們也可以以開發模式執行應用程式。此模式允許你修改前端程式碼，並即時看到變更反映在執行的應用程式中，而無需重新建置整個應用程式。
+您也可以在開發模式下執行應用程式。在此模式下，您可以\
+修改前端程式碼，並直接在執行中的應用程式內看到變更，\
+不必重新建置整個應用程式。
 
 1. 開啟新的終端機視窗。
-2. 執行 `wails3 dev`。應用程式將以除錯模式編譯並執行。
-3. 在你偏好的編輯器中開啟 `frontend/index.html`。
-4. 編輯程式碼，將 `Please enter your name below` 改為 `Please enter your name below!!!`。
+2. 執行`wails3 dev`。應用程式會進行編譯，並以偵錯模式執行。
+3. 使用您偏好的編輯器開啟`frontend/index.html`。
+4. 編輯程式碼，將`Please enter your name below`變更為`Please enter your name below!!!`。
 5. 儲存檔案。
 
-此變更會立即反映在你的應用程式中。
+此變更會立即反映在您的應用程式中。
 
-對後端程式碼的任何變更都會觸發重新建置：
+後端程式碼的任何變更都會觸發重新建置：
 
-1. 開啟 `greetservice.go`。
-2. 將包含 `return "Hello " + name + "!"` 的行改為 `return "Hello there " + name + "!"`。
+1. 開啟`greetservice.go`。
+2. 將包含`return "Hello " + name + "!"`的那一行變更為`return "Hello there " + name + "!"`。
 3. 儲存檔案。
 
-應用程式將在幾秒內更新。
+應用程式會在幾秒內更新。
 
     @rawHTML
      <video src="/assets/wails_dev.mp4" controls></video>
     @end
 
 @end
-@step title="封裝你的應用程式"
+@step title="封裝應用程式"
 
-    一旦你的應用程式準備好分發，你可以建立平台專屬的套件：
+    應用程式可供散佈後，您可以建立\
+    各平台專用的套件：
 
     @tabs sync-key="platform"
     @tab label="Mac"
 
-要建立 `.app` 套件：
+若要建立`.app`套件組合：
 
 ```bash
 wails3 package
 ```
 
-這將建立生產版本，並將其封裝成 `bin` 目錄中的 `.app` 套件。
+這會建立正式版本，並將其封裝成`.app`套件組合，置於`bin`目錄中。
 
 
 
@@ -182,13 +194,13 @@ wails3 package
     @end
     @tab label="Windows"
 
-要建立 NSIS 安裝程式：
+若要建立 NSIS 安裝程式：
 
 ```bash
 wails3 package
 ```
 
-這將建立生產版本，並將其封裝成 `bin` 目錄中的 NSIS 安裝程式。
+這會建立正式版本，並將其封裝成 NSIS 安裝程式，置於`bin`目錄中。
 
 
 
@@ -196,17 +208,17 @@ wails3 package
     @end
     @tab label="Linux"
 
-Wails 支援多種 Linux 分發的套件格式：
+Wails 支援多種用於 Linux 散佈的套件格式：
 
 ```bash
-# 建立所有套件類型 (AppImage, deb, rpm, 和 Arch Linux)
+# Create all package types (AppImage, deb, rpm, and Arch Linux)
 wails3 package
 
-# 或建立特定套件類型
-wails3 task linux:create:appimage  # AppImage 格式
-wails3 task linux:create:deb       # Debian 套件
-wails3 task linux:create:rpm       # Red Hat 套件
-wails3 task linux:create:aur       # Arch Linux 套件
+# Or create specific package types
+wails3 task linux:create:appimage  # AppImage format
+wails3 task linux:create:deb       # Debian package
+wails3 task linux:create:rpm       # Red Hat package
+wails3 task linux:create:aur       # Arch Linux package
 ```
 
 
@@ -215,45 +227,46 @@ wails3 task linux:create:aur       # Arch Linux 套件
     @end
     @end
 
-    有關封裝選項與設定的更多詳細資訊，請查看我們的 [封裝指南](/guides/installers/)。
+    如需封裝選項與設定的詳細資訊，\
+    請參閱我們的[建置與封裝指南](/guides/build/building/)。
 
 @end
 @step title="設定版本控制與模組名稱"
 
-你的專案已建立，但模組名稱為佔位符 `changeme`。建議將其更新以符合你的儲存庫 URL：
+建立專案時會使用預留位置模組名稱`changeme`。建議將其更新為與您的儲存庫 URL 相符：
 
-1. 在 GitHub（或你偏好的 Git 主機）上建立新儲存庫
-2. 在你的專案目錄中初始化 git：
+1. 在 GitHub（或您偏好的 Git 託管服務）上建立新儲存庫
+2. 在專案目錄中初始化 Git：
   ```bash
   git init
   git add .
   git commit -m "Initial commit"
   ```
-3. 設定你的遠端儲存庫（替換為你的儲存庫 URL）：
+3. 設定遠端儲存庫（請替換為您的儲存庫 URL）：
   ```bash
   git remote add origin https://github.com/username/myfirstapp.git
   ```
-4. 更新 `go.mod` 中的模組名稱以符合你的儲存庫 URL：
+4. 更新`go.mod`中的模組名稱，使其與您的儲存庫 URL 相符：
   ```bash
   go mod edit -module github.com/username/myfirstapp
   ```
-5. 推送你的程式碼：
+5. 推送程式碼：
   ```bash
   git push -u origin main
   ```
 
-這可確保你的 Go 模組名稱符合 Go 的模組命名慣例，並使分享程式碼變得更容易。
+這可確保您的 Go 模組名稱符合 Go 的模組命名慣例，也能讓您更輕鬆地分享程式碼。
 
 @note type="tip" title="專業提示"
-您可以透過在建立專案時使用 `-git` 旗標，自動化所有初始化步驟：
+建立專案時使用`-git`旗標，即可自動完成所有初始化步驟：
 ```bash
 wails3 init -n myfirstapp -git github.com/username/myfirstapp
 ```
-此功能支援各種 Git URL 格式：
-- HTTPS: `https://github.com/username/project`
-- SSH: `git@github.com:username/project` 或 `ssh://git@github.com/username/project`
-- Git 協定: `git://github.com/username/project`
-- 檔案系統: `file:///path/to/project.git`
+這支援多種 Git URL 格式：
+- HTTPS：`https://github.com/username/project`
+- SSH：`git@github.com:username/project`或`ssh://git@github.com/username/project`
+- Git 通訊協定：`git://github.com/username/project`
+- 檔案系統：`file:///path/to/project.git`
 @end
 
 @end
@@ -261,11 +274,11 @@ wails3 init -n myfirstapp -git github.com/username/myfirstapp
 
 ## 恭喜！
 
-您剛剛建立、開發並打包了您的第一個 Wails 應用程式。\
-這只是您使用 Wails v3 所能達成成就的開始。
+您剛剛已建立、開發並封裝了第一個 Wails 應用程式。\
+這只是您使用 Wails v3 實現各種成果的起點。
 
-## 下一步
+## 後續步驟
 
-如果您是 Wails 的新手，我們建議您接著閱讀我們的教學課程，這將是一份實用的指南，帶領您了解 Wails 的各項功能。第一個教學課程為 [建立服務](/tutorials/01-creating-a-service/)。
+如果您是 Wails 新手，建議接著閱讀我們的教學；這些教學會透過實作方式，引導您瞭解 Wails 的各項功能。第一篇教學是[建立服務](/tutorials/01-creating-a-service/)。
 
-如果您是進階使用者，請查看我們的 [指南](/guides/)，以獲取有關如何使用 Wails 的更詳細資訊。
+如果您是較進階的使用者，請參閱[建置與封裝指南](/guides/build/building/)，深入瞭解如何使用 Wails。

@@ -1,20 +1,20 @@
 ---
 schema = 1
-title = "Standar Coding"
+title = "Standar Pengodean"
 description = "Gaya kode, konvensi, dan praktik terbaik untuk Wails v3"
 slug = "contributing/standards"
-sourcePath = "id/contributing/standards.mpd"
+sourcePath = "contributing/standards.mpd"
 ---
 
-## Gaya Kode dan Konvensi
+## Gaya dan Konvensi Kode
 
-Mengikuti standar coding yang konsisten membuat codebase lebih mudah dibaca, dipelihara, dan dikontribusikan.
+Penerapan standar pengodean yang konsisten membuat basis kode lebih mudah dibaca dan dipelihara, serta memudahkan pengembang untuk berkontribusi pada basis kode tersebut.
 
 ## Standar Kode Go
 
-### Format Kode
+### Pemformatan Kode
 
-Gunakan alat format Go standar:
+Gunakan alat pemformatan Go standar:
 
 ```bash
 # Format all code
@@ -24,26 +24,26 @@ gofmt -w .
 goimports -w .
 ```
 
-*Wajib:* Semua kode Go harus lulus `gofmt` dan `goimports` sebelum commit.
+*Wajib:* Semua kode Go harus lolos `gofmt` dan `goimports` sebelum di-commit.
 
 ### Konvensi Penamaan
 
 *Paket:*
-- Huruf kecil, satu kata jika memungkinkan
+- Gunakan huruf kecil dan satu kata jika memungkinkan
 - `package application`, `package events`
-- Hindari underscore atau mixed caps
+- Hindari garis bawah atau campuran huruf besar dan kecil
 
-*Nama Exported:*
-- PascalCase untuk tipe, fungsi, konstanta
+*Nama yang diekspor:*
+- Gunakan PascalCase untuk tipe, fungsi, dan konstanta
 - `type WebviewWindow struct`, `func NewApplication()`
 
-*Nama Unexported:*
-- camelCase untuk tipe, fungsi, variabel internal
+*Nama yang tidak diekspor:*
+- Gunakan camelCase untuk tipe, fungsi, dan variabel internal
 - `type windowImpl struct`, `func createWindow()`
 
-*Interface:*
-- Dinamai berdasarkan perilaku: `Reader`, `Writer`, `Handler`
-- Interface satu method: nama dengan akhiran `-er`
+*Antarmuka:*
+- Beri nama berdasarkan perilaku: `Reader`, `Writer`, `Handler`
+- Untuk antarmuka dengan satu metode, gunakan nama dengan akhiran `-er`
 
 ```go
 // Good
@@ -57,9 +57,9 @@ type CloseInterface interface {
 }
 ```
 
-### Penanganan Error
+### Penanganan Kesalahan
 
-*Selalu periksa error:*
+*Selalu periksa kesalahan:*
 
 ```go
 // Good
@@ -72,7 +72,7 @@ if err != nil {
 result, _ := doSomething()
 ```
 
-*Gunakan error wrapping:*
+*Gunakan pembungkusan kesalahan:*
 
 ```go
 // Wrap errors to provide context
@@ -81,7 +81,7 @@ if err := validate(); err != nil {
 }
 ```
 
-*Buat tipe error kustom jika diperlukan:*
+*Buat tipe kesalahan khusus bila diperlukan:*
 
 ```go
 type ValidationError struct {
@@ -105,7 +105,7 @@ func (e *ValidationError) Error() string {
 package application
 ```
 
-*Deklarasi exported:*
+*Deklarasi yang diekspor:*
 
 ```go
 // NewApplication creates a new Wails application with the given options.
@@ -132,9 +132,9 @@ func (a *Application) processEvent(event *Event) {
 }
 ```
 
-### Struktur Fungsi dan Method
+### Struktur Fungsi dan Metode
 
-*Jaga fungsi tetap fokus:*
+*Pastikan fungsi tetap terfokus:*
 
 ```go
 // Good - single responsibility
@@ -152,7 +152,7 @@ func (w *Window) updateEverything() {
 }
 ```
 
-*Gunakan early return:*
+*Gunakan pengembalian awal:*
 
 ```go
 // Good
@@ -171,7 +171,7 @@ func validate(input string) error {
 // Avoid deep nesting
 ```
 
-### Concurrency
+### Konkurensi
 
 *Gunakan context untuk pembatalan:*
 
@@ -186,7 +186,7 @@ func (a *Application) RunWithContext(ctx context.Context) error {
 }
 ```
 
-*Lindungi state bersama dengan mutex:*
+*Lindungi status bersama dengan mutex:*
 
 ```go
 type SafeCounter struct {
@@ -201,7 +201,7 @@ func (c *SafeCounter) Increment() {
 }
 ```
 
-*Hindari goroutine leak:*
+*Hindari kebocoran goroutine:*
 
 ```go
 // Good - goroutine has exit condition
@@ -219,16 +219,16 @@ func (a *Application) startWorker(ctx context.Context) {
 }
 ```
 
-### Testing
+### Pengujian
 
-*Penamaan file test:*
+*Penamaan berkas pengujian:*
 
 ```go
 // Implementation: window.go
 // Tests: window_test.go
 ```
 
-*Table-driven test:*
+*Pengujian berbasis tabel:*
 
 ```go
 func TestValidate(t *testing.T) {
@@ -255,9 +255,9 @@ func TestValidate(t *testing.T) {
 
 ## Standar JavaScript/TypeScript
 
-### Format Kode
+### Pemformatan Kode
 
-Gunakan Prettier untuk format konsisten:
+Gunakan Prettier untuk pemformatan yang konsisten:
 
 ```json
 {
@@ -273,7 +273,7 @@ Gunakan Prettier untuk format konsisten:
 *Variabel dan fungsi:*
 - camelCase: `const userName = "John"`
 
-*Class dan tipe:*
+*Kelas dan tipe:*
 - PascalCase: `class WindowManager`
 
 *Konstanta:*
@@ -295,7 +295,7 @@ function process(data) {  // Bad
 }
 ```
 
-*Definisikan interface:*
+*Definisikan antarmuka:*
 
 ```typescript
 interface WindowOptions {
@@ -325,9 +325,9 @@ Gunakan [Conventional Commits](https://www.conventionalcommits.org/):
 - `feat`: Fitur baru
 - `fix`: Perbaikan bug
 - `docs`: Perubahan dokumentasi
-- `refactor`: Refactoring kode
-- `test`: Menambah atau memperbarui tes
-- `chore`: Tugas maintenance
+- `refactor`: Refaktorisasi kode
+- `test`: Penambahan atau pembaruan pengujian
+- `chore`: Tugas pemeliharaan
 
 *Contoh:*
 
@@ -348,18 +348,18 @@ windows were closed. This adds explicit cleanup in the
 window destructor.
 ```
 
-## Panduan Pull Request
+## Pedoman Pull Request
 
-### Sebelum Submit
+### Sebelum Mengirimkan
 
-- [ ] Kode lulus `gofmt` dan `goimports`
-- [ ] Semua tes lulus (`go test ./...`)
-- [ ] Kode baru memiliki tes
+- [ ] Kode lolos `gofmt` dan `goimports`
+- [ ] Semua pengujian lulus (`go test ./...`)
+- [ ] Kode baru dilengkapi pengujian
 - [ ] Dokumentasi diperbarui jika diperlukan
 - [ ] Pesan commit mengikuti konvensi
-- [ ] Tidak ada konflik merge dengan `master`
+- [ ] Tidak ada konflik penggabungan dengan `master`
 
-### Template Deskripsi PR
+### Templat Deskripsi PR
 
 ```markdown
 ## Description
@@ -380,29 +380,29 @@ How was this tested?
 - [ ] No breaking changes (or documented)
 ```
 
-## Proses Code Review
+## Proses Peninjauan Kode
 
-### Sebagai Reviewer
+### Sebagai Peninjau
 
-- Bersikap konstruktif dan hormat
-- Fokus pada kualitas kode, bukan preferensi pribadi
-- Jelaskan mengapa perubahan disarankan
-- Setujui setelah puas
+- Bersikaplah konstruktif dan penuh hormat
+- Fokuslah pada kualitas kode, bukan preferensi pribadi
+- Jelaskan alasan perubahan disarankan
+- Setujui setelah merasa puas
 
-### Sebagai Author
+### Sebagai Penulis
 
 - Tanggapi semua komentar
-- Minta klarifikasi jika diperlukan
-- Lakukan perubahan yang diminta atau jelaskan mengapa tidak
-- Terbuka terhadap feedback
+- Mintalah klarifikasi jika diperlukan
+- Lakukan perubahan yang diminta atau jelaskan alasan Anda tidak melakukannya
+- Terbukalah terhadap umpan balik
 
 ## Praktik Terbaik
 
 ### Performa
 
-- Hindari optimisasi prematur
-- Profil sebelum mengoptimalkan
-- Gunakan benchmark untuk kode kritis performa
+- Hindari optimasi prematur
+- Lakukan profiling sebelum mengoptimalkan
+- Gunakan benchmark untuk kode yang sangat memengaruhi performa
 
 ```go
 func BenchmarkProcess(b *testing.B) {
@@ -414,19 +414,19 @@ func BenchmarkProcess(b *testing.B) {
 
 ### Keamanan
 
-- Validasi semua input pengguna
+- Validasi semua masukan pengguna
 - Sanitasi data sebelum ditampilkan
 - Gunakan `crypto/rand` untuk data acak
-- Jangan pernah log informasi sensitif
+- Jangan pernah mencatat informasi sensitif dalam log
 
 ### Dokumentasi
 
-- Dokumentasikan API exported
+- Dokumentasikan API yang diekspor
 - Sertakan contoh dalam dokumentasi
-- Perbarui docs saat mengubah API
-- Jaga README tetap mutakhir
+- Perbarui dokumentasi saat mengubah API
+- Pastikan file README selalu mutakhir
 
-## Kode Spesifik Platform
+## Kode Khusus Platform
 
 ### Penamaan File
 
@@ -437,7 +437,7 @@ window_windows.go   // Windows implementation
 window_linux.go     // Linux implementation
 ```
 
-### Build Tags
+### Tag Build
 
 ```go
 //go:build darwin
@@ -449,7 +449,7 @@ package application
 
 ## Linting
 
-Jalankan linter sebelum commit:
+Jalankan linter sebelum melakukan commit:
 
 ```bash
 # golangci-lint (recommended)
@@ -460,9 +460,9 @@ go vet ./...
 staticcheck ./...
 ```
 
-## Pertanyaan?
+## Ada Pertanyaan?
 
 Jika Anda tidak yakin tentang standar apa pun:
-- Periksa kode yang ada untuk contoh
-- Tanya di [Discord](https://discord.gg/JDdSxwjhGf)
+- Periksa kode yang ada untuk melihat contoh
+- Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf)
 - Buka diskusi di GitHub

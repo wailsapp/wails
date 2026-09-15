@@ -1,161 +1,162 @@
 ---
 schema = 1
-title = "Wails의 작동 원리"
-description = "Wails 아키텍처 이해 및 네이티브 성능 달성 방식"
+title = "Wails의 작동 방식"
+description = "Wails 아키텍처와 네이티브 성능을 구현하는 방식 이해하기"
 slug = "concepts/architecture"
-sourcePath = "ko/concepts/architecture.mpd"
+sourcePath = "concepts/architecture.mpd"
 ---
 
-Wails는 *백엔드에 Go*와 *프론트엔드에 웹 기술*을 사용하여 데스크탑 애플리케이션을 구축하기 위한 프레임워크입니다. 하지만 Electron과 달리 Wails는 브라우저를 번들링하지 않으며, *운영 체제의 네이티브 WebView*를 사용합니다.
+Wails는 *백엔드에 Go*를 사용하고 *프런트엔드에 웹 기술*을 사용하여 데스크톱 애플리케이션을 빌드하는 프레임워크입니다. 하지만 Electron과 달리 Wails는 브라우저를 번들로 포함하지 않고 *운영 체제의 네이티브 WebView*를 사용합니다.
 
 ```d2
 direction: left
 
 Wails App: {
   shape: sequence_diagram
-  label: "Wails App"
+  label: Wails 앱
 
-  frontend: Frontend
-  backend: Go Backend
-  os: Operating System
+  frontend: 프런트엔드
+  backend: Go 백엔드
+  os: 운영 체제
 
-  Initialisation: {
+  Initialisation: 초기화 {
     shape: sequence_diagram
-    backend."Serves Static Web App"
+    backend."Serves Static Web App": 정적 웹 앱 제공
     backend -> frontend: HTML / JS / CSS
-    frontend."Render Site via OS-native WebView"
+    frontend."Render Site via OS-native WebView": OS 네이티브 WebView로 사이트 렌더링
   }
-  Regular Communication: {
+  Regular Communication: 일반 통신 {
     shape: sequence_diagram
-    frontend."Make API-style call"
+    frontend."Make API-style call": API 방식으로 호출
     frontend -> backend.a: JSON
-    backend.a."Service processes request"
-    backend.a -> os: Call System APIs
-    backend.a."Generate Response"
+    backend.a."Service processes request": 서비스가 요청 처리
+    backend.a -> os: 시스템 API 호출
+    backend.a."Generate Response": 응답 생성
     backend.a -> frontend: JSON
-    frontend."Process response"
+    frontend."Process response": 응답 처리
   }
+  backend.a.label: a
 }
 ```
 
 *Electron과의 주요 차이점:*
 
 @table header=true
-| 측면 | Wails | Electron |
-| *브라우저* | OS 제공 WebView | 번들링된 Chromium (~100MB) |
-| *백엔드* | Go (컴파일됨) | Node.js (인터프리터) |
-| *통신* | 인메모리 브리지 | IPC (프로세스 간 통신) |
+| 항목 | Wails | Electron |
+| *브라우저* | OS에서 제공하는 WebView | 번들로 포함된 Chromium(~100MB) |
+| *백엔드* | Go(컴파일 방식) | Node.js(인터프리트 방식) |
+| *통신* | 인메모리 브리지 | IPC(프로세스 간 통신) |
 | *번들 크기* | ~15MB | ~150MB |
 | *메모리* | ~10MB | ~100MB+ |
-| *시작 시간* | &lt;0.5s | 2-3s |
+| *시작 시간* | &lt;0.5초 | 2-3초 |
 @end
 
 ## 핵심 구성 요소
 
 ### 1. 네이티브 WebView
 
-Wails는 운영 체제의 내장 웹 렌더링 엔진을 사용합니다.
+Wails는 운영 체제에 내장된 웹 렌더링 엔진을 사용합니다.
 
 @tabs sync-key="platform"
 @tab label="Windows"
 
-*WebView2* (Microsoft Edge WebView2)
-- Chromium 기반 (Edge 브라우저와 동일)
-- Windows 10/11에 사전 설치됨
+*WebView2*(Microsoft Edge WebView2)
+- Chromium 기반(Edge 브라우저와 동일)
+- Windows 10/11에 기본 설치됨
 - Windows Update를 통한 자동 업데이트
-- 최신 웹 표준 전체 지원
+- 최신 웹 표준 완벽 지원
 
 
 
 @end
 @tab label="macOS"
 
-*WebKit* (Safari의 렌더링 엔진)
+*WebKit*(Safari의 렌더링 엔진)
 - macOS에 내장됨
 - Safari 브라우저와 동일한 엔진
-- 우수한 성능과 배터리 수명
-- 최신 웹 표준 전체 지원
+- 뛰어난 성능과 배터리 사용 시간
+- 최신 웹 표준 완벽 지원
 
 
 
 @end
 @tab label="Linux"
 
-*WebKitGTK* (WebKit의 GTK 포트)
+*WebKitGTK*(WebKit의 GTK 포트)
 - 패키지 관리자를 통해 설치
-- GNOME Web(Epiphany)와 동일한 엔진
-- 우수한 표준 지원
-- 경량이고 성능이 우수함
+- GNOME Web(Epiphany)과 동일한 엔진
+- 웹 표준을 충실히 지원
+- 가볍고 성능이 우수함
 
 
 @end
 @end
 
-*이것이 중요한 이유:*
-- *번들링된 브라우저 없음* → 더 작은 애플리케이션 크기
-- *OS 네이티브* → 더 나은 통합 및 성능
-- *자동 업데이트* → OS 업데이트를 통한 보안 패치
+*이 점이 중요한 이유:*
+- *브라우저를 번들로 포함하지 않음* → 더 작은 앱 크기
+- *OS 네이티브* → 더 나은 통합과 성능
+- *자동 업데이트* → OS 업데이트를 통해 보안 패치 적용
 - *익숙한 렌더링* → 시스템 브라우저와 동일
 
 ### 2. Wails 브리지
 
-브리지는 Wails의 핵심으로, Go와 JavaScript 간의 *직접 통신*을 가능하게 합니다.
+브리지는 Wails의 핵심으로, Go와 JavaScript 간의 *직접 통신*을 지원합니다.
 
 ```d2
 direction: down
 
-Frontend: "Frontend (JavaScript)" {
+Frontend: 프런트엔드(JavaScript) {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
-Bridge: "Wails Bridge" {
-  Encoder: "JSON Encoder" {
+Bridge: Wails 브리지 {
+  Encoder: JSON 인코더 {
     shape: rectangle
   }
-  
-  Router: "Method Router" {
+
+  Router: 메서드 라우터 {
     shape: diamond
     style.fill: "#10B981"
   }
-  
-  Decoder: "JSON Decoder" {
+
+  Decoder: JSON 디코더 {
     shape: rectangle
   }
 }
 
-Backend: "Backend (Go)" {
-  Services: "Registered Services" {
+Backend: 백엔드(Go) {
+  Services: 등록된 서비스 {
     shape: rectangle
     style.fill: "#00ADD8"
   }
 }
 
-Frontend -> Bridge.Encoder: "1. Call Go method\nGreet('Alice')"
-Bridge.Encoder -> Bridge.Router: "2. Encode to JSON\n{method: 'Greet', args: ['Alice']}"
-Bridge.Router -> Backend.Services: "3. Route to service\nGreetService.Greet('Alice')"
-Backend.Services -> Bridge.Decoder: "4. Return result\n'Hello, Alice!'"
-Bridge.Decoder -> Frontend: "5. Decode to JS\nPromise resolves"
+Frontend -> Bridge.Encoder: "1. Go 메서드 호출\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. JSON으로 인코딩\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. 서비스로 라우팅\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. 결과 반환\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. JS로 디코딩\nPromise 이행"
 ```
 
 *작동 방식:*
 
-1. *프론트엔드가 Go 메서드 호출* (자동 생성 바인딩을 통해)
-2. *브리지가 호출을 JSON으로 인코딩* (메서드 이름 + 인수)
-3. *라우터가 등록된 서비스에서 Go 메서드 찾기*
-4. *Go 메서드 실행* 및 값 반환
-5. *브리지가 결과를 디코딩*하여 프론트엔드로 전송
-6. *JavaScript에서 Promise가 해결*되며 결과 반환
+1. *프런트엔드가 Go 메서드를 호출*(자동 생성된 바인딩을 통해)
+2. *브리지가 호출을 JSON으로 인코딩*(메서드 이름 + 인수)
+3. *라우터가 등록된 서비스에서 Go 메서드를 찾음*
+4. *Go 메서드가 실행*되고 값을 반환
+5. *브리지가 결과를 디코딩*하여 프런트엔드로 다시 전송
+6. JavaScript에서 결과로 *Promise가 이행됨*
 
 *성능 특성:*
-- *인메모리*: 네트워크 오버헤드 없음, HTTP 없음
-- *가능한 경우 제로 복사* (대용량 데이터용)
-- *기본 비동기*: 양쪽 모두 차단되지 않음
-- *타입 안전*: TypeScript 정의 자동 생성
+- *인메모리*: 네트워크 오버헤드와 HTTP가 없음
+- 가능한 경우 *제로 카피* 적용(대용량 데이터)
+- *기본적으로 비동기*: 양쪽 모두 논블로킹 방식
+- *타입 안전성*: TypeScript 정의 자동 생성
 
 ### 3. 서비스 시스템
 
-서비스는 Go 기능을 프론트엔드에 노출하는 권장 방법입니다.
+서비스는 Go 기능을 프런트엔드에 노출할 때 권장되는 방식입니다.
 
 ```go
 // Define a service (just a regular Go struct)
@@ -180,11 +181,11 @@ app := application.New(application.Options{
 })
 ```
 
-*서비스 발견:*
-- Wails는 시작 시 *구조체를 스캔*합니다.
-- *내보낸 메서드*가 프론트엔드에서 호출 가능해집니다.
-- *타입 정보*가 TypeScript 바인딩을 위해 추출됩니다.
-- *오류 처리*가 자동화됩니다 (Go 오류 → JS 예외).
+*서비스 검색:*
+- Wails가 시작 시 *구조체를 스캔*합니다.
+- *내보낸 메서드*를 프런트엔드에서 호출할 수 있게 됩니다.
+- TypeScript 바인딩을 위해 *타입 정보*를 추출합니다.
+- *오류 처리*가 자동으로 이루어집니다(Go 오류 → JS 예외).
 
 *생성된 TypeScript 바인딩:*
 ```typescript
@@ -193,48 +194,50 @@ export function Greet(name: string): Promise<string>
 export function GetTime(): Promise<Date>
 ```
 
-*서비스를 사용하는 이유:*
-- *타입 안전*: 전체 TypeScript 지원
-- *자동 발견*: 메서드 수동 등록 불필요
-- *구성*: 관련 기능 그룹화
-- *테스트 가능*: 서비스는 단순 Go 구조체
+*서비스를 사용하는 이유*
+- *타입 안전성*: TypeScript 완전 지원
+- *자동 검색*: 메서드를 수동으로 등록할 필요 없음
+- *체계적인 구성*: 관련 기능을 그룹화
+- *테스트 가능*: 서비스는 일반 Go 구조체일 뿐임
 
-[서비스에 대해 더 알아보기 →](/features/bindings/services/)
+[서비스에 대해 자세히 알아보기 →](/features/bindings/services/)
 
 ### 4. 이벤트 시스템
 
-이벤트는 구성 요소 간 *pub/sub 통신*을 가능하게 합니다.
+이벤트를 사용하면 컴포넌트 간에 *게시/구독 통신*을 수행할 수 있습니다.
 
 ```d2
 direction: left
 
-Wails Event System: {
+Wails Event System: Wails 이벤트 시스템 {
   shape: sequence_diagram
 
-  window1: Window 1
-  window2: Window 2
-  backend: Go Backend
+  window1: 창 1
+  window2: 창 2
+  backend: Go 백엔드
 
-  Event Driver: {
+  Event Driver: 이벤트 드라이버 {
     shape: sequence_diagram
-    window1."Subscribe to 'data-updated' events"
-    window2."Subscribe to 'data-updated' events"
-    backend.a."App Emit('data-updated', data)"
-    backend.a -> window1.a:"JSON Event Bus"
-    backend.a -> window2:"JSON Event Bus"
-    window1.a."Subscriber processes On('data-updated', handler)"
-    window2."Subscriber processes On('data-updated', handler)"
+    window1."Subscribe to 'data-updated' events": "'data-updated' 이벤트 구독"
+    window2."Subscribe to 'data-updated' events": "'data-updated' 이벤트 구독"
+    backend.a."App Emit('data-updated', data)": "앱에서 Emit('data-updated', data) 호출"
+    backend.a -> window1.a: JSON 이벤트 버스
+    backend.a -> window2: JSON 이벤트 버스
+    window1.a."Subscriber processes On('data-updated', handler)": "구독자가 On('data-updated', handler) 처리"
+    window2."Subscriber processes On('data-updated', handler)": "구독자가 On('data-updated', handler) 처리"
   }
+  backend.a.label: a
+  window1.a.label: a
 }
 ```
 
 *사용 사례:*
-- *창 간 통신*: 한 창이 다른 창에 알림
-- *백그라운드 작업*: Go 서비스가 UI에 진행 상황 알림
-- *상태 동기화*: 여러 창을 동기화 상태로 유지
-- *느슨한 결합*: 구성 요소가 직접 참조할 필요 없음
+- *창 간 통신*: 한 창에서 다른 창에 알림
+- *백그라운드 작업*: Go 서비스에서 UI에 진행 상황 알림
+- *상태 동기화*: 여러 창의 상태를 동기화
+- *느슨한 결합*: 컴포넌트 간 직접 참조가 필요 없음
 
-*예제:*
+*예시:*
 ```go
 // Go: Emit an event
 app.Event.Emit("user-logged-in", user)
@@ -249,59 +252,59 @@ Events.On('user-logged-in', (user) => {
 })
 ```
 
-[이벤트에 대해 더 알아보기 →](/features/events/system/)
+[이벤트에 대해 자세히 알아보기 →](/features/events/system/)
 
 ## 애플리케이션 수명 주기
 
-수명 주기를 이해하면 리소스를 초기화하고 정리해야 할 시기를 알 수 있습니다.
+수명 주기를 이해하면 리소스를 초기화하고 정리해야 하는 시점을 파악할 수 있습니다.
 
 ```d2
 direction: down
 
-Start: "Application Start" {
+Start: 애플리케이션 시작 {
   shape: oval
   style.fill: "#10B981"
 }
 
-Init: "Initialisation" {
-  Create: "Create Application" {
+Init: 초기화 {
+  Create: 애플리케이션 생성 {
     shape: rectangle
   }
-  
-  Register: "Register Services" {
+
+  Register: 서비스 등록 {
     shape: rectangle
   }
-  
-  Setup: "Setup Windows/Menus" {
+
+  Setup: 창/메뉴 설정 {
     shape: rectangle
   }
 }
 
-Run: "Event Loop" {
-  Events: "Process Events" {
+Run: 이벤트 루프 {
+  Events: 이벤트 처리 {
     shape: rectangle
   }
-  
-  Messages: "Handle Messages" {
+
+  Messages: 메시지 처리 {
     shape: rectangle
   }
-  
-  Render: "Update UI" {
+
+  Render: UI 업데이트 {
     shape: rectangle
   }
 }
 
-Shutdown: "Shutdown" {
-  Cleanup: "Cleanup Resources" {
+Shutdown: 종료 {
+  Cleanup: 리소스 정리 {
     shape: rectangle
   }
-  
-  Save: "Save State" {
+
+  Save: 상태 저장 {
     shape: rectangle
   }
 }
 
-End: "Application End" {
+End: 애플리케이션 종료 {
   shape: oval
   style.fill: "#EF4444"
 }
@@ -312,313 +315,311 @@ Init.Register -> Init.Setup
 Init.Setup -> Run.Events
 Run.Events -> Run.Messages
 Run.Messages -> Run.Render
-Run.Render -> Run.Events: "Loop"
-Run.Events -> Shutdown.Cleanup: "Quit signal"
+Run.Render -> Run.Events: 반복
+Run.Events -> Shutdown.Cleanup: 종료 신호
 Shutdown.Cleanup -> Shutdown.Save
 Shutdown.Save -> End
 ```
 
-*Lifecycle hooks:*
+*수명 주기 훅:*
 
 ```go
 app := application.New(application.Options{
     Name: "My App",
-    
-    // Called before windows are created
-    OnStartup: func(ctx context.Context) {
-        // Initialise database, load config, etc.
-    },
-    
-    // Called when app is about to quit
-    OnShutdown: func() {
-        // Save state, close connections, etc.
-    },
+
+    // Cleanly intercept quit requests (e.g. unsaved changes).
+    ShouldQuit: func() bool { return true },
+
+    // Called when the app is confirmed to be quitting — save state, close connections, etc.
+    OnShutdown: func() {},
 })
 ```
 
-[Learn more about lifecycle →](/concepts/lifecycle/)
+`application.Options`에는 `OnStartup` 필드가 없습니다. 시작 작업은 서비스의 `ServiceStartup(ctx, options)`, `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`을 통해 등록한 콜백 또는 단순히 `app.Run()` 이전에 배치해야 합니다.
 
-## Build Process
+[수명 주기에 대해 자세히 알아보기 →](/concepts/lifecycle/)
 
-Understanding how Wails builds your application:
+## 빌드 프로세스
+
+Wails가 애플리케이션을 빌드하는 방식을 알아봅니다.
 
 ```d2
 direction: down
 
-Source: "Source Code" {
-  Go: "Go Code\n(main.go, services)" {
+Source: 소스 코드 {
+  Go: "Go 코드\n(main.go, 서비스)" {
     shape: rectangle
     style.fill: "#00ADD8"
   }
-  
-  Frontend: "Frontend Code\n(HTML/CSS/JS)" {
+
+  Frontend: "프런트엔드 코드\n(HTML/CSS/JS)" {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
 }
 
-Build: "Build Process" {
-  AnalyseGo: "Analyse Go Code" {
+Build: 빌드 프로세스 {
+  AnalyseGo: Go 코드 분석 {
     shape: rectangle
   }
-  
-  GenerateBindings: "Generate Bindings" {
+
+  GenerateBindings: 바인딩 생성 {
     shape: rectangle
   }
-  
-  BuildFrontend: "Build Frontend" {
+
+  BuildFrontend: 프런트엔드 빌드 {
     shape: rectangle
   }
-  
-  CompileGo: "Compile Go" {
+
+  CompileGo: Go 컴파일 {
     shape: rectangle
   }
-  
-  Embed: "Embed Assets" {
+
+  Embed: 에셋 임베드 {
     shape: rectangle
   }
 }
 
-Output: "Output" {
-  Binary: "Native Binary\n(myapp.exe/.app)" {
+Output: 출력 {
+  Binary: "네이티브 바이너리\n(myapp.exe/.app)" {
     shape: rectangle
     style.fill: "#10B981"
   }
 }
 
 Source.Go -> Build.AnalyseGo
-Build.AnalyseGo -> Build.GenerateBindings: "Extract types"
-Build.GenerateBindings -> Source.Frontend: "TypeScript bindings"
-Source.Frontend -> Build.BuildFrontend: "Compile (Vite/webpack)"
-Build.BuildFrontend -> Build.Embed: "Bundled assets"
+Build.AnalyseGo -> Build.GenerateBindings: 타입 추출
+Build.GenerateBindings -> Source.Frontend: TypeScript 바인딩
+Source.Frontend -> Build.BuildFrontend: 컴파일(Vite/webpack)
+Build.BuildFrontend -> Build.Embed: 번들 에셋
 Source.Go -> Build.CompileGo
 Build.CompileGo -> Build.Embed
 Build.Embed -> Output.Binary
 ```
 
-*Build steps:*
+*빌드 단계:*
 
-1. *Analyse Go code*
-  - Scan services for exported methods
-  - Extract parameter and return types
-  - Generate method signatures
+1. *Go 코드 분석*
+  - 서비스에서 내보낸 메서드 검색
+  - 매개변수 및 반환 타입 추출
+  - 메서드 시그니처 생성
 
-2. *Generate TypeScript bindings*
-  - Create `.ts` files for each service
-  - Include full type definitions
-  - Add JSDoc comments
+2. *TypeScript 바인딩 생성*
+  - 각 서비스의 `.ts` 파일 생성
+  - 전체 타입 정의 포함
+  - JSDoc 주석 추가
 
-3. *Build frontend*
-  - Run your bundler (Vite, webpack, etc.)
-  - Minify and optimise
-  - Output to `frontend/dist/`
+3. *프런트엔드 빌드*
+  - 번들러 실행(Vite, webpack 등)
+  - 축소 및 최적화
+  - `frontend/dist/`에 출력
 
-4. *Compile Go*
-  - Compile with optimisations (`-ldflags="-s -w"`)
-  - Include build metadata
-  - Platform-specific compilation
+4. *Go 컴파일*
+  - 최적화 옵션을 적용하여 컴파일(`-ldflags="-s -w"`)
+  - 빌드 메타데이터 포함
+  - 플랫폼별 컴파일
 
-5. *Embed assets*
-  - Embed frontend files into Go binary
-  - Compress assets
-  - Create single executable
+5. *애셋 임베드*
+  - 프런트엔드 파일을 Go 바이너리에 임베드
+  - 애셋 압축
+  - 단일 실행 파일 생성
 
-*Result:* A single native executable with everything embedded.
+*결과:* 모든 요소가 임베드된 하나의 네이티브 실행 파일입니다.
 
-[Learn more about building →](/guides/build/building/)
+[빌드에 대해 자세히 알아보기 →](/guides/build/building/)
 
-## Development vs Production
+## 개발 환경과 프로덕션 환경
 
-Wails behaves differently in development and production:
+Wails는 개발 환경과 프로덕션 환경에서 다르게 동작합니다.
 
 @tabs sync-key="mode"
-@tab label="Development (wails3 dev)"
+@tab label="개발 환경(wails3 dev)"
 
-*Characteristics:*
-- *Hot reload*: Frontend changes reload instantly
-- *Source maps*: Debug with original source
-- *DevTools*: Browser DevTools available
-- *Logging*: Verbose logging enabled
-- *External frontend*: Served from dev server (Vite)
+*특징:*
+- *핫 리로드*: 프런트엔드 변경 사항을 즉시 다시 로드
+- *소스 맵*: 원본 소스로 디버깅
+- *DevTools*: 브라우저 DevTools 사용 가능
+- *로깅*: 상세 로깅 활성화
+- *외부 프런트엔드*: 개발 서버(Vite)에서 제공
 
-*How it works:*
+*작동 방식:*
 ```d2
 direction: right
 
-WailsApp: "Wails App" {
+WailsApp: Wails 앱 {
   shape: rectangle
   style.fill: "#00ADD8"
 }
 
-DevServer: "Vite Dev Server\n(localhost:5173)" {
+DevServer: "Vite 개발 서버\n(localhost:5173)" {
   shape: rectangle
   style.fill: "#8B5CF6"
 }
 
-WebView: "WebView" {
+WebView: WebView {
   shape: rectangle
   style.fill: "#6B7280"
 }
 
-WailsApp -> DevServer: "Proxy requests"
-DevServer -> WebView: "Serve with HMR"
-WebView -> WailsApp: "Call Go methods"
+WailsApp -> DevServer: 요청 프록시
+DevServer -> WebView: HMR로 제공
+WebView -> WailsApp: Go 메서드 호출
 ```
 
-*Benefits:*
-- Instant feedback on changes
-- Full debugging capabilities
-- Faster iteration
+*이점:*
+- 변경 사항에 대한 즉각적인 피드백
+- 모든 디버깅 기능 사용 가능
+- 더 빠른 반복 개발
 
 
 
 @end
-@tab label="Production (wails3 build)"
+@tab label="프로덕션 환경(wails3 build)"
 
-*Characteristics:*
-- *Embedded assets*: Frontend built into binary
-- *Optimised*: Minified, compressed
-- *No DevTools*: Disabled by default
-- *Minimal logging*: Errors only
-- *Single file*: Everything in one executable
+*특징:*
+- *임베드된 애셋*: 프런트엔드를 바이너리에 포함하여 빌드
+- *최적화*: 축소 및 압축
+- *DevTools 없음*: 기본적으로 비활성화
+- *최소한의 로깅*: 오류만 기록
+- *단일 파일*: 모든 요소를 하나의 실행 파일에 포함
 
-*How it works:*
+*작동 방식:*
 ```d2
 direction: right
 
-Binary: "Single Binary\n(myapp.exe)" {
-  GoCode: "Compiled Go" {
+Binary: "단일 바이너리\n(myapp.exe)" {
+  GoCode: 컴파일된 Go 코드 {
     shape: rectangle
     style.fill: "#00ADD8"
   }
-  
-  Assets: "Embedded Assets\n(HTML/CSS/JS)" {
+
+  Assets: "임베드된 에셋\n(HTML/CSS/JS)" {
     shape: rectangle
     style.fill: "#8B5CF6"
   }
 }
 
-WebView: "WebView" {
+WebView: WebView {
   shape: rectangle
   style.fill: "#6B7280"
 }
 
-Binary.Assets -> WebView: "Serve from memory"
-WebView -> Binary.GoCode: "Call Go methods"
+Binary.Assets -> WebView: 메모리에서 제공
+WebView -> Binary.GoCode: Go 메서드 호출
 ```
 
-*Benefits:*
-- Single file distribution
-- Smaller size (minified)
-- Better performance
-- No external dependencies
+*이점:*
+- 단일 파일 배포
+- 더 작은 크기(최소화됨)
+- 더 나은 성능
+- 외부 종속성 없음
 
 
 @end
 @end
 
-## Memory Model
+## 메모리 모델
 
-Understanding memory usage helps you build efficient applications.
+메모리 사용 방식을 이해하면 효율적인 애플리케이션을 빌드할 수 있습니다.
 
-*Memory regions:*
+*메모리 영역:*
 
-1. *Go Heap*
-  - Your services and application state
-  - Managed by Go garbage collector
-  - Typically 5-10MB for simple apps
+1. *Go 힙*
+  - 서비스와 애플리케이션 상태
+  - Go 가비지 컬렉터에서 관리
+  - 간단한 앱의 경우 일반적으로 5-10MB
 
-2. *WebView Memory*
-  - DOM, JavaScript heap, CSS
-  - Managed by WebView's engine
-  - Typically 10-20MB for simple apps
+2. *WebView 메모리*
+  - DOM, JavaScript 힙, CSS
+  - WebView 엔진에서 관리
+  - 간단한 앱의 경우 일반적으로 10-20MB
 
-3. *Bridge Memory*
-  - Message buffers for communication
-  - Minimal overhead (\<1MB)
-  - Zero-copy for large data where possible
+3. *브리지 메모리*
+  - 통신용 메시지 버퍼
+  - 최소한의 오버헤드(\<1MB)
+  - 가능한 경우 대용량 데이터를 복사 없이 처리
 
-*Optimisation tips:*
-- *Avoid large data transfers*: Pass IDs, fetch details on demand
-- *Use events for updates*: Don't poll from frontend
-- *Stream large files*: Don't load entirely into memory
-- *Clean up listeners*: Remove event listeners when done
+*최적화 팁:*
+- *대용량 데이터 전송을 피하세요*: ID를 전달하고 필요할 때 세부 정보를 가져오세요.
+- *업데이트에는 이벤트를 사용하세요*: 프런트엔드에서 폴링하지 마세요.
+- *대용량 파일을 스트리밍하세요*: 파일 전체를 메모리에 로드하지 마세요.
+- *리스너를 정리하세요*: 사용을 마치면 이벤트 리스너를 제거하세요.
 
-[Learn more about performance →](/guides/performance/)
+[성능에 대해 자세히 알아보기 →](/guides/performance/)
 
-## Security Model
+## 보안 모델
 
-Wails provides a secure-by-default architecture:
+Wails는 기본적으로 안전한 아키텍처를 제공합니다:
 
 ```d2
 direction: down
 
-Frontend: "Frontend (Untrusted)" {
+Frontend: 프런트엔드(신뢰할 수 없음) {
   shape: rectangle
   style.fill: "#EF4444"
 }
 
-Bridge: "Wails Bridge (Validation)" {
+Bridge: Wails 브리지(검증) {
   shape: diamond
   style.fill: "#F59E0B"
 }
 
-Backend: "Backend (Trusted)" {
+Backend: 백엔드(신뢰됨) {
   shape: rectangle
   style.fill: "#10B981"
 }
 
-Frontend -> Bridge: "Call method"
-Bridge -> Bridge: "Validate:\n- Method exists?\n- Types correct?\n- Access allowed?"
-Bridge -> Backend: "Execute if valid"
-Backend -> Bridge: "Return result"
-Bridge -> Frontend: "Send response"
+Frontend -> Bridge: 메서드 호출
+Bridge -> Bridge: "검증:\n- 메서드가 존재합니까?\n- 타입이 올바릅니까?\n- 접근이 허용됩니까?"
+Bridge -> Backend: 유효한 경우 실행
+Backend -> Bridge: 결과 반환
+Bridge -> Frontend: 응답 전송
 ```
 
-*Security features:*
+*보안 기능:*
 
-1. *Method whitelisting*
-  - Only exported methods are callable
-  - Private methods are inaccessible
-  - Explicit service registration required
+1. *메서드 허용 목록*
+  - 내보낸 메서드만 호출 가능
+  - 비공개 메서드에는 접근 불가
+  - 서비스를 명시적으로 등록해야 함
 
-2. *Type validation*
-  - Arguments checked against Go types
-  - Invalid types rejected
-  - Prevents injection attacks
+2. *타입 검증*
+  - 인수를 Go 타입과 대조하여 검사
+  - 유효하지 않은 타입을 거부
+  - 인젝션 공격 방지
 
-3. *No eval()*
-  - Frontend can't execute arbitrary Go code
-  - Only predefined methods callable
-  - No dynamic code execution
+3. *eval() 없음*
+  - 프런트엔드에서 임의의 Go 코드를 실행할 수 없음
+  - 미리 정의된 메서드만 호출 가능
+  - 동적 코드 실행 없음
 
-4. *Context isolation*
-  - Each window has its own context
-  - Services can check caller context
-  - Permissions per window possible
+4. *컨텍스트 격리*
+  - 각 창은 자체 컨텍스트를 사용
+  - 서비스에서 호출자 컨텍스트를 확인할 수 있음
+  - 창별 권한 설정 가능
 
-*Best practices:*
-- *Validate user input* in Go (don't trust frontend)
-- *Use context* for authentication/authorisation
-- *Sanitise file paths* before file operations
-- *Rate limit* expensive operations
+*권장 사항:*
+- Go에서 *사용자 입력을 검증하세요*(프런트엔드를 신뢰하지 마세요).
+- 인증 및 권한 부여에 *컨텍스트를 사용하세요*.
+- 파일 작업 전에 *파일 경로를 정제하세요*.
+- 비용이 많이 드는 작업에 *속도 제한을 적용하세요*.
 
-[Learn more about security →](/guides/security/)
+[보안에 대해 자세히 알아보기 →](/guides/security/)
 
-## Next Steps
+## 다음 단계
 
-*Application Lifecycle* - Understand startup, shutdown, and lifecycle hooks\
-[Learn More →](/concepts/lifecycle/)
+*애플리케이션 수명 주기* - 시작, 종료 및 수명 주기 훅을 이해하세요.\
+[자세히 알아보기 →](/concepts/lifecycle/)
 
-*Go-Frontend Bridge* - Deep dive into how the bridge works\
-[Learn More →](/concepts/bridge/)
+*Go-프런트엔드 브리지* - 브리지의 작동 방식을 자세히 살펴보세요.\
+[자세히 알아보기 →](/concepts/bridge/)
 
-*Build System* - Understand how Wails builds your application\
-[Learn More →](/concepts/build-system/)
+*빌드 시스템* - Wails가 애플리케이션을 빌드하는 방식을 이해하세요.\
+[자세히 알아보기 →](/concepts/build-system/)
 
-*Start Building* - Apply what you've learned in a tutorial\
-[Tutorials →](/tutorials/03-notes-vanilla/)
+*빌드 시작하기* - 지금까지 배운 내용을 튜토리얼에서 적용해 보세요.\
+[튜토리얼 →](/tutorials/03-notes-vanilla/)
 
 ---
 
-*아키텍처에 대해 질문이 있으신가요?* [Discord](https://discord.gg/JDdSxwjhGf)에서 문의하거나 [API 레퍼런스](/reference/overview/)를 확인하세요.
+*아키텍처에 관해 궁금한 점이 있나요?* [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [API 참조 문서](/reference/overview/)를 확인하세요.

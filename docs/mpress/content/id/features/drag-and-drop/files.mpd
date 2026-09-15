@@ -1,16 +1,20 @@
 ---
 schema = 1
-title = "Drop File"
+title = "Penjatuhan File"
 description = "Terima file yang diseret dari sistem operasi ke aplikasi Anda"
 slug = "features/drag-and-drop/files"
-sourcePath = "id/features/drag-and-drop/files.mpd"
+sourcePath = "features/drag-and-drop/files.mpd"
 ---
 
-Wails memungkinkan pengguna menyeret file dari sistem operasi (file manager, desktop) ke aplikasi Anda. Berbeda dengan drag-and-drop HTML5 yang hanya bekerja di dalam browser, ini memberi Anda akses ke path file aktual di disk.
+Wails memungkinkan pengguna menyeret file dari sistem operasi (pengelola file, desktop) ke aplikasi Anda. Berbeda dengan seret dan jatuhkan HTML5 yang hanya berfungsi di dalam browser, fitur ini memberi Anda akses ke jalur file yang sebenarnya pada disk.
 
-## Aktifkan Drop File
+![Contoh seret dan jatuhkan Wails dengan zona penjatuhan file eksternal di macOS](/assets/screenshots/file-drop-macos.png)
 
-Drop file dinonaktifkan secara default. Untuk mengaktifkannya, set `EnableFileDrop: true` di opsi window Anda:
+Zona penjatuhan eksternal merupakan bagian dari webview, sedangkan Wails menyediakan peristiwa penjatuhan file native dari sistem operasi.
+
+## Aktifkan Penjatuhan File
+
+Penjatuhan file dinonaktifkan secara default. Untuk mengaktifkannya, atur `EnableFileDrop: true` dalam opsi jendela Anda:
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -21,13 +25,13 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-Ketika `EnableFileDrop` adalah `false` (default), file yang diseret dari OS diblokir — tidak akan terbuka di webview atau memicu event apa pun. Ini mencegah navigasi tidak sengaja saat pengguna menyeret file di atas aplikasi Anda.
+Saat `EnableFileDrop` bernilai `false` (nilai default), file yang diseret dari sistem operasi akan diblokir—file tersebut tidak akan dibuka di webview atau memicu peristiwa apa pun. Hal ini mencegah navigasi yang tidak disengaja ketika pengguna menyeret file di atas aplikasi Anda.
 
-## Tentukan Zona Drop
+## Tentukan Zona Penjatuhan
 
-Zona drop memberi tahu Wails elemen mana yang harus menerima file. File yang di-drop di luar zona drop diabaikan.
+Zona penjatuhan memberi tahu Wails elemen mana yang harus menerima file. File yang dijatuhkan di luar zona penjatuhan akan diabaikan.
 
-Tambahkan atribut `data-file-drop-target` ke elemen mana pun:
+Tambahkan atribut `data-file-drop-target` ke elemen apa pun:
 
 ```html
 <div id="upload" class="drop-zone" data-file-drop-target>
@@ -35,11 +39,11 @@ Tambahkan atribut `data-file-drop-target` ke elemen mana pun:
 </div>
 ```
 
-Anda dapat memiliki beberapa zona drop. `id` dan class CSS elemen diteruskan ke kode Go Anda, sehingga Anda dapat menangani drop secara berbeda tergantung di mana file mendarat.
+Anda dapat memiliki beberapa zona penjatuhan. `id` dan kelas CSS milik elemen diteruskan ke kode Go Anda, sehingga Anda dapat menangani penjatuhan secara berbeda sesuai lokasi file dijatuhkan.
 
-## Gaya Hover Drag
+## Atur Gaya Saat Seretan Melintas
 
-Saat file diseret di atas zona drop, Wails menambahkan class `file-drop-target-active`. Ini memungkinkan Anda memberikan umpan balik visual agar pengguna tahu di mana mereka dapat drop:
+Saat file diseret di atas zona penjatuhan, Wails menambahkan kelas `file-drop-target-active`. Dengan demikian, Anda dapat memberikan umpan balik visual agar pengguna mengetahui tempat mereka dapat menjatuhkan file:
 
 ```css
 .drop-zone {
@@ -55,11 +59,11 @@ Saat file diseret di atas zona drop, Wails menambahkan class `file-drop-target-a
 }
 ```
 
-Class dihapus otomatis saat file meninggalkan zona atau di-drop.
+Kelas tersebut dihapus secara otomatis saat file meninggalkan zona atau dijatuhkan.
 
-## Deteksi File yang Di-drop
+## Deteksi File yang Dijatuhkan
 
-Saat file di-drop pada zona drop yang valid, Wails memicu event `WindowFilesDropped`. Konteks event berisi path filesystem lengkap dari semua file yang di-drop:
+Saat file dijatuhkan pada zona penjatuhan yang valid, Wails memicu peristiwa `WindowFilesDropped`. Konteks peristiwa berisi jalur lengkap sistem file untuk semua file yang dijatuhkan:
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/events"
@@ -73,11 +77,11 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
 })
 ```
 
-Path bersifat absolut, seperti `/home/user/documents/report.pdf` atau `C:\Users\Name\Documents\report.pdf`.
+Jalur tersebut bersifat absolut, seperti `/home/user/documents/report.pdf` atau `C:\Users\Name\Documents\report.pdf`.
 
-## Dapatkan Info Target Drop
+## Dapatkan Informasi Target Penjatuhan
 
-Saat Anda memiliki beberapa zona drop, Anda dapat mengetahui zona mana yang menerima file menggunakan `DropTargetDetails()`:
+Jika Anda memiliki beberapa zona penjatuhan, Anda dapat mengetahui zona yang menerima file menggunakan `DropTargetDetails()`:
 
 ```go
 window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
@@ -90,7 +94,7 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
 })
 ```
 
-Ini memungkinkan Anda mengarahkan file ke handler yang berbeda:
+Dengan demikian, Anda dapat mengarahkan file ke penangan yang berbeda:
 
 ```go
 switch details.ElementID {
@@ -151,9 +155,9 @@ window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.W
 </style>
 ```
 
-## Drop Seluruh Window
+## Penjatuhan di Seluruh Jendela
 
-Jika Anda ingin file dapat di-drop di mana saja di aplikasi, tambahkan atribut ke elemen body:
+Jika Anda ingin file dapat dijatuhkan di mana saja dalam aplikasi, tambahkan atribut tersebut ke elemen body:
 
 ```html
 <body data-file-drop-target>
@@ -161,7 +165,7 @@ Jika Anda ingin file dapat di-drop di mana saja di aplikasi, tambahkan atribut k
 </body>
 ```
 
-Anda dapat menggunakan overlay CSS untuk menunjukkan seluruh window adalah target drop:
+Anda dapat menggunakan lapisan CSS untuk menunjukkan bahwa seluruh jendela merupakan target penjatuhan:
 
 ```css
 body.file-drop-target-active::after {
@@ -178,11 +182,11 @@ body.file-drop-target-active::after {
 }
 ```
 
-## Menggabungkan dengan HTML Drag & Drop
+## Menggabungkan dengan Seret dan Jatuhkan HTML
 
-Anda dapat menggunakan drop file eksternal dan drag-and-drop HTML internal dalam aplikasi yang sama. Saat `EnableFileDrop` adalah `true`, Wails mencegat drag file eksternal tetapi membiarkan drag HTML5 internal melewati secara normal.
+Anda dapat menggunakan penjatuhan file eksternal dan seret dan jatuhkan HTML internal dalam aplikasi yang sama. Saat `EnableFileDrop` bernilai `true`, Wails mencegat seretan file eksternal, tetapi tetap membiarkan seretan HTML5 internal berjalan seperti biasa.
 
-Untuk membedakannya di handler zona drop HTML Anda, periksa apakah drag berisi file:
+Untuk membedakan keduanya dalam penangan zona penjatuhan HTML, periksa apakah seretan berisi file:
 
 ```javascript
 zone.addEventListener('dragenter', (e) => {
@@ -205,9 +209,9 @@ zone.addEventListener('drop', (e) => {
 });
 ```
 
-Ini memastikan handler drop HTML Anda hanya merespons drag internal (seperti memindahkan item daftar), sementara Wails menangani drop file eksternal secara terpisah melalui event `WindowFilesDropped`.
+Hal ini memastikan penangan penjatuhan HTML Anda hanya merespons seretan internal (seperti memindahkan item daftar), sementara Wails menangani penjatuhan file eksternal secara terpisah melalui peristiwa `WindowFilesDropped`.
 
-## Langkah Selanjutnya
+## Langkah Berikutnya
 
-- [HTML Drag & Drop](/id/features/drag-and-drop/html/) - Seret elemen di dalam aplikasi Anda
-- [Opsi Window](/id/features/windows/options/) - Semua opsi konfigurasi window
+- [Seret dan Jatuhkan HTML](/features/drag-and-drop/html/)—Seret elemen di dalam aplikasi Anda
+- [Opsi Jendela](/features/windows/options/)—Semua opsi konfigurasi jendela

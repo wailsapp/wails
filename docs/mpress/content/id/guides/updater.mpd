@@ -1,16 +1,16 @@
 ---
 schema = 1
-title = "Updater"
-description = "Self-update dalam aplikasi untuk Wails v3 — provider yang dapat di-plug, verifikasi kriptografis, atomic swap, dan UI default yang dapat di-theme atau diganti."
+title = "Pembaru"
+description = "Pembaruan mandiri dalam aplikasi untuk Wails v3 — penyedia yang dapat dipasang, verifikasi kriptografis, penggantian atomik, dan UI bawaan yang dapat Anda ubah temanya atau ganti."
 slug = "guides/updater"
-sourcePath = "id/guides/updater.mpd"
+sourcePath = "guides/updater.mpd"
 ---
 
-Updater menyediakan pembaruan perangkat lunak dalam aplikasi tanpa memaksa Anda membangun pipeline download / verify / swap sendiri. Updater duduk di atas `app.Updater`, menerima satu atau lebih `Provider` yang dapat di-plug (GitHub Releases, keygen.sh, Sparkle AppCast, atau milik Anda sendiri), mengautentikasi download terhadap public key yang dikonfigurasi, menukar binary yang sedang berjalan dengan aman, dan menampilkan setiap transisi melalui event bus Wails standar.
+Pembaru mengirimkan pembaruan perangkat lunak dalam aplikasi tanpa mengharuskan Anda membuat sendiri alur pengunduhan / verifikasi / penggantian. Komponen ini berada di atas `app.Updater`, menerima satu atau beberapa `Provider` yang dapat dipasang (GitHub Releases, keygen.sh, Sparkle AppCast, protokol terbuka Wails Update Manifest, atau milik Anda sendiri), mengautentikasi unduhan menggunakan kunci publik yang dikonfigurasi, mengganti biner yang sedang berjalan dengan aman, dan menampilkan setiap transisi melalui bus peristiwa Wails standar.
 
-![Window updater default dalam state Update Ready — ikon aware state, pill versi (v1.0.0 → v2.0.1 · 8.8 MB), release notes yang di-render Markdown termasuk tabel GFM, dan satu aksi primary.](/assets/updater/default-window-ready.png)
+![Jendela pembaruan bawaan dalam status Pembaruan Siap — ikon yang menyesuaikan status, label versi berbentuk pil (v1.0.0 → v2.0.1 · 8.8 MB), catatan rilis yang dirender dari Markdown termasuk tabel GFM, dan satu tindakan utama.](/assets/updater/default-window-ready.png)
 
-## Quick start
+## Mulai cepat
 
 ```go {title="main.go"}
 package main
@@ -43,35 +43,35 @@ func main() {
 }
 ```
 
-Itu membuka window update framework, memeriksa GitHub, mengunduh asset platform, memverifikasinya, menukar binary, dan menunggu pengguna restart.
+Tindakan tersebut membuka jendela pembaruan framework, memeriksa GitHub, mengunduh artefak platform, memverifikasinya, mengganti biner, lalu menunggu pengguna memulai ulang.
 
-## Lifecycle
+## Siklus hidup
 
-`app.Updater` adalah state machine dengan state berikut (`updater.State`):
+`app.Updater` adalah mesin status dengan status berikut (`updater.State`):
 
 @table header=true
-| State | Kapan |
+| Status | Kapan |
 | `unconfigured` | Sebelum `Init` dipanggil |
 | `idle` | Setelah `Init`, sebelum pemeriksaan apa pun |
-| `checking` | `Check` sedang berjalan |
-| `up-to-date` | Respons provider terbaru mengatakan caller sudah current |
-| `available` | Release baru ditemukan; belum mengunduh |
-| `downloading` | Byte sedang streaming dari provider |
-| `verifying` | Download selesai, signature/digest sedang diperiksa |
-| `installing` | Byte terverifikasi sedang di-unpack dan di-rename ke staging dir |
-| `ready` | Update di-stage; panggil `Restart` untuk menerapkan |
-| `error` | Langkah sebelumnya gagal |
+| `checking` | `Check` sedang berlangsung |
+| `up-to-date` | Respons terbaru dari penyedia menyatakan bahwa pemanggil sudah menggunakan versi terkini |
+| `available` | Rilis baru ditemukan; pengunduhan belum dimulai |
+| `downloading` | Byte sedang dialirkan dari penyedia |
+| `verifying` | Pengunduhan selesai, tanda tangan/digest sedang diperiksa |
+| `installing` | Byte yang telah diverifikasi sedang dibongkar dan diganti namanya ke dalam direktori staging |
+| `ready` | Pembaruan telah disiapkan; panggil `Restart` untuk menerapkannya |
+| `error` | Salah satu langkah sebelumnya gagal |
 @end
 
-Anda dapat membaca state saat ini dengan `app.Updater.State()` kapan saja. Setiap transisi juga mengirim Wails event (lihat [Events](#events)).
+Anda dapat membaca status saat ini menggunakan `app.Updater.State()` kapan saja. Setiap transisi juga memancarkan peristiwa Wails (lihat [Peristiwa](#peristiwa)).
 
-Window default mencerminkan state saat ini secara otomatis — misalnya, saat `Check` tidak menemukan upgrade, pengguna melihat ini dan menutup dengan *Close*:
+Jendela bawaan mencerminkan status saat ini secara otomatis — misalnya, ketika `Check` menyatakan tidak ada peningkatan, pengguna akan melihat tampilan berikut dan menutupnya dengan *Tutup*:
 
-![Window updater default dalam state Up-to-Date — centang hijau, heading 'You're Up to Date', tombol Close tunggal.](/assets/updater/default-window-up-to-date.png)
+![Jendela pembaruan bawaan dalam status Versi Terkini — tanda centang hijau, judul 'Versi Anda Sudah Terkini', dan satu tombol Tutup.](/assets/updater/default-window-up-to-date.png)
 
-## Providers
+## Penyedia
 
-`Provider` adalah apa pun yang memenuhi interface ini:
+`Provider` adalah apa pun yang memenuhi antarmuka berikut:
 
 ```go
 type Provider interface {
@@ -81,23 +81,23 @@ type Provider interface {
 }
 ```
 
-Tiga implementasi tersedia in-tree.
+Empat implementasi disertakan dalam repositori.
 
 ### GitHub Releases — `updater/providers/github`
 
 ```go {title="github provider"}
 gh, err := github.New(github.Config{
-    Repository:    "myorg/myapp",     // owner/repo Anda (wajib)
-    Token:         "ghp_…",           // opsional; meningkatkan rate limit + repo private
-    Prerelease:    false,             // sertakan pre-release dalam lookup latest
-    ChecksumAsset: "SHA256SUMS",      // asset sibling opsional untuk verifikasi digest
-    BaseURL:       "",                // override opsional (mis. GitHub Enterprise)
-    AssetMatcher:  nil,               // asset-picker kustom opsional; nil memakai DefaultAssetMatcher
-    HTTPClient:    nil,               // override client opsional
+    Repository:    "myorg/myapp",     // your owner/repo (required)
+    Token:         "ghp_…",           // optional; raises rate limit + private repos
+    Prerelease:    false,             // include pre-releases in latest lookup
+    ChecksumAsset: "SHA256SUMS",      // optional sibling asset for digest verification
+    BaseURL:       "",                // optional override (e.g. GitHub Enterprise)
+    AssetMatcher:  nil,               // optional custom asset-picker; nil uses DefaultAssetMatcher
+    HTTPClient:    nil,               // optional client override
 })
 ```
 
-Default asset matcher memilih berdasarkan substring `GOOS` + `GOARCH` pada nama file, mengenali alias umum (`amd64` / `x86_64` / `x64`, `arm64` / `aarch64`, `386` / `i386` / `x86` / `ia32`). Untuk skema penamaan kustom:
+Pencocok artefak bawaan memilih berdasarkan substring `GOOS` + `GOARCH` dalam nama file, dengan mengenali alias umum (`amd64` / `x86_64` / `x64`, `arm64` / `aarch64`, `386` / `i386` / `x86` / `ia32`). Untuk skema penamaan khusus:
 
 ```go
 gh, _ := github.New(github.Config{
@@ -109,64 +109,89 @@ gh, _ := github.New(github.Config{
                 return i
             }
         }
-        return -1 // tidak ada kecocokan
+        return -1 // no match
     },
 })
 ```
 
-`ChecksumAsset` adalah nama asset release sibling yang kontennya baris `<sha256>  <filename>` (format yang dihasilkan `sha256sum` dan `shasum -a 256`). Provider mengambilnya saat `Check`, menemukan baris yang cocok dengan artifact yang dipilih, dan mengisi `Release.Verification.Digest` agar framework memverifikasi download.
+`ChecksumAsset` adalah nama artefak lain dalam rilis yang sama, dengan konten berupa baris-baris `<sha256>  <filename>` (format yang dihasilkan oleh `sha256sum` dan `shasum -a 256`). Penyedia mengambilnya selama `Check`, menemukan baris yang cocok dengan artefak yang dipilih, lalu mengisi `Release.Verification.Digest` agar framework memverifikasi unduhan tersebut.
 
 ### keygen.sh — `updater/providers/keygen`
 
 ```go {title="keygen provider"}
 kg, err := keygen.New(keygen.Config{
-    Account:    "your-account-slug", // wajib
-    Product:    "product-uuid",      // opsional tapi direkomendasikan jika account punya banyak product
-    Package:    "",                  // penyempitan lebih lanjut opsional
+    Account:    "your-account-slug", // required
+    Product:    "product-uuid",      // optional but recommended when account has multiple products
+    Package:    "",                  // optional further narrowing
     Channel:    "stable",            // "stable" / "rc" / "beta" / "alpha" / "dev"
-    Filetype:   "",                  // filter filetype artifact opsional ("dmg", "exe", …)
-    Token:      "prod-…",            // product / environment / user / admin token; menang atas LicenseKey
-    LicenseKey: "",                  // auth license key (hanya dipakai saat Token kosong)
-    BaseURL:    "",                  // override base API opsional
-    HTTPClient: nil,                 // override client opsional; redirect-strip wrapper tetap diterapkan
+    Filetype:   "",                  // optional artifact filetype filter ("dmg", "exe", …)
+    Token:      "prod-…",            // product / environment / user / admin token; wins over LicenseKey
+    LicenseKey: "",                  // license key auth (used only when Token is empty)
+    BaseURL:    "",                  // optional API base override
+    HTTPClient: nil,                 // optional client override; redirect-strip wrapper still applied
 })
 ```
 
-Provider secara otomatis memetakan checksum SHA-512 per-artifact dan signature Ed25519ph keygen.sh ke blok `Release.Verification` framework — tanpa wiring tambahan.
+Penyedia secara otomatis memetakan checksum SHA-512 dan tanda tangan Ed25519ph per artefak dari keygen.sh ke blok `Release.Verification` milik framework — tidak diperlukan konfigurasi tambahan.
 
-*Format token:* token keygen.sh membawa prefix role (`admi-` / `prod-` / `envi-` / `user-`). UUID mentah yang Anda lihat di dashboard adalah _identifier_ token, bukan nilai secret — secret hanya terlihat saat token dibuat. Lihat [auth docs](https://keygen.sh/docs/api/authentication/) keygen.sh untuk detail.
+*Format token:* token keygen.sh memiliki prefiks peran (`admi-` / `prod-` / `envi-` / `user-`). UUID mentah yang Anda lihat di dasbor adalah _pengidentifikasi_ token, bukan nilai rahasianya — rahasia tersebut hanya terlihat saat token dibuat. Lihat [dokumentasi autentikasi](https://keygen.sh/docs/api/authentication/) keygen.sh untuk detailnya.
 
 ### Sparkle AppCast — `updater/providers/appcast`
 
 ```go {title="appcast provider"}
 ac, err := appcast.New(appcast.Config{
-    URL:        "https://your.app/appcast.xml", // wajib
-    Channel:    "stable",                       // filter sparkle:channel opsional
-    HTTPClient: nil,                            // override client opsional
+    URL:        "https://your.app/appcast.xml", // required
+    Channel:    "stable",                       // optional sparkle:channel filter
+    HTTPClient: nil,                            // optional client override
 })
 ```
 
-Drop-in ke infrastruktur Sparkle / WinSparkle yang sudah ada tanpa perubahan. Membaca `sparkle:shortVersionString`, `<enclosure url type length sparkle:os sparkle:edSignature>`, dan `sparkle:channel` dari feed.
+Dapat langsung digunakan tanpa perubahan pada infrastruktur Sparkle / WinSparkle yang sudah ada. Membaca `sparkle:shortVersionString`, `<enclosure url type length sparkle:os sparkle:edSignature>`, dan `sparkle:channel` dari feed.
 
-Signature DSA Sparkle 1 (`sparkle:dsaSignature`) tidak didukung — proyek pada skema signing itu harus beralih ke EdDSA (Sparkle 2).
+Tanda tangan DSA milik Sparkle 1 (`sparkle:dsaSignature`) tidak didukung — proyek yang menggunakan skema penandatanganan tersebut sebaiknya beralih ke EdDSA (Sparkle 2).
 
-### Fallback chain
+### Wails Update Manifest — `updater/providers/endpoint`
 
-`Config.Providers` berurutan. Updater menelusurinya secara berurutan: provider pertama yang mengembalikan release menang, yang pertama melaporkan "up to date" mempersingkat chain (fallback untuk "primary unreachable", bukan "provider tidak setuju"). Error lanjut ke provider berikutnya.
+```go {title="endpoint provider"}
+ep, err := endpoint.New(endpoint.Config{
+    URL:        "https://updates.example.com/check", // required; supports {{platform}} / {{arch}} / {{version}} / {{channel}} placeholders
+    Channel:    "stable",                            // optional channel filter
+    Headers:    nil,                                 // optional headers, e.g. {"Authorization": "License <key>"}
+    HTTPClient: nil,                                 // optional client override; redirect-strip wrapper still applied
+})
+```
+
+Menggunakan [protokol Wails Update Manifest](/reference/update-manifest/) yang terbuka: satu dokumen JSON yang menjelaskan rilis terbaru beserta artefaknya untuk setiap platform, dengan checksum dan tanda tangan yang disertakan langsung. Dokumen yang sama dapat digunakan dari host file statis (S3, GitHub Pages, CDN apa pun — terbitkan satu manifes per kanal yang mencantumkan semua platform) atau dari server pembaruan dinamis (penyedia mengirim `platform`, `arch`, `version`, dan `channel` pada setiap pemeriksaan, sehingga server dapat mengembalikan tepat satu artefak atau membatasi akses berdasarkan lisensi).
+
+Placeholder URL membuat tata letak statis cukup dikonfigurasi dalam satu baris:
+
+```go
+ep, _ := endpoint.New(endpoint.Config{
+    URL: "https://cdn.example.com/updates/{{platform}}/{{arch}}/stable.json",
+})
+```
+
+Header yang dikonfigurasi dikirim pada setiap permintaan manifes; unduhan artefak hanya menggunakannya kembali pada host manifes itu sendiri tanpa penurunan dari `https` ke `http`, dan header `Authorization` dihapus pada setiap pengalihan lintas origin atau pengalihan yang menurunkan protokol.
+
+CLI menangani sisi penerbitan: `wails3 updater manifest` menghitung digest, menandatangani, dan mendeskripsikan file rilis Anda dalam satu perintah, sedangkan `wails3 updater verify` memeriksa ulang hasilnya sebelum Anda mengunggahnya. Lihat [Penerbitan dengan CLI wails3](/reference/update-manifest/#publishing-with-the-wails3-cli).
+
+### Rantai fallback
+
+`Config.Providers` memiliki urutan. Pembaru menelusurinya secara berurutan: penyedia pertama yang mengembalikan rilis akan digunakan, sedangkan penyedia pertama yang melaporkan "versi sudah terkini" langsung menghentikan rantai (fallback ditujukan untuk kondisi "penyedia utama tidak dapat dijangkau", bukan "para penyedia memberikan hasil yang berbeda"). Kesalahan akan melanjutkan proses ke penyedia berikutnya.
 
 ```go
 app.Updater.Init(updater.Config{
     CurrentVersion: "1.0.0",
     Providers: []updater.Provider{
-        kg, // primary: pelanggan berlisensi
-        gh, // fallback: mirror publik
+        kg, // primary: licensed customers
+        gh, // fallback: public mirror
     },
 })
 ```
 
-### Menulis provider sendiri
+### Menulis penyedia Anda sendiri
 
-Tiga method, ~150 baris untuk implementasi tipikal. Updater memiliki verifikasi, atomic staging, swap, dan window — kode provider menyelesaikan release berikutnya dan streaming byte:
+Tiga metode, sekitar 150 baris untuk implementasi pada umumnya. Updater menangani verifikasi, penyiapan atomik, penukaran, dan jendela — kode penyedia menentukan rilis berikutnya dan mengalirkan byte:
 
 ```go
 type CustomProvider struct { /* config */ }
@@ -174,23 +199,23 @@ type CustomProvider struct { /* config */ }
 func (p *CustomProvider) Name() string { return "custom" }
 
 func (p *CustomProvider) Check(ctx context.Context, req updater.CheckRequest) (*updater.Release, error) {
-    // Hit endpoint update Anda, tentukan apakah req.CurrentVersion sudah current,
-    // dan kembalikan nil (tanpa upgrade) atau *Release dengan Artifact + optional
-    // Verification terisi.
-    // Error di sini lanjut ke provider berikutnya di Config.Providers.
+    // Hit your update endpoint, decide whether req.CurrentVersion is current,
+    // and return either nil (no upgrade) or a *Release with Artifact + optional
+    // Verification populated.
+    // Errors here drop through to the next provider in Config.Providers.
 }
 
 func (p *CustomProvider) Download(ctx context.Context, r *updater.Release, dst io.Writer, onProgress func(int64, int64)) error {
-    // Stream byte artifact ke dst. Panggil onProgress(written, total) saat
-    // byte mengalir; Updater debounce emit ke ~10 Hz di event bus.
+    // Stream the artifact's bytes to dst. Call onProgress(written, total) as
+    // bytes flow past; the Updater debounces emits to ~10 Hz on the event bus.
 }
 ```
 
-Gunakan provider in-tree sebagai referensi — masing-masing satu file Go.
+Gunakan penyedia dalam pohon sumber sebagai referensi — masing-masing hanya terdiri dari satu berkas Go.
 
 ## Verifikasi kriptografis
 
-Release diautentikasi oleh verifier framework menggunakan `Config.PublicKey` sebagai trust root:
+Rilis diautentikasi oleh pemverifikasi framework dengan `Config.PublicKey` sebagai akar kepercayaan:
 
 ```go
 //go:embed publickey.pem
@@ -207,63 +232,64 @@ Algoritma yang didukung (`Release.Verification.SignatureAlgo`):
 
 @table header=true
 | Algoritma | Yang ditandatangani | Catatan |
-| `ed25519` | Digest SHA-256 artifact | Dipakai Sparkle EdDSA |
-| `ed25519ph` | Artifact penuh via pre-hash Ed25519ph (SHA-512 internal) | Dipakai keygen.sh |
-| `ecdsa-p256` | Digest SHA-256 artifact | Signature raw `r∥s` dan DER diterima |
+| `ed25519` | Digest SHA-256 dari artefak | Digunakan oleh Sparkle EdDSA |
+| `ed25519ph` | Seluruh artefak melalui pra-hash Ed25519ph (secara internal menggunakan SHA-512) | Digunakan oleh keygen.sh |
+| `ecdsa-p256` | Digest SHA-256 dari artefak | Tanda tangan `r∥s` mentah maupun DER diterima |
 @end
 
-Plus digest-only (`DigestAlgo`: `sha256` / `sha512`) saat release mengirim hash tanpa signature.
+Selain itu, tersedia mode khusus digest (`DigestAlgo`: `sha256` / `sha512`) jika rilis menyertakan hash tetapi tidak menyertakan tanda tangan.
 
-`Config.PublicKey` adalah SATU-SATUNYA trust anchor untuk verifikasi signature — sumber release tidak bisa mengganti key sendiri. Release yang membawa `Signature` tanpa `Config.PublicKey` yang dikonfigurasi gagal closed. Verifier menghitung digest dalam pass streaming saat download, jadi bahkan pada update multi-GB verifikasi tidak menambah pass disk ekstra.
+`Config.PublicKey` adalah SATU-SATUNYA jangkar kepercayaan untuk verifikasi tanda tangan — sumber rilis tidak dapat menggantinya dengan kuncinya sendiri. Rilis yang menyertakan `Signature` tanpa `Config.PublicKey` yang dikonfigurasi akan ditolak. Pemverifikasi menghitung digest dalam satu lintasan streaming selama pengunduhan, sehingga verifikasi tidak memerlukan lintasan disk tambahan, bahkan untuk pembaruan berukuran beberapa GB.
 
-@note type="caution" title="Digest-only ≠ verifikasi kriptografis"
-Release dengan hanya `Digest` diautentikasi terhadap TLS registry plus jaminan integritas yang diberikan registry — bukan terhadap root kriptografis yang Anda kontrol. Gunakan digest-only untuk deteksi bit-rot; gunakan signature untuk ketahanan tamper terhadap pipeline release yang compromised.
+@note type="caution" title="Khusus digest ≠ verifikasi kriptografis"
+Rilis yang hanya memiliki `Digest` diautentikasi berdasarkan TLS milik registri serta jaminan integritas apa pun yang disediakan oleh registri itu sendiri — bukan berdasarkan akar kriptografis yang Anda kendalikan. Gunakan mode khusus digest untuk mendeteksi kerusakan bit; gunakan tanda tangan agar tahan terhadap manipulasi akibat alur rilis yang disusupi.
 @end
 
-### Menghasilkan signing key
+### Membuat kunci penandatanganan
 
 ```bash
-# Generate keypair Ed25519 baru untuk signing
-ssh-keygen -t ed25519 -f updater-key -N "" -C "wails-updater"
-# updater-key       — rahasiakan, pakai untuk sign release
-# updater-key.pub   — bundle di app via go:embed
+wails3 updater genkey
+# updater.key       — keep secret, use to sign releases
+# updater.key.pub   — bundle in your app via go:embed
 ```
 
-Atau di Go:
+Kunci privat menggunakan PEM PKCS#8, sedangkan kunci publik menggunakan PEM PKIX; `Config.PublicKey` menerima berkas `.pub` secara langsung (serta menerima kunci mentah 32 byte atau representasi base64-nya, yang dicetak oleh `genkey` agar dapat disematkan). Tandatangani rilis dengan `wails3 updater manifest -key updater.key ...` atau `wails3 updater sign`; lihat [Menerbitkan dengan CLI wails3](/reference/update-manifest/#publishing-with-the-wails3-cli).
+
+Atau dalam Go:
 
 ```go
 import "crypto/ed25519"
 import "crypto/rand"
 
 pub, priv, _ := ed25519.GenerateKey(rand.Reader)
-// Persist `priv` dengan aman (HSM, signing CI, dll.); embed `pub` di binary Anda.
+// Persist `priv` securely (HSM, signing CI, etc.); embed `pub` in your binary.
 ```
 
-## Format artifact
+## Format artefak
 
-Provider streaming byte untuk file apa pun yang Anda publikasikan; framework lalu unpack sebelum swap:
+Penyedia mengalirkan byte untuk berkas apa pun yang Anda terbitkan; framework kemudian mengekstraknya sebelum penukaran:
 
-- *Single binary* (mis. `myapp-linux-amd64`) — dipakai apa adanya. Umum di Linux.
-- *`.zip`* — diekstrak in-place. Archive harus berisi tepat satu entry top-level (biasanya bundle `.app` macOS atau single binary). Packaging yang direkomendasikan untuk macOS.
-- *`.tar.gz`* / *`.tgz`* — diekstrak in-place dengan aturan single-top-level-entry yang sama. Berguna untuk distribusi Linux yang mengirim runtime tree bersama binary.
+- *Biner tunggal* (misalnya `myapp-linux-amd64`) — digunakan apa adanya. Umum digunakan di Linux.
+- *`.zip`* — diekstrak di tempat. Arsip harus memuat tepat satu entri tingkat teratas (biasanya bundel `.app` macOS atau satu biner). Ini adalah format paket yang disarankan untuk macOS.
+- *`.tar.gz`* / *`.tgz`* — diekstrak di tempat dengan aturan satu entri tingkat teratas yang sama. Berguna untuk distribusi Linux yang menyertakan pohon runtime bersama biner.
 
-Archive dengan lebih dari satu entry top-level ditolak: framework menukar satu target on-disk, jadi "swap archive ini ke tempat" ambigu saat archive berisi banyak hal. `.dmg` dan `.pkg` (macOS) serta `.msi` (Windows) tidak didukung di v1 — distribusikan `.zip` bundle sebagai gantinya. Ekstraksi menerapkan proteksi zip-slip, menolak symlink yang keluar dari root archive, dan membatasi total ukuran uncompressed (2 GiB) dan jumlah entry (50 000).
+Arsip yang memuat lebih dari satu entri tingkat teratas akan ditolak: framework menukar satu target pada disk, sehingga perintah "tukar arsip ini ke tempatnya" menjadi ambigu jika arsip memuat beberapa hal. `.dmg` dan `.pkg` (macOS), serta `.msi` (Windows), tidak didukung di v1 — distribusikan `.zip` dari bundel tersebut sebagai gantinya. Proses ekstraksi menerapkan perlindungan zip-slip, menolak symlink yang keluar dari akar arsip, serta membatasi ukuran total setelah dekompresi (2 GiB) dan jumlah entri (50 000).
 
-## Window default
+## Jendela bawaan
 
-`app.Updater.CheckAndInstall(ctx)` membuka window 520×540 milik framework dengan:
+`app.Updater.CheckAndInstall(ctx)` membuka jendela berukuran 520×540 yang dikelola oleh framework, dengan:
 
-- Ikon hero berdasarkan state (biru ↓ untuk available/downloading, hijau ✓ untuk ready/up-to-date, merah ! untuk error)
-- Pill versi: `v1.0.0 → v2.0.1 · 8.8 MB`
-- Panel release-notes scrollable dengan *Markdown yang di-render* (paragraf, bold/italic, list, tabel GFM, inline code, fenced code block, h1–h3, link)
-- Satu aksi primary per state (Install / Restart & Apply / Try Again)
-- Aksi secondary bergaya ghost (Skip This Version / Remind Me Later)
-- Dark/light mode via `prefers-color-scheme`
-- Shimmer progress indeterminate saat total ukuran tidak diketahui
+- Ikon utama berbasis status (↓ biru untuk tersedia/mengunduh, ✓ hijau untuk siap/sudah terbaru, ! merah untuk kesalahan)
+- Lencana versi: `v1.0.0 → v2.0.1 · 8.8 MB`
+- Panel catatan rilis yang dapat digulir, dengan *Markdown yang dirender* (paragraf, tebal/miring, daftar, tabel GFM, kode sebaris, blok kode berpagar, h1–h3, tautan)
+- Satu tindakan utama untuk setiap status (Instal / Mulai Ulang & Terapkan / Coba Lagi)
+- Tindakan sekunder bergaya ghost (Lewati Versi Ini / Ingatkan Saya Nanti)
+- Mode gelap/terang melalui `prefers-color-scheme`
+- Efek kilau progres tak tentu jika ukuran total tidak diketahui
 
-Window mendengarkan events `updater:*` di event bus Wails dan mengirim aksi `updater:user:*` kembali ke Go.
+Jendela ini mendengarkan peristiwa `updater:*` pada bus peristiwa Wails dan mengirimkan tindakan `updater:user:*` kembali ke Go.
 
-### Theme via CSS variables
+### Tema melalui variabel CSS
 
 ```go
 app.Updater.Init(updater.Config{
@@ -274,10 +300,10 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Stylesheet default mengekspos variabel ini — override mana pun:
+Stylesheet bawaan menyediakan variabel berikut — Anda dapat mengganti nilai variabel mana pun:
 
 @table header=true
-| Variabel | Default (light) | Default (dark) |
+| Variabel | Bawaan (terang) | Bawaan (gelap) |
 | `--bg` | `#f8f8fa` | `#1a1a1c` |
 | `--surface` | `#ffffff` | `#232326` |
 | `--surface-2` | `#f0f0f3` | `#2c2c30` |
@@ -290,12 +316,12 @@ Stylesheet default mengekspos variabel ini — override mana pun:
 | `--success` | `#34c759` | — |
 | `--error` | `#ff3b30` | — |
 | `--radius` | `10px` | — |
-| `--font` | system stack | — |
+| `--font` | tumpukan sistem | — |
 @end
 
-### Ganti template
+### Ganti templat
 
-Sediakan HTML Anda sendiri; cukup dengarkan events `wails:updater:*` dan kirim aksi `wails:updater:user:*`:
+Sediakan HTML Anda sendiri; HTML tersebut hanya perlu memantau peristiwa `wails:updater:*` dan memancarkan tindakan `wails:updater:user:*`:
 
 ```go
 app.Updater.Init(updater.Config{
@@ -306,12 +332,12 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Window InitialHTML dimuat tanpa origin asset-server, jadi tidak bisa fetch `/wails/runtime.js` secara dinamis. Ada dua cara berkomunikasi dengan host:
+Jendela InitialHTML dimuat tanpa origin server aset sehingga tidak dapat mengambil `/wails/runtime.js` secara dinamis. Ada dua cara untuk berkomunikasi dengan host dari jendela tersebut:
 
-1. *Tulis HTML saja.* Framework auto-inject shim `window.wails.Events` minimal ke window apa pun yang dibuka dengan `WebviewWindowOptions.AllowSimpleEventEmit = true` dan `HTML` diset — persis yang dilakukan path builtin dan BYO updater. Tanpa build step. Ini jalur yang dipakai contoh di bawah.
-2. *Bundle `@wailsio/runtime` dengan bundler pilihan Anda* (Vite, esbuild, Rollup) dan import ke custom HTML saat build time. `Events.On` berfungsi out of the box karena purely client-side; `Events.Emit` melalui fetch transport runtime, yang null origin rusak — jadi pasang transport postMessage kecil via hook [`setTransport`](https://wails.io/wails/runtime.js) runtime yang route melalui `window._wails.invoke("wails:event:emit:<name>")`. Injection framework no-op jika `window.wails.Events` sudah ada, jadi kedua pendekatan tidak bentrok.
+1. *Cukup tulis HTML.* Framework secara otomatis menyisipkan shim `window.wails.Events` minimal ke setiap jendela yang dibuka dengan `WebviewWindowOptions.AllowSimpleEventEmit = true` dan `HTML` yang telah ditetapkan—persis seperti yang dilakukan jalur bawaan dan BYO milik updater. Tidak diperlukan langkah build. Contoh di bawah menggunakan jalur ini.
+2. *Bundel `@wailsio/runtime` dengan bundler pilihan Anda* (Vite, esbuild, Rollup), lalu impor ke HTML kustom Anda pada waktu build. `Events.On` langsung berfungsi karena sepenuhnya berjalan di sisi klien; `Events.Emit` menggunakan transpor fetch milik runtime, yang tidak berfungsi karena origin null—jadi pasang transpor postMessage kecil melalui hook [`setTransport`](https://wails.io/wails/runtime.js) milik runtime yang merutekannya melalui `window._wails.invoke("wails:event:emit:<name>")`. Penyisipan oleh framework tidak melakukan apa pun jika `window.wails.Events` sudah berada dalam cakupan, sehingga kedua pendekatan tersebut tidak saling bertentangan.
 
-Bagaimanapun, JS di custom HTML memanggil API `Events.On` / `Events.Emit` yang sama:
+Apa pun caranya, JS yang Anda tulis dalam HTML kustom akan memanggil API `Events.On` / `Events.Emit` yang sama:
 
 ```html
 <script>
@@ -325,18 +351,18 @@ On("wails:updater:update-available", (e) => {
 document.getElementById("install").addEventListener("click",
     () => Emit("wails:updater:user:install"));
 
-// Minta host replay state saat ini agar kita paint benar saat (re)open.
+// Ask the host to replay the current state so we paint correctly on (re)open.
 Emit("wails:updater:window:ready");
 </script>
 ```
 
-Shim mengekspos subset runtime modern yang dibutuhkan bare-name events: `Events.On(name, cb)` mengembalikan fungsi unsubscribe, dan `Events.Emit(nameOrEventObject)` route ke host via jalur postMessage `wails:event:emit:` yang gated. Terpasang sekali saat page-load sebelum inline script Anda jalan.
+Shim mengekspos subset runtime modern yang diperlukan oleh peristiwa bernama polos: `Events.On(name, cb)` mengembalikan fungsi untuk berhenti berlangganan, sedangkan `Events.Emit(nameOrEventObject)` merutekan ke host melalui jalur postMessage `wails:event:emit:` yang dilindungi. Shim dipasang satu kali saat halaman dimuat, sebelum skrip inline Anda dijalankan.
 
-Jika Anda _ingin_ override shim (atau memuat full runtime cara lain), set `window.wails.Events` sebelum tag `<script>` pertama halaman dieksekusi dan injection melewatinya.
+Jika Anda _ingin_ mengganti shim (atau memuat runtime lengkap dengan cara lain), tetapkan `window.wails.Events` sebelum tag `<script>` pertama pada halaman dijalankan agar penyisipan dilewati.
 
-### Window chrome
+### Bingkai jendela
 
-Override opsi window (ukuran, frameless, always-on-top) tanpa menyentuh HTML:
+Timpa opsi jendela (ukuran, tanpa bingkai, selalu di atas) tanpa mengubah HTML:
 
 ```go
 Window: &updater.BuiltinWindow{
@@ -351,18 +377,18 @@ Window: &updater.BuiltinWindow{
 },
 ```
 
-### Bring your own window
+### Gunakan jendela Anda sendiri
 
-Kendalikan alur update terhadap `*application.WebviewWindow` yang Anda buat sendiri. Updater memanggil `Show()` / `Close()` / `EmitEvent()` pada window Anda — HTML Anda yang memutuskan apa yang di-render:
+Jalankan alur pembaruan pada `*application.WebviewWindow` yang Anda buat sendiri. Updater memanggil `Show()` / `Close()` / `EmitEvent()` pada jendela Anda—HTML Anda menentukan apa yang dirender:
 
-![Window updater 'Bring your own' dengan background gradient pink-orange, satu kartu putih rounded, tipografi kustom, dan events updater yang sama mengendalikan state yang terlihat. Menunjukkan seberapa lengkap UI default dapat diganti.](/assets/updater/byo-custom-window.png)
+![Jendela updater "Gunakan milik Anda sendiri" dengan latar gradien merah muda-oranye, satu kartu putih bersudut membulat, tipografi kustom, dan peristiwa updater yang sama untuk mengendalikan status yang terlihat. Menunjukkan bahwa UI default dapat diganti sepenuhnya.](/assets/updater/byo-custom-window.png)
 
 ```go
 myWin := app.Window.NewWithOptions(application.WebviewWindowOptions{
     Title:                "My Updater",
     Width:                520, Height: 460,
     HTML:                 myCustomHTML,
-    AllowSimpleEventEmit: true,           // lihat catatan keamanan di bawah
+    AllowSimpleEventEmit: true,           // see security note below
 })
 app.Updater.Init(updater.Config{
     // …
@@ -370,17 +396,17 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-HTML Anda memakai `window.wails.Events.On` / `Events.Emit` seperti template builtin — shim auto-inject framework masuk ke window apa pun dengan `AllowSimpleEventEmit: true` terlepas dari window milik framework atau milik Anda. Lihat [Ganti template](#ganti-template) untuk API.
+HTML Anda menggunakan `window.wails.Events.On` / `Events.Emit` seperti templat bawaan—shim yang disisipkan otomatis oleh framework disertakan dalam setiap jendela dengan `AllowSimpleEventEmit: true`, baik jendela tersebut dimiliki oleh framework maupun oleh Anda. Lihat [Ganti templat](#ganti-templat) untuk API-nya.
 
-@note type="caution" title="`AllowSimpleEventEmit` wajib untuk window updater BYO"
-Framework meng-gate shortcut postMessage `wails:event:emit:` pada field ini untuk keamanan: window tanpa field ini tidak bisa mensintesis custom events di sisi host. Shim custom-HTML updater mengirim events `updater:user:*` via shortcut itu, jadi window BYO yang lupa field ini diam-diam menelan setiap klik tombol — pengguna klik Install dan tidak terjadi apa-apa.
+@note type="caution" title="`AllowSimpleEventEmit` diperlukan untuk jendela updater BYO"
+Demi keamanan, framework membatasi pintasan postMessage `wails:event:emit:` berdasarkan bidang ini: jendela yang bidangnya belum ditetapkan tidak dapat membuat peristiwa kustom di sisi host. Shim HTML kustom milik updater memancarkan peristiwa `updater:user:*` melalui pintasan tersebut, sehingga jendela BYO yang lupa menetapkan bidang ini akan mengabaikan setiap klik tombol tanpa pemberitahuan—pengguna mengeklik Instal, tetapi tidak terjadi apa pun.
 
-Jaga `AllowSimpleEventEmit` *off* untuk window yang memuat HTML yang tidak Anda kontrol penuh (URL remote, konten dari pengguna). Saat on, JavaScript apa pun di halaman — termasuk XSS sink — bisa fire handler `app.Event.On(name, …)` apa pun. Shortcut hanya menyampaikan bare name (tanpa payload) dan tidak bisa mencapai jalur binding/Call, tapi masih bisa memicu handler custom-event privileged di kode Go jika handler hanya bertindak berdasarkan nama event.
+Biarkan `AllowSimpleEventEmit` tetap *nonaktif* untuk setiap jendela yang memuat HTML yang tidak sepenuhnya Anda kendalikan (URL jarak jauh, konten yang disediakan pengguna). Saat aktif, JavaScript apa pun di halaman—termasuk sink XSS—dapat memicu handler `app.Event.On(name, …)` apa pun. Pintasan ini hanya menyampaikan nama polos (tanpa payload) dan tidak dapat menjangkau jalur binding/Call, tetapi tetap dapat memicu handler peristiwa kustom dengan hak istimewa dalam kode Go Anda jika handler tersebut bertindak hanya berdasarkan nama peristiwa.
 
-Window updater _builtin_ framework sudah set ini secara internal — hanya pemanggil BYO yang perlu ingat.
+Jendela updater _bawaan_ milik framework telah menetapkan ini secara internal—hanya pemanggil BYO yang perlu mengingatnya.
 @end
 
-### Headless
+### Tanpa antarmuka
 
 ```go
 app.Updater.Init(updater.Config{
@@ -389,15 +415,15 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Tidak ada window yang pernah dibuka. Subscribe ke events `updater:*` dari UI Anda sendiri (atau main window yang sudah ada) dan panggil `app.Updater.CheckAndInstall(ctx)` dari button handler. Berguna untuk pemeriksaan background berkala yang hanya muncul saat sesuatu ditemukan, atau app yang mengintegrasikan alur update ke panel settings kustom.
+Tidak ada jendela yang dibuka. Berlanggananlah ke peristiwa `updater:*` dari UI Anda sendiri (atau jendela utama yang sudah ada), lalu panggil `app.Updater.CheckAndInstall(ctx)` dari handler tombol. Ini berguna untuk pemeriksaan latar belakang berkala yang hanya perlu ditampilkan saat sesuatu ditemukan, atau untuk aplikasi yang mengintegrasikan alur pembaruan ke panel pengaturan kustom.
 
-## Events
+## Peristiwa
 
-Go dan JavaScript subscribe melalui event bus Wails standar. *Jangan ketik wire string manual* — gunakan konstanta yang diekspor dari paket updater (Go) atau paket runtime (JS). Kedua lapisan berbagi set nama yang sama, disinkronkan oleh regression test.
+Go dan JavaScript sama-sama berlangganan melalui bus peristiwa Wails standar. *Jangan ketik string wire secara manual*—gunakan konstanta yang diekspor dari paket updater (Go) atau paket runtime (JS). Kedua lapisan menggunakan kumpulan nama yang sama dan dijaga agar tetap sinkron oleh pengujian regresi.
 
 ### Dari Go
 
-Konstanta ada di `github.com/wailsapp/wails/v3/pkg/updater`. Subscribe via `app.Event.On(name, fn)`; callback menerima `*application.CustomEvent` yang field `Data`-nya adalah payload bertipe yang tercantum di [referensi event](#referensi-event) — type-assert, jangan JSON-decode:
+Konstanta berada di `github.com/wailsapp/wails/v3/pkg/updater`. Berlanggananlah melalui `app.Event.On(name, fn)`; callback menerima `*application.CustomEvent` yang bidang `Data`-nya merupakan payload bertipe yang tercantum dalam [referensi peristiwa](#referensi-peristiwa)—gunakan type assertion, bukan dekode JSON:
 
 ```go {title="main.go"}
 import (
@@ -431,7 +457,7 @@ app.Event.On(updater.EventError, func(e *application.CustomEvent) {
 Semua konstanta Go yang tersedia:
 
 @table header=true
-| Konstanta | Wire string |
+| Konstanta | String wire |
 | `updater.EventCheckStarted` | `wails:updater:check-started` |
 | `updater.EventUpdateAvailable` | `wails:updater:update-available` |
 | `updater.EventNoUpdate` | `wails:updater:no-update` |
@@ -453,7 +479,7 @@ Semua konstanta Go yang tersedia:
 
 ### Dari JavaScript
 
-Konstanta ada di bawah `Updater.Events` di `@wailsio/runtime`. Nama sama dengan Go, diorganisir per sub-namespace (`User.*`, `Window.*`) untuk discoverability autocomplete:
+Konstanta tersedia di bawah `Updater.Events` dalam `@wailsio/runtime`. Namanya sama seperti di Go dan dikelompokkan berdasarkan subnamespace (`User.*`, `Window.*`) agar mudah ditemukan melalui pelengkapan otomatis:
 
 ```js
 import { Events, Updater } from "@wailsio/runtime";
@@ -473,47 +499,47 @@ Events.On(Updater.Events.Error, (e) => {
 });
 ```
 
-Events aksi pengguna yang custom HTML Anda kirim _kembali_ ke host ada di bawah `Updater.Events.User`:
+Peristiwa tindakan pengguna yang dikirim kembali oleh HTML kustom Anda _ke_ host tersedia di bawah `Updater.Events.User`:
 
 ```js
 import { Updater } from "@wailsio/runtime";
 
 document.getElementById("install-btn").addEventListener("click", () => {
-    // Window framework melakukan ini secara internal via postMessage shim;
-    // ditampilkan di sini untuk template BYO yang perlu mengendalikan alur sendiri.
+    // The framework window does this internally via the postMessage shim;
+    // shown here for BYO templates that need to drive the flow themselves.
     window._wails.invoke("wails:event:emit:" + Updater.Events.User.Install);
 });
 ```
 
-### Referensi event
+### Referensi peristiwa
 
-Sisi subscribe (host → page):
+Sisi langganan (host → halaman):
 
 @table header=true
 | Konstanta (Go) | Konstanta (JS) | Payload | Kapan |
-| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | none | Sebelum setiap round-trip `Check` |
-| `updater.EventUpdateAvailable` | `Updater.Events.UpdateAvailable` | `*Release` | `Check` menemukan release lebih baru |
-| `updater.EventNoUpdate` | `Updater.Events.NoUpdate` | none | `Check` mengonfirmasi up-to-date |
-| `updater.EventDownloadStarted` | `Updater.Events.DownloadStarted` | `*Release` | Byte mulai streaming |
-| `updater.EventDownloadProgress` | `Updater.Events.DownloadProgress` | `Progress` | ~10 Hz saat download |
-| `updater.EventDownloadComplete` | `Updater.Events.DownloadComplete` | `*Release` | Semua byte ditulis, sebelum verify |
-| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | Pemeriksaan signature/digest dimulai |
-| `updater.EventInstalling` | `Updater.Events.Installing` | `*Release` | Unpack + staging dimulai |
-| `updater.EventUpdateReady` | `Updater.Events.UpdateReady` | `*Release` | Restart menunggu |
-| `updater.EventError` | `Updater.Events.Error` | `ErrorInfo` | Tahap apa pun gagal |
-| `updater.EventMeta` | `Updater.Events.Meta` | `Meta` | Sekali per sesi sebelum snapshot replay |
+| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | tidak ada | Sebelum setiap perjalanan pulang-pergi `Check` |
+| `updater.EventUpdateAvailable` | `Updater.Events.UpdateAvailable` | `*Release` | `Check` menemukan rilis yang lebih baru |
+| `updater.EventNoUpdate` | `Updater.Events.NoUpdate` | tidak ada | `Check` mengonfirmasi bahwa versi sudah terbaru |
+| `updater.EventDownloadStarted` | `Updater.Events.DownloadStarted` | `*Release` | Byte mulai dialirkan |
+| `updater.EventDownloadProgress` | `Updater.Events.DownloadProgress` | `Progress` | ~10 Hz selama pengunduhan |
+| `updater.EventDownloadComplete` | `Updater.Events.DownloadComplete` | `*Release` | Semua byte telah ditulis, sebelum verifikasi |
+| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | Pemeriksaan tanda tangan/digest dimulai |
+| `updater.EventInstalling` | `Updater.Events.Installing` | `*Release` | Ekstraksi + staging dimulai |
+| `updater.EventUpdateReady` | `Updater.Events.UpdateReady` | `*Release` | Menunggu mulai ulang |
+| `updater.EventError` | `Updater.Events.Error` | `ErrorInfo` | Tahap mana pun gagal |
+| `updater.EventMeta` | `Updater.Events.Meta` | `Meta` | Sekali per sesi sebelum pemutaran ulang snapshot |
 @end
 
-Sisi page (page → host) — kode Anda subscribe jika menulis template kustom:
+Sisi halaman (halaman → host) — kode Anda berlangganan jika Anda menulis templat kustom:
 
 @table header=true
 | Konstanta (Go) | Konstanta (JS) | Kapan |
-| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | Window selesai loading; host replay state saat ini |
-| `updater.EventUserInstall` | `Updater.Events.User.Install` | Aksi primary di state `available` |
-| `updater.EventUserRestart` | `Updater.Events.User.Restart` | Aksi primary di state `ready` |
-| `updater.EventUserSkip` | `Updater.Events.User.Skip` | "Skip This Version" |
-| `updater.EventUserRemind` | `Updater.Events.User.Remind` | "Remind Me Later" |
-| `updater.EventUserCancel` | `Updater.Events.User.Cancel` | Tombol Close |
+| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | Jendela selesai dimuat; host mengirim ulang status saat ini |
+| `updater.EventUserInstall` | `Updater.Events.User.Install` | Tindakan utama dalam status `available` |
+| `updater.EventUserRestart` | `Updater.Events.User.Restart` | Tindakan utama dalam status `ready` |
+| `updater.EventUserSkip` | `Updater.Events.User.Skip` | "Lewati Versi Ini" |
+| `updater.EventUserRemind` | `Updater.Events.User.Remind` | "Ingatkan Saya Nanti" |
+| `updater.EventUserCancel` | `Updater.Events.User.Cancel` | Tombol tutup |
 @end
 
 ## Referensi API
@@ -521,61 +547,61 @@ Sisi page (page → host) — kode Anda subscribe jika menulis template kustom:
 ### `updater.Config`
 
 @table header=true
-| Field | Tipe | Catatan |
-| `CurrentVersion` | `string` | *Wajib.* String yang sama dengan tag release (tanpa prefix `v`) |
-| `Providers` | `[]updater.Provider` | *Wajib.* Fallback chain berurutan |
-| `PublicKey` | `[]byte` | PEM atau raw bytes. Opsional tapi release bertanda tangan gagal closed tanpanya |
-| `CheckInterval` | `time.Duration` | Non-zero memulai loop poll background yang memanggil `CheckAndInstall` |
-| `Platform` | `string` | Override `runtime.GOOS` untuk pemilihan asset |
-| `Arch` | `string` | Override `runtime.GOARCH` untuk pemilihan asset |
-| `Channel` | `string` | Saat ini informatif; filter channel spesifik provider |
-| `Window` | `updater.WindowOption` | `nil` (default builtin), `&BuiltinWindow{…}`, `BYOWindow(handle)`, atau `WindowNone` |
+| Bidang | Tipe | Catatan |
+| `CurrentVersion` | `string` | *Wajib.* String yang sama dengan yang Anda gunakan untuk memberi tag pada rilis (tanpa prefiks `v`) |
+| `Providers` | `[]updater.Provider` | *Wajib.* Rantai fallback berurutan |
+| `PublicKey` | `[]byte` | PEM atau byte mentah. Opsional, tetapi rilis bertanda tangan akan ditolak jika tidak disediakan |
+| `CheckInterval` | `time.Duration` | Nilai bukan nol memulai loop polling di latar belakang yang memanggil `CheckAndInstall` |
+| `Platform` | `string` | Timpa `runtime.GOOS` untuk pemilihan aset |
+| `Arch` | `string` | Timpa `runtime.GOARCH` untuk pemilihan aset |
+| `Channel` | `string` | Saat ini hanya bersifat informatif; pemfilteran kanal khusus penyedia |
+| `Window` | `updater.WindowOption` | `nil` (nilai bawaan), `&BuiltinWindow{…}`, `BYOWindow(handle)`, atau `WindowNone` |
 @end
 
-### Method pada `*updater.Updater`
+### Metode pada `*updater.Updater`
 
 @table header=true
 | Signature | Tujuan |
-| `Init(cfg Config) error` | Konfigurasi. Mengembalikan `ErrAlreadyConfigured` pada panggilan kedua |
-| `State() State` | Fase lifecycle saat ini |
+| `Init(cfg Config) error` | Mengonfigurasi. Mengembalikan `ErrAlreadyConfigured` pada pemanggilan kedua |
+| `State() State` | Fase siklus hidup saat ini |
 | `CurrentVersion() string` | Versi yang diteruskan ke `Init` |
-| `Check(ctx) (*Release, error)` | Telusuri provider chain. `(rel, nil)` = ditemukan, `(nil, nil)` = up-to-date, `(nil, err)` = semua gagal |
-| `DownloadAndInstall(ctx) error` | Stream, verify, extract (jika archive), stage. Memerlukan `Check` sebelumnya |
-| `CheckAndInstall(ctx) error` | Convenience: buka window, `Check`, lalu `DownloadAndInstall` jika ditemukan |
-| `Restart(ctx) error` | Spawn helper, panggil `Host.Quit`, keluar; helper swap + relaunch |
-| `DownloadedPath() string` | Lokasi update staged on-disk, atau `""` jika tidak ada |
-| `SkipVersion(v string)` | Catat `v` sebagai skipped; `Check` berikutnya memperlakukannya sebagai up-to-date |
-| `SkippedVersion() string` | Baca versi yang saat ini di-skip |
-| `StopPeriodicCheck()` | Batalkan timer yang dimulai `Config.CheckInterval` dan tunggu loop kembali |
+| `Check(ctx) (*Release, error)` | Menelusuri rantai penyedia. `(rel, nil)` = ditemukan, `(nil, nil)` = sudah terbaru, `(nil, err)` = semuanya gagal |
+| `DownloadAndInstall(ctx) error` | Melakukan streaming, memverifikasi, mengekstrak (jika berupa arsip), lalu menyiapkan. Memerlukan `Check` sebelumnya |
+| `CheckAndInstall(ctx) error` | Cara praktis: membuka jendela, menjalankan `Check`, lalu `DownloadAndInstall` jika ditemukan |
+| `Restart(ctx) error` | Menjalankan helper, memanggil `Host.Quit`, lalu keluar; helper mengganti aplikasi dan meluncurkannya kembali |
+| `DownloadedPath() string` | Lokasi pembaruan yang telah disiapkan pada disk, atau `""` jika tidak ada |
+| `SkipVersion(v string)` | Mencatat `v` sebagai versi yang dilewati; pemanggilan `Check` berikutnya menganggapnya sudah terbaru |
+| `SkippedVersion() string` | Membaca versi yang saat ini dilewati |
+| `StopPeriodicCheck()` | Membatalkan timer yang dimulai oleh `Config.CheckInterval` dan menunggu hingga loop selesai |
 @end
 
-### Errors
+### Galat
 
 @table header=true
 | Sentinel | Dikembalikan oleh |
-| `ErrAlreadyConfigured` | `Init` setelah sukses pertama |
+| `ErrAlreadyConfigured` | `Init` setelah keberhasilan pertama |
 | `ErrNotConfigured` | Operasi apa pun sebelum `Init` |
 | `ErrNoPendingRelease` | `DownloadAndInstall` tanpa `Check` sebelumnya |
-| `ErrDownloadInProgress` | `DownloadAndInstall` dipanggil saat yang lain berjalan |
-| `ErrNotReady` | `Restart` tanpa update staged |
+| `ErrDownloadInProgress` | `DownloadAndInstall` dipanggil saat pemanggilan lain dari metode yang sama sedang berjalan |
+| `ErrNotReady` | `Restart` tanpa pembaruan yang telah disiapkan |
 @end
 
-## Cara swap bekerja
+## Cara kerja penggantian
 
-`Restart` re-exec binary saat ini dengan environment variable sentinel diset. `application.New` mendeteksinya saat startup dan beralih ke helper-mode:
+`Restart` mengeksekusi ulang biner saat ini dengan variabel lingkungan sentinel yang telah ditetapkan. `application.New` mendeteksinya saat dimulai dan mengalihkan proses ke mode helper:
 
-1. Helper menunggu hingga 30 dtk parent PID exit (`platformIsAlive` poll via `syscall.OpenProcess` + `GetExitCodeProcess` di Windows, `os.FindProcess` + `proc.Signal(syscall.Signal(0))` di Unix).
-2. Helper backup target (copy untuk file, recursive copy untuk direktori bundle `.app` macOS).
-3. Helper mengganti target dengan artifact staged, retry hingga 20 kali dengan backoff 500 ms antar percobaan:
-  - *Unix* — `os.RemoveAll(target)` + `os.Rename(newPath, target)`. File descriptor terbuka terhadap inode lama tetap valid.
-  - *Windows* — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`. Windows mengizinkan rename file yang image-nya masih mapped, tapi tidak delete; pada update berikutnya helper sweep sibling `.old.*` yang mapping kernel-nya sudah dilepas.
-4. Helper memulihkan mode executable asli pada binary baru (file unduhan dibuat dengan umask default, yang menghilangkan `+x` di Unix; di Windows ini no-op).
-5. Helper membersihkan env var helper-mode dan re-launch binary (yang sudah diganti).
-6. Helper exit.
+1. Helper menunggu hingga 30 dtk agar PID induk berhenti (`platformIsAlive` melakukan polling melalui `syscall.OpenProcess` + `GetExitCodeProcess` di Windows, serta `os.FindProcess` + `proc.Signal(syscall.Signal(0))` di Unix).
+2. Helper mencadangkan target (menyalin file atau menyalin secara rekursif direktori bundel `.app` macOS).
+3. Helper mengganti target dengan artefak yang telah disiapkan dan mencoba kembali hingga 20 kali dengan jeda 500 md antara setiap percobaan:
+  - *Unix* — `os.RemoveAll(target)` + `os.Rename(newPath, target)`. Deskriptor file terbuka yang mengacu pada inode lama tetap valid.
+  - *Windows* — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`. Windows mengizinkan penggantian nama file yang image-nya masih dipetakan, tetapi tidak mengizinkan penghapusannya; pada pembaruan berikutnya, helper membersihkan file saudara `.old.*` yang tersisa setelah pemetaan kernel pemiliknya dilepas.
+4. Helper memulihkan mode eksekusi asli pada biner baru (file unduhan dibuat dengan umask default, yang menghapus `+x` di Unix; di Windows, operasi ini tidak melakukan apa pun).
+5. Helper menghapus variabel lingkungan mode helper dan meluncurkan ulang biner yang kini telah diganti.
+6. Helper berhenti.
 
-Jika launch gagal, helper memulihkan backup. Jika parent tidak exit dalam 30 dtk, helper abort sebelum menyentuh target (pengguna tetap punya app yang berfungsi meski dialog shutdown memblokir `Quit`).
+Jika peluncuran gagal, helper memulihkan cadangan. Jika proses induk tidak berhenti dalam 30 dtk, helper membatalkan proses sebelum menyentuh target (sehingga pengguna tetap memiliki aplikasi yang berfungsi meskipun dialog penonaktifan memblokir `Quit`).
 
-Untuk bundle `.app` macOS yang didistribusikan sebagai `.zip` (packaging yang direkomendasikan), archive di-unpack antara verify dan ready agar helper punya direktori nyata untuk di-swap.
+Untuk bundel `.app` macOS yang didistribusikan sebagai `.zip` (kemasan yang disarankan), arsip dibongkar antara tahap verifikasi dan siap agar helper memiliki direktori nyata untuk dipasang melalui penggantian.
 
 ## Pemeriksaan berkala
 
@@ -586,47 +612,47 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-Saat `CheckInterval > 0`, goroutine background memanggil `CheckAndInstall` pada interval yang dikonfigurasi. Tick yang tiba saat alur lain sedang berjalan (checking / downloading / verifying / installing) di-drop — state machine konkuren tidak didukung.
+Jika `CheckInterval > 0`, goroutine latar belakang memanggil `CheckAndInstall` sesuai interval yang dikonfigurasi. Tick yang tiba saat alur lain sedang berlangsung (memeriksa / mengunduh / memverifikasi / memasang) akan diabaikan — mesin status serentak tidak didukung.
 
-Untuk polling background silent yang hanya muncul saat sesuatu ditemukan, set `Window: updater.WindowNone` dan bereaksi terhadap `EventUpdateAvailable` dari UI Anda sendiri.
+Untuk polling latar belakang senyap yang hanya ditampilkan saat sesuatu ditemukan, tetapkan `Window: updater.WindowNone` dan tanggapi `EventUpdateAvailable` dari UI Anda sendiri.
 
-## Skip & remind
+## Lewati & ingatkan
 
-Tombol "Skip This Version" window default mencatat versi tersedia via `SkipVersion(rel.Version)`. `Check` berikutnya menemukan versi yang sama dan memperlakukannya sebagai up-to-date (sampai pengguna memperbarui `CurrentVersion`, yang terjadi otomatis setelah `Restart` sukses). "Remind Me Later" hanya menutup window tanpa mencatat apa pun.
+Tombol "Lewati Versi Ini" pada jendela default mencatat versi yang tersedia melalui `SkipVersion(rel.Version)`. Pemanggilan `Check` berikutnya menemukan versi yang sama dan menganggapnya sebagai versi terbaru (hingga pengguna memperbarui `CurrentVersion`, yang terjadi secara otomatis setelah `Restart` berhasil). "Ingatkan Saya Nanti" hanya menutup jendela tanpa mencatat apa pun.
 
 ```go
-// Membaca apa yang di-skip pengguna (mis. untuk ditampilkan di app settings)
+// Reading what the user skipped (e.g. to surface in app settings)
 if v := app.Updater.SkippedVersion(); v != "" {
     log.Printf("user skipped %s", v)
 }
 
-// Menghapus skip secara programatik:
+// Programmatically clearing the skip:
 app.Updater.SkipVersion("")
 ```
 
-## Checklist distribusi
+## Daftar periksa distribusi
 
-Sebelum mempublikasikan release yang akan di-install updater:
+Sebelum memublikasikan rilis yang akan dipasang oleh pemutakhir:
 
-1. *Pilih format archive yang tepat.* macOS: `.zip` bundle `.app`. Linux: single binary atau `.tar.gz`. Windows: single `.exe` atau `.zip`. `.dmg` / `.msi` / `.pkg` tidak didukung.
-2. *Sign artifact* dengan private key yang cocok dengan `Config.PublicKey`. Untuk feed yang dipublikasikan provider (keygen.sh, AppCast), ikuti workflow signing masing-masing provider. Untuk GitHub Releases dengan `ChecksumAsset`, generate file `SHA256SUMS` dengan `sha256sum` / `shasum -a 256`.
-3. *Cocokkan string versi.* `Config.CurrentVersion` dan tag versi release harus cocok persis (mis. `1.0.0` ↔ tag `v1.0.0`; prefix `v` di-strip di sisi provider).
-4. *Uji swap di platform target* minimal sekali sebelum ship — codesigning, notarization, dan penanganan Gatekeeper spesifik platform dan tidak dicakup updater.
+1. *Pilih format arsip yang tepat.* macOS: `.zip` dari bundel `.app`. Linux: satu biner atau `.tar.gz`. Windows: satu `.exe` atau `.zip`. `.dmg` / `.msi` / `.pkg` tidak didukung.
+2. *Tandatangani artefak* dengan kunci privat yang sesuai dengan `Config.PublicKey`. Untuk umpan yang dipublikasikan penyedia (keygen.sh, AppCast), ikuti alur kerja penandatanganan masing-masing penyedia. Untuk GitHub Releases dengan `ChecksumAsset`, buat file `SHA256SUMS` menggunakan `sha256sum` / `shasum -a 256`.
+3. *Cocokkan string versi.* `Config.CurrentVersion` dan tag versi rilis harus sama persis (misalnya `1.0.0` ↔ tag `v1.0.0`; `v` di awal dihapus di sisi penyedia).
+4. *Uji penggantian pada platform target* setidaknya sekali sebelum merilis — penandatanganan kode, notarisasi, dan penanganan Gatekeeper bersifat khusus platform dan tidak ditangani oleh pemutakhir itu sendiri.
 
-## Troubleshooting
+## Pemecahan masalah
 
-*"signature requires a public key but none configured"* — release punya field `Signature` tapi `Config.PublicKey` kosong. Set public key atau ubah pipeline release agar tidak menyertakan signature.
+*"tanda tangan memerlukan kunci publik, tetapi tidak ada yang dikonfigurasi"* — rilis memiliki bidang `Signature`, tetapi `Config.PublicKey` kosong. Tetapkan kunci publik atau ubah pipeline rilis Anda agar tidak menyertakan tanda tangan.
 
-*"digest mismatch"* — byte unduhan tidak cocok dengan yang dijanjikan provider. Biasanya unduhan partial (gangguan jaringan) atau artifact corrupt. Menjalankan ulang sering memperbaikinya.
+*"digest tidak cocok"* — byte yang diunduh tidak sesuai dengan yang dijanjikan penyedia. Biasanya penyebabnya adalah unduhan parsial (gangguan jaringan) atau artefak yang rusak. Menjalankannya kembali sering kali menyelesaikan masalah.
 
-*Window terbuka lalu langsung hilang, tanpa markdown, tanpa progress* — custom HTML tidak memanggil `wails:runtime:ready`. Lihat shim [Ganti template](#ganti-template).
+*Jendela terbuka tetapi langsung menghilang, tanpa markdown dan tanpa progres* — HTML kustom Anda tidak memanggil `wails:runtime:ready`. Lihat shim [Ganti templat](#ganti-templat).
 
-*Update Windows tidak pernah selesai; log helper "remove old (attempt N): Access is denied"* — hanya terjadi pada versi pre-`de764fb` PR ini; implementasi saat ini memakai rename-aside yang tidak mengalami ini. Upgrade.
+*Pembaruan Windows tidak pernah selesai; log helper menyatakan "remove old (attempt N): Access is denied"* — ini hanya terjadi pada versi sebelum `de764fb` dari PR ini; implementasi saat ini menggunakan rename-aside sehingga tidak mengalami masalah tersebut. Lakukan pemutakhiran.
 
-*macOS Gatekeeper memblokir binary yang di-swap* — code-signing harus dipertahankan end-to-end. Sign `.app` asli _dan_ re-sign binary yang di-relaunch jika pipeline build Anda mengubah entitlements saat update.
+*Gatekeeper macOS memblokir biner yang diganti* — penandatanganan kode harus dipertahankan secara menyeluruh. Tandatangani `.app` asli _dan_ tandatangani ulang biner yang diluncurkan kembali jika pipeline build Anda mengubah entitlement saat pembaruan.
 
 ## Lihat juga
 
 - Contoh yang dapat dijalankan: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
-- Repo demo test: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
-- Tutorial: [Menambahkan self-update ke aplikasi Wails](/id/tutorials/04-self-update-a-wails-app/)
+- Repositori demo pengujian: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
+- Tutorial: [Menambahkan pembaruan mandiri ke aplikasi Wails](/tutorials/04-self-update-a-wails-app/)

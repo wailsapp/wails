@@ -1,12 +1,11 @@
 ---
 schema = 1
 title = "hiposter"
-description = "Aplikasi desktop yang dibangun dengan Wails"
+description = "Aplikasi desktop yang dibuat dengan Wails"
 slug = "community/showcase/hiposter"
-sourcePath = "id/community/showcase/hiposter.mpd"
+sourcePath = "community/showcase/hiposter.mpd"
 ---
 
 ![hiposter](/assets/showcase-images/hiposter.webp)
 
-[hiposter](https://github.com/obity/hiposter) adalah tool klien pengujian http API\
-yang sederhana dan efisien. Berbasis Wails, Go dan sveltejs.
+[hiposter](https://github.com/obity/hiposter) adalah alat klien sederhana dan efisien untuk menguji API http. Dibuat menggunakan Wails, Go, dan sveltejs.
