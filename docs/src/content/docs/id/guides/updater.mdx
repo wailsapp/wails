@@ -66,6 +66,8 @@ Itu membuka window update framework, memeriksa GitHub, mengunduh asset platform,
 
 Anda dapat membaca state saat ini dengan `app.Updater.State()` kapan saja. Setiap transisi juga mengirim Wails event (lihat [Events](#events)).
 
+`Restart` menunggu helper mencapai `application.New` sebelum meminta aplikasi yang sedang berjalan untuk keluar. Batas waktu startup default adalah 30 detik. Jika aplikasi melakukan inisialisasi panjang sebelum `application.New`, atur `Config.HelperReadyTimeout` ke durasi yang lebih lama, seperti `time.Minute`. Nilai nol menggunakan default; durasi negatif ditolak. Jika startup melewati batas waktu, `Restart` mengembalikan `updater.ErrHelperNotReady` dan membiarkan aplikasi tetap terbuka.
+
 Window default mencerminkan state saat ini secara otomatis — misalnya, saat `Check` tidak menemukan upgrade, pengguna melihat ini dan menutup dengan **Close**:
 
 <Image src={defaultWindowUpToDate} alt="Window updater default dalam state Up-to-Date — centang hijau, heading 'You're Up to Date', tombol Close tunggal." style="max-width: 420px; margin: 1rem auto; display: block; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));" />
