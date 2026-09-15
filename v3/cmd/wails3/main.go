@@ -101,6 +101,7 @@ func main() {
 	tool.NewSubCommandFunction("msix", "Create a Windows MSIX package", commands.ToolMSIX)
 	tool.NewSubCommand("msix-install-tools", "Install Windows MSIX packaging tools").Action(commands.InstallMSIXTools)
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
+	tool.NewSubCommandFunction("waitport", "Waits for a port to open. Useful for gating dependent development tasks.", commands.ToolWaitPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
 	tool.NewSubCommandFunction("buildinfo", "Show Build Info", commands.BuildInfo)
