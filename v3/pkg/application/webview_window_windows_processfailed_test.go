@@ -115,13 +115,7 @@ func TestBeginWebviewRecoveryStopsAtTheLimit(t *testing.T) {
 // This covers resetWebviewRecoveryBudget, not its call site: navigationCompleted
 // needs a live controller to invoke.
 func TestResetWebviewRecoveryBudget(t *testing.T) {
-	w := &windowsWebviewWindow{}
-
-	for i := 0; i < maxWebviewRecoveryAttempts; i++ {
-		if !w.beginWebviewRecovery() {
-			t.Fatalf("attempt %d refused while filling the budget", i+1)
-		}
-	}
+	w := webviewWindowWithExhaustedRecoveryBudget(t)
 	if w.beginWebviewRecovery() {
 		t.Fatal("budget not exhausted before the reset; test cannot prove the reset works")
 	}
@@ -134,6 +128,34 @@ func TestResetWebviewRecoveryBudget(t *testing.T) {
 	if !w.beginWebviewRecovery() {
 		t.Error("recovery still refused after the budget was reset")
 	}
+}
+
+func TestUnsuccessfulNavigationDoesNotResetWebviewRecoveryBudget(t *testing.T) {
+	w := webviewWindowWithExhaustedRecoveryBudget(t)
+
+	if shouldResetWebviewRecoveryBudget(false, nil) {
+		w.resetWebviewRecoveryBudget()
+	}
+
+	if w.webviewRecoveryAttempts != maxWebviewRecoveryAttempts {
+		t.Fatalf("webviewRecoveryAttempts = %d after unsuccessful navigation, want %d",
+			w.webviewRecoveryAttempts, maxWebviewRecoveryAttempts)
+	}
+	if w.beginWebviewRecovery() {
+		t.Fatal("unsuccessful navigation reset the exhausted recovery budget")
+	}
+}
+
+func webviewWindowWithExhaustedRecoveryBudget(t *testing.T) *windowsWebviewWindow {
+	t.Helper()
+	w := &windowsWebviewWindow{}
+
+	for i := 0; i < maxWebviewRecoveryAttempts; i++ {
+		if !w.beginWebviewRecovery() {
+			t.Fatalf("attempt %d refused while filling the budget", i+1)
+		}
+	}
+	return w
 }
 
 func TestProcessFailedDoesNotQueueOverlappingRecovery(t *testing.T) {

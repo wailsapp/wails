@@ -2756,9 +2756,11 @@ func (w *windowsWebviewWindow) navigationCompleted(
 	// on every cycle and the attempt bound would never trip, which is the
 	// runaway it exists to stop. Treat an unreadable IsSuccess as unsuccessful
 	// for the same reason.
-	if ok, err := args.GetIsSuccess(); err != nil {
-		globalApplication.error("webview2: reading navigation success: %v", err)
-	} else if ok {
+	isSuccess, navigationErr := args.GetIsSuccess()
+	if navigationErr != nil {
+		globalApplication.error("webview2: reading navigation success: %v", navigationErr)
+	}
+	if shouldResetWebviewRecoveryBudget(isSuccess, navigationErr) {
 		w.resetWebviewRecoveryBudget()
 	}
 
@@ -3204,6 +3206,12 @@ func (w *windowsWebviewWindow) beginWebviewRecovery() bool {
 // of its own rather than inheriting a spent counter.
 func (w *windowsWebviewWindow) resetWebviewRecoveryBudget() {
 	w.webviewRecoveryAttempts = 0
+}
+
+// shouldResetWebviewRecoveryBudget reports whether a navigation completion
+// represents a successful recovery and can replenish the retry budget.
+func shouldResetWebviewRecoveryBudget(isSuccess bool, err error) bool {
+	return err == nil && isSuccess
 }
 
 // processFailed handles WebView2 process-failure notifications. Without a
