@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sheet</title>
+  <style>
+    :root { color-scheme: light dark; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+    html, body { margin: 0; height: 100%; }
+    body { display: flex; flex-direction: column; justify-content: space-between; padding: 28px 32px; box-sizing: border-box; }
+    h1 { font-size: 17px; font-weight: 600; margin: 0 0 8px; }
+    p { margin: 0; color: #6e6e73; font-size: 13px; }
+    .buttons { display: flex; justify-content: flex-end; gap: 10px; }
+    button { font: inherit; font-size: 13px; padding: 6px 18px; border-radius: 8px; border: 1px solid rgba(127,127,127,.35); background: rgba(127,127,127,.12); cursor: default; }
+    button.primary { background: #2f6fed; border-color: transparent; color: white; }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>This window is a sheet</h1>
+    <p>It was created hidden and attached with <code>PresentSheet</code>. Ending it delivers the response code to <code>OnSheetEnd</code> on the sheet window and orders it out; the parent can present it again.</p>
+  </div>
+  <div class="buttons">
+    <button id="cancel">Cancel</button>
+    <button class="primary" id="ok">OK</button>
+  </div>
+  <script type="module">
+    import { Events } from '/wails/runtime.js';
+    document.getElementById('ok').addEventListener('click', () => Events.Emit('sheet:end', 1));
+    document.getElementById('cancel').addEventListener('click', () => Events.Emit('sheet:end', 0));
+  </script>
+</body>
+</html>

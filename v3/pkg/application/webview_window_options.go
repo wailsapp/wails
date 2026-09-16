@@ -718,6 +718,15 @@ type MacWindow struct {
 	// Empty disables frame autosave. See also SetFrameAutosaveName.
 	FrameAutosaveName string
 
+	// RestorationID makes the window restorable: when the application is
+	// relaunched after a crash, a reboot or (with "Close windows when
+	// quitting an application" off) a normal quit, macOS asks the
+	// application to recreate the window through WindowManager.OnRestore
+	// with this identifier and the data last stored with
+	// SetRestorationData. Empty leaves the window out of state restoration.
+	// See also SetRestorationID.
+	RestorationID string
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 

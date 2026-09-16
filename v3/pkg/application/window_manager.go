@@ -45,6 +45,16 @@ func (wm *WindowManager) OnCreate(callback func(Window)) {
 	wm.app.windowCreatedCallbacks = append(wm.app.windowCreatedCallbacks, callback)
 }
 
+// OnRestore registers the callback macOS state restoration calls at launch
+// for every window that was restorable (MacWindow.RestorationID) when the
+// application last ran. The callback recreates the window from the
+// identifier and the data stored with WebviewWindow.SetRestorationData and
+// returns it, or returns nil to skip that window. See
+// webview_window_restoration.go; it is never called off macOS.
+func (wm *WindowManager) OnRestore(callback func(id string, state RestorationState) Window) {
+	setMacWindowRestoreHandler(callback)
+}
+
 // New creates a new webview window
 func (wm *WindowManager) New() *WebviewWindow {
 	return wm.NewWithOptions(WebviewWindowOptions{})

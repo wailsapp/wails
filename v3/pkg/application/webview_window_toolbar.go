@@ -940,6 +940,15 @@ func (i *MacToolbarItem) SetTooltip(tooltip string) *MacToolbarItem {
 	return i
 }
 
+// ShowPopover shows a MacPopover anchored to this item's toolbar control.
+// The item must be installed in a live toolbar; on macOS 14 and newer the
+// popover anchors to the item itself, on earlier releases it anchors to the
+// item's custom view (search fields) and other items return an error. See
+// webview_window_popover.go.
+func (i *MacToolbarItem) ShowPopover(popover *MacPopover) error {
+	return macToolbarItemShowPopover(i, popover)
+}
+
 // SetBordered controls the item's bordered presentation on macOS 10.15 and
 // newer.
 func (i *MacToolbarItem) SetBordered(bordered bool) *MacToolbarItem {

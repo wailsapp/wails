@@ -207,6 +207,24 @@ type MacOptions struct {
 	ActivationPolicy ActivationPolicy
 	// If set to true, the application will terminate when the last window is closed.
 	ApplicationShouldTerminateAfterLastWindowClosed bool
+
+	// SupportsSecureRestorableState is returned from the application
+	// delegate's applicationSupportsSecureRestorableState:, which macOS 14
+	// asks at launch. The delegate always implements the method, so the
+	// "Secure coding is automatically enabled for restorable state" warning
+	// is never logged; set this to true to opt in to secure coding for the
+	// window restoration state (see MacWindow.RestorationID and
+	// WindowManager.OnRestore). Wails only stores strings in that state, so
+	// enabling it is safe.
+	SupportsSecureRestorableState bool
+
+	// PresentationOptions is applied to NSApplication.presentationOptions
+	// when the application finishes launching: kiosk mode, hiding the Dock
+	// or menu bar, disabling process switching and so on. Invalid
+	// combinations are reported through the error handler and ignored; see
+	// MacPresentationOptions.Validate. Change it at runtime with
+	// App.SetPresentationOptions.
+	PresentationOptions MacPresentationOptions
 }
 
 /****** Windows Options *******/

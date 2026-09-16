@@ -346,6 +346,8 @@ func (m *macosApp) run() error {
 			if m.parent.options.Mac.ActivationPolicy == ActivationPolicyRegular {
 				C.activateIgnoringOtherApps()
 			}
+			// MacOptions.PresentationOptions (presentation_options_darwin.go).
+			macApplyPresentationOptionsAtLaunch(m.parent)
 			if err := m.processAndCacheScreens(); err != nil {
 				m.parent.handleError(err)
 			}

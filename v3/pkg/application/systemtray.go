@@ -358,6 +358,13 @@ func (s *SystemTray) SetTooltip(tooltip string) {
 	})
 }
 
+// ShowPopover shows a MacPopover anchored below the status item's button,
+// the native replacement for an attached window. The tray must be running.
+// Off macOS it returns ErrMacOnly. See webview_window_popover.go.
+func (s *SystemTray) ShowPopover(popover *MacPopover) error {
+	return macSystemTrayShowPopover(s, popover)
+}
+
 func (s *SystemTray) Destroy() {
 	globalApplication.SystemTray.destroy(s)
 }

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Windows Extra</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --accent: #2f6fed;
+      --card: rgba(127, 127, 127, .08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink: #f5f5f7; --muted: #a1a1a6; --accent: #6ea0ff; --card: rgba(255, 255, 255, .07); }
+    }
+    html, body { margin: 0; background: transparent; color: var(--ink); }
+    body { padding: 36px 40px; }
+    h1 { font-size: 26px; font-weight: 600; margin: 0 0 4px; }
+    p.lead { color: var(--muted); margin: 0 0 28px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card { background: var(--card); border-radius: 12px; padding: 18px; }
+    .card h2 { font-size: 14px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+    .card .value { font-size: 34px; font-weight: 600; margin: 0 0 12px; font-variant-numeric: tabular-nums; }
+    .card small { color: var(--muted); }
+    button { font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(127,127,127,.35); background: rgba(127,127,127,.12); color: var(--ink); cursor: default; }
+    button.primary { background: var(--accent); border-color: transparent; color: white; }
+    code { font-size: 12px; color: var(--muted); }
+    #log { margin-top: 20px; font-size: 12px; color: var(--muted); white-space: pre-line; }
+  </style>
+</head>
+<body>
+  <h1>Windows Extra</h1>
+  <p class="lead">Sheets, popovers, presentation options and state restoration, all native.</p>
+  <div class="grid">
+    <section class="card">
+      <h2>Restored counter</h2>
+      <p class="value" id="counter">0</p>
+      <button class="primary" id="increment">Increment</button>
+      <p><small>Stored with the window's restorable state. Quit with the window open and relaunch: it comes back.</small></p>
+    </section>
+    <section class="card">
+      <h2>Presentation</h2>
+      <p class="value" id="presentation" style="font-size:18px">Default</p>
+      <p><small>Toggle with the Kiosk toolbar button or <code>Cmd-K</code>. The Dock and menu bar auto-hide; Command-Tab and Hide are disabled; Force Quit still works.</small></p>
+    </section>
+    <section class="card">
+      <h2>Popover from a rectangle</h2>
+      <button id="popover">Show popover above this button</button>
+      <p><small>The same popover the toolbar item shows, anchored to this button's rectangle in window points.</small></p>
+    </section>
+    <section class="card">
+      <h2>Sheet</h2>
+      <p><small>Use the Sheet toolbar button. The result code arrives here:</small></p>
+      <p class="value" id="sheet" style="font-size:18px">not shown yet</p>
+    </section>
+  </div>
+  <div id="log"></div>
+  <script type="module">
+    import { Events } from '/wails/runtime.js';
+
+    const counter = document.getElementById('counter');
+    const presentation = document.getElementById('presentation');
+    const sheet = document.getElementById('sheet');
+    const log = document.getElementById('log');
+
+    Events.On('counter', (event) => { counter.textContent = String(event.data); });
+    Events.On('presentation', (event) => { presentation.textContent = String(event.data); });
+    Events.On('sheet:ended', (event) => {
+      const code = Number(event.data);
+      sheet.textContent = code === 1 ? 'OK (1)' : code === 0 ? 'Cancel (0)' : `code ${code}`;
+      log.textContent = `sheet ended with ${code}\n` + log.textContent;
+    });
+
+    document.getElementById('increment').addEventListener('click', () => Events.Emit('counter:increment'));
+    document.getElementById('popover').addEventListener('click', (click) => {
+      const rect = click.currentTarget.getBoundingClientRect();
+      Events.Emit('popover:show', { x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+    });
+  </script>
+</body>
+</html>
