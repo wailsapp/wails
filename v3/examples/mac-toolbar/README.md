@@ -27,7 +27,13 @@ It demonstrates:
   fallback used on macOS 10.13–10.15);
 - an `NSSharingServicePickerToolbarItem` backed by a lazy, multi-format Go
   provider (with a native picker fallback on macOS 10.13–10.14);
-- native New, Save, and Focus controls;
+- native New, Save, and Focus controls, a navigational Back button with a low
+  visibility priority, a fixed space, and an `NSMenuToolbarItem` dropdown
+  built from an ordinary `Menu`;
+- user customisation with autosave (`SetCustomizable`, per-item persistence
+  keys, `RunCustomizationPalette`) and live toolbar mutation (`Remove`, `Move`,
+  late `Add*`);
+- recent searches and a custom scope menu on the search field;
 - the standard AppKit inspector toggle and tracking separator on macOS 14+,
   with a native functional toggle fallback on older supported releases;
 - generated internal item identifiers, with no IDs in application code;
@@ -69,11 +75,13 @@ unobscured window content guide for applications that do not want overlap.
 
 - `main.go` creates the application and window, attaches the split view (which
   must be configured before the window is shown), then the toolbar and menu.
-- `split.go` builds the native source-list model, owns the note navigation
-  state, assembles all three split panes, and wires native selection and
-  collapse callbacks.
-- `inspector.go` builds the native property model and connects its generated
-  control callbacks to the current note.
+- `split.go` builds the native source-list model (a badged All Notes row,
+  renameable and reorderable Notes rows with a context menu, and nested Tags
+  rows), owns the note navigation state, assembles all three split panes, and
+  wires native selection, rename, move, and collapse callbacks.
+- `inspector.go` builds the native property model, including a collapsible
+  Sidebar section with a slider, colour well, and button, and connects its
+  generated control callbacks to the current note.
 - `toolbar.go` constructs the native controls, registers their callbacks, and
   keeps toolbar and focus state in sync with editor and sidebar events.
 - `menu.go` adds keyboard and menu equivalents, including View → Toggle
@@ -153,7 +161,7 @@ AppKit does not expose a soft/hard style setter for an ordinary `NSToolbar`.
 Those preferences are public only on real titlebar and split-item accessory
 controllers in macOS 26.1+. Consequently Wails does not present a toolbar
 style switch that AppKit cannot faithfully implement. Choose
-`MacContentLayoutBelowToolbar` when overlap—and therefore the effect—is not
+`MacContentLayoutBelowToolbar` when overlap, and therefore the effect, is not
 wanted.
 
 Native integrations that own an `NSTitlebarAccessoryViewController` or
@@ -174,8 +182,8 @@ if accessory.SupportsPreferredScrollEdgeEffectStyle() {
 ```
 
 `MacScrollEdgeEffectStyleAutomatic`, `Soft`, and `Hard` map one-to-one to
-`NSScrollEdgeEffectStyle`. The setter affects only the wrapped accessory—not
-the window toolbar—and never exposes a synthetic blur-strength value. On
+`NSScrollEdgeEffectStyle`. The setter affects only the wrapped accessory, not
+the window toolbar, and never exposes a synthetic blur-strength value. On
 macOS before 26.1, `Automatic` is a successful no-op while explicit `Soft` or
 `Hard` returns `ErrMacScrollEdgeEffectStyleUnavailable`. The wrapper is
 non-owning, so the native window or split item must keep its controller alive.
@@ -221,6 +229,66 @@ AppKit groups compatible controls. `MacToolbarItem.SetProminent` and
 custom whole-window backdrop for intentionally translucent application
 content and is separate from `NSToolbar` presentation.
 
+## Native sidebar API
+
+`MacSidebar` is an `NSOutlineView` source list. Build the model first, then
+add it as the leading pane:
+
+```go
+sidebar := application.NewMacSidebar()
+
+all := sidebar.AddItem("All Notes").SetSymbol("tray.full").SetBadge(3)
+
+notes := sidebar.AddSection("Notes")
+draft := notes.AddItem("Saturday, slowly.").
+    SetSymbol("doc.text").
+    SetEditable(true).
+    OnRename(func(_ *application.Context, title string) { model.Rename(title) })
+
+tags := sidebar.AddSection("Tags")
+personal := tags.AddItem("Personal").
+    SetSymbol("person").
+    SetTintColor(&application.RGBA{Red: 255, Green: 149, Blue: 0, Alpha: 255}).
+    SetExpanded(true)
+personal.AddItem("Drafts").SetBadge(2).SetAccessorySymbol("pin.fill")
+
+sidePane := split.AddSidebar(sidebar)
+```
+
+Rows nest to any depth with `MacSidebarItem.AddItem`; nested rows start
+collapsed until `SetExpanded(true)` or the user opens them, which invokes
+`OnExpandedChange`. `SetBadge` shows a trailing count like Mail's unread
+counts (zero clears it), `SetAccessorySymbol` adds a trailing SF Symbol, and
+`SetTintColor` colours the leading symbol.
+
+Selection is single by default. `SetAllowsMultipleSelection(true)` enables
+Command and Shift clicks; `OnClick` still fires for the clicked row, and
+`OnSelectionChange` receives the whole selection in row order. `SelectedItem`
+and `SelectedItems` read the current state.
+
+Context menus are ordinary `Menu` values. `item.SetContextMenu` attaches a
+fixed menu to one row, `sidebar.OnContextMenu` builds one per right-click
+(receiving the clicked row, or nil for the empty area), and
+`sidebar.SetContextMenu` is the fallback. Menu item `OnClick` handlers fire
+through the normal menu plumbing. The callback runs on the application thread
+while AppKit waits to show the menu, so keep it quick.
+
+Editable rows (`SetEditable(true)`) rename in place with Return or a click on
+the selected row's label; the commit updates the Go label and then invokes
+`OnRename`. `SetReorderable(true)` lets the user drag rows within a section,
+between sections, and to the sidebar root; nested rows reorder beneath their
+parent, and nothing is accepted from outside the sidebar. Drops update the Go
+model before `OnMove` reports the row, its new section (nil at the root), and
+its new index.
+
+`item.Remove`, `section.Remove`, `sidebar.Remove`, and `sidebar.RemoveSection`
+detach rows and sections, unregister their callbacks, and leave the handles
+inert. `section.Move` reorders rows programmatically.
+
+The demo uses all of this: All Notes carries the note count, the Notes rows
+are renameable and reorderable with a Pin/Delete context menu, and Tags nests
+categories whose badges count matching notes.
+
 ## Native inspector API
 
 Build the control model first, retain handles that need updates, and append the
@@ -265,6 +333,26 @@ Programmatic setters never invoke callbacks. User interaction updates the Go
 handle before `OnTextChange`, `OnToggle`, or `OnSelectionChange` runs. This
 prevents model-to-view updates from feeding back into application logic while
 still making the latest user value immediately readable from the handle.
+
+Beyond labels, text fields, checkboxes, and pop-ups, sections offer
+`AddSlider(label, min, max, value)` and `AddStepper(label, min, max, step,
+value)` with `OnValueChange`, `SetFloatValue`, `FloatValue`, and `SetRange`;
+`AddSegmented(label, options, selected)` (an `NSSegmentedControl` sharing the
+pop-up's `OnSelectionChange`, `SetOptions`, and `SetSelectedIndex`);
+`AddColorWell(label, colour)` with `OnColorChange`, `SetColor`, and `Color`;
+`AddDatePicker(label, time)` with `OnDateChange`, `SetDate`, and `Date`; and
+`AddButton(label)` with `OnClick`. Kind-specific setters are safe no-ops on
+other kinds.
+
+`section.SetCollapsible(true)` adds a disclosure triangle beside the heading;
+`SetCollapsed` and `IsCollapsed` track it from Go. `section.Remove(control)`,
+`inspector.RemoveSection(section)`, `section.Move(control, index)`, and
+`inspector.MoveSection(section, index)` edit the layout after installation.
+Removed handles are inert and their callbacks are unregistered.
+
+The demo's collapsible Sidebar section drives the native source list
+directly: its Priority slider becomes the active row's badge, the colour well
+tints the row symbol, and the button resets both.
 
 On macOS 11+, the pane is created with AppKit's semantic
 `inspectorWithViewController:` role. macOS 10.13–10.15 use the same native
@@ -527,8 +615,97 @@ The general `SetEnabled` state and provider availability are combined. A Share
 item is enabled only when the application enables it and a valid provider is
 installed.
 
+## Toolbar layout, menus and customisation
+
+The toolbar is a live model. Items can be added, moved and removed before or
+after `SetToolbar`; an attached `NSToolbar` follows the Go model immediately:
+
+```go
+later := toolbar.AddButton("Later").SetSymbol("clock")
+later.OnClick(func(*application.Context) { /* ... */ })
+toolbar.Move(later, 1)
+toolbar.Remove(later)
+```
+
+Callbacks are chained after the constructor, so a live addition is installed
+first and picks up `OnClick` or `OnSearch` on the next click. A click on an
+item that still has no callback is logged through the window's error handler.
+Attaching a toolbar with `SetToolbar` continues to require every callback up
+front.
+
+### Dropdown menus
+
+`AddMenu` wraps `NSMenuToolbarItem` (macOS 10.15+) around an ordinary `Menu`.
+Entries fire `MenuItem.OnClick`, `Menu.Update` refreshes the native menu in
+place, and `SetShowsIndicator(false)` hides the chevron:
+
+```go
+actions := application.NewMenu()
+actions.Add("Save Note").OnClick(func(*application.Context) { save() })
+actions.AddSeparator()
+actions.Add("Customize Toolbar...").OnClick(func(*application.Context) {
+    toolbar.RunCustomizationPalette()
+})
+toolbar.AddMenu("Actions", actions).SetSymbol("ellipsis.circle")
+```
+
+### Standard identifiers and item semantics
+
+- `AddSpace` adds the fixed `NSToolbarSpaceItemIdentifier`; `AddFlexibleSpace`
+  the flexible one.
+- `SetCenteredItems(items...)` maps to `centeredItemIdentifiers` on macOS 13+
+  (earlier releases keep the standard layout and log at debug level).
+- `SetVisibilityPriority` accepts `MacToolbarVisibilityPriorityLow`,
+  `Standard`, `High` and `User` and decides which items overflow first.
+- `SetNavigational(true)` (macOS 11+) pins an item to the leading edge, as
+  Safari's Back and Forward buttons are. Daymark's Back button combines both:
+  it is navigational and has a low priority so document actions stay visible
+  longer than history.
+
+### User customisation and autosave
+
+```go
+toolbar := application.NewMacToolbar().SetCustomizable("mac-toolbar.main")
+toolbar.AddButton("New").SetPersistenceKey("new").OnClick(...)
+toolbar.AddButton("Statistics").SetPersistenceKey("statistics").SetInDefaultSet(false).OnClick(...)
+```
+
+`SetCustomizable` turns on `allowsUserCustomization` and
+`autosavesConfiguration` with the key as the `NSToolbar` identifier, so the
+user's layout is stored per toolbar. Give every item a stable
+`SetPersistenceKey`; items that keep their generated `wails.toolbar.item.N`
+identifier cannot be restored after a relaunch. `SetInDefaultSet(false)` (or
+`SetDefaultItems(...)`) offers an item in the palette without placing it in
+the default layout. `RunCustomizationPalette` opens the sheet
+programmatically. Call `SetCustomizable` before the toolbar is attached; the
+identifier of a live `NSToolbar` cannot change, so a key set later applies on
+the next attachment.
+
+When customisation is on, structural changes from Go respect the user's
+layout: removed items disappear, newly added default items are inserted at
+their model position, and `Move` relocates an item the user still shows.
+Without customisation the live toolbar mirrors the Go order exactly.
+
+### Search options
+
+```go
+search := toolbar.AddSearch("Search notes").
+    SetSearchPlaceholder("Search notes").
+    SetSearchRecentsKey("mac-toolbar.search.recents").
+    SetSearchMenu(scopeMenu).
+    SetSearchIncremental(false)
+```
+
+`SetSearchRecentsKey` enables the native recent-searches menu
+(`recentsAutosaveName`, ten entries). `SetSearchMenu` installs a custom
+`searchMenuTemplate`; with a recents key set, the standard recents section is
+appended after the custom entries. `SetSearchIncremental(true)` fires
+`OnSearch` while typing instead of on Return.
+
 ## Platform behavior
 
+- `NSMenuToolbarItem` needs macOS 10.15; the item is omitted on earlier
+  releases. `SetNavigational` needs macOS 11 and `SetCenteredItems` macOS 13.
 - macOS 10.15 and newer use `NSSharingServicePickerToolbarItem` directly.
 - macOS 10.13–10.14 use an `NSToolbarItem` that opens the native
   `NSSharingServicePicker`.

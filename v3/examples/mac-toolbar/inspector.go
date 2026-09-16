@@ -19,6 +19,10 @@ var daymarkCategories = []string{
 // daymarkInspector owns the native trailing inspector and translates between
 // AppKit control callbacks and the editor's application model. It contains no
 // HTML and creates no WebView.
+//
+// The Sidebar section is collapsible and drives the native source list
+// directly: its slider becomes the active row's badge and its colour well
+// tints the row symbol.
 type daymarkInspector struct {
 	app       *application.App
 	inspector *application.MacInspector
@@ -27,6 +31,10 @@ type daymarkInspector struct {
 	title       *application.MacInspectorControl
 	category    *application.MacInspectorControl
 	pinned      *application.MacInspectorControl
+	priority    *application.MacInspectorControl
+	tint        *application.MacInspectorControl
+	useTint     *application.MacInspectorControl
+	reset       *application.MacInspectorControl
 	words       *application.MacInspectorControl
 	characters  *application.MacInspectorControl
 	readingTime *application.MacInspectorControl
@@ -36,6 +44,8 @@ type daymarkInspector struct {
 	onTitleChange    func(string)
 	onCategoryChange func(string)
 	onPinnedChange   func(bool)
+	onPriorityChange func(int)
+	onTintChange     func(*application.RGBA)
 }
 
 type daymarkInspectorState struct {
@@ -47,6 +57,8 @@ type daymarkInspectorState struct {
 	Reading    int    `json:"readingMinutes"`
 	Dirty      bool   `json:"dirty"`
 }
+
+var daymarkDefaultTint = application.NewRGB(0, 122, 255)
 
 func newDaymarkInspector(app *application.App) *daymarkInspector {
 	result := &daymarkInspector{
@@ -60,6 +72,15 @@ func newDaymarkInspector(app *application.App) *daymarkInspector {
 	result.category = document.AddPopup("Category", daymarkCategories, 0).
 		SetTooltip("Choose where this note belongs")
 	result.pinned = document.AddCheckbox("Keep this note pinned", false)
+
+	sidebar := result.inspector.AddSection("Sidebar").SetCollapsible(true)
+	result.priority = sidebar.AddSlider("Priority", 0, 5, 0).
+		SetTooltip("Shown as the badge on the note's sidebar row")
+	result.useTint = sidebar.AddCheckbox("Tint the sidebar symbol", false)
+	result.tint = sidebar.AddColorWell("Tint", daymarkDefaultTint).
+		SetTooltip("Colour of the note's sidebar symbol").
+		SetEnabled(false)
+	result.reset = sidebar.AddButton("Reset Sidebar Row")
 
 	statistics := result.inspector.AddSection("Statistics")
 	result.words = statistics.AddLabel("Words", "0")
@@ -92,6 +113,23 @@ func newDaymarkInspector(app *application.App) *daymarkInspector {
 		if callback != nil {
 			callback(checked)
 		}
+	})
+	result.priority.OnValueChange(func(_ *application.Context, value float64) {
+		result.notifyPriority(int(value + 0.5))
+	})
+	result.useTint.OnToggle(func(_ *application.Context, checked bool) {
+		result.tint.SetEnabled(checked)
+		result.notifyTint()
+	})
+	result.tint.OnColorChange(func(*application.Context, application.RGBA) {
+		result.notifyTint()
+	})
+	result.reset.OnClick(func(*application.Context) {
+		result.priority.SetFloatValue(0)
+		result.useTint.SetChecked(false)
+		result.tint.SetColor(daymarkDefaultTint).SetEnabled(false)
+		result.notifyPriority(0)
+		result.notifyTint()
 	})
 
 	app.Event.On("editor:inspector-state", result.handleEditorState)
@@ -132,6 +170,60 @@ func (i *daymarkInspector) OnPinnedChange(callback func(bool)) {
 	i.callbacksLock.Lock()
 	i.onPinnedChange = callback
 	i.callbacksLock.Unlock()
+}
+
+// OnPriorityChange observes the Sidebar section's slider as a whole number.
+func (i *daymarkInspector) OnPriorityChange(callback func(int)) {
+	i.callbacksLock.Lock()
+	i.onPriorityChange = callback
+	i.callbacksLock.Unlock()
+}
+
+// OnTintChange observes the colour well. It receives nil when tinting is off.
+func (i *daymarkInspector) OnTintChange(callback func(*application.RGBA)) {
+	i.callbacksLock.Lock()
+	i.onTintChange = callback
+	i.callbacksLock.Unlock()
+}
+
+// SetTitle and SetPinned reflect changes made from the sidebar (inline rename
+// and the row context menu) without invoking the inspector callbacks.
+func (i *daymarkInspector) SetTitle(title string) { i.title.SetValue(title) }
+func (i *daymarkInspector) SetPinned(pinned bool) { i.pinned.SetChecked(pinned) }
+
+// SetSidebarState shows the active note's badge and tint in the Sidebar
+// section. Programmatic setters never fire callbacks.
+func (i *daymarkInspector) SetSidebarState(priority int, tint *application.RGBA) {
+	i.priority.SetFloatValue(float64(priority))
+	i.useTint.SetChecked(tint != nil)
+	i.tint.SetEnabled(tint != nil)
+	if tint != nil {
+		i.tint.SetColor(*tint)
+	}
+}
+
+func (i *daymarkInspector) notifyPriority(priority int) {
+	i.callbacksLock.RLock()
+	callback := i.onPriorityChange
+	i.callbacksLock.RUnlock()
+	if callback != nil {
+		callback(priority)
+	}
+}
+
+func (i *daymarkInspector) notifyTint() {
+	i.callbacksLock.RLock()
+	callback := i.onTintChange
+	i.callbacksLock.RUnlock()
+	if callback == nil {
+		return
+	}
+	if !i.useTint.Checked() {
+		callback(nil)
+		return
+	}
+	colour := i.tint.Color()
+	callback(&colour)
 }
 
 func (i *daymarkInspector) handleEditorState(event *application.CustomEvent) {

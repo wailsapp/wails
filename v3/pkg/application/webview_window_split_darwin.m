@@ -22,23 +22,85 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 }
 #endif
 
+// Sidebar model and cells. Nodes mirror the Go MacSidebar tree: sections at
+// the root, rows beneath sections, rows, or the root itself.
+static NSString* const WailsSidebarDragType = @"io.wails.sidebar.row";
+
 @interface WailsSidebarNode : NSObject
 @property unsigned long long nodeID;
 @property BOOL section;
 @property (copy) NSString* label;
 @property (copy) NSString* symbolName;
 @property (copy) NSString* tooltip;
+@property (copy) NSString* accessorySymbol;
+@property (retain) NSColor* tintColor;
 @property BOOL disabled;
 @property BOOL hidden;
+@property BOOL expanded;
+@property BOOL editable;
+@property NSInteger badge;
+@property (assign) WailsSidebarNode* parent;
 @property (retain) NSMutableArray<WailsSidebarNode*>* children;
 @end
 
 @implementation WailsSidebarNode
+- (instancetype)init {
+    self = [super init];
+    if (self) _children = [[NSMutableArray alloc] init];
+    return self;
+}
+
 - (void)dealloc {
     [_label release];
     [_symbolName release];
     [_tooltip release];
+    [_accessorySymbol release];
+    [_tintColor release];
     [_children release];
+    [super dealloc];
+}
+@end
+
+static WailsSidebarNode* sidebarNodeInTree(NSArray<WailsSidebarNode*>* nodes, unsigned long long nodeID) {
+    for (WailsSidebarNode* node in nodes) {
+        if (node.nodeID == nodeID) return node;
+        WailsSidebarNode* found = sidebarNodeInTree(node.children, nodeID);
+        if (found != nil) return found;
+    }
+    return nil;
+}
+
+// sidebarNodeHasAncestor reports whether node is ancestor or nests beneath it.
+static BOOL sidebarNodeHasAncestor(WailsSidebarNode* node, WailsSidebarNode* ancestor) {
+    for (WailsSidebarNode* current = node; current != nil; current = current.parent) {
+        if (current == ancestor) return YES;
+    }
+    return NO;
+}
+
+static NSImage* sidebarSymbolImage(NSString* symbolName, NSString* description) {
+    NSImage* image = nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+    if (@available(macOS 11.0, *)) {
+        image = symbolName.length > 0
+            ? [NSImage imageWithSystemSymbolName:symbolName accessibilityDescription:description]
+            : nil;
+    }
+#endif
+    return image;
+}
+
+// One source-list row: leading symbol, label, trailing badge count, and an
+// optional trailing accessory symbol. Hidden trailing views leave the layout.
+@interface WailsSidebarItemCell : NSTableCellView
+@property (retain) NSTextField* badgeLabel;
+@property (retain) NSImageView* accessoryView;
+@end
+
+@implementation WailsSidebarItemCell
+- (void)dealloc {
+    [_badgeLabel release];
+    [_accessoryView release];
     [super dealloc];
 }
 @end
@@ -69,15 +131,30 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 }
 @end
 
+@class WailsSidebarViewController;
+
+// The outline subclass routes right-clicks and Return to the controller so
+// context menus and inline rename behave like Finder's source list.
+@interface WailsSidebarOutlineView : NSOutlineView
+@property (assign) WailsSidebarViewController* controller;
+@end
+
 // A real AppKit source list. Both the outline and its scroll view remain
 // transparent so NSSplitViewItem's semantic sidebar material is visible.
-@interface WailsSidebarViewController : NSViewController <NSOutlineViewDataSource, NSOutlineViewDelegate>
+@interface WailsSidebarViewController : NSViewController <NSOutlineViewDataSource, NSOutlineViewDelegate, NSTextFieldDelegate>
 @property (retain) NSMutableArray<WailsSidebarNode*>* roots;
 @property (retain) NSOutlineView* outlineView;
 @property (retain) NSColor* surfaceColor;
+@property unsigned long long paneID;
 @property unsigned long long selectedItemID;
+@property BOOL allowsMultipleSelection;
+@property BOOL reorderable;
 @property BOOL suppressSelectionCallback;
+@property BOOL suppressExpansionCallback;
 - (void)reloadContents;
+- (void)applyOptions;
+- (NSMenu*)contextMenuForEvent:(NSEvent*)event;
+- (BOOL)beginEditingSelectedRow;
 @end
 
 @implementation WailsSidebarViewController
@@ -97,7 +174,8 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     scrollView.hasVerticalScroller = YES;
     scrollView.autohidesScrollers = YES;
 
-    NSOutlineView* outlineView = [[NSOutlineView alloc] initWithFrame:scrollView.bounds];
+    WailsSidebarOutlineView* outlineView = [[WailsSidebarOutlineView alloc] initWithFrame:scrollView.bounds];
+    outlineView.controller = self;
     outlineView.backgroundColor = [NSColor clearColor];
     outlineView.headerView = nil;
     outlineView.floatsGroupRows = YES;
@@ -105,8 +183,14 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     outlineView.autoresizesOutlineColumn = NO;
     outlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
     outlineView.allowsEmptySelection = YES;
-    outlineView.allowsMultipleSelection = NO;
+    outlineView.allowsMultipleSelection = self.allowsMultipleSelection;
     outlineView.rowSizeStyle = NSTableViewRowSizeStyleDefault;
+    outlineView.verticalMotionCanBeginDrag = YES;
+    [outlineView registerForDraggedTypes:@[WailsSidebarDragType]];
+    [outlineView setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
+    [outlineView setDraggingSourceOperationMask:NSDragOperationNone forLocal:NO];
+    outlineView.target = self;
+    outlineView.doubleAction = @selector(handleDoubleClick:);
 
     NSTableColumn* column = [[NSTableColumn alloc] initWithIdentifier:@"sidebar"];
     column.resizingMask = NSTableColumnAutoresizingMask;
@@ -123,6 +207,10 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     self.view = scrollView;
     [outlineView release];
     [scrollView release];
+}
+
+- (void)applyOptions {
+    self.outlineView.allowsMultipleSelection = self.allowsMultipleSelection;
 }
 
 - (NSArray<WailsSidebarNode*>*)visibleNodes:(NSArray<WailsSidebarNode*>*)nodes {
@@ -144,7 +232,8 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 }
 
 - (BOOL)outlineView:(NSOutlineView*)outlineView isItemExpandable:(id)item {
-    return ((WailsSidebarNode*)item).section;
+    WailsSidebarNode* node = (WailsSidebarNode*)item;
+    return node.section || [self visibleNodes:node.children].count > 0;
 }
 
 - (BOOL)outlineView:(NSOutlineView*)outlineView isGroupItem:(id)item {
@@ -152,13 +241,12 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 }
 
 - (NSTableCellView*)newCellWithIdentifier:(NSUserInterfaceItemIdentifier)identifier section:(BOOL)section {
-    NSTableCellView* cell = [[[NSTableCellView alloc] initWithFrame:NSMakeRect(0, 0, 220, section ? 22 : 28)] autorelease];
-    cell.identifier = identifier;
-
     NSTextField* textField = [NSTextField labelWithString:@""];
     textField.translatesAutoresizingMaskIntoConstraints = NO;
     textField.lineBreakMode = NSLineBreakByTruncatingTail;
     if (section) {
+        NSTableCellView* cell = [[[NSTableCellView alloc] initWithFrame:NSMakeRect(0, 0, 220, 22)] autorelease];
+        cell.identifier = identifier;
         textField.font = [NSFont systemFontOfSize:11 weight:NSFontWeightSemibold];
         textField.textColor = [NSColor secondaryLabelColor];
         [cell addSubview:textField];
@@ -167,24 +255,59 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
             [textField.trailingAnchor constraintEqualToAnchor:cell.trailingAnchor constant:-4],
             [textField.centerYAnchor constraintEqualToAnchor:cell.centerYAnchor]
         ]];
-    } else {
-        NSImageView* imageView = [[[NSImageView alloc] initWithFrame:NSZeroRect] autorelease];
-        imageView.translatesAutoresizingMaskIntoConstraints = NO;
-        imageView.imageScaling = NSImageScaleProportionallyUpOrDown;
-        [cell addSubview:imageView];
-        [cell addSubview:textField];
-        [NSLayoutConstraint activateConstraints:@[
-            [imageView.leadingAnchor constraintEqualToAnchor:cell.leadingAnchor constant:2],
-            [imageView.centerYAnchor constraintEqualToAnchor:cell.centerYAnchor],
-            [imageView.widthAnchor constraintEqualToConstant:16],
-            [imageView.heightAnchor constraintEqualToConstant:16],
-            [textField.leadingAnchor constraintEqualToAnchor:imageView.trailingAnchor constant:7],
-            [textField.trailingAnchor constraintEqualToAnchor:cell.trailingAnchor constant:-4],
-            [textField.centerYAnchor constraintEqualToAnchor:cell.centerYAnchor]
-        ]];
-        cell.imageView = imageView;
+        cell.textField = textField;
+        return cell;
     }
+
+    WailsSidebarItemCell* cell = [[[WailsSidebarItemCell alloc] initWithFrame:NSMakeRect(0, 0, 220, 28)] autorelease];
+    cell.identifier = identifier;
+    textField.delegate = self;
+    [textField setContentHuggingPriority:NSLayoutPriorityDefaultLow
+        forOrientation:NSLayoutConstraintOrientationHorizontal];
+    [textField setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow
+        forOrientation:NSLayoutConstraintOrientationHorizontal];
+
+    NSImageView* imageView = [[[NSImageView alloc] initWithFrame:NSZeroRect] autorelease];
+    imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    imageView.imageScaling = NSImageScaleProportionallyUpOrDown;
+    [NSLayoutConstraint activateConstraints:@[
+        [imageView.widthAnchor constraintEqualToConstant:16],
+        [imageView.heightAnchor constraintEqualToConstant:16]
+    ]];
+
+    NSTextField* badge = [NSTextField labelWithString:@""];
+    badge.translatesAutoresizingMaskIntoConstraints = NO;
+    badge.font = [NSFont monospacedDigitSystemFontOfSize:[NSFont smallSystemFontSize] weight:NSFontWeightMedium];
+    badge.textColor = [NSColor secondaryLabelColor];
+    badge.alignment = NSTextAlignmentRight;
+    [badge setContentHuggingPriority:NSLayoutPriorityRequired
+        forOrientation:NSLayoutConstraintOrientationHorizontal];
+
+    NSImageView* accessory = [[[NSImageView alloc] initWithFrame:NSZeroRect] autorelease];
+    accessory.translatesAutoresizingMaskIntoConstraints = NO;
+    accessory.imageScaling = NSImageScaleProportionallyDown;
+    [NSLayoutConstraint activateConstraints:@[
+        [accessory.widthAnchor constraintEqualToConstant:14],
+        [accessory.heightAnchor constraintEqualToConstant:14]
+    ]];
+
+    NSStackView* stack = [NSStackView stackViewWithViews:@[imageView, textField, badge, accessory]];
+    stack.translatesAutoresizingMaskIntoConstraints = NO;
+    stack.orientation = NSUserInterfaceLayoutOrientationHorizontal;
+    stack.alignment = NSLayoutAttributeCenterY;
+    stack.distribution = NSStackViewDistributionFill;
+    stack.spacing = 6;
+    [stack setCustomSpacing:7 afterView:imageView];
+    [cell addSubview:stack];
+    [NSLayoutConstraint activateConstraints:@[
+        [stack.leadingAnchor constraintEqualToAnchor:cell.leadingAnchor constant:2],
+        [stack.trailingAnchor constraintEqualToAnchor:cell.trailingAnchor constant:-6],
+        [stack.centerYAnchor constraintEqualToAnchor:cell.centerYAnchor]
+    ]];
+    cell.imageView = imageView;
     cell.textField = textField;
+    cell.badgeLabel = badge;
+    cell.accessoryView = accessory;
     return cell;
 }
 
@@ -197,18 +320,31 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
     cell.toolTip = node.tooltip.length > 0 ? node.tooltip : nil;
     cell.textField.textColor = node.disabled ? [NSColor disabledControlTextColor] :
         (node.section ? [NSColor secondaryLabelColor] : [NSColor labelColor]);
-    if (!node.section) {
-        NSImage* image = nil;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-        if (@available(macOS 11.0, *)) {
-            image = node.symbolName.length > 0
-                ? [NSImage imageWithSystemSymbolName:node.symbolName accessibilityDescription:node.label]
-                : nil;
-        }
-#endif
-        cell.imageView.image = image;
-        cell.imageView.hidden = image == nil;
+    if (node.section) return cell;
+
+    NSImage* image = sidebarSymbolImage(node.symbolName, node.label);
+    cell.imageView.image = image;
+    cell.imageView.hidden = image == nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+    if (@available(macOS 10.14, *)) {
+        cell.imageView.contentTintColor = node.disabled ? nil : node.tintColor;
     }
+#endif
+    cell.textField.editable = node.editable && !node.disabled;
+    cell.textField.selectable = cell.textField.editable;
+
+    WailsSidebarItemCell* itemCell = [cell isKindOfClass:[WailsSidebarItemCell class]] ? (WailsSidebarItemCell*)cell : nil;
+    itemCell.badgeLabel.stringValue = node.badge > 0 ? [NSString stringWithFormat:@"%ld", (long)node.badge] : @"";
+    itemCell.badgeLabel.hidden = node.badge <= 0;
+    itemCell.badgeLabel.textColor = node.disabled ? [NSColor disabledControlTextColor] : [NSColor secondaryLabelColor];
+    NSImage* accessoryImage = sidebarSymbolImage(node.accessorySymbol, node.accessorySymbol);
+    itemCell.accessoryView.image = accessoryImage;
+    itemCell.accessoryView.hidden = accessoryImage == nil;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400
+    if (@available(macOS 10.14, *)) {
+        itemCell.accessoryView.contentTintColor = [NSColor secondaryLabelColor];
+    }
+#endif
     return cell;
 }
 
@@ -219,26 +355,66 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
 
 - (void)outlineViewSelectionDidChange:(NSNotification*)notification {
     if (self.suppressSelectionCallback) return;
-    NSInteger row = self.outlineView.selectedRow;
-    if (row < 0) {
-        self.selectedItemID = 0;
-        return;
+    NSIndexSet* rows = self.outlineView.selectedRowIndexes;
+    NSMutableArray<NSNumber*>* ids = [NSMutableArray arrayWithCapacity:rows.count];
+    NSInteger clicked = self.outlineView.clickedRow;
+    if (clicked >= 0 && [rows containsIndex:(NSUInteger)clicked]) {
+        WailsSidebarNode* node = [self.outlineView itemAtRow:clicked];
+        if (node != nil && !node.section && !node.disabled) [ids addObject:@(node.nodeID)];
     }
-    WailsSidebarNode* node = [self.outlineView itemAtRow:row];
-    if (node == nil || node.section || node.disabled) return;
-    self.selectedItemID = node.nodeID;
-    processMacSidebarItemSelected(node.nodeID);
+    [rows enumerateIndexesUsingBlock:^(NSUInteger row, BOOL* stop) {
+        if ((NSInteger)row == clicked) return;
+        WailsSidebarNode* node = [self.outlineView itemAtRow:(NSInteger)row];
+        if (node == nil || node.section || node.disabled) return;
+        [ids addObject:@(node.nodeID)];
+    }];
+    self.selectedItemID = ids.count > 0 ? ids[0].unsignedLongLongValue : 0;
+    unsigned long long* buffer = ids.count > 0 ? calloc(ids.count, sizeof(unsigned long long)) : NULL;
+    for (NSUInteger index = 0; index < ids.count && buffer != NULL; index++) {
+        buffer[index] = ids[index].unsignedLongLongValue;
+    }
+    processMacSidebarSelectionChanged(self.paneID, buffer, (int)ids.count);
+    free(buffer);
+}
+
+- (void)expandNodes:(NSArray<WailsSidebarNode*>*)nodes {
+    for (WailsSidebarNode* node in nodes) {
+        if (node.hidden) continue;
+        if (node.section || node.expanded) {
+            [self.outlineView expandItem:node];
+            [self expandNodes:node.children];
+        }
+    }
+}
+
+- (void)outlineViewItemDidExpand:(NSNotification*)notification {
+    WailsSidebarNode* node = notification.userInfo[@"NSObject"];
+    if (node == nil || node.section) return;
+    // Nested rows keep their own state; restore it now that they are visible.
+    BOOL suppressed = self.suppressExpansionCallback;
+    self.suppressExpansionCallback = YES;
+    [self expandNodes:node.children];
+    self.suppressExpansionCallback = suppressed;
+    if (suppressed) return;
+    node.expanded = YES;
+    processMacSidebarItemExpanded(node.nodeID, true);
+}
+
+- (void)outlineViewItemDidCollapse:(NSNotification*)notification {
+    WailsSidebarNode* node = notification.userInfo[@"NSObject"];
+    if (node == nil || node.section || self.suppressExpansionCallback) return;
+    node.expanded = NO;
+    processMacSidebarItemExpanded(node.nodeID, false);
 }
 
 - (void)reloadContents {
     if (self.outlineView == nil) return;
     self.suppressSelectionCallback = YES;
+    self.suppressExpansionCallback = YES;
     CGFloat availableWidth = self.outlineView.bounds.size.width;
     if (availableWidth > 0) self.outlineView.outlineTableColumn.width = availableWidth;
     [self.outlineView reloadData];
-    for (WailsSidebarNode* node in self.roots) {
-        if (node.section && !node.hidden) [self.outlineView expandItem:node];
-    }
+    [self expandNodes:self.roots];
     NSIndexSet* selection = [NSIndexSet indexSet];
     if (self.selectedItemID != 0) {
         for (NSInteger row = 0; row < self.outlineView.numberOfRows; row++) {
@@ -250,12 +426,154 @@ unsigned long long splitPrimaryPaneIDForWebView(void* webView) {
         }
     }
     [self.outlineView selectRowIndexes:selection byExtendingSelection:NO];
+    self.suppressExpansionCallback = NO;
     self.suppressSelectionCallback = NO;
+}
+
+// Inline rename.
+
+- (BOOL)beginEditingRow:(NSInteger)row {
+    if (row < 0) return NO;
+    WailsSidebarNode* node = [self.outlineView itemAtRow:row];
+    if (node == nil || node.section || node.disabled || !node.editable) return NO;
+    [self.outlineView editColumn:0 row:row withEvent:nil select:YES];
+    return YES;
+}
+
+- (BOOL)beginEditingSelectedRow {
+    if (self.outlineView.numberOfSelectedRows != 1) return NO;
+    return [self beginEditingRow:self.outlineView.selectedRow];
+}
+
+- (void)handleDoubleClick:(id)sender {
+    [self beginEditingRow:self.outlineView.clickedRow];
+}
+
+- (void)controlTextDidEndEditing:(NSNotification*)notification {
+    NSTextField* field = notification.object;
+    if (![field isKindOfClass:[NSTextField class]]) return;
+    NSInteger row = [self.outlineView rowForView:field];
+    if (row < 0) return;
+    WailsSidebarNode* node = [self.outlineView itemAtRow:row];
+    if (node == nil || node.section || !node.editable) return;
+    NSString* label = field.stringValue ?: @"";
+    if ([label isEqualToString:node.label ?: @""]) return;
+    node.label = label;
+    processMacSidebarItemRenamed(node.nodeID, (char*)label.UTF8String);
+}
+
+// Context menus.
+
+- (NSMenu*)contextMenuForEvent:(NSEvent*)event {
+    NSPoint point = [self.outlineView convertPoint:event.locationInWindow fromView:nil];
+    NSInteger row = [self.outlineView rowAtPoint:point];
+    unsigned long long itemID = 0;
+    if (row >= 0) {
+        WailsSidebarNode* node = [self.outlineView itemAtRow:row];
+        if (node != nil && !node.section) itemID = node.nodeID;
+    }
+    return (NSMenu*)processMacSidebarContextMenu(self.paneID, itemID);
+}
+
+// Drag reorder. Only rows from this outline are accepted, and a row keeps its
+// nesting level: nested rows reorder beneath their parent, other rows move
+// between sections and the root.
+
+- (id<NSPasteboardWriting>)outlineView:(NSOutlineView*)outlineView pasteboardWriterForItem:(id)item {
+    WailsSidebarNode* node = (WailsSidebarNode*)item;
+    if (!self.reorderable || node == nil || node.section || node.disabled) return nil;
+    NSPasteboardItem* pasteboardItem = [[[NSPasteboardItem alloc] init] autorelease];
+    [pasteboardItem setString:[NSString stringWithFormat:@"%llu", node.nodeID] forType:WailsSidebarDragType];
+    return pasteboardItem;
+}
+
+- (WailsSidebarNode*)draggedNodeForInfo:(id<NSDraggingInfo>)info {
+    NSString* value = [info.draggingPasteboard stringForType:WailsSidebarDragType];
+    if (value == nil) return nil;
+    return sidebarNodeInTree(self.roots, strtoull(value.UTF8String, NULL, 10));
+}
+
+- (BOOL)canMoveNode:(WailsSidebarNode*)node toParent:(WailsSidebarNode*)parent {
+    if (node == nil || node.section) return NO;
+    if (parent != nil && sidebarNodeHasAncestor(parent, node)) return NO;
+    WailsSidebarNode* current = node.parent;
+    if (current != nil && !current.section) return parent == current;
+    return parent == nil || parent.section;
+}
+
+- (NSDragOperation)outlineView:(NSOutlineView*)outlineView validateDrop:(id<NSDraggingInfo>)info
+    proposedItem:(id)item proposedChildIndex:(NSInteger)index {
+    if (!self.reorderable || info.draggingSource != outlineView) return NSDragOperationNone;
+    WailsSidebarNode* dragged = [self draggedNodeForInfo:info];
+    WailsSidebarNode* target = (WailsSidebarNode*)item;
+    if (index == NSOutlineViewDropOnItemIndex) {
+        if (target == nil || !target.section) return NSDragOperationNone;
+        [outlineView setDropItem:target dropChildIndex:(NSInteger)[self visibleNodes:target.children].count];
+    }
+    if (![self canMoveNode:dragged toParent:target]) return NSDragOperationNone;
+    return NSDragOperationMove;
+}
+
+- (BOOL)outlineView:(NSOutlineView*)outlineView acceptDrop:(id<NSDraggingInfo>)info
+    item:(id)item childIndex:(NSInteger)index {
+    if (!self.reorderable || info.draggingSource != outlineView) return NO;
+    WailsSidebarNode* dragged = [self draggedNodeForInfo:info];
+    WailsSidebarNode* target = (WailsSidebarNode*)item;
+    if (![self canMoveNode:dragged toParent:target]) return NO;
+    NSArray<WailsSidebarNode*>* all = target == nil ? self.roots : target.children;
+    NSArray<WailsSidebarNode*>* visible = [self visibleNodes:all];
+    NSInteger fullIndex;
+    if (index == NSOutlineViewDropOnItemIndex || index >= (NSInteger)visible.count) {
+        fullIndex = (NSInteger)all.count;
+    } else {
+        fullIndex = (NSInteger)[all indexOfObjectIdenticalTo:visible[(NSUInteger)index]];
+    }
+    processMacSidebarItemMoved(self.paneID, dragged.nodeID, target == nil ? 0 : target.nodeID, (int)fullIndex);
+    return YES;
+}
+
+@end
+
+@implementation WailsSidebarOutlineView
+
+- (NSMenu*)menuForEvent:(NSEvent*)event {
+    // Let NSTableView record clickedRow and draw the contextual highlight.
+    NSMenu* fallback = [super menuForEvent:event];
+    NSMenu* menu = [self.controller contextMenuForEvent:event];
+    return menu != nil ? menu : fallback;
+}
+
+- (void)keyDown:(NSEvent*)event {
+    NSString* characters = event.charactersIgnoringModifiers;
+    if (characters.length == 1) {
+        unichar key = [characters characterAtIndex:0];
+        if ((key == NSCarriageReturnCharacter || key == NSEnterCharacter) &&
+            [self.controller beginEditingSelectedRow]) {
+            return;
+        }
+    }
+    [super keyDown:event];
 }
 
 @end
 
 static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorControlIDAssociationKey;
+static const void* WailsInspectorStepperFieldIDAssociationKey = &WailsInspectorStepperFieldIDAssociationKey;
+static const void* WailsInspectorSectionIDAssociationKey = &WailsInspectorSectionIDAssociationKey;
+
+// Mirrors MacInspectorControlKind.
+enum {
+    WailsInspectorKindLabel = 0,
+    WailsInspectorKindTextField = 1,
+    WailsInspectorKindCheckbox = 2,
+    WailsInspectorKindPopup = 3,
+    WailsInspectorKindSlider = 4,
+    WailsInspectorKindStepper = 5,
+    WailsInspectorKindSegmented = 6,
+    WailsInspectorKindColorWell = 7,
+    WailsInspectorKindDatePicker = 8,
+    WailsInspectorKindButton = 9,
+};
 
 @interface WailsInspectorControlModel : NSObject
 @property unsigned long long controlID;
@@ -265,6 +583,12 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 @property BOOL checked;
 @property (retain) NSArray<NSString*>* options;
 @property NSInteger selectedIndex;
+@property double number;
+@property double minimum;
+@property double maximum;
+@property double step;
+@property (retain) NSColor* color;
+@property double dateSeconds;
 @property (copy) NSString* tooltip;
 @property BOOL disabled;
 @property BOOL hidden;
@@ -275,6 +599,7 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     [_label release];
     [_value release];
     [_options release];
+    [_color release];
     [_tooltip release];
     [super dealloc];
 }
@@ -283,6 +608,8 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 @interface WailsInspectorSectionModel : NSObject
 @property unsigned long long sectionID;
 @property (copy) NSString* label;
+@property BOOL collapsible;
+@property BOOL collapsed;
 @property (retain) NSMutableArray<WailsInspectorControlModel*>* controls;
 @end
 
@@ -301,16 +628,36 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 - (BOOL)isFlipped { return YES; }
 @end
 
-// A native property inspector. Its scroll view, section headings, labels,
-// text fields, checkboxes, and pop-up buttons are all AppKit controls. The
-// view remains transparent so NSSplitViewItem's semantic inspector surface
-// controls the appearance.
+static NSString* inspectorNumberString(double value) {
+    return [NSString stringWithFormat:@"%g", value];
+}
+
+static NSStepper* inspectorStepperInContainer(NSView* container) {
+    for (NSView* view in container.subviews) {
+        if ([view isKindOfClass:[NSStepper class]]) return (NSStepper*)view;
+    }
+    return nil;
+}
+
+static NSTextField* inspectorFieldInContainer(NSView* container) {
+    for (NSView* view in container.subviews) {
+        if ([view isKindOfClass:[NSTextField class]]) return (NSTextField*)view;
+    }
+    return nil;
+}
+
+// A native property inspector. Its scroll view, section headings, and every
+// control (labels, text fields, checkboxes, pop-ups, sliders, steppers,
+// segmented controls, colour wells, date pickers, and buttons) are AppKit.
+// The view remains transparent so NSSplitViewItem's semantic inspector
+// surface controls the appearance.
 @interface WailsInspectorViewController : NSViewController <NSTextFieldDelegate>
 @property (retain) NSMutableArray<WailsInspectorSectionModel*>* sections;
 @property (retain) NSMutableDictionary<NSNumber*, WailsInspectorControlModel*>* modelsByID;
-@property (retain) NSMutableDictionary<NSNumber*, NSControl*>* controlsByID;
+@property (retain) NSMutableDictionary<NSNumber*, NSView*>* controlsByID;
 @property (retain) NSMutableDictionary<NSNumber*, NSView*>* rowsByID;
 @property (retain) NSMutableDictionary<NSNumber*, NSTextField*>* nameLabelsByID;
+@property (retain) NSMutableDictionary<NSNumber*, NSNumber*>* sectionIDsByControlID;
 @property (retain) NSStackView* stackView;
 @property (retain) NSColor* surfaceColor;
 - (void)reloadContents;
@@ -327,6 +674,7 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
         _controlsByID = [[NSMutableDictionary alloc] init];
         _rowsByID = [[NSMutableDictionary alloc] init];
         _nameLabelsByID = [[NSMutableDictionary alloc] init];
+        _sectionIDsByControlID = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
@@ -337,6 +685,7 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     [_controlsByID release];
     [_rowsByID release];
     [_nameLabelsByID release];
+    [_sectionIDsByControlID release];
     [_stackView release];
     [_surfaceColor release];
     [super dealloc];
@@ -383,6 +732,14 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     [scrollView release];
 }
 
+- (WailsInspectorSectionModel*)sectionForID:(NSNumber*)sectionID {
+    if (sectionID == nil) return nil;
+    for (WailsInspectorSectionModel* section in self.sections) {
+        if (section.sectionID == sectionID.unsignedLongLongValue) return section;
+    }
+    return nil;
+}
+
 - (NSTextField*)propertyNameLabel:(NSString*)name {
     NSTextField* label = [NSTextField labelWithString:name ?: @""];
     label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
@@ -393,43 +750,122 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     return label;
 }
 
-- (NSControl*)nativeControlForModel:(WailsInspectorControlModel*)model {
-    NSControl* result = nil;
+- (NSView*)nativeControlForModel:(WailsInspectorControlModel*)model {
+    NSView* result = nil;
     switch (model.kind) {
-        case 0: {
+        case WailsInspectorKindLabel: {
             NSTextField* value = [NSTextField labelWithString:model.value ?: @""];
             value.selectable = YES;
             value.lineBreakMode = NSLineBreakByTruncatingTail;
             result = value;
             break;
         }
-        case 1: {
+        case WailsInspectorKindTextField: {
             NSTextField* field = [NSTextField textFieldWithString:model.value ?: @""];
             field.controlSize = NSControlSizeSmall;
             field.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
             field.delegate = self;
+            objc_setAssociatedObject(field, WailsInspectorControlIDAssociationKey,
+                @(model.controlID), OBJC_ASSOCIATION_RETAIN);
             result = field;
             break;
         }
-        case 2: {
+        case WailsInspectorKindCheckbox: {
             NSButton* checkbox = [NSButton checkboxWithTitle:model.label ?: @"" target:self
                 action:@selector(handleCheckbox:)];
             checkbox.controlSize = NSControlSizeSmall;
             result = checkbox;
             break;
         }
-        case 3: {
-            NSPopUpButton* popup = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+        case WailsInspectorKindPopup: {
+            NSPopUpButton* popup = [[[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO] autorelease];
             popup.controlSize = NSControlSizeSmall;
             [popup addItemsWithTitles:model.options ?: @[]];
-            if (model.selectedIndex >= 0 && model.selectedIndex < popup.numberOfItems) {
-                [popup selectItemAtIndex:model.selectedIndex];
-            } else {
-                [popup selectItem:nil];
-            }
             popup.target = self;
             popup.action = @selector(handlePopup:);
-            result = [popup autorelease];
+            result = popup;
+            break;
+        }
+        case WailsInspectorKindSlider: {
+            NSSlider* slider = [NSSlider sliderWithValue:model.number minValue:model.minimum
+                maxValue:model.maximum target:self action:@selector(handleSlider:)];
+            slider.controlSize = NSControlSizeSmall;
+            slider.continuous = YES;
+            result = slider;
+            break;
+        }
+        case WailsInspectorKindStepper: {
+            NSTextField* field = [NSTextField textFieldWithString:inspectorNumberString(model.number)];
+            field.controlSize = NSControlSizeSmall;
+            field.font = [NSFont monospacedDigitSystemFontOfSize:[NSFont smallSystemFontSize]
+                weight:NSFontWeightRegular];
+            field.alignment = NSTextAlignmentRight;
+            field.delegate = self;
+            field.translatesAutoresizingMaskIntoConstraints = NO;
+            [field.widthAnchor constraintEqualToConstant:64].active = YES;
+            objc_setAssociatedObject(field, WailsInspectorStepperFieldIDAssociationKey,
+                @(model.controlID), OBJC_ASSOCIATION_RETAIN);
+
+            NSStepper* stepper = [[[NSStepper alloc] initWithFrame:NSZeroRect] autorelease];
+            stepper.controlSize = NSControlSizeSmall;
+            stepper.minValue = model.minimum;
+            stepper.maxValue = model.maximum;
+            stepper.increment = model.step;
+            stepper.doubleValue = model.number;
+            stepper.valueWraps = NO;
+            stepper.autorepeat = YES;
+            stepper.target = self;
+            stepper.action = @selector(handleStepper:);
+
+            NSStackView* container = [NSStackView stackViewWithViews:@[field, stepper]];
+            container.orientation = NSUserInterfaceLayoutOrientationHorizontal;
+            container.alignment = NSLayoutAttributeCenterY;
+            container.spacing = 2;
+            result = container;
+            break;
+        }
+        case WailsInspectorKindSegmented: {
+            NSSegmentedControl* segmented = [NSSegmentedControl segmentedControlWithLabels:model.options ?: @[]
+                trackingMode:NSSegmentSwitchTrackingSelectOne target:self action:@selector(handleSegmented:)];
+            segmented.controlSize = NSControlSizeSmall;
+            segmented.segmentDistribution = NSSegmentDistributionFillEqually;
+            result = segmented;
+            break;
+        }
+        case WailsInspectorKindColorWell: {
+            NSColorWell* well = [[[NSColorWell alloc] initWithFrame:NSZeroRect] autorelease];
+            well.translatesAutoresizingMaskIntoConstraints = NO;
+            [NSLayoutConstraint activateConstraints:@[
+                [well.widthAnchor constraintEqualToConstant:44],
+                [well.heightAnchor constraintEqualToConstant:23]
+            ]];
+            well.target = self;
+            well.action = @selector(handleColorWell:);
+            well.continuous = YES;
+            result = well;
+            break;
+        }
+        case WailsInspectorKindDatePicker: {
+            NSDatePicker* picker = [[[NSDatePicker alloc] initWithFrame:NSZeroRect] autorelease];
+            picker.controlSize = NSControlSizeSmall;
+            picker.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+            picker.datePickerStyle = NSDatePickerStyleTextFieldAndStepper;
+            picker.datePickerMode = NSDatePickerModeSingle;
+            picker.datePickerElements = NSDatePickerElementFlagYearMonthDay | NSDatePickerElementFlagHourMinute;
+            picker.drawsBackground = NO;
+            picker.bezeled = NO;
+            picker.bordered = NO;
+            picker.target = self;
+            picker.action = @selector(handleDatePicker:);
+            result = picker;
+            break;
+        }
+        case WailsInspectorKindButton: {
+            NSButton* button = [NSButton buttonWithTitle:model.label ?: @"" target:self
+                action:@selector(handleButton:)];
+            button.controlSize = NSControlSizeSmall;
+            button.bezelStyle = NSBezelStyleRounded;
+            result = button;
             break;
         }
     }
@@ -441,27 +877,75 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     return result;
 }
 
-- (NSView*)rowForModel:(WailsInspectorControlModel*)model control:(NSControl*)control {
+- (BOOL)modelOmitsNameLabel:(WailsInspectorControlModel*)model {
+    return model.kind == WailsInspectorKindCheckbox || model.kind == WailsInspectorKindButton;
+}
+
+- (NSView*)rowForModel:(WailsInspectorControlModel*)model control:(NSView*)control {
     NSStackView* row = [[NSStackView alloc] initWithFrame:NSZeroRect];
     row.translatesAutoresizingMaskIntoConstraints = NO;
     row.orientation = NSUserInterfaceLayoutOrientationHorizontal;
-    row.alignment = model.kind == 2 ? NSLayoutAttributeCenterY : NSLayoutAttributeFirstBaseline;
+    BOOL textual = model.kind == WailsInspectorKindLabel || model.kind == WailsInspectorKindTextField ||
+        model.kind == WailsInspectorKindPopup;
+    row.alignment = textual ? NSLayoutAttributeFirstBaseline : NSLayoutAttributeCenterY;
     row.distribution = NSStackViewDistributionFill;
     row.spacing = 8;
 
-    if (model.kind == 2) {
+    if ([self modelOmitsNameLabel:model]) {
         [row addArrangedSubview:control];
     } else {
         NSTextField* nameLabel = [self propertyNameLabel:model.label];
         [row addArrangedSubview:nameLabel];
         self.nameLabelsByID[@(model.controlID)] = nameLabel;
         [row addArrangedSubview:control];
-        [control setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow
-            forOrientation:NSLayoutConstraintOrientationHorizontal];
-        [control.widthAnchor constraintGreaterThanOrEqualToConstant:90].active = YES;
+        BOOL fixedWidth = model.kind == WailsInspectorKindColorWell || model.kind == WailsInspectorKindStepper ||
+            model.kind == WailsInspectorKindDatePicker;
+        if (!fixedWidth) {
+            [control setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow
+                forOrientation:NSLayoutConstraintOrientationHorizontal];
+            [control.widthAnchor constraintGreaterThanOrEqualToConstant:90].active = YES;
+        } else {
+            [control setContentHuggingPriority:NSLayoutPriorityRequired
+                forOrientation:NSLayoutConstraintOrientationHorizontal];
+        }
     }
     row.hidden = model.hidden;
     return [row autorelease];
+}
+
+- (NSView*)headingForSection:(WailsInspectorSectionModel*)section {
+    NSTextField* heading = [NSTextField labelWithString:section.label ?: @""];
+    heading.font = [NSFont systemFontOfSize:13 weight:NSFontWeightSemibold];
+    heading.textColor = [NSColor labelColor];
+    heading.lineBreakMode = NSLineBreakByTruncatingTail;
+    heading.translatesAutoresizingMaskIntoConstraints = NO;
+    if (!section.collapsible) return heading;
+
+    NSButton* disclosure = [[[NSButton alloc] initWithFrame:NSZeroRect] autorelease];
+    [disclosure setButtonType:NSButtonTypeOnOff];
+    disclosure.bezelStyle = NSBezelStyleDisclosure;
+    disclosure.title = @"";
+    disclosure.controlSize = NSControlSizeSmall;
+    disclosure.state = section.collapsed ? NSControlStateValueOff : NSControlStateValueOn;
+    disclosure.target = self;
+    disclosure.action = @selector(handleDisclosure:);
+    disclosure.translatesAutoresizingMaskIntoConstraints = NO;
+    objc_setAssociatedObject(disclosure, WailsInspectorSectionIDAssociationKey,
+        @(section.sectionID), OBJC_ASSOCIATION_RETAIN);
+
+    NSStackView* header = [NSStackView stackViewWithViews:@[disclosure, heading]];
+    header.translatesAutoresizingMaskIntoConstraints = NO;
+    header.orientation = NSUserInterfaceLayoutOrientationHorizontal;
+    header.alignment = NSLayoutAttributeCenterY;
+    header.spacing = 2;
+    return header;
+}
+
+- (void)applySectionVisibility:(WailsInspectorSectionModel*)section {
+    for (WailsInspectorControlModel* model in section.controls) {
+        NSView* row = self.rowsByID[@(model.controlID)];
+        row.hidden = model.hidden || section.collapsed;
+    }
 }
 
 - (void)reloadContents {
@@ -475,6 +959,7 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     [self.controlsByID removeAllObjects];
     [self.rowsByID removeAllObjects];
     [self.nameLabelsByID removeAllObjects];
+    [self.sectionIDsByControlID removeAllObjects];
 
     BOOL firstSection = YES;
     for (WailsInspectorSectionModel* section in self.sections) {
@@ -488,48 +973,47 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
         }
         firstSection = NO;
 
-        NSTextField* heading = [NSTextField labelWithString:section.label ?: @""];
-        heading.font = [NSFont systemFontOfSize:13 weight:NSFontWeightSemibold];
-        heading.textColor = [NSColor labelColor];
-        heading.lineBreakMode = NSLineBreakByTruncatingTail;
-        heading.translatesAutoresizingMaskIntoConstraints = NO;
+        NSView* heading = [self headingForSection:section];
         [self.stackView addArrangedSubview:heading];
         [heading.widthAnchor constraintEqualToAnchor:self.stackView.widthAnchor].active = YES;
         [self.stackView setCustomSpacing:9 afterView:heading];
 
         for (WailsInspectorControlModel* model in section.controls) {
-            NSControl* control = [self nativeControlForModel:model];
+            NSView* control = [self nativeControlForModel:model];
             if (control == nil) continue;
             NSView* row = [self rowForModel:model control:control];
             [self.stackView addArrangedSubview:row];
             [row.widthAnchor constraintEqualToAnchor:self.stackView.widthAnchor].active = YES;
             self.controlsByID[@(model.controlID)] = control;
             self.rowsByID[@(model.controlID)] = row;
+            self.sectionIDsByControlID[@(model.controlID)] = @(section.sectionID);
             [self applyModel:model];
         }
     }
 }
 
 - (void)applyModel:(WailsInspectorControlModel*)model {
-    NSControl* control = self.controlsByID[@(model.controlID)];
+    NSView* control = self.controlsByID[@(model.controlID)];
     NSView* row = self.rowsByID[@(model.controlID)];
     if (control == nil) return;
 
-    control.enabled = !model.disabled;
+    WailsInspectorSectionModel* section = [self sectionForID:self.sectionIDsByControlID[@(model.controlID)]];
+    row.hidden = model.hidden || (section != nil && section.collapsed);
     control.toolTip = model.tooltip.length > 0 ? model.tooltip : nil;
-    row.hidden = model.hidden;
+    if ([control isKindOfClass:[NSControl class]]) ((NSControl*)control).enabled = !model.disabled;
     NSTextField* nameLabel = self.nameLabelsByID[@(model.controlID)];
     if (nameLabel != nil) nameLabel.stringValue = model.label ?: @"";
+
     switch (model.kind) {
-        case 0:
-        case 1:
+        case WailsInspectorKindLabel:
+        case WailsInspectorKindTextField:
             ((NSTextField*)control).stringValue = model.value ?: @"";
             break;
-        case 2:
+        case WailsInspectorKindCheckbox:
             ((NSButton*)control).title = model.label ?: @"";
             ((NSButton*)control).state = model.checked ? NSControlStateValueOn : NSControlStateValueOff;
             break;
-        case 3: {
+        case WailsInspectorKindPopup: {
             NSPopUpButton* popup = (NSPopUpButton*)control;
             if (![popup.itemTitles isEqualToArray:model.options ?: @[]]) {
                 [popup removeAllItems];
@@ -542,15 +1026,77 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
             }
             break;
         }
+        case WailsInspectorKindSlider: {
+            NSSlider* slider = (NSSlider*)control;
+            slider.minValue = model.minimum;
+            slider.maxValue = model.maximum;
+            slider.doubleValue = model.number;
+            break;
+        }
+        case WailsInspectorKindStepper: {
+            NSStepper* stepper = inspectorStepperInContainer(control);
+            NSTextField* field = inspectorFieldInContainer(control);
+            stepper.minValue = model.minimum;
+            stepper.maxValue = model.maximum;
+            stepper.increment = model.step;
+            stepper.doubleValue = model.number;
+            stepper.enabled = !model.disabled;
+            field.stringValue = inspectorNumberString(model.number);
+            field.enabled = !model.disabled;
+            break;
+        }
+        case WailsInspectorKindSegmented: {
+            NSSegmentedControl* segmented = (NSSegmentedControl*)control;
+            NSArray<NSString*>* options = model.options ?: @[];
+            BOOL same = segmented.segmentCount == (NSInteger)options.count;
+            for (NSInteger index = 0; same && index < segmented.segmentCount; index++) {
+                same = [[segmented labelForSegment:index] isEqualToString:options[(NSUInteger)index]];
+            }
+            if (!same) {
+                segmented.segmentCount = (NSInteger)options.count;
+                for (NSInteger index = 0; index < segmented.segmentCount; index++) {
+                    [segmented setLabel:options[(NSUInteger)index] forSegment:index];
+                }
+            }
+            if (model.selectedIndex >= 0 && model.selectedIndex < segmented.segmentCount) {
+                segmented.selectedSegment = model.selectedIndex;
+            } else {
+                segmented.selectedSegment = -1;
+            }
+            break;
+        }
+        case WailsInspectorKindColorWell:
+            if (model.color != nil) ((NSColorWell*)control).color = model.color;
+            break;
+        case WailsInspectorKindDatePicker:
+            ((NSDatePicker*)control).dateValue = [NSDate dateWithTimeIntervalSince1970:model.dateSeconds];
+            break;
+        case WailsInspectorKindButton:
+            ((NSButton*)control).title = model.label ?: @"";
+            break;
     }
 }
 
 - (void)controlTextDidChange:(NSNotification*)notification {
     NSTextField* field = notification.object;
     NSNumber* controlID = objc_getAssociatedObject(field, WailsInspectorControlIDAssociationKey);
-    if (controlID != nil) {
+    if (controlID != nil && [field isKindOfClass:[NSTextField class]]) {
         processMacInspectorTextChanged(controlID.unsignedLongLongValue, (char*)field.stringValue.UTF8String);
     }
+}
+
+- (void)controlTextDidEndEditing:(NSNotification*)notification {
+    NSTextField* field = notification.object;
+    NSNumber* controlID = objc_getAssociatedObject(field, WailsInspectorStepperFieldIDAssociationKey);
+    if (controlID == nil) return;
+    WailsInspectorControlModel* model = self.modelsByID[controlID];
+    NSStepper* stepper = inspectorStepperInContainer(self.controlsByID[controlID]);
+    if (model == nil || stepper == nil) return;
+    double value = MIN(MAX(field.doubleValue, model.minimum), model.maximum);
+    model.number = value;
+    stepper.doubleValue = value;
+    field.stringValue = inspectorNumberString(value);
+    processMacInspectorNumberChanged(controlID.unsignedLongLongValue, WailsInspectorKindStepper, value);
 }
 
 - (void)handleCheckbox:(NSButton*)sender {
@@ -566,6 +1112,61 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
     if (controlID != nil) {
         processMacInspectorSelectionChanged(controlID.unsignedLongLongValue, (int)sender.indexOfSelectedItem);
     }
+}
+
+- (void)handleSlider:(NSSlider*)sender {
+    NSNumber* controlID = objc_getAssociatedObject(sender, WailsInspectorControlIDAssociationKey);
+    if (controlID == nil) return;
+    self.modelsByID[controlID].number = sender.doubleValue;
+    processMacInspectorNumberChanged(controlID.unsignedLongLongValue, WailsInspectorKindSlider, sender.doubleValue);
+}
+
+- (void)handleStepper:(NSStepper*)sender {
+    NSNumber* controlID = objc_getAssociatedObject(sender.superview, WailsInspectorControlIDAssociationKey);
+    if (controlID == nil) return;
+    WailsInspectorControlModel* model = self.modelsByID[controlID];
+    model.number = sender.doubleValue;
+    inspectorFieldInContainer(sender.superview).stringValue = inspectorNumberString(sender.doubleValue);
+    processMacInspectorNumberChanged(controlID.unsignedLongLongValue, WailsInspectorKindStepper, sender.doubleValue);
+}
+
+- (void)handleSegmented:(NSSegmentedControl*)sender {
+    NSNumber* controlID = objc_getAssociatedObject(sender, WailsInspectorControlIDAssociationKey);
+    if (controlID != nil) {
+        processMacInspectorSegmentChanged(controlID.unsignedLongLongValue, (int)sender.selectedSegment);
+    }
+}
+
+- (void)handleColorWell:(NSColorWell*)sender {
+    NSNumber* controlID = objc_getAssociatedObject(sender, WailsInspectorControlIDAssociationKey);
+    NSColor* color = [sender.color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+    if (controlID == nil || color == nil) return;
+    self.modelsByID[controlID].color = sender.color;
+    processMacInspectorColorChanged(controlID.unsignedLongLongValue,
+        (int)lround(color.redComponent * 255.0), (int)lround(color.greenComponent * 255.0),
+        (int)lround(color.blueComponent * 255.0), (int)lround(color.alphaComponent * 255.0));
+}
+
+- (void)handleDatePicker:(NSDatePicker*)sender {
+    NSNumber* controlID = objc_getAssociatedObject(sender, WailsInspectorControlIDAssociationKey);
+    if (controlID == nil) return;
+    double seconds = sender.dateValue.timeIntervalSince1970;
+    self.modelsByID[controlID].dateSeconds = seconds;
+    processMacInspectorDateChanged(controlID.unsignedLongLongValue, seconds);
+}
+
+- (void)handleButton:(NSButton*)sender {
+    NSNumber* controlID = objc_getAssociatedObject(sender, WailsInspectorControlIDAssociationKey);
+    if (controlID != nil) processMacInspectorButtonClicked(controlID.unsignedLongLongValue);
+}
+
+- (void)handleDisclosure:(NSButton*)sender {
+    NSNumber* sectionID = objc_getAssociatedObject(sender, WailsInspectorSectionIDAssociationKey);
+    WailsInspectorSectionModel* section = [self sectionForID:sectionID];
+    if (section == nil) return;
+    section.collapsed = sender.state == NSControlStateValueOff;
+    [self applySectionVisibility:section];
+    processMacInspectorSectionCollapsed(section.sectionID, section.collapsed);
 }
 
 @end
@@ -644,6 +1245,8 @@ static const void* WailsInspectorControlIDAssociationKey = &WailsInspectorContro
 @property BOOL startCollapsed;
 @property int contentLayout;
 @property unsigned long long selectedSidebarItemID;
+@property BOOL sidebarAllowsMultipleSelection;
+@property BOOL sidebarReorderable;
 @property (retain) NSMutableArray<WailsSidebarNode*>* sidebarRoots;
 @property (retain) WailsSidebarViewController* sidebarController;
 @property (retain) NSMutableArray<WailsInspectorSectionModel*>* inspectorSections;
@@ -739,6 +1342,14 @@ static WailsSidebarNode* sidebarSection(WailsSplitPaneRecord* record, unsigned l
     return nil;
 }
 
+// sidebarControllerApplyRecord copies the pane's sidebar options onto a
+// freshly created controller before its view loads.
+static void sidebarControllerApplyRecord(WailsSidebarViewController* sidebar, WailsSplitPaneRecord* record) {
+    sidebar.paneID = record.paneID;
+    sidebar.allowsMultipleSelection = record.sidebarAllowsMultipleSelection;
+    sidebar.reorderable = record.sidebarReorderable;
+}
+
 static WailsInspectorSectionModel* inspectorSection(WailsSplitPaneRecord* record,
     unsigned long long sectionID) {
     for (WailsInspectorSectionModel* section in record.inspectorSections) {
@@ -759,19 +1370,24 @@ static NSArray<NSString*>* inspectorOptionsFromJSON(const char* optionsJSON) {
     return result;
 }
 
-static void configureInspectorModel(WailsInspectorControlModel* model, int kind,
-    const char* label, const char* value, bool checked, const char* optionsJSON,
-    int selectedIndex, const char* tooltip, bool disabled, bool hidden) {
+static void configureInspectorModel(WailsInspectorControlModel* model, WailsInspectorControlSpec spec) {
     if (model == nil) return;
-    model.kind = kind;
-    model.label = label == NULL ? @"" : [NSString stringWithUTF8String:label];
-    model.value = value == NULL ? @"" : [NSString stringWithUTF8String:value];
-    model.checked = checked;
-    model.options = inspectorOptionsFromJSON(optionsJSON);
-    model.selectedIndex = selectedIndex;
-    model.tooltip = tooltip == NULL ? @"" : [NSString stringWithUTF8String:tooltip];
-    model.disabled = disabled;
-    model.hidden = hidden;
+    model.kind = spec.kind;
+    model.label = spec.label == NULL ? @"" : [NSString stringWithUTF8String:spec.label];
+    model.value = spec.value == NULL ? @"" : [NSString stringWithUTF8String:spec.value];
+    model.checked = spec.checked;
+    model.options = inspectorOptionsFromJSON(spec.optionsJSON);
+    model.selectedIndex = spec.selectedIndex;
+    model.number = spec.number;
+    model.minimum = spec.minimum;
+    model.maximum = spec.maximum;
+    model.step = spec.step;
+    model.color = [NSColor colorWithSRGBRed:spec.red / 255.0 green:spec.green / 255.0
+        blue:spec.blue / 255.0 alpha:spec.alpha / 255.0];
+    model.dateSeconds = spec.dateSeconds;
+    model.tooltip = spec.tooltip == NULL ? @"" : [NSString stringWithUTF8String:spec.tooltip];
+    model.disabled = spec.disabled;
+    model.hidden = spec.hidden;
 }
 
 static void splitViewItemApplyCanCollapseFromResize(NSSplitViewItem* item, BOOL allowed) {
@@ -874,6 +1490,7 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
             WailsSidebarViewController* sidebar = [[WailsSidebarViewController alloc] init];
             sidebar.roots = record.sidebarRoots;
             sidebar.selectedItemID = record.selectedSidebarItemID;
+            sidebarControllerApplyRecord(sidebar, record);
             sidebar.surfaceColor = primaryBackground;
             (void)sidebar.view;
             if (sidebar.view == nil) {
@@ -1083,6 +1700,7 @@ bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop
             WailsSidebarViewController* sidebar = [[WailsSidebarViewController alloc] init];
             sidebar.roots = record.sidebarRoots;
             sidebar.selectedItemID = record.selectedSidebarItemID;
+            sidebarControllerApplyRecord(sidebar, record);
             sidebar.surfaceColor = primaryBackground;
             (void)sidebar.view;
             if (sidebar.view == nil) {
@@ -1273,6 +1891,19 @@ void splitViewSidebarReset(void* handlePtr, unsigned long long paneID) {
     [record.sidebarController reloadContents];
 }
 
+void splitViewSidebarSetOptions(void* handlePtr, unsigned long long paneID,
+    bool allowsMultipleSelection, bool reorderable) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    if (record == nil || record.role != WailsSplitPaneRoleSidebar) return;
+    record.sidebarAllowsMultipleSelection = allowsMultipleSelection;
+    record.sidebarReorderable = reorderable;
+    if (record.sidebarController != nil) {
+        record.sidebarController.allowsMultipleSelection = allowsMultipleSelection;
+        record.sidebarController.reorderable = reorderable;
+        [record.sidebarController applyOptions];
+    }
+}
+
 void splitViewSidebarAddSection(void* handlePtr, unsigned long long paneID,
     unsigned long long sectionID, const char* label) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
@@ -1281,15 +1912,15 @@ void splitViewSidebarAddSection(void* handlePtr, unsigned long long paneID,
     node.nodeID = sectionID;
     node.section = YES;
     node.label = label == NULL ? @"" : [NSString stringWithUTF8String:label];
-    node.children = [NSMutableArray array];
     [record.sidebarRoots addObject:node];
     [node release];
 }
 
 void splitViewSidebarAddItem(void* handlePtr, unsigned long long paneID,
-    unsigned long long sectionID, unsigned long long itemID,
+    unsigned long long parentID, unsigned long long itemID,
     const char* label, const char* symbolName, const char* tooltip,
-    bool disabled, bool hidden) {
+    bool disabled, bool hidden, bool expanded, bool editable, int badge,
+    const char* accessorySymbol, bool hasTint, int red, int green, int blue, int alpha) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
     if (record == nil || record.role != WailsSplitPaneRoleSidebar) return;
     WailsSidebarNode* node = [[WailsSidebarNode alloc] init];
@@ -1297,10 +1928,17 @@ void splitViewSidebarAddItem(void* handlePtr, unsigned long long paneID,
     node.label = label == NULL ? @"" : [NSString stringWithUTF8String:label];
     node.symbolName = symbolName == NULL ? @"" : [NSString stringWithUTF8String:symbolName];
     node.tooltip = tooltip == NULL ? @"" : [NSString stringWithUTF8String:tooltip];
+    node.accessorySymbol = accessorySymbol == NULL ? @"" : [NSString stringWithUTF8String:accessorySymbol];
     node.disabled = disabled;
     node.hidden = hidden;
-    WailsSidebarNode* section = sectionID == 0 ? nil : sidebarSection(record, sectionID);
-    if (section != nil) [section.children addObject:node];
+    node.expanded = expanded;
+    node.editable = editable;
+    node.badge = badge;
+    node.tintColor = hasTint ? [NSColor colorWithSRGBRed:red / 255.0 green:green / 255.0
+        blue:blue / 255.0 alpha:alpha / 255.0] : nil;
+    WailsSidebarNode* parent = parentID == 0 ? nil : sidebarNodeInTree(record.sidebarRoots, parentID);
+    node.parent = parent;
+    if (parent != nil) [parent.children addObject:node];
     else [record.sidebarRoots addObject:node];
     [node release];
 }
@@ -1322,28 +1960,28 @@ void splitViewInspectorReset(void* handlePtr, unsigned long long paneID) {
 }
 
 void splitViewInspectorAddSection(void* handlePtr, unsigned long long paneID,
-    unsigned long long sectionID, const char* label) {
+    unsigned long long sectionID, const char* label, bool collapsible, bool collapsed) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
     if (record == nil || record.role != WailsSplitPaneRoleInspector) return;
     WailsInspectorSectionModel* section = [[WailsInspectorSectionModel alloc] init];
     section.sectionID = sectionID;
     section.label = label == NULL ? @"" : [NSString stringWithUTF8String:label];
+    section.collapsible = collapsible;
+    section.collapsed = collapsible && collapsed;
     section.controls = [NSMutableArray array];
     [record.inspectorSections addObject:section];
     [section release];
 }
 
 void splitViewInspectorAddControl(void* handlePtr, unsigned long long paneID,
-    unsigned long long sectionID, unsigned long long controlID, int kind,
-    const char* label, const char* value, bool checked, const char* optionsJSON,
-    int selectedIndex, const char* tooltip, bool disabled, bool hidden) {
+    unsigned long long sectionID, unsigned long long controlID,
+    WailsInspectorControlSpec spec) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
     WailsInspectorSectionModel* section = inspectorSection(record, sectionID);
     if (record == nil || record.role != WailsSplitPaneRoleInspector || section == nil) return;
     WailsInspectorControlModel* model = [[WailsInspectorControlModel alloc] init];
     model.controlID = controlID;
-    configureInspectorModel(model, kind, label, value, checked, optionsJSON,
-        selectedIndex, tooltip, disabled, hidden);
+    configureInspectorModel(model, spec);
     [section.controls addObject:model];
     record.inspectorModelsByID[@(controlID)] = model;
     [model release];
@@ -1356,14 +1994,11 @@ void splitViewInspectorReload(void* handlePtr, unsigned long long paneID) {
 }
 
 void splitViewInspectorUpdateControl(void* handlePtr, unsigned long long paneID,
-    unsigned long long controlID, int kind, const char* label, const char* value,
-    bool checked, const char* optionsJSON, int selectedIndex, const char* tooltip,
-    bool disabled, bool hidden) {
+    unsigned long long controlID, WailsInspectorControlSpec spec) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
     if (record == nil || record.role != WailsSplitPaneRoleInspector) return;
     WailsInspectorControlModel* model = record.inspectorModelsByID[@(controlID)];
-    if (model == nil || model.kind != kind) return;
-    configureInspectorModel(model, kind, label, value, checked, optionsJSON,
-        selectedIndex, tooltip, disabled, hidden);
+    if (model == nil || model.kind != spec.kind) return;
+    configureInspectorModel(model, spec);
     [record.inspectorController applyModel:model];
 }
