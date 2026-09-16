@@ -274,4 +274,10 @@ var knownEvents = map[string]struct{}{
 	"common:ScreenLocked":                                         {},
 	"common:ScreenUnlocked":                                       {},
 	"common:LowMemory":                                            {},
+	"mac:ApplicationDidChangePowerState":                          {},
+	"mac:ApplicationDidChangeThermalState":                        {},
+	"mac:ApplicationDidChangeAccessibilitySettings":               {},
+	"mac:ApplicationDidChangeKeyboardLayout":                      {},
+	"mac:ApplicationDidChangeLocale":                              {},
+	"common:AccessibilitySettingsChanged":                         {},
 }

@@ -6,6 +6,7 @@
 #import "webview_window_darwin.h"
 #import "mac_private_api_darwin.h"
 #import "webview_window_split_darwin.h"
+#import "permissions_manager_darwin.h"
 #import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
@@ -1037,6 +1038,12 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     [webView reload];
 }
 // WKUIDelegate - Handle file input element clicks
+// Media capture (camera and microphone) decisions come from the window's
+// cross-platform Permissions option, so it behaves the same as WebView2.
+- (void)webView:(WKWebView *)webView requestMediaCapturePermissionForOrigin:(WKSecurityOrigin *)origin initiatedByFrame:(WKFrameInfo *)frame type:(WKMediaCaptureType)type decisionHandler:(void (^)(WKPermissionDecision))decisionHandler API_AVAILABLE(macos(12.0)) {
+    decisionHandler((WKPermissionDecision)wailsMediaCapturePermissionDecision(self.windowId, (int)type));
+}
+
 - (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
     initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];

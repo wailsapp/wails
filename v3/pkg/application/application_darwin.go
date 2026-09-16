@@ -70,6 +70,16 @@ static void init(void) {
 	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidSleep:) name:NSWorkspaceScreensDidSleepNotification object:nil];
 	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidWake:) name:NSWorkspaceScreensDidWakeNotification object:nil];
 
+	// System integration observers: NSProcessInfo power/thermal state
+	// (power_manager_darwin.m) and NSWorkspace accessibility, Text Input
+	// Services keyboard layout and NSLocale changes
+	// (environment_manager_darwin.m). Each owns a standalone observer object,
+	// so nothing is added to the AppDelegate.
+	extern void wailsPowerObserverStart(void);
+	extern void wailsEnvironmentObserverStart(void);
+	wailsPowerObserverStart();
+	wailsEnvironmentObserverStart();
+
 	// Register the custom URL scheme handler
 	StartCustomProtocolHandler();
 }
