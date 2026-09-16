@@ -340,6 +340,11 @@ func appendDocumentationLinks(entry string, docURLs []string) string {
 	if len(docURLs) == 0 {
 		return entry
 	}
+	const maxInlineDocLinks = 3
+	if len(docURLs) > maxInlineDocLinks {
+		return fmt.Sprintf("%s — see the [documentation site](%s) (%d pages updated)",
+			entry, docsSiteURL, len(docURLs))
+	}
 	links := make([]string, 0, len(docURLs))
 	for _, docURL := range docURLs {
 		links = append(links, fmt.Sprintf("[documentation](%s)", docURL))
