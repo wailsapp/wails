@@ -235,13 +235,15 @@ func TestProcessData(t *testing.T) {
 
 ### ドキュメントの執筆
 
-ドキュメントには M-Press を使用しています：
+ドキュメントには M-Press を使用しています。`docs/mpress/content/` 配下の
+`.mpd` ファイルを編集し、リポジトリのルートからプレビューと検証を実行してください。
 
 ```bash
 go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 

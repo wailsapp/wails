@@ -235,13 +235,15 @@ func TestProcessData(t *testing.T) {
 
 ### Написание документации
 
-Для документации используется M-Press:
+Для документации используется M-Press. Отредактируйте файлы `.mpd` в каталоге
+`docs/mpress/content/`, затем из корневого каталога репозитория выполните предварительный просмотр и проверку:
 
 ```bash
 go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 

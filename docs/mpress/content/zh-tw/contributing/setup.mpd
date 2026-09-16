@@ -35,7 +35,7 @@ sourcePath = "contributing/setup.mpd"
 
 ### Node.js 與 npm
 
-建置文件及測試前端整合時需要使用。
+僅前端整合範例需要。
 
 ```bash
 # Install Node.js 20+ and npm
@@ -223,17 +223,23 @@ go test ./... -race
 
 ## 處理文件
 
-Wails 文件使用 M-Press 建置。
+Wails v3 文件使用 M-Press 編寫。英文原始檔位於
+`docs/mpress/content/`；翻譯檔位於各語言目錄，例如
+`fr/` 和 `id/`。
+
+請從儲存庫根目錄預覽並驗證文件變更：
 
 ```bash
 go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-文件將可在`http://localhost:4321/`取得
+正式環境網站是靜態網站。在本機處理文件時，不需要 Node.js、翻譯服務供應商或 Cloudflare
+憑證。
 
 ## 偵錯
 

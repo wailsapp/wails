@@ -59,7 +59,7 @@ sourcePath = "community/showcase/index.mpd"
 @end
 @step title="Добавьте изображения в папку `docs/mpress/static/showcase-images`."
 @end
-@step title="Создайте копию файла `.mpd` в папке"
+@step title="Создайте копию существующего файла `.mpd` из галереи в папке"
 `docs/mpress/content/community/showcase`.
 @end
 @step title="Переименуйте скопированный файл в соответствии с названием своего проекта. (Имя не должно начинаться"

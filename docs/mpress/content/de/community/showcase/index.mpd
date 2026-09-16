@@ -59,7 +59,7 @@ Sieh dir den Abschnitt\
 @end
 @step title="Füge die Bilder im Ordner `docs/mpress/static/showcase-images` hinzu."
 @end
-@step title="Erstelle eine Kopie der Datei `.mpd` im"
+@step title="Erstellen Sie unter eine Kopie einer vorhandenen `.mpd`-Showcase-Datei"
 Ordner `docs/mpress/content/community/showcase`.
 @end
 @step title="Benenne die kopierte Datei nach deinem Projekt. (Der Name sollte nicht"

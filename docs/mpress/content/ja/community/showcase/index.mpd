@@ -59,7 +59,7 @@ sourcePath = "community/showcase/index.mpd"
 @end
 @step title="画像を `docs/mpress/static/showcase-images` フォルダーに追加します。"
 @end
-@step title="次の場所にある `.mpd` ファイルをコピーします："
+@step title="`docs/mpress/content/community/showcase` 内にある既存の `.mpd` ショーケースファイルをコピーします"
 `docs/mpress/content/community/showcase` フォルダー。
 @end
 @step title="コピーしたファイルの名前をプロジェクト名に変更します。（名前の先頭は"

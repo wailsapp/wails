@@ -235,13 +235,14 @@ func TestProcessData(t *testing.T) {
 
 ### 编写文档
 
-文档使用 M-Press：
+文档使用 M-Press。编辑`docs/mpress/content/`目录下的`.mpd`文件，然后从仓库根目录预览并验证：
 
 ```bash
 go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 

@@ -35,7 +35,7 @@ sourcePath = "contributing/setup.mpd"
 
 ### Node.js и npm
 
-Необходимы для сборки документации и тестирования интеграций с фронтендом.
+Требуется только для примеров интеграции с фронтендом.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -223,17 +223,22 @@ go test ./... -race
 
 ## Работа с документацией
 
-Документация Wails собирается с помощью M-Press.
+Документация Wails v3 написана с использованием M-Press. Исходные файлы на английском языке находятся в
+`docs/mpress/content/`, а переводы — в каталогах соответствующих языков, например
+`fr/` и `id/`.
+
+Предварительно просмотрите и проверьте изменения в документации из корневого каталога репозитория:
 
 ```bash
 go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-Документация будет доступна по адресу `http://localhost:4321/`
+Рабочий сайт является статическим. Для локальной работы с документацией не требуются Node.js, поставщик услуг перевода и учетные данные Cloudflare.
 
 ## Отладка
 

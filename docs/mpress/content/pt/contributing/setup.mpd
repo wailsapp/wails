@@ -35,7 +35,7 @@ Este guia mostra como configurar um ambiente de desenvolvimento completo para tr
 
 ### Node.js e npm
 
-Necessários para compilar a documentação e testar as integrações com o frontend.
+Necessário apenas para exemplos de integração com o frontend.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -223,17 +223,23 @@ go test ./... -race
 
 ## Trabalhar com a documentação
 
-A documentação do Wails é compilada com M-Press.
+A documentação do Wails v3 é escrita em M-Press. Os arquivos-fonte em inglês ficam em
+`docs/mpress/content/`; as traduções ficam em diretórios de idiomas, como
+`fr/` e `id/`.
+
+Visualize e valide as alterações na documentação a partir da raiz do repositório:
 
 ```bash
 go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-A documentação estará disponível em `http://localhost:4321/`
+O site de produção é estático. Node.js, um provedor de tradução e credenciais da Cloudflare
+não são necessários para trabalhar localmente na documentação.
 
 ## Depuração
 

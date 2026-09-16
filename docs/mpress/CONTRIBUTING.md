@@ -29,6 +29,10 @@ A translation correction can change just the affected language. If you change
 English meaning, update the corresponding translations; unrelated pages do not
 need to be regenerated.
 
+The translated `changelog.mpd` files are retained for publication and coverage,
+but their historical segment audit is excluded until the generated release notes
+are re-synchronised. Translation audits remain strict for every other page.
+
 MPD keeps headings, paragraphs, lists and fenced code readable. Preserve its
 `---` metadata block and matching `@...` / `@end` component boundaries. See
 https://github.com/leaanthony/mpress for the authoring reference.
