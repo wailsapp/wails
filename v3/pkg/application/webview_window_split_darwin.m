@@ -1,6 +1,7 @@
 //go:build darwin && !ios && !server
 
 #import "webview_window_split_darwin.h"
+#import "mac_private_api_darwin.h"
 #import <objc/runtime.h>
 #import <string.h>
 
@@ -857,7 +858,7 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
     // transparent. Split windows need the WebView to reveal the AppKit pane
     // surface beneath it, otherwise WebKit, the source list, and the unified
     // titlebar resolve to subtly different system colours.
-    [primaryWebView setValue:@NO forKey:@"drawsBackground"];
+    wailsPrivateSetWebviewTransparent(primaryWebView);
 
     // Construct every controller before touching the window hierarchy.
     for (WailsSplitPaneRecord* record in owner.records) {
