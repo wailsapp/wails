@@ -32,6 +32,71 @@ func ExampleMacShareProviderFunc() {
 	// window.SetToolbar(toolbar)
 }
 
+func ExampleMacToolbar_AddMenu() {
+	toolbar := application.NewMacToolbar()
+
+	// A dropdown toolbar item reuses the ordinary Menu model. Item clicks fire
+	// MenuItem.OnClick exactly as they do from the application menu.
+	actions := application.NewMenu()
+	actions.Add("Duplicate Note").OnClick(func(*application.Context) {
+		fmt.Println("duplicate")
+	})
+	actions.AddSeparator()
+	actions.Add("Move to Trash").OnClick(func(*application.Context) {
+		fmt.Println("trash")
+	})
+
+	toolbar.AddMenu("Actions", actions).
+		SetSymbol("ellipsis.circle").
+		SetShowsIndicator(true)
+
+	// Items can be added, moved and removed after the toolbar is attached;
+	// the native toolbar follows the Go model.
+	// window.SetToolbar(toolbar)
+	// later := toolbar.AddButton("Later").OnClick(func(*application.Context) {})
+	// toolbar.Move(later, 0)
+	// toolbar.Remove(later)
+}
+
+func ExampleMacToolbar_SetCustomizable() {
+	toolbar := application.NewMacToolbar()
+
+	// Stable persistence keys let AppKit restore a user-customised layout on
+	// the next launch. Items without a key keep generated identifiers and are
+	// not restored.
+	back := toolbar.AddButton("Back").
+		SetSymbol("chevron.backward").
+		SetPersistenceKey("back").
+		SetNavigational(true).
+		SetVisibilityPriority(application.MacToolbarVisibilityPriorityLow)
+	back.OnClick(func(*application.Context) {})
+
+	toolbar.AddFlexibleSpace()
+
+	search := toolbar.AddSearch("Search").
+		SetPersistenceKey("search").
+		SetSearchPlaceholder("Search notes").
+		SetSearchRecentsKey("example.search.recents")
+	search.OnSearch(func(_ *application.Context, query string) {
+		fmt.Println("search:", query)
+	})
+
+	// Offered in the customisation palette but hidden until the user adds it.
+	toolbar.AddButton("Statistics").
+		SetSymbol("chart.bar").
+		SetPersistenceKey("statistics").
+		SetInDefaultSet(false).
+		OnClick(func(*application.Context) {})
+
+	// Enables the standard "Customize Toolbar..." sheet and autosave. Call it
+	// before attaching the toolbar so the persistence key becomes the
+	// NSToolbar identifier.
+	toolbar.SetCustomizable("example.main-window")
+
+	// window.SetToolbar(toolbar)
+	// toolbar.RunCustomizationPalette() opens the sheet programmatically.
+}
+
 type exampleNote struct {
 	Title string
 	Body  string

@@ -19,3 +19,14 @@ func macToolbarGroupSetSelectionMode(unsafe.Pointer, string, MacToolbarGroupSele
 }
 func macToolbarShareItemSetProvider(unsafe.Pointer, string, MacShareProvider, string, string, []MacShareRepresentation) {
 }
+func macToolbarSetCustomizable(unsafe.Pointer, bool)                   {}
+func macToolbarRunCustomizationPalette(unsafe.Pointer)                 {}
+func macToolbarSyncNative(*MacToolbar, *MacToolbarItem)                {}
+func macToolbarMenuItemSetShowsIndicator(unsafe.Pointer, string, bool) {}
+func macToolbarItemSetVisibilityPriority(unsafe.Pointer, string, MacToolbarVisibilityPriority) {
+}
+func macToolbarItemSetNavigational(unsafe.Pointer, string, bool)         {}
+func macToolbarSearchItemSetRecents(unsafe.Pointer, string, string, int) {}
+func macToolbarSearchItemSetMenu(unsafe.Pointer, string, *Menu, bool)    {}
+func macToolbarSearchItemSetIncremental(unsafe.Pointer, string, bool)    {}
+func macToolbarSearchItemSetPlaceholder(unsafe.Pointer, string, string)  {}

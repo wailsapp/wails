@@ -4,6 +4,7 @@ package application
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -56,6 +57,107 @@ func TestClearMacToolbarStateRemovesCallbacksAndOwnership(t *testing.T) {
 	defer toolbar.stateLock.RUnlock()
 	if toolbar.state.native != nil || len(toolbar.state.itemIDs) != 0 || toolbar.state.window != nil {
 		t.Fatal("clearing toolbar state should invalidate the native handle and release ownership")
+	}
+}
+
+func TestMacToolbarLayoutPayloadDistinguishesDefaultAndAllowed(t *testing.T) {
+	toolbar := NewMacToolbar()
+	toolbar.AddSidebarToggle()
+	toolbar.AddSidebarTrackingSeparator()
+	back := toolbar.AddButton("Back").OnClick(func(*Context) {}).SetPersistenceKey("back")
+	toolbar.AddSpace()
+	toolbar.AddFlexibleSpace()
+	palette := toolbar.AddButton("Palette only").OnClick(func(*Context) {}).SetInDefaultSet(false)
+	toolbar.AddInspectorTrackingSeparator()
+	toolbar.AddInspectorToggle()
+	toolbar.SetCenteredItems(back)
+
+	payload := macToolbarLayoutPayloadFor(toolbar, true, "back")
+	if !payload.Customizable || payload.Moved != "back" {
+		t.Fatalf("payload flags = %#v", payload)
+	}
+	kinds := func(entries []macToolbarLayoutEntry) []string {
+		result := make([]string, 0, len(entries))
+		for _, entry := range entries {
+			result = append(result, entry.Kind)
+		}
+		return result
+	}
+	wantAllowed := []string{"sidebarToggle", "sidebarSeparator", "item", "space", "flexibleSpace", "item", "inspectorSeparator", "inspectorToggle"}
+	if got := kinds(payload.Allowed); strings.Join(got, ",") != strings.Join(wantAllowed, ",") {
+		t.Fatalf("allowed kinds = %v", got)
+	}
+	if len(payload.Default) != len(payload.Allowed)-1 {
+		t.Fatalf("an item outside the default set must still be allowed: default=%d allowed=%d", len(payload.Default), len(payload.Allowed))
+	}
+	for _, entry := range payload.Default {
+		if entry.ID == palette.identifier {
+			t.Fatal("palette-only item leaked into the default layout")
+		}
+	}
+	if payload.Allowed[2].ID != "back" {
+		t.Fatalf("persistence key should be the layout identifier, got %q", payload.Allowed[2].ID)
+	}
+	if len(payload.Centered) != 1 || payload.Centered[0].ID != "back" {
+		t.Fatalf("centred entries = %#v", payload.Centered)
+	}
+
+	encoded, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("encode layout: %v", err)
+	}
+	if !strings.Contains(string(encoded), `"kind":"space"`) {
+		t.Fatalf("layout JSON should carry entry kinds: %s", encoded)
+	}
+}
+
+func TestMacToolbarItemSignatureTracksGroupMembers(t *testing.T) {
+	toolbar := NewMacToolbar()
+	button := toolbar.AddButton("Save").OnClick(func(*Context) {})
+	group := toolbar.AddGroup("Mode", ToolbarGroupSelectOne)
+	write := group.AddButton("Write").OnClick(func(*Context) {})
+
+	if signature, members := macToolbarItemSignature(snapshotMacToolbarItem(button)); signature != "" || members != nil {
+		t.Fatal("non-group items have no rebuild signature")
+	}
+	before, members := macToolbarItemSignature(snapshotMacToolbarItem(group.MacToolbarItem))
+	if len(members) != 1 || members[0] != write.identifier {
+		t.Fatalf("group members = %v", members)
+	}
+	group.AddButton("Preview").OnClick(func(*Context) {})
+	after, _ := macToolbarItemSignature(snapshotMacToolbarItem(group.MacToolbarItem))
+	if before == after {
+		t.Fatal("adding a member must change the group signature so the native group is rebuilt")
+	}
+	// Relabelling a member does not require a rebuild.
+	write.SetLabel("Compose")
+	relabelled, _ := macToolbarItemSignature(snapshotMacToolbarItem(group.MacToolbarItem))
+	if relabelled != after {
+		t.Fatal("label changes must not force a group rebuild")
+	}
+}
+
+func TestMacToolbarLayoutKinds(t *testing.T) {
+	cases := map[macToolbarItemKind]string{
+		toolbarButton:                     "item",
+		toolbarGroup:                      "item",
+		toolbarSearchField:                "item",
+		toolbarShare:                      "item",
+		toolbarMenu:                       "item",
+		toolbarSpace:                      "space",
+		toolbarFlexibleSpace:              "flexibleSpace",
+		toolbarSidebarToggle:              "sidebarToggle",
+		toolbarSidebarTrackingSeparator:   "sidebarSeparator",
+		toolbarInspectorToggle:            "inspectorToggle",
+		toolbarInspectorTrackingSeparator: "inspectorSeparator",
+	}
+	for kind, want := range cases {
+		if got := macToolbarLayoutKind(kind); got != want {
+			t.Fatalf("layout kind for %d = %q, want %q", kind, got, want)
+		}
+	}
+	if macToolbarKindIsWailsOwned(toolbarSpace) || !macToolbarKindIsWailsOwned(toolbarMenu) {
+		t.Fatal("ownership classification is wrong")
 	}
 }
 

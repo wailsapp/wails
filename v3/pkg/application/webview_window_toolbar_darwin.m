@@ -142,12 +142,15 @@ static const void* WailsToolbarShareProviderLifetimeAssociationKey = &WailsToolb
     if (self) {
         _orderedIdentifiers = [[NSMutableArray alloc] init];
         _itemsByIdentifier = [[NSMutableDictionary alloc] init];
+        _knownIdentifiers = [[NSMutableSet alloc] init];
     }
     return self;
 }
 
 - (void)dealloc {
     [_orderedIdentifiers release];
+    [_allowedIdentifiers release];
+    [_knownIdentifiers release];
     [_itemsByIdentifier release];
     [super dealloc];
 }
@@ -157,7 +160,7 @@ static const void* WailsToolbarShareProviderLifetimeAssociationKey = &WailsToolb
 }
 
 - (NSArray<NSToolbarItemIdentifier>*)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar {
-    return self.orderedIdentifiers;
+    return self.allowedIdentifiers ?: self.orderedIdentifiers;
 }
 
 - (NSToolbarItem*)toolbar:(NSToolbar*)toolbar
@@ -167,6 +170,8 @@ static const void* WailsToolbarShareProviderLifetimeAssociationKey = &WailsToolb
 }
 
 @end
+
+static NSToolbarItem* toolbarItemForIdentifier(void* handlePtr, const char* identifier);
 
 static WailsToolbarHandle* toolbarHandle(void* handlePtr) {
     return (WailsToolbarHandle*)handlePtr;
@@ -208,7 +213,7 @@ static void applyCommonItemStyle(NSToolbarItem* item, const char* tooltip,
 #endif
 }
 
-void* toolbarCreate(const char* identifier) {
+void* toolbarCreate(const char* identifier, bool customizable) {
     if (identifier == NULL || strlen(identifier) == 0) return NULL;
 
     WailsToolbarHandle* handle = calloc(1, sizeof(WailsToolbarHandle));
@@ -225,8 +230,10 @@ void* toolbarCreate(const char* identifier) {
     }
 
     toolbar.displayMode = NSToolbarDisplayModeIconAndLabel;
-    toolbar.allowsUserCustomization = NO;
-    toolbar.autosavesConfiguration = NO;
+    // Both flags are set before the delegate so AppKit restores a saved
+    // layout for a customizable toolbar when it is attached.
+    toolbar.allowsUserCustomization = customizable;
+    toolbar.autosavesConfiguration = customizable;
     toolbar.visible = YES;
 
     // NSToolbar.delegate is weak/assign. The association makes the delegate's
@@ -251,12 +258,20 @@ void toolbarAttach(void* nsWindow, void* handlePtr, int style) {
     // initial default-identifier request therefore sees the complete tree.
     toolbar.delegate = delegate;
     NSArray<NSToolbarItemIdentifier>* identifiers = delegate.orderedIdentifiers;
-    if (@available(macOS 15.0, *)) {
+    if (toolbar.autosavesConfiguration) {
+        // AppKit restores the user's saved layout (or asks the delegate for
+        // the default one) when the toolbar joins the window. Forcing the
+        // default identifiers here would discard that saved layout.
+    } else if (@available(macOS 15.0, *)) {
         toolbar.itemIdentifiers = identifiers;
     } else {
         for (NSToolbarItemIdentifier identifier in identifiers) {
             [toolbar insertItemWithItemIdentifier:identifier atIndex:toolbar.items.count];
         }
+    }
+    [delegate.knownIdentifiers addObjectsFromArray:identifiers];
+    if (delegate.allowedIdentifiers != nil) {
+        [delegate.knownIdentifiers addObjectsFromArray:delegate.allowedIdentifiers];
     }
 
     for (NSToolbarItem* item in delegate.itemsByIdentifier.allValues) {
@@ -293,6 +308,248 @@ void toolbarSetDisplayMode(void* handlePtr, int displayMode) {
     if (handle == NULL || handle->toolbar == nil) return;
     if (displayMode < NSToolbarDisplayModeDefault || displayMode > NSToolbarDisplayModeLabelOnly) return;
     handle->toolbar.displayMode = (NSToolbarDisplayMode)displayMode;
+}
+
+void toolbarSetCustomizable(void* handlePtr, bool customizable) {
+    WailsToolbarHandle* handle = toolbarHandle(handlePtr);
+    if (handle == NULL || handle->toolbar == nil) return;
+    handle->toolbar.allowsUserCustomization = customizable;
+    handle->toolbar.autosavesConfiguration = customizable;
+}
+
+void toolbarRunCustomizationPalette(void* handlePtr) {
+    WailsToolbarHandle* handle = toolbarHandle(handlePtr);
+    if (handle == NULL || handle->toolbar == nil) return;
+    if (!handle->toolbar.allowsUserCustomization || handle->toolbar.customizationPaletteIsRunning) return;
+    [handle->toolbar runCustomizationPalette:nil];
+}
+
+bool toolbarSupportsCenteredItems(void) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 130000
+    if (@available(macOS 13.0, *)) return true;
+#endif
+    return false;
+}
+
+void toolbarForgetItem(void* handlePtr, const char* identifier) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate == nil || identifier == NULL) return;
+    [delegate.itemsByIdentifier removeObjectForKey:[NSString stringWithUTF8String:identifier]];
+}
+
+// Resolves one layout entry to the identifier AppKit should receive, or nil
+// when the entry is unavailable on this system (a standard identifier that
+// does not exist yet, or a Wails item that was not built natively).
+static NSToolbarItemIdentifier toolbarResolveLayoutEntry(WailsToolbarDelegate* delegate, id entry) {
+    if (![entry isKindOfClass:[NSDictionary class]]) return nil;
+    id identifier = ((NSDictionary*)entry)[@"id"];
+    id kind = ((NSDictionary*)entry)[@"kind"];
+    if (![kind isKindOfClass:[NSString class]]) kind = @"item";
+
+    if ([kind isEqualToString:@"space"]) return NSToolbarSpaceItemIdentifier;
+    if ([kind isEqualToString:@"flexibleSpace"]) return NSToolbarFlexibleSpaceItemIdentifier;
+    if ([kind isEqualToString:@"sidebarToggle"]) return NSToolbarToggleSidebarItemIdentifier;
+    if ([kind isEqualToString:@"sidebarSeparator"]) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+        if (@available(macOS 11.0, *)) return NSToolbarSidebarTrackingSeparatorItemIdentifier;
+#endif
+        return nil;
+    }
+    if ([kind isEqualToString:@"inspectorSeparator"]) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+        if (@available(macOS 14.0, *)) return NSToolbarInspectorTrackingSeparatorItemIdentifier;
+#endif
+        return nil;
+    }
+    if ([kind isEqualToString:@"inspectorToggle"]) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+        if (@available(macOS 14.0, *)) return NSToolbarToggleInspectorItemIdentifier;
+#endif
+        // Fall through to the Wails-owned fallback item registered under id.
+    }
+    if (![identifier isKindOfClass:[NSString class]]) return nil;
+    return delegate.itemsByIdentifier[identifier] != nil ? identifier : nil;
+}
+
+static NSArray<NSToolbarItemIdentifier>* toolbarResolveLayoutEntries(WailsToolbarDelegate* delegate, id entries) {
+    NSMutableArray<NSToolbarItemIdentifier>* result = [NSMutableArray array];
+    if (![entries isKindOfClass:[NSArray class]]) return result;
+    for (id entry in (NSArray*)entries) {
+        NSToolbarItemIdentifier identifier = toolbarResolveLayoutEntry(delegate, entry);
+        if (identifier != nil) [result addObject:identifier];
+    }
+    return result;
+}
+
+static BOOL toolbarIdentifierIsSpace(NSToolbarItemIdentifier identifier) {
+    return [identifier isEqualToString:NSToolbarSpaceItemIdentifier] ||
+        [identifier isEqualToString:NSToolbarFlexibleSpaceItemIdentifier];
+}
+
+// A live item matches a layout identifier when the identifiers agree and,
+// for a Wails-owned item, the live instance is the one currently registered
+// (a rebuilt group registers a new instance under the same identifier).
+static BOOL toolbarLiveItemMatches(WailsToolbarDelegate* delegate, NSToolbarItem* live, NSToolbarItemIdentifier identifier) {
+    if (![live.itemIdentifier isEqualToString:identifier]) return NO;
+    NSToolbarItem* canonical = delegate.itemsByIdentifier[identifier];
+    return canonical == nil || canonical == live;
+}
+
+static NSInteger toolbarLiveIndexOfIdentifier(NSToolbar* toolbar, NSToolbarItemIdentifier identifier) {
+    NSInteger index = 0;
+    for (NSToolbarItem* live in toolbar.items) {
+        if ([live.itemIdentifier isEqualToString:identifier]) return index;
+        index++;
+    }
+    return NSNotFound;
+}
+
+// Makes the live toolbar mirror the desired identifier list with the minimum
+// of removals and insertions: matching prefixes are kept, an item found later
+// is exposed by removing what precedes it, and a missing item is inserted.
+static void toolbarApplyExactOrder(NSToolbar* toolbar, WailsToolbarDelegate* delegate,
+    NSArray<NSToolbarItemIdentifier>* desired) {
+    NSUInteger index = 0;
+    for (NSToolbarItemIdentifier identifier in desired) {
+        if (index < toolbar.items.count && toolbarLiveItemMatches(delegate, toolbar.items[index], identifier)) {
+            index++;
+            continue;
+        }
+        NSUInteger found = NSNotFound;
+        for (NSUInteger candidate = index; candidate < toolbar.items.count; candidate++) {
+            if (toolbarLiveItemMatches(delegate, toolbar.items[candidate], identifier)) {
+                found = candidate;
+                break;
+            }
+        }
+        if (found != NSNotFound) {
+            while (found > index) {
+                [toolbar removeItemAtIndex:index];
+                found--;
+            }
+            index++;
+            continue;
+        }
+        [toolbar insertItemWithItemIdentifier:identifier atIndex:index];
+        if (index < toolbar.items.count && toolbarLiveItemMatches(delegate, toolbar.items[index], identifier)) {
+            index++;
+        }
+    }
+    while (toolbar.items.count > index) {
+        [toolbar removeItemAtIndex:toolbar.items.count - 1];
+    }
+}
+
+// Position for identifier in the live toolbar that preserves the relative
+// order of the default layout: the number of live items that precede it in
+// the default list (items unknown to the default list do not count).
+static NSUInteger toolbarLivePositionForIdentifier(NSToolbar* toolbar, NSArray<NSToolbarItemIdentifier>* defaults,
+    NSToolbarItemIdentifier identifier, NSToolbarItem* ignoring) {
+    NSUInteger rank = [defaults indexOfObject:identifier];
+    if (rank == NSNotFound) return toolbar.items.count;
+    NSUInteger position = 0;
+    NSUInteger scanned = 0;
+    for (NSToolbarItem* live in toolbar.items) {
+        if (live == ignoring) continue;
+        scanned++;
+        NSUInteger liveRank = [defaults indexOfObject:live.itemIdentifier];
+        if (liveRank != NSNotFound && liveRank < rank) position = scanned;
+    }
+    return position;
+}
+
+// Preserves the user's layout while applying structural changes from Go.
+static void toolbarApplyCustomizableLayout(NSToolbar* toolbar, WailsToolbarDelegate* delegate,
+    NSArray<NSToolbarItemIdentifier>* defaults, NSArray<NSToolbarItemIdentifier>* allowed,
+    NSToolbarItemIdentifier moved) {
+    NSSet<NSToolbarItemIdentifier>* allowedSet = [NSSet setWithArray:allowed];
+
+    // Remove items that are no longer offered and replace stale instances of
+    // rebuilt items in place.
+    for (NSInteger index = (NSInteger)toolbar.items.count - 1; index >= 0; index--) {
+        NSToolbarItem* live = toolbar.items[index];
+        NSToolbarItemIdentifier identifier = live.itemIdentifier;
+        if (![allowedSet containsObject:identifier] && !toolbarIdentifierIsSpace(identifier)) {
+            [toolbar removeItemAtIndex:index];
+            continue;
+        }
+        NSToolbarItem* canonical = delegate.itemsByIdentifier[identifier];
+        if (canonical != nil && canonical != live) {
+            [toolbar removeItemAtIndex:index];
+            [toolbar insertItemWithItemIdentifier:identifier atIndex:index];
+        }
+    }
+
+    // Insert items Go added since the last sync. Identifiers already known
+    // but absent were removed by the user and stay removed.
+    for (NSToolbarItemIdentifier identifier in defaults) {
+        if ([delegate.knownIdentifiers containsObject:identifier]) continue;
+        if (toolbarLiveIndexOfIdentifier(toolbar, identifier) != NSNotFound) continue;
+        NSUInteger position = toolbarLivePositionForIdentifier(toolbar, defaults, identifier, nil);
+        [toolbar insertItemWithItemIdentifier:identifier atIndex:MIN(position, toolbar.items.count)];
+    }
+
+    if (moved.length > 0) {
+        NSInteger current = toolbarLiveIndexOfIdentifier(toolbar, moved);
+        if (current != NSNotFound) {
+            NSToolbarItem* live = toolbar.items[current];
+            NSUInteger position = toolbarLivePositionForIdentifier(toolbar, defaults, moved, live);
+            if (position != (NSUInteger)current) {
+                [toolbar removeItemAtIndex:current];
+                [toolbar insertItemWithItemIdentifier:moved atIndex:MIN(position, toolbar.items.count)];
+            }
+        }
+    }
+}
+
+void toolbarSync(void* handlePtr, const char* layoutJSON) {
+    WailsToolbarHandle* handle = toolbarHandle(handlePtr);
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (handle == NULL || handle->toolbar == nil || delegate == nil || layoutJSON == NULL) return;
+
+    NSData* data = [[NSString stringWithUTF8String:layoutJSON] dataUsingEncoding:NSUTF8StringEncoding];
+    id decoded = data == nil ? nil : [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (![decoded isKindOfClass:[NSDictionary class]]) return;
+    NSDictionary* layout = (NSDictionary*)decoded;
+
+    BOOL customizable = [layout[@"customizable"] isKindOfClass:[NSNumber class]] &&
+        ((NSNumber*)layout[@"customizable"]).boolValue;
+    NSArray<NSToolbarItemIdentifier>* defaults = toolbarResolveLayoutEntries(delegate, layout[@"default"]);
+    NSMutableArray<NSToolbarItemIdentifier>* allowed =
+        [toolbarResolveLayoutEntries(delegate, layout[@"allowed"]) mutableCopy];
+    NSArray<NSToolbarItemIdentifier>* centered = toolbarResolveLayoutEntries(delegate, layout[@"centered"]);
+    id movedValue = layout[@"moved"];
+    NSToolbarItemIdentifier moved = [movedValue isKindOfClass:[NSString class]] ? movedValue : nil;
+
+    if (customizable) {
+        // The palette always offers the standard spacers.
+        if (![allowed containsObject:NSToolbarSpaceItemIdentifier]) [allowed addObject:NSToolbarSpaceItemIdentifier];
+        if (![allowed containsObject:NSToolbarFlexibleSpaceItemIdentifier]) {
+            [allowed addObject:NSToolbarFlexibleSpaceItemIdentifier];
+        }
+    }
+
+    delegate.orderedIdentifiers = [[defaults mutableCopy] autorelease];
+    delegate.allowedIdentifiers = allowed;
+    [allowed release];
+
+    NSToolbar* toolbar = handle->toolbar;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 130000
+    if (@available(macOS 13.0, *)) {
+        toolbar.centeredItemIdentifiers = [NSSet setWithArray:centered];
+    }
+#endif
+
+    // Detached: the lists above seed the initial layout in toolbarAttach.
+    if (toolbar.delegate == nil) return;
+
+    if (customizable) {
+        toolbarApplyCustomizableLayout(toolbar, delegate, defaults, delegate.allowedIdentifiers, moved);
+    } else {
+        toolbarApplyExactOrder(toolbar, delegate, defaults);
+    }
+    [delegate.knownIdentifiers addObjectsFromArray:delegate.allowedIdentifiers];
+    [toolbar validateVisibleItems];
 }
 
 // Returns a +1 retained item. A caller must transfer it to an owning
@@ -607,6 +864,152 @@ void toolbarAddFlexibleSpaceIdentifier(void* handlePtr) {
     if (delegate != nil) {
         [delegate.orderedIdentifiers addObject:NSToolbarFlexibleSpaceItemIdentifier];
     }
+}
+
+void toolbarAddSpaceIdentifier(void* handlePtr) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate != nil) {
+        [delegate.orderedIdentifiers addObject:NSToolbarSpaceItemIdentifier];
+    }
+}
+
+void* toolbarAddMenuItem(void* handlePtr, const char* identifier, const char* label,
+    const char* symbolName, const char* tooltip, bool bordered, bool disabled, bool hidden,
+    void* nsMenu, bool showsIndicator) {
+    WailsToolbarDelegate* delegate = toolbarDelegate(handlePtr);
+    if (delegate == nil) return NULL;
+
+    NSString* identifierString = [NSString stringWithUTF8String:identifier];
+    if (@available(macOS 10.15, *)) {
+        NSMenuToolbarItem* item = [[NSMenuToolbarItem alloc] initWithItemIdentifier:identifierString];
+        item.label = [NSString stringWithUTF8String:label];
+        item.menu = (NSMenu*)nsMenu;
+        item.showsIndicator = showsIndicator;
+        NSImage* symbol = toolbarSymbolImage(symbolName, item.label);
+        if (symbol != nil) {
+            item.image = symbol;
+        } else if (@available(macOS 11.0, *)) {
+            // A menu item without an image renders as text; supply the
+            // system chevron image so icon-only toolbars still show it.
+            item.image = [NSImage imageWithSystemSymbolName:@"ellipsis.circle"
+                                   accessibilityDescription:item.label];
+        }
+        applyCommonItemStyle(item, tooltip, bordered, false, disabled, hidden,
+            false, 0, 0, 0, 0, 0);
+        [delegate.orderedIdentifiers addObject:identifierString];
+        delegate.itemsByIdentifier[identifierString] = item;
+        [item release];
+        return item;
+    }
+    NSLog(@"[Wails] toolbar menu item %s requires macOS 10.15 or newer and was omitted", label);
+    return NULL;
+}
+
+void toolbarMenuItemSetShowsIndicator(void* handlePtr, const char* identifier, bool showsIndicator) {
+    NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
+    if (@available(macOS 10.15, *)) {
+        if ([item isKindOfClass:[NSMenuToolbarItem class]]) {
+            ((NSMenuToolbarItem*)item).showsIndicator = showsIndicator;
+        }
+    }
+}
+
+void toolbarItemSetVisibilityPriority(void* handlePtr, const char* identifier, int priority) {
+    NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
+    if (item != nil) item.visibilityPriority = priority;
+}
+
+void toolbarItemSetNavigational(void* handlePtr, const char* identifier, bool navigational) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+    NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
+    if (@available(macOS 11.0, *)) {
+        if (item != nil) item.navigational = navigational;
+    }
+#endif
+}
+
+static NSSearchField* toolbarSearchFieldForItem(NSToolbarItem* item) {
+    if (item == nil) return nil;
+    if (@available(macOS 11.0, *)) {
+        Class searchToolbarItemClass = NSClassFromString(@"NSSearchToolbarItem");
+        if (searchToolbarItemClass != nil && [item isKindOfClass:searchToolbarItemClass]) {
+            return [item valueForKey:@"searchField"];
+        }
+    }
+    if ([item.view isKindOfClass:[NSSearchField class]]) return (NSSearchField*)item.view;
+    return nil;
+}
+
+void toolbarSearchItemSetPlaceholder(void* handlePtr, const char* identifier, const char* placeholder) {
+    NSSearchField* field = toolbarSearchFieldForItem(toolbarItemForIdentifier(handlePtr, identifier));
+    if (field == nil) return;
+    field.placeholderString = placeholder != NULL && strlen(placeholder) > 0
+        ? [NSString stringWithUTF8String:placeholder]
+        : nil;
+}
+
+void toolbarSearchItemSetIncremental(void* handlePtr, const char* identifier, bool incremental) {
+    NSSearchField* field = toolbarSearchFieldForItem(toolbarItemForIdentifier(handlePtr, identifier));
+    if (field == nil) return;
+    field.sendsSearchStringImmediately = incremental;
+    field.sendsWholeSearchString = !incremental;
+}
+
+void toolbarSearchItemSetRecents(void* handlePtr, const char* identifier, const char* autosaveName, int maximumRecents) {
+    NSSearchField* field = toolbarSearchFieldForItem(toolbarItemForIdentifier(handlePtr, identifier));
+    if (field == nil) return;
+    if (autosaveName == NULL || strlen(autosaveName) == 0) {
+        field.recentsAutosaveName = nil;
+        field.maximumRecents = 0;
+        return;
+    }
+    field.recentsAutosaveName = [NSString stringWithUTF8String:autosaveName];
+    field.maximumRecents = maximumRecents > 0 ? maximumRecents : 10;
+}
+
+// Appends the standard recent-searches section to menu unless it is already
+// present. AppKit recognises the entries by tag.
+static void toolbarAppendRecentsSection(NSMenu* menu) {
+    if ([menu itemWithTag:NSSearchFieldRecentsMenuItemTag] != nil) return;
+    if (menu.numberOfItems > 0) {
+        NSMenuItem* separator = [NSMenuItem separatorItem];
+        separator.tag = NSSearchFieldRecentsTitleMenuItemTag;
+        [menu addItem:separator];
+    }
+    NSMenuItem* title = [[NSMenuItem alloc] initWithTitle:@"Recent Searches" action:nil keyEquivalent:@""];
+    title.tag = NSSearchFieldRecentsTitleMenuItemTag;
+    [menu addItem:title];
+    [title release];
+
+    NSMenuItem* recents = [[NSMenuItem alloc] initWithTitle:@"Recents" action:nil keyEquivalent:@""];
+    recents.tag = NSSearchFieldRecentsMenuItemTag;
+    [menu addItem:recents];
+    [recents release];
+
+    NSMenuItem* noRecents = [[NSMenuItem alloc] initWithTitle:@"No Recent Searches" action:nil keyEquivalent:@""];
+    noRecents.tag = NSSearchFieldNoRecentsMenuItemTag;
+    [menu addItem:noRecents];
+    [noRecents release];
+
+    NSMenuItem* clear = [[NSMenuItem alloc] initWithTitle:@"Clear Recent Searches" action:nil keyEquivalent:@""];
+    clear.tag = NSSearchFieldClearRecentsMenuItemTag;
+    [menu addItem:clear];
+    [clear release];
+}
+
+void toolbarSearchItemSetMenu(void* handlePtr, const char* identifier, void* nsMenu, bool includeRecents) {
+    NSSearchField* field = toolbarSearchFieldForItem(toolbarItemForIdentifier(handlePtr, identifier));
+    if (field == nil) return;
+    NSMenu* menu = (NSMenu*)nsMenu;
+    if (menu == nil) {
+        if (!includeRecents) {
+            field.searchMenuTemplate = nil;
+            return;
+        }
+        menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+    }
+    if (includeRecents) toolbarAppendRecentsSection(menu);
+    field.searchMenuTemplate = menu;
 }
 
 void toolbarAddSidebarToggleIdentifier(void* handlePtr) {

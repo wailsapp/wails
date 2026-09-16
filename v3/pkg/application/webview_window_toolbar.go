@@ -27,6 +27,16 @@ type MacToolbar struct {
 	stateLock   sync.RWMutex
 	state       *macToolbarState
 	displayMode MacToolbarDisplayMode
+
+	// customizable enables the standard "Customize Toolbar..." sheet and
+	// autosave. persistenceKey becomes the NSToolbar identifier so the saved
+	// layout is stable across launches. Both are protected by stateLock.
+	customizable   bool
+	persistenceKey string
+
+	// centeredItems lists the items AppKit should keep centred (macOS 13+).
+	// Protected by itemsLock.
+	centeredItems []*MacToolbarItem
 }
 
 var toolbarIdentifier uint64
@@ -38,6 +48,247 @@ func NewMacToolbar() *MacToolbar {
 		identifier:  fmt.Sprintf("wails.toolbar.%d", sequence),
 		displayMode: MacToolbarDisplayModeIconAndLabel,
 	}
+}
+
+// SetCustomizable enables the standard AppKit "Customize Toolbar..." sheet
+// (allowsUserCustomization) and automatic layout persistence
+// (autosavesConfiguration). persistenceKey becomes the NSToolbar identifier
+// under which AppKit stores the user's layout, so it must be unique per
+// toolbar within the application and stable across launches. Items keep their
+// generated identifiers unless SetPersistenceKey gives them a stable one, and
+// only stable item identifiers survive a relaunch. Passing an empty key
+// disables customisation again.
+//
+// Call SetCustomizable before the toolbar is attached: an NSToolbar's
+// identifier is fixed at creation, so a key set afterwards is applied the next
+// time the toolbar is attached while the customisation sheet is enabled
+// immediately.
+func (t *MacToolbar) SetCustomizable(persistenceKey string) *MacToolbar {
+	if t == nil {
+		return t
+	}
+	t.stateLock.Lock()
+	t.customizable = persistenceKey != ""
+	t.persistenceKey = persistenceKey
+	customizable := t.customizable
+	installed := t.state != nil && t.state.native != nil
+	t.stateLock.Unlock()
+	if !installed {
+		return t
+	}
+	if customizable {
+		t.logDebug("SetCustomizable: the toolbar is already attached; persistence key %q applies on the next attachment", persistenceKey)
+	}
+	InvokeSync(func() {
+		t.stateLock.RLock()
+		defer t.stateLock.RUnlock()
+		if t.state != nil && t.state.native != nil {
+			macToolbarSetCustomizable(t.state.native, t.customizable)
+		}
+	})
+	t.syncNative(nil)
+	return t
+}
+
+// RunCustomizationPalette opens the standard AppKit toolbar customisation
+// sheet. It does nothing unless the toolbar is attached and SetCustomizable
+// has been called.
+func (t *MacToolbar) RunCustomizationPalette() *MacToolbar {
+	if t == nil {
+		return t
+	}
+	t.stateLock.RLock()
+	installed := t.state != nil && t.state.native != nil
+	customizable := t.customizable
+	t.stateLock.RUnlock()
+	if !installed || !customizable {
+		t.logDebug("RunCustomizationPalette: the toolbar must be attached and customizable")
+		return t
+	}
+	InvokeSync(func() {
+		t.stateLock.RLock()
+		defer t.stateLock.RUnlock()
+		if t.state != nil && t.state.native != nil {
+			macToolbarRunCustomizationPalette(t.state.native)
+		}
+	})
+	return t
+}
+
+// SetCenteredItems asks AppKit to keep the given items centred in the toolbar
+// (NSToolbar.centeredItemIdentifiers, macOS 13 and newer; earlier releases
+// keep the standard layout). Pass no items to clear the centred set. Items
+// must belong to this toolbar; others are ignored.
+func (t *MacToolbar) SetCenteredItems(items ...*MacToolbarItem) *MacToolbar {
+	if t == nil {
+		return t
+	}
+	centered := make([]*MacToolbarItem, 0, len(items))
+	for _, item := range items {
+		if item != nil && item.toolbar == t && item.parent == nil {
+			centered = append(centered, item)
+		}
+	}
+	t.itemsLock.Lock()
+	t.centeredItems = centered
+	t.itemsLock.Unlock()
+	t.syncNative(nil)
+	return t
+}
+
+// SetDefaultItems marks the given top-level items as the toolbar's default
+// layout: every other item remains available in the customisation palette
+// (see SetCustomizable) but is not shown until the user adds it. It is
+// equivalent to calling SetInDefaultSet on every item. Passing no items
+// restores every item to the default layout.
+func (t *MacToolbar) SetDefaultItems(items ...*MacToolbarItem) *MacToolbar {
+	if t == nil {
+		return t
+	}
+	defaults := make(map[*MacToolbarItem]bool, len(items))
+	for _, item := range items {
+		defaults[item] = true
+	}
+	for _, item := range t.itemSnapshot() {
+		item.lock.Lock()
+		item.inDefaultSet = len(items) == 0 || defaults[item]
+		item.lock.Unlock()
+	}
+	t.syncNative(nil)
+	return t
+}
+
+// Remove detaches an item (or a group member) from the toolbar. An attached
+// toolbar drops the native item immediately. The item cannot be re-added; its
+// setters become no-ops.
+func (t *MacToolbar) Remove(item *MacToolbarItem) *MacToolbar {
+	if t == nil || item == nil || item.toolbar != t {
+		return t
+	}
+	if item.parent != nil {
+		parent := item.parent
+		parent.lock.Lock()
+		parent.items = removeMacToolbarItem(parent.items, item)
+		parent.lock.Unlock()
+	} else {
+		t.itemsLock.Lock()
+		t.items = removeMacToolbarItem(t.items, item)
+		t.centeredItems = removeMacToolbarItem(t.centeredItems, item)
+		t.itemsLock.Unlock()
+	}
+	t.syncNative(nil)
+	return t
+}
+
+// Move places an item (or a group member) at index within its container.
+// Indices outside the container are clamped. An attached toolbar reorders the
+// native item immediately.
+func (t *MacToolbar) Move(item *MacToolbarItem, index int) *MacToolbar {
+	if t == nil || item == nil || item.toolbar != t {
+		return t
+	}
+	if item.parent != nil {
+		parent := item.parent
+		parent.lock.Lock()
+		parent.items = moveMacToolbarItem(parent.items, item, index)
+		parent.lock.Unlock()
+	} else {
+		t.itemsLock.Lock()
+		t.items = moveMacToolbarItem(t.items, item, index)
+		t.itemsLock.Unlock()
+	}
+	t.syncNative(item)
+	return t
+}
+
+func removeMacToolbarItem(items []*MacToolbarItem, item *MacToolbarItem) []*MacToolbarItem {
+	result := make([]*MacToolbarItem, 0, len(items))
+	for _, candidate := range items {
+		if candidate != item {
+			result = append(result, candidate)
+		}
+	}
+	return result
+}
+
+func moveMacToolbarItem(items []*MacToolbarItem, item *MacToolbarItem, index int) []*MacToolbarItem {
+	found := false
+	for _, candidate := range items {
+		if candidate == item {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return items
+	}
+	result := removeMacToolbarItem(items, item)
+	if index < 0 {
+		index = 0
+	}
+	if index > len(result) {
+		index = len(result)
+	}
+	result = append(result, nil)
+	copy(result[index+1:], result[index:])
+	result[index] = item
+	return result
+}
+
+// syncNative re-synchronises an attached native toolbar with the Go model
+// after a structural change (an item was added, removed, moved, renamed with
+// a persistence key, or its default-set membership changed). Callback
+// requirements are not enforced here because callbacks are normally chained
+// after the constructor; a click on an item without a callback is reported
+// when it happens. Structural problems are logged rather than failing
+// silently.
+func (t *MacToolbar) syncNative(moved *MacToolbarItem) {
+	if t == nil {
+		return
+	}
+	t.stateLock.RLock()
+	installed := t.state != nil && t.state.native != nil
+	t.stateLock.RUnlock()
+	if !installed {
+		return
+	}
+	if err := validateToolbarLayout(t.itemSnapshot(), false); err != nil {
+		t.logError("toolbar: %s", err)
+	}
+	InvokeSync(func() {
+		t.stateLock.Lock()
+		defer t.stateLock.Unlock()
+		if t.state == nil || t.state.native == nil {
+			return
+		}
+		macToolbarSyncNative(t, moved)
+	})
+}
+
+// logError reports a toolbar problem through the owning window when the
+// toolbar is attached, and through the application logger otherwise.
+func (t *MacToolbar) logError(format string, args ...any) {
+	if t == nil || globalApplication == nil {
+		return
+	}
+	t.stateLock.RLock()
+	var window macToolbarWindow
+	if t.state != nil {
+		window = t.state.window
+	}
+	t.stateLock.RUnlock()
+	if window != nil {
+		window.Error(format, args...)
+		return
+	}
+	globalApplication.error(format, args...)
+}
+
+func (t *MacToolbar) logDebug(format string, args ...any) {
+	if t == nil || globalApplication == nil {
+		return
+	}
+	globalApplication.debug(fmt.Sprintf(format, args...))
 }
 
 // MacToolbarDisplayMode controls whether an NSToolbar shows item icons,
@@ -93,7 +344,30 @@ const (
 	toolbarSidebarTrackingSeparator
 	toolbarInspectorToggle
 	toolbarInspectorTrackingSeparator
+	toolbarMenu
+	toolbarSpace
 )
+
+// MacToolbarVisibilityPriority controls which toolbar items AppKit moves into
+// the overflow menu first when the window is too narrow. Values map directly
+// to NSToolbarItemVisibilityPriority.
+type MacToolbarVisibilityPriority int
+
+const (
+	// MacToolbarVisibilityPriorityStandard is the default priority.
+	MacToolbarVisibilityPriorityStandard MacToolbarVisibilityPriority = 0
+	// MacToolbarVisibilityPriorityLow items are the first to overflow.
+	MacToolbarVisibilityPriorityLow MacToolbarVisibilityPriority = -1000
+	// MacToolbarVisibilityPriorityHigh items overflow after standard items.
+	MacToolbarVisibilityPriorityHigh MacToolbarVisibilityPriority = 1000
+	// MacToolbarVisibilityPriorityUser is reserved for items the user has
+	// explicitly prioritised; AppKit keeps them visible for as long as possible.
+	MacToolbarVisibilityPriorityUser MacToolbarVisibilityPriority = 2000
+)
+
+// macToolbarDefaultSearchRecents is the NSSearchField maximumRecents applied
+// when a recents key is configured.
+const macToolbarDefaultSearchRecents = 10
 
 // MacShareContentType is a Uniform Type Identifier (UTI) advertised to
 // NSItemProvider. It tells receiving services how to interpret the bytes
@@ -210,10 +484,13 @@ const (
 type MacToolbarItem struct {
 	lock sync.RWMutex
 
-	identifier string
-	kind       macToolbarItemKind
-	toolbar    *MacToolbar
-	parent     *MacToolbarItem
+	// identifier is the NSToolbarItemIdentifier: generatedIdentifier unless
+	// SetPersistenceKey supplied a stable key.
+	identifier          string
+	generatedIdentifier string
+	kind                macToolbarItemKind
+	toolbar             *MacToolbar
+	parent              *MacToolbarItem
 
 	label      string
 	symbolName string
@@ -224,6 +501,18 @@ type MacToolbarItem struct {
 	badgeCount int
 	disabled   bool
 	hidden     bool
+
+	visibilityPriority MacToolbarVisibilityPriority
+	navigational       bool
+	inDefaultSet       bool
+
+	menu           *Menu
+	showsIndicator bool
+
+	searchRecentsKey  string
+	searchMenu        *Menu
+	searchIncremental bool
+	searchPlaceholder string
 
 	items              []*MacToolbarItem
 	selectionMode      MacToolbarGroupSelectionMode
@@ -254,18 +543,26 @@ var toolbarItemIdentifier uint64
 
 func newMacToolbarItem(toolbar *MacToolbar, kind macToolbarItemKind, label string) *MacToolbarItem {
 	sequence := atomic.AddUint64(&toolbarItemIdentifier, 1)
+	identifier := fmt.Sprintf("wails.toolbar.item.%d", sequence)
 	return &MacToolbarItem{
-		identifier: fmt.Sprintf("wails.toolbar.item.%d", sequence),
-		kind:       kind,
-		toolbar:    toolbar,
-		label:      label,
+		identifier:          identifier,
+		generatedIdentifier: identifier,
+		kind:                kind,
+		toolbar:             toolbar,
+		label:               label,
+		inDefaultSet:        true,
+		showsIndicator:      true,
 	}
 }
 
+// add appends a top-level item. When the toolbar is already attached the
+// native toolbar is updated immediately; callbacks chained after the
+// constructor take effect on the next click.
 func (t *MacToolbar) add(item *MacToolbarItem) *MacToolbarItem {
 	t.itemsLock.Lock()
 	t.items = append(t.items, item)
 	t.itemsLock.Unlock()
+	t.syncNative(nil)
 	return item
 }
 
@@ -311,6 +608,23 @@ func (t *MacToolbar) AddGroup(label string, mode MacToolbarGroupSelectionMode) *
 // AddFlexibleSpace adds a native flexible-space item.
 func (t *MacToolbar) AddFlexibleSpace() *MacToolbarItem {
 	return t.add(newMacToolbarItem(t, toolbarFlexibleSpace, ""))
+}
+
+// AddSpace adds the standard fixed-width space item
+// (NSToolbarSpaceItemIdentifier).
+func (t *MacToolbar) AddSpace() *MacToolbarItem {
+	return t.add(newMacToolbarItem(t, toolbarSpace, ""))
+}
+
+// AddMenu adds a native dropdown toolbar item (NSMenuToolbarItem, macOS 10.15
+// and newer; earlier releases omit the item) that opens menu when clicked.
+// Menu item clicks fire the usual MenuItem.OnClick callbacks, and Menu.Update
+// refreshes the native menu in place. Use SetSymbol for an icon and
+// SetShowsIndicator to hide the dropdown chevron.
+func (t *MacToolbar) AddMenu(label string, menu *Menu) *MacToolbarItem {
+	item := newMacToolbarItem(t, toolbarMenu, label)
+	item.menu = menu
+	return t.add(item)
 }
 
 // AddSidebarToggle adds the standard AppKit toolbar item that sends
@@ -419,6 +733,8 @@ func (g *MacToolbarGroup) AddButton(label string) *MacToolbarItem {
 	g.lock.Lock()
 	g.items = append(g.items, item)
 	g.lock.Unlock()
+	// A native segmented group is rebuilt when its members change.
+	g.toolbar.syncNative(nil)
 	return item
 }
 
@@ -429,6 +745,153 @@ func (i *MacToolbarItem) OnClick(callback func(*Context)) *MacToolbarItem {
 		i.onClick = callback
 		i.lock.Unlock()
 	}
+	return i
+}
+
+// SetShowsIndicator controls whether a menu item shows the dropdown chevron
+// (NSMenuToolbarItem.showsIndicator). It is ignored for other item kinds.
+func (i *MacToolbarItem) SetShowsIndicator(shows bool) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	i.showsIndicator = shows
+	i.lock.Unlock()
+	i.update(func(native unsafe.Pointer) { macToolbarMenuItemSetShowsIndicator(native, i.identifier, shows) })
+	return i
+}
+
+// SetVisibilityPriority controls which items AppKit moves into the overflow
+// menu first when the window narrows (NSToolbarItem.visibilityPriority).
+func (i *MacToolbarItem) SetVisibilityPriority(priority MacToolbarVisibilityPriority) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	i.visibilityPriority = priority
+	i.lock.Unlock()
+	i.update(func(native unsafe.Pointer) { macToolbarItemSetVisibilityPriority(native, i.identifier, priority) })
+	return i
+}
+
+// SetNavigational marks an item as navigational (NSToolbarItem.navigational,
+// macOS 11 and newer): AppKit keeps it at the leading edge of the toolbar,
+// before the sidebar section, as back and forward buttons are in Safari.
+func (i *MacToolbarItem) SetNavigational(navigational bool) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	i.navigational = navigational
+	i.lock.Unlock()
+	i.update(func(native unsafe.Pointer) { macToolbarItemSetNavigational(native, i.identifier, navigational) })
+	return i
+}
+
+// SetPersistenceKey gives the item a stable NSToolbarItemIdentifier so a
+// user-customised layout (see MacToolbar.SetCustomizable) can restore it
+// across launches. Keys must be unique within a toolbar; an empty key
+// restores the generated identifier. Changing the key of an attached item
+// rebuilds its native item.
+func (i *MacToolbarItem) SetPersistenceKey(key string) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	if key == "" {
+		key = i.generatedIdentifier
+	}
+	changed := i.identifier != key
+	i.identifier = key
+	i.lock.Unlock()
+	if changed && i.toolbar != nil {
+		i.toolbar.syncNative(nil)
+	}
+	return i
+}
+
+// SetInDefaultSet controls whether a top-level item is part of the default
+// toolbar layout. Items outside the default set are still offered in the
+// customisation palette (see MacToolbar.SetCustomizable) and are otherwise
+// hidden. The default is true.
+func (i *MacToolbarItem) SetInDefaultSet(inDefaultSet bool) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	changed := i.inDefaultSet != inDefaultSet
+	i.inDefaultSet = inDefaultSet
+	i.lock.Unlock()
+	if changed && i.toolbar != nil {
+		i.toolbar.syncNative(nil)
+	}
+	return i
+}
+
+// SetSearchRecentsKey enables the native recent-searches menu of a search
+// item and persists the recent queries under key
+// (NSSearchField.recentsAutosaveName). An empty key disables recents. It is
+// ignored for other item kinds.
+func (i *MacToolbarItem) SetSearchRecentsKey(key string) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	i.searchRecentsKey = key
+	menu := i.searchMenu
+	i.lock.Unlock()
+	i.update(func(native unsafe.Pointer) {
+		macToolbarSearchItemSetRecents(native, i.identifier, key, macToolbarDefaultSearchRecents)
+		macToolbarSearchItemSetMenu(native, i.identifier, menu, key != "")
+	})
+	return i
+}
+
+// SetSearchMenu installs a custom menu behind the search field's magnifier
+// (NSSearchField.searchMenuTemplate). MenuItem.OnClick callbacks fire as
+// usual. When a recents key is also set, the standard recent-searches section
+// is appended after the custom items. Passing nil removes the custom menu.
+// Calling Menu.Update after attachment rebuilds the custom items; call
+// SetSearchMenu again to restore the recents section.
+func (i *MacToolbarItem) SetSearchMenu(menu *Menu) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	i.searchMenu = menu
+	recentsKey := i.searchRecentsKey
+	i.lock.Unlock()
+	i.update(func(native unsafe.Pointer) {
+		macToolbarSearchItemSetMenu(native, i.identifier, menu, recentsKey != "")
+	})
+	return i
+}
+
+// SetSearchIncremental controls when OnSearch fires: incrementally as the
+// user types (NSSearchField.sendsSearchStringImmediately) or only when the
+// user presses Return or clears the field (the default,
+// sendsWholeSearchString).
+func (i *MacToolbarItem) SetSearchIncremental(incremental bool) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	i.searchIncremental = incremental
+	i.lock.Unlock()
+	i.update(func(native unsafe.Pointer) { macToolbarSearchItemSetIncremental(native, i.identifier, incremental) })
+	return i
+}
+
+// SetSearchPlaceholder sets the placeholder text shown in an empty search
+// field. It is ignored for other item kinds.
+func (i *MacToolbarItem) SetSearchPlaceholder(placeholder string) *MacToolbarItem {
+	if i == nil {
+		return i
+	}
+	i.lock.Lock()
+	i.searchPlaceholder = placeholder
+	i.lock.Unlock()
+	i.update(func(native unsafe.Pointer) { macToolbarSearchItemSetPlaceholder(native, i.identifier, placeholder) })
 	return i
 }
 
@@ -707,10 +1170,24 @@ type macToolbarState struct {
 	window  macToolbarWindow
 	native  unsafe.Pointer
 	itemIDs []uint
+	// nativeItems records which top-level items have been built into the
+	// native toolbar, keyed by identifier, so a structural change can rebuild
+	// only what changed.
+	nativeItems map[string]macToolbarNativeItem
+}
+
+// macToolbarNativeItem describes one built native item. signature captures
+// the properties that require a rebuild when changed (a group's member
+// identifiers); itemIDs are the callback registrations owned by the item.
+type macToolbarNativeItem struct {
+	signature         string
+	itemIDs           []uint
+	memberIdentifiers []string
 }
 
 type macToolbarWindow interface {
 	ID() uint
+	Error(message string, args ...any)
 	macInspectorPane() *MacSplitPane
 }
 
@@ -740,11 +1217,23 @@ func releaseMacToolbarOwnership(toolbar *MacToolbar, window macToolbarWindow) {
 	toolbar.stateLock.Unlock()
 }
 
+// validateToolbarItems checks a toolbar before it is attached: every item
+// must be well formed and every button or search field must have its
+// callback.
 func validateToolbarItems(items []*MacToolbarItem) error {
+	return validateToolbarLayout(items, true)
+}
+
+// validateToolbarLayout checks item structure and identifier uniqueness.
+// requireCallbacks additionally enforces OnClick and OnSearch; a live
+// structural change skips that because callbacks are chained after the
+// constructor, and a missing callback is reported when the item is used.
+func validateToolbarLayout(items []*MacToolbarItem, requireCallbacks bool) error {
 	sidebarToggles := 0
 	trackingSeparators := 0
 	inspectorToggles := 0
 	inspectorTrackingSeparators := 0
+	identifiers := make(map[string]string)
 	var validate func([]*MacToolbarItem, string) error
 	validate = func(items []*MacToolbarItem, parent string) error {
 		for _, item := range items {
@@ -754,19 +1243,34 @@ func validateToolbarItems(items []*MacToolbarItem) error {
 			item.lock.RLock()
 			kind := item.kind
 			label := item.label
+			identifier := item.identifier
 			onClick := item.onClick
 			onSearch := item.onSearch
+			menu := item.menu
 			members := append([]*MacToolbarItem(nil), item.items...)
 			item.lock.RUnlock()
 
+			if kind != toolbarFlexibleSpace && kind != toolbarSpace &&
+				kind != toolbarSidebarToggle && kind != toolbarSidebarTrackingSeparator &&
+				kind != toolbarInspectorTrackingSeparator {
+				if previous, exists := identifiers[identifier]; exists {
+					return fmt.Errorf("toolbar items %q and %q share the persistence key %q", previous, label, identifier)
+				}
+				identifiers[identifier] = label
+			}
+
 			switch kind {
 			case toolbarButton:
-				if onClick == nil {
+				if requireCallbacks && onClick == nil {
 					return fmt.Errorf("toolbar button %q requires OnClick", label)
 				}
 			case toolbarSearchField:
-				if onSearch == nil {
+				if requireCallbacks && onSearch == nil {
 					return fmt.Errorf("toolbar search field %q requires OnSearch", label)
+				}
+			case toolbarMenu:
+				if menu == nil {
+					return fmt.Errorf("toolbar menu %q requires a Menu", label)
 				}
 			case toolbarGroup:
 				if len(members) == 0 {
@@ -777,7 +1281,7 @@ func validateToolbarItems(items []*MacToolbarItem) error {
 						return fmt.Errorf("toolbar group %q contains a nil member", label)
 					}
 					member.lock.RLock()
-					valid := member.kind == toolbarButton && member.onClick != nil
+					valid := member.kind == toolbarButton && (!requireCallbacks || member.onClick != nil)
 					member.lock.RUnlock()
 					if !valid {
 						return fmt.Errorf("toolbar group %q members must be buttons with OnClick", label)
@@ -786,7 +1290,7 @@ func validateToolbarItems(items []*MacToolbarItem) error {
 				if err := validate(members, label); err != nil {
 					return err
 				}
-			case toolbarShare, toolbarFlexibleSpace:
+			case toolbarShare, toolbarFlexibleSpace, toolbarSpace:
 			case toolbarSidebarToggle:
 				// AppKit owns the toggle's action, so no OnClick is required.
 				sidebarToggles++
@@ -903,10 +1407,15 @@ func handleToolbarItemClicked(itemID uint) {
 	}
 	item.lock.RLock()
 	callback := item.onClick
+	label := item.label
 	item.lock.RUnlock()
-	if callback != nil {
-		callback(newContext())
+	if callback == nil {
+		// Items added after attachment are installed before their callback
+		// is chained, so the missing callback is reported here instead.
+		item.toolbar.logError("toolbar button %q was clicked but has no OnClick", label)
+		return
 	}
+	callback(newContext())
 }
 
 func handleToolbarSearch(itemID uint, query string) {
@@ -917,10 +1426,13 @@ func handleToolbarSearch(itemID uint, query string) {
 	}
 	item.lock.RLock()
 	callback := item.onSearch
+	label := item.label
 	item.lock.RUnlock()
-	if callback != nil {
-		callback(newContext(), query)
+	if callback == nil {
+		item.toolbar.logError("toolbar search field %q was used but has no OnSearch", label)
+		return
 	}
+	callback(newContext(), query)
 }
 
 func handleToolbarShareResult(event toolbarShareEvent) {

@@ -20,18 +20,27 @@ type daymarkToolbar struct {
 	provider *daymarkShareProvider
 	save     *application.MacToolbarItem
 	focus    *application.MacToolbarItem
+	back     *application.MacToolbarItem
 
 	stateLock sync.Mutex
 	focused   bool
 	dirty     bool
 	subject   string
+	// history records the notes the user has visited so the navigational
+	// Back button can return to the previous one.
+	history []int
 }
 
 func newDaymarkToolbar(app *application.App, split *daymarkSplit) *daymarkToolbar {
 	result := &daymarkToolbar{
-		app:     app,
-		split:   split,
-		toolbar: application.NewMacToolbar().SetDisplayMode(application.MacToolbarDisplayModeIconOnly),
+		app:   app,
+		split: split,
+		// SetCustomizable enables the standard "Customize Toolbar..." sheet
+		// and stores the user's layout under this key. Every item below has a
+		// stable persistence key so the saved layout survives a relaunch.
+		toolbar: application.NewMacToolbar().
+			SetDisplayMode(application.MacToolbarDisplayModeIconOnly).
+			SetCustomizable("mac-toolbar.main"),
 		provider: newDaymarkPDFShareProvider(sharePayload{
 			Title:    "Saturday, slowly.",
 			Subtitle: "A good day has room around it.",
@@ -43,6 +52,7 @@ func newDaymarkToolbar(app *application.App, split *daymarkSplit) *daymarkToolba
 	result.addItems()
 	result.observeEditor()
 	result.observeNativePanes()
+	result.observeNavigation()
 	return result
 }
 
@@ -57,7 +67,23 @@ func (t *daymarkToolbar) addItems() {
 	// divider moves.
 	t.toolbar.AddSidebarToggle()
 
-	newNote := t.toolbar.AddButton("New").SetSymbol("square.and.pencil").SetBordered(true)
+	// A navigational item is pinned to the leading edge by AppKit, as the
+	// back and forward buttons are in Safari. Its low visibility priority
+	// makes it the first item to move into the overflow menu when the window
+	// narrows; the document actions matter more than history.
+	t.back = t.toolbar.AddButton("Back").
+		SetSymbol("chevron.backward").
+		SetTooltip("Show the previous note").
+		SetBordered(true).
+		SetPersistenceKey("back").
+		SetNavigational(true).
+		SetVisibilityPriority(application.MacToolbarVisibilityPriorityLow).
+		SetEnabled(false)
+	t.back.OnClick(func(*application.Context) {
+		t.goBack()
+	})
+
+	newNote := t.toolbar.AddButton("New").SetSymbol("square.and.pencil").SetBordered(true).SetPersistenceKey("new")
 	newNote.OnClick(func(*application.Context) {
 		t.split.NewNote()
 	})
@@ -67,14 +93,29 @@ func (t *daymarkToolbar) addItems() {
 
 	// Search belongs to the primary toolbar section. NSSearchToolbarItem is
 	// horizontally expandable; placing it in the sidebar section would allow
-	// it to outgrow that pane as the divider moves.
-	search := t.toolbar.AddSearch("Search notes").SetTooltip("Search your notes")
+	// it to outgrow that pane as the divider moves. Recent searches persist
+	// under the recents key and appear in the magnifier menu after a custom
+	// scope entry.
+	scope := application.NewMenu()
+	scope.Add("Clear Filter").OnClick(func(*application.Context) {
+		t.split.Filter("")
+	})
+	search := t.toolbar.AddSearch("Search notes").
+		SetTooltip("Search your notes").
+		SetPersistenceKey("search").
+		SetSearchPlaceholder("Search notes").
+		SetSearchRecentsKey("mac-toolbar.search.recents").
+		SetSearchMenu(scope)
 	search.OnSearch(func(_ *application.Context, query string) {
 		t.split.Filter(query)
 	})
 
+	// A fixed-width space keeps the search field from touching the mode
+	// switch when the toolbar is icon-only.
+	t.toolbar.AddSpace()
+
 	mode := t.toolbar.AddGroup("Mode", application.ToolbarGroupSelectOne)
-	mode.SetBordered(true)
+	mode.SetBordered(true).SetPersistenceKey("mode")
 	mode.AddButton("Write").SetSymbol("pencil").OnClick(func(*application.Context) {
 		mode.SetSelectedIndex(0)
 		t.app.Event.Emit("toolbar:mode", "write")
@@ -86,7 +127,35 @@ func (t *daymarkToolbar) addItems() {
 
 	t.toolbar.AddFlexibleSpace()
 
+	// A dropdown menu item collects the secondary actions. Its menu is the
+	// ordinary Menu model, so the entries fire MenuItem.OnClick and can also
+	// open the customisation sheet for this toolbar.
+	actions := application.NewMenu()
+	actions.Add("Save Note").OnClick(func(*application.Context) {
+		t.saveNote()
+	})
+	actions.Add("Toggle Focus").OnClick(func(*application.Context) {
+		t.toggleFocus()
+	})
+	actions.AddSeparator()
+	actions.Add("Toggle Sidebar").OnClick(func(*application.Context) {
+		t.split.ToggleSidebar()
+	})
+	actions.Add("Toggle Inspector").OnClick(func(*application.Context) {
+		t.split.ToggleInspector()
+	})
+	actions.AddSeparator()
+	actions.Add("Customize Toolbar...").OnClick(func(*application.Context) {
+		t.toolbar.RunCustomizationPalette()
+	})
+	t.toolbar.AddMenu("Actions", actions).
+		SetSymbol("ellipsis.circle").
+		SetTooltip("More actions").
+		SetBordered(true).
+		SetPersistenceKey("actions")
+
 	t.share = t.toolbar.AddShare("Share PDF")
+	t.share.SetPersistenceKey("share")
 	t.share.SetTooltip("Share the current note as a PDF")
 	t.share.SetBordered(true)
 	t.share.SetProvider(t.provider).SetSubject(t.subject).SetSuggestedName("Daymark Note")
@@ -103,7 +172,7 @@ func (t *daymarkToolbar) addItems() {
 	// Related document actions share one native glass group. AppKit owns the
 	// capsule, hit testing, highlighting, and Liquid Glass presentation.
 	documentActions := t.toolbar.AddGroup("Document", application.ToolbarGroupMomentary)
-	documentActions.SetBordered(true)
+	documentActions.SetBordered(true).SetPersistenceKey("document")
 	t.save = documentActions.AddButton("Save").SetSymbol("checkmark.circle").SetBordered(true).SetBadgeCount(0)
 	t.save.OnClick(func(*application.Context) {
 		t.saveNote()
@@ -143,6 +212,57 @@ func (t *daymarkToolbar) observeEditor() {
 		t.provider.update(note)
 		t.setShareSubject(note.Title)
 	})
+}
+
+// observeNavigation records every note the user visits so the Back button
+// can step through the history. The sidebar, the New button and Back itself
+// all emit the same selection event, so one observer covers every path.
+func (t *daymarkToolbar) observeNavigation() {
+	t.app.Event.On("sidebar:note-selected", func(event *application.CustomEvent) {
+		payload, ok := event.Data.(map[string]any)
+		if !ok {
+			return
+		}
+		index, ok := payload["index"].(int)
+		if !ok {
+			return
+		}
+		t.stateLock.Lock()
+		if len(t.history) == 0 || t.history[len(t.history)-1] != index {
+			t.history = append(t.history, index)
+		}
+		canGoBack := len(t.history) > 1
+		t.stateLock.Unlock()
+		t.back.SetEnabled(canGoBack)
+	})
+}
+
+func (t *daymarkToolbar) goBack() {
+	t.stateLock.Lock()
+	if len(t.history) < 2 {
+		t.stateLock.Unlock()
+		return
+	}
+	t.history = t.history[:len(t.history)-1]
+	index := t.history[len(t.history)-1]
+	canGoBack := len(t.history) > 1
+	t.stateLock.Unlock()
+	t.back.SetEnabled(canGoBack)
+	t.selectNote(index)
+}
+
+// selectNote makes index the active note in the sidebar and the editor.
+func (t *daymarkToolbar) selectNote(index int) {
+	t.split.stateLock.Lock()
+	if index < 0 || index >= len(t.split.items) {
+		t.split.stateLock.Unlock()
+		return
+	}
+	t.split.active = index
+	item := t.split.items[index]
+	t.split.stateLock.Unlock()
+	t.split.sidebar.SetSelectedItem(item)
+	t.split.emitActiveNote()
 }
 
 func (t *daymarkToolbar) saveNote() {
