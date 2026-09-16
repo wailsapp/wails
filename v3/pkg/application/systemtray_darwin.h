@@ -7,6 +7,9 @@
 @property (assign) NSStatusItem *statusItem;
 @property (assign) NSMenu *cachedMenu;
 @property (strong) id eventMonitor;
+// YES once the controller observes NSStatusItem.visible (see
+// systemTraySetRemovable); the observer is removed in systemTrayDestroy.
+@property BOOL observingVisibility;
 - (void)statusItemClicked:(id)sender;
 @end
 
@@ -34,3 +37,19 @@ void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset);
 // (typically a later NSEventTypeMouseMoved), so callers fall back to
 // [NSEvent pressedMouseButtons]. Exposed for regression testing (#5752).
 int systemTrayCoerceEventType(int rawEventType, unsigned long pressedMouseButtons);
+
+// Tooltip on the status item's button (NSButton.toolTip). NULL clears it.
+void systemTraySetTooltip(void* nsStatusItem, const char *tooltip);
+
+// SF Symbol icon (macOS 11+; ignored on older systems). pointSize 0 keeps
+// the status bar default; weight 0 keeps the default weight, otherwise it is
+// a MacSymbolWeight value (1 = ultraLight ... 9 = black).
+void systemTraySetSymbol(void* nsStatusItem, const char *symbolName, double pointSize, int weight, int position);
+
+// User removal (NSStatusItemBehaviorRemovalAllowed) and autosave name.
+// Installs a KVO observer on NSStatusItem.visible that reports changes to Go
+// through systrayVisibilityCallback.
+void systemTraySetRemovable(void* nsStatusItem, bool allowed, const char *autosaveName);
+
+// NSStatusItem.visible
+bool systemTrayIsVisible(void* nsStatusItem);

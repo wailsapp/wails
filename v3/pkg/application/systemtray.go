@@ -77,6 +77,59 @@ type systemTrayImpl interface {
 	Hide()
 }
 
+// systemTrayDarwinExtras is implemented by the macOS system tray only. The
+// cross-platform SystemTray methods type-assert it so systemTrayImpl stays
+// stable for the other platforms.
+type systemTrayDarwinExtras interface {
+	setSymbol(name string, pointSize float64, weight MacSymbolWeight)
+	setTooltip(tooltip string)
+	setRemovable(allowed bool, autosaveName string)
+	isVisible() bool
+}
+
+// MacSymbolWeight is the weight applied to an SF Symbol rendered in the
+// status bar (NSFontWeight). MacSymbolWeightUnspecified keeps the default.
+type MacSymbolWeight int
+
+const (
+	MacSymbolWeightUnspecified MacSymbolWeight = iota
+	MacSymbolWeightUltraLight
+	MacSymbolWeightThin
+	MacSymbolWeightLight
+	MacSymbolWeightRegular
+	MacSymbolWeightMedium
+	MacSymbolWeightSemibold
+	MacSymbolWeightBold
+	MacSymbolWeightHeavy
+	MacSymbolWeightBlack
+)
+
+// String returns the AppKit name of the weight.
+func (w MacSymbolWeight) String() string {
+	switch w {
+	case MacSymbolWeightUltraLight:
+		return "ultraLight"
+	case MacSymbolWeightThin:
+		return "thin"
+	case MacSymbolWeightLight:
+		return "light"
+	case MacSymbolWeightRegular:
+		return "regular"
+	case MacSymbolWeightMedium:
+		return "medium"
+	case MacSymbolWeightSemibold:
+		return "semibold"
+	case MacSymbolWeightBold:
+		return "bold"
+	case MacSymbolWeightHeavy:
+		return "heavy"
+	case MacSymbolWeightBlack:
+		return "black"
+	default:
+		return "unspecified"
+	}
+}
+
 type SystemTray struct {
 	id           uint
 	label        string
@@ -99,6 +152,17 @@ type SystemTray struct {
 	menu           *Menu
 	isTemplateIcon bool
 	attachedWindow WindowAttachConfig
+
+	// macOS extras (see SetSymbol, SetRemovable). The model is kept here so
+	// values set before Run are applied when the native item is created and
+	// so the state is observable on platforms without native support.
+	symbolName        string
+	symbolPointSize   float64
+	symbolWeight      MacSymbolWeight
+	removable         bool
+	autosaveName      string
+	hidden            bool
+	visibilityHandler func(visible bool)
 }
 
 func newSystemTray(id uint) *SystemTray {
@@ -285,8 +349,8 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 }
 
 func (s *SystemTray) SetTooltip(tooltip string) {
+	s.tooltip = tooltip
 	if s.impl == nil {
-		s.tooltip = tooltip
 		return
 	}
 	InvokeSync(func() {
@@ -336,6 +400,7 @@ func (s *SystemTray) OnMouseLeave(handler func()) *SystemTray {
 }
 
 func (s *SystemTray) Show() {
+	s.hidden = false
 	if s.impl == nil {
 		return
 	}
@@ -345,12 +410,136 @@ func (s *SystemTray) Show() {
 }
 
 func (s *SystemTray) Hide() {
+	s.hidden = true
 	if s.impl == nil {
 		return
 	}
 	InvokeSync(func() {
 		s.impl.Hide()
 	})
+}
+
+// SetVisible shows or hides the tray item. It is equivalent to Show and Hide.
+func (s *SystemTray) SetVisible(visible bool) {
+	if visible {
+		s.Show()
+		return
+	}
+	s.Hide()
+}
+
+// IsVisible reports whether the tray item is currently visible.
+//
+// On macOS this reads NSStatusItem.visible, so it is false after the user
+// drags a removable item out of the menu bar (see SetRemovable) or when a
+// removable item with an autosave name was removed in a previous session.
+// On other platforms it reflects the last Show/Hide call.
+func (s *SystemTray) IsVisible() bool {
+	if s.impl == nil {
+		return !s.hidden
+	}
+	extras, ok := s.impl.(systemTrayDarwinExtras)
+	if !ok {
+		return !s.hidden
+	}
+	return InvokeSyncWithResult(extras.isVisible)
+}
+
+// SetSymbol sets the tray icon to the SF Symbol with the given name, for
+// example "star.fill" or "cloud.sun". Symbols are rendered as template
+// images so they follow the menu bar appearance.
+//
+// macOS 11 or later only; it is ignored elsewhere and on older versions. The
+// symbol coexists with SetIcon, SetTemplateIcon and SetDarkModeIcon: the last
+// call wins. Optional sizing is applied with SetSymbolConfiguration.
+func (s *SystemTray) SetSymbol(name string) *SystemTray {
+	s.symbolName = name
+	if s.impl == nil {
+		return s
+	}
+	if extras, ok := s.impl.(systemTrayDarwinExtras); ok {
+		InvokeSync(func() {
+			extras.setSymbol(name, s.symbolPointSize, s.symbolWeight)
+		})
+	}
+	return s
+}
+
+// Symbol returns the SF Symbol name set with SetSymbol, or "" when none is set.
+func (s *SystemTray) Symbol() string {
+	return s.symbolName
+}
+
+// SetSymbolConfiguration sets the point size and weight used to render the
+// SF Symbol set with SetSymbol. A pointSize of 0 keeps the status bar default
+// and MacSymbolWeightUnspecified keeps the default weight.
+//
+// macOS 11 or later only; ignored elsewhere.
+func (s *SystemTray) SetSymbolConfiguration(pointSize float64, weight MacSymbolWeight) *SystemTray {
+	if pointSize < 0 {
+		pointSize = 0
+	}
+	s.symbolPointSize = pointSize
+	s.symbolWeight = weight
+	if s.impl == nil || s.symbolName == "" {
+		return s
+	}
+	if extras, ok := s.impl.(systemTrayDarwinExtras); ok {
+		InvokeSync(func() {
+			extras.setSymbol(s.symbolName, pointSize, weight)
+		})
+	}
+	return s
+}
+
+// SetRemovable controls whether the user may drag the tray item out of the
+// menu bar (Command-drag), the way built-in status items work. autosaveName
+// is the key under which macOS remembers the item's position and whether it
+// was removed; it must be a non-empty, stable string when allowed is true so
+// the item stays removed across launches. Pass an empty name to keep the
+// default (an automatic name is used, which does not survive relaunch).
+//
+// A removed item can be brought back with Show or SetVisible(true). Use
+// OnVisibilityChange to react when the user removes it.
+//
+// macOS only; the flag is stored but has no effect elsewhere.
+func (s *SystemTray) SetRemovable(allowed bool, autosaveName string) *SystemTray {
+	s.removable = allowed
+	s.autosaveName = autosaveName
+	if s.impl == nil {
+		return s
+	}
+	if extras, ok := s.impl.(systemTrayDarwinExtras); ok {
+		InvokeSync(func() {
+			extras.setRemovable(allowed, autosaveName)
+		})
+	}
+	return s
+}
+
+// IsRemovable reports whether SetRemovable allowed user removal.
+func (s *SystemTray) IsRemovable() bool {
+	return s.removable
+}
+
+// AutosaveName returns the autosave name set with SetRemovable.
+func (s *SystemTray) AutosaveName() string {
+	return s.autosaveName
+}
+
+// OnVisibilityChange registers a handler called when the tray item's
+// visibility changes, including when the user removes a removable item from
+// the menu bar or the item is shown or hidden programmatically.
+//
+// macOS only; the handler is never called elsewhere.
+func (s *SystemTray) OnVisibilityChange(handler func(visible bool)) *SystemTray {
+	s.visibilityHandler = handler
+	return s
+}
+
+// Tooltip returns the tooltip set with SetTooltip.
+func (s *SystemTray) Tooltip() string {
+	return s.tooltip
 }
 
 type WindowAttachConfig struct {
