@@ -90,7 +90,11 @@ func (w *NativeWindow) Run() {
 	w.lock.Unlock()
 	if err := impl.run(); err != nil {
 		w.Error("NativeWindow.Run: %s", err)
+		return
 	}
+	// Accessories added before the native window existed are attached once
+	// the scheduled creation has run.
+	w.flushPendingMacAccessories()
 }
 
 func (w *NativeWindow) Show() *NativeWindow {

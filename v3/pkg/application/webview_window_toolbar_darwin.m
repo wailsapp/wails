@@ -202,7 +202,7 @@ static void applyCommonItemStyle(NSToolbarItem* item, const char* tooltip,
     if (@available(macOS 10.15, *)) {
         item.bordered = bordered;
     }
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
     if (@available(macOS 26.0, *)) {
         item.style = prominent ? NSToolbarItemStyleProminent : NSToolbarItemStylePlain;
         item.backgroundTintColor = hasTint
@@ -1100,7 +1100,7 @@ void toolbarItemSetBordered(void* handlePtr, const char* identifier, bool border
 }
 
 void toolbarItemSetProminent(void* handlePtr, const char* identifier, bool prominent) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
     NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
     if (@available(macOS 26.0, *)) {
         if (item != nil) item.style = prominent ? NSToolbarItemStyleProminent : NSToolbarItemStylePlain;
@@ -1110,7 +1110,7 @@ void toolbarItemSetProminent(void* handlePtr, const char* identifier, bool promi
 
 void toolbarItemSetTintColor(void* handlePtr, const char* identifier, bool hasTint,
     double tintR, double tintG, double tintB, double tintA) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
     NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
     if (@available(macOS 26.0, *)) {
         if (item != nil) {
@@ -1140,7 +1140,7 @@ void toolbarItemSetHidden(void* handlePtr, const char* identifier, bool hidden) 
 }
 
 void toolbarItemSetBadgeCount(void* handlePtr, const char* identifier, int badgeCount) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
     NSToolbarItem* item = toolbarItemForIdentifier(handlePtr, identifier);
     if (@available(macOS 26.0, *)) {
         if (item != nil) item.badge = badgeCount > 0 ? [NSItemBadge badgeWithCount:badgeCount] : nil;

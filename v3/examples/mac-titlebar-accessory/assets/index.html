@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Postbox</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --line: color-mix(in srgb, CanvasText 12%, transparent);
+      --muted: color-mix(in srgb, CanvasText 55%, transparent);
+      --accent: #2f6fed;
+    }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font: 13px/1.45 -apple-system, "SF Pro Text", system-ui, sans-serif;
+      background: Canvas;
+      color: CanvasText;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    header {
+      padding: 14px 18px 8px;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    header small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+    ul { list-style: none; margin: 0; padding: 0 8px 16px; }
+    li {
+      display: grid;
+      grid-template-columns: 10px 1fr auto;
+      gap: 10px;
+      align-items: baseline;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    li .dot { width: 8px; height: 8px; border-radius: 50%; background: transparent; align-self: center; }
+    li.unread .dot { background: var(--accent); }
+    li .sender { font-weight: 600; }
+    li.unread .sender { color: var(--accent); }
+    li .subject { color: var(--muted); }
+    li .subject .star { color: #e8a800; margin-left: 4px; }
+    li .when { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .empty { padding: 40px 18px; color: var(--muted); text-align: center; }
+  </style>
+</head>
+<body>
+  <header>Postbox<small id="caption">Native titlebar controls drive this list</small></header>
+  <ul id="list"></ul>
+  <script type="module">
+    import { Events } from '/wails/runtime.js';
+
+    const list = document.getElementById('list');
+    const caption = document.getElementById('caption');
+
+    function when(minutes) {
+      if (minutes < 1) return 'now';
+      if (minutes < 60) return `${minutes}m`;
+      if (minutes < 1440) return `${Math.round(minutes / 60)}h`;
+      return `${Math.round(minutes / 1440)}d`;
+    }
+
+    function render(state) {
+      caption.textContent = `${state.folder} · filtered and sorted by the native accessories`;
+      list.replaceChildren();
+      if (!state.messages.length) {
+        const empty = document.createElement('li');
+        empty.className = 'empty';
+        empty.textContent = 'Nothing here';
+        list.append(empty);
+        return;
+      }
+      for (const item of state.messages) {
+        const row = document.createElement('li');
+        row.className = item.unread ? 'unread' : '';
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        const body = document.createElement('span');
+        const sender = document.createElement('span');
+        sender.className = 'sender';
+        sender.textContent = item.sender;
+        const subject = document.createElement('span');
+        subject.className = 'subject';
+        subject.textContent = ` · ${item.subject}`;
+        if (item.starred) {
+          const star = document.createElement('span');
+          star.className = 'star';
+          star.textContent = '★';
+          subject.append(star);
+        }
+        body.append(sender, subject);
+        const time = document.createElement('span');
+        time.className = 'when';
+        time.textContent = when(item.minutes);
+        row.append(dot, body, time);
+        list.append(row);
+      }
+    }
+
+    Events.On('mail:state', (event) => {
+      try { render(JSON.parse(event.data)); } catch (error) { console.error(error); }
+    });
+    Events.Emit('mail:ready');
+  </script>
+</body>
+</html>

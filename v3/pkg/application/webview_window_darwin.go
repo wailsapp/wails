@@ -1716,6 +1716,9 @@ func (w *macosWebviewWindow) run() {
 				w.parent.Error("SetToolbar: %s", err)
 			}
 		}
+		// Titlebar and pane accessories added before the native window existed
+		// are attached now that the window, split view, and toolbar exist.
+		w.flushPendingMacAccessories()
 
 		if macOptions.Appearance != "" {
 			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
