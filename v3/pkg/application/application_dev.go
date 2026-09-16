@@ -3,15 +3,27 @@
 package application
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver"
+	"github.com/wailsapp/wails/v3/internal/devruntime"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 var devMode = false
 
 func (a *App) preRun() error {
+	if os.Getenv(devruntime.TokenEnv) != "" {
+		a.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(*ApplicationEvent) {
+			// Tray-only applications have no webview handshake to wait for.
+			if len(a.Window.GetAll()) == 0 {
+				devruntime.Notify()
+			}
+		})
+	}
 	// Check for frontend server url
 	frontendURL := assetserver.GetDevServerURL()
 	if frontendURL != "" {
@@ -21,9 +33,19 @@ func (a *App) preRun() error {
 		// still not available, we return an error.
 		// This is to allow the frontend server to start up before the backend server.
 		client := http.Client{}
+		experimentalDev := os.Getenv(devruntime.TokenEnv) != ""
+		if experimentalDev {
+			client.Timeout = 3 * time.Second
+		}
 		a.Logger.Info("Waiting for frontend dev server to start...", "url", frontendURL)
 		for i := 0; i < 10; i++ {
-			_, err := client.Get(frontendURL)
+			response, err := client.Get(frontendURL)
+			if response != nil {
+				response.Body.Close()
+			}
+			if err != nil && experimentalDev {
+				fmt.Fprintf(os.Stderr, "Wails frontend readiness: %v\n", err)
+			}
 			if err == nil {
 				a.Logger.Info("Connected to frontend dev server!")
 				return nil

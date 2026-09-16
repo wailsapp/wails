@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/x/ansi"
 	"github.com/wailsapp/wails/v3/internal/report"
 )
 
@@ -448,7 +449,7 @@ func (r *Reporter) writeFailuresLocked() {
 // transformations preserve visible width, so the box math below is
 // unaffected.
 func (r *Reporter) writePanelLocked(name string, f report.Failure) {
-	const labelW = 9 // "command  ", "status   ", "error    "
+	const labelW = 9 // "command  "
 	cwd, _ := osGetwd()
 	var body strings.Builder
 	if f.Command != "" {
@@ -456,17 +457,13 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 			r.s.bold(r.s.fg(Failure, padRight("command", labelW))),
 			f.Command)
 	}
-	// Skip the "status exited N" body row when there's an exit code — the
-	// panel header carries the "exit N" badge already, and repeating it in
-	// the body just adds chrome. Keep the "error" row when there's an err
-	// because the body needs to carry the error *message*, not just its
-	// type.
-	if f.ExitCode == 0 && f.Err != nil {
-		fmt.Fprintf(&body, "%s %s\n",
-			r.s.bold(r.s.fg(Failure, padRight("error", labelW))),
-			f.Err.Error())
-	}
+	// Only omit a bare exit status when captured output already explains it.
+	// Wrapped native errors may carry the entire diagnostic in Err instead.
 	out := strings.TrimRight(f.Output, "\n")
+	if f.Err != nil && (strings.TrimSpace(out) == "" || f.ExitCode <= 0 || f.Err.Error() != fmt.Sprintf("exit status %d", f.ExitCode)) {
+		body.WriteString(f.Err.Error())
+		body.WriteByte('\n')
+	}
 	if out != "" {
 		body.WriteString("\n")
 		body.WriteString(tailLines(out, 20))
@@ -500,7 +497,7 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 	// carries the headline in one line instead of two.
 	badge := ""
 	badgeW := 0
-	if f.ExitCode != 0 {
+	if f.ExitCode > 0 {
 		s := fmt.Sprintf("exit %d", f.ExitCode)
 		badge = r.s.bold(r.s.fg(Failure, s))
 		badgeW = visibleWidth(s)
@@ -516,35 +513,34 @@ func (r *Reporter) writePanelLocked(name string, f report.Failure) {
 	// Visible: 5 + nameW + ruleLeft + 1 + badgeW + 2 = inner + 4
 	// So: ruleLeft = inner - nameW - badgeW - 4
 	var top string
+	border := func(text string) string { return r.s.fg(Failure, text) }
 	if badgeW > 0 {
 		ruleLeft := inner - visibleWidth(name) - badgeW - 4
 		if ruleLeft < 1 {
 			ruleLeft = 1
 		}
-		top = "╭─ " + r.s.bold(r.s.fg(Failure, name)) + " " +
-			strings.Repeat("─", ruleLeft) + " " + badge + " ─╮"
+		top = border("╭─ ") + r.s.bold(r.s.fg(Failure, name)) +
+			border(" "+strings.Repeat("─", ruleLeft)+" ") + badge + border(" ─╮")
 	} else {
 		rule := inner - 1 - visibleWidth(name)
 		if rule < 1 {
 			rule = 1
 		}
-		top = "╭─ " + r.s.bold(r.s.fg(Failure, name)) + " " +
-			strings.Repeat("─", rule) + "╮"
+		top = border("╭─ ") + r.s.bold(r.s.fg(Failure, name)) +
+			border(" "+strings.Repeat("─", rule)+"╮")
 	}
 	bot := "╰" + strings.Repeat("─", inner+2) + "╯"
 
-	fmt.Fprintf(r.w, "  %s\n", r.s.fg(Failure, top))
+	fmt.Fprintf(r.w, "  %s\n", top)
 	for _, ln := range bodyLines {
-		// Body lines past the available inner width get truncated with an
-		// ellipsis — wrapping a compile-error line at a panel boundary tends
-		// to mangle the file:line:col pattern that the reader actually cares
-		// about, so we'd rather show "…" than break the column.
-		clipped := truncate(ln, inner)
-		padded := padRight(clipped, inner)
-		fmt.Fprintf(r.w, "  %s %s %s\n",
-			r.s.fg(Failure, "│"),
-			padded,
-			r.s.fg(Failure, "│"))
+		// Long paths often precede the actionable diagnostic. Preserve it by
+		// wrapping rather than truncating; ANSI styles and links stay intact.
+		for _, line := range strings.Split(ansi.Wrap(ln, inner, ""), "\n") {
+			fmt.Fprintf(r.w, "  %s %s %s\n",
+				r.s.fg(Failure, "│"),
+				padRight(line, inner),
+				r.s.fg(Failure, "│"))
+		}
 	}
 	fmt.Fprintf(r.w, "  %s\n", r.s.fg(Failure, bot))
 }

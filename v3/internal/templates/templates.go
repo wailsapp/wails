@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/s"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -19,8 +20,8 @@ import (
 	"errors"
 
 	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/debug"
+	"github.com/wailsapp/wails/v3/internal/git"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
@@ -460,49 +461,49 @@ func Install(options *flags.Init) error {
 	case sourceLocal, sourceRemote:
 		publisher := fmt.Sprintf("CN=%s", options.ProductCompany)
 		data := struct {
-		TemplateOptions
-		Dir                   string
-		Name                  string
-		BinaryName            string
-		ProductName           string
-		ProductDescription    string
-		ProductVersion        string
-		ProductCompany        string
-		ProductCopyright      string
-		ProductComments       string
-		ProductIdentifier     string
-		Publisher             string
-		ProcessorArchitecture string
-		ExecutableName        string
-		ExecutablePath        string
-		OutputPath            string
-		CertificatePath       string
-		FileAssociations      []FileAssociation
-		Protocols             []ProtocolConfig
-		Silent                bool
-		Typescript            bool
-	}{
-		Name:                  options.ProjectName,
-		BinaryName:            NormalizeBinaryName(options.ProjectName),
-		Silent:                true,
-		ProductCompany:        options.ProductCompany,
-		ProductName:           options.ProductName,
-		ProductDescription:    options.ProductDescription,
-		ProductVersion:        options.ProductVersion,
-		ProductIdentifier:     options.ProductIdentifier,
-		ProductCopyright:      options.ProductCopyright,
-		ProductComments:       options.ProductComments,
-		Publisher:             publisher,
-		ProcessorArchitecture: "x64",
-		ExecutableName:        options.ProjectName,
-		ExecutablePath:        options.ProjectName,
-		OutputPath:            fmt.Sprintf("%s.msix", options.ProjectName),
-		CertificatePath:       "",
-		FileAssociations:      []FileAssociation{},
-		Protocols:             []ProtocolConfig{},
-		Typescript:            templateData.UseTypescript,
-		TemplateOptions:       templateData,
-	}
+			TemplateOptions
+			Dir                   string
+			Name                  string
+			BinaryName            string
+			ProductName           string
+			ProductDescription    string
+			ProductVersion        string
+			ProductCompany        string
+			ProductCopyright      string
+			ProductComments       string
+			ProductIdentifier     string
+			Publisher             string
+			ProcessorArchitecture string
+			ExecutableName        string
+			ExecutablePath        string
+			OutputPath            string
+			CertificatePath       string
+			FileAssociations      []FileAssociation
+			Protocols             []ProtocolConfig
+			Silent                bool
+			Typescript            bool
+		}{
+			Name:                  options.ProjectName,
+			BinaryName:            NormalizeBinaryName(options.ProjectName),
+			Silent:                true,
+			ProductCompany:        options.ProductCompany,
+			ProductName:           options.ProductName,
+			ProductDescription:    options.ProductDescription,
+			ProductVersion:        options.ProductVersion,
+			ProductIdentifier:     options.ProductIdentifier,
+			ProductCopyright:      options.ProductCopyright,
+			ProductComments:       options.ProductComments,
+			Publisher:             publisher,
+			ProcessorArchitecture: "x64",
+			ExecutableName:        options.ProjectName,
+			ExecutablePath:        options.ProjectName,
+			OutputPath:            fmt.Sprintf("%s.msix", options.ProjectName),
+			CertificatePath:       "",
+			FileAssociations:      []FileAssociation{},
+			Protocols:             []ProtocolConfig{},
+			Typescript:            templateData.UseTypescript,
+			TemplateOptions:       templateData,
+		}
 		// If options.ProjectDir does not exist, create it
 		if _, err := os.Stat(options.ProjectDir); os.IsNotExist(err) {
 			err = os.Mkdir(options.ProjectDir, 0755)
@@ -517,6 +518,30 @@ func Install(options *flags.Init) error {
 
 		if template.tempDir != "" {
 			s.RMDIR(template.tempDir)
+		}
+	}
+	if !features.WakeEnabled() {
+		// Local templates generated under the experiment also need a legacy
+		// entry point. Never replace a template author's existing Taskfile.
+		hasTaskfile := false
+		for _, name := range []string{"Taskfile.yml", "Taskfile.yaml", "Taskfile.dist.yml", "Taskfile.dist.yaml"} {
+			_, err := os.Stat(filepath.Join(options.ProjectDir, name))
+			if err == nil {
+				hasTaskfile = true
+				break
+			}
+			if !os.IsNotExist(err) {
+				return err
+			}
+		}
+		if !hasTaskfile {
+			legacy, err := fs.Sub(templates, "_legacy")
+			if err != nil {
+				return err
+			}
+			if err := gosod.New(legacy).Extract(options.ProjectDir, templateData); err != nil {
+				return err
+			}
 		}
 	}
 	if !options.SkipGoModTidy {
@@ -556,7 +581,7 @@ func GenerateTemplate(options *BaseTemplate) error {
 		return err
 	}
 
-	// Copy the common files (Go backend, Taskfile, go.mod, etc.) verbatim.
+	// Copy the common files (Go backend, module metadata, etc.) verbatim.
 	// These files contain template variables like {{.ProjectName}} that must be
 	// preserved so they are expanded when users later run `wails init -t <template>`.
 	commonFS, err := fs.Sub(templates, "_common")
@@ -565,6 +590,16 @@ func GenerateTemplate(options *BaseTemplate) error {
 	}
 	if err = os.CopyFS(outDir, commonFS); err != nil {
 		return err
+	}
+
+	if !features.WakeEnabled() {
+		legacy, err := fs.Sub(templates, "_legacy")
+		if err != nil {
+			return err
+		}
+		if err := os.CopyFS(outDir, legacy); err != nil {
+			return err
+		}
 	}
 
 	// Replace the placeholder frontend directory with the real frontend content.

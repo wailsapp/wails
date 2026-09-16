@@ -1162,3 +1162,16 @@ func getMimeTypeForPath(path string) string {
 func endsWith(s, suffix string) bool {
 	return len(s) >= len(suffix) && s[len(s)-len(suffix):] == suffix
 }
+
+//export Java_com_wails_app_WailsBridge_nativeConfigureDev
+func Java_com_wails_app_WailsBridge_nativeConfigureDev(env *C.JNIEnv, obj C.jobject, url, ready, token C.jstring) {
+	convert := func(value C.jstring) string {
+		p := C.jstringToC(env, value)
+		if p == nil {
+			return ""
+		}
+		defer C.releaseJString(env, value, p)
+		return C.GoString(p)
+	}
+	configureDevRuntime(convert(url), convert(ready), convert(token))
+}

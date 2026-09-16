@@ -393,6 +393,7 @@ export default defineConfig({
             { label: "Dialogs", link: "/reference/dialogs" },
             { label: "Frontend Runtime", link: "/reference/frontend-runtime" },
             { label: "CLI", link: "/reference/cli" },
+            { label: "YAML Run", link: "/reference/wails-yaml-run" },
             { label: "Update Manifest Protocol", link: "/reference/update-manifest" },
           ],
         },

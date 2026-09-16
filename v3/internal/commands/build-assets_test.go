@@ -373,38 +373,38 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	tests := []struct {
-		name                string
-		createAssetsCar     bool
-		configIconName      string
-		expectedIconName    string
+		name                  string
+		createAssetsCar       bool
+		configIconName        string
+		expectedIconName      string
 		expectIconNameInPlist bool
 	}{
 		{
-			name:                "Assets.car exists, no config - should default to appicon",
-			createAssetsCar:     true,
-			configIconName:      "",
-			expectedIconName:    "appicon",
+			name:                  "Assets.car exists, no config - should default to appicon",
+			createAssetsCar:       true,
+			configIconName:        "",
+			expectedIconName:      "appicon",
 			expectIconNameInPlist: true,
 		},
 		{
-			name:                "Assets.car exists, config set - should use config",
-			createAssetsCar:     true,
-			configIconName:      "custom-icon",
-			expectedIconName:    "custom-icon",
+			name:                  "Assets.car exists, config set - should use config",
+			createAssetsCar:       true,
+			configIconName:        "custom-icon",
+			expectedIconName:      "custom-icon",
 			expectIconNameInPlist: true,
 		},
 		{
-			name:                "No Assets.car, no config - should not set",
-			createAssetsCar:     false,
-			configIconName:      "",
-			expectedIconName:    "",
+			name:                  "No Assets.car, no config - should not set",
+			createAssetsCar:       false,
+			configIconName:        "",
+			expectedIconName:      "",
 			expectIconNameInPlist: false,
 		},
 		{
-			name:                "No Assets.car, config set - should use config",
-			createAssetsCar:     false,
-			configIconName:      "config-icon",
-			expectedIconName:    "config-icon",
+			name:                  "No Assets.car, config set - should use config",
+			createAssetsCar:       false,
+			configIconName:        "config-icon",
+			expectedIconName:      "config-icon",
 			expectIconNameInPlist: true,
 		},
 	}
@@ -469,14 +469,14 @@ func TestCFBundleIconNameDetection(t *testing.T) {
 
 			options := &UpdateBuildAssetsOptions{
 				Dir:               buildDir,
-				Name:               "TestApp",
-				ProductName:        "Test App",
-				ProductVersion:     "1.0.0",
-				ProductCompany:     "Test Company",
-				ProductIdentifier:  "com.test.app",
-				CFBundleIconName:   tt.configIconName,
-				Config:             configFile,
-				Silent:             true,
+				Name:              "TestApp",
+				ProductName:       "Test App",
+				ProductVersion:    "1.0.0",
+				ProductCompany:    "Test Company",
+				ProductIdentifier: "com.test.app",
+				CFBundleIconName:  tt.configIconName,
+				Config:            configFile,
+				Silent:            true,
 			}
 
 			err = UpdateBuildAssets(options)
@@ -848,7 +848,7 @@ func TestPreserveOriginallyEmptyContainers(t *testing.T) {
 			name: "map with mixed content keeps real values and drops templates",
 			input: map[string]any{
 				"MixedMap": map[string]any{
-					"RealKey":    "RealValue",
+					"RealKey":     "RealValue",
 					"TemplateKey": "{{.Ext}}",
 				},
 			},
@@ -879,13 +879,13 @@ func TestPreserveOriginallyEmptyContainers(t *testing.T) {
 			name: "nested originally empty containers are preserved",
 			input: map[string]any{
 				"Outer": map[string]any{
-					"InnerMap":  map[string]any{},
+					"InnerMap":   map[string]any{},
 					"InnerArray": []any{},
 				},
 			},
 			expected: map[string]any{
 				"Outer": map[string]any{
-					"InnerMap":  map[string]any{},
+					"InnerMap":   map[string]any{},
 					"InnerArray": []any{},
 				},
 			},

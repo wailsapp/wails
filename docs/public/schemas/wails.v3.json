@@ -1,0 +1,1299 @@
+{
+  "$id": "https://v3.wails.io/schemas/wails.v3.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Declarative build configuration for Wails v3 projects.",
+  "properties": {
+    "android": {
+      "additionalProperties": false,
+      "properties": {
+        "application_id": {
+          "description": "Android application identifier.",
+          "type": "string"
+        },
+        "comments": {
+          "description": "Additional package metadata comments.",
+          "type": "string"
+        },
+        "company": {
+          "description": "Company or organisation name.",
+          "type": "string"
+        },
+        "display_name": {
+          "description": "Name displayed by the mobile platform.",
+          "type": "string"
+        },
+        "icon": {
+          "description": "Project-relative user-owned icon file.",
+          "type": "string"
+        },
+        "manifest": {
+          "description": "Project-relative user-owned platform or package manifest.",
+          "type": "string"
+        },
+        "minimum_sdk": {
+          "description": "Minimum supported Android SDK level.",
+          "type": "integer"
+        },
+        "signing": {
+          "additionalProperties": false,
+          "properties": {
+            "certificate": {
+              "description": "Project-relative signing certificate file.",
+              "type": "string"
+            },
+            "credential": {
+              "description": "Named external credential reference; never secret material.",
+              "type": "string"
+            },
+            "entitlements": {
+              "description": "Project-relative Apple entitlements file.",
+              "type": "string"
+            },
+            "identity": {
+              "description": "Signing identity selected through the platform toolchain.",
+              "type": "string"
+            },
+            "key_alias": {
+              "description": "Alias of the Android signing key.",
+              "type": "string"
+            },
+            "provisioning_profile": {
+              "description": "Project-relative Apple provisioning profile.",
+              "type": "string"
+            },
+            "thumbprint": {
+              "description": "Windows certificate thumbprint.",
+              "type": "string"
+            },
+            "timestamp_server": {
+              "description": "URL of the signing timestamp service.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "target_sdk": {
+          "description": "Android SDK level targeted by the application.",
+          "type": "integer"
+        },
+        "version_code": {
+          "description": "Monotonic Android release number.",
+          "type": "integer"
+        },
+        "version_name": {
+          "description": "Human-readable Android release version.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "build": {
+      "additionalProperties": false,
+      "properties": {
+        "compiler_flags": {
+          "default": [],
+          "description": "Additional Go compiler flags.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "environment": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "description": "Environment variables added to this operation.",
+          "type": "object"
+        },
+        "garble_args": {
+          "default": [],
+          "description": "Additional arguments passed to garble.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "ldflags": {
+          "default": [],
+          "description": "Additional Go linker flags.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "obfuscated": {
+          "default": false,
+          "description": "Obfuscate Go code with garble.",
+          "type": "boolean"
+        },
+        "output": {
+          "default": "bin",
+          "description": "Project-relative output directory.",
+          "type": "string"
+        },
+        "strip": {
+          "default": true,
+          "description": "Strip debug information from production binaries.",
+          "type": "boolean"
+        },
+        "tags": {
+          "default": [],
+          "description": "Additional Go build tags.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "trim_path": {
+          "default": true,
+          "description": "Remove local filesystem paths from production binaries.",
+          "type": "boolean"
+        },
+        "vcs_info": {
+          "default": false,
+          "description": "Embed version-control metadata in the Go binary.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "darwin": {
+      "additionalProperties": false,
+      "properties": {
+        "assets_car": {
+          "description": "User-owned compiled Apple asset catalogue.",
+          "type": "string"
+        },
+        "build_number": {
+          "description": "Platform build number.",
+          "type": "integer"
+        },
+        "capabilities": {
+          "description": "Native platform capabilities requested by the application.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "cf_bundle_icon_name": {
+          "description": "Apple asset-catalogue icon set name.",
+          "type": "string"
+        },
+        "icon": {
+          "description": "Project-relative user-owned icon file.",
+          "type": "string"
+        },
+        "identifier": {
+          "description": "Reverse-domain application identifier.",
+          "type": "string"
+        },
+        "info_plist": {
+          "description": "User-owned Apple Info.plist file.",
+          "type": "string"
+        },
+        "minimum_version": {
+          "description": "Minimum supported operating-system version.",
+          "type": "string"
+        },
+        "notarization": {
+          "additionalProperties": false,
+          "properties": {
+            "credential": {
+              "description": "Named external credential reference; never secret material.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "product_name": {
+          "description": "Human-readable product name.",
+          "type": "string"
+        },
+        "signing": {
+          "additionalProperties": false,
+          "properties": {
+            "certificate": {
+              "description": "Project-relative signing certificate file.",
+              "type": "string"
+            },
+            "credential": {
+              "description": "Named external credential reference; never secret material.",
+              "type": "string"
+            },
+            "entitlements": {
+              "description": "Project-relative Apple entitlements file.",
+              "type": "string"
+            },
+            "identity": {
+              "description": "Signing identity selected through the platform toolchain.",
+              "type": "string"
+            },
+            "key_alias": {
+              "description": "Alias of the Android signing key.",
+              "type": "string"
+            },
+            "provisioning_profile": {
+              "description": "Project-relative Apple provisioning profile.",
+              "type": "string"
+            },
+            "thumbprint": {
+              "description": "Windows certificate thumbprint.",
+              "type": "string"
+            },
+            "timestamp_server": {
+              "description": "URL of the signing timestamp service.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "dev": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "description": "Development application arguments passed without shell expansion; supported on desktop and iOS. Android requires an empty list.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "debounce_ms": {
+          "default": 250,
+          "description": "Delay used to coalesce development file changes.",
+          "type": "integer"
+        },
+        "exclude": {
+          "default": [
+            ".git",
+            ".wails",
+            "bin",
+            "node_modules",
+            "frontend/dist"
+          ],
+          "description": "Development watcher exclusion patterns.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "grace_period_ms": {
+          "default": 1500,
+          "description": "Time allowed for a development process to stop cleanly.",
+          "type": "integer"
+        },
+        "log_level": {
+          "default": "warn",
+          "description": "Development log verbosity.",
+          "type": "string"
+        },
+        "tags": {
+          "default": [],
+          "description": "Additional Go build tags.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "use_git_ignore": {
+          "default": true,
+          "description": "Apply .gitignore rules to the development watcher.",
+          "type": "boolean"
+        },
+        "watch": {
+          "default": [
+            "**/*.go",
+            "wails.yaml"
+          ],
+          "description": "Development watcher inclusion patterns.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "file_associations": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "description": "Human-readable description.",
+            "type": "string"
+          },
+          "extensions": {
+            "description": "File extensions handled by the application.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "icon": {
+            "description": "Project-relative user-owned icon file.",
+            "type": "string"
+          },
+          "mime_type": {
+            "description": "MIME type registered for a file association.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Stable project or registration name.",
+            "type": "string"
+          },
+          "platforms": {
+            "description": "Platforms receiving this registration.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "role": {
+            "description": "Application role for a file association.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "extensions"
+        ],
+        "type": "object"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "type": "object"
+    },
+    "frontend": {
+      "additionalProperties": false,
+      "properties": {
+        "bindings": {
+          "additionalProperties": false,
+          "properties": {
+            "index_filename": {
+              "default": "index",
+              "description": "Base filename for generated binding exports.",
+              "type": "string"
+            },
+            "interfaces": {
+              "default": true,
+              "description": "Generate TypeScript interfaces instead of classes where supported.",
+              "type": "boolean"
+            },
+            "models_filename": {
+              "default": "models",
+              "description": "Base filename for generated binding models.",
+              "type": "string"
+            },
+            "output": {
+              "default": "bindings",
+              "description": "Project-relative output directory.",
+              "type": "string"
+            },
+            "time_type": {
+              "default": "string",
+              "description": "TypeScript representation of Go time values.",
+              "type": "string"
+            },
+            "typescript": {
+              "default": true,
+              "description": "Generate TypeScript bindings.",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "build": {
+          "default": [
+            "npm",
+            "run",
+            "build"
+          ],
+          "description": "Frontend production build command and arguments.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "dev": {
+          "default": [
+            "npm",
+            "run",
+            "dev"
+          ],
+          "description": "Frontend development-server command and arguments.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "directory": {
+          "default": "frontend",
+          "description": "Project-relative frontend source directory.",
+          "type": "string"
+        },
+        "disabled": {
+          "default": false,
+          "description": "Disable frontend dependency installation, binding generation and frontend building for Go-only projects.",
+          "type": "boolean"
+        },
+        "environment": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "description": "Environment variables added to this operation.",
+          "type": "object"
+        },
+        "install": {
+          "default": [
+            "npm",
+            "install"
+          ],
+          "description": "Frontend dependency installation command and arguments.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "output": {
+          "default": "dist",
+          "description": "Project-relative output directory.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "hooks": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "cache": {
+            "default": false,
+            "description": "Allow this hook to use the artifact cache; complete inputs and outputs are required.",
+            "type": "boolean"
+          },
+          "directory": {
+            "description": "Project-relative working directory used to invoke the hook.",
+            "type": "string"
+          },
+          "inputs": {
+            "default": [],
+            "description": "Project-relative files or directories that determine a cached hook result.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "outputs": {
+            "default": [],
+            "description": "Project-relative files or directories produced completely by a cached hook.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "script": {
+            "description": "Project-relative executable script invoked directly without a shell command string.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "script"
+        ],
+        "type": "object"
+      },
+      "propertyNames": {
+        "enum": [
+          "before_build",
+          "after_build",
+          "before_package",
+          "after_package",
+          "before_sign",
+          "after_sign"
+        ]
+      },
+      "type": "object"
+    },
+    "ios": {
+      "additionalProperties": false,
+      "properties": {
+        "assets_car": {
+          "description": "User-owned compiled Apple asset catalogue.",
+          "type": "string"
+        },
+        "background_modes": {
+          "description": "iOS background execution modes.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "build_number": {
+          "description": "Platform build number.",
+          "type": "integer"
+        },
+        "bundle_id": {
+          "description": "iOS bundle identifier.",
+          "type": "string"
+        },
+        "capabilities": {
+          "description": "Native platform capabilities requested by the application.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "cf_bundle_icon_name": {
+          "description": "Apple asset-catalogue icon set name.",
+          "type": "string"
+        },
+        "comments": {
+          "description": "Additional package metadata comments.",
+          "type": "string"
+        },
+        "company": {
+          "description": "Company or organisation name.",
+          "type": "string"
+        },
+        "display_name": {
+          "description": "Name displayed by the mobile platform.",
+          "type": "string"
+        },
+        "icon": {
+          "description": "Project-relative user-owned icon file.",
+          "type": "string"
+        },
+        "info_plist": {
+          "description": "User-owned Apple Info.plist file.",
+          "type": "string"
+        },
+        "minimum_version": {
+          "description": "Minimum supported operating-system version.",
+          "type": "string"
+        },
+        "signing": {
+          "additionalProperties": false,
+          "properties": {
+            "certificate": {
+              "description": "Project-relative signing certificate file.",
+              "type": "string"
+            },
+            "credential": {
+              "description": "Named external credential reference; never secret material.",
+              "type": "string"
+            },
+            "entitlements": {
+              "description": "Project-relative Apple entitlements file.",
+              "type": "string"
+            },
+            "identity": {
+              "description": "Signing identity selected through the platform toolchain.",
+              "type": "string"
+            },
+            "key_alias": {
+              "description": "Alias of the Android signing key.",
+              "type": "string"
+            },
+            "provisioning_profile": {
+              "description": "Project-relative Apple provisioning profile.",
+              "type": "string"
+            },
+            "thumbprint": {
+              "description": "Windows certificate thumbprint.",
+              "type": "string"
+            },
+            "timestamp_server": {
+              "description": "URL of the signing timestamp service.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "linux": {
+      "additionalProperties": false,
+      "properties": {
+        "build_number": {
+          "description": "Platform build number.",
+          "type": "integer"
+        },
+        "capabilities": {
+          "description": "Native platform capabilities requested by the application.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "desktop_entry": {
+          "description": "User-owned Linux desktop-entry file.",
+          "type": "string"
+        },
+        "icon": {
+          "description": "Project-relative user-owned icon file.",
+          "type": "string"
+        },
+        "identifier": {
+          "description": "Reverse-domain application identifier.",
+          "type": "string"
+        },
+        "minimum_version": {
+          "description": "Minimum supported operating-system version.",
+          "type": "string"
+        },
+        "product_name": {
+          "description": "Human-readable product name.",
+          "type": "string"
+        },
+        "signing": {
+          "additionalProperties": false,
+          "properties": {
+            "certificate": {
+              "description": "Project-relative signing certificate file.",
+              "type": "string"
+            },
+            "credential": {
+              "description": "Named external credential reference; never secret material.",
+              "type": "string"
+            },
+            "entitlements": {
+              "description": "Project-relative Apple entitlements file.",
+              "type": "string"
+            },
+            "identity": {
+              "description": "Signing identity selected through the platform toolchain.",
+              "type": "string"
+            },
+            "key_alias": {
+              "description": "Alias of the Android signing key.",
+              "type": "string"
+            },
+            "provisioning_profile": {
+              "description": "Project-relative Apple provisioning profile.",
+              "type": "string"
+            },
+            "thumbprint": {
+              "description": "Windows certificate thumbprint.",
+              "type": "string"
+            },
+            "timestamp_server": {
+              "description": "URL of the signing timestamp service.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "packages": {
+      "additionalProperties": false,
+      "properties": {
+        "appimage": {
+          "additionalProperties": false,
+          "properties": {
+            "categories": {
+              "description": "Desktop menu categories.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "desktop_entry": {
+              "description": "User-owned Linux desktop-entry file.",
+              "type": "string"
+            },
+            "icon": {
+              "description": "Project-relative user-owned icon file.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "archlinux": {
+          "additionalProperties": false,
+          "properties": {
+            "dependencies": {
+              "description": "Native package dependencies.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "maintainer": {
+              "description": "Native Linux package maintainer.",
+              "type": "string"
+            },
+            "post_install": {
+              "description": "Project-relative Linux post-install script.",
+              "type": "string"
+            },
+            "post_remove": {
+              "description": "Project-relative Linux post-remove script.",
+              "type": "string"
+            },
+            "pre_install": {
+              "description": "Project-relative Linux pre-install script.",
+              "type": "string"
+            },
+            "pre_remove": {
+              "description": "Project-relative Linux pre-remove script.",
+              "type": "string"
+            },
+            "section": {
+              "description": "Linux package repository section.",
+              "type": "string"
+            },
+            "template": {
+              "description": "Complete user-owned package template replacement.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "deb": {
+          "additionalProperties": false,
+          "properties": {
+            "dependencies": {
+              "description": "Native package dependencies.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "maintainer": {
+              "description": "Native Linux package maintainer.",
+              "type": "string"
+            },
+            "post_install": {
+              "description": "Project-relative Linux post-install script.",
+              "type": "string"
+            },
+            "post_remove": {
+              "description": "Project-relative Linux post-remove script.",
+              "type": "string"
+            },
+            "pre_install": {
+              "description": "Project-relative Linux pre-install script.",
+              "type": "string"
+            },
+            "pre_remove": {
+              "description": "Project-relative Linux pre-remove script.",
+              "type": "string"
+            },
+            "section": {
+              "description": "Linux package repository section.",
+              "type": "string"
+            },
+            "template": {
+              "description": "Complete user-owned package template replacement.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "dmg": {
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "description": "User-owned DMG background image.",
+              "type": "string"
+            },
+            "file_icon": {
+              "description": "User-owned DMG file icon.",
+              "type": "string"
+            },
+            "files": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "User-owned files copied into the DMG, keyed by destination name.",
+              "type": "object"
+            },
+            "template": {
+              "description": "Complete user-owned package template replacement.",
+              "type": "string"
+            },
+            "volume_icon": {
+              "description": "User-owned DMG volume icon.",
+              "type": "string"
+            },
+            "window_height": {
+              "description": "DMG Finder window height in pixels.",
+              "type": "integer"
+            },
+            "window_width": {
+              "description": "DMG Finder window width in pixels.",
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "msix": {
+          "additionalProperties": false,
+          "properties": {
+            "manifest": {
+              "description": "Project-relative user-owned platform or package manifest.",
+              "type": "string"
+            },
+            "publisher": {
+              "description": "Windows package publisher identity.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "nsis": {
+          "additionalProperties": false,
+          "properties": {
+            "install_scope": {
+              "description": "NSIS installation scope.",
+              "type": "string"
+            },
+            "template": {
+              "description": "Complete user-owned package template replacement.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "rpm": {
+          "additionalProperties": false,
+          "properties": {
+            "dependencies": {
+              "description": "Native package dependencies.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "maintainer": {
+              "description": "Native Linux package maintainer.",
+              "type": "string"
+            },
+            "post_install": {
+              "description": "Project-relative Linux post-install script.",
+              "type": "string"
+            },
+            "post_remove": {
+              "description": "Project-relative Linux post-remove script.",
+              "type": "string"
+            },
+            "pre_install": {
+              "description": "Project-relative Linux pre-install script.",
+              "type": "string"
+            },
+            "pre_remove": {
+              "description": "Project-relative Linux pre-remove script.",
+              "type": "string"
+            },
+            "section": {
+              "description": "Linux package repository section.",
+              "type": "string"
+            },
+            "template": {
+              "description": "Complete user-owned package template replacement.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "profiles": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "targets": {
+            "additionalProperties": {
+              "additionalProperties": false,
+              "properties": {
+                "destination": {
+                  "description": "Mobile build destination.",
+                  "type": "string"
+                },
+                "formats": {
+                  "description": "Artifact formats produced for this profile target.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "notarize": {
+                  "description": "Notarize the produced artifact.",
+                  "type": "boolean"
+                },
+                "sign": {
+                  "description": "Sign the produced artifact.",
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "minProperties": 1,
+            "propertyNames": {
+              "enum": [
+                "android/amd64",
+                "android/arm64",
+                "android/universal",
+                "darwin/amd64",
+                "darwin/arm64",
+                "darwin/universal",
+                "ios/arm64",
+                "linux/amd64",
+                "linux/arm64",
+                "windows/amd64",
+                "windows/arm64"
+              ]
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "targets"
+        ],
+        "type": "object"
+      },
+      "propertyNames": {
+        "pattern": "^(?!default$)[a-z0-9]+(?:-[a-z0-9]+)*$"
+      },
+      "type": "object"
+    },
+    "project": {
+      "additionalProperties": false,
+      "properties": {
+        "binary_name": {
+          "description": "Base name of the native executable.",
+          "type": "string"
+        },
+        "build_number": {
+          "default": 1,
+          "description": "Platform build number.",
+          "type": "integer"
+        },
+        "comments": {
+          "description": "Additional package metadata comments.",
+          "type": "string"
+        },
+        "company": {
+          "description": "Company or organisation name.",
+          "type": "string"
+        },
+        "copyright": {
+          "description": "Copyright notice embedded in artifacts.",
+          "type": "string"
+        },
+        "description": {
+          "description": "Human-readable description.",
+          "type": "string"
+        },
+        "icon": {
+          "description": "Project-relative user-owned icon file.",
+          "type": "string"
+        },
+        "identifier": {
+          "description": "Reverse-domain application identifier.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "name": {
+          "description": "Stable project or registration name.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "product_name": {
+          "description": "Human-readable product name.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "supported_platforms": {
+          "description": "Platforms supported by this project; empty permits all platforms.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "version": {
+          "description": "Manifest or application version.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "product_name",
+        "identifier",
+        "version"
+      ],
+      "type": "object"
+    },
+    "protocols": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "description": "Human-readable description.",
+            "type": "string"
+          },
+          "platforms": {
+            "description": "Platforms receiving this registration.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "type": "object"
+    },
+    "run": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "description": "Application arguments passed without shell expansion.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "environment": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Environment variables added to this operation.",
+          "type": "object"
+        },
+        "tags": {
+          "description": "Additional Go build tags.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "targets": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "build_number": {
+            "description": "Platform build number.",
+            "type": "integer"
+          },
+          "compiler_flags": {
+            "description": "Additional Go compiler flags.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dev": {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "description": "Development application arguments passed without shell expansion; supported on desktop and iOS. Android requires an empty list.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "environment": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Environment variables added to this operation.",
+            "type": "object"
+          },
+          "garble_args": {
+            "description": "Additional arguments passed to garble.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ldflags": {
+            "description": "Additional Go linker flags.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "minimum_version": {
+            "description": "Minimum supported operating-system version.",
+            "type": "string"
+          },
+          "obfuscated": {
+            "description": "Obfuscate Go code with garble.",
+            "type": "boolean"
+          },
+          "run": {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "description": "Application arguments passed without shell expansion.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "environment": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Environment variables added to this operation.",
+                "type": "object"
+              },
+              "tags": {
+                "description": "Additional Go build tags.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "tags": {
+            "description": "Additional Go build tags.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "toolchain": {
+            "description": "Compiler toolchain policy for this target.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "propertyNames": {
+        "enum": [
+          "android",
+          "android/amd64",
+          "android/arm64",
+          "android/universal",
+          "darwin",
+          "darwin/amd64",
+          "darwin/arm64",
+          "darwin/universal",
+          "ios",
+          "ios/arm64",
+          "linux",
+          "linux/amd64",
+          "linux/arm64",
+          "windows",
+          "windows/amd64",
+          "windows/arm64"
+        ]
+      },
+      "type": "object"
+    },
+    "version": {
+      "const": 3,
+      "description": "Wails manifest schema version; this must be the first field.",
+      "type": "integer"
+    },
+    "windows": {
+      "additionalProperties": false,
+      "properties": {
+        "build_number": {
+          "description": "Platform build number.",
+          "type": "integer"
+        },
+        "capabilities": {
+          "description": "Native platform capabilities requested by the application.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "icon": {
+          "description": "Project-relative user-owned icon file.",
+          "type": "string"
+        },
+        "identifier": {
+          "description": "Reverse-domain application identifier.",
+          "type": "string"
+        },
+        "manifest": {
+          "description": "Project-relative user-owned platform or package manifest.",
+          "type": "string"
+        },
+        "minimum_version": {
+          "description": "Minimum supported operating-system version.",
+          "type": "string"
+        },
+        "product_name": {
+          "description": "Human-readable product name.",
+          "type": "string"
+        },
+        "publisher": {
+          "description": "Windows package publisher identity.",
+          "type": "string"
+        },
+        "signing": {
+          "additionalProperties": false,
+          "properties": {
+            "certificate": {
+              "description": "Project-relative signing certificate file.",
+              "type": "string"
+            },
+            "credential": {
+              "description": "Named external credential reference; never secret material.",
+              "type": "string"
+            },
+            "entitlements": {
+              "description": "Project-relative Apple entitlements file.",
+              "type": "string"
+            },
+            "identity": {
+              "description": "Signing identity selected through the platform toolchain.",
+              "type": "string"
+            },
+            "key_alias": {
+              "description": "Alias of the Android signing key.",
+              "type": "string"
+            },
+            "provisioning_profile": {
+              "description": "Project-relative Apple provisioning profile.",
+              "type": "string"
+            },
+            "thumbprint": {
+              "description": "Windows certificate thumbprint.",
+              "type": "string"
+            },
+            "timestamp_server": {
+              "description": "URL of the signing timestamp service.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "version",
+    "project"
+  ],
+  "title": "Wails v3 build configuration",
+  "type": "object"
+}

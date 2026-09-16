@@ -1,12 +1,16 @@
 package commands
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 func TestMergeTags(t *testing.T) {
@@ -74,4 +78,25 @@ func TestBuildCommandWithMCPEnvVar(t *testing.T) {
 	err = Build(buildFlags, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"EXTRA_TAGS=mcp", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
+}
+
+func TestMCPEnvTagDoesNotOverrideANamedManifestProfile(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
+	prependFakePlanTools(t, "npm")
+	root := t.TempDir()
+	t.Chdir(root)
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "frontend"), 0o755))
+	profile := fmt.Sprintf(`
+profiles:
+  release:
+    targets:
+      %s: {}
+`, runtime.GOOS+"/"+runtime.GOARCH)
+	require.NoError(t, os.WriteFile(filepath.Join(root, manifest.Filename), append(manifest.Minimal(manifest.Project{
+		Name: "app", ProductName: "App", Identifier: "com.example.app", Version: "1.0.0",
+	}), profile...), 0o644))
+	t.Setenv(mcpEnvVar, "1")
+
+	err := Build(&flags.Build{Profile: "release", Plan: true}, nil)
+	assert.NoError(t, err)
 }

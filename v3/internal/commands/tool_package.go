@@ -15,7 +15,10 @@ import (
 // ToolPackage generates a package in the specified format
 func ToolPackage(options *flags.ToolPackage) error {
 	DisableFooter = true
+	return toolPackage(options)
+}
 
+func toolPackage(options *flags.ToolPackage) error {
 	// Check if we're creating a DMG
 	isDMG := strings.ToLower(options.Format) == "dmg" || options.CreateDMG
 

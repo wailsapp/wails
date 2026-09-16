@@ -5,6 +5,7 @@ import (
 	"runtime/debug"
 
 	"github.com/wailsapp/wails/v3/internal/browser"
+	"github.com/wailsapp/wails/v3/internal/features"
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/lo"
@@ -14,6 +15,7 @@ import (
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/term"
 	"github.com/wailsapp/wails/v3/internal/wake"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 func init() {
@@ -31,6 +33,8 @@ func init() {
 }
 
 func main() {
+	var applicationArgs []string
+	os.Args, applicationArgs = detachApplicationArguments(os.Args)
 	if os.Getenv("WAILS_MCP_CHILD") == "1" {
 		commands.DisableFooter = true
 	}
@@ -38,19 +42,73 @@ func main() {
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
 
+	run := app.NewSubCommand("run", "Build and run the application; use go run . when no wails.yaml exists")
+	var runOptions commands.RunOptions
+	run.AddFlags(&runOptions)
+	run.Action(func() error {
+		args := run.OtherArgs()
+		if len(args) == 0 {
+			args = nil // flag.Args returns a non-nil empty slice; preserve manifest defaults.
+		}
+		if applicationArgs != nil {
+			args = applicationArgs
+		}
+		return commands.RunApplication(&runOptions, args)
+	})
+
 	build := app.NewSubCommand("build", "Build the project")
 	var buildFlags flags.Build
-	build.AddFlags(&buildFlags)
+	addBuildFlags(build, &buildFlags)
 	build.Action(func() error {
 		return commands.Build(&buildFlags, build.OtherArgs())
 	})
 
-	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
+	dev := app.NewSubCommand("dev", "Run in Dev mode")
+	var devOptions commands.DevOptions
+	addDevFlags(dev, &devOptions)
+	dev.Action(func() error {
+		args := dev.OtherArgs()
+		if len(args) == 0 {
+			args = nil
+		}
+		if applicationArgs != nil {
+			args = applicationArgs
+		}
+		return commands.Dev(&devOptions, args...)
+	})
 	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
+	if features.WakeEnabled() {
+		config := app.NewSubCommand("config", "Validate Wails configuration")
+		configCheck := config.NewSubCommand("check", "Validate wails.yaml and its profiles without building")
+		var configCheckOptions commands.ConfigCheckOptions
+		configCheck.AddFlags(&configCheckOptions)
+		configCheck.Action(func() error { return commands.ConfigCheck(&configCheckOptions, configCheck.OtherArgs()) })
 
-	pkg := app.NewSubCommand("package", "Package application")
+		eject := app.NewSubCommand("eject", "Write the complete resolved reference manifest to wails.ejected.yaml")
+		var ejectOptions commands.EjectOptions
+		eject.AddFlags(&ejectOptions)
+		eject.Action(func() error { return commands.Eject(&ejectOptions, eject.OtherArgs()) })
+
+		migrate := app.NewSubCommand("migrate", "Create or activate a reviewed wails.yaml migration draft")
+		var migrateOptions commands.MigrateOptions
+		migrate.AddFlags(&migrateOptions)
+		migrate.Action(func() error { return commands.Migrate(&migrateOptions) })
+
+		clean := app.NewSubCommand("clean", "Remove disposable Wails-generated build state")
+		clean.Action(func() error { return commands.Clean(clean.OtherArgs()) })
+	}
+
+	packageDescription := "Package the project"
+	if features.WakeEnabled() {
+		packageDescription = "Deprecated: use build with a profile or --formats"
+	}
+	pkg := app.NewSubCommand("package", packageDescription)
 	var pkgFlags flags.Package
-	pkg.AddFlags(&pkgFlags)
+	if features.WakeEnabled() {
+		pkg.AddFlags(&pkgFlags)
+	} else {
+		pkg.AddFlags(&pkgFlags.Common)
+	}
 	pkg.Action(func() error {
 		return commands.Package(&pkgFlags, pkg.OtherArgs())
 	})
@@ -135,9 +193,17 @@ func main() {
 	})
 
 	// Sign command (wrapper that calls platform-specific tasks)
-	sign := app.NewSubCommand("sign", "Sign binaries and packages for current or specified platform")
+	signDescription := "Sign the project"
+	if features.WakeEnabled() {
+		signDescription = "Deprecated: select signing in a profile and use build"
+	}
+	sign := app.NewSubCommand("sign", signDescription)
 	var signWrapperFlags flags.SignWrapper
-	sign.AddFlags(&signWrapperFlags)
+	if features.WakeEnabled() {
+		sign.AddFlags(&signWrapperFlags)
+	} else {
+		sign.AddFlags(&signWrapperFlags.Common)
+	}
 	sign.Action(func() error {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
@@ -169,6 +235,13 @@ func main() {
 	// Android tools
 	android := app.NewSubCommand("android", "Android tooling")
 	android.NewSubCommandFunction("overlay:gen", "Generate Go overlay that registers the Android main", commands.AndroidOverlayGen)
+	if features.WakeEnabled() {
+		android.NewSubCommandFunction("devices", "List connected Android devices and emulators", commands.AndroidDevices)
+		androidRun := android.NewSubCommand("run", "Build, install and launch a development APK")
+		var androidRunOptions commands.AndroidRunOptions
+		androidRun.AddFlags(&androidRunOptions)
+		androidRun.Action(func() error { return commands.AndroidRun(&androidRunOptions, androidRun.OtherArgs()) })
+	}
 
 	app.NewSubCommandFunction("version", "Print the version", commands.Version)
 	app.NewSubCommand("sponsor", "Sponsor the project").Action(openSponsor)
@@ -177,10 +250,17 @@ func main() {
 
 	err := app.Run()
 	if err != nil {
+		if code, ok := commands.ApplicationExitCode(err); ok {
+			os.Exit(code)
+		}
 		// A wake build failure is already rendered as a clean panel by the build
 		// reporter; printing the raw error again would duplicate it.
 		if !wake.IsReported(err) {
-			pterm.Error.Println(err)
+			if diagnostic, ok := manifest.FormatValidationDiagnostics(err); ok {
+				pterm.Error.Println("Invalid wails.yaml\n" + diagnostic)
+			} else {
+				pterm.Error.Println(err)
+			}
 		}
 		os.Exit(1)
 	}
@@ -213,4 +293,18 @@ func openDocs() error {
 func openSponsor() error {
 	commands.DisableFooter = true
 	return browser.OpenURL("https://github.com/sponsors/leaanthony")
+}
+
+// clir reparses arguments after --. Remove application arguments before giving
+// it the command line so application flags can never be interpreted as CLI flags.
+func detachApplicationArguments(args []string) ([]string, []string) {
+	if len(args) < 2 || (args[1] != "run" && args[1] != "dev") {
+		return args, nil
+	}
+	for i := 2; i < len(args); i++ {
+		if args[i] == "--" {
+			return args[:i], append([]string{}, args[i+1:]...)
+		}
+	}
+	return args, nil
 }

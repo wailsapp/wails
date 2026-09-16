@@ -2,7 +2,6 @@ package wake
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -61,14 +60,9 @@ func Parse(path string) (*ast.Taskfile, error) {
 	return tf, nil
 }
 
+// Execute runs the internal Taskfile executor explicitly. CLI Taskfile commands
+// use the embedded Task runtime; this entry point does not select CLI behavior.
 func Execute(name string, opts ExecuteOptions) error {
-	if !useWake() {
-		if fallback.Available() {
-			return fallback.TaskCLI(name, opts.Dir, nil)
-		}
-		return fmt.Errorf("wake: WAILS_USE_WAKE not set and task CLI not available")
-	}
-
 	dir := opts.Dir
 	if dir == "" {
 		dir = "."
@@ -119,18 +113,6 @@ func Execute(name string, opts ExecuteOptions) error {
 	level := opts.verbosity()
 	rep := pulse.New(os.Stdout, level)
 
-	// Print a single-line experimental notice once per wake invocation, unless
-	// the user has explicitly silenced wake output. Wake is gated behind
-	// WAILS_USE_WAKE=true and the default build path remains the Task runtime;
-	// the notice exists so users running the opt-in path always know they're
-	// on the experimental track and can correlate any anomalies they hit.
-	// Suppress it under WAKE_SILENT (which already implies a non-interactive
-	// or scripted invocation) and during cache-hit dry-runs / DAG previews.
-	if !opts.Silent && os.Getenv("WAKE_NOTICE") != "off" {
-		fmt.Fprintln(os.Stderr,
-			"  wake (experimental) · set WAILS_USE_WAKE= to disable · WAKE_NOTICE=off to hide this notice")
-	}
-
 	// Make the reporter reachable by in-process producers for the duration of
 	// the build. Subprocess producers reach it over the wire protocol instead
 	// (see internal/report and the executor's output capture).
@@ -177,7 +159,7 @@ func Execute(name string, opts ExecuteOptions) error {
 
 	rep.BuildEnd(time.Since(start), runErr == nil)
 	if runErr != nil {
-		return errReported{runErr}
+		return MarkReported(runErr)
 	}
 	return nil
 }
@@ -224,18 +206,11 @@ func countSteps(tf *ast.Taskfile, target string) int {
 	return len(steps)
 }
 
-// errReported marks an error whose failure has already been rendered by the
-// reporter, so the top-level CLI can avoid printing it a second time.
-type errReported struct{ err error }
+// IsReported reports whether a shared Wails reporter already rendered err.
+func IsReported(err error) bool { return report.IsReported(err) }
 
-func (e errReported) Error() string { return e.err.Error() }
-func (e errReported) Unwrap() error { return e.err }
-
-// IsReported reports whether err was already rendered to the build UI.
-func IsReported(err error) bool {
-	var r errReported
-	return errors.As(err, &r)
-}
+// MarkReported preserves the legacy executor API for CLI callers.
+func MarkReported(err error) error { return report.MarkReported(err) }
 
 func discoverAndParse(dir string) (*ast.Taskfile, error) {
 	candidates := []string{
@@ -415,13 +390,6 @@ func resolveInNamespace(tf *ast.Taskfile, contextName, name string) (string, boo
 		}
 	}
 	return name, false
-}
-
-func useWake() bool {
-	if env := os.Getenv("WAILS_USE_WAKE"); env != "" {
-		return env == "true"
-	}
-	return false
 }
 
 // overridesDisabled reports whether local override files (Taskfile.local.* /

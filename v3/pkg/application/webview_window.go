@@ -840,6 +840,7 @@ func (w *WebviewWindow) HandleMessage(message string) {
 		message = strings.Replace(message, "wails:non-client-region:", "", 1)
 		w.handleNonClientRegionMessage(message)
 	case message == "wails:runtime:ready":
+		notifyDevRuntimeReady()
 		w.emit(events.Common.WindowRuntimeReady)
 		w.pendingJSMutex.Lock()
 		w.runtimeLoaded = true

@@ -21,9 +21,10 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/browser"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
-	"gopkg.in/yaml.v3"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 //go:embed frontend/dist/*
@@ -200,22 +201,6 @@ type DockerStatus struct {
 }
 
 const crossImageName = "ghcr.io/wailsapp/wails-cross"
-
-// WailsConfigInfo represents the info section of wails.yaml
-type WailsConfigInfo struct {
-	CompanyName       string `json:"companyName" yaml:"companyName"`
-	ProductName       string `json:"productName" yaml:"productName"`
-	ProductIdentifier string `json:"productIdentifier" yaml:"productIdentifier"`
-	Description       string `json:"description" yaml:"description"`
-	Copyright         string `json:"copyright" yaml:"copyright"`
-	Comments          string `json:"comments,omitempty" yaml:"comments,omitempty"`
-	Version           string `json:"version" yaml:"version"`
-}
-
-// WailsConfig represents the wails.yaml configuration
-type WailsConfig struct {
-	Info WailsConfigInfo `json:"info" yaml:"info"`
-}
 
 // SystemInfo contains detected system information
 type SystemInfo struct {
@@ -472,9 +457,14 @@ func (w *Wizard) handleCheckMobileDependencies(rw http.ResponseWriter, r *http.R
 }
 
 func (w *Wizard) handleWailsConfig(rw http.ResponseWriter, r *http.Request) {
+	if !features.WakeEnabled() {
+		w.handleLegacyWailsConfig(rw, r)
+		return
+	}
+
 	rw.Header().Set("Content-Type", "application/json")
 
-	// Find wails.yaml in current directory or parent directories
+	// Find the active Manifest in the current project.
 	configPath := findWailsConfig()
 
 	switch r.Method {
@@ -484,41 +474,61 @@ func (w *Wizard) handleWailsConfig(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		data, err := os.ReadFile(configPath)
+		loaded, err := manifest.Load(configPath, "")
 		if err != nil {
-			json.NewEncoder(rw).Encode(nil)
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		var config WailsConfig
-		if err := yaml.Unmarshal(data, &config); err != nil {
-			json.NewEncoder(rw).Encode(nil)
-			return
-		}
-
-		json.NewEncoder(rw).Encode(config)
+		json.NewEncoder(rw).Encode(projectConfigStateFromConfig(loaded.Config))
 
 	case http.MethodPost:
-		var config WailsConfig
-		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+		var state ProjectConfigState
+		if err := json.NewDecoder(r.Body).Decode(&state); err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if configPath == "" {
-			configPath = "wails.yaml"
-		}
-
-		data, err := yaml.Marshal(&config)
+		root, err := os.Getwd()
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		if err := os.WriteFile(configPath, data, 0644); err != nil {
+		existing := manifest.Project{}
+		if configPath != "" {
+			root = filepath.Dir(configPath)
+			loaded, loadErr := manifest.Load(configPath, "")
+			if loadErr != nil {
+				http.Error(rw, loadErr.Error(), http.StatusBadRequest)
+				return
+			}
+			existing = loaded.Config.Project
+		}
+		initial, stateErr := state.ManifestState(existing)
+		if stateErr != nil {
+			http.Error(rw, stateErr.Error(), http.StatusBadRequest)
+			return
+		}
+		if configPath == "" {
+			candidate := filepath.Join(root, manifest.Filename)
+			if _, statErr := os.Stat(candidate); statErr == nil {
+				http.Error(rw, "legacy wails.yaml already exists; migrate or rename it before creating a native build manifest", http.StatusConflict)
+				return
+			} else if !os.IsNotExist(statErr) {
+				http.Error(rw, statErr.Error(), http.StatusInternalServerError)
+				return
+			}
+			err = manifest.WriteInitial(root, initial)
+		} else if state.Bindings != nil {
+			err = manifest.UpdateInitialState(root, initial)
+		} else {
+			err = manifest.UpdateProjectMetadata(root, initial.Project)
+		}
+		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		configPath = filepath.Join(root, manifest.Filename)
 
 		json.NewEncoder(rw).Encode(map[string]string{"status": "saved", "path": configPath})
 
@@ -532,21 +542,11 @@ func findWailsConfig() string {
 	if err != nil {
 		return ""
 	}
-
-	for {
-		configPath := filepath.Join(dir, "wails.yaml")
-		if _, err := os.Stat(configPath); err == nil {
-			return configPath
-		}
-
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break
-		}
-		dir = parent
+	_, configPath, err := manifest.Discover(dir)
+	if err != nil {
+		return ""
 	}
-
-	return ""
+	return configPath
 }
 
 func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {

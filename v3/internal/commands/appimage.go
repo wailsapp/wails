@@ -228,8 +228,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 
 	output, err := s.EXEC(cmd)
 	if err != nil {
-		fmt.Println(string(output))
-		return err
+		return fmt.Errorf("linuxdeploy failed: %w\n%s", err, commandOutputTail(string(output), 20))
 	}
 
 	// Move file to output directory
@@ -237,6 +236,14 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 
 	log(p, "AppImage created: "+filepath.Join(options.OutputDir, appImageName))
 	return nil
+}
+
+func commandOutputTail(output string, lines int) string {
+	items := strings.Split(strings.TrimSpace(output), "\n")
+	if len(items) > lines {
+		items = items[len(items)-lines:]
+	}
+	return strings.Join(items, "\n")
 }
 
 func findGTKFiles(files []string) ([]string, error) {

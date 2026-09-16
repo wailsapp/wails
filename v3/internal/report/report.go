@@ -106,6 +106,10 @@ type Reporter interface {
 	StepFailed(id StepID, f Failure)
 	// BuildEnd closes the build.
 	BuildEnd(dur time.Duration, ok bool)
+	// BuildCanceled clears an interrupted build without presenting it as a
+	// failure. Long-lived controllers use this when newer work supersedes a
+	// generation that was still running.
+	BuildCanceled(dur time.Duration)
 	// Artifact registers a build output (binary, bundle, archive, etc.) for
 	// display in the end-of-build summary.
 	Artifact(a Artifact)
@@ -140,6 +144,7 @@ func (Nop) StepOutput(StepID, string)             {}
 func (Nop) StepEnd(StepID, Status, time.Duration) {}
 func (Nop) StepFailed(StepID, Failure)            {}
 func (Nop) BuildEnd(time.Duration, bool)          {}
+func (Nop) BuildCanceled(time.Duration)           {}
 func (Nop) Artifact(Artifact)                     {}
 func (Nop) Debug(DebugLine)                       {}
 func (Nop) Level() Verbosity                      { return Normal }

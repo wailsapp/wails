@@ -2,7 +2,7 @@ import { Events } from "@wailsio/runtime";
 import {
     NotificationService,
 } from "../bindings/github.com/wailsapp/wails/v3/pkg/services/notifications";
-import * as DemoAssetsService from "../bindings/notifications/demoassets";
+import * as DemoAssetsService from "../bindings/github.com/wailsapp/wails/v3/examples/notifications/demoassets";
 
 // Inline the option type so we don't have to fight tsconfig path resolution
 // for the generated d.ts files; the generated bindings already accept this

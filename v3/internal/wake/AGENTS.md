@@ -1,13 +1,33 @@
-# Wake - Go-native Build System for Wails v3
+# Wake - Go-native Build Systems for Wails v3
 
 ## Overview
 
-Wake is a Go-native Taskfile executor embedded in `wailsapp/wails/v3/internal/wake/`. It replaces the external `task` CLI dependency, executing `Taskfile.yml` files directly in Go. Enabled via `WAILS_USE_WAKE=true` env var; falls back to `task` CLI when unset or unsupported features are used.
+Wake contains two deliberately separated paths:
+
+- The manifest-native Wails pipeline (`manifest/`, `pipeline/`, and `cache/`)
+  is available when `WAILS_EXP_USE_WAKE` is present in the environment and
+  selected when an active root `wails.yaml` exists. It is the
+  build/dev implementation for new and fully migrated projects and does not
+  discover or interpret Taskfiles. Package and sign are deprecated aliases
+  over the same build planner.
+- The Go-native Taskfile executor is the legacy compatibility and migration
+  path, retained as an internal executor. CLI Taskfile commands always use the
+  embedded Task runtime; the old environment-variable selector was removed.
+
+The retired `WAILS_USE_WAKE` flag is ignored.
+The shared `internal/features.WakeEnabled` presence check gates the YAML CLI,
+init/setup generation and build/dev/package/sign routing. An empty value or
+`false` still opts in; an unset variable preserves legacy Taskfile behavior.
 
 ## Architecture
 
 ```
 wake.go              Entry point: Parse -> Resolve -> DAG -> Execute (serial or parallel)
+manifest/             Sparse wails.yaml defaults, validation, profiles, eject
+migration/            Ephemeral migration analysis DTOs
+pipeline/             Typed manifest Planner, Plan, scheduler and handlers seam
+cache/                BLAKE3 Snapshots, Receipts, Action Index, Artifact Store
+packagetemplate/      Atomic rendering of user-owned package files/directories
 ast/                 Taskfile AST types + deep Clone() for include isolation
 parse/               YAML parsing, include resolution, var/shell expansion, template expansion
 resolve/             DAG builder (topological sort, cycle detection), platform filtering
@@ -23,6 +43,50 @@ Build output is rendered through `internal/report` (a leaf contract) and
 
 ## Execution Flow
 
+### Manifest pipeline
+
+1. Load and strictly validate sparse `wails.yaml`; resolve defaults and Profile.
+2. Plan one immutable typed graph for every requested Target and package format.
+3. Snapshot direct inputs and calculate tool/environment-aware Action Keys.
+4. Prune or restore reusable Artifacts; validate stateful Receipts.
+5. Run the remaining critical path with bounded CPU, memory, and exclusive-tool
+   claims. The default memory capacity is one logical GiB per worker; constrained
+   callers may provide a tighter `MemoryLimitMB`.
+6. Generate platform state under `.wails/` and report user-visible Artifacts.
+
+Package templates use a versioned, format-neutral model containing resolved
+Project, Target, Package, Paths, Associations, Protocols, and opaque Options.
+The renderer accepts one file or a directory tree, renders files ending in
+`.tmpl`, copies other files byte-for-byte, rejects symlinks, and atomically
+replaces its generated destination. Package adapters render only into their
+own `.wails/package/` workspace or final Artifact; they must never mutate the
+platform-assets Artifact they consume.
+
+The Plan has six bounded `RunHook` phases: `before_build`, `after_build`,
+`before_package`, `after_package`, `before_sign`, and `after_sign`. Hooks invoke
+one project-owned script directly and must remain separate from built-in stage
+implementation. Preserve project/target/package barrier scope, versioned JSON
+context through `WAILS_HOOK_CONTEXT_FILE`, process-group
+cancellation, path containment, and default `CacheNever`. The generated context
+path is ephemeral and must not affect cache identity; its semantic schema
+version and resolved scope must. Remove context after success or cancellation,
+retain it with a reported path after failure, and never copy inherited secrets
+into it. A cacheable hook requires complete inputs and outputs; its bounded
+output root is the only reusable Artifact. Typed tool calls and arbitrary
+user-authored graph edges remain outside the public schema.
+
+The Dev Session is outside the Plan: it owns persistent frontend/backend
+processes and replaceable watch sets while requesting ordinary finite
+development Plans. Treat a generation update as cancellation, not failure.
+Use compile and `after_build` results to avoid replacing an unchanged backend;
+stage changed frontend/port sessions before the backend that consumes them.
+Keep candidate `FRONTEND_DEVSERVER_URL`/`WAILS_VITE_PORT` values scoped to the
+build and child process, pin both sides to the same loopback address, replace
+watches transactionally, and terminate/reap complete process groups on every
+exit path.
+
+### Legacy Taskfile pipeline
+
 1. **Discover** `Taskfile.yml` / `Taskfile.yaml` / `build/Taskfile.yml`
 2. **Parse** YAML into AST, recursively resolve includes with cycle detection
 3. **Clone** included tasks (`task.Clone()`) to prevent pointer aliasing across namespaces
@@ -35,6 +99,18 @@ Build output is rendered through `internal/report` (a leaf contract) and
 10. **Build DAG** from target task's dependency tree
 11. **Execute** serially (`ex.Execute`) or parallel (`executeParallel` via DAG in-degree)
 12. **Cache** results in `.wake/cache.json` (hash + last_run timestamp)
+
+### Migration cutover
+
+`wails3 migrate` classifies Taskfiles against current embedded ASTs and known
+historical fingerprints, computes reachability from Wails entry points, and
+prints an ephemeral analysis. It exclusively creates inactive
+`wails.migrated.yaml`; reruns never replace a reviewed draft. `--activate`
+reruns current analysis, validates the selected draft, and atomically creates
+active `wails.yaml` only when no reachable unrepresented behaviour remains.
+Migration never modifies, retires, renames, or backs up legacy sources. There
+is no persistent migration report. Active `wails.yaml` is the sole cutover and
+routing signal; invalid YAML never falls back to Taskfiles.
 
 ## Parallel Execution
 
@@ -77,7 +153,7 @@ Result (badge example, no-op rebuild): wake ~20ms vs `task` ~316ms (~94% faster)
 - **Glob exclude**: `recursiveMatch` treats `**/*` suffix as matching everything under the prefix. Pattern `frontend/**/*` matches any file under `frontend/`.
 - **Namespace filtering**: `filterTaskNamespaces` removes `common:` tasks and non-matching platform prefixes when target is `darwin:*` / `linux:*` / `windows:*`.
 - **Dep namespace resolution**: Short dep names resolved to full namespace via `resolveDepNamespaces` (pre-execution) and `resolveTaskName` (runtime). Tries `prefix:task`, then `prefix:common:task`, then `include:task`.
-- **Fallback**: When `WAILS_USE_WAKE` not set or unsupported features detected (dotenv, output modes, defer, interval, short), falls back to `task` CLI if available.
+- **Fallback**: When unsupported features are detected (dotenv, output modes, defer, interval, short), falls back to `task` CLI if available.
 
 ## Build Reporting (UI)
 
@@ -122,7 +198,7 @@ producers can instead use `report.Active()`.
 are rendered in a bordered panel; `wake.Execute` wraps the error as
 `errReported` and `cmd/wails3/main.go` skips re-printing it (no double output).
 
-## Unsupported Features (triggers fallback)
+## Unsupported Taskfile Features (triggers legacy fallback)
 
 - `dotenv` at taskfile level
 - `output` modes other than `interleaved`
@@ -136,6 +212,9 @@ are rendered in a bordered panel; `wake.Execute` wraps the error as
 
 ```bash
 go test ./internal/wake/...
+go test ./internal/commands ./cmd/wails3
+go test -race ./internal/wake/... ./internal/commands ./cmd/wails3
+go vet ./internal/wake/... ./internal/commands ./cmd/wails3
 ```
 
 All packages have tests. Run from `wails-v3/v3/` directory.
@@ -154,6 +233,11 @@ Current results (badge example, no-op cached build): wake **~20ms** vs task CLI 
 | File | Purpose |
 |------|---------|
 | `wake.go` | Entry point, orchestration, parallel execution, platform filtering |
+| `manifest/` | Root YAML defaults, strict decoding, Profiles and ejection |
+| `migration/` | Ephemeral migration diagnostics and Taskfile classifications |
+| `pipeline/` | Typed multi-Target planning and critical-path execution |
+| `cache/` | Content Snapshots, Action Index, Receipts and Artifact Store |
+| `packagetemplate/` | Stable package template model and atomic renderer |
 | `ast/ast.go` | Taskfile AST types, `Task.Clone()` deep copy |
 | `ast/walk.go` | AST visitor pattern |
 | `parse/parse.go` | YAML parsing, include resolution, var resolution, builtins |

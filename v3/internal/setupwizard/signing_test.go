@@ -48,7 +48,7 @@ func TestGPGFieldClean(t *testing.T) {
 		{"  spaced  ", "spaced", true},
 		{"", "", false},
 		{"line\nbreak", "", false},
-		{"%commit", "", false},        // batch-directive injection
+		{"%commit", "", false}, // batch-directive injection
 		{"carriage\rreturn", "", false},
 	}
 	for _, c := range cases {

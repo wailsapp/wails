@@ -11,11 +11,13 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/defaults"
+	"github.com/wailsapp/wails/v3/internal/features"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/setupwizard"
 	"github.com/wailsapp/wails/v3/internal/templates"
 	"github.com/wailsapp/wails/v3/internal/term"
+	"github.com/wailsapp/wails/v3/internal/wake/manifest"
 )
 
 var DisableFooter bool
@@ -60,9 +62,7 @@ func gitURLToModulePath(gitURL string) string {
 		path = gitURL
 	}
 
-	if strings.HasSuffix(path, ".git") {
-		path = path[:len(path)-4]
-	}
+	path = strings.TrimSuffix(path, ".git")
 
 	// Remove leading forward slash for file system paths
 	return strings.TrimPrefix(path, "/")
@@ -240,12 +240,6 @@ func Init(options *flags.Init) error {
 		}
 	}
 
-	// Determine the binding language AFTER global defaults are applied: when no
-	// -t is given, applyGlobalDefaults may have just set options.TemplateName
-	// from the wizard's configured default template, and that must drive the
-	// TypeScript-vs-JavaScript bindings choice.
-	isTypescript := templates.IsTypescript(options.TemplateName)
-
 	if options.ModulePath == "" {
 		if options.Git == "" {
 			options.ModulePath = "changeme"
@@ -272,33 +266,15 @@ func Init(options *flags.Init) error {
 		_ = os.Rename(npmrcSrc, filepath.Join(options.ProjectDir, "frontend", ".npmrc"))
 	}
 
-	// Generate build assets
-	buildAssetsOptions := &BuildAssetsOptions{
-		Name:               options.ProjectName,
-		Dir:                filepath.Join(options.ProjectDir, "build"),
-		Silent:             true,
-		ProductCompany:     options.ProductCompany,
-		ProductName:        options.ProductName,
-		ProductDescription: options.ProductDescription,
-		ProductVersion:     options.ProductVersion,
-		ProductIdentifier:  options.ProductIdentifier,
-		ProductCopyright:   options.ProductCopyright,
-		ProductComments:    options.ProductComments,
-		Typescript:         isTypescript,
-		UseInterfaces:      options.UseInterfaces,
-	}
-	err = GenerateBuildAssets(buildAssetsOptions)
-	if err != nil {
+	// With the experiment disabled, retain legacy Taskfiles and build assets.
+	// Experimental built-in templates omit build configuration so the manifest
+	// schema writer remains the single source of the generated YAML shape. An
+	// older community template may still ship a customised Taskfile: analyse it
+	// and retain legacy execution until migration is complete instead of
+	// silently switching the project to the built-in pipeline. Templates with
+	// neither file receive the new minimal manifest.
+	if err := initialiseTemplateBuildManifest(options); err != nil {
 		return err
-	}
-
-	// In UI mode the wizard is explicitly about the project config, so write the
-	// chosen values into build/config.yml itself (the generated assets already
-	// carry them; the source config.yml is otherwise a static copy).
-	if options.UI {
-		if err := writeProjectConfigYML(options); err != nil {
-			term.Warningf("Could not update build/config.yml: %v\n", err)
-		}
 	}
 
 	// Initialize git repository if URL is provided
@@ -314,47 +290,65 @@ func Init(options *flags.Init) error {
 	return nil
 }
 
-// writeProjectConfigYML rewrites the `info:` values in the freshly scaffolded
-// build/config.yml from the chosen options, preserving the file's comments. The
-// info keys map 1:1 onto the Product* fields.
-func writeProjectConfigYML(options *flags.Init) error {
-	path := filepath.Join(options.ProjectDir, "build", "config.yml")
-	data, err := os.ReadFile(path)
+func initialiseTemplateBuildManifest(options *flags.Init) error {
+	if !features.WakeEnabled() {
+		return GenerateBuildAssets(&BuildAssetsOptions{
+			Name: options.ProjectName, Dir: filepath.Join(options.ProjectDir, "build"), Silent: true,
+			ProductCompany: options.ProductCompany, ProductName: options.ProductName,
+			ProductDescription: options.ProductDescription, ProductVersion: options.ProductVersion,
+			ProductIdentifier: options.ProductIdentifier, ProductCopyright: options.ProductCopyright,
+			ProductComments: options.ProductComments, Typescript: templates.IsTypescript(options.TemplateName),
+			UseInterfaces: options.UseInterfaces,
+		})
+	}
+
+	state, err := initManifestState(options, manifest.Project{})
 	if err != nil {
 		return err
 	}
-	content := string(data)
-
-	values := map[string]string{
-		"companyName":       options.ProductCompany,
-		"productName":       options.ProductName,
-		"productIdentifier": options.ProductIdentifier,
-		"description":       options.ProductDescription,
-		"copyright":         options.ProductCopyright,
-		"comments":          options.ProductComments,
-		"version":           options.ProductVersion,
+	if manifest.Exists(options.ProjectDir) {
+		return manifest.UpdateInitialState(options.ProjectDir, state)
 	}
-	for key, val := range values {
-		if val == "" {
-			continue
+	if _, taskfileErr := findTaskfile(options.ProjectDir); taskfileErr == nil {
+		report, doc, err := analyseMigration(options.ProjectDir)
+		if err != nil {
+			return fmt.Errorf("analyse community template Taskfile: %w", err)
 		}
-		// Replace only the quoted value on the `  key: "..."` line, keeping any
-		// trailing comment. Anchored to start-of-line so it won't touch the
-		// commented ios: overrides.
-		re := regexp.MustCompile(`(?m)^(\s*` + regexp.QuoteMeta(key) + `:\s*")[^"]*(")`)
-		// Escape for a YAML double-quoted scalar — backslash first (so the escapes
-		// added next aren't doubled), then quotes; collapse newlines to keep it a
-		// single-line value; finally escape `$` for the regexp replacement template.
-		repl := val
-		repl = strings.ReplaceAll(repl, `\`, `\\`)
-		repl = strings.ReplaceAll(repl, `"`, `\"`)
-		repl = strings.ReplaceAll(repl, "\r", "")
-		repl = strings.ReplaceAll(repl, "\n", " ")
-		repl = strings.ReplaceAll(repl, `$`, `$$`)
-		content = re.ReplaceAllString(content, `${1}`+repl+`${2}`)
+		state, err := initManifestState(options, doc.Project)
+		if err != nil {
+			return err
+		}
+		doc.Project = state.Project
+		if report.Complete {
+			return manifest.WriteDocument(options.ProjectDir, doc)
+		}
+		if err := manifest.WriteMigrationDraftAt(options.ProjectDir, manifest.MigratedFilename, doc, migrationBlockerComments(report)); err != nil {
+			return err
+		}
+		if !options.Quiet {
+			term.Warningf("The template contains Taskfile customisations, so legacy builds remain active. Review %s and rerun `wails3 migrate` for current diagnostics.\n", manifest.MigratedFilename)
+		}
+		return nil
 	}
+	return manifest.WriteInitial(options.ProjectDir, state)
+}
 
-	return os.WriteFile(path, []byte(content), 0o644)
+func initManifestState(options *flags.Init, project manifest.Project) (manifest.InitialState, error) {
+	typescript := templates.IsTypescript(options.TemplateName)
+	state := setupwizard.ProjectConfigState{
+		Info: setupwizard.ProjectMetadataState{
+			ProjectName:       options.ProjectName,
+			CompanyName:       options.ProductCompany,
+			ProductName:       options.ProductName,
+			ProductIdentifier: options.ProductIdentifier,
+			Description:       options.ProductDescription,
+			Copyright:         options.ProductCopyright,
+			Comments:          options.ProductComments,
+			Version:           options.ProductVersion,
+		},
+		Bindings: &setupwizard.BindingState{TypeScript: typescript, Interfaces: options.UseInterfaces},
+	}
+	return state.ManifestState(project)
 }
 
 func printTemplates() error {

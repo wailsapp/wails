@@ -1,0 +1,239 @@
+---
+title: YAML run configuration
+description: Local run defaults, platform overrides and launch behaviour for wails3 run.
+---
+
+## Availability
+
+This reference describes the experimental run extension. It is not a guarantee
+of availability in a released CLI.
+
+`wails3 run` builds and launches the application using local manifest defaults.
+Manifest-driven execution requires the
+[`WAILS_EXP_USE_WAKE=1` opt-in](/experimental/yaml-builds#enable-yaml-builds).
+When no manifest is found, the command runs `go run .` in the current directory,
+without requiring that opt-in. An invalid or unreadable manifest is an error;
+it never selects the fallback. If a manifest exists while YAML is disabled, the
+command reports how to enable it.
+
+The generated [`wails.yaml` field reference](/reference/wails-yaml-fields) lists
+field types and defaults. Native mobile and macOS bundle acceptance must be
+verified on the appropriate host before a release claims those platforms ready.
+
+## Command contract
+
+`wails3 run` discovers the nearest `wails.yaml`, resolves configuration for one
+target, builds through the existing cached pipeline and launches the result.
+Discovery searches from the working directory upwards, checking for a manifest
+before stopping at a `go.mod` boundary. The manifest directory is the project
+root and the desktop application's working directory.
+
+The default target is the host operating system and architecture. Mobile targets
+require explicit selection. Cross-compilation does not imply that a desktop
+executable can run on the host; incompatible desktop targets fail before building.
+Use `--target android/arm64 --device <adb-serial>` or `--target android/arm64 --emulator <avd-name>` for Android.
+The selected architecture must match the device or emulator. Use `--target ios/arm64 --device <udid>` for an iOS simulator, adding `--destination device` for a physical device. iOS planning and execution require macOS and Xcode.
+
+With YAML, the build uses embedded assets and the production build path, which supplies
+the `production` tag automatically. `wails3 dev` continues to own live reload;
+`dev.tags` does not contribute to `wails3 run`.
+
+```shell
+wails3 run
+wails3 run --tags extra_tag
+wails3 run -- --example-mode other
+wails3 run --plan
+```
+
+`--plan` resolves and displays the selected target, effective build tags,
+executable or installable artefact, arguments and working directory without
+building, installing or launching. The plan lists environment override key names and omits their values.
+
+## CLI options
+
+| Option | Meaning |
+| --- | --- |
+| `--tags <tags>` | Additional comma-separated Go build tags. |
+| `--target <os>/<arch>` | Select one target; defaults to the host OS and architecture. |
+| `--plan` | Display resolved settings without building or launching. Cross-platform desktop plans are allowed. |
+| `--device <id>` | Android adb serial or iOS simulator/device identifier. |
+| `--emulator <name>` | Android Virtual Device to start or reuse; cannot be combined with `--device`. |
+| `--destination <kind>` | iOS destination: `simulator` (default) or `device`. |
+| `-- <args...>` | Replace configured application arguments. A bare `--` clears them. |
+| `--appargs <string>` | Compatibility spelling: parse one string using POSIX-style quoting. Cannot be repeated or combined with arguments after `--`. |
+
+Mobile selectors require a manifest and a matching mobile target.
+
+## Fields
+
+The optional `run` mapping supplies shared launch defaults. An optional `run`
+mapping inside `targets["<os>"]` or `targets["<os>/<arch>"]` supplies platform-
+or architecture-specific defaults. Architecture-specific settings take
+precedence over OS-wide settings, regardless of map order.
+
+| Field | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `run.tags` | list(string) | `[]` | Additional Go tags used only by run builds. |
+| `run.args` | list(string) | `[]` | Arguments passed to the application. |
+| `run.environment` | map(string) | `{}` | Runtime environment overrides, separate from compiler environment. |
+| `target["<os>"].run.tags` | list(string) | `[]` | Additional run tags for the selected platform. |
+| `target["<os>"].run.args` | list(string) | inherited | Replaces shared arguments when explicitly set; `[]` clears them. |
+| `target["<os>"].run.environment` | map(string) | `{}` | Overrides shared runtime environment values by key. |
+
+Arguments are passed as an argument vector, without shell expansion. Environment
+values are literal strings under the existing YAML literal-only contract.
+
+## Platform example
+
+This fragment accompanies the normal project configuration. `example_private_api`
+is a placeholder for the actual private API tag required by the example.
+
+```yaml
+build:
+  tags: [devtools]
+run:
+  args: [--example-mode]
+targets:
+  darwin:
+    tags: [example_private_api]
+    run:
+      environment:
+        EXAMPLE_WINDOW_MODE: native
+  linux:
+    run:
+      environment:
+        GDK_BACKEND: wayland
+  windows:
+    run:
+      args: [--example-mode, --windows-option]
+```
+
+The Linux environment setting is specific to this example and requires a Wayland
+session; it is not a Wails default. The private API tag is selected only on macOS.
+Existing `target.tags` applies to production builds, including run builds.
+`target.run.tags` restricts an additional tag to run builds.
+
+An architecture-specific override can refine the OS-wide defaults:
+
+```yaml
+targets:
+  linux/arm64:
+    run:
+      tags: [example_arm64]
+      args: []
+```
+
+Together with the preceding Linux mapping, this keeps `GDK_BACKEND`, adds the
+architecture-specific tag and clears the shared application arguments.
+
+## Resolution rules
+
+| Setting | Resolution, from lowest to highest precedence |
+| --- | --- |
+| Tags | Combine `build.tags`, selected `target.tags`, automatic `production`, `run.tags`, selected `target.run.tags` and CLI `--tags`; retain first occurrence of each tag. |
+| Runtime environment | Inherit the launching shell, overlay `run.environment`, then overlay selected `target.run.environment`. An empty value sets an empty string. |
+| Application arguments | Shared `run.args`, replaced by explicitly set target arguments, then replaced by explicit arguments after `--`. A bare `--` clears configured arguments. |
+
+Within the selected target, OS-wide settings are resolved before architecture-specific
+settings: tags accumulate, environment values merge by key and explicitly supplied
+arguments replace the less-specific list. Run builds also supply `android` or `ios`
+for the corresponding mobile target.
+
+Binding generation and Go compilation receive the same resolved tags. Build
+cache keys include those tags. Changing only application arguments or runtime
+environment does not invalidate compilation; the next launch uses the new values.
+
+Platform mappings customise a platform; their presence does not make other
+platforms unsupported. `project.supported_platforms` restricts the platforms accepted by builds and `run`; an omitted or empty list permits all platforms. For example, `supported_platforms: [darwin]` inside `project` makes a macOS-only example fail early on Linux.
+
+## Platform launch behaviour
+
+| Platform | Launch behaviour |
+| --- | --- |
+| Linux and Windows | Launch the executable with connected standard input/output, termination handling and application exit-status propagation. |
+| macOS | Assemble an app bundle and execute its `Contents/MacOS` binary with connected standard input/output. Register the bundle with Launch Services for URL schemes and file associations. Signing and native lifecycle acceptance require macOS verification. |
+| Android | Build an APK, select a device or emulator, install and launch the application. Report build, installation and launch failures distinctly. |
+| iOS | Build an app bundle, select a simulator or device, satisfy signing and provisioning requirements, install and launch. Device builds require the appropriate credentials and Apple toolchain. |
+
+Android rejects application arguments and runtime environment overrides before deployment. Shared desktop-only settings belong in desktop target mappings when Android is also supported. Android runs attach application logs and stop the application when attachment ends. iOS passes arguments to the selected launcher. Simulators receive environment overrides through `SIMCTL_CHILD_` variables; physical devices receive a JSON map through `devicectl --environment-variables`. Mobile exit status describes the launcher or log-monitoring result, rather than a portable application exit code.
+
+## Go-only examples and fallback
+
+A Go-only example with pre-existing or embedded assets disables frontend stages:
+
+```yaml
+frontend:
+  disabled: true
+```
+
+This skips frontend dependency installation, binding generation and frontend
+building. Examples that need generated binding classes can instead set
+`interfaces: false` under `frontend.bindings`.
+
+The no-manifest fallback executes `go run [-tags <tags>] . [application arguments]`
+without adding `production` or `devtools`. It follows Go's own exit-status behaviour.
+Arguments after `--` go to the application, including flags such as `--help`.
+Runtime values shown by `--plan` are limited to environment key names; values are
+not printed. The fallback plan displays the Go command and working directory.
+
+## Development application arguments
+
+With an active YAML project, `wails3 dev` accepts application arguments independently
+of production `run` defaults. `dev.args` supplies shared defaults; a nested `dev`
+mapping in `targets["<os>"]` or `targets["<os>/<arch>"]` replaces them for that
+target. Architecture settings take precedence over OS-wide settings regardless
+of map order. Explicit `args: []` clears inherited arguments.
+
+```yaml
+dev:
+  args: [--config-path, config/testing.yaml]
+targets:
+  windows:
+    dev:
+      args: [--config-path, config/testing-windows.yaml]
+```
+
+`run.args` and `run.tags` do not contribute to development launches. The existing
+`dev.tags` build policy is unchanged. Relative application paths are interpreted
+by the application from the manifest directory.
+
+```shell
+wails3 dev
+wails3 dev -- --config-path "profile with spaces.yaml"
+wails3 dev --appargs='--config-path "profile with spaces.yaml"'
+wails3 dev --
+wails3 dev --plan
+```
+
+Arguments after `--` replace configured arguments, including when the list is
+empty. `--help` after that delimiter belongs to the application. `--appargs=""`
+also clears defaults. The compatibility option accepts one quoted string; using
+it with `--`, positional application arguments, or a second `--appargs` is an
+error. Malformed quoting is rejected before starting a session.
+
+The compatibility parser uses the same POSIX-style quoting rules on every host.
+It does not execute shell commands or expand variables; the invoking shell may
+already have expanded text before passing it to Wails. Arguments after `--` are
+already separate values and undergo no additional tokenisation. This is the
+preferred form for Windows paths, for example in PowerShell:
+
+```powershell
+wails3 dev -- --config-path 'C:\Users\Example User\testing.yaml'
+```
+
+The session preserves the resolved argument vector through source rebuilds.
+Changing only `dev.args` or the selected target's arguments restarts the backend
+using the cached executable; it does not restart the frontend. CLI overrides
+remain in effect after manifest reloads. Failed replacements keep, or restore,
+the previous executable with its previous arguments. Application arguments are
+not compiler flags and do not enter compilation cache keys. `dev --plan` displays
+the effective arguments alongside the finite build plan without launching.
+
+Linux, Windows and macOS pass the vector directly to the executable. iOS passes
+it through the simulator or device launcher. Android rejects nonempty development
+application arguments before device discovery or building, because there is no
+supported equivalent argument channel. Desktop-only defaults can be placed in
+desktop target mappings, or cleared with `args: []` under `targets.android.dev`.
+
+These development options require an active `wails.yaml` and the YAML opt-in. They
+do not rewrite Taskfile or watcher shell commands in the legacy development path.

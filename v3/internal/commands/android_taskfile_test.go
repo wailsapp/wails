@@ -52,6 +52,22 @@ func TestAndroidTaskfileRunDevice(t *testing.T) {
 	assert.NotContains(t, runDeviceTask, "ensure-emulator")
 }
 
+func TestEmbeddedAndroidProjectTargetsAPI36(t *testing.T) {
+	rootData, err := buildAssets.ReadFile("build_assets/android/build.gradle")
+	require.NoError(t, err)
+	rootGradle := string(rootData)
+	assert.Contains(t, rootGradle, "version '9.0.1'")
+	assert.NotContains(t, rootGradle, "version '8.7.3'")
+
+	data, err := buildAssets.ReadFile("build_assets/android/app/build.gradle")
+	require.NoError(t, err)
+	gradle := string(data)
+	assert.Contains(t, gradle, "compileSdk = 36")
+	assert.Contains(t, gradle, "targetSdk = 36")
+	assert.NotContains(t, gradle, "compileSdk 35")
+	assert.NotContains(t, gradle, "targetSdk 35")
+}
+
 func androidTaskYAML(t *testing.T, name string) string {
 	t.Helper()
 

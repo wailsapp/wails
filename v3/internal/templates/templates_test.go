@@ -184,6 +184,7 @@ func TestStripUnsafe_CleanString_Unchanged(t *testing.T) {
 // --- GenerateTemplate ---
 
 func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
+	t.Setenv("WAILS_EXP_USE_WAKE", "1")
 	dir := t.TempDir()
 	opts := &BaseTemplate{
 		Name:    "MyTemplate",
@@ -204,7 +205,6 @@ func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
 		"main.go.tmpl",
 		"go.mod.tmpl",
 		"greetservice.go",
-		"Taskfile.tmpl.yml",
 		"gitignore.tmpl",
 		filepath.Join("frontend", "index.html"),
 	}
@@ -212,6 +212,11 @@ func TestGenerateTemplate_CreatesExpectedFiles(t *testing.T) {
 		path := filepath.Join(outDir, f)
 		if _, err := os.Stat(path); err != nil {
 			t.Errorf("expected file %s to exist: %v", f, err)
+		}
+	}
+	for _, filename := range []string{"wails.tmpl.toml", "wails.tmpl.yaml", "Taskfile.tmpl.yml"} {
+		if _, err := os.Stat(filepath.Join(outDir, filename)); !os.IsNotExist(err) {
+			t.Errorf("generated reusable template must not contain %s", filename)
 		}
 	}
 }
@@ -280,4 +285,3 @@ func TestGenerateTemplate_GeneratedTemplateCanBeInstalled(t *testing.T) {
 		t.Errorf("WailsVersion = %d, want 3", tmpl.WailsVersion)
 	}
 }
-

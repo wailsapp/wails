@@ -139,7 +139,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	// a file watcher (e.g. Vite's dev server) holds it open (#5515).
 	if !swapped && generationDir != absPath {
 		if err := syncDirs(generationDir, absPath); err != nil {
-			return fmt.Errorf("failed to install new bindings at %q: %w\nThe bindings directory may be partially updated. Re-run the command to retry.", absPath, err)
+			return fmt.Errorf("failed to install new bindings at %q: %w; the bindings directory may be partially updated; rerun the command to retry", absPath, err)
 		}
 		swapped = true
 	}
