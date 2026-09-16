@@ -57,10 +57,10 @@ Consultez la section\
 @steps
 @step title="Créez un fork du dépôt."
 @end
-@step title="Ajoutez la ou les images dans le dossier `docs/src/assets/showcase-images`."
+@step title="Ajoutez la ou les images dans le dossier `docs/mpress/static/showcase-images`."
 @end
-@step title="Créez une copie du fichier `_template.md` dans le dossier"
-`docs/src/content/docs/community/showcase`.
+@step title="Créez une copie du fichier `.mpd` dans le dossier"
+`docs/mpress/content/community/showcase`.
 @end
 @step title="Renommez le fichier copié avec le nom de votre projet. (Le nom ne devrait pas commencer"
 par `_`.)
@@ -68,7 +68,7 @@ par `_`.)
 @step title="Mettez à jour le titre, l’image, le lien et le contenu du fichier."
 @end
 @step title="Ajoutez-le à la liste ci-dessus dans"
-`docs/src/content/docs/community/showcase/index.mdx`.
+`docs/mpress/content/community/showcase/index.mpd`.
 @end
 @step title="Soumettez une PR."
 

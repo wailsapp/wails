@@ -346,7 +346,7 @@ _/
 
 ## Adicionado
 - Adiciona um aviso ao compilar um AAB de lançamento sem `ANDROID_KEYSTORE_FILE` definido (o Google Play rejeita pacotes assinados para depuração) e documenta o empacotamento e a assinatura de App Bundles no [PR](https://github.com/wailsapp/wails/pull/5730) por @taliesin-ai
-- Adiciona a documentação why-wails.mdx em vários idiomas no [PR](https://github.com/wailsapp/wails/pull/5739) por @taliesin-ai
+- Adiciona a documentação Why Wails em vários idiomas no [PR](https://github.com/wailsapp/wails/pull/5739) por @taliesin-ai
 - Adiciona suporte ao mapeamento de Go time.Time para JS Date ou string nos bindings no [PR](https://github.com/wailsapp/wails/pull/5398) por @fbbdev
 - Adiciona tarefas de empacotamento de Android App Bundle (AAB) (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) para envio à Play Store — as tarefas de APK permanecem disponíveis para testes locais ou em emuladores — no [PR](https://github.com/wailsapp/wails/pull/5728) por @mortenolsrud (corrige [#5726](https://github.com/wailsapp/wails/issues/5726))
 - Adiciona destinos de tarefas para dispositivos Android físicos e retoma as permissões de câmera/localização no [PR](https://github.com/wailsapp/wails/pull/5735) por @taliesin-ai
@@ -707,10 +707,10 @@ _/
 
 ## Adicionado
 - Adiciona a localização da documentação em francês no [PR](https://github.com/wailsapp/wails/pull/5328) por @leaanthony
-- Adiciona a localidade alemã ao site de documentação do Astro no [PR](https://github.com/wailsapp/wails/pull/5343) por @leaanthony
+- Adiciona a localidade alemã ao site de documentação no [PR](https://github.com/wailsapp/wails/pull/5343) por @leaanthony
 
 ## Alterado
-- Registra todas as 8 localidades traduzidas na configuração do Starlight no [PR](https://github.com/wailsapp/wails/pull/5347) por @leaanthony
+- Registra todas as 8 localidades traduzidas na configuração da documentação no [PR](https://github.com/wailsapp/wails/pull/5347) por @leaanthony
 - Atualiza diversos arquivos relacionados ao Windows para o WebView2 no [PR](https://github.com/wailsapp/wails/pull/5317) por @leaanthony
 
 ## Corrigido

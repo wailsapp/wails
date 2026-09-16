@@ -195,11 +195,13 @@ Si l’application de test est générée et s’exécute correctement, votre en
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### Tests d’un paquet spécifique
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### Exécution avec mesure de la couverture
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,24 +217,20 @@ go tool cover -html=coverage.out
 ### Exécution avec le détecteur de situations de concurrence
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## Utilisation de la documentation
 
-La documentation de Wails est générée avec Astro et Starlight.
+La documentation de Wails est générée avec M-Press.
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 La documentation sera disponible à l’adresse `http://localhost:4321/`

@@ -786,12 +786,12 @@
       "updatedAt": "2026-09-13T23:13:52Z"
     },
     "b0063-text-01": {
-      "sourceHash": "489381fda1b1730f039b924ea476a2f212c50b6eb5af56dffd75799a5ddeeaae",
-      "targetHash": "b15eb80472f9b3666873f4b2e5ae6c4f1518056736bb901dcc5dbb76fbc0cac2",
-      "machineHash": "b15eb80472f9b3666873f4b2e5ae6c4f1518056736bb901dcc5dbb76fbc0cac2",
-      "machineText": "文件使用 Starlight（Astro）：",
+      "sourceHash": "9cc1ef4d36cd68f8379e4ae822fe36b11c4354c0b01b2b8dd6ac371b5b0c5bdd",
+      "targetHash": "8028b396f673bcd86d5683bb372efb577871f1c584120ac7960eea009e5eff57",
+      "machineHash": "8028b396f673bcd86d5683bb372efb577871f1c584120ac7960eea009e5eff57",
+      "machineText": "文件使用 M-Press：",
       "status": "final",
-      "sourcePreview": "Documentation uses Starlight (Astro):",
+      "sourcePreview": "Documentation uses M-Press:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

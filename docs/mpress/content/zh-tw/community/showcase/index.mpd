@@ -57,10 +57,10 @@ sourcePath = "community/showcase/index.mpd"
 @steps
 @step title="建立此儲存庫的分叉副本。"
 @end
-@step title="將圖片新增至`docs/src/assets/showcase-images`資料夾。"
+@step title="將圖片新增至`docs/mpress/static/showcase-images`資料夾。"
 @end
-@step title="複製下列資料夾中的`_template.md`檔案："
-`docs/src/content/docs/community/showcase`資料夾。
+@step title="複製下列資料夾中的`.mpd`檔案："
+`docs/mpress/content/community/showcase`資料夾。
 @end
 @step title="將複製的檔案重新命名為您的專案名稱。（名稱開頭不應"
 為`_`）
@@ -68,7 +68,7 @@ sourcePath = "community/showcase/index.mpd"
 @step title="更新檔案的標題、圖片、連結和內容。"
 @end
 @step title="將其新增至下列檔案中的上述清單："
-`docs/src/content/docs/community/showcase/index.mdx`。
+`docs/mpress/content/community/showcase/index.mpd`。
 @end
 @step title="提交 PR。"
 

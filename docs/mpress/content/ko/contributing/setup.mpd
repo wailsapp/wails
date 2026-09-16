@@ -195,11 +195,13 @@ cd mytest
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### 특정 패키지 테스트
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### 커버리지 측정과 함께 실행
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,24 +217,20 @@ go tool cover -html=coverage.out
 ### 경쟁 상태 감지기와 함께 실행
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## 문서 작업
 
-Wails 문서는 Astro와 Starlight로 빌드됩니다.
+Wails 문서는 M-Press로 빌드됩니다.
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 문서는 `http://localhost:4321/`에서 확인할 수 있습니다

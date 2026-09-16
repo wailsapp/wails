@@ -25,7 +25,7 @@ Dokumen ini menguraikan _cara_ hal tersebut berlangsung, mulai dari *analisis st
 waktu build, melalui *pembuatan kode*, hingga *jembatan runtime* yang memindahkan\
 byte melalui WebView.
 
-> Lihat [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/) untuk
+> Lihat [`contributing/architecture/bindings`](/contributing/architecture/bindings/) untuk
 > pembahasan mendalam dan otoritatif tentang pipeline generator — halaman ini merupakan
 > ikhtisar yang berfokus pada kontributor.
 

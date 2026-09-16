@@ -39,8 +39,6 @@ contribution:
   guide: docs/mpress/CONTRIBUTING.md
 theme:
   accentColor: "#5375F6"
-  layout:
-    preset: starlight
 build:
   contentDir: docs/mpress/content
   staticDir: docs/mpress/static

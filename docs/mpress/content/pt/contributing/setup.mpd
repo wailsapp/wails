@@ -195,11 +195,13 @@ Se o aplicativo de teste for compilado e executado, seu ambiente estará pronto!
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### Testes de pacotes específicos
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### Executar com cobertura
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,24 +217,20 @@ go tool cover -html=coverage.out
 ### Executar com o detector de condições de corrida
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## Trabalhar com a documentação
 
-A documentação do Wails é compilada com Astro e Starlight.
+A documentação do Wails é compilada com M-Press.
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 A documentação estará disponível em `http://localhost:4321/`

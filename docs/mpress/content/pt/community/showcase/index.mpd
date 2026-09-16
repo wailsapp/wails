@@ -57,10 +57,10 @@ Consulte a seção\
 @steps
 @step title="Crie um fork do repositório."
 @end
-@step title="Adicione as imagens à pasta `docs/src/assets/showcase-images`."
+@step title="Adicione as imagens à pasta `docs/mpress/static/showcase-images`."
 @end
-@step title="Crie uma cópia do arquivo `_template.md` na"
-pasta `docs/src/content/docs/community/showcase`.
+@step title="Crie uma cópia do arquivo `.mpd` na"
+pasta `docs/mpress/content/community/showcase`.
 @end
 @step title="Renomeie o arquivo copiado com o nome do seu projeto. (O nome não deve começar"
 com `_`))
@@ -68,7 +68,7 @@ com `_`))
 @step title="Atualize o título, a imagem, o link e o conteúdo do arquivo."
 @end
 @step title="Adicione-o à lista acima em"
-`docs/src/content/docs/community/showcase/index.mdx`.
+`docs/mpress/content/community/showcase/index.mpd`.
 @end
 @step title="Envie um PR."
 

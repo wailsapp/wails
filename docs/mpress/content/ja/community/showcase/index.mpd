@@ -57,10 +57,10 @@ sourcePath = "community/showcase/index.mpd"
 @steps
 @step title="リポジトリをフォークします。"
 @end
-@step title="画像を `docs/src/assets/showcase-images` フォルダーに追加します。"
+@step title="画像を `docs/mpress/static/showcase-images` フォルダーに追加します。"
 @end
-@step title="次の場所にある `_template.md` ファイルをコピーします："
-`docs/src/content/docs/community/showcase` フォルダー。
+@step title="次の場所にある `.mpd` ファイルをコピーします："
+`docs/mpress/content/community/showcase` フォルダー。
 @end
 @step title="コピーしたファイルの名前をプロジェクト名に変更します。（名前の先頭は"
 `_`で））
@@ -68,7 +68,7 @@ sourcePath = "community/showcase/index.mpd"
 @step title="ファイルのタイトル、画像、リンク、内容を更新します。"
 @end
 @step title="次のファイル内にある上記のリストに追加します："
-`docs/src/content/docs/community/showcase/index.mdx`。
+`docs/mpress/content/community/showcase/index.mpd`。
 @end
 @step title="PR を作成します。"
 

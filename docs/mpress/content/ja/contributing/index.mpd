@@ -94,6 +94,7 @@ go test ./pkg/application
 # Inspect coverage for the packages you changed
 go test ./pkg/application -coverprofile=coverage.out
 go tool cover -func=coverage.out
+cd ..
 ```
 
 統合テストスイート、競合状態の検出、および CI と同等の全コマンドについては、[テストと継続的インテグレーション](/contributing/testing-ci/)を参照してください。
@@ -234,12 +235,14 @@ func TestProcessData(t *testing.T) {
 
 ### ドキュメントの執筆
 
-ドキュメントには Starlight（Astro）を使用しています：
+ドキュメントには M-Press を使用しています：
 
 ```bash
-cd docs
-npm install
-npm run dev
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 ### ドキュメントのスタイル

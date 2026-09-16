@@ -195,11 +195,13 @@ cd mytest
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### 特定套件測試
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### 執行測試並產生涵蓋率
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,24 +217,20 @@ go tool cover -html=coverage.out
 ### 使用競爭偵測器執行測試
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## 處理文件
 
-Wails 文件使用 Astro 與 Starlight 建置。
+Wails 文件使用 M-Press 建置。
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 文件將可在`http://localhost:4321/`取得

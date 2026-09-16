@@ -57,10 +57,10 @@ sourcePath = "community/showcase/index.mpd"
 @steps
 @step title="Создайте форк репозитория."
 @end
-@step title="Добавьте изображения в папку `docs/src/assets/showcase-images`."
+@step title="Добавьте изображения в папку `docs/mpress/static/showcase-images`."
 @end
-@step title="Создайте копию файла `_template.md` в папке"
-`docs/src/content/docs/community/showcase`.
+@step title="Создайте копию файла `.mpd` в папке"
+`docs/mpress/content/community/showcase`.
 @end
 @step title="Переименуйте скопированный файл в соответствии с названием своего проекта. (Имя не должно начинаться"
 с `_`))
@@ -68,7 +68,7 @@ sourcePath = "community/showcase/index.mpd"
 @step title="Обновите заголовок, изображение, ссылку и содержимое файла."
 @end
 @step title="Добавьте его в приведённый выше список в файле"
-`docs/src/content/docs/community/showcase/index.mdx`.
+`docs/mpress/content/community/showcase/index.mpd`.
 @end
 @step title="Отправьте PR."
 

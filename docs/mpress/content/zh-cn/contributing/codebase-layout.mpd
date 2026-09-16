@@ -15,7 +15,7 @@ Wails v3 位于一个*单体仓库*中，其中包含框架运行时、CLI、示
 wails/
 ├── v3/               # ⬅️ Everything specific to Wails v3 lives here
 ├── v2/               # Legacy v2 implementation (can be ignored for v3 work)
-├── docs/             # Astro-powered v3 docs site (this page!)
+├── docs/             # M-Press-powered v3 docs site (this page!)
 ├── website/          # Docusaurus v2 site and marketing pages (main site)
 ├── scripts/          # Misc helper scripts (e.g. sponsor image generator)
 └── *.md              # Project-wide meta files (CHANGELOG, LICENSE, …)

@@ -195,11 +195,13 @@ cd mytest
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### 特定のパッケージのテスト
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### カバレッジを有効にして実行
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,24 +217,20 @@ go tool cover -html=coverage.out
 ### レースディテクターを有効にして実行
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## ドキュメントの作業
 
-Wailsのドキュメントは、AstroとStarlightを使用してビルドされています。
+Wailsのドキュメントは、M-Pressを使用してビルドされています。
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 ドキュメントは`http://localhost:4321/`で確認できます
