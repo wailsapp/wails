@@ -1,10 +1,14 @@
 """The publication gate must reject fallback files and stale audit exceptions."""
 
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
-from check_translations import accepted_finding, check_coverage, file_digest
+from check_translations import (AUDIT_EXCLUDED_FILES, accepted_finding,
+                                audit_language, check_coverage, file_digest)
 
 
 class TranslationChecks(unittest.TestCase):
@@ -44,6 +48,26 @@ class TranslationChecks(unittest.TestCase):
     def test_structure_errors_cannot_be_waived(self):
         finding = {"file": "guide.mpd", "segment": "body", "code": "structure"}
         self.assertFalse(accepted_finding(self.content, "fr", finding, [finding]))
+
+    def test_historical_changelog_audit_findings_are_excluded(self):
+        (self.content / "changelog.mpd").write_text("# Changelog\n")
+        (self.content / "fr/changelog.mpd").write_text("# Journal\n")
+        report = {
+            "language": "fr",
+            "files": ["changelog.mpd", "guide.mpd"],
+            "segments": ["changelog-title", "guide-title"],
+            "findings": [
+                {"file": "changelog.mpd", "segment": "body", "code": "structure",
+                 "message": "legacy baseline"},
+                {"file": "guide.mpd", "segment": "title", "code": "structure",
+                 "message": "current issue"},
+            ],
+        }
+        with patch("check_translations.subprocess.run") as run:
+            run.return_value = SimpleNamespace(stdout=json.dumps(report), stderr="", returncode=1)
+            errors = audit_language("mpress", self.content, self.content, "fr", [])
+        self.assertIn("changelog.mpd", AUDIT_EXCLUDED_FILES)
+        self.assertEqual(errors, ["fr/guide.mpd title: structure: current issue"])
 
 
 if __name__ == "__main__":

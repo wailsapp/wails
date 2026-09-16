@@ -59,7 +59,7 @@ sourcePath = "community/showcase/index.mpd"
 @end
 @step title="將圖片新增至`docs/mpress/static/showcase-images`資料夾。"
 @end
-@step title="複製下列資料夾中的`.mpd`檔案："
+@step title="複製位於以下資料夾中的現有`.mpd`展示作品檔案："
 `docs/mpress/content/community/showcase`資料夾。
 @end
 @step title="將複製的檔案重新命名為您的專案名稱。（名稱開頭不應"

@@ -59,7 +59,7 @@ Lihat bagian\
 @end
 @step title="Tambahkan gambar ke folder `docs/mpress/static/showcase-images`."
 @end
-@step title="Buat salinan file `.mpd` di"
+@step title="Buat salinan file showcase `.mpd` yang sudah ada di dalam"
 folder `docs/mpress/content/community/showcase`.
 @end
 @step title="Ubah nama file salinan sesuai nama proyek Anda. (Nama sebaiknya tidak diawali"

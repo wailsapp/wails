@@ -245,13 +245,15 @@ func TestProcessData(t *testing.T) {
 
 ### Rédiger la documentation
 
-La documentation utilise M-Press :
+La documentation utilise M-Press. Modifiez les fichiers `.mpd` situés dans
+`docs/mpress/content/`, puis prévisualisez-les et validez-les depuis la racine du dépôt :
 
 ```bash
 go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 

@@ -35,7 +35,7 @@ Diese Anleitung führt Sie durch die Einrichtung einer vollständigen Entwicklun
 
 ### Node.js und npm
 
-Erforderlich zum Erstellen der Dokumentation und zum Testen von Frontend-Integrationen.
+Nur für Beispiele zur Frontend-Integration erforderlich.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -223,17 +223,22 @@ go test ./... -race
 
 ## Mit der Dokumentation arbeiten
 
-Die Wails-Dokumentation wird mit M-Press erstellt.
+Die Wails-v3-Dokumentation ist in M-Press verfasst. Die englischen Quelldateien befinden sich in
+`docs/mpress/content/`; die Übersetzungen befinden sich in Sprachverzeichnissen wie
+`fr/` und `id/`.
+
+Zeigen Sie Dokumentationsänderungen in der Vorschau an und validieren Sie sie im Stammverzeichnis des Repositorys:
 
 ```bash
 go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-Die Dokumentation ist unter `http://localhost:4321/` verfügbar
+Die Produktionswebsite ist statisch. Für die lokale Arbeit an der Dokumentation sind Node.js, ein Übersetzungsanbieter und Cloudflare-Anmeldedaten nicht erforderlich.
 
 ## Debugging
 

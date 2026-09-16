@@ -59,7 +59,7 @@ Consultez la section\
 @end
 @step title="Ajoutez la ou les images dans le dossier `docs/mpress/static/showcase-images`."
 @end
-@step title="Créez une copie du fichier `.mpd` dans le dossier"
+@step title="Faites une copie d’un fichier `.mpd` existant de la vitrine dans le dossier"
 `docs/mpress/content/community/showcase`.
 @end
 @step title="Renommez le fichier copié avec le nom de votre projet. (Le nom ne devrait pas commencer"
