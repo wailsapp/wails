@@ -234,6 +234,7 @@ type App struct {
 	Activity         *ActivityManager
 	QuickLook        *QuickLookManager
 	Spotlight        *SpotlightManager
+	AppleEvents      *AppleEventsManager
 
 	// Windows
 	windows     map[uint]Window
@@ -415,6 +416,7 @@ func (a *App) init() {
 	a.Activity = newActivityManager(a)
 	a.QuickLook = newQuickLookManager(a)
 	a.Spotlight = newSpotlightManager(a)
+	a.AppleEvents = newAppleEventsManager(a)
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
