@@ -198,6 +198,7 @@ export default defineConfig({
                 { label: "Permissions", link: "/features/windows/permissions" },
                 { label: "Multiple Windows", link: "/features/windows/multiple" },
                 { label: "Frameless Windows", link: "/features/windows/frameless" },
+                { label: "Native macOS Chrome", link: "/guides/macos-native-chrome" },
                 { label: "Window Events", link: "/features/windows/events" },
               ],
             },
