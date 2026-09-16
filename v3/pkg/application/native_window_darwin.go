@@ -6,6 +6,7 @@ package application
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa
 #include "native_window_darwin.h"
+#include "mac_window_chrome_darwin.h"
 #include "webview_window_split_darwin.h"
 #include <stdlib.h>
 */
@@ -16,6 +17,72 @@ import (
 	"unsafe"
 )
 
+// NativeWindowOptions.Mac contract on macOS.
+//
+// A NativeWindow applies the MacWindow options below with the same AppKit
+// semantics WebviewWindow uses; the appliers live in mac_window_chrome_darwin.m
+// and native_window_darwin.m. NativeWindowOptions has no Frameless field, so
+// TitleBar.Hide is the native frameless switch and follows the
+// WebviewWindowOptions.Frameless rules on macOS.
+//
+//	Field                         Native window behaviour
+//	Backdrop                      Normal: opaque windowBackgroundColor surface.
+//	                              Transparent: clear window, transparent editor.
+//	                              Translucent: NSVisualEffectView (behind-window)
+//	                              beneath every pane, transparent editor.
+//	                              LiquidGlass: NSGlassEffectView on macOS 26+
+//	                              beneath every pane (translucent fallback
+//	                              elsewhere), transparent editor. Sidebar,
+//	                              inspector and content-list panes keep their
+//	                              own material in every mode.
+//	LiquidGlass                   Style, Material, CornerRadius, TintColor apply;
+//	                              GroupID/GroupSpacing need -tags private_mac_apis
+//	                              exactly as for WebviewWindow.
+//	DisableShadow                 NSWindow.hasShadow.
+//	TitleBar.Hide                 Frameless: with CornerType Rounded and
+//	                              CornerRadius 0 the AppKit frame is kept with a
+//	                              transparent titlebar, hidden title and hidden
+//	                              window buttons; otherwise the window is
+//	                              borderless. The other TitleBar fields are
+//	                              ignored, as for a frameless WebviewWindow.
+//	CornerType / CornerRadius     Only with TitleBar.Hide: Square gives a
+//	                              borderless square window; a radius gives a
+//	                              borderless window whose content is masked to
+//	                              that radius.
+//	TitleBar.AppearsTransparent   NSWindow.titlebarAppearsTransparent.
+//	TitleBar.HideTitle            NSWindow.titleVisibility.
+//	TitleBar.FullSizeContent      NSWindowStyleMaskFullSizeContentView (also the
+//	                              ContentLayout Automatic input).
+//	TitleBar.UseToolbar           Ignored: a NativeWindow only shows a toolbar
+//	                              attached with SetToolbar.
+//	TitleBar.ToolbarStyle         NSWindow.toolbarStyle.
+//	TitleBar.HideToolbarSeparator NSToolbar.showsBaselineSeparator.
+//	TitleBar.ShowToolbarWhenFullscreen  Fullscreen presentation options.
+//	ContentLayout                 EdgeToEdge keeps the split layout full-size so
+//	                              the editor scrolls beneath the toolbar with
+//	                              AppKit's automatic insets. BelowToolbar removes
+//	                              full-size content, which places the whole
+//	                              layout, sidebar included, beneath the toolbar
+//	                              (the split view is the window's content view).
+//	                              Automatic follows TitleBar.FullSizeContent.
+//	Appearance                    NSWindow.appearance by name.
+//	WindowLevel                   NSWindow.level; precedence WindowLevel, then
+//	                              AlwaysOnTop or a floating panel, then normal.
+//	CollectionBehavior            NSWindow.collectionBehavior; zero selects
+//	                              FullScreenPrimary.
+//	TabbingMode                   NSWindow.tabbingMode; Default resolves to
+//	                              Disallowed.
+//	DisableEscapeExitsFullscreen  cancelOperation: is swallowed in fullscreen.
+//	WindowClass / PanelPreferences  Panel creates an NSPanel subclass with the
+//	                              FloatingPanel, BecomesKeyOnlyIfNeeded,
+//	                              NonActivating and UtilityWindow preferences.
+//	InvisibleTitleBarHeight       Not applicable: it sizes the WebView drag
+//	                              region, and native views handle their own drag.
+//	EventMapping                  Not applicable: NativeWindow has no window
+//	                              event API yet, so nothing is emitted to remap.
+//	EnableFraudulentWebsiteWarnings, WebviewPreferences  Not applicable: no WKWebView.
+//	SplitView, Toolbar            Ignored: NativeWindowOptions.SplitView and
+//	                              NativeWindowOptions.Toolbar are used instead.
 type macosNativeWindow struct {
 	parent        *NativeWindow
 	nsWindow      unsafe.Pointer
@@ -37,7 +104,9 @@ func newNativeWindowImpl(parent *NativeWindow) nativeWindowImpl {
 func (w *macosNativeWindow) run() error {
 	globalApplication.dispatchOnMainThread(func() {
 		options := w.parent.options
-		w.nsWindow = C.nativeWindowCreate(C.uint(w.parent.id), C.int(options.Width), C.int(options.Height), C.bool(options.HideOnClose))
+		macOptions := options.Mac
+		frame := resolveNativeMacFrame(macOptions)
+		w.nsWindow = C.nativeWindowCreate(w.windowConfig(frame))
 		if w.nsWindow == nil {
 			w.parent.Error("failed to create NSWindow")
 			return
@@ -50,19 +119,27 @@ func (w *macosNativeWindow) run() error {
 		if options.MaxWidth != 0 || options.MaxHeight != 0 {
 			C.nativeWindowSetMaxSize(w.nsWindow, C.int(options.MaxWidth), C.int(options.MaxHeight))
 		}
-		C.nativeWindowSetAlwaysOnTop(w.nsWindow, C.bool(options.AlwaysOnTop))
-		titlebar := options.Mac.TitleBar
-		C.nativeWindowConfigureTitlebar(w.nsWindow,
-			C.bool(titlebar.AppearsTransparent),
-			C.bool(titlebar.FullSizeContent),
-			C.bool(titlebar.HideTitle),
-			C.bool(titlebar.HideToolbarSeparator),
-			C.int(titlebar.ToolbarStyle))
+		// The order below matches macosWebviewWindow.run so both window kinds
+		// resolve the same MacWindow options identically.
+		C.windowChromeSetShadow(w.nsWindow, C.bool(!macOptions.DisableShadow))
+		C.windowChromeSetLevel(w.nsWindow, C.int(nativeMacWindowLevelCode(effectiveNativeMacWindowLevel(options))))
+		C.windowChromeSetCollectionBehavior(w.nsWindow, C.int(macOptions.CollectionBehavior))
+		C.windowChromeSetTabbingMode(w.nsWindow, C.int(nativeMacTabbingModeValue(macOptions.TabbingMode)))
+		titlebar := macOptions.TitleBar
+		if !frame.frameless {
+			C.nativeWindowConfigureTitlebar(w.nsWindow,
+				C.bool(titlebar.AppearsTransparent),
+				C.bool(titlebar.FullSizeContent),
+				C.bool(titlebar.HideTitle),
+				C.bool(titlebar.HideToolbarSeparator),
+				C.int(titlebar.ToolbarStyle))
+		}
 		if err := w.installSplitView(); err != nil {
 			w.parent.Error("%s", err)
 			w.close()
 			return
 		}
+		w.applyContentChrome(frame)
 		w.parent.lock.RLock()
 		toolbar := w.parent.toolbar
 		w.parent.lock.RUnlock()
@@ -72,6 +149,11 @@ func (w *macosNativeWindow) run() error {
 				w.close()
 				return
 			}
+		}
+		if macOptions.Appearance != "" {
+			appearance := C.CString(string(macOptions.Appearance))
+			C.windowChromeSetAppearanceByName(w.nsWindow, appearance)
+			C.free(unsafe.Pointer(appearance))
 		}
 		if options.InitialPosition == WindowCentered {
 			C.nativeWindowCenter(w.nsWindow)
@@ -92,6 +174,58 @@ func (w *macosNativeWindow) run() error {
 		}
 	})
 	return nil
+}
+
+// windowConfig gathers the options AppKit needs at construction time.
+func (w *macosNativeWindow) windowConfig(frame nativeMacFrame) C.WailsNativeWindowConfig {
+	options := w.parent.options
+	panel := options.Mac.PanelPreferences
+	return C.WailsNativeWindowConfig{
+		windowID:                     C.uint(w.parent.id),
+		width:                        C.int(options.Width),
+		height:                       C.int(options.Height),
+		hideOnClose:                  C.bool(options.HideOnClose),
+		frameless:                    C.bool(frame.frameless),
+		borderless:                   C.bool(frame.borderless),
+		cornerRadius:                 C.double(frame.cornerRadius),
+		isPanel:                      C.bool(options.Mac.WindowClass == MacWindowClassPanel),
+		floatingPanel:                C.bool(panel.FloatingPanel),
+		becomesKeyOnlyIfNeeded:       C.bool(panel.BecomesKeyOnlyIfNeeded),
+		nonActivating:                C.bool(panel.NonActivating),
+		utilityWindow:                C.bool(panel.UtilityWindow),
+		disableEscapeExitsFullscreen: C.bool(options.Mac.DisableEscapeExitsFullscreen),
+	}
+}
+
+// applyContentChrome applies ContentLayout, the custom corner mask and the
+// Backdrop once the split layout owns the window's content view. The backdrop
+// is created here rather than before installation because the split installer
+// replaces the content view, which would discard an earlier backdrop.
+func (w *macosNativeWindow) applyContentChrome(frame nativeMacFrame) {
+	macOptions := w.parent.options.Mac
+	glass := macOptions.LiquidGlass
+	backdrop := C.WailsNativeBackdropConfig{
+		backdrop:          C.int(macOptions.Backdrop),
+		glassStyle:        C.int(glass.Style),
+		glassMaterial:     C.int(glass.Material),
+		glassCornerRadius: C.double(nativeMacLiquidGlassCornerRadius(glass)),
+		groupSpacing:      C.double(glass.GroupSpacing),
+	}
+	if glass.TintColor != nil {
+		backdrop.tintR = C.int(glass.TintColor.Red)
+		backdrop.tintG = C.int(glass.TintColor.Green)
+		backdrop.tintB = C.int(glass.TintColor.Blue)
+		backdrop.tintA = C.int(glass.TintColor.Alpha)
+	}
+	if glass.GroupID != "" {
+		backdrop.groupID = C.CString(glass.GroupID)
+		defer C.free(unsafe.Pointer(backdrop.groupID))
+	}
+	if macOptions.Backdrop == MacBackdropLiquidGlass && !bool(C.windowChromeLiquidGlassSupported()) {
+		globalApplication.debug("Liquid Glass not supported on this macOS version, falling back to translucent", "window", w.parent.id)
+	}
+	belowToolbar := resolveNativeMacContentLayout(macOptions) == MacContentLayoutBelowToolbar
+	C.nativeWindowApplyContentChrome(w.nsWindow, C.bool(belowToolbar), C.double(frame.cornerRadius), backdrop)
 }
 
 func (w *macosNativeWindow) installSplitView() error {

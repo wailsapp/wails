@@ -32,6 +32,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	quick, err := newQuickNote(app, editorApp)
+	if err != nil {
+		log.Fatal(err)
+	}
+	editorApp.toggleQuickNote = quick.toggle
 
 	tray := app.SystemTray.New().
 		SetTemplateIcon(icons.SystrayMacTemplate)
@@ -42,6 +47,7 @@ func main() {
 	trayMenu.Add("Open Native Notes").OnClick(func(*application.Context) {
 		editorApp.show()
 	})
+	trayMenu.Add("Quick Note").OnClick(func(*application.Context) { quick.toggle() })
 	trayMenu.Add("Save").OnClick(func(*application.Context) {
 		if err := editorApp.save(); err != nil {
 			log.Printf("save: %v", err)
@@ -88,6 +94,11 @@ func installApplicationMenu(app *application.App, editor *nativeEditorApp) {
 	view := menu.AddSubmenu("View")
 	view.Add("Toggle Sidebar").SetAccelerator("Ctrl+Cmd+s").OnClick(func(*application.Context) {
 		editor.sidebarPane.Toggle()
+	})
+	view.Add("Quick Note").SetAccelerator("Ctrl+Cmd+n").OnClick(func(*application.Context) {
+		if editor.toggleQuickNote != nil {
+			editor.toggleQuickNote()
+		}
 	})
 	menu.AddRole(application.WindowMenu)
 	app.Menu.Set(menu)

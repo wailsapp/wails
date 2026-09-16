@@ -31,6 +31,9 @@ type nativeEditorApp struct {
 	sidebarPane *application.MacSplitPane
 	saveItem    *application.MacToolbarItem
 	directory   string
+	// toggleQuickNote shows or hides the floating Quick Note panel; main.go
+	// wires it once the panel exists.
+	toggleQuickNote func()
 
 	lock      sync.Mutex
 	files     []nativeFile
@@ -104,6 +107,14 @@ func newNativeEditorApp(app *application.App, benchmark benchmarkConfig) (*nativ
 			result.window.Error("save: %s", err)
 		}
 	})
+	toolbar.AddButton("Quick Note").
+		SetSymbol("square.and.pencil").
+		SetTooltip("Show or hide the floating Quick Note panel").
+		OnClick(func(*application.Context) {
+			if result.toggleQuickNote != nil {
+				result.toggleQuickNote()
+			}
+		})
 	if err := result.window.SetToolbar(toolbar); err != nil {
 		return nil, err
 	}
@@ -228,6 +239,20 @@ func (a *nativeEditorApp) save() error {
 	a.lock.Unlock()
 	a.saveItem.SetEnabled(false).SetBadgeCount(0)
 	return nil
+}
+
+// appendText adds a paragraph to the document open in the editor and marks it
+// dirty. SetText does not raise OnChange, so the dirty state is set here.
+func (a *nativeEditorApp) appendText(text string) {
+	current := a.editor.Text()
+	if current != "" && !strings.HasSuffix(current, "\n") {
+		current += "\n"
+	}
+	a.editor.SetText(current + text + "\n")
+	a.lock.Lock()
+	a.dirty = true
+	a.lock.Unlock()
+	a.saveItem.SetEnabled(true).SetBadgeCount(1)
 }
 
 func (a *nativeEditorApp) filter(query string) {
