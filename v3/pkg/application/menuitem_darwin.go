@@ -432,5 +432,6 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 	if item.accelerator != nil {
 		result.setAccelerator(item.accelerator)
 	}
+	result.applyExtras()
 	return result
 }

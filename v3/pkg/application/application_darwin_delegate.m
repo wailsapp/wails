@@ -86,6 +86,9 @@ extern void handleSecondInstanceData(char * message);
         handleSecondInstanceData((char*)utf8Message);
     }
 }
+- (NSMenu *)applicationDockMenu:(NSApplication *)sender {
+    return (NSMenu *)HandleDockMenu();
+}
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     if( hasListeners(EventApplicationDidBecomeActive) ) {

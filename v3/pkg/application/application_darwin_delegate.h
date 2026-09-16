@@ -13,6 +13,10 @@
 
 extern void HandleOpenFile(char *);
 
+// Dock menu: returns the NSMenu* to show for a right-click on the Dock icon,
+// or NULL for none (see menu_mac_extras_darwin.go)
+extern void* HandleDockMenu(void);
+
 // Declarations for Apple Event based custom URL handling and universal link
 extern void HandleOpenURL(char*);
 

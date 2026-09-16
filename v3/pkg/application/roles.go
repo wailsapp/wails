@@ -63,6 +63,7 @@ const (
 	FindPrevious   Role = iota
 	Front          Role = iota
 	Help           Role = iota
+	OpenRecent     Role = iota
 )
 
 func NewFileMenu() *MenuItem {

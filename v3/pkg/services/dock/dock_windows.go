@@ -400,6 +400,22 @@ func (w *windowsDock) createBadge() {
 	w.badgeImg = img
 }
 
+// SetProgress is not implemented on Windows yet (taskbar progress is
+// available through ITaskbarList3 but not wired here).
+func (w *windowsDock) SetProgress(fraction float64) error {
+	return nil
+}
+
+// ClearProgress is not implemented on Windows yet.
+func (w *windowsDock) ClearProgress() error {
+	return nil
+}
+
+// GetProgress is not implemented on Windows yet.
+func (w *windowsDock) GetProgress() *float64 {
+	return nil
+}
+
 func (w *windowsDock) GetBadge() *string {
 	return w.badge
 }

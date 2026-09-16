@@ -64,6 +64,21 @@ func (d *iosDock) RemoveBadge() error {
 	return nil
 }
 
+// SetProgress is a stub on iOS since app icons have no progress bar.
+func (d *iosDock) SetProgress(fraction float64) error {
+	return nil
+}
+
+// ClearProgress is a stub on iOS.
+func (d *iosDock) ClearProgress() error {
+	return nil
+}
+
+// GetProgress is a stub on iOS.
+func (d *iosDock) GetProgress() *float64 {
+	return nil
+}
+
 // GetBadge retrieves the badge from the iOS app icon.
 func (d *iosDock) GetBadge() *string {
 	// iOS badge retrieval would go here via native bridge

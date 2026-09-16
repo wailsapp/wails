@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>macOS menus and Dock</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 32px; line-height: 1.5; }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    p, li { font-size: 14px; }
+    code { background: rgba(127,127,127,.18); padding: 1px 5px; border-radius: 4px; }
+    #log { margin-top: 16px; padding: 12px; border-radius: 8px; background: rgba(127,127,127,.12); font-family: ui-monospace, monospace; font-size: 12px; white-space: pre-wrap; min-height: 80px; }
+  </style>
+</head>
+<body>
+  <h1>macOS menus and Dock demo</h1>
+  <p>Everything in this demo lives in the native menu bar and the Dock:</p>
+  <ul>
+    <li><strong>Demo menu</strong>: SF Symbol images, badges, a section header, mixed state, indentation, an alternate item (hold Option).</li>
+    <li><strong>Demo &gt; Tag colour</strong>: a macOS 14 palette menu.</li>
+    <li><strong>File &gt; Open Recent</strong>: recent documents from <code>NSDocumentController</code>.</li>
+    <li><strong>Dock icon</strong>: right-click for the dock menu; the Dock menu items drive the badge and progress bar.</li>
+  </ul>
+  <div id="log">Waiting for menu events...</div>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const log = document.getElementById("log");
+      const append = (line) => { log.textContent = line + "\n" + log.textContent; };
+      if (window.wails && window.wails.Events) {
+        window.wails.Events.On("demo:log", (event) => append(String(event.data)));
+      }
+    });
+  </script>
+</body>
+</html>
