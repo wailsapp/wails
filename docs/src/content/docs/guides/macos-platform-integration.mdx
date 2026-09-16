@@ -953,6 +953,24 @@ returns that block ready to paste and `InfoPlistEntries` returns the same
 data as maps for a plist serialiser. `NSPortName` in those entries is the
 application `Name`, which must match `CFBundleName`.
 
+Projects built with the Wails CLI can declare the same services once in
+`build/config.yml` and let packaging render the `NSServices` block:
+
+```yaml
+services:
+  - name: SummariseText
+    menuTitle: Summarise with My Product
+    sendTypes:
+      - public.utf8-plain-text
+    returnTypes:
+      - public.utf8-plain-text
+    keyEquivalent: S
+```
+
+Each entry must match a `ServiceDefinition` registered in Go with the same
+`Name`. Run `pbs -update` after installing a new build so the Services menu
+picks up the change without a logout.
+
 ### Handoff and user activities
 
 `app.Activity.Publish` makes an `NSUserActivity` current so the user can
