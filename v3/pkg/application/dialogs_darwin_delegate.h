@@ -13,6 +13,9 @@
 // OpenPanel delegate to handle file filtering
 @interface OpenPanelDelegate : NSObject <NSOpenSavePanelDelegate>
 @property (nonatomic, strong) NSArray *allowedExtensions;
+// Uniform type identifiers added with AddContentType. Files conforming to
+// any of them are enabled even when their extension is not listed.
+@property (nonatomic, strong) NSArray *allowedTypeIdentifiers;
 @end
 
 #endif

@@ -3,6 +3,7 @@ package application
 import (
 	"strings"
 	"sync"
+	"unsafe"
 )
 
 type DialogType int
@@ -80,6 +81,14 @@ type MessageDialogOptions struct {
 
 type MessageDialog struct {
 	MessageDialogOptions
+
+	// macOS extras (see dialogs_mac_extras.go)
+	showsSuppression bool
+	suppressionLabel string
+	suppressed       bool
+	onSuppression    func(bool)
+	helpCallback     func()
+	accessoryView    unsafe.Pointer
 
 	// platform independent
 	impl messageDialogImpl
@@ -199,6 +208,7 @@ type OpenFileDialogStruct struct {
 	treatsFilePackagesAsDirectories bool
 	allowsOtherFileTypes            bool
 	filters                         []FileFilter
+	contentTypes                    []string
 
 	title      string
 	message    string
@@ -391,6 +401,14 @@ type SaveFileDialogStruct struct {
 	filename                        string
 	buttonText                      string
 	filters                         []FileFilter
+
+	// macOS extras (see dialogs_mac_extras.go)
+	contentTypes   []string
+	formats        []DialogFormat
+	selectedFormat int
+	onFormatChange func(int)
+	nameFieldLabel string
+	tags           []string
 
 	window Window
 

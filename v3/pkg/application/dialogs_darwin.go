@@ -10,6 +10,7 @@ package application
 
 #import <UniformTypeIdentifiers/UTType.h>
 #import "dialogs_darwin_delegate.h"
+#import "dialogs_mac_extras_darwin.h"
 
 extern void openFileDialogCallback(uint id, char* path);
 extern void openFileDialogCallbackEnd(uint id);
@@ -156,6 +157,7 @@ static void showOpenFileDialog(unsigned int dialogID,
 	bool allowsOtherFileTypes,
 	char *filterPatterns,
 	unsigned int filterPatternsCount,
+	char *contentTypes,
 	char* message,
 	char* directory,
 	char* buttonText,
@@ -206,6 +208,16 @@ static void showOpenFileDialog(unsigned int dialogID,
 		free(filterPatterns);
 	}
 
+	// Content type identifiers (AddContentType) coexist with the extension
+	// filters above: the panel accepts either, and the extension delegate
+	// also lets through files conforming to the identifiers.
+	if (contentTypes != NULL) {
+		NSArray<NSString *> *identifiers = wailsPanelApplyContentTypes(panel, contentTypes);
+		OpenPanelDelegate *delegate = (OpenPanelDelegate *)panel.delegate;
+		if (delegate != nil) {
+			delegate.allowedTypeIdentifiers = identifiers;
+		}
+	}
 
 	if (message != NULL) {
 		[panel setMessage:[NSString stringWithUTF8String:message]];
@@ -268,6 +280,7 @@ static void showSaveFileDialog(unsigned int dialogID,
 	char* directory,
 	char* buttonText,
 	char* filename,
+	WailsSavePanelExtras *extras,
 	void *window) {
 
 	NSSavePanel *panel = [NSSavePanel savePanel];
@@ -298,6 +311,11 @@ static void showSaveFileDialog(unsigned int dialogID,
 	[panel setExtensionHidden:hideExtension];
 	[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
 	[panel setAllowsOtherFileTypes:allowOtherFileTypes];
+
+	// Content types, name field label, tags and the format pop-up accessory
+	// (see dialogs_mac_extras_darwin.m). Applied after the name so the
+	// selected format can rewrite its extension.
+	wailsSavePanelApplyExtras(panel, dialogID, extras);
 
 	if (window != NULL) {
 		[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
@@ -458,8 +476,12 @@ func (m *macosDialog) show() {
 			count++
 		}
 
+		// Suppression checkbox, help button and accessory view (macOS extras)
+		helpID := m.applyExtras()
+
 		var callBackID int
 		callBackID = addDialogCallback(func(buttonPressed int) {
+			m.finishExtras(helpID)
 			if len(m.dialog.Buttons) > buttonPressed {
 				button := reversedButtons[buttonPressed]
 				if button.Callback != nil {
@@ -535,6 +557,7 @@ func (m *macosOpenFileDialog) show() (chan string, error) {
 		C.bool(m.dialog.allowsOtherFileTypes),
 		toCString(filterPatterns),
 		C.uint(len(filterPatterns)),
+		m.contentTypesCString(),
 		toCString(m.dialog.message),
 		toCString(m.dialog.directory),
 		toCString(m.dialog.buttonText),
@@ -585,6 +608,7 @@ func (m *macosSaveFileDialog) show() (chan string, error) {
 		// get NSWindow from window
 		nsWindow = m.dialog.window.NativeWindow()
 	}
+	extras := m.savePanelExtras()
 	C.showSaveFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canCreateDirectories),
 		C.bool(m.dialog.showHiddenFiles),
@@ -596,6 +620,7 @@ func (m *macosSaveFileDialog) show() (chan string, error) {
 		toCString(m.dialog.directory),
 		toCString(m.dialog.buttonText),
 		toCString(m.dialog.filename),
+		&extras,
 		nsWindow)
 	return saveFileResponses[m.dialog.id], nil
 }
@@ -611,6 +636,7 @@ func saveFileDialogCallback(cid C.uint, cpath *C.char) {
 		channel <- path
 		close(channel)
 		delete(saveFileResponses, id)
+		saveFormatDialogDone(id)
 		freeDialogID(id)
 
 	} else {

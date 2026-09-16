@@ -55,3 +55,31 @@ func (dm *DialogManager) Warning() *MessageDialog {
 func (dm *DialogManager) Error() *MessageDialog {
 	return newMessageDialog(ErrorDialogType)
 }
+
+// Prompt shows a native alert with a text field and blocks until it is
+// dismissed. It returns the entered value and true when the OK button was
+// pressed, or "" and false when cancelled. The alert is a sheet when
+// options.Window is set. Call it from a goroutine, not from the main
+// thread. On platforms without a native implementation it returns
+// ErrDialogNotSupported.
+func (dm *DialogManager) Prompt(options PromptOptions) (string, bool, error) {
+	return dialogPrompt(options)
+}
+
+// PickColor opens the system colour panel and blocks until it is closed.
+// It returns the final colour and true when the user changed the colour,
+// or the initial colour and false when the panel was closed untouched.
+// Call it from a goroutine, not from the main thread. On platforms without
+// a native colour panel it returns ErrDialogNotSupported.
+func (dm *DialogManager) PickColor(options ColorPickerOptions) (RGBA, bool, error) {
+	return dialogPickColor(options)
+}
+
+// PickFont opens the system font panel and blocks until it is closed. It
+// returns the final font and true when the user changed the selection, or
+// the initial font and false when the panel was closed untouched. Call it
+// from a goroutine, not from the main thread. On platforms without a native
+// font panel it returns ErrDialogNotSupported.
+func (dm *DialogManager) PickFont(options FontPickerOptions) (FontDescriptor, bool, error) {
+	return dialogPickFont(options)
+}
