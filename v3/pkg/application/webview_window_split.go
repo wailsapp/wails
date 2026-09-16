@@ -1,12 +1,27 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"sync"
 	"sync/atomic"
 	"unsafe"
 )
+
+// ErrMacSplitViewAlreadyInstalled is reported when SetSplitView is called on a
+// window whose native split view is already installed. AppKit hands the
+// window's content view controller to the split layout and Wails does not
+// reverse that operation; create a new window with the new layout instead.
+var ErrMacSplitViewAlreadyInstalled = errors.New("a native split view is already installed in this window")
+
+// macSplitLateInstaller is implemented by window implementations that can
+// install a split layout into a native window that already exists. Platforms
+// without AppKit do not implement it, so a late SetSplitView only stores the
+// layout there.
+type macSplitLateInstaller interface {
+	installSplitViewLate() error
+}
 
 // macSplitPaneRole is the semantic AppKit role of a split-view pane. The role
 // selects the NSSplitViewItem factory and therefore the system's default

@@ -9,6 +9,7 @@ import (
 // installDaymarkMenu gives the native toolbar actions keyboard and menu
 // equivalents, as a production macOS application should.
 func installDaymarkMenu(app *application.App, toolbar *daymarkToolbar, split *daymarkSplit) {
+	runtimeWindows := newDaymarkRuntimeWindows(app)
 	menu := app.NewMenu()
 	if runtime.GOOS == "darwin" {
 		menu.AddRole(application.AppMenu)
@@ -51,7 +52,22 @@ func installDaymarkMenu(app *application.App, toolbar *daymarkToolbar, split *da
 		split.SetContentLayout(application.MacContentLayoutBelowToolbar)
 	})
 
-	menu.AddRole(application.WindowMenu)
+	// A custom Window menu: the standard items plus two that create windows
+	// while the application is running (see runtime.go).
+	windowMenu := menu.AddSubmenu("Window")
+	windowMenu.Add("New Split Window").SetAccelerator("CmdOrCtrl+Shift+n").OnClick(func(*application.Context) {
+		runtimeWindows.NewSplitWindow()
+	})
+	windowMenu.Add("New Native Editor Window").SetAccelerator("CmdOrCtrl+Option+n").OnClick(func(*application.Context) {
+		runtimeWindows.NewNativeEditorWindow()
+	})
+	windowMenu.AddSeparator()
+	windowMenu.AddRole(application.Minimise)
+	windowMenu.AddRole(application.Zoom)
+	if runtime.GOOS == "darwin" {
+		windowMenu.AddSeparator()
+		windowMenu.AddRole(application.Front)
+	}
 	menu.AddRole(application.HelpMenu)
 	app.Menu.Set(menu)
 }

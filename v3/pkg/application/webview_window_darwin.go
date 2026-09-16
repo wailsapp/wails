@@ -1699,7 +1699,9 @@ func (w *macosWebviewWindow) run() {
 		// Install the native split layout, if one was configured, before any
 		// toolbar is attached: a sidebar tracking separator requires its
 		// split view to already be in the same window as its toolbar.
-		w.installSplitView()
+		if err := w.installSplitView(); err != nil {
+			w.parent.Error("SetSplitView: %s", err)
+		}
 		if w.activeSplitView == nil {
 			layout := resolveMacContentLayout(macOptions, MacContentLayoutAutomatic)
 			C.windowApplyContentLayout(w.nsWindow, C.int(layout))

@@ -11,6 +11,7 @@ package application
 import "C"
 
 import (
+	"fmt"
 	"unsafe"
 )
 
@@ -68,16 +69,37 @@ func processMacTextEditorChanged(editorID C.ulonglong) {
 	macTextEditorChanged <- uint64(editorID)
 }
 
-// installSplitView installs a pending native split layout. It runs on the
-// application thread during window creation, after the primary WebView exists
-// and before any toolbar is attached: a sidebar tracking separator requires
-// its split view to already be in the window.
-func (w *macosWebviewWindow) installSplitView() {
+// installSplitViewLate installs a split layout into a window that already
+// exists. It runs on the application thread. The WebView is re-parented into
+// the primary pane by the same native path creation uses, the current toolbar
+// is re-attached so tracking separators can align with the new sidebar
+// divider, and accessories queued for the new panes are attached.
+func (w *macosWebviewWindow) installSplitViewLate() error {
+	if w.nsWindow == nil {
+		return fmt.Errorf("the native window is not available")
+	}
+	if w.activeSplitView != nil {
+		return ErrMacSplitViewAlreadyInstalled
+	}
+	if err := w.installSplitView(); err != nil {
+		return err
+	}
+	w.refreshToolbarAfterShow()
+	w.flushPendingMacAccessories()
+	return nil
+}
+
+// installSplitView installs the window's pending native split layout. It runs
+// on the application thread: during window creation, after the primary
+// WebView exists and before any toolbar is attached (a sidebar tracking
+// separator requires its split view to already be in the window), or later
+// through installSplitViewLate. A nil pending layout is not an error.
+func (w *macosWebviewWindow) installSplitView() error {
 	w.parent.splitViewLock.RLock()
 	split := w.parent.splitView
 	w.parent.splitViewLock.RUnlock()
 	if split == nil {
-		return
+		return nil
 	}
 
 	split.lock.RLock()
@@ -89,8 +111,7 @@ func (w *macosWebviewWindow) installSplitView() {
 	handle := C.splitViewCreate(autosaveC)
 	C.free(unsafe.Pointer(autosaveC))
 	if handle == nil {
-		w.parent.Error("SetSplitView: failed to create the native split view")
-		return
+		return fmt.Errorf("failed to create the native split view")
 	}
 
 	for _, pane := range panes {
@@ -155,8 +176,7 @@ func (w *macosWebviewWindow) installSplitView() {
 			}
 		}
 		C.splitViewRelease(handle)
-		w.parent.Error("SetSplitView: failed to install the native split view")
-		return
+		return fmt.Errorf("failed to install the native split view")
 	}
 
 	split.lock.Lock()
@@ -170,6 +190,7 @@ func (w *macosWebviewWindow) installSplitView() {
 	for _, pane := range panes {
 		applyMacSplitPaneLatestState(pane)
 	}
+	return nil
 }
 
 // teardownSplitView detaches the Go callback registry, invalidates every pane

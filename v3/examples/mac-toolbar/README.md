@@ -75,6 +75,26 @@ standard macOS 26 toolbar floats above the WebView and AppKit supplies the
 scroll-edge treatment. **Below Toolbar** constrains the WebView to the
 unobscured window content guide for applications that do not want overlap.
 
+### Windows created at runtime
+
+The **Window** menu creates windows while the application is running, the
+way a tray or menu callback in a real application would (see `runtime.go`):
+
+- **Window → New Split Window** (Cmd+Shift+N) opens another WebView window
+  with a native sidebar beside the editor page. The layout and toolbar are
+  passed as `WebviewWindowOptions.Mac.SplitView` and `Mac.Toolbar`, so the
+  window is constructed in one call.
+- **Window → New Native Editor Window** (Cmd+Option+N) opens a WebView-free
+  `NativeWindow`: a sidebar of snippets beside an `NSTextView`, passed as
+  `NativeWindowOptions.SplitView` and `Toolbar`. A `NativeWindow` is created
+  as soon as it has content, so with the layout in its options the window is
+  visible before `NewWithOptions` returns.
+
+`SetSplitView` also works on a window that already exists: it installs the
+layout on the application thread and moves the window's WebView into the
+primary pane. An installed layout cannot be replaced; that call reports
+`ErrMacSplitViewAlreadyInstalled` and leaves the window unchanged.
+
 ## Example layout
 
 - `main.go` creates the application and window, attaches the split view (which

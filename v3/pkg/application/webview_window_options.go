@@ -674,9 +674,11 @@ type MacWindow struct {
 	ContentLayout MacContentLayout
 	// Appearance is the appearance type for the window
 	Appearance MacAppearanceType
-	// InvisibleTitleBarHeight defines the height of an invisible titlebar which responds to dragging
+	// InvisibleTitleBarHeight defines the height of an invisible titlebar which responds to dragging.
+	// It sizes the WebView drag region only and does not apply to a NativeWindow.
 	InvisibleTitleBarHeight int
-	// Maps events from platform specific to common event types
+	// Maps events from platform specific to common event types.
+	// A NativeWindow emits no window events yet, so it does not apply there.
 	EventMapping map[events.WindowEventType]events.WindowEventType
 
 	// EnableFraudulentWebsiteWarnings will enable warnings for fraudulent websites.
@@ -711,6 +713,18 @@ type MacWindow struct {
 	// PanelPreferences configures NSPanel-specific behaviour when WindowClass is
 	// MacWindowClassPanel. It is ignored for standard windows.
 	PanelPreferences MacPanelPreferences
+
+	// SplitView installs a native split-view layout when the window is
+	// created, exactly as WebviewWindow.SetSplitView would before the window
+	// is shown. It lets a window created after App.Run be configured in one
+	// call. Validation errors are reported through Window.Error.
+	SplitView *MacSplitView
+
+	// Toolbar attaches a native toolbar when the window is created, exactly
+	// as WebviewWindow.SetToolbar would before the window is shown. It is
+	// attached after SplitView so a sidebar tracking separator can align with
+	// the sidebar divider.
+	Toolbar *MacToolbar
 }
 
 // MacWindowClass selects the native AppKit class used for a webview window.
