@@ -1,5 +1,11 @@
 # Native macOS chrome branch review
 
+> **Status update, 2026-09-16.** Every finding and every item under "Recommended
+> next work" sections 0 to 5 has since been implemented on this branch (commits
+> `0d04d3cfc` through `ac9239814`). Each finding below carries a resolution note.
+> Section 6 (PDFKit, Quick Look, sheets, popovers, NSDocument) remains open and
+> is catalogued in `native-feature-audit.md`.
+
 ## Scope
 
 This review covers the branch-specific work from `7b4823680` through
@@ -111,6 +117,8 @@ surface is intentionally temporary and materially less complete than
 
 ### [P1] Split windows cannot be constructed after `App.Run`
 
+**Resolved.** `SetSplitView` installs immediately on an existing window, `MacWindow.SplitView` and `MacWindow.Toolbar` (and the `NativeWindowOptions` equivalents) give atomic construction, `NativeWindow.Run` returns errors, and `NativeWindowManager.New()` returns a deferred window that is created once it has content. Replacing an installed layout returns `ErrMacSplitViewAlreadyInstalled`. Covered by `webview_window_split_runtime_test.go` and a GUI probe.
+
 Both window managers call `runOrDeferToAppRun` inside `NewWithOptions`. Once
 the app is running, that method calls `Run` synchronously before returning the
 new window. `SetSplitView` is a separate call and rejects any window whose
@@ -133,6 +141,8 @@ failure with a race.
 
 ### [P1] `server` builds no longer compile
 
+**Resolved.** The WebKit request constructors moved to `webview_requests_darwin.go`; the `CGO_ENABLED=0 GOOS=linux -tags server` and `GOOS=windows` builds pass.
+
 `webview_requests.go` is guarded only by `!wails_native` and unconditionally
 calls `webview.NewRequest`. Under `-tags server`, the asset-server WebView
 package intentionally has no platform `NewRequest` implementation.
@@ -150,6 +160,8 @@ be excluded from `server`, with a server-compatible stub or with the consumer
 removed from that build graph.
 
 ### [P1] `NativeWindowOptions.Mac` silently ignores most advertised options
+
+**Resolved.** Native windows apply backdrop, shadow, corners, appearance, level, collection behaviour, tabbing mode, escape-in-fullscreen, panel class and preferences, content layout and the full titlebar struct through shared helpers in `mac_window_chrome_darwin.m`. The contract table sits above `macosNativeWindow` in `native_window_darwin.go`.
 
 The public comment says `NativeWindow` reuses existing macOS window chrome
 options. The implementation currently applies only a titlebar subset:
@@ -173,6 +185,8 @@ acceptance is the least reliable contract.
 
 ### [P2] Toolbar structure becomes silently stale after attachment
 
+**Resolved.** Structural changes sync to the live `NSToolbar`; `Remove` and `Move` exist; late additions validate at add time and report through `Window.Error`.
+
 Item setters update an installed toolbar, but every `Add*` method only appends
 to the Go model. Adding a button, group member, space, toggle, or separator
 after installation does not insert it into the active `NSToolbar`, and no
@@ -188,6 +202,8 @@ can preserve the no-public-ID API.
 
 ### [P2] Accessory style API has no Go-native producer
 
+**Resolved.** `MacAccessory` builds native controls and attaches to titlebars and, on macOS 26+, split items; `Controller()` exposes the wrapped controller.
+
 The scroll-edge wrapper accepts an unsafe pointer, but Wails no longer exposes
 the titlebar-accessory creation API that existed in the branch's first draft,
 and it does not expose split-item accessories. A normal Go application cannot
@@ -197,6 +213,8 @@ This is a useful escape hatch, but it should not be presented as complete
 accessory-controller support.
 
 ### [P2] Native window failures are log-only
+
+**Resolved.** `NativeWindow.Run() error` and `SetSplitView` return the failure; asynchronous native allocation failures are still logged.
 
 `NativeWindow.Run()` has no error result. Creation, split installation, and
 toolbar attachment failures are logged and the window is closed. This makes
