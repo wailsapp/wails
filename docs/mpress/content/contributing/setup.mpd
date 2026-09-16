@@ -35,7 +35,7 @@ This guide walks you through setting up a complete development environment for w
 
 ### Node.js and npm
 
-Required for building documentation and testing frontend integrations.
+Required only for frontend integration examples.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -195,11 +195,13 @@ If the test app builds and runs, your environment is ready!
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### Specific Package Tests
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### Run with Coverage
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,27 +217,29 @@ go tool cover -html=coverage.out
 ### Run with Race Detector
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## Working with Documentation
 
-The Wails documentation is built with Astro and Starlight.
+The Wails v3 documentation is written in M-Press. English source files live in
+`docs/mpress/content/`; translations live in language directories such as
+`fr/` and `id/`.
+
+Preview and validate documentation changes from the repository root:
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+# Use `python` on Windows if `python3` is unavailable.
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-Documentation will be available at `http://localhost:4321/`
+The production site is static. Node.js, a translation provider, and Cloudflare
+credentials are not required for local documentation work.
 
 ## Debugging
 

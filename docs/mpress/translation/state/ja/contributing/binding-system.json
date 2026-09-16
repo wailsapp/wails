@@ -42,12 +42,12 @@
       "updatedAt": "2026-09-13T23:13:33Z"
     },
     "b0004-text-01": {
-      "sourceHash": "a3ffba599380feff13f27e19ad45240fe779657f2589aaf9a9da590b2fc880e8",
-      "targetHash": "9f8c5ba696afd34053ded79335f6097cdff2ef8f87f87703ef49148549fefd74",
-      "machineHash": "9f8c5ba696afd34053ded79335f6097cdff2ef8f87f87703ef49148549fefd74",
-      "machineText": "正式な詳細解説については[`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/)を参照してください。",
+      "sourceHash": "436122fa35ef898c1fad4d8d8be66b00e060858a6a1a653005d2ac9322089d54",
+      "targetHash": "846e23d301adcc4e04ecee4bdff88b7b85f074c22f364e0d15517983b42218bf",
+      "machineHash": "846e23d301adcc4e04ecee4bdff88b7b85f074c22f364e0d15517983b42218bf",
+      "machineText": "正式な詳細解説については[`contributing/architecture/bindings`](/contributing/architecture/bindings/)を参照してください。",
       "status": "final",
-      "sourcePreview": "See [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/) for",
+      "sourcePreview": "See [`contributing/architecture/bindings`](/contributing/architecture/bindings/) for",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

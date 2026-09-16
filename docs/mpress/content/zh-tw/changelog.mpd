@@ -346,7 +346,7 @@ _/
 
 ## 新增
 - 建置發布版 AAB 時，若未設定`ANDROID_KEYSTORE_FILE`，則顯示警告（Google Play 會拒絕以偵錯金鑰簽署的套件），並在 @taliesin-ai 的[PR](https://github.com/wailsapp/wails/pull/5730)中記錄 App Bundle 封裝與簽署方式
-- 在 @taliesin-ai 的[PR](https://github.com/wailsapp/wails/pull/5739)中新增多語言的 why-wails.mdx 文件
+- 在 @taliesin-ai 的[PR](https://github.com/wailsapp/wails/pull/5739)中新增多語言的 Why Wails 文件
 - 在 @fbbdev 的[PR](https://github.com/wailsapp/wails/pull/5398)中，支援在繫結中將 Go time.Time 對應至 JS Date 或字串
 - 在 @mortenolsrud 的[PR](https://github.com/wailsapp/wails/pull/5728)中新增供提交至 Play Store 使用的 Android App Bundle（AAB）封裝工作（`bundle`、`bundle:fat`、`assemble:aab`、`assemble:aab:release`）；APK 工作仍保留供本機／模擬器測試使用（修正[#5726](https://github.com/wailsapp/wails/issues/5726)）
 - 在 @taliesin-ai 的[PR](https://github.com/wailsapp/wails/pull/5735)中新增 Android 實體裝置工作目標，並恢復相機／位置權限
@@ -707,10 +707,10 @@ _/
 
 ## 新增
 - 新增法文文件本地化，見[PR](https://github.com/wailsapp/wails/pull/5328)，由 @leaanthony 貢獻
-- 在 Astro 文件網站中新增德文語系，見[PR](https://github.com/wailsapp/wails/pull/5343)，由 @leaanthony 貢獻
+- 在文件網站中新增德文語系，見[PR](https://github.com/wailsapp/wails/pull/5343)，由 @leaanthony 貢獻
 
 ## 變更
-- 在 Starlight 設定中註冊全部8個已翻譯語系，見[PR](https://github.com/wailsapp/wails/pull/5347)，由 @leaanthony 貢獻
+- 在文件設定中註冊全部8個已翻譯語系，見[PR](https://github.com/wailsapp/wails/pull/5347)，由 @leaanthony 貢獻
 - 更新多個與 Windows 上 WebView2 相關的檔案，見[PR](https://github.com/wailsapp/wails/pull/5317)，由 @leaanthony 貢獻
 
 ## 修正

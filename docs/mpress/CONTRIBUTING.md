@@ -33,7 +33,6 @@ MPD keeps headings, paragraphs, lists and fenced code readable. Preserve its
 `---` metadata block and matching `@...` / `@end` component boundaries. See
 https://github.com/leaanthony/mpress for the authoring reference.
 
-`docs/src/content/docs/` remains the Starlight rollback source.
 The M-Press site is built from `docs/mpress/content/`; do not edit generated
 `docs/mpress/site/` files.
 

@@ -594,12 +594,12 @@
       "updatedAt": "2026-09-13T23:13:49Z"
     },
     "b0050-text-01": {
-      "sourceHash": "5b73f2321385509f574732fe29743b7ab71b75118d6de896ba7454127d8b1382",
-      "targetHash": "985666e7e2d63b09a3980bd67f1a7663d3abf34c68ac917b70b27b92570487c6",
-      "machineHash": "985666e7e2d63b09a3980bd67f1a7663d3abf34c68ac917b70b27b92570487c6",
-      "machineText": "Wails 文档使用 Astro 和 Starlight 构建。",
+      "sourceHash": "cd731fffd21b1e020929e8c79c7b9c9dfad2f78081a53df1252a1a6668490984",
+      "targetHash": "b9c3aa7fc98eb428f45b81f616cc347040b838a86a77644c290913138db56e01",
+      "machineHash": "b9c3aa7fc98eb428f45b81f616cc347040b838a86a77644c290913138db56e01",
+      "machineText": "Wails 文档使用 M-Press 构建。",
       "status": "final",
-      "sourcePreview": "The Wails documentation is built with Astro and Starlight.",
+      "sourcePreview": "The Wails documentation is built with M-Press.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

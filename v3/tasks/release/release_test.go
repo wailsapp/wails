@@ -1028,7 +1028,7 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 		t.Fatalf("Failed to create version directory: %v", err)
 	}
 
-	err = os.MkdirAll(filepath.Join(projectRoot, "docs", "src", "content", "docs"), 0755)
+	err = os.MkdirAll(filepath.Join(projectRoot, "docs", "mpress", "content"), 0755)
 	if err != nil {
 		t.Fatalf("Failed to create docs directory: %v", err)
 	}
@@ -1041,9 +1041,10 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 	}
 
 	// Create initial changelog
-	changelogFile := filepath.Join(projectRoot, "docs", "src", "content", "docs", "changelog.mdx")
+	changelogFile := filepath.Join(projectRoot, "docs", "mpress", "content", "changelog.mpd")
 	initialChangelog := `---
-title: Changelog
+schema = 1
+title = "Changelog"
 ---
 
 ## [Unreleased]

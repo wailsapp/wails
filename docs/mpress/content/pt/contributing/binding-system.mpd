@@ -25,7 +25,7 @@ Este documento detalha _como_ isso acontece, desde a *análise estática* durant
 a compilação, passando pela *geração de código*, até a *ponte de runtime* que transfere\
 bytes pelo WebView.
 
-> Consulte [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/) para ver
+> Consulte [`contributing/architecture/bindings`](/contributing/architecture/bindings/) para ver
 > a análise detalhada e oficial do pipeline do gerador — esta página é uma
 > visão geral voltada a colaboradores.
 

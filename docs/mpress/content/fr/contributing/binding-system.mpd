@@ -25,7 +25,7 @@ Ce document explique en détail _comment_ cela fonctionne, depuis l’*analyse s
 compilation, en passant par la *génération de code*, jusqu’au *pont d’exécution* qui transfère\
 les octets via la WebView.
 
-> Consultez [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/) pour obtenir
+> Consultez [`contributing/architecture/bindings`](/contributing/architecture/bindings/) pour obtenir
 > l’analyse de référence détaillée du pipeline du générateur — cette page en donne une vue d’ensemble
 > destinée aux contributeurs.
 

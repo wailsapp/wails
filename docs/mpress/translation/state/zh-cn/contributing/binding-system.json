@@ -42,12 +42,12 @@
       "updatedAt": "2026-09-13T23:13:48Z"
     },
     "b0004-text-01": {
-      "sourceHash": "a3ffba599380feff13f27e19ad45240fe779657f2589aaf9a9da590b2fc880e8",
-      "targetHash": "ef3bff82eabc3abf8bb7f34e4ece70e2180f5329eafb1f061163be9c697969f0",
-      "machineHash": "ef3bff82eabc3abf8bb7f34e4ece70e2180f5329eafb1f061163be9c697969f0",
-      "machineText": "有关以下内容，请参阅[`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/)：",
+      "sourceHash": "436122fa35ef898c1fad4d8d8be66b00e060858a6a1a653005d2ac9322089d54",
+      "targetHash": "b421d5af815c7f988fb503bc0213bf9c7d5a10fd8f74600f86df75048328ae78",
+      "machineHash": "b421d5af815c7f988fb503bc0213bf9c7d5a10fd8f74600f86df75048328ae78",
+      "machineText": "有关以下内容，请参阅[`contributing/architecture/bindings`](/contributing/architecture/bindings/)：",
       "status": "final",
-      "sourcePreview": "See [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/) for",
+      "sourcePreview": "See [`contributing/architecture/bindings`](/contributing/architecture/bindings/) for",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

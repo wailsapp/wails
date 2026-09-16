@@ -346,7 +346,7 @@ _/
 
 ## 추가됨
 - `ANDROID_KEYSTORE_FILE`이 설정되지 않은 상태에서 릴리스 AAB를 빌드하면 경고하도록 추가하고(Google Play는 디버그 서명된 번들을 거부함), @taliesin-ai가 작성한 [PR](https://github.com/wailsapp/wails/pull/5730)에서 App Bundle 패키징 및 서명 방법을 문서화함
-- \@taliesin-ai가 작성한 [PR](https://github.com/wailsapp/wails/pull/5739)에서 여러 언어로 된 why-wails.mdx 문서를 추가함
+- \@taliesin-ai가 작성한 [PR](https://github.com/wailsapp/wails/pull/5739)에서 여러 언어로 된 Why Wails 문서를 추가함
 - \@fbbdev가 작성한 [PR](https://github.com/wailsapp/wails/pull/5398)에서 바인딩의 Go time.Time을 JS Date 또는 string으로 매핑하도록 지원함
 - \@mortenolsrud가 작성한 [PR](https://github.com/wailsapp/wails/pull/5728)에서 Play Store 제출용 Android App Bundle(AAB) 패키징 작업(`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`)을 추가함. APK 작업은 로컬/에뮬레이터 테스트용으로 유지함([#5726](https://github.com/wailsapp/wails/issues/5726) 해결)
 - \@taliesin-ai가 작성한 [PR](https://github.com/wailsapp/wails/pull/5735)에서 Android 실제 기기용 작업 대상을 추가하고 카메라/위치 권한을 재개함
@@ -707,10 +707,10 @@ _/
 
 ## 추가됨
 - 프랑스어 문서 현지화를 추가했습니다. [PR](https://github.com/wailsapp/wails/pull/5328), @leaanthony
-- Astro 문서 사이트에 독일어 로캘을 추가했습니다. [PR](https://github.com/wailsapp/wails/pull/5343), @leaanthony
+- 문서 사이트에 독일어 로캘을 추가했습니다. [PR](https://github.com/wailsapp/wails/pull/5343), @leaanthony
 
 ## 변경됨
-- 번역된 로캘 8개를 모두 Starlight 구성에 등록했습니다. [PR](https://github.com/wailsapp/wails/pull/5347), @leaanthony
+- 번역된 로캘 8개를 모두 문서 구성에 등록했습니다. [PR](https://github.com/wailsapp/wails/pull/5347), @leaanthony
 - WebView2를 위해 여러 Windows 관련 파일을 업데이트했습니다. [PR](https://github.com/wailsapp/wails/pull/5317), @leaanthony
 
 ## 수정됨

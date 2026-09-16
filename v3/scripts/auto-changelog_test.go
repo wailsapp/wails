@@ -227,10 +227,13 @@ func TestLocalizedMPDSlug(t *testing.T) {
 	}
 }
 
-func TestDocumentationIgnoresRollbackAndNonPages(t *testing.T) {
-	for _, file := range []string{"docs/src/content/docs/guide.mdx", "docs/mpress/content/changelog.mpd", "docs/mpress/content/image.svg"} {
-		if isDocumentationPage(file) {
-			t.Errorf("%s must not produce a release-note documentation link", file)
-		}
+func TestDocumentationIgnoresNonMPD(t *testing.T) {
+	files := []string{"docs/legacy/guide.mdx", "docs/mpress/content/changelog.mpd", "docs/mpress/content/image.svg"}
+	for _, file := range files {
+		t.Run(file, func(t *testing.T) {
+			if isDocumentationPage(file) {
+				t.Errorf("%s must not produce a release-note documentation link", file)
+			}
+		})
 	}
 }

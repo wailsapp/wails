@@ -57,10 +57,10 @@ Check out the\
 @steps
 @step title="Make a fork of the repository."
 @end
-@step title="Add the image(s) under `docs/src/assets/showcase-images` folder."
+@step title="Add the image(s) under `docs/mpress/static/showcase-images` folder."
 @end
-@step title="Make a copy of the `_template.md` file under"
-`docs/src/content/docs/community/showcase` folder.
+@step title="Make a copy of an existing `.mpd` showcase file under"
+`docs/mpress/content/community/showcase` folder.
 @end
 @step title="Rename the copied file to the name of your project. (Name should not start"
 with `_`))
@@ -68,7 +68,7 @@ with `_`))
 @step title="Update the title, image, link and content of the file."
 @end
 @step title="Add it on the above list in"
-`docs/src/content/docs/community/showcase/index.mdx`.
+`docs/mpress/content/community/showcase/index.mpd`.
 @end
 @step title="Submit a PR."
 

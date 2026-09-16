@@ -346,7 +346,7 @@ _/
 
 ## Ditambahkan
 - Tambahkan peringatan saat membangun AAB rilis tanpa menetapkan `ANDROID_KEYSTORE_FILE` (Google Play menolak bundle yang ditandatangani dengan kunci debug), serta dokumentasikan pengemasan dan penandatanganan App Bundle dalam [PR](https://github.com/wailsapp/wails/pull/5730) oleh @taliesin-ai
-- Tambahkan dokumentasi why-wails.mdx dalam beberapa bahasa melalui [PR](https://github.com/wailsapp/wails/pull/5739) oleh @taliesin-ai
+- Tambahkan dokumentasi Why Wails dalam beberapa bahasa melalui [PR](https://github.com/wailsapp/wails/pull/5739) oleh @taliesin-ai
 - Tambahkan dukungan untuk memetakan Go time.Time ke JS Date atau string dalam binding melalui [PR](https://github.com/wailsapp/wails/pull/5398) oleh @fbbdev
 - Tambahkan tugas pengemasan Android App Bundle (AAB) (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) untuk pengiriman ke Play Store—tugas APK tetap tersedia untuk pengujian lokal/emulator—melalui [PR](https://github.com/wailsapp/wails/pull/5728) oleh @mortenolsrud (memperbaiki [#5726](https://github.com/wailsapp/wails/issues/5726))
 - Tambahkan target tugas untuk perangkat fisik Android dan pemulihan izin kamera/lokasi melalui [PR](https://github.com/wailsapp/wails/pull/5735) oleh @taliesin-ai
@@ -707,10 +707,10 @@ _/
 
 ## Ditambahkan
 - Menambahkan pelokalan dokumentasi bahasa Prancis dalam [PR](https://github.com/wailsapp/wails/pull/5328) oleh @leaanthony
-- Menambahkan locale bahasa Jerman ke situs dokumentasi Astro dalam [PR](https://github.com/wailsapp/wails/pull/5343) oleh @leaanthony
+- Menambahkan locale bahasa Jerman ke situs dokumentasi dalam [PR](https://github.com/wailsapp/wails/pull/5343) oleh @leaanthony
 
 ## Diubah
-- Mendaftarkan semua 8 locale terjemahan dalam konfigurasi Starlight dalam [PR](https://github.com/wailsapp/wails/pull/5347) oleh @leaanthony
+- Mendaftarkan semua 8 locale terjemahan dalam konfigurasi dokumentasi dalam [PR](https://github.com/wailsapp/wails/pull/5347) oleh @leaanthony
 - Memperbarui berbagai file terkait Windows untuk WebView2 dalam [PR](https://github.com/wailsapp/wails/pull/5317) oleh @leaanthony
 
 ## Diperbaiki

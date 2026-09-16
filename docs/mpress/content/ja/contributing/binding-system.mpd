@@ -23,7 +23,7 @@ const msg = await Send("Hello");
 TypeScript では、*IPC の接続コードを手作業で一切記述せずに*実現できます。\
 このドキュメントでは、その仕組みが_どのように_動作するのかを、ビルド時の*静的解析*から*コード生成*、さらに WebView 経由でバイト列を転送する*ランタイムブリッジ*まで順に解説します。
 
-> 正式な詳細解説については[`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/)を参照してください。
+> 正式な詳細解説については[`contributing/architecture/bindings`](/contributing/architecture/bindings/)を参照してください。
 > ジェネレーターパイプラインに関する決定版の詳細解説を参照してください。このページは、
 > コントリビューター向けの概要を説明します。
 

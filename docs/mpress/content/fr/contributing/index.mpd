@@ -103,6 +103,7 @@ go test ./pkg/application
 # Inspect coverage for the packages you changed
 go test ./pkg/application -coverprofile=coverage.out
 go tool cover -func=coverage.out
+cd ..
 ```
 
 Pour les suites d’intégration, la détection des courses aux données et toutes les commandes équivalentes à celles de la CI,\
@@ -244,12 +245,14 @@ func TestProcessData(t *testing.T) {
 
 ### Rédiger la documentation
 
-La documentation utilise Starlight (Astro) :
+La documentation utilise M-Press :
 
 ```bash
-cd docs
-npm install
-npm run dev
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 ### Style de la documentation

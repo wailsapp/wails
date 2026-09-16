@@ -94,6 +94,7 @@ go test ./pkg/application
 # Inspect coverage for the packages you changed
 go test ./pkg/application -coverprofile=coverage.out
 go tool cover -func=coverage.out
+cd ..
 ```
 
 有关集成测试套件、竞态检测以及与完整 CI 等效的命令，请参阅[测试与持续集成](/contributing/testing-ci/)。
@@ -234,12 +235,14 @@ func TestProcessData(t *testing.T) {
 
 ### 编写文档
 
-文档使用 Starlight（Astro）：
+文档使用 M-Press：
 
 ```bash
-cd docs
-npm install
-npm run dev
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 ### 文档风格

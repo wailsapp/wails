@@ -94,6 +94,7 @@ go test ./pkg/application
 # Inspect coverage for the packages you changed
 go test ./pkg/application -coverprofile=coverage.out
 go tool cover -func=coverage.out
+cd ..
 ```
 
 통합 테스트 스위트, 경쟁 상태 감지 및 CI 전체와 동일한 명령은 [테스트 및 지속적 통합](/contributing/testing-ci/)을 참조하세요.
@@ -234,12 +235,14 @@ func TestProcessData(t *testing.T) {
 
 ### 문서 작성
 
-문서는 Starlight(Astro)를 사용합니다:
+문서는 M-Press를 사용합니다:
 
 ```bash
-cd docs
-npm install
-npm run dev
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 ### 문서 스타일

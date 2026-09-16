@@ -42,12 +42,12 @@
       "updatedAt": "2026-09-13T23:13:21Z"
     },
     "b0004-text-01": {
-      "sourceHash": "a3ffba599380feff13f27e19ad45240fe779657f2589aaf9a9da590b2fc880e8",
-      "targetHash": "67de55f7655737573f5bd56b36883abbe19d6264ed4418910c2bd8328ad20876",
-      "machineHash": "67de55f7655737573f5bd56b36883abbe19d6264ed4418910c2bd8328ad20876",
-      "machineText": "Eine maßgebliche ausführliche Beschreibung der Generator-Pipeline finden Sie unter [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/). Diese Seite bietet",
+      "sourceHash": "436122fa35ef898c1fad4d8d8be66b00e060858a6a1a653005d2ac9322089d54",
+      "targetHash": "00ab06baca28396635bcfb6bbc3cc935d7304b6e229c3d2fbc3ec988051c8422",
+      "machineHash": "00ab06baca28396635bcfb6bbc3cc935d7304b6e229c3d2fbc3ec988051c8422",
+      "machineText": "Eine maßgebliche ausführliche Beschreibung der Generator-Pipeline finden Sie unter [`contributing/architecture/bindings`](/contributing/architecture/bindings/). Diese Seite bietet",
       "status": "final",
-      "sourcePreview": "See [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/) for",
+      "sourcePreview": "See [`contributing/architecture/bindings`](/contributing/architecture/bindings/) for",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

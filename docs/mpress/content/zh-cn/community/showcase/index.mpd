@@ -57,10 +57,10 @@ sourcePath = "community/showcase/index.mpd"
 @steps
 @step title="复刻该仓库。"
 @end
-@step title="将图片添加到`docs/src/assets/showcase-images`文件夹中。"
+@step title="将图片添加到`docs/mpress/static/showcase-images`文件夹中。"
 @end
-@step title="复制以下位置的`_template.md`文件："
-`docs/src/content/docs/community/showcase`文件夹。
+@step title="复制以下位置的`.mpd`文件："
+`docs/mpress/content/community/showcase`文件夹。
 @end
 @step title="将复制的文件重命名为你的项目名称。（名称不应以"
 `_`开头）
@@ -68,7 +68,7 @@ sourcePath = "community/showcase/index.mpd"
 @step title="更新该文件的标题、图片、链接和内容。"
 @end
 @step title="将其添加到以下文件中的上述列表："
-`docs/src/content/docs/community/showcase/index.mdx`。
+`docs/mpress/content/community/showcase/index.mpd`。
 @end
 @step title="提交 PR。"
 
