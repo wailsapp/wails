@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Serve `/wails/*` assets on Android with their real MIME type instead of a hardcoded `application/json`, so ES modules such as `/wails/runtime.js` are no longer rejected by the WebView and the runtime initialises correctly (#6014)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
