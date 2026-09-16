@@ -21,7 +21,6 @@ From the repository root:
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
 The root `mpress.yaml` points to `docs/mpress/content`, static assets, and CSS.
@@ -33,31 +32,11 @@ Keep both configurations aligned when changing site settings.
 English source files live in `docs/mpress/content/`; translated files live under
 folders such as `fr/`, `id/`, and `zh-cn/`. Output goes to `docs/mpress/site/`.
 The build retains CSS because the imported home-page animation creates classes
-at runtime. Contributors do not need Cloudflare credentials, Node.js, private
-services, or a translation provider. The final site check requires Python 3;
-use `python` instead of `python3` on Windows when needed.
+at runtime. Contributors do not need deployment credentials, Node.js, private
+services, or a translation provider to preview or edit the documentation.
 
-## Cloudflare build
-
-Run `bash docs/mpress/scripts/build.sh` on Linux AMD64 to execute the exact CI
-build: download M-Press v1.0.17, verify its pinned SHA-256 digest, build, and check.
-The output is a static directory suitable for Cloudflare Pages Direct Upload.
-
-The `Wails v3 documentation` workflow validates the static build and release
-metadata automation without deployment secrets. Cloudflare Pages uses its
-existing GitHub integration to deploy `master` from the `wails-v3-site` project:
-
-- Root directory: `docs/mpress`
-- Build command: `bash scripts/build.sh`
-- Output directory: `site`
-- Production branch: `master`
-- Build watch paths: `docs/mpress/*`, `mpress.yaml`
-- `SKIP_DEPENDENCY_INSTALL=true` in production and preview build environments.
-
-No GitHub Pages API token is required. `v3.wails.io` continues to use the same
-Pages project. The separate `wails-v3-docs` project holds migration previews.
-To roll back, use Cloudflare Pages' deployment rollback and restore the prior
-build configuration before allowing further automatic production builds.
+See the [M-Press contribution guide](mpress/CONTRIBUTING.md) for the complete
+correction and validation workflow.
 
 M-Press is the only supported v3 documentation source. The nightly release
 publisher writes `docs/mpress/content/changelog.mpd`, and generated release
