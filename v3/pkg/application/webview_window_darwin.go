@@ -12,6 +12,7 @@ package application
 #include "webview_panel_darwin.h"
 #include "webview_notch_window_darwin.h"
 #include "mac_window_chrome_darwin.h"
+#include "webview_window_mac_extras_darwin.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
@@ -1030,43 +1031,8 @@ static void startDrag(void *window) {
 	[windowDelegate startDrag:nsWindow];
 }
 
-// Credit: https://stackoverflow.com/q/33319295
-static void windowPrint(void *window) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-	// Check if macOS 11.0 or newer
-	if (@available(macOS 11.0, *)) {
-		NSWindow* nsWindow = nativeWindow(window);
-		NSWindow<WailsWebviewWindow>* host = webviewHost(window);
-		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
-		WKWebView* webView = host.webView;
-
-		// TODO: Think about whether to expose this as config
-		NSPrintInfo *pInfo = [NSPrintInfo sharedPrintInfo];
-		pInfo.horizontalPagination = NSPrintingPaginationModeAutomatic;
-		pInfo.verticalPagination = NSPrintingPaginationModeAutomatic;
-		pInfo.verticallyCentered = YES;
-		pInfo.horizontallyCentered = YES;
-		pInfo.orientation = NSPaperOrientationLandscape;
-		pInfo.leftMargin = 30;
-		pInfo.rightMargin = 30;
-		pInfo.topMargin = 30;
-		pInfo.bottomMargin = 30;
-
-		NSPrintOperation *po = [webView printOperationWithPrintInfo:pInfo];
-		po.showsPrintPanel = YES;
-		po.showsProgressPanel = YES;
-
-		// Without the next line you get an exception. Also it seems to
-		// completely ignore the values in the rect. I tried changing them
-		// in both x and y direction to include content scrolled off screen.
-		// It had no effect whatsoever in either direction.
-		po.view.frame = webView.bounds;
-
-		// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
-		[po runOperationModalForWindow:nsWindow delegate:windowDelegate didRunSelector:nil contextInfo:nil];
-	}
-#endif
-}
+// Printing lives in webview_window_mac_extras_darwin.m (windowExtrasPrint),
+// shared by Print and PrintWithOptions.
 
 void setWindowEnabled(void *window, bool enabled) {
 	NSWindow* nsWindow = nativeWindow(window);
@@ -1165,8 +1131,19 @@ func (w *macosWebviewWindow) centerOnScreen(screen *Screen) {
 	C.windowCenterOnScreen(w.nsWindow, cID)
 }
 
+// print keeps the historical Print behaviour (landscape, 30 point margins,
+// panels shown) through the PrintWithOptions implementation. It runs on the
+// application thread already, so it calls the C function directly.
 func (w *macosWebviewWindow) print() error {
-	C.windowPrint(w.nsWindow)
+	options := legacyPrintOptions()
+	margins := options.Margins
+	result := C.windowExtrasPrint(w.nsWindow,
+		C.int(options.Orientation), C.bool(true),
+		C.double(margins.Top), C.double(margins.Left), C.double(margins.Bottom), C.double(margins.Right),
+		C.bool(false), nil, 0, nil)
+	if result == C.WailsWindowExtrasPrintUnsupported {
+		return fmt.Errorf("printing requires macOS 11 or later")
+	}
 	return nil
 }
 
@@ -1742,8 +1719,14 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if w.parent.notchWindow == nil {
-			if options.Screen != nil {
+		// Frame autosave, window button offsets and values queued before the
+		// window existed (represented file, edited, subtitle). A restored
+		// autosaved frame wins over the initial position options.
+		frameRestored := w.applyMacWindowExtras()
+		if w.parent.notchWindow == nil && !frameRestored {
+			if w.parent.options.InitialPosition == WindowCascade {
+				macWindowExtrasCascadeNext(w.nsWindow)
+			} else if options.Screen != nil {
 				cID := C.CString(options.Screen.ID)
 				if w.parent.options.InitialPosition == WindowCentered {
 					C.windowCenterOnScreen(w.nsWindow, cID)

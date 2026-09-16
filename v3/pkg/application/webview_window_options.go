@@ -75,6 +75,12 @@ type WindowStartPosition int
 const (
 	WindowCentered WindowStartPosition = 0
 	WindowXY       WindowStartPosition = 1
+	// WindowCascade places the window offset down and to the right of the
+	// last cascaded window, like new document windows in macOS apps. The
+	// first cascaded window steps away from the main window, or keeps its
+	// default position when there is none. X, Y and Screen are ignored.
+	// Off macOS it behaves as WindowCentered.
+	WindowCascade WindowStartPosition = 2
 )
 
 type WebviewWindowOptions struct {
@@ -187,6 +193,14 @@ type WebviewWindowOptions struct {
 	// When enabled, files dragged from the OS onto elements with the
 	// `data-file-drop-target` attribute will trigger a FilesDropped event.
 	EnableFileDrop bool
+
+	// DropTypes selects what dragged content the window accepts from other
+	// applications. Empty means DropFiles, which keeps the file drop
+	// pipeline above. Adding DropText, DropURLs or DropImages delivers
+	// those drops to Go through WebviewWindow.OnDrop and implicitly enables
+	// the drop overlay; it also means the page's own HTML5 drop handling no
+	// longer receives them. Non-file types are implemented on macOS.
+	DropTypes []DropType
 
 	// Permissions controls how capability requests (camera, microphone, …)
 	// from the web content are handled, per PermissionType. Unset entries use
@@ -697,6 +711,13 @@ type MacWindow struct {
 	// TabbingMode sets the window tabbing mode (macOS 10.12+)
 	TabbingMode MacWindowTabbingMode
 
+	// FrameAutosaveName saves the window's position and size in the user
+	// defaults under this name whenever it moves or resizes, and restores
+	// them when a window with the same name is next created. A restored
+	// frame takes precedence over X, Y, Width, Height and InitialPosition.
+	// Empty disables frame autosave. See also SetFrameAutosaveName.
+	FrameAutosaveName string
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 
@@ -879,6 +900,12 @@ type MacTitleBar struct {
 	ShowToolbarWhenFullscreen bool
 	// ToolbarStyle is the style of toolbar to use
 	ToolbarStyle MacToolbarStyle
+	// WindowButtonsOffset moves the close, minimise and zoom buttons (the
+	// traffic lights) by X and Y points from their default position; X
+	// moves them right and Y moves them down. The offset is reapplied
+	// whenever AppKit lays the titlebar out again. Nil keeps the default
+	// position. See also SetWindowButtonsOffset.
+	WindowButtonsOffset *Point
 }
 
 // MacTitleBarDefault results in the default Mac MacTitleBar

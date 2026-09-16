@@ -53,7 +53,10 @@ func main() {
 	// A native status label at the trailing edge of the titlebar; see
 	// accessories.go. The sidebar filter strip is attached in split.go.
 	newDaymarkAccessories(app, window)
-	installDaymarkMenu(app, toolbar, split)
+	// Document-style window behaviour (edited dot, proxy icon, PDF export,
+	// print settings, cascading); see windowextras.go.
+	extras := newDaymarkWindowExtras(app, window)
+	installDaymarkMenu(app, toolbar, split, extras)
 
 	if err := app.Run(); err != nil {
 		log.Fatal(err)

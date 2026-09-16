@@ -357,6 +357,12 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if options.URL == "" {
 		options.URL = "/"
 	}
+	// Non-file DropTypes need the drop overlay that EnableFileDrop creates.
+	if dropTypesNeedOverlay(options.DropTypes) {
+		options.EnableFileDrop = true
+	}
+	// WindowCascade is macOS only; elsewhere it becomes WindowCentered.
+	options.InitialPosition = normaliseInitialPosition(options.InitialPosition)
 
 	if options.Name == "" {
 		options.Name = fmt.Sprintf("window-%d", thisWindowID)

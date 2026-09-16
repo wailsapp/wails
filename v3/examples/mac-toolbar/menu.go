@@ -8,7 +8,7 @@ import (
 
 // installDaymarkMenu gives the native toolbar actions keyboard and menu
 // equivalents, as a production macOS application should.
-func installDaymarkMenu(app *application.App, toolbar *daymarkToolbar, split *daymarkSplit) {
+func installDaymarkMenu(app *application.App, toolbar *daymarkToolbar, split *daymarkSplit, extras *daymarkWindowExtras) {
 	runtimeWindows := newDaymarkRuntimeWindows(app)
 	menu := app.NewMenu()
 	if runtime.GOOS == "darwin" {
@@ -22,6 +22,9 @@ func installDaymarkMenu(app *application.App, toolbar *daymarkToolbar, split *da
 	fileMenu.Add("Save Note").SetAccelerator("CmdOrCtrl+s").OnClick(func(*application.Context) {
 		toolbar.saveNote()
 	})
+	fileMenu.AddSeparator()
+	// Export PDF and Print; see windowextras.go.
+	extras.addFileItems(fileMenu)
 	fileMenu.AddSeparator()
 	fileMenu.AddRole(application.CloseWindow)
 
@@ -61,6 +64,8 @@ func installDaymarkMenu(app *application.App, toolbar *daymarkToolbar, split *da
 	windowMenu.Add("New Native Editor Window").SetAccelerator("CmdOrCtrl+Option+n").OnClick(func(*application.Context) {
 		runtimeWindows.NewNativeEditorWindow()
 	})
+	// New Cascaded Window; see windowextras.go.
+	extras.addWindowItems(windowMenu)
 	windowMenu.AddSeparator()
 	windowMenu.AddRole(application.Minimise)
 	windowMenu.AddRole(application.Zoom)

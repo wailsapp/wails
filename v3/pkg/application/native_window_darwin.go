@@ -157,6 +157,8 @@ func (w *macosNativeWindow) run() error {
 		}
 		if options.InitialPosition == WindowCentered {
 			C.nativeWindowCenter(w.nsWindow)
+		} else if options.InitialPosition == WindowCascade {
+			macWindowExtrasCascadeNext(w.nsWindow)
 		} else {
 			C.nativeWindowSetPosition(w.nsWindow, C.int(options.X), C.int(options.Y))
 		}
