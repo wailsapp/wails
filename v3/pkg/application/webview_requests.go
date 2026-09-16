@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 )
@@ -19,10 +18,6 @@ type webViewAssetRequest struct {
 }
 
 var _ webview.Request = &webViewAssetRequest{}
-
-func newWebViewAssetRequest(task unsafe.Pointer, windowID uint, windowName string) *webViewAssetRequest {
-	return &webViewAssetRequest{Request: webview.NewRequest(task), windowId: windowID, windowName: windowName}
-}
 
 func (r *webViewAssetRequest) URL() (string, error)             { return r.Request.URL() }
 func (r *webViewAssetRequest) Method() (string, error)          { return r.Request.Method() }
@@ -52,12 +47,6 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 }
 
 var webviewRequests = make(chan *webViewAssetRequest, 256)
-
-// cancelWebViewAssetRequest tells the asset server the platform has abandoned
-// the scheme task so any in-flight handler can stop early.
-func cancelWebViewAssetRequest(task unsafe.Pointer) {
-	webview.CancelRequest(task)
-}
 
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	defer handlePanic()
