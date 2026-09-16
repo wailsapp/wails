@@ -50,6 +50,8 @@ type daymarkSplit struct {
 	primaryPane *application.MacSplitWebviewPane
 	inspector   *daymarkInspector
 	inspectPane *application.MacSplitPane
+	contentList *daymarkContentList
+	listPane    *application.MacSplitPane
 	section     *application.MacSidebarSection
 	allNotes    *application.MacSidebarItem
 	tagRows     map[string]*application.MacSidebarItem
@@ -137,6 +139,26 @@ When you finally turn home, leave enough quiet in the day to hear your own foots
 		SetMinimumThickness(210).
 		SetMaximumThickness(340).
 		SetCollapsible(true)
+	// Sidebar accessory: a Finder-style native filter strip pinned to the
+	// top of the sidebar pane (NSSplitViewItemAccessoryViewController,
+	// macOS 26+). It is queued now and installed with the split view.
+	filter := application.NewMacAccessory(application.MacAccessoryLayoutTop)
+	filter.AddSearch("Filter notes").
+		SetIncremental(true).
+		SetTooltip("Show only notes matching this text")
+	filterField := filter.Controls()[0]
+	filterField.OnSearch(func(_ *application.Context, query string) { result.Filter(query) })
+	if err := result.sidePane.AddTopAccessory(filter); err != nil {
+		app.Logger.Error("sidebar filter accessory", "error", err)
+	}
+	// The content list is AppKit's middle column: it must sit between the
+	// sidebar and the primary content pane.
+	result.contentList = newDaymarkContentList(result)
+	result.listPane = result.split.AddContentList(result.contentList.NativeContentList())
+	result.listPane.
+		SetMinimumThickness(240).
+		SetMaximumThickness(420).
+		SetCollapsible(true)
 	result.primaryPane = result.split.AddPrimaryContent().
 		SetContentLayout(application.MacContentLayoutEdgeToEdge)
 	result.inspector = newDaymarkInspector(app)
@@ -154,6 +176,7 @@ When you finally turn home, leave enough quiet in the day to hear your own foots
 	result.inspector.OnPriorityChange(result.changeActivePriority)
 	result.inspector.OnTintChange(result.changeActiveTint)
 	result.pushSidebarStateToInspector()
+	result.syncContentList()
 
 	result.sidePane.OnCollapsedChange(func(_ *application.Context, collapsed bool) {
 		result.observersLock.Lock()
@@ -292,6 +315,7 @@ func (s *daymarkSplit) renameNote(item *application.MacSidebarItem, title string
 	s.notes[index].Title = title
 	isActive := index == s.active
 	s.stateLock.Unlock()
+	s.syncContentList()
 	if isActive {
 		s.inspector.SetTitle(title)
 		s.app.Event.Emit("inspector:title-changed", title)
@@ -309,6 +333,7 @@ func (s *daymarkSplit) setPinned(item *application.MacSidebarItem, pinned bool) 
 	isActive := index == s.active
 	s.stateLock.Unlock()
 	item.SetSymbol(noteSymbol(daymarkNote{Pinned: pinned}))
+	s.syncContentList()
 	if isActive {
 		s.inspector.SetPinned(pinned)
 		s.app.Event.Emit("inspector:pinned-changed", pinned)
@@ -326,6 +351,7 @@ func (s *daymarkSplit) setPriority(item *application.MacSidebarItem, priority in
 	isActive := index == s.active
 	s.stateLock.Unlock()
 	item.SetBadge(priority)
+	s.syncContentList()
 	if isActive {
 		s.pushSidebarStateToInspector()
 	}
@@ -371,6 +397,7 @@ func (s *daymarkSplit) refreshBadges() {
 		}
 		row.SetBadge(count)
 	}
+	s.syncContentList()
 }
 
 func (s *daymarkSplit) setCategory(prefix string) {
@@ -394,6 +421,7 @@ func (s *daymarkSplit) applyFilters() {
 			(category != "" && !strings.HasPrefix(note.Category, category))
 		items[index].SetHidden(hidden)
 	}
+	s.syncContentList()
 }
 
 func (s *daymarkSplit) pushSidebarStateToInspector() {
@@ -408,6 +436,7 @@ func (s *daymarkSplit) emitActiveNote() {
 	index := s.active
 	note := s.notes[index]
 	s.stateLock.Unlock()
+	s.syncContentList()
 	s.app.Event.Emit("sidebar:note-selected", map[string]any{"index": index, "note": note})
 }
 
@@ -499,6 +528,7 @@ func (s *daymarkSplit) renameActiveNote(title string) {
 	item := s.items[index]
 	s.stateLock.Unlock()
 	item.SetLabel(title)
+	s.syncContentList()
 	s.app.Event.Emit("inspector:title-changed", title)
 }
 
@@ -517,6 +547,7 @@ func (s *daymarkSplit) changeActivePinned(pinned bool) {
 	item := s.items[index]
 	s.stateLock.Unlock()
 	item.SetSymbol(noteSymbol(daymarkNote{Pinned: pinned}))
+	s.syncContentList()
 	s.app.Event.Emit("inspector:pinned-changed", pinned)
 }
 
@@ -528,6 +559,7 @@ func (s *daymarkSplit) changeActivePriority(priority int) {
 	item := s.items[index]
 	s.stateLock.Unlock()
 	item.SetBadge(priority)
+	s.syncContentList()
 }
 
 // changeActiveTint colours the row symbol from the inspector colour well.

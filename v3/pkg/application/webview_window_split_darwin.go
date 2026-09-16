@@ -123,6 +123,10 @@ func (w *macosWebviewWindow) installSplitView() {
 			pane.inspector.registerControls()
 			applyMacInspectorSnapshotToNative(handle, pane.internalID, pane.inspector.snapshot())
 		}
+		if pane.contentList != nil {
+			pane.contentList.registerRows()
+			applyMacContentListSnapshotToNative(handle, pane.internalID, pane.contentList.snapshot())
+		}
 
 		// Registered before installation so no native callback can arrive for
 		// an unknown pane.
@@ -142,6 +146,11 @@ func (w *macosWebviewWindow) installSplitView() {
 			if pane.inspector != nil {
 				for _, control := range pane.inspector.controlHandles() {
 					unregisterMacInspectorControl(control.internalID)
+				}
+			}
+			if pane.contentList != nil {
+				for _, row := range pane.contentList.Rows() {
+					unregisterMacContentListRow(row.internalID)
 				}
 			}
 		}

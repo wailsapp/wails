@@ -138,6 +138,10 @@ func (w *macosNativeWindow) installSplitView() error {
 			pane.inspector.registerControls()
 			applyMacInspectorSnapshotToNative(unsafe.Pointer(handle), pane.internalID, pane.inspector.snapshot())
 		}
+		if pane.contentList != nil {
+			pane.contentList.registerRows()
+			applyMacContentListSnapshotToNative(unsafe.Pointer(handle), pane.internalID, pane.contentList.snapshot())
+		}
 		if pane.editor != nil {
 			editorID, text, editable, version := pane.editor.snapshot()
 			textC := C.CString(text)

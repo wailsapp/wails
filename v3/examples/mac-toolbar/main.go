@@ -50,6 +50,9 @@ func main() {
 
 	toolbar := newDaymarkToolbar(app, split)
 	window.SetToolbar(toolbar.NativeToolbar())
+	// A native status label at the trailing edge of the titlebar; see
+	// accessories.go. The sidebar filter strip is attached in split.go.
+	newDaymarkAccessories(app, window)
 	installDaymarkMenu(app, toolbar, split)
 
 	if err := app.Run(); err != nil {

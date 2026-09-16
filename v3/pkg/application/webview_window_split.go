@@ -17,6 +17,7 @@ const (
 	macSplitPaneSidebar macSplitPaneRole = iota
 	macSplitPanePrimary
 	macSplitPaneInspector
+	macSplitPaneContentList
 )
 
 // MacSplitView is a native, side-by-side NSSplitViewController layout for one
@@ -148,6 +149,34 @@ func (s *MacSplitView) AddInspector(inspector *MacInspector) *MacSplitPane {
 	inspector.pane = pane.MacSplitPane
 	inspector.lock.Unlock()
 	pane.inspector = inspector
+	return pane.MacSplitPane
+}
+
+// AddContentList adds a native NSTableView using AppKit's content-list
+// split-item role: the middle column of Finder, Mail, and document browsers.
+// It must be added after the sidebar and before the primary content pane. A
+// split view holds at most one content list, and a content list can belong to
+// only one split view. On macOS 11 and newer Wails uses AppKit's semantic
+// content-list role; older releases host the same table in a regular item.
+func (s *MacSplitView) AddContentList(list *MacContentList) *MacSplitPane {
+	if list == nil {
+		return nil
+	}
+	pane := s.addPane(macSplitPaneContentList, false)
+	if pane == nil {
+		return nil
+	}
+	list.lock.Lock()
+	if list.pane != nil {
+		list.lock.Unlock()
+		s.lock.Lock()
+		s.panes = s.panes[:len(s.panes)-1]
+		s.lock.Unlock()
+		return nil
+	}
+	list.pane = pane.MacSplitPane
+	list.lock.Unlock()
+	pane.contentList = list
 	return pane.MacSplitPane
 }
 
@@ -284,12 +313,45 @@ func validateMacSplitView(s *MacSplitView) error {
 		if pane.role == macSplitPaneInspector && pane.inspector == nil {
 			return fmt.Errorf("split view inspector pane requires a native inspector")
 		}
+		if pane.role == macSplitPaneContentList && pane.contentList == nil {
+			return fmt.Errorf("split view content list pane requires a native content list")
+		}
 		if err := pane.validate(); err != nil {
 			return err
 		}
 	}
 	if primaries != 1 {
 		return fmt.Errorf("split view requires exactly one primary content pane, found %d", primaries)
+	}
+	return validateMacSplitContentListOrder(panes)
+}
+
+// validateMacSplitContentListOrder enforces AppKit's column order for the
+// content-list role: at most one, after any sidebar and before the primary
+// content pane.
+func validateMacSplitContentListOrder(panes []*MacSplitWebviewPane) error {
+	sidebarIndex, contentListIndex, primaryIndex := -1, -1, -1
+	for index, pane := range panes {
+		switch {
+		case pane.primary:
+			primaryIndex = index
+		case pane.role == macSplitPaneSidebar:
+			sidebarIndex = index
+		case pane.role == macSplitPaneContentList:
+			if contentListIndex >= 0 {
+				return fmt.Errorf("split view allows at most one content list pane")
+			}
+			contentListIndex = index
+		}
+	}
+	if contentListIndex < 0 {
+		return nil
+	}
+	if contentListIndex < sidebarIndex {
+		return fmt.Errorf("split view content list must come after the sidebar")
+	}
+	if contentListIndex > primaryIndex {
+		return fmt.Errorf("split view content list must come before the primary content pane")
 	}
 	return nil
 }
@@ -608,6 +670,7 @@ func (p *MacSplitWebviewPane) markDead() {
 	p.onCollapsedChange = nil
 	sidebar := p.sidebar
 	inspector := p.inspector
+	contentList := p.contentList
 	p.url = ""
 	p.lock.Unlock()
 	if sidebar != nil {
@@ -615,6 +678,9 @@ func (p *MacSplitWebviewPane) markDead() {
 	}
 	if inspector != nil {
 		inspector.markDead()
+	}
+	if contentList != nil {
+		contentList.markDead()
 	}
 	if p.editor != nil {
 		p.editor.markDead()
@@ -643,6 +709,7 @@ type MacSplitWebviewPane struct {
 	contentLayout MacContentLayout
 	sidebar       *MacSidebar
 	inspector     *MacInspector
+	contentList   *MacContentList
 	editor        *MacTextEditor
 	loaded        bool
 	// navigationGeneration increments synchronously when WebKit starts a new

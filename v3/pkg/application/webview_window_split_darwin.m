@@ -1,6 +1,7 @@
 //go:build darwin && !ios && !server
 
 #import "webview_window_split_darwin.h"
+#import "webview_window_contentlist_darwin.h"
 #import "mac_private_api_darwin.h"
 #import <objc/runtime.h>
 #import <string.h>
@@ -1396,6 +1397,28 @@ static void splitViewItemApplyCanCollapseFromResize(NSSplitViewItem* item, BOOL 
     }
 }
 
+// Content list hooks begin (table implemented in webview_window_contentlist_darwin.m).
+// The table controller is created lazily so Go can stage rows before the
+// window exists; the record's generic viewController retains it.
+NSViewController* splitViewContentListController(void* handlePtr, unsigned long long paneID) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    if (record == nil || record.role != WailsSplitPaneRoleContentList) return nil;
+    if (record.viewController == nil) record.viewController = wailsContentListCreateController(paneID);
+    return record.viewController;
+}
+
+static BOOL splitRecordPrepareContentList(void* handlePtr, WailsSplitPaneRecord* record, NSColor* surfaceColor) {
+    NSViewController* controller = splitViewContentListController(handlePtr, record.paneID);
+    return controller != nil && wailsContentListPrepareForInstall(controller, surfaceColor);
+}
+
+static void splitRecordsReloadContentLists(NSArray<WailsSplitPaneRecord*>* records) {
+    for (WailsSplitPaneRecord* record in records) {
+        if (record.role == WailsSplitPaneRoleContentList) wailsContentListDidInstall(record.viewController);
+    }
+}
+// Content list hooks end.
+
 void* splitViewCreate(const char* autosaveName) {
     WailsSplitViewOwner* owner = [[WailsSplitViewOwner alloc] init];
     if (owner == nil) return NULL;
@@ -1450,7 +1473,8 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
     for (WailsSplitPaneRecord* record in owner.records) {
         if (record.primary) primaryRecord = record;
         if (!record.primary && record.role != WailsSplitPaneRoleSidebar &&
-            record.role != WailsSplitPaneRoleInspector) return false;
+            record.role != WailsSplitPaneRoleInspector &&
+            record.role != WailsSplitPaneRoleContentList) return false;
     }
     if (primaryRecord == nil) return false;
 
@@ -1500,6 +1524,8 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
             record.sidebarController = sidebar;
             record.viewController = sidebar;
             [sidebar release];
+        } else if (record.role == WailsSplitPaneRoleContentList) {
+            if (!splitRecordPrepareContentList(handlePtr, record, primaryBackground)) return false;
         } else {
             WailsInspectorViewController* inspector = [[WailsInspectorViewController alloc] init];
             inspector.sections = record.inspectorSections;
@@ -1527,6 +1553,8 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
         NSSplitViewItem* item = nil;
         if (record.role == WailsSplitPaneRoleSidebar) {
             item = [NSSplitViewItem sidebarWithViewController:record.viewController];
+        } else if (record.role == WailsSplitPaneRoleContentList) {
+            item = wailsContentListSplitItem(record.viewController);
         } else if (record.role == WailsSplitPaneRoleInspector) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
             if (@available(macOS 11.0, *)) {
@@ -1641,6 +1669,7 @@ bool splitViewInstall(void* handlePtr, void* nsWindow, bool normalBackdrop) {
         [record.sidebarController reloadContents];
         [record.inspectorController reloadContents];
     }
+    splitRecordsReloadContentLists(owner.records);
 
     [primaryWebView release];
     if (dragView != nil) [dragView release];
@@ -1665,7 +1694,8 @@ bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop
     for (WailsSplitPaneRecord* record in owner.records) {
         if (record.primary) primaryRecord = record;
         if (!record.primary && record.role != WailsSplitPaneRoleSidebar &&
-            record.role != WailsSplitPaneRoleInspector) return false;
+            record.role != WailsSplitPaneRoleInspector &&
+            record.role != WailsSplitPaneRoleContentList) return false;
     }
     if (primaryRecord == nil || primaryRecord.textEditorID == 0) return false;
 
@@ -1710,6 +1740,8 @@ bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop
             record.sidebarController = sidebar;
             record.viewController = sidebar;
             [sidebar release];
+        } else if (record.role == WailsSplitPaneRoleContentList) {
+            if (!splitRecordPrepareContentList(handlePtr, record, primaryBackground)) return false;
         } else {
             WailsInspectorViewController* inspector = [[WailsInspectorViewController alloc] init];
             inspector.sections = record.inspectorSections;
@@ -1735,6 +1767,8 @@ bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop
         NSSplitViewItem* item = nil;
         if (record.role == WailsSplitPaneRoleSidebar) {
             item = [NSSplitViewItem sidebarWithViewController:record.viewController];
+        } else if (record.role == WailsSplitPaneRoleContentList) {
+            item = wailsContentListSplitItem(record.viewController);
         } else if (record.role == WailsSplitPaneRoleInspector) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
             if (@available(macOS 11.0, *)) {
@@ -1780,6 +1814,7 @@ bool splitViewInstallNative(void* handlePtr, void* nsWindow, bool normalBackdrop
         [record.sidebarController reloadContents];
         [record.inspectorController reloadContents];
     }
+    splitRecordsReloadContentLists(owner.records);
     owner.controller = controller;
     [controller release];
     owner.installed = YES;
@@ -1882,6 +1917,12 @@ void splitViewPaneSetCollapsed(void* handlePtr, unsigned long long paneID, bool 
 void splitViewPaneToggleCollapsed(void* handlePtr, unsigned long long paneID) {
     WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
     if (record.item != nil) ((NSSplitViewItem*)record.item.animator).collapsed = !record.item.collapsed;
+}
+
+// Pane accessory hook: see webview_window_split_darwin.h.
+void* splitViewPaneItem(void* handlePtr, unsigned long long paneID) {
+    WailsSplitPaneRecord* record = splitPaneRecord(handlePtr, paneID);
+    return record == nil ? NULL : (void*)record.item;
 }
 
 void splitViewSidebarReset(void* handlePtr, unsigned long long paneID) {

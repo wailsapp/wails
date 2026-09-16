@@ -34,6 +34,10 @@ It demonstrates:
   keys, `RunCustomizationPalette`) and live toolbar mutation (`Remove`, `Move`,
   late `Add*`);
 - recent searches and a custom scope menu on the search field;
+- native accessories (`MacAccessory`): a Finder-style filter strip pinned to
+  the top of the sidebar pane (`MacSplitPane.AddTopAccessory`, macOS 26+) and
+  a trailing titlebar status label (`WebviewWindow.AddTitlebarAccessory`)
+  that follows the editor's saved state;
 - the standard AppKit inspector toggle and tracking separator on macOS 14+,
   with a native functional toggle fallback on older supported releases;
 - generated internal item identifiers, with no IDs in application code;
@@ -77,8 +81,11 @@ unobscured window content guide for applications that do not want overlap.
   must be configured before the window is shown), then the toolbar and menu.
 - `split.go` builds the native source-list model (a badged All Notes row,
   renameable and reorderable Notes rows with a context menu, and nested Tags
-  rows), owns the note navigation state, assembles all three split panes, and
+  rows), owns the note navigation state, assembles all four split panes, and
   wires native selection, rename, move, and collapse callbacks.
+- `contentlist.go` builds the native content-list table in the middle column
+  (title, first body line, modification time, and priority badge per note),
+  reconciles it with the notes, and drives the editor from its selection.
 - `inspector.go` builds the native property model, including a collapsible
   Sidebar section with a slider, colour well, and button, and connects its
   generated control callbacks to the current note.
@@ -288,6 +295,70 @@ inert. `section.Move` reorders rows programmatically.
 The demo uses all of this: All Notes carries the note count, the Notes rows
 are renameable and reorderable with a Pin/Delete context menu, and Tags nests
 categories whose badges count matching notes.
+
+## Content list
+
+`MacContentList` is an `NSTableView` hosted by AppKit's content-list split
+item, the middle column of Finder, Mail, and document browsers. It sits
+between the sidebar and the primary content pane; a split view holds at most
+one, and `SetSplitView` rejects layouts that put it anywhere else.
+
+Without columns the list shows Mail-style rich rows: a title, a subtitle line,
+an optional leading SF Symbol, trailing detail text such as a date, and a
+count badge.
+
+```go
+list := application.NewMacContentList().
+    SetStyle(application.MacContentListStyleInset).
+    SetEmptyText("No notes match")
+
+row := list.AddRow("Saturday, slowly.").
+    SetSubtitle("A good day has room around it.").
+    SetDetail("Yesterday").
+    SetSymbol("doc.text").
+    SetBadge(2)
+
+list.OnSelectionChange(func(_ *application.Context, rows []*application.MacContentListRow) {
+    if len(rows) > 0 { model.Open(rows[0]) }
+})
+list.OnActivate(func(_ *application.Context, row *application.MacContentListRow) {
+    model.Reveal(row)
+})
+
+listPane := split.AddContentList(list)
+```
+
+`SetColumns` switches to a multi-column table whose rows are filled with
+`SetCells`; the header is shown by default in that mode and hidden for rich
+rows (`SetHeaderVisible` overrides either). Columns marked `Sortable` show a
+sort indicator once `SetSortable(true)` is on. A header click reaches
+`OnSort` with the column and direction; without an `OnSort` callback the list
+reorders itself with `SortBy`, which compares the column text (in rich-row
+mode, column 0 is the title, 1 the subtitle, and 2 the detail). `SortRows`
+takes a comparator for values that are not displayed, such as dates shown as
+relative text.
+
+Selection is single by default; `SetAllowsMultipleSelection(true)` enables
+Command and Shift clicks. `SelectedRows`, `SetSelectedRow`, and
+`SetSelectedRows` read and write the selection without firing
+`OnSelectionChange`. `OnActivate` fires for a double-click or Return on a
+single selected row.
+
+Context menus mirror the sidebar: `row.SetContextMenu` attaches a fixed menu
+to one row, `list.OnContextMenu` builds one per right-click (receiving the
+row, or nil for the empty area), and `list.SetContextMenu` is the fallback.
+
+`SetRowHeight`, `SetStyle` (automatic, inset, source list, plain, or full
+width on macOS 11 and newer), `SetAlternatingRowBackgrounds`, and
+`SetEmptyText` control presentation. `InsertRow`, `Rows`, `row.Remove`, and
+`RemoveAll` manage the rows; row setters update the native table in place,
+and structural changes reload it with the selection preserved.
+
+The demo lists every note with its first body line as the subtitle, the
+modification time as the detail, and the priority as the badge. Selecting a
+row opens the note in the editor and mirrors the choice into the sidebar;
+double-clicking also reveals the inspector. The context menu offers Pin,
+Delete, and a Sort By submenu (manual order, title, or date modified).
 
 ## Native inspector API
 
