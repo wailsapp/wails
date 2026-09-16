@@ -501,56 +501,9 @@ func (a *App) Run() error {
 			}
 		}()
 
-		go func() {
-			for {
-				itemID := <-toolbarItemClicked
-				go handleToolbarItemClicked(itemID)
-			}
-		}()
-		go func() {
-			for {
-				event := <-toolbarSearchTriggered
-				go handleToolbarSearch(event.itemID, event.query)
-			}
-		}()
-		go func() {
-			for {
-				event := <-toolbarShareCompleted
-				go handleToolbarShareResult(event)
-			}
-		}()
-		go func() {
-			for {
-				event := <-splitPaneCollapseEvents
-				handleMacSplitPaneCollapsed(event.paneID, event.collapsed)
-			}
-		}()
-		go func() {
-			for {
-				itemID := <-macSidebarItemSelected
-				go handleMacSidebarItemSelected(itemID)
-			}
-		}()
-		go func() {
-			for {
-				event := <-macInspectorControlEvents
-				go handleMacInspectorControlEvent(event)
-			}
-		}()
-		go func() {
-			for {
-				editorID := <-macTextEditorChanged
-				go handleMacTextEditorChanged(editorID)
-			}
-		}()
-		go func() {
-			for {
-				windowID := <-nativeWindowClosed
-				if window, ok := a.NativeWindow.GetByID(windowID); ok {
-					go window.Close()
-				}
-			}
-		}()
+		for _, loop := range chromeEventLoops {
+			go loop(a)
+		}
 
 		a.runLock.Lock()
 		a.running = true
