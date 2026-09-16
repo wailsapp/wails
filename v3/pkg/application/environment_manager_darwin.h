@@ -30,4 +30,15 @@ char* wailsLocaleJSON(void);
 // environmentNotification.
 void wailsEnvironmentObserverStart(void);
 
+// wailsWorkspaceSetDefaultHandler makes this bundle the default application
+// for contentType (a UTI) or scheme; pass NULL for the one not used. The
+// outcome arrives through wailsCompletionCallback(id, message) with a NULL
+// message on success. Call on the main thread.
+void wailsWorkspaceSetDefaultHandler(unsigned long long id, const char *contentType, const char *scheme);
+
+// wailsWorkspaceDefaultHandlerJSON returns {"name","bundleID","path"} for
+// the application that opens contentType or scheme (pass NULL for the one
+// not used), or "null" when nothing is registered. Caller frees.
+char* wailsWorkspaceDefaultHandlerJSON(const char *contentType, const char *scheme);
+
 #endif /* environment_manager_darwin_h */

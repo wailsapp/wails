@@ -1,5 +1,5 @@
 # This file contains the configuration for this project.
-# When you update `info` or `fileAssociations`, run `wails3 task common:update:build-assets` to update the assets.
+# When you update `info`, `fileAssociations` or `services`, run `wails3 task common:update:build-assets` to update the assets.
 # Note that this will overwrite any changes you have made to the assets.
 version: '3'
 
@@ -73,6 +73,18 @@ fileAssociations:
 #    iconName: jpegFileIcon
 #    role: Editor
 #    mimeType: image/jpeg  # (optional)
+
+# macOS Services menu entries (NSServices in Info.plist). Each `name` must match
+# a ServiceDefinition registered at runtime with app.ServicesProvider.Register.
+# Types are UTIs such as public.utf8-plain-text or public.file-url.
+services:
+#  - name: SummariseText
+#    menuTitle: Summarise with My Product
+#    sendTypes:
+#      - public.utf8-plain-text
+#    returnTypes:
+#      - public.utf8-plain-text
+#    keyEquivalent: S  # (optional) Cmd+Shift+S
 
 # Other data
 other:

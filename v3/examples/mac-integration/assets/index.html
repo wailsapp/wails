@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Platform Integration</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --border: rgba(128, 128, 128, 0.35);
+            --muted: rgba(128, 128, 128, 0.9);
+        }
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        h2 { font-size: 14px; margin: 0 0 8px; }
+        p.lead { margin: 0 0 20px; color: var(--muted); }
+        p.hint { margin: 6px 0 0; color: var(--muted); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        section {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        section.wide { grid-column: 1 / -1; }
+        textarea, input[type=text] {
+            width: 100%;
+            box-sizing: border-box;
+            font: inherit;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: transparent;
+            color: inherit;
+        }
+        textarea { min-height: 70px; resize: vertical; }
+        .row { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+        .row input[type=text] { flex: 1; }
+        button { font: inherit; padding: 4px 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        td { padding: 4px 6px; border-top: 1px solid var(--border); vertical-align: middle; }
+        td.actions { text-align: right; white-space: nowrap; }
+        pre {
+            margin: 8px 0 0;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 11px;
+            max-height: 220px;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+        #log {
+            margin-top: 16px;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow: auto;
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<h1>Platform Integration</h1>
+<p class="lead">Services menu, Handoff, universal links and NSWorkspace helpers.</p>
+
+<div class="grid">
+    <section>
+        <h2>Services menu</h2>
+        <p>Select text in another app and choose <strong>Summarise with Wails Example</strong>
+            from its application menu &gt; Services (Cmd+Shift+S). Each invocation is logged
+            below. The service is offered only when the app runs from a bundle whose
+            Info.plist carries the entry shown here.</p>
+        <pre id="plist">loading...</pre>
+    </section>
+
+    <section>
+        <h2>Handoff activity</h2>
+        <p>The text below is mirrored into an <code>NSUserActivity</code>; the first change
+            publishes it, later changes update its <code>userInfo</code>.</p>
+        <textarea id="handoff" placeholder="Type here to publish a Handoff activity"></textarea>
+        <div class="row">
+            <button id="invalidate">Invalidate activity</button>
+            <span id="activity-state" class="hint">not published</span>
+        </div>
+        <p class="hint">Universal links and continued activities appear in the log.</p>
+    </section>
+
+    <section class="wide">
+        <h2>Workspace helpers</h2>
+        <div class="row">
+            <input type="text" id="file" placeholder="/path/to/file.txt">
+            <button id="apps">Applications for file</button>
+        </div>
+        <table id="app-list"></table>
+        <div class="row">
+            <input type="text" id="bundle" placeholder="com.apple.TextEdit" value="com.apple.TextEdit">
+            <button id="open-with">Open with</button>
+            <button id="activate">Activate</button>
+        </div>
+        <div class="row">
+            <input type="text" id="content-type" placeholder="public.plain-text" value="public.plain-text">
+            <button id="default-type">Default app for content type</button>
+            <input type="text" id="scheme" placeholder="mailto" value="mailto">
+            <button id="default-scheme">Default app for scheme</button>
+        </div>
+    </section>
+</div>
+
+<div id="log"></div>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    const call = (method, ...args) => wails.Call.ByName("main.IntegrationService." + method, ...args);
+    const el = (id) => document.getElementById(id);
+    const log = (text) => {
+        const line = new Date().toLocaleTimeString() + "  " + text + "\n";
+        el("log").textContent = line + el("log").textContent;
+    };
+    const escape = (value) => String(value).replace(/[&<>]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
+
+    call("ServiceInfoPlist").then((xml) => { el("plist").textContent = xml || "(no services registered)"; });
+
+    let timer = null;
+    el("handoff").addEventListener("input", () => {
+        clearTimeout(timer);
+        timer = setTimeout(async () => {
+            try {
+                const activity = await call("PublishActivity", el("handoff").value);
+                el("activity-state").textContent = "current: " + activity.type + " (" + (activity.userInfo.text || "").length + " chars)";
+            } catch (error) {
+                log("publish failed: " + error);
+            }
+        }, 300);
+    });
+    el("invalidate").addEventListener("click", async () => {
+        await call("InvalidateActivity");
+        el("activity-state").textContent = "not published";
+        log("activity invalidated");
+    });
+
+    const renderApps = (apps) => {
+        el("app-list").innerHTML = apps.length === 0
+            ? "<tr><td>No applications found</td></tr>"
+            : apps.map((app) =>
+                `<tr><td>${escape(app.name)}</td><td>${escape(app.bundleID)}</td>` +
+                `<td class="actions"><button data-open="${escape(app.bundleID || app.path)}">Open with</button> ` +
+                `<button data-activate="${escape(app.bundleID)}">Activate</button></td></tr>`).join("");
+    };
+    el("apps").addEventListener("click", async () => {
+        const apps = await call("ApplicationsForFile", el("file").value);
+        renderApps(apps);
+        log(apps.length + " application(s) can open " + el("file").value);
+    });
+    el("app-list").addEventListener("click", async (event) => {
+        const open = event.target.dataset.open;
+        const activate = event.target.dataset.activate;
+        try {
+            if (open) { await call("OpenWith", el("file").value, open); log("opened with " + open); }
+            if (activate) { await call("ActivateApplication", activate); log("activated " + activate); }
+        } catch (error) {
+            log("error: " + error);
+        }
+    });
+    el("open-with").addEventListener("click", async () => {
+        try {
+            await call("OpenWith", el("file").value, el("bundle").value);
+            log("opened " + el("file").value + " with " + el("bundle").value);
+        } catch (error) {
+            log("open with failed: " + error);
+        }
+    });
+    el("activate").addEventListener("click", async () => {
+        try {
+            await call("ActivateApplication", el("bundle").value);
+            log("activated " + el("bundle").value);
+        } catch (error) {
+            log("activate failed: " + error);
+        }
+    });
+    const showHandler = async (contentType, scheme) => {
+        try {
+            const app = await call("DefaultHandler", contentType, scheme);
+            log("default for " + (contentType || scheme) + ": " + app.name + " (" + app.bundleID + ") at " + app.path);
+        } catch (error) {
+            log("default handler lookup failed: " + error);
+        }
+    };
+    el("default-type").addEventListener("click", () => showHandler(el("content-type").value, ""));
+    el("default-scheme").addEventListener("click", () => showHandler("", el("scheme").value));
+
+    wails.Events.On("integration:service", (event) => {
+        log("service ran: " + JSON.stringify(event.data.input) + " -> " + JSON.stringify(event.data.output));
+    });
+    wails.Events.On("integration:activity", (event) => {
+        log("activity " + event.data.phase + ": " + JSON.stringify(event.data));
+    });
+    wails.Events.On("integration:url", (event) => {
+        log("launched with URL: " + event.data);
+    });
+</script>
+</body>
+</html>

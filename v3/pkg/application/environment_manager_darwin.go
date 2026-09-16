@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -framework Carbon -mmacosx-version-min=10.13
+#cgo LDFLAGS: -framework Cocoa -framework Carbon -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
 
 #include <stdlib.h>
 #include "environment_manager_darwin.h"
@@ -13,6 +13,7 @@ import "C"
 
 import (
 	"encoding/json"
+	"fmt"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -67,4 +68,46 @@ func environmentNotification(kind C.int) {
 	case 2:
 		applicationEvents <- newApplicationEvent(events.Mac.ApplicationDidChangeLocale)
 	}
+}
+
+func defaultHandlerCStrings(handler DefaultHandler) (contentType *C.char, scheme *C.char, free func()) {
+	if handler.ContentType != "" {
+		contentType = C.CString(handler.ContentType)
+	}
+	if handler.URLScheme != "" {
+		scheme = C.CString(handler.URLScheme)
+	}
+	return contentType, scheme, func() {
+		C.free(unsafe.Pointer(contentType))
+		C.free(unsafe.Pointer(scheme))
+	}
+}
+
+func platformSetDefaultHandler(handler DefaultHandler) error {
+	id, ch := newCompletionWaiter()
+	contentType, scheme, free := defaultHandlerCStrings(handler)
+	defer free()
+	InvokeSync(func() {
+		C.wailsWorkspaceSetDefaultHandler(C.ulonglong(id), contentType, scheme)
+	})
+	if err := awaitCompletion(id, ch, "environment: SetDefaultHandler"); err != nil {
+		return fmt.Errorf("environment: SetDefaultHandler for %s: %w", handler, err)
+	}
+	return nil
+}
+
+func platformDefaultHandler(handler DefaultHandler) (AppInfo, error) {
+	contentType, scheme, free := defaultHandlerCStrings(handler)
+	defer free()
+	raw := C.wailsWorkspaceDefaultHandlerJSON(contentType, scheme)
+	defer C.free(unsafe.Pointer(raw))
+	text := C.GoString(raw)
+	if text == "null" || text == "" {
+		return AppInfo{}, fmt.Errorf("%w: no default application for %s", ErrApplicationNotFound, handler)
+	}
+	var info AppInfo
+	if err := json.Unmarshal([]byte(text), &info); err != nil {
+		return AppInfo{}, fmt.Errorf("environment: cannot decode the default handler for %s: %w", handler, err)
+	}
+	return info, nil
 }

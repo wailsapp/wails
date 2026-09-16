@@ -72,6 +72,7 @@ type BuildConfig struct {
 	TemplateEnrichment
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
+	Services         []ServiceConfig   `yaml:"services,omitempty"`
 }
 
 // UpdateBuildAssetsOptions defines the options for updating build assets.
@@ -206,6 +207,7 @@ type UpdateConfig struct {
 	UpdateBuildAssetsOptions
 	FileAssociations []FileAssociation `yaml:"fileAssociations"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
+	Services         []ServiceConfig   `yaml:"services,omitempty"`
 }
 
 // WailsConfig defines the structure for a Wails configuration.
@@ -222,6 +224,20 @@ type WailsConfig struct {
 	} `yaml:"info"`
 	FileAssociations []FileAssociation `yaml:"fileAssociations,omitempty"`
 	Protocols        []ProtocolConfig  `yaml:"protocols,omitempty"`
+	Services         []ServiceConfig   `yaml:"services,omitempty"`
+}
+
+// ServiceConfig defines one macOS Services menu entry (an NSServices item in
+// Info.plist). Name must match the ServiceDefinition.Name registered through
+// app.ServicesProvider.Register at runtime, and PortName defaults to the
+// product name (CFBundleName).
+type ServiceConfig struct {
+	Name          string   `yaml:"name"`
+	MenuTitle     string   `yaml:"menuTitle"`
+	SendTypes     []string `yaml:"sendTypes,omitempty"`
+	ReturnTypes   []string `yaml:"returnTypes,omitempty"`
+	KeyEquivalent string   `yaml:"keyEquivalent,omitempty"`
+	PortName      string   `yaml:"portName,omitempty"`
 }
 
 // UpdateBuildAssets updates the build assets for the project.
@@ -272,6 +288,7 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 		}
 		config.FileAssociations = wailsConfig.FileAssociations
 		config.Protocols = wailsConfig.Protocols
+		config.Services = wailsConfig.Services
 	}
 
 	config.UpdateBuildAssetsOptions = *options

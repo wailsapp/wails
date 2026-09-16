@@ -65,3 +65,32 @@ func TestEnvironmentEventsRegistered(t *testing.T) {
 		}
 	}
 }
+
+func TestDefaultHandlerValidation(t *testing.T) {
+	valid := []DefaultHandler{
+		{ContentType: "public.plain-text"},
+		{ContentType: "com.adobe.pdf"},
+		{URLScheme: "mailto"},
+		{URLScheme: "my-app+v2.x"},
+	}
+	for _, h := range valid {
+		if err := h.validate(); err != nil {
+			t.Errorf("%+v rejected: %v", h, err)
+		}
+	}
+	invalid := map[string]DefaultHandler{
+		"empty":              {},
+		"both":               {ContentType: "public.plain-text", URLScheme: "mailto"},
+		"content type space": {ContentType: "public plain text"},
+		"content type slash": {ContentType: "text/plain"},
+		"scheme with colon":  {URLScheme: "mailto:"},
+		"scheme with slash":  {URLScheme: "https://"},
+		"scheme digit first": {URLScheme: "1app"},
+		"scheme with space":  {URLScheme: "my app"},
+	}
+	for name, h := range invalid {
+		if err := h.validate(); err == nil {
+			t.Errorf("%s (%+v) accepted", name, h)
+		}
+	}
+}

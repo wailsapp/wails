@@ -19,3 +19,11 @@ func platformLocale() LocaleInfo {
 	}
 	return info
 }
+
+func platformSetDefaultHandler(handler DefaultHandler) error {
+	return ErrDefaultHandlerUnsupported
+}
+
+func platformDefaultHandler(handler DefaultHandler) (AppInfo, error) {
+	return AppInfo{}, ErrDefaultHandlerUnsupported
+}

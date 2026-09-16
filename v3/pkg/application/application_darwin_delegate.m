@@ -17,16 +17,6 @@ extern void handleSecondInstanceData(char * message);
     HandleOpenFile((char*)utf8FileName);
     return YES;
  }
-- (BOOL)application:(NSApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<NSUserActivityRestoring>> * _Nullable))restorationHandler {
-    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
-        NSURL *url = userActivity.webpageURL;
-        if (url) {
-            HandleOpenURL((char*)[[url absoluteString] UTF8String]);
-            return YES;
-        }
-    }
-    return NO;
-}
 // Create the applicationShouldTerminateAfterLastWindowClosed: method
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {
@@ -67,9 +57,12 @@ extern void handleSecondInstanceData(char * message);
     }
     return NSTerminateNow;
 }
+// State restoration: answers MacOptions.SupportsSecureRestorableState. The
+// method is always implemented so macOS 14 never logs the secure coding
+// warning (see webview_window_restoration_darwin.go).
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app
 {
-    return YES;
+    return HandleSupportsSecureRestorableState() ? YES : NO;
 }
 - (BOOL)applicationShouldHandleReopen:(NSNotification *)notification
                     hasVisibleWindows:(BOOL)flag { // Changed from NSApplication to NSNotification
@@ -85,6 +78,28 @@ extern void handleSecondInstanceData(char * message);
         const char* utf8Message = message.UTF8String;
         handleSecondInstanceData((char*)utf8Message);
     }
+}
+// User activities (Handoff, Spotlight continuation and universal links).
+// The Go side lives in activity_manager_darwin.go; universal links
+// (NSUserActivityTypeBrowsingWeb) are also routed to HandleOpenURL there so
+// they share the custom URL scheme path.
+- (BOOL)application:(NSApplication *)application willContinueUserActivityWithType:(NSString *)userActivityType {
+    return activityWillContinue((char *)[userActivityType UTF8String]);
+}
+- (BOOL)application:(NSApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<NSUserActivityRestoring>> * _Nullable))restorationHandler {
+    char *json = wailsUserActivityJSON(userActivity);
+    BOOL handled = activityContinue(json);
+    free(json);
+    return handled;
+}
+- (void)application:(NSApplication *)application didFailToContinueUserActivityWithType:(NSString *)userActivityType error:(NSError *)error {
+    NSString *message = error.localizedDescription ?: @"";
+    activityDidFail((char *)[userActivityType UTF8String], (char *)[message UTF8String]);
+}
+- (void)application:(NSApplication *)application didUpdateUserActivity:(NSUserActivity *)userActivity {
+    char *json = wailsUserActivityJSON(userActivity);
+    activityDidUpdate(json);
+    free(json);
 }
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender {
     return (NSMenu *)HandleDockMenu();

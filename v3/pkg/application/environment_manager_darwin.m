@@ -124,3 +124,111 @@ void wailsEnvironmentObserverStart(void) {
                                                  name:NSCurrentLocaleDidChangeNotification
                                                object:nil];
 }
+
+// Default application handlers. wailsApplicationInfo and wailsApplicationURL
+// live in browser_manager_darwin.m; wailsCompletionCallback is the Go side
+// of the asynchronous NSWorkspace calls.
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+extern NSDictionary *wailsApplicationInfo(NSURL *appURL);
+extern NSURL *wailsApplicationURL(NSString *app);
+extern void wailsCompletionCallback(unsigned long long id, char *message);
+
+static void wailsDefaultHandlerComplete(unsigned long long id, NSError *error) {
+    if (error == nil) {
+        wailsCompletionCallback(id, NULL);
+    } else {
+        wailsCompletionCallback(id, (char *)[error.localizedDescription UTF8String]);
+    }
+}
+
+void wailsWorkspaceSetDefaultHandler(unsigned long long id, const char *contentType, const char *scheme) {
+    @autoreleasepool {
+        NSBundle *bundle = [NSBundle mainBundle];
+        NSString *bundleID = bundle.bundleIdentifier;
+        if (bundleID.length == 0) {
+            wailsCompletionCallback(id, "the application is not a bundle with a bundle identifier");
+            return;
+        }
+        NSString *type = contentType != NULL ? [NSString stringWithUTF8String:contentType] : nil;
+        NSString *urlScheme = scheme != NULL ? [NSString stringWithUTF8String:scheme] : nil;
+        NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+        if (@available(macOS 12.0, *)) {
+            if (type != nil) {
+                UTType *utType = [UTType typeWithIdentifier:type];
+                if (utType == nil) {
+                    wailsCompletionCallback(id, "unknown content type");
+                    return;
+                }
+                [workspace setDefaultApplicationAtURL:bundle.bundleURL
+                                    toOpenContentType:utType
+                                    completionHandler:^(NSError *error) {
+                                        wailsDefaultHandlerComplete(id, error);
+                                    }];
+            } else {
+                [workspace setDefaultApplicationAtURL:bundle.bundleURL
+                                 toOpenURLsWithScheme:urlScheme
+                                    completionHandler:^(NSError *error) {
+                                        wailsDefaultHandlerComplete(id, error);
+                                    }];
+            }
+            return;
+        }
+        OSStatus status;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        if (type != nil) {
+            status = LSSetDefaultRoleHandlerForContentType((CFStringRef)type, kLSRolesAll, (CFStringRef)bundleID);
+        } else {
+            status = LSSetDefaultHandlerForURLScheme((CFStringRef)urlScheme, (CFStringRef)bundleID);
+        }
+#pragma clang diagnostic pop
+        if (status != noErr) {
+            NSString *message = [NSString stringWithFormat:@"Launch Services error %d", (int)status];
+            wailsCompletionCallback(id, (char *)[message UTF8String]);
+            return;
+        }
+        wailsCompletionCallback(id, NULL);
+    }
+}
+
+char *wailsWorkspaceDefaultHandlerJSON(const char *contentType, const char *scheme) {
+    @autoreleasepool {
+        NSString *type = contentType != NULL ? [NSString stringWithUTF8String:contentType] : nil;
+        NSString *urlScheme = scheme != NULL ? [NSString stringWithUTF8String:scheme] : nil;
+        NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+        NSURL *appURL = nil;
+        if (@available(macOS 12.0, *)) {
+            if (type != nil) {
+                UTType *utType = [UTType typeWithIdentifier:type];
+                if (utType != nil) {
+                    appURL = [workspace URLForApplicationToOpenContentType:utType];
+                }
+            } else {
+                NSURL *probe = [NSURL URLWithString:[urlScheme stringByAppendingString:@":"]];
+                if (probe != nil) {
+                    appURL = [workspace URLForApplicationToOpenURL:probe];
+                }
+            }
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            CFStringRef handler = type != nil
+                ? LSCopyDefaultRoleHandlerForContentType((CFStringRef)type, kLSRolesAll)
+                : LSCopyDefaultHandlerForURLScheme((CFStringRef)urlScheme);
+#pragma clang diagnostic pop
+            if (handler != NULL) {
+                appURL = wailsApplicationURL([(NSString *)handler autorelease]);
+            }
+        }
+        NSDictionary *info = wailsApplicationInfo(appURL);
+        if (info == nil) {
+            return strdup("null");
+        }
+        NSData *data = [NSJSONSerialization dataWithJSONObject:info options:0 error:nil];
+        if (data == nil) {
+            return strdup("null");
+        }
+        NSString *json = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
+        return strdup([json UTF8String]);
+    }
+}

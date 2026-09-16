@@ -1,6 +1,8 @@
 package application
 
 import (
+	"errors"
+	"fmt"
 	"runtime"
 	"strings"
 
@@ -187,4 +189,82 @@ func localeFromEnvironment(lookup func(string) string) LocaleInfo {
 		}
 	}
 	return LocaleInfo{}
+}
+
+// DefaultHandler selects what a default-application query or change refers
+// to: exactly one of ContentType or URLScheme must be set.
+type DefaultHandler struct {
+	// ContentType is a uniform type identifier such as "public.plain-text"
+	// or "com.adobe.pdf".
+	ContentType string `json:"contentType,omitempty"`
+	// URLScheme is a URL scheme without the colon, such as "mailto" or
+	// "myapp".
+	URLScheme string `json:"urlScheme,omitempty"`
+}
+
+func (h DefaultHandler) validate() error {
+	contentType := strings.TrimSpace(h.ContentType)
+	scheme := strings.TrimSpace(h.URLScheme)
+	switch {
+	case contentType == "" && scheme == "":
+		return errors.New("environment: DefaultHandler needs a ContentType or a URLScheme")
+	case contentType != "" && scheme != "":
+		return errors.New("environment: DefaultHandler takes either a ContentType or a URLScheme, not both")
+	case contentType != "" && strings.ContainsAny(contentType, " \t\r\n/:"):
+		return fmt.Errorf("environment: %q is not a uniform type identifier", h.ContentType)
+	case scheme != "":
+		for index, r := range scheme {
+			isLetter := (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z')
+			isDigit := r >= '0' && r <= '9'
+			if !(isLetter || (index > 0 && (isDigit || r == '+' || r == '-' || r == '.'))) {
+				return fmt.Errorf("environment: %q is not a URL scheme (letters, digits, '+', '-' and '.', starting with a letter, no colon)", h.URLScheme)
+			}
+		}
+	}
+	return nil
+}
+
+// String describes the handler for error messages.
+func (h DefaultHandler) String() string {
+	if h.ContentType != "" {
+		return "content type " + h.ContentType
+	}
+	return "URL scheme " + h.URLScheme
+}
+
+// ErrDefaultHandlerUnsupported is returned by SetDefaultHandler and
+// DefaultHandler on platforms without a default-application registry.
+var ErrDefaultHandlerUnsupported = errors.New("environment: default handlers are not supported on this platform")
+
+// SetDefaultHandler makes this application the default for a content type
+// or URL scheme. The application must be a bundle with a bundle identifier;
+// unbundled `go run` binaries cannot be registered.
+//
+// macOS: NSWorkspace setDefaultApplicationAtURL:toOpenContentType: and
+// toOpenURLsWithScheme: (macOS 12+), which may show a confirmation dialog
+// for browsers and mail clients, with LSSetDefaultRoleHandlerForContentType
+// and LSSetDefaultHandlerForURLScheme on older systems.
+//
+// Other platforms: ErrDefaultHandlerUnsupported.
+func (em *EnvironmentManager) SetDefaultHandler(handler DefaultHandler) error {
+	if err := handler.validate(); err != nil {
+		return err
+	}
+	return platformSetDefaultHandler(handler)
+}
+
+// DefaultHandler returns the application that currently opens the content
+// type or URL scheme.
+//
+// macOS: NSWorkspace URLForApplicationToOpenContentType: and
+// URLForApplicationToOpenURL: (macOS 12+), with the Launch Services
+// LSCopyDefaultRoleHandlerForContentType and LSCopyDefaultHandlerForURLScheme
+// on older systems. ErrApplicationNotFound when nothing is registered.
+//
+// Other platforms: ErrDefaultHandlerUnsupported.
+func (em *EnvironmentManager) DefaultHandler(handler DefaultHandler) (AppInfo, error) {
+	if err := handler.validate(); err != nil {
+		return AppInfo{}, err
+	}
+	return platformDefaultHandler(handler)
 }
