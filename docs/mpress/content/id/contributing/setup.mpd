@@ -35,7 +35,7 @@ Panduan ini memandu Anda menyiapkan lingkungan pengembangan lengkap untuk menger
 
 ### Node.js dan npm
 
-Diperlukan untuk membangun dokumentasi dan menguji integrasi frontend.
+Hanya diperlukan untuk contoh integrasi frontend.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -195,11 +195,13 @@ Jika aplikasi pengujian berhasil dibangun dan dijalankan, lingkungan Anda sudah 
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### Pengujian Paket Tertentu
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### Jalankan dengan Cakupan Kode
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,27 +217,29 @@ go tool cover -html=coverage.out
 ### Jalankan dengan Pendeteksi Race Condition
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## Mengelola Dokumentasi
 
-Dokumentasi Wails dibangun dengan Astro dan Starlight.
+Dokumentasi Wails v3 ditulis dalam M-Press. File sumber bahasa Inggris berada di
+`docs/mpress/content/`; terjemahan berada di direktori bahasa seperti
+`fr/` dan `id/`.
+
+Pratinjau dan validasi perubahan dokumentasi dari direktori utama repositori:
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+# Use `python` on Windows if `python3` is unavailable.
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-Dokumentasi akan tersedia di `http://localhost:4321/`
+Situs produksi bersifat statis. Node.js, penyedia layanan terjemahan, dan kredensial Cloudflare
+tidak diperlukan untuk mengerjakan dokumentasi secara lokal.
 
 ## Debugging
 

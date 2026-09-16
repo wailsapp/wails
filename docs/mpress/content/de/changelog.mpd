@@ -346,7 +346,7 @@ _/
 
 ## Hinzugefügt
 - Warnung beim Erstellen eines Release-AAB ohne gesetztes `ANDROID_KEYSTORE_FILE` hinzugefügt (Google Play lehnt mit Debug-Signatur signierte Bundles ab) und die Paketierung sowie Signierung von App Bundles in [PR](https://github.com/wailsapp/wails/pull/5730) durch @taliesin-ai dokumentiert
-- Dokumentation why-wails.mdx in mehreren Sprachen in [PR](https://github.com/wailsapp/wails/pull/5739) durch @taliesin-ai hinzugefügt
+- Dokumentation Why Wails in mehreren Sprachen in [PR](https://github.com/wailsapp/wails/pull/5739) durch @taliesin-ai hinzugefügt
 - Zuordnung von Go time.Time zu JS Date oder string in Bindings in [PR](https://github.com/wailsapp/wails/pull/5398) durch @fbbdev unterstützt
 - Aufgaben für die Paketierung von Android App Bundles (AAB) (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) zur Einreichung im Play Store hinzugefügt — APK-Aufgaben bleiben für Tests auf lokalen Geräten und Emulatoren erhalten; umgesetzt in [PR](https://github.com/wailsapp/wails/pull/5728) durch @mortenolsrud (behebt [#5726](https://github.com/wailsapp/wails/issues/5726))
 - Aufgabenziele für physische Android-Geräte sowie die Wiederaufnahme der Kamera- und Standortberechtigungen in [PR](https://github.com/wailsapp/wails/pull/5735) durch @taliesin-ai hinzugefügt
@@ -707,10 +707,10 @@ _/
 
 ## Hinzugefügt
 - Französische Dokumentationslokalisierung hinzugefügt in [PR](https://github.com/wailsapp/wails/pull/5328) von @leaanthony
-- Deutsche Sprachversion zur Astro-Dokumentationswebsite hinzugefügt in [PR](https://github.com/wailsapp/wails/pull/5343) von @leaanthony
+- Deutsche Sprachversion zur Dokumentationswebsite hinzugefügt in [PR](https://github.com/wailsapp/wails/pull/5343) von @leaanthony
 
 ## Geändert
-- Alle 8 übersetzten Sprachversionen in der Starlight-Konfiguration registriert in [PR](https://github.com/wailsapp/wails/pull/5347) von @leaanthony
+- Alle 8 übersetzten Sprachversionen in der Dokumentationskonfiguration registriert in [PR](https://github.com/wailsapp/wails/pull/5347) von @leaanthony
 - Verschiedene Windows-bezogene Dateien für WebView2 aktualisiert in [PR](https://github.com/wailsapp/wails/pull/5317) von @leaanthony
 
 ## Behoben

@@ -35,7 +35,7 @@ sourcePath = "contributing/setup.mpd"
 
 ### Node.jsとnpm
 
-ドキュメントのビルドとフロントエンド統合のテストに必要です。
+フロントエンド統合の例を使用する場合にのみ必要です。
 
 ```bash
 # Install Node.js 20+ and npm
@@ -195,11 +195,13 @@ cd mytest
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### 特定のパッケージのテスト
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### カバレッジを有効にして実行
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,27 +217,29 @@ go tool cover -html=coverage.out
 ### レースディテクターを有効にして実行
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## ドキュメントの作業
 
-Wailsのドキュメントは、AstroとStarlightを使用してビルドされています。
+Wails v3 ドキュメントは M-Press で記述されています。英語のソースファイルは
+`docs/mpress/content/` にあり、翻訳ファイルは `fr/` や
+`id/` などの言語別ディレクトリにあります。
+
+リポジトリのルートからドキュメントの変更をプレビューし、検証します。
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+# Use `python` on Windows if `python3` is unavailable.
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-ドキュメントは`http://localhost:4321/`で確認できます
+本番サイトは静的サイトです。ローカルでドキュメントを編集する場合、Node.js、翻訳プロバイダー、Cloudflare
+の認証情報は必要ありません。
 
 ## デバッグ
 

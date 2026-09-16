@@ -24,7 +24,7 @@ TypeScript에서는 *IPC 연결 코드를 직접 작성하지 않고도* 가능�
 이 문서에서는 빌드 시의 *정적 분석*부터 *코드 생성*을 거쳐 WebView를 통해\
 바이트를 전달하는 *런타임 브리지*에 이르기까지, 이 과정이 _어떻게_ 이루어지는지 설명합니다.
 
-> 다음에 관한 자세하고 공식적인 설명은 [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/)에서 확인하세요.
+> 다음에 관한 자세하고 공식적인 설명은 [`contributing/architecture/bindings`](/contributing/architecture/bindings/)에서 확인하세요.
 > 생성기 파이프라인을 심층적으로 다루며, 이 페이지에서는
 > 기여자에게 초점을 맞춰 개괄적으로 설명합니다.
 

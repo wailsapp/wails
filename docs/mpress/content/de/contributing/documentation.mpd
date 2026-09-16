@@ -36,6 +36,7 @@ Behalte den Metadatenblock am Anfang jeder Seite sowie zusammengehörige `@...`-
 python3 docs/mpress/scripts/check_translations.py
 mpress build --strict --no-purge-css
 mpress check
+# Use `python` on Windows if `python3` is unavailable.
 python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 

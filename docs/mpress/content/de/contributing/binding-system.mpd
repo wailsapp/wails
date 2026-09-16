@@ -23,7 +23,7 @@ const msg = await Send("Hello");
 in TypeScript, *ohne IPC-Verbindungscode manuell schreiben zu müssen*.\
 Dieses Dokument erläutert, _wie_ dies funktioniert: von der *statischen Analyse* zur Build-Zeit über die *Codegenerierung* bis zur *Laufzeit-Bridge*, die Bytes über die WebView überträgt.
 
-> Eine maßgebliche ausführliche Beschreibung der Generator-Pipeline finden Sie unter [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/). Diese Seite bietet
+> Eine maßgebliche ausführliche Beschreibung der Generator-Pipeline finden Sie unter [`contributing/architecture/bindings`](/contributing/architecture/bindings/). Diese Seite bietet
 > einen Überblick
 > für Mitwirkende.
 

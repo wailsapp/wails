@@ -346,7 +346,7 @@ _/
 
 ## 新增
 - 在未设置`ANDROID_KEYSTORE_FILE`的情况下构建发布版 AAB 时添加警告（Google Play 会拒绝使用调试签名的应用包），并在由 @taliesin-ai 提交的[PR](https://github.com/wailsapp/wails/pull/5730)中记录 App Bundle 的打包和签名方法
-- 在由 @taliesin-ai 提交的[PR](https://github.com/wailsapp/wails/pull/5739)中新增多语言 why-wails.mdx 文档
+- 在由 @taliesin-ai 提交的[PR](https://github.com/wailsapp/wails/pull/5739)中新增多语言 Why Wails 文档
 - 在由 @fbbdev 提交的[PR](https://github.com/wailsapp/wails/pull/5398)中支持在绑定中将 Go time.Time 映射为 JS Date 或字符串
 - 在由 @mortenolsrud 提交的[PR](https://github.com/wailsapp/wails/pull/5728)中新增用于提交到 Play Store 的 Android App Bundle (AAB) 打包任务（`bundle`、`bundle:fat`、`assemble:aab`、`assemble:aab:release`）；APK 任务仍用于本地/模拟器测试（修复[#5726](https://github.com/wailsapp/wails/issues/5726)）
 - 在由 @taliesin-ai 提交的[PR](https://github.com/wailsapp/wails/pull/5735)中新增 Android 实体设备任务目标，并恢复相机/位置权限
@@ -707,10 +707,10 @@ _/
 
 ## 新增
 - 在[PR](https://github.com/wailsapp/wails/pull/5328)中新增法语文档本地化，贡献者：@leaanthony
-- 在[PR](https://github.com/wailsapp/wails/pull/5343)中为 Astro 文档站点新增德语区域设置，贡献者：@leaanthony
+- 在[PR](https://github.com/wailsapp/wails/pull/5343)中为 文档站点新增德语区域设置，贡献者：@leaanthony
 
 ## 变更
-- 在[PR](https://github.com/wailsapp/wails/pull/5347)中将全部8个已翻译的区域设置注册到 Starlight 配置，贡献者：@leaanthony
+- 在[PR](https://github.com/wailsapp/wails/pull/5347)中将全部8个已翻译的区域设置注册到 文档配置，贡献者：@leaanthony
 - 在[PR](https://github.com/wailsapp/wails/pull/5317)中更新与 WebView2 有关的多个 Windows 文件，贡献者：@leaanthony
 
 ## 修复

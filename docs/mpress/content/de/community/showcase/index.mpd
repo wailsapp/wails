@@ -57,10 +57,10 @@ Sieh dir den Abschnitt\
 @steps
 @step title="Erstelle einen Fork des Repositorys."
 @end
-@step title="Füge die Bilder im Ordner `docs/src/assets/showcase-images` hinzu."
+@step title="Füge die Bilder im Ordner `docs/mpress/static/showcase-images` hinzu."
 @end
-@step title="Erstelle eine Kopie der Datei `_template.md` im"
-Ordner `docs/src/content/docs/community/showcase`.
+@step title="Erstellen Sie unter eine Kopie einer vorhandenen `.mpd`-Showcase-Datei"
+Ordner `docs/mpress/content/community/showcase`.
 @end
 @step title="Benenne die kopierte Datei nach deinem Projekt. (Der Name sollte nicht"
 mit `_` beginnen.)
@@ -68,7 +68,7 @@ mit `_` beginnen.)
 @step title="Aktualisiere Titel, Bild, Link und Inhalt der Datei."
 @end
 @step title="Füge das Projekt der obigen Liste in"
-`docs/src/content/docs/community/showcase/index.mdx` hinzu.
+`docs/mpress/content/community/showcase/index.mpd` hinzu.
 @end
 @step title="Reiche einen Pull Request ein."
 
