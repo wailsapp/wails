@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search and Preview</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --border: rgba(128, 128, 128, 0.35);
+            --muted: rgba(128, 128, 128, 0.9);
+        }
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        h2 { font-size: 14px; margin: 0 0 8px; }
+        p.lead { margin: 0 0 20px; color: var(--muted); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        section {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        section.wide { grid-column: 1 / -1; }
+        button { font: inherit; padding: 3px 10px; margin-right: 4px; }
+        input[type=text] { font: inherit; padding: 3px 6px; width: 220px; }
+        label { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; }
+        .files { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .file { text-align: center; }
+        .file img {
+            width: 96px;
+            height: 96px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 6px;
+            border-radius: 6px;
+        }
+        .file .name { font-weight: 600; word-break: break-all; }
+        .row { margin: 6px 0; }
+        .status { color: var(--muted); }
+        pre {
+            max-height: 200px;
+            overflow: auto;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 11px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+        }
+        #log {
+            margin-top: 16px;
+            max-height: 130px;
+            overflow: auto;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 11px;
+            color: var(--muted);
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<h1>Search and Preview</h1>
+<p class="lead">Spotlight indexing, Quick Look previews and thumbnails, and Apple Events. Each section calls one manager on <code>application.App</code>.</p>
+
+<div class="grid">
+    <section class="wide">
+        <h2>Sample files and Quick Look thumbnails</h2>
+        <div class="row">
+            <label><input type="checkbox" id="iconMode"> Icon mode</label>
+            <button id="previewAll">Preview all</button>
+            <button id="closePreview">Close</button>
+            <span class="status" id="previewStatus"></span>
+        </div>
+        <div class="files" id="files"></div>
+    </section>
+
+    <section>
+        <h2>Spotlight</h2>
+        <div class="row">Indexing available: <span id="spotlightAvailable">...</span></div>
+        <div class="row">
+            <button id="index">Index in Spotlight</button>
+            <button id="removeIndex">Remove from Spotlight</button>
+        </div>
+        <div class="row status">Search "Beta feedback" in Spotlight after indexing (bundled app only). Selecting a result arrives through <code>OnOpen</code>.</div>
+        <div class="row" id="opened"></div>
+    </section>
+
+    <section>
+        <h2>Apple Events</h2>
+        <div class="row status">Handler registered for <code>WAIL</code>/<code>note</code>. Try:<br><code>osascript -e 'tell application id "com.wails.mac-search-preview" to «event WAILnote» "alpha"'</code></div>
+        <div class="row">
+            <input type="text" id="sendTarget" placeholder="target bundle id" value="com.wails.mac-search-preview">
+        </div>
+        <div class="row">
+            <input type="text" id="sendText" placeholder="note id or title" value="beta">
+            <button id="send">Send WAIL/note</button>
+        </div>
+        <div class="row" id="sendResult"></div>
+    </section>
+
+    <section class="wide">
+        <h2>Scripting definition</h2>
+        <pre id="sdef"></pre>
+    </section>
+</div>
+<div id="log"></div>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    const call = (method, ...args) => wails.Call.ByName("main.SearchPreviewService." + method, ...args);
+    const $ = (id) => document.getElementById(id);
+    const logEl = $("log");
+    function log(message) {
+        logEl.textContent = new Date().toLocaleTimeString() + "  " + message + "\n" + logEl.textContent;
+    }
+    function fail(what, error) {
+        log(what + ": " + (error && error.message ? error.message : error));
+    }
+
+    const notes = await call("Notes");
+    const files = await call("Files");
+    const byPath = Object.fromEntries(notes.map((note) => [note.path, note]));
+
+    async function renderFiles() {
+        const container = $("files");
+        container.innerHTML = "";
+        const iconMode = $("iconMode").checked;
+        for (const path of files) {
+            const card = document.createElement("div");
+            card.className = "file";
+            const img = document.createElement("img");
+            img.alt = "";
+            const name = document.createElement("div");
+            name.className = "name";
+            name.textContent = path.split("/").pop();
+            const preview = document.createElement("button");
+            preview.textContent = "Preview";
+            const note = byPath[path];
+            preview.addEventListener("click", async () => {
+                try {
+                    await call("Preview", note ? note.id : "");
+                    $("previewStatus").textContent = "panel open";
+                    log("preview " + name.textContent);
+                } catch (error) {
+                    fail("preview", error);
+                }
+            });
+            card.append(img, name, preview);
+            container.append(card);
+            call("Thumbnail", path, 96, iconMode)
+                .then((url) => { img.src = url; })
+                .catch((error) => fail("thumbnail " + name.textContent, error));
+        }
+    }
+
+    $("iconMode").addEventListener("change", renderFiles);
+    $("previewAll").addEventListener("click", async () => {
+        try {
+            await call("Preview", "");
+            $("previewStatus").textContent = "panel open";
+            log("preview all");
+        } catch (error) {
+            fail("preview all", error);
+        }
+    });
+    $("closePreview").addEventListener("click", async () => {
+        await call("ClosePreview");
+        $("previewStatus").textContent = (await call("IsPreviewOpen")) ? "panel open" : "panel closed";
+        log("close preview");
+    });
+
+    $("index").addEventListener("click", async () => {
+        try {
+            await call("IndexNotes");
+            log("indexed " + notes.length + " notes in Spotlight");
+        } catch (error) {
+            fail("index", error);
+        }
+    });
+    $("removeIndex").addEventListener("click", async () => {
+        try {
+            await call("RemoveIndex");
+            log("removed the Spotlight domain");
+        } catch (error) {
+            fail("remove index", error);
+        }
+    });
+
+    $("send").addEventListener("click", async () => {
+        $("sendResult").textContent = "sending...";
+        try {
+            const reply = await call("SendNote", $("sendTarget").value, $("sendText").value);
+            $("sendResult").textContent = "reply: " + reply;
+            log("sent WAIL/note");
+        } catch (error) {
+            $("sendResult").textContent = "error: " + (error && error.message ? error.message : error);
+        }
+    });
+
+    wails.Events.On("note:opened", (event) => {
+        const data = event.data;
+        const title = data.title || ("unknown note " + JSON.stringify(data.id));
+        $("opened").textContent = "Opened via " + data.source + ": " + title;
+        log("opened " + title + " via " + data.source);
+    });
+    wails.Events.On("note:search", (event) => {
+        $("opened").textContent = "Search in app: " + event.data;
+        log("search in app: " + event.data);
+    });
+
+    $("spotlightAvailable").textContent = (await call("SpotlightAvailable")) ? "yes" : "no";
+    $("sdef").textContent = await call("ScriptingDefinition");
+    await renderFiles();
+    log("ready");
+</script>
+</body>
+</html>
