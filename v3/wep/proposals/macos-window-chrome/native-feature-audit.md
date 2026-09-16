@@ -80,6 +80,8 @@ These are the highest-leverage items because the Objective-C host code, callback
 
 ### 4.2 Tier 2: platform integration
 
+**Status, 2026-09-17: 47 of 48 items implemented** on this branch across ten commits, each with a runtime probe on macOS 26.4.1 and an example under `v3/examples/mac-*`. The one exception is trackpad gestures (item 26), left for the open macOS 27 preparation PR #5760, which already adds gesture recognisers and would conflict. Two deviations from the sketches: popovers host native accessory controls rather than a WebView, because the WebView configuration is bound to a window delegate (a WebView popover is a follow-up), and the permission kinds carry a `PermissionKind` prefix because `PermissionCamera` and friends already existed as window option values. The guide `guides/macos-platform-integration.mdx` covers the resulting surface.
+
 Features that make an app feel native without touching the window architecture. Several are one-line AppKit calls behind a small Go API.
 
 #### Window behaviour
