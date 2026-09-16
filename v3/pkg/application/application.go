@@ -223,6 +223,18 @@ type App struct {
 	GlobalShortcut *GlobalShortcutManager
 	Updater        *applicationUpdater
 
+	// Platform integration managers. See each manager for platform support.
+	Haptics          *HapticsManager
+	Sound            *SoundManager
+	Speech           *SpeechManager
+	Permissions      *PermissionsManager
+	Power            *PowerManager
+	Lifecycle        *LifecycleManager
+	ServicesProvider *ServicesProviderManager
+	Activity         *ActivityManager
+	QuickLook        *QuickLookManager
+	Spotlight        *SpotlightManager
+
 	// Windows
 	windows     map[uint]Window
 	windowsLock sync.RWMutex
@@ -393,6 +405,16 @@ func (a *App) init() {
 	a.Autostart = newAutostartManager(a)
 	a.GlobalShortcut = newGlobalShortcutManager(a)
 	a.Updater = newApplicationUpdater(a)
+	a.Haptics = newHapticsManager(a)
+	a.Sound = newSoundManager(a)
+	a.Speech = newSpeechManager(a)
+	a.Permissions = newPermissionsManager(a)
+	a.Power = newPowerManager(a)
+	a.Lifecycle = newLifecycleManager(a)
+	a.ServicesProvider = newServicesProviderManager(a)
+	a.Activity = newActivityManager(a)
+	a.QuickLook = newQuickLookManager(a)
+	a.Spotlight = newSpotlightManager(a)
 }
 
 func (a *App) Capabilities() capabilities.Capabilities {
