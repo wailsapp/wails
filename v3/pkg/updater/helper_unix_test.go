@@ -25,6 +25,9 @@ func withRenameFunc(t *testing.T, fn func(oldpath, newpath string) error) {
 	t.Cleanup(func() { renameFunc = prev })
 }
 
+// TestIsCrossDevice verifies EXDEV classification: only cross-device link
+// errors trigger the copy fallback; nil, plain, and other errno failures do
+// not.
 func TestIsCrossDevice(t *testing.T) {
 	tests := []struct {
 		name string
@@ -47,6 +50,8 @@ func TestIsCrossDevice(t *testing.T) {
 	}
 }
 
+// TestBothDirs verifies the directory-pair detection that selects the
+// clear-slot-then-retry replace path for .app bundle swaps.
 func TestBothDirs(t *testing.T) {
 	dir := t.TempDir()
 	fileA := filepath.Join(dir, "a.bin")
@@ -85,6 +90,9 @@ func TestBothDirs(t *testing.T) {
 	}
 }
 
+// TestRenameOrCopy covers the move strategy: direct rename on the same
+// filesystem, copy-and-delete fallback on EXDEV, and as-is return of other
+// errors with both sides left untouched.
 func TestRenameOrCopy(t *testing.T) {
 	t.Run("same filesystem renames", func(t *testing.T) {
 		dir := t.TempDir()
@@ -262,5 +270,53 @@ func TestRunHelperSwap_CrossDeviceFile(t *testing.T) {
 	}
 	if len(l.calls) != 1 || l.calls[0] != target {
 		t.Errorf("launcher calls: %+v", l.calls)
+	}
+}
+
+// End-to-end recovery for a failed directory swap: after bothDirs clears the
+// target slot, a non-EXDEV rename failure must fall through to the backup
+// restore — original bundle back at target, relaunched, no helper env.
+func TestRunHelperSwap_DirReplaceFails_RestoresBackup(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "App.app")
+	newPath := filepath.Join(dir, "App.app.new")
+	makeAppBundle(t, target, "old-bin")
+	makeAppBundle(t, newPath, "new-bin")
+	for _, key := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog} {
+		t.Setenv(key, "1")
+	}
+	withRenameFunc(t, func(oldpath, newpath string) error {
+		return &os.LinkError{Op: "rename", Old: oldpath, New: newpath, Err: syscall.EACCES}
+	})
+
+	calls := 0
+	l := &funcLauncher{fn: func(path string) error {
+		calls++
+		if path != target {
+			t.Errorf("launch path: %q (want %q)", path, target)
+		}
+		if got := readFile(t, filepath.Join(path, "Contents", "MacOS", "exe")); string(got) != "old-bin" {
+			t.Errorf("restored bundle exe: %q (want old-bin)", got)
+		}
+		for _, key := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog} {
+			if value := os.Getenv(key); value != "" {
+				t.Errorf("%s leaked to restored application: %q", key, value)
+			}
+		}
+		return nil
+	}}
+
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 13 {
+		t.Fatalf("code: %d (want 13)", code)
+	}
+	if calls != 1 {
+		t.Fatalf("launches: %d (want 1)", calls)
+	}
+	if got := readFile(t, filepath.Join(target, "Contents", "MacOS", "exe")); string(got) != "old-bin" {
+		t.Errorf("after restore bundle exe: %q (want old-bin)", got)
+	}
+	if got := readFile(t, filepath.Join(newPath, "Contents", "MacOS", "exe")); string(got) != "new-bin" {
+		t.Errorf("staged bundle must be untouched, got %q", got)
 	}
 }
