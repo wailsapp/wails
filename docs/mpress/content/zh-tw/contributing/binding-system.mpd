@@ -25,7 +25,7 @@ const msg = await Send("Hello");
 *靜態分析*，經過*程式碼產生*，一直到透過 WebView 傳輸\
 位元組的*執行階段橋接器*。
 
-> 如需以下內容，請參閱[`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/)：
+> 如需以下內容，請參閱[`contributing/architecture/bindings`](/contributing/architecture/bindings/)：
 > 產生器管線的權威深入解析——本頁則是
 > 以貢獻者為對象的概覽。
 

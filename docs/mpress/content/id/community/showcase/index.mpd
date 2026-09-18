@@ -57,10 +57,10 @@ Lihat bagian\
 @steps
 @step title="Buat fork repositori."
 @end
-@step title="Tambahkan gambar ke folder `docs/src/assets/showcase-images`."
+@step title="Tambahkan gambar ke folder `docs/mpress/static/showcase-images`."
 @end
-@step title="Buat salinan file `_template.md` di"
-folder `docs/src/content/docs/community/showcase`.
+@step title="Buat salinan file showcase `.mpd` yang sudah ada di dalam"
+folder `docs/mpress/content/community/showcase`.
 @end
 @step title="Ubah nama file salinan sesuai nama proyek Anda. (Nama sebaiknya tidak diawali"
 dengan `_`))
@@ -68,7 +68,7 @@ dengan `_`))
 @step title="Perbarui judul, gambar, tautan, dan konten file tersebut."
 @end
 @step title="Tambahkan ke daftar di atas dalam"
-`docs/src/content/docs/community/showcase/index.mdx`.
+`docs/mpress/content/community/showcase/index.mpd`.
 @end
 @step title="Ajukan PR."
 

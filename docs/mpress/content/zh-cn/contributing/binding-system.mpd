@@ -23,7 +23,7 @@ const msg = await Send("Hello");
 在 TypeScript 中*，而无需手动编写任何 IPC 粘合代码*。\
 本文详细说明这一过程是_如何_实现的：从构建时的*静态分析*，到*代码生成*，再到通过 WebView 传输字节的*运行时桥接层*。
 
-> 有关以下内容，请参阅[`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/)：
+> 有关以下内容，请参阅[`contributing/architecture/bindings`](/contributing/architecture/bindings/)：
 > 生成器流水线的权威深入解析——本页则是
 > 面向贡献者的概述。
 

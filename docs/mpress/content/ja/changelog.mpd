@@ -346,7 +346,7 @@ _/
 
 ## 追加
 - `ANDROID_KEYSTORE_FILE`を設定せずにリリース用 AAB をビルドした場合の警告を追加し（Google Play はデバッグ署名されたバンドルを拒否します）、@taliesin-ai による[PR](https://github.com/wailsapp/wails/pull/5730)で App Bundle のパッケージ化と署名について文書化
-- \@taliesin-ai による[PR](https://github.com/wailsapp/wails/pull/5739)で why-wails.mdx ドキュメントを複数の言語で追加
+- \@taliesin-ai による[PR](https://github.com/wailsapp/wails/pull/5739)で Why Wails ドキュメントを複数の言語で追加
 - \@fbbdev による[PR](https://github.com/wailsapp/wails/pull/5398)で、バインディングにおける Go の time.Time から JS の Date または string へのマッピングをサポート
 - Play Store への提出用に Android App Bundle（AAB）のパッケージ化タスク（`bundle`、`bundle:fat`、`assemble:aab`、`assemble:aab:release`）を追加。ローカル／エミュレーターでのテスト用 APK タスクは引き続き利用可能。@mortenolsrud による[PR](https://github.com/wailsapp/wails/pull/5728)（[#5726](https://github.com/wailsapp/wails/issues/5726)を修正）
 - \@taliesin-ai による[PR](https://github.com/wailsapp/wails/pull/5735)で、Android 実機向けタスクターゲットと、カメラ／位置情報の権限の再開処理を追加
@@ -707,10 +707,10 @@ _/
 
 ## 追加
 - フランス語のドキュメントローカライズを追加（@leaanthony による [PR](https://github.com/wailsapp/wails/pull/5328)）
-- Astro ドキュメントサイトにドイツ語ロケールを追加（@leaanthony による [PR](https://github.com/wailsapp/wails/pull/5343)）
+- ドキュメントサイトにドイツ語ロケールを追加（@leaanthony による [PR](https://github.com/wailsapp/wails/pull/5343)）
 
 ## 変更
-- 翻訳済みの全 8 ロケールを Starlight 設定に登録（@leaanthony による [PR](https://github.com/wailsapp/wails/pull/5347)）
+- 翻訳済みの全 8 ロケールをドキュメント設定に登録（@leaanthony による [PR](https://github.com/wailsapp/wails/pull/5347)）
 - WebView2 向けに Windows 関連の各種ファイルを更新（@leaanthony による [PR](https://github.com/wailsapp/wails/pull/5317)）
 
 ## 修正

@@ -408,6 +408,9 @@ func readFile(path string) (string, error) {
 
 	var content strings.Builder
 	scanner := bufio.NewScanner(file)
+	// M-Press changelog entries can contain generated links long enough to
+	// exceed Scanner's default 64 KiB token limit.
+	scanner.Buffer(make([]byte, 64*1024), 8*1024*1024)
 	for scanner.Scan() {
 		content.WriteString(scanner.Text())
 		content.WriteString("\n")

@@ -35,7 +35,7 @@ Ce guide vous accompagne dans la configuration d’un environnement de développ
 
 ### Node.js et npm
 
-Requis pour générer la documentation et tester les intégrations front-end.
+Requis uniquement pour les exemples d’intégration avec le frontend.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -195,11 +195,13 @@ Si l’application de test est générée et s’exécute correctement, votre en
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### Tests d’un paquet spécifique
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### Exécution avec mesure de la couverture
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,27 +217,29 @@ go tool cover -html=coverage.out
 ### Exécution avec le détecteur de situations de concurrence
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## Utilisation de la documentation
 
-La documentation de Wails est générée avec Astro et Starlight.
+La documentation de Wails v3 est rédigée avec M-Press. Les fichiers sources en anglais se trouvent dans
+`docs/mpress/content/` ; les traductions se trouvent dans des répertoires de langue tels que
+`fr/` et `id/`.
+
+Prévisualisez et validez les modifications apportées à la documentation depuis la racine du dépôt :
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+# Use `python` on Windows if `python3` is unavailable.
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-La documentation sera disponible à l’adresse `http://localhost:4321/`
+Le site de production est statique. Node.js, un fournisseur de traduction et des identifiants
+Cloudflare ne sont pas requis pour travailler localement sur la documentation.
 
 ## Débogage
 

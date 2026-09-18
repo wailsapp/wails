@@ -227,10 +227,43 @@ func TestLocalizedMPDSlug(t *testing.T) {
 	}
 }
 
-func TestDocumentationIgnoresRollbackAndNonPages(t *testing.T) {
-	for _, file := range []string{"docs/src/content/docs/guide.mdx", "docs/mpress/content/changelog.mpd", "docs/mpress/content/image.svg"} {
-		if isDocumentationPage(file) {
-			t.Errorf("%s must not produce a release-note documentation link", file)
-		}
+func TestDocumentationIgnoresNonMPD(t *testing.T) {
+	files := []string{"docs/legacy/guide.mdx", "docs/mpress/content/changelog.mpd", "docs/mpress/content/image.svg"}
+	for _, file := range files {
+		t.Run(file, func(t *testing.T) {
+			if isDocumentationPage(file) {
+				t.Errorf("%s must not produce a release-note documentation link", file)
+			}
+		})
+	}
+}
+
+func TestAppendDocumentationLinksKeepsFocusedChangesReadable(t *testing.T) {
+	entry := "Add a focused documentation page"
+	urls := []string{
+		"https://v3.wails.io/guides/one",
+		"https://v3.wails.io/guides/two",
+	}
+
+	got := appendDocumentationLinks(entry, urls)
+	want := entry + " — see [documentation](https://v3.wails.io/guides/one) and [documentation](https://v3.wails.io/guides/two)"
+	if got != want {
+		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
+	}
+}
+
+func TestAppendDocumentationLinksCollapsesBroadChanges(t *testing.T) {
+	entry := "Update the documentation translations"
+	urls := []string{
+		"https://v3.wails.io/one",
+		"https://v3.wails.io/two",
+		"https://v3.wails.io/three",
+		"https://v3.wails.io/four",
+	}
+
+	got := appendDocumentationLinks(entry, urls)
+	want := entry + " — see the [documentation site](https://v3.wails.io) (4 pages updated)"
+	if got != want {
+		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
 	}
 }

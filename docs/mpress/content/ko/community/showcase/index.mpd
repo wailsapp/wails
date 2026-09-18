@@ -56,10 +56,10 @@ sourcePath = "community/showcase/index.mpd"
 @steps
 @step title="저장소를 포크합니다."
 @end
-@step title="이미지를 `docs/src/assets/showcase-images` 폴더에 추가합니다."
+@step title="이미지를 `docs/mpress/static/showcase-images` 폴더에 추가합니다."
 @end
-@step title="다음 폴더에 있는 `_template.md` 파일을 복사합니다."
-`docs/src/content/docs/community/showcase` 폴더입니다.
+@step title="`docs/mpress/content/community/showcase` 폴더에 있는 기존 `.mpd` 쇼케이스 파일을 복사하세요."
+`docs/mpress/content/community/showcase` 폴더입니다.
 @end
 @step title="복사한 파일의 이름을 프로젝트 이름으로 변경합니다. (이름의 시작 부분에 사용하면 안 되는 문자는"
 `_`입니다.))
@@ -67,7 +67,7 @@ sourcePath = "community/showcase/index.mpd"
 @step title="파일의 제목, 이미지, 링크 및 콘텐츠를 업데이트합니다."
 @end
 @step title="다음 파일의 위 목록에 프로젝트를 추가합니다."
-`docs/src/content/docs/community/showcase/index.mdx`.
+`docs/mpress/content/community/showcase/index.mpd`.
 @end
 @step title="PR을 제출합니다."
 

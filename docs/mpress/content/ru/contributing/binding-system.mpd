@@ -25,7 +25,7 @@ const msg = await Send("Hello");
 сборки через *генерацию кода* до *моста среды выполнения*, который передаёт\
 байты через WebView.
 
-> Подробное описание см. в [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/):
+> Подробное описание см. в [`contributing/architecture/bindings`](/contributing/architecture/bindings/):
 > это авторитетное подробное руководство по конвейеру генератора, а данная страница —
 > обзор для участников проекта.
 

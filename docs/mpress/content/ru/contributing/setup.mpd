@@ -35,7 +35,7 @@ sourcePath = "contributing/setup.mpd"
 
 ### Node.js и npm
 
-Необходимы для сборки документации и тестирования интеграций с фронтендом.
+Требуется только для примеров интеграции с фронтендом.
 
 ```bash
 # Install Node.js 20+ and npm
@@ -195,11 +195,13 @@ cd mytest
 ```bash
 cd v3
 go test ./...
+cd ..
 ```
 
 ### Тесты определённого пакета
 
 ```bash
+cd v3
 go test ./pkg/application
 go test ./pkg/events -v  # Verbose output
 ```
@@ -207,6 +209,7 @@ go test ./pkg/events -v  # Verbose output
 ### Запуск с измерением покрытия
 
 ```bash
+cd v3
 go test ./... -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
@@ -214,27 +217,28 @@ go tool cover -html=coverage.out
 ### Запуск с детектором гонок данных
 
 ```bash
+cd v3
 go test ./... -race
 ```
 
 ## Работа с документацией
 
-Документация Wails собирается с помощью Astro и Starlight.
+Документация Wails v3 написана с использованием M-Press. Исходные файлы на английском языке находятся в
+`docs/mpress/content/`, а переводы — в каталогах соответствующих языков, например
+`fr/` и `id/`.
+
+Предварительно просмотрите и проверьте изменения в документации из корневого каталога репозитория:
 
 ```bash
-cd docs
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+# Use `python` on Windows if `python3` is unavailable.
+python3 docs/mpress/scripts/check_site.py docs/mpress/site
 ```
 
-Документация будет доступна по адресу `http://localhost:4321/`
+Рабочий сайт является статическим. Для локальной работы с документацией не требуются Node.js, поставщик услуг перевода и учетные данные Cloudflare.
 
 ## Отладка
 

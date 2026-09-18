@@ -346,7 +346,7 @@ _/
 
 ## Добавлено
 - Добавлено предупреждение при сборке релизного AAB без заданного `ANDROID_KEYSTORE_FILE` (Google Play отклоняет пакеты с отладочной подписью), а также документация по упаковке и подписыванию App Bundle в [PR](https://github.com/wailsapp/wails/pull/5730) от @taliesin-ai
-- Добавлена документация why-wails.mdx на нескольких языках в [PR](https://github.com/wailsapp/wails/pull/5739) от @taliesin-ai
+- Добавлена документация Why Wails на нескольких языках в [PR](https://github.com/wailsapp/wails/pull/5739) от @taliesin-ai
 - Добавлена поддержка преобразования Go time.Time в JS Date или строку в привязках в [PR](https://github.com/wailsapp/wails/pull/5398) от @fbbdev
 - Добавлены задачи для упаковки Android App Bundle (AAB) (`bundle`, `bundle:fat`, `assemble:aab`, `assemble:aab:release`) для отправки в Play Store; задачи для APK сохранены для локального тестирования и тестирования в эмуляторе — [PR](https://github.com/wailsapp/wails/pull/5728) от @mortenolsrud (исправляет [#5726](https://github.com/wailsapp/wails/issues/5726))
 - Добавлены задачи для физических устройств Android и возобновление запроса разрешений на использование камеры и геолокации в [PR](https://github.com/wailsapp/wails/pull/5735) от @taliesin-ai
@@ -707,10 +707,10 @@ _/
 
 ## Добавлено
 - Добавлена французская локализация документации в [PR](https://github.com/wailsapp/wails/pull/5328), автор: @leaanthony
-- На сайт документации Astro добавлена немецкая локаль в [PR](https://github.com/wailsapp/wails/pull/5343), автор: @leaanthony
+- На сайт документации добавлена немецкая локаль в [PR](https://github.com/wailsapp/wails/pull/5343), автор: @leaanthony
 
 ## Изменено
-- Все 8 переведённые локали зарегистрированы в конфигурации Starlight в [PR](https://github.com/wailsapp/wails/pull/5347), автор: @leaanthony
+- Все 8 переведённых локалей зарегистрированы в конфигурации документации в [PR](https://github.com/wailsapp/wails/pull/5347), автор: @leaanthony
 - Обновлены различные связанные с Windows файлы для WebView2 в [PR](https://github.com/wailsapp/wails/pull/5317), автор: @leaanthony
 
 ## Исправлено
