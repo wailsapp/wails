@@ -14,6 +14,11 @@ import (
 	"time"
 )
 
+// devProxyMaxIdleConnsPerHost is the idle connection pool the dev proxy keeps to the frontend
+// dev server. It only ever targets that one host, so a generous pool is cheap, and
+// IdleConnTimeout reaps whatever is not in use.
+const devProxyMaxIdleConnsPerHost = 512
+
 // retryTransport implements http.RoundTripper with retry logic for transient connection failures.
 // This is particularly useful when the Vite dev server temporarily rejects connections due to
 // high concurrency with many dynamic imports.
@@ -43,6 +48,11 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // isConnectionError checks if the error is a connection-related error that may be transient.
+//
+// Errors reporting that no local address could be allocated - EADDRNOTAVAIL ("cannot assign
+// requested address") on Unix, a failed bind on Windows - must NOT be added here. Those mean the
+// host is out of ephemeral ports, and retrying only prolongs an outage that is already affecting
+// every process on the machine. Failing fast is the correct response.
 func isConnectionError(err error) bool {
 	if err == nil {
 		return false
@@ -85,6 +95,15 @@ func NewAssetFileServer(vfs fs.FS) http.Handler {
 				}
 				return dialer.DialContext(ctx, network, addr)
 			},
+			// A dev page pulls hundreds of unbundled ES modules concurrently. Without this,
+			// MaxIdleConnsPerHost falls back to DefaultMaxIdleConnsPerHost (2), so most of
+			// those requests get a connection that is closed instead of pooled the moment it
+			// is returned. Closing it here leaves a TIME_WAIT holding one of the proxy's own
+			// ephemeral ports for 2*MSL (30s on macOS). On a large frontend that drains the
+			// host's ephemeral range, at which point every process on the machine - not just
+			// the app - starts failing to make outbound connections.
+			MaxIdleConnsPerHost: devProxyMaxIdleConnsPerHost,
+			IdleConnTimeout:     90 * time.Second,
 		},
 		maxRetries: 50,
 		delay:      50 * time.Millisecond,

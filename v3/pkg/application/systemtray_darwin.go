@@ -82,6 +82,12 @@ const (
 // system tray map
 var systemTrayMap = make(map[uint]*macosSystemTray)
 
+// coerceStatusItemEventType wraps the C helper; used by tests.
+// See systemtray_darwin.h for the #5752 rationale.
+func coerceStatusItemEventType(rawEventType int, pressedMouseButtons uint64) int {
+	return int(C.systemTrayCoerceEventType(C.int(rawEventType), C.ulong(pressedMouseButtons)))
+}
+
 //export systrayClickCallback
 func systrayClickCallback(id C.long, buttonID C.int) {
 	// Get the system tray

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f823ce1a2e0d6c4f2552",
+  "sourceFile": "community/showcase/modalfilemanager.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "targetHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "machineHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "machineText": "![Modal File Manager](/assets/showcase-images/modalfilemanager.webp)",
+      "status": "final",
+      "sourcePreview": "![Modal File Manager](/assets/showcase-images/modalfilemanager.webp)",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "06cd1a6c3ce63c22e1d8b0c9661be754cb24103592b1890d35702e0a559d6f3f",
+      "targetHash": "37f5e262fbb0cbc1cb66baa407ab65ab3f30aeeefd8cfd7ee3b10522d50609de",
+      "machineHash": "37f5e262fbb0cbc1cb66baa407ab65ab3f30aeeefd8cfd7ee3b10522d50609de",
+      "machineText": "[Modal File Manager](https://github.com/raguay/ModalFileManager) ist ein mit Webtechnologien entwickelter Dateimanager mit zwei Bereichen. Mein ursprünglicher Entwurf basierte auf NW.js und ist [hier](https://github.com/raguay/ModalFileManager-NWjs) zu finden. Diese Version verwendet denselben Svelte-basierten Frontendcode, der jedoch seit der Abkehr von NW.js umfassend geändert wurde. Das Backend ist dagegen eine [Wails-2](https://wails.io/)Implementierung. Mit dieser Implementierung verwende ich keine Befehlszeilenbefehle wie `rm`, `cp` usw. mehr. Zum Herunterladen von Themes und Erweiterungen muss Git jedoch auf dem System installiert sein. Die Anwendung ist vollständig in Go programmiert und läuft wesentlich schneller als die vorherigen Versionen.",
+      "status": "final",
+      "sourcePreview": "[Modal File Manager](https://github.com/raguay/ModalFileManager) is a dual pane\\ file manager using …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "99ddc7fca550958f0a6fa1ab392be75c6d154ba33da7da797d3c3f31a0a5e549",
+      "targetHash": "590e10d8948422f11c90604813f8428305eba9ea3f2a5e6ccad186ac216d266e",
+      "machineHash": "590e10d8948422f11c90604813f8428305eba9ea3f2a5e6ccad186ac216d266e",
+      "machineText": "Dieser Dateimanager folgt demselben Prinzip wie Vim: Tastaturaktionen werden durch Zustände gesteuert. Die Anzahl der Zustände ist nicht festgelegt, sondern umfassend programmierbar. Daher lassen sich unendlich viele Tastaturkonfigurationen erstellen und verwenden. Dies ist der Hauptunterschied zu anderen Dateimanagern. Themes und Erweiterungen können von GitHub heruntergeladen werden.",
+      "status": "final",
+      "sourcePreview": "This file manager is designed around the same principle as Vim: a state\\ controlled keyboard actions…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "97d115b835efd090084ae30921495a53a33a3a29db823c8ac6324c5a9cb82f27",
+      "machineHash": "97d115b835efd090084ae30921495a53a33a3a29db823c8ac6324c5a9cb82f27",
+      "machineText": "Eine mit Wails entwickelte Desktopanwendung",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "targetHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "machineHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "machineText": "Modal File Manager",
+      "status": "final",
+      "sourcePreview": "Modal File Manager",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "84220d31f800dcb22a5e",
+  "sourceFile": "community/showcase/scriptbar.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "targetHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "machineHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "machineText": "![ScriptBar](/assets/showcase-images/scriptbar.webp)",
+      "status": "final",
+      "sourcePreview": "![ScriptBar](/assets/showcase-images/scriptbar.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "055c47d2b759e5946aac414285f8bdc803175d60e9e482e2efd71b08f4a54ed6",
+      "targetHash": "387467caf66f11199d6b54243e7493880795e18692b5cf58363d03506f983ed1",
+      "machineHash": "387467caf66f11199d6b54243e7493880795e18692b5cf58363d03506f983ed1",
+      "machineText": "[ScriptBar](https://GitHub.com/raguay/ScriptBarApp)는 스크립트 또는 [Node-Red](https://nodered.org) 서버의 출력을 표시하는 프로그램입니다. EmailIt 프로그램에 정의된 스크립트를 실행하고 그 출력을 표시합니다. xBar 또는 TextBar의 스크립트를 사용할 수 있지만, 현재는 TextBar 스크립트만 제대로 작동합니다. 시스템에 있는 스크립트의 출력도 표시합니다. ScriptBar는 이러한 출력을 메뉴 막대에 배치하지 않고, 쉽게 볼 수 있도록 하나의 편리한 창에 모두 표시합니다. 여러 탭을 사용하여 다양한 항목을 표시할 수 있습니다. 자주 방문하는 웹사이트의 링크도 보관할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "[ScriptBar](https://GitHub.com/raguay/ScriptBarApp) is a program to show the\\ output of scripts or […",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "targetHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "machineHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "machineText": "ScriptBar",
+      "status": "final",
+      "sourcePreview": "ScriptBar",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

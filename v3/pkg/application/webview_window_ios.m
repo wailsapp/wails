@@ -10,6 +10,7 @@ extern void processApplicationEvent(unsigned int, void* data);
 extern void iosEmitNativeEvent(const char* name, const char* json);
 extern void processWindowEvent(unsigned int, unsigned int);
 extern bool hasListeners(unsigned int);
+extern void cancelURLRequest(void *);
 // Buffer console messages until a WKWebView exists
 static NSMutableArray<NSString *> *pendingConsoleJS;
 // Subclass that optionally hides the input accessory toolbar based on global flag
@@ -108,6 +109,7 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     }
 }
 - (void)webView:(WKWebView *)webView stopURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask {
+    cancelURLRequest((__bridge void*)urlSchemeTask);
     WailsVLog(@"[WailsSchemeHandler] stop task");
 }
 @end

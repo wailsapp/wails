@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4506a9e3c5ae02b7ae65",
+  "sourceFile": "community/showcase/happytools.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "71b0065b19f403632553a038da45743d08af1de11b80993861c1d6db5078e37c",
+      "targetHash": "342843e48a39108abdce79c35dd9e92a96ff3bcb47130d674798fd22a7bf8eab",
+      "machineHash": "342843e48a39108abdce79c35dd9e92a96ff3bcb47130d674798fd22a7bf8eab",
+      "machineText": "![HappyTools 螢幕截圖](/assets/showcase-images/happytools.webp)",
+      "status": "final",
+      "sourcePreview": "![HappyTools Screenshot](/assets/showcase-images/happytools.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ffb6941ee2fb43c4f06e222d23903994e47550c1f54399fb74f006ce73c3fad8",
+      "targetHash": "b1d82984c27a38d61fe41f2cebb3832c3e77d18d8f164dc14b1c904add2da218",
+      "machineHash": "b1d82984c27a38d61fe41f2cebb3832c3e77d18d8f164dc14b1c904add2da218",
+      "machineText": "[HappyTools](https://github.com/Aliuyanfeng/happytools) 是一款功能豐富的桌面應用程式，整合待辦事項管理、分類管理、日報管理、系統監控及應用程式設定等多項實用功能。其現代化介面設計與流暢的使用體驗，可協助使用者更妥善地管理日常工作與生活。這是一款以 Wails v3 + Vue 3 開發的跨平台桌面應用程式，旨在提升使用者的幸福感與工作效率。",
+      "status": "final",
+      "sourcePreview": "[HappyTools](https://github.com/Aliuyanfeng/happytools) is a feature-rich desktop application that i…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "629d14a8435baa886edc8d545db968057259dc472434ebabfcef0e52d3383d17",
+      "targetHash": "202c44a3aa3a9400bb875e42a92a4d2a69daa57fc0d9ba07f452fcb3c090e651",
+      "machineHash": "202c44a3aa3a9400bb875e42a92a4d2a69daa57fc0d9ba07f452fcb3c090e651",
+      "machineText": "⚡ 輕量快速\\",
+      "status": "final",
+      "sourcePreview": "⚡ Lightweight \u0026 Fast\\",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "6318a87b6930b0624f5d8869468cb243eb612725951b2aecccdb984b1f2b6422",
+      "targetHash": "6623155e5bc15bf05dd8ed754a6487831245037b12348c21acd6d085619b1922",
+      "machineHash": "6623155e5bc15bf05dd8ed754a6487831245037b12348c21acd6d085619b1922",
+      "machineText": "🔒 安全可靠\\",
+      "status": "final",
+      "sourcePreview": "🔒 Secure \u0026 Reliable\\",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "ba8b0b3e9112c250d619fa873a433e87f16981781e7b1c92a3a412467312a9c6",
+      "targetHash": "114f439abc6707d0cdec15ea58a649358efd061b99bac366cc5de1f48d370907",
+      "machineHash": "114f439abc6707d0cdec15ea58a649358efd061b99bac366cc5de1f48d370907",
+      "machineText": "🎯 簡單高效\\",
+      "status": "final",
+      "sourcePreview": "🎯 Simple \u0026 Efficient\\",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "f6d499974e5b7108f00949d056d27758192a444c6656215f3c4e8dee3396e556",
+      "targetHash": "f6d499974e5b7108f00949d056d27758192a444c6656215f3c4e8dee3396e556",
+      "machineHash": "f6d499974e5b7108f00949d056d27758192a444c6656215f3c4e8dee3396e556",
+      "machineText": "HappyTools",
+      "status": "final",
+      "sourcePreview": "HappyTools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}
