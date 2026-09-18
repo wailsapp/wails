@@ -1,0 +1,340 @@
+---
+title: "Optimasi Performa"
+description: "Optimalkan aplikasi Wails Anda untuk performa maksimum"
+slug: "guides/performance"
+sourcePath: "guides/performance.md"
+---
+
+## Ikhtisar
+
+Optimalkan aplikasi Wails Anda untuk meningkatkan kecepatan, efisiensi memori, dan daya tanggap.
+
+## Optimasi Frontend
+
+### Ukuran Bundel
+
+```javascript
+// vite.config.js
+export default {
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
+  },
+}
+```
+
+### Pemisahan Kode
+
+```javascript
+// Lazy load components
+const Settings = lazy(() => import('./Settings'))
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Settings />
+    </Suspense>
+  )
+}
+```
+
+### Optimasi Aset
+
+```javascript
+// Optimise images
+import { defineConfig } from 'vite'
+import imagemin from 'vite-plugin-imagemin'
+
+export default defineConfig({
+  plugins: [
+    imagemin({
+      gifsicle: { optimizationLevel: 3 },
+      optipng: { optimizationLevel: 7 },
+      svgo: { plugins: [{ removeViewBox: false }] },
+    }),
+  ],
+})
+```
+
+## Optimasi Backend
+
+### Binding yang Efisien
+
+```go
+// ❌ Bad: Return everything
+func (s *Service) GetAllData() []Data {
+    return s.db.FindAll() // Could be huge
+}
+
+// ✅ Good: Paginate
+func (s *Service) GetData(page, size int) (*PagedData, error) {
+    return s.db.FindPaged(page, size)
+}
+```
+
+### Caching
+
+```go
+type CachedService struct {
+    cache *lru.Cache
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // Check cache
+    if val, ok := s.cache.Get(key); ok {
+        return val, nil
+    }
+    
+    // Fetch and cache
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    s.cache.Add(key, data)
+    return data, nil
+}
+```
+
+### Goroutine untuk Operasi Berdurasi Panjang
+
+```go
+func (s *Service) ProcessLargeFile(path string) error {
+    // Process in background
+    go func() {
+        result, err := s.process(path)
+        if err != nil {
+            s.app.Event.Emit("process-error", err.Error())
+            return
+        }
+        s.app.Event.Emit("process-complete", result)
+    }()
+    
+    return nil
+}
+```
+
+## Optimasi Memori
+
+### Hindari Kebocoran Memori
+
+```go
+// ❌ Bad: Goroutine leak
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    go func() {
+        for range ticker.C {
+            s.poll()
+        }
+    }()
+    // ticker never stopped!
+}
+
+// ✅ Good: Proper cleanup
+func (s *Service) StartPolling() {
+    ticker := time.NewTicker(1 * time.Second)
+    s.stopChan = make(chan bool)
+    
+    go func() {
+        for {
+            select {
+            case <-ticker.C:
+                s.poll()
+            case <-s.stopChan:
+                ticker.Stop()
+                return
+            }
+        }
+    }()
+}
+
+func (s *Service) StopPolling() {
+    close(s.stopChan)
+}
+```
+
+### Gunakan Pool Sumber Daya
+
+```go
+var bufferPool = sync.Pool{
+    New: func() interface{} {
+        return new(bytes.Buffer)
+    },
+}
+
+func processData(data []byte) []byte {
+    buf := bufferPool.Get().(*bytes.Buffer)
+    defer bufferPool.Put(buf)
+    
+    buf.Reset()
+    buf.Write(data)
+    // Process...
+    return buf.Bytes()
+}
+```
+
+## Optimasi Peristiwa
+
+### Debounce Peristiwa
+
+```javascript
+// Debounce frequent events
+let debounceTimer
+function handleInput(value) {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => {
+        UpdateData(value)
+    }, 300)
+}
+```
+
+### Pembaruan secara Batch
+
+```go
+type BatchProcessor struct {
+    items []Item
+    mu    sync.Mutex
+    timer *time.Timer
+}
+
+func (b *BatchProcessor) Add(item Item) {
+    b.mu.Lock()
+    defer b.mu.Unlock()
+    
+    b.items = append(b.items, item)
+    
+    if b.timer == nil {
+        b.timer = time.AfterFunc(100*time.Millisecond, b.flush)
+    }
+}
+
+func (b *BatchProcessor) flush() {
+    b.mu.Lock()
+    items := b.items
+    b.items = nil
+    b.timer = nil
+    b.mu.Unlock()
+    
+    // Process batch
+    processBatch(items)
+}
+```
+
+## Optimasi Build
+
+### Ukuran Biner
+
+`wails3 build` sendiri tidak memiliki flag `-ldflags` — Taskfile yang disertakan sudah meneruskan `-ldflags="-s -w"` ke `go build`. Untuk lebih memperkecil biner, edit tugas build atau panggil `go build` secara langsung:
+
+```bash
+# Strip debug symbols and trim file paths
+go build -ldflags="-s -w" -trimpath -o bin/myapp
+```
+
+### Kecepatan Kompilasi
+
+```bash
+# Use build cache
+go build -buildmode=default
+
+# Parallel compilation
+go build -p 8
+```
+
+## Pembuatan Profil
+
+### Pembuatan Profil CPU
+
+```go
+import "runtime/pprof"
+
+func profileCPU() {
+    f, _ := os.Create("cpu.prof")
+    defer f.Close()
+    
+    pprof.StartCPUProfile(f)
+    defer pprof.StopCPUProfile()
+    
+    // Code to profile
+}
+```
+
+### Pembuatan Profil Memori
+
+```go
+import "runtime/pprof"
+
+func profileMemory() {
+    f, _ := os.Create("mem.prof")
+    defer f.Close()
+    
+    runtime.GC()
+    pprof.WriteHeapProfile(f)
+}
+```
+
+### Analisis Profil
+
+```bash
+# View CPU profile
+go tool pprof cpu.prof
+
+# View memory profile
+go tool pprof mem.prof
+
+# Web interface
+go tool pprof -http=:8080 cpu.prof
+```
+
+## Praktik Terbaik
+
+### ✅ Lakukan
+
+- Buat profil sebelum melakukan optimasi
+- Cache operasi yang mahal
+- Gunakan paginasi untuk set data berukuran besar
+- Terapkan debounce pada peristiwa yang sering terjadi
+- Gunakan pool sumber daya
+- Bersihkan goroutine
+- Optimalkan ukuran bundel
+- Gunakan pemuatan lambat
+
+### ❌ Jangan Lakukan
+
+- Jangan melakukan optimasi terlalu dini
+- Jangan mengabaikan kebocoran memori
+- Jangan memblokir thread utama
+- Jangan mengembalikan set data yang sangat besar
+- Jangan melewatkan pembuatan profil
+- Jangan lupa melakukan pembersihan
+
+## Daftar Periksa Performa
+
+- [ ] Bundel frontend telah dioptimalkan
+- [ ] Gambar telah dikompresi
+- [ ] Pemisahan kode telah diterapkan
+- [ ] Metode backend telah menggunakan paginasi
+- [ ] Caching telah diterapkan
+- [ ] Goroutine telah dibersihkan
+- [ ] Debounce telah diterapkan pada peristiwa
+- [ ] Ukuran biner telah dioptimalkan
+- [ ] Pembuatan profil telah dilakukan
+- [ ] Kebocoran memori telah diperbaiki
+
+## Langkah Berikutnya
+
+- [Arsitektur](/guides/architecture/) - Pola arsitektur aplikasi
+- [Pengujian](/guides/testing/) - Uji aplikasi Anda
+- [Build](/guides/build/building/) - Buat biner yang dioptimalkan

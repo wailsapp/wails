@@ -99,3 +99,8 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 # Local Go workspaces are a per-developer concern, not part of the source
 go.work
 go.work.sum
+
+# M-Press documentation build and local migration evidence
+.mpress/
+.wrangler/
+history/

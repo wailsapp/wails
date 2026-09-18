@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4820647960e27385e339",
+  "sourceFile": "quick-start/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
+      "targetHash": "5a3633854c839eb81ed88e51a794fb4a83e34c73b57e0f5123cdbf4bf4502f46",
+      "machineHash": "5a3633854c839eb81ed88e51a794fb4a83e34c73b57e0f5123cdbf4bf4502f46",
+      "machineText": "快速入門",
+      "status": "final",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:55Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
+      "targetHash": "5a3633854c839eb81ed88e51a794fb4a83e34c73b57e0f5123cdbf4bf4502f46",
+      "machineHash": "5a3633854c839eb81ed88e51a794fb4a83e34c73b57e0f5123cdbf4bf4502f46",
+      "machineText": "快速入門",
+      "status": "final",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:55Z"
+    }
+  }
+}
