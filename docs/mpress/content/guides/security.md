@@ -232,6 +232,7 @@ The following field names are automatically redacted (case-insensitive, substrin
 - **Session**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
 
 Additionally, these patterns are detected in values:
+
 - JWT tokens (`eyJhbG...`)
 - Bearer tokens (`Bearer xxx`)
 - Common API key formats (`sk_live_xxx`, `pk_test_xxx`)

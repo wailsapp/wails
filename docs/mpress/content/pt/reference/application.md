@@ -362,12 +362,12 @@ app.Logger.Warn("Warning message")
 ```go
 func (s *MyService) ProcessData(data string) error {
     s.app.Logger.Info("Processing data", "length", len(data))
-    
+
     if err := process(data); err != nil {
         s.app.Logger.Error("Processing failed", "error", err)
         return err
     }
-    
+
     s.app.Logger.Info("Processing complete")
     return nil
 }
