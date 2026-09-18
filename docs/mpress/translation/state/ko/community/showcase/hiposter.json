@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "38d341732f0c7bab1aad",
+  "sourceFile": "community/showcase/hiposter.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7ea7924ffe105e62309c874f497b19b73041e930326e931cfc839ca297dfcb9e",
+      "targetHash": "7ea7924ffe105e62309c874f497b19b73041e930326e931cfc839ca297dfcb9e",
+      "machineHash": "7ea7924ffe105e62309c874f497b19b73041e930326e931cfc839ca297dfcb9e",
+      "machineText": "![hiposter](/assets/showcase-images/hiposter.webp)",
+      "status": "final",
+      "sourcePreview": "![hiposter](/assets/showcase-images/hiposter.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "4f8eaa26ab7f076d017fa57669556b3f0b6f2794c37259063abb2988aee0a763",
+      "targetHash": "75666b73011a851f871405b9e95d9e69516ff324a4d15af337157883703b68e2",
+      "machineHash": "75666b73011a851f871405b9e95d9e69516ff324a4d15af337157883703b68e2",
+      "machineText": "[hiposter](https://github.com/obity/hiposter)는 간단하고 효율적인 http API\\\n테스트 클라이언트 도구입니다. Wails, Go 및 sveltejs를 기반으로 합니다.",
+      "status": "final",
+      "sourcePreview": "[hiposter](https://github.com/obity/hiposter) is a simple and efficient http API\\ testing client too…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "ce663866cb7bcbfe070a4570dc8305a837332c1e3223f3034826954e2b6f8fbf",
+      "targetHash": "ce663866cb7bcbfe070a4570dc8305a837332c1e3223f3034826954e2b6f8fbf",
+      "machineHash": "ce663866cb7bcbfe070a4570dc8305a837332c1e3223f3034826954e2b6f8fbf",
+      "machineText": "hiposter",
+      "status": "final",
+      "sourcePreview": "hiposter",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}
