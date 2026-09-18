@@ -53,7 +53,7 @@ sourcePath: "community/showcase/index.md"
 @steps
 ### リポジトリをフォークします。
 ### 画像を `docs/mpress/static/showcase-images` フォルダーに追加します。
-### `docs/mpress/content/community/showcase` 内にある既存の `.md` ショーケースファイルをコピーします
+### 既存の `.md` ショーケースファイルをコピーします
 `docs/mpress/content/community/showcase` フォルダー。
 
 ### コピーしたファイルの名前をプロジェクト名に変更します。（名前の先頭は

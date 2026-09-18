@@ -53,7 +53,7 @@ sourcePath: "community/showcase/index.md"
 @steps
 ### 저장소를 포크합니다.
 ### 이미지를 `docs/mpress/static/showcase-images` 폴더에 추가합니다.
-### `docs/mpress/content/community/showcase` 폴더에 있는 기존 `.md` 쇼케이스 파일을 복사하세요.
+### 기존 `.md` 쇼케이스 파일을 복사하세요.
 `docs/mpress/content/community/showcase` 폴더입니다.
 
 ### 복사한 파일의 이름을 프로젝트 이름으로 변경합니다. (이름의 시작 부분에 사용하면 안 되는 문자는
