@@ -33,11 +33,11 @@ wails3 migrate -d ./myv2project -o ./myv3project
 
 自動で移行するもの：
 
-- `main.go` を `application.New()` と `app.Window.NewWithOptions()` を使う形に変更し、独自のコードとコメントを保持します。プラットフォーム固有のウィンドウ設定も対応するオプションへ変換します。
+- `main.go` を `application.New()` と `app.Window.NewWithOptions()` を使う形に変更し、独自のコードとコメントを保持します。プラットフォーム固有のウィンドウ設定を含め、オプションを対応する v3 のオプションへ変換します。
 - `Bind` の構造体は v3 サービスになり、`OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` は v3 の対応先であるアプリケーションイベント、`OnShutdown`、`ShouldQuit` へ接続します。
-- `wails.json` を Taskfile によるビルドシステムと `build/config.yml` に置き換え、製品情報、ファイル関連付け、プロトコルなどの v2 メタデータを反映します。
+- `wails.json` を v3 のプロジェクトファイル（Taskfile によるビルドシステムと `build/config.yml`）に置き換え、製品情報、ファイル関連付け、プロトコルなどの v2 メタデータを反映します。
 - `go.mod` の `wails/v2` を `wails/v3` に置き換え、古い Go ディレクティブを v3 の最低要件である `go 1.25` に引き上げます。新しいバージョンは保持します。
-- フロントエンドをコピーし、依存関係に `@wailsio/runtime` を追加します。生成済みの `wailsjs/` は v3 で使えない v2 の生成物なのでコピーしません。
+- フロントエンドをコピーし、依存関係に `@wailsio/runtime` を追加します。生成済みの `wailsjs/` は v3 で使えない v2 のビルド生成物なのでコピーしません。
 
 `MIGRATION.md` に記録するもの：
 

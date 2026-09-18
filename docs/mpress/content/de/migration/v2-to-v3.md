@@ -33,11 +33,11 @@ Der Befehl migriert deterministisch zuordenbare Teile und dokumentiert den Rest.
 
 Automatisch migriert werden:
 
-- `main.go` wird auf `application.New()` und `app.Window.NewWithOptions()` umgestellt; eigener Code und Kommentare bleiben erhalten. Auch plattformspezifische Fensteroptionen werden zugeordnet.
+- `main.go` wird auf `application.New()` und `app.Window.NewWithOptions()` umgestellt; eigener Code und Kommentare bleiben erhalten. Die Optionen werden ihren v3-Entsprechungen zugeordnet, einschließlich plattformspezifischer Fensteroptionen.
 - Strukturen aus `Bind` werden zu v3-Diensten. `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` werden mit ihren v3-Entsprechungen verbunden: Anwendungsereignisse, `OnShutdown` und `ShouldQuit`.
-- `wails.json` wird durch ein Taskfile-Buildsystem und `build/config.yml` ersetzt, befüllt mit v2-Metadaten zu Produkt, Dateizuordnungen und Protokollen.
+- `wails.json` wird durch die v3-Projektdateien ersetzt: ein Taskfile-Buildsystem und `build/config.yml`, befüllt mit v2-Metadaten zu Produkt, Dateizuordnungen und Protokollen.
 - `go.mod` ersetzt `wails/v2` durch `wails/v3` und hebt ältere Go-Direktiven auf das von v3 benötigte Minimum `go 1.25` an. Neuere Versionen bleiben erhalten.
-- Das Frontend wird kopiert und `@wailsio/runtime` zu den Abhängigkeiten hinzugefügt. Das generierte v2-Verzeichnis `wailsjs/` wird nicht übernommen, da es mit v3 nicht funktioniert.
+- Das Frontend wird kopiert und `@wailsio/runtime` zu den Abhängigkeiten hinzugefügt. Das generierte Verzeichnis `wailsjs/` wird nicht übernommen, da es v2-Buildausgaben enthält, die mit v3 nicht funktionieren.
 
 In `MIGRATION.md` dokumentiert werden:
 

@@ -33,11 +33,11 @@ O comando migra o que tem correspondência determinística e documenta o restant
 
 O que é migrado:
 
-- `main.go` passa a usar `application.New()` e `app.Window.NewWithOptions()`, preservando seu código e comentários. As opções são mapeadas, inclusive as de janela específicas de plataforma.
+- `main.go` passa a usar `application.New()` e `app.Window.NewWithOptions()`, preservando seu código e comentários. As opções são mapeadas para seus equivalentes v3, inclusive as de janela específicas de plataforma.
 - Estruturas em `Bind` tornam-se serviços v3, e `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` são ligados aos equivalentes v3: eventos do aplicativo, `OnShutdown` e `ShouldQuit`.
-- `wails.json` é substituído pelo sistema de compilação Taskfile e por `build/config.yml`, preenchido com metadados v2 de produto, associações de arquivos e protocolos.
+- `wails.json` é substituído pelos arquivos de projeto v3: o sistema de compilação Taskfile e `build/config.yml`, preenchido com metadados v2 de produto, associações de arquivos e protocolos.
 - `go.mod` troca `wails/v2` por `wails/v3` e eleva diretivas Go antigas para `go 1.25`, o mínimo da v3. Versões mais recentes são mantidas.
-- O frontend é copiado e `@wailsio/runtime` é adicionado às dependências. O diretório gerado `wailsjs/` não é copiado, pois é saída da v2 incompatível com v3.
+- O frontend é copiado e `@wailsio/runtime` é adicionado às dependências. O diretório gerado `wailsjs/` não é copiado, pois é saída de compilação da v2 incompatível com v3.
 
 O que é documentado em `MIGRATION.md`:
 

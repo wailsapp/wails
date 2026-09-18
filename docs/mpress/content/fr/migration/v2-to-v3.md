@@ -33,11 +33,11 @@ La commande migre les éléments dont la correspondance est déterministe et doc
 
 Éléments migrés :
 
-- `main.go` est réorganisé autour d’`application.New()` et d’`app.Window.NewWithOptions()`, en conservant votre code et vos commentaires. Les options, y compris celles des fenêtres propres aux plateformes, sont converties.
-- Les structures de `Bind` deviennent des services v3 ; les callbacks `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` sont reliés à leurs équivalents (événements de l’application, `OnShutdown`, `ShouldQuit`).
-- `wails.json` est remplacé par un système de compilation Taskfile et `build/config.yml`, alimenté par vos métadonnées v2 : informations produit, associations de fichiers et protocoles.
+- `main.go` est réorganisé autour d’`application.New()` et d’`app.Window.NewWithOptions()`, en conservant votre code et vos commentaires. Les options, y compris celles des fenêtres propres aux plateformes, sont converties vers leurs équivalents v3.
+- Les structures de `Bind` deviennent des services v3 ; les callbacks `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` sont reliés à leurs équivalents v3 (événements de l’application, `OnShutdown`, `ShouldQuit`).
+- `wails.json` est remplacé par les fichiers de projet v3 : un système de compilation Taskfile et `build/config.yml`, alimenté par vos métadonnées v2 : informations produit, associations de fichiers et protocoles.
 - `go.mod` remplace `wails/v2` par `wails/v3` et relève les anciennes directives Go à `go 1.25`, minimum requis par v3. Les versions plus récentes sont conservées.
-- Le frontend est copié et `@wailsio/runtime` ajouté aux dépendances. Le dossier généré `wailsjs/`, incompatible avec v3, n’est pas repris.
+- Le frontend est copié et `@wailsio/runtime` ajouté aux dépendances. Le dossier généré `wailsjs/` n’est pas repris, car il contient les résultats de compilation v2, incompatibles avec v3.
 
 Éléments documentés dans `MIGRATION.md` :
 

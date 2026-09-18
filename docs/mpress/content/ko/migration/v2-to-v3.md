@@ -35,7 +35,7 @@ wails3 migrate -d ./myv2project -o ./myv3project
 
 - `main.go`를 `application.New()`와 `app.Window.NewWithOptions()` 중심으로 변경하면서 사용자 코드와 주석을 보존합니다. 플랫폼별 창 옵션도 대응되는 v3 옵션으로 변환합니다.
 - `Bind` 구조체는 v3 서비스가 되고 `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` 콜백은 애플리케이션 이벤트, `OnShutdown`, `ShouldQuit` 등 v3 대응 항목에 연결됩니다.
-- `wails.json`은 Taskfile 빌드 시스템과 `build/config.yml`로 대체되며 제품 정보, 파일 연결, 프로토콜 같은 v2 메타데이터가 반영됩니다.
+- `wails.json`은 v3 프로젝트 파일인 Taskfile 빌드 시스템과 `build/config.yml`로 대체되며 제품 정보, 파일 연결, 프로토콜 같은 v2 메타데이터가 반영됩니다.
 - `go.mod`에서 `wails/v2`를 `wails/v3`로 바꾸고 오래된 Go 지시문은 v3 최소 요구사항인 `go 1.25`로 높입니다. 더 최신 버전은 유지합니다.
 - 프런트엔드를 복사하고 `@wailsio/runtime`을 의존성에 추가합니다. 생성된 `wailsjs/`는 v3에서 작동하지 않는 v2 빌드 출력이므로 복사하지 않습니다.
 

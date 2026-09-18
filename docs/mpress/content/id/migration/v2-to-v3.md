@@ -33,9 +33,9 @@ Perintah memigrasikan bagian yang dapat dipetakan secara pasti dan mendokumentas
 
 Yang dimigrasikan:
 
-- `main.go` diubah untuk memakai `application.New()` dan `app.Window.NewWithOptions()` dengan mempertahankan kode dan komentar Anda. Opsi, termasuk opsi jendela khusus platform, dipetakan ke padanannya.
+- `main.go` diubah untuk memakai `application.New()` dan `app.Window.NewWithOptions()` dengan mempertahankan kode dan komentar Anda. Opsi, termasuk opsi jendela khusus platform, dipetakan ke padanannya di v3.
 - Struktur dalam `Bind` menjadi layanan v3; callback `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` dihubungkan ke padanan v3: peristiwa aplikasi, `OnShutdown`, dan `ShouldQuit`.
-- `wails.json` diganti dengan sistem build Taskfile dan `build/config.yml` yang diisi metadata v2: informasi produk, asosiasi berkas, dan protokol.
+- `wails.json` diganti dengan berkas proyek v3: sistem build Taskfile dan `build/config.yml` yang diisi metadata v2: informasi produk, asosiasi berkas, dan protokol.
 - `go.mod` mengganti `wails/v2` dengan `wails/v3` dan menaikkan direktif Go lama ke `go 1.25`, minimum yang dibutuhkan v3. Versi yang lebih baru dipertahankan.
 - Frontend disalin dan `@wailsio/runtime` ditambahkan sebagai dependensi. Direktori hasil generasi `wailsjs/` tidak disalin karena merupakan keluaran build v2 yang tidak bisa digunakan di v3.
 

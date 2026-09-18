@@ -33,9 +33,9 @@ wails3 migrate -d ./myv2project -o ./myv3project
 
 自動遷移的內容：
 
-- 將 `main.go` 改為使用 `application.New()` 與 `app.Window.NewWithOptions()`，保留你的程式碼及註解，並對應選項，包括平台專用視窗選項。
+- 將 `main.go` 改為使用 `application.New()` 與 `app.Window.NewWithOptions()`，保留你的程式碼及註解，並將選項（包括平台專用視窗選項）對應至 v3 的同等選項。
 - `Bind` 中的結構變成 v3 服務；`OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` 回呼連接到對應的 v3 應用程式事件、`OnShutdown` 與 `ShouldQuit`。
-- 使用 Taskfile 建置系統與 `build/config.yml` 取代 `wails.json`，填入 v2 產品資訊、檔案關聯及協定等中繼資料。
+- 使用 v3 專案檔案（Taskfile 建置系統與 `build/config.yml`）取代 `wails.json`，填入 v2 產品資訊、檔案關聯及協定等中繼資料。
 - `go.mod` 將 `wails/v2` 換為 `wails/v3`，並將較舊的 Go 指令提升至 v3 所需的最低版本 `go 1.25`；較新版本維持不變。
 - 複製前端並加入 `@wailsio/runtime` 相依性。不複製產生的 `wailsjs/`，因為它是無法用於 v3 的 v2 建置產物。
 
