@@ -21,6 +21,9 @@ import (
 // to prevent memory bloat from occasional large requests (e.g., images).
 const maxPooledBufferSize = 512 * 1024 // 512KB
 
+// Ordinary requests have the same payload ceiling as assembled chunked requests.
+const maxRuntimeBodyBytes = maxAssembledBytes
+
 var bufferPool = sync.Pool{
 	New: func() any {
 		return bytes.NewBuffer(make([]byte, 0, 4096))
@@ -180,7 +183,13 @@ func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Req
 		}
 	}()
 
+	r.Body = http.MaxBytesReader(rw, r.Body, int64(maxRuntimeBodyBytes))
 	if _, err := io.Copy(buf, r.Body); err != nil {
+		var sizeErr *http.MaxBytesError
+		if errors.As(err, &sizeErr) {
+			http.Error(rw, "runtime request body exceeds "+strconv.FormatInt(sizeErr.Limit/(1024*1024), 10)+" MiB", http.StatusRequestEntityTooLarge)
+			return
+		}
 		t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "Unable to read request body"))
 		return
 	}

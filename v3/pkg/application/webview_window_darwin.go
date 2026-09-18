@@ -8,6 +8,7 @@ package application
 
 #include "application_darwin.h"
 #include "webview_window_darwin.h"
+#include "mac_private_api_darwin.h"
 #include "webview_panel_darwin.h"
 #include "webview_notch_window_darwin.h"
 #include <stdlib.h>
@@ -526,15 +527,13 @@ void windowSetTranslucent(void* nsWindow) {
 // Make webview background transparent
 void webviewSetTransparent(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Set webview background transparent
-	[window.webView setValue:@NO forKey:@"drawsBackground"];
+	wailsPrivateSetWebviewTransparent((void*)window.webView);
 }
 
 // Set webview background colour
 void webviewSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Set webview background color
-	[window.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
+	wailsPrivateSetWebviewBackgroundColour((void*)window.webView, r, g, b, alpha);
 }
 
 // Set the window background colour

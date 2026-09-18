@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "bdd6c5c9cf122ef816b0",
+  "sourceFile": "community/showcase/ytd.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "92ddca4f62f7752720e1096ed152e9afd8eb60a6dd914c699a4f3c64c8302085",
+      "targetHash": "ef87cb0cb042ad2ec7742c36819d441f3fba9e7273b5cd6faf6dafad843e76ab",
+      "machineHash": "ef87cb0cb042ad2ec7742c36819d441f3fba9e7273b5cd6faf6dafad843e76ab",
+      "machineText": "![Снимок экрана Ytd](/assets/showcase-images/ytd.webp)",
+      "status": "final",
+      "sourcePreview": "![Ytd Screenshot](/assets/showcase-images/ytd.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2787e8aedc73c0ae53917767c3d98d379fd25ab4412d89ae8b0b46374fb88bd1",
+      "targetHash": "23a9df5c91a896c6307b008d27190db338a187ff0b2a6a5c658400ec4d28f5a5",
+      "machineHash": "23a9df5c91a896c6307b008d27190db338a187ff0b2a6a5c658400ec4d28f5a5",
+      "machineText": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) — приложение для\\\nскачивания треков с YouTube, создания офлайн-плейлистов и обмена ими с\\\nдрузьями. Ваши друзья смогут воспроизводить ваши плейлисты или скачивать\\\nих для прослушивания без подключения к интернету. В приложение встроен проигрыватель.",
+      "status": "final",
+      "sourcePreview": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) is an app for\\ downloading tracks from yout…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "dcbc788ccf547cd8d2946b0e95753a804fdc36d4f8bcd5f65110e3c7a8c518c7",
+      "machineHash": "dcbc788ccf547cd8d2946b0e95753a804fdc36d4f8bcd5f65110e3c7a8c518c7",
+      "machineText": "Настольное приложение, созданное с помощью Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "targetHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineText": "Ytd",
+      "status": "final",
+      "sourcePreview": "Ytd",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:44Z"
+    }
+  }
+}
