@@ -133,6 +133,17 @@ func TestGenerateBuildAssets(t *testing.T) {
 					}
 				}
 
+				// DMG packaging uses dedicated, branded assets rather than the
+				// application's icon. They must be present in every new project.
+				for _, file := range []string{
+					filepath.Join("darwin", "dmg-background.png"),
+					filepath.Join("darwin", "dmg-file-icon.icns"),
+				} {
+					if _, err := os.Stat(filepath.Join(buildDir, file)); os.IsNotExist(err) {
+						t.Errorf("Expected DMG asset %s was not created", file)
+					}
+				}
+
 				// Test that defaults were applied correctly
 				if tt.options.ProductIdentifier == "" && tt.options.Name != "" {
 					expectedIdentifier := "com.wails." + normaliseName(tt.options.Name)

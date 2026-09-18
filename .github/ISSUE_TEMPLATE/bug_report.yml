@@ -23,6 +23,10 @@ body:
 
         Bug reports that do not follow these steps will likely be closed, so please help us to help you.
 
+        For v3, report the exact tagged release from `wails3 version`. Source
+        checkouts should be reproduced against a released version before filing
+        a beta bug report.
+
   - type: dropdown
     id: version_family
     attributes:
@@ -31,6 +35,14 @@ body:
       options:
         - v3
         - v2
+    validations:
+      required: true
+  - type: input
+    id: exact-version
+    attributes:
+      label: Exact Wails version
+      description: Run `wails3 version` for v3 or `wails version` for v2, then paste the full output.
+      placeholder: v3.0.0-beta.1
     validations:
       required: true
   - type: dropdown

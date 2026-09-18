@@ -22,9 +22,9 @@ import (
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{
@@ -39,6 +39,7 @@ var edgeMap = map[string]uintptr{
 }
 
 type windowsWebviewWindow struct {
+	requestCancellation      *windowsRequestCancellation
 	windowImpl               unsafe.Pointer
 	parent                   *WebviewWindow
 	hwnd                     w32.HWND
@@ -116,21 +117,60 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	if w.parent.options.Windows.DisableMenu {
 		return
 	}
+	// A nil menu means "no menu", which is what macOS makes of it. Update
+	// dereferences its receiver once the application is running, so without
+	// this the call panicked rather than doing nothing (#6104).
+	if menu == nil {
+		return
+	}
+	// The menu being replaced owns an HMENU, the HBITMAPs SetMenuIcons
+	// allocated while building it, and the submenu handles detached for hidden
+	// rows. Win32Menu.Update frees those, but only for the same object, and
+	// this builds a new one - so without freeing it here nothing ever does
+	// (#6102). Its runtime bitmaps are taken first, because building the
+	// replacement reassigns item.impl and would put them out of reach.
+	previous := w.menu
+	previousImpls := make(map[*MenuItem]menuItemImpl)
+	if previous != nil {
+		previous.takeRuntimeBitmaps()
+		for _, item := range previous.menuMapping {
+			previousImpls[item] = item.impl
+		}
+	}
 	menu.Update()
-	w.menu = NewApplicationMenu(w, menu)
-	w.menu.parentWindow = w
-	w32.SetMenu(w.hwnd, w.menu.menu)
+
+	replacement := NewApplicationMenu(w, menu)
+	if !w32.SetMenu(w.hwnd, replacement.menu) {
+		replacement.Destroy()
+		// Restore retained bindings and clear items from the rejected menu.
+		for _, item := range replacement.menuMapping {
+			item.impl = previousImpls[item]
+		}
+		return
+	}
+	w.menu = replacement
+
+	// Only once the window has been given the new menu: destroying one that is
+	// still assigned to a window leaves it pointing at a freed handle.
+	if previous != nil {
+		previous.Destroy()
+	}
 
 	// Set menu background if theme is active
 	if w.menubarTheme != nil {
 		globalApplication.debug("Applying menubar theme in setMenu", "window", w.parent.id)
 		w.menubarTheme.SetMenuBackground(w.menu.menu)
-		w32.DrawMenuBar(w.hwnd)
 		// Force a repaint of the menu area
 		w32.InvalidateRect(w.hwnd, nil, true)
 	} else {
 		globalApplication.debug("No menubar theme to apply in setMenu", "window", w.parent.id)
 	}
+
+	// Outside the branch above: the bar has to be redrawn whenever the menu
+	// changes, not only when a menubar theme happens to be set, or the window
+	// goes on showing the old one until something else forces a repaint
+	// (#6103).
+	w32.DrawMenuBar(w.hwnd)
 
 	// Check if using translucent background with Mica - this makes menubars invisible
 	if w.parent.options.BackgroundType == BackgroundTypeTranslucent &&
@@ -564,7 +604,7 @@ func (w *windowsWebviewWindow) run() {
 	case SystemDefault:
 		isDark := w32.IsCurrentlyDarkMode()
 		if isDark {
-			w32.AllowDarkModeForWindow(w.hwnd, true)
+			w.applyDarkMode()
 		}
 		w.updateTheme(isDark)
 		// Don't initialize default dark theme here if custom theme might be set
@@ -577,7 +617,7 @@ func (w *windowsWebviewWindow) run() {
 	case Light:
 		w.updateTheme(false)
 	case Dark:
-		w32.AllowDarkModeForWindow(w.hwnd, true)
+		w.applyDarkMode()
 		w.updateTheme(true)
 		// Don't initialize default dark theme here if custom theme might be set
 		// The updateTheme call above will handle custom themes
@@ -854,6 +894,7 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
+	w.requestCancellation.close()
 	// Re-enable parent window if this was a modal window
 	if w.parentHWND != 0 {
 		w32.EnableWindow(w.parentHWND, true)
@@ -1447,6 +1488,16 @@ func (w *windowsWebviewWindow) disableIcon() {
 	)
 }
 
+// applyDarkMode opts the window into dark mode via the uxtheme
+// AllowDarkModeForWindow export. That export is only loaded on Windows builds
+// that provide it (>= 17763); on older builds it is nil, so this guards the
+// call to avoid a nil-pointer panic on startup.
+func (w *windowsWebviewWindow) applyDarkMode() {
+	if w32.AllowDarkModeForWindow != nil {
+		w32.AllowDarkModeForWindow(w.hwnd, true)
+	}
+}
+
 func (w *windowsWebviewWindow) processThemeColour(fn func(w32.HWND, uint32), value *uint32) {
 	if value == nil {
 		return
@@ -1470,9 +1521,13 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	}
 
 	w32.SetTheme(w.hwnd, isDarkMode)
+	// Native popup-menu text follows Windows' process-level colour policy, not
+	// the per-window DWM theme. Do not paint a dark menu background when that
+	// policy is light, otherwise Windows draws dark text on dark backgrounds.
+	menuIsDarkMode := useDarkNativeWindowsMenu(isDarkMode, w32.ShouldAppsUseDarkMode)
 
 	// Clear any existing theme first
-	if w.menubarTheme != nil && !isDarkMode {
+	if w.menubarTheme != nil && !menuIsDarkMode {
 		// Reset menu to default Windows theme when switching to light mode
 		w.menubarTheme = nil
 		if w.menu != nil {
@@ -1490,7 +1545,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	// Custom theme
 	if w32.SupportsCustomThemes() {
 		var userTheme *MenuBarTheme
-		if isDarkMode {
+		if menuIsDarkMode {
 			userTheme = customTheme.DarkModeMenuBar
 		} else {
 			userTheme = customTheme.LightModeMenuBar
@@ -1498,7 +1553,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 		if userTheme != nil {
 			modeStr := "light"
-			if isDarkMode {
+			if menuIsDarkMode {
 				modeStr = "dark"
 			}
 			globalApplication.debug("Setting custom "+modeStr+" menubar theme", "window", w.parent.id)
@@ -1519,7 +1574,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				w32.DrawMenuBar(w.hwnd)
 				w32.InvalidateRect(w.hwnd, nil, true)
 			}
-		} else if userTheme == nil && isDarkMode {
+		} else if userTheme == nil && menuIsDarkMode {
 			// Use default dark theme if no custom theme provided
 			globalApplication.debug("Setting default dark menubar theme", "window", w.parent.id)
 			w.menubarTheme = &w32.MenuBarTheme{
@@ -1539,7 +1594,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				w32.DrawMenuBar(w.hwnd)
 				w32.InvalidateRect(w.hwnd, nil, true)
 			}
-		} else if userTheme == nil && !isDarkMode && w.menu != nil {
+		} else if userTheme == nil && !menuIsDarkMode && w.menu != nil {
 			// No custom theme for light mode - ensure menu is reset to default
 			globalApplication.debug("Resetting menu to default light theme", "window", w.parent.id)
 			var mi w32.MENUINFO
@@ -1644,6 +1699,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}()
 
 		// Now do the actual close
+		w.requestCancellation.close()
 		w.chromium.ShuttingDown()
 		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
 	case w32.WM_SETCURSOR:
@@ -2345,6 +2401,9 @@ func (w *windowsWebviewWindow) processRequest(
 		return
 	}
 
+	if w.requestCancellation != nil && !w.requestCancellation.closed {
+		webviewRequest = w.requestCancellation.tracker.Wrap(webviewRequest)
+	}
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webviewRequest,
 		windowId:   w.parent.id,
@@ -2586,6 +2645,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	}
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
+
+	w.startRequestCancellation(w.navigateInitialPage)
+}
+
+func (w *windowsWebviewWindow) navigateInitialPage() {
+	chromium := w.chromium
 
 	if w.parent.options.HTML != "" {
 		var script string

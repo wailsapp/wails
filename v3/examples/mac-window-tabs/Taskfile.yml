@@ -8,12 +8,12 @@ includes:
 
 # This example is a standalone Go module (its own go.mod, with a `replace`
 # pointing at the local Wails checkout because MacWindowTabbingMode is not in a
-# published release yet). It physically lives under v3/, which is a member of
-# the repo's root go.work. An active workspace would shadow this module: binding
-# generation would find 0 services and `go mod tidy` would target v3 instead.
-# Force workspace mode off so the example always builds as itself. This is
-# inherited by the wails3 dev/build subprocess tree and is a harmless no-op
-# outside the monorepo, where there is no go.work.
+# published release yet). It physically lives under v3/, so any go.work that
+# covers v3 would shadow this module: binding generation would find 0 services
+# and `go mod tidy` would target v3 instead. The repo no longer ships a
+# workspace file, but contributors often create one locally, so force workspace
+# mode off and the example always builds as itself. This is inherited by the
+# wails3 dev/build subprocess tree and is a harmless no-op everywhere else.
 env:
   GOWORK: "off"
 

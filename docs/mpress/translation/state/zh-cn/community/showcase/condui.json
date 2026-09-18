@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "9517a90c7cbe4dee3f3d",
+  "sourceFile": "community/showcase/condui.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "targetHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "machineHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "machineText": "![Condui](/assets/showcase-images/condui.png)",
+      "status": "final",
+      "sourcePreview": "![Condui](/assets/showcase-images/condui.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ee2f0ea8cd31c3c2cff2e046ae5666a0a5804b9c50e0edcbae6adf679cd4b525",
+      "targetHash": "727515af30dcb307fafd738165e32608b87d8ab68aae200813c3ad770504383e",
+      "machineHash": "727515af30dcb307fafd738165e32608b87d8ab68aae200813c3ad770504383e",
+      "machineText": "Condui 是一款支持端到端加密和多设备同步的 SSH 连接管理器。它可以在你使用的所有设备间同步连接、SSH 隧道和受保险库保护的凭据，而同步服务器永远无法看到你的明文凭据。",
+      "status": "final",
+      "sourcePreview": "Condui is an SSH connection manager with end-to-end encrypted, multi-device\\ sync. It keeps your con…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "1d4105a0707deabff58b0b90d8f5acf871e8536b40b762ca980f4f38eafb8ac0",
+      "targetHash": "fd9dffb4436b32e12762d29b80c0351ba8526cea08eef309ef50d90083cb200c",
+      "machineHash": "fd9dffb4436b32e12762d29b80c0351ba8526cea08eef309ef50d90083cb200c",
+      "machineText": "主要功能",
+      "status": "final",
+      "sourcePreview": "Key Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "be0559a49a6516aca836a901b9654646101a46300bfe13ab7244456461245621",
+      "targetHash": "9f5d473aad9c6471dcd6216f291c335d9a5be4fdab20b4061ac2bab84d4bceb8",
+      "machineHash": "9f5d473aad9c6471dcd6216f291c335d9a5be4fdab20b4061ac2bab84d4bceb8",
+      "machineText": "🔐 端到端加密的保险库，用于保存 SSH 密码和私钥口令",
+      "status": "final",
+      "sourcePreview": "🔐 End-to-end encrypted vault for SSH passwords and private key passphrases",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "dc66fe3ca06e989add74c24b635fca58fd8b3b0e3e40455610c2e147c9d26aec",
+      "targetHash": "ec4c0b22284db1ce16fbdd7938f2050c77075f9b62a45aa683b99b300b1d4c78",
+      "machineHash": "ec4c0b22284db1ce16fbdd7938f2050c77075f9b62a45aa683b99b300b1d4c78",
+      "machineText": "🔄 在多台设备间同步连接、文件夹和 SSH 隧道",
+      "status": "final",
+      "sourcePreview": "🔄 Multi-device sync of connections, folders and SSH tunnels",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "195faa3f9a4df1b8dfe36c0f0627b71f938c73da525bb4407f570ff4e25e17ed",
+      "targetHash": "d39a8a1f534f2127b1333f8f39ad2fbe14ee3fa3ffa2c1f2b56470308e5b3e35",
+      "machineHash": "d39a8a1f534f2127b1333f8f39ad2fbe14ee3fa3ffa2c1f2b56470308e5b3e35",
+      "machineText": "🌐 为每个连接持久保存本地端口转发隧道",
+      "status": "final",
+      "sourcePreview": "🌐 Local port-forwarding tunnels persisted per connection",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0007-text-01": {
+      "sourceHash": "bfd07ecab0e319bb768ac7eea7c4e2cad4e2ea3b09e108dc3a0702f2ac41df5b",
+      "targetHash": "1e64e991893dc77323bd19773e2329a84f0d3ed98a9e6a595ec16675161bbd3a",
+      "machineHash": "1e64e991893dc77323bd19773e2329a84f0d3ed98a9e6a595ec16675161bbd3a",
+      "machineText": "🖥️ 集成终端、SFTP、Docker 和数据库工具",
+      "status": "final",
+      "sourcePreview": "🖥️ Integrated terminal, SFTP, Docker and database tooling",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0008-text-01": {
+      "sourceHash": "254799c3e57415264d9ee8f99c5ef5e02a8c1b0eee8cc20e21d079e6c96ada98",
+      "targetHash": "172db54ae7cf9b8a5dc53014667b544c196331ec91f52a37b4c38d3b51dfa2b9",
+      "machineHash": "172db54ae7cf9b8a5dc53014667b544c196331ec91f52a37b4c38d3b51dfa2b9",
+      "machineText": "💻 支持 macOS、Windows 和 Linux",
+      "status": "final",
+      "sourcePreview": "💻 Available for macOS, Windows and Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0009-text-01": {
+      "sourceHash": "3fcc66119619a2abf1bd46ce80a64f90d0b7ee5fbe487097c7a7d413b28a9036",
+      "targetHash": "252e9c336af4a2be2afed1a33bd043865a1ed0a865df40f5a1801ea80d7c1ebb",
+      "machineHash": "252e9c336af4a2be2afed1a33bd043865a1ed0a865df40f5a1801ea80d7c1ebb",
+      "machineText": "立即试用 Condui！",
+      "status": "final",
+      "sourcePreview": "Try Condui Today!",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0010-text-01": {
+      "sourceHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "targetHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "machineHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "machineText": "💻 [https://condui.codeffeine.io/](https://condui.codeffeine.io/) | [GitHub](https://github.com/mgueregath/condui)",
+      "status": "final",
+      "sourcePreview": "💻 [https://condui.codeffeine.io/](https://condui.codeffeine.io/) | [GitHub](https://github.com/mguer…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "targetHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "machineHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "machineText": "Condui",
+      "status": "final",
+      "sourcePreview": "Condui",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

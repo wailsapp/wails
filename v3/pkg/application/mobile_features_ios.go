@@ -12,6 +12,8 @@ import "C"
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"unsafe"
 )
 
@@ -122,27 +124,68 @@ func (iosManager) PostNotification(jsonPayload string) {
 	C.ios_post_notification(c)
 }
 
-// SecureSet stores a value in the Keychain under key.
-func (iosManager) SecureSet(key, value string) {
+// SecureSet stores or updates a value in the Keychain under key.
+func (iosManager) SecureSet(key, value string) error {
+	if key == "" {
+		return errors.New("secure storage: empty key")
+	}
 	ck, freeK := cString(key)
 	defer freeK()
 	cv, freeV := cString(value)
 	defer freeV()
-	C.ios_secure_set(ck, cv)
+	return iosParseOkError(cStr(C.ios_secure_set(ck, cv)))
 }
 
-// SecureGet reads a Keychain value (empty if absent).
-func (iosManager) SecureGet(key string) string {
+// SecureGet reads a Keychain value. Returns (value, true, nil) if found,
+// ("", false, nil) if the key does not exist, or ("", false, err) on failure.
+func (iosManager) SecureGet(key string) (string, bool, error) {
+	if key == "" {
+		return "", false, errors.New("secure storage: empty key")
+	}
 	c, free := cString(key)
 	defer free()
-	return cStr(C.ios_secure_get(c))
+	raw := cStr(C.ios_secure_get(c))
+	var env struct {
+		Ok    bool   `json:"ok"`
+		Found bool   `json:"found"`
+		Value string `json:"value"`
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal([]byte(raw), &env); err != nil {
+		return "", false, fmt.Errorf("secure storage: malformed response: %w", err)
+	}
+	if !env.Ok {
+		return "", false, errors.New("secure storage: " + env.Error)
+	}
+	if !env.Found {
+		return "", false, nil
+	}
+	return env.Value, true, nil
 }
 
-// SecureDelete removes a Keychain value.
-func (iosManager) SecureDelete(key string) {
+// SecureDelete removes a Keychain value. Deleting a non-existent key succeeds.
+func (iosManager) SecureDelete(key string) error {
+	if key == "" {
+		return errors.New("secure storage: empty key")
+	}
 	c, free := cString(key)
 	defer free()
-	C.ios_secure_delete(c)
+	return iosParseOkError(cStr(C.ios_secure_delete(c)))
+}
+
+// iosParseOkError parses a {"ok":true} / {"ok":false,"error":"..."} envelope.
+func iosParseOkError(raw string) error {
+	var env struct {
+		Ok    bool   `json:"ok"`
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal([]byte(raw), &env); err != nil {
+		return fmt.Errorf("secure storage: malformed response: %w", err)
+	}
+	if !env.Ok {
+		return errors.New("secure storage: " + env.Error)
+	}
+	return nil
 }
 
 // --- Phase D: sensors & hardware ---------------------------------------------
