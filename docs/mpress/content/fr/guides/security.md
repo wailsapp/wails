@@ -219,6 +219,88 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## Assainissement des journaux
+
+Wails masque automatiquement les données sensibles dans les journaux IPC pour éviter la divulgation accidentelle de secrets. Cette fonctionnalité est **activée par défaut**, avec des paramètres par défaut adaptés.
+
+### Protection par défaut
+
+Les noms de champs suivants sont automatiquement masqués (recherche de sous-chaînes sans distinction de casse) :
+
+- **Authentification**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **Cryptographie**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **Session**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+Les motifs suivants sont également détectés dans les valeurs :
+
+- Jetons JWT (`eyJhbG...`)
+- Jetons Bearer (`Bearer xxx`)
+- Formats courants de clés API (`sk_live_xxx`, `pk_test_xxx`)
+
+### Configuration personnalisée
+
+Configurez l’assainissement avec toutes les options disponibles :
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### Options de configuration
+
+| Option | Description |
+| --- | --- |
+| `RedactFields` | Noms de champs supplémentaires à masquer (ajoutés aux valeurs par défaut) |
+| `RedactPatterns` | Expressions régulières supplémentaires à rechercher dans les valeurs |
+| `CustomSanitizeFunc` | Fonction de contrôle complet ; renvoyez `(value, true)` pour remplacer la valeur |
+| `DisableDefaults` | Utiliser uniquement les champs et motifs explicitement spécifiés |
+| `Replacement` | Texte de remplacement personnalisé (par défaut : `***`) |
+| `Disabled` | Désactiver complètement l’assainissement (à utiliser avec prudence) |
+
+### API publique d’assainissement
+
+Utilisez l’assainisseur pour vos propres données :
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## Bonnes pratiques
 
 ### ✅ À faire
@@ -238,9 +320,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - Ne stockez pas les mots de passe en texte clair
 - Ne codez pas les secrets en dur
 - N’omettez pas la vérification des certificats
-- N’exposez pas de données sensibles dans les journaux
+- N’exposez pas de données sensibles dans les journaux (Wails assainit les journaux IPC par défaut)
 - N’utilisez pas de chiffrement faible
 - N’ignorez pas les mises à jour de sécurité
+- Ne désactivez pas l’assainissement des journaux en production
 
 ## Liste de contrôle de sécurité
 
@@ -254,6 +337,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] La journalisation des événements de sécurité est activée
 - [ ] Les messages d’erreur ne divulguent aucune information
 - [ ] Le code a fait l’objet d’une recherche de vulnérabilités
+- [ ] Assainissement des journaux configuré pour les champs propres à l’application
+- [ ] Champs sensibles non divulgués dans la journalisation personnalisée
 
 ## Étapes suivantes
 

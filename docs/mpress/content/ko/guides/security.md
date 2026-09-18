@@ -219,6 +219,88 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## 로그 정제
+
+Wails는 비밀 정보가 실수로 노출되지 않도록 IPC 로그의 민감한 데이터를 자동으로 마스킹합니다. 이 기능은 적절한 기본 설정으로 **기본적으로 활성화**됩니다.
+
+### 기본 보호
+
+다음 필드 이름은 자동으로 마스킹됩니다(대소문자를 구분하지 않는 부분 문자열 일치).
+
+- **인증**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **암호화**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **세션**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+값에서 다음 패턴도 감지합니다.
+
+- JWT 토큰 (`eyJhbG...`)
+- Bearer 토큰 (`Bearer xxx`)
+- 일반적인 API 키 형식 (`sk_live_xxx`, `pk_test_xxx`)
+
+### 사용자 지정 설정
+
+사용 가능한 모든 옵션으로 정제를 설정합니다.
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### 설정 옵션
+
+| 옵션 | 설명 |
+| --- | --- |
+| `RedactFields` | 마스킹할 추가 필드 이름(기본 목록과 병합) |
+| `RedactPatterns` | 값에 일치시킬 추가 정규 표현식 |
+| `CustomSanitizeFunc` | 전체 제어 함수. 값을 대체하려면 `(value, true)` 반환 |
+| `DisableDefaults` | 명시적으로 지정한 필드와 패턴만 사용 |
+| `Replacement` | 사용자 지정 대체 문자열(기본값: `***`) |
+| `Disabled` | 정제를 완전히 비활성화(주의해서 사용) |
+
+### 공개 정제 API
+
+자체 데이터에도 정제기를 사용하세요.
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## 모범 사례
 
 ### ✅ 해야 할 일
@@ -238,9 +320,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - 비밀번호를 평문으로 저장하지 마세요
 - 비밀 정보를 하드코딩하지 마세요
 - 인증서 검증을 생략하지 마세요
-- 로그에 민감한 데이터를 노출하지 마세요
+- 로그에 민감한 데이터를 노출하지 마세요 (Wails는 기본적으로 IPC 로그를 정제합니다)
 - 취약한 암호화를 사용하지 마세요
 - 보안 업데이트를 무시하지 마세요
+- 프로덕션 환경에서 로그 정제를 비활성화하지 마세요
 
 ## 보안 체크리스트
 
@@ -254,6 +337,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] 보안 로깅 활성화
 - [ ] 오류 메시지에서 정보가 유출되지 않음
 - [ ] 코드의 취약점 검토 완료
+- [ ] 앱별 필드에 대한 로그 정제가 설정됨
+- [ ] 사용자 지정 로그에 민감한 필드가 노출되지 않음
 
 ## 다음 단계
 

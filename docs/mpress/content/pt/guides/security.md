@@ -219,6 +219,88 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## Sanitização de logs
+
+O Wails oculta automaticamente dados sensíveis nos logs de IPC para evitar a exposição acidental de segredos. Esse recurso é **habilitado por padrão**, com configurações padrão adequadas.
+
+### Proteção padrão
+
+Os seguintes nomes de campos são ocultados automaticamente (correspondência por substring, sem diferenciar maiúsculas e minúsculas):
+
+- **Autenticação**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **Criptografia**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **Sessão**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+Além disso, estes padrões são detectados nos valores:
+
+- Tokens JWT (`eyJhbG...`)
+- Tokens Bearer (`Bearer xxx`)
+- Formatos comuns de chaves de API (`sk_live_xxx`, `pk_test_xxx`)
+
+### Configuração personalizada
+
+Configure a sanitização com todas as opções disponíveis:
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### Opções de configuração
+
+| Opção | Descrição |
+| --- | --- |
+| `RedactFields` | Nomes de campos adicionais a ocultar (combinados com os padrões) |
+| `RedactPatterns` | Expressões regulares adicionais para comparar com os valores |
+| `CustomSanitizeFunc` | Função de controle completo; retorne `(value, true)` para substituir o valor |
+| `DisableDefaults` | Usar somente os campos e padrões especificados explicitamente |
+| `Replacement` | Texto de substituição personalizado (padrão: `***`) |
+| `Disabled` | Desabilitar completamente a sanitização (use com cuidado) |
+
+### API pública do sanitizador
+
+Use o sanitizador com seus próprios dados:
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## Práticas recomendadas
 
 ### ✅ Faça
@@ -238,9 +320,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - Não armazene senhas em texto simples
 - Não insira segredos diretamente no código
 - Não ignore a verificação de certificados
-- Não exponha dados confidenciais nos logs
+- Não exponha dados confidenciais nos logs (O Wails sanitiza os logs de IPC por padrão)
 - Não use criptografia fraca
 - Não ignore atualizações de segurança
+- Não desabilite a sanitização de logs em produção
 
 ## Lista de verificação de segurança
 
@@ -254,6 +337,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] O registro de eventos de segurança está habilitado
 - [ ] As mensagens de erro não expõem informações
 - [ ] O código foi revisado em busca de vulnerabilidades
+- [ ] Sanitização de logs configurada para campos específicos da aplicação
+- [ ] Campos sensíveis não expostos nos logs personalizados
 
 ## Próximas etapas
 

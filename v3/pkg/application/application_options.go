@@ -59,6 +59,11 @@ type Options struct {
 	// LogLevel defines the log level of the Wails system logger.
 	LogLevel slog.Level
 
+	// SanitizeOptions configures automatic redaction of sensitive data in logs.
+	// If nil, default sanitization is applied (common secret field patterns are redacted).
+	// Set SanitizeOptions.Disabled to true to disable all sanitization.
+	SanitizeOptions *SanitizeOptions
+
 	// Assets are the application assets to be used.
 	Assets AssetOptions
 

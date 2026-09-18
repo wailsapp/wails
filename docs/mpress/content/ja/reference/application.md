@@ -362,16 +362,83 @@ app.Logger.Warn("Warning message")
 ```go
 func (s *MyService) ProcessData(data string) error {
     s.app.Logger.Info("Processing data", "length", len(data))
-    
+
     if err := process(data); err != nil {
         s.app.Logger.Error("Processing failed", "error", err)
         return err
     }
-    
+
     s.app.Logger.Info("Processing complete")
     return nil
 }
 ```
+
+## Sanitizer
+
+アプリケーションは、機密データをマスクするサニタイザーを提供します。IPC ログはデフォルトで自動的にサニタイズされます。
+
+### Sanitizer()
+
+アプリケーションのサニタイザーインスタンスを返します。
+
+```go
+func (a *App) Sanitizer() *Sanitizer
+```
+
+**例:**
+
+```go
+// Get the sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(map[string]any{
+    "username": "john",
+    "password": "secret123",  // Will be redacted
+})
+
+// Sanitize JSON bytes
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
+### 設定
+
+アプリケーションオプションの `SanitizeOptions` でサニタイズを設定します。
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+詳しいドキュメントは[セキュリティガイド](/guides/security/)を参照してください。
 
 ## 生メッセージの処理
 

@@ -219,6 +219,88 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## ログのサニタイズ
+
+Wails は IPC ログ内の機密データを自動的にマスクし、秘密情報の意図しない露出を防ぎます。この機能は、適切な既定設定で**デフォルトで有効**になっています。
+
+### 既定の保護
+
+以下のフィールド名は自動的にマスクされます（大文字と小文字を区別しない部分文字列一致）。
+
+- **認証**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **暗号**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **セッション**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+さらに、値に含まれる以下のパターンも検出されます。
+
+- JWT トークン (`eyJhbG...`)
+- Bearer トークン (`Bearer xxx`)
+- 一般的な API キー形式 (`sk_live_xxx`, `pk_test_xxx`)
+
+### カスタム設定
+
+利用可能なすべてのオプションを使ってサニタイズを設定します。
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### 設定オプション
+
+| オプション | 説明 |
+| --- | --- |
+| `RedactFields` | マスクする追加のフィールド名（既定値と統合） |
+| `RedactPatterns` | 値との照合に使う追加の正規表現 |
+| `CustomSanitizeFunc` | 完全に制御するための関数。値を置き換えるには `(value, true)` を返す |
+| `DisableDefaults` | 明示的に指定されたフィールドとパターンだけを使用 |
+| `Replacement` | カスタムの置換文字列（デフォルト：`***`） |
+| `Disabled` | サニタイズを完全に無効化する（注意して使用） |
+
+### 公開サニタイザー API
+
+独自のデータにもサニタイザーを使用できます。
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## ベストプラクティス
 
 ### ✅ 推奨事項
@@ -238,9 +320,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - パスワードを平文で保存しない
 - シークレットをハードコードしない
 - 証明書の検証を省略しない
-- 機密データをログに出力しない
+- 機密データをログに出力しない (Wails はデフォルトで IPC ログをサニタイズします)
 - 脆弱な暗号化を使用しない
 - セキュリティ更新を無視しない
+- 本番環境でログのサニタイズを無効にしない
 
 ## セキュリティチェックリスト
 
@@ -254,6 +337,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] セキュリティログを有効化済み
 - [ ] エラーメッセージから情報が漏えいしない
 - [ ] 脆弱性についてコードをレビュー済み
+- [ ] アプリケーション固有のフィールドに対してログのサニタイズを設定している
+- [ ] 独自のログ出力で機密フィールドを露出していない
 
 ## 次のステップ
 

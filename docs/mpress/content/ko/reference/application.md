@@ -362,16 +362,83 @@ app.Logger.Warn("Warning message")
 ```go
 func (s *MyService) ProcessData(data string) error {
     s.app.Logger.Info("Processing data", "length", len(data))
-    
+
     if err := process(data); err != nil {
         s.app.Logger.Error("Processing failed", "error", err)
         return err
     }
-    
+
     s.app.Logger.Info("Processing complete")
     return nil
 }
 ```
+
+## Sanitizer
+
+애플리케이션은 민감한 데이터를 마스킹하는 정제기를 제공합니다. IPC 로그는 기본적으로 자동 정제됩니다.
+
+### Sanitizer()
+
+애플리케이션의 정제기 인스턴스를 반환합니다.
+
+```go
+func (a *App) Sanitizer() *Sanitizer
+```
+
+**예제:**
+
+```go
+// Get the sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(map[string]any{
+    "username": "john",
+    "password": "secret123",  // Will be redacted
+})
+
+// Sanitize JSON bytes
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
+### 설정
+
+애플리케이션 옵션의 `SanitizeOptions`로 정제를 설정합니다.
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+전체 문서는 [보안 가이드](/guides/security/)를 참조하세요.
 
 ## 원시 메시지 처리
 

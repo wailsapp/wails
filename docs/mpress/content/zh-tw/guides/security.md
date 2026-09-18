@@ -219,6 +219,88 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## 日誌去識別化
+
+Wails 會自動遮蔽 IPC 日誌中的敏感資料，防止意外洩漏機密資訊。此功能**預設啟用**，並提供合理的預設設定。
+
+### 預設保護
+
+下列欄位名稱會自動遮蔽（不區分大小寫，以子字串比對）：
+
+- **身分驗證**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **密碼學**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **工作階段**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+此外，也會在值中偵測下列模式：
+
+- JWT 權杖 (`eyJhbG...`)
+- Bearer 權杖 (`Bearer xxx`)
+- 常見 API 金鑰格式 (`sk_live_xxx`, `pk_test_xxx`)
+
+### 自訂設定
+
+使用所有可用選項設定去識別化：
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### 設定選項
+
+| 選項 | 說明 |
+| --- | --- |
+| `RedactFields` | 額外需要遮蔽的欄位名稱（與預設值合併） |
+| `RedactPatterns` | 額外用於比對值的正規表示式 |
+| `CustomSanitizeFunc` | 完全控制處理過程的函式；傳回 `(value, true)` 可覆寫結果 |
+| `DisableDefaults` | 僅使用明確指定的欄位與模式 |
+| `Replacement` | 自訂替代字串（預設：`***`） |
+| `Disabled` | 完全停用去識別化（請謹慎使用） |
+
+### 公開去識別化 API
+
+使用去識別化工具處理自己的資料：
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## 最佳實務
 
 ### ✅ 應做事項
@@ -238,9 +320,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - 請勿以純文字儲存密碼
 - 請勿將機密資訊寫死在程式碼中
 - 請勿略過憑證驗證
-- 請勿在記錄中洩露敏感資料
+- 請勿在記錄中洩露敏感資料 (Wails 預設會將 IPC 日誌去識別化)
 - 請勿使用強度不足的加密
 - 請勿忽略安全性更新
+- 不要在正式環境中停用日誌去識別化
 
 ## 安全性檢查清單
 
@@ -254,6 +337,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] 已啟用安全性記錄
 - [ ] 錯誤訊息不會洩露資訊
 - [ ] 已審查程式碼是否存在漏洞
+- [ ] 已針對應用程式特定欄位設定日誌去識別化
+- [ ] 自訂日誌未暴露敏感欄位
 
 ## 後續步驟
 

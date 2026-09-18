@@ -219,6 +219,88 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## Sanitasi Log
+
+Wails secara otomatis menyamarkan data sensitif dalam log IPC untuk mencegah terbukanya rahasia secara tidak sengaja. Fitur ini **diaktifkan secara default** dengan pengaturan bawaan yang sesuai.
+
+### Perlindungan Default
+
+Nama bidang berikut disamarkan secara otomatis (pencocokan substring tanpa membedakan huruf besar dan kecil):
+
+- **Autentikasi**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **Kriptografi**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **Sesi**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+Selain itu, pola berikut dideteksi dalam nilai:
+
+- Token JWT (`eyJhbG...`)
+- Token Bearer (`Bearer xxx`)
+- Format kunci API yang umum (`sk_live_xxx`, `pk_test_xxx`)
+
+### Konfigurasi Khusus
+
+Konfigurasikan sanitasi dengan semua opsi yang tersedia:
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### Opsi Konfigurasi
+
+| Opsi | Deskripsi |
+| --- | --- |
+| `RedactFields` | Nama bidang tambahan untuk disamarkan (digabungkan dengan bawaan) |
+| `RedactPatterns` | Ekspresi reguler tambahan untuk mencocokkan nilai |
+| `CustomSanitizeFunc` | Fungsi kendali penuh; kembalikan `(value, true)` untuk mengganti nilai |
+| `DisableDefaults` | Hanya gunakan bidang dan pola yang ditentukan secara eksplisit |
+| `Replacement` | Teks pengganti khusus (default: `***`) |
+| `Disabled` | Nonaktifkan sanitasi sepenuhnya (gunakan dengan hati-hati) |
+
+### API Sanitizer Publik
+
+Gunakan sanitizer untuk data Anda sendiri:
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## Praktik Terbaik
 
 ### ✅ Lakukan
@@ -238,9 +320,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - Jangan simpan kata sandi sebagai teks biasa
 - Jangan tanamkan rahasia langsung dalam kode
 - Jangan lewatkan verifikasi sertifikat
-- Jangan tampilkan data sensitif dalam log
+- Jangan tampilkan data sensitif dalam log (Wails melakukan sanitasi log IPC secara default)
 - Jangan gunakan enkripsi yang lemah
 - Jangan abaikan pembaruan keamanan
+- Jangan nonaktifkan sanitasi log di produksi
 
 ## Daftar Periksa Keamanan
 
@@ -254,6 +337,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] Pencatatan log keamanan telah diaktifkan
 - [ ] Pesan kesalahan tidak membocorkan informasi
 - [ ] Kode telah ditinjau untuk menemukan kerentanan
+- [ ] Sanitasi log dikonfigurasi untuk bidang khusus aplikasi
+- [ ] Bidang sensitif tidak terekspos dalam log khusus
 
 ## Langkah Berikutnya
 

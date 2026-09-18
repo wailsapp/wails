@@ -219,6 +219,88 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## Очистка журналов
+
+Wails автоматически скрывает конфиденциальные данные в журналах IPC, предотвращая случайное раскрытие секретов. Эта функция **включена по умолчанию** с подходящими стандартными настройками.
+
+### Защита по умолчанию
+
+Следующие имена полей автоматически скрываются (поиск подстроки без учёта регистра):
+
+- **Аутентификация**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **Криптография**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **Сеанс**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+Кроме того, в значениях обнаруживаются следующие шаблоны:
+
+- Токены JWT (`eyJhbG...`)
+- Токены Bearer (`Bearer xxx`)
+- Распространённые форматы ключей API (`sk_live_xxx`, `pk_test_xxx`)
+
+### Пользовательская конфигурация
+
+Настройте очистку с помощью всех доступных параметров:
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### Параметры конфигурации
+
+| Параметр | Описание |
+| --- | --- |
+| `RedactFields` | Дополнительные имена полей для скрытия (объединяются со стандартными) |
+| `RedactPatterns` | Дополнительные регулярные выражения для поиска в значениях |
+| `CustomSanitizeFunc` | Функция полного управления; верните `(value, true)`, чтобы заменить значение |
+| `DisableDefaults` | Использовать только явно указанные поля и шаблоны |
+| `Replacement` | Пользовательская строка замены (по умолчанию: `***`) |
+| `Disabled` | Полностью отключить очистку (используйте с осторожностью) |
+
+### Открытый API очистки
+
+Используйте механизм очистки для собственных данных:
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## Рекомендации
 
 ### ✅ Делайте
@@ -238,9 +320,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - Не храните пароли в открытом виде
 - Не встраивайте секреты непосредственно в код
 - Не пропускайте проверку сертификатов
-- Не раскрывайте конфиденциальные данные в журналах
+- Не раскрывайте конфиденциальные данные в журналах (Wails очищает журналы IPC по умолчанию)
 - Не используйте ненадёжное шифрование
 - Не игнорируйте обновления безопасности
+- Не отключайте очистку журналов в рабочей среде
 
 ## Контрольный список безопасности
 
@@ -254,6 +337,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] Включено журналирование событий безопасности
 - [ ] Сообщения об ошибках не раскрывают информацию
 - [ ] Код проверен на наличие уязвимостей
+- [ ] Очистка журналов настроена для полей, специфичных для приложения
+- [ ] Конфиденциальные поля не раскрываются в пользовательских журналах
 
 ## Дальнейшие действия
 

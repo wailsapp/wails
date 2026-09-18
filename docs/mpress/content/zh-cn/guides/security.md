@@ -219,6 +219,88 @@ func (r *RateLimiter) Allow(key string) bool {
 }
 ```
 
+## 日志脱敏
+
+Wails 会自动对 IPC 日志中的敏感数据进行脱敏，防止意外泄露秘密信息。此功能**默认启用**，并提供合理的默认设置。
+
+### 默认保护
+
+以下字段名称会被自动脱敏（不区分大小写，按子字符串匹配）：
+
+- **身份验证**: `password`, `passwd`, `pwd`, `token`, `bearer`, `jwt`, `access_token`, `refresh_token`, `secret`, `apikey`, `api_key`, `auth`, `authorization`, `credential`
+- **密码学**: `private`, `privatekey`, `private_key`, `signing`, `encryption_key`
+- **会话**: `session`, `sessionid`, `session_id`, `cookie`, `csrf`, `xsrf`
+
+此外，还会在值中检测以下模式：
+
+- JWT 令牌 (`eyJhbG...`)
+- Bearer 令牌 (`Bearer xxx`)
+- 常见 API 密钥格式 (`sk_live_xxx`, `pk_test_xxx`)
+
+### 自定义配置
+
+使用全部可用选项配置脱敏：
+
+```go
+app := application.New(application.Options{
+    Name: "MyApp",
+    SanitizeOptions: &application.SanitizeOptions{
+        // RedactFields: additional field names to redact (merged with defaults)
+        RedactFields: []string{"cardNumber", "cvv", "ssn"},
+
+        // RedactPatterns: additional regex patterns to match values
+        RedactPatterns: []*regexp.Regexp{
+            regexp.MustCompile(`\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b`), // card numbers
+            regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`), // SSN format
+        },
+
+        // CustomSanitizeFunc: full control - return (value, true) to override
+        CustomSanitizeFunc: func(key string, value any, path string) (any, bool) {
+            // Custom handling for specific paths
+            if strings.HasPrefix(path, "payment.") && key != "amount" {
+                return "[PAYMENT_REDACTED]", true
+            }
+            return nil, false // fall through to default logic
+        },
+
+        // Replacement: custom replacement string (default: "***")
+        Replacement: "[REDACTED]",
+
+        // DisableDefaults: if true, only use explicitly specified fields/patterns
+        // DisableDefaults: false,
+
+        // Disabled: completely disable sanitization
+        // Disabled: false,
+    },
+})
+```
+
+### 配置选项
+
+| 选项 | 描述 |
+| --- | --- |
+| `RedactFields` | 额外需要脱敏的字段名称（与默认值合并） |
+| `RedactPatterns` | 额外用于匹配值的正则表达式 |
+| `CustomSanitizeFunc` | 完全控制处理过程的函数；返回 `(value, true)` 可覆盖结果 |
+| `DisableDefaults` | 仅使用明确指定的字段和模式 |
+| `Replacement` | 自定义替换字符串（默认：`***`） |
+| `Disabled` | 完全禁用脱敏（请谨慎使用） |
+
+### 公共脱敏 API
+
+使用脱敏器处理自己的数据：
+
+```go
+// Get the application's sanitizer
+sanitizer := app.Sanitizer()
+
+// Sanitize a map
+cleanData := sanitizer.SanitizeMap(sensitiveData)
+
+// Sanitize JSON
+cleanJSON := sanitizer.SanitizeJSON(jsonBytes)
+```
+
 ## 最佳实践
 
 ### ✅ 应该做
@@ -238,9 +320,10 @@ func (r *RateLimiter) Allow(key string) bool {
 - 不要以明文存储密码
 - 不要硬编码机密信息
 - 不要跳过证书验证
-- 不要在日志中暴露敏感数据
+- 不要在日志中暴露敏感数据 (Wails 默认对 IPC 日志进行脱敏)
 - 不要使用安全性弱的加密算法
 - 不要忽略安全更新
+- 不要在生产环境中禁用日志脱敏
 
 ## 安全检查清单
 
@@ -254,6 +337,8 @@ func (r *RateLimiter) Allow(key string) bool {
 - [ ] 已启用安全日志记录
 - [ ] 错误消息不会泄露信息
 - [ ] 已审查代码中的漏洞
+- [ ] 已为应用特定字段配置日志脱敏
+- [ ] 自定义日志未暴露敏感字段
 
 ## 后续步骤
 
