@@ -445,6 +445,17 @@ Ces événements fonctionnent sur toutes les plateformes :
 | `common:WindowDidResize` | La fenêtre a été redimensionnée | Adapter la mise en page et restituer à nouveau les graphiques |
 | `common:WindowDidMove` | La fenêtre a été déplacée | Mettre à jour les fonctionnalités dépendant de la position |
 
+#### Événements du cycle de vie de l’application (Android, iOS, macOS)
+
+Ces événements sont émis uniquement sur Android, iOS et macOS. Windows et Linux n’ont pas de transitions équivalentes entre premier plan et arrière-plan au niveau de l’application (utilisez `common:SystemWillSleep`/`SystemDidWake` pour la mise en veille et la reprise de la machine sur ces plateformes).
+
+| Événement | Description | Quand l’utiliser |
+| --- | --- | --- |
+| `common:ApplicationResumed` | L’application est devenue active (au premier plan et interactive). Sur macOS : application activée. Sur mobile : retour au premier plan. | Reconnecter les services, reprendre le rendu |
+| `common:ApplicationPaused` | L’application est sur le point de perdre le focus ou de devenir inactive. Sur macOS : application désactivée. Sur mobile : transition vers l’arrière-plan. | Suspendre les opérations coûteuses, enregistrer l’état temporaire |
+| `common:ApplicationBackgrounded` | L’application est passée à l’arrière-plan. Sur macOS : application masquée. Sur mobile : entièrement en arrière-plan. | Enregistrer l’état, libérer les ressources, suspendre les échanges réseau |
+| `common:ApplicationForegrounded` | L’application revient au premier plan, avant de devenir active. Sur macOS : application en cours de réaffichage. Sur mobile : retour depuis l’arrière-plan. | Préparer la reprise, actualiser les données obsolètes |
+
 ### Événements propres à chaque plateforme
 
 #### Événements Windows

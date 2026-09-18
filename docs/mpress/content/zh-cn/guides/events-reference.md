@@ -445,6 +445,17 @@ Events.On(MonitorStats, (event) => {
 | `common:WindowDidResize` | 窗口大小已调整 | 调整布局并重新渲染图表 |
 | `common:WindowDidMove` | 窗口已移动 | 更新依赖位置的功能 |
 
+#### 应用生命周期事件 (Android, iOS, macOS)
+
+这些事件仅在 Android、iOS 和 macOS 上触发。Windows 和 Linux 没有对应的应用级前台/后台生命周期转换（在这些平台上，可使用 `common:SystemWillSleep`/`SystemDidWake` 处理整台计算机的休眠/唤醒）。
+
+| 事件 | 描述 | 使用场景 |
+| --- | --- | --- |
+| `common:ApplicationResumed` | 应用已激活（处于前台且可交互）。macOS：应用被激活。移动端：返回前台。 | 重新连接服务，恢复渲染 |
+| `common:ApplicationPaused` | 应用即将失去焦点或变为非活动状态。macOS：应用不再活跃。移动端：正在转入后台。 | 暂停高开销操作，保存临时状态 |
+| `common:ApplicationBackgrounded` | 应用已进入后台。macOS：应用被隐藏。移动端：完全处于后台。 | 持久化状态，释放资源，暂停网络活动 |
+| `common:ApplicationForegrounded` | 应用正在返回前台，但尚未激活。macOS：应用正在重新显示。移动端：正在从后台返回。 | 准备恢复运行，刷新过期数据 |
+
 ### 平台特定事件
 
 #### Windows 事件

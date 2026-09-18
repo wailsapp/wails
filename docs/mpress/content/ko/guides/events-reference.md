@@ -445,6 +445,17 @@ Events.On(MonitorStats, (event) => {
 | `common:WindowDidResize` | 창 크기가 조정됨 | 레이아웃을 조정하고 차트 다시 렌더링 |
 | `common:WindowDidMove` | 창이 이동됨 | 위치 종속 기능 업데이트 |
 
+#### 애플리케이션 수명 주기 이벤트 (Android, iOS, macOS)
+
+이 이벤트는 Android, iOS, macOS에서만 발생합니다. Windows와 Linux에는 이에 해당하는 앱 수준의 포그라운드/백그라운드 전환이 없습니다(이 플랫폼의 컴퓨터 절전/복귀에는 `common:SystemWillSleep`/`SystemDidWake`를 사용하세요).
+
+| 이벤트 | 설명 | 사용 시점 |
+| --- | --- | --- |
+| `common:ApplicationResumed` | 애플리케이션이 활성화되었습니다(포그라운드에서 사용자와 상호 작용 가능). macOS: 앱 활성화. 모바일: 포그라운드로 복귀. | 서비스에 다시 연결하고 렌더링 재개 |
+| `common:ApplicationPaused` | 애플리케이션이 포커스를 잃거나 비활성화되려 합니다. macOS: 앱이 비활성화됨. 모바일: 백그라운드로 전환 중. | 비용이 큰 작업을 일시 중지하고 임시 상태 저장 |
+| `common:ApplicationBackgrounded` | 애플리케이션이 백그라운드로 이동했습니다. macOS: 앱이 숨겨짐. 모바일: 완전히 백그라운드 상태. | 상태를 영구 저장하고 리소스를 해제하며 네트워크 작업 일시 중지 |
+| `common:ApplicationForegrounded` | 애플리케이션이 활성화되기 전에 포그라운드로 돌아오는 중입니다. macOS: 앱이 다시 표시되는 중. 모바일: 백그라운드에서 복귀 중. | 재개를 준비하고 오래된 데이터 갱신 |
+
 ### 플랫폼별 이벤트
 
 #### Windows 이벤트

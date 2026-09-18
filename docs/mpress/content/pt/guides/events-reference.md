@@ -445,6 +445,17 @@ Estes eventos funcionam em todas as plataformas:
 | `common:WindowDidResize` | A janela foi redimensionada | Ajustar o layout e renderizar os gráficos novamente |
 | `common:WindowDidMove` | A janela foi movida | Atualizar funcionalidades que dependem da posição |
 
+#### Eventos do ciclo de vida da aplicação (Android, iOS, macOS)
+
+Esses eventos são emitidos apenas no Android, iOS e macOS. Windows e Linux não têm transições equivalentes entre primeiro e segundo plano no nível da aplicação (use `common:SystemWillSleep`/`SystemDidWake` para suspensão e retomada da máquina nessas plataformas).
+
+| Evento | Descrição | Quando usar |
+| --- | --- | --- |
+| `common:ApplicationResumed` | A aplicação tornou-se ativa (em primeiro plano e interativa). No macOS: aplicação ativada. Em dispositivos móveis: voltou ao primeiro plano. | Reconectar serviços, retomar a renderização |
+| `common:ApplicationPaused` | A aplicação está prestes a perder o foco ou ficar inativa. No macOS: aplicação deixou de estar ativa. Em dispositivos móveis: transição para segundo plano. | Pausar operações custosas, salvar o estado temporário |
+| `common:ApplicationBackgrounded` | A aplicação passou para segundo plano. No macOS: aplicação ocultada. Em dispositivos móveis: totalmente em segundo plano. | Persistir o estado, liberar recursos, pausar a rede |
+| `common:ApplicationForegrounded` | A aplicação está voltando ao primeiro plano, antes de se tornar ativa. No macOS: aplicação sendo exibida novamente. Em dispositivos móveis: retorno do segundo plano. | Preparar a retomada, atualizar dados desatualizados |
+
 ### Eventos específicos da plataforma
 
 #### Eventos do Windows

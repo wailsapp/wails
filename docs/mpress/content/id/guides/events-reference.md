@@ -445,6 +445,17 @@ Event berikut berfungsi di semua platform:
 | `common:WindowDidResize` | Ukuran jendela diubah | Sesuaikan tata letak dan render ulang bagan |
 | `common:WindowDidMove` | Jendela dipindahkan | Perbarui fitur yang bergantung pada posisi |
 
+#### Peristiwa Siklus Hidup Aplikasi (Android, iOS, macOS)
+
+Peristiwa ini hanya dipancarkan di Android, iOS, dan macOS. Windows dan Linux tidak memiliki transisi siklus hidup latar depan/latar belakang yang setara pada tingkat aplikasi (gunakan `common:SystemWillSleep`/`SystemDidWake` untuk penangguhan dan pemulihan mesin pada platform tersebut).
+
+| Peristiwa | Deskripsi | Kapan digunakan |
+| --- | --- | --- |
+| `common:ApplicationResumed` | Aplikasi menjadi aktif (di latar depan dan dapat berinteraksi). Di macOS: aplikasi diaktifkan. Di perangkat seluler: kembali ke latar depan. | Hubungkan kembali layanan, lanjutkan perenderan |
+| `common:ApplicationPaused` | Aplikasi akan kehilangan fokus atau menjadi tidak aktif. Di macOS: aplikasi tidak lagi aktif. Di perangkat seluler: beralih ke latar belakang. | Jeda operasi yang berat, simpan status sementara |
+| `common:ApplicationBackgrounded` | Aplikasi telah berpindah ke latar belakang. Di macOS: aplikasi disembunyikan. Di perangkat seluler: sepenuhnya berada di latar belakang. | Simpan status secara permanen, lepaskan sumber daya, jeda jaringan |
+| `common:ApplicationForegrounded` | Aplikasi kembali ke latar depan sebelum menjadi aktif. Di macOS: aplikasi sedang ditampilkan kembali. Di perangkat seluler: kembali dari latar belakang. | Siapkan pemulihan, perbarui data yang usang |
+
 ### Event Khusus Platform
 
 #### Event Windows

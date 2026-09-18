@@ -445,6 +445,17 @@ Events.On(MonitorStats, (event) => {
 | `common:WindowDidResize` | 視窗大小已調整 | 調整版面配置、重新轉譯圖表 |
 | `common:WindowDidMove` | 視窗已移動 | 更新取決於位置的功能 |
 
+#### 應用程式生命週期事件 (Android, iOS, macOS)
+
+這些事件只會在 Android、iOS 和 macOS 上觸發。Windows 和 Linux 沒有對應的應用程式層級前景/背景生命週期轉換（在這些平台上，可使用 `common:SystemWillSleep`/`SystemDidWake` 處理整部電腦的睡眠/喚醒）。
+
+| 事件 | 說明 | 使用時機 |
+| --- | --- | --- |
+| `common:ApplicationResumed` | 應用程式已啟用（位於前景且可互動）。macOS：應用程式已啟用。行動裝置：返回前景。 | 重新連接服務，恢復繪製 |
+| `common:ApplicationPaused` | 應用程式即將失去焦點或變為非作用中狀態。macOS：應用程式不再作用中。行動裝置：正在轉入背景。 | 暫停高成本操作，儲存暫時狀態 |
+| `common:ApplicationBackgrounded` | 應用程式已移至背景。macOS：應用程式已隱藏。行動裝置：完全位於背景。 | 持久儲存狀態，釋放資源，暫停網路活動 |
+| `common:ApplicationForegrounded` | 應用程式正在返回前景，但尚未啟用。macOS：應用程式正在重新顯示。行動裝置：正在從背景返回。 | 準備恢復執行，重新整理過期資料 |
+
 ### 平台特定事件
 
 #### Windows 事件

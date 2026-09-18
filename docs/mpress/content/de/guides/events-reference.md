@@ -445,6 +445,17 @@ Diese Events funktionieren auf allen Plattformen:
 | `common:WindowDidResize` | Fenstergröße wurde geändert | Layout anpassen, Diagramme neu rendern |
 | `common:WindowDidMove` | Fenster wurde verschoben | Positionsabhängige Funktionen aktualisieren |
 
+#### Anwendungslebenszyklus-Ereignisse (Android, iOS, macOS)
+
+Diese Ereignisse werden nur unter Android, iOS und macOS ausgelöst. Windows und Linux haben keine entsprechenden Vordergrund-/Hintergrundübergänge auf Anwendungsebene (verwende dort `common:SystemWillSleep`/`SystemDidWake` für den Ruhezustand und das Aufwachen des Rechners).
+
+| Ereignis | Beschreibung | Einsatz |
+| --- | --- | --- |
+| `common:ApplicationResumed` | Die Anwendung wurde aktiv (im Vordergrund und interaktiv). Unter macOS: Anwendung aktiviert. Auf Mobilgeräten: in den Vordergrund zurückgekehrt. | Dienste erneut verbinden, Rendering fortsetzen |
+| `common:ApplicationPaused` | Die Anwendung verliert gerade den Fokus oder wird inaktiv. Unter macOS: Anwendung nicht mehr aktiv. Auf Mobilgeräten: Übergang in den Hintergrund. | Aufwendige Vorgänge pausieren, vorübergehenden Zustand speichern |
+| `common:ApplicationBackgrounded` | Die Anwendung wurde in den Hintergrund verschoben. Unter macOS: Anwendung ausgeblendet. Auf Mobilgeräten: vollständig im Hintergrund. | Zustand dauerhaft speichern, Ressourcen freigeben, Netzwerkaktivität pausieren |
+| `common:ApplicationForegrounded` | Die Anwendung kehrt in den Vordergrund zurück, bevor sie aktiv wird. Unter macOS: Anwendung wird eingeblendet. Auf Mobilgeräten: Rückkehr aus dem Hintergrund. | Fortsetzung vorbereiten, veraltete Daten aktualisieren |
+
 ### Plattformspezifische Events
 
 #### Windows-Events
