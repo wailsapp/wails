@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !wails_native
 
 #ifndef WebviewWindowDelegate_h
 #define WebviewWindowDelegate_h
@@ -53,6 +53,9 @@ NSString* acceleratorStringFromKeyEvent(NSEvent* event);
 BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window);
 
 void windowSetScreen(void* window, void* screen, int yOffset);
+// Applies one of the MacContentLayout values to the window's primary
+// WKWebView. The WebView may already have been reparented into a split pane.
+void windowApplyContentLayout(void* window, int layout);
 
 // Liquid Glass support functions
 bool isLiquidGlassSupported();

@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !wails_native
 
 #ifndef WebviewPanel_h
 #define WebviewPanel_h

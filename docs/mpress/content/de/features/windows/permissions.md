@@ -79,7 +79,7 @@ Wenn du `Permissions` unter Windows überhaupt konfigurierst, wird daher für je
 
 macOS verwaltet den Zugriff auf Kamera, Mikrofon, Standort und Benachrichtigungen über sein systemweites Datenschutz-Framework. Wenn Webinhalte erstmals eine Funktion anfordern, erscheint automatisch die Abfrage des Betriebssystems. Die Auswahl des Benutzers wird in den Systemeinstellungen unter „Datenschutz & Sicherheit“ anwendungsspezifisch gespeichert.
 
-Dies funktioniert auch ohne `Permissions`-Konfiguration ordnungsgemäß. Die Map wird unter macOS **derzeit ignoriert**: Unabhängig von den festgelegten Werten laufen alle Anfragen über TCC. In der Praxis bedeutet dies, dass `PermissionDeny` unter macOS wirkungslos ist: Du kannst ein Webview nicht daran hindern, eine Funktion zu verwenden, die TCC bereits auf Systemebene genehmigt hat.
+Dies funktioniert ohne Konfiguration von `Permissions`. Wenn die Map gesetzt ist, berücksichtigt macOS sie bei Kamera- und Mikrofonanforderungen aus Webinhalten: `PermissionDeny` lehnt die Anforderung vor der Systemabfrage ab, `PermissionAllow` gewährt sie im Rahmen der bereits vom Benutzer auf Systemebene erteilten Berechtigungen, und `PermissionDefault` (der Standardwert) lässt die Systemabfrage erscheinen. Standort und Mitteilungen werden unabhängig von der Map weiterhin über das Datenschutz-Framework des Systems behandelt. Verwenden Sie `app.Permissions`, um Berechtigungen auf Systemebene aus Go anzufordern oder zu prüfen. Dies ist im [Leitfaden zur macOS-Plattformintegration](/guides/macos-platform-integration/) beschrieben.
 
 Stelle sicher, dass deine `Info.plist` die entsprechenden Schlüssel für Verwendungsbeschreibungen enthält:
 
@@ -182,8 +182,8 @@ Die Auswertungsreihenfolge unter Windows lautet:
 
 | Funktion | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| Mikrofon | ✅ | ✅ | Nur TCC |
-| Kamera | ✅ | ✅ | Nur TCC |
+| Mikrofon | ✅ | ✅ | ✅ + TCC |
+| Kamera | ✅ | ✅ | ✅ + TCC |
 | Geolokalisierung | ❌ noch nicht | ✅ | Nur TCC |
 | Benachrichtigungen | ❌ noch nicht | ✅ | Nur TCC |
 | Lesen aus der Zwischenablage | ❌ noch nicht | ✅ | Nur TCC |
@@ -200,7 +200,7 @@ Sobald `Permissions` einen Eintrag enthält, erteilt Wails nicht mehr die pausch
 
 **macOS-Berechtigungen funktionieren nicht**
 
-Die `Permissions`-Zuordnung hat unter macOS keine Wirkung. Stellen Sie sicher, dass `Info.plist` die richtigen Schlüssel für Nutzungsbeschreibungen enthält (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription` usw.) und dass der Benutzer den Zugriff unter Systemeinstellungen → Datenschutz & Sicherheit gewährt hat.
+Unter macOS beeinflusst die Map `Permissions` nur Kamera- und Mikrofonanforderungen aus Webinhalten. Über den allgemeinen Zugriff entscheidet weiterhin das Datenschutz-Framework des Systems. Stellen Sie sicher, dass Ihre `Info.plist` die richtigen Schlüssel für die Nutzungsbeschreibung enthält (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription` usw.) und dass der Benutzer den Zugriff unter „Systemeinstellungen → Datenschutz & Sicherheit“ gewährt hat.
 
 **Geolokalisierung, Benachrichtigungen und Zwischenablage haben unter Linux keine Wirkung**
 

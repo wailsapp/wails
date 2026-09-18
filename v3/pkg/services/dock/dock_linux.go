@@ -73,3 +73,19 @@ func (l *linuxDock) GetBadge() *string {
 	// No-op: Linux doesn't have standardized badge support
 	return nil
 }
+
+// SetProgress is a stub on Linux since dock progress is not standardized
+// across desktop environments.
+func (l *linuxDock) SetProgress(fraction float64) error {
+	return nil
+}
+
+// ClearProgress is a stub on Linux.
+func (l *linuxDock) ClearProgress() error {
+	return nil
+}
+
+// GetProgress is a stub on Linux.
+func (l *linuxDock) GetProgress() *float64 {
+	return nil
+}

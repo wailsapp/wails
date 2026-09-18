@@ -1,0 +1,5 @@
+A native window should feel quiet and immediate.
+
+This document is loaded from a real text file and displayed by NSTextView. The sidebar is an NSOutlineView, the split is NSSplitViewController, and the toolbar is NSToolbar.
+
+There is no HTML, JavaScript, CSS, asset navigation, or WKWebView in this editor window.

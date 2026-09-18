@@ -6,76 +6,78 @@ type WindowEventType uint
 var Common = newCommonEvents()
 
 type commonEvents struct {
-	ApplicationOpenedWithFile  ApplicationEventType
-	ApplicationStarted         ApplicationEventType
-	ApplicationLaunchedWithUrl ApplicationEventType
-	ThemeChanged               ApplicationEventType
-	SystemDidWake              ApplicationEventType
-	SystemWillSleep            ApplicationEventType
-	WindowClosing              WindowEventType
-	WindowDidMove              WindowEventType
-	WindowDidResize            WindowEventType
-	WindowDPIChanged           WindowEventType
-	WindowFilesDropped         WindowEventType
-	WindowFocus                WindowEventType
-	WindowFullscreen           WindowEventType
-	WindowHide                 WindowEventType
-	WindowLostFocus            WindowEventType
-	WindowMaximise             WindowEventType
-	WindowMinimise             WindowEventType
-	WindowToggleFrameless      WindowEventType
-	WindowRestore              WindowEventType
-	WindowRuntimeReady         WindowEventType
-	WindowShow                 WindowEventType
-	WindowUnFullscreen         WindowEventType
-	WindowUnMaximise           WindowEventType
-	WindowUnMinimise           WindowEventType
-	WindowZoom                 WindowEventType
-	WindowZoomIn               WindowEventType
-	WindowZoomOut              WindowEventType
-	WindowZoomReset            WindowEventType
-	BatteryChanged             ApplicationEventType
-	NetworkChanged             ApplicationEventType
-	ScreenLocked               ApplicationEventType
-	ScreenUnlocked             ApplicationEventType
-	LowMemory                  ApplicationEventType
+	ApplicationOpenedWithFile    ApplicationEventType
+	ApplicationStarted           ApplicationEventType
+	ApplicationLaunchedWithUrl   ApplicationEventType
+	ThemeChanged                 ApplicationEventType
+	SystemDidWake                ApplicationEventType
+	SystemWillSleep              ApplicationEventType
+	WindowClosing                WindowEventType
+	WindowDidMove                WindowEventType
+	WindowDidResize              WindowEventType
+	WindowDPIChanged             WindowEventType
+	WindowFilesDropped           WindowEventType
+	WindowFocus                  WindowEventType
+	WindowFullscreen             WindowEventType
+	WindowHide                   WindowEventType
+	WindowLostFocus              WindowEventType
+	WindowMaximise               WindowEventType
+	WindowMinimise               WindowEventType
+	WindowToggleFrameless        WindowEventType
+	WindowRestore                WindowEventType
+	WindowRuntimeReady           WindowEventType
+	WindowShow                   WindowEventType
+	WindowUnFullscreen           WindowEventType
+	WindowUnMaximise             WindowEventType
+	WindowUnMinimise             WindowEventType
+	WindowZoom                   WindowEventType
+	WindowZoomIn                 WindowEventType
+	WindowZoomOut                WindowEventType
+	WindowZoomReset              WindowEventType
+	BatteryChanged               ApplicationEventType
+	NetworkChanged               ApplicationEventType
+	ScreenLocked                 ApplicationEventType
+	ScreenUnlocked               ApplicationEventType
+	LowMemory                    ApplicationEventType
+	AccessibilitySettingsChanged ApplicationEventType
 }
 
 func newCommonEvents() commonEvents {
 	return commonEvents{
-		ApplicationOpenedWithFile:  1024,
-		ApplicationStarted:         1025,
-		ApplicationLaunchedWithUrl: 1026,
-		ThemeChanged:               1027,
-		SystemDidWake:              1028,
-		SystemWillSleep:            1029,
-		WindowClosing:              1030,
-		WindowDidMove:              1031,
-		WindowDidResize:            1032,
-		WindowDPIChanged:           1033,
-		WindowFilesDropped:         1034,
-		WindowFocus:                1035,
-		WindowFullscreen:           1036,
-		WindowHide:                 1037,
-		WindowLostFocus:            1038,
-		WindowMaximise:             1039,
-		WindowMinimise:             1040,
-		WindowToggleFrameless:      1041,
-		WindowRestore:              1042,
-		WindowRuntimeReady:         1043,
-		WindowShow:                 1044,
-		WindowUnFullscreen:         1045,
-		WindowUnMaximise:           1046,
-		WindowUnMinimise:           1047,
-		WindowZoom:                 1048,
-		WindowZoomIn:               1049,
-		WindowZoomOut:              1050,
-		WindowZoomReset:            1051,
-		BatteryChanged:             1287,
-		NetworkChanged:             1288,
-		ScreenLocked:               1289,
-		ScreenUnlocked:             1290,
-		LowMemory:                  1291,
+		ApplicationOpenedWithFile:    1024,
+		ApplicationStarted:           1025,
+		ApplicationLaunchedWithUrl:   1026,
+		ThemeChanged:                 1027,
+		SystemDidWake:                1028,
+		SystemWillSleep:              1029,
+		WindowClosing:                1030,
+		WindowDidMove:                1031,
+		WindowDidResize:              1032,
+		WindowDPIChanged:             1033,
+		WindowFilesDropped:           1034,
+		WindowFocus:                  1035,
+		WindowFullscreen:             1036,
+		WindowHide:                   1037,
+		WindowLostFocus:              1038,
+		WindowMaximise:               1039,
+		WindowMinimise:               1040,
+		WindowToggleFrameless:        1041,
+		WindowRestore:                1042,
+		WindowRuntimeReady:           1043,
+		WindowShow:                   1044,
+		WindowUnFullscreen:           1045,
+		WindowUnMaximise:             1046,
+		WindowUnMinimise:             1047,
+		WindowZoom:                   1048,
+		WindowZoomIn:                 1049,
+		WindowZoomOut:                1050,
+		WindowZoomReset:              1051,
+		BatteryChanged:               1287,
+		NetworkChanged:               1288,
+		ScreenLocked:                 1289,
+		ScreenUnlocked:               1290,
+		LowMemory:                    1291,
+		AccessibilitySettingsChanged: 1297,
 	}
 }
 
@@ -255,6 +257,11 @@ type macEvents struct {
 	WindowZoomOut                                           WindowEventType
 	WindowZoomReset                                         WindowEventType
 	WebViewWebContentProcessDidTerminate                    WindowEventType
+	ApplicationDidChangePowerState                          ApplicationEventType
+	ApplicationDidChangeThermalState                        ApplicationEventType
+	ApplicationDidChangeAccessibilitySettings               ApplicationEventType
+	ApplicationDidChangeKeyboardLayout                      ApplicationEventType
+	ApplicationDidChangeLocale                              ApplicationEventType
 }
 
 func newMacEvents() macEvents {
@@ -396,6 +403,11 @@ func newMacEvents() macEvents {
 		WindowZoomOut:                                           1199,
 		WindowZoomReset:                                         1200,
 		WebViewWebContentProcessDidTerminate:                    1267,
+		ApplicationDidChangePowerState:                          1292,
+		ApplicationDidChangeThermalState:                        1293,
+		ApplicationDidChangeAccessibilitySettings:               1294,
+		ApplicationDidChangeKeyboardLayout:                      1295,
+		ApplicationDidChangeLocale:                              1296,
 	}
 }
 
@@ -872,4 +884,10 @@ var eventToJS = map[uint]string{
 	1289: "common:ScreenLocked",
 	1290: "common:ScreenUnlocked",
 	1291: "common:LowMemory",
+	1292: "mac:ApplicationDidChangePowerState",
+	1293: "mac:ApplicationDidChangeThermalState",
+	1294: "mac:ApplicationDidChangeAccessibilitySettings",
+	1295: "mac:ApplicationDidChangeKeyboardLayout",
+	1296: "mac:ApplicationDidChangeLocale",
+	1297: "common:AccessibilitySettingsChanged",
 }

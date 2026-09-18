@@ -3,6 +3,8 @@ package application
 // MenuManager manages menu-related operations
 type MenuManager struct {
 	app *App
+
+	menuManagerExtras
 }
 
 // newMenuManager creates a new MenuManager instance

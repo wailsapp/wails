@@ -1,0 +1,6 @@
+Ideas for the native application API
+
+• Treat a WebView as content, not as a window.
+• Keep toolbar item handles instead of public callback IDs.
+• Let AppKit own selection, focus, undo, scrolling, and accessibility.
+• Copy document text across the Go bridge only when it is needed.

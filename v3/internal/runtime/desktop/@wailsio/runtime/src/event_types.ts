@@ -196,6 +196,11 @@ export const Types = Object.freeze({
 		WindowZoomOut: "mac:WindowZoomOut",
 		WindowZoomReset: "mac:WindowZoomReset",
 		WebViewWebContentProcessDidTerminate: "mac:WebViewWebContentProcessDidTerminate",
+		ApplicationDidChangePowerState: "mac:ApplicationDidChangePowerState",
+		ApplicationDidChangeThermalState: "mac:ApplicationDidChangeThermalState",
+		ApplicationDidChangeAccessibilitySettings: "mac:ApplicationDidChangeAccessibilitySettings",
+		ApplicationDidChangeKeyboardLayout: "mac:ApplicationDidChangeKeyboardLayout",
+		ApplicationDidChangeLocale: "mac:ApplicationDidChangeLocale",
 	}),
 	Linux: Object.freeze({
 		ApplicationStartup: "linux:ApplicationStartup",
@@ -291,5 +296,6 @@ export const Types = Object.freeze({
 		ScreenLocked: "common:ScreenLocked",
 		ScreenUnlocked: "common:ScreenUnlocked",
 		LowMemory: "common:LowMemory",
+		AccessibilitySettingsChanged: "common:AccessibilitySettingsChanged",
 	}),
 });

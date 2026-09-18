@@ -86,6 +86,10 @@ Pour éviter cela, Wails applique, lors de l’initialisation, l’état **le pl
 
 Pendant l’exécution, `SetMaximiseButtonState` et `SetFullscreenButtonState` ciblent tous deux `NSWindowZoomButton` sous macOS ; le dernier appel l’emporte donc.
 
+### macOS : habillage natif des fenêtres
+
+Au-delà des boutons de la barre de titre, les fenêtres macOS peuvent intégrer un `NSToolbar` natif, une barre latérale de liste de sources, une liste de contenu, un inspecteur de propriétés, des bandes d’accessoires de barre de titre et des onglets de fenêtre, le tout créé depuis Go. Consultez le guide [Habillage natif des fenêtres macOS](/guides/macos-native-chrome/) pour découvrir l’API complète.
+
 ### Différences entre les plateformes
 
 La gestion de l’état des boutons se comporte légèrement différemment sous Windows et macOS :

@@ -86,6 +86,10 @@ macOS では、緑色の信号ボタン（`NSWindowZoomButton`）が、最大化
 
 実行時には、macOS 上の `SetMaximiseButtonState` と `SetFullscreenButtonState` はどちらも `NSWindowZoomButton` を対象とするため、最後の呼び出しが優先されます。
 
+### macOS: ネイティブのウィンドウ装飾
+
+macOS のウィンドウには、タイトルバーのボタンに加えて、ネイティブの `NSToolbar`、ソースリストのサイドバー、コンテンツリスト、プロパティインスペクタ、タイトルバーのアクセサリ領域、ウィンドウタブを配置でき、すべて Go から構築できます。API の全容については、[macOS のネイティブウィンドウ装飾](/guides/macos-native-chrome/)ガイドを参照してください。
+
 ### プラットフォームによる違い
 
 ボタン状態の機能は、Windows と macOS で動作が多少異なります。

@@ -79,7 +79,7 @@ Isso significa que, se você configurar `Permissions` de qualquer forma no Windo
 
 O macOS gerencia o acesso à câmera, ao microfone, à geolocalização e às notificações por meio de sua estrutura de privacidade do sistema. A solicitação do sistema operacional aparece automaticamente na primeira vez em que o conteúdo da Web solicita um recurso, e a escolha do usuário é lembrada para cada aplicativo em Ajustes do Sistema → Privacidade e Segurança.
 
-Isso funciona corretamente sem nenhuma configuração de `Permissions`. Atualmente, o mapa **é ignorado no macOS** — todas as solicitações passam pelo TCC, independentemente do valor definido. Na prática, a limitação é que `PermissionDeny` não tem efeito no macOS: não é possível impedir que uma webview use um recurso que o TCC já tenha concedido no nível do sistema.
+Isso funciona sem nenhuma configuração de `Permissions`. Quando o mapa é definido, o macOS o respeita para solicitações de câmera e microfone feitas por conteúdo web: `PermissionDeny` recusa a solicitação antes da solicitação do sistema, `PermissionAllow` a concede dentro do que o usuário já permitiu no nível do sistema, e `PermissionDefault` (o padrão) permite que a solicitação do sistema apareça. A geolocalização e as notificações continuam passando pelo sistema de privacidade, independentemente do mapa. Para solicitar ou consultar permissões do sistema em Go, use `app.Permissions`, descrito no [guia de integração com a plataforma macOS](/guides/macos-platform-integration/).
 
 Verifique se `Info.plist` inclui as chaves de descrição de uso apropriadas:
 
@@ -182,8 +182,8 @@ A ordem de avaliação no Windows é:
 
 | Recurso | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| Microfone | ✅ | ✅ | Somente TCC |
-| Câmera | ✅ | ✅ | Somente TCC |
+| Microfone | ✅ | ✅ | ✅ + TCC |
+| Câmera | ✅ | ✅ | ✅ + TCC |
 | Geolocalização | ❌ ainda não | ✅ | Somente TCC |
 | Notificações | ❌ ainda não | ✅ | Somente TCC |
 | Leitura da área de transferência | ❌ ainda não | ✅ | Somente TCC |
@@ -200,7 +200,7 @@ Quando há alguma entrada em `Permissions`, o Wails deixa de definir a permissã
 
 **As permissões do macOS não estão funcionando**
 
-O mapa `Permissions` não tem efeito no macOS. Verifique se `Info.plist` inclui as chaves corretas de descrição de uso (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription` etc.) e se o usuário concedeu acesso em Ajustes do Sistema → Privacidade e Segurança.
+No macOS, o mapa `Permissions` afeta apenas solicitações de câmera e microfone feitas por conteúdo web; o sistema de privacidade ainda determina o acesso geral. Verifique se seu `Info.plist` inclui as chaves corretas de descrição de uso (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription` etc.) e se o usuário concedeu acesso em Ajustes do Sistema → Privacidade e Segurança.
 
 **Geolocalização, notificações e área de transferência não têm efeito no Linux**
 

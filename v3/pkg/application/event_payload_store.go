@@ -3,6 +3,9 @@ package application
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -189,4 +192,49 @@ func (s *eventPayloadStore) close() {
 
 	s.janitor.Do(func() {}) // consume the Once so reap can never start later
 	s.once.Do(func() { close(s.stop) })
+}
+
+// serveEventPayload delivers an oversized event body that was parked by
+// DispatchWailsEvent. Payloads are one-shot and bound to the window they were
+// dispatched to, so a stale or cross-window id simply 404s.
+func (a *App) serveEventPayload(rw http.ResponseWriter, req *http.Request) {
+	if a.eventPayloads == nil {
+		http.NotFound(rw, req)
+		return
+	}
+
+	// Read-only endpoint; anything else is not something we serve.
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		rw.Header().Set("Allow", "GET, HEAD")
+		http.Error(rw, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Ids are always 32 hex chars. Checking the shape first keeps a stream of
+	// junk requests from doing map work on arbitrarily long keys.
+	id := strings.TrimPrefix(req.URL.Path, eventPayloadPath)
+	if len(id) != eventPayloadIDLen || !isHexString(id) {
+		http.NotFound(rw, req)
+		return
+	}
+
+	// Bind to the requesting window where the platform tags the request.
+	// Parsed at uint width so the conversion cannot truncate on 32-bit builds.
+	var windowID uint
+	if raw := req.Header.Get(webViewRequestHeaderWindowId); raw != "" {
+		if parsed, err := strconv.ParseUint(raw, 10, strconv.IntSize); err == nil {
+			windowID = uint(parsed)
+		}
+	}
+
+	data, ok := a.eventPayloads.take(id, windowID)
+	if !ok {
+		http.NotFound(rw, req)
+		return
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.Header().Set("Cache-Control", "no-store")
+	rw.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	_, _ = rw.Write(data)
 }

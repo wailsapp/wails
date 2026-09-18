@@ -4,7 +4,7 @@ package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
-#cgo LDFLAGS: -framework Cocoa -framework WebKit
+#cgo LDFLAGS: -framework Cocoa
 
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
@@ -37,10 +37,11 @@ import (
 )
 
 type macosSystemTray struct {
-	id    uint
-	label string
-	icon  []byte
-	menu  *Menu
+	id      uint
+	label   string
+	tooltip string
+	icon    []byte
+	menu    *Menu
 
 	nsStatusItem      unsafe.Pointer
 	nsImage           unsafe.Pointer
@@ -49,6 +50,11 @@ type macosSystemTray struct {
 	isTemplateIcon    bool
 	parent            *SystemTray
 	lastClickedScreen unsafe.Pointer
+
+	// AppKit posts the visible KVO notification more than once per change,
+	// so the last reported value is kept to deliver each change once.
+	visibilityKnown bool
+	lastVisible     bool
 }
 
 func (s *macosSystemTray) Show() {
@@ -81,6 +87,49 @@ const (
 
 // system tray map
 var systemTrayMap = make(map[uint]*macosSystemTray)
+
+// systemTrayVisibilityEvents carries NSStatusItem.visible changes observed
+// through KVO (see systemTraySetRemovable) to the Go drain loop below.
+type systemTrayVisibilityEvent struct {
+	id      uint
+	visible bool
+}
+
+var systemTrayVisibilityEvents = make(chan systemTrayVisibilityEvent, 16)
+
+//export systrayVisibilityCallback
+func systrayVisibilityCallback(id C.long, visible C.bool) {
+	select {
+	case systemTrayVisibilityEvents <- systemTrayVisibilityEvent{id: uint(id), visible: bool(visible)}:
+	default:
+		globalApplication.warning("system tray %d: visibility event dropped", uint(id))
+	}
+}
+
+func handleSystemTrayVisibilityChanged(event systemTrayVisibilityEvent) {
+	tray := systemTrayMap[event.id]
+	if tray == nil || tray.parent == nil {
+		return
+	}
+	if tray.visibilityKnown && tray.lastVisible == event.visible {
+		return
+	}
+	tray.visibilityKnown = true
+	tray.lastVisible = event.visible
+	tray.parent.hidden = !event.visible
+	if handler := tray.parent.visibilityHandler; handler != nil {
+		handler(event.visible)
+	}
+}
+
+func init() {
+	registerChromeEventLoop(func(*App) {
+		for {
+			event := <-systemTrayVisibilityEvents
+			go handleSystemTrayVisibilityChanged(event)
+		}
+	})
+}
 
 // coerceStatusItemEventType wraps the C helper; used by tests.
 // See systemtray_darwin.h for the #5752 rationale.
@@ -201,9 +250,23 @@ func (s *macosSystemTray) run() {
 		if s.label != "" {
 			s.setLabel(s.label)
 		}
+		if s.tooltip != "" {
+			s.setTooltip(s.tooltip)
+		}
 		if s.icon != nil {
 			s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&s.icon[0]), C.int(len(s.icon))))
 			C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
+		}
+		if s.parent != nil {
+			if s.parent.symbolName != "" {
+				s.setSymbol(s.parent.symbolName, s.parent.symbolPointSize, s.parent.symbolWeight)
+			}
+			if s.parent.removable || s.parent.autosaveName != "" {
+				s.setRemovable(s.parent.removable, s.parent.autosaveName)
+			}
+			if s.parent.hidden {
+				C.systemTrayHide(s.nsStatusItem)
+			}
 		}
 		if s.menu != nil {
 			s.menu.Update()
@@ -237,7 +300,47 @@ func (s *macosSystemTray) setTemplateIcon(icon []byte) {
 }
 
 func (s *macosSystemTray) setTooltip(tooltip string) {
-	// Tooltips not supported on macOS
+	s.tooltip = tooltip
+	if s.nsStatusItem == nil {
+		return
+	}
+	cTooltip := C.CString(tooltip)
+	defer C.free(unsafe.Pointer(cTooltip))
+	C.systemTraySetTooltip(s.nsStatusItem, cTooltip)
+}
+
+// setSymbol renders an SF Symbol as the status item image (macOS 11+).
+func (s *macosSystemTray) setSymbol(name string, pointSize float64, weight MacSymbolWeight) {
+	if s.nsStatusItem == nil || name == "" {
+		return
+	}
+	s.icon = nil
+	s.nsImage = nil
+	s.isTemplateIcon = true
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+	C.systemTraySetSymbol(s.nsStatusItem, cName, C.double(pointSize), C.int(weight), C.int(s.iconPosition))
+}
+
+// setRemovable applies NSStatusItemBehaviorRemovalAllowed and the autosave
+// name, and starts observing visibility changes.
+func (s *macosSystemTray) setRemovable(allowed bool, autosaveName string) {
+	if s.nsStatusItem == nil {
+		return
+	}
+	var cName *C.char
+	if autosaveName != "" {
+		cName = C.CString(autosaveName)
+		defer C.free(unsafe.Pointer(cName))
+	}
+	C.systemTraySetRemovable(s.nsStatusItem, C.bool(allowed), cName)
+}
+
+func (s *macosSystemTray) isVisible() bool {
+	if s.nsStatusItem == nil {
+		return false
+	}
+	return bool(C.systemTrayIsVisible(s.nsStatusItem))
 }
 
 func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
@@ -245,6 +348,7 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		parent:         s,
 		id:             s.id,
 		label:          s.label,
+		tooltip:        s.tooltip,
 		icon:           s.icon,
 		menu:           s.menu,
 		iconPosition:   s.iconPosition,

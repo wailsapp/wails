@@ -79,7 +79,7 @@ WebView2 提供原生权限提示和按类型设置权限的 API。它完全支�
 
 macOS 通过其系统隐私框架管理摄像头、麦克风、地理位置和通知访问权限。当网页内容首次请求某项功能时，操作系统会自动显示提示，并在“系统设置”→“隐私与安全性”中按应用记住用户的选择。
 
-无需进行任何`Permissions`配置，此机制即可正常工作。macOS<strong>目前会忽略此映射</strong>——无论你如何设置，所有请求都会交由 TCC 处理。实际缺口是`PermissionDeny`在 macOS 上不起作用：如果 TCC 已在系统层面授予某项功能的使用权限，你无法阻止 WebView 使用该功能。
+无需配置 `Permissions`，此功能也能工作。设置该映射后，macOS 会在处理网页内容发出的摄像头和麦克风请求时遵循其设置：`PermissionDeny` 会在系统提示出现前拒绝请求，`PermissionAllow` 会在用户已于系统层面允许的范围内授予权限，`PermissionDefault`（默认值）则允许显示系统提示。无论映射如何设置，地理位置和通知仍通过系统隐私框架处理。若要从 Go 请求或检查系统级权限，请使用 [macOS 平台集成指南](/guides/macos-platform-integration/)中介绍的 `app.Permissions`。
 
 请确保你的`Info.plist`包含相应的用途说明键：
 
@@ -182,8 +182,8 @@ Windows 上的求值顺序如下：
 
 | 功能 | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| 麦克风 | ✅ | ✅ | 仅由 TCC 处理 |
-| 摄像头 | ✅ | ✅ | 仅由 TCC 处理 |
+| 麦克风 | ✅ | ✅ | ✅ + TCC |
+| 摄像头 | ✅ | ✅ | ✅ + TCC |
 | 地理位置 | ❌ 尚不支持 | ✅ | 仅由 TCC 处理 |
 | 通知 | ❌ 尚不支持 | ✅ | 仅由 TCC 处理 |
 | 读取剪贴板 | ❌ 尚不支持 | ✅ | 仅由 TCC 处理 |
@@ -200,7 +200,7 @@ Windows 上的求值顺序如下：
 
 **macOS 权限不起作用**
 
-`Permissions`映射在 macOS 上不起作用。请确保`Info.plist`包含正确的用途说明键（`NSMicrophoneUsageDescription`、`NSCameraUsageDescription`等），并确保用户已在“系统设置 → 隐私与安全性”中授予访问权限。
+在 macOS 上，`Permissions` 映射只影响网页内容发出的摄像头和麦克风请求；整体访问权限仍由系统隐私框架决定。请确保 `Info.plist` 包含正确的用途说明键（`NSMicrophoneUsageDescription`、`NSCameraUsageDescription` 等），并确认用户已在“系统设置 → 隐私与安全性”中授予访问权限。
 
 **地理位置、通知和剪贴板策略在 Linux 上不起作用**
 

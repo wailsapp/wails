@@ -1,0 +1,1302 @@
+---
+title: macOS Platform Integration
+description: Document windows, Dock and menu extras, native panels, status items, feedback, the rich clipboard, drag out, permissions, power and lifecycle on macOS
+slug: "guides/macos-platform-integration"
+sourcePath: "guides/macos-platform-integration.md"
+---
+
+Relevant Platforms: macOS
+
+Wails v3 gives your application the behaviours macOS users expect from a
+native app: document windows with proxy icons and cascading, menus with
+symbols and badges, a Dock menu with progress, native alerts and panels,
+removable status items, haptics and speech, a rich clipboard with drag out,
+system information about permissions, power and locale, and a place in the
+Services menu, Handoff, AppleScript and Quick Look. Everything is driven
+from Go through the `application` package.
+
+The same code compiles on Windows and Linux. Setters store their values,
+queries return zero values, and operations that need macOS return a
+documented error such as `ErrMacOnly`, `ErrDialogNotSupported` or
+`ErrClipboardNotSupported`. The [platform notes](#platform-notes) below list
+the behaviour of each area off macOS.
+
+For native window chrome (toolbars, sidebars, inspectors, accessories and
+window tabs) see the [Native macOS Chrome](/guides/macos-native-chrome)
+guide.
+
+## Document windows
+
+A document window shows the file it represents in the titlebar, marks
+unsaved changes with a dot in the close button, and opens new windows in a
+cascade. These are all methods on `WebviewWindow` and options on
+`MacWindow`.
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:           "Report.md",
+    URL:             "/editor",
+    InitialPosition: application.WindowCascade,
+    Mac: application.MacWindow{
+        FrameAutosaveName: "editor.main",
+        TitleBar: application.MacTitleBar{
+            WindowButtonsOffset: &application.Point{X: 12, Y: 8},
+        },
+    },
+})
+
+window.SetRepresentedFile("/Users/me/Documents/Report.md")
+window.SetSubtitle("Documents")
+window.SetDocumentEdited(true)
+```
+
+- `SetRepresentedFile` shows the file's proxy icon in the titlebar. The
+  user can drag the icon to another app or command-click it to reveal the
+  path. Pass `""` to remove it. `RepresentedFile` reads it back.
+- `SetDocumentEdited` shows the unsaved-changes dot in the close button and
+  dims the proxy icon. `IsDocumentEdited` reads it back.
+- `SetSubtitle` shows a second line under the title on macOS 11 and later.
+- `InitialPosition: application.WindowCascade` places the window down and
+  to the right of the last cascaded window, the way new documents open.
+  `CascadeFrom(other)` does the same for an existing window and updates the
+  cascade point for later windows.
+- `Mac.FrameAutosaveName` restores the saved position and size before the
+  window is first shown and keeps saving it as the window moves. A restored
+  frame wins over `X`, `Y`, `Width`, `Height` and `InitialPosition`.
+  `SetFrameAutosaveName` switches the name on a live window.
+- `MacTitleBar.WindowButtonsOffset` moves the close, minimise and zoom
+  buttons by a number of points. `SetWindowButtonsOffset` and
+  `ResetWindowButtonsOffset` change it at runtime.
+
+All three setters can be called before the native window exists; the
+values are applied when it is created.
+
+### Attention requests
+
+`RequestAttention` bounces the Dock icon while the application is in the
+background. An informational request bounces once. A critical request keeps
+bouncing until the user activates the application or you cancel it.
+
+```go
+request := window.RequestAttention(true)
+
+// Once the work that needed attention is done:
+request.Cancel()
+```
+
+`Flash` remains the cross-platform way to ask for attention once.
+
+### Printing and export
+
+`PrintWithOptions` prints the WebView with explicit page settings. The zero
+value shows the print panel with the shared print settings. `Print` keeps
+its historical behaviour (landscape, 30 point margins).
+
+`ExportPDF` renders the page to a PDF document and `Snapshot` captures it as
+a PNG. Both wait for WebKit, so call them from a goroutine and never from the
+application thread; calling them there returns `ErrMacExportOnMainThread`.
+
+```go
+err := window.PrintWithOptions(application.PrintOptions{
+    Orientation: application.PrintOrientationPortrait,
+    Margins:     application.PrintMargins{Top: 36, Left: 36, Bottom: 36, Right: 36},
+    Silent:      false,
+})
+if err != nil {
+    log.Println("print:", err)
+}
+
+go func() {
+    pdf, err := window.ExportPDF(application.PDFExportOptions{})
+    if err != nil {
+        log.Println("export:", err)
+        return
+    }
+    if err := os.WriteFile("report.pdf", pdf, 0o644); err != nil {
+        log.Println("write:", err)
+    }
+
+    png, err := window.Snapshot(application.SnapshotOptions{Width: 800})
+    if err != nil {
+        log.Println("snapshot:", err)
+        return
+    }
+    if err := os.WriteFile("preview.png", png, 0o644); err != nil {
+        log.Println("write:", err)
+    }
+}()
+```
+
+`PrintOptions` also accepts `PrinterName`, `PaperName` (a PostScript name
+such as `"iso-a4"`) and `Scale`. `PDFExportOptions` and `SnapshotOptions`
+take an optional `Rect` to limit the capture and a `Timeout` that defaults to
+`DefaultMacExportTimeout` (30 seconds).
+
+## Sheets
+
+A sheet is a second window attached to the top of its parent, the way Save
+panels are. Any `WebviewWindow` can be presented as a sheet of another with
+`PresentSheet`, and ended with `EndSheet` and a response code that reaches
+the sheet's `OnSheetEnd` callbacks. Create the sheet window with `Hidden`
+set so it does not flash on screen before it is attached; AppKit orders it
+out again when it ends, so the same window can be presented repeatedly.
+
+```go
+sheet := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:  "Rename",
+    URL:    "/rename",
+    Width:  420,
+    Height: 180,
+    Hidden: true,
+})
+sheet.OnSheetEnd(func(code int) {
+    if code == application.MacSheetResponseOK {
+        log.Println("renamed")
+    }
+})
+
+// From a menu item or a bound method:
+if err := window.PresentSheet(sheet); err != nil {
+    log.Println(err)
+}
+
+// From the sheet's own page, through a bound method:
+sheet.EndSheet(application.MacSheetResponseOK)
+```
+
+`PresentCriticalSheet` shows the sheet in front of any ordinary sheet
+already attached instead of queueing behind it. `PresentNativeSheet` does
+the same for a `NativeWindow`. `IsSheet`, `SheetParent`, `AttachedSheet`,
+`AttachedNativeSheet` and `HasAttachedSheet` describe the current state.
+Closing a sheet window instead of ending it delivers
+`MacSheetResponseStop`.
+
+## Popovers
+
+A `MacPopover` is an `NSPopover`: a transient panel anchored to a rectangle
+in a window, to a toolbar item or to the status item in the menu bar. Its
+content is a native `MacAccessory` control strip, the same type the
+[Native macOS Chrome](/guides/macos-native-chrome) guide uses for titlebar
+accessories. Add every control before the first show.
+
+```go
+strip := application.NewMacAccessory(application.MacAccessoryLayoutBottom)
+strip.AddLabel("Sort by")
+strip.AddSegmented([]string{"Date", "Title"}, 0)
+strip.AddFlexibleSpace()
+strip.AddButton("Apply").OnClick(func(*application.Context) {
+    // apply the sort
+})
+
+popover := application.NewMacPopover(application.MacPopoverOptions{
+    Width:    320,
+    Behavior: application.MacPopoverBehaviorTransient,
+    Content:  strip,
+})
+popover.OnClose(func() {
+    log.Println("popover closed")
+})
+
+// Anchored to a rectangle in the page, in window content coordinates:
+err := popover.ShowRelativeTo(application.Rect{X: 20, Y: 60, Width: 120, Height: 28}, window, application.MacRectEdgeMaxY)
+if err != nil {
+    log.Println(err)
+}
+```
+
+`MacToolbarItem.ShowPopover` and `SystemTray.ShowPopover` anchor the same
+popover to a toolbar item or to the status item.
+`MacPopoverBehaviorTransient` closes the popover on any click outside it,
+`Semitransient` only on clicks in the presenting window, and the default
+keeps it open until `Close`. `MacRectEdge` picks the side the popover
+appears on. `SetContentSize` and `SetBehavior` adjust a live popover, and
+`Destroy` releases the native popover and frees the content strip for use
+elsewhere.
+
+## State restoration
+
+macOS reopens an application's windows after a crash, a forced quit or a
+reboot, and after a normal quit when "Close windows when quitting an
+application" is off in System Settings. Give a window a
+`Mac.RestorationID`, store what is needed to recreate it with
+`SetRestorationData`, and register `app.Window.OnRestore` to build the
+window again at the next launch.
+
+```go
+app.Window.OnRestore(func(id string, state application.RestorationState) application.Window {
+    if id != "editor" {
+        return nil
+    }
+    path := state.Get("path")
+    restored := app.Window.NewWithOptions(application.WebviewWindowOptions{
+        Title: filepath.Base(path),
+        URL:   "/editor?path=" + path,
+        Mac:   application.MacWindow{RestorationID: id},
+    })
+    restored.SetRestorationData(state.Data)
+    return restored
+})
+
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Report.md",
+    URL:   "/editor?path=/Users/me/Documents/Report.md",
+    Mac:   application.MacWindow{RestorationID: "editor"},
+})
+window.SetRestorationData(map[string]string{"path": "/Users/me/Documents/Report.md"})
+```
+
+Only windows that are visible when the application terminates are saved.
+`RestorationState.Data` is a string map; keep it to identifiers, paths and
+positions. `InteractionState` returns the WebView's back-forward list and
+scroll positions as an opaque blob (macOS 12+) that
+`RestoreInteractionState` applies to a recreated window, typically stored
+base64 encoded in the restoration data. `SetRestorationID` and
+`RestorationID` change and read the identifier on a live window.
+
+## Presentation options
+
+`MacPresentationOptions` mirrors `NSApplication.presentationOptions`: a
+bitmask that hides the Dock or menu bar and disables process switching,
+force quit, log out or the Hide command while the application is active.
+Set `Mac.PresentationOptions` in the application options to apply it at
+launch, or change it at runtime with `SetPresentationOptions`. Invalid
+combinations are rejected before they reach AppKit with an error wrapping
+`ErrMacPresentationOptionsInvalid`.
+
+```go
+kiosk := application.MacPresentationHideDock |
+    application.MacPresentationHideMenuBar |
+    application.MacPresentationDisableProcessSwitching |
+    application.MacPresentationDisableForceQuit
+
+if err := app.SetPresentationOptions(kiosk); err != nil {
+    log.Println(err)
+}
+log.Println("presentation:", app.PresentationOptions())
+
+// Restore the standard Dock and menu bar:
+_ = app.SetPresentationOptions(application.MacPresentationDefault)
+```
+
+Hiding the menu bar (`HideMenuBar` or `AutoHideMenuBar`) requires one of
+the Dock options, and `AutoHideToolbar` requires both `FullScreen` and
+`AutoHideMenuBar`. `Validate` reports the first rule a value breaks and
+`Has` tests individual flags.
+
+## Menus and the Dock
+
+Menu items gain SF Symbols, badges, section headers, colour palettes, the
+mixed check state, alternates and indentation. All of them are methods on
+`MenuItem` and `Menu`, so they work in the application menu, context menus,
+tray menus and the Dock menu.
+
+```go
+menu := app.NewMenu()
+menu.AddRole(application.AppMenu)
+
+fileMenu := menu.AddSubmenu("File")
+fileMenu.Add("Open...").SetSymbol("folder").SetAccelerator("CmdOrCtrl+o").
+    OnClick(func(*application.Context) {
+        // open the file, then note it in the recent list:
+        app.Menu.AddRecentDocument("/Users/me/Documents/Report.md")
+    })
+fileMenu.AddRole(application.OpenRecent)
+
+view := menu.AddSubmenu("View")
+view.AddSectionHeader("Mailboxes")
+inbox := view.Add("Inbox").SetSymbol("tray.full").SetBadge(3)
+inbox.OnClick(func(*application.Context) {
+    inbox.ClearBadge()
+})
+view.Add("Updates").SetBadgeText("New")
+
+view.AddSeparator()
+wrap := view.AddCheckbox("Wrap lines", false).SetMixed()
+view.Add("Reset").SetIndentationLevel(1).OnClick(func(*application.Context) {
+    wrap.SetMixed()
+})
+
+view.AddSeparator()
+view.Add("Close Tab").SetAccelerator("CmdOrCtrl+w").OnClick(func(*application.Context) {})
+view.Add("Close All Tabs").SetAccelerator("CmdOrCtrl+OptionOrAlt+w").SetAlternate(true).
+    OnClick(func(*application.Context) {})
+
+colours := []application.RGBA{
+    application.NewRGB(255, 59, 48),
+    application.NewRGB(255, 149, 0),
+    application.NewRGB(52, 199, 89),
+}
+view.AddPalette([]string{"tag.fill"}, colours, 0, func(_ *application.Context, index int) {
+    log.Println("tag colour", index)
+}).SetLabel("Tag colour")
+
+app.Menu.Set(menu)
+```
+
+- `SetSymbol` shows an SF Symbol next to the title (macOS 11+). It replaces
+  an image set with `SetBitmap`.
+- `SetBadge` shows a count and `SetBadgeText` shows a short string after the
+  title (macOS 14+). `ClearBadge` removes it; `BadgeCount` and `BadgeText`
+  read it back.
+- `AddSectionHeader` adds a non-interactive header (macOS 14+). On earlier
+  releases it is a disabled item with the same title.
+- `AddPalette` adds a row of colour swatches backed by `NSMenu`'s palette
+  menu (macOS 14+). Pass one symbol for every swatch, one per colour, or an
+  empty slice for filled circles. Without a label the palette is inline in
+  the parent menu; `SetLabel` presents it as a titled submenu.
+  `PaletteSelected` returns the selected index.
+- `SetMixed` puts a checkbox into the mixed state, drawn as a dash. A click
+  turns it fully on, as AppKit does.
+- `SetAlternate(true)` shows the item in place of the item above it while
+  the differing modifier is held. The two items must share a key and differ
+  in modifiers.
+- `SetIndentationLevel` indents the title by up to 15 levels.
+
+### Open Recent
+
+`fileMenu.AddRole(application.OpenRecent)` adds the standard Open Recent
+submenu. On macOS it is filled by `NSDocumentController` every time it
+opens and includes a Clear Menu item. Add files with
+`app.Menu.AddRecentDocument`, list them with `RecentDocuments` and empty
+the list with `ClearRecentDocuments`. The list survives restarts.
+
+Choosing a recent file arrives as the same event as a file opened from
+Finder:
+
+```go
+app.Event.OnApplicationEvent(events.Common.ApplicationOpenedWithFile, func(event *application.ApplicationEvent) {
+    path := event.Context().Filename()
+    log.Println("open", path)
+})
+```
+
+### Dock menu
+
+`app.Menu.SetDockMenu` installs a static menu behind a right-click on the
+Dock icon. `OnDockMenu` builds one on demand every time it is about to be
+shown, which is the right choice when the items reflect changing state. A
+builder takes precedence over the static menu.
+
+```go
+dockMenu := application.NewMenu()
+dockMenu.Add("New Document").SetSymbol("doc.badge.plus").OnClick(func(*application.Context) {
+    // create a document
+})
+app.Menu.SetDockMenu(dockMenu)
+
+app.Menu.OnDockMenu(func() *application.Menu {
+    dynamic := application.NewMenu()
+    dynamic.AddSectionHeader("Recent")
+    for _, path := range app.Menu.RecentDocuments() {
+        path := path
+        dynamic.Add(filepath.Base(path)).OnClick(func(*application.Context) {
+            app.Menu.OpenRecentDocument(path)
+        })
+    }
+    return dynamic
+})
+```
+
+### Dock progress
+
+The dock service draws a progress bar over the Dock icon alongside the
+existing badge support. Register `dock.New()` as a service and call
+`SetProgress` with a fraction between 0 and 1.
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/services/dock"
+
+dockService := dock.New()
+
+app := application.New(application.Options{
+    Name: "Exporter",
+    Services: []application.Service{
+        application.NewService(dockService),
+    },
+})
+
+app.Event.On("export:progress", func(event *application.CustomEvent) {
+    if fraction, ok := event.Data.(float64); ok {
+        _ = dockService.SetProgress(fraction)
+    }
+})
+app.Event.On("export:done", func(*application.CustomEvent) {
+    _ = dockService.ClearProgress()
+})
+```
+
+`GetProgress` returns the current fraction, or `nil` when no bar is shown.
+
+## Dialogs
+
+The message, open and save dialogs accept macOS options, and the dialog
+manager gains a text prompt plus the system colour and font panels.
+
+### Alerts
+
+`SetSuppression` adds a "Do not show this message again" checkbox and
+`SetHelp` shows the help button. Read the checkbox with `Suppressed` from a
+button callback, or register `OnSuppression` to receive it first.
+
+```go
+dialog := app.Dialog.Warning().
+    SetTitle("Delete 3 items?").
+    SetMessage("The items will be moved to the Bin.").
+    SetSuppression("Do not warn me again").
+    SetHelp(func() {
+        log.Println("help requested")
+    }).
+    AttachToWindow(window)
+
+dialog.AddButton("Delete").SetAsDefault().OnClick(func() {
+    if dialog.Suppressed() {
+        // remember not to ask again
+    }
+})
+dialog.AddButton("Cancel").SetAsCancel()
+dialog.Show()
+```
+
+### Text prompt
+
+`Prompt` shows an alert with a text field and blocks until it is dismissed,
+so call it from a goroutine or a bound method. `Secure` turns the field
+into a password field and `Window` presents the alert as a sheet.
+
+```go
+go func() {
+    value, ok, err := app.Dialog.Prompt(application.PromptOptions{
+        Title:        "Name this document",
+        Message:      "The name is used for the exported file.",
+        Placeholder:  "Untitled",
+        DefaultValue: "Quarterly report",
+        OKLabel:      "Rename",
+        Window:       window,
+    })
+    if err != nil || !ok {
+        return
+    }
+    log.Println("renamed to", value)
+}()
+```
+
+### File panels
+
+`AddContentType` filters by uniform type identifier on both open and save
+dialogs. It sits alongside `AddFilter`, so `"public.image"` matches every
+image type the system knows about while a filter still catches PDFs by
+extension.
+
+```go
+paths, err := app.Dialog.OpenFile().
+    SetTitle("Choose images").
+    AddFilter("PDF", "*.pdf").
+    AddContentType("public.image").
+    AttachToWindow(window).
+    PromptForMultipleSelection()
+if err == nil {
+    log.Println(paths)
+}
+```
+
+Save panels gain a Format pop-up, a custom label for the name field and
+Finder tags. `SetFormats` swaps the allowed type and the extension of the
+name field as the user changes the pop-up, and `SelectedFormat` reports the
+final choice.
+
+```go
+formats := []application.DialogFormat{
+    {Label: "PNG image", Extension: "png", UTI: "public.png"},
+    {Label: "PDF document", Extension: "pdf", UTI: "com.adobe.pdf"},
+}
+save := app.Dialog.SaveFile().
+    SetFilename("Quarterly report.png").
+    SetNameFieldLabel("Export As:").
+    SetTags([]string{"Reports", "Draft"}).
+    AttachToWindow(window)
+save.SetFormats(formats, 0, nil)
+
+path, err := save.PromptForSingleSelection()
+if err == nil && path != "" {
+    log.Println("export", path, "as", formats[save.SelectedFormat()].Label)
+}
+```
+
+### Colour and font panels
+
+`PickColor` and `PickFont` open the shared system panels and block until the
+panel closes. `OnChange` delivers every selection while the panel is open,
+which lets the page preview the choice live. Only one panel of each kind can
+be open at a time; a second call returns `ErrDialogInProgress`.
+
+```go
+go func() {
+    colour, changed, err := app.Dialog.PickColor(application.ColorPickerOptions{
+        Initial:    application.NewRGB(52, 120, 246),
+        ShowsAlpha: true,
+        Title:      "Accent colour",
+        OnChange: func(colour application.RGBA) {
+            app.Event.Emit("accent:preview", colour)
+        },
+    })
+    if err == nil && changed {
+        log.Println("accent", colour)
+    }
+
+    font, changed, err := app.Dialog.PickFont(application.FontPickerOptions{
+        Family: "Helvetica Neue",
+        Size:   18,
+    })
+    if err == nil && changed {
+        log.Println(font.Family, font.Face, font.PostScriptName, font.Size)
+    }
+}()
+```
+
+## Status items and feedback
+
+### Status items
+
+A system tray item on macOS is an `NSStatusItem`. It can be drawn from an SF
+Symbol, carry a tooltip, and be removable by the user in the same way as the
+built-in items.
+
+```go
+tray := app.SystemTray.New()
+tray.SetSymbol("waveform.circle").SetSymbolConfiguration(0, application.MacSymbolWeightMedium)
+tray.SetTooltip("Recorder. Command-drag to remove.")
+tray.SetRemovable(true, "com.example.recorder.tray")
+tray.OnVisibilityChange(func(visible bool) {
+    log.Println("status item visible:", visible)
+})
+
+trayMenu := app.Menu.New()
+trayMenu.Add("Show").OnClick(func(*application.Context) {
+    window.Show().Focus()
+})
+tray.SetMenu(trayMenu)
+tray.Run()
+```
+
+- `SetSymbol` renders the symbol as a template image so it follows the
+  menu bar appearance (macOS 11+). `SetSymbolConfiguration` sets the point
+  size and weight.
+- `SetTooltip` sets the hover text. `Tooltip` reads it back.
+- `SetRemovable(true, name)` lets the user command-drag the item out of the
+  menu bar. Give it a stable autosave name so macOS remembers the removal
+  across launches. `Show` or `SetVisible(true)` brings it back.
+- `IsVisible` reads `NSStatusItem.visible`, so it is false after the user
+  removes the item. `OnVisibilityChange` reports every change.
+
+### Haptics
+
+`app.Haptics.Perform` plays a pattern on a Force Touch trackpad or Magic
+Trackpad while the application is active.
+
+```go
+app.Haptics.Perform(application.HapticAlignment)
+```
+
+The kinds are `HapticGeneric`, `HapticAlignment` (an item snapped into
+place) and `HapticLevelChange` (a detent or click stage). `IsSupported`
+reports whether the platform can play feedback at all.
+
+### Sounds
+
+`app.Sound` plays the alert sound, a named system sound or an audio file.
+
+```go
+app.Sound.Beep()
+
+if err := app.Sound.Play("Glass"); err != nil {
+    log.Println(err)
+}
+
+for _, name := range app.Sound.SystemSounds() {
+    log.Println(name)
+}
+```
+
+`Play` accepts a name from `SystemSounds` or an absolute path to any file
+Core Audio can decode. `PlayData` plays a complete audio file from memory.
+
+### Speech
+
+`app.Speech.Speak` queues text for the system voice and returns an
+`Utterance`. Utterances play one after another; `Stop` drops one and
+`StopAll` clears the queue. `Voices` lists the installed voices with their
+identifiers and languages.
+
+```go
+utterance, err := app.Speech.Speak("Export finished", application.SpeechOptions{
+    Voice: "com.apple.voice.compact.en-GB.Daniel",
+    Rate:  0.5,
+})
+if err != nil {
+    log.Println(err)
+    return
+}
+utterance.OnFinished(func() {
+    log.Println("done, stopped:", utterance.WasStopped())
+})
+```
+
+`Recognize` transcribes the default microphone with `SFSpeechRecognizer`.
+The first call prompts for the microphone and speech recognition
+permissions and blocks until the user answers, so call it from a goroutine.
+Partial transcripts arrive through `OnPartial`; `Stop` ends capture and
+returns the final text.
+
+```go
+go func() {
+    session, err := app.Speech.Recognize(application.RecognitionOptions{
+        Locale: "en-US",
+        OnPartial: func(text string) {
+            app.Event.Emit("dictation:partial", text)
+        },
+    })
+    if err != nil {
+        if errors.Is(err, application.ErrSpeechRecognitionDenied) {
+            _ = app.Permissions.OpenSystemSettings(application.PermissionKindMicrophone)
+        }
+        log.Println(err)
+        return
+    }
+    time.Sleep(5 * time.Second)
+    text, err := session.Stop()
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    app.Event.Emit("dictation:final", text)
+}()
+```
+
+Recognition needs a bundled application whose `Info.plist` declares
+`NSSpeechRecognitionUsageDescription` and `NSMicrophoneUsageDescription`.
+Without them macOS refuses access and `Recognize` returns
+`ErrSpeechRecognitionUsageDescription`.
+
+## Clipboard and drag
+
+### Rich clipboard
+
+`app.Clipboard` reads and writes images, file references, HTML, RTF and raw
+data under any uniform type identifier, in addition to plain text. `Types`
+lists what is on the pasteboard and `OnChange` reports changes made by any
+application.
+
+```go
+if err := app.Clipboard.SetHTML("<p>Rich <b>HTML</b></p>", "Rich HTML"); err != nil {
+    log.Println(err)
+}
+_ = app.Clipboard.SetFiles([]string{"/Users/me/Documents/Report.md"})
+_ = app.Clipboard.SetData("com.example.record", []byte(`{"id":42}`))
+
+stop := app.Clipboard.OnChange(func() {
+    log.Println("clipboard changed", app.Clipboard.ChangeCount(), app.Clipboard.Types())
+    if files, err := app.Clipboard.Files(); err == nil && len(files) > 0 {
+        log.Println("files:", files)
+    }
+})
+defer stop()
+```
+
+`SetImage` and `Image` work with PNG bytes; images copied as TIFF by other
+apps are converted for you. There is no system notification for clipboard
+changes, so `OnChange` polls the change count every 500 ms while at least
+one listener exists.
+
+### Drag out
+
+`StartDrag` begins a system drag from the window, as if the user had picked
+the items up in Finder. It offers existing files, file promises whose
+contents are produced only when a destination accepts the drop, or plain
+text. Start it during a mouse gesture: bind a Go method and call it from the
+page's `mousedown` or `pointerdown` handler on the draggable element, with
+the HTML `draggable` attribute set to `false` so WebKit does not start its
+own drag.
+
+```go
+// DragService is bound to the page and called from a mousedown handler.
+type DragService struct {
+    window *application.WebviewWindow
+}
+
+func (s *DragService) DragExport() error {
+    return s.window.StartDrag(application.DragItems{
+        Promises: []application.DragPromise{{
+            Filename: "export.csv",
+            Data: func() ([]byte, error) {
+                return []byte("id,name\n1,Wails\n"), nil
+            },
+        }},
+        Operations: application.DragOperationCopy,
+    })
+}
+```
+
+```go
+window.OnDragEnd(func(operation application.DragOperation) {
+    log.Println("drag ended:", operation)
+})
+```
+
+Calling `StartDrag` outside a gesture returns `ErrDragOutNoGesture`.
+`DragItems.Image` and `ImageOffset` set the picture under the cursor.
+
+### Drops from other applications
+
+File drops keep using the `WindowFilesDropped` event. To accept text, URLs
+or images dragged from other apps, list the types in `DropTypes` and
+register `OnDrop`. Those drops are delivered to Go rather than to the
+page's own HTML5 drop handlers.
+
+```go
+window := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Inbox",
+    URL:   "/",
+    DropTypes: []application.DropType{
+        application.DropFiles,
+        application.DropText,
+        application.DropURLs,
+        application.DropImages,
+    },
+})
+
+window.OnWindowEvent(events.Common.WindowFilesDropped, func(event *application.WindowEvent) {
+    log.Println("files:", event.Context().DroppedFiles())
+})
+
+window.OnDrop(func(_ *application.Context, data application.DropData) {
+    log.Println("text:", data.Text, "urls:", data.URLs, "images:", len(data.Images), "at", data.X, data.Y)
+})
+```
+
+## System
+
+### Permissions
+
+`app.Permissions` reports and requests the system privacy permissions
+(camera, microphone, screen recording, accessibility, location,
+notifications, input monitoring and full disk access). `Status` never
+prompts. `Request` prompts for kinds that are not yet determined and blocks
+until the user answers, so call it from a goroutine. `OpenSystemSettings`
+opens the matching Privacy & Security pane.
+
+```go
+go func() {
+    status := app.Permissions.Status(application.PermissionKindCamera)
+    if status == application.PermissionStatusNotDetermined {
+        status, _ = app.Permissions.Request(application.PermissionKindCamera)
+    }
+    if status == application.PermissionStatusDenied {
+        _ = app.Permissions.OpenSystemSettings(application.PermissionKindCamera)
+    }
+}()
+```
+
+Full disk access cannot be requested and returns
+`ErrPermissionNotRequestable`; direct the user to the settings pane. A
+request that never gets an answer returns `ErrPermissionRequestTimeout`,
+which on macOS usually means the usage description key for that kind is
+missing from `Info.plist`.
+
+The `Permissions` window option is now honoured on macOS. It decides how
+`getUserMedia` requests from the page are handled: `PermissionAllow` skips
+the WebView's own prompt, `PermissionDeny` refuses without asking, and
+`PermissionDefault` shows the prompt. The system-level TCC prompt still
+appears the first time the camera or microphone is used.
+
+```go
+app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title: "Meeting",
+    URL:   "/",
+    Permissions: map[application.PermissionType]application.Permission{
+        application.PermissionMicrophone: application.PermissionAllow,
+        application.PermissionCamera:     application.PermissionDefault,
+    },
+})
+```
+
+### Power
+
+`app.Power.PreventSleep` keeps the system awake, and with `Display` the
+screen too, until the returned release function is called. Holds are
+counted, so several parts of the app can hold at once. The reason is shown
+in Activity Monitor.
+
+```go
+release, err := app.Power.PreventSleep("Exporting video", application.PreventSleepOptions{Display: true})
+if err != nil {
+    log.Println(err)
+}
+defer release()
+
+state := app.Power.State()
+if state.LowPowerMode || state.ThermalState >= application.ThermalStateSerious {
+    // trim background work
+}
+log.Println("battery", state.BatteryLevel, "charging", state.Charging, "on battery", state.OnBattery)
+```
+
+Changes arrive as `events.Mac.ApplicationDidChangePowerState` (Low Power
+Mode toggled) and `events.Mac.ApplicationDidChangeThermalState`.
+
+### Lifecycle
+
+macOS can terminate an idle app instantly at logout or shutdown when the
+app opts in with `NSSupportsSuddenTermination`, and can quit an idle app
+with no windows when it opts in with `NSSupportsAutomaticTermination`.
+`app.Lifecycle.HoldTermination` suspends both for a critical section such as
+saving a file.
+
+```go
+release := app.Lifecycle.HoldTermination("Saving document")
+defer release()
+// write the file
+```
+
+`SetSuddenTerminationEnabled` toggles sudden termination at runtime;
+`SuddenTerminationEnabled` reports the current state, which starts from the
+`Info.plist` key.
+
+### Environment
+
+`app.Env` gains three queries about the user's settings.
+
+```go
+a11y := app.Env.Accessibility()
+if a11y.ReduceMotion || a11y.ReduceTransparency {
+    app.Event.Emit("theme:calm", true)
+}
+
+layout := app.Env.KeyboardLayout()
+log.Println(layout.ID, layout.Name, layout.Languages)
+
+locale := app.Env.Locale()
+log.Println(locale.Identifier, locale.Language, locale.Region, locale.Preferred)
+```
+
+- `Accessibility` mirrors Reduce Motion, Reduce Transparency, Increase
+  Contrast, Differentiate Without Colour, Invert Colours, VoiceOver and
+  Switch Control.
+- `KeyboardLayout` returns the active input source with its identifier,
+  localised name and languages.
+- `Locale` returns the locale AppKit selected for the app plus the user's
+  full ordered `Preferred` list. `Identifier` only reflects a language the
+  bundle declares in `CFBundleLocalizations`; use `Preferred` to pick a
+  language yourself.
+
+### Events
+
+These application events are new. Each one is delivered through
+`app.Event.OnApplicationEvent`; query the matching manager for the fresh
+value.
+
+| Event | Fires when | Read with |
+|-------|------------|-----------|
+| `events.Mac.ApplicationDidChangePowerState` | Low Power Mode toggles | `app.Power.State()` |
+| `events.Mac.ApplicationDidChangeThermalState` | thermal pressure changes | `app.Power.State()` |
+| `events.Common.AccessibilitySettingsChanged` | an accessibility display setting changes | `app.Env.Accessibility()` |
+| `events.Mac.ApplicationDidChangeAccessibilitySettings` | the macOS form of the same change | `app.Env.Accessibility()` |
+| `events.Mac.ApplicationDidChangeKeyboardLayout` | the input source changes | `app.Env.KeyboardLayout()` |
+| `events.Mac.ApplicationDidChangeLocale` | the locale changes | `app.Env.Locale()` |
+
+```go
+app.Event.OnApplicationEvent(events.Mac.ApplicationDidChangeThermalState, func(*application.ApplicationEvent) {
+    app.Event.Emit("system:power", app.Power.State())
+})
+app.Event.OnApplicationEvent(events.Common.AccessibilitySettingsChanged, func(*application.ApplicationEvent) {
+    app.Event.Emit("system:accessibility", app.Env.Accessibility())
+})
+```
+
+## Integration
+
+### Services menu
+
+`app.ServicesProvider.Register` adds an entry to the Services submenu that
+every macOS application shows for selected text or files. The handler
+receives the pasteboard as a `ServiceRequest` and returns a
+`ServiceResponse` to write back; an empty response leaves the selection
+untouched. Keep the handler fast, because AppKit waits for it on the main
+thread.
+
+```go
+err := app.ServicesProvider.Register(application.ServiceDefinition{
+    Name:          "summarise",
+    MenuTitle:     "Summarise with Notes",
+    SendTypes:     []string{"public.utf8-plain-text"},
+    ReturnTypes:   []string{"public.utf8-plain-text"},
+    KeyEquivalent: "S",
+    Handler: func(_ *application.Context, request application.ServiceRequest) (application.ServiceResponse, error) {
+        return application.ServiceResponse{Text: "Summary: " + request.Text}, nil
+    },
+})
+if err != nil {
+    log.Println(err)
+}
+
+// Paste this inside the top-level <dict> of Info.plist.
+log.Println(app.ServicesProvider.InfoPlistXML())
+```
+
+`Name` is the message AppKit sends and must be a plain identifier.
+`SendTypes` and `ReturnTypes` are pasteboard types; a service needs at least
+one of them. Registration alone does not make the service visible: the
+bundle's `Info.plist` must declare it under `NSServices`. `InfoPlistXML`
+returns that block ready to paste and `InfoPlistEntries` returns the same
+data as maps for a plist serialiser. `NSPortName` in those entries is the
+application `Name`, which must match `CFBundleName`.
+
+Projects built with the Wails CLI can declare the same services once in
+`build/config.yml` and let packaging render the `NSServices` block:
+
+```yaml
+services:
+  - name: SummariseText
+    menuTitle: Summarise with My Product
+    sendTypes:
+      - public.utf8-plain-text
+    returnTypes:
+      - public.utf8-plain-text
+    keyEquivalent: S
+```
+
+Each entry must match a `ServiceDefinition` registered in Go with the same
+`Name`. Run `pbs -update` after installing a new build so the Services menu
+picks up the change without a logout.
+
+### Handoff and user activities
+
+`app.Activity.Publish` makes an `NSUserActivity` current so the user can
+continue it on another device, find it in Spotlight or have Siri suggest
+it. The returned `PublishedActivity` can be updated as state changes and
+invalidated when the document closes. Publishing a new activity supersedes
+the previous one.
+
+```go
+activity, err := app.Activity.Publish(application.UserActivity{
+    Type:               "com.example.notes.editing",
+    Title:              "Editing Quarterly report",
+    UserInfo:           map[string]any{"note": "quarterly-report"},
+    WebpageURL:         "https://example.com/notes/quarterly-report",
+    EligibleForHandoff: true,
+    EligibleForSearch:  true,
+    Keywords:           []string{"report", "quarterly"},
+})
+if err != nil {
+    log.Println(err)
+    return
+}
+if err := activity.Update(map[string]any{"note": "quarterly-report", "cursor": 120}); err != nil {
+    log.Println(err)
+}
+// When the document closes:
+activity.Invalidate()
+```
+
+Incoming activities arrive through `OnContinue`. Universal links carry the
+type `UserActivityTypeBrowsingWeb` with the page in `WebpageURL`, and are
+also delivered as `events.Common.ApplicationLaunchedWithUrl` so an app can
+keep one URL code path. `OnWillContinue`, `OnFailed` and `OnUpdated` cover
+the rest of the delegate.
+
+```go
+app.Activity.OnContinue(func(_ *application.Context, incoming application.UserActivity) bool {
+    if incoming.Type == application.UserActivityTypeBrowsingWeb {
+        log.Println("universal link", incoming.WebpageURL)
+        return true
+    }
+    note, _ := incoming.UserInfo["note"].(string)
+    log.Println("continue editing", note)
+    return true
+})
+```
+
+Every activity type must be listed under `NSUserActivityTypes` in
+`Info.plist`. Universal links also need the
+`com.apple.developer.associated-domains` entitlement with an
+`applinks:example.com` entry and the matching `apple-app-site-association`
+file on that domain.
+
+### Apple Events
+
+`app.AppleEvents.Handle` registers a handler for an event class and ID, so
+AppleScript, Shortcuts and other applications can drive the app. The codes
+are four-character strings. The direct parameter is decoded into a Go value
+(`string`, `[]string` of file paths, `int64`, `float64`, `bool`, `[]any` or
+`AppleEventRawData`) and the reply's `Result` accepts the same kinds.
+Handlers run on their own goroutine while the event is suspended.
+
+```go
+err := app.AppleEvents.Handle("WAIL", "note", func(_ *application.Context, event application.AppleEvent) (application.AppleEventReply, error) {
+    text, _ := event.DirectObject.(string)
+    return application.AppleEventReply{Result: "noted: " + text}, nil
+})
+if err != nil {
+    log.Println(err)
+}
+
+go func() {
+    result, err := app.AppleEvents.Send("com.apple.finder", "misc", "actv", nil)
+    log.Println(result, err)
+}()
+
+sdef := app.AppleEvents.ScriptingDefinition()
+if err := os.WriteFile("Notes.sdef", []byte(sdef), 0o644); err != nil {
+    log.Println(err)
+}
+```
+
+A script can call the handler straight away with the raw event syntax:
+
+```applescript
+tell application id "com.example.notes" to «event WAILnote» "hello"
+```
+
+`ScriptingDefinition` generates a minimal `.sdef` that gives each handler a
+command name. Ship it in `Contents/Resources` and point `Info.plist` at it
+with `NSAppleScriptEnabled` and `OSAScriptingDefinition`; Script Editor then
+shows it under File > Open Dictionary. Wails already handles the Get URL
+event for custom URL schemes; a handler for `"GURL"`/`"GURL"` chains to it,
+while a handler for `"aevt"`/`"odoc"` replaces the built-in Open Documents
+delivery. `Send` targets a running application by bundle identifier, needs
+`NSAppleEventsUsageDescription` in a bundled app, and blocks the calling
+goroutine until the reply arrives.
+
+### Quick Look
+
+`app.QuickLook.Preview` opens the shared Quick Look panel on one or more
+files; with several paths the panel shows arrows to move between them.
+`Thumbnail` renders a file through the system's thumbnail providers and
+returns a PNG, so documents, images, PDFs and movies all work.
+
+```go
+if err := app.QuickLook.Preview([]string{"/Users/me/Documents/Report.pdf"}); err != nil {
+    log.Println(err)
+}
+
+go func() {
+    png, err := app.QuickLook.Thumbnail("/Users/me/Documents/Report.pdf", application.ThumbnailOptions{
+        Width: 256,
+        Scale: 2,
+    })
+    if err != nil {
+        log.Println(err)
+        return
+    }
+    if err := os.WriteFile("thumbnail.png", png, 0o644); err != nil {
+        log.Println(err)
+    }
+}()
+```
+
+Paths must be absolute and exist. `ClosePreview` and `IsPreviewOpen`
+manage the panel. `ThumbnailOptions.IconMode` draws the Finder-style
+document border, and `Scale: 2` produces a Retina image. `Thumbnail` blocks
+the calling goroutine, so call it from a goroutine or a bound method.
+
+### Workspace helpers
+
+`app.Browser` gains three helpers around `NSWorkspace`. `OpenWith` opens a
+file with a specific application named by bundle identifier or bundle path.
+`ApplicationsForFile` lists the installed applications that can open a
+file, default handler first. `ActivateApplication` brings a running
+application to the front.
+
+```go
+apps := app.Browser.ApplicationsForFile("/Users/me/Documents/Report.md")
+for _, info := range apps {
+    log.Println(info.Name, info.BundleID, info.Path)
+}
+
+if err := app.Browser.OpenWith("/Users/me/Documents/Report.md", "com.apple.TextEdit"); err != nil {
+    log.Println(err)
+}
+
+if err := app.Browser.ActivateApplication("com.apple.TextEdit"); err != nil {
+    log.Println(err)
+}
+```
+
+### Spotlight
+
+`app.Spotlight.Index` adds application content to the system search index
+through Core Spotlight. Each `SearchableItem` has an `ID`, a `Title` and
+optionally a `Domain` for bulk removal, a `Description`, `Keywords`, a
+`ContentType`, a PNG thumbnail, a deep link `URL` and an expiry time.
+`OnOpen` is called when the user picks one of the items in Spotlight, or
+chooses "Search in App" with a query.
+
+```go
+err := app.Spotlight.Index([]application.SearchableItem{{
+    ID:          "note:quarterly-report",
+    Domain:      "notes",
+    Title:       "Quarterly report",
+    Description: "Draft for the board meeting",
+    Keywords:    []string{"finance", "q3"},
+    ContentType: "public.plain-text",
+    URL:         "notes://open/quarterly-report",
+}})
+if err != nil {
+    log.Println(err)
+}
+
+stop := app.Spotlight.OnOpen(func(_ *application.Context, id string, query string) {
+    if query != "" {
+        log.Println("search in app:", query)
+        return
+    }
+    log.Println("open item", id)
+})
+defer stop()
+
+// Later:
+_ = app.Spotlight.Delete([]string{"note:quarterly-report"})
+_ = app.Spotlight.DeleteDomain("notes")
+```
+
+`IsAvailable` reports whether the index accepts items. Indexing needs a
+bundled application: items indexed by an unbundled `go run` binary never
+show up in Spotlight. `DeleteAll` removes everything the app indexed.
+
+## Coming next
+
+A `mac-windows-extra` example covering sheets, popovers, presentation
+options and state restoration is being added and will be linked here when
+it lands.
+
+## Version requirements
+
+Everything on this page is macOS only and the Go API is identical
+everywhere. Wails targets macOS 10.13 and later; features that need a newer
+release degrade as noted.
+
+| Feature | Minimum macOS | Behaviour on earlier releases |
+|---------|---------------|-------------------------------|
+| Camera and microphone permission status | 10.14 | reported as authorised (earlier releases do not gate capture devices) |
+| `Speech.Speak` and `Voices` | 10.14 | `ErrSpeechNotSupported` |
+| Screen recording and input monitoring permissions | 10.15 | reported as authorised |
+| `Speech.Recognize` | 10.15 | `ErrSpeechRecognitionNotSupported` |
+| `QuickLook.Thumbnail` | 10.15 | `ErrQuickLookNotSupported` |
+| `SetSubtitle` | 11 | ignored with a debug log entry |
+| `ExportPDF` | 11 | `ErrMacExportUnsupported` |
+| `SetSymbol` on menu items and status items | 11 | no image is shown |
+| `AddContentType`, `SetFormats` by UTI | 11 | the same identifiers are applied through the legacy allowed file types API |
+| File promise icons in `StartDrag` | 11 | a generic document icon |
+| `PowerState.LowPowerMode` and its event | 12 | always false; the event never fires |
+| `InteractionState` and `RestoreInteractionState` | 12 | `ErrMacInteractionStateUnsupported` |
+| Notifications pane in `OpenSystemSettings` | 13 | the older Notifications preference pane opens |
+| Menu badges, section headers, palettes | 14 | badges are not shown; headers are disabled items; palettes are hidden |
+| `MacToolbarItem.ShowPopover` on items without a custom view | 14 | `ErrMacPopoverAnchorUnavailable` |
+
+Everything else has no requirement beyond the Wails minimum.
+
+## Info.plist keys
+
+Several features depend on keys in the application's `Info.plist`. The
+usage descriptions are shown to the user in the permission prompt; without
+the key macOS never shows the prompt and the request times out.
+
+| Key | Needed by |
+|-----|-----------|
+| `NSCameraUsageDescription` | `Permissions.Request(PermissionKindCamera)`, camera access from the page |
+| `NSMicrophoneUsageDescription` | `Permissions.Request(PermissionKindMicrophone)`, microphone access from the page, `Speech.Recognize` |
+| `NSSpeechRecognitionUsageDescription` | `Speech.Recognize` |
+| `NSLocationUsageDescription` | `Permissions.Request(PermissionKindLocation)` |
+| `NSSupportsSuddenTermination` | the starting state of `Lifecycle.SuddenTerminationEnabled`; `HoldTermination` suspends it |
+| `NSSupportsAutomaticTermination` | lets macOS quit the idle app; `HoldTermination` suspends it |
+| `CFBundleLocalizations` | which languages `Env.Locale().Identifier` can report |
+| `NSServices` | one entry per service registered with `app.ServicesProvider`; generate the block with `InfoPlistXML` |
+| `NSUserActivityTypes` | every `UserActivity.Type` published or continued through `app.Activity` |
+| `NSAppleScriptEnabled` and `OSAScriptingDefinition` | mark the app as scriptable and name the `.sdef` written from `app.AppleEvents.ScriptingDefinition` |
+| `NSAppleEventsUsageDescription` | `app.AppleEvents.Send` to other applications |
+
+Notifications permission and speech recognition also need the app to run
+as a bundle with a bundle identifier; an unbundled `go run` binary reports
+`PermissionStatusUnsupported` for notifications.
+
+## Platform notes
+
+Every API on this page compiles on Windows and Linux. Off macOS:
+
+- Window extras: `SetRepresentedFile`, `SetDocumentEdited`, `SetSubtitle`,
+  `CascadeFrom`, `SetFrameAutosaveName` and `SetWindowButtonsOffset` are
+  no-ops. `WindowCascade` behaves as `WindowCentered`. `RequestAttention`
+  returns a handle whose `Cancel` is a no-op. `PrintWithOptions` calls
+  `Print`. `ExportPDF` and `Snapshot` return `ErrMacOnly`.
+- Menus: symbols, badges, mixed state, alternates and indentation are
+  stored but not drawn. Section headers are disabled items. Palettes are
+  hidden. The Open Recent submenu is filled from the Go recent list when the
+  menu is created. Dock menus are never shown.
+- Dialogs: `SetSuppression`, `SetHelp`, `SetNameFieldLabel` and `SetTags`
+  are ignored. `AddContentType` and `SetFormats` become extension filters
+  where a translation is known. `Prompt`, `PickColor` and `PickFont` return
+  `ErrDialogNotSupported`.
+- Status items: `SetSymbol`, `SetRemovable` and `OnVisibilityChange` have
+  no effect. `IsVisible` reflects the last `Show` or `Hide` call.
+- Feedback: haptics reach iOS and Android; Windows and Linux are no-ops.
+  `Sound.Beep` and `Sound.Play` work on Windows with WAV files and registry
+  aliases; elsewhere `Play` returns `ErrSoundNotSupported`. Speech returns
+  `ErrSpeechNotSupported` and `ErrSpeechRecognitionNotSupported`.
+- Clipboard: the rich methods return `ErrClipboardNotSupported`, `Types`
+  is empty, `ChangeCount` is 0 and `OnChange` never fires.
+- Drag: `StartDrag` returns `ErrDragOutUnsupported`. Non-file drop types
+  are not delivered; file drops keep working through `WindowFilesDropped`.
+- System: `Permissions.Status` reports `PermissionStatusUnsupported` and
+  `Request` returns `ErrPermissionsUnsupported`. `PreventSleep` returns
+  `ErrPreventSleepUnsupported` with a no-op release. `HoldTermination`
+  returns a no-op release. `Accessibility` is all false, `KeyboardLayout` is
+  the zero value and `Locale` is derived from `LC_ALL`, `LC_MESSAGES` and
+  `LANG`. The `Permissions` window option is cross-platform.
+- Integration: `ServicesProvider.Register` returns `ErrServicesUnsupported`
+  and `Activity.Publish` returns `ErrActivityUnsupported`; `InfoPlistXML`,
+  `InfoPlistEntries` and the activity handlers still work. `AppleEvents`
+  `Handle` and `Send` return `ErrAppleEventsNotSupported`;
+  `ScriptingDefinition` is generated everywhere. `QuickLook.Preview` and
+  `Thumbnail` return `ErrQuickLookNotSupported`. `Spotlight` indexing
+  methods return `ErrSpotlightNotSupported` and `OnOpen` never fires.
+  `Browser.OpenWith` starts the named executable with the path as its
+  argument, `ApplicationsForFile` is empty and `ActivateApplication`
+  returns `ErrApplicationNotRunning`.
+- Presentation options: `SetPresentationOptions` returns `ErrMacOnly` and
+  `PresentationOptions` is `MacPresentationDefault`.
+- Sheets: `PresentSheet`, `PresentCriticalSheet` and `PresentNativeSheet`
+  return `ErrMacSheetUnsupported`; `EndSheet` is a no-op and the query
+  methods report no sheet.
+- Popovers: `NewMacPopover` works, the show methods return
+  `ErrMacPopoverUnsupported`, and `IsShown` is false.
+- State restoration: `SetRestorationID` and `SetRestorationData` are
+  no-ops, `OnRestore` is never called, and `InteractionState` and
+  `RestoreInteractionState` return `ErrMacOnly`.
+
+## Examples
+
+Each example is a complete, runnable application:
+
+- [`v3/examples/mac-toolbar`](https://github.com/wailsapp/wails/tree/master/v3/examples/mac-toolbar):
+  `windowextras.go` wires the edited dot, subtitle, PDF export, print
+  options and cascaded windows into the notes editor.
+- [`v3/examples/mac-menus-dock`](https://github.com/wailsapp/wails/tree/master/v3/examples/mac-menus-dock):
+  symbols, badges, section headers, mixed state, alternates, a palette, Open
+  Recent, a dynamic Dock menu and Dock progress.
+- [`v3/examples/mac-dialogs`](https://github.com/wailsapp/wails/tree/master/v3/examples/mac-dialogs):
+  suppression and help buttons, text prompts, content types, the Format
+  pop-up, Finder tags, and the colour and font panels.
+- [`v3/examples/mac-feedback`](https://github.com/wailsapp/wails/tree/master/v3/examples/mac-feedback):
+  a removable SF Symbol status item, haptics, system sounds, text to speech
+  and speech recognition.
+- [`v3/examples/mac-clipboard-drag`](https://github.com/wailsapp/wails/tree/master/v3/examples/mac-clipboard-drag):
+  the rich clipboard with change tracking, drag out with file promises, and
+  text, URL and image drops.
+- [`v3/examples/mac-system`](https://github.com/wailsapp/wails/tree/master/v3/examples/mac-system):
+  permissions, sleep prevention, termination holds, power state,
+  accessibility, keyboard layout and locale with live updates.
+- [`v3/examples/mac-integration`](https://github.com/wailsapp/wails/tree/master/v3/examples/mac-integration):
+  a Services menu entry, a Handoff activity with continuation handlers, and
+  the workspace helpers on `app.Browser`.
+- [`v3/examples/mac-search-preview`](https://github.com/wailsapp/wails/tree/master/v3/examples/mac-search-preview):
+  Spotlight indexing with `OnOpen`, Quick Look previews and thumbnails, and
+  a custom Apple Event with its scripting definition.

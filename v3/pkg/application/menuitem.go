@@ -13,6 +13,8 @@ const (
 	checkbox
 	radio
 	submenu
+	sectionHeader
+	palette
 )
 
 var menuItemID uintptr
@@ -62,6 +64,19 @@ type MenuItem struct {
 	accelerator     *accelerator
 	role            Role
 	contextMenuData *ContextMenuData
+
+	// macOS extras (see menu_mac_extras.go)
+	symbol           string
+	badgeText        string
+	badgeCount       int
+	hasBadge         bool
+	mixed            bool
+	alternate        bool
+	indentationLevel int
+	paletteSymbols   []string
+	paletteColours   []RGBA
+	paletteSelected  int
+	paletteCallback  func(*Context, int)
 
 	impl              menuItemImpl
 	radioGroupMembers []*MenuItem
@@ -222,6 +237,8 @@ func NewRole(role Role) *MenuItem {
 		result = NewFindPreviousMenuItem()
 	case Help:
 		result = NewHelpMenuItem()
+	case OpenRecent:
+		result = NewOpenRecentMenuItem()
 
 	default:
 		globalApplication.error("no support for role: %v", role)
@@ -245,7 +262,13 @@ func (m *MenuItem) handleClick() {
 		withClickedMenuItem(m).
 		withContextMenuData(m.contextMenuData)
 	if m.itemType == checkbox {
-		m.checked = !m.checked
+		// A mixed (partially checked) item turns fully on when clicked.
+		if m.mixed {
+			m.mixed = false
+			m.checked = true
+		} else {
+			m.checked = !m.checked
+		}
 		ctx.withChecked(m.checked)
 		if m.impl != nil {
 			m.impl.setChecked(m.checked)
@@ -335,6 +358,7 @@ func (m *MenuItem) SetBitmap(bitmap []byte) *MenuItem {
 
 func (m *MenuItem) SetChecked(checked bool) *MenuItem {
 	m.checked = checked
+	m.mixed = false
 	if m.impl != nil {
 		m.impl.setChecked(m.checked)
 	}
@@ -416,6 +440,18 @@ func (m *MenuItem) Clone() *MenuItem {
 		callback: m.callback,
 		itemType: m.itemType,
 		role:     m.role,
+
+		symbol:           m.symbol,
+		badgeText:        m.badgeText,
+		badgeCount:       m.badgeCount,
+		hasBadge:         m.hasBadge,
+		mixed:            m.mixed,
+		alternate:        m.alternate,
+		indentationLevel: m.indentationLevel,
+		paletteSymbols:   append([]string(nil), m.paletteSymbols...),
+		paletteColours:   append([]RGBA(nil), m.paletteColours...),
+		paletteSelected:  m.paletteSelected,
+		paletteCallback:  m.paletteCallback,
 	}
 	if m.submenu != nil {
 		result.submenu = m.submenu.Clone()

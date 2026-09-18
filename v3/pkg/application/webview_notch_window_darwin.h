@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !wails_native
 
 #ifndef WebviewNotchWindow_h
 #define WebviewNotchWindow_h

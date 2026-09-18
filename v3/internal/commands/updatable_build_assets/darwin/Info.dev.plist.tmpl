@@ -70,5 +70,46 @@
             {{- end}}
         </array>
         {{- end}}
+        {{- if .Services}}
+        <key>NSServices</key>
+        <array>
+            {{- range .Services}}
+            <dict>
+                <key>NSMenuItem</key>
+                <dict>
+                    <key>default</key>
+                    <string>{{.MenuTitle}}</string>
+                </dict>
+                <key>NSMessage</key>
+                <string>{{.Name}}</string>
+                <key>NSPortName</key>
+                <string>{{if .PortName}}{{.PortName}}{{else}}{{$.ProductName}}{{end}}</string>
+                {{- if .SendTypes}}
+                <key>NSSendTypes</key>
+                <array>
+                    {{- range .SendTypes}}
+                    <string>{{.}}</string>
+                    {{- end}}
+                </array>
+                {{- end}}
+                {{- if .ReturnTypes}}
+                <key>NSReturnTypes</key>
+                <array>
+                    {{- range .ReturnTypes}}
+                    <string>{{.}}</string>
+                    {{- end}}
+                </array>
+                {{- end}}
+                {{- if .KeyEquivalent}}
+                <key>NSKeyEquivalent</key>
+                <dict>
+                    <key>default</key>
+                    <string>{{.KeyEquivalent}}</string>
+                </dict>
+                {{- end}}
+            </dict>
+            {{- end}}
+        </array>
+        {{- end}}
     </dict>
 </plist>

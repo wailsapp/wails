@@ -86,6 +86,10 @@ macOS에서 녹색 신호등 버튼(`NSWindowZoomButton`)은 최대화와 전체
 
 런타임에는 macOS에서 `SetMaximiseButtonState`과 `SetFullscreenButtonState`이 모두 `NSWindowZoomButton`을 대상으로 하므로 마지막 호출이 적용됩니다.
 
+### macOS: 네이티브 창 구성 요소
+
+제목 표시줄 버튼 외에도 macOS 창에는 Go에서 구성한 네이티브 `NSToolbar`, 소스 목록 사이드바, 콘텐츠 목록, 속성 패널, 제목 표시줄 보조 컨트롤 띠 및 창 탭을 추가할 수 있습니다. 전체 API는 [네이티브 macOS 창 구성 요소](/guides/macos-native-chrome/) 가이드를 참조하세요.
+
 ### 플랫폼별 차이점
 
 버튼 상태 기능은 Windows와 macOS에서 약간 다르게 동작합니다.

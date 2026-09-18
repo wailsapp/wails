@@ -9,13 +9,17 @@ package application
 
 #include "application_darwin.h"
 #include "application_darwin_delegate.h"
-#include "webview_window_darwin.h"
 #include <stdlib.h>
 
 extern void registerListener(unsigned int event);
 
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
+
+@protocol WailsWindowMouseDelegate <NSObject>
+- (void)handleLeftMouseDown:(NSEvent*)event;
+- (void)handleLeftMouseUp:(NSWindow*)window;
+@end
 
 static AppDelegate *appDelegate = nil;
 
@@ -29,12 +33,12 @@ static void init(void) {
 		if (eventWindow == nil ) {
 			return event;
         }
-		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[eventWindow delegate];
+		id windowDelegate = [eventWindow delegate];
 		if (windowDelegate == nil) {
 			return event;
 		}
 		if ([windowDelegate respondsToSelector:@selector(handleLeftMouseDown:)]) {
-			[windowDelegate handleLeftMouseDown:event];
+			[(id<WailsWindowMouseDelegate>)windowDelegate handleLeftMouseDown:event];
 		}
 		return event;
 	}];
@@ -44,12 +48,12 @@ static void init(void) {
 		if (eventWindow == nil ) {
 			return event;
         }
-		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[eventWindow delegate];
+		id windowDelegate = [eventWindow delegate];
 		if (windowDelegate == nil) {
 			return event;
 		}
 		if ([windowDelegate respondsToSelector:@selector(handleLeftMouseUp:)]) {
-			[windowDelegate handleLeftMouseUp:eventWindow];
+			[(id<WailsWindowMouseDelegate>)windowDelegate handleLeftMouseUp:eventWindow];
 		}
 		return event;
 	}];
@@ -65,6 +69,16 @@ static void init(void) {
 	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceDidWake:) name:NSWorkspaceDidWakeNotification object:nil];
 	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidSleep:) name:NSWorkspaceScreensDidSleepNotification object:nil];
 	[workspaceCenter addObserver:appDelegate selector:@selector(workspaceScreensDidWake:) name:NSWorkspaceScreensDidWakeNotification object:nil];
+
+	// System integration observers: NSProcessInfo power/thermal state
+	// (power_manager_darwin.m) and NSWorkspace accessibility, Text Input
+	// Services keyboard layout and NSLocale changes
+	// (environment_manager_darwin.m). Each owns a standalone observer object,
+	// so nothing is added to the AppDelegate.
+	extern void wailsPowerObserverStart(void);
+	extern void wailsEnvironmentObserverStart(void);
+	wailsPowerObserverStart();
+	wailsEnvironmentObserverStart();
 
 	// Register the custom URL scheme handler
 	StartCustomProtocolHandler();
@@ -181,15 +195,14 @@ static unsigned int getCurrentWindowID(void) {
 		if (window == nil) {
 			return;
 		}
-		// System panels (e.g. PMPrintPanelController) can become the key window;
-		// their delegates are not WebviewWindowDelegate and would crash on windowId.
+		// System panels can become the key window. Resolve Wails delegates by
+		// capability so this works without linking the WebView implementation and
+		// also recognises NativeWindow delegates.
 		id delegateObj = [window delegate];
-		if (![delegateObj isKindOfClass:[WebviewWindowDelegate class]]) {
-			return;
-		}
-		WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)delegateObj;
-		if (delegate != nil) {
-			result = delegate.windowId;
+		if ([delegateObj respondsToSelector:@selector(windowId)]) {
+			result = [[delegateObj valueForKey:@"windowId"] unsignedIntValue];
+		} else if ([delegateObj respondsToSelector:@selector(windowID)]) {
+			result = [[delegateObj valueForKey:@"windowID"] unsignedIntValue];
 		}
 	};
 	if ([NSThread isMainThread]) {
@@ -250,7 +263,6 @@ import (
 
 	"encoding/json"
 
-	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -334,6 +346,8 @@ func (m *macosApp) run() error {
 			if m.parent.options.Mac.ActivationPolicy == ActivationPolicyRegular {
 				C.activateIgnoringOtherApps()
 			}
+			// MacOptions.PresentationOptions (presentation_options_darwin.go).
+			macApplyPresentationOptionsAtLaunch(m.parent)
 			if err := m.processAndCacheScreens(); err != nil {
 				m.parent.handleError(err)
 			}
@@ -436,16 +450,12 @@ func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 		return
 	}
 
-	webviewRequests <- &webViewAssetRequest{
-		Request:    webview.NewRequest(wkUrlSchemeTask),
-		windowId:   uint(windowID),
-		windowName: window.Name(),
-	}
+	webviewRequests <- newWebViewAssetRequest(wkUrlSchemeTask, uint(windowID), window.Name())
 }
 
 //export cancelURLRequest
 func cancelURLRequest(wkUrlSchemeTask unsafe.Pointer) {
-	webview.CancelRequest(wkUrlSchemeTask)
+	cancelWebViewAssetRequest(wkUrlSchemeTask)
 }
 
 // acceleratorFromKeyPress names a key press the way a key binding is written.

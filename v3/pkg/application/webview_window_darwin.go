@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !wails_native
 
 package application
 
@@ -11,6 +11,8 @@ package application
 #include "mac_private_api_darwin.h"
 #include "webview_panel_darwin.h"
 #include "webview_notch_window_darwin.h"
+#include "mac_window_chrome_darwin.h"
+#include "webview_window_mac_extras_darwin.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
@@ -154,10 +156,10 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 120300
 	if (@available(macOS 12.3, *)) {
-         if (preferences.FullscreenEnabled != NULL) {
-             config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
-         }
-     }
+		if (preferences.FullscreenEnabled != NULL) {
+			config.preferences.elementFullscreenEnabled = *preferences.FullscreenEnabled;
+		}
+	}
 #endif
 
 	if (preferences.AllowsAirPlayForMediaPlayback != NULL) {
@@ -181,33 +183,32 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500
- 	if (@available(macOS 10.15, *)) {
-         config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
+	if (@available(macOS 10.15, *)) {
+		config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
 	}
 #endif
 
 	// Setup user content controller
-    WKUserContentController* userContentController = [WKUserContentController new];
+	WKUserContentController* userContentController = [WKUserContentController new];
 	[userContentController autorelease];
-
-    [userContentController addScriptMessageHandler:delegate name:@"external"];
-    config.userContentController = userContentController;
+	[userContentController addScriptMessageHandler:delegate name:@"external"];
+	config.userContentController = userContentController;
 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[webView autorelease];
 
-    if (preferences.AllowsBackForwardNavigationGestures != NULL) {
-        webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
-    }
+	if (preferences.AllowsBackForwardNavigationGestures != NULL) {
+		webView.allowsBackForwardNavigationGestures = *preferences.AllowsBackForwardNavigationGestures;
+	}
 	if (preferences.AllowsMagnification != NULL) {
 		webView.allowsMagnification = *preferences.AllowsMagnification;
 	}
 
 	[view addSubview:webView];
 
-    // support webview events
-    [webView setNavigationDelegate:delegate];
-    [webView setUIDelegate:delegate];
+	// support webview events
+	[webView setNavigationDelegate:delegate];
+	[webView setUIDelegate:delegate];
 
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -305,6 +306,20 @@ void setInvisibleTitleBarHeight(void* window, unsigned int height) {
 void windowSetTransparent(void* nsWindow) {
 	[nativeWindow(nsWindow) setOpaque:NO];
 	[nativeWindow(nsWindow) setBackgroundColor:[NSColor clearColor]];
+}
+
+// Restore the standard AppKit window surface. WebviewWindow starts clear so
+// explicit transparent backdrop modes can opt into translucency, but normal
+// document windows must be opaque for the titlebar, split view, and content
+// regions to resolve against one system background.
+void windowSetNormalBackdrop(void* nsWindow) {
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
+	NSColor* background = window.backgroundColor;
+	if (background == nil || background.alphaComponent <= 0.0) {
+		background = [NSColor windowBackgroundColor];
+	}
+	[window setBackgroundColor:background];
+	[window setOpaque:YES];
 }
 
 void windowSetInvisibleTitleBar(void* nsWindow, unsigned int height) {
@@ -648,39 +663,6 @@ void windowSetUseToolbar(void* nsWindow, bool useToolbar) {
 	} else {
 		[window setToolbar:nil];
 	}
-}
-
-// Set window toolbar style
-void windowSetToolbarStyle(void* nsWindow, int style) {
-	NSWindow* window = nativeWindow(nsWindow);
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-	if (@available(macOS 11.0, *)) {
-		NSToolbar* toolbar = [window toolbar];
-		if ( toolbar == nil ) {
-			return;
-		}
-		[window setToolbarStyle:style];
-	}
-#endif
-
-}
-// Set Hide Toolbar Separator
-void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
-	NSToolbar* toolbar = [nativeWindow(nsWindow) toolbar];
-	if( toolbar == nil ) {
-		return;
-	}
-	[toolbar setShowsBaselineSeparator:!hideSeparator];
-}
-
-// Configure the toolbar auto-hide feature
-void windowSetShowToolbarWhenFullscreen(void* window, bool setting) {
-	NSWindow* nsWindow = nativeWindow(window);
-	// Get delegate
-	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
-	// Set height
-	delegate.showToolbarWhenFullscreen = setting;
 }
 
 // Set Window appearance type
@@ -1049,43 +1031,8 @@ static void startDrag(void *window) {
 	[windowDelegate startDrag:nsWindow];
 }
 
-// Credit: https://stackoverflow.com/q/33319295
-static void windowPrint(void *window) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-	// Check if macOS 11.0 or newer
-	if (@available(macOS 11.0, *)) {
-		NSWindow* nsWindow = nativeWindow(window);
-		NSWindow<WailsWebviewWindow>* host = webviewHost(window);
-		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
-		WKWebView* webView = host.webView;
-
-		// TODO: Think about whether to expose this as config
-		NSPrintInfo *pInfo = [NSPrintInfo sharedPrintInfo];
-		pInfo.horizontalPagination = NSPrintingPaginationModeAutomatic;
-		pInfo.verticalPagination = NSPrintingPaginationModeAutomatic;
-		pInfo.verticallyCentered = YES;
-		pInfo.horizontallyCentered = YES;
-		pInfo.orientation = NSPaperOrientationLandscape;
-		pInfo.leftMargin = 30;
-		pInfo.rightMargin = 30;
-		pInfo.topMargin = 30;
-		pInfo.bottomMargin = 30;
-
-		NSPrintOperation *po = [webView printOperationWithPrintInfo:pInfo];
-		po.showsPrintPanel = YES;
-		po.showsProgressPanel = YES;
-
-		// Without the next line you get an exception. Also it seems to
-		// completely ignore the values in the rect. I tried changing them
-		// in both x and y direction to include content scrolled off screen.
-		// It had no effect whatsoever in either direction.
-		po.view.frame = webView.bounds;
-
-		// [printOperation runOperation] DOES NOT WORK WITH WKWEBVIEW, use
-		[po runOperationModalForWindow:nsWindow delegate:windowDelegate didRunSelector:nil contextInfo:nil];
-	}
-#endif
-}
+// Printing lives in webview_window_mac_extras_darwin.m (windowExtrasPrint),
+// shared by Print and PrintWithOptions.
 
 void setWindowEnabled(void *window, bool enabled) {
 	NSWindow* nsWindow = nativeWindow(window);
@@ -1150,8 +1097,10 @@ import (
 )
 
 type macosWebviewWindow struct {
-	nsWindow unsafe.Pointer
-	parent   *WebviewWindow
+	nsWindow        unsafe.Pointer
+	parent          *WebviewWindow
+	activeToolbar   *MacToolbar
+	activeSplitView *MacSplitView
 }
 
 func (w *macosWebviewWindow) handleKeyEvent(acceleratorString string) {
@@ -1182,8 +1131,19 @@ func (w *macosWebviewWindow) centerOnScreen(screen *Screen) {
 	C.windowCenterOnScreen(w.nsWindow, cID)
 }
 
+// print keeps the historical Print behaviour (landscape, 30 point margins,
+// panels shown) through the PrintWithOptions implementation. It runs on the
+// application thread already, so it calls the C function directly.
 func (w *macosWebviewWindow) print() error {
-	C.windowPrint(w.nsWindow)
+	options := legacyPrintOptions()
+	margins := options.Margins
+	result := C.windowExtrasPrint(w.nsWindow,
+		C.int(options.Orientation), C.bool(true),
+		C.double(margins.Top), C.double(margins.Left), C.double(margins.Bottom), C.double(margins.Right),
+		C.bool(false), nil, 0, nil)
+	if result == C.WailsWindowExtrasPrintUnsupported {
+		return fmt.Errorf("printing requires macOS 11 or later")
+	}
 	return nil
 }
 
@@ -1604,7 +1564,6 @@ func (w *macosWebviewWindow) getWebviewPreferences() C.struct_WebviewPreferences
 	if wvprefs.EnableAutoplayWithoutUserAction.IsSet() {
 		result.EnableAutoplayWithoutUserAction = bool2CboolPtr(wvprefs.EnableAutoplayWithoutUserAction.Get())
 	}
-
 	return result
 }
 
@@ -1680,6 +1639,7 @@ func (w *macosWebviewWindow) run() {
 		case MacBackdropLiquidGlass:
 			w.applyLiquidGlass()
 		case MacBackdropNormal:
+			C.windowSetNormalBackdrop(w.nsWindow)
 		}
 
 		w.setWindowLevel(effectiveMacWindowLevel(options))
@@ -1713,6 +1673,32 @@ func (w *macosWebviewWindow) run() {
 			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 		}
 
+		// Install the native split layout, if one was configured, before any
+		// toolbar is attached: a sidebar tracking separator requires its
+		// split view to already be in the same window as its toolbar.
+		if err := w.installSplitView(); err != nil {
+			w.parent.Error("SetSplitView: %s", err)
+		}
+		if w.activeSplitView == nil {
+			layout := resolveMacContentLayout(macOptions, MacContentLayoutAutomatic)
+			C.windowApplyContentLayout(w.nsWindow, C.int(layout))
+		}
+		// A SetToolbar call made before the native window existed (e.g. right
+		// after NewWithOptions, before app.Run()) is stashed on the parent;
+		// apply it now, overriding the placeholder toolbar UseToolbar may
+		// have just attached above.
+		w.parent.toolbarLock.RLock()
+		pendingToolbar := w.parent.toolbar
+		w.parent.toolbarLock.RUnlock()
+		if pendingToolbar != nil {
+			if err := w.setToolbar(pendingToolbar); err != nil {
+				w.parent.Error("SetToolbar: %s", err)
+			}
+		}
+		// Titlebar and pane accessories added before the native window existed
+		// are attached now that the window, split view, and toolbar exist.
+		w.flushPendingMacAccessories()
+
 		if macOptions.Appearance != "" {
 			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 		}
@@ -1733,8 +1719,14 @@ func (w *macosWebviewWindow) run() {
 			w.fullscreen()
 		case WindowStateNormal:
 		}
-		if w.parent.notchWindow == nil {
-			if options.Screen != nil {
+		// Frame autosave, window button offsets and values queued before the
+		// window existed (represented file, edited, subtitle). A restored
+		// autosaved frame wins over the initial position options.
+		frameRestored := w.applyMacWindowExtras()
+		if w.parent.notchWindow == nil && !frameRestored {
+			if w.parent.options.InitialPosition == WindowCascade {
+				macWindowExtrasCascadeNext(w.nsWindow)
+			} else if options.Screen != nil {
 				cID := C.CString(options.Screen.ID)
 				if w.parent.options.InitialPosition == WindowCentered {
 					C.windowCenterOnScreen(w.nsWindow, cID)
@@ -1754,9 +1746,10 @@ func (w *macosWebviewWindow) run() {
 			globalApplication.handleFatalError(err)
 		}
 
-		w.setURL(startURL)
-
-		// We need to wait for the HTML to load before we can execute the javascript
+		// Register before starting navigation. Bundled assets can finish quickly
+		// enough for WebViewDidFinishNavigation to fire synchronously with respect
+		// to this setup path; registering afterwards can leave a healthy window
+		// permanently hidden.
 		w.parent.OnWindowEvent(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEvent) {
 			InvokeAsync(func() {
 				if options.JS != "" {
@@ -1767,9 +1760,12 @@ func (w *macosWebviewWindow) run() {
 				}
 				if !options.Hidden {
 					w.parent.Show()
+					w.refreshToolbarAfterShow()
 				}
 			})
 		})
+
+		w.setURL(startURL)
 
 		if options.HTML != "" {
 			w.setHTML(options.HTML)
@@ -1895,6 +1891,18 @@ func (w *macosWebviewWindow) destroy() {
 	// from observing a dangling native pointer.
 	atomic.StoreUint32(&w.parent.unconditionallyClose, 1)
 	w.parent.markAsDestroyed()
+	// Detach the Go callback registry and invalidate every live item handle
+	// before AppKit releases the window and its toolbar delegate.
+	if w.activeToolbar != nil {
+		clearMacToolbarState(w.activeToolbar, w.parent, true)
+		w.activeToolbar = nil
+	}
+	w.parent.toolbarLock.Lock()
+	w.parent.toolbar = nil
+	w.parent.toolbarLock.Unlock()
+	// Detach the split-view callback state while its native controllers are
+	// still alive. The original WebView remains owned by the window throughout.
+	w.teardownSplitView()
 	// Clear caches for this window
 	clearWindowDragCache(w.parent.id)
 	C.windowDestroy(w.nsWindow)

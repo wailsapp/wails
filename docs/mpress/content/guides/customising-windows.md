@@ -86,6 +86,13 @@ To avoid this, Wails applies the **more restrictive** of the two states at initi
 
 At runtime, `SetMaximiseButtonState` and `SetFullscreenButtonState` both target `NSWindowZoomButton` on macOS, so the last call wins.
 
+### macOS: Native window chrome
+
+Beyond the titlebar buttons, macOS windows can carry a native `NSToolbar`, a
+source-list sidebar, a content list, a property inspector, titlebar accessory
+strips and window tabs, all built from Go. See the
+[Native macOS Chrome](/guides/macos-native-chrome) guide for the full API.
+
 ### Platform Differences
 
 The button state functionality behaves slightly differently on Windows and macOS:

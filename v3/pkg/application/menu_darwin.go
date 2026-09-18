@@ -110,7 +110,13 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 		case submenu:
 			submenu := item.submenu
 			nsSubmenu := C.createNSMenu(C.CString(item.label))
-			m.processMenu(nsSubmenu, submenu)
+			if item.role == OpenRecent {
+				// Populated natively from NSDocumentController on every
+				// open; the Go submenu stays empty on macOS.
+				installOpenRecentMenu(nsSubmenu)
+			} else {
+				m.processMenu(nsSubmenu, submenu)
+			}
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
 			C.addMenuItem(parent, menuItem.nsMenuItem)
@@ -133,13 +139,48 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			C.addMenuItem(parent, menuItem.nsMenuItem)
 		case separator:
 			C.addMenuSeparator(parent)
+		case sectionHeader:
+			menuItem := newSectionHeaderImpl(item)
+			item.impl = menuItem
+			if item.hidden {
+				menuItem.setHidden(true)
+			}
+			C.addMenuItem(parent, menuItem.nsMenuItem)
+		case palette:
+			menuItem := newPaletteImpl(item)
+			if menuItem == nil {
+				// Below macOS 14: nothing to show.
+				continue
+			}
+			item.impl = menuItem
+			C.addMenuItem(parent, menuItem.nsMenuItem)
 		}
 		if item.bitmap != nil {
 			macMenuItem := item.impl.(*macosMenuItem)
 			C.setMenuItemBitmap(macMenuItem.nsMenuItem, (*C.uchar)(&item.bitmap[0]), C.int(len(item.bitmap)))
 		}
+		// A symbol wins over a bitmap, so apply it after.
+		if item.symbol != "" && item.impl != nil {
+			if macMenuItem, ok := item.impl.(*macosMenuItem); ok && macMenuItem.nsMenuItem != nil {
+				macMenuItem.setSymbol(item.symbol)
+			}
+		}
 
 	}
+}
+
+// destroy releases the createNSMenu +1 once the Go Menu is destroyed. Any
+// native owner (main menu, status item, a parent NSMenuItem) holds its own
+// retain, so this only unwinds our reference.
+func (m *macosMenu) destroy() {
+	if m.nsMenu == nil {
+		return
+	}
+	nsMenu := m.nsMenu
+	m.nsMenu = nil
+	InvokeSync(func() {
+		C.releaseNSMenu(nsMenu)
+	})
 }
 
 func DefaultApplicationMenu() *Menu {

@@ -86,6 +86,10 @@ Untuk menghindari hal ini, saat inisialisasi Wails menerapkan status yang **lebi
 
 Pada saat runtime, `SetMaximiseButtonState` dan `SetFullscreenButtonState` sama-sama menargetkan `NSWindowZoomButton` di macOS, sehingga pemanggilan terakhir akan berlaku.
 
+### macOS: Antarmuka jendela native
+
+Selain tombol titlebar, jendela macOS dapat memiliki `NSToolbar` native, sidebar daftar sumber, daftar konten, panel pemeriksa properti, bilah aksesori titlebar, dan tab jendela, semuanya dibuat dari Go. Lihat panduan [Antarmuka Jendela Native macOS](/guides/macos-native-chrome/) untuk API lengkapnya.
+
 ### Perbedaan Antarplatform
 
 Fungsionalitas status tombol berperilaku sedikit berbeda di Windows dan macOS:

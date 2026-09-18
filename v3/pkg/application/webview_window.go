@@ -10,7 +10,6 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/internal/assetserver"
 	"github.com/wailsapp/wails/v3/internal/optional"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -116,6 +115,7 @@ type (
 		setContentProtection(enabled bool)
 		attachModal(modalWindow *WebviewWindow)
 		setNonClientHitTestRegions([]nonClientHitTestRegion)
+		setToolbar(toolbar *MacToolbar) error
 	}
 
 	nonClientHitTestKind string
@@ -219,6 +219,23 @@ type WebviewWindow struct {
 	savedMaxWidth    int
 	savedMaxHeight   int
 	constraintsSaved bool
+
+	// toolbar holds the most recently requested toolbar (macOS only). It is
+	// stashed here so a SetToolbar call made before the native window exists
+	// (e.g. immediately after NewWithOptions, before app.Run()) is applied
+	// once run() creates the window, instead of being silently dropped.
+	toolbar     *MacToolbar
+	toolbarLock sync.RWMutex
+
+	// splitView holds the native split layout requested for this window
+	// (macOS only). A layout configured before the native window exists is
+	// installed by run() before any toolbar is attached; a layout configured
+	// afterwards is installed immediately on the application thread.
+	splitView     *MacSplitView
+	splitViewLock sync.RWMutex
+	// splitViewInstallLock serialises late installations so two concurrent
+	// SetSplitView calls cannot both pass the "already installed" check.
+	splitViewInstallLock sync.Mutex
 }
 
 func (w *WebviewWindow) SetMenu(menu *Menu) {
@@ -340,6 +357,12 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if options.URL == "" {
 		options.URL = "/"
 	}
+	// Non-file DropTypes need the drop overlay that EnableFileDrop creates.
+	if dropTypesNeedOverlay(options.DropTypes) {
+		options.EnableFileDrop = true
+	}
+	// WindowCascade is macOS only; elsewhere it becomes WindowCentered.
+	options.InitialPosition = normaliseInitialPosition(options.InitialPosition)
 
 	if options.Name == "" {
 		options.Name = fmt.Sprintf("window-%d", thisWindowID)
@@ -382,6 +405,19 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	if result.options.HideOnFocusLost {
 		result.setupHideOnFocusLost()
+	}
+
+	// Options-time native chrome (macOS). It is claimed here, before the
+	// window is scheduled to run, so a window created after App.Run is
+	// constructed in one step: the split view and toolbar are in place when
+	// the native window is created instead of being installed by later calls.
+	// The toolbar is applied second so a tracking separator can find the
+	// sidebar it aligns with.
+	if options.Mac.SplitView != nil {
+		result.SetSplitView(options.Mac.SplitView)
+	}
+	if options.Mac.Toolbar != nil {
+		result.SetToolbar(options.Mac.Toolbar)
 	}
 
 	return result
@@ -534,7 +570,7 @@ func (w *WebviewWindow) Hide() Window {
 }
 
 func (w *WebviewWindow) SetURL(s string) Window {
-	url, _ := assetserver.GetStartURL(s)
+	url := webviewStartURL(s)
 	w.options.URL = url
 	if w.impl != nil {
 		InvokeSync(func() {
@@ -801,6 +837,193 @@ func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window {
 			w.impl.setBackgroundColour(colour)
 		})
 	}
+	return w
+}
+
+// SetToolbar sets or replaces the window's toolbar (macOS only; a no-op on
+// other platforms). Passing nil removes the toolbar. An item that requires
+// a callback (a button with no OnClick, a search field with no OnSearch) is
+// rejected: the whole call fails, logged via Window.Error, and the previous
+// toolbar (if any) is left in place.
+//
+// A MacToolbar may only be attached to one window at a time. Removing or
+// replacing it releases that ownership so it can be attached elsewhere.
+func (w *WebviewWindow) SetToolbar(toolbar *MacToolbar) Window {
+	claimed := false
+	if toolbar != nil {
+		if err := validateToolbarItems(toolbar.itemSnapshot()); err != nil {
+			w.Error("SetToolbar: %s", err)
+			return w
+		}
+		var err error
+		claimed, err = claimMacToolbar(toolbar, w)
+		if err != nil {
+			w.Error("SetToolbar: %s", err)
+			return w
+		}
+	}
+
+	if w.impl == nil {
+		// The native window does not exist yet. Swap the stashed toolbar and
+		// release the previous owner's claim; run() will attach the new one.
+		w.toolbarLock.Lock()
+		previous := w.toolbar
+		w.toolbar = toolbar
+		w.toolbarLock.Unlock()
+		if previous != nil && previous != toolbar {
+			releaseMacToolbarOwnership(previous, w)
+		}
+		return w
+	}
+
+	var err error
+	var previous *MacToolbar
+	InvokeSync(func() {
+		err = w.impl.setToolbar(toolbar)
+		if err == nil {
+			w.toolbarLock.Lock()
+			previous = w.toolbar
+			w.toolbar = toolbar
+			w.toolbarLock.Unlock()
+		}
+	})
+	if err != nil {
+		if toolbar != nil && claimed {
+			releaseMacToolbarOwnership(toolbar, w)
+		}
+		w.Error("SetToolbar: %s", err)
+	} else if previous != nil && previous != toolbar {
+		// The native implementation releases an active previous toolbar. This
+		// also releases a toolbar that was only stashed before the window was
+		// shown and therefore never became active.
+		releaseMacToolbarOwnership(previous, w)
+	}
+	return w
+}
+
+func (w *WebviewWindow) macInspectorPane() *MacSplitPane {
+	w.splitViewLock.RLock()
+	split := w.splitView
+	w.splitViewLock.RUnlock()
+	if split == nil {
+		return nil
+	}
+	return split.inspectorPane()
+}
+
+func (w *WebviewWindow) macSplitOptions() MacWindow { return w.options.Mac }
+
+// SetSplitView configures the native macOS split-view layout for this window.
+// Called before the native window exists, the layout is queued and installed
+// during creation. Called afterwards, for example from a menu or tray
+// callback in a running application, the layout is installed immediately on
+// the application thread: the window's existing WebView becomes the primary
+// pane, the current toolbar is re-attached so tracking separators align with
+// the new sidebar, and queued accessories are attached. An installed layout
+// cannot be replaced; such a call reports ErrMacSplitViewAlreadyInstalled and
+// leaves the window unchanged. WebviewWindowOptions.Mac.SplitView configures
+// the same layout at construction time.
+//
+// Passing nil before installation clears a pending layout and releases the
+// split view for use elsewhere. Errors are reported through Window.Error.
+//
+// The layout must contain at least two panes and exactly one pane added with
+// AddPrimaryContent. On platforms without AppKit the call validates and
+// stores the layout but the window keeps its ordinary single WebView.
+func (w *WebviewWindow) SetSplitView(split *MacSplitView) Window {
+	if w.impl != nil {
+		return w.setSplitViewAfterCreation(split)
+	}
+	if split == nil {
+		w.splitViewLock.Lock()
+		previous := w.splitView
+		w.splitView = nil
+		w.splitViewLock.Unlock()
+		releaseMacSplitViewOwnership(previous, w)
+		return w
+	}
+	if err := validateMacSplitView(split); err != nil {
+		reportMacSplitError(w, "SetSplitView: %s", err)
+		return w
+	}
+	if err := claimMacSplitView(split, w); err != nil {
+		reportMacSplitError(w, "SetSplitView: %s", err)
+		return w
+	}
+	w.splitViewLock.Lock()
+	previous := w.splitView
+	w.splitView = split
+	w.splitViewLock.Unlock()
+	if previous != nil && previous != split {
+		releaseMacSplitViewOwnership(previous, w)
+	}
+	split.adoptPendingPrimaryState(w)
+	return w
+}
+
+// setSplitViewAfterCreation installs a split layout into a window whose
+// native implementation already exists. Validation and ownership are handled
+// on the calling goroutine; the native installation runs on the application
+// thread through the implementation's macSplitLateInstaller. A failed
+// installation releases the layout so it can be attached elsewhere.
+func (w *WebviewWindow) setSplitViewAfterCreation(split *MacSplitView) Window {
+	if w.isDestroyed() {
+		return w
+	}
+	w.splitViewInstallLock.Lock()
+	defer w.splitViewInstallLock.Unlock()
+
+	w.splitViewLock.RLock()
+	current := w.splitView
+	w.splitViewLock.RUnlock()
+	if current != nil && current.isInstalled() {
+		reportMacSplitError(w, "SetSplitView: %s", ErrMacSplitViewAlreadyInstalled)
+		return w
+	}
+	if split == nil {
+		// Nothing is installed, so at most a layout the platform never
+		// installed is pending; release it.
+		w.splitViewLock.Lock()
+		previous := w.splitView
+		w.splitView = nil
+		w.splitViewLock.Unlock()
+		releaseMacSplitViewOwnership(previous, w)
+		return w
+	}
+	if err := validateMacSplitView(split); err != nil {
+		reportMacSplitError(w, "SetSplitView: %s", err)
+		return w
+	}
+	if err := claimMacSplitView(split, w); err != nil {
+		reportMacSplitError(w, "SetSplitView: %s", err)
+		return w
+	}
+	w.splitViewLock.Lock()
+	previous := w.splitView
+	w.splitView = split
+	w.splitViewLock.Unlock()
+	if previous != nil && previous != split {
+		releaseMacSplitViewOwnership(previous, w)
+	}
+	split.adoptPendingPrimaryState(w)
+
+	installer, ok := w.impl.(macSplitLateInstaller)
+	if !ok {
+		// No AppKit: the layout is stored and its pane handles stay inert.
+		return w
+	}
+	var err error
+	InvokeSync(func() { err = installer.installSplitViewLate() })
+	if err == nil {
+		return w
+	}
+	w.splitViewLock.Lock()
+	if w.splitView == split {
+		w.splitView = nil
+	}
+	w.splitViewLock.Unlock()
+	releaseMacSplitViewOwnership(split, w)
+	reportMacSplitError(w, "SetSplitView: %s", err)
 	return w
 }
 

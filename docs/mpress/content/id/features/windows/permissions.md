@@ -79,7 +79,7 @@ Artinya, jika Anda mengonfigurasi `Permissions` di Windows, kapabilitas apa pun 
 
 macOS mengelola akses kamera, mikrofon, geolokasi, dan notifikasi melalui kerangka kerja privasi sistemnya. Permintaan izin OS muncul secara otomatis saat konten web pertama kali meminta suatu kapabilitas, dan pilihan pengguna disimpan per aplikasi di System Settings → Privacy & Security.
 
-Ini berfungsi dengan benar tanpa konfigurasi `Permissions` apa pun. Peta tersebut **saat ini diabaikan di macOS**—semua permintaan diproses melalui TCC, apa pun yang Anda tetapkan. Keterbatasan praktisnya adalah `PermissionDeny` tidak berpengaruh di macOS: Anda tidak dapat mencegah webview menggunakan kapabilitas yang sudah diizinkan TCC pada tingkat sistem.
+Ini berfungsi tanpa konfigurasi `Permissions` apa pun. Ketika map diatur, macOS menerapkannya untuk permintaan kamera dan mikrofon dari konten web: `PermissionDeny` menolak permintaan sebelum permintaan izin sistem, `PermissionAllow` memberikan akses dalam batas yang sudah diizinkan pengguna pada tingkat sistem, dan `PermissionDefault` (bawaan) memungkinkan permintaan izin sistem muncul. Geolokasi dan notifikasi tetap melalui kerangka privasi sistem tanpa dipengaruhi map tersebut. Untuk meminta atau memeriksa izin tingkat sistem dari Go, gunakan `app.Permissions`, yang dijelaskan dalam [panduan Integrasi Platform macOS](/guides/macos-platform-integration/).
 
 Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang sesuai:
 
@@ -182,8 +182,8 @@ Urutan evaluasi di Windows adalah:
 
 | Kapabilitas | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| Mikrofon | ✅ | ✅ | Hanya TCC |
-| Kamera | ✅ | ✅ | Hanya TCC |
+| Mikrofon | ✅ | ✅ | ✅ + TCC |
+| Kamera | ✅ | ✅ | ✅ + TCC |
 | Geolokasi | ❌ belum didukung | ✅ | Hanya TCC |
 | Notifikasi | ❌ belum didukung | ✅ | Hanya TCC |
 | Pembacaan Papan Klip | ❌ belum didukung | ✅ | Hanya TCC |
@@ -200,7 +200,7 @@ Setelah ada entri apa pun di `Permissions`, Wails tidak lagi menetapkan pemberia
 
 **Izin macOS tidak berfungsi**
 
-Peta `Permissions` tidak berpengaruh di macOS. Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang benar (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, dan sebagainya) serta pengguna telah memberikan akses di Pengaturan Sistem → Privasi & Keamanan.
+Pada macOS, map `Permissions` hanya memengaruhi permintaan kamera dan mikrofon dari konten web; kerangka privasi sistem tetap menentukan akses secara keseluruhan. Pastikan `Info.plist` Anda memuat kunci deskripsi penggunaan yang benar (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, dan sebagainya) dan pengguna telah memberikan akses di System Settings → Privacy & Security.
 
 **Geolokasi/notifikasi/papan klip tidak berpengaruh di Linux**
 

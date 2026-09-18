@@ -86,6 +86,10 @@ window.SetFullscreenButtonState(wails.ButtonEnabled)
 
 在執行階段，`SetMaximiseButtonState` 和 `SetFullscreenButtonState` 在 macOS 上都以 `NSWindowZoomButton` 為目標，因此以最後一次呼叫為準。
 
+### macOS：原生視窗介面
+
+除了標題列按鈕，macOS 視窗還能包含原生 `NSToolbar`、來源清單側邊欄、內容清單、屬性檢閱器、標題列附加控制列和視窗分頁，全部都可從 Go 建立。完整 API 請參閱[原生 macOS 視窗介面](/guides/macos-native-chrome/)指南。
+
 ### 平台差異
 
 按鈕狀態功能在 Windows 和 macOS 上的行為略有不同：

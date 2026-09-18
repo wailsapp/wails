@@ -1,4 +1,4 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !wails_native
 
 #import <Cocoa/Cocoa.h>
 #import "webview_panel_darwin.h"

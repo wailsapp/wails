@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clipboard and Drag</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f4f6;
+      --card: #ffffff;
+      --line: #d8d8de;
+      --text: #1d1d1f;
+      --muted: #6e6e73;
+      --accent: #2b8af7;
+      --accent-2: #e53e3e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1e;
+        --card: #2c2c2e;
+        --line: #3a3a3c;
+        --text: #f5f5f7;
+        --muted: #98989d;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 56px 24px 24px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .titlebar {
+      position: fixed; top: 0; left: 0; right: 0; height: 44px;
+      --wails-draggable: drag;
+    }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    .lead { color: var(--muted); margin: 0 0 20px; font-size: 13px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 220px;
+    }
+    .panel h2 { font-size: 14px; margin: 0 0 10px; }
+    .cards { display: flex; flex-direction: column; gap: 10px; }
+    .card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--card) 85%, var(--accent) 15%);
+      cursor: grab;
+      font-size: 13px;
+    }
+    .card:active { cursor: grabbing; }
+    .swatch {
+      width: 28px; height: 28px; border-radius: 6px; background: var(--accent);
+      flex: none;
+    }
+    .swatch.red { background: var(--accent-2); }
+    .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+    button {
+      font: inherit; font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    .dropzone {
+      margin-top: 8px;
+      border: 2px dashed var(--line);
+      border-radius: 10px;
+      padding: 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 120px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    }
+    .dropzone.file-target { border-color: var(--accent); }
+    .dropzone img { max-width: 120px; max-height: 120px; border-radius: 8px; }
+    pre {
+      margin: 10px 0 0;
+      font-size: 11px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--muted);
+      max-height: 160px;
+      overflow: auto;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .log {
+      margin-top: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      max-height: 150px;
+      overflow: auto;
+    }
+    .log div { padding: 2px 0; }
+  </style>
+</head>
+<body>
+  <div class="titlebar"></div>
+  <h1>Clipboard and Drag</h1>
+  <p class="lead">Drag the cards into Finder, Mail or a text editor. Drop text, links or images from other apps onto the drop zone. Copy rich content and inspect it.</p>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Drag out</h2>
+      <div class="cards">
+        <div class="card" data-kind="text" draggable="false">
+          <div class="swatch"></div>
+          <div>Text<br><small>Drag into a text editor</small></div>
+        </div>
+        <div class="card" data-kind="file" draggable="false">
+          <div class="swatch"></div>
+          <div>Existing file<br><small>Drag into Finder</small></div>
+        </div>
+        <div class="card" data-kind="promise" draggable="false">
+          <div class="swatch red"></div>
+          <div>File promise (PNG)<br><small>Written when Finder accepts it</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Drop in</h2>
+      <div class="dropzone" id="dropzone" data-file-drop-target>
+        <span id="drop-hint">Drop text, a link, an image or files here</span>
+      </div>
+      <pre id="drop-detail"></pre>
+    </section>
+
+    <section class="panel">
+      <h2>Clipboard</h2>
+      <div class="buttons">
+        <button data-copy="CopyText">Copy text</button>
+        <button data-copy="CopyImage">Copy image</button>
+        <button data-copy="CopyHTML">Copy HTML</button>
+        <button data-copy="CopyFile">Copy file</button>
+        <button data-copy="CopyCustom">Copy custom data</button>
+        <button data-copy="Clear">Clear</button>
+        <button id="inspect">Inspect</button>
+      </div>
+      <div class="dropzone" id="clipboard-preview" style="min-height: 80px;">
+        <span id="clipboard-hint">Nothing inspected yet</span>
+      </div>
+      <pre id="clipboard-detail"></pre>
+    </section>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <script type="module">
+    import { Call, Events } from '/wails/runtime.js';
+
+    const log = document.getElementById('log');
+    function addLog(message) {
+      const line = document.createElement('div');
+      line.textContent = new Date().toLocaleTimeString() + '  ' + message;
+      log.prepend(line);
+    }
+
+    // Drag out: the Go side can only start a drag while the mouse button is
+    // down, so StartDrag is called from mousedown. The card has
+    // draggable="false" so WebKit does not start its own HTML5 drag.
+    for (const card of document.querySelectorAll('.card')) {
+      card.addEventListener('mousedown', (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        const kind = card.dataset.kind;
+        Call.ByName('main.DragService.StartDrag', kind)
+          .then(() => addLog('drag started: ' + kind))
+          .catch((err) => addLog('drag failed: ' + err));
+      });
+    }
+
+    // Drop in: files come through the runtime's file drop pipeline and the
+    // Go WindowFilesDropped event; text, URLs and images come from OnDrop.
+    // Both are re-emitted by main.go as the "dropped" event.
+    const dropzone = document.getElementById('dropzone');
+    const dropDetail = document.getElementById('drop-detail');
+    const dropHint = document.getElementById('drop-hint');
+    Events.On('dropped', (event) => {
+      const data = event.data;
+      dropzone.querySelectorAll('img').forEach((img) => img.remove());
+      if (data.image) {
+        const img = document.createElement('img');
+        img.src = data.image;
+        dropzone.appendChild(img);
+        dropHint.textContent = 'Dropped an image';
+      } else if (data.files && data.files.length) {
+        dropHint.textContent = 'Dropped ' + data.files.length + ' file(s)';
+      } else if (data.urls && data.urls.length) {
+        dropHint.textContent = 'Dropped a link';
+      } else if (data.text) {
+        dropHint.textContent = 'Dropped text';
+      }
+      const shown = { ...data };
+      if (shown.image) shown.image = shown.image.slice(0, 40) + '... (' + data.image.length + ' chars)';
+      dropDetail.textContent = JSON.stringify(shown, null, 2);
+      addLog('drop: ' + dropHint.textContent);
+    });
+
+    // Clipboard.
+    for (const button of document.querySelectorAll('[data-copy]')) {
+      button.addEventListener('click', () => {
+        Call.ByName('main.ClipboardService.' + button.dataset.copy)
+          .then(() => addLog(button.dataset.copy + ' ok'))
+          .catch((err) => addLog(button.dataset.copy + ' failed: ' + err));
+      });
+    }
+    const preview = document.getElementById('clipboard-preview');
+    const previewHint = document.getElementById('clipboard-hint');
+    const clipboardDetail = document.getElementById('clipboard-detail');
+    async function inspect() {
+      try {
+        const info = await Call.ByName('main.ClipboardService.Inspect');
+        preview.querySelectorAll('img').forEach((img) => img.remove());
+        if (info.image) {
+          const img = document.createElement('img');
+          img.src = info.image;
+          preview.appendChild(img);
+          previewHint.textContent = 'Image on the clipboard';
+        } else if (info.html) {
+          previewHint.innerHTML = info.html;
+        } else if (info.files) {
+          previewHint.textContent = info.files.join('\n');
+        } else if (info.text) {
+          previewHint.textContent = info.text;
+        } else {
+          previewHint.textContent = 'No text, HTML, files or image';
+        }
+        const shown = { ...info };
+        if (shown.image) shown.image = '(' + info.image.length + ' chars)';
+        clipboardDetail.textContent = JSON.stringify(shown, null, 2);
+      } catch (err) {
+        addLog('inspect failed: ' + err);
+      }
+    }
+    document.getElementById('inspect').addEventListener('click', inspect);
+    Events.On('clipboard-changed', (event) => {
+      addLog('clipboard changed (change count ' + event.data + ')');
+      inspect();
+    });
+    Events.On('log', (event) => addLog(event.data));
+  </script>
+</body>
+</html>

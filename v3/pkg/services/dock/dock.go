@@ -21,6 +21,11 @@ type platformDock interface {
 	SetCustomBadge(label string, options BadgeOptions) error
 	RemoveBadge() error
 	GetBadge() *string
+
+	// Progress methods
+	SetProgress(fraction float64) error
+	ClearProgress() error
+	GetProgress() *float64
 }
 
 // Service represents the dock service
@@ -80,4 +85,27 @@ func (d *DockService) RemoveBadge() error {
 // GetBadge returns the badge label on the application icon.
 func (d *DockService) GetBadge() *string {
 	return d.impl.GetBadge()
+}
+
+// SetProgress draws a progress bar over the application icon (macOS Dock
+// tile). fraction is clamped to 0..1. The badge, if any, keeps showing.
+func (d *DockService) SetProgress(fraction float64) error {
+	if fraction < 0 {
+		fraction = 0
+	}
+	if fraction > 1 {
+		fraction = 1
+	}
+	return d.impl.SetProgress(fraction)
+}
+
+// ClearProgress removes the progress bar from the application icon.
+func (d *DockService) ClearProgress() error {
+	return d.impl.ClearProgress()
+}
+
+// GetProgress returns the current progress fraction, or nil when no
+// progress bar is shown.
+func (d *DockService) GetProgress() *float64 {
+	return d.impl.GetProgress()
 }

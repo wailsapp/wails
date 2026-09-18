@@ -926,3 +926,85 @@ func TestPreserveOriginallyEmptyContainers(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateBuildAssetsServices(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "wails-update-assets-services-*")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	configFile := filepath.Join(tempDir, "config.yml")
+	configYAML := `info:
+  productName: "Services Product"
+services:
+  - name: SummariseText
+    menuTitle: Summarise with Services Product
+    sendTypes:
+      - public.utf8-plain-text
+    returnTypes:
+      - public.utf8-plain-text
+    keyEquivalent: S
+  - name: ArchiveFiles
+    menuTitle: Archive
+    sendTypes:
+      - public.file-url
+    portName: Custom Port
+`
+	if err := os.WriteFile(configFile, []byte(configYAML), 0644); err != nil {
+		t.Fatalf("Failed to write config file: %v", err)
+	}
+
+	buildDir := filepath.Join(tempDir, "build")
+	err = UpdateBuildAssets(&UpdateBuildAssetsOptions{
+		Dir:         buildDir,
+		Name:        "ServicesApp",
+		ProductName: "My Product", // the CLI default, replaced by info.productName
+		Config:      configFile,
+		Silent:      true,
+	})
+	if err != nil {
+		t.Fatalf("UpdateBuildAssets() error = %v", err)
+	}
+
+	for _, name := range []string{"Info.plist", "Info.dev.plist"} {
+		content, err := os.ReadFile(filepath.Join(buildDir, "darwin", name))
+		if err != nil {
+			t.Fatalf("Failed to read %s: %v", name, err)
+		}
+		plist := string(content)
+		for _, want := range []string{
+			"<key>NSServices</key>",
+			"<key>NSMessage</key>",
+			"<string>SummariseText</string>",
+			"<string>Summarise with Services Product</string>",
+			"<key>NSPortName</key>",
+			"<string>Services Product</string>",
+			"<string>Custom Port</string>",
+			"<key>NSSendTypes</key>",
+			"<string>public.utf8-plain-text</string>",
+			"<key>NSReturnTypes</key>",
+			"<string>public.file-url</string>",
+			"<key>NSKeyEquivalent</key>",
+			"<string>S</string>",
+		} {
+			if !strings.Contains(plist, want) {
+				t.Errorf("%s is missing %q:\n%s", name, want, plist)
+			}
+		}
+	}
+
+	// Without services the key must not be emitted at all.
+	plainDir := filepath.Join(tempDir, "plain")
+	err = UpdateBuildAssets(&UpdateBuildAssetsOptions{Dir: plainDir, Name: "PlainApp", Silent: true})
+	if err != nil {
+		t.Fatalf("UpdateBuildAssets() without services error = %v", err)
+	}
+	content, err := os.ReadFile(filepath.Join(plainDir, "darwin", "Info.plist"))
+	if err != nil {
+		t.Fatalf("Failed to read plain Info.plist: %v", err)
+	}
+	if strings.Contains(string(content), "NSServices") {
+		t.Errorf("Info.plist without services still contains NSServices:\n%s", content)
+	}
+}

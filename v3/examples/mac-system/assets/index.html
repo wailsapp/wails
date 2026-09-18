@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>System Integration</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --border: rgba(128, 128, 128, 0.35);
+            --muted: rgba(128, 128, 128, 0.9);
+        }
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        h2 { font-size: 14px; margin: 0 0 8px; }
+        p.lead { margin: 0 0 20px; color: var(--muted); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        section {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        section.wide { grid-column: 1 / -1; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 4px 6px; border-top: 1px solid var(--border); vertical-align: middle; }
+        tr:first-child td { border-top: none; }
+        td.key { color: var(--muted); width: 40%; }
+        td.actions { text-align: right; white-space: nowrap; }
+        button { font: inherit; padding: 3px 10px; margin-left: 4px; }
+        .status { font-weight: 600; text-transform: capitalize; }
+        .status.authorized { color: #34c759; }
+        .status.denied, .status.restricted { color: #ff3b30; }
+        .status.not-determined { color: #ff9f0a; }
+        .status.unsupported { color: var(--muted); }
+        .flag-on { color: #34c759; font-weight: 600; }
+        .flag-off { color: var(--muted); }
+        label { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; }
+        #log {
+            margin-top: 16px;
+            max-height: 130px;
+            overflow: auto;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 11px;
+            color: var(--muted);
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<h1>System Integration</h1>
+<p class="lead">Permissions, sleep prevention, termination control, power and thermal state, accessibility settings, keyboard layout and locale. Everything below updates live when macOS posts a change.</p>
+
+<div class="grid">
+    <section class="wide">
+        <h2>Permissions</h2>
+        <table id="permissions"></table>
+    </section>
+
+    <section>
+        <h2>Sleep</h2>
+        <label><input type="checkbox" id="keepAwake"> Keep awake</label>
+        <label><input type="checkbox" id="keepDisplay"> Also keep display on</label>
+        <div>Active holds: <span id="sleepHolds">0</span></div>
+        <div style="color: var(--muted); margin-top: 6px;">Check with <code>pmset -g assertions</code>.</div>
+    </section>
+
+    <section>
+        <h2>Termination</h2>
+        <label><input type="checkbox" id="holdTermination"> Hold termination</label>
+        <div>Active holds: <span id="termHolds">0</span></div>
+        <label style="margin-top: 8px;"><input type="checkbox" id="suddenTermination"> Sudden termination enabled</label>
+    </section>
+
+    <section>
+        <h2>Power and thermal</h2>
+        <table id="power"></table>
+    </section>
+
+    <section>
+        <h2>Accessibility</h2>
+        <table id="accessibility"></table>
+    </section>
+
+    <section>
+        <h2>Keyboard layout</h2>
+        <table id="keyboard"></table>
+    </section>
+
+    <section>
+        <h2>Locale</h2>
+        <table id="locale"></table>
+    </section>
+</div>
+
+<div id="log"></div>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+
+    const call = (method, ...args) => wails.Call.ByName("main.SystemService." + method, ...args);
+    const el = (id) => document.getElementById(id);
+    const log = (text) => {
+        const line = new Date().toLocaleTimeString() + "  " + text + "\n";
+        el("log").textContent = line + el("log").textContent;
+    };
+
+    const flag = (value) => value
+        ? '<span class="flag-on">on</span>'
+        : '<span class="flag-off">off</span>';
+    const rows = (target, entries) => {
+        el(target).innerHTML = entries.map(([key, value]) =>
+            `<tr><td class="key">${key}</td><td>${value}</td></tr>`).join("");
+    };
+
+    const kindLabels = {
+        "camera": "Camera",
+        "microphone": "Microphone",
+        "screen-recording": "Screen recording",
+        "accessibility": "Accessibility",
+        "location": "Location",
+        "notifications": "Notifications",
+        "input-monitoring": "Input monitoring",
+        "full-disk-access": "Full disk access",
+    };
+
+    async function refreshPermissions() {
+        const statuses = await call("PermissionStatuses");
+        el("permissions").innerHTML = Object.keys(kindLabels).map((kind) => {
+            const status = statuses[kind] || "unsupported";
+            const canRequest = status === "not-determined";
+            return `<tr>
+                <td class="key">${kindLabels[kind]}</td>
+                <td><span class="status ${status}">${status.replace("-", " ")}</span></td>
+                <td class="actions">
+                    <button data-request="${kind}" ${canRequest ? "" : "disabled"}>Request</button>
+                    <button data-settings="${kind}">System Settings</button>
+                </td>
+            </tr>`;
+        }).join("");
+    }
+
+    el("permissions").addEventListener("click", async (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        if (button.dataset.request) {
+            const kind = button.dataset.request;
+            log(`requesting ${kind}`);
+            try {
+                const status = await call("RequestPermission", kind);
+                log(`${kind}: ${status}`);
+            } catch (err) {
+                log(`${kind}: ${err}`);
+            }
+            await refreshPermissions();
+        }
+        if (button.dataset.settings) {
+            try {
+                await call("OpenPermissionSettings", button.dataset.settings);
+            } catch (err) {
+                log(`open settings: ${err}`);
+            }
+        }
+    });
+
+    async function setKeepAwake() {
+        try {
+            const holds = await call("SetKeepAwake", el("keepAwake").checked, el("keepDisplay").checked);
+            el("sleepHolds").textContent = holds;
+            log(`keep awake ${el("keepAwake").checked ? "on" : "off"} (${holds} hold(s))`);
+        } catch (err) {
+            log(`keep awake: ${err}`);
+            el("keepAwake").checked = false;
+        }
+    }
+    el("keepAwake").addEventListener("change", setKeepAwake);
+    el("keepDisplay").addEventListener("change", async () => {
+        if (el("keepAwake").checked) {
+            // Re-acquire with the new display option.
+            await call("SetKeepAwake", false, false);
+            await setKeepAwake();
+        }
+    });
+
+    el("holdTermination").addEventListener("change", async () => {
+        const holds = await call("SetTerminationHold", el("holdTermination").checked);
+        el("termHolds").textContent = holds;
+        log(`termination hold ${el("holdTermination").checked ? "on" : "off"} (${holds} hold(s))`);
+    });
+    el("suddenTermination").addEventListener("change", async () => {
+        const enabled = await call("SetSuddenTermination", el("suddenTermination").checked);
+        el("suddenTermination").checked = enabled;
+        log(`sudden termination ${enabled ? "enabled" : "disabled"}`);
+    });
+
+    function renderPower(state) {
+        const level = state.batteryLevel < 0 ? "no battery" : Math.round(state.batteryLevel * 100) + "%";
+        rows("power", [
+            ["Low Power Mode", flag(state.lowPowerMode)],
+            ["Thermal state", state.thermalState],
+            ["On battery", flag(state.onBattery)],
+            ["Battery level", level],
+            ["Charging", flag(state.charging)],
+        ]);
+    }
+    function renderAccessibility(settings) {
+        rows("accessibility", [
+            ["Reduce motion", flag(settings.reduceMotion)],
+            ["Reduce transparency", flag(settings.reduceTransparency)],
+            ["Increase contrast", flag(settings.increaseContrast)],
+            ["Differentiate without colour", flag(settings.differentiateWithoutColor)],
+            ["Invert colours", flag(settings.invertColors)],
+            ["VoiceOver", flag(settings.voiceOverEnabled)],
+            ["Switch Control", flag(settings.switchControlEnabled)],
+        ]);
+    }
+    function renderKeyboard(layout) {
+        rows("keyboard", [
+            ["ID", layout.id || "(unknown)"],
+            ["Name", layout.name || "(unknown)"],
+            ["Languages", (layout.languages || []).join(", ") || "(none)"],
+        ]);
+    }
+    function renderLocale(locale) {
+        rows("locale", [
+            ["Identifier", locale.identifier || "(unknown)"],
+            ["Language", locale.language || "(unknown)"],
+            ["Region", locale.region || "(unknown)"],
+            ["Preferred", (locale.preferred || []).join(", ") || "(none)"],
+        ]);
+    }
+
+    wails.Events.On("system:power", (event) => { renderPower(event.data); log("power state changed"); });
+    wails.Events.On("system:accessibility", (event) => { renderAccessibility(event.data); log("accessibility settings changed"); });
+    wails.Events.On("system:keyboard", (event) => { renderKeyboard(event.data); log("keyboard layout changed"); });
+    wails.Events.On("system:locale", (event) => { renderLocale(event.data); log("locale changed"); });
+
+    await refreshPermissions();
+    renderPower(await call("PowerState"));
+    renderAccessibility(await call("Accessibility"));
+    renderKeyboard(await call("KeyboardLayout"));
+    renderLocale(await call("Locale"));
+    log("ready");
+</script>
+</body>
+</html>

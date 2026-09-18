@@ -86,6 +86,10 @@ Um dies zu vermeiden, verwendet Wails bei der Initialisierung den **restriktiver
 
 Zur Laufzeit steuern `SetMaximiseButtonState` und `SetFullscreenButtonState` unter macOS beide `NSWindowZoomButton` an, sodass der letzte Aufruf Vorrang hat.
 
+### macOS: Native Fensterelemente
+
+Zusätzlich zu den Schaltflächen in der Titelleiste können macOS-Fenster eine native `NSToolbar`, eine Seitenleiste als Quellliste, eine Inhaltsliste, einen Eigenschaften-Inspektor, Zusatzleisten für die Titelleiste und Fenstertabs enthalten – alles aus Go heraus erstellt. Die vollständige API finden Sie im Leitfaden [Native macOS-Fensterelemente](/guides/macos-native-chrome/).
+
 ### Plattformunterschiede
 
 Die Funktionalität für Schaltflächenzustände verhält sich unter Windows und macOS geringfügig unterschiedlich:

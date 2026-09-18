@@ -86,6 +86,10 @@ Para evitar isso, durante a inicialização, o Wails aplica o estado **mais rest
 
 Em tempo de execução, `SetMaximiseButtonState` e `SetFullscreenButtonState` controlam `NSWindowZoomButton` no macOS; portanto, prevalece a última chamada.
 
+### macOS: elementos nativos da janela
+
+Além dos botões da barra de título, as janelas do macOS podem conter uma `NSToolbar` nativa, uma barra lateral de lista de origem, uma lista de conteúdo, um inspetor de propriedades, faixas de acessórios da barra de título e abas de janela, tudo criado em Go. Consulte o guia [Elementos nativos da janela no macOS](/guides/macos-native-chrome/) para conhecer a API completa.
+
 ### Diferenças entre plataformas
 
 A funcionalidade de estado dos botões se comporta de maneira ligeiramente diferente no Windows e no macOS:

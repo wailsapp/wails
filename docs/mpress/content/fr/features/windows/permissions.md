@@ -79,7 +79,7 @@ Par conséquent, sous Windows, dès que vous configurez `Permissions`, toute fon
 
 macOS gère l’accès à la caméra, au microphone, à la géolocalisation et aux notifications au moyen de son infrastructure système de confidentialité. L’invite du système d’exploitation s’affiche automatiquement la première fois que le contenu web demande une fonctionnalité, et le choix de l’utilisateur est mémorisé pour chaque application dans Réglages Système → Confidentialité et sécurité.
 
-Cela fonctionne correctement sans aucune configuration de `Permissions`. La table est **actuellement ignorée sous macOS** : toutes les demandes passent par TCC, quelle que soit la valeur définie. En pratique, `PermissionDeny` est sans effet sous macOS : vous ne pouvez pas empêcher une vue web d’utiliser une fonctionnalité déjà autorisée par TCC au niveau du système.
+Cela fonctionne sans aucune configuration de `Permissions`. Lorsque la map est définie, macOS l’applique aux demandes d’accès à la caméra et au microphone provenant du contenu Web : `PermissionDeny` refuse la demande avant l’invite du système, `PermissionAllow` l’autorise dans les limites de ce que l’utilisateur a déjà permis au niveau du système, et `PermissionDefault` (valeur par défaut) laisse apparaître l’invite du système. La géolocalisation et les notifications passent toujours par le mécanisme de confidentialité du système, quelle que soit la map. Pour demander ou consulter les autorisations au niveau du système depuis Go, utilisez `app.Permissions`, décrit dans le [guide d’intégration à la plateforme macOS](/guides/macos-platform-integration/).
 
 Vérifiez que votre `Info.plist` comprend les clés de description d’utilisation appropriées :
 
@@ -182,8 +182,8 @@ Sous Windows, l’ordre d’évaluation est le suivant :
 
 | Fonctionnalité | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| Microphone | ✅ | ✅ | TCC uniquement |
-| Caméra | ✅ | ✅ | TCC uniquement |
+| Microphone | ✅ | ✅ | ✅ + TCC |
+| Caméra | ✅ | ✅ | ✅ + TCC |
 | Géolocalisation | ❌ pas encore | ✅ | TCC uniquement |
 | Notifications | ❌ pas encore | ✅ | TCC uniquement |
 | Lecture du presse-papiers | ❌ pas encore | ✅ | TCC uniquement |
@@ -200,7 +200,7 @@ Dès qu’une entrée figure dans `Permissions`, Wails n’accorde plus l’auto
 
 **Les autorisations macOS ne fonctionnent pas**
 
-La table `Permissions` n’a aucun effet sous macOS. Vérifiez que votre `Info.plist` contient les clés de description d’utilisation appropriées (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, etc.) et que l’utilisateur a accordé l’accès dans Réglages Système → Confidentialité et sécurité.
+Sur macOS, la map `Permissions` ne concerne que les demandes d’accès à la caméra et au microphone provenant du contenu Web ; le mécanisme de confidentialité du système décide toujours de l’accès global. Vérifiez que votre fichier `Info.plist` contient les clés de description d’utilisation appropriées (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, etc.) et que l’utilisateur a accordé l’accès dans Réglages Système → Confidentialité et sécurité.
 
 **La géolocalisation, les notifications et le presse-papiers n’ont aucun effet sous Linux**
 

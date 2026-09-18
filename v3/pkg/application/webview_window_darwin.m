@@ -1,9 +1,12 @@
-//go:build darwin && !ios && !server
+//go:build darwin && !ios && !server && !wails_native
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
+#import <objc/runtime.h>
 #import "webview_window_darwin.h"
 #import "mac_private_api_darwin.h"
+#import "webview_window_split_darwin.h"
+#import "permissions_manager_darwin.h"
 #import "../events/events_darwin.h"
 extern void processMessage(unsigned int, const char*, const char *, bool);
 extern void processURLRequest(unsigned int, void *);
@@ -17,6 +20,48 @@ extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
+static const void* WailsContentLayoutConstraintsAssociationKey =
+    &WailsContentLayoutConstraintsAssociationKey;
+
+enum {
+    WailsMacContentLayoutAutomatic = 0,
+    WailsMacContentLayoutBelowToolbar = 1,
+    WailsMacContentLayoutEdgeToEdge = 2,
+};
+
+void windowApplyContentLayout(void* nsWindow, int layout) {
+    WebviewWindow* window = (WebviewWindow*)nsWindow;
+    if (window == nil) return;
+    WKWebView* webView = window.webView;
+    NSView* host = webView.superview;
+    if (webView == nil || host == nil) return;
+
+    NSArray<NSLayoutConstraint*>* previous = objc_getAssociatedObject(
+        webView, WailsContentLayoutConstraintsAssociationKey);
+    if (previous.count > 0) [NSLayoutConstraint deactivateConstraints:previous];
+
+    BOOL edgeToEdge = layout == WailsMacContentLayoutEdgeToEdge;
+    if (layout == WailsMacContentLayoutAutomatic) {
+        edgeToEdge = (window.styleMask & NSWindowStyleMaskFullSizeContentView) != 0;
+    }
+    if (edgeToEdge) window.styleMask |= NSWindowStyleMaskFullSizeContentView;
+
+    id contentGuide = window.contentLayoutGuide;
+    NSLayoutYAxisAnchor* topAnchor = edgeToEdge || contentGuide == nil
+        ? host.topAnchor
+        : [(NSLayoutGuide*)contentGuide topAnchor];
+
+    webView.translatesAutoresizingMaskIntoConstraints = NO;
+    NSArray<NSLayoutConstraint*>* constraints = @[
+        [webView.leadingAnchor constraintEqualToAnchor:host.leadingAnchor],
+        [webView.trailingAnchor constraintEqualToAnchor:host.trailingAnchor],
+        [webView.topAnchor constraintEqualToAnchor:topAnchor],
+        [webView.bottomAnchor constraintEqualToAnchor:host.bottomAnchor]
+    ];
+    [NSLayoutConstraint activateConstraints:constraints];
+    objc_setAssociatedObject(webView, WailsContentLayoutConstraintsAssociationKey,
+        constraints, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
 
 @interface WebviewWindow ()
 
@@ -954,6 +999,10 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     }
 }
 - (void)webView:(nonnull WKWebView *)webview didStartProvisionalNavigation:(WKNavigation *)navigation {
+    unsigned long long primaryPaneID = splitPrimaryPaneIDForWebView(webview);
+    if (primaryPaneID != 0) {
+        processMacSplitPaneNavigationStarted(primaryPaneID);
+    }
     if( hasListeners(EventWebViewDidStartProvisionalNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidStartProvisionalNavigation);
     }
@@ -964,6 +1013,10 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     }
 }
 - (void)webView:(nonnull WKWebView *)webview didFinishNavigation:(WKNavigation *)navigation {
+    unsigned long long primaryPaneID = splitPrimaryPaneIDForWebView(webview);
+    if (primaryPaneID != 0) {
+        processMacSplitPaneLoaded(primaryPaneID);
+    }
     if( hasListeners(EventWebViewDidFinishNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidFinishNavigation);
     }
@@ -985,6 +1038,12 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     [webView reload];
 }
 // WKUIDelegate - Handle file input element clicks
+// Media capture (camera and microphone) decisions come from the window's
+// cross-platform Permissions option, so it behaves the same as WebView2.
+- (void)webView:(WKWebView *)webView requestMediaCapturePermissionForOrigin:(WKSecurityOrigin *)origin initiatedByFrame:(WKFrameInfo *)frame type:(WKMediaCaptureType)type decisionHandler:(void (^)(WKPermissionDecision))decisionHandler API_AVAILABLE(macos(12.0)) {
+    decisionHandler((WKPermissionDecision)wailsMediaCapturePermissionDecision(self.windowId, (int)type));
+}
+
 - (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
     initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];

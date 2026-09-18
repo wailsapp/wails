@@ -97,6 +97,11 @@ func (m *Menu) Destroy() {
 		item.Destroy()
 	}
 	m.items = nil
+	// Platform impls that own a native menu object release it here.
+	if impl, ok := m.impl.(interface{ destroy() }); ok && m.impl != nil {
+		impl.destroy()
+	}
+	m.impl = nil
 }
 
 func (m *Menu) AddSubmenu(s string) *Menu {

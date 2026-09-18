@@ -79,7 +79,7 @@ WebView2 具有原生權限提示，以及依權限種類區分的權限 API。�
 
 macOS 透過其系統隱私權架構管理相機、麥克風、地理位置和通知的存取權。網頁內容首次請求某項功能時，作業系統會自動顯示提示，並在「系統設定」→「隱私權與安全性」中依應用程式記住使用者的選擇。
 
-即使完全不設定`Permissions`，此機制也能正常運作。目前 macOS 會<strong>忽略此對應表</strong>；無論如何設定，所有請求都會交由 TCC 處理。實際的功能缺口是`PermissionDeny`在 macOS 上不起作用：若 TCC 已在系統層級授予某項功能的權限，你便無法阻止 WebView 使用該功能。
+即使沒有任何 `Permissions` 設定，此功能也能運作。設定映射後，macOS 會依其設定處理網頁內容的相機和麥克風要求：`PermissionDeny` 會在系統提示前拒絕要求；`PermissionAllow` 會在使用者已於系統層級允許的範圍內授予權限；`PermissionDefault`（預設值）則允許顯示系統提示。無論映射如何設定，定位和通知仍會經由系統隱私權架構處理。若要從 Go 要求或檢查系統層級權限，請使用 [macOS 平台整合指南](/guides/macos-platform-integration/)中說明的 `app.Permissions`。
 
 請確保你的`Info.plist`包含適當的用途說明鍵：
 
@@ -182,8 +182,8 @@ Windows 上的評估順序如下：
 
 | 功能 | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| 麥克風 | ✅ | ✅ | 僅限 TCC |
-| 攝影機 | ✅ | ✅ | 僅限 TCC |
+| 麥克風 | ✅ | ✅ | ✅ + TCC |
+| 攝影機 | ✅ | ✅ | ✅ + TCC |
 | 地理位置 | ❌ 尚未支援 | ✅ | 僅限 TCC |
 | 通知 | ❌ 尚未支援 | ✅ | 僅限 TCC |
 | 讀取剪貼簿 | ❌ 尚未支援 | ✅ | 僅限 TCC |
@@ -200,7 +200,7 @@ Windows 上的評估順序如下：
 
 **macOS 權限無法運作**
 
-`Permissions`對應表在 macOS 上不會生效。請確認`Info.plist`包含正確的用途說明鍵（`NSMicrophoneUsageDescription`、`NSCameraUsageDescription`等），而且使用者已在「系統設定」→「隱私權與安全性」中授予存取權。
+在 macOS 上，`Permissions` 映射只影響網頁內容的相機和麥克風要求；整體存取權仍由系統隱私權架構決定。請確認 `Info.plist` 包含正確的用途說明鍵（`NSMicrophoneUsageDescription`、`NSCameraUsageDescription` 等），且使用者已在「系統設定」→「隱私權與安全性」中授予存取權。
 
 **地理位置、通知和剪貼簿在 Linux 上不會生效**
 

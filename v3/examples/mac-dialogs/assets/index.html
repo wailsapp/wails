@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Native Dialogs</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 24px;
+            background: Canvas;
+            color: CanvasText;
+        }
+        h1 {
+            font-size: 20px;
+            margin: 0 0 4px;
+        }
+        p.lead {
+            margin: 0 0 20px;
+            opacity: 0.7;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        button {
+            font: inherit;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid color-mix(in srgb, CanvasText 20%, transparent);
+            background: color-mix(in srgb, CanvasText 6%, Canvas);
+            color: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+        button:hover {
+            background: color-mix(in srgb, CanvasText 12%, Canvas);
+        }
+        button small {
+            display: block;
+            opacity: 0.6;
+            margin-top: 2px;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            background: color-mix(in srgb, CanvasText 6%, Canvas);
+            min-height: 1.4em;
+            white-space: pre-wrap;
+        }
+        #swatch {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            vertical-align: middle;
+            border-radius: 3px;
+            border: 1px solid color-mix(in srgb, CanvasText 30%, transparent);
+            background: rgb(52, 120, 246);
+        }
+        #sample {
+            margin-top: 12px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Native macOS dialogs</h1>
+    <p class="lead">Each button calls a bound Go method that shows a native AppKit dialog or panel.</p>
+
+    <div class="grid">
+        <button data-method="Suppression">Alert with suppression and help
+            <small>showsSuppressionButton, showsHelp</small></button>
+        <button data-method="Prompt">Text prompt (sheet)
+            <small>NSAlert accessory NSTextField</small></button>
+        <button data-method="SecurePrompt">Secure prompt (modal)
+            <small>NSSecureTextField</small></button>
+        <button data-method="OpenImages">Open images
+            <small>allowedContentTypes: public.image + *.pdf</small></button>
+        <button data-method="Export">Export with format pop-up
+            <small>accessoryView, nameFieldLabel, tagNames</small></button>
+        <button data-method="PickColor">Colour panel
+            <small>NSColorPanel with live updates</small></button>
+        <button data-method="PickFont">Font panel
+            <small>NSFontPanel with live updates</small></button>
+    </div>
+
+    <div id="status">Ready. <span id="swatch"></span></div>
+    <div id="sample">The quick brown fox jumps over the lazy dog.</div>
+
+    <script type="module">
+        import * as runtime from "/wails/runtime.js";
+
+        const status = document.getElementById('status');
+        const swatch = document.getElementById('swatch');
+        const sample = document.getElementById('sample');
+
+        function show(text) {
+            status.textContent = text + ' ';
+            status.appendChild(swatch);
+        }
+
+        for (const button of document.querySelectorAll('button[data-method]')) {
+            button.addEventListener('click', async () => {
+                const method = button.dataset.method;
+                show(method + '...');
+                try {
+                    const result = await runtime.Call.ByName('main.DialogService.' + method);
+                    show(method + ': ' + result);
+                } catch (err) {
+                    show(method + ' failed: ' + err);
+                }
+            });
+        }
+
+        runtime.Events.On('dialog:color', (event) => {
+            swatch.style.background = event.data;
+            sample.style.color = event.data;
+        });
+        runtime.Events.On('dialog:font', (event) => {
+            const font = event.data;
+            sample.style.fontFamily = '"' + font.PostScriptName + '", "' + font.Family + '"';
+            sample.style.fontSize = font.Size + 'px';
+        });
+        runtime.Events.On('dialog:help', (event) => {
+            show(event.data);
+        });
+    </script>
+</body>
+</html>

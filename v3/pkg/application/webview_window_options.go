@@ -75,6 +75,12 @@ type WindowStartPosition int
 const (
 	WindowCentered WindowStartPosition = 0
 	WindowXY       WindowStartPosition = 1
+	// WindowCascade places the window offset down and to the right of the
+	// last cascaded window, like new document windows in macOS apps. The
+	// first cascaded window steps away from the main window, or keeps its
+	// default position when there is none. X, Y and Screen are ignored.
+	// Off macOS it behaves as WindowCentered.
+	WindowCascade WindowStartPosition = 2
 )
 
 type WebviewWindowOptions struct {
@@ -187,6 +193,14 @@ type WebviewWindowOptions struct {
 	// When enabled, files dragged from the OS onto elements with the
 	// `data-file-drop-target` attribute will trigger a FilesDropped event.
 	EnableFileDrop bool
+
+	// DropTypes selects what dragged content the window accepts from other
+	// applications. Empty means DropFiles, which keeps the file drop
+	// pipeline above. Adding DropText, DropURLs or DropImages delivers
+	// those drops to Go through WebviewWindow.OnDrop and implicitly enables
+	// the drop overlay; it also means the page's own HTML5 drop handling no
+	// longer receives them. Non-file types are implemented on macOS.
+	DropTypes []DropType
 
 	// Permissions controls how capability requests (camera, microphone, …)
 	// from the web content are handled, per PermissionType. Unset entries use
@@ -506,13 +520,18 @@ type ThemeSettings struct {
 type MacBackdrop int
 
 const (
-	// MacBackdropNormal - The default value. The window will have a normal opaque background.
+	// MacBackdropNormal uses AppKit's normal opaque window surface. This is the
+	// appropriate backdrop for standard document windows, including windows
+	// whose edge-to-edge content scrolls underneath an NSToolbar.
 	MacBackdropNormal MacBackdrop = iota
 	// MacBackdropTransparent - The window will have a transparent background, with the content underneath it being visible
 	MacBackdropTransparent
 	// MacBackdropTranslucent - The window will have a translucent background, with the content underneath it being "fuzzy" or "frosted"
 	MacBackdropTranslucent
-	// MacBackdropLiquidGlass - The window will use Apple's Liquid Glass effect (macOS 15.0+ with fallback to translucent)
+	// MacBackdropLiquidGlass applies a custom whole-window glass backdrop on
+	// macOS 26+ with a translucent fallback. It does not enable toolbar glass:
+	// standard NSToolbar instances adopt the system Liquid Glass appearance
+	// automatically on supported macOS releases.
 	MacBackdropLiquidGlass
 )
 
@@ -531,6 +550,42 @@ const (
 	// MacToolbarStyleUnifiedCompact - Same as MacToolbarStyleUnified, but with reduced margins in the toolbar allowing more focus to be on the contents of the window
 	MacToolbarStyleUnifiedCompact
 )
+
+// MacContentLayout controls whether a window's primary content is laid out
+// below the titlebar and toolbar or extends underneath them. Edge-to-edge
+// layout is the native arrangement required for AppKit's automatic scroll
+// edge effect on macOS 26 and newer.
+type MacContentLayout int
+
+const (
+	// MacContentLayoutAutomatic follows the titlebar's FullSizeContent option:
+	// full-size content is edge-to-edge, otherwise it remains below the toolbar.
+	MacContentLayoutAutomatic MacContentLayout = iota
+	// MacContentLayoutBelowToolbar constrains primary content to the window's
+	// unobscured content layout guide.
+	MacContentLayoutBelowToolbar
+	// MacContentLayoutEdgeToEdge extends primary content beneath the titlebar
+	// and toolbar. Native scroll views preserve their resting inset and, on
+	// macOS 26+, receive AppKit's automatic scroll edge effect while scrolling.
+	MacContentLayoutEdgeToEdge
+)
+
+func validMacContentLayout(layout MacContentLayout) bool {
+	return layout >= MacContentLayoutAutomatic && layout <= MacContentLayoutEdgeToEdge
+}
+
+func resolveMacContentLayout(window MacWindow, pane MacContentLayout) MacContentLayout {
+	if validMacContentLayout(pane) && pane != MacContentLayoutAutomatic {
+		return pane
+	}
+	if validMacContentLayout(window.ContentLayout) && window.ContentLayout != MacContentLayoutAutomatic {
+		return window.ContentLayout
+	}
+	if window.TitleBar.FullSizeContent {
+		return MacContentLayoutEdgeToEdge
+	}
+	return MacContentLayoutBelowToolbar
+}
 
 // MacLiquidGlassStyle defines the style of the Liquid Glass effect.
 // Without -tags private_mac_apis, styles use public regular/clear values and
@@ -626,11 +681,18 @@ type MacWindow struct {
 	CornerRadius float64
 	// TitleBar contains options for the Mac titlebar
 	TitleBar MacTitleBar
+	// ContentLayout controls whether the primary WebView is constrained below
+	// the titlebar and toolbar or extends underneath them. Automatic follows
+	// TitleBar.FullSizeContent. A split view's primary WebView pane may override
+	// this value with MacSplitWebviewPane.SetContentLayout.
+	ContentLayout MacContentLayout
 	// Appearance is the appearance type for the window
 	Appearance MacAppearanceType
-	// InvisibleTitleBarHeight defines the height of an invisible titlebar which responds to dragging
+	// InvisibleTitleBarHeight defines the height of an invisible titlebar which responds to dragging.
+	// It sizes the WebView drag region only and does not apply to a NativeWindow.
 	InvisibleTitleBarHeight int
-	// Maps events from platform specific to common event types
+	// Maps events from platform specific to common event types.
+	// A NativeWindow emits no window events yet, so it does not apply there.
 	EventMapping map[events.WindowEventType]events.WindowEventType
 
 	// EnableFraudulentWebsiteWarnings will enable warnings for fraudulent websites.
@@ -649,6 +711,22 @@ type MacWindow struct {
 	// TabbingMode sets the window tabbing mode (macOS 10.12+)
 	TabbingMode MacWindowTabbingMode
 
+	// FrameAutosaveName saves the window's position and size in the user
+	// defaults under this name whenever it moves or resizes, and restores
+	// them when a window with the same name is next created. A restored
+	// frame takes precedence over X, Y, Width, Height and InitialPosition.
+	// Empty disables frame autosave. See also SetFrameAutosaveName.
+	FrameAutosaveName string
+
+	// RestorationID makes the window restorable: when the application is
+	// relaunched after a crash, a reboot or (with "Close windows when
+	// quitting an application" off) a normal quit, macOS asks the
+	// application to recreate the window through WindowManager.OnRestore
+	// with this identifier and the data last stored with
+	// SetRestorationData. Empty leaves the window out of state restoration.
+	// See also SetRestorationID.
+	RestorationID string
+
 	// LiquidGlass contains configuration for the Liquid Glass effect
 	LiquidGlass MacLiquidGlass
 
@@ -665,6 +743,18 @@ type MacWindow struct {
 	// PanelPreferences configures NSPanel-specific behaviour when WindowClass is
 	// MacWindowClassPanel. It is ignored for standard windows.
 	PanelPreferences MacPanelPreferences
+
+	// SplitView installs a native split-view layout when the window is
+	// created, exactly as WebviewWindow.SetSplitView would before the window
+	// is shown. It lets a window created after App.Run be configured in one
+	// call. Validation errors are reported through Window.Error.
+	SplitView *MacSplitView
+
+	// Toolbar attaches a native toolbar when the window is created, exactly
+	// as WebviewWindow.SetToolbar would before the window is shown. It is
+	// attached after SplitView so a sidebar tracking separator can align with
+	// the sidebar divider.
+	Toolbar *MacToolbar
 }
 
 // MacWindowClass selects the native AppKit class used for a webview window.
@@ -797,13 +887,19 @@ type MacWebviewPreferences struct {
 
 // MacTitleBar contains options for the Mac titlebar
 type MacTitleBar struct {
-	// AppearsTransparent will make the titlebar transparent
+	// AppearsTransparent prevents AppKit from drawing an opaque titlebar
+	// background. Leave this false for automatic AppKit content-inset and
+	// scroll-edge handling under a standard toolbar. This is independent of
+	// transparent window backdrops.
 	AppearsTransparent bool
 	// Hide will hide the titlebar
 	Hide bool
 	// HideTitle will hide the title
 	HideTitle bool
-	// FullSizeContent will extend the window content to the full size of the window
+	// FullSizeContent extends the window content through the titlebar and toolbar
+	// region. Pair it with MacContentLayoutEdgeToEdge to enable the native
+	// Finder-style arrangement in which scrolling content passes beneath a
+	// standard NSToolbar.
 	FullSizeContent bool
 	// UseToolbar will use a toolbar instead of a titlebar
 	UseToolbar bool
@@ -813,6 +909,12 @@ type MacTitleBar struct {
 	ShowToolbarWhenFullscreen bool
 	// ToolbarStyle is the style of toolbar to use
 	ToolbarStyle MacToolbarStyle
+	// WindowButtonsOffset moves the close, minimise and zoom buttons (the
+	// traffic lights) by X and Y points from their default position; X
+	// moves them right and Y moves them down. The offset is reapplied
+	// whenever AppKit lays the titlebar out again. Nil keeps the default
+	// position. See also SetWindowButtonsOffset.
+	WindowButtonsOffset *Point
 }
 
 // MacTitleBarDefault results in the default Mac MacTitleBar

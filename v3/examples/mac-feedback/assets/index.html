@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Feedback</title>
+    <style>
+        :root { color-scheme: light dark; }
+        body {
+            margin: 0; padding: 48px 28px 28px;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+            color: #f2f2f2; background: rgba(24, 26, 32, 0.92);
+            user-select: none; -webkit-user-select: none;
+        }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        p.lead { margin: 0 0 20px; color: #a9adb8; font-size: 13px; }
+        section { margin-bottom: 18px; padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.06); }
+        h2 { font-size: 13px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #8fa3ff; }
+        .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        button, select, input {
+            font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.10); color: inherit;
+        }
+        button:hover { background: rgba(255,255,255,0.18); }
+        button.primary { background: #4f6df5; border-color: #4f6df5; }
+        input[type=text] { flex: 1; min-width: 200px; }
+        input[type=range] { padding: 0; }
+        #log { font: 12px ui-monospace, Menlo, monospace; white-space: pre-wrap; max-height: 150px; overflow-y: auto; color: #cfd3dc; margin: 0; }
+        #transcript { min-height: 40px; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.25); font-size: 14px; }
+        #transcript.error { color: #ff9c8a; }
+        .muted { color: #a9adb8; font-size: 12px; }
+    </style>
+</head>
+<body>
+<h1>Feedback</h1>
+<p class="lead">Status item, haptics, sounds and speech on macOS.</p>
+
+<section>
+    <h2>Status item</h2>
+    <div class="row">
+        <button onclick="wails.Events.Emit('tray:show')">Show</button>
+        <button onclick="wails.Events.Emit('tray:hide')">Hide</button>
+        <span class="muted" id="tray-state">visible: unknown</span>
+    </div>
+    <p class="muted">The item uses the SF Symbol <code>waveform.circle</code>, has a tooltip and can be removed with a Command-drag. macOS remembers the removal by autosave name; Show brings it back.</p>
+</section>
+
+<section>
+    <h2>Haptics</h2>
+    <div class="row">
+        <button onclick="wails.Events.Emit('haptic', 'generic')">Generic</button>
+        <button onclick="wails.Events.Emit('haptic', 'alignment')">Alignment</button>
+        <button onclick="wails.Events.Emit('haptic', 'levelChange')">Level change</button>
+        <span class="muted">Felt on a Force Touch trackpad while the app is active.</span>
+    </div>
+</section>
+
+<section>
+    <h2>Sounds</h2>
+    <div class="row">
+        <button onclick="wails.Events.Emit('sound:beep')">Beep</button>
+        <select id="sound"></select>
+        <button onclick="playSound()">Play</button>
+    </div>
+</section>
+
+<section>
+    <h2>Speech</h2>
+    <div class="row">
+        <input type="text" id="text" value="Hello from Wails. This is native text to speech.">
+    </div>
+    <div class="row" style="margin-top: 8px">
+        <select id="voice"><option value="">Default voice</option></select>
+        <label class="muted">Rate <input type="range" id="rate" min="0" max="1" step="0.05" value="0.5"></label>
+        <button class="primary" onclick="speak()">Speak</button>
+        <button onclick="wails.Events.Emit('speech:stop')">Stop all</button>
+    </div>
+</section>
+
+<section>
+    <h2>Recognition</h2>
+    <div class="row" style="margin-bottom: 8px">
+        <button class="primary" onclick="recognise()">Recognise 5 seconds</button>
+        <span class="muted">Requires the usage strings in Info.plist and permission prompts on first use.</span>
+    </div>
+    <div id="transcript">Transcript appears here.</div>
+</section>
+
+<section>
+    <h2>Log</h2>
+    <pre id="log"></pre>
+</section>
+
+<script type="module">
+    import * as wails from "/wails/runtime.js";
+    window.wails = wails;
+
+    const log = (line) => {
+        const el = document.getElementById("log");
+        el.textContent = `${new Date().toLocaleTimeString()}  ${line}\n` + el.textContent;
+    };
+
+    wails.Events.On("status", (e) => log(e.data));
+    wails.Events.On("tray:visible", (e) => {
+        document.getElementById("tray-state").textContent = `visible: ${e.data}`;
+        log(`tray visible: ${e.data}`);
+    });
+    wails.Events.On("sound:names", (e) => {
+        const select = document.getElementById("sound");
+        select.innerHTML = "";
+        for (const name of e.data || []) {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        }
+        if (!select.options.length) {
+            select.innerHTML = '<option value="">No system sounds</option>';
+        }
+    });
+    wails.Events.On("speech:voices:result", (e) => {
+        const select = document.getElementById("voice");
+        for (const voice of e.data || []) {
+            const option = document.createElement("option");
+            option.value = voice.ID;
+            option.textContent = `${voice.Name} (${voice.Language})`;
+            select.appendChild(option);
+        }
+        log(`${(e.data || []).length} voices available`);
+    });
+    const transcript = document.getElementById("transcript");
+    wails.Events.On("speech:partial", (e) => { transcript.className = ""; transcript.textContent = e.data || "..."; });
+    wails.Events.On("speech:final", (e) => { transcript.className = ""; transcript.textContent = e.data || "(nothing recognised)"; log("recognition finished"); });
+    wails.Events.On("speech:error", (e) => { transcript.className = "error"; transcript.textContent = e.data; log("recognition error: " + e.data); });
+
+    window.playSound = () => wails.Events.Emit("sound:play", document.getElementById("sound").value);
+    window.speak = () => wails.Events.Emit("speech:speak", {
+        text: document.getElementById("text").value,
+        voice: document.getElementById("voice").value,
+        rate: parseFloat(document.getElementById("rate").value),
+    });
+    window.recognise = () => { transcript.className = ""; transcript.textContent = "Listening..."; wails.Events.Emit("speech:recognize"); };
+
+    wails.Events.Emit("sound:list");
+    wails.Events.Emit("speech:voices");
+</script>
+</body>
+</html>

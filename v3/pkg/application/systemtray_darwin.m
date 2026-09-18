@@ -6,6 +6,9 @@
 
 extern void systrayClickCallback(long, int);
 extern int systrayPreClickCallback(long, int);
+extern void systrayVisibilityCallback(long, bool);
+
+static void *kWailsStatusItemVisibleContext = &kWailsStatusItemVisibleContext;
 
 // Bit returned by +[NSEvent pressedMouseButtons] for the right mouse button.
 static const NSUInteger kRightMouseButtonBit = 1UL << 1;
@@ -36,6 +39,17 @@ int systemTrayCoerceEventType(int rawEventType, unsigned long pressedMouseButton
 	// action handler instead of re-showing the menu.
 	self.statusItem.menu = nil;
 	menu.delegate = nil;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change
+                       context:(void *)context {
+	if (context != kWailsStatusItemVisibleContext) {
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+		return;
+	}
+	systrayVisibilityCallback(self.id, (bool)self.statusItem.visible);
 }
 
 @end
@@ -192,6 +206,10 @@ void systemTrayDestroy(void* nsStatusItem) {
 			[NSEvent removeMonitor:controller.eventMonitor];
 			controller.eventMonitor = nil;
 		}
+		if (controller.observingVisibility) {
+			[statusItem removeObserver:controller forKeyPath:@"visible" context:kWailsStatusItemVisibleContext];
+			controller.observingVisibility = NO;
+		}
 		[[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
 		[controller release];
 		[statusItem release];
@@ -324,4 +342,79 @@ void systemTrayPositionWindow(void* nsStatusItem, void* nsWindow, int offset) {
 
     // Bring window to front
     [(NSWindow*)nsWindow orderFrontRegardless];
+}
+
+void systemTraySetTooltip(void* nsStatusItem, const char *tooltip) {
+	NSString *text = tooltip ? [NSString stringWithUTF8String:tooltip] : nil;
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+		statusItem.button.toolTip = (text.length > 0) ? text : nil;
+	});
+}
+
+void systemTraySetSymbol(void* nsStatusItem, const char *symbolName, double pointSize, int weight, int position) {
+	if (symbolName == NULL) {
+		return;
+	}
+	NSString *name = [NSString stringWithUTF8String:symbolName];
+	dispatch_async(dispatch_get_main_queue(), ^{
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+		if (@available(macOS 11.0, *)) {
+			NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+			NSImage *image = [NSImage imageWithSystemSymbolName:name accessibilityDescription:name];
+			if (image == nil) {
+				NSLog(@"[wails] system tray: unknown SF Symbol '%@'", name);
+				return;
+			}
+			if (pointSize > 0 || weight > 0) {
+				CGFloat size = pointSize > 0 ? (CGFloat)pointSize : [NSFont systemFontSize];
+				NSFontWeight fontWeight = NSFontWeightRegular;
+				switch (weight) {
+					case 1: fontWeight = NSFontWeightUltraLight; break;
+					case 2: fontWeight = NSFontWeightThin; break;
+					case 3: fontWeight = NSFontWeightLight; break;
+					case 4: fontWeight = NSFontWeightRegular; break;
+					case 5: fontWeight = NSFontWeightMedium; break;
+					case 6: fontWeight = NSFontWeightSemibold; break;
+					case 7: fontWeight = NSFontWeightBold; break;
+					case 8: fontWeight = NSFontWeightHeavy; break;
+					case 9: fontWeight = NSFontWeightBlack; break;
+					default: break;
+				}
+				NSImageSymbolConfiguration *config = [NSImageSymbolConfiguration configurationWithPointSize:size weight:fontWeight];
+				NSImage *configured = [image imageWithSymbolConfiguration:config];
+				if (configured != nil) {
+					image = configured;
+				}
+			}
+			[image setTemplate:YES];
+			statusItem.button.image = image;
+			statusItem.button.imagePosition = position;
+		}
+#endif
+	});
+}
+
+void systemTraySetRemovable(void* nsStatusItem, bool allowed, const char *autosaveName) {
+	NSString *name = autosaveName ? [NSString stringWithUTF8String:autosaveName] : nil;
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+		StatusItemController *controller = (StatusItemController *)[statusItem target];
+		if (name.length > 0) {
+			statusItem.autosaveName = name;
+		}
+		statusItem.behavior = allowed ? NSStatusItemBehaviorRemovalAllowed : 0;
+		if (controller != nil && !controller.observingVisibility) {
+			[statusItem addObserver:controller
+			             forKeyPath:@"visible"
+			                options:NSKeyValueObservingOptionNew
+			                context:kWailsStatusItemVisibleContext];
+			controller.observingVisibility = YES;
+		}
+	});
+}
+
+bool systemTrayIsVisible(void* nsStatusItem) {
+	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+	return (bool)statusItem.visible;
 }
