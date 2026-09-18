@@ -9,18 +9,23 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 )
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: go run validate-changelog.go <changelog-file> <added-lines-file> [deleted-lines-file] [base-changelog-file]")
+		fmt.Println("Usage: go run validate-changelog.go <changelog-file> <added-lines-file> [deleted-lines-file] [base-changelog-file] [unreleased-file]")
 		os.Exit(1)
 	}
 
 	changelogPath := os.Args[1]
 	addedLinesPath := os.Args[2]
+	unreleasedPath := "v3/UNRELEASED_CHANGELOG.md"
+	if len(os.Args) >= 6 {
+		unreleasedPath = os.Args[5]
+	}
 
 	// Read changelog
 	content, err := readFile(changelogPath)
@@ -62,7 +67,8 @@ func main() {
 	// Parse changelog to find where added lines ended up
 	lines := strings.Split(content, "\n")
 
-	// Find problematic entries - only check lines that were ADDED in this PR
+	// The site contains released history only. Check all newly added entries,
+	// including entries accidentally placed before the first release.
 	var issues []Issue
 	currentSection := ""
 	publishedNotes := make(map[string]string)
@@ -73,16 +79,15 @@ func main() {
 			currentSection = section
 		}
 
-		// Check if this line was added in this PR AND is in a released version
-		if currentSection != "" && currentSection != "Unreleased" &&
-			strings.HasPrefix(strings.TrimSpace(line), "- ") &&
+		// Historical corrections and published backfills retain their provenance checks.
+		if strings.HasPrefix(strings.TrimSpace(line), "- ") &&
 			wasAddedInThisPR(line, addedLines) {
 			if isSameSourceCorrection(line, currentSection, deletedEntries) {
 				fmt.Printf("✅ CORRECTION: Same-source replacement in %s: %s\n", currentSection, strings.TrimSpace(line))
 				continue
 			}
 
-			if _, loaded := publishedNotes[currentSection]; !loaded {
+			if _, loaded := publishedNotes[currentSection]; !loaded && currentSection != "" && currentSection != "Unreleased" {
 				body, err := publishedReleaseNotes(currentSection)
 				if err != nil {
 					fmt.Printf("⚠️ Cannot verify published notes for %s: %v\n", currentSection, err)
@@ -98,7 +103,7 @@ func main() {
 				Line:     lineNum,
 				Content:  strings.TrimSpace(line),
 				Section:  currentSection,
-				Category: getCurrentCategory(lines, lineNum),
+				Category: normalizeCategory(getCurrentCategory(lines, lineNum)),
 			})
 			fmt.Printf("🚨 MISPLACED: Line added to released version %s: %s\n", currentSection, strings.TrimSpace(line))
 		}
@@ -117,7 +122,7 @@ func main() {
 	}
 
 	// Attempt automatic fix
-	fixed, err := attemptFix(content, issues, changelogPath)
+	fixed, err := attemptFix(content, issues, changelogPath, unreleasedPath)
 	if err != nil {
 		fmt.Printf("VALIDATION_RESULT=error\n")
 		fmt.Printf("ERROR: Failed to fix changelog: %v\n", err)
@@ -126,7 +131,7 @@ func main() {
 
 	if fixed {
 		fmt.Println("VALIDATION_RESULT=fixed")
-		fmt.Println("✅ Changelog has been automatically fixed")
+		fmt.Println("✅ Entries moved to " + unreleasedPath)
 	} else {
 		fmt.Println("VALIDATION_RESULT=cannot_fix")
 		fmt.Println("❌ Cannot automatically fix changelog issues")
@@ -264,6 +269,20 @@ type Issue struct {
 	Category string
 }
 
+// changelogCategories are the section headers used by UNRELEASED_CHANGELOG.md.
+var changelogCategories = []string{"Added", "Changed", "Fixed", "Deprecated", "Removed", "Security"}
+
+// normalizeCategory maps the category header an entry was found under to one
+// of the UNRELEASED_CHANGELOG.md sections, defaulting to "Added".
+func normalizeCategory(category string) string {
+	for _, c := range changelogCategories {
+		if strings.EqualFold(category, c) {
+			return c
+		}
+	}
+	return "Added"
+}
+
 func wasAddedInThisPR(line string, addedLines []string) bool {
 	trimmedLine := strings.TrimSpace(line)
 	for _, addedLine := range addedLines {
@@ -297,106 +316,89 @@ func getCurrentCategory(lines []string, lineNum int) string {
 	return "Added"
 }
 
-func attemptFix(content string, issues []Issue, outputPath string) (bool, error) {
+// attemptFix removes the misplaced entries from the generated changelog and
+// inserts them into the matching category sections of UNRELEASED_CHANGELOG.md.
+func attemptFix(content string, issues []Issue, changelogPath, unreleasedPath string) (bool, error) {
 	lines := strings.Split(content, "\n")
 
-	// Find unreleased section
-	unreleasedStart := -1
-	unreleasedEnd := -1
-
-	for i, line := range lines {
-		if strings.Contains(line, "[Unreleased]") {
-			unreleasedStart = i
-			for j := i + 1; j < len(lines); j++ {
-				if strings.HasPrefix(lines[j], "## ") && !strings.Contains(lines[j], "[Unreleased]") {
-					unreleasedEnd = j
-					break
-				}
-			}
-			break
-		}
+	// Remove issue lines from the changelog (highest line number first)
+	linesToRemove := make([]int, 0, len(issues))
+	for _, issue := range issues {
+		linesToRemove = append(linesToRemove, issue.Line)
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(linesToRemove)))
+	for _, lineNum := range linesToRemove {
+		lines = append(lines[:lineNum], lines[lineNum+1:]...)
 	}
 
-	if unreleasedStart == -1 {
-		return false, fmt.Errorf("Could not find [Unreleased] section")
+	// Insert the entries into UNRELEASED_CHANGELOG.md
+	unreleasedContent, err := readFile(unreleasedPath)
+	if err != nil {
+		return false, fmt.Errorf("failed to read %s: %w", unreleasedPath, err)
 	}
+	unreleasedLines := strings.Split(unreleasedContent, "\n")
 
-	// Group issues by category
 	issuesByCategory := make(map[string][]Issue)
 	for _, issue := range issues {
 		issuesByCategory[issue.Category] = append(issuesByCategory[issue.Category], issue)
 	}
 
-	// Remove issues from original locations (in reverse order)
-	var linesToRemove []int
-	for _, issue := range issues {
-		linesToRemove = append(linesToRemove, issue.Line)
-	}
-
-	// Sort in reverse order
-	for i := 0; i < len(linesToRemove); i++ {
-		for j := i + 1; j < len(linesToRemove); j++ {
-			if linesToRemove[i] < linesToRemove[j] {
-				linesToRemove[i], linesToRemove[j] = linesToRemove[j], linesToRemove[i]
-			}
+	// Iterate categories in a stable order
+	for _, category := range changelogCategories {
+		categoryIssues := issuesByCategory[category]
+		if len(categoryIssues) == 0 {
+			continue
 		}
-	}
-
-	// Remove lines
-	for _, lineNum := range linesToRemove {
-		lines = append(lines[:lineNum], lines[lineNum+1:]...)
-	}
-
-	// Add entries to unreleased section
-	for category, categoryIssues := range issuesByCategory {
-		categoryFound := false
-		insertPos := unreleasedStart + 1
-
-		for i := unreleasedStart + 1; i < unreleasedEnd && i < len(lines); i++ {
-			if strings.Contains(lines[i], "### "+category) || strings.Contains(lines[i], "## "+category) {
-				categoryFound = true
-				for j := i + 1; j < unreleasedEnd && j < len(lines); j++ {
-					if strings.HasPrefix(lines[j], "### ") || strings.HasPrefix(lines[j], "## ") {
-						insertPos = j
-						break
-					}
-					if j == len(lines)-1 || j == unreleasedEnd-1 {
-						insertPos = j + 1
-						break
-					}
-				}
-				break
-			}
+		insertPos := findCategoryInsertPos(unreleasedLines, category)
+		if insertPos == -1 {
+			return false, fmt.Errorf("could not find '## %s' section in %s", category, unreleasedPath)
 		}
-
-		if !categoryFound {
-			if unreleasedEnd > 0 {
-				insertPos = unreleasedEnd
-			} else {
-				insertPos = unreleasedStart + 1
-			}
-
-			newLines := []string{
-				"",
-				"### " + category,
-				"",
-			}
-			lines = append(lines[:insertPos], append(newLines, lines[insertPos:]...)...)
-			insertPos += len(newLines)
-			unreleasedEnd += len(newLines)
-		}
-
-		// Add entries to the category
 		for _, issue := range categoryIssues {
-			lines = append(lines[:insertPos], append([]string{issue.Content}, lines[insertPos:]...)...)
+			unreleasedLines = append(unreleasedLines[:insertPos], append([]string{issue.Content}, unreleasedLines[insertPos:]...)...)
 			insertPos++
-			unreleasedEnd++
 		}
 	}
 
-	// Write back to file
-	newContent := strings.Join(lines, "\n")
-	return true, writeFile(outputPath, newContent)
+	// Save the destination first so a failed write cannot discard an entry.
+	if err := writeFile(unreleasedPath, strings.Join(unreleasedLines, "\n")); err != nil {
+		return false, err
+	}
+	if err := writeFile(changelogPath, strings.Join(lines, "\n")); err != nil {
+		if rollbackErr := writeFile(unreleasedPath, unreleasedContent); rollbackErr != nil {
+			return false, fmt.Errorf("write changelog: %w; restore unreleased file: %v", err, rollbackErr)
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// findCategoryInsertPos returns the line index at which new entries should be
+// inserted for the given category in UNRELEASED_CHANGELOG.md: after the
+// section's placeholder comment and any existing entries, before the next
+// section starts. Returns -1 if the section is missing.
+func findCategoryInsertPos(lines []string, category string) int {
+	sectionStart := -1
+	for i, line := range lines {
+		if strings.TrimSpace(line) == "## "+category {
+			sectionStart = i
+			break
+		}
+	}
+	if sectionStart == -1 {
+		return -1
+	}
+
+	insertPos := sectionStart + 1
+	for i := sectionStart + 1; i < len(lines); i++ {
+		trimmed := strings.TrimSpace(lines[i])
+		if strings.HasPrefix(trimmed, "## ") || strings.HasPrefix(trimmed, "---") {
+			break
+		}
+		if strings.HasPrefix(trimmed, "<!--") || strings.HasPrefix(trimmed, "- ") || strings.HasPrefix(trimmed, "* ") {
+			insertPos = i + 1
+		}
+	}
+	return insertPos
 }
 
 func readFile(path string) (string, error) {

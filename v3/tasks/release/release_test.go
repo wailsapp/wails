@@ -1041,13 +1041,12 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 	}
 
 	// Create initial changelog
-	changelogFile := filepath.Join(projectRoot, "docs", "mpress", "content", "changelog.mpd")
+	changelogPath := filepath.Join(projectRoot, "docs", "mpress", "content", "changelog.md")
 	initialChangelog := `---
-schema = 1
-title = "Changelog"
+title: Changelog
 ---
 
-## [Unreleased]
+` + changelogInsertMarker + `
 
 ## v1.0.0-alpha.4 - 2024-01-01
 
@@ -1055,7 +1054,7 @@ title = "Changelog"
 - Previous feature
 
 `
-	err = os.WriteFile(changelogFile, []byte(initialChangelog), 0644)
+	err = os.WriteFile(changelogPath, []byte(initialChangelog), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create changelog file: %v", err)
 	}
@@ -1118,39 +1117,82 @@ title = "Changelog"
 		}
 	}
 
-	// Simulate updating the main changelog
-	changelogData, _ := os.ReadFile(changelogFile)
-	changelog := string(changelogData)
-	changelogSplit := strings.Split(changelog, "## [Unreleased]")
+	// Update the main changelog for real, via the same code path the release uses
+	origChangelogFile := changelogFile
+	changelogFile = changelogPath
+	defer func() { changelogFile = origChangelogFile }()
 
 	newVersion := "v1.0.0-alpha.6"
-	today := "2024-01-15"
-	newChangelog := changelogSplit[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + "\n\n" + changelogContent + changelogSplit[1]
+	if err := applyChangelogUpdates(newVersion, strings.TrimSpace(changelogContent)); err != nil {
+		t.Fatalf("applyChangelogUpdates() failed: %v", err)
+	}
+
+	newChangelogData, err := os.ReadFile(changelogPath)
+	if err != nil {
+		t.Fatalf("Failed to read updated changelog: %v", err)
+	}
+	newChangelog := string(newChangelogData)
 
 	// Verify the final changelog format
-	if !strings.Contains(newChangelog, "## v1.0.0-alpha.6 - 2024-01-15") {
+	if !strings.Contains(newChangelog, "## "+newVersion+" - ") {
 		t.Error("Expected new version header in changelog")
+	}
+	if !strings.Contains(newChangelog, changelogInsertMarker) {
+		t.Error("Expected insert marker to be preserved in changelog")
+	}
+	if strings.Index(newChangelog, changelogInsertMarker) > strings.Index(newChangelog, "## "+newVersion) {
+		t.Error("Expected new version section to be inserted below the marker")
 	}
 
 	// Count occurrences of section headers in the new version section
 	newVersionSection := strings.Split(newChangelog, "## v1.0.0-alpha.4")[0]
 
-	addedCount := strings.Count(newVersionSection, "## Added")
+	// Category headers must be demoted to h3 for the site's table of contents
+	addedCount := strings.Count(newVersionSection, "### Added")
 	if addedCount != 1 {
-		t.Errorf("Expected exactly 1 '## Added' section, got %d", addedCount)
+		t.Errorf("Expected exactly 1 '### Added' section, got %d", addedCount)
 	}
 
-	deprecatedCount := strings.Count(newVersionSection, "## Deprecated")
+	deprecatedCount := strings.Count(newVersionSection, "### Deprecated")
 	if deprecatedCount != 1 {
-		t.Errorf("Expected exactly 1 '## Deprecated' section, got %d", deprecatedCount)
+		t.Errorf("Expected exactly 1 '### Deprecated' section, got %d", deprecatedCount)
+	}
+	if strings.Contains(newVersionSection, "\n## Added") || strings.Contains(newVersionSection, "\n## Deprecated") {
+		t.Error("Expected category headers to be demoted from '##' to '###'")
 	}
 
 	// Ensure no empty sections in the new version section
-	for _, section := range []string{"## Changed", "## Fixed", "## Removed", "## Security"} {
+	for _, section := range []string{"### Changed", "### Fixed", "### Removed", "### Security"} {
 		count := strings.Count(newVersionSection, section)
 		if count > 0 {
 			t.Errorf("Expected 0 occurrences of empty section '%s', got %d", section, count)
 		}
+	}
+}
+
+func TestFormatChangelogForSite(t *testing.T) {
+	input := strings.Join([]string{
+		"## Added",
+		"- New feature with ## in the middle",
+		"",
+		"## Fixed",
+		"- A fix",
+		"### Already h3",
+	}, "\n")
+
+	got := formatChangelogForSite(input)
+
+	if !strings.Contains(got, "### Added") || !strings.Contains(got, "### Fixed") {
+		t.Errorf("Expected category headers demoted to h3, got:\n%s", got)
+	}
+	if strings.Contains(got, "\n## ") || strings.HasPrefix(got, "## ") {
+		t.Errorf("Expected no h2 headers to remain, got:\n%s", got)
+	}
+	if !strings.Contains(got, "- New feature with ## in the middle") {
+		t.Errorf("Expected bullet content to be untouched, got:\n%s", got)
+	}
+	if !strings.Contains(got, "### Already h3") {
+		t.Errorf("Expected existing h3 headers to be left as-is, got:\n%s", got)
 	}
 }
 
@@ -1333,32 +1375,61 @@ func TestSyncRuntimePackageVersion(t *testing.T) {
 	}
 }
 
-func TestReleasePublishesMPDChangelog(t *testing.T) {
+func TestReleasePublishesMarkdownChangelog(t *testing.T) {
 	cleanup, root := setupTestEnvironment(t)
 	defer cleanup()
-	archive := filepath.Join(root, "docs/mpress/content/changelog.mpd")
+	archive := filepath.Join(root, "docs/mpress/content/changelog.md")
 	if err := os.MkdirAll(filepath.Dir(archive), 0755); err != nil {
 		t.Fatal(err)
 	}
-	original := "---\nschema = 1\ntitle = \"Changelog\"\n---\n\n## [Unreleased]\n\n## v3.0.0-beta.8\nOld notes\n"
+	original := "---\ntitle: \"Changelog\"\n---\n\n" + changelogInsertMarker + "\n\n## v3.0.0-beta.8\nOld notes\n"
 	if err := os.WriteFile(archive, []byte(original), 0644); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(unreleasedChangelogFile, []byte("## Fixed\n- A fix\n"), 0644); err != nil {
 		t.Fatal(err)
 	}
-	if err := applyChangelogUpdates("v3.0.0-beta.9", "### Fixed\n- A fix\n"); err != nil {
+	if err := applyChangelogUpdates("v3.0.0-beta.9", "## Fixed\n- A fix\n"); err != nil {
 		t.Fatal(err)
 	}
 	data, err := os.ReadFile(archive)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.HasPrefix(string(data), strings.Split(original, "## [Unreleased]")[0]) || !strings.Contains(string(data), "## v3.0.0-beta.9") || !strings.Contains(string(data), "Old notes") {
-		t.Fatalf("Invalid published MPD: %s", data)
+	if !strings.HasPrefix(string(data), strings.Split(original, changelogInsertMarker)[0]) || !strings.Contains(string(data), "## v3.0.0-beta.9") || !strings.HasSuffix(string(data), "## v3.0.0-beta.8\nOld notes\n") || !strings.Contains(string(data), "\n### Fixed\n") {
+		t.Fatalf("Invalid published Markdown: %s", data)
 	}
 	remaining, err := os.ReadFile(unreleasedChangelogFile)
 	if err != nil || strings.Contains(string(remaining), "- A fix") {
 		t.Fatalf("Unreleased changelog was not reset: %s, %v", remaining, err)
+	}
+}
+
+func TestReleaseRejectsMissingOrDuplicateChangelogMarker(t *testing.T) {
+	for _, markers := range []int{0, 2} {
+		t.Run(strconv.Itoa(markers), func(t *testing.T) {
+			cleanup, root := setupTestEnvironment(t)
+			defer cleanup()
+			archive := filepath.Join(root, "docs/mpress/content/changelog.md")
+			if err := os.MkdirAll(filepath.Dir(archive), 0755); err != nil {
+				t.Fatal(err)
+			}
+			original := strings.Repeat(changelogInsertMarker+"\n", markers) + "## v3.0.0-beta.8\nOld notes\n"
+			pending := "## Fixed\n- Keep this entry\n"
+			for path, text := range map[string]string{archive: original, unreleasedChangelogFile: pending} {
+				if err := os.WriteFile(path, []byte(text), 0644); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := applyChangelogUpdates("v3.0.0-beta.9", pending); err == nil {
+				t.Fatal("expected marker error")
+			}
+			for path, want := range map[string]string{archive: original, unreleasedChangelogFile: pending} {
+				got, err := os.ReadFile(path)
+				if err != nil || string(got) != want {
+					t.Fatalf("%s changed: %q (%v)", path, got, err)
+				}
+			}
+		})
 	}
 }

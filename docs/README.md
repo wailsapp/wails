@@ -39,5 +39,5 @@ See the [M-Press contribution guide](mpress/CONTRIBUTING.md) for the complete
 correction and validation workflow.
 
 M-Press is the only supported v3 documentation source. The nightly release
-publisher writes `docs/mpress/content/changelog.mpd`, and generated release
-notes use MPD paths and metadata.
+publisher writes `docs/mpress/content/changelog.md`, and generated release
+notes use Markdown paths and metadata.

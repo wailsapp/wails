@@ -2,7 +2,58 @@
 
 package main
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func TestAttemptFixMovesEntriesToSeparateUnreleasedFile(t *testing.T) {
+	dir := t.TempDir()
+	site, unreleased := filepath.Join(dir, "changelog.md"), filepath.Join(dir, "UNRELEASED_CHANGELOG.md")
+	content := "<!-- CHANGELOG-INSERT-MARKER -->\n## v3.0.0-beta.23\n### Added\n- New feature\n### Fixed\n- New fix\n- Historical fix\n"
+	destination := "# Unreleased Changes\n\n## Added\n<!-- New features -->\n- Existing feature\n\n## Fixed\n<!-- Fixes -->\n\n## Changed\n"
+	for path, text := range map[string]string{site: content, unreleased: destination} {
+		if err := os.WriteFile(path, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	issues := []Issue{{Line: 3, Content: "- New feature", Category: "Added"}, {Line: 5, Content: "- New fix", Category: "Fixed"}}
+	if fixed, err := attemptFix(content, issues, site, unreleased); err != nil || !fixed {
+		t.Fatalf("fixed=%v err=%v", fixed, err)
+	}
+	gotSite, _ := os.ReadFile(site)
+	if want := strings.ReplaceAll(strings.ReplaceAll(content, "- New feature\n", ""), "- New fix\n", ""); string(gotSite) != want {
+		t.Fatalf("history changed: %s", gotSite)
+	}
+	got, _ := os.ReadFile(unreleased)
+	want := strings.Replace(destination, "- Existing feature\n", "- Existing feature\n- New feature\n", 1)
+	want = strings.Replace(want, "<!-- Fixes -->\n", "<!-- Fixes -->\n- New fix\n", 1)
+	if string(got) != want {
+		t.Fatalf("got %q; want %q", got, want)
+	}
+}
+
+func TestAttemptFixMissingDestinationCategoryPreservesFiles(t *testing.T) {
+	dir := t.TempDir()
+	site, unreleased := filepath.Join(dir, "changelog.md"), filepath.Join(dir, "UNRELEASED_CHANGELOG.md")
+	content, destination := "- New fix\n", "## Added\n"
+	for path, text := range map[string]string{site: content, unreleased: destination} {
+		if err := os.WriteFile(path, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := attemptFix(content, []Issue{{Line: 0, Content: "- New fix", Category: "Fixed"}}, site, unreleased); err == nil {
+		t.Fatal("expected missing category error")
+	}
+	for path, want := range map[string]string{site: content, unreleased: destination} {
+		got, err := os.ReadFile(path)
+		if err != nil || string(got) != want {
+			t.Fatalf("%s changed: %q (%v)", path, got, err)
+		}
+	}
+}
 
 func TestHistoricalShorthandReferenceCorrection(t *testing.T) {
 	old := "- Fix build hangs with 50-100k+ files (#4939)"
@@ -26,6 +77,35 @@ func TestHistoricalShorthandReferenceCorrection(t *testing.T) {
 		if got := changelogReferenceFromLine(line); got != "" {
 			t.Fatalf("changelogReferenceFromLine(%q) = %q, want rejection", line, got)
 		}
+	}
+}
+
+func TestMainMovesEntryBeforeFirstRelease(t *testing.T) {
+	dir := t.TempDir()
+	site, added := filepath.Join(dir, "changelog.md"), filepath.Join(dir, "added.txt")
+	deleted, base := filepath.Join(dir, "deleted.txt"), filepath.Join(dir, "base.md")
+	unreleased := filepath.Join(dir, "UNRELEASED_CHANGELOG.md")
+	history := "<!-- CHANGELOG-INSERT-MARKER -->\n\n## v3.0.0-beta.23\n### Fixed\n- Historical fix\n"
+	for path, text := range map[string]string{
+		site:  "- Unpublished entry\n" + history,
+		added: "- Unpublished entry\n", deleted: "", base: history,
+		unreleased: "## Added\n<!-- New features -->\n\n## Fixed\n",
+	} {
+		if err := os.WriteFile(path, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	args := os.Args
+	t.Cleanup(func() { os.Args = args })
+	os.Args = []string{"validate-changelog", site, added, deleted, base, unreleased}
+	main()
+	got, err := os.ReadFile(site)
+	if err != nil || string(got) != history {
+		t.Fatalf("history changed: %q (%v)", got, err)
+	}
+	got, err = os.ReadFile(unreleased)
+	if err != nil || !strings.Contains(string(got), "<!-- New features -->\n- Unpublished entry\n") {
+		t.Fatalf("entry not moved: %q (%v)", got, err)
 	}
 }
 

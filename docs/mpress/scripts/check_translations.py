@@ -15,17 +15,17 @@ LANGUAGES = ("fr", "de", "pt", "ru", "ja", "ko", "zh-cn", "zh-tw", "id")
 # currently have a known audit baseline mismatch. Keep coverage checks and all
 # other translated pages strict until those generated release notes are
 # re-synchronised.
-AUDIT_EXCLUDED_FILES = frozenset({"changelog.mpd"})
+AUDIT_EXCLUDED_FILES = frozenset({"changelog.md"})
 
 
 def check_coverage(content, languages=LANGUAGES):
-    sources = {path.relative_to(content).as_posix() for path in content.rglob("*.mpd")
+    sources = {path.relative_to(content).as_posix() for path in content.rglob("*.md")
                if path.relative_to(content).parts[0] not in languages}
     sources.add("_nav.yaml")
     errors = []
     for language in languages:
         root = content / language
-        targets = {path.relative_to(root).as_posix() for path in root.rglob("*.mpd")}
+        targets = {path.relative_to(root).as_posix() for path in root.rglob("*.md")}
         if (root / "_nav.yaml").is_file():
             targets.add("_nav.yaml")
         errors.extend(f"{language}/{file}: missing translation" for file in sorted(sources - targets))

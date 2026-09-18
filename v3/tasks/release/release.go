@@ -19,18 +19,19 @@ import (
 )
 
 const (
-	versionFile          = "../../internal/version/version.txt"
-	changelogFile        = "../../../docs/mpress/content/changelog.mpd"
-	defaultReleaseBranch = "master"
-	defaultReleaseTitle  = "Wails %s"
-	defaultReleaseTarget = "master"
-	githubDefaultAPI     = "https://api.github.com"
-	githubAPIVersion     = "2022-11-28"
-	runtimePackageJSON   = "v3/internal/runtime/desktop/@wailsio/runtime/package.json"
-	runtimePackageLock   = "v3/internal/runtime/desktop/@wailsio/runtime/package-lock.json"
+	versionFile           = "../../internal/version/version.txt"
+	changelogInsertMarker = "<!-- CHANGELOG-INSERT-MARKER -->"
+	defaultReleaseBranch  = "master"
+	defaultReleaseTitle   = "Wails %s"
+	defaultReleaseTarget  = "master"
+	githubDefaultAPI      = "https://api.github.com"
+	githubAPIVersion      = "2022-11-28"
+	runtimePackageJSON    = "v3/internal/runtime/desktop/@wailsio/runtime/package.json"
+	runtimePackageLock    = "v3/internal/runtime/desktop/@wailsio/runtime/package-lock.json"
 )
 
 var (
+	changelogFile           = "../../../docs/mpress/content/changelog.md"
 	unreleasedChangelogFile = "../../UNRELEASED_CHANGELOG.md"
 )
 
@@ -661,7 +662,7 @@ func runRelease(opts releaseOptions) error {
 		"v3/internal/version/version.txt",
 		runtimePackageJSON,
 		runtimePackageLock,
-		"docs/mpress/content/changelog.mpd",
+		"docs/mpress/content/changelog.md",
 		"v3/UNRELEASED_CHANGELOG.md",
 	}
 	if err := git.add(filesToAdd...); err != nil {
@@ -783,24 +784,37 @@ func validateToken(token, repoSlug string) error {
 	}
 }
 
+// formatChangelogForSite nests categories below release headings. Release notes
+// continue to use the original unreleased content.
+func formatChangelogForSite(content string) string {
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		if strings.HasPrefix(line, "## ") {
+			lines[i] = "#" + line
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
 func applyChangelogUpdates(newVersion, changelogContent string) error {
 	changelogData, err := os.ReadFile(changelogFile)
 	if err != nil {
-		return fmt.Errorf("failed to read changelog.mpd: %w", err)
+		return fmt.Errorf("failed to read changelog.md: %w", err)
 	}
 	changelog := string(changelogData)
-	split := strings.Split(changelog, "## [Unreleased]")
+	split := strings.Split(changelog, changelogInsertMarker)
 	if len(split) != 2 {
-		return fmt.Errorf("could not find '## [Unreleased]' section in changelog.mpd")
+		return fmt.Errorf("expected exactly one CHANGELOG-INSERT-MARKER in changelog.md")
 	}
 
 	today := time.Now().Format("2006-01-02")
-	newChangelog := split[0] + "## [Unreleased]\n\n## " + newVersion + " - " + today + "\n\n" + changelogContent + split[1]
+	newSection := "## " + newVersion + " - " + today + "\n\n" + formatChangelogForSite(changelogContent)
+	newChangelog := split[0] + changelogInsertMarker + "\n\n" + newSection + "\n\n" + strings.TrimLeft(split[1], "\n")
 
 	if err := safeFileOperation(changelogFile, func() error {
 		return os.WriteFile(changelogFile, []byte(newChangelog), 0o644)
 	}); err != nil {
-		return fmt.Errorf("failed to update changelog.mpd: %w", err)
+		return fmt.Errorf("failed to update changelog.md: %w", err)
 	}
 	fmt.Println("📝 Updated docs changelog with new release entry.")
 

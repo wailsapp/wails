@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-      - 'docs/mpress/content/changelog.mpd'
+      - 'docs/mpress/content/changelog.md'
   workflow_dispatch:
     inputs:
       pr_number:
@@ -74,10 +74,10 @@ jobs:
         echo "Checking PR #${{ steps.pr_info.outputs.pr_number }} for changelog changes"
         git fetch origin ${{ steps.pr_info.outputs.base_ref }}
         
-        # Initial imports have no MPD baseline. Historical source preservation
+        # Initial imports have no Markdown baseline. Historical source preservation
         # is reviewed with the migration; later changes use this guard.
-        if git cat-file -e origin/${{ steps.pr_info.outputs.base_ref }}:docs/mpress/content/changelog.mpd 2>/dev/null &&
-           git diff --name-only origin/${{ steps.pr_info.outputs.base_ref }}..HEAD | grep -q "docs/mpress/content/changelog.mpd"; then
+        if git cat-file -e origin/${{ steps.pr_info.outputs.base_ref }}:docs/mpress/content/changelog.md 2>/dev/null &&
+           git diff --name-only origin/${{ steps.pr_info.outputs.base_ref }}..HEAD | grep -q "docs/mpress/content/changelog.md"; then
           echo "changelog_modified=true" >> $GITHUB_OUTPUT
           echo "✅ Changelog was modified in this PR"
         else
@@ -90,8 +90,8 @@ jobs:
       if: steps.changelog_check.outputs.changelog_modified == 'true'
       run: |
         echo "Getting diff for changelog changes..."
-        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/mpress/content/changelog.mpd > /tmp/pr_changelog.diff
-        git show origin/${{ steps.pr_info.outputs.base_ref }}:docs/mpress/content/changelog.mpd > /tmp/base_changelog.mpd
+        git diff origin/${{ steps.pr_info.outputs.base_ref }}..HEAD docs/mpress/content/changelog.md > /tmp/pr_changelog.diff
+        git show origin/${{ steps.pr_info.outputs.base_ref }}:docs/mpress/content/changelog.md > /tmp/base_changelog.md
         awk '/^\+\+\+/ { next } /^\+/ { sub(/^\+/, ""); print }' /tmp/pr_changelog.diff > /tmp/pr_added_lines.txt
         awk '/^---/ { next } /^-/ { sub(/^-/, ""); print }' /tmp/pr_changelog.diff > /tmp/pr_deleted_lines.txt
         
@@ -110,9 +110,10 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         echo "Running changelog validation..."
-        cp docs/mpress/content/changelog.mpd /tmp/changelog.mpd
+        cp docs/mpress/content/changelog.md /tmp/changelog.md
+        cp v3/UNRELEASED_CHANGELOG.md /tmp/UNRELEASED_CHANGELOG.md
         cd v3/scripts
-        if ! OUTPUT=$(go run validate-changelog.go /tmp/changelog.mpd /tmp/pr_added_lines.txt /tmp/pr_deleted_lines.txt /tmp/base_changelog.mpd 2>&1); then
+        if ! OUTPUT=$(go run validate-changelog.go /tmp/changelog.md /tmp/pr_added_lines.txt /tmp/pr_deleted_lines.txt /tmp/base_changelog.md /tmp/UNRELEASED_CHANGELOG.md 2>&1); then
           echo "$OUTPUT"
           exit 1
         fi
@@ -120,6 +121,11 @@ jobs:
         
         RESULT=$(echo "$OUTPUT" | grep "VALIDATION_RESULT=" | cut -d'=' -f2)
         echo "result=$RESULT" >> $GITHUB_OUTPUT
+        if [ "$RESULT" = "fixed" ]; then
+          echo "Apply these corrections to the generated page and unreleased changelog:"
+          diff -u ../../docs/mpress/content/changelog.md /tmp/changelog.md || true
+          diff -u ../UNRELEASED_CHANGELOG.md /tmp/UNRELEASED_CHANGELOG.md || true
+        fi
         
     - name: Fail if validation failed
       if: steps.validate.outputs.result && steps.validate.outputs.result != 'success'
@@ -155,8 +161,8 @@ jobs:
           const message = result === 'success'
             ? '## ✅ Changelog Validation Passed\n\nNo misplaced changelog entries detected.'
             : '## ⚠️ Changelog Validation Issue\n\n@' + pr.user.login +
-              ' your PR contains changelog entries outside `[Unreleased]`. ' +
-              'The validation job is read-only; apply the correction manually and rerun it.';
+              ' your PR adds unpublished entries to the generated changelog. New entries belong in `v3/UNRELEASED_CHANGELOG.md`. ' +
+              'The validation job is read-only; apply the corrections shown in the validation log manually and rerun it.';
 
           await github.rest.issues.createComment({
             issue_number: prNumber,
