@@ -1,6 +1,6 @@
 ---
-title: "ロードマップ"
-description: "Wails v3プロジェクトの状況、予定されている機能、コントリビューション方法"
+title: "プロジェクトの状況"
+description: "Wails v3 ベータ版の互換性、セキュリティサポート、アップグレード手順"
 slug: "status"
 sourcePath: "status.md"
 ---
@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 最新の状況については、[変更履歴](/changelog/)を確認してください。
 
-私たちの目標は、安定版のv3.0リリースを実現することです。このロードマップでは、正式リリースまでに実装する必要がある主な機能と改善点を示します。これは随時更新される文書であり、優先順位の変化や新たな知見に応じて更新される場合があります。
+目標は安定版 v3.0 のリリースです。Wails v2 は引き続き現在の安定版であり、修正が提供されます。デプロイ前に、ご自身のアプリケーションでベータ版をテストしてください。
 
 ## ベータ版の互換性保証
 
@@ -34,4 +34,18 @@ v3ベータ版の互換性保証は、デスクトップアプリケーション
 
 ## フィードバックと更新
 
-このロードマップは、コミュニティからのフィードバックやプロジェクトの優先順位に応じて変更される場合があります。進捗や方針の変更を反映するため、定期的に更新します。再現可能な問題はIssueとして報告し、新機能は[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)のPRを通じて提案してください。
+再現可能な問題はIssueとして報告し、新機能は[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)のPRを通じて提案してください。
+
+## ベータ版の利用
+
+`latest` を追従するのではなく、CLI、Go モジュール、フロントエンドランタイムのバージョンを明示的に固定してください。既存のアルファ版プロジェクトについては、[アルファ版からベータ版へのアップグレードガイド](/migration/alpha-to-beta/)に従ってください。
+
+[セキュリティポリシー](https://github.com/wailsapp/wails/blob/master/SECURITY.md)では、v3 ベータ版はサポート対象、アルファ版はサポート対象外とされています。脆弱性は公開 Issue ではなく、[非公開の脆弱性報告](https://github.com/wailsapp/wails/security/advisories/new)から報告してください。
+
+## 追跡中の作業
+
+- [v3 ラベルの付いた未解決のバグ](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3ABug+label%3Av3)
+- [P0 または P1 ラベルの付いた未解決の v3 Issue](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3Av3+label%3AP0%2CP1)
+- [リリースのマイルストーン](https://github.com/wailsapp/wails/milestones)
+
+これらのリアルタイム検索は Issue のラベルに依存します。完全な一覧でも、リリース日や範囲を約束するものでもありません。Issue を読んで、ご自身のプロジェクトへの影響を評価してください。

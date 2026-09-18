@@ -1,6 +1,6 @@
 ---
-title: "Peta Jalan"
-description: "Status proyek Wails v3, fitur yang direncanakan, dan cara berkontribusi"
+title: "Status proyek"
+description: "Kompatibilitas beta Wails v3, dukungan keamanan, dan panduan peningkatan versi"
 slug: "status"
 sourcePath: "status.md"
 ---
@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 Lihat [Catatan Perubahan](/changelog/) untuk mengetahui status terbaru.
 
-Tujuan kami adalah mencapai rilis v3.0 yang stabil. Peta jalan ini menguraikan fitur-fitur utama dan peningkatan yang perlu kami implementasikan sebelum rilis final. Perlu diketahui bahwa dokumen ini terus berkembang dan dapat diperbarui seiring perubahan prioritas atau munculnya wawasan baru.
+Tujuan kami adalah rilis v3.0 yang stabil. Wails v2 tetap menjadi rilis stabil saat ini dan terus menerima perbaikan. Uji rilis beta dengan aplikasi Anda sebelum penerapan.
 
 ## Jaminan Kompatibilitas Beta
 
@@ -34,4 +34,18 @@ Kami menyambut kontribusi dari komunitas. Jika Anda ingin membantu mencapai tuju
 
 ## Umpan Balik dan Pembaruan
 
-Peta jalan ini dapat berubah berdasarkan umpan balik komunitas dan prioritas proyek. Kami akan memperbaruinya secara rutin untuk mencerminkan kemajuan dan perubahan arah. Laporkan masalah yang dapat direproduksi sebagai issue; usulkan fungsionalitas baru melalui PR [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Laporkan masalah yang dapat direproduksi sebagai issue; usulkan fungsionalitas baru melalui PR [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+
+## Menggunakan beta
+
+Tetapkan versi yang pasti untuk CLI, modul Go, dan runtime frontend alih-alih mengikuti `latest`. Untuk proyek alpha yang sudah ada, ikuti [panduan peningkatan dari alpha ke beta](/migration/alpha-to-beta/).
+
+[Kebijakan keamanan](https://github.com/wailsapp/wails/blob/master/SECURITY.md) mencantumkan rilis beta v3 sebagai versi yang didukung dan rilis alpha sebagai versi yang tidak didukung. Laporkan kerentanan melalui [pelaporan kerentanan privat](https://github.com/wailsapp/wails/security/advisories/new), bukan issue publik.
+
+## Pekerjaan yang dilacak
+
+- [Bug terbuka berlabel v3](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3ABug+label%3Av3)
+- [Issue v3 terbuka berlabel P0 atau P1](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3Av3+label%3AP0%2CP1)
+- [Milestone rilis](https://github.com/wailsapp/wails/milestones)
+
+Kueri langsung ini bergantung pada label issue; hasilnya bukan daftar lengkap atau janji tanggal maupun cakupan rilis. Baca issue untuk menilai dampaknya pada proyek Anda.

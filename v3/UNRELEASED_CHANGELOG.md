@@ -21,6 +21,8 @@ After processing, the content will be moved to the main changelog and this file 
 ## Changed
 <!-- Changes in existing functionality -->
 
+- Clarify the [v3 beta status](https://v3.wails.io/status/) and add an [alpha-to-beta upgrade guide](https://v3.wails.io/migration/alpha-to-beta/) covering exact version pinning, security support, regenerated bindings, and platform testing (#5819).
+
 ## Fixed
 <!-- Bug fixes -->
 

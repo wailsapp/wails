@@ -1,6 +1,6 @@
 ---
-title: "路线图"
-description: "Wails v3 项目状态、计划功能以及参与贡献的方式"
+title: "项目状态"
+description: "Wails v3 Beta 兼容性、安全支持及升级指南"
 slug: "status"
 sourcePath: "status.md"
 ---
@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 请查看[更新日志](/changelog/)以了解最新状态。
 
-我们的目标是发布稳定的 v3.0 版本。本路线图概述了正式发布前需要实现的主要功能和改进。请注意，本文档会持续更新，并可能随着优先事项的调整或新见解的出现而更改。
+我们的目标是发布稳定的 v3.0 版本。Wails v2 仍是当前稳定版，并继续接收修复。部署前，请使用你的应用程序测试 Beta 版本。
 
 ## Beta 兼容性承诺
 
@@ -34,4 +34,18 @@ v3 Beta 兼容性约定涵盖桌面应用程序：
 
 ## 反馈和更新
 
-本路线图可能根据社区反馈和项目优先事项进行调整。我们会定期更新路线图，以反映进展和方向变化。请将可复现的问题报告为议题；新功能则应通过[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)拉取请求提出。
+请将可复现的问题报告为议题；新功能则应通过[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)拉取请求提出。
+
+## 使用 Beta 版本
+
+请固定 CLI、Go 模块和前端运行时的确切版本，而不是跟踪 `latest`。现有 Alpha 项目请遵循 [Alpha 到 Beta 升级指南](/migration/alpha-to-beta/)。
+
+[安全策略](https://github.com/wailsapp/wails/blob/master/SECURITY.md)将 v3 Beta 版本列为受支持版本，Alpha 版本则不受支持。请通过[私密漏洞报告](https://github.com/wailsapp/wails/security/advisories/new)报告漏洞，不要提交公开议题。
+
+## 跟踪中的工作
+
+- [带有 v3 标签的未解决错误](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3ABug+label%3Av3)
+- [带有 P0 或 P1 标签的未解决 v3 议题](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3Av3+label%3AP0%2CP1)
+- [发布里程碑](https://github.com/wailsapp/wails/milestones)
+
+这些实时查询依赖议题标签，既不是完整列表，也不承诺发布日期或范围。请阅读议题，评估它们对项目的影响。

@@ -1,6 +1,6 @@
 ---
-title: "로드맵"
-description: "Wails v3 프로젝트 상태, 계획된 기능 및 기여 방법"
+title: "프로젝트 상태"
+description: "Wails v3 베타 호환성, 보안 지원 및 업그레이드 안내"
 slug: "status"
 sourcePath: "status.md"
 ---
@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 최신 상태는 [변경 로그](/changelog/)에서 확인하세요.
 
-저희의 목표는 안정적인 v3.0 릴리스에 도달하는 것입니다. 이 로드맵에서는 최종 릴리스 전에 구현해야 할 주요 기능과 개선 사항을 설명합니다. 이 문서는 지속적으로 변경되며, 우선순위가 바뀌거나 새로운 통찰을 얻으면 업데이트될 수 있습니다.
+목표는 안정적인 v3.0 릴리스입니다. Wails v2는 현재 안정 버전으로 유지되며 계속 수정 사항을 받습니다. 배포 전에 애플리케이션에서 베타 릴리스를 테스트하세요.
 
 ## 베타 호환성 보장
 
@@ -34,4 +34,18 @@ v3 베타 호환성 계약은 데스크톱 애플리케이션에 적용됩니다
 
 ## 피드백 및 업데이트
 
-이 로드맵은 커뮤니티 피드백과 프로젝트 우선순위에 따라 변경될 수 있습니다. 진행 상황과 방향 변경을 반영하도록 정기적으로 업데이트하겠습니다. 재현 가능한 문제는 이슈로 보고하고, 새로운 기능은 [WEP(Wails 개선 제안)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) PR을 통해 제안하세요.
+재현 가능한 문제는 이슈로 보고하고, 새로운 기능은 [WEP(Wails 개선 제안)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) PR을 통해 제안하세요.
+
+## 베타 사용
+
+`latest`를 추적하는 대신 CLI, Go 모듈, 프런트엔드 런타임의 정확한 버전을 고정하세요. 기존 알파 프로젝트는 [알파에서 베타로 업그레이드하는 안내서](/migration/alpha-to-beta/)를 따르세요.
+
+[보안 정책](https://github.com/wailsapp/wails/blob/master/SECURITY.md)은 v3 베타 릴리스를 지원 대상으로, 알파 릴리스를 지원 대상이 아닌 것으로 명시합니다. 취약점은 공개 이슈가 아닌 [비공개 취약점 보고](https://github.com/wailsapp/wails/security/advisories/new)를 통해 신고하세요.
+
+## 추적 중인 작업
+
+- [v3 라벨이 있는 열린 버그](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3ABug+label%3Av3)
+- [P0 또는 P1 라벨이 있는 열린 v3 이슈](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3Av3+label%3AP0%2CP1)
+- [릴리스 마일스톤](https://github.com/wailsapp/wails/milestones)
+
+이 실시간 검색은 이슈 라벨에 의존하며, 전체 목록이나 릴리스 날짜 또는 범위에 대한 약속이 아닙니다. 이슈를 읽고 프로젝트에 미치는 영향을 평가하세요.

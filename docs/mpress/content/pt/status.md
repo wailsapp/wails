@@ -1,6 +1,6 @@
 ---
-title: "Roteiro"
-description: "Status do projeto Wails v3, funcionalidades planejadas e como contribuir"
+title: "Status do projeto"
+description: "Compatibilidade da versão beta do Wails v3, suporte de segurança e orientações de atualização"
 slug: "status"
 sourcePath: "status.md"
 ---
@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 Consulte o [Registro de alterações](/changelog/) para ver o status mais recente.
 
-Nosso objetivo é chegar a uma versão v3.0 estável. Este roteiro descreve as principais funcionalidades e melhorias que precisamos implementar antes da versão final. Este é um documento dinâmico e pode ser atualizado à medida que as prioridades mudarem ou surgirem novas informações.
+Nosso objetivo é uma versão v3.0 estável. Wails v2 continua sendo a versão estável atual e segue recebendo correções. Teste as versões beta com seu aplicativo antes da implantação.
 
 ## Compromisso de compatibilidade da versão Beta
 
@@ -34,4 +34,18 @@ Agradecemos as contribuições da comunidade. Se quiser ajudar com esses objetiv
 
 ## Feedback e atualizações
 
-Este roteiro está sujeito a alterações com base no feedback da comunidade e nas prioridades do projeto. Vamos atualizá-lo regularmente para refletir o progresso e as mudanças de direção. Relate problemas reproduzíveis como issues; proponha novas funcionalidades por meio de um PR de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Relate problemas reproduzíveis como issues; proponha novas funcionalidades por meio de um PR de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+
+## Usar a versão beta
+
+Fixe versões exatas da CLI, do módulo Go e do runtime frontend em vez de usar `latest`. Para um projeto alpha existente, siga o [guia de atualização de alpha para beta](/migration/alpha-to-beta/).
+
+A [política de segurança](https://github.com/wailsapp/wails/blob/master/SECURITY.md) lista as versões beta da v3 como suportadas e as versões alpha como não suportadas. Relate vulnerabilidades pelo [canal privado de relato de vulnerabilidades](https://github.com/wailsapp/wails/security/advisories/new), não em issues públicas.
+
+## Trabalho acompanhado
+
+- [Bugs abertos com o rótulo v3](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3ABug+label%3Av3)
+- [Issues v3 abertas com o rótulo P0 ou P1](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3Av3+label%3AP0%2CP1)
+- [Marcos de lançamento](https://github.com/wailsapp/wails/milestones)
+
+Essas consultas em tempo real dependem dos rótulos das issues; não são uma lista completa nem uma promessa de data ou escopo de lançamento. Leia as issues para avaliar o impacto no seu projeto.

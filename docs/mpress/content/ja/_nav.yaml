@@ -269,6 +269,8 @@
   items:
     - label: "v2 から v3 への移行"
       link: "/migration/v2-to-v3/"
+    - label: "v3 アルファ版からのアップグレード"
+      link: "/migration/alpha-to-beta/"
     - label: "Electron からの移行"
       link: "/migration/from-electron/"
 - label: "トラブルシューティング"

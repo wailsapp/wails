@@ -269,6 +269,8 @@
   items:
     - label: "從 v2 移轉至 v3"
       link: "/migration/v2-to-v3/"
+    - label: "從 v3 Alpha 升級"
+      link: "/migration/alpha-to-beta/"
     - label: "從 Electron 移轉"
       link: "/migration/from-electron/"
 - label: "疑難排解"

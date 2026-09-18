@@ -1,6 +1,6 @@
 ---
-title: "Roadmap"
-description: "Projektstatus von Wails v3, geplante Funktionen und Möglichkeiten zur Mitwirkung"
+title: "Projektstatus"
+description: "Beta-Kompatibilität, Sicherheitsunterstützung und Upgrade-Anleitung für Wails v3"
 slug: "status"
 sourcePath: "status.md"
 ---
@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 Den aktuellen Status finden Sie im [Änderungsprotokoll](/changelog/).
 
-Unser Ziel ist eine stabile Version v3.0. Diese Roadmap beschreibt die wichtigsten Funktionen und Verbesserungen, die wir vor der endgültigen Veröffentlichung implementieren müssen. Beachten Sie, dass dies ein lebendes Dokument ist und aktualisiert werden kann, wenn sich Prioritäten verschieben oder neue Erkenntnisse ergeben.
+Unser Ziel ist eine stabile Version v3.0. Wails v2 bleibt die aktuelle stabile Version und erhält weiterhin Fehlerbehebungen. Testen Sie Beta-Versionen mit Ihrer Anwendung vor der Bereitstellung.
 
 ## Kompatibilitätsversprechen für die Beta
 
@@ -34,4 +34,18 @@ Beiträge aus der Community sind willkommen. Wenn Sie uns bei diesen Zielen unte
 
 ## Feedback und Aktualisierungen
 
-Diese Roadmap kann sich aufgrund des Feedbacks der Community und der Projektprioritäten ändern. Wir aktualisieren sie regelmäßig, um Fortschritte und Richtungsänderungen widerzuspiegeln. Melden Sie reproduzierbare Probleme als Issues; schlagen Sie neue Funktionen über einen PR für ein [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) vor.
+Melden Sie reproduzierbare Probleme als Issues; schlagen Sie neue Funktionen über einen PR für ein [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) vor.
+
+## Die Beta verwenden
+
+Legen Sie genaue Versionen für CLI, Go-Modul und Frontend-Runtime fest, statt `latest` zu verwenden. Folgen Sie bei einem bestehenden Alpha-Projekt der [Upgrade-Anleitung von Alpha auf Beta](/migration/alpha-to-beta/).
+
+Die [Sicherheitsrichtlinie](https://github.com/wailsapp/wails/blob/master/SECURITY.md) führt v3-Beta-Versionen als unterstützt und Alpha-Versionen als nicht unterstützt auf. Melden Sie Sicherheitslücken über die [private Schwachstellenmeldung](https://github.com/wailsapp/wails/security/advisories/new), nicht in öffentlichen Issues.
+
+## Erfasste Arbeiten
+
+- [Offene Fehler mit dem Label v3](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3ABug+label%3Av3)
+- [Offene v3-Issues mit dem Label P0 oder P1](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3Av3+label%3AP0%2CP1)
+- [Release-Meilensteine](https://github.com/wailsapp/wails/milestones)
+
+Diese aktuellen Abfragen hängen von den Issue-Labels ab. Sie sind weder eine vollständige Liste noch eine Zusage zu einem Veröffentlichungsdatum oder Umfang. Lesen Sie die Issues, um ihre Auswirkungen auf Ihr Projekt einzuschätzen.

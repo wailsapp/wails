@@ -1,6 +1,6 @@
 ---
-title: "Feuille de route"
-description: "État du projet Wails v3, fonctionnalités prévues et modalités de contribution"
+title: "État du projet"
+description: "Compatibilité de la bêta Wails v3, prise en charge de la sécurité et guide de mise à niveau"
 slug: "status"
 sourcePath: "status.md"
 ---
@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 Consultez le [journal des modifications](/changelog/) pour connaître le dernier état du projet.
 
-Notre objectif est de parvenir à une version v3.0 stable. Cette feuille de route présente les principales fonctionnalités et améliorations que nous devons mettre en œuvre avant la version finale. Notez qu’il s’agit d’un document évolutif susceptible d’être mis à jour en fonction de l’évolution des priorités ou de l’apparition de nouveaux enseignements.
+Notre objectif est une version v3.0 stable. Wails v2 reste la version stable actuelle et continue de recevoir des correctifs. Testez les versions bêta avec votre application avant le déploiement.
 
 ## Engagement de compatibilité de la version bêta
 
@@ -34,4 +34,18 @@ Les contributions de la communauté sont les bienvenues. Si vous souhaitez parti
 
 ## Retours et mises à jour
 
-Cette feuille de route est susceptible d’évoluer en fonction des retours de la communauté et des priorités du projet. Nous la mettrons régulièrement à jour pour refléter les avancées et les changements d’orientation. Signalez les problèmes reproductibles dans des issues ; proposez les nouvelles fonctionnalités au moyen d’une pull request [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Signalez les problèmes reproductibles dans des issues ; proposez les nouvelles fonctionnalités au moyen d’une pull request [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+
+## Utiliser la bêta
+
+Fixez des versions exactes pour la CLI, le module Go et le runtime frontend plutôt que de suivre `latest`. Pour un projet alpha existant, suivez le [guide de mise à niveau d’alpha vers bêta](/migration/alpha-to-beta/).
+
+La [politique de sécurité](https://github.com/wailsapp/wails/blob/master/SECURITY.md) indique que les versions bêta de v3 sont prises en charge, contrairement aux versions alpha. Signalez les vulnérabilités via le [signalement privé de vulnérabilités](https://github.com/wailsapp/wails/security/advisories/new), et non dans des issues publiques.
+
+## Travaux suivis
+
+- [Bogues ouverts portant le label v3](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3ABug+label%3Av3)
+- [Issues v3 ouvertes portant le label P0 ou P1](https://github.com/wailsapp/wails/issues?q=is%3Aissue+is%3Aopen+label%3Av3+label%3AP0%2CP1)
+- [Jalons des versions](https://github.com/wailsapp/wails/milestones)
+
+Ces recherches en direct dépendent des labels des issues ; elles ne constituent ni une liste exhaustive ni un engagement sur une date ou un périmètre de version. Lisez les issues pour évaluer leur incidence sur votre projet.
