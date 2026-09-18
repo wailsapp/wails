@@ -63,6 +63,8 @@ func main() {
 
 언제든지 `app.Updater.State()`로 현재 상태를 확인할 수 있습니다. 각 상태 전환 시에도 Wails 이벤트가 발생합니다([이벤트](#heading-2) 참조).
 
+`Restart`는 실행 중인 앱에 종료를 요청하기 전에 헬퍼가 `application.New`에 도달할 때까지 기다립니다. 기본 시작 제한 시간은 30초입니다. 앱이 `application.New` 이전에 오래 걸리는 초기화를 수행한다면 `Config.HelperReadyTimeout`을 `time.Minute`처럼 더 긴 시간으로 설정하세요. 0은 기본값을 선택하며 음수 기간은 거부됩니다. 시작 제한 시간을 초과하면 `Restart`는 `updater.ErrHelperNotReady`를 반환하고 실행 중인 앱을 열린 상태로 유지합니다.
+
 기본 창은 현재 상태를 자동으로 반영합니다. 예를 들어 `Check`에서 업그레이드가 없다고 반환하면 사용자에게 다음 화면이 표시되며, <strong>닫기</strong>를 눌러 닫을 수 있습니다.
 
 ![최신 상태의 기본 업데이터 창 — 녹색 확인 표시, '최신 상태입니다' 제목, 하나의 닫기 버튼을 표시합니다.](/assets/updater/default-window-up-to-date.png)

@@ -63,6 +63,8 @@ Isso abre a janela de atualização do framework, consulta o GitHub, baixa o art
 
 Você pode consultar o estado atual com `app.Updater.State()` a qualquer momento. Cada transição também emite um evento do Wails (consulte [Eventos](#eventos)).
 
+`Restart` espera que o processo auxiliar chegue a `application.New` antes de solicitar que o aplicativo em execução seja encerrado. O tempo limite padrão de inicialização é de 30 segundos. Se o aplicativo executar uma inicialização demorada antes de `application.New`, defina `Config.HelperReadyTimeout` com uma duração maior, como `time.Minute`. Zero seleciona o valor padrão; durações negativas são rejeitadas. Se o tempo de inicialização se esgotar, `Restart` retorna `updater.ErrHelperNotReady` e mantém o aplicativo em execução aberto.
+
 A janela padrão reflete automaticamente o estado atual — por exemplo, quando `Check` não retorna nenhuma atualização, o usuário vê esta tela e a fecha com **Fechar**:
 
 ![A janela padrão do atualizador no estado Atualizado — marca de seleção verde, título "Você está usando a versão mais recente" e um único botão Fechar.](/assets/updater/default-window-up-to-date.png)
