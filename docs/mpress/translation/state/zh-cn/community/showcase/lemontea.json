@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "37dcc2cbff6ddaf56d0e",
+  "sourceFile": "community/showcase/lemontea.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "targetHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "machineHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "machineText": "![lemontea](/assets/showcase-images/lemontea_1.png)",
+      "status": "final",
+      "sourcePreview": "![lemontea](/assets/showcase-images/lemontea_1.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "c179846817f47c12a67eadff23312b049ad4d536ff23cbc6b157493cbbd3247e",
+      "targetHash": "08c575a59cbfe3f4d1f9006f155033a09c55bc8ae7cf2303510fb4c7eb8f6584",
+      "machineHash": "08c575a59cbfe3f4d1f9006f155033a09c55bc8ae7cf2303510fb4c7eb8f6584",
+      "machineText": "[lemontea](https://github.com/MikeLINGxZ/lemontea)——一款使用 Wails v3、Go、React 和 TypeScript 构建的跨平台 AI 桌面客户端，专注于聊天、工具调用、多智能体工作流执行和本地桌面集成。",
+      "status": "final",
+      "sourcePreview": "[lemontea](https://github.com/MikeLINGxZ/lemontea) - A cross-platform AI desktop client built with W…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "9f9cced83647ef87825107c75c62a16bfb0c0e507928081ddca26fb41797b092",
+      "targetHash": "0abccb130380486864472f801ed2ba453cae65e9651a193d48566a80bf071bf8",
+      "machineHash": "0abccb130380486864472f801ed2ba453cae65e9651a193d48566a80bf071bf8",
+      "machineText": "一款使用 Wails v3 构建的跨平台 AI 桌面客户端。",
+      "status": "final",
+      "sourcePreview": "A cross-platform AI desktop client built with Wails v3.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "targetHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "machineHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "machineText": "lemontea",
+      "status": "final",
+      "sourcePreview": "lemontea",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

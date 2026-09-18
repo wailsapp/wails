@@ -1,0 +1,87 @@
+# フレームレスアプリケーション
+
+Wailsでは、フレームのないアプリケーションの作成をサポートしています。 [アプリケーションオプション](../reference/options.mdx#application-options)の[frameless](../reference/options.mdx#frameless)フィールドで設定することが可能です。
+
+Wailsでは、フレームレスウィンドウをドラッグできるようにするための簡単な仕組みを提供しています。`--wails-draggable:drag`というCSSスタイルをもつ任意のHTML要素は、"ドラッグハンドル"として機能します。 このプロパティは、すべての子要素にも継承されます。 ネストされている子要素で、ドラッグを明示的に無効化したい場合は、当該子要素で'--wails-draggable:no-drag'を指定します。
+
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="/main.css" />
+  </head>
+
+  <body style="--wails-draggable:drag">
+    <div id="logo"></div>
+    <div id="input" style="--wails-draggable:no-drag">
+      <input id="name" type="text" />
+      <button onclick="greet()">Greet</button>
+    </div>
+    <div id="result"></div>
+
+    <script src="/main.js"></script>
+  </body>
+</html>
+```
+
+一部のプロジェクトでは、動的なスタイリングが原因で、これらのCSSプロパティが使用できない場合があるでしょう。 そのような場合、アプリケーションオプションの`CSSDragProperty`および`CSSDragValue`を使用して、ドラッグ可能な領域を示すプロパティ名と値を独自に定義することができます。
+
+```go title=main.go
+package main
+
+import (
+    "embed"
+
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    // アプリケーション構造体のインスタンスを作成
+    app := NewApp()
+
+    // オプション付きでアプリケーションを作成
+    err := wails.Run(&options.App{
+        Title:  "alwaysontop",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+          Assets: assets,
+        },
+        Frameless:       true,
+        CSSDragProperty: "widows",
+        CSSDragValue:    "1",
+        Bind: []interface{}{
+          app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+```html title=index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>alwaysontop</title>
+  </head>
+  <body style="widows: 1">
+    <div id="app"></div>
+    <script src="./src/main.js" type="module"></script>
+  </body>
+</html>
+```
+
+:::info フルスクリーン
+
+アプリケーションをフルスクリーン状態にすると、このドラッグ機能は無効になります。
+
+:::

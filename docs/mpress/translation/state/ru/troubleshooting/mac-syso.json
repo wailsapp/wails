@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "377dd833678c36520c09",
+  "sourceFile": "troubleshooting/mac-syso.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "a1c5ae7bcb34bbf48104488eff8deede31b059aceceab562a6aace384f7fd64f",
+      "targetHash": "54a37f55dcd8d0cb2cb0f2889f0560644919539d06abb141b066910d2f857c81",
+      "machineHash": "54a37f55dcd8d0cb2cb0f2889f0560644919539d06abb141b066910d2f857c81",
+      "machineText": "Проблема",
+      "status": "final",
+      "sourcePreview": "Problem",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "c1861dbf007e89c53b4883484dc04c8f5af27d4495a2b1f6e9bddf941b1a369c",
+      "targetHash": "b27eb115a3b0d93aadfdc4e1c7dfcb456492292cd34a8647b134441d74b3602c",
+      "machineHash": "b27eb115a3b0d93aadfdc4e1c7dfcb456492292cd34a8647b134441d74b3602c",
+      "machineText": "При попытке собрать приложение Wails в macOS сборка завершается ошибкой, подобной следующей:",
+      "status": "final",
+      "sourcePreview": "When trying to build a Wails application on macOS, the build fails with an error similar to the foll…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    },
+    "b0003-heading-01": {
+      "sourceHash": "6b4a685e845db15988b579333e8d5ce8709d87d5c7e90214c636c874515ff6bd",
+      "targetHash": "b52f0c8022f8df656ce101e95d839111eeef769d6627762c0ac9f2dedb5a769f",
+      "machineHash": "b52f0c8022f8df656ce101e95d839111eeef769d6627762c0ac9f2dedb5a769f",
+      "machineText": "Почему это происходит?",
+      "status": "final",
+      "sourcePreview": "Why is this happening?",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "3f2bd288579e296e0e1ac8d543a955c98c3fa646d03e8599e9f642f2c4d5747e",
+      "targetHash": "83ed795964c422dd3681915c35e5a74cdddd9246b4891fcb2ed04de26b631763",
+      "machineHash": "83ed795964c422dd3681915c35e5a74cdddd9246b4891fcb2ed04de26b631763",
+      "machineText": "При сборке для Windows Wails создаёт файлы `.syso` для значка приложения, значка окна и значка меню. Эти файлы необходимы для сборки приложения в Windows.\\\nЭти файлы `.syso` находятся в корневом каталоге проекта и могут вызывать проблемы при сборке для macOS.",
+      "status": "final",
+      "sourcePreview": "When building for Windows, Wails will generate `.syso` files for the application icon, window icon, …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    },
+    "b0005-heading-01": {
+      "sourceHash": "22927695994eab589c7601a6b15df4d9dc67c5aceb9a74cdb965444b9b8362a6",
+      "targetHash": "199d6db958cdb81713e474a75baeddf7b70122aae0da9f96eb6a238caf738786",
+      "machineHash": "199d6db958cdb81713e474a75baeddf7b70122aae0da9f96eb6a238caf738786",
+      "machineText": "Решение",
+      "status": "final",
+      "sourcePreview": "Solution",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "16eb66de16e21a577ab0a344beae8566ef549169d3497c5825cca3138212f080",
+      "targetHash": "365de076e8fcfaf12c02361104091d4fdf9a126869a15c3dbcb87231d6f4c243",
+      "machineHash": "365de076e8fcfaf12c02361104091d4fdf9a126869a15c3dbcb87231d6f4c243",
+      "machineText": "Чтобы устранить эту проблему, можно удалить файлы syso из корневого каталога проекта или, если вы создаёте их самостоятельно, присвоить им имена `wails_windows_\u003carch\u003e.syso`, например `wails_windows_arm64.syso`.",
+      "status": "final",
+      "sourcePreview": "To fix this issue, you can remove the syso files from the project's root directory or if you are gen…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "4da2cd3c8185c0d943eb6f9477cc52eb4eb2dd4dbdc85e708190f67eb3bd9411",
+      "targetHash": "19bfc8accf0c481d79f89dd9d47104d6862c39c57e86d6ec3ab54f6f55da6f05",
+      "machineHash": "19bfc8accf0c481d79f89dd9d47104d6862c39c57e86d6ec3ab54f6f55da6f05",
+      "machineText": "Устранение ошибок сборки из-за файлов Syso в macOS",
+      "status": "final",
+      "sourcePreview": "Troubleshoot Syso file build errors on macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "1b8555b5a34b1cedc935ed6bb65d97a04aa9fcb3cb0337867bc6f82ae63dd379",
+      "targetHash": "793f121b59d03e8aa517cfadac9028a95dd47f65aaee5f8cfb35572f4bb931f9",
+      "machineHash": "793f121b59d03e8aa517cfadac9028a95dd47f65aaee5f8cfb35572f4bb931f9",
+      "machineText": "Файлы Syso в macOS",
+      "status": "final",
+      "sourcePreview": "Syso files on macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:47Z"
+    }
+  }
+}
