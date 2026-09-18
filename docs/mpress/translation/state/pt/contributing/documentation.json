@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "2edc59b59bb09a8d6e02",
-  "sourceFile": "contributing/documentation.mpd",
+  "sourceFile": "contributing/documentation.md",
   "sourceLanguage": "en",
   "targetLanguage": "pt",
   "segments": {
@@ -76,9 +76,9 @@
       "sourceHash": "f61b13db52f322df0280de40502a660d759dad2025a2af3bc3fefa8f8982332f",
       "targetHash": "799baf0af8ec4de6d1655569c44586fc7ff32289195ca3db712bd5521d85dfce",
       "machineHash": "799baf0af8ec4de6d1655569c44586fc7ff32289195ca3db712bd5521d85dfce",
-      "machineText": "Edite os arquivos-fonte `.mpd` em `docs/mpress/content/`. O inglês é o idioma padrão\ne fica diretamente nesse diretório. As traduções existentes ficam em\npastas de idiomas, como `fr/` e `id/`. A visualização é recompilada conforme você salva as alterações.",
+      "machineText": "Edite os arquivos-fonte `.md` em `docs/mpress/content/`. O inglês é o idioma padrão\ne fica diretamente nesse diretório. As traduções existentes ficam em\npastas de idiomas, como `fr/` e `id/`. A visualização é recompilada conforme você salva as alterações.",
       "status": "final",
-      "sourcePreview": "Edit `.mpd` source files in `docs/mpress/content/`. English is the default\nlanguage and lives directly in that directory. Existing translations live in\nlanguage",
+      "sourcePreview": "Edit `.md` source files in `docs/mpress/content/`. English is the default\nlanguage and lives directly in that directory. Existing translations live in\nlanguage",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

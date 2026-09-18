@@ -5,7 +5,7 @@ tasks:
   setup:
     summary: Install the pinned M-Press CLI with embedded D2
     cmds:
-      - go install github.com/leaanthony/mpress/cmd/mpress@v1.0.3
+      - go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 
   dev:
     summary: Preview the Wails v3 documentation
@@ -17,6 +17,7 @@ tasks:
     summary: Build and validate the Wails v3 documentation
     dir: ..
     cmds:
+      - python3 docs/mpress/scripts/check_translations.py
       - mpress build --strict --no-purge-css
       - mpress check
       - python3 docs/mpress/scripts/check_site.py docs/mpress/site

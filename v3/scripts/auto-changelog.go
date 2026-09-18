@@ -16,6 +16,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 const changelogPath = "v3/UNRELEASED_CHANGELOG.md"
@@ -254,7 +256,7 @@ func isDocumentationPage(file string) bool {
 		return false
 	}
 	base := path.Base(file)
-	return path.Ext(base) == ".mpd" && base != "changelog.mpd"
+	return path.Ext(base) == ".md" && base != "changelog.md"
 }
 
 func documentationURLForFile(file string) (string, error) {
@@ -307,8 +309,6 @@ func documentationURLFromPath(file, slug string) (string, error) {
 	return (&url.URL{Scheme: "https", Host: strings.TrimPrefix(docsSiteURL, "https://"), Path: relative}).String(), nil
 }
 
-var mpdSlugField = regexp.MustCompile(`(?m)^[\t ]*slug[\t ]*=[\t ]*(.*)$`)
-
 func readFrontmatterSlug(file string) (string, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
@@ -323,22 +323,23 @@ func readFrontmatterSlug(file string) (string, error) {
 		return "", nil
 	}
 	frontmatter := content[3 : end+3]
-	// MPD uses key = JSON-value fields, including nested objects that are not
-	// TOML. Only the slug field affects the public route.
-	field := mpdSlugField.FindStringSubmatch(frontmatter)
-	if field == nil {
-		return "", nil
+	var metadata struct {
+		Slug string `yaml:"slug"`
 	}
-	var slug string
-	if err := json.Unmarshal([]byte(field[1]), &slug); err != nil {
-		return "", fmt.Errorf("parse MPD metadata in %s: %w", file, err)
+	if err := yaml.Unmarshal([]byte(frontmatter), &metadata); err != nil {
+		return "", fmt.Errorf("parse Markdown metadata in %s: %w", file, err)
 	}
-	return slug, nil
+	return metadata.Slug, nil
 }
 
 func appendDocumentationLinks(entry string, docURLs []string) string {
 	if len(docURLs) == 0 {
 		return entry
+	}
+	const maxInlineDocLinks = 3
+	if len(docURLs) > maxInlineDocLinks {
+		return fmt.Sprintf("%s — see the [documentation site](%s) (%d pages updated)",
+			entry, docsSiteURL, len(docURLs))
 	}
 	links := make([]string, 0, len(docURLs))
 	for _, docURL := range docURLs {

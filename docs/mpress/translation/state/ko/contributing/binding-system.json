@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "15c787e5e251867cebbc",
-  "sourceFile": "contributing/binding-system.mpd",
+  "sourceFile": "contributing/binding-system.md",
   "sourceLanguage": "en",
   "targetLanguage": "ko",
   "segments": {
@@ -42,12 +42,12 @@
       "updatedAt": "2026-09-13T23:13:37Z"
     },
     "b0004-text-01": {
-      "sourceHash": "a3ffba599380feff13f27e19ad45240fe779657f2589aaf9a9da590b2fc880e8",
-      "targetHash": "d68f63a02c900e0f098f35dffcec350883b55383d5f54bb216863a059af2a161",
-      "machineHash": "d68f63a02c900e0f098f35dffcec350883b55383d5f54bb216863a059af2a161",
-      "machineText": "다음에 관한 자세하고 공식적인 설명은 [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/)에서 확인하세요.",
+      "sourceHash": "436122fa35ef898c1fad4d8d8be66b00e060858a6a1a653005d2ac9322089d54",
+      "targetHash": "b891d2026396b3731b4e98b05ef9a652d96287c72cabe2d9d70a0e070ba0a340",
+      "machineHash": "b891d2026396b3731b4e98b05ef9a652d96287c72cabe2d9d70a0e070ba0a340",
+      "machineText": "다음에 관한 자세하고 공식적인 설명은 [`contributing/architecture/bindings`](/contributing/architecture/bindings/)에서 확인하세요.",
       "status": "final",
-      "sourcePreview": "See [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/) for",
+      "sourcePreview": "See [`contributing/architecture/bindings`](/contributing/architecture/bindings/) for",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

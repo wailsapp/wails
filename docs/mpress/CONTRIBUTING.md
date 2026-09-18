@@ -11,7 +11,7 @@ or add a failing code test for a documentation-only correction.
    go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
    ```
 
-3. From the repository root, run `mpress dev`. Edit the `.mpd` files in
+3. From the repository root, run `mpress dev`. Edit the `.md` files in
    `docs/mpress/content/`; English lives directly in that directory and
    translations live under their language codes (for example `fr/`).
 4. Run `python3 docs/mpress/scripts/check_translations.py`,
@@ -29,11 +29,14 @@ A translation correction can change just the affected language. If you change
 English meaning, update the corresponding translations; unrelated pages do not
 need to be regenerated.
 
-MPD keeps headings, paragraphs, lists and fenced code readable. Preserve its
-`---` metadata block and matching `@...` / `@end` component boundaries. See
+The translated `changelog.md` files are retained for publication and coverage,
+but their historical segment audit is excluded until the generated release notes
+are re-synchronised. Translation audits remain strict for every other page.
+
+Markdown keeps headings, paragraphs, lists and fenced code readable. Preserve its
+`---` YAML metadata block and matching `@...` / `@end` component boundaries. See
 https://github.com/leaanthony/mpress for the authoring reference.
 
-`docs/src/content/docs/` remains the Starlight rollback source.
 The M-Press site is built from `docs/mpress/content/`; do not edit generated
 `docs/mpress/site/` files.
 
