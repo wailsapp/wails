@@ -11,6 +11,7 @@ sourcePath: "community/showcase/index.md"
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/ja/community/showcase/clip/"><img src="/assets/showcase-images/clip.png" alt="Clip のスクリーンショット" loading="lazy"><span>Clip</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="BulletinBoard のスクリーンショット" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="CFN Tracker のスクリーンショット" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Clave のスクリーンショット" loading="lazy"><span>Clave</span></a>

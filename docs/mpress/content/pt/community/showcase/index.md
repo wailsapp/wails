@@ -11,6 +11,7 @@ Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-p
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/pt/community/showcase/clip/"><img src="/assets/showcase-images/clip.png" alt="Captura de tela do Clip" loading="lazy"><span>Clip</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="Captura de tela do BulletinBoard" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="Captura de tela do CFN Tracker" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Captura de tela do Clave" loading="lazy"><span>Clave</span></a>

@@ -11,6 +11,7 @@ Sieh dir den Abschnitt [So fügst du dein Projekt zum Showcase hinzu](#so-fgst-d
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/de/community/showcase/clip/"><img src="/assets/showcase-images/clip.png" alt="Screenshot von Clip" loading="lazy"><span>Clip</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="Screenshot von BulletinBoard" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="Screenshot von CFN Tracker" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Screenshot von Clave" loading="lazy"><span>Clave</span></a>
