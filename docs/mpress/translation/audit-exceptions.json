@@ -9286,5 +9286,2786 @@
     "sourceSHA256": "be6fe6e4c81ca648245979fac68baa7007517223e76fd994a4fd800a36acf792",
     "targetSHA256": "0465fe4d42f403efaa27aa8932e0f770279bf1442d41a7c6de0476bb5a5cca84",
     "reason": "Reviewed unchanged technical wording: this is a product, platform, tool, command, or literal error message that should remain unchanged in the translated page."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "04159b958ab9afe55ba0a74f651d370f14ee4aa9bb0de927161c0cc614f8808a",
+    "reason": "Reviewed unchanged text: CFN Tracker. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "47eefcd432123f2debfd92b17c2ef2b5f9c519ed90c69b08269204ef2220fb47",
+    "reason": "Reviewed unchanged text: ESP Studio. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/minecraftupdater.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "39372fa399ef99fd8b566cba533e9a9ebc4c746a7afe26e66624e7bc93a2ae40",
+    "targetSHA256": "42f3941c85ab6386f76e7fc60aa05b177773d227e30a7bc7e91ea2171a3b7685",
+    "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/minesweeper-xp.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "d6fb7ec10edf70b03d52d48704511d55b81a38dc7846fb32ec1b98c9abd1cd25",
+    "targetSHA256": "c25d529b20a2e182dc54e816afa536d1844fc5058e2c96e74f6536ebd419e1af",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "d903d83914e608728323036a45b5b11c8b847658f038d6552295eeb1a3615a64",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "14e444d3d9cc984b81e38c8c8c82822c897c3c964d0f019d74fc27be6b376c89",
+    "reason": "Reviewed unchanged text: Molley Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/peirato-s-piano-keyboard.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5273091a448135a746af284d37949756205c3ba1647c05bbff572ef27906066",
+    "targetSHA256": "32e01f4c8e297affaf65b061d75a77d042e5589719e96549f56b373c01ccb39d",
+    "reason": "Reviewed unchanged text: Peirato's Piano Keyboard. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/redisviewer.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "7798df8ab35f34366fd90d36e0876db4fe920ba83812f39e94e3876f26cb56fd",
+    "targetSHA256": "f25f9438d06ef656201abf55450a88ca73c595dcaf439fa7cf2a3c3aba365f05",
+    "reason": "Reviewed unchanged text: Redis Viewer. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "6d89994cfb628ed4a8d67bb96ff8816512c4449149f695dcc4890aeadce98623",
+    "reason": "Reviewed unchanged text: Restic Browser. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "198027b5c55030b94dcd5673e7fc5a89871b9ebd8d5cd8375f4100549adfd6db",
+    "reason": "Reviewed unchanged text: Snippet Expander. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "66a8f68eac81b6f929079d030d41996ba0f694ceb6f2f1331fd95d51a7a212a2",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "concepts/architecture.md",
+    "segment": "tab0002-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "4936c5713a377ed3357a811c8041dffb8d969bb4274c6bfa386912b9511dcc90",
+    "targetSHA256": "a4fe7ee10919bffa9e1de3bf390e3d9e0cde202f48941c78920b5f4fcbaf3f12",
+    "reason": "Reviewed unchanged name or technical wording: Production (wails3 build). Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
+  },
+  {
+    "language": "fr",
+    "file": "concepts/build-system.md",
+    "segment": "tab0001-label-002",
+    "code": "untranslated",
+    "sourceSHA256": "818b3e6de3fd8e6f91b487afb975807e5fe9f8ca506b48d883177e3622965eb8",
+    "targetSHA256": "4b5a6f865f55469c8e7a200e0689589716fe720cd9a16fdc54494be45729dd90",
+    "reason": "Reviewed unchanged text: Production (wails3 build). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "contributing/runtime-internals.md",
+    "segment": "b0090-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "19d2ea357a2fe488931b9ad8e313de4148a38289bf6eb90e3c01108ced49ad16",
+    "targetSHA256": "aada93126ad31d1d3361a3b600571bdbd439d8a4c7ca7aba147264f122910e38",
+    "reason": "Reviewed unchanged text: `systemtray_windows.go` (Shell_NotifyIcon). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "contributing/testing-ci.md",
+    "segment": "b0116-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d8f2590b79553662befbc9a43ba0e171a319eaec5602b3881150dd934f126b06",
+    "targetSHA256": "b2056e24f013bc7a3dd42c417012abab3728426f6d94586fde6d848b51ef956f",
+    "reason": "Reviewed unchanged text: `.github/workflows/build-and-test-v3.yml` (Go 1.25 via `actions/setup-go@v5`). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "features/windows/frameless.md",
+    "segment": "b0055-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "7f302cf9f18106ce1ee558008080bbb1c03dc59298055fb9f047cc13bfbf6dbd",
+    "reason": "Reviewed unchanged text: WebView2 app-region. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "7daec4febec13a95c75c31be7db0f30dad9117cdbf30fb2c1d2bd84394b7a331",
+    "reason": "Reviewed unchanged text: .msix, .appx. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "7daec4febec13a95c75c31be7db0f30dad9117cdbf30fb2c1d2bd84394b7a331",
+    "reason": "Reviewed unchanged text: wails3 setup signing. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "7daec4febec13a95c75c31be7db0f30dad9117cdbf30fb2c1d2bd84394b7a331",
+    "reason": "Reviewed unchanged text: wails3 setup entitlements. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "7daec4febec13a95c75c31be7db0f30dad9117cdbf30fb2c1d2bd84394b7a331",
+    "reason": "Reviewed unchanged text: wails3 sign. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "7daec4febec13a95c75c31be7db0f30dad9117cdbf30fb2c1d2bd84394b7a331",
+    "reason": "Reviewed unchanged text: wails3 tool sign. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/cli.md",
+    "segment": "b0308-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "7521913fabc780e8f28e46a4eb2e206eac5a2738544958826e87d551dcd5d75e",
+    "targetSHA256": "eb56d6f78263f0f88b2fdc5b812c000e0cfe1625754f8a50864668d9c2d5e132",
+    "reason": "Reviewed unchanged technical text: Icon Composer (macOS). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0002-label-004",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "a334f65b97cf73bd45250de2f41b05cb59a01428e41b72d623a0d339075c199a",
+    "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "a334f65b97cf73bd45250de2f41b05cb59a01428e41b72d623a0d339075c199a",
+    "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-006",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "a334f65b97cf73bd45250de2f41b05cb59a01428e41b72d623a0d339075c199a",
+    "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mobile/index.md",
+    "segment": "a0002-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8289fc3db2bef85211e1311351d85981b2fcff838b6c0cde3c824fe510d448d1",
+    "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mobile/index.md",
+    "segment": "b0023-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8289fc3db2bef85211e1311351d85981b2fcff838b6c0cde3c824fe510d448d1",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8289fc3db2bef85211e1311351d85981b2fcff838b6c0cde3c824fe510d448d1",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8289fc3db2bef85211e1311351d85981b2fcff838b6c0cde3c824fe510d448d1",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mobile/index.md",
+    "segment": "b0045-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8289fc3db2bef85211e1311351d85981b2fcff838b6c0cde3c824fe510d448d1",
+    "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8289fc3db2bef85211e1311351d85981b2fcff838b6c0cde3c824fe510d448d1",
+    "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8289fc3db2bef85211e1311351d85981b2fcff838b6c0cde3c824fe510d448d1",
+    "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "fr",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "f594b69e8c7b73466111057383854926d85974c960fc1abc7ca32e53dfdd4896",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/updater.md",
+    "segment": "b0036-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
+    "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/updater.md",
+    "segment": "b0039-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
+    "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/updater.md",
+    "segment": "b0042-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
+    "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "index.md",
+    "segment": "b0029-text-01",
+    "code": "untranslated",
+    "reason": "Windows, macOS, Linux, iOS, and Android are platform names and remain unchanged.",
+    "sourceSHA256": "4c30bd861fdcea210bba2f3228185763060fb48623b469a2e0b123429b47b225",
+    "targetSHA256": "47de1406e24d1c80339b70c3fbdc9e589efbdc010ebcd1ecddcaee4b517679ff"
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "54f3fc9ce8b73b69c0bec7420d7802cc4cbf72cf611d004ef8e7a3c87f36853d",
+    "reason": "Reviewed unchanged text: CFN Tracker. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "9d936edc7e8edbe310dc6fadf1f1a17c5ffe2526fcdcbd2091b5ab2d0fbd3597",
+    "reason": "Reviewed unchanged text: ESP Studio. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/filehound.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "54962da0db3069fa605aed91115e00408ac61adfce34413fe6a9985a8b164ff9",
+    "targetSHA256": "8d0d10a6af3cfaa42b353e9a74b1352489d62493a8957a8d5772cd31635bb668",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/minecraftupdater.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "39372fa399ef99fd8b566cba533e9a9ebc4c746a7afe26e66624e7bc93a2ae40",
+    "targetSHA256": "c4d6f2db785ac1fa71627882031289afa387cb6a62d8f86f0ef15bbcd0c52909",
+    "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/minesweeper-xp.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "d6fb7ec10edf70b03d52d48704511d55b81a38dc7846fb32ec1b98c9abd1cd25",
+    "targetSHA256": "c8c92d6360d04ecd3a3b2f07d2ac00a60095156531b5503aa8fd9c0771e5575f",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "49247bf32fffdd8b616b793e6fce031943b9e6b8bbad0906a3feaf69ca31e175",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "1bfaaf28954f1ff7b536adef9ac27bfc29f7f3301af2ff82c709715b01109f31",
+    "reason": "Reviewed unchanged text: Molley Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/peirato-s-piano-keyboard.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5273091a448135a746af284d37949756205c3ba1647c05bbff572ef27906066",
+    "targetSHA256": "8d26028af5d0c885a078b22548d99c137d255bfec189119d239b3d50aa1db17c",
+    "reason": "Reviewed unchanged text: Peirato's Piano Keyboard. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "fb7802195e601aab4ba8dcd4e7abd72533b84466351039b849d55ca1fd08bca0",
+    "reason": "Reviewed unchanged text: Restic Browser. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "821ccb1993c5344dfebc068d55b18ae9358377e504624b59dce200c2dab5f2b7",
+    "reason": "Reviewed unchanged text: Snippet Expander. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "0d18a604e8fab29346644af847b6d360f38a9746808628229c4e0da4223c214e",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "contributing/runtime-internals.md",
+    "segment": "b0090-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "19d2ea357a2fe488931b9ad8e313de4148a38289bf6eb90e3c01108ced49ad16",
+    "targetSHA256": "799c20712fad61b7fdb9036ddd58fd00cd1c0e4febd3c71d1198ba7e069555a5",
+    "reason": "Reviewed unchanged text: `systemtray_windows.go` (Shell_NotifyIcon). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "guides/advanced/wml.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "8f37522191623dc6ba392f929d2769d60939e37302ce0c224192c33f36474346",
+    "targetSHA256": "d011b75ab896a19819b7176be4293a6b616e18d57bf1f0bd1e790592cecdf86b",
+    "reason": "Reviewed unchanged text: WML (Wails Markup). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "a8b7c86ea7fe7e15a222cb21fe30bb1c74173392fddc354313a728f07a64b318",
+    "reason": "Reviewed unchanged technical text: .msix, .appx. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "a8b7c86ea7fe7e15a222cb21fe30bb1c74173392fddc354313a728f07a64b318",
+    "reason": "Reviewed unchanged technical text: wails3 setup signing. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "a8b7c86ea7fe7e15a222cb21fe30bb1c74173392fddc354313a728f07a64b318",
+    "reason": "Reviewed unchanged technical text: wails3 setup entitlements. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "a8b7c86ea7fe7e15a222cb21fe30bb1c74173392fddc354313a728f07a64b318",
+    "reason": "Reviewed unchanged technical text: wails3 sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "a8b7c86ea7fe7e15a222cb21fe30bb1c74173392fddc354313a728f07a64b318",
+    "reason": "Reviewed unchanged technical text: wails3 tool sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/cli.md",
+    "segment": "b0308-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "7521913fabc780e8f28e46a4eb2e206eac5a2738544958826e87d551dcd5d75e",
+    "targetSHA256": "ed0928967651184743262cd7f4fb76de2b133e98f3be442e54776668ed836ca8",
+    "reason": "Reviewed unchanged technical text: Icon Composer (macOS). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0002-label-004",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "6bd8e3aaca19ea63dc0cbb3d4db6691c4d9aa2033d29607edb54f32bc4e31953",
+    "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "6bd8e3aaca19ea63dc0cbb3d4db6691c4d9aa2033d29607edb54f32bc4e31953",
+    "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-006",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "6bd8e3aaca19ea63dc0cbb3d4db6691c4d9aa2033d29607edb54f32bc4e31953",
+    "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "3f9d3964726d0295459cb2ff6f5cd843b1f49b3be76dabf410d9c74d4d32f26d",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "3f9d3964726d0295459cb2ff6f5cd843b1f49b3be76dabf410d9c74d4d32f26d",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/mobile/index.md",
+    "segment": "b0045-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "3f9d3964726d0295459cb2ff6f5cd843b1f49b3be76dabf410d9c74d4d32f26d",
+    "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "3f9d3964726d0295459cb2ff6f5cd843b1f49b3be76dabf410d9c74d4d32f26d",
+    "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "3f9d3964726d0295459cb2ff6f5cd843b1f49b3be76dabf410d9c74d4d32f26d",
+    "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "de",
+    "file": "guides/streams.md",
+    "segment": "b0047-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "c61772004e3fc94b269bcfc429d6a0a52a562bc35b49498f13d6ecaf8bf9bed3",
+    "reason": "Reviewed unchanged text: `s.close()` in JS. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "c61772004e3fc94b269bcfc429d6a0a52a562bc35b49498f13d6ecaf8bf9bed3",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "guides/streams.md",
+    "segment": "b0065-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "c61772004e3fc94b269bcfc429d6a0a52a562bc35b49498f13d6ecaf8bf9bed3",
+    "reason": "Reviewed unchanged text: 2793 MB/s. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "index.md",
+    "segment": "b0029-text-01",
+    "code": "untranslated",
+    "reason": "Windows, macOS, Linux, iOS, and Android are platform names and remain unchanged.",
+    "sourceSHA256": "4c30bd861fdcea210bba2f3228185763060fb48623b469a2e0b123429b47b225",
+    "targetSHA256": "aaf45e33f852cd2dd1682ac35578fef6a471e9f3f597734c29a1492b1e24e2aa"
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "9cb4da3fddf82eac58317d3c48c80d6152de540930d2cdf1027e99f4e8c1751b",
+    "reason": "Reviewed unchanged text: CFN Tracker. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "0ed3dc040581ece95fdf250a843011965fa11f4eaab1bcd591c39d60787f6ab5",
+    "reason": "Reviewed unchanged text: ESP Studio. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/minecraftupdater.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "39372fa399ef99fd8b566cba533e9a9ebc4c746a7afe26e66624e7bc93a2ae40",
+    "targetSHA256": "b18ffdabd602ee16465dde5d2b9cfa60faecfed9079fa97c16c749a0da58acef",
+    "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/minesweeper-xp.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "d6fb7ec10edf70b03d52d48704511d55b81a38dc7846fb32ec1b98c9abd1cd25",
+    "targetSHA256": "1e2a15e427798abee2e733781aca53c5c52bbfe2a1e7da000e104c1a3cedef79",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "5af94642bb85da4ce7437301618ec9460d45e0af16d9e39a9dc4cd3aa675ef99",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "62b7589e60665608aa21782ec50a98eb93cc274e6e9e0b05d1968d7ff62d9d32",
+    "reason": "Reviewed unchanged text: Molley Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/peirato-s-piano-keyboard.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5273091a448135a746af284d37949756205c3ba1647c05bbff572ef27906066",
+    "targetSHA256": "2a285d3bae0e6b23d432eb5530a5f79d388898d688e44f32cdb597b809142e1b",
+    "reason": "Reviewed unchanged text: Peirato's Piano Keyboard. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/redisviewer.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "7798df8ab35f34366fd90d36e0876db4fe920ba83812f39e94e3876f26cb56fd",
+    "targetSHA256": "efb40241e65b752c32cb078628556bcb95f3444b17d4ababf27abc3a0e3349e7",
+    "reason": "Reviewed unchanged text: Redis Viewer. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "e2b0f55c66779f0fca23818481ff9039df2e95f88916b099ae30f26cfba3d1a7",
+    "reason": "Reviewed unchanged text: Restic Browser. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "e85aad5706ec406cb63aca91bdff2c547603f9d01fe78f63343995a90e7d6386",
+    "reason": "Reviewed unchanged text: Snippet Expander. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "560cc97d9876439fc6c3b0a7aeced7c705807eec20fd4f751b1b0b6363aedf4d",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "contributing/runtime-internals.md",
+    "segment": "b0090-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "19d2ea357a2fe488931b9ad8e313de4148a38289bf6eb90e3c01108ced49ad16",
+    "targetSHA256": "50ba5dc34390f6976b19c38f70b643bfb2d91eac2b8c7ab6f0e72cf167c81feb",
+    "reason": "Reviewed unchanged text: `systemtray_windows.go` (Shell_NotifyIcon). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "35bd813921ec68151f92e9bac55464b513148301af95db61cd07abe38b9f215c",
+    "reason": "Reviewed unchanged technical text: .msix, .appx. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "35bd813921ec68151f92e9bac55464b513148301af95db61cd07abe38b9f215c",
+    "reason": "Reviewed unchanged technical text: wails3 setup signing. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "35bd813921ec68151f92e9bac55464b513148301af95db61cd07abe38b9f215c",
+    "reason": "Reviewed unchanged technical text: wails3 setup entitlements. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "35bd813921ec68151f92e9bac55464b513148301af95db61cd07abe38b9f215c",
+    "reason": "Reviewed unchanged technical text: wails3 sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "35bd813921ec68151f92e9bac55464b513148301af95db61cd07abe38b9f215c",
+    "reason": "Reviewed unchanged technical text: wails3 tool sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/cli.md",
+    "segment": "b0308-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "7521913fabc780e8f28e46a4eb2e206eac5a2738544958826e87d551dcd5d75e",
+    "targetSHA256": "135fce6ea2487444bfe69742a2beabe86ff228d5fa9aeea2d0f2d8844d4a59b0",
+    "reason": "Reviewed unchanged technical text: Icon Composer (macOS). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0002-label-004",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "76e60c07680c0a0b5db4d3e4876b231074a138d522766c83459cdd28dfddfaf8",
+    "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "76e60c07680c0a0b5db4d3e4876b231074a138d522766c83459cdd28dfddfaf8",
+    "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-006",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "76e60c07680c0a0b5db4d3e4876b231074a138d522766c83459cdd28dfddfaf8",
+    "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mobile/index.md",
+    "segment": "a0002-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8fb8c729e27ba59db1d37787ef84dc28ddfd1b0f30aa3b9aebb10cc2cfb000c1",
+    "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mobile/index.md",
+    "segment": "b0023-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8fb8c729e27ba59db1d37787ef84dc28ddfd1b0f30aa3b9aebb10cc2cfb000c1",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8fb8c729e27ba59db1d37787ef84dc28ddfd1b0f30aa3b9aebb10cc2cfb000c1",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8fb8c729e27ba59db1d37787ef84dc28ddfd1b0f30aa3b9aebb10cc2cfb000c1",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mobile/index.md",
+    "segment": "b0045-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8fb8c729e27ba59db1d37787ef84dc28ddfd1b0f30aa3b9aebb10cc2cfb000c1",
+    "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8fb8c729e27ba59db1d37787ef84dc28ddfd1b0f30aa3b9aebb10cc2cfb000c1",
+    "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "8fb8c729e27ba59db1d37787ef84dc28ddfd1b0f30aa3b9aebb10cc2cfb000c1",
+    "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "pt",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "d5467144666ab9ce2577fa095d0ec06ec64f1e91602a5e9c43eba06db2b5de3d",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "guides/streams.md",
+    "segment": "b0065-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "d5467144666ab9ce2577fa095d0ec06ec64f1e91602a5e9c43eba06db2b5de3d",
+    "reason": "Reviewed unchanged text: 2793 MB/s. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "guides/updater.md",
+    "segment": "b0036-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "fc458bc45fda20ab3fa27b0441bad98d67a5e7fbb29f5314ebaaaa2b9bce792c",
+    "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "guides/updater.md",
+    "segment": "b0039-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "fc458bc45fda20ab3fa27b0441bad98d67a5e7fbb29f5314ebaaaa2b9bce792c",
+    "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "guides/updater.md",
+    "segment": "b0042-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "fc458bc45fda20ab3fa27b0441bad98d67a5e7fbb29f5314ebaaaa2b9bce792c",
+    "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "guides/updater.md",
+    "segment": "b0045-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "fc458bc45fda20ab3fa27b0441bad98d67a5e7fbb29f5314ebaaaa2b9bce792c",
+    "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "ac34b9e0f103cc1697f654ba216c95c8aade6a55479ed943ec269484486caf3f",
+    "reason": "Reviewed unchanged text: CFN Tracker. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "1c22c42720b247f888496543192ed84da95e4019875dce0b7386711945834d3a",
+    "reason": "Reviewed unchanged text: ESP Studio. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/minecraftupdater.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "39372fa399ef99fd8b566cba533e9a9ebc4c746a7afe26e66624e7bc93a2ae40",
+    "targetSHA256": "2f38b1cba733154c62716647e31e9dab54bf2d53c30a27448d79edbf4501c713",
+    "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "229370355bded5c74110d5645c311137ed97a4a0a3efbe2f1302d98cccc8ead2",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "d433b086e135e825758b62873b72924403020c33b755e6b8b6f841cfb0c2edc6",
+    "reason": "Reviewed unchanged text: Molley Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/peirato-s-piano-keyboard.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5273091a448135a746af284d37949756205c3ba1647c05bbff572ef27906066",
+    "targetSHA256": "4f65e27f34e00b453f665b5571928baffb4cac2cfabb1cfb2981470d46fc0157",
+    "reason": "Reviewed unchanged text: Peirato's Piano Keyboard. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/redisviewer.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "7798df8ab35f34366fd90d36e0876db4fe920ba83812f39e94e3876f26cb56fd",
+    "targetSHA256": "b3ee472afd6a38c90f699e18f1087ad3f862902e8497ac797441b94769359cbe",
+    "reason": "Reviewed unchanged text: Redis Viewer. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "38522646d8f0b1cc717bac39da4d13bce52096dd40db742a8d073e65db76c0f4",
+    "reason": "Reviewed unchanged text: Restic Browser. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "910f6628ddce868bd2351512e37f05438e08992456d17f672c4aa1a5dde78237",
+    "reason": "Reviewed unchanged text: Snippet Expander. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "2cd45266a3c69adecabbf40609ee70bf1e487153302ececa1924da0500927f21",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "contributing/runtime-internals.md",
+    "segment": "b0090-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "19d2ea357a2fe488931b9ad8e313de4148a38289bf6eb90e3c01108ced49ad16",
+    "targetSHA256": "6dc716cced976127f9ed5704dbb63ba027aa3a7840f29d240deb3fb4552945da",
+    "reason": "Reviewed unchanged text: `systemtray_windows.go` (Shell_NotifyIcon). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "13e129d33d131978abe8ac57e7e6505a6b31a267c46f6b7accdf0c8c15729af6",
+    "reason": "Reviewed unchanged technical text: .msix, .appx. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "13e129d33d131978abe8ac57e7e6505a6b31a267c46f6b7accdf0c8c15729af6",
+    "reason": "Reviewed unchanged technical text: wails3 setup signing. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "13e129d33d131978abe8ac57e7e6505a6b31a267c46f6b7accdf0c8c15729af6",
+    "reason": "Reviewed unchanged technical text: wails3 setup entitlements. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "13e129d33d131978abe8ac57e7e6505a6b31a267c46f6b7accdf0c8c15729af6",
+    "reason": "Reviewed unchanged technical text: wails3 sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "13e129d33d131978abe8ac57e7e6505a6b31a267c46f6b7accdf0c8c15729af6",
+    "reason": "Reviewed unchanged technical text: wails3 tool sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/cli.md",
+    "segment": "b0308-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "7521913fabc780e8f28e46a4eb2e206eac5a2738544958826e87d551dcd5d75e",
+    "targetSHA256": "39bab5f3ddd7ce331fb9f193d1ae7808e5ff8bda77efb56421b4feb8e3a0167e",
+    "reason": "Reviewed unchanged technical text: Icon Composer (macOS). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0002-label-004",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "29c315eb37bebf62c13cc003e983ff78ded6e7b705a79f72db30e1972918e20b",
+    "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "29c315eb37bebf62c13cc003e983ff78ded6e7b705a79f72db30e1972918e20b",
+    "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-006",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "29c315eb37bebf62c13cc003e983ff78ded6e7b705a79f72db30e1972918e20b",
+    "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/first-mobile-app.md",
+    "segment": "tab0001-label-001",
+    "code": "untranslated",
+    "sourceSHA256": "257017211f84f3ecc550cfc258e312ddf513a94b3471e986bf7185c15263853a",
+    "targetSHA256": "abc4e8ed12b4a147349f08a42df31ed125c7f5500e657453de11bd3397974c5f",
+    "reason": "Reviewed unchanged technical text: iOS Simulator. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/first-mobile-app.md",
+    "segment": "tab0003-label-002",
+    "code": "untranslated",
+    "sourceSHA256": "257017211f84f3ecc550cfc258e312ddf513a94b3471e986bf7185c15263853a",
+    "targetSHA256": "abc4e8ed12b4a147349f08a42df31ed125c7f5500e657453de11bd3397974c5f",
+    "reason": "Reviewed unchanged technical text: Android Emulator. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/index.md",
+    "segment": "a0002-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "64448739d5426491b546708646f597c71fae114fec9066aa6df289a72007d625",
+    "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/index.md",
+    "segment": "b0023-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "64448739d5426491b546708646f597c71fae114fec9066aa6df289a72007d625",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "64448739d5426491b546708646f597c71fae114fec9066aa6df289a72007d625",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "64448739d5426491b546708646f597c71fae114fec9066aa6df289a72007d625",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/index.md",
+    "segment": "b0045-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "64448739d5426491b546708646f597c71fae114fec9066aa6df289a72007d625",
+    "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "64448739d5426491b546708646f597c71fae114fec9066aa6df289a72007d625",
+    "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "64448739d5426491b546708646f597c71fae114fec9066aa6df289a72007d625",
+    "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ru",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "9f94432f866bbbe4fe990921b877e13e8cb628f4aeb9244c0032d4837d993bc6",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "guides/updater.md",
+    "segment": "b0036-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "41e75f84685c93f46e25e6470a8208a869d33a2e27eadd1621c54241a2b83c33",
+    "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "guides/updater.md",
+    "segment": "b0039-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "41e75f84685c93f46e25e6470a8208a869d33a2e27eadd1621c54241a2b83c33",
+    "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "guides/updater.md",
+    "segment": "b0042-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "41e75f84685c93f46e25e6470a8208a869d33a2e27eadd1621c54241a2b83c33",
+    "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "guides/updater.md",
+    "segment": "b0045-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "41e75f84685c93f46e25e6470a8208a869d33a2e27eadd1621c54241a2b83c33",
+    "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "index.md",
+    "segment": "b0029-text-01",
+    "code": "untranslated",
+    "reason": "Windows, macOS, Linux, iOS, and Android are platform names and remain unchanged.",
+    "sourceSHA256": "4c30bd861fdcea210bba2f3228185763060fb48623b469a2e0b123429b47b225",
+    "targetSHA256": "850f0c91d56809e70b1f204447caf51bd6464afd7809aea53898dbf63ce4c4cd"
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "1319ad62f701433cad16a87b7530658df9832eef67c60ee97fe8d25794991843",
+    "reason": "Reviewed unchanged text: CFN Tracker. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "7f593662afdeb60b4036fa17e8e586fef99f985da8d06f5d9d578723398bd0d3",
+    "reason": "Reviewed unchanged text: ESP Studio. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/minecraftupdater.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "39372fa399ef99fd8b566cba533e9a9ebc4c746a7afe26e66624e7bc93a2ae40",
+    "targetSHA256": "30587e0f53fa021b8282adbdab93bce6c6ef337716ed195a45a9d39bfb9555c6",
+    "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/minesweeper-xp.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "d6fb7ec10edf70b03d52d48704511d55b81a38dc7846fb32ec1b98c9abd1cd25",
+    "targetSHA256": "3e5e9ebede70e607bd2cafb019311b10b63236e9a6f3844a8d76a1d28dada21a",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "c97fbf166b339287ac78e87a441656e0426aeb13871fe1d7d3efcb934e1aa160",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "da3fc17dcdd4939d07a9783aba336c1492a7b2a8d12be660503262d06955c85a",
+    "reason": "Reviewed unchanged text: Molley Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/peirato-s-piano-keyboard.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5273091a448135a746af284d37949756205c3ba1647c05bbff572ef27906066",
+    "targetSHA256": "c6f99d8367ae1906657ef4ba82841a45e59668f7677eaa5025f966acfd3c9063",
+    "reason": "Reviewed unchanged text: Peirato's Piano Keyboard. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/redisviewer.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "7798df8ab35f34366fd90d36e0876db4fe920ba83812f39e94e3876f26cb56fd",
+    "targetSHA256": "6dff24beab138ab6b4785cc8182b1d643e5fb9ac5a20d59eaace3c690fd1a1f4",
+    "reason": "Reviewed unchanged text: Redis Viewer. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "0416a84b5c2e37c9d188948d78686f7786b33ad1f87b266c948bc35bfff87e97",
+    "reason": "Reviewed unchanged text: Restic Browser. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "c84f9a54b2b73e7a2c70c1ab695ac8f6f297d14a986726543debe0a76677cabb",
+    "reason": "Reviewed unchanged text: Snippet Expander. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "b48349da9bf28dbdb7badc63901f38c6e8e382e8506ce6e2074f687e0f4a7f9e",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "contributing/build-packaging.md",
+    "segment": "b0040-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "9ec531e0a0154cf32870f5560d9af80feaa9df68b3fa9772b5cdccdc3c40f589",
+    "targetSHA256": "097f42f0a35983862c61c2c54105785d046685333ec515af40cedb0755c054bc",
+    "reason": "Reviewed unchanged text: Windows MSIX. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "contributing/build-packaging.md",
+    "segment": "b0108-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "9ec531e0a0154cf32870f5560d9af80feaa9df68b3fa9772b5cdccdc3c40f589",
+    "targetSHA256": "097f42f0a35983862c61c2c54105785d046685333ec515af40cedb0755c054bc",
+    "reason": "Reviewed unchanged text: Windows MSIX. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "contributing/extending-wails.md",
+    "segment": "b0091-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "cb5fab3206ab98cbfbaf04f0ba7e2bde86f5aa509028180c68082c09e880bb91",
+    "targetSHA256": "ad030876c2dcb5e6676a9f6b7e8ac3490c28a5f1846f8693c5dbc2a9996cb1c5",
+    "reason": "Reviewed unchanged text: Taskfile DSL. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "features/windows/frameless.md",
+    "segment": "b0055-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "e87c892665631a831d0c23dc635a46ade935cfc1d9acdcfaa15a08570002d550",
+    "reason": "Reviewed unchanged text: WebView2 app-region. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "3ba0970ec393792ed8c0bcd900de50685a8260bf4ea46e14ae0e90230557a372",
+    "reason": "Reviewed unchanged technical text: .msix, .appx. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "3ba0970ec393792ed8c0bcd900de50685a8260bf4ea46e14ae0e90230557a372",
+    "reason": "Reviewed unchanged technical text: wails3 setup signing. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "3ba0970ec393792ed8c0bcd900de50685a8260bf4ea46e14ae0e90230557a372",
+    "reason": "Reviewed unchanged technical text: wails3 setup entitlements. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "3ba0970ec393792ed8c0bcd900de50685a8260bf4ea46e14ae0e90230557a372",
+    "reason": "Reviewed unchanged technical text: wails3 sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "3ba0970ec393792ed8c0bcd900de50685a8260bf4ea46e14ae0e90230557a372",
+    "reason": "Reviewed unchanged technical text: wails3 tool sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "ecbb153ff1d69b3479b509db8740b4b5f669bbcd7514d493c753196129d9efad",
+    "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mobile/first-mobile-app.md",
+    "segment": "tab0001-label-001",
+    "code": "untranslated",
+    "sourceSHA256": "257017211f84f3ecc550cfc258e312ddf513a94b3471e986bf7185c15263853a",
+    "targetSHA256": "e98de76093334d9263910c46679566bdb90a90112256a81766961abd362299c1",
+    "reason": "Reviewed unchanged technical text: iOS Simulator. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mobile/first-mobile-app.md",
+    "segment": "tab0003-label-002",
+    "code": "untranslated",
+    "sourceSHA256": "257017211f84f3ecc550cfc258e312ddf513a94b3471e986bf7185c15263853a",
+    "targetSHA256": "e98de76093334d9263910c46679566bdb90a90112256a81766961abd362299c1",
+    "reason": "Reviewed unchanged technical text: Android Emulator. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mobile/index.md",
+    "segment": "a0002-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "4caa515d01b6e7070621e32a976c4b60e308fc9eb58f05efe3b21ab9714c0f56",
+    "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mobile/index.md",
+    "segment": "b0023-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "4caa515d01b6e7070621e32a976c4b60e308fc9eb58f05efe3b21ab9714c0f56",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "4caa515d01b6e7070621e32a976c4b60e308fc9eb58f05efe3b21ab9714c0f56",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "4caa515d01b6e7070621e32a976c4b60e308fc9eb58f05efe3b21ab9714c0f56",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "4caa515d01b6e7070621e32a976c4b60e308fc9eb58f05efe3b21ab9714c0f56",
+    "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "4caa515d01b6e7070621e32a976c4b60e308fc9eb58f05efe3b21ab9714c0f56",
+    "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ja",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "da2ef62eef24e559af289bad11951c1a227f35aa669d0d16dd09109941448655",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "guides/streams.md",
+    "segment": "b0065-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "da2ef62eef24e559af289bad11951c1a227f35aa669d0d16dd09109941448655",
+    "reason": "Reviewed unchanged text: 2793 MB/s. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "guides/updater.md",
+    "segment": "b0036-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "cad9ba1778643c2738581a7e3c9a8eefe0978d12274937fcf941a69f7c5543c0",
+    "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "guides/updater.md",
+    "segment": "b0039-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "cad9ba1778643c2738581a7e3c9a8eefe0978d12274937fcf941a69f7c5543c0",
+    "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "guides/updater.md",
+    "segment": "b0042-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "cad9ba1778643c2738581a7e3c9a8eefe0978d12274937fcf941a69f7c5543c0",
+    "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "guides/updater.md",
+    "segment": "b0045-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "cad9ba1778643c2738581a7e3c9a8eefe0978d12274937fcf941a69f7c5543c0",
+    "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "f682a7a422e92b6b43d3e07279a8cb5ece09e02122716352c4411cd87044fe33",
+    "reason": "Reviewed unchanged text: CFN Tracker. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "b82d8dfe2442e46471b2c9f610c29dfd985286847b1570254be8fb4a7df7da11",
+    "reason": "Reviewed unchanged text: ESP Studio. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/minecraftupdater.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "39372fa399ef99fd8b566cba533e9a9ebc4c746a7afe26e66624e7bc93a2ae40",
+    "targetSHA256": "d39b122e6ca874d2e04340aa233ea2d649bed99079e7001cdc1edb998c1de529",
+    "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/minesweeper-xp.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "d6fb7ec10edf70b03d52d48704511d55b81a38dc7846fb32ec1b98c9abd1cd25",
+    "targetSHA256": "ddacf4eac3ce37cd94d45fad9441a14f2bbd082b7998603a839fc796e5f8ecc2",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "6c557459e390a693b846df3001843bdfec00302b33bc1c82ea2cc4e5867290a4",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "44504d52b2a5e7bf27540cd4e97e33cfbbc4f51675931f0e3df6d9a2576eb1a8",
+    "reason": "Reviewed unchanged text: Molley Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/peirato-s-piano-keyboard.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5273091a448135a746af284d37949756205c3ba1647c05bbff572ef27906066",
+    "targetSHA256": "944d96dc85127c0d0358ac89adb3c2d4541038627229f99c833c6ff13b88bcb3",
+    "reason": "Reviewed unchanged text: Peirato's Piano Keyboard. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/redisviewer.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "7798df8ab35f34366fd90d36e0876db4fe920ba83812f39e94e3876f26cb56fd",
+    "targetSHA256": "7d36c92243b89d1d189e1226f81158dac9da3e2cc392945c46cd739f899a8986",
+    "reason": "Reviewed unchanged text: Redis Viewer. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "fe66b579f59d0a78a5615acc3a54b0874cb4a9474d1db241804f7d33af695f47",
+    "reason": "Reviewed unchanged text: Restic Browser. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "124e126b216e5c8f85bedfab803f8dba697fe950651cfdb3702d89f243738cd5",
+    "reason": "Reviewed unchanged text: Snippet Expander. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "6588d8092ffb40836ec72db7900898aab39dd3c19c872e072b2cfe05cd138fac",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "contributing/build-packaging.md",
+    "segment": "b0040-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "9ec531e0a0154cf32870f5560d9af80feaa9df68b3fa9772b5cdccdc3c40f589",
+    "targetSHA256": "142e8ae605c403e9997d7a2ed61c92574b4ad917e152c31cfcb38c821a83b004",
+    "reason": "Reviewed unchanged text: Windows MSIX. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "contributing/build-packaging.md",
+    "segment": "b0108-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "9ec531e0a0154cf32870f5560d9af80feaa9df68b3fa9772b5cdccdc3c40f589",
+    "targetSHA256": "142e8ae605c403e9997d7a2ed61c92574b4ad917e152c31cfcb38c821a83b004",
+    "reason": "Reviewed unchanged text: Windows MSIX. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "contributing/extending-wails.md",
+    "segment": "b0091-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "cb5fab3206ab98cbfbaf04f0ba7e2bde86f5aa509028180c68082c09e880bb91",
+    "targetSHA256": "c9f73d553f1a560dc98bccdc5c50f82d0338f84396acd8f3faaeaedd3176dee1",
+    "reason": "Reviewed unchanged text: Taskfile DSL. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "features/bindings/methods.md",
+    "segment": "b0131-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "fcf656109f276203a7cc720df8a4532a3dc95ea1082868a7086df523190587ef",
+    "targetSHA256": "6083c37eff681b28ac24789ba1681d209b297a9052eb146664b82699e92b1476",
+    "reason": "Reviewed unchanged text: HTTP/REST: 5-50ms. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "features/windows/frameless.md",
+    "segment": "b0055-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "2d82ec1ba8fbc0be2451dcee9f444f79e0755ec2acec70d98944a888dc0a3d85",
+    "reason": "Reviewed unchanged text: WebView2 app-region. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "cc96b0aa26b34964a7c29cebb218323f7d71c2719c5e35a09eadfa6bed6aba85",
+    "reason": "Reviewed unchanged technical text: .msix, .appx. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "cc96b0aa26b34964a7c29cebb218323f7d71c2719c5e35a09eadfa6bed6aba85",
+    "reason": "Reviewed unchanged technical text: wails3 setup signing. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "cc96b0aa26b34964a7c29cebb218323f7d71c2719c5e35a09eadfa6bed6aba85",
+    "reason": "Reviewed unchanged technical text: wails3 setup entitlements. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "cc96b0aa26b34964a7c29cebb218323f7d71c2719c5e35a09eadfa6bed6aba85",
+    "reason": "Reviewed unchanged technical text: wails3 sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "cc96b0aa26b34964a7c29cebb218323f7d71c2719c5e35a09eadfa6bed6aba85",
+    "reason": "Reviewed unchanged technical text: wails3 tool sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "2f27fba3bb1fcd916583d908efd691255dd3578e1b3a10b2dc0483039b8eedd7",
+    "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/first-mobile-app.md",
+    "segment": "tab0001-label-001",
+    "code": "untranslated",
+    "sourceSHA256": "257017211f84f3ecc550cfc258e312ddf513a94b3471e986bf7185c15263853a",
+    "targetSHA256": "cc7d78d1bd0f47b625f2c08c91ea450c75cbccc1a7b228ea5240b723e550e1d3",
+    "reason": "Reviewed unchanged technical text: iOS Simulator. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/first-mobile-app.md",
+    "segment": "tab0003-label-002",
+    "code": "untranslated",
+    "sourceSHA256": "257017211f84f3ecc550cfc258e312ddf513a94b3471e986bf7185c15263853a",
+    "targetSHA256": "cc7d78d1bd0f47b625f2c08c91ea450c75cbccc1a7b228ea5240b723e550e1d3",
+    "reason": "Reviewed unchanged technical text: Android Emulator. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/index.md",
+    "segment": "a0002-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "5d52680800e542c7eff45f42062fdd4e27d1607750001dbf093dedb94cf5ec6d",
+    "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/index.md",
+    "segment": "b0023-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "5d52680800e542c7eff45f42062fdd4e27d1607750001dbf093dedb94cf5ec6d",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "5d52680800e542c7eff45f42062fdd4e27d1607750001dbf093dedb94cf5ec6d",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "5d52680800e542c7eff45f42062fdd4e27d1607750001dbf093dedb94cf5ec6d",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/index.md",
+    "segment": "b0045-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "5d52680800e542c7eff45f42062fdd4e27d1607750001dbf093dedb94cf5ec6d",
+    "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "5d52680800e542c7eff45f42062fdd4e27d1607750001dbf093dedb94cf5ec6d",
+    "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "5d52680800e542c7eff45f42062fdd4e27d1607750001dbf093dedb94cf5ec6d",
+    "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "ko",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "e2c08e0988f1db1c92d98ccc0a3f05441f290f28c19726386a20a4912bf4ff49",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "guides/streams.md",
+    "segment": "b0065-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "e2c08e0988f1db1c92d98ccc0a3f05441f290f28c19726386a20a4912bf4ff49",
+    "reason": "Reviewed unchanged text: 2793 MB/s. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "guides/updater.md",
+    "segment": "b0036-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "bfba301658055ad4fd23d1179e1877a29987104d11c4348f05ca0d7f29a42a64",
+    "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "guides/updater.md",
+    "segment": "b0039-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "bfba301658055ad4fd23d1179e1877a29987104d11c4348f05ca0d7f29a42a64",
+    "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "guides/updater.md",
+    "segment": "b0042-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "bfba301658055ad4fd23d1179e1877a29987104d11c4348f05ca0d7f29a42a64",
+    "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "guides/updater.md",
+    "segment": "b0045-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "bfba301658055ad4fd23d1179e1877a29987104d11c4348f05ca0d7f29a42a64",
+    "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "index.md",
+    "segment": "b0029-text-01",
+    "code": "untranslated",
+    "reason": "Windows, macOS, Linux, iOS, and Android are platform names and remain unchanged.",
+    "sourceSHA256": "4c30bd861fdcea210bba2f3228185763060fb48623b469a2e0b123429b47b225",
+    "targetSHA256": "12c6c7be18f6eb170e39dca81e8a03fbc0ebabfb4c6ffa01e10dec0c7475cd22"
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "f681d4c45f758d0845690b49a16c700b5a8788447b5843ef5f52425128c1a108",
+    "reason": "Reviewed unchanged text: CFN Tracker. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "c0584a9531922d4ddad5d4be4aae0b01997ee65d5007154cdfa856b0f378eaaa",
+    "reason": "Reviewed unchanged text: ESP Studio. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "07053067a1d45d7d3b64c47f990f3c42a70ca889fe3aabf33b1a88a17365ca82",
+    "reason": "Reviewed unchanged text: Modal File Manager. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "9cf0fd291d388ca53f735ceffa858e216303e7591bde64f28bc3262bd24496d7",
+    "reason": "Reviewed unchanged text: Molley Wallet. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "eeb17dcae3ca6b8cf7b37fba31ed0d0f137404343a6044e19ced4aff14d24b39",
+    "reason": "Reviewed unchanged text: Restic Browser. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "5255dae806edee887cbb3d688b3b50eca3ccd8ee1d666743ecc3e309431ee191",
+    "reason": "Reviewed unchanged text: Snippet Expander. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "096d4556c5d66cdd46da3296e5b93d932301b357f2e38053b39140120f84b1aa",
+    "reason": "Reviewed unchanged text: Tiny RDM. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "contributing/build-packaging.md",
+    "segment": "b0040-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "9ec531e0a0154cf32870f5560d9af80feaa9df68b3fa9772b5cdccdc3c40f589",
+    "targetSHA256": "ccc2ae130865fcfd38fcd105d87260eddcc46defe39d5b01288822ce716d4874",
+    "reason": "Reviewed unchanged text: Windows MSIX. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "contributing/build-packaging.md",
+    "segment": "b0108-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "9ec531e0a0154cf32870f5560d9af80feaa9df68b3fa9772b5cdccdc3c40f589",
+    "targetSHA256": "ccc2ae130865fcfd38fcd105d87260eddcc46defe39d5b01288822ce716d4874",
+    "reason": "Reviewed unchanged text: Windows MSIX. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "contributing/extending-wails.md",
+    "segment": "b0091-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "cb5fab3206ab98cbfbaf04f0ba7e2bde86f5aa509028180c68082c09e880bb91",
+    "targetSHA256": "3dd9f81a4da00f8e119eb453d9fc87ff50b4f514285b0dc6ddb11da20f0f442a",
+    "reason": "Reviewed unchanged text: Taskfile DSL. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "features/windows/frameless.md",
+    "segment": "b0055-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "85cf9f2e5345149df6363c013727879c345401c9d84b7fa4003d610d852ee0bc",
+    "reason": "Reviewed unchanged text: WebView2 app-region. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "36d27d4ac57646715706f09077d48024b32dd6dd06feea80167b9d01fe838c72",
+    "reason": "Reviewed unchanged text: .msix, .appx. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "36d27d4ac57646715706f09077d48024b32dd6dd06feea80167b9d01fe838c72",
+    "reason": "Reviewed unchanged text: wails3 setup signing. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "36d27d4ac57646715706f09077d48024b32dd6dd06feea80167b9d01fe838c72",
+    "reason": "Reviewed unchanged text: wails3 setup entitlements. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "36d27d4ac57646715706f09077d48024b32dd6dd06feea80167b9d01fe838c72",
+    "reason": "Reviewed unchanged text: wails3 sign. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "36d27d4ac57646715706f09077d48024b32dd6dd06feea80167b9d01fe838c72",
+    "reason": "Reviewed unchanged text: wails3 tool sign. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "d2608b7befc697e1f375cc6d9fcebb23a8ca3e6d588c768b1bc08f2ba634180c",
+    "reason": "Reviewed unchanged text: Claude Code. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/mobile/index.md",
+    "segment": "b0023-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "57ae675f38b5bc7a225e7f81b86f323dfb9684889e3047b774d68826b8c5553c",
+    "reason": "Reviewed unchanged text: iOS + Android. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "57ae675f38b5bc7a225e7f81b86f323dfb9684889e3047b774d68826b8c5553c",
+    "reason": "Reviewed unchanged text: iOS + Android. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "57ae675f38b5bc7a225e7f81b86f323dfb9684889e3047b774d68826b8c5553c",
+    "reason": "Reviewed unchanged text: iOS + Android. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "57ae675f38b5bc7a225e7f81b86f323dfb9684889e3047b774d68826b8c5553c",
+    "reason": "Reviewed unchanged text: Android SDK + NDK 26.3.x + JDK. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "57ae675f38b5bc7a225e7f81b86f323dfb9684889e3047b774d68826b8c5553c",
+    "reason": "Reviewed unchanged text: ✅ Storage Access Framework. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "e13b0d7279dc671ad289d258144c06ffaa59c64bbaa39771df0ecace20b37daa",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/streams.md",
+    "segment": "b0065-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "e13b0d7279dc671ad289d258144c06ffaa59c64bbaa39771df0ecace20b37daa",
+    "reason": "Reviewed unchanged text: 2793 MB/s. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/updater.md",
+    "segment": "b0036-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "ba830416a1644a31a5ddeaf61e67e23ccd64aaba7c5bf614c9f6f60f45693611",
+    "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/updater.md",
+    "segment": "b0039-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "ba830416a1644a31a5ddeaf61e67e23ccd64aaba7c5bf614c9f6f60f45693611",
+    "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/updater.md",
+    "segment": "b0042-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "ba830416a1644a31a5ddeaf61e67e23ccd64aaba7c5bf614c9f6f60f45693611",
+    "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "8ae39d6863e870b1468a37d1cd8892dab500356dcf7c7ac7cc60a9f548ffc916",
+    "reason": "Reviewed unchanged text: CFN Tracker. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "ff60268210e85dafbba5da3a9a5c3ffc5b5f741669776a3129e044e27b2f3eed",
+    "reason": "Reviewed unchanged text: ESP Studio. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/minesweeper-xp.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "d6fb7ec10edf70b03d52d48704511d55b81a38dc7846fb32ec1b98c9abd1cd25",
+    "targetSHA256": "72e3ed8fab1db063cb4aa7fb07954d9866e54299b321af2e945653a034668ccd",
+    "reason": "Reviewed unchanged text: Minesweeper XP. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "9589ca0f5590a91134d3ae56319bba73f1aa5ff6470071ebc7f04de2a65d85e9",
+    "reason": "Reviewed unchanged text: Modal File Manager. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "eedee657d2a82b3132c6b731e3ab960200a5747512e8e5b2f233e4d5c6c4ecb6",
+    "reason": "Reviewed unchanged text: Molley Wallet. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "f728aed61850b2bfb06a74698735010467493353aea8607bbdb6df7c1adb8b77",
+    "reason": "Reviewed unchanged text: Restic Browser. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "17ff7fc31b0dd1cb4dc5bdc693e2c03a119493ee4564f4a0916d2d0104b4edca",
+    "reason": "Reviewed unchanged text: Snippet Expander. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "3469ffc99527a692292051fad122032d97be3f0ef7c6a8cd42a81de8e7c63de5",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a literal code expression or product/platform name; prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "contributing/build-packaging.md",
+    "segment": "b0040-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "9ec531e0a0154cf32870f5560d9af80feaa9df68b3fa9772b5cdccdc3c40f589",
+    "targetSHA256": "12e8b700e214806ae31a5f6aef8f854656175cd32d9490c7301de450a621c750",
+    "reason": "Reviewed unchanged text: Windows MSIX. This is a literal code expression or product/platform name; prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "contributing/build-packaging.md",
+    "segment": "b0108-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "9ec531e0a0154cf32870f5560d9af80feaa9df68b3fa9772b5cdccdc3c40f589",
+    "targetSHA256": "12e8b700e214806ae31a5f6aef8f854656175cd32d9490c7301de450a621c750",
+    "reason": "Reviewed unchanged text: Windows MSIX. This is a literal code expression or product/platform name; prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "contributing/extending-wails.md",
+    "segment": "b0091-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "cb5fab3206ab98cbfbaf04f0ba7e2bde86f5aa509028180c68082c09e880bb91",
+    "targetSHA256": "ee46989ceb527b19f047eab279a41228e103ca7f7cd6e4abe9353276b3dcb84f",
+    "reason": "Reviewed unchanged text: Taskfile DSL. This is a literal code expression or product/platform name; prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "features/windows/frameless.md",
+    "segment": "b0055-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "83749b3647ea40c79c4cabd1b428f94f27a5e89888d3e84ca1166458729623ae",
+    "reason": "Reviewed unchanged text: WebView2 app-region. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "5270559ea0e0976e9103d5393b9e98e196f5d58dceb6fedb8c469c094105b276",
+    "reason": "Reviewed unchanged text: .msix, .appx. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "5270559ea0e0976e9103d5393b9e98e196f5d58dceb6fedb8c469c094105b276",
+    "reason": "Reviewed unchanged text: wails3 setup signing. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "5270559ea0e0976e9103d5393b9e98e196f5d58dceb6fedb8c469c094105b276",
+    "reason": "Reviewed unchanged text: wails3 setup entitlements. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "5270559ea0e0976e9103d5393b9e98e196f5d58dceb6fedb8c469c094105b276",
+    "reason": "Reviewed unchanged text: wails3 sign. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "5270559ea0e0976e9103d5393b9e98e196f5d58dceb6fedb8c469c094105b276",
+    "reason": "Reviewed unchanged text: wails3 tool sign. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "0c7acd33c458b0fec04daab16b5f22fe2c6e5e6f5e1f169491e0dcc2dfc95608",
+    "reason": "Reviewed unchanged text: Claude Code. This is a product, platform or API identifier, or a literal command, rather than translatable prose."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/mobile/index.md",
+    "segment": "a0002-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "579ed4704c065524ab90934061fe6b56368c3fa83206a3dee63a4f83046e2e91",
+    "reason": "Reviewed unchanged text: Mobile Kitchen Sink — GitHub. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/mobile/index.md",
+    "segment": "b0023-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "579ed4704c065524ab90934061fe6b56368c3fa83206a3dee63a4f83046e2e91",
+    "reason": "Reviewed unchanged text: iOS + Android. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "579ed4704c065524ab90934061fe6b56368c3fa83206a3dee63a4f83046e2e91",
+    "reason": "Reviewed unchanged text: iOS + Android. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "579ed4704c065524ab90934061fe6b56368c3fa83206a3dee63a4f83046e2e91",
+    "reason": "Reviewed unchanged text: iOS + Android. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "579ed4704c065524ab90934061fe6b56368c3fa83206a3dee63a4f83046e2e91",
+    "reason": "Reviewed unchanged text: Android SDK + NDK 26.3.x + JDK. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "579ed4704c065524ab90934061fe6b56368c3fa83206a3dee63a4f83046e2e91",
+    "reason": "Reviewed unchanged text: ✅ Storage Access Framework. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "1ca574cf6652d885d0601c11a5d49c79e2ced5748b892a371f0da3458c0e862e",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/streams.md",
+    "segment": "b0065-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "1ca574cf6652d885d0601c11a5d49c79e2ced5748b892a371f0da3458c0e862e",
+    "reason": "Reviewed unchanged text: 2793 MB/s. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/updater.md",
+    "segment": "b0036-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "a8c9daa5ac5c16902d8b09d6fc700a98fa3e9acdfe2799bf1f84efaf32dc7a68",
+    "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/updater.md",
+    "segment": "b0039-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "a8c9daa5ac5c16902d8b09d6fc700a98fa3e9acdfe2799bf1f84efaf32dc7a68",
+    "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/updater.md",
+    "segment": "b0042-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "a8c9daa5ac5c16902d8b09d6fc700a98fa3e9acdfe2799bf1f84efaf32dc7a68",
+    "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/cfntracker.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "35882cf48c74ad24dc40111242a74e2e1254ff0bd39634b70d6ac440b6d13c9f",
+    "targetSHA256": "efb6f31a2445bce4f3b713542a068f0105381a9f7ac03fb341a548a209d0967e",
+    "reason": "Reviewed unchanged text: CFN Tracker. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/espstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "66fdd14e8a3219ef926826dcf351079248eef3bfc48a05f6f55c9e15a90abd19",
+    "targetSHA256": "9a020adc3fbbf73a8c97a152104e76e3ce21f45ef15decbe4afc125f6d8e1aa1",
+    "reason": "Reviewed unchanged text: ESP Studio. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/minecraftupdater.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "39372fa399ef99fd8b566cba533e9a9ebc4c746a7afe26e66624e7bc93a2ae40",
+    "targetSHA256": "081c5553eb0a50700562e86b5c3e9cb45928d6b72f76df6ac15aed859544d63a",
+    "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/minesweeper-xp.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "d6fb7ec10edf70b03d52d48704511d55b81a38dc7846fb32ec1b98c9abd1cd25",
+    "targetSHA256": "8d5765c1255de2b13079cd81b7964e8f530bb8a2cf492305763061b7dc114634",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/modalfilemanager.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "394767c54a651a38bee656bca53f82c0c48dfd5c1f5166a48a848496858b96ac",
+    "targetSHA256": "3ce9fcbf0e6d53cf80f93ebf20b44948f0932746ffee7f7982b41fe68628520b",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/mollywallet.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5252f8634553b359f74af222d0f6b0e558448c76174f0c14418bcf9759121f5",
+    "targetSHA256": "163fbce8f44d2f48058d1a72e1d2d36cca0fe7677386988763c2f3e77959efec",
+    "reason": "Reviewed unchanged text: Molley Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/peirato-s-piano-keyboard.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "f5273091a448135a746af284d37949756205c3ba1647c05bbff572ef27906066",
+    "targetSHA256": "7a5f089b303977587e8c097fd98115d870b5eb1c6d2364db2aecf3fed9b82bc5",
+    "reason": "Reviewed unchanged text: Peirato's Piano Keyboard. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/redisviewer.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "7798df8ab35f34366fd90d36e0876db4fe920ba83812f39e94e3876f26cb56fd",
+    "targetSHA256": "626c3c0a7b6b3cd2f75f0e31191908cd2170c116110b852d6e715f08827d5a08",
+    "reason": "Reviewed unchanged text: Redis Viewer. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/restic-browser.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "603da063ebf1148dfd844769936e289bb10ef0b3e0b560a23f9cfeb829be91ee",
+    "targetSHA256": "da84ff5d29148f7ff47ea5f7a5e87e30a56daee700d5393446b30511a6fa3924",
+    "reason": "Reviewed unchanged text: Restic Browser. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/snippetexpander.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "34bcedb9aac2f597478eaba03786fb40eb7876e8a56ee0c6f0910a6024a46ca9",
+    "targetSHA256": "a11c0672b24c50aae1913e91006b62343f4ca194562372615307c096f087cb14",
+    "reason": "Reviewed unchanged text: Snippet Expander. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/tinyrdm.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "08741afa429b938bca1a4daa5ce7a05831df0c429677a32cd9be76a6436a9dc5",
+    "targetSHA256": "91f9400e849375951c10c06021bf441a1c504264ece37cb75820cf86556ae3f9",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "contributing/binding-system.md",
+    "segment": "b0066-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "b98858a5c45c8e5c944fc03722376681f9e9606c185ca74bfe0a39f6a6b6bc9d",
+    "targetSHA256": "f3add5c748bd6338320eef0b91ec07e6426398b49dc4da6e64fb6097baefb72e",
+    "reason": "Reviewed unchanged text: `string` (JSON ISO 8601). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "contributing/runtime-internals.md",
+    "segment": "b0090-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "19d2ea357a2fe488931b9ad8e313de4148a38289bf6eb90e3c01108ced49ad16",
+    "targetSHA256": "03091e40876e879eaea19263949bc2c3fc6fb47f1f7a7c6232577a700110ad6b",
+    "reason": "Reviewed unchanged text: `systemtray_windows.go` (Shell_NotifyIcon). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "features/autostart/basics.md",
+    "segment": "tab0001-label-004",
+    "code": "untranslated",
+    "sourceSHA256": "0fcfd409e416037bc1b68639753e8d2ffe2967391e091aaa256659a25dbe925b",
+    "targetSHA256": "3eb72c0f2aca3489a24cbde1eb78e885f177cb94e1cd2715793eced2bb538081",
+    "reason": "Reviewed unchanged text: iOS / Android / server. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "features/bindings/methods.md",
+    "segment": "b0131-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "fcf656109f276203a7cc720df8a4532a3dc95ea1082868a7086df523190587ef",
+    "targetSHA256": "2790ae4463881e78fe8f186124efca9394f1bdf2657ea2125e717d47caaeade1",
+    "reason": "Reviewed unchanged text: HTTP/REST: 5-50ms. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "guides/advanced/wml.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "8f37522191623dc6ba392f929d2769d60939e37302ce0c224192c33f36474346",
+    "targetSHA256": "e6d71a882518a8931f34aa5255828941d613b5b5cf92099517a60c21d842d261",
+    "reason": "Reviewed unchanged text: WML (Wails Markup). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "guides/build/signing.md",
+    "segment": "b0169-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "db4a9eb7eb2020817ac392c69a49318cb59f98c577987850635a816a79affa8a",
+    "reason": "Reviewed unchanged technical text: .msix, .appx. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/build/signing.md",
+    "segment": "b0225-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "db4a9eb7eb2020817ac392c69a49318cb59f98c577987850635a816a79affa8a",
+    "reason": "Reviewed unchanged technical text: wails3 setup signing. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/build/signing.md",
+    "segment": "b0231-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "db4a9eb7eb2020817ac392c69a49318cb59f98c577987850635a816a79affa8a",
+    "reason": "Reviewed unchanged technical text: wails3 setup entitlements. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/build/signing.md",
+    "segment": "b0239-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "db4a9eb7eb2020817ac392c69a49318cb59f98c577987850635a816a79affa8a",
+    "reason": "Reviewed unchanged technical text: wails3 sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/build/signing.md",
+    "segment": "b0242-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "bdf3fcc302cfc68e105bb9d22512de3c72810938102c14b70e2adc4923f595ff",
+    "targetSHA256": "db4a9eb7eb2020817ac392c69a49318cb59f98c577987850635a816a79affa8a",
+    "reason": "Reviewed unchanged technical text: wails3 tool sign. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/cli.md",
+    "segment": "b0308-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "7521913fabc780e8f28e46a4eb2e206eac5a2738544958826e87d551dcd5d75e",
+    "targetSHA256": "e6139fd011407167c1770d522334f34c6e05d59e2f2ea379151e7fd0bbe10b0f",
+    "reason": "Reviewed unchanged technical text: Icon Composer (macOS). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0002-label-004",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "131ccd2f9d6d6878895e0edd3bb992fe76c318d53fd1a0f9b574f4fcfeada1ed",
+    "reason": "Reviewed unchanged technical text: Windows (PowerShell). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-005",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "131ccd2f9d6d6878895e0edd3bb992fe76c318d53fd1a0f9b574f4fcfeada1ed",
+    "reason": "Reviewed unchanged technical text: Claude Code. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mcp-service.md",
+    "segment": "tab0003-label-006",
+    "code": "untranslated",
+    "sourceSHA256": "dff2603fa992587ebf5f6392b46d270f8e8e7f1f9ba7925a0e77862db6fa6437",
+    "targetSHA256": "131ccd2f9d6d6878895e0edd3bb992fe76c318d53fd1a0f9b574f4fcfeada1ed",
+    "reason": "Reviewed unchanged technical text: VS Code (GitHub Copilot). This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/first-mobile-app.md",
+    "segment": "tab0001-label-001",
+    "code": "untranslated",
+    "sourceSHA256": "257017211f84f3ecc550cfc258e312ddf513a94b3471e986bf7185c15263853a",
+    "targetSHA256": "d9dbfc294da5f5a5a827456645a7e540458f24df98b963722317c164cf274ab7",
+    "reason": "Reviewed unchanged technical text: iOS Simulator. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/first-mobile-app.md",
+    "segment": "tab0003-label-002",
+    "code": "untranslated",
+    "sourceSHA256": "257017211f84f3ecc550cfc258e312ddf513a94b3471e986bf7185c15263853a",
+    "targetSHA256": "d9dbfc294da5f5a5a827456645a7e540458f24df98b963722317c164cf274ab7",
+    "reason": "Reviewed unchanged technical text: Android Emulator. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/index.md",
+    "segment": "a0002-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "efd6f98a0c169c642bd7eb071d3aaa8011b4b9157a6f7837e0021bcc02a1f7cd",
+    "reason": "Reviewed unchanged technical text: Mobile Kitchen Sink — GitHub. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/index.md",
+    "segment": "b0023-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "efd6f98a0c169c642bd7eb071d3aaa8011b4b9157a6f7837e0021bcc02a1f7cd",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/index.md",
+    "segment": "b0026-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "efd6f98a0c169c642bd7eb071d3aaa8011b4b9157a6f7837e0021bcc02a1f7cd",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/index.md",
+    "segment": "b0029-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "efd6f98a0c169c642bd7eb071d3aaa8011b4b9157a6f7837e0021bcc02a1f7cd",
+    "reason": "Reviewed unchanged technical text: iOS + Android. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/index.md",
+    "segment": "b0045-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "efd6f98a0c169c642bd7eb071d3aaa8011b4b9157a6f7837e0021bcc02a1f7cd",
+    "reason": "Reviewed unchanged technical text: macOS, Linux, Windows. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/index.md",
+    "segment": "b0048-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "efd6f98a0c169c642bd7eb071d3aaa8011b4b9157a6f7837e0021bcc02a1f7cd",
+    "reason": "Reviewed unchanged technical text: Android SDK + NDK 26.3.x + JDK. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/mobile/index.md",
+    "segment": "b0075-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "d87cd40c3d161a093f2b707dcd63a6a9ce6aba908db7f2da14f09f9947dea7a8",
+    "targetSHA256": "efd6f98a0c169c642bd7eb071d3aaa8011b4b9157a6f7837e0021bcc02a1f7cd",
+    "reason": "Reviewed unchanged technical text: ✅ Storage Access Framework. This is a named platform/tool/API/feature, command, standard quantity with units, or valid wording in the target language."
+  },
+  {
+    "language": "id",
+    "file": "guides/streams.md",
+    "segment": "b0063-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "184cc38ac1b6a6c4f0fea3ab9bd9a095d07f09f365a220186d16a0fc425805d0",
+    "reason": "Reviewed unchanged text: macOS / WebKit-Cocoa. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "guides/streams.md",
+    "segment": "b0065-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "184cc38ac1b6a6c4f0fea3ab9bd9a095d07f09f365a220186d16a0fc425805d0",
+    "reason": "Reviewed unchanged text: 2793 MB/s. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "guides/updater.md",
+    "segment": "b0036-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "9b2f1c65fc0fda447af669ad7fd79ff0659db53a0ddfd63dc1ebccabf44e8dc4",
+    "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "guides/updater.md",
+    "segment": "b0039-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "9b2f1c65fc0fda447af669ad7fd79ff0659db53a0ddfd63dc1ebccabf44e8dc4",
+    "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "guides/updater.md",
+    "segment": "b0042-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "9b2f1c65fc0fda447af669ad7fd79ff0659db53a0ddfd63dc1ebccabf44e8dc4",
+    "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "guides/updater.md",
+    "segment": "b0045-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "9b2f1c65fc0fda447af669ad7fd79ff0659db53a0ddfd63dc1ebccabf44e8dc4",
+    "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "index.md",
+    "segment": "b0029-text-01",
+    "code": "untranslated",
+    "reason": "Windows, macOS, Linux, iOS, and Android are platform names and remain unchanged.",
+    "sourceSHA256": "4c30bd861fdcea210bba2f3228185763060fb48623b469a2e0b123429b47b225",
+    "targetSHA256": "d22a4f03bec154a1d5de420c5b1e0932f28e91772399f8b4b955ce211be554d2"
+  },
+  {
+    "language": "fr",
+    "file": "contributing/runtime-internals.md",
+    "segment": "b0145-cell-01",
+    "code": "requirement-language",
+    "sourceSHA256": "19d2ea357a2fe488931b9ad8e313de4148a38289bf6eb90e3c01108ced49ad16",
+    "targetSHA256": "aada93126ad31d1d3361a3b600571bdbd439d8a4c7ca7aba147264f122910e38",
+    "reason": "French il faut preserves the mandatory distinction between file and HTML5 drags."
+  },
+  {
+    "language": "fr",
+    "file": "guides/file-associations.md",
+    "segment": "b0061-text-01",
+    "code": "requirement-language",
+    "sourceSHA256": "9ee59c92b3d832dcac49a64b81e0e7b689871d3f92f66b83c8f1e9111a3dcdc2",
+    "targetSHA256": "046849641c0539fd237897392461d7823cca461c167422a5dfc07f561103dc3c",
+    "reason": "French vous devez preserves the requirement to install the packaged application."
   }
 ]
