@@ -65,6 +65,14 @@ Supprime l’enregistrement du démarrage automatique. Renvoie `nil` si l’appl
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+Supprime l’enregistrement créé avec un `AutostartOptions.Identifier` donné, quelle que soit la cible de la commande enregistrée. Utilisez cette méthode pour nettoyer un enregistrement laissé par un exécutable déplacé ou renommé. Un `Identifier` vide conserve le comportement de recherche de `Disable`. L’opération est idempotente : supprimer un enregistrement absent renvoie nil.
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 Indique s’il existe un enregistrement. Cette opération est rapide, car elle ne valide pas le chemin enregistré.

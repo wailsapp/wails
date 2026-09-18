@@ -162,6 +162,6 @@ type AutostartStatus struct {
 
 type autostartImpl interface {
 	enable(opts AutostartOptions) error
-	disable() error
+	disable(opts AutostartOptions) error
 	status() (AutostartStatus, error)
 }

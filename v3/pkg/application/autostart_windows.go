@@ -65,7 +65,26 @@ func (a *windowsAutostart) enable(opts AutostartOptions) error {
 	return nil
 }
 
-func (a *windowsAutostart) disable() error {
+func (a *windowsAutostart) disable(opts AutostartOptions) error {
+	if err := validateAutostartIdentifier(opts.Identifier); err != nil {
+		return err
+	}
+	if opts.Identifier != "" {
+		// Identifier-targeted removal: delete exactly the named value even
+		// when its command points at a moved executable.
+		key, err := registry.OpenKey(registry.CURRENT_USER, a.registrySubKey, registry.SET_VALUE)
+		if err != nil {
+			if errors.Is(err, registry.ErrNotExist) {
+				return nil
+			}
+			return fmt.Errorf("autostart: open registry key: %w", err)
+		}
+		defer key.Close()
+		if err := key.DeleteValue(opts.Identifier); err != nil && !errors.Is(err, registry.ErrNotExist) {
+			return fmt.Errorf("autostart: delete registry value: %w", err)
+		}
+		return nil
+	}
 	id, _, err := a.find()
 	if err != nil {
 		return err

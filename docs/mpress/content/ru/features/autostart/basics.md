@@ -65,6 +65,14 @@ func (m *AutostartManager) EnableWithOptions(opts AutostartOptions) error
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+Удаляет регистрацию, созданную с определённым `AutostartOptions.Identifier`, независимо от того, куда указывает зарегистрированная команда. Используйте для очистки регистрации после перемещения или переименования исполняемого файла. Пустой `Identifier` сохраняет поведение `Disable`, основанное на поиске. Операция идемпотентна: при отсутствии регистрации возвращается nil.
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 Сообщает, существует ли регистрация. Выполняется быстро, поскольку зарегистрированный путь не проверяется.

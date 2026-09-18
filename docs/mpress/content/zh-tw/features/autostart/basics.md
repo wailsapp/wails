@@ -65,6 +65,14 @@ func (m *AutostartManager) EnableWithOptions(opts AutostartOptions) error
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+刪除以指定 `AutostartOptions.Identifier` 建立的註冊項目，不論已註冊的命令指向何處。可用來清理移動或重新命名執行檔後遺留的註冊項目。`Identifier` 為空時，保留 `Disable` 以搜尋為基礎的行為。此操作具有冪等性：註冊項目不存在時也會傳回 nil。
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 回報註冊是否存在。此操作速度快，但不會驗證已註冊的路徑。

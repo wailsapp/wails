@@ -65,6 +65,14 @@ Entfernt die Autostart-Registrierung. Gibt `nil` zurück, wenn die Anwendung nic
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+Entfernt die unter einem bestimmten `AutostartOptions.Identifier` angelegte Registrierung, unabhängig davon, wohin der registrierte Befehl verweist. Damit lassen sich Registrierungen nach dem Verschieben oder Umbenennen einer ausführbaren Datei bereinigen. Ein leerer `Identifier` behält das suchbasierte Verhalten von `Disable` bei. Die Operation ist idempotent: Fehlt die Registrierung, wird nil zurückgegeben.
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 Gibt an, ob eine Registrierung vorhanden ist. Schnell – der registrierte Pfad wird nicht validiert.

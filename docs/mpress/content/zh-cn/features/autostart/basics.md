@@ -65,6 +65,14 @@ func (m *AutostartManager) EnableWithOptions(opts AutostartOptions) error
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+删除使用指定 `AutostartOptions.Identifier` 创建的注册项，无论注册的命令指向何处。可用于清理移动或重命名可执行文件后遗留的注册项。`Identifier` 为空时，保留 `Disable` 基于查找的行为。此操作具有幂等性：注册项不存在时也返回 nil。
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 报告注册是否存在。此操作速度很快，但不会验证已注册的路径。

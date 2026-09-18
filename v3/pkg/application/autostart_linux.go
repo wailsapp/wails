@@ -67,10 +67,22 @@ func (a *linuxAutostart) enable(opts AutostartOptions) error {
 	return nil
 }
 
-func (a *linuxAutostart) disable() error {
+func (a *linuxAutostart) disable(opts AutostartOptions) error {
+	if err := validateAutostartIdentifier(opts.Identifier); err != nil {
+		return err
+	}
 	dir, err := a.autostartDir()
 	if err != nil {
 		return err
+	}
+	if opts.Identifier != "" {
+		// Identifier-targeted removal: delete exactly <id>.desktop even when
+		// its Exec= points at a different (e.g. moved) executable.
+		path := filepath.Join(dir, opts.Identifier+".desktop")
+		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("remove desktop file: %w", err)
+		}
+		return nil
 	}
 	path, err := a.findDesktopFile(dir)
 	if err != nil {

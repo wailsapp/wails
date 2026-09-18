@@ -65,6 +65,14 @@ Menghapus pendaftaran mulai otomatis. Mengembalikan `nil` jika aplikasi belum di
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+Menghapus pendaftaran yang dibuat dengan `AutostartOptions.Identifier` tertentu, terlepas dari tujuan perintah yang terdaftar. Gunakan untuk membersihkan pendaftaran yang tertinggal setelah berkas executable dipindahkan atau diganti namanya. `Identifier` kosong mempertahankan perilaku pencarian `Disable`. Operasi ini idempoten: menghapus pendaftaran yang tidak ada mengembalikan nil.
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 Melaporkan apakah pendaftaran tersedia. Cepat — tidak memvalidasi jalur yang terdaftar.

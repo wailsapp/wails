@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `AutostartManager.DisableWithOptions` to remove an autostart registration by its exact identifier, so entries left by moved or renamed executables can be cleaned up (#6057)
 
 ## Changed
 <!-- Changes in existing functionality -->

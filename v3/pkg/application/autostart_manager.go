@@ -43,7 +43,15 @@ func (am *AutostartManager) EnableWithOptions(opts AutostartOptions) error {
 // Disable removes the autostart registration. Returns nil if the application
 // was not registered.
 func (am *AutostartManager) Disable() error {
-	return am.impl.disable()
+	return am.impl.disable(AutostartOptions{})
+}
+
+// DisableWithOptions removes the autostart registration created under
+// opts.Identifier, regardless of where the registered command points. Use it
+// to remove a registration left behind by a moved or renamed executable.
+// An empty Identifier keeps the discovery-based behaviour of Disable.
+func (am *AutostartManager) DisableWithOptions(opts AutostartOptions) error {
+	return am.impl.disable(opts)
 }
 
 // IsEnabled reports whether the application is currently registered to launch

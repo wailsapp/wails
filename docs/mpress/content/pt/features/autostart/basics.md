@@ -65,6 +65,14 @@ Remove o registro de inicialização automática. Retorna `nil` se o aplicativo 
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+Remove o registro criado com um `AutostartOptions.Identifier` específico, independentemente do destino do comando registrado. Use para limpar registros deixados por um executável movido ou renomeado. Um `Identifier` vazio mantém o comportamento de descoberta de `Disable`. A operação é idempotente: remover um registro inexistente retorna nil.
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 Informa se existe um registro. É rápido, pois não valida o caminho registrado.

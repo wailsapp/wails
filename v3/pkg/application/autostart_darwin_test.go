@@ -77,7 +77,7 @@ func TestDarwinAutostartRoundTrip(t *testing.T) {
 		}
 	}
 
-	if err := a.disable(); err != nil {
+	if err := a.disable(AutostartOptions{}); err != nil {
 		t.Fatalf("disable: %v", err)
 	}
 
@@ -122,7 +122,7 @@ func TestDarwinAutostartIdentifierValidation(t *testing.T) {
 
 func TestDarwinAutostartDisableNoOp(t *testing.T) {
 	a := newDarwinAutostartForTest(t, "Test App")
-	if err := a.disable(); err != nil {
+	if err := a.disable(AutostartOptions{}); err != nil {
 		t.Errorf("disable when not enabled should be nil, got %v", err)
 	}
 }
@@ -145,5 +145,45 @@ func TestRunningFromAppBundle(t *testing.T) {
 	// `go test` runs from a tempdir-built binary, not an .app bundle.
 	if runningFromAppBundle() {
 		t.Skip("test binary surprisingly looks like it's inside a .app — skipping")
+	}
+}
+
+func TestDarwinAutostartDisableWithOptions(t *testing.T) {
+	a := newDarwinAutostartForTest(t, "Test App")
+	dir, err := a.launchAgentsDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	stale := filepath.Join(dir, "com.example.stale.plist")
+	plist, err := launchAgentPlist("com.example.stale", "/nonexistent/old/path", []string{"--hidden"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(stale, plist, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Discovery-based disable cannot see the stale entry.
+	if err := a.disable(AutostartOptions{}); err != nil {
+		t.Fatalf("discovery disable: %v", err)
+	}
+	if _, err := os.Stat(stale); err != nil {
+		t.Fatalf("stale plist should still exist after discovery disable: %v", err)
+	}
+
+	if err := a.disable(AutostartOptions{Identifier: "com.example.stale"}); err != nil {
+		t.Fatalf("disable with identifier: %v", err)
+	}
+	if _, err := os.Stat(stale); !os.IsNotExist(err) {
+		t.Fatal("stale plist should be gone")
+	}
+	if err := a.disable(AutostartOptions{Identifier: "com.example.stale"}); err != nil {
+		t.Fatalf("second disable should be nil, got %v", err)
+	}
+	if err := a.disable(AutostartOptions{Identifier: "bad/identifier"}); err == nil {
+		t.Error("expected error for invalid identifier")
 	}
 }

@@ -65,6 +65,14 @@ func (m *AutostartManager) EnableWithOptions(opts AutostartOptions) error
 func (m *AutostartManager) Disable() error
 ```
 
+### `DisableWithOptions`
+
+指定した `AutostartOptions.Identifier` で作成された登録を、登録済みコマンドの参照先に関係なく削除します。実行ファイルの移動や名前変更で残った登録の削除に使用します。`Identifier` が空の場合は、`Disable` と同じ検索ベースの動作を維持します。この操作は冪等で、登録が存在しない場合も nil を返します。
+
+```go
+func (m *AutostartManager) DisableWithOptions(opts AutostartOptions) error
+```
+
 ### `IsEnabled`
 
 登録が存在するかどうかを報告します。処理は高速ですが、登録済みのパスは検証しません。
