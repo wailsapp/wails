@@ -21,6 +21,12 @@ const errCrossDevice = syscall.EXDEV
 // (mirrors selfExecutable / newDetachedCommand in spawn.go).
 var renameFunc = os.Rename
 
+// copyFileFunc copies a file's contents with mode and fsync. Held in a
+// package-level var so tests can inject a deterministic copy failure —
+// permission-based failure injection is unreliable because a root-capable
+// test runner bypasses file modes.
+var copyFileFunc = copyFile
+
 // platformIsAlive reports whether pid names a running process. Sending the
 // no-op signal 0 to a pid either succeeds (process is running and we have
 // permission) or fails (process is gone / no permission).
@@ -109,7 +115,7 @@ func stageFileCopy(src, dst string, mode os.FileMode) error {
 
 	// copyFile truncates the already-created staging file without
 	// re-applying the mode, so set it explicitly before the swap.
-	if err := copyFile(src, tmpName, mode); err != nil {
+	if err := copyFileFunc(src, tmpName, mode); err != nil {
 		cleanup()
 		return fmt.Errorf("cross-device copy %s -> %s: %w", src, dst, err)
 	}

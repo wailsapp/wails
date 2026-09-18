@@ -25,6 +25,16 @@ func withRenameFunc(t *testing.T, fn func(oldpath, newpath string) error) {
 	t.Cleanup(func() { renameFunc = prev })
 }
 
+// withCopyFileFunc swaps copyFileFunc for the duration of a test. Copy
+// failures are injected through this seam rather than file permissions,
+// which a root-capable test runner would bypass.
+func withCopyFileFunc(t *testing.T, fn func(src, dst string, mode os.FileMode) error) {
+	t.Helper()
+	prev := copyFileFunc
+	copyFileFunc = fn
+	t.Cleanup(func() { copyFileFunc = prev })
+}
+
 // TestIsCrossDevice verifies EXDEV classification: only cross-device link
 // errors trigger the copy fallback; nil, plain, and other errno failures do
 // not.
@@ -312,28 +322,30 @@ func TestRenameOrCopy_StagedFileSwap(t *testing.T) {
 	}
 }
 
-// TestRenameOrCopy_StagingFailurePreservesDst forces the staged copy to fail
-// (unreadable src) and verifies dst keeps its complete original contents,
-// src is left alone, and the staging file is cleaned up.
+// TestRenameOrCopy_StagingFailurePreservesDst injects a staged-copy failure
+// and verifies dst keeps its complete original contents, src is left alone,
+// and the staging file is cleaned up.
 func TestRenameOrCopy_StagingFailurePreservesDst(t *testing.T) {
 	dir := t.TempDir()
 	src := filepath.Join(dir, "src.bin")
 	dst := filepath.Join(dir, "dst.bin")
 	writeFile(t, src, []byte("NEW"))
-	if err := os.Chmod(src, 0o000); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = os.Chmod(src, 0o644) })
 	writeFile(t, dst, []byte("OLD"))
 	withRenameFunc(t, func(oldpath, newpath string) error {
 		return crossDeviceErr(oldpath, newpath)
 	})
+	withCopyFileFunc(t, func(_, _ string, _ os.FileMode) error {
+		return errors.New("injected copy failure")
+	})
 
 	if err := renameOrCopy(src, dst); err == nil {
-		t.Fatal("expected error for unreadable src")
+		t.Fatal("expected error for injected copy failure")
 	}
 	if got := readFile(t, dst); string(got) != "OLD" {
 		t.Errorf("dst must keep its complete original, got %q", got)
+	}
+	if got := readFile(t, src); string(got) != "NEW" {
+		t.Errorf("src must be untouched, got %q", got)
 	}
 	if got := dirNames(t, dir); len(got) != 2 {
 		t.Errorf("dir entries after failed swap: %q (want src+dst only)", got)
