@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
+	"slices"
 	"strings"
 	"sync"
 
@@ -25,22 +25,6 @@ import (
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
-
-var invalidAppNameChars = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
-var leadingDigits = regexp.MustCompile(`^[0-9]+`)
-
-func sanitizeAppName(name string) string {
-	name = invalidAppNameChars.ReplaceAllString(name, "_")
-	name = leadingDigits.ReplaceAllString(name, "_$0")
-	for strings.Contains(name, "__") {
-		name = strings.ReplaceAll(name, "__", "_")
-	}
-	name = strings.Trim(name, "_")
-	if name == "" {
-		name = "wailsapp"
-	}
-	return strings.ToLower(name)
-}
 
 func init() {
 	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
@@ -87,6 +71,28 @@ func (a *linuxApp) name() string {
 }
 
 func (a *linuxApp) run() error {
+	if len(os.Args) == 2 {
+		arg1 := os.Args[1]
+		if strings.Contains(arg1, "://") {
+			eventContext := newApplicationEventContext()
+			eventContext.setURL(arg1)
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(events.Common.ApplicationLaunchedWithUrl),
+				ctx: eventContext,
+			}
+		} else if a.parent.options.FileAssociations != nil {
+			ext := filepath.Ext(arg1)
+			if slices.Contains(a.parent.options.FileAssociations, ext) {
+				eventContext := newApplicationEventContext()
+				eventContext.setOpenedWithFile(arg1)
+				applicationEvents <- &ApplicationEvent{
+					Id:  uint(events.Common.ApplicationOpenedWithFile),
+					ctx: eventContext,
+				}
+			}
+		}
+	}
+
 	a.parent.Event.OnApplicationEvent(events.Linux.ApplicationStartup, func(evt *ApplicationEvent) {
 		if err := a.processAndCacheScreens(); err != nil {
 			a.parent.handleError(err)
@@ -209,16 +215,20 @@ func (a *linuxApp) unregisterWindow(window windowPointer) {
 }
 
 func newPlatformApp(parent *App) *linuxApp {
-	name := sanitizeAppName(parent.options.Name)
+	appID, err := applicationID(parent.options)
+	if err != nil {
+		parent.error("invalid Linux.ApplicationID: %w; falling back to %q", err, appID)
+	}
+
 	app := &linuxApp{
 		parent:      parent,
-		application: appNew(name),
+		application: appNew(appID),
 		activated:   make(chan struct{}),
 		windowMap:   map[windowPointer]uint{},
 	}
 
-	if parent.options.Linux.ProgramName != "" {
-		setProgramName(parent.options.Linux.ProgramName)
+	if name := programName(parent.options, appID); name != "" {
+		setProgramName(name)
 	}
 
 	return app

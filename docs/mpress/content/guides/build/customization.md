@@ -1,0 +1,310 @@
+---
+title: "Build Customization"
+description: "Customize your build process using Task and Taskfile.yml"
+slug: "guides/build/customization"
+sourcePath: "guides/build/customization.md"
+---
+
+## Overview
+
+The Wails build system is a flexible and powerful tool designed to streamline the build process for your Wails applications. It leverages [Task](https://taskfile.dev), a task runner that allows you to define and run tasks easily. While the v3 build system is the default, Wails encourages a "bring your own tooling" approach, allowing developers to customize their build process as needed.
+
+Learn more about how to use Task in the [official documentation](https://taskfile.dev/usage/).
+
+## Task: The Heart of the Build System
+
+[Task](https://taskfile.dev) is a modern alternative to Make, written in Go. It uses a YAML file to define tasks and their dependencies. In the Wails build system, [Task](https://taskfile.dev) plays a central role in orchestrating the build process.
+
+The main `Taskfile.yml` is located in the project root, while platform-specific tasks are defined in `build/<platform>/Taskfile.yml` files. A common `Taskfile.yml` file in the `build` directory contains common tasks that are shared across platforms.
+
+@filetree
+
+- Project Root
+  - Taskfile.yml
+  - build
+    - windows/Taskfile.yml
+    - darwin/Taskfile.yml
+    - linux/Taskfile.yml
+    - Taskfile.yml
+@end
+
+## Taskfile.yml
+
+The `Taskfile.yml` file in the project root is the main entry point for the build system. It defines the tasks and their dependencies. Here's the default `Taskfile.yml` file:
+
+```yaml
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  windows: ./build/windows/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+  linux: ./build/linux/Taskfile.yml
+
+vars:
+  APP_NAME: "myproject"
+  BIN_DIR: "bin"
+  VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application
+    cmds:
+      - task: "{{OS}}:run"
+
+  dev:
+    summary: Runs the application in development mode
+    cmds:
+      - wails3 dev -config ./build/config.yml -port {{.VITE_PORT}}
+
+
+```
+
+## Platform-Specific Taskfiles
+
+Each platform has its own Taskfile, located in the platform directories beneath the `build` directory. These files define the core tasks for that platform. Each taskfile includes common tasks from the `build/Taskfile.yml` file.
+
+### Windows
+
+Location: `build/windows/Taskfile.yml`
+
+The Windows-specific Taskfile includes tasks for building, packaging, and running the application on Windows. Key features include:
+
+- Building with optional production flags
+- Generating `.ico` icon file
+- Generating Windows `.syso` file
+- Creating an NSIS installer for packaging
+
+### Linux
+
+Location: `build/linux/Taskfile.yml`
+
+The Linux-specific Taskfile includes tasks for building, packaging, and running the application on Linux. Key features include:
+
+- Building with optional production flags
+- Creating an AppImage, deb, rpm, and Arch Linux packages
+- Generating `.desktop` file for Linux applications
+
+### macOS
+
+Location: `build/darwin/Taskfile.yml`
+
+The macOS-specific Taskfile includes tasks for building, packaging, and running the application on macOS. Key features include:
+
+- Building binaries for amd64, arm64 and universal (both) architectures
+- Generating `.icns` icon file
+- Creating an `.app` bundle for distributing
+- Ad-hoc signing `.app` bundles
+- Setting macOS-specific build flags and environment variables
+
+## Task Execution and Command Aliases
+
+The `wails3 task` command is an embedded version of [Taskfile](https://taskfile.dev), which executes the tasks defined in your `Taskfile.yml`.
+
+The `wails3 build` and `wails3 package` commands are aliases for `wails3 task build` and `wails3 task package` respectively. When you run these commands, Wails internally translates them to the appropriate task execution:
+
+- `wails3 build` → `wails3 task build`
+- `wails3 package` → `wails3 task package`
+
+### Passing Parameters to Tasks
+
+You can pass CLI variables to tasks using the `KEY=VALUE` format. These variables are forwarded through the alias commands:
+
+```bash
+# These are equivalent:
+wails3 build PLATFORM=linux CONFIG=production
+wails3 task build PLATFORM=linux CONFIG=production
+
+# Package with custom version:
+wails3 package VERSION=2.0.0 OUTPUT=myapp.pkg
+```
+
+In your `Taskfile.yml`, you can access these variables using Go template syntax:
+
+```yaml
+tasks:
+  build:
+    cmds:
+      - echo "Building for {{.PLATFORM | default "darwin"}}"
+      - go build -tags {{.CONFIG | default "debug"}} -o myapp
+```
+
+### Go build customisation variables
+
+Generated projects expose additive variables for custom Go build tags, linker
+flags, and CGO. Tag values must be comma-separated names, without the `-tags`
+option; Wails combines them with the tags required by the selected build mode
+and platform.
+
+| Variable | Applies to |
+| --- | --- |
+| `APP_TAGS` | Every Taskfile-driven build |
+| `APP_TAGS_LINUX` | Linux builds |
+| `APP_TAGS_DARWIN` | macOS builds |
+| `APP_TAGS_WINDOWS` | Windows builds |
+| `APP_TAGS_ANDROID` | Android builds |
+| `APP_TAGS_IOS` | iOS builds |
+| `APP_TAGS_SERVER` | Server-mode builds |
+| `APP_LDFLAGS` | Additional linker flags for every Taskfile-driven build |
+| `APP_CGO_ENABLED` | Overrides CGO with `0` or `1` for desktop and server builds |
+| `EXTRA_TAGS` | Additional tags for one invocation |
+
+For example:
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+Set an `APP_*` value in the root `Taskfile.yml` when it is a persistent project
+default. A `KEY=value` passed with the command has the highest precedence and
+replaces that variable for the invocation. A literal root Taskfile value takes
+precedence over the same-named process environment variable. If the
+self-defaulting expression shown below is retained, the process environment is
+used when no command-line value is supplied. Use `EXTRA_TAGS` when you want to
+add tags for one build without replacing the persistent `APP_TAGS` value.
+
+When `APP_CGO_ENABLED` is empty, Linux and macOS default to `1`, Windows defaults
+to `0`, native server builds keep Go's host default, and server Docker builds
+default to `0`. Android and iOS builds always use CGO and keep `CGO_ENABLED=1`;
+`APP_CGO_ENABLED` does not override those mobile toolchains. Docker-backed
+desktop cross-compilation and server builds receive the same applicable
+`APP_*` values as their native Taskfile counterparts.
+
+@note{type="info" title="Existing projects"}
+The root `Taskfile.yml` is project-owned, so `wails3 update build-assets` does
+not overwrite it. Projects created before these variables were introduced must
+add the following entries to their root `vars` block manually:
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+Replace a self-defaulting expression with a literal value to make it a
+persistent project default.
+
+@end
+
+These variables are consumed by Taskfile-driven builds. The build phase in the
+generated Xcode project invokes Go directly and is outside this Taskfile
+customisation path, so builds launched from Xcode do not currently consume
+these variables.
+
+## Common Build Process
+
+Across all platforms, the build process typically includes the following steps:
+
+1. Tidying Go modules
+2. Building the frontend
+3. Generating icons
+4. Compiling the Go code with platform-specific flags
+5. Packaging the application (platform-specific)
+
+## Customising the Build Process
+
+While the v3 build system provides a solid default configuration, you can easily customise it to fit your project's needs. By modifying the `Taskfile.yml` and platform-specific Taskfiles, you can:
+
+- Add new tasks
+- Modify existing tasks
+- Change the order of task execution
+- Integrate with other tools and scripts
+
+This flexibility allows you to tailor the build process to your specific requirements while still benefiting from the structure provided by the Wails build system.
+
+@note{type="tip" title="Learning Taskfile"}
+We highly recommend reading the [Taskfile](https://taskfile.dev) documentation to understand how to use Taskfile effectively. You can find out which version of Taskfile is embedded in the Wails CLI by running `wails3 task --version`.
+
+@end
+
+## Development Mode
+
+The Wails build system includes a powerful development mode that enhances the developer experience by providing live reloading and hot module replacement. This mode is activated using the `wails3 dev` command.
+
+### How It Works
+
+When you run `wails3 dev`, the following process occurs:
+
+1. The command checks for an available port, defaulting to 9245 if not specified.
+2. It sets up the environment variables for the frontend dev server (Vite).
+3. It starts the file watcher using the [refresh](https://github.com/atterpac/refresh) library.
+
+The [refresh](https://github.com/atterpac/refresh) library is responsible for monitoring file changes and triggering rebuilds. It uses the configuration defined under the `dev_mode` key in the `./build/config.yml` file. It may be configured to ignore certain directories and files, to determine which files to watch and what actions to take when changes are detected. The default configuration works pretty well, but feel free to customise it to your needs.
+
+### Configuration
+
+Here's an example of its structure:
+
+```yaml
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 1000
+  ignore:
+    dir:
+      - .git
+      - node_modules
+      - frontend
+      - bin
+    file:
+      - .DS_Store
+      - .gitignore
+      - .gitkeep
+    watched_extension:
+      - "*.go"
+    git_ignore: true
+  executes:
+    - cmd: wails3 task common:install:frontend:deps
+      type: once
+    - cmd: wails3 task common:dev:frontend
+      type: background
+    - cmd: go mod tidy
+      type: blocking
+    - cmd: wails3 task build
+      type: blocking
+    - cmd: wails3 task run
+      type: primary
+```
+
+This configuration file allows you to:
+
+- Set the root path for file watching
+- Configure logging level
+- Set a debounce time for file change events
+- Ignore specific directories, files, or file extensions
+- Define commands to execute on file changes
+
+### Customising Development Mode
+
+You can customise the development mode experience by modifying these values in the `config.yml` file.
+
+Some ways to customise include:
+
+1. Changing the watched directories or files
+2. Adjusting the debounce time to control how quickly the system responds to changes
+3. Adding or modifying the execute commands to fit your project's needs
+
+### Using a browser for development
+
+Whilst Wails v2 fully supported the use of a browser for development, it caused a lot of confusion. Applications that would work in the browser would not necessarily work in the desktop application, as not all browser APIs are available in webviews.
+
+For UI-focused development work, you still have the flexibility to use a browser in v3, by accessing the Vite URL at `http://localhost:9245` in dev mode. This gives you access to powerful browser dev tools while working on styling and layout. Be aware that Go bindings *will not work* in this mode. When you're ready to test functionality like bindings and events, simply switch to the desktop view to ensure everything works perfectly in the production environment.

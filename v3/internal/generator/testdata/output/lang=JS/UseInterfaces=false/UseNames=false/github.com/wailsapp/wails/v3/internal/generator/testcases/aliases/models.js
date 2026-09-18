@@ -306,9 +306,19 @@ export const SubPackageAlias = subpkg$0.SubStruct;
 const $$createType0 = $Create.Array($Create.Any);
 const $$createType1 = $Create.Nullable($$createType0);
 const $$createType2 = $Create.Array($Create.Any);
-const $$createType3 = GenericPerson.createFrom($$createType2);
+var $$createType3 = /** @type {(...args: any[]) => any} */(function $$initCreateType3(...args) {
+    if ($$createType3 === $$initCreateType3) {
+        $$createType3 = GenericPerson.createFrom($$createType2);
+    }
+    return $$createType3(...args);
+});
 const $$createType4 = $Create.Nullable($$createType3);
 const $$createType5 = $Create.Map($Create.Any, $Create.Any);
 const $$createType6 = $Create.Array($Create.Any);
-const $$createType7 = GenericPerson.createFrom($$createType6);
+var $$createType7 = /** @type {(...args: any[]) => any} */(function $$initCreateType7(...args) {
+    if ($$createType7 === $$initCreateType7) {
+        $$createType7 = GenericPerson.createFrom($$createType6);
+    }
+    return $$createType7(...args);
+});
 const $$createType8 = subpkg$0.SubStruct.createFrom;

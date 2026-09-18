@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "377dd833678c36520c09",
+  "sourceFile": "troubleshooting/mac-syso.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "a1c5ae7bcb34bbf48104488eff8deede31b059aceceab562a6aace384f7fd64f",
+      "targetHash": "cc6c1a06c6f9251634a0ea23205be046568b66205143e7a8edcedab7757e7217",
+      "machineHash": "cc6c1a06c6f9251634a0ea23205be046568b66205143e7a8edcedab7757e7217",
+      "machineText": "Problema",
+      "status": "final",
+      "sourcePreview": "Problem",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "c1861dbf007e89c53b4883484dc04c8f5af27d4495a2b1f6e9bddf941b1a369c",
+      "targetHash": "c50f1a4c60c5ab787319153af8c9206f4c364cc3947a3d8c6a594db9b62f9d0c",
+      "machineHash": "c50f1a4c60c5ab787319153af8c9206f4c364cc3947a3d8c6a594db9b62f9d0c",
+      "machineText": "Ao tentar compilar um aplicativo Wails no macOS, a compilação falha com um erro semelhante ao seguinte:",
+      "status": "final",
+      "sourcePreview": "When trying to build a Wails application on macOS, the build fails with an error similar to the foll…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "b0003-heading-01": {
+      "sourceHash": "6b4a685e845db15988b579333e8d5ce8709d87d5c7e90214c636c874515ff6bd",
+      "targetHash": "c2ceeac2b38435165c3b6ff3d604b3cca0d2ce505f538e44bf9f3396b9ff401c",
+      "machineHash": "c2ceeac2b38435165c3b6ff3d604b3cca0d2ce505f538e44bf9f3396b9ff401c",
+      "machineText": "Por que isso acontece?",
+      "status": "final",
+      "sourcePreview": "Why is this happening?",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "3f2bd288579e296e0e1ac8d543a955c98c3fa646d03e8599e9f642f2c4d5747e",
+      "targetHash": "e91242997ae1759a679e6ee60c9ec98b9f8bb05fc06946fc148e7c89297cd7e7",
+      "machineHash": "e91242997ae1759a679e6ee60c9ec98b9f8bb05fc06946fc148e7c89297cd7e7",
+      "machineText": "Ao compilar para Windows, o Wails gera arquivos `.syso` para o ícone do aplicativo, o ícone da janela e o ícone do menu. Esses arquivos são necessários para compilar o aplicativo no Windows.\\\nEsses arquivos `.syso` ficam no diretório raiz do projeto e podem causar problemas durante a compilação para macOS.",
+      "status": "final",
+      "sourcePreview": "When building for Windows, Wails will generate `.syso` files for the application icon, window icon, …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "b0005-heading-01": {
+      "sourceHash": "22927695994eab589c7601a6b15df4d9dc67c5aceb9a74cdb965444b9b8362a6",
+      "targetHash": "7151c6d35f546267e6d8ce4a2d23aa400da1faf64ee5e3c6d6627622ce639a13",
+      "machineHash": "7151c6d35f546267e6d8ce4a2d23aa400da1faf64ee5e3c6d6627622ce639a13",
+      "machineText": "Solução",
+      "status": "final",
+      "sourcePreview": "Solution",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "16eb66de16e21a577ab0a344beae8566ef549169d3497c5825cca3138212f080",
+      "targetHash": "5c6512d50680cb38cf41eaaff735ccac2944e806c31c7e7a35d1c834a16ebf26",
+      "machineHash": "5c6512d50680cb38cf41eaaff735ccac2944e806c31c7e7a35d1c834a16ebf26",
+      "machineText": "Para corrigir esse problema, remova os arquivos syso do diretório raiz do projeto ou, se você mesmo os gerar, nomeie-os como `wails_windows_\u003carch\u003e.syso`, por exemplo, `wails_windows_arm64.syso`.",
+      "status": "final",
+      "sourcePreview": "To fix this issue, you can remove the syso files from the project's root directory or if you are gen…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "4da2cd3c8185c0d943eb6f9477cc52eb4eb2dd4dbdc85e708190f67eb3bd9411",
+      "targetHash": "b4c183f4e1970a85bdcb5bde6f0e7eb17eb1c7a9af848af810dc4d3f0135d101",
+      "machineHash": "b4c183f4e1970a85bdcb5bde6f0e7eb17eb1c7a9af848af810dc4d3f0135d101",
+      "machineText": "Solucione erros de compilação causados por arquivos Syso no macOS",
+      "status": "final",
+      "sourcePreview": "Troubleshoot Syso file build errors on macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "1b8555b5a34b1cedc935ed6bb65d97a04aa9fcb3cb0337867bc6f82ae63dd379",
+      "targetHash": "74f2dc851ca031af835eb27a095fb18aa4deaab2a753ff12947bd7c249776e42",
+      "machineHash": "74f2dc851ca031af835eb27a095fb18aa4deaab2a753ff12947bd7c249776e42",
+      "machineText": "Arquivos Syso no macOS",
+      "status": "final",
+      "sourcePreview": "Syso files on macOS",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    }
+  }
+}
