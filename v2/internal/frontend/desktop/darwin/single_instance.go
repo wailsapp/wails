@@ -62,7 +62,7 @@ func HandleSecondInstanceData(secondInstanceMessage *C.char) {
 	}
 }
 
-// CreateLockFile tries to create a file with given name and acquire an
+// createLockFile tries to create a file with given name and acquire an
 // exclusive lock on it. If the file already exists AND is still locked, it will
 // fail.
 func createLockFile(filename string) (*os.File, error) {

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndexedDB API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #4ade80; }
+        td button { margin: 0; padding: 5px 10px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IndexedDB API Demo</h1>
+        <p class="description">
+            IndexedDB is a low-level API for storing significant amounts of structured data,
+            including files and blobs. It uses indexes for high-performance searches.
+        </p>
+
+        <div id="status" class="status success">
+            IndexedDB available: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Add Person Record</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" placeholder="30">
+                </div>
+            </div>
+            <button onclick="addRecord()">Add Record</button>
+            <button class="secondary" onclick="addSampleData()">Add Sample Data</button>
+        </div>
+
+        <div class="card">
+            <h2>Search Records</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="searchField">Search By</label>
+                    <select id="searchField">
+                        <option value="name">Name</option>
+                        <option value="email">Email</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="searchValue">Value</label>
+                    <input type="text" id="searchValue" placeholder="Search...">
+                </div>
+            </div>
+            <button onclick="searchRecords()">Search</button>
+            <button onclick="getAllRecords()">Show All</button>
+            <button class="danger" onclick="clearDatabase()">Clear Database</button>
+        </div>
+
+        <div class="card">
+            <h2>Records</h2>
+            <table id="recordsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Age</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsBody"></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Database Info</h2>
+            <div class="output" id="info"></div>
+        </div>
+    </div>
+
+    <script>
+        const DB_NAME = 'WebAPIDemo';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'people';
+        let db = null;
+
+        // Check if IndexedDB is available
+        function checkIndexedDB() {
+            if (!window.indexedDB) {
+                document.getElementById('available').textContent = 'No';
+                document.getElementById('status').className = 'status error';
+                return false;
+            }
+            document.getElementById('available').textContent = 'Yes';
+            return true;
+        }
+
+        // Initialize database
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        const store = database.createObjectStore(STORE_NAME, {
+                            keyPath: 'id',
+                            autoIncrement: true
+                        });
+                        store.createIndex('name', 'name', { unique: false });
+                        store.createIndex('email', 'email', { unique: true });
+                    }
+                };
+            });
+        }
+
+        async function addRecord() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const age = parseInt(document.getElementById('age').value) || 0;
+
+            if (!name || !email) {
+                alert('Please fill in name and email');
+                return;
+            }
+
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            try {
+                await new Promise((resolve, reject) => {
+                    const request = store.add({ name, email, age, created: new Date().toISOString() });
+                    request.onsuccess = resolve;
+                    request.onerror = () => reject(request.error);
+                });
+                document.getElementById('name').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('age').value = '';
+                getAllRecords();
+                updateInfo();
+            } catch (e) {
+                alert('Error adding record: ' + e.message);
+            }
+        }
+
+        async function addSampleData() {
+            const samples = [
+                { name: 'Alice Johnson', email: 'alice@example.com', age: 28 },
+                { name: 'Bob Smith', email: 'bob@example.com', age: 35 },
+                { name: 'Carol White', email: 'carol@example.com', age: 42 },
+                { name: 'David Brown', email: 'david@example.com', age: 31 },
+            ];
+
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            for (const person of samples) {
+                try {
+                    await new Promise((resolve, reject) => {
+                        const request = store.add({ ...person, created: new Date().toISOString() });
+                        request.onsuccess = resolve;
+                        request.onerror = resolve; // Ignore duplicates
+                    });
+                } catch (e) {}
+            }
+            getAllRecords();
+            updateInfo();
+        }
+
+        async function getAllRecords() {
+            const transaction = db.transaction([STORE_NAME], 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+
+            const records = await new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+
+            displayRecords(records);
+        }
+
+        async function searchRecords() {
+            const field = document.getElementById('searchField').value;
+            const value = document.getElementById('searchValue').value;
+
+            if (!value) {
+                getAllRecords();
+                return;
+            }
+
+            const transaction = db.transaction([STORE_NAME], 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const index = store.index(field);
+
+            const records = await new Promise((resolve, reject) => {
+                const request = index.getAll(value);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+
+            displayRecords(records);
+        }
+
+        async function deleteRecord(id) {
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            await new Promise((resolve, reject) => {
+                const request = store.delete(id);
+                request.onsuccess = resolve;
+                request.onerror = () => reject(request.error);
+            });
+
+            getAllRecords();
+            updateInfo();
+        }
+
+        async function clearDatabase() {
+            if (!confirm('Clear all records?')) return;
+
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            await new Promise((resolve, reject) => {
+                const request = store.clear();
+                request.onsuccess = resolve;
+                request.onerror = () => reject(request.error);
+            });
+
+            getAllRecords();
+            updateInfo();
+        }
+
+        function displayRecords(records) {
+            const tbody = document.getElementById('recordsBody');
+            tbody.innerHTML = records.map(r => `
+                <tr>
+                    <td>${r.id}</td>
+                    <td>${escapeHtml(r.name)}</td>
+                    <td>${escapeHtml(r.email)}</td>
+                    <td>${r.age}</td>
+                    <td><button class="danger" onclick="deleteRecord(${r.id})">Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateInfo() {
+            const transaction = db.transaction([STORE_NAME], 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const count = await new Promise((resolve) => {
+                const req = store.count();
+                req.onsuccess = () => resolve(req.result);
+            });
+
+            document.getElementById('info').textContent = `Database: ${DB_NAME}
+Version: ${DB_VERSION}
+Object Store: ${STORE_NAME}
+Records: ${count}
+
+Key Features:
+- Asynchronous API (Promise-based)
+- Supports indexes for fast queries
+- Can store large amounts of data
+- Supports transactions (ACID)
+- Can store complex objects, files, blobs
+
+API Pattern:
+1. Open database: indexedDB.open(name, version)
+2. Create object stores in onupgradeneeded
+3. Use transactions for all operations
+4. Use indexes for efficient queries`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        if (checkIndexedDB()) {
+            initDB().then(() => {
+                getAllRecords();
+                updateInfo();
+            }).catch(e => {
+                document.getElementById('status').className = 'status error';
+                document.getElementById('available').textContent = 'Error: ' + e.message;
+            });
+        }
+    </script>
+</body>
+</html>

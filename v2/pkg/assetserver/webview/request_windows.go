@@ -4,6 +4,7 @@
 package webview
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -213,5 +214,5 @@ func combineErrs(errs []error) error {
 		errStrings[i] = err.Error()
 	}
 
-	return fmt.Errorf(strings.Join(errStrings, "\n"))
+	return errors.New(strings.Join(errStrings, "\n"))
 }

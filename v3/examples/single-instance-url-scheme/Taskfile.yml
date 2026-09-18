@@ -1,0 +1,52 @@
+version: '3'
+
+includes:
+  common: ./build/Taskfile.yml
+  darwin: ./build/darwin/Taskfile.yml
+
+vars:
+  APP_NAME: "single-instance-url-scheme"
+  BIN_DIR: "bin"
+
+tasks:
+  build:
+    summary: Builds the application
+    cmds:
+      - task: "{{OS}}:build"
+
+  package:
+    summary: Packages a production build of the application
+    cmds:
+      - task: "{{OS}}:package"
+
+  run:
+    summary: Runs the application from a dev .app bundle (required so macOS routes URL scheme to it)
+    cmds:
+      - task: "{{OS}}:run"
+
+  trigger:
+    summary: 'Launch the custom URL. Usage: wails3 task trigger URL=wails-single-url://hello?n=1'
+    desc: |
+      On macOS 14/15, routes the URL to a second process which hits the SingleInstance
+      lock, captures the URL via the kAEGetURL Apple Event, and relays it to the first
+      instance via SecondInstanceData.Args before exiting.
+      On macOS 26+, LaunchServices sends the Apple Event directly to the running first
+      instance, so ApplicationLaunchedWithUrl fires (no second process spawned).
+      Use trigger:force to exercise the second-instance relay path on macOS 26+.
+    cmds:
+      - 'open "{{.URL | default "wails-single-url://hello?n=1"}}"'
+
+  trigger:force:
+    summary: 'Force a new process launch with URL (exercises second-instance relay). Usage: wails3 task trigger:force URL=wails-single-url://hello?n=1'
+    desc: |
+      Uses open -n to bypass LaunchServices reuse behaviour and force a new process.
+      The new process hits the SingleInstance lock, captures the URL via the kAEGetURL
+      Apple Event, and relays it to the first instance via SecondInstanceData.Args.
+      OnSecondInstanceLaunch fires on the first instance with url-in-args?=true.
+    cmds:
+      - 'open -n -a "{{.BIN_DIR}}/{{.APP_NAME}}.dev.app" "{{.URL | default "wails-single-url://hello?n=1"}}"'
+
+  tail:
+    summary: Tail the repro logfile written by main.go
+    cmds:
+      - tail -f /tmp/wails-single-instance-url.log

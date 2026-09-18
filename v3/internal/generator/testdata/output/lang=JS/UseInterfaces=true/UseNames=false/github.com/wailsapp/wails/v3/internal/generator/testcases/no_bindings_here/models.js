@@ -12,7 +12,7 @@ import * as other$0 from "./other/models.js";
  * @template How
  * @typedef {Object} HowDifferent
  * @property {string} Name - They have a name as well.
- * @property {({ [_: string]: How } | null)[] | null} Differences - But they may have many differences.
+ * @property {({ [_ in string]?: How } | null)[] | null} Differences - But they may have many differences.
  */
 
 /**

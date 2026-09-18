@@ -1,14 +1,28 @@
 package main
 
 import (
-	"runtime"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type ScreenService struct {
 	screenManager   application.ScreenManager
 	isExampleLayout bool
+}
+
+// Helper to safely get float64 from interface{}
+func getFloat64(v interface{}) float64 {
+	if v == nil {
+		return 0
+	}
+	if f, ok := v.(float64); ok {
+		return f
+	}
+	return 0
+}
+
+// Helper to safely get int from interface{} (expecting float64 from JSON)
+func getInt(v interface{}) int {
+	return int(getFloat64(v))
 }
 
 func (s *ScreenService) GetSystemScreens() []*application.Screen {
@@ -21,11 +35,14 @@ func (s *ScreenService) ProcessExampleScreens(rawScreens []interface{}) []*appli
 	s.isExampleLayout = true
 
 	parseRect := func(m map[string]interface{}) application.Rect {
+		if m == nil {
+			return application.Rect{}
+		}
 		return application.Rect{
-			X:      int(m["X"].(float64)),
-			Y:      int(m["Y"].(float64)),
-			Width:  int(m["Width"].(float64)),
-			Height: int(m["Height"].(float64)),
+			X:      getInt(m["X"]),
+			Y:      getInt(m["Y"]),
+			Width:  getInt(m["Width"]),
+			Height: getInt(m["Height"]),
 		}
 	}
 
@@ -37,22 +54,56 @@ func (s *ScreenService) ProcessExampleScreens(rawScreens []interface{}) []*appli
 
 	screens := make([]*application.Screen, 0, len(rawScreens))
 	for _, s := range rawScreens {
-		s := s.(map[string]interface{})
+		sm, ok := s.(map[string]interface{})
+		if !ok {
+			continue
+		}
 
-		bounds := parseRect(s["Bounds"].(map[string]interface{}))
+		boundsVal, ok := sm["Bounds"]
+		if !ok {
+			continue
+		}
+		boundsMap, ok := boundsVal.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		bounds := parseRect(boundsMap)
+
+		var id, name string
+		var isPrimary bool
+		if idVal, ok := sm["ID"].(string); ok {
+			id = idVal
+		}
+		if nameVal, ok := sm["Name"].(string); ok {
+			name = nameVal
+		}
+		if primaryVal, ok := sm["IsPrimary"].(bool); ok {
+			isPrimary = primaryVal
+		}
+
+		var physicalBounds, workArea, physicalWorkArea application.Rect
+		if pb, ok := sm["PhysicalBounds"].(map[string]interface{}); ok {
+			physicalBounds = parseRect(pb)
+		}
+		if wa, ok := sm["WorkArea"].(map[string]interface{}); ok {
+			workArea = parseRect(wa)
+		}
+		if pwa, ok := sm["PhysicalWorkArea"].(map[string]interface{}); ok {
+			physicalWorkArea = parseRect(pwa)
+		}
 
 		screens = append(screens, &application.Screen{
-			ID:               s["ID"].(string),
-			Name:             s["Name"].(string),
+			ID:               id,
+			Name:             name,
 			X:                bounds.X,
 			Y:                bounds.Y,
 			Size:             application.Size{Width: bounds.Width, Height: bounds.Height},
 			Bounds:           bounds,
-			PhysicalBounds:   parseRect(s["PhysicalBounds"].(map[string]interface{})),
-			WorkArea:         parseRect(s["WorkArea"].(map[string]interface{})),
-			PhysicalWorkArea: parseRect(s["PhysicalWorkArea"].(map[string]interface{})),
-			IsPrimary:        s["IsPrimary"].(bool),
-			ScaleFactor:      float32(s["ScaleFactor"].(float64)),
+			PhysicalBounds:   physicalBounds,
+			WorkArea:         workArea,
+			PhysicalWorkArea: physicalWorkArea,
+			IsPrimary:        isPrimary,
+			ScaleFactor:      float32(getFloat64(sm["ScaleFactor"])),
 			Rotation:         0,
 		})
 	}
@@ -69,13 +120,6 @@ func (s *ScreenService) transformPoint(point application.Point, toDIP bool) appl
 			return s.screenManager.DipToPhysicalPoint(point)
 		}
 	} else {
-		// =======================
-		// TODO: remove this block when DPI is implemented in Linux & Mac
-		if runtime.GOOS != "windows" {
-			println("DPI not implemented yet!")
-			return point
-		}
-		// =======================
 		if toDIP {
 			return application.PhysicalToDipPoint(point)
 		} else {
@@ -85,9 +129,13 @@ func (s *ScreenService) transformPoint(point application.Point, toDIP bool) appl
 }
 
 func (s *ScreenService) TransformPoint(point map[string]interface{}, toDIP bool) (points [2]application.Point) {
+	if point == nil {
+		return points
+	}
+
 	pt := application.Point{
-		X: int(point["X"].(float64)),
-		Y: int(point["Y"].(float64)),
+		X: getInt(point["X"]),
+		Y: getInt(point["Y"]),
 	}
 
 	ptTransformed := s.transformPoint(pt, toDIP)
@@ -107,11 +155,15 @@ func (s *ScreenService) TransformPoint(point map[string]interface{}, toDIP bool)
 }
 
 func (s *ScreenService) TransformRect(rect map[string]interface{}, toDIP bool) application.Rect {
+	if rect == nil {
+		return application.Rect{}
+	}
+
 	r := application.Rect{
-		X:      int(rect["X"].(float64)),
-		Y:      int(rect["Y"].(float64)),
-		Width:  int(rect["Width"].(float64)),
-		Height: int(rect["Height"].(float64)),
+		X:      getInt(rect["X"]),
+		Y:      getInt(rect["Y"]),
+		Width:  getInt(rect["Width"]),
+		Height: getInt(rect["Height"]),
 	}
 
 	if s.isExampleLayout {
@@ -121,13 +173,6 @@ func (s *ScreenService) TransformRect(rect map[string]interface{}, toDIP bool) a
 			return s.screenManager.DipToPhysicalRect(r)
 		}
 	} else {
-		// =======================
-		// TODO: remove this block when DPI is implemented in Linux & Mac
-		if runtime.GOOS != "windows" {
-			println("DPI not implemented yet!")
-			return r
-		}
-		// =======================
 		if toDIP {
 			return application.PhysicalToDipRect(r)
 		} else {

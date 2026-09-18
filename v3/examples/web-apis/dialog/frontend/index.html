@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dialog Element API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+
+        /* Dialog styling */
+        dialog {
+            background: #1a1a2e;
+            color: #eee;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 0;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .dialog-header {
+            background: rgba(74, 222, 128, 0.1);
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dialog-header h3 {
+            color: #4ade80;
+            font-size: 1.1rem;
+        }
+        .dialog-close {
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+        }
+        .dialog-close:hover { color: #fff; }
+        .dialog-body {
+            padding: 20px;
+        }
+        .dialog-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .dialog-footer button { margin: 0; }
+
+        /* Form inside dialog */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            color: #aaa;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: #0a0a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #eee;
+            font-size: 1rem;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+
+        /* Dialog variants */
+        dialog.warning .dialog-header {
+            background: rgba(251, 191, 36, 0.1);
+        }
+        dialog.warning .dialog-header h3 {
+            color: #fbbf24;
+        }
+        dialog.danger .dialog-header {
+            background: rgba(248, 113, 113, 0.1);
+        }
+        dialog.danger .dialog-header h3 {
+            color: #f87171;
+        }
+        dialog.info .dialog-header {
+            background: rgba(96, 165, 250, 0.1);
+        }
+        dialog.info .dialog-header h3 {
+            color: #60a5fa;
+        }
+
+        /* Non-modal dialog positioning */
+        dialog.non-modal {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            margin: 0;
+            max-width: 300px;
+        }
+
+        .result-display {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .result-label {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        .result-value {
+            color: #4ade80;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dialog Element API Demo</h1>
+        <p class="description">
+            The HTML &lt;dialog&gt; element provides a native way to create modal and non-modal dialog boxes,
+            with built-in accessibility features and backdrop handling.
+        </p>
+
+        <div class="status success">
+            Dialog Element API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Basic Modal Dialog</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Modal dialogs block interaction with the rest of the page:</p>
+            <button onclick="showBasicModal()">Open Modal Dialog</button>
+            <div class="result-display">
+                <div class="result-label">Last action:</div>
+                <div class="result-value" id="basicResult">-</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Non-Modal Dialog</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Non-modal dialogs allow interaction with the page:</p>
+            <button onclick="showNonModal()">Open Non-Modal Dialog</button>
+            <button class="secondary" onclick="closeNonModal()">Close Non-Modal</button>
+        </div>
+
+        <div class="card">
+            <h2>Confirm Dialog</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">A custom confirm dialog that returns user choice:</p>
+            <button onclick="showConfirmDialog()">Show Confirm Dialog</button>
+            <div class="result-display">
+                <div class="result-label">User choice:</div>
+                <div class="result-value" id="confirmResult">-</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Form Dialog</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Dialog with form that uses method="dialog":</p>
+            <button onclick="showFormDialog()">Open Form Dialog</button>
+            <div class="result-display">
+                <div class="result-label">Form data:</div>
+                <div class="result-value" id="formResult">-</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Alert Variants</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Different styled dialogs for various purposes:</p>
+            <button onclick="showAlert('success')">Success Alert</button>
+            <button onclick="showAlert('warning')" class="secondary">Warning Alert</button>
+            <button onclick="showAlert('danger')" class="danger">Error Alert</button>
+            <button onclick="showAlert('info')">Info Alert</button>
+        </div>
+
+        <div class="card">
+            <h2>Stacked Dialogs</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Multiple dialogs can be stacked:</p>
+            <button onclick="showStackedDialog(1)">Open First Dialog</button>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">Dialog events will appear here...</div>
+        </div>
+    </div>
+
+    <!-- Basic Modal Dialog -->
+    <dialog id="basicModal">
+        <div class="dialog-header">
+            <h3>Basic Modal Dialog</h3>
+            <button class="dialog-close" onclick="closeBasicModal()">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <p>This is a modal dialog. The backdrop prevents interaction with the page behind it.</p>
+            <p style="margin-top: 10px; color: #aaa;">Press Escape or click outside to close (if enabled).</p>
+        </div>
+        <div class="dialog-footer">
+            <button class="secondary" onclick="closeBasicModal()">Cancel</button>
+            <button onclick="confirmBasicModal()">OK</button>
+        </div>
+    </dialog>
+
+    <!-- Non-Modal Dialog -->
+    <dialog id="nonModal" class="non-modal">
+        <div class="dialog-header">
+            <h3>Non-Modal Dialog</h3>
+            <button class="dialog-close" onclick="closeNonModal()">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <p>This dialog allows interaction with the page behind it.</p>
+            <p style="margin-top: 10px; color: #aaa;">You can still click buttons and scroll the page.</p>
+        </div>
+    </dialog>
+
+    <!-- Confirm Dialog -->
+    <dialog id="confirmModal">
+        <div class="dialog-header">
+            <h3>Confirm Action</h3>
+            <button class="dialog-close" onclick="document.getElementById('confirmModal').close('cancelled')">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <p>Are you sure you want to proceed with this action?</p>
+            <p style="margin-top: 10px; color: #aaa;">This action may have consequences.</p>
+        </div>
+        <div class="dialog-footer">
+            <button class="danger" onclick="document.getElementById('confirmModal').close('declined')">No, Cancel</button>
+            <button onclick="document.getElementById('confirmModal').close('confirmed')">Yes, Proceed</button>
+        </div>
+    </dialog>
+
+    <!-- Form Dialog -->
+    <dialog id="formModal">
+        <form method="dialog" id="dialogForm">
+            <div class="dialog-header">
+                <h3>User Information</h3>
+                <button type="button" class="dialog-close" onclick="document.getElementById('formModal').close()">&times;</button>
+            </div>
+            <div class="dialog-body">
+                <div class="form-group">
+                    <label for="userName">Name</label>
+                    <input type="text" id="userName" name="name" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email</label>
+                    <input type="email" id="userEmail" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Role</label>
+                    <select id="userRole" name="role">
+                        <option value="developer">Developer</option>
+                        <option value="designer">Designer</option>
+                        <option value="manager">Manager</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userMessage">Message</label>
+                    <textarea id="userMessage" name="message" rows="3" placeholder="Optional message"></textarea>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button type="button" class="secondary" onclick="document.getElementById('formModal').close()">Cancel</button>
+                <button type="submit" value="submit">Submit</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Alert Dialog Template -->
+    <dialog id="alertModal">
+        <div class="dialog-header">
+            <h3 id="alertTitle">Alert</h3>
+            <button class="dialog-close" onclick="document.getElementById('alertModal').close()">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <p id="alertMessage">Alert message</p>
+        </div>
+        <div class="dialog-footer">
+            <button onclick="document.getElementById('alertModal').close()">OK</button>
+        </div>
+    </dialog>
+
+    <!-- Stacked Dialog 1 -->
+    <dialog id="stackedDialog1">
+        <div class="dialog-header">
+            <h3>First Dialog</h3>
+            <button class="dialog-close" onclick="document.getElementById('stackedDialog1').close()">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <p>This is the first dialog in the stack.</p>
+            <p style="margin-top: 10px; color: #aaa;">Click the button below to open another dialog on top.</p>
+        </div>
+        <div class="dialog-footer">
+            <button class="secondary" onclick="document.getElementById('stackedDialog1').close()">Close</button>
+            <button onclick="showStackedDialog(2)">Open Second Dialog</button>
+        </div>
+    </dialog>
+
+    <!-- Stacked Dialog 2 -->
+    <dialog id="stackedDialog2">
+        <div class="dialog-header">
+            <h3>Second Dialog</h3>
+            <button class="dialog-close" onclick="document.getElementById('stackedDialog2').close()">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <p>This is the second dialog, stacked on top of the first.</p>
+            <p style="margin-top: 10px; color: #aaa;">You can stack as many dialogs as needed.</p>
+        </div>
+        <div class="dialog-footer">
+            <button class="secondary" onclick="document.getElementById('stackedDialog2').close()">Close</button>
+            <button onclick="showStackedDialog(3)">Open Third Dialog</button>
+        </div>
+    </dialog>
+
+    <!-- Stacked Dialog 3 -->
+    <dialog id="stackedDialog3" class="info">
+        <div class="dialog-header">
+            <h3>Third Dialog</h3>
+            <button class="dialog-close" onclick="document.getElementById('stackedDialog3').close()">&times;</button>
+        </div>
+        <div class="dialog-body">
+            <p>This is the third and final dialog in the stack.</p>
+            <p style="margin-top: 10px; color: #aaa;">Close dialogs in reverse order by pressing Escape or clicking Close.</p>
+        </div>
+        <div class="dialog-footer">
+            <button onclick="document.getElementById('stackedDialog3').close()">Close</button>
+        </div>
+    </dialog>
+
+    <script>
+        // Event logging
+        let logEntries = [];
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 50) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        // Check API support
+        function checkSupport() {
+            const dialog = document.createElement('dialog');
+            const hasDialog = typeof dialog.showModal === 'function';
+
+            document.getElementById('supported').textContent = hasDialog ? 'Available' : 'Not available';
+            document.getElementById('supported').parentElement.className = hasDialog ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: '<dialog> element', supported: 'HTMLDialogElement' in window },
+                { name: 'showModal()', supported: typeof dialog.showModal === 'function' },
+                { name: 'show()', supported: typeof dialog.show === 'function' },
+                { name: 'close()', supported: typeof dialog.close === 'function' },
+                { name: 'open attribute', supported: 'open' in dialog },
+                { name: 'returnValue', supported: 'returnValue' in dialog },
+                { name: '::backdrop pseudo', supported: CSS.supports('selector(::backdrop)') },
+                { name: 'method="dialog"', supported: true },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+
+            log('API support check completed');
+        }
+
+        // Setup dialog event listeners
+        function setupDialogEvents(dialogId) {
+            const dialog = document.getElementById(dialogId);
+
+            dialog.addEventListener('close', () => {
+                log(`Dialog "${dialogId}" closed with returnValue: "${dialog.returnValue || '(empty)'}"`);
+            });
+
+            dialog.addEventListener('cancel', (e) => {
+                log(`Dialog "${dialogId}" cancel event (Escape pressed)`);
+            });
+
+            // Close on backdrop click for modal dialogs
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) {
+                    dialog.close('backdrop-click');
+                    log(`Dialog "${dialogId}" closed via backdrop click`);
+                }
+            });
+        }
+
+        // Basic Modal
+        const basicModal = document.getElementById('basicModal');
+        setupDialogEvents('basicModal');
+
+        function showBasicModal() {
+            basicModal.showModal();
+            log('Basic modal dialog opened');
+        }
+
+        function closeBasicModal() {
+            basicModal.close('cancelled');
+            document.getElementById('basicResult').textContent = 'Cancelled';
+        }
+
+        function confirmBasicModal() {
+            basicModal.close('confirmed');
+            document.getElementById('basicResult').textContent = 'Confirmed';
+        }
+
+        // Non-Modal
+        const nonModal = document.getElementById('nonModal');
+        setupDialogEvents('nonModal');
+
+        function showNonModal() {
+            nonModal.show();
+            log('Non-modal dialog opened');
+        }
+
+        function closeNonModal() {
+            nonModal.close();
+        }
+
+        // Confirm Dialog
+        const confirmModal = document.getElementById('confirmModal');
+        setupDialogEvents('confirmModal');
+
+        function showConfirmDialog() {
+            confirmModal.showModal();
+            log('Confirm dialog opened');
+        }
+
+        confirmModal.addEventListener('close', () => {
+            document.getElementById('confirmResult').textContent = confirmModal.returnValue || 'No value';
+        });
+
+        // Form Dialog
+        const formModal = document.getElementById('formModal');
+        const dialogForm = document.getElementById('dialogForm');
+        setupDialogEvents('formModal');
+
+        function showFormDialog() {
+            dialogForm.reset();
+            formModal.showModal();
+            log('Form dialog opened');
+        }
+
+        dialogForm.addEventListener('submit', (e) => {
+            const formData = new FormData(dialogForm);
+            const data = Object.fromEntries(formData.entries());
+            document.getElementById('formResult').textContent = JSON.stringify(data, null, 2);
+            log(`Form submitted: ${JSON.stringify(data)}`);
+        });
+
+        // Alert Dialog
+        const alertModal = document.getElementById('alertModal');
+        setupDialogEvents('alertModal');
+
+        const alertConfigs = {
+            success: {
+                title: 'Success!',
+                message: 'Your operation completed successfully.',
+                class: ''
+            },
+            warning: {
+                title: 'Warning',
+                message: 'Please review before proceeding.',
+                class: 'warning'
+            },
+            danger: {
+                title: 'Error',
+                message: 'Something went wrong. Please try again.',
+                class: 'danger'
+            },
+            info: {
+                title: 'Information',
+                message: 'Here is some helpful information for you.',
+                class: 'info'
+            }
+        };
+
+        function showAlert(type) {
+            const config = alertConfigs[type];
+            alertModal.className = config.class;
+            document.getElementById('alertTitle').textContent = config.title;
+            document.getElementById('alertMessage').textContent = config.message;
+            alertModal.showModal();
+            log(`Alert dialog opened: ${type}`);
+        }
+
+        // Stacked Dialogs
+        ['stackedDialog1', 'stackedDialog2', 'stackedDialog3'].forEach(id => {
+            setupDialogEvents(id);
+        });
+
+        function showStackedDialog(num) {
+            const dialog = document.getElementById(`stackedDialog${num}`);
+            dialog.showModal();
+            log(`Stacked dialog ${num} opened`);
+        }
+
+        // Initialize
+        checkSupport();
+        log('Dialog Element demo initialized');
+    </script>
+</body>
+</html>

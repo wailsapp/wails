@@ -22,7 +22,7 @@ import * as $models from "./models.js";
  * @param {string} str
  * @param {$models.Person[]} people
  * @param {{"AnotherCount": number, "AnotherOne": $models.Person | null}} $2
- * @param {{ [_: `${number}`]: boolean | null }} assoc
+ * @param {{ [_ in `${number}`]?: boolean | null }} assoc
  * @param {(number | null)[]} $4
  * @param {string[]} other
  * @returns {$CancellablePromise<[$models.Person, any, number[]]>}

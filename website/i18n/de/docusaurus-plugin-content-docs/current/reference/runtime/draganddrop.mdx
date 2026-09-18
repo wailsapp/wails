@@ -1,0 +1,35 @@
+---
+sidebar_position: 10
+---
+
+# Drag And Drop
+
+:::
+
+Dieser Teil der Laufzeit verarbeitet das Ziehen und Ablegen von Dateien oder Ordnern in das Fenster.<br/>
+
+Um diese Funktion zu aktivieren, musst du in den [Anwendungsoptionen](../../reference/options.mdx#drag-and-drop) [EnableFileDrop](../../reference/options.mdx#enablefiledrop) auf `true`
+setzen.
+
+### OnFileDrop
+
+Diese Methode verarbeitet das Drop-Event im Fenster.
+
+Go: `OnFileDrop(ctx context.Context, callback func(x, y int, paths []string))`<br/>
+Ruft die Callback-Funktion mit den Koordinaten innerhalb des Fensters, an denen der Dragvorgang beendet wurde, und einer Liste absoluter Dateipfade auf.
+
+JS: `OnFileDrop(callback: (x: number, y: number, paths: string[]) => void, useDropTarget: boolean) :void`<br/>
+Ruft die Callback-Funktion mit den Koordinaten innerhalb des Fensters auf, in dem die Ziehung freigegeben wurde, und ein slice mit den absoluten Dateipfaden auf.
+
+Wenn `useDropTarget` auf `true` gesetzt ist, werden zusätzlich zum Aufruf des Callbacks beim Ablegen Event-Listener am Fenster registriert, die die Drag-Koordinaten überwachen und prüfen, ob sich die Maus über einem Element befindet, welches den [CSSDropProperty](../../reference/options.mdx#cssdropproperty) Stil aufweist. Wenn das Element die erforderliche Eigenschaft
+besitzt, fügt es die `wails-drop-target-active` Klasse zur Klassenliste des Elements hinzu und entfernt sie, wenn sich die Maus davon bewegt.
+
+### OnFileDropOff
+
+Diese Methode entfernt alle registrierten listener und Handler für Drag & Drop Ereignisse.
+
+Go: `OnFileDropOff(ctx context.Context)`<br/>
+Returns: hat keinen Rückgabewert.
+
+JS: `OnFileDropOff(): void`<br/>
+Returns: hat keinen Rückgabewert.

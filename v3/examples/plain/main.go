@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"log"
 	"net/http"
 	"time"
@@ -56,7 +55,7 @@ func main() {
 		// Use a ticker instead of sleep to allow for cancellation
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
-		
+
 		select {
 		case <-ticker.C:
 			// Create window after delay - in production, you should handle potential errors

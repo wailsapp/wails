@@ -1,0 +1,142 @@
+# Dynamische Assets
+
+:::info
+
+Diese Funktion funktioniert nicht mit vite v5.0.0+ und wails v2 aufgrund von Veränderungen in vite. Änderungen sind in v3 geplant, um ähnliche Funktionen unter v5.0.0+ zu unterstützen. Wenn du diese Funktion benötigst, bleibe bei vite v4.0.0+. Siehe [Issue 3240](https://github.com/wailsapp/wails/issues/3240) für Details
+
+:::
+
+Wenn Dateien für dein Frontend dynamisch geladen oder erzeugt werden sollen, kann das mit der [AssetsHandler](../reference/options#assetshandler) Option erreicht werden. Der AssetsHandler ist ein generischer `http.Handler`, der für alle Nicht-GET-Anfragen an den Asset-Server und für GET-Anfragen aufgerufen wird, die nicht aus den gebündelten Assets bedient werden können, weil die Datei nicht gefunden wird.
+
+Durch die Installation eines benutzerdefinierten AssetsHandlers können eigene Assets über einen eigenen Asset-Server geserved werden.
+
+## Beispiel
+
+In unserem Beispielprojekt werden wir einen einfachen Asset-Handler erstellen, der Dateien von der Festplatte lädt:
+
+```go title=main.go {17-36,49}
+package main
+
+import (
+    "embed"
+    "fmt"
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "net/http"
+    "os"
+    "strings"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+type FileLoader struct {
+    http.Handler
+}
+
+func NewFileLoader() *FileLoader {
+    return &FileLoader{}
+}
+
+func (h *FileLoader) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+    var err error
+    requestedFilename := strings.TrimPrefix(req.URL.Path, "/")
+    println("Requesting file:", requestedFilename)
+    fileData, err := os.ReadFile(requestedFilename)
+    if err != nil {
+        res.WriteHeader(http.StatusBadRequest)
+        res.Write([]byte(fmt.Sprintf("Could not load file %s", requestedFilename)))
+    }
+
+    res.Write(fileData)
+}
+
+func main() {
+    // Create an instance of the app structure
+    app := NewApp()
+
+    // Create application with options
+    err := wails.Run(&options.App{
+        Title:  "helloworld",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets:  assets,
+            Handler: NewFileLoader(),
+        },
+        BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 255},
+        OnStartup:        app.startup,
+        Bind: []interface{}{
+            app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+Wenn wir die Anwendung im Dev-Modus mit `wails dev`ausführen, sehen wir die folgende Ausgabe:
+
+```
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico'
+DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico' failed, using AssetHandler
+Requesting file: favicon.ico
+```
+
+Wie man sehen kann, wird der Asset-Handler aufgerufen, wenn der Standard-Asset-Server nicht in der Lage ist, die `favicon.ico` Datei zu serven.
+
+Um diese Funktion zu testen kannst du in der Hauptanwendung mit der rechten Maustaste "inspect" auswählen, um die devtools hervorzubringen. In die Konsole muss nun folgendes eingegeben werden:
+
+```
+let response = await fetch('does-not-exist.txt');
+```
+
+Das wird einen Fehler in den devtools erzeugen. Wir können sehen, dass der Fehler ist, was wir erwarten, von unserem benutzerdefinierten Asset-Handler:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
+  />
+</p>
+```
+
+Wenn wir jedoch `go.mod`anfordern, sehen wir die folgende Ausgabe:
+
+```mdx-code-block
+<p className="text--center">
+  <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
+</p>
+```
+
+Diese Technik kann benutzt werden, um Bilder direkt in die Seite zu laden. Wenn wir unsere Standardvorlage für Vanilla aktualisiert haben und das Logobild:
+
+```html
+<img id="logo" class="logo" />
+```
+
+mit folgendem ersetzen:
+
+```html
+<img src="build/appicon.png" style="width: 300px" />
+```
+
+Dann sollten wir folgendes sehen:
+
+```mdx-code-block
+<p className="text--center">
+  <img
+    src={require("@site/static/img/assetshandler-image.webp").default}
+    style={{ width: "75%" }}
+  />
+</p>
+```
+
+:::warning
+
+Das Exposen des Dateisystems auf diese Art ist ein Sicherheitsrisiko. Es wird empfohlen, dass der Zugriff auf das Dateisystem korrekt verwaltet wird.
+
+:::

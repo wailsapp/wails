@@ -56,7 +56,7 @@ func (s *stdoutScanner) Write(data []byte) (n int, err error) {
 			logutils.LogGreen("Vite Server URL: %s", viteServerURL)
 			_, err := url.Parse(viteServerURL)
 			if err != nil {
-				logutils.LogRed(err.Error())
+				logutils.LogRed("%s", err.Error())
 			} else {
 				s.ViteServerURLChan <- viteServerURL
 			}

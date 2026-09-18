@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 package application
 
@@ -7,6 +7,8 @@ import "github.com/wailsapp/wails/v3/pkg/events"
 var commonApplicationEventMap = map[events.ApplicationEventType]events.ApplicationEventType{
 	events.Mac.ApplicationDidFinishLaunching: events.Common.ApplicationStarted,
 	events.Mac.ApplicationDidChangeTheme:     events.Common.ThemeChanged,
+	events.Mac.ApplicationWillSleep:          events.Common.SystemWillSleep,
+	events.Mac.ApplicationDidWake:            events.Common.SystemDidWake,
 }
 
 func (m *macosApp) setupCommonEvents() {
@@ -14,8 +16,10 @@ func (m *macosApp) setupCommonEvents() {
 		sourceEvent := sourceEvent
 		targetEvent := targetEvent
 		m.parent.Event.OnApplicationEvent(sourceEvent, func(event *ApplicationEvent) {
-			event.Id = uint(targetEvent)
-			applicationEvents <- event
+			applicationEvents <- &ApplicationEvent{
+				Id:  uint(targetEvent),
+				ctx: event.ctx,
+			}
 		})
 	}
 

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas 2D API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .canvas-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        canvas {
+            background: #0a0a1a;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        input[type="color"] {
+            width: 40px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="range"] {
+            width: 100px;
+        }
+        .demos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .demo-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .demo-card canvas {
+            margin-bottom: 10px;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Canvas 2D API Demo</h1>
+        <p class="description">
+            The Canvas API provides a means for drawing graphics via JavaScript and HTML.
+            It can be used for animation, game graphics, data visualization, and image manipulation.
+        </p>
+
+        <div class="status success">
+            Canvas 2D supported: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Drawing Canvas</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Color:</label>
+                    <input type="color" id="color" value="#4ade80">
+                </div>
+                <div class="control-group">
+                    <label>Size:</label>
+                    <input type="range" id="size" min="1" max="50" value="5">
+                    <span id="sizeValue">5</span>
+                </div>
+                <div class="control-group">
+                    <label>Tool:</label>
+                    <button onclick="setTool('brush')" id="brushBtn" class="secondary">Brush</button>
+                    <button onclick="setTool('line')">Line</button>
+                    <button onclick="setTool('rect')">Rectangle</button>
+                    <button onclick="setTool('circle')">Circle</button>
+                </div>
+            </div>
+            <div class="controls">
+                <button onclick="clearCanvas()">Clear</button>
+                <button onclick="saveCanvas()">Save as PNG</button>
+                <button onclick="fillBackground()">Fill Background</button>
+            </div>
+            <canvas id="drawCanvas" width="600" height="400"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>Canvas Demos</h2>
+            <div class="demos">
+                <div class="demo-card">
+                    <canvas id="shapesDemo" width="180" height="150"></canvas>
+                    <div>Shapes & Paths</div>
+                </div>
+                <div class="demo-card">
+                    <canvas id="gradientDemo" width="180" height="150"></canvas>
+                    <div>Gradients</div>
+                </div>
+                <div class="demo-card">
+                    <canvas id="textDemo" width="180" height="150"></canvas>
+                    <div>Text Rendering</div>
+                </div>
+                <div class="demo-card">
+                    <canvas id="animationDemo" width="180" height="150"></canvas>
+                    <div>Animation</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check Canvas support
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+        document.getElementById('supported').textContent = ctx ? 'Yes' : 'No';
+
+        let isDrawing = false;
+        let lastX = 0, lastY = 0;
+        let currentTool = 'brush';
+        let startX = 0, startY = 0;
+
+        // Drawing canvas setup
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        document.getElementById('size').addEventListener('input', (e) => {
+            document.getElementById('sizeValue').textContent = e.target.value;
+        });
+
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('secondary'));
+            document.getElementById(tool + 'Btn')?.classList.add('secondary');
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+            [startX, startY] = [e.offsetX, e.offsetY];
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const color = document.getElementById('color').value;
+            const size = document.getElementById('size').value;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+
+            if (currentTool === 'brush') {
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            const color = document.getElementById('color').value;
+            const size = document.getElementById('size').value;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+
+            if (currentTool === 'line') {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            } else if (currentTool === 'rect') {
+                ctx.strokeRect(startX, startY, e.offsetX - startX, e.offsetY - startY);
+            } else if (currentTool === 'circle') {
+                const radius = Math.sqrt(Math.pow(e.offsetX - startX, 2) + Math.pow(e.offsetY - startY, 2));
+                ctx.beginPath();
+                ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => isDrawing = false);
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function fillBackground() {
+            ctx.fillStyle = document.getElementById('color').value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveCanvas() {
+            const link = document.createElement('a');
+            link.download = 'canvas-drawing.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Demo: Shapes
+        const shapesCtx = document.getElementById('shapesDemo').getContext('2d');
+        shapesCtx.fillStyle = '#4ade80';
+        shapesCtx.fillRect(10, 10, 50, 50);
+        shapesCtx.fillStyle = '#60a5fa';
+        shapesCtx.beginPath();
+        shapesCtx.arc(120, 35, 25, 0, Math.PI * 2);
+        shapesCtx.fill();
+        shapesCtx.fillStyle = '#e94560';
+        shapesCtx.beginPath();
+        shapesCtx.moveTo(90, 130);
+        shapesCtx.lineTo(130, 130);
+        shapesCtx.lineTo(110, 90);
+        shapesCtx.closePath();
+        shapesCtx.fill();
+        shapesCtx.strokeStyle = '#fbbf24';
+        shapesCtx.lineWidth = 3;
+        shapesCtx.strokeRect(10, 80, 60, 60);
+
+        // Demo: Gradients
+        const gradCtx = document.getElementById('gradientDemo').getContext('2d');
+        const linearGrad = gradCtx.createLinearGradient(0, 0, 180, 0);
+        linearGrad.addColorStop(0, '#4ade80');
+        linearGrad.addColorStop(0.5, '#60a5fa');
+        linearGrad.addColorStop(1, '#e94560');
+        gradCtx.fillStyle = linearGrad;
+        gradCtx.fillRect(10, 10, 160, 50);
+
+        const radialGrad = gradCtx.createRadialGradient(90, 110, 5, 90, 110, 40);
+        radialGrad.addColorStop(0, '#fbbf24');
+        radialGrad.addColorStop(1, '#1a1a2e');
+        gradCtx.fillStyle = radialGrad;
+        gradCtx.beginPath();
+        gradCtx.arc(90, 110, 40, 0, Math.PI * 2);
+        gradCtx.fill();
+
+        // Demo: Text
+        const textCtx = document.getElementById('textDemo').getContext('2d');
+        textCtx.fillStyle = '#4ade80';
+        textCtx.font = 'bold 24px sans-serif';
+        textCtx.fillText('Canvas', 20, 40);
+        textCtx.font = '16px sans-serif';
+        textCtx.fillStyle = '#60a5fa';
+        textCtx.fillText('2D Context', 20, 70);
+        textCtx.strokeStyle = '#e94560';
+        textCtx.lineWidth = 2;
+        textCtx.font = 'bold 28px sans-serif';
+        textCtx.strokeText('API', 50, 120);
+
+        // Demo: Animation
+        const animCtx = document.getElementById('animationDemo').getContext('2d');
+        let angle = 0;
+        function animate() {
+            animCtx.clearRect(0, 0, 180, 150);
+
+            // Rotating square
+            animCtx.save();
+            animCtx.translate(90, 75);
+            animCtx.rotate(angle);
+            animCtx.fillStyle = '#4ade80';
+            animCtx.fillRect(-25, -25, 50, 50);
+            animCtx.restore();
+
+            // Orbiting circle
+            const x = 90 + Math.cos(angle * 2) * 50;
+            const y = 75 + Math.sin(angle * 2) * 30;
+            animCtx.fillStyle = '#e94560';
+            animCtx.beginPath();
+            animCtx.arc(x, y, 10, 0, Math.PI * 2);
+            animCtx.fill();
+
+            angle += 0.02;
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

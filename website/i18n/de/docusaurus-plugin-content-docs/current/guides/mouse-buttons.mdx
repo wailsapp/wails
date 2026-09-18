@@ -1,0 +1,25 @@
+# Maustasten
+
+Die Wails Laufzeit fängt Mausklicks ab, um festzustellen, ob ein rahmenloses Fenster eine Größenänderung braucht, oder ein Fenster verschoben werden muss. Es wurde gefragt, wie man feststellen kann, wann ein Mausklick stattgefunden hat, da `window.onclick` die Maustasten nicht korrekt meldet. Der folgende Code zeigt, wie man Mausklicks erkennt:
+
+```javascript
+window.addEventListener("mousedown", handleMouseButtonDown);
+
+function handleMouseButtonDown(event) {
+  if (event.button === 0) {
+    // left mouse button
+  } else if (event.button === 1) {
+    // middle mouse button
+  } else if (event.button === 2) {
+    // right mouse button
+  } else if (event.button === 3) {
+    // back mouse button
+  } else if (event.button === 4) {
+    // forward mouse button
+  } else {
+    // other mouse button
+  }
+}
+```
+
+Referenz: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button

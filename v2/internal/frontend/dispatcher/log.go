@@ -23,19 +23,19 @@ func (d *Dispatcher) processLogMessage(message string) (string, error) {
 
 	switch message[1] {
 	case 'T':
-		d.log.Trace(messageText)
+		d.log.Trace("%s", messageText)
 	case 'P':
 		d.log.Print(messageText)
 	case 'D':
-		d.log.Debug(messageText)
+		d.log.Debug("%s", messageText)
 	case 'I':
-		d.log.Info(messageText)
+		d.log.Info("%s", messageText)
 	case 'W':
-		d.log.Warning(messageText)
+		d.log.Warning("%s", messageText)
 	case 'E':
-		d.log.Error(messageText)
+		d.log.Error("%s", messageText)
 	case 'F':
-		d.log.Fatal(messageText)
+		d.log.Fatal("%s", messageText)
 	case 'S':
 		loglevel, exists := logLevelMap[message[2]]
 		if !exists {

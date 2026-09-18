@@ -41,6 +41,24 @@ func StringToLogLevel(input string) (LogLevel, error) {
 	return result, nil
 }
 
+// String returns the string representation of the LogLevel
+func (l LogLevel) String() string {
+	switch l {
+	case TRACE:
+		return "trace"
+	case DEBUG:
+		return "debug"
+	case INFO:
+		return "info"
+	case WARNING:
+		return "warning"
+	case ERROR:
+		return "error"
+	default:
+		return "debug"
+	}
+}
+
 // Logger specifies the methods required to attach
 // a logger to a Wails application
 type Logger interface {

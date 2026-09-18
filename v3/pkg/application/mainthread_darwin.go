@@ -1,4 +1,4 @@
-//go:build darwin && !ios
+//go:build darwin && !ios && !server
 
 package application
 
@@ -11,9 +11,16 @@ package application
 extern void dispatchOnMainThreadCallback(unsigned int);
 
 static void dispatchOnMainThread(unsigned int id) {
-	dispatch_async(dispatch_get_main_queue(), ^{
+	// Not dispatch_async to the main queue: AppKit drains that queue and does
+	// not re-enter, so once a callback shows a modal dialog or a menu - calls
+	// which do not return until they are dismissed - everything queued behind it
+	// waits that long too. The run loop keeps turning throughout, so schedule
+	// the callback on it instead and it is delivered either way.
+	CFRunLoopRef mainLoop = CFRunLoopGetMain();
+	CFRunLoopPerformBlock(mainLoop, kCFRunLoopCommonModes, ^{
 		dispatchOnMainThreadCallback(id);
 	});
+	CFRunLoopWakeUp(mainLoop);
 }
 
 static bool onMainThread() {
@@ -33,13 +40,15 @@ func (m *macosApp) dispatchOnMainThread(id uint) {
 
 //export dispatchOnMainThreadCallback
 func dispatchOnMainThreadCallback(callbackID C.uint) {
-	mainThreadFunctionStoreLock.RLock()
+	mainThreadFunctionStoreLock.Lock()
 	id := uint(callbackID)
 	fn := mainThreadFunctionStore[id]
 	if fn == nil {
+		mainThreadFunctionStoreLock.Unlock()
 		Fatal("dispatchCallback called with invalid id: %v", id)
+		return
 	}
 	delete(mainThreadFunctionStore, id)
-	mainThreadFunctionStoreLock.RUnlock()
+	mainThreadFunctionStoreLock.Unlock()
 	fn()
 }

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        .form-row { display: flex; gap: 10px; align-items: end; }
+        .form-row .form-group { flex: 1; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+        }
+        .indicator.connected { background: #4ade80; }
+        .indicator.connecting { background: #fbbf24; animation: pulse 1s infinite; }
+        .indicator.disconnected { background: #f87171; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .message { padding: 8px 12px; margin: 5px 0; border-radius: 6px; }
+        .message.sent { background: rgba(74, 222, 128, 0.1); border-left: 3px solid #4ade80; }
+        .message.received { background: rgba(96, 165, 250, 0.1); border-left: 3px solid #60a5fa; }
+        .message.system { background: rgba(251, 191, 36, 0.1); border-left: 3px solid #fbbf24; color: #aaa; font-style: italic; }
+        .message .time { color: #666; font-size: 0.75rem; }
+        .message .content { margin-top: 4px; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WebSocket API Demo</h1>
+        <p class="description">
+            WebSocket provides full-duplex communication channels over a single TCP connection,
+            enabling real-time data exchange between client and server.
+        </p>
+
+        <div id="status" class="status">
+            <div class="indicator" id="indicator"></div>
+            <span>WebSocket: <span id="connectionStatus">Disconnected</span></span>
+        </div>
+
+        <div class="card">
+            <h2>Connection</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="wsUrl">WebSocket URL</label>
+                    <input type="text" id="wsUrl" value="wss://echo.websocket.org">
+                </div>
+            </div>
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled class="danger">Disconnect</button>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 10px;">
+                Try: wss://echo.websocket.org (echo server) or wss://ws.postman-echo.com/raw
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Send Message</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <input type="text" id="message" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()">
+                </div>
+                <button id="sendBtn" onclick="sendMessage()" disabled style="margin-bottom: 15px;">Send</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Messages</h2>
+            <button onclick="clearMessages()">Clear</button>
+            <div class="output" id="messages">
+                <div class="message system">
+                    <span class="content">Connect to a WebSocket server to start...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>WebSocket API Reference</h2>
+            <div class="output" style="white-space: pre-wrap;">
+// Create connection
+const ws = new WebSocket('wss://example.com/socket');
+
+// Connection opened
+ws.onopen = (event) => {
+    console.log('Connected');
+    ws.send('Hello Server!');
+};
+
+// Listen for messages
+ws.onmessage = (event) => {
+    console.log('Received:', event.data);
+};
+
+// Connection closed
+ws.onclose = (event) => {
+    console.log('Disconnected', event.code, event.reason);
+};
+
+// Error handling
+ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+};
+
+// Send data
+ws.send('text message');
+ws.send(new Blob(['binary data']));
+ws.send(new ArrayBuffer(8));
+
+// Close connection
+ws.close(1000, 'Normal closure');
+
+// Properties
+ws.readyState  // 0=CONNECTING, 1=OPEN, 2=CLOSING, 3=CLOSED
+ws.bufferedAmount  // Bytes queued for transmission
+ws.protocol  // Selected sub-protocol
+ws.url  // WebSocket URL</div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+
+        function updateStatus(state) {
+            const indicator = document.getElementById('indicator');
+            const statusText = document.getElementById('connectionStatus');
+            const status = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const sendBtn = document.getElementById('sendBtn');
+
+            switch (state) {
+                case 'connecting':
+                    indicator.className = 'indicator connecting';
+                    statusText.textContent = 'Connecting...';
+                    status.className = 'status warning';
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = true;
+                    sendBtn.disabled = true;
+                    break;
+                case 'connected':
+                    indicator.className = 'indicator connected';
+                    statusText.textContent = 'Connected';
+                    status.className = 'status success';
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                    sendBtn.disabled = false;
+                    break;
+                case 'disconnected':
+                    indicator.className = 'indicator disconnected';
+                    statusText.textContent = 'Disconnected';
+                    status.className = 'status error';
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                    sendBtn.disabled = true;
+                    break;
+            }
+        }
+
+        function addMessage(type, content) {
+            const messages = document.getElementById('messages');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = `
+                <span class="time">${time}</span>
+                <div class="content">${escapeHtml(content)}</div>
+            `;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function connect() {
+            const url = document.getElementById('wsUrl').value;
+            if (!url) {
+                alert('Please enter a WebSocket URL');
+                return;
+            }
+
+            updateStatus('connecting');
+            addMessage('system', `Connecting to ${url}...`);
+
+            try {
+                ws = new WebSocket(url);
+
+                ws.onopen = () => {
+                    updateStatus('connected');
+                    addMessage('system', 'Connection established');
+                };
+
+                ws.onmessage = (event) => {
+                    addMessage('received', event.data);
+                };
+
+                ws.onclose = (event) => {
+                    updateStatus('disconnected');
+                    addMessage('system', `Connection closed (code: ${event.code}, reason: ${event.reason || 'none'})`);
+                    ws = null;
+                };
+
+                ws.onerror = (error) => {
+                    addMessage('system', 'WebSocket error occurred');
+                    console.error('WebSocket error:', error);
+                };
+
+            } catch (e) {
+                updateStatus('disconnected');
+                addMessage('system', `Error: ${e.message}`);
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close(1000, 'User disconnected');
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message');
+            const message = input.value.trim();
+            if (!message || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+            ws.send(message);
+            addMessage('sent', message);
+            input.value = '';
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Check WebSocket support
+        if (typeof WebSocket === 'undefined') {
+            document.getElementById('status').className = 'status error';
+            document.getElementById('connectionStatus').textContent = 'Not supported';
+        } else {
+            updateStatus('disconnected');
+        }
+    </script>
+</body>
+</html>

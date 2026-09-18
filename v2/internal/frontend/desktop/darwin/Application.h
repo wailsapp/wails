@@ -17,7 +17,7 @@
 #define WindowStartsMinimised 2
 #define WindowStartsFullscreen 3
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int zoomable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences, int singleInstanceEnabled, const char* singleInstanceUniqueId, bool enableDragAndDrop, bool disableWebViewDragAndDrop);
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int zoomable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int contentProtection, int devtoolsEnabled, int defaultContextMenuEnabled, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled, struct Preferences preferences, int singleInstanceLockEnabled, const char* singleInstanceUniqueId, bool enableDragAndDrop, bool disableWebViewDragAndDrop, int disableEscapeExitsFullscreen);
 void Run(void*, const char* url);
 
 void SetTitle(void* ctx, const char *title);
@@ -68,6 +68,21 @@ void AppendSeparator(void* inMenu);
 void UpdateMenuItem(void* nsmenuitem, int checked);
 void RunMainLoop(void);
 void ReleaseContext(void *inctx);
+
+/* Notifications */
+bool IsNotificationAvailable(void *inctx);
+bool CheckBundleIdentifier(void *inctx);
+bool EnsureDelegateInitialized(void *inctx);
+void RequestNotificationAuthorization(void *inctx, int channelID);
+void CheckNotificationAuthorization(void *inctx, int channelID);
+void SendNotification(void *inctx, int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json);
+void SendNotificationWithActions(void *inctx, int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *categoryId, const char *actions_json);
+void RegisterNotificationCategory(void *inctx, int channelID, const char *categoryId, const char *actions_json, bool hasReplyField, const char *replyPlaceholder, const char *replyButtonTitle);
+void RemoveNotificationCategory(void *inctx, int channelID, const char *categoryId);
+void RemoveAllPendingNotifications(void *inctx);
+void RemovePendingNotification(void *inctx, const char *identifier);
+void RemoveAllDeliveredNotifications(void *inctx);
+void RemoveDeliveredNotification(void *inctx, const char *identifier);
 
 NSString* safeInit(const char* input);
 

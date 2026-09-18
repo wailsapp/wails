@@ -330,6 +330,9 @@ func (d *OpenFileDialogStruct) SetOptions(options *OpenFileDialogOptions) {
 	d.directory = options.Directory
 	d.canChooseDirectories = options.CanChooseDirectories
 	d.canChooseFiles = options.CanChooseFiles
+	if !options.CanChooseFiles && !options.CanChooseDirectories {
+		d.canChooseFiles = true
+	}
 	d.canCreateDirectories = options.CanCreateDirectories
 	d.showHiddenFiles = options.ShowHiddenFiles
 	d.resolvesAliases = options.ResolvesAliases

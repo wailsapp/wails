@@ -81,19 +81,19 @@ export function IntPointerInputNamedOutputs($in: number | null): $CancellablePro
     return $Call.ByName("main.GreetService.IntPointerInputNamedOutputs", $in);
 }
 
-export function MapIntInt($in: { [_: `${number}`]: number }): $CancellablePromise<void> {
+export function MapIntInt($in: { [_ in `${number}`]?: number }): $CancellablePromise<void> {
     return $Call.ByName("main.GreetService.MapIntInt", $in);
 }
 
-export function MapIntIntPointer($in: { [_: `${number}`]: number | null }): $CancellablePromise<void> {
+export function MapIntIntPointer($in: { [_ in `${number}`]?: number | null }): $CancellablePromise<void> {
     return $Call.ByName("main.GreetService.MapIntIntPointer", $in);
 }
 
-export function MapIntSliceInt($in: { [_: `${number}`]: number[] }): $CancellablePromise<void> {
+export function MapIntSliceInt($in: { [_ in `${number}`]?: number[] }): $CancellablePromise<void> {
     return $Call.ByName("main.GreetService.MapIntSliceInt", $in);
 }
 
-export function MapIntSliceIntInMapIntSliceIntOut($in: { [_: `${number}`]: number[] }): $CancellablePromise<{ [_: `${number}`]: number[] }> {
+export function MapIntSliceIntInMapIntSliceIntOut($in: { [_ in `${number}`]?: number[] }): $CancellablePromise<{ [_ in `${number}`]?: number[] }> {
     return $Call.ByName("main.GreetService.MapIntSliceIntInMapIntSliceIntOut", $in).then(($result: any) => {
         return $$createType1($result);
     });
@@ -115,7 +115,7 @@ export function PointerFloat64InFloat64Out($in: number | null): $CancellableProm
     return $Call.ByName("main.GreetService.PointerFloat64InFloat64Out", $in);
 }
 
-export function PointerMapIntInt($in: { [_: `${number}`]: number } | null): $CancellablePromise<void> {
+export function PointerMapIntInt($in: { [_ in `${number}`]?: number } | null): $CancellablePromise<void> {
     return $Call.ByName("main.GreetService.PointerMapIntInt", $in);
 }
 

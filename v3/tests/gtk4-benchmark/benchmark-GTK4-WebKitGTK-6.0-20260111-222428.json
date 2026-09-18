@@ -1,0 +1,136 @@
+{
+  "gtk_version": "GTK4 (WebKitGTK 6.0)",
+  "platform": "linux/amd64",
+  "go_version": "go1.25.4",
+  "timestamp": "2026-01-11T22:24:28.770802311+11:00",
+  "results": [
+    {
+      "name": "Screen Enumeration",
+      "iterations": 100,
+      "total_time_ns": 49065976,
+      "avg_time_ns": 490659,
+      "min_time_ns": 40,
+      "max_time_ns": 49060802
+    },
+    {
+      "name": "Primary Screen Query",
+      "iterations": 100,
+      "total_time_ns": 4778,
+      "avg_time_ns": 47,
+      "min_time_ns": 40,
+      "max_time_ns": 110
+    },
+    {
+      "name": "Window Create/Destroy",
+      "iterations": 20,
+      "total_time_ns": 3783355772,
+      "avg_time_ns": 189167788,
+      "min_time_ns": 82048294,
+      "max_time_ns": 359631289
+    },
+    {
+      "name": "Window SetSize",
+      "iterations": 50,
+      "total_time_ns": 189389209,
+      "avg_time_ns": 3787784,
+      "min_time_ns": 113717,
+      "max_time_ns": 148270567
+    },
+    {
+      "name": "Window SetTitle",
+      "iterations": 100,
+      "total_time_ns": 3940155,
+      "avg_time_ns": 39401,
+      "min_time_ns": 32061,
+      "max_time_ns": 127723
+    },
+    {
+      "name": "Window Size Query",
+      "iterations": 100,
+      "total_time_ns": 3187990,
+      "avg_time_ns": 31879,
+      "min_time_ns": 28244,
+      "max_time_ns": 95472
+    },
+    {
+      "name": "Window Position Query",
+      "iterations": 100,
+      "total_time_ns": 3157760,
+      "avg_time_ns": 31577,
+      "min_time_ns": 27572,
+      "max_time_ns": 52790
+    },
+    {
+      "name": "Window Center",
+      "iterations": 50,
+      "total_time_ns": 1670267,
+      "avg_time_ns": 33405,
+      "min_time_ns": 29256,
+      "max_time_ns": 51037
+    },
+    {
+      "name": "Window Show/Hide",
+      "iterations": 20,
+      "total_time_ns": 149208499897,
+      "avg_time_ns": 7460424994,
+      "min_time_ns": 10363207,
+      "max_time_ns": 145362924705
+    },
+    {
+      "name": "Menu Creation (Simple)",
+      "iterations": 50,
+      "total_time_ns": 115039,
+      "avg_time_ns": 2300,
+      "min_time_ns": 471,
+      "max_time_ns": 23715
+    },
+    {
+      "name": "Menu Creation (Complex)",
+      "iterations": 20,
+      "total_time_ns": 1340059,
+      "avg_time_ns": 67002,
+      "min_time_ns": 23926,
+      "max_time_ns": 634788
+    },
+    {
+      "name": "Menu with Accelerators",
+      "iterations": 50,
+      "total_time_ns": 131468,
+      "avg_time_ns": 2629,
+      "min_time_ns": 1513,
+      "max_time_ns": 11362
+    },
+    {
+      "name": "Event Emit",
+      "iterations": 100,
+      "total_time_ns": 688025,
+      "avg_time_ns": 6880,
+      "min_time_ns": 681,
+      "max_time_ns": 115830
+    },
+    {
+      "name": "Event Emit+Receive",
+      "iterations": 50,
+      "total_time_ns": 1186158,
+      "avg_time_ns": 23723,
+      "min_time_ns": 551,
+      "max_time_ns": 994422
+    },
+    {
+      "name": "Dialog Setup (Info)",
+      "iterations": 20,
+      "total_time_ns": 710,
+      "avg_time_ns": 35,
+      "min_time_ns": 20,
+      "max_time_ns": 160
+    },
+    {
+      "name": "Dialog Setup (Question)",
+      "iterations": 20,
+      "total_time_ns": 601,
+      "avg_time_ns": 30,
+      "min_time_ns": 20,
+      "max_time_ns": 90
+    }
+  ]
+}

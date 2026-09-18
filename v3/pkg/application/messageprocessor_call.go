@@ -2,8 +2,9 @@ package application
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
+
+	"encoding/json"
 
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
@@ -30,7 +31,7 @@ func (m *MessageProcessor) processCallCancelMethod(req *RuntimeRequest) (any, er
 
 	if cancel != nil {
 		cancel()
-		m.Info("Binding call cancelled:", "id", *callID)
+		m.Debug("Binding call cancelled:", "id", *callID)
 	}
 	return unit, nil
 }
@@ -54,7 +55,7 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 		if options.MethodName == "" {
 			methodRef = options.MethodID
 		}
-		m.Info("Binding call started:", "id", *callID, "method", methodRef)
+		m.Debug("Binding call started:", "id", *callID, "method", methodRef)
 
 		ctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
 
@@ -67,6 +68,12 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 		}()
 
 		ambiguousID := false
+		// Calls may originate from windowless transports, so the window may be nil.
+		var windowID uint
+		hasWindow := window != nil
+		if hasWindow {
+			windowID = window.ID()
+		}
 		func() {
 			m.l.Lock()
 			defer m.l.Unlock()
@@ -75,6 +82,12 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 				ambiguousID = true
 			} else {
 				m.runningCalls[*callID] = cancel
+				if hasWindow {
+					if m.windowCalls[windowID] == nil {
+						m.windowCalls[windowID] = make(map[string]bool)
+					}
+					m.windowCalls[windowID][*callID] = true
+				}
 			}
 		}()
 
@@ -86,6 +99,14 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 			m.l.Lock()
 			defer m.l.Unlock()
 			delete(m.runningCalls, *callID)
+			if hasWindow {
+				if windowCalls, exists := m.windowCalls[windowID]; exists {
+					delete(windowCalls, *callID)
+					if len(windowCalls) == 0 {
+						delete(m.windowCalls, windowID)
+					}
+				}
+			}
 		}()
 		defer cancel()
 
@@ -107,7 +128,7 @@ func (m *MessageProcessor) processCallMethod(ctx context.Context, req *RuntimeRe
 		defer func() {
 			var jsonResult []byte
 			jsonResult, _ = json.Marshal(result)
-			m.Info("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
+			m.Debug("Binding call complete:", "id", *callID, "method", boundMethod, "args", string(jsonArgs), "result", string(jsonResult))
 		}()
 
 		// Set the context values for the window

@@ -6,13 +6,11 @@
 *     YOUR PR MAY BE REJECTED IF IT DOES NOT FOLLOW THESE STEPS     *
 *********************************************************************
 
-- *DO NOT* submit bugs for a source install of v3, ONLY tagged versions, e.g. v3.0.0-alpha.11
-- *DO NOT* submit PRs for v3 alpha enhancements, unless you have opened a post on the discord channel.
-  All enhancements must be discussed first.
-  The feedback guide for v3 is here: https://v3alpha.wails.io/getting-started/feedback/
+- *DO NOT* submit bugs for a source install of v3, ONLY tagged versions, e.g. v3.0.0-beta.1
+- For a new capability or change to public behaviour, submit a draft **WEP (Wails Enhancement Proposal)** PR first. Do not start implementation until it is accepted.
+  The feedback guide for v3 is here: https://v3.wails.io/feedback/
 
-- Before submitting your PR, please ensure you have created and linked the PR to an issue.
-- If a relevant issue already exists, please reference it in your PR by including `Fixes #<issue number>` in your PR description.
+- For a bug fix, link the bug issue where one exists. For an enhancement implementation, link the accepted WEP PR.
 - Please fill in the checklists.
 
 -->
@@ -29,6 +27,7 @@ Please select the option that is relevant.
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
+- [ ] WEP (proposal only; no implementation)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
 
@@ -48,7 +47,7 @@ Please paste the output of `wails doctor`. If you are unable to run this command
 
 # Checklist:
 
-- [ ] I have updated `v3/UNRELEASED_CHANGELOG.md` with details of this PR
+- [ ] (v2 only) I have updated `website/src/pages/changelog.mdx` with details of this PR (v3 changelog entries are added automatically)
 - [ ] My code follows the general coding style of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas

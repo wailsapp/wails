@@ -1,0 +1,97 @@
+# Vorlagen
+
+Wails generiert Projekte aus vorgefertigten Vorlagen. Bei v1 handelte es sich um eine schwer zu pflegende Reihe von Projekten, die veraltet sein konnten. In v2, um die Community zu stärken, wurden einige neue Funktionen für Vorlagen hinzugefügt:
+
+- Fähigkeit Projekte aus [Remote-Vorlagen](../reference/cli.mdx#remote-templates) zu generieren
+- Werkzeuge, um deine eigenen Vorlagen zu erstellen
+
+## Vorlage erstellen
+
+Um eine Vorlage zu erstellen, benutzt man den `wails generate template` Befehl. Um eine Standardvorlage zu erstellen, führe folgendes aus:
+
+`wails generate template -name mytemplate`
+
+Erstellt das Verzeichnis "mytemplate" mit den Standarddateien:
+
+```shell title=mytemplate/
+.
+|-- NEXTSTEPS.md
+|-- README.md
+|-- app.tmpl.go
+|-- frontend
+|   `-- dist
+|       |-- assets
+|       |   |-- fonts
+|       |   |   |-- OFL.txt
+|       |   |   `-- nunito-v16-latin-regular.woff2
+|       |   `-- images
+|       |       `-- logo-dark.svg
+|       |-- index.html
+|       |-- main.css
+|       `-- main.js
+|-- go.mod.tmpl
+|-- main.tmpl.go
+|-- template.json
+`-- wails.tmpl.json
+```
+
+### Vorlagenübersicht
+
+Die Standardvorlage besteht aus folgenden Dateien und Verzeichnissen:
+
+| Dateiname / Verzeichnis | Beschreibung                                       |
+| ----------------------- | -------------------------------------------------- |
+| NEXTSTEPS.md            | Anleitung zur Fertigstellung der Vorlage           |
+| README.md               | Die README die mit der Vorlage veröffentlicht wird |
+| app.tmpl.go             | `app.go` Template-Datei                            |
+| frontend/               | Verzeichnis mit Frontend-Assets                    |
+| go.mod.tmpl             | `go.mod` Template-Datei                            |
+| main.tmpl.go            | `main.go` Template-Datei                           |
+| template.json           | Die Vorlagen Metadaten                             |
+| wails.tmpl.json         | `wails.json` Template-Datei                        |
+
+An dieser Stelle ist es ratsam, die Schritte in `NEXTSTEPS.md` zu folgen.
+
+## Erstellen einer Vorlage aus einem existierenden Projekt
+
+Es ist möglich, eine Vorlage aus einem bestehenden Frontend-Projekt zu erstellen, indem der Pfad an das Projekt übergeben wird, wenn die Vorlage generiert wird. Wir werden nun durch die Erstellung einer Vue 3 Vorlage gehen:
+
+- Installiere das vue cli: `npm install -g @vue/cli`
+- Erstelle das Standardprojekt: `vue create vue3-base`
+  - Wähle `Standard (Vue 3) ([Vue 3] babel, eslint)`
+- Nachdem das Projekt generiert wurde, führe es aus:
+
+```shell
+> wails generate template -name wails-vue3-template -frontend .\vue3-base\
+Extracting base template files...
+Migrating existing project files to frontend directory...
+Updating package.json data...
+Renaming package.json -> package.tmpl.json...
+Updating package-lock.json data...
+Renaming package-lock.json -> package-lock.tmpl.json...
+```
+
+- Die Vorlage kann jetzt angepasst werden, wie in der Datei `NEXTSTEPS.md` angegeben
+- Sobald die Dateien fertig sind, kann die Vorlage getestet werden: `wails init -n my-vue3-project -t .\wails-vue3-template\`
+- Um das neue Projekt zu testen, führe folgende Befehle aus: `cd my-vue3-project` dann `wails build`
+- Sobald das Projekt kompiliert wurde, führe es aus: `.\build\bin\my-vue3-project.exe`
+- Du solltest nun eine voll funktionsfähige Vue3-Anwendung haben:
+
+```mdx-code-block
+<div className="text--center">
+  <img
+    src={require("@site/static/img/vue3-template.png").default}
+    width="50%"
+  />
+</div>
+```
+
+## Vorlagen veröffentlichen
+
+Das Veröffentlichen einer Vorlage führt einfach dazu, dass die Dateien auf GitHub hochgeladen werden. Folgende bewährte Verfahren werden bevorzugt:
+
+- Entferne unerwünschte Dateien und Verzeichnisse (wie `.git`) aus deinem Frontend-Verzeichnis
+- Stelle sicher, dass `template.json` vollständig ist, insbesondere `helpurl`
+- Das pushen der Dateien zu GitHub
+- PR auf der [Community-Vorlagen](../community/templates.mdx) Seite erstellen
+- Die Vorlage im [Template Announcement](https://github.com/wailsapp/wails/discussions/825) Diskussionsforum ankündigen

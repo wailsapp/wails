@@ -1,0 +1,80 @@
+version: '3'
+
+vars:
+  APP_NAME: "server-example"
+  BIN_DIR: "bin"
+
+tasks:
+  default:
+    summary: Shows available tasks
+    cmds:
+      - task --list
+
+  build:
+    summary: Builds the application in server mode
+    desc: |
+      Builds the application with the server build tag enabled.
+      Server mode runs as a pure HTTP server without native GUI dependencies.
+    deps:
+      - task: build:frontend
+    cmds:
+      - go build -tags server -o {{.BIN_DIR}}/{{.APP_NAME}} .
+
+  build:frontend:
+    summary: Ensures frontend assets exist (static HTML, no build needed)
+    dir: frontend
+    sources:
+      - dist/index.html
+    preconditions:
+      - sh: test -f dist/index.html
+        msg: "frontend/dist/index.html not found"
+
+  run:
+    summary: Builds and runs the application in server mode
+    deps:
+      - task: build
+    cmds:
+      - ./{{.BIN_DIR}}/{{.APP_NAME}}
+
+  dev:
+    summary: Runs the application in development mode (no build step)
+    desc: |
+      Runs the application directly with `go run` for rapid development.
+      Changes require restarting the command.
+    cmds:
+      - go run -tags server .
+
+  clean:
+    summary: Removes build artifacts
+    cmds:
+      - rm -rf {{.BIN_DIR}}
+
+  build:docker:
+    summary: Builds a Docker image for deployment
+    desc: |
+      Builds from v3 root to include local server mode code.
+      After server mode is published, can build from example dir directly.
+    dir: ../..
+    cmds:
+      - docker build -t {{.TAG | default "server-example:latest"}} -f examples/server/Dockerfile .
+    vars:
+      TAG: '{{.TAG}}'
+    preconditions:
+      - sh: docker info > /dev/null 2>&1
+        msg: "Docker is required. Please install Docker first."
+
+  run:docker:
+    summary: Builds and runs the Docker image
+    deps:
+      - task: build:docker
+    cmds:
+      - docker run --rm -p {{.PORT | default "8080"}}:8080 {{.TAG | default "server-example:latest"}}
+    vars:
+      TAG: '{{.TAG}}'
+      PORT: '{{.PORT}}'
+
+  test:
+    summary: Runs the server mode tests
+    dir: ../../pkg/application
+    cmds:
+      - go test -tags server -v -run TestServerMode .

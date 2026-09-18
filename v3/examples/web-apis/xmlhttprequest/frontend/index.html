@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMLHttpRequest API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .form-group { margin-bottom: 15px; }
+        .form-row { display: flex; gap: 10px; align-items: end; }
+        .form-row .form-group { flex: 1; }
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status.loading { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4ade80;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .event-log {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 4px 8px;
+            margin: 2px 0;
+            border-radius: 4px;
+            display: flex;
+            gap: 10px;
+        }
+        .log-entry.event { background: rgba(96, 165, 250, 0.1); }
+        .log-entry.state { background: rgba(251, 191, 36, 0.1); }
+        .log-entry.error { background: rgba(248, 113, 113, 0.1); }
+        .log-entry.success { background: rgba(74, 222, 128, 0.1); }
+        .log-time { color: #666; flex-shrink: 0; }
+        .log-type { color: #60a5fa; flex-shrink: 0; width: 80px; }
+        .log-message { color: #ccc; }
+        .response-info { display: flex; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
+        .response-info span { padding: 5px 10px; background: rgba(0,0,0,0.3); border-radius: 4px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .tab.active { background: #4ade80; color: #1a1a2e; border-color: #4ade80; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>XMLHttpRequest API Demo</h1>
+        <p class="description">
+            XMLHttpRequest (XHR) is the classic API for making HTTP requests in JavaScript.
+            It provides detailed control over request/response handling with event-based progress tracking.
+        </p>
+
+        <div id="status" class="status success">
+            XMLHttpRequest API available: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Make Request</h2>
+            <div class="form-row">
+                <div class="form-group" style="flex: 0 0 120px;">
+                    <label for="method">Method</label>
+                    <select id="method">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="text" id="url" value="https://jsonplaceholder.typicode.com/posts/1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="headers">Headers (JSON)</label>
+                <textarea id="headers" rows="2" placeholder='{"Content-Type": "application/json"}'></textarea>
+            </div>
+            <div class="form-group">
+                <label for="body">Body (for POST/PUT)</label>
+                <textarea id="body" rows="3" placeholder='{"title": "foo", "body": "bar", "userId": 1}'></textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="async" checked> Asynchronous
+                </label>
+            </div>
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <button onclick="makeRequest()">Send Request</button>
+            <button id="abortBtn" class="danger" onclick="abortRequest()" disabled>Abort</button>
+            <button class="secondary" onclick="loadExample('get')">GET Posts</button>
+            <button class="secondary" onclick="loadExample('post')">POST Create</button>
+            <button class="secondary" onclick="loadExample('large')">Large Response</button>
+        </div>
+
+        <div class="card">
+            <h2>Response</h2>
+            <div id="responseStatus" class="status" style="display: none;"></div>
+            <div class="response-info" id="responseInfo" style="display: none;">
+                <span>Status: <strong id="resStatus"></strong></span>
+                <span>Ready State: <strong id="resReadyState"></strong></span>
+                <span>Time: <strong id="resTime"></strong></span>
+            </div>
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('body')">Body</button>
+                <button class="tab" onclick="showTab('headers')">Headers</button>
+            </div>
+            <div id="responseBody" class="output">Make a request to see the response...</div>
+            <div id="responseHeaders" class="output" style="display: none;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="event-log" id="eventLog">
+                <div class="log-entry state">
+                    <span class="log-time">--:--:--</span>
+                    <span class="log-type">INFO</span>
+                    <span class="log-message">Ready to make requests...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>XMLHttpRequest API Reference</h2>
+            <div class="output">
+// Create request
+const xhr = new XMLHttpRequest();
+
+// Configure request
+xhr.open('GET', 'https://api.example.com/data', true);  // async=true
+
+// Set headers
+xhr.setRequestHeader('Content-Type', 'application/json');
+xhr.setRequestHeader('X-Custom-Header', 'value');
+
+// Event handlers
+xhr.onreadystatechange = () => {
+    // 0=UNSENT, 1=OPENED, 2=HEADERS_RECEIVED, 3=LOADING, 4=DONE
+    console.log('Ready state:', xhr.readyState);
+};
+
+xhr.onload = () => console.log('Load complete');
+xhr.onerror = () => console.log('Network error');
+xhr.onprogress = (e) => console.log(`Progress: ${e.loaded}/${e.total}`);
+xhr.onabort = () => console.log('Request aborted');
+xhr.ontimeout = () => console.log('Request timed out');
+
+// Response properties
+xhr.status        // HTTP status code (200, 404, etc.)
+xhr.statusText    // Status text ("OK", "Not Found", etc.)
+xhr.responseText  // Response as text
+xhr.responseXML   // Response as XML document
+xhr.response      // Response based on responseType
+xhr.responseType  // '', 'arraybuffer', 'blob', 'document', 'json', 'text'
+
+// Send request
+xhr.send();                              // GET/DELETE
+xhr.send('data');                        // POST/PUT with string
+xhr.send(new FormData(formElement));     // POST with form data
+xhr.send(JSON.stringify({key: 'value'})); // POST with JSON
+
+// Abort request
+xhr.abort();</div>
+        </div>
+    </div>
+
+    <script>
+        let currentXhr = null;
+        let currentTab = 'body';
+
+        const readyStates = {
+            0: 'UNSENT',
+            1: 'OPENED',
+            2: 'HEADERS_RECEIVED',
+            3: 'LOADING',
+            4: 'DONE'
+        };
+
+        function checkXHR() {
+            const available = typeof XMLHttpRequest !== 'undefined';
+            document.getElementById('available').textContent = available ? 'Yes' : 'No';
+            document.getElementById('status').className = available ? 'status success' : 'status error';
+            return available;
+        }
+
+        function logEvent(type, message, className = 'event') {
+            const log = document.getElementById('eventLog');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${className}`;
+            entry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-type">${type}</span>
+                <span class="log-message">${message}</span>
+            `;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '';
+            logEvent('INFO', 'Log cleared', 'state');
+        }
+
+        function loadExample(type) {
+            const method = document.getElementById('method');
+            const url = document.getElementById('url');
+            const headers = document.getElementById('headers');
+            const body = document.getElementById('body');
+
+            switch (type) {
+                case 'get':
+                    method.value = 'GET';
+                    url.value = 'https://jsonplaceholder.typicode.com/posts?_limit=5';
+                    headers.value = '';
+                    body.value = '';
+                    break;
+                case 'post':
+                    method.value = 'POST';
+                    url.value = 'https://jsonplaceholder.typicode.com/posts';
+                    headers.value = '{"Content-Type": "application/json"}';
+                    body.value = JSON.stringify({ title: 'XHR Test', body: 'Hello from XMLHttpRequest!', userId: 1 }, null, 2);
+                    break;
+                case 'large':
+                    method.value = 'GET';
+                    url.value = 'https://jsonplaceholder.typicode.com/photos';
+                    headers.value = '';
+                    body.value = '';
+                    break;
+            }
+            logEvent('INFO', `Loaded example: ${type}`, 'state');
+        }
+
+        function makeRequest() {
+            const method = document.getElementById('method').value;
+            const url = document.getElementById('url').value;
+            const headersStr = document.getElementById('headers').value;
+            const bodyStr = document.getElementById('body').value;
+            const async = document.getElementById('async').checked;
+
+            const statusEl = document.getElementById('responseStatus');
+            const infoEl = document.getElementById('responseInfo');
+            const bodyEl = document.getElementById('responseBody');
+            const headersEl = document.getElementById('responseHeaders');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const abortBtn = document.getElementById('abortBtn');
+
+            // Reset UI
+            statusEl.style.display = 'block';
+            statusEl.className = 'status loading';
+            statusEl.textContent = 'Loading...';
+            infoEl.style.display = 'none';
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            abortBtn.disabled = false;
+
+            const startTime = performance.now();
+            logEvent('INFO', `Starting ${method} request to ${url}`, 'state');
+
+            try {
+                currentXhr = new XMLHttpRequest();
+
+                // Ready state change handler
+                currentXhr.onreadystatechange = function() {
+                    const state = readyStates[this.readyState];
+                    logEvent('STATE', `readyState changed to ${this.readyState} (${state})`, 'state');
+                    document.getElementById('resReadyState').textContent = `${this.readyState} (${state})`;
+                };
+
+                // Progress handler
+                currentXhr.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total * 100).toFixed(1);
+                        progressFill.style.width = percent + '%';
+                        logEvent('PROGRESS', `Loaded ${e.loaded} of ${e.total} bytes (${percent}%)`, 'event');
+                    } else {
+                        logEvent('PROGRESS', `Loaded ${e.loaded} bytes (total unknown)`, 'event');
+                    }
+                };
+
+                // Load handler
+                currentXhr.onload = function() {
+                    const endTime = performance.now();
+                    progressFill.style.width = '100%';
+                    abortBtn.disabled = true;
+
+                    logEvent('LOAD', `Request completed with status ${this.status}`, 'success');
+
+                    // Display response info
+                    infoEl.style.display = 'flex';
+                    document.getElementById('resStatus').textContent = `${this.status} ${this.statusText}`;
+                    document.getElementById('resTime').textContent = `${(endTime - startTime).toFixed(0)}ms`;
+
+                    // Display headers
+                    headersEl.textContent = this.getAllResponseHeaders() || 'No headers';
+
+                    // Display body
+                    const contentType = this.getResponseHeader('content-type') || '';
+                    let bodyText = this.responseText;
+                    if (contentType.includes('application/json')) {
+                        try {
+                            bodyText = JSON.stringify(JSON.parse(this.responseText), null, 2);
+                        } catch (e) {}
+                    }
+                    bodyEl.textContent = bodyText;
+
+                    statusEl.className = this.status >= 200 && this.status < 300 ? 'status success' : 'status error';
+                    statusEl.textContent = this.status >= 200 && this.status < 300 ? 'Request successful' : `Request failed: ${this.status}`;
+
+                    currentXhr = null;
+                };
+
+                // Error handler
+                currentXhr.onerror = function() {
+                    const endTime = performance.now();
+                    abortBtn.disabled = true;
+                    progressBar.style.display = 'none';
+
+                    logEvent('ERROR', 'Network error occurred', 'error');
+
+                    statusEl.className = 'status error';
+                    statusEl.textContent = 'Network Error';
+                    bodyEl.textContent = 'A network error occurred. This could be due to CORS, network issues, or an invalid URL.';
+
+                    document.getElementById('resTime').textContent = `${(endTime - startTime).toFixed(0)}ms`;
+                    infoEl.style.display = 'flex';
+
+                    currentXhr = null;
+                };
+
+                // Abort handler
+                currentXhr.onabort = function() {
+                    abortBtn.disabled = true;
+                    progressBar.style.display = 'none';
+
+                    logEvent('ABORT', 'Request was aborted', 'error');
+
+                    statusEl.className = 'status error';
+                    statusEl.textContent = 'Request Aborted';
+                    bodyEl.textContent = 'The request was aborted by the user.';
+
+                    currentXhr = null;
+                };
+
+                // Timeout handler
+                currentXhr.ontimeout = function() {
+                    abortBtn.disabled = true;
+                    progressBar.style.display = 'none';
+
+                    logEvent('TIMEOUT', 'Request timed out', 'error');
+
+                    statusEl.className = 'status error';
+                    statusEl.textContent = 'Request Timeout';
+                    bodyEl.textContent = 'The request timed out.';
+
+                    currentXhr = null;
+                };
+
+                // Load start handler
+                currentXhr.onloadstart = function() {
+                    logEvent('LOADSTART', 'Request started', 'event');
+                };
+
+                // Load end handler
+                currentXhr.onloadend = function() {
+                    logEvent('LOADEND', 'Request finished (success or failure)', 'event');
+                };
+
+                // Open connection
+                currentXhr.open(method, url, async);
+                logEvent('EVENT', `Connection opened (${async ? 'async' : 'sync'})`, 'event');
+
+                // Set headers
+                if (headersStr) {
+                    const headers = JSON.parse(headersStr);
+                    for (const [key, value] of Object.entries(headers)) {
+                        currentXhr.setRequestHeader(key, value);
+                        logEvent('HEADER', `Set header: ${key}: ${value}`, 'event');
+                    }
+                }
+
+                // Send request
+                if (bodyStr && (method === 'POST' || method === 'PUT')) {
+                    currentXhr.send(bodyStr);
+                    logEvent('SEND', `Request sent with body (${bodyStr.length} chars)`, 'event');
+                } else {
+                    currentXhr.send();
+                    logEvent('SEND', 'Request sent (no body)', 'event');
+                }
+
+            } catch (e) {
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Error: ' + e.message;
+                bodyEl.textContent = e.stack || e.message;
+                logEvent('ERROR', e.message, 'error');
+                abortBtn.disabled = true;
+                progressBar.style.display = 'none';
+            }
+        }
+
+        function abortRequest() {
+            if (currentXhr) {
+                currentXhr.abort();
+                logEvent('ACTION', 'Abort requested by user', 'state');
+            }
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById('responseBody').style.display = tab === 'body' ? 'block' : 'none';
+            document.getElementById('responseHeaders').style.display = tab === 'headers' ? 'block' : 'none';
+        }
+
+        checkXHR();
+    </script>
+</body>
+</html>

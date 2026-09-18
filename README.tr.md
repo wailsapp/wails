@@ -25,7 +25,7 @@
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
   <a href="https://discord.gg/BrRSWTaxVK">
-    <img alt="Discord" src="https://dcbadge.vercel.app/api/server/BrRSWTaxVK?style=flat"/>
+    <img alt="Discord" src="https://img.shields.io/discord/1042734330029547630?logo=discord"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build-and-test.yml" rel="nofollow">
@@ -43,7 +43,7 @@
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
 [Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) ·
-[Türkçe](README.tr.md)
+[Türkçe](README.tr.md) · [Bahasa Indonesia](README.id.md)
 
 </samp>
 </strong>
@@ -119,12 +119,8 @@ Bu proje, aşağıdaki nazik insanlar / şirketler tarafından desteklenmektedir
 
 ## Zaman içinda yıldızlayanlar
 
-<a href="https://star-history.com/#wailsapp/wails&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-  </picture>
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Star History Chart" src="website/static/img/star-history.svg" width="800" />
 </a>
 
 ## Katkıda Bulunanlar
@@ -153,4 +149,3 @@ Bu proje esas olarak aşağıdaki albümler dinlenilerek kodlandı:
 - [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
-

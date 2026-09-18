@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -156,8 +157,8 @@ func TestCLIParameterFormats(t *testing.T) {
 			},
 		},
 		{
-			name:         "Empty value",
-			otherArgs:    []string{"build", "EMPTY=", "KEY=value"},
+			name:      "Empty value",
+			otherArgs: []string{"build", "EMPTY=", "KEY=value"},
 			expectedVars: map[string]string{
 				"EMPTY": "",
 				"KEY":   "value",
@@ -224,7 +225,7 @@ func captureTaskOutput(t *testing.T, options *RunTaskOptions, otherArgs []string
 
 	// Wait for task to complete
 	<-done
-	
+
 	// Check for errors (might be expected in some tests)
 	if taskErr != nil && !strings.Contains(taskErr.Error(), "expected") {
 		t.Logf("Task error (might be expected): %v", taskErr)
@@ -286,4 +287,56 @@ func TestBackwardCompatibility(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMkdirWithSpacesInPath(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("Skipping: macOS app bundle test only applies to darwin")
+	}
+	if os.Getenv("CI") == "true" && os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
+		t.Skip("Skipping integration test in CI")
+	}
+
+	tmpDir, err := os.MkdirTemp("", "wails task test with spaces-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	taskfileContent := `version: '3'
+
+vars:
+  BIN_DIR: "` + tmpDir + `/bin"
+  APP_NAME: "My App"
+
+tasks:
+  create-bundle:
+    cmds:
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/MacOS"
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_NAME}}.app/Contents/Resources"
+`
+
+	taskfilePath := filepath.Join(tmpDir, "Taskfile.yml")
+	err = os.WriteFile(taskfilePath, []byte(taskfileContent), 0644)
+	require.NoError(t, err)
+
+	originalWd, err := os.Getwd()
+	require.NoError(t, err)
+	defer os.Chdir(originalWd)
+
+	err = os.Chdir(tmpDir)
+	require.NoError(t, err)
+
+	err = RunTask(&RunTaskOptions{Name: "create-bundle"}, []string{})
+	require.NoError(t, err)
+
+	appContentsDir := filepath.Join(tmpDir, "bin", "My App.app", "Contents")
+
+	macOSDir := filepath.Join(appContentsDir, "MacOS")
+	info, err := os.Stat(macOSDir)
+	require.NoError(t, err, "MacOS directory should exist")
+	assert.True(t, info.IsDir(), "MacOS should be a directory")
+
+	resourcesDir := filepath.Join(appContentsDir, "Resources")
+	info, err = os.Stat(resourcesDir)
+	require.NoError(t, err, "Resources directory should exist")
+	assert.True(t, info.IsDir(), "Resources should be a directory")
 }

@@ -7,7 +7,6 @@ import (
 	"text/template"
 
 	"github.com/wailsapp/wails/v3/internal/generator/collect"
-	"golang.org/x/tools/go/types/typeutil"
 )
 
 // SkipCreate returns true if the given array of types needs no creation code.
@@ -22,35 +21,42 @@ func (m *module) SkipCreate(ts []types.Type) bool {
 
 // NeedsCreate returns true if the given type needs some creation code.
 func (m *module) NeedsCreate(typ types.Type) bool {
-	return m.needsCreateImpl(typ, new(typeutil.Map))
+	return m.needsCreateImpl(typ, make(map[*types.TypeName]bool))
 }
 
 // needsCreateImpl provides the actual implementation of NeedsCreate.
 // The visited parameter is used to break cycles.
-func (m *module) needsCreateImpl(typ types.Type, visited *typeutil.Map) bool {
+func (m *module) needsCreateImpl(typ types.Type, visited map[*types.TypeName]bool) bool {
 	switch t := typ.(type) {
 	case *types.Alias:
-		if m.collector.IsVoidAlias(t.Obj()) {
-			return false
-		}
-
 		return m.needsCreateImpl(types.Unalias(typ), visited)
 
 	case *types.Named:
-		if visited.Set(typ, true) != nil {
+		obj := t.Obj()
+		if visited[obj] {
 			// The only way to hit a cycle here
 			// is through a chain of structs, nested pointers and arrays (not slices).
 			// We can safely return false at this point
-			// as the final answer is independent of the cycle.
+			// since the cycle will not contribute to the final answer.
 			return false
 		}
+		visited[obj] = true
 
-		if t.Obj().Pkg() == nil {
+		if obj.Pkg() == nil {
 			// Builtin named type: render underlying type.
 			return m.needsCreateImpl(t.Underlying(), visited)
 		}
 
-		if m.collector.IsVoidAlias(t.Obj()) {
+		// Handle special cases.
+		switch {
+		case m.collector.IsStdTime(obj):
+			switch m.TimeType {
+			case "Date":
+				return true
+			default:
+				return false
+			}
+		case m.collector.IsVoidAlias(obj):
 			return false
 		}
 
@@ -112,10 +118,6 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 
 	switch t := typ.(type) {
 	case *types.Alias:
-		if m.collector.IsVoidAlias(t.Obj()) {
-			return "$Create.Any"
-		}
-
 		return m.JSCreateWithParams(types.Unalias(typ), params)
 
 	case *types.Array, *types.Pointer:
@@ -147,7 +149,16 @@ func (m *module) JSCreateWithParams(typ types.Type, params string) string {
 			return m.JSCreateWithParams(t.Underlying(), params)
 		}
 
-		if m.collector.IsVoidAlias(t.Obj()) {
+		// Handle special cases.
+		switch {
+		case m.collector.IsStdTime(t.Obj()):
+			switch m.TimeType {
+			case "Date":
+				return "$Create.DateFromTime"
+			default:
+				return "$Create.Any"
+			}
+		case m.collector.IsVoidAlias(t.Obj()):
 			return "$Create.Any"
 		}
 
@@ -247,9 +258,55 @@ func (m *module) PostponedCreates() []string {
 			result[pp.index] = fmt.Sprintf("%s$Create.Map($Create.Any, %s)%s", pre, m.JSCreateWithParams(t.Elem(), pp.params), post)
 
 		case *types.Named:
-			if !collect.IsClass(key) {
-				// Creation functions for non-struct named types
-				// require an indirect assignment to break cycles.
+			var builder strings.Builder
+			isClass := collect.IsClass(key)
+			if isClass {
+				if t.Obj().Pkg().Path() == m.Imports.Self {
+					if m.Imports.ImportModels {
+						builder.WriteString("$models.")
+					}
+				} else {
+					builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
+					builder.WriteRune('.')
+				}
+				builder.WriteString(jsid(t.Obj().Name()))
+				builder.WriteString(".createFrom")
+
+				if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
+					builder.WriteString("(")
+					for i := range t.TypeArgs().Len() {
+						if i > 0 {
+							builder.WriteString(", ")
+						}
+						builder.WriteString(m.JSCreateWithParams(t.TypeArgs().At(i), pp.params))
+					}
+					builder.WriteString(")")
+				}
+			} else {
+				builder.WriteString(m.JSCreateWithParams(t.Underlying(), pp.params))
+			}
+
+			if isClass && pp.params != "" {
+				// Resolve recursive generic classes on first use, with a separate
+				// cached creator for each set of type-parameter converters.
+				declaration, sourceParam := "/** @type {((source: any) => any) | undefined} */ let $$create;", "/** @type {any} */ $$source"
+				if m.TS {
+					declaration, sourceParam = "let $$create: ((source: any) => any) | undefined;", "$$source: any"
+				}
+				result[pp.index] = fmt.Sprintf(`%s{
+    %s
+    return (%s) => {
+        $$create ??= %s;
+        return $$create($$source);
+    };
+}%s`, pre, declaration, sourceParam, builder.String(), post)
+				break
+			}
+
+			if !isClass || t.TypeArgs() != nil && t.TypeArgs().Len() > 0 &&
+				t.Obj().Pkg().Path() == m.Imports.Self && !m.Imports.ImportModels {
+				// Non-struct named types and concrete generic classes declared in
+				// this module require an indirect assignment to break cycles.
 
 				// Typescript cannot infer the return type on its own: add hints.
 				cast, argType, returnType := "", "", ""
@@ -269,42 +326,13 @@ func (m *module) PostponedCreates() []string {
 })`,
 					cast, pp.index, argType, returnType,
 					pp.index, pp.index,
-					pp.index, pre, m.JSCreateWithParams(t.Underlying(), pp.params), post,
+					pp.index, pre, builder.String(), post,
 					pp.index,
 				)[1:] // Remove initial newline.
-
-				// We're done.
 				break
 			}
 
-			var builder strings.Builder
-
-			builder.WriteString(pre)
-
-			if t.Obj().Pkg().Path() == m.Imports.Self {
-				if m.Imports.ImportModels {
-					builder.WriteString("$models.")
-				}
-			} else {
-				builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
-				builder.WriteRune('.')
-			}
-			builder.WriteString(jsid(t.Obj().Name()))
-			builder.WriteString(".createFrom")
-
-			if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
-				builder.WriteString("(")
-				for i := range t.TypeArgs().Len() {
-					if i > 0 {
-						builder.WriteString(", ")
-					}
-					builder.WriteString(m.JSCreateWithParams(t.TypeArgs().At(i), pp.params))
-				}
-				builder.WriteString(")")
-			}
-			builder.WriteString(post)
-
-			result[pp.index] = builder.String()
+			result[pp.index] = pre + builder.String() + post
 
 		case *types.Pointer:
 			result[pp.index] = fmt.Sprintf("%s$Create.Nullable(%s)%s", pre, m.JSCreateWithParams(t.Elem(), pp.params), post)

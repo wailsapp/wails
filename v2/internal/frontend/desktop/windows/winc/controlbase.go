@@ -65,7 +65,7 @@ type ControlBase struct {
 	dispatchq []func()
 }
 
-// initControl is called by controls: edit, button, treeview, listview, and so on.
+// InitControl is called by controls: edit, button, treeview, listview, and so on.
 func (cba *ControlBase) InitControl(className string, parent Controller, exstyle, style uint) {
 	cba.hwnd = CreateWindow(className, parent, exstyle, style)
 	if cba.hwnd == 0 {
@@ -168,6 +168,14 @@ func (cba *ControlBase) SetTranslucentBackground() {
 	data.CbData = unsafe.Sizeof(accent)
 
 	w32.SetWindowCompositionAttribute(cba.hwnd, &data)
+}
+
+func (cba *ControlBase) SetContentProtection(enable bool) {
+	if enable {
+		w32.SetWindowDisplayAffinity(uintptr(cba.hwnd), w32.WDA_EXCLUDEFROMCAPTURE)
+	} else {
+		w32.SetWindowDisplayAffinity(uintptr(cba.hwnd), w32.WDA_NONE)
+	}
 }
 
 func min(a, b int) int {
@@ -412,15 +420,19 @@ func (cba *ControlBase) InvokeRequired() bool {
 	return windowThreadId != currentThreadId
 }
 
-func (cba *ControlBase) Invoke(f func()) {
+// Invoke schedules f to run on the window's UI thread. It returns true when
+// PostMessage succeeded (or f was executed synchronously on the current thread),
+// and false when PostMessage failed; the caller is responsible for logging and
+// retrying when a false return matters.
+func (cba *ControlBase) Invoke(f func()) bool {
 	if cba.tryInvokeOnCurrentGoRoutine(f) {
-		return
+		return true
 	}
 
 	cba.m.Lock()
 	cba.dispatchq = append(cba.dispatchq, f)
 	cba.m.Unlock()
-	w32.PostMessage(cba.hwnd, wmInvokeCallback, 0, 0)
+	return w32.PostMessage(cba.hwnd, wmInvokeCallback, 0, 0)
 }
 
 func (cba *ControlBase) PreTranslateMessage(msg *w32.MSG) bool {

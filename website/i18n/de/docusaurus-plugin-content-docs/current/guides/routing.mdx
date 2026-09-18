@@ -1,0 +1,68 @@
+# Routing
+
+Routing ist ein beliebter Weg, um Ansichten in einer Anwendung zu wechseln. Diese Seite bietet einige Hinweise dazu, wie das umgesetzt werden kann.
+
+## Vue
+
+Der empfohlene Ansatz für das Routen in Vue ist der [Hash-Modus](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
+
+```js
+import { createRouter, createWebHashHistory } from "vue-router";
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [
+    //...
+  ],
+});
+```
+
+## Angular
+
+Der empfohlene Ansatz für das Routen in Angular ist die [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#_hashlocationstrategy):
+
+```ts
+RouterModule.forRoot(routes, { useHash: true });
+```
+
+## React
+
+Die empfohlene Vorgehensweise für das Routen in React ist der [HashRouter](https://reactrouter.com/en/main/router-components/hash-router):
+
+```jsx
+import { HashRouter, Routes, Route } from "react-router-dom";
+
+ReactDOM.render(
+  <HashRouter basename={"/"}>
+    {/* The rest of your app goes here */}
+    <Routes>
+      <Route path="/" element={<Page0 />} exact />
+      <Route path="/page1" element={<Page1 />} />
+      <Route path="/page2" element={<Page2 />} />
+      {/* more... */}
+    </Routes>
+  </HashRouter>,
+  root
+);
+```
+
+## Svelte
+
+Die empfohlene Vorgehensweise für das Routen in Svelte ist der [svelte-spa-router](https://github.com/ItalyPaleAle/svelte-spa-router):
+
+```svelte
+<script>
+    import Router from "svelte-spa-router";
+</script>
+
+<Router
+    routes={{
+        "/": Home,
+        "/products": wrap({
+            asyncComponent: () => import("./routes/Products.svelte"),
+        }),
+        "/settings": Settings,
+        "*": NotFound,
+    }}
+/>
+```

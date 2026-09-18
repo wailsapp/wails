@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intersection Observer API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .scroll-container {
+            height: 400px;
+            overflow-y: auto;
+            background: #0a0a1a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .spacer { height: 200px; }
+        .observe-target {
+            padding: 40px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+            opacity: 0.3;
+            transform: translateX(-20px);
+        }
+        .observe-target.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .observe-target.box1 { background: linear-gradient(135deg, #4ade80, #22c55e); color: #1a1a2e; }
+        .observe-target.box2 { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+        .observe-target.box3 { background: linear-gradient(135deg, #e94560, #dc2626); }
+        .observe-target.box4 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a2e; }
+        .observe-target.box5 { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label { color: #aaa; font-size: 0.85rem; }
+        input[type="range"] { width: 120px; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover { opacity: 0.9; }
+        .lazy-image {
+            width: 100%;
+            height: 200px;
+            background: #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            transition: background 0.3s;
+        }
+        .lazy-image.loaded {
+            background: linear-gradient(45deg, #4ade80, #60a5fa, #e94560, #fbbf24);
+            background-size: 400% 400%;
+            animation: gradient 3s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .visibility-indicator {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+        .visibility-indicator .item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 0;
+        }
+        .visibility-indicator .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #666;
+        }
+        .visibility-indicator .dot.active { background: #4ade80; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Intersection Observer API Demo</h1>
+        <p class="description">
+            The Intersection Observer API provides a way to asynchronously observe changes
+            in the intersection of a target element with an ancestor element or viewport.
+        </p>
+
+        <div class="status success">
+            Intersection Observer: <span id="supported">checking...</span>
+        </div>
+
+        <div class="visibility-indicator">
+            <div><strong>Visibility</strong></div>
+            <div class="item"><span class="dot" id="dot1"></span> Box 1</div>
+            <div class="item"><span class="dot" id="dot2"></span> Box 2</div>
+            <div class="item"><span class="dot" id="dot3"></span> Box 3</div>
+            <div class="item"><span class="dot" id="dot4"></span> Box 4</div>
+            <div class="item"><span class="dot" id="dot5"></span> Box 5</div>
+        </div>
+
+        <div class="card">
+            <h2>Observer Options</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Threshold: <span id="thresholdVal">0.5</span></label>
+                    <input type="range" id="threshold" min="0" max="1" step="0.1" value="0.5" onchange="updateObserver()">
+                </div>
+                <div class="control-group">
+                    <label>Root Margin: <span id="marginVal">0</span>px</label>
+                    <input type="range" id="rootMargin" min="-100" max="100" step="10" value="0" onchange="updateObserver()">
+                </div>
+                <button onclick="updateObserver()">Apply Settings</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Scroll Demo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Scroll down to see elements animate when they enter the viewport.</p>
+            <div class="scroll-container" id="scrollContainer">
+                <div class="spacer"></div>
+                <div class="observe-target box1" data-box="1">Box 1 - I animate when visible!</div>
+                <div class="spacer"></div>
+                <div class="observe-target box2" data-box="2">Box 2 - Intersection detected!</div>
+                <div class="spacer"></div>
+                <div class="observe-target box3" data-box="3">Box 3 - Lazy loading example</div>
+                <div class="spacer"></div>
+                <div class="observe-target box4" data-box="4">Box 4 - Analytics trigger</div>
+                <div class="spacer"></div>
+                <div class="observe-target box5" data-box="5">Box 5 - Infinite scroll trigger</div>
+                <div class="spacer"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Lazy Loading Images</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Images load when they enter the viewport.</p>
+            <div id="lazyContainer">
+                <div class="lazy-image" data-src="image1">Scroll to load...</div>
+                <div class="lazy-image" data-src="image2">Scroll to load...</div>
+                <div class="lazy-image" data-src="image3">Scroll to load...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <div class="output" id="eventLog">Intersection events will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let observer = null;
+        let lazyObserver = null;
+        let logEntries = [];
+
+        function checkSupport() {
+            const supported = 'IntersectionObserver' in window;
+            document.getElementById('supported').textContent = supported ? 'Available' : 'Not available';
+            return supported;
+        }
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 20) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function updateObserver() {
+            const threshold = parseFloat(document.getElementById('threshold').value);
+            const rootMargin = parseInt(document.getElementById('rootMargin').value);
+            document.getElementById('thresholdVal').textContent = threshold;
+            document.getElementById('marginVal').textContent = rootMargin;
+
+            // Disconnect old observer
+            if (observer) observer.disconnect();
+
+            // Create new observer
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const box = entry.target;
+                    const boxNum = box.dataset.box;
+
+                    if (entry.isIntersecting) {
+                        box.classList.add('visible');
+                        document.getElementById('dot' + boxNum).classList.add('active');
+                        log(`Box ${boxNum}: VISIBLE (${(entry.intersectionRatio * 100).toFixed(0)}% visible)`);
+                    } else {
+                        box.classList.remove('visible');
+                        document.getElementById('dot' + boxNum).classList.remove('active');
+                        log(`Box ${boxNum}: HIDDEN`);
+                    }
+                });
+            }, {
+                root: document.getElementById('scrollContainer'),
+                threshold: threshold,
+                rootMargin: `${rootMargin}px`
+            });
+
+            // Observe all boxes
+            document.querySelectorAll('.observe-target').forEach(el => observer.observe(el));
+            log(`Observer updated: threshold=${threshold}, rootMargin=${rootMargin}px`);
+        }
+
+        // Lazy loading observer
+        function setupLazyLoading() {
+            lazyObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        // Simulate image loading
+                        setTimeout(() => {
+                            img.classList.add('loaded');
+                            img.textContent = 'Image loaded!';
+                            log(`Lazy image "${img.dataset.src}" loaded`);
+                        }, 500);
+                        lazyObserver.unobserve(img);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.lazy-image').forEach(el => lazyObserver.observe(el));
+        }
+
+        if (checkSupport()) {
+            updateObserver();
+            setupLazyLoading();
+        }
+    </script>
+</body>
+</html>

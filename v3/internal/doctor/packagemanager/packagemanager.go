@@ -29,6 +29,7 @@ var pmcommands = []string{
 	"emerge",
 	"zypper",
 	"nix-env",
+	"xbps-install",
 }
 
 // commandExists returns true if the given command can be found on the shell
@@ -68,6 +69,8 @@ func newPackageManager(pmname string, osid string) PackageManager {
 		return NewZypper(osid)
 	case "nix-env":
 		return NewNixpkgs(osid)
+	case "xbps-install":
+		return NewXbps(osid)
 	}
 	return nil
 }

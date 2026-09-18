@@ -66,7 +66,7 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 | -nsis                | Generate NSIS installer for Windows                                                                                                                                                                                                                                |                                                                                                                                                     |
 | -o filename          | Output filename                                                                                                                                                                                                                                                    |                                                                                                                                                     |
 | -obfuscated          | Obfuscate the application using [garble](https://github.com/burrowers/garble)                                                                                                                                                                                      |                                                                                                                                                     |
-| -platform            | Build for the given (comma delimited) [platforms](../reference/cli.mdx#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used.                                                                                        | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` envrionment variable if given else `runtime.GOARCH`. |
+| -platform            | Build for the given (comma delimited) [platforms](../reference/cli.mdx#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used.                                                                                        | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` environment variable if given else `runtime.GOARCH`. |
 | -race                | Build with Go's race detector                                                                                                                                                                                                                                      |                                                                                                                                                     |
 | -s                   | Skip building the frontend                                                                                                                                                                                                                                         |                                                                                                                                                     |
 | -skipbindings        | Skip bindings generation                                                                                                                                                                                                                                           |                                                                                                                                                     |
@@ -96,6 +96,12 @@ On Mac, the application will be bundled with `Info.plist`, not `Info.dev.plist`.
 :::info UPX on Apple Silicon
 
 There are [issues](https://github.com/upx/upx/issues/446) with using UPX with Apple Silicon.
+
+:::
+
+:::info Set minimal version for MacOS
+
+You can override default [minimal version](../gettingstarted/installation#supported-platforms) of macOS for your app by providing version via `CGO_CFLAGS` and `CGO_LDFLAGS` environment variables. e.g. `CGO_CFLAGS=-mmacosx-version-min=10.15.0 CGO_LDFLAGS=-mmacosx-version-min=10.15.0 wails build`
 
 :::
 

@@ -90,33 +90,27 @@ function notifyListeners(eventData) {
     // Get the event name
     let eventName = eventData.name;
 
-    // Check if we have any listeners for this event
-    if (eventListeners[eventName]) {
+    // Dispatch to a snapshot: callbacks may add or remove listeners while
+    // we iterate.
+    const snapshot = eventListeners[eventName]?.slice() || [];
 
-        // Keep a list of listener indexes to destroy
-        const newEventListenerList = eventListeners[eventName].slice();
+    for (let count = snapshot.length - 1; count >= 0; count -= 1) {
 
-        // Iterate listeners
-        for (let count = eventListeners[eventName].length - 1; count >= 0; count -= 1) {
+        // Get next listener
+        const listener = snapshot[count];
 
-            // Get next listener
-            const listener = eventListeners[eventName][count];
+        let data = eventData.data;
 
-            let data = eventData.data;
-
-            // Do the callback
-            const destroy = listener.Callback(data);
-            if (destroy) {
-                // if the listener indicated to destroy itself, add it to the destroy list
-                newEventListenerList.splice(count, 1);
-            }
-        }
-
-        // Update callbacks with new list of listeners
-        if (newEventListenerList.length === 0) {
-            removeListener(eventName);
-        } else {
-            eventListeners[eventName] = newEventListenerList;
+        // Do the callback
+        const destroy = listener.Callback(data);
+        if (destroy) {
+            // Remove the expired listener from the live list, not the
+            // snapshot: writing the snapshot back (the old behaviour)
+            // undid any subscription change made inside a callback —
+            // listeners removed via EventsOff during dispatch were
+            // resurrected and listeners added during dispatch were
+            // dropped (#4393).
+            listenerOff(listener);
         }
     }
 }
@@ -190,9 +184,9 @@ export function EventsOff(eventName, ...additionalEventNames) {
  */
  export function EventsOffAll() {
     const eventNames = Object.keys(eventListeners);
-    for (let i = 0; i !== eventNames.length; i++) {
-        removeListener(eventNames[i]);
-    }
+    eventNames.forEach(eventName => {
+        removeListener(eventName)
+    })
 }
 
 /**
@@ -202,6 +196,8 @@ export function EventsOff(eventName, ...additionalEventNames) {
  */
  function listenerOff(listener) {
     const eventName = listener.eventName;
+    if (eventListeners[eventName] === undefined) return;
+
     // Remove local listener
     eventListeners[eventName] = eventListeners[eventName].filter(l => l !== listener);
 

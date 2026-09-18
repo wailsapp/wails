@@ -52,3 +52,48 @@ func TestInstall(t *testing.T) {
 	is2.NoErr(err)
 
 }
+
+func TestInstallFailsInNonEmptyDirectory(t *testing.T) {
+	is2 := is.New(t)
+
+	// Create a temp directory with a file in it
+	tempDir, err := os.MkdirTemp("", "wails-test-nonempty-*")
+	is2.NoErr(err)
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	// Create a file in the directory to make it non-empty
+	err = os.WriteFile(filepath.Join(tempDir, "existing-file.txt"), []byte("test"), 0644)
+	is2.NoErr(err)
+
+	options := &Options{
+		ProjectName:  "test",
+		TemplateName: "vanilla",
+		TargetDir:    tempDir,
+	}
+
+	_, _, err = Install(options)
+	is2.True(err != nil) // Should fail
+	is2.True(err.Error() == "cannot initialise project in non-empty directory: "+tempDir)
+}
+
+func TestInstallSucceedsInEmptyDirectory(t *testing.T) {
+	is2 := is.New(t)
+
+	// Create an empty temp directory
+	tempDir, err := os.MkdirTemp("", "wails-test-empty-*")
+	is2.NoErr(err)
+	defer func() {
+		_ = os.RemoveAll(tempDir)
+	}()
+
+	options := &Options{
+		ProjectName:  "test",
+		TemplateName: "vanilla",
+		TargetDir:    tempDir,
+	}
+
+	_, _, err = Install(options)
+	is2.NoErr(err) // Should succeed in empty directory
+}

@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"slices"
 	"sync"
 	"sync/atomic"
 
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/mailbox"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -75,8 +76,10 @@ func (e *CustomEvent) ToJSON() string {
 	return string(marshal)
 }
 
-// WailsEventListener is an interface that can be implemented to listen for Wails events
-// It is used by the RegisterListener method of the Application.
+// WailsEventListener is an interface for receiving all emitted Wails events.
+// Used by transport layers (IPC, WebSocket) to broadcast events. Calls are made
+// serially in emit order. Implementations that forward events asynchronously
+// must preserve that order.
 type WailsEventListener interface {
 	DispatchWailsEvent(event *CustomEvent)
 }
@@ -98,18 +101,23 @@ type eventListener struct {
 // EventProcessor handles custom events
 type EventProcessor struct {
 	// Go event listeners
-	listeners              map[string][]*eventListener
-	notifyLock             sync.RWMutex
-	dispatchEventToWindows func(*CustomEvent)
-	hooks                  map[string][]*hook
-	hookLock               sync.RWMutex
+	listeners  map[string][]*eventListener
+	notifyLock sync.RWMutex
+	// frontendEvents serializes delivery to all WailsEventListener transports:
+	// native IPC, server WebSocket, and custom transports.
+	frontendEvents *mailbox.Mailbox[*CustomEvent]
+	hooks          map[string][]*hook
+	hookLock       sync.RWMutex
 }
 
 func NewWailsEventProcessor(dispatchEventToWindows func(*CustomEvent)) *EventProcessor {
 	return &EventProcessor{
-		listeners:              make(map[string][]*eventListener),
-		dispatchEventToWindows: dispatchEventToWindows,
-		hooks:                  make(map[string][]*hook),
+		listeners: make(map[string][]*eventListener),
+		frontendEvents: mailbox.New(func(event *CustomEvent) {
+			defer handlePanic()
+			dispatchEventToWindows(event)
+		}),
+		hooks: make(map[string][]*hook),
 	}
 }
 
@@ -160,10 +168,7 @@ func (e *EventProcessor) Emit(thisEvent *CustomEvent) error {
 		defer handlePanic()
 		e.dispatchEventToListeners(thisEvent)
 	}()
-	go func() {
-		defer handlePanic()
-		e.dispatchEventToWindows(thisEvent)
-	}()
+	e.frontendEvents.Send(thisEvent)
 
 	return nil
 }
@@ -197,8 +202,8 @@ func (e *EventProcessor) registerListener(eventName string, callback func(*Custo
 		if _, ok := e.listeners[eventName]; !ok {
 			return
 		}
-		e.listeners[eventName] = lo.Filter(e.listeners[eventName], func(l *eventListener, i int) bool {
-			return l != thisListener
+		e.listeners[eventName] = slices.DeleteFunc(e.listeners[eventName], func(l *eventListener) bool {
+			return l == thisListener
 		})
 	}
 }
@@ -220,8 +225,8 @@ func (e *EventProcessor) RegisterHook(eventName string, callback func(*CustomEve
 		if _, ok := e.hooks[eventName]; !ok {
 			return
 		}
-		e.hooks[eventName] = lo.Filter(e.hooks[eventName], func(l *hook, i int) bool {
-			return l != thisHook
+		e.hooks[eventName] = slices.DeleteFunc(e.hooks[eventName], func(h *hook) bool {
+			return h == thisHook
 		})
 	}
 }
@@ -268,8 +273,8 @@ func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
 
 	// Do we have items to delete?
 	if itemsToDelete == true {
-		e.listeners[event.Name] = lo.Filter(listeners, func(l *eventListener, i int) bool {
-			return l.delete == false
+		e.listeners[event.Name] = slices.DeleteFunc(listeners, func(l *eventListener) bool {
+			return l.delete == true
 		})
 	}
 }

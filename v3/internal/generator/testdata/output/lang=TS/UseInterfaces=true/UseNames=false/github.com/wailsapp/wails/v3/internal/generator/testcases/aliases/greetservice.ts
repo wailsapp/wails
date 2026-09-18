@@ -47,6 +47,10 @@ export function GetButGenericAliases(): $CancellablePromise<$models.AliasGroup> 
     return $Call.ByID(914093800);
 }
 
+export function GetButSubPackageAlias(): $CancellablePromise<$models.SubPackageAlias> {
+    return $Call.ByID(1443276371);
+}
+
 /**
  * Greet a lot of unusual things.
  */

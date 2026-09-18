@@ -4,11 +4,14 @@ package notifications
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
+
+	"encoding/json"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -20,6 +23,8 @@ type linuxNotifier struct {
 	categoriesLock    sync.RWMutex
 	notifications     map[uint32]*notificationData
 	notificationsLock sync.RWMutex
+	scheduledTimers   map[string]*time.Timer
+	scheduledLock     sync.Mutex
 	appName           string
 	cancel            context.CancelFunc
 }
@@ -44,8 +49,9 @@ const (
 func New() *NotificationService {
 	notificationServiceOnce.Do(func() {
 		impl := &linuxNotifier{
-			categories:    make(map[string]NotificationCategory),
-			notifications: make(map[uint32]*notificationData),
+			categories:      make(map[string]NotificationCategory),
+			notifications:   make(map[uint32]*notificationData),
+			scheduledTimers: make(map[string]*time.Timer),
 		}
 
 		NotificationService_ = &NotificationService{
@@ -82,6 +88,15 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 
 // Shutdown will save categories and close the D-Bus connection when the service unloads.
 func (ln *linuxNotifier) Shutdown() error {
+	// Cancel pending scheduled timers before tearing down the D-Bus connection
+	// so their callbacks cannot fire against a closed connection.
+	ln.scheduledLock.Lock()
+	for id, t := range ln.scheduledTimers {
+		t.Stop()
+		delete(ln.scheduledTimers, id)
+	}
+	ln.scheduledLock.Unlock()
+
 	if ln.cancel != nil {
 		ln.cancel()
 	}
@@ -110,68 +125,26 @@ func (ln *linuxNotifier) CheckNotificationAuthorization() (bool, error) {
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
-	hints := map[string]dbus.Variant{}
-
-	body := options.Body
-	if options.Subtitle != "" {
-		body = options.Subtitle + "\n" + body
+	if delay, ok := scheduleDelay(options.Schedule); ok && delay > 0 {
+		ln.parkSchedule(options.ID, delay, func() error {
+			opts := options
+			opts.Schedule = nil
+			return ln.SendNotification(opts)
+		})
+		return nil
 	}
+
+	// An immediate send must invalidate any previously parked timer for the
+	// same ID so it can't fire later and spawn a duplicate notification.
+	ln.cancelScheduled(options.ID)
 
 	defaultActionID := "default"
 	actions := []string{defaultActionID, "Default"}
-
 	actionMap := map[string]string{
 		defaultActionID: DefaultActionIdentifier,
 	}
 
-	hints["x-notification-id"] = dbus.MakeVariant(options.ID)
-
-	if options.Data != nil {
-		userData, err := json.Marshal(options.Data)
-		if err == nil {
-			hints["x-user-data"] = dbus.MakeVariant(string(userData))
-		}
-	}
-
-	// Call the Notify method on the D-Bus interface
-	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
-	call := obj.Call(
-		dbusNotificationInterface+".Notify",
-		0,
-		ln.appName,
-		uint32(0),
-		"", // Icon
-		options.Title,
-		body,
-		actions,
-		hints,
-		int32(-1),
-	)
-
-	if call.Err != nil {
-		return fmt.Errorf("failed to send notification: %w", call.Err)
-	}
-
-	var dbusID uint32
-	if err := call.Store(&dbusID); err != nil {
-		return fmt.Errorf("failed to store notification ID: %w", err)
-	}
-
-	notification := &notificationData{
-		ID:        options.ID,
-		Title:     options.Title,
-		Subtitle:  options.Subtitle,
-		Body:      options.Body,
-		Data:      options.Data,
-		DBusID:    dbusID,
-		ActionMap: actionMap,
-	}
-
-	ln.notificationsLock.Lock()
-	ln.notifications[dbusID] = notification
-	ln.notificationsLock.Unlock()
-
-	return nil
+	return ln.notify(options, actions, actionMap)
 }
 
 // SendNotificationWithActions sends a notification with additional actions.
@@ -185,10 +158,18 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 		return ln.SendNotification(options)
 	}
 
-	body := options.Body
-	if options.Subtitle != "" {
-		body = options.Subtitle + "\n" + body
+	if delay, ok := scheduleDelay(options.Schedule); ok && delay > 0 {
+		ln.parkSchedule(options.ID, delay, func() error {
+			opts := options
+			opts.Schedule = nil
+			return ln.SendNotificationWithActions(opts)
+		})
+		return nil
 	}
+
+	// Same rationale as in SendNotification: kill any parked timer so it
+	// cannot fire after we deliver immediately.
+	ln.cancelScheduled(options.ID)
 
 	var actions []string
 	actionMap := make(map[string]string)
@@ -202,25 +183,89 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 		actionMap[action.ID] = action.ID
 	}
 
-	hints := map[string]dbus.Variant{}
+	return ln.notify(options, actions, actionMap)
+}
 
+// notify is the shared D-Bus Notify caller. It wires options.Sound /
+// Attachments / ThreadID / InterruptionLevel onto freedesktop hints, looks up
+// any existing dbusID for options.ID to enable update-by-id via replaces_id,
+// and stores the resulting dbusID for later signal handling and removal.
+func (ln *linuxNotifier) notify(options NotificationOptions, actions []string, actionMap map[string]string) error {
+	body := options.Body
+	if options.Subtitle != "" {
+		body = options.Subtitle + "\n" + body
+	}
+
+	hints := map[string]dbus.Variant{}
 	hints["x-notification-id"] = dbus.MakeVariant(options.ID)
 
-	hints["x-category-id"] = dbus.MakeVariant(options.CategoryID)
+	if options.CategoryID != "" {
+		hints["x-category-id"] = dbus.MakeVariant(options.CategoryID)
+	}
 
 	if options.Data != nil {
-		userData, err := json.Marshal(options.Data)
-		if err == nil {
+		if userData, err := json.Marshal(options.Data); err == nil {
 			hints["x-user-data"] = dbus.MakeVariant(string(userData))
 		}
 	}
+
+	if options.Sound != nil {
+		if options.Sound.Silent {
+			hints["suppress-sound"] = dbus.MakeVariant(true)
+		} else if options.Sound.Name != "" {
+			hints["sound-name"] = dbus.MakeVariant(options.Sound.Name)
+		}
+	}
+
+	for _, a := range options.Attachments {
+		if a.Path == "" {
+			continue
+		}
+		// freedesktop spec only honours one image hint; use the first entry
+		// whose extension is a recognised image type. Non-image paths are
+		// skipped to prevent arbitrary files from being surfaced to the daemon.
+		if isImagePath(a.Path) {
+			hints["image-path"] = dbus.MakeVariant(a.Path)
+			break
+		}
+	}
+
+	if options.ThreadID != "" {
+		// Use category as the closest stable freedesktop hint for grouping
+		// when no explicit category id has been set.
+		if _, has := hints["x-category-id"]; !has {
+			hints["category"] = dbus.MakeVariant(options.ThreadID)
+		}
+		hints["x-wails-thread-id"] = dbus.MakeVariant(options.ThreadID)
+	}
+
+	switch options.InterruptionLevel {
+	case InterruptionLevelPassive:
+		hints["urgency"] = dbus.MakeVariant(byte(0))
+	case InterruptionLevelTimeSensitive, InterruptionLevelCritical:
+		hints["urgency"] = dbus.MakeVariant(byte(2))
+	case InterruptionLevelActive, "":
+		// default urgency
+	}
+
+	// Look up an existing tracked dbusID for this options.ID so D-Bus
+	// replaces in place rather than spawning a duplicate. Zero means new.
+	var replacesID uint32
+	ln.notificationsLock.RLock()
+	for id, n := range ln.notifications {
+		if n.ID == options.ID {
+			replacesID = id
+			break
+		}
+	}
+	ln.notificationsLock.RUnlock()
 
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
 	call := obj.Call(
 		dbusNotificationInterface+".Notify",
 		0,
 		ln.appName,
-		uint32(0),
+		replacesID,
 		"", // Icon
 		options.Title,
 		body,
@@ -250,10 +295,61 @@ func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions
 	}
 
 	ln.notificationsLock.Lock()
+	// Drop the previous tracking entry under the old dbusID if replacing.
+	if replacesID != 0 && replacesID != dbusID {
+		delete(ln.notifications, replacesID)
+	}
 	ln.notifications[dbusID] = notification
 	ln.notificationsLock.Unlock()
 
 	return nil
+}
+
+// parkSchedule defers `fire` by `delay`. Any previously parked timer for the
+// same id is cancelled and removed eagerly, and the parked callback only
+// removes its map entry if it is still the live owner — that guards against a
+// just-fired-but-not-yet-cleaned-up callback racing in to delete the entry
+// for a freshly-parked successor.
+func (ln *linuxNotifier) parkSchedule(id string, delay time.Duration, fire func() error) {
+	ln.scheduledLock.Lock()
+	if existing, ok := ln.scheduledTimers[id]; ok {
+		existing.Stop()
+		delete(ln.scheduledTimers, id)
+	}
+	var timer *time.Timer
+	timer = time.AfterFunc(delay, func() {
+		if err := fire(); err != nil {
+			fmt.Printf("scheduled notification %s push failed: %v\n", id, err)
+		}
+		ln.scheduledLock.Lock()
+		defer ln.scheduledLock.Unlock()
+		if cur, ok := ln.scheduledTimers[id]; ok && cur == timer {
+			delete(ln.scheduledTimers, id)
+		}
+	})
+	ln.scheduledTimers[id] = timer
+	ln.scheduledLock.Unlock()
+}
+
+// cancelScheduled stops and removes any parked timer for id. Safe to call when
+// no timer is parked.
+func (ln *linuxNotifier) cancelScheduled(id string) {
+	ln.scheduledLock.Lock()
+	defer ln.scheduledLock.Unlock()
+	if t, ok := ln.scheduledTimers[id]; ok {
+		t.Stop()
+		delete(ln.scheduledTimers, id)
+	}
+}
+
+// UpdateNotification re-posts a notification by ID. The Send path passes
+// replaces_id when an existing notification with the same options.ID is
+// tracked, so D-Bus updates in place.
+func (ln *linuxNotifier) UpdateNotification(options NotificationOptions) error {
+	if options.CategoryID != "" {
+		return ln.SendNotificationWithActions(options)
+	}
+	return ln.SendNotification(options)
 }
 
 // RegisterNotificationCategory registers a new NotificationCategory to be used with SendNotificationWithActions.
@@ -282,8 +378,16 @@ func (ln *linuxNotifier) RemoveNotificationCategory(categoryId string) error {
 	return nil
 }
 
-// RemoveAllPendingNotifications attempts to remove all active notifications.
+// RemoveAllPendingNotifications cancels any in-process scheduled timers AND
+// closes every currently-tracked delivered notification.
 func (ln *linuxNotifier) RemoveAllPendingNotifications() error {
+	ln.scheduledLock.Lock()
+	for id, t := range ln.scheduledTimers {
+		t.Stop()
+		delete(ln.scheduledTimers, id)
+	}
+	ln.scheduledLock.Unlock()
+
 	ln.notificationsLock.Lock()
 	dbusIDs := make([]uint32, 0, len(ln.notifications))
 	for id := range ln.notifications {
@@ -298,8 +402,16 @@ func (ln *linuxNotifier) RemoveAllPendingNotifications() error {
 	return nil
 }
 
-// RemovePendingNotification removes a pending notification.
+// RemovePendingNotification cancels a scheduled timer for the given identifier
+// and/or closes the currently-tracked delivered notification.
 func (ln *linuxNotifier) RemovePendingNotification(identifier string) error {
+	ln.scheduledLock.Lock()
+	if t, ok := ln.scheduledTimers[identifier]; ok {
+		t.Stop()
+		delete(ln.scheduledTimers, identifier)
+	}
+	ln.scheduledLock.Unlock()
+
 	var dbusID uint32
 	found := false
 
@@ -562,4 +674,15 @@ func (ln *linuxNotifier) handleNotificationClosed(signal *dbus.Signal) {
 			ns.handleNotificationResult(result)
 		}
 	}
+}
+
+// isImagePath reports whether path has an extension recognised as an image by
+// freedesktop notification daemons. Only image files are valid for the
+// image-path hint; passing arbitrary paths (e.g. text files) is rejected.
+func isImagePath(path string) bool {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".ico", ".webp", ".tiff", ".tif":
+		return true
+	}
+	return false
 }

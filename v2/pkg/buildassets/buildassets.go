@@ -8,6 +8,8 @@ import (
 	iofs "io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"text/template"
 
 	"github.com/leaanthony/gosod"
@@ -102,19 +104,39 @@ func ReadOriginalFileWithProjectDataAndSave(projectData *project.Project, file s
 }
 
 type assetData struct {
-	Name string
-	Info project.Info
+	Name           string
+	Info           project.Info
+	OutputFilename string
+}
+
+func xmlEscape(s string) string {
+	var buf bytes.Buffer
+	template.HTMLEscape(&buf, []byte(s))
+	return buf.String()
+}
+
+var nonAlphaNum = regexp.MustCompile(`[^A-Za-z0-9]+`)
+
+func safeBundleID(s string) string {
+	result := strings.ToLower(nonAlphaNum.ReplaceAllString(s, "-"))
+	result = strings.Trim(result, "-")
+	return result
 }
 
 func resolveProjectData(content []byte, projectData *project.Project) ([]byte, error) {
-	tmpl, err := template.New("").Parse(string(content))
+	funcMap := template.FuncMap{
+		"xml":          xmlEscape,
+		"safeBundleID": safeBundleID,
+	}
+	tmpl, err := template.New("").Funcs(funcMap).Parse(string(content))
 	if err != nil {
 		return nil, err
 	}
 
 	data := &assetData{
-		Name: projectData.Name,
-		Info: projectData.Info,
+		Name:           projectData.Name,
+		Info:           projectData.Info,
+		OutputFilename: projectData.OutputFilename,
 	}
 
 	var out bytes.Buffer

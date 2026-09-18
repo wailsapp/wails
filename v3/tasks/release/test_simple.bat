@@ -17,7 +17,7 @@ REM Create a test UNRELEASED_CHANGELOG.md
 echo # Unreleased Changes > UNRELEASED_CHANGELOG.md
 echo. >> UNRELEASED_CHANGELOG.md
 echo ^<^!-- >> UNRELEASED_CHANGELOG.md
-echo This file is used to collect changelog entries for the next v3-alpha release. >> UNRELEASED_CHANGELOG.md
+echo This file is used to collect changelog entries for the next v3 alpha release. >> UNRELEASED_CHANGELOG.md
 echo --^> >> UNRELEASED_CHANGELOG.md
 echo. >> UNRELEASED_CHANGELOG.md
 echo ## Added >> UNRELEASED_CHANGELOG.md

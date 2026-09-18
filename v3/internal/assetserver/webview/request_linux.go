@@ -1,34 +1,35 @@
-//go:build linux && !android
+//go:build linux && cgo && !gtk3 && !android
 
 package webview
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.1 gio-unix-2.0
+#cgo linux pkg-config: gtk4 webkitgtk-6.0 gio-unix-2.0
 
-#include "gtk/gtk.h"
-#include "webkit2/webkit2.h"
+#include <gtk/gtk.h>
+#include <webkit/webkit.h>
 */
 import "C"
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"unsafe"
 )
 
-// NewRequest creates as new WebViewRequest based on a pointer to an `WebKitURISchemeRequest`
 func NewRequest(webKitURISchemeRequest unsafe.Pointer) Request {
 	webkitReq := (*C.WebKitURISchemeRequest)(webKitURISchemeRequest)
-	C.g_object_ref(C.gpointer(webkitReq))
+	lifetime := retainRequest(webKitURISchemeRequest)
 
-	req := &request{req: webkitReq}
+	req := &request{req: webkitReq, lifetime: lifetime}
 	return newRequestFinalizer(req)
 }
 
 var _ Request = &request{}
 
 type request struct {
-	req *C.WebKitURISchemeRequest
+	lifetime *requestLifetime
+	req      *C.WebKitURISchemeRequest
 
 	header http.Header
 	body   io.ReadCloser
@@ -36,7 +37,14 @@ type request struct {
 }
 
 func (r *request) URL() (string, error) {
-	return C.GoString(C.webkit_uri_scheme_request_get_uri(r.req)), nil
+	// Reading the URI touches the WebKit-owned request on the GTK main loop;
+	// this runs on a worker goroutine, so it must hop to the main thread.
+	// See mainthread_linux.go and issue #5631.
+	var uri string
+	invokeOnMainSync(func() {
+		uri = C.GoString(C.webkit_uri_scheme_request_get_uri(r.req))
+	})
+	return uri, nil
 }
 
 func (r *request) Method() (string, error) {
@@ -77,6 +85,8 @@ func (r *request) Close() error {
 		err = r.body.Close()
 	}
 	r.Response().Finish()
-	C.g_object_unref(C.gpointer(r.req))
+	r.lifetime.close()
 	return err
 }
+
+func (r *request) Context() context.Context { return r.lifetime.Context }

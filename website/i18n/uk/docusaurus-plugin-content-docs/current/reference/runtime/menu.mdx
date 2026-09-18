@@ -1,0 +1,25 @@
+---
+sidebar_position: 6
+---
+
+# Menu
+
+These methods are related to the application menu.
+
+:::info JavaScript
+
+Menu is currently unsupported in the JS runtime.
+
+:::
+
+### MenuSetApplicationMenu
+
+Sets the application menu to the given [menu](../menus.mdx).
+
+Go: `MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu)`
+
+### MenuUpdateApplicationMenu
+
+Updates the application menu, picking up any changes to the menu passed to `MenuSetApplicationMenu`.
+
+Go: `MenuUpdateApplicationMenu(ctx context.Context)`

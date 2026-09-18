@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background: #f87171; }
+        button.secondary { background: #60a5fa; }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+
+        /* History API specific styles */
+        .url-display {
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .url-label {
+            color: #aaa;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .url-value {
+            font-family: monospace;
+            color: #4ade80;
+            word-break: break-all;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .nav-buttons button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-arrow {
+            font-size: 1.2rem;
+        }
+
+        .state-display {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .state-label {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        .state-content {
+            font-family: monospace;
+            color: #60a5fa;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .form-row input {
+            flex: 1;
+            min-width: 150px;
+            margin-bottom: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .history-stack {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .history-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-left: 3px solid #333;
+            transition: all 0.2s;
+        }
+        .history-item.current {
+            border-left-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .history-item-index {
+            background: #333;
+            color: #aaa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .history-item-index.current {
+            background: #4ade80;
+            color: #1a1a2e;
+        }
+        .history-item-time {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        .history-item-url {
+            font-family: monospace;
+            color: #eee;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        .history-item-state {
+            font-family: monospace;
+            color: #60a5fa;
+            font-size: 0.8rem;
+        }
+
+        .quick-pages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .quick-page {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-page:hover {
+            background: rgba(96, 165, 250, 0.3);
+        }
+        .quick-page.active {
+            background: #4ade80;
+            color: #1a1a2e;
+            border-color: #4ade80;
+        }
+
+        .page-content {
+            min-height: 150px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .page-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .page-title {
+            font-size: 1.5rem;
+            color: #4ade80;
+            margin-bottom: 10px;
+        }
+        .page-desc {
+            color: #aaa;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .stat-label {
+            color: #aaa;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .info-box {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-box-title {
+            color: #60a5fa;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .info-box-content {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>History API Demo</h1>
+        <p class="description">
+            The History API allows manipulation of the browser session history, enabling
+            single-page applications (SPAs) to update the URL without full page reloads.
+        </p>
+
+        <div id="status" class="status success">
+            History API: <span id="available">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>Current State</h2>
+            <div class="url-display">
+                <span class="url-label">URL:</span>
+                <span class="url-value" id="currentUrl">--</span>
+            </div>
+
+            <div class="state-display">
+                <div class="state-label">history.state:</div>
+                <div class="state-content" id="currentState">null</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="historyLength">0</div>
+                    <div class="stat-label">History Length</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pushCount">0</div>
+                    <div class="stat-label">pushState Calls</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="replaceCount">0</div>
+                    <div class="stat-label">replaceState Calls</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="popstateCount">0</div>
+                    <div class="stat-label">popstate Events</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Navigation Controls</h2>
+            <div class="nav-buttons">
+                <button onclick="goBack()">
+                    <span class="nav-arrow">&larr;</span> Back
+                </button>
+                <button onclick="goForward()">
+                    Forward <span class="nav-arrow">&rarr;</span>
+                </button>
+                <button class="secondary" onclick="go(-2)">Go -2</button>
+                <button class="secondary" onclick="go(2)">Go +2</button>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-title">Note on Navigation</div>
+                <div class="info-box-content">
+                    The back/forward buttons use <code>history.back()</code> and <code>history.forward()</code>.
+                    You can also use <code>history.go(n)</code> to jump multiple entries.
+                    Navigation will trigger the <code>popstate</code> event.
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Simulated SPA Navigation</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Click pages below to navigate. The URL updates without a page reload.
+            </p>
+            <div class="quick-pages" id="quickPages">
+                <span class="quick-page active" data-page="home" onclick="navigateToPage('home')">Home</span>
+                <span class="quick-page" data-page="products" onclick="navigateToPage('products')">Products</span>
+                <span class="quick-page" data-page="about" onclick="navigateToPage('about')">About</span>
+                <span class="quick-page" data-page="contact" onclick="navigateToPage('contact')">Contact</span>
+                <span class="quick-page" data-page="settings" onclick="navigateToPage('settings')">Settings</span>
+            </div>
+
+            <div class="page-content" id="pageContent">
+                <div class="page-icon" id="pageIcon">&#127968;</div>
+                <div class="page-title" id="pageTitle">Home</div>
+                <div class="page-desc" id="pageDesc">Welcome to the home page</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>pushState</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Add a new entry to the browser history. This does not reload the page.
+            </p>
+            <div class="form-group">
+                <label>URL Path</label>
+                <input type="text" id="pushUrl" placeholder="/page/new-page">
+            </div>
+            <div class="form-group">
+                <label>State Data (JSON)</label>
+                <input type="text" id="pushState" placeholder='{"id": 1, "name": "example"}'>
+            </div>
+            <div class="form-group">
+                <label>Title (mostly ignored by browsers)</label>
+                <input type="text" id="pushTitle" placeholder="Page Title">
+            </div>
+            <button onclick="doPushState()">pushState</button>
+        </div>
+
+        <div class="card">
+            <h2>replaceState</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Replace the current history entry. Does not create a new entry.
+            </p>
+            <div class="form-group">
+                <label>URL Path</label>
+                <input type="text" id="replaceUrl" placeholder="/page/replaced">
+            </div>
+            <div class="form-group">
+                <label>State Data (JSON)</label>
+                <input type="text" id="replaceState" placeholder='{"replaced": true}'>
+            </div>
+            <button onclick="doReplaceState()">replaceState</button>
+        </div>
+
+        <div class="card">
+            <h2>History Stack (Local Tracking)</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">
+                Note: The History API does not provide access to the full history stack for privacy reasons.
+                This list tracks only entries created during this session.
+            </p>
+            <button onclick="clearLocalHistory()">Clear Local Tracking</button>
+            <div class="history-stack" id="historyStack" style="margin-top: 15px;">
+                <div class="history-item current">
+                    <div class="history-item-header">
+                        <span class="history-item-index current">0</span>
+                        <span class="history-item-time">--</span>
+                    </div>
+                    <div class="history-item-url">Loading...</div>
+                    <div class="history-item-state">state: null</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog" style="margin-top: 10px;">History events will be logged here...
+
+Use the controls above to manipulate history and see events logged.</div>
+        </div>
+    </div>
+
+    <script>
+        let logEntries = [];
+        let localHistory = [];
+        let currentLocalIndex = 0;
+        let stats = {
+            pushCount: 0,
+            replaceCount: 0,
+            popstateCount: 0
+        };
+
+        // Page definitions for SPA simulation
+        const pages = {
+            home: { icon: '&#127968;', title: 'Home', desc: 'Welcome to the home page' },
+            products: { icon: '&#128722;', title: 'Products', desc: 'Browse our product catalog' },
+            about: { icon: '&#128100;', title: 'About', desc: 'Learn more about us' },
+            contact: { icon: '&#128231;', title: 'Contact', desc: 'Get in touch with our team' },
+            settings: { icon: '&#9881;', title: 'Settings', desc: 'Configure your preferences' }
+        };
+
+        function checkSupport() {
+            const hasHistory = !!(window.history && window.history.pushState);
+            document.getElementById('available').textContent = hasHistory ? 'Available' : 'Not available';
+            document.getElementById('status').className = hasHistory ? 'status success' : 'status error';
+            return hasHistory;
+        }
+
+        function checkFeatures() {
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'history.pushState', supported: typeof history.pushState === 'function' },
+                { name: 'history.replaceState', supported: typeof history.replaceState === 'function' },
+                { name: 'history.state', supported: 'state' in history },
+                { name: 'history.length', supported: 'length' in history },
+                { name: 'history.go', supported: typeof history.go === 'function' },
+                { name: 'popstate event', supported: 'onpopstate' in window },
+                { name: 'history.scrollRestoration', supported: 'scrollRestoration' in history },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+        }
+
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 50) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        function updateDisplay() {
+            document.getElementById('currentUrl').textContent = window.location.href;
+            document.getElementById('currentState').textContent =
+                history.state ? JSON.stringify(history.state, null, 2) : 'null';
+            document.getElementById('historyLength').textContent = history.length;
+            document.getElementById('pushCount').textContent = stats.pushCount;
+            document.getElementById('replaceCount').textContent = stats.replaceCount;
+            document.getElementById('popstateCount').textContent = stats.popstateCount;
+
+            // Update page content based on state
+            if (history.state && history.state.page) {
+                updatePageContent(history.state.page);
+            }
+        }
+
+        function updatePageContent(pageName) {
+            const page = pages[pageName] || pages.home;
+            document.getElementById('pageIcon').innerHTML = page.icon;
+            document.getElementById('pageTitle').textContent = page.title;
+            document.getElementById('pageDesc').textContent = page.desc;
+
+            // Update active state of quick pages
+            document.querySelectorAll('.quick-page').forEach(el => {
+                el.classList.toggle('active', el.dataset.page === pageName);
+            });
+        }
+
+        function addToLocalHistory(url, state) {
+            // Remove any forward history if we're not at the end
+            if (currentLocalIndex < localHistory.length - 1) {
+                localHistory = localHistory.slice(0, currentLocalIndex + 1);
+            }
+
+            localHistory.push({
+                url: url,
+                state: state,
+                time: new Date()
+            });
+            currentLocalIndex = localHistory.length - 1;
+            renderLocalHistory();
+        }
+
+        function renderLocalHistory() {
+            const stack = document.getElementById('historyStack');
+            if (localHistory.length === 0) {
+                stack.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">No history entries tracked</div>';
+                return;
+            }
+
+            stack.innerHTML = localHistory.map((entry, index) => {
+                const isCurrent = index === currentLocalIndex;
+                return `
+                    <div class="history-item ${isCurrent ? 'current' : ''}">
+                        <div class="history-item-header">
+                            <span class="history-item-index ${isCurrent ? 'current' : ''}">${index}</span>
+                            <span class="history-item-time">${entry.time.toLocaleTimeString()}</span>
+                        </div>
+                        <div class="history-item-url">${escapeHtml(entry.url)}</div>
+                        <div class="history-item-state">state: ${entry.state ? JSON.stringify(entry.state) : 'null'}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function clearLocalHistory() {
+            localHistory = [{
+                url: window.location.href,
+                state: history.state,
+                time: new Date()
+            }];
+            currentLocalIndex = 0;
+            renderLocalHistory();
+            log('Local history tracking cleared');
+        }
+
+        // Navigation functions
+        function goBack() {
+            history.back();
+            log('Called history.back()');
+        }
+
+        function goForward() {
+            history.forward();
+            log('Called history.forward()');
+        }
+
+        function go(n) {
+            history.go(n);
+            log(`Called history.go(${n})`);
+        }
+
+        // SPA navigation
+        function navigateToPage(pageName) {
+            const page = pages[pageName];
+            if (!page) return;
+
+            const state = { page: pageName, timestamp: Date.now() };
+            const url = `?page=${pageName}`;
+
+            history.pushState(state, page.title, url);
+            stats.pushCount++;
+
+            addToLocalHistory(window.location.href, state);
+            updateDisplay();
+            log(`Navigated to: ${pageName} (pushState)`);
+        }
+
+        // Manual pushState
+        function doPushState() {
+            const url = document.getElementById('pushUrl').value || null;
+            const stateStr = document.getElementById('pushState').value;
+            const title = document.getElementById('pushTitle').value || '';
+
+            let state = null;
+            if (stateStr) {
+                try {
+                    state = JSON.parse(stateStr);
+                } catch (e) {
+                    state = { raw: stateStr };
+                }
+            }
+
+            try {
+                history.pushState(state, title, url);
+                stats.pushCount++;
+                addToLocalHistory(window.location.href, state);
+                updateDisplay();
+                log(`pushState: url=${url || '(none)'}, state=${JSON.stringify(state)}`);
+            } catch (e) {
+                log(`pushState error: ${e.message}`);
+            }
+        }
+
+        // Manual replaceState
+        function doReplaceState() {
+            const url = document.getElementById('replaceUrl').value || null;
+            const stateStr = document.getElementById('replaceState').value;
+
+            let state = null;
+            if (stateStr) {
+                try {
+                    state = JSON.parse(stateStr);
+                } catch (e) {
+                    state = { raw: stateStr };
+                }
+            }
+
+            try {
+                history.replaceState(state, '', url);
+                stats.replaceCount++;
+
+                // Update current entry in local history
+                if (localHistory.length > 0) {
+                    localHistory[currentLocalIndex] = {
+                        url: window.location.href,
+                        state: state,
+                        time: new Date()
+                    };
+                    renderLocalHistory();
+                }
+
+                updateDisplay();
+                log(`replaceState: url=${url || '(current)'}, state=${JSON.stringify(state)}`);
+            } catch (e) {
+                log(`replaceState error: ${e.message}`);
+            }
+        }
+
+        // Handle popstate events
+        window.addEventListener('popstate', (event) => {
+            stats.popstateCount++;
+
+            // Try to find matching entry in local history
+            const currentUrl = window.location.href;
+            const matchIndex = localHistory.findIndex(entry => entry.url === currentUrl);
+            if (matchIndex !== -1) {
+                currentLocalIndex = matchIndex;
+            }
+
+            renderLocalHistory();
+            updateDisplay();
+
+            log(`popstate event: state=${JSON.stringify(event.state)}`);
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize
+        if (checkSupport()) {
+            checkFeatures();
+
+            // Initialize local history with current state
+            localHistory.push({
+                url: window.location.href,
+                state: history.state,
+                time: new Date()
+            });
+
+            // Check URL for page parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageName = urlParams.get('page');
+            if (pageName && pages[pageName]) {
+                // Restore page state without creating new history entry
+                history.replaceState({ page: pageName, timestamp: Date.now() }, pages[pageName].title);
+                updatePageContent(pageName);
+            }
+
+            renderLocalHistory();
+            updateDisplay();
+            log('History API initialized');
+            log(`Initial history.length: ${history.length}`);
+        }
+    </script>
+</body>
+</html>

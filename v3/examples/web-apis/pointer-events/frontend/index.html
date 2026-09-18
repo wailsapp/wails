@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointer Events API Demo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #4ade80; margin-bottom: 10px; }
+        .description { color: #aaa; margin-bottom: 30px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; color: #e94560; }
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: #60a5fa; }
+        button.danger { background: #f87171; }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+        .status.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+        .status.error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .output {
+            background: #0a0a1a;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .feature .name { font-weight: 600; margin-bottom: 5px; }
+        .feature .supported { color: #4ade80; }
+        .feature .unsupported { color: #f87171; }
+        .pointer-area {
+            background: #0a0a1a;
+            border-radius: 8px;
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .pointer-indicator {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: width 0.1s, height 0.1s;
+        }
+        .pointer-trail {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .pointer-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .info-item {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .info-label {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+        }
+        .info-value {
+            color: #4ade80;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+        .drawing-canvas {
+            background: #0a0a1a;
+            border-radius: 8px;
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label { color: #aaa; font-size: 0.9rem; }
+        input[type="color"] {
+            width: 40px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="range"] { width: 100px; }
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .active-pointers {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .pointer-badge {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pointer-badge.touch { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .pointer-badge.pen { background: rgba(233, 69, 96, 0.2); color: #e94560; }
+        .pointer-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pointer Events API Demo</h1>
+        <p class="description">
+            The Pointer Events API provides a unified way to handle input from mouse, touch, and pen/stylus
+            devices with a single event model, including pressure and tilt information.
+        </p>
+
+        <div class="status success">
+            Pointer Events API: <span id="supported">checking...</span>
+        </div>
+
+        <div class="card">
+            <h2>API Support</h2>
+            <div class="feature-grid" id="features"></div>
+        </div>
+
+        <div class="card">
+            <h2>Pointer Tracking</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Move your mouse, touch, or use a stylus in the area below:</p>
+            <div class="pointer-area" id="trackingArea"></div>
+            <div class="pointer-info">
+                <div class="info-item">
+                    <div class="info-label">Pointer ID</div>
+                    <div class="info-value" id="pointerId">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Pointer Type</div>
+                    <div class="info-value" id="pointerType">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Position (X, Y)</div>
+                    <div class="info-value" id="position">-, -</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Pressure</div>
+                    <div class="info-value" id="pressure">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Tilt (X, Y)</div>
+                    <div class="info-value" id="tilt">-, -</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Width x Height</div>
+                    <div class="info-value" id="contactSize">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Twist</div>
+                    <div class="info-value" id="twist">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Buttons</div>
+                    <div class="info-value" id="buttons">-</div>
+                </div>
+            </div>
+            <div class="active-pointers" id="activePointers"></div>
+        </div>
+
+        <div class="card">
+            <h2>Pressure-Sensitive Drawing</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Draw with pressure sensitivity (size varies with pressure):</p>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Color:</label>
+                    <input type="color" id="drawColor" value="#4ade80">
+                </div>
+                <div class="control-group">
+                    <label>Base Size:</label>
+                    <input type="range" id="baseSize" min="1" max="30" value="8">
+                    <span id="baseSizeValue">8</span>
+                </div>
+                <div class="control-group">
+                    <input type="checkbox" id="pressureEnabled" checked>
+                    <label>Pressure Sensitivity</label>
+                </div>
+            </div>
+            <div class="controls">
+                <button onclick="clearDrawing()">Clear Canvas</button>
+                <button class="secondary" onclick="saveDrawing()">Save as PNG</button>
+            </div>
+            <canvas id="drawingCanvas" class="drawing-canvas" width="800" height="300"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>Pointer Capture Demo</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Click and drag the box - it captures pointer events even outside itself:</p>
+            <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                <div id="captureBox" style="width: 100px; height: 100px; background: #4ade80; border-radius: 8px; cursor: grab; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #1a1a2e; user-select: none;">
+                    Drag Me
+                </div>
+                <div>
+                    <div class="info-item" style="min-width: 150px;">
+                        <div class="info-label">Capture Status</div>
+                        <div class="info-value" id="captureStatus">Not captured</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Multi-Touch Points</h2>
+            <p style="color: #aaa; margin-bottom: 15px;">Touch with multiple fingers (on touch devices):</p>
+            <div class="pointer-area" id="multiTouchArea" style="height: 200px;"></div>
+            <p style="color: #888; font-size: 0.85rem; margin-top: 10px;">Active touch points: <span id="touchCount">0</span></p>
+        </div>
+
+        <div class="card">
+            <h2>Event Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div class="output" id="eventLog">Pointer events will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Event logging
+        let logEntries = [];
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logEntries.unshift(`[${time}] ${message}`);
+            if (logEntries.length > 50) logEntries.pop();
+            document.getElementById('eventLog').textContent = logEntries.join('\n');
+        }
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('eventLog').textContent = 'Log cleared.';
+        }
+
+        // Check API support
+        function checkSupport() {
+            const hasPointerEvents = 'PointerEvent' in window;
+            document.getElementById('supported').textContent = hasPointerEvents ? 'Available' : 'Not available';
+            document.getElementById('supported').parentElement.className = hasPointerEvents ? 'status success' : 'status error';
+
+            const features = document.getElementById('features');
+            const checks = [
+                { name: 'PointerEvent', supported: 'PointerEvent' in window },
+                { name: 'pointerdown', supported: 'onpointerdown' in window },
+                { name: 'pointermove', supported: 'onpointermove' in window },
+                { name: 'pointerup', supported: 'onpointerup' in window },
+                { name: 'pointerenter/leave', supported: 'onpointerenter' in window },
+                { name: 'pointercancel', supported: 'onpointercancel' in window },
+                { name: 'setPointerCapture', supported: Element.prototype.setPointerCapture !== undefined },
+                { name: 'Touch Support', supported: 'ontouchstart' in window || navigator.maxTouchPoints > 0 },
+            ];
+
+            features.innerHTML = checks.map(c => `
+                <div class="feature">
+                    <div class="name">${c.name}</div>
+                    <div class="${c.supported ? 'supported' : 'unsupported'}">${c.supported ? 'Supported' : 'Not supported'}</div>
+                </div>
+            `).join('');
+
+            log('API support check completed');
+        }
+
+        // Pointer tracking area
+        const trackingArea = document.getElementById('trackingArea');
+        const activePointers = new Map();
+        const pointerColors = {
+            mouse: '#4ade80',
+            touch: '#60a5fa',
+            pen: '#e94560'
+        };
+
+        function updatePointerInfo(e) {
+            document.getElementById('pointerId').textContent = e.pointerId;
+            document.getElementById('pointerType').textContent = e.pointerType;
+            document.getElementById('position').textContent = `${Math.round(e.offsetX)}, ${Math.round(e.offsetY)}`;
+            document.getElementById('pressure').textContent = e.pressure.toFixed(3);
+            document.getElementById('tilt').textContent = `${e.tiltX}, ${e.tiltY}`;
+            document.getElementById('contactSize').textContent = `${e.width.toFixed(1)} x ${e.height.toFixed(1)}`;
+            document.getElementById('twist').textContent = `${e.twist}deg`;
+            document.getElementById('buttons').textContent = e.buttons;
+        }
+
+        function updateActivePointersList() {
+            const container = document.getElementById('activePointers');
+            container.innerHTML = '';
+            activePointers.forEach((pointer, id) => {
+                const badge = document.createElement('div');
+                badge.className = `pointer-badge ${pointer.type}`;
+                badge.innerHTML = `<span class="pointer-dot"></span>${pointer.type} #${id}`;
+                container.appendChild(badge);
+            });
+        }
+
+        function getOrCreateIndicator(pointerId, pointerType) {
+            let indicator = trackingArea.querySelector(`[data-pointer-id="${pointerId}"]`);
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'pointer-indicator';
+                indicator.dataset.pointerId = pointerId;
+                indicator.style.background = pointerColors[pointerType] || '#fff';
+                indicator.style.border = `2px solid ${pointerColors[pointerType] || '#fff'}`;
+                trackingArea.appendChild(indicator);
+            }
+            return indicator;
+        }
+
+        trackingArea.addEventListener('pointerenter', (e) => {
+            log(`pointerenter: ${e.pointerType} #${e.pointerId}`);
+            activePointers.set(e.pointerId, { type: e.pointerType });
+            updateActivePointersList();
+        });
+
+        trackingArea.addEventListener('pointerleave', (e) => {
+            log(`pointerleave: ${e.pointerType} #${e.pointerId}`);
+            const indicator = trackingArea.querySelector(`[data-pointer-id="${e.pointerId}"]`);
+            if (indicator) indicator.remove();
+            activePointers.delete(e.pointerId);
+            updateActivePointersList();
+        });
+
+        trackingArea.addEventListener('pointerdown', (e) => {
+            log(`pointerdown: ${e.pointerType} #${e.pointerId} at (${Math.round(e.offsetX)}, ${Math.round(e.offsetY)})`);
+        });
+
+        trackingArea.addEventListener('pointerup', (e) => {
+            log(`pointerup: ${e.pointerType} #${e.pointerId}`);
+        });
+
+        trackingArea.addEventListener('pointermove', (e) => {
+            updatePointerInfo(e);
+
+            const indicator = getOrCreateIndicator(e.pointerId, e.pointerType);
+            const rect = trackingArea.getBoundingClientRect();
+            indicator.style.left = `${e.offsetX}px`;
+            indicator.style.top = `${e.offsetY}px`;
+
+            // Adjust size based on pressure
+            const size = 20 + (e.pressure * 40);
+            indicator.style.width = `${size}px`;
+            indicator.style.height = `${size}px`;
+        });
+
+        trackingArea.addEventListener('pointercancel', (e) => {
+            log(`pointercancel: ${e.pointerType} #${e.pointerId}`);
+            const indicator = trackingArea.querySelector(`[data-pointer-id="${e.pointerId}"]`);
+            if (indicator) indicator.remove();
+            activePointers.delete(e.pointerId);
+            updateActivePointersList();
+        });
+
+        // Drawing canvas
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0, lastY = 0;
+
+        document.getElementById('baseSize').addEventListener('input', (e) => {
+            document.getElementById('baseSizeValue').textContent = e.target.value;
+        });
+
+        canvas.addEventListener('pointerdown', (e) => {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+            canvas.setPointerCapture(e.pointerId);
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (!isDrawing) return;
+
+            const color = document.getElementById('drawColor').value;
+            const baseSize = parseInt(document.getElementById('baseSize').value);
+            const usePressure = document.getElementById('pressureEnabled').checked;
+
+            // Calculate size based on pressure
+            const pressure = usePressure ? Math.max(0.1, e.pressure) : 0.5;
+            const size = baseSize * pressure * 2;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+
+        canvas.addEventListener('pointerup', (e) => {
+            isDrawing = false;
+            canvas.releasePointerCapture(e.pointerId);
+        });
+
+        canvas.addEventListener('pointerleave', () => {
+            isDrawing = false;
+        });
+
+        function clearDrawing() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            log('Drawing canvas cleared');
+        }
+
+        function saveDrawing() {
+            const link = document.createElement('a');
+            link.download = 'pointer-drawing.png';
+            link.href = canvas.toDataURL();
+            link.click();
+            log('Drawing saved as PNG');
+        }
+
+        // Pointer capture demo
+        const captureBox = document.getElementById('captureBox');
+        let isDragging = false;
+        let dragOffsetX = 0, dragOffsetY = 0;
+        let boxX = 0, boxY = 0;
+
+        captureBox.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            captureBox.setPointerCapture(e.pointerId);
+            captureBox.style.cursor = 'grabbing';
+            captureBox.style.background = '#60a5fa';
+
+            const rect = captureBox.getBoundingClientRect();
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+
+            document.getElementById('captureStatus').textContent = 'Captured!';
+            log(`Pointer captured: #${e.pointerId}`);
+        });
+
+        captureBox.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+
+            const parent = captureBox.parentElement;
+            const parentRect = parent.getBoundingClientRect();
+
+            boxX = e.clientX - parentRect.left - dragOffsetX;
+            boxY = e.clientY - parentRect.top - dragOffsetY;
+
+            captureBox.style.transform = `translate(${boxX}px, ${boxY}px)`;
+        });
+
+        captureBox.addEventListener('pointerup', (e) => {
+            isDragging = false;
+            captureBox.releasePointerCapture(e.pointerId);
+            captureBox.style.cursor = 'grab';
+            captureBox.style.background = '#4ade80';
+            document.getElementById('captureStatus').textContent = 'Released';
+            log(`Pointer released: #${e.pointerId}`);
+        });
+
+        captureBox.addEventListener('gotpointercapture', (e) => {
+            log(`gotpointercapture event fired`);
+        });
+
+        captureBox.addEventListener('lostpointercapture', (e) => {
+            log(`lostpointercapture event fired`);
+            isDragging = false;
+            captureBox.style.cursor = 'grab';
+            captureBox.style.background = '#4ade80';
+        });
+
+        // Multi-touch area
+        const multiTouchArea = document.getElementById('multiTouchArea');
+        const touchPoints = new Map();
+
+        multiTouchArea.addEventListener('pointerdown', (e) => {
+            const dot = document.createElement('div');
+            dot.className = 'pointer-indicator';
+            dot.dataset.pointerId = e.pointerId;
+            dot.style.background = pointerColors[e.pointerType] || '#fff';
+            dot.style.left = `${e.offsetX}px`;
+            dot.style.top = `${e.offsetY}px`;
+            dot.style.width = '40px';
+            dot.style.height = '40px';
+            multiTouchArea.appendChild(dot);
+            touchPoints.set(e.pointerId, dot);
+            document.getElementById('touchCount').textContent = touchPoints.size;
+        });
+
+        multiTouchArea.addEventListener('pointermove', (e) => {
+            const dot = touchPoints.get(e.pointerId);
+            if (dot) {
+                dot.style.left = `${e.offsetX}px`;
+                dot.style.top = `${e.offsetY}px`;
+            }
+        });
+
+        multiTouchArea.addEventListener('pointerup', (e) => {
+            const dot = touchPoints.get(e.pointerId);
+            if (dot) {
+                dot.remove();
+                touchPoints.delete(e.pointerId);
+                document.getElementById('touchCount').textContent = touchPoints.size;
+            }
+        });
+
+        multiTouchArea.addEventListener('pointercancel', (e) => {
+            const dot = touchPoints.get(e.pointerId);
+            if (dot) {
+                dot.remove();
+                touchPoints.delete(e.pointerId);
+                document.getElementById('touchCount').textContent = touchPoints.size;
+            }
+        });
+
+        // Initialize
+        checkSupport();
+        log('Pointer Events demo initialized');
+    </script>
+</body>
+</html>

@@ -1,8 +1,10 @@
-//go:build windows
+//go:build windows && !server
 
 package application
 
 import (
+	"fmt"
+	"syscall"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -20,13 +22,24 @@ type windowsMenuItem struct {
 	itemType menuItemType
 	hidden   bool
 	submenu  w32.HMENU
+
+	// detachedSubmenus is shared with the builder that owns this item. A
+	// submenu is detached while its parent row is hidden, so destroying the
+	// root HMENU will not release it.
+	detachedSubmenus detachedSubmenuSet
+
+	// bitmap holds the HBITMAP handle installed by the most recent
+	// setBitmap call so it can be released before a new one is installed.
+	bitmap w32.HBITMAP
 }
 
 func (m *windowsMenuItem) setHidden(hidden bool) {
 	if hidden && !m.hidden {
 		m.hidden = true
 		// Remove from parent menu
-		w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND)
+		if w32.RemoveMenu(m.hMenu, m.id, w32.MF_BYCOMMAND) {
+			m.detachedSubmenus.add(m.submenu)
+		}
 	} else if !hidden && m.hidden {
 		m.hidden = false
 		// Reinsert into parent menu at correct visible position
@@ -39,7 +52,9 @@ func (m *windowsMenuItem) setHidden(hidden bool) {
 				pos++
 			}
 		}
-		w32.InsertMenuItem(m.hMenu, uint32(pos), true, m.getMenuInfo())
+		if w32.InsertMenuItem(m.hMenu, uint32(pos), true, m.getMenuInfo()) {
+			m.detachedSubmenus.remove(m.submenu)
+		}
 	}
 }
 
@@ -61,6 +76,44 @@ func (m *windowsMenuItem) IsRadio() bool {
 
 func (m *windowsMenuItem) Enabled() bool {
 	return !m.disabled
+}
+
+type detachedSubmenuSet map[w32.HMENU]struct{}
+
+func (s detachedSubmenuSet) add(submenu w32.HMENU) {
+	if submenu != 0 && s != nil {
+		s[submenu] = struct{}{}
+	}
+}
+
+func (s detachedSubmenuSet) remove(submenu w32.HMENU) {
+	delete(s, submenu)
+}
+
+func (s detachedSubmenuSet) destroyAll() {
+	for submenu := range s {
+		w32.DestroyMenu(submenu)
+		delete(s, submenu)
+	}
+}
+
+// assignCommandID gives the last already-appended menu item an explicit
+// command ID.
+func assignCommandID(parentMenu w32.HMENU, id int) error {
+	itemCount := w32.GetMenuItemCount(parentMenu)
+	if itemCount <= 0 {
+		return fmt.Errorf("GetMenuItemCount returned %d: %v", itemCount, syscall.GetLastError())
+	}
+
+	var mii w32.MENUITEMINFO
+	mii.CbSize = uint32(unsafe.Sizeof(mii))
+	mii.FMask = w32.MIIM_ID
+	mii.WID = uint32(id)
+	position := uint32(itemCount - 1)
+	if !w32.SetMenuItemInfo(parentMenu, position, true, &mii) {
+		return fmt.Errorf("SetMenuItemInfo failed at position %d: %v", position, syscall.GetLastError())
+	}
+	return nil
 }
 
 func (m *windowsMenuItem) update() {
@@ -104,11 +157,18 @@ func (m *windowsMenuItem) setBitmap(bitmap []byte) {
 		return
 	}
 
-	// Set the icon
-	err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
+	handles, err := w32.SetMenuIcons(m.hMenu, m.id, bitmap, nil)
 	if err != nil {
 		globalApplication.error("unable to set bitmap on menu item: %w", err)
 		return
+	}
+	// Release the previous HBITMAP, if any, before replacing it.
+	if m.bitmap != 0 {
+		w32.DeleteObject(w32.HGDIOBJ(m.bitmap))
+	}
+	m.bitmap = 0
+	if len(handles) > 0 {
+		m.bitmap = handles[0]
 	}
 	m.update()
 }

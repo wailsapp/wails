@@ -2,7 +2,7 @@
 
 This guide will go into:
 
-1. Miminal Installation Steps - The steps needed to get a minimum Wails setup working for SvelteKit.
+1. Minimal Installation Steps - The steps needed to get a minimum Wails setup working for SvelteKit.
 2. Install Script - Bash script for accomplishing the Minimal Installation Steps with optional Wails branding.
 3. Important Notes - Issues that can be encountered when using SvelteKit + Wails and fixes.
 
@@ -17,9 +17,9 @@ This guide will go into:
 - Navigate into your newly created myapp folder.
 - Delete the folder named "frontend"
 
-##### While in the Wails project root. Use your favorite package manager and install SvelteKit as the new frontend.  Follow the prompts.
+##### While in the Wails project root. Use the Svelte CLI to create a SvelteKit project as the new frontend. Follow the prompts, nothing Wails specific is needed here.
 
-- `npm create svelte@latest frontend`
+- `npx sv create frontend`
 
 ##### Modify wails.json.
 
@@ -124,7 +124,7 @@ wails dev
 
 See https://wails.io/docs/guides/frontend for more information.
 
-##### Inital data can be loaded and refreshed from +page.ts/+page.js to +page.svelte.
+##### Initial data can be loaded and refreshed from +page.ts/+page.js to +page.svelte.
 
 - \+page.ts/+page.js works well with load() https://kit.svelte.dev/docs/load#page-data
 - invalidateAll() in +page.svelte will call load() from +page.ts/+page.js https://kit.svelte.dev/docs/load#rerunning-load-functions-manual-invalidation.

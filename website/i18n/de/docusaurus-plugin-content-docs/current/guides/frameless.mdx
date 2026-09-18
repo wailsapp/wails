@@ -1,0 +1,87 @@
+# Rahmenlose Anwendungen
+
+Wails unterstützt Anwendungen, die keine Rahmen haben. Dies kann über das Feld [frameless](../reference/options.mdx#frameless) in den [Anwendungsoptionen](../reference/options.mdx#application-options) erreicht werden.
+
+Wails bietet eine einfache Lösung zum Ziehen des Fensters: Jedes HTML-Element, das den CSS-Stil `--wails-draggable:drag` besitzt, fungiert als "Ziehpunkt". Diese Eigenschaft gilt für alle untergeordneten Elemente. Wenn du angeben musst, dass ein verschachteltes Element nicht ziehbar sein soll, dann verwende das Attribut '--wails-draggable:no-drag' auf diesem Element.
+
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="/main.css" />
+  </head>
+
+  <body style="--wails-draggable:drag">
+    <div id="logo"></div>
+    <div id="input" style="--wails-draggable:no-drag">
+      <input id="name" type="text" />
+      <button onclick="greet()">Greet</button>
+    </div>
+    <div id="result"></div>
+
+    <script src="/main.js"></script>
+  </body>
+</html>
+```
+
+Bei einigen Projekten ist die Verwendung einer CSS-Variable aufgrund des dynamischen Stylings möglicherweise nicht möglich. In diesem Fall kann die Anwendungsoptionen `CSSDragProperty` und `CSSDragValue` verwendet werden, um eine Eigenschaft und einen Wert zu definieren, der zur Angabe von ziehbaren Regionen verwendet wird:
+
+```go title=main.go
+package main
+
+import (
+    "embed"
+
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    // Create an instance of the app structure
+    app := NewApp()
+
+    // Create application with options
+    err := wails.Run(&options.App{
+        Title:  "alwaysontop",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+          Assets: assets,
+        },
+        Frameless:       true,
+        CSSDragProperty: "widows",
+        CSSDragValue:    "1",
+        Bind: []interface{}{
+          app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+```html title=index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>alwaysontop</title>
+  </head>
+  <body style="widows: 1">
+    <div id="app"></div>
+    <script src="./src/main.js" type="module"></script>
+  </body>
+</html>
+```
+
+:info Vollbildmodus
+
+Wenn zugelassen wird, dass die Anwendung im Vollbildmodus geöffnet wird, wird diese Funktion deaktiviert.
+
+:::

@@ -3,6 +3,6 @@
 
 export type Alias = Cyclic | null;
 
-export type Cyclic = ({ [_: string]: Alias } | null)[] | null;
+export type Cyclic = ({ [_ in string]?: Alias } | null)[] | null;
 
 export type GenericCyclic<T> = {"X": GenericCyclic<T> | null, "Y": T[] | null}[] | null;

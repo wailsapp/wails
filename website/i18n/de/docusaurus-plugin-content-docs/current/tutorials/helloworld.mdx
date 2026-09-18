@@ -1,0 +1,123 @@
+---
+sidebar_position: 10
+---
+
+# Hello World
+
+Das Ziel dieses Tutorials ist es, den Einstieg in Wails mit einer sehr grundlegenden Anwendung zu ermöglichen. Du wirst in der Lage sein:
+
+- Eine neue Wails Anwendung zu erstellen
+- Die Anwendung zu builden
+- Die Anwendung auszuführen
+
+:::note
+
+Dieses Tutorial verwendet Windows als Zielplattform. Die Ausgabe variiert je nach Betriebssystem leicht.
+
+:::
+
+## Eine neue Wails Anwendung zu erstellen
+
+Um eine neue Wails-Anwendung mit der Standardvorlage für Vanilla JS zu erstellen, muss folgender Befehl ausgeführt werden:
+
+```bash
+wails init -n helloworld
+```
+
+Etwas Ähnliches, wie folgt, sollte zu sehen sein:
+
+```
+Wails CLI v2.0.0
+
+Initialising Project 'helloworld'
+---------------------------------
+
+Project Name:      helloworld
+Project Directory: C:\Users\leaan\tutorial\helloworld
+Project Template:  vanilla
+Template Support:  https://wails.io
+
+Initialised project 'helloworld' in 232ms.
+```
+
+Dies wird ein neues Verzeichnis namens `helloworld` im aktuellen Verzeichnis erstellen. In diesem Verzeichnis sind eine Anzahl von Dateien zu finden:
+
+```
+build/       - Contains the build files + compiled application
+frontend/    - Contains the frontend files
+app.go       - Contains the application code
+main.go      - The main program with the application configuration
+wails.json   - The project configuration file
+go.mod       - The go module file
+go.sum       - The go module checksum file
+```
+
+## Die Anwendung zu builden
+
+Um die Anwendung zu builden, wechsel in das neue `helloworld` Projektverzeichnis und führe den folgenden Befehl aus:
+
+```bash
+wails build
+```
+
+Etwas Ähnliches, wie folgt, sollte zu sehen sein:
+
+```
+Wails CLI v2.0.0
+
+App Type:               desktop
+Platforms:              windows/amd64
+Compiler:               C:\Users\leaan\go\go1.18.3\bin\go.exe
+Build Mode:             Production
+Devtools:               false
+Skip Frontend:          false
+Compress:               false
+Package:                true
+Clean Build Dir:        false
+LDFlags:                ""
+Tags:                   []
+Race Detector:          false
+
+Building target: windows/amd64
+------------------------------
+  - Installing frontend dependencies: Done.
+  - Compiling frontend: Done.
+  - Generating bundle assets: Done.
+  - Compiling application: Done.
+Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
+```
+
+Dies hat die Anwendung kompiliert und im Verzeichnis `build/bin` gespeichert.
+
+## Die Anwendung auszuführen
+
+Wenn wir das Verzeichnis `build/bin` im Windows Explorer ansehen, sollten wir unsere Projektdatei sehen:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/helloworld-app-icon.webp").default}
+    width="134px"
+  />
+</div>
+<br />
+```
+
+Wir können diese durch einen Doppelklick auf die `helloworld.exe` Datei ausführen.
+
+Auf Mac erzeugt Wails eine `helloworld.app` Datei, die durch einen Doppelklick ausgeführt werden kann.
+
+Unter Linux kann die Anwendung mit `./helloworld` aus dem `build/bin` Verzeichnis ausgeführt werden.
+
+Die Anwendung sollte wie erwartet funktionieren:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/windows-default-app.webp").default}
+    width="50%"
+    className="screenshot"
+  />
+</div>
+<br />
+```

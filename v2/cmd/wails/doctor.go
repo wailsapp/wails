@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/shell"
 	"runtime"
 	"runtime/debug"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/shell"
 
 	"github.com/pterm/pterm"
 
@@ -78,6 +79,7 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 		{pterm.Bold.Sprint("OS"), info.OS.Name},
 		{pterm.Bold.Sprint("Version"), info.OS.Version},
 		{pterm.Bold.Sprint("ID"), info.OS.ID},
+		{pterm.Bold.Sprint("Branding"), info.OS.Branding},
 		{pterm.Bold.Sprint("Go Version"), runtime.Version()},
 		{pterm.Bold.Sprint("Platform"), runtime.GOOS},
 		{pterm.Bold.Sprint("Architecture"), runtime.GOARCH},
@@ -253,7 +255,6 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	if len(dependenciesMissing) != 0 {
 		pterm.Println("Fatal:")
 		pterm.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
-		pterm.Println("Please read this article on how to resolve this: https://wails.io/guides/resolving-missing-packages")
 	}
 
 	pterm.Println() // Spacer for sponsor message

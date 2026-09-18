@@ -20,6 +20,7 @@ type platformDock interface {
 	SetBadge(label string) error
 	SetCustomBadge(label string, options BadgeOptions) error
 	RemoveBadge() error
+	GetBadge() *string
 }
 
 // Service represents the dock service
@@ -74,4 +75,9 @@ func (d *DockService) SetCustomBadge(label string, options BadgeOptions) error {
 // RemoveBadge removes the badge label from the application icon.
 func (d *DockService) RemoveBadge() error {
 	return d.impl.RemoveBadge()
+}
+
+// GetBadge returns the badge label on the application icon.
+func (d *DockService) GetBadge() *string {
+	return d.impl.GetBadge()
 }

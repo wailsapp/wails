@@ -50,6 +50,15 @@ func TestBindings_GenerateModels(t *testing.T) {
 		EntityWithDiffNamespacesTest,
 		SpecialCharacterFieldTest,
 		WithoutFieldsTest,
+		NoFieldTagsTest,
+		Generics1Test,
+		Generics2Test,
+		IgnoredTest,
+		DeepElementsTest,
+		// PR #4664: Enum ordering tests
+		EnumOrderingTest,
+		EnumElementOrderingTest,
+		TSNameEnumElementOrderingTest,
 	}
 
 	testLogger := &logger.Logger{}

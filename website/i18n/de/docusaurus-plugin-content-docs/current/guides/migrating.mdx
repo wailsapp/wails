@@ -1,0 +1,191 @@
+# Migration von v1
+
+## Übersicht
+
+Wails v2 beinhaltet wesentliche Änderung gegenüber v1. Dieses Dokument zielt darauf ab, die Änderungen und Schritte bei der Migration eines bestehenden Projekts hervorzuheben.
+
+### Erstellen der Anwendung
+
+In v1 wird die Hauptanwendung mit `wails.CreateApp` erstellt. Verknüpfungen werden mit `app.Bind` hinzugefügt, die Anwendung wird dann mit `app.Run()` ausgeführt.
+
+Beispiel:
+
+```go title="v1"
+ app := wails.CreateApp(&wails.AppConfig{
+    Title:  "MyApp",
+    Width:  1024,
+    Height: 768,
+    JS:     js,
+    CSS:    css,
+    Colour: "#131313",
+  })
+  app.Bind(basic)
+  app.Run()
+```
+
+In v2 gibt es nur eine einzige Methode, `wails.Run()`, die [Anwendungsoptionen](../reference/options.mdx#application-options) akzeptiert.
+
+```go title="v2"
+    err := wails.Run(&options.App{
+        Title:  "MyApp",
+        Width:  800,
+        Height: 600,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        Bind:   []interface{}{
+            basic,
+        },
+    })
+```
+
+### Verknüpfungen
+
+In v1 war es möglich, sowohl beliebige Funktionen als auch Structs zu verknüpfen. In v2 wurde dies vereinfacht, sodass nur noch Structs angenommen werden. Die Struct Instanzen, die zuvor an die `Bind()` Methode in v1 übergeben wurden sind nun im `Bind` Feld der [Anwendungsoptionen](../reference/options.mdx#application-options) spezifiziert:
+
+```go title="v1"
+  app := wails.CreateApp(/* options */)
+  app.Bind(basic)
+```
+
+```go title="v2"
+    err := wails.Run(&options.App{
+        /* other options */
+        Bind: []interface{}{
+            basic,
+        },
+    })
+```
+
+In v1 standen gebundene Methoden im Frontend unter `window.backend` zur Verfügung. Dies hat sich zu `window.go` geändert
+
+### Anwendungslebenszyklus
+
+In v1 gab es 2 spezielle Methoden in einem gebundenen Struct: `WailsInit()` und `WailsShutdown()`. Diese wurden durch 3 Lebenszyklushaken als Teil der [Anwendungsoptionen](../reference/options.mdx#application-options) ersetzt:
+
+- [OnStartup](../reference/options.mdx#onstartup)
+- [OnShutdown](../reference/options.mdx#onshutdown)
+- [OnDomReady](../reference/options.mdx#ondomready)
+
+Hinweis: [OnDomReady](../reference/options.mdx#ondomready) ersetzt das `Wails:ready` Systemereignis von v1.
+
+Diese Methoden können Standardfunktionen sein, aber es ist eine gängige Praxis, diese als Teil eines Structs zu definieren:
+
+```go title="v2"
+    basic := NewBasicApp()
+    err := wails.Run(&options.App{
+        /* Other Options */
+        OnStartup:  basic.startup,
+        OnShutdown: basic.shutdown,
+        OnDomReady: basic.domready,
+    })
+...
+type Basic struct {
+    ctx context.Context
+}
+func (b *Basic) startup(ctx context.Context) {
+    b.ctx = ctx
+}
+...
+```
+
+### Laufzeit
+
+Die Laufzeit in v2 ist viel reicher an Funktionen als v1, mit Unterstützung für Menüs, Fenstermanipulation und besseren Dialogen. Die Benennung der Methoden hat sich leicht geändert – bitte lese dir dafür die [Laufzeitreferenz](../reference/runtime/intro.mdx) durch.
+
+In v1 war die [Laufzeit](../reference/runtime/intro.mdx) über einen an `WailsInit()` übergebenen Struct verfügbar. In v2 wurde die Laufzeit in ein eigenes Paket verschoben. Jede Methode in der Laufzeit Methode verwendet die `context.Context` die an die [OnStartup](../reference/options.mdx#onstartup) Methode übergeben wird.
+
+```go title="Runtime Example"
+package main
+
+import "github.com/wailsapp/wails/v2/pkg/runtime"
+
+type Basic struct {
+    ctx context.Context
+}
+
+// startup is called at application startup
+func (a *App) startup(ctx context.Context) {
+    a.ctx = ctx
+    runtime.LogInfo(ctx, "Application Startup called!")
+}
+
+```
+
+### Assets
+
+Die _größte_ Änderung in v2 ist, wie mit assets umgegangen wird.
+
+In v1 wurden Assets über 2 Anwendungsoptionen übergeben:
+
+- `JS` - JavaScript der Anwendung
+- `CSS` - CSS der Anwendung
+
+Dies bedeutete, dass die Verantwortung für die Erstellung einer einzigen JS- und CSS-Datei beim Entwickler lag. Dies erforderte im Wesentlichen den Einsatz von komplizierten Packern wie Webpack.
+
+In v2 macht Wails keine Annahmen über deine Frontend-Assets wie ein Webserver. Alle deine App-Assets werden als `embed.FS` an die Anwendungsoptionen übergeben.
+
+**Das bedeutet, dass du deine Assets nicht bündeln, Bilder nicht als Base64 kodieren oder mit der komplizierten Konfiguration von Bundlern für die Verwendung benutzerdefinierter Schriftarten herumschlagen musst**.
+
+Beim Start durchsucht Wails die angegebene `embed.FS` nach `Index.html` und verwenden seine Position als root Pfad für alle anderen App-Assets - genau wie ein Webserver.
+
+Beispiel: Eine Anwendung hat das folgende Projekt-Layout. Alle endgültigen Assets sind im `frontend/dist` Verzeichnis platziert:
+
+```shell
+.
+├── build/
+├── frontend/
+│   └── dist/
+│       ├── index.html
+│       ├── main.js
+│       ├── main.css
+│       └── logo.svg
+├── main.go
+└── wails.json
+```
+
+Diese Assets können von der Anwendung verwendet werden, indem einfach eine `embed.FS` erstellt wird:
+
+```go title="Assets Example"
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    err := wails.Run(&options.App{
+        /* Other Options */
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+    })
+}
+```
+
+Natürlich können Bundler auch eingesetzt werden, wenn du das möchtest. Die einzige Voraussetzung ist, das endgültige Verzeichnis der Anwendungsressourcen mithilfe eines `embed.FS` im `Assets` Feld der [application options](../reference/options.mdx#application-options) an Wails zu übergeben.
+
+### Projekt-Konfiguration
+
+In v1 wurde die Projekt-Konfiguration in der Datei `project.json` im Projektverzeichnis gespeichert. In v2 wird die Projekt-Konfiguration in der `wails.json` Datei im Projektverzeichnis gespeichert.
+
+Das Format der Datei ist leicht unterschiedlich. Hier ist ein Vergleich:
+
+<p align="center">
+
+| v1                 | v2               | Notes                                                                                                                                                                      |
+| ------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name               | name             |                                                                                                                                                                            |
+| description        |                  | Removed                                                                                                                                                                    |
+| author / name      | author / name    |                                                                                                                                                                            |
+| author / email     | author / email   |                                                                                                                                                                            |
+| version            | version          |                                                                                                                                                                            |
+| binaryname         | outputfilename   | Changed                                                                                                                                                                    |
+| frontend / dir     |                  | Removed                                                                                                                                                                    |
+| frontend / install | frontend:install | Changed                                                                                                                                                                    |
+| frontend / build   | frontend:build   | Changed                                                                                                                                                                    |
+| frontend / bridge  |                  | Removed                                                                                                                                                                    |
+| frontend / serve   |                  | Removed                                                                                                                                                                    |
+| tags               |                  | Removed                                                                                                                                                                    |
+|                    | wailsjsdir       | Das Verzeichnis zum Generieren von wailsjs-Modulen                                                                                                                                  |
+|                    | assetdir         | Das Verzeichnis der kompilierten Frontend-Assets für den `dev`-Modus. Dies wird normalerweise abgeleitet und kann leer bleiben.                                                           |
+| | reloaddirs       | Durch Komma getrennte Liste zusätzlicher Verzeichnisse, die auf Änderungen achten und im `dev` Modus neu laden können. Dies wird nur für fortgeschrittenere Asset-Konfigurationen benötigt. |
+
+</p>

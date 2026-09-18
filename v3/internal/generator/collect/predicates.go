@@ -400,6 +400,68 @@ func IsStringAlias(typ types.Type) bool {
 	return ok && basic.Info()&types.IsString != 0
 }
 
+// IsNumberAlias returns true when
+// either typ will be rendered to JS/TS as an alias for the TS type `number`,
+// or typ itself (not its underlying type) is a pointer
+// whose element type satisfies the property described above.
+//
+// This predicate is only safe to use either with map keys,
+// where pointers are treated in an ad-hoc way by [json.Marshal],
+// or when typ IS ALREADY KNOWN to be either [types.Alias] or [types.Named].
+//
+// Otherwise, the result might be incorrect:
+// IsNumberAlias MUST NOT be used to check
+// whether an arbitrary instance of [types.Type]
+// renders as a JS/TS number type.
+//
+// Notice that IsNumberAlias returns false for all type parameters:
+// detecting those that must be always instantiated as number aliases
+// is technically possible, but very difficult.
+func IsNumberAlias(typ types.Type) bool {
+	// Unwrap at most one pointer.
+	// NOTE: do not unalias typ before testing:
+	// aliases whose underlying type is a pointer
+	// are never rendered as numbers.
+	if ptr, ok := typ.(*types.Pointer); ok {
+		typ = ptr.Elem()
+	}
+
+	switch typ.(type) {
+	case *types.Alias, *types.Named:
+		// Aliases and named types might be rendered as number aliases.
+	default:
+		// Not a model type, hence not an alias.
+		return false
+	}
+
+	// Skip pointer and interface types: they are always nullable
+	// and cannot have any explicitly defined methods.
+	// This takes care of rejecting type params as well,
+	// since their underlying type is guaranteed to be an interface.
+	switch typ.Underlying().(type) {
+	case *types.Pointer, *types.Interface:
+		return false
+	}
+
+	// Follow alias chain.
+	typ = types.Unalias(typ)
+
+	// Aliases of the basic numeric types are rendered as numbers.
+	if basic, ok := typ.(*types.Basic); ok {
+		return basic.Info()&(types.IsInteger|types.IsUnsigned|types.IsFloat) != 0
+	}
+
+	// json.Marshalers can only be rendered as any.
+	// TextMarshalers that aren't json.Marshalers render as strings not numbers.
+	if MaybeJSONMarshaler(typ) != NonMarshaler || MaybeTextMarshaler(typ) != NonMarshaler {
+		return false
+	}
+
+	// Named types whose underlying type is numeric are rendered as numbers.
+	basic, ok := typ.Underlying().(*types.Basic)
+	return ok && basic.Info()&(types.IsInteger|types.IsUnsigned|types.IsFloat) != 0
+}
+
 // IsClass returns true if the given type will be rendered
 // as a JS/TS model class (or interface).
 func IsClass(typ types.Type) bool {

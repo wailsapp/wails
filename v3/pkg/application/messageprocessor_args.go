@@ -1,8 +1,9 @@
 package application
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"encoding/json"
 )
 
 type Args struct {

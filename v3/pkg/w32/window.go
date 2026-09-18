@@ -4,7 +4,6 @@ package w32
 
 import (
 	"fmt"
-	"github.com/samber/lo"
 	"strconv"
 	"strings"
 	"sync"
@@ -44,6 +43,7 @@ var Fatal func(error)
 
 const (
 	GCLP_HBRBACKGROUND int32 = -10
+	GCLP_HCURSOR       int32 = -12
 	GCLP_HICON         int32 = -14
 )
 
@@ -64,8 +64,12 @@ func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) error {
 	//     are shown if transparent ant translucent.
 	var margins MARGINS
 	if extend {
-		margins = MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
+		margins = MARGINS{1, 1, 1, 1}
 	}
+	return ExtendFrameIntoClientAreaWithMargins(hwnd, margins)
+}
+
+func ExtendFrameIntoClientAreaWithMargins(hwnd uintptr, margins MARGINS) error {
 	if err := dwmExtendFrameIntoClientArea(hwnd, &margins); err != nil {
 		return fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err)
 	}
@@ -113,6 +117,10 @@ func ShowWindowMinimised(hwnd uintptr) {
 
 func SetApplicationIcon(hwnd uintptr, icon HICON) {
 	setClassLongPtr(hwnd, GCLP_HICON, icon)
+}
+
+func SetClassCursor(hwnd uintptr, cursor HCURSOR) {
+	setClassLongPtr(hwnd, GCLP_HCURSOR, cursor)
 }
 
 func SetBackgroundColour(hwnd uintptr, r, g, b uint8) {
@@ -180,17 +188,33 @@ func MustStringToUTF16Ptr(input string) *uint16 {
 	return result
 }
 
+// MustStringToUTF16uintptr converts input to a NUL-terminated UTF-16 buffer and returns its pointer as a uintptr.
+// It first removes any internal NUL characters from input, then converts the result to a UTF-16 pointer.
+// The function panics if the conversion fails.
 func MustStringToUTF16uintptr(input string) uintptr {
 	input = stripNulls(input)
-	ret := lo.Must(syscall.UTF16PtrFromString(input))
+	ret, err := syscall.UTF16PtrFromString(input)
+	if err != nil {
+		panic(err)
+	}
 	return uintptr(unsafe.Pointer(ret))
 }
 
+// MustStringToUTF16 converts s to UTF-16 encoding, stripping any embedded NULs and panicking on error.
+//
+// The returned slice is suitable for Windows API calls that expect a UTF-16 encoded string.
 func MustStringToUTF16(input string) []uint16 {
 	input = stripNulls(input)
-	return lo.Must(syscall.UTF16FromString(input))
+	ret, err := syscall.UTF16FromString(input)
+	if err != nil {
+		panic(err)
+	}
+	return ret
 }
 
+// StringToUTF16 converts input to a UTF-16 encoded, NUL-terminated []uint16 suitable for Windows API calls.
+// It first removes any embedded NUL ('\x00') characters from input. The returned slice is NUL-terminated;
+// an error is returned if the conversion fails.
 func StringToUTF16(input string) ([]uint16, error) {
 	input = stripNulls(input)
 	return syscall.UTF16FromString(input)
@@ -322,6 +346,11 @@ func EnableCloseButton(hwnd HWND) error {
 	}
 
 	return nil
+}
+
+func GetSystemMenu(hwnd HWND, revert bool) HMENU {
+	ret, _, _ := getSystemMenu.Call(hwnd, uintptr(BoolToBOOL(revert)))
+	return HMENU(ret)
 }
 
 func FindWindowW(className, windowName *uint16) HWND {
