@@ -117,7 +117,7 @@ err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: already 
 [macOS]
 全域快捷鍵使用 Carbon Event Manager 的快速鍵 API。這是 macOS 上系統範圍快速鍵的標準機制，不需要「輔助使用」權限。
 
-快速鍵會繫結至實體按鍵位置，因此在非 QWERTY 鍵盤配置上，快捷鍵會對應至標準 ANSI/QWERTY 位置上的按鍵。
+字母快捷鍵會依照鍵盤配置運作。Carbon API 繫結的是實體按鍵位置，因此 Wails 會透過 `UCKeyTranslate` 找出目前配置中可輸入該字母的按鍵。在 AZERTY、QWERTZ、Dvorak 等配置中，`Cmd+A` 因此會對應至標示 **A** 的按鍵，而不是 QWERTY 配置中的位置。數字、標點符號和具名按鍵（方向鍵、功能鍵等）仍使用固定的實體位置。繫結會在註冊快捷鍵時決定；如果在應用程式執行期間切換鍵盤配置，現有的字母快捷鍵仍會繫結至原本的實體按鍵。
 
 @note{type="caution" title="隱藏快捷鍵與 `ApplicationShouldTerminateAfterLastWindowClosed`"}
 在 macOS 上，`window.Hide()`會使用`orderOut:`，使視窗變為不可見。AppKit 會將最後一個不可見視窗視為已關閉，因此，如果您設定了`Mac.ApplicationShouldTerminateAfterLastWindowClosed: true`，並使用全域快捷鍵隱藏唯一的視窗，應用程式將會結束，而不是繼續在背景執行。若您仰賴顯示／隱藏快速鍵，請勿設定該選項（預設即為未設定），如此便能隱藏視窗，並在之後再次將其叫出。

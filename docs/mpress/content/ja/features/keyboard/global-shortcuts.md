@@ -117,7 +117,7 @@ err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: already 
 [macOS]
 グローバルショートカットでは、Carbon Event Manager のホットキー API を使用します。これは macOS でシステム全体のホットキーを実現する標準的な仕組みであり、アクセシビリティ権限は必要ありません。
 
-ホットキーは物理的なキー位置にバインドされるため、QWERTY 以外の配列では、ショートカットは標準の ANSI/QWERTY 配列で同じ位置にあるキーに対応します。
+文字キーのショートカットはキーボード配列を考慮します。Carbon API は物理的なキー位置にバインドするため、Wails は `UCKeyTranslate` を使い、現在の配列でその文字を入力するキーを特定します。そのため、AZERTY、QWERTZ、Dvorak などの配列では、`Cmd+A` は QWERTY の位置ではなく、**A** と表示されたキーに対応します。数字、句読点、名前付きキー（矢印キーやファンクションキーなど）は固定の物理位置を使用します。割り当てはショートカットの登録時に決まるため、アプリケーションの実行中に配列を変更しても、既存の文字キーのショートカットは登録時の物理キーに割り当てられたままです。
 
 @note{type="caution" title="非表示ショートカットと `ApplicationShouldTerminateAfterLastWindowClosed`"}
 macOS では、`window.Hide()` は `orderOut:` を使用してウィンドウを非表示にします。AppKit は最後の非表示ウィンドウを閉じたものとして扱うため、`Mac.ApplicationShouldTerminateAfterLastWindowClosed: true` を設定し、唯一のウィンドウをグローバルショートカットで非表示にすると、アプリケーションはバックグラウンドに残らず終了します。表示／非表示を切り替えるホットキーを使用する場合は、このオプションを未設定（デフォルト）のままにしてください。これにより、ウィンドウを非表示にした後で再び呼び出せます。

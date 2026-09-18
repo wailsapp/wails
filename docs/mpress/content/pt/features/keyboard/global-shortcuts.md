@@ -117,7 +117,7 @@ Devido a essas diferenças, sempre verifique o erro retornado por `Register` e f
 [macOS]
 Os atalhos globais usam a API de teclas de atalho do Carbon Event Manager. Esse é o mecanismo padrão para teclas de atalho disponíveis em todo o sistema no macOS e não requer permissão de Acessibilidade.
 
-As teclas de atalho são associadas às posições físicas das teclas; portanto, em layouts que não sejam QWERTY, um atalho corresponde à tecla situada na posição padrão ANSI/QWERTY.
+Os atalhos com letras respeitam o layout do teclado. A API Carbon associa os atalhos a posições físicas, por isso o Wails usa `UCKeyTranslate` para encontrar a tecla que produz a letra no layout ativo. Assim, `Cmd+A` corresponde à tecla marcada com **A** em layouts AZERTY, QWERTZ, Dvorak e semelhantes, em vez da posição QWERTY. Dígitos, sinais de pontuação e teclas nomeadas (setas, teclas de função etc.) mantêm sua posição física fixa. A associação é definida no registro do atalho; se você mudar o layout enquanto o aplicativo estiver em execução, os atalhos com letras existentes permanecerão associados à tecla física original.
 
 @note{type="caution" title="Atalhos para ocultar e `ApplicationShouldTerminateAfterLastWindowClosed`"}
 `window.Hide()` usa `orderOut:` no macOS, o que torna a janela não visível. O AppKit considera fechada a última janela não visível; portanto, se você definir `Mac.ApplicationShouldTerminateAfterLastWindowClosed: true` e usar um atalho global para ocultar sua única janela, o aplicativo será encerrado em vez de permanecer em segundo plano. Quando depender de uma tecla de atalho para ocultar/exibir, deixe essa opção sem definir (o padrão), para que a janela possa ser ocultada e reaberta posteriormente.

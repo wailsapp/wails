@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Global shortcuts on macOS are now keyboard-layout aware: letter accelerators bind to the labelled key on non-QWERTY layouts (AZERTY, QWERTZ, Dvorak, ...) via `UCKeyTranslate`, instead of the fixed QWERTY physical position.
 
 ## Changed
 <!-- Changes in existing functionality -->

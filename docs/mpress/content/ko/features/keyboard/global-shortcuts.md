@@ -117,7 +117,7 @@ err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: already 
 [macOS]
 전역 단축키는 Carbon Event Manager의 단축키 API를 사용합니다. 이는 macOS에서 시스템 전역 단축키를 구현하는 표준 메커니즘이며 손쉬운 사용 권한이 필요하지 않습니다.
 
-단축키는 키의 물리적 위치에 바인딩되므로 QWERTY가 아닌 레이아웃에서도 표준 ANSI/QWERTY 위치의 키에 매핑됩니다.
+문자 단축키는 키보드 레이아웃을 따릅니다. Carbon API는 물리적 키 위치에 바인딩하므로 Wails는 `UCKeyTranslate`를 사용하여 현재 레이아웃에서 해당 문자를 입력하는 키를 찾습니다. 따라서 AZERTY, QWERTZ, Dvorak 등의 레이아웃에서 `Cmd+A`는 QWERTY 위치가 아닌 **A**라고 표시된 키에 연결됩니다. 숫자, 문장 부호, 이름이 있는 키(화살표 키, 기능 키 등)는 고정된 물리적 위치를 사용합니다. 바인딩은 단축키를 등록할 때 결정됩니다. 애플리케이션 실행 중에 키보드 레이아웃을 바꾸더라도 기존 문자 단축키는 처음 바인딩된 물리적 키를 유지합니다.
 
 @note{type="caution" title="숨기기 단축키와 `ApplicationShouldTerminateAfterLastWindowClosed`"}
 macOS에서 `window.Hide()`은 `orderOut:`을 사용하여 창을 보이지 않게 합니다. AppKit은 보이지 않는 마지막 창을 닫힌 것으로 처리하므로 `Mac.ApplicationShouldTerminateAfterLastWindowClosed: true`을 설정한 상태에서 전역 단축키를 사용해 유일한 창을 숨기면 애플리케이션이 백그라운드에 남지 않고 종료됩니다. 숨기기/표시 단축키를 사용하는 경우에는 이 옵션을 설정하지 않은 상태(기본값)로 두어야 창을 숨겼다가 나중에 다시 불러올 수 있습니다.

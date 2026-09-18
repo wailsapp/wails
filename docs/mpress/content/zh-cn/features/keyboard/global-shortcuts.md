@@ -117,7 +117,7 @@ err := app.GlobalShortcut.Register("Shift+Ctrl+G", doSomething) // err: already 
 [macOS]
 全局快捷键使用 Carbon Event Manager 的热键 API。这是 macOS 上实现系统级热键的标准机制，无需辅助功能权限。
 
-热键绑定到物理按键位置，因此在非 QWERTY 键盘布局上，快捷键会映射到标准 ANSI/QWERTY 布局中相应位置的按键。
+字母快捷键会考虑键盘布局。Carbon API 绑定的是物理按键位置，因此 Wails 通过 `UCKeyTranslate` 查找当前布局中能够输入相应字母的按键。在 AZERTY、QWERTZ、Dvorak 等布局中，`Cmd+A` 因此对应标有 **A** 的按键，而不是 QWERTY 布局中的位置。数字、标点和具名按键（方向键、功能键等）仍使用固定的物理位置。绑定在注册快捷键时确定；如果在应用运行期间切换键盘布局，已有的字母快捷键仍会绑定到原来的物理按键。
 
 @note{type="caution" title="隐藏快捷键与`ApplicationShouldTerminateAfterLastWindowClosed`"}
 在 macOS 上，`window.Hide()`使用`orderOut:`，这会使窗口不可见。AppKit 会将最后一个不可见窗口视为已关闭，因此，如果设置了`Mac.ApplicationShouldTerminateAfterLastWindowClosed: true`，并使用全局快捷键隐藏唯一的窗口，应用将退出，而不是继续在后台运行。依赖隐藏/显示热键时，请不要设置该选项（默认即为未设置），这样窗口便可隐藏，并在之后重新调出。
