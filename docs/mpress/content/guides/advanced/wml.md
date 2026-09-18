@@ -1,0 +1,13 @@
+---
+title: "WML (Wails Markup)"
+description: "A markup language for describing Wails v3 user interfaces"
+slug: "guides/advanced/wml"
+sourcePath: "guides/advanced/wml.md"
+---
+
+@note{type="info"}
+This page is a placeholder. Full WML content is coming soon.
+
+@end
+
+WML (Wails Markup) is a declarative language for describing Wails user interfaces. Documentation for the markup syntax and available components will be added here.

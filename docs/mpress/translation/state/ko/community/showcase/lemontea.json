@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "37dcc2cbff6ddaf56d0e",
+  "sourceFile": "community/showcase/lemontea.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "targetHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "machineHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "machineText": "![lemontea](/assets/showcase-images/lemontea_1.png)",
+      "status": "final",
+      "sourcePreview": "![lemontea](/assets/showcase-images/lemontea_1.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "c179846817f47c12a67eadff23312b049ad4d536ff23cbc6b157493cbbd3247e",
+      "targetHash": "e48b1b1611b2d304f8b2effe9fc3cd6fda307de711172e73d01abc812d3f0205",
+      "machineHash": "e48b1b1611b2d304f8b2effe9fc3cd6fda307de711172e73d01abc812d3f0205",
+      "machineText": "[lemontea](https://github.com/MikeLINGxZ/lemontea) - Wails v3, Go, React, TypeScript로 구축한 크로스 플랫폼 AI 데스크톱 클라이언트입니다. 채팅, 도구 호출, 멀티 에이전트 워크플로 실행, 로컬 데스크톱 통합에 중점을 둡니다.",
+      "status": "final",
+      "sourcePreview": "[lemontea](https://github.com/MikeLINGxZ/lemontea) - A cross-platform AI desktop client built with W…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "9f9cced83647ef87825107c75c62a16bfb0c0e507928081ddca26fb41797b092",
+      "targetHash": "3bbe6989e275bbf74ccdd9333450b23465e57e5996c29a98e2cea5137be8f7ef",
+      "machineHash": "3bbe6989e275bbf74ccdd9333450b23465e57e5996c29a98e2cea5137be8f7ef",
+      "machineText": "Wails v3로 구축한 크로스 플랫폼 AI 데스크톱 클라이언트입니다.",
+      "status": "final",
+      "sourcePreview": "A cross-platform AI desktop client built with Wails v3.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "targetHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "machineHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "machineText": "lemontea",
+      "status": "final",
+      "sourcePreview": "lemontea",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}
