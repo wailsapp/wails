@@ -1,0 +1,87 @@
+# Aplicações sem frames
+
+O Wails suporta aplicativos que não possuem frames. Isso pode ser conseguido usando o campo [sem frameless](../reference/options.mdx#frameless) no [Application Options](../reference/options.mdx#application-options).
+
+Wails oferece uma solução simples para arrastar a janela: qualquer elemento HTML que tenha o estilo CSS `--wails-draggable:drag` irá atuar como uma "alça de arrastar". Esta propriedade se aplica a todos os elementos filhos. Se você precisar indicar que um elemento aninhado não deve arrastar, então use o atributo '--wails-draggable:no-drag' nesse elemento.
+
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="/main.css" />
+  </head>
+
+  <body style="--wails-draggable:drag">
+    <div id="logo"></div>
+    <div id="input" style="--wails-draggable:no-drag">
+      <input id="name" type="text" />
+      <button onclick="greet()">Greet</button>
+    </div>
+    <div id="result"></div>
+
+    <script src="/main.js"></script>
+  </body>
+</html>
+```
+
+Para alguns projetos, usar uma variável CSS pode não ser possível devido a um estilo dinâmico. Neste caso, você pode usar o aplicativo `CSSDragProperty` e `CSSDragValue` opções para definir uma propriedade e valor que serão usados para indicar regiões arrastáveis:
+
+```go title=main.go
+package main
+
+import (
+    "embed"
+
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    // Create an instance of the app structure
+    app := NewApp()
+
+    // Create application with options
+    err := wails.Run(&options.App{
+        Title:  "alwaysontop",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+          Assets: assets,
+        },
+        Frameless:       true,
+        CSSDragProperty: "widows",
+        CSSDragValue:    "1",
+        Bind: []interface{}{
+          app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+```html title=index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>alwaysontop</title>
+  </head>
+  <body style="widows: 1">
+    <div id="app"></div>
+    <script src="./src/main.js" type="module"></script>
+  </body>
+</html>
+```
+
+:::info Tela Cheia
+
+Se você permitir que seu aplicativo vá para tela cheia, esta funcionalidade de arrastar será desativada.
+
+:::

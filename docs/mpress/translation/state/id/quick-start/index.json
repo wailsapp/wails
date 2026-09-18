@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4820647960e27385e339",
+  "sourceFile": "quick-start/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
+      "targetHash": "77a2ae2efc70b28096bcae84f892c650fbcfb17c0f5f9240f61ef1807ff934a2",
+      "machineHash": "77a2ae2efc70b28096bcae84f892c650fbcfb17c0f5f9240f61ef1807ff934a2",
+      "machineText": "Mulai Cepat",
+      "status": "final",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "328908a83269e0db2035621d0110a68fba3dad6330d66d58a7371cb377e0d5e4",
+      "targetHash": "77a2ae2efc70b28096bcae84f892c650fbcfb17c0f5f9240f61ef1807ff934a2",
+      "machineHash": "77a2ae2efc70b28096bcae84f892c650fbcfb17c0f5f9240f61ef1807ff934a2",
+      "machineText": "Mulai Cepat",
+      "status": "final",
+      "sourcePreview": "Quick Start",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    }
+  }
+}

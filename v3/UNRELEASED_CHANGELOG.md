@@ -1,7 +1,7 @@
 # Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3 alpha release.
+This file is used to collect changelog entries for the next v3 release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
