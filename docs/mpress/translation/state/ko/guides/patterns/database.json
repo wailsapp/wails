@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ebb78f638168e5ffdf0d",
+  "sourceFile": "guides/patterns/database.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "48156a472942928fcc5a0f4927f6328b6eaa8559effc6458800128031a6634ea",
+      "targetHash": "964bd3ceb558135dbabd30609a1dbc76589564c570f4bb9e1b36a38ee16f48be",
+      "machineHash": "964bd3ceb558135dbabd30609a1dbc76589564c570f4bb9e1b36a38ee16f48be",
+      "machineText": "이 페이지는 자리 표시자입니다. 전체 데이터베이스 통합 콘텐츠는 곧 제공될 예정입니다.",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full database integration content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "9989f2f7ebde19c0531fa8bf720eb348bf4fd7a5bda29b63969eac0991e81b29",
+      "targetHash": "a732625565a69a29ddf468ec9e346c62fdb763f6702c5afb35d70f6104bc0b8d",
+      "machineHash": "a732625565a69a29ddf468ec9e346c62fdb763f6702c5afb35d70f6104bc0b8d",
+      "machineText": "Wails v3 애플리케이션은 Go 애플리케이션이므로 바인딩된 서비스 내에서 [SQLite](https://github.com/mattn/go-sqlite3), [PostgreSQL](https://github.com/jackc/pgx), [MySQL](https://github.com/go-sql-driver/mysql)을 비롯한 모든 표준 Go 데이터베이스 드라이버를 사용할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "Wails v3 applications are Go applications, so you can use any standard Go database driver — includin…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9883cf56cdd6b6b93f4d4f5cbb41be7e28856a26677ccd24cf6657162d222941",
+      "targetHash": "240a1482576cca491b6f42ba68cb7e35d9bfd2abdf20371ae0545d1337e41437",
+      "machineHash": "240a1482576cca491b6f42ba68cb7e35d9bfd2abdf20371ae0545d1337e41437",
+      "machineText": "실제로 작동하는 예제는 완성된 애플리케이션에 SQLite 영속성을 추가하는 방법을 보여 주는 [TODO 튜토리얼](/tutorials/02-todo-vanilla/)을 참조하세요.",
+      "status": "final",
+      "sourcePreview": "For a working example, see the [TODO tutorial](/tutorials/02-todo-vanilla/), which demonstrates addi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "7987957fb2e6e74f86e5306bcb37e60acda396bf7715e1d25ce339d7708d2fe2",
+      "targetHash": "a85e7586a822d2fb526719a445ca579b7bc7230b99d25be61977373bd92889dd",
+      "machineHash": "a85e7586a822d2fb526719a445ca579b7bc7230b99d25be61977373bd92889dd",
+      "machineText": "Wails v3에서 SQLite, PostgreSQL 및 기타 데이터베이스 통합하기",
+      "status": "final",
+      "sourcePreview": "Integrating SQLite, PostgreSQL, and other databases with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "080b9c836c59a179f2be830de3453b7b756ec9f5977db00aecfc5193baa53d5c",
+      "targetHash": "05ac22830afac2ef5941e53800ef84f56004768260327af691cef29ef8545a97",
+      "machineHash": "05ac22830afac2ef5941e53800ef84f56004768260327af691cef29ef8545a97",
+      "machineText": "데이터베이스 통합",
+      "status": "final",
+      "sourcePreview": "Database Integration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    }
+  }
+}

@@ -64,6 +64,13 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 	return rw.w.Write(buf)
 }
 
+// Flush implements the http.Flusher interface.
+//
+// Write goes into the pipe whose read end WebKitGTK consumes as a
+// GUnixInputStream, so bytes are already on their way out and there is
+// nothing held back here.
+func (rw *responseWriter) Flush() {}
+
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.code = code
 	if rw.wroteHeader || rw.finished {
