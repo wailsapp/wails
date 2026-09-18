@@ -94,6 +94,23 @@ func (p *Win32Menu) freeBitmaps() {
 	p.bitmaps = nil
 }
 
+// takeRuntimeBitmaps moves the HBITMAP handles MenuItem.SetBitmap allocated
+// after the build off the item impls and into the menu's own list.
+//
+// It exists for the same reason Update does the equivalent inline: building a
+// menu reassigns item.impl, so any handle still hanging off the old impl
+// becomes unreachable through this menu's mapping and would never be freed.
+// A caller replacing one Win32Menu with another has to take them before the
+// new build, and can then Destroy the old one afterwards.
+func (p *Win32Menu) takeRuntimeBitmaps() {
+	for _, item := range p.menuMapping {
+		if impl, ok := item.impl.(*windowsMenuItem); ok && impl.bitmap != 0 {
+			p.bitmaps = append(p.bitmaps, impl.bitmap)
+			impl.bitmap = 0
+		}
+	}
+}
+
 func (p *Win32Menu) newMenu() w32.HMENU {
 	if p.isPopup {
 		return w32.NewPopupMenu()

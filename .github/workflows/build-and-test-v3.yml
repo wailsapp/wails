@@ -1,5 +1,8 @@
 name: Build + Test v3
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -281,19 +284,50 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     name: v3 Build Results
-    needs: [test_go, test_js, test_templates]
+    needs: [test_go, test_js, test_templates, test_mac_private_apis]
     steps:
       - run: |
           go_result="${{ needs.test_go.result }}"
           js_result="${{ needs.test_js.result }}"
           templates_result="${{ needs.test_templates.result }}"
+          mac_apis_result="${{ needs.test_mac_private_apis.result }}"
           
           if [[ $go_result == "success" || $go_result == "skipped" ]] && \
              [[ $js_result == "success" || $js_result == "skipped" ]] && \
-             [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
+             [[ $templates_result == "success" || $templates_result == "skipped" ]] && \
+             [[ $mac_apis_result == "success" || $mac_apis_result == "skipped" ]]; then
             echo "All required jobs succeeded or were skipped"
             exit 0
           else
             echo "One or more required jobs failed"
             exit 1
           fi
+
+  test_mac_private_apis:
+    name: macOS API variants (${{ matrix.tags || 'public' }})
+    if: github.base_ref == 'master'
+    runs-on: macos-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        tags:
+          - ''
+          - private_mac_apis
+          - production
+          - production,private_mac_apis
+          - production,devtools
+          - production,devtools,private_mac_apis
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: v3/go.mod
+          cache-dependency-path: v3/go.sum
+      - name: Test native bridges, binary isolation, and application package
+        working-directory: v3
+        env:
+          BUILD_TAGS: ${{ matrix.tags }}
+        run: go test -tags "$BUILD_TAGS" ./pkg/application -count=1

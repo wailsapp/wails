@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "fe3243ae4816d1ecf421",
+  "sourceFile": "community/showcase/wailsterm.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "8dcddece546de009d76773707b674c638dd60160f75536d34a45b1d285c7c5b4",
+      "targetHash": "daf6c6ee7ab0cf8c6febd93fe5135d22eb2c2ec94d2623d3a48bf1d6bb4ed915",
+      "machineHash": "daf6c6ee7ab0cf8c6febd93fe5135d22eb2c2ec94d2623d3a48bf1d6bb4ed915",
+      "machineText": "![WailsTerm 螢幕截圖](/assets/showcase-images/wailsterm.webp)",
+      "status": "final",
+      "sourcePreview": "![WailsTerm Screenshot](/assets/showcase-images/wailsterm.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ad12595e14434cde4712fd1829c83e982f9ad6c2efa1ce476ed0a703e03e19ea",
+      "targetHash": "9cba8a34a2435442105fff85050406abe7a0507321435284426f1d892ccb349e",
+      "machineHash": "9cba8a34a2435442105fff85050406abe7a0507321435284426f1d892ccb349e",
+      "machineText": "[WailsTerm](https://github.com/rlshukhov/wailsterm) 是一款由 Wails 和 Xterm.js 驅動的簡易半透明\\\n終端機應用程式。",
+      "status": "final",
+      "sourcePreview": "[WailsTerm](https://github.com/rlshukhov/wailsterm) is a simple translucent\\ terminal app powered by…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineText": "使用 Wails 建置的桌面應用程式",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+      "targetHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+      "machineHash": "ccf9ec424c76cad6c776e7f14f37b0bc02563d9c95976626e67e58d7eecab68b",
+      "machineText": "WailsTerm",
+      "status": "final",
+      "sourcePreview": "WailsTerm",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}
