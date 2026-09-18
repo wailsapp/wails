@@ -33,7 +33,7 @@ Edite os arquivos-fonte `.md` em `docs/mpress/content/`. O inglês é o idioma p
 e fica diretamente nesse diretório. As traduções existentes ficam em  
 pastas de idiomas, como `fr/` e `id/`. A visualização é recompilada conforme você salva as alterações.
 
-Preserve o bloco de metadados no início de cada página e os componentes `:::...` / `:::`  
+Preserve o bloco de metadados no início de cada página e os componentes `@...` / `@end`  
 correspondentes. Parágrafos comuns, títulos, listas e código delimitado podem ser editados  
 como texto. Não edite os arquivos gerados em `docs/mpress/site/`.
 

@@ -33,7 +33,7 @@ Edit file sumber `.md` di `docs/mpress/content/`. Bahasa Inggris adalah bahasa d
 dan berada langsung di direktori tersebut. Terjemahan yang sudah ada berada di folder  
 bahasa seperti `fr/` dan `id/`. Pratinjau dibuat ulang saat Anda menyimpan perubahan.
 
-Pertahankan blok metadata di bagian atas setiap halaman dan pasangan komponen `:::...` / `:::`.  
+Pertahankan blok metadata di bagian atas setiap halaman dan pasangan komponen `@...` / `@end`.  
 Paragraf biasa, judul, daftar, dan kode berpagar dapat diedit sebagai teks.  
 Jangan edit file yang dihasilkan di `docs/mpress/site/`.
 

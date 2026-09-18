@@ -27,7 +27,7 @@ mpress dev
 
 Modifiez les fichiers sources `.md` dans `docs/mpress/content/`. L’anglais est la langue par défaut et se trouve directement dans ce répertoire. Les traductions existantes se trouvent dans des dossiers de langue tels que `fr/` et `id/`. La prévisualisation est régénérée à chaque enregistrement.
 
-Conservez le bloc de métadonnées situé en haut de chaque page ainsi que les composants `:::...` / `:::` appariés. Les paragraphes ordinaires, les titres, les listes et le code délimité peuvent être modifiés comme du texte. Ne modifiez pas les fichiers générés dans `docs/mpress/site/`.
+Conservez le bloc de métadonnées situé en haut de chaque page ainsi que les composants `@...` / `@end` appariés. Les paragraphes ordinaires, les titres, les listes et le code délimité peuvent être modifiés comme du texte. Ne modifiez pas les fichiers générés dans `docs/mpress/site/`.
 
 ## Vérifier la correction
 
