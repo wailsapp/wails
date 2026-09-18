@@ -228,11 +228,15 @@ wails3 task --list
 
 ### 图标和打包
 
-从源 PNG 生成各平台的图标（`build/icons.icns`、`build/icon.ico`等）：
+从标准源 PNG 生成 Windows、macOS 和 Linux hicolor 图标：
 
 ```bash
-wails3 generate icons -input appicon.png
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons
 ```
+
+Linux PNG 是可重现的生成资源。默认 DEB、RPM 和 Arch 软件包配置会将固定尺寸文件安装到对应的 hicolor 目录。
 
 构建平台特定的安装程序或软件包：
 

@@ -58,6 +58,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### デスクトップアイコン
+
+`build/appicon.png` が基準となるアイコンソースです。共通の `generate:icons` タスクは、16、32、48、64、128、256、512 ピクセルの決定的な PNG を `build/linux/icons/` に生成します。DEB、RPM、Arch パッケージは、各生成画像を対応する `/usr/share/icons/hicolor/<size>x<size>/apps/` ディレクトリにインストールします。
+
+生成される nFPM 設定は、このデフォルトのサイズ一式を前提としています。`-linuxsizes` を変更する場合は、`build/linux/nfpm/nfpm.yaml` のアイコン項目も合わせて更新してください。
+
+Wails はプロジェクトの Taskfile を上書きしないため、Linux アイコン生成の導入前に作成されたプロジェクトは、`update build-assets` の実行時にも互換性のある従来のパッケージマッピングを保持します。有効にするには、現在のプロジェクトから共通の `generate:icons` タスクを取り込み、`-linuxoutputdir linux/icons` を渡し、各 Linux PNG を `generates` に宣言するよう更新してから、次を実行してください。
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 AppImage の設定は `build/linux/appimage/` にあります。アプリアイコンには `build/appicon.png` が使用されます。

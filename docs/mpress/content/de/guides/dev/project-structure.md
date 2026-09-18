@@ -20,6 +20,7 @@ Diese Seite bietet eine einfache Übersicht über die Dateien, die beim Erstelle
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # Generierter hicolor-PNG-Symbolsatz
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ Diese Seite bietet eine einfache Übersicht über die Dateien, die beim Erstelle
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
 ```
+
+Generierte Verzeichnisse wie `frontend/dist`, `frontend/bindings` und `build/linux/icons` entstehen nach der ersten Ausführung der zugehörigen Build- oder Generierungsaufgabe.
 
 @note{type="info" title="Frontend-Projektdateien"}
 Wenn Sie eine andere Startvorlage verwenden, unterscheidet sich der Inhalt von `frontend/src` je nach gewähltem Framework

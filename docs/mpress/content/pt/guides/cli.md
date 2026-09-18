@@ -323,13 +323,32 @@ wails3 generate icons [flags]
 
 | Opção | Descrição | Padrão |
 | --- | --- | --- |
-| `-input` | Arquivo PNG de entrada | Obrigatório |
-| `-windowsfilename` | Nome do arquivo de saída para Windows |  |
-| `-macfilename` | Nome do arquivo de saída para macOS |  |
-| `-sizes` | Tamanhos dos ícones (separados por vírgulas) | `256,128,64,48,32,16` |
+| `-input` | Arquivo PNG de entrada | `build/appicon.png` |
+| `-windowsfilename` | Nome do arquivo de saída para Windows | `build/windows/icon.ico` |
+| `-macfilename` | Nome do arquivo de saída para macOS | `build/darwin/icon.icns` |
+| `-sizes` | Tamanhos ICO Windows, separados por vírgulas | `256,128,64,48,32,16` |
+| `-linuxoutputdir` | Diretório de saída dos PNGs Linux hicolor |  |
+| `-linuxsizes` | Tamanhos dos PNGs Linux, separados por vírgulas | `16,32,48,64,128,256,512` |
 | `-example` | Gerar ícone de exemplo | `false` |
 | `-iconcomposerinput` | Arquivo do Icon Composer de entrada (`.icon`) |  |
 | `-macassetdir` | Diretório de saída dos recursos para Mac (Assets.car + icns) |  |
+
+#### Ícones Linux hicolor
+
+Gere um conjunto completo de ícones de desktop Linux sem ImageMagick ou outra ferramenta externa de imagens:
+
+```bash
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons \
+  -linuxsizes 16,32,48,64,128,256,512
+```
+
+O comando grava arquivos como `48x48.png` e `128x128.png` no diretório de saída. Cada PNG é um quadrado exato; imagens de origem não quadradas mantêm a proporção e recebem preenchimento transparente centralizado. A geração é determinística byte a byte em todos os hosts de compilação suportados.
+
+Trate `build/appicon.png` como a origem canônica e o diretório de saída Linux como um conjunto gerado descartável. A tarefa padrão `generate:icons` declara cada tamanho como saída, portanto excluir qualquer um deles regenera o conjunto completo.
+
+A configuração padrão dos pacotes DEB, RPM e Arch referencia os sete tamanhos padrão. Se personalizar `-linuxsizes` na tarefa gerada, atualize `build/linux/nfpm/nfpm.yaml` para instalar o mesmo conjunto.
 
 #### Icon Composer (macOS)
 

@@ -228,11 +228,15 @@ wails3 task --list
 
 ### 아이콘 및 패키징
 
-소스 PNG에서 플랫폼 아이콘(`build/icons.icns`, `build/icon.ico` 등)을 생성하려면 다음을 실행하세요.
+기준 PNG 원본에서 Windows, macOS 및 Linux hicolor 아이콘을 생성하세요.
 
 ```bash
-wails3 generate icons -input appicon.png
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons
 ```
+
+Linux PNG는 재현 가능한 생성 자산입니다. 고정 크기 파일은 기본 DEB, RPM 및 Arch 패키지 설정에 따라 해당 hicolor 디렉터리에 설치됩니다.
 
 플랫폼별 설치 프로그램/패키지를 빌드하려면 다음을 실행하세요.
 

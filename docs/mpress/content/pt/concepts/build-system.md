@@ -228,11 +228,15 @@ wails3 task --list
 
 ### Ícones e empacotamento
 
-Gere ícones para as plataformas (`build/icons.icns`, `build/icon.ico` etc.) a partir de um PNG de origem:
+Gere ícones Windows, macOS e Linux hicolor a partir do PNG de origem canônico:
 
 ```bash
-wails3 generate icons -input appicon.png
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons
 ```
+
+Os PNGs Linux são recursos gerados reproduzíveis. Os arquivos de tamanho fixo são instalados nos diretórios hicolor correspondentes pela configuração padrão dos pacotes DEB, RPM e Arch.
 
 Crie instaladores/pacotes específicos de cada plataforma:
 

@@ -20,6 +20,7 @@ sourcePath: "guides/dev/project-structure.md"
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # 生成された hicolor PNG アイコン一式
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ sourcePath: "guides/dev/project-structure.md"
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
 ```
+
+`frontend/dist`、`frontend/bindings`、`build/linux/icons` などの生成ディレクトリは、対応するビルドまたは生成タスクの初回実行後に作成されます。
 
 @note{type="info" title="フロントエンドプロジェクトのファイル"}
 別のスターターテンプレートを使用する場合、`frontend/src` の内容は選択したフレームワークによって異なります

@@ -115,7 +115,7 @@ Ikon aplikasi dihasilkan dari aset dalam direktori `build/`. Gunakan task `gener
 wails3 task common:generate:icons
 ```
 
-Task ini menggunakan `build/appicon.png` untuk menghasilkan `darwin/icons.icns` dan `windows/icon.ico`. Di macOS, Anda juga dapat menyediakan `build/appicon.icon` (format Icon Composer): task tersebut meneruskan `-iconcomposerinput appicon.icon -macassetdir darwin`, yang menghasilkan `Assets.car` dan `darwin/icons.icns` dari file `.icon` (dilewati pada platform selain macOS). Jika `Assets.car` tersedia, jalankan task `update:build-assets` agar `Info.plist` dan `CFBundleIconName` diperbarui sebagaimana mestinya:
+Task ini menggunakan `build/appicon.png` untuk menghasilkan `darwin/icons.icns`, `windows/icon.ico`, dan kumpulan PNG Linux hicolor. Di macOS, Anda juga dapat menyediakan `build/appicon.icon` (format Icon Composer): task tersebut meneruskan `-iconcomposerinput appicon.icon -macassetdir darwin`, yang menghasilkan `Assets.car` dan `darwin/icons.icns` dari file `.icon` (dilewati pada platform selain macOS). Jika `Assets.car` tersedia, jalankan task `update:build-assets` agar `Info.plist` dan `CFBundleIconName` diperbarui sebagaimana mestinya:
 
 ```bash
 wails3 task common:update:build-assets
@@ -125,7 +125,7 @@ Untuk menjalankan perintah ikon secara manual dari direktori `build/`:
 
 ```bash
 cd build
-wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin -linuxoutputdir linux/icons -linuxsizes 16,32,48,64,128,256,512
 ```
 
 ## Penandatanganan Kode

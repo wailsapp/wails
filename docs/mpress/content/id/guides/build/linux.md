@@ -58,6 +58,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### Ikon Desktop
+
+`build/appicon.png` adalah sumber ikon utama. Task bersama `generate:icons` membuat PNG deterministik di `build/linux/icons/` dengan ukuran 16, 32, 48, 64, 128, 256, dan 512 piksel. Paket DEB, RPM, dan Arch memasang setiap gambar yang dihasilkan ke direktori `/usr/share/icons/hicolor/<size>x<size>/apps/` yang sesuai.
+
+Konfigurasi nFPM yang dihasilkan mengharapkan kumpulan ukuran default tersebut. Jika menyesuaikan `-linuxsizes`, perbarui entri ikon dalam `build/linux/nfpm/nfpm.yaml` agar cocok.
+
+Proyek yang dibuat sebelum generasi ikon Linux mempertahankan pemetaan paket lama yang kompatibel saat `update build-assets` dijalankan, karena Wails tidak menimpa Taskfile proyek. Untuk mengaktifkannya, perbarui task bersama `generate:icons` dari proyek terkini agar meneruskan `-linuxoutputdir linux/icons`, mendeklarasikan setiap PNG Linux di bawah `generates`, lalu jalankan:
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 Konfigurasi AppImage berada di `build/linux/appimage/`. Ikon aplikasi berasal dari `build/appicon.png`.

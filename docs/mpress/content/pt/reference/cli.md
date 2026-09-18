@@ -40,7 +40,7 @@ wails3 <command> --help
 | Subcomando | Descrição |
 | --- | --- |
 | `generate bindings` | Gera bindings de Go para o frontend. Opções: `-d` (diretório de saída), `-models`, `-index`, `-ts`, `-i` (interfaces), `-b` (bundle), `-names` (emitir `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (padrão: `true`), `-f`, `-obfuscated` (gerar `wails_obfuscated.gen.go` com IDs de binding estáveis para compilações com Garble; consulte [Compilações ofuscadas](/guides/build/obfuscation/)), `-obfuscated-output` (diretório do arquivo gerado; o padrão é o diretório do pacote principal). Aceita padrões de pacotes (por exemplo, `./...`); se nenhum for informado, usa o diretório atual. |
-| `generate icons` | Converte um PNG de origem nos formatos de ícone da plataforma. Opções: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
+| `generate icons` | Converte um PNG de origem nos formatos de ícone Windows, macOS e Linux. Opções: `-input`, `-windowsfilename`, `-macfilename`, `-sizes` (tamanhos ICO), `-linuxoutputdir`, `-linuxsizes`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Gera o conteúdo do diretório `build/` (trechos de Taskfile, arquivos NSIS, `Info.plist`, modelo `.desktop` etc.) com base em `build/config.yml`. |
 | `generate runtime` | Gera novamente o `/wails/runtime.js` pré-compilado fornecido ao webview. |
 | `generate syso` | Gera o arquivo de recursos `.syso` do Windows (ícone + manifesto + informações da versão). |

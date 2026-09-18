@@ -323,13 +323,32 @@ wails3 generate icons [flags]
 
 | Option | Description | Valeur par défaut |
 | --- | --- | --- |
-| `-input` | Fichier PNG d’entrée | Obligatoire |
-| `-windowsfilename` | Nom du fichier de sortie Windows |  |
-| `-macfilename` | Nom du fichier de sortie macOS |  |
-| `-sizes` | Tailles des icônes (séparées par des virgules) | `256,128,64,48,32,16` |
+| `-input` | Fichier PNG d’entrée | `build/appicon.png` |
+| `-windowsfilename` | Nom du fichier de sortie Windows | `build/windows/icon.ico` |
+| `-macfilename` | Nom du fichier de sortie macOS | `build/darwin/icon.icns` |
+| `-sizes` | Tailles ICO Windows, séparées par des virgules | `256,128,64,48,32,16` |
+| `-linuxoutputdir` | Répertoire de sortie des PNG Linux hicolor |  |
+| `-linuxsizes` | Tailles des PNG Linux, séparées par des virgules | `16,32,48,64,128,256,512` |
 | `-example` | Générer un exemple d’icône | `false` |
 | `-iconcomposerinput` | Fichier Icon Composer d’entrée (`.icon`) |  |
 | `-macassetdir` | Répertoire de sortie des ressources Mac (Assets.car + icns) |  |
+
+#### Icônes Linux hicolor
+
+Générez un ensemble complet d’icônes de bureau Linux sans ImageMagick ni autre outil d’image externe :
+
+```bash
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons \
+  -linuxsizes 16,32,48,64,128,256,512
+```
+
+La commande écrit des fichiers tels que `48x48.png` et `128x128.png` dans le répertoire de sortie. Chaque PNG est un carré exact ; les images sources non carrées conservent leurs proportions et reçoivent un remplissage transparent centré. La génération est déterministe à l’octet près sur chaque hôte de compilation pris en charge.
+
+Considérez `build/appicon.png` comme la source de référence et le répertoire de sortie Linux comme un ensemble généré jetable. La tâche `generate:icons` par défaut déclare chaque taille comme sortie : supprimer l’une d’elles provoque donc la régénération de l’ensemble complet.
+
+La configuration par défaut des paquets DEB, RPM et Arch référence les sept tailles par défaut. Si vous personnalisez `-linuxsizes` dans la tâche générée, adaptez `build/linux/nfpm/nfpm.yaml` pour installer le même ensemble.
 
 #### Icon Composer (macOS)
 

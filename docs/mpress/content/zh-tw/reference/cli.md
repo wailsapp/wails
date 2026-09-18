@@ -40,7 +40,7 @@ wails3 <command> --help
 | 子指令 | 說明 |
 | --- | --- |
 | `generate bindings` | 產生從 Go 到前端的繫結。旗標：`-d`（輸出目錄）、`-models`、`-index`、`-ts`、`-i`（介面）、`-b`（套件組合）、`-names`（輸出`Call.ByName`）、`-noevents`、`-noindex`、`-dry`、`-silent`、`-v`、`-clean`（預設為`true`）、`-f`、`-obfuscated`（產生具有穩定繫結 ID 的`wails_obfuscated.gen.go`，供 Garble 建置使用；請參閱[混淆建置](/guides/build/obfuscation/)）、`-obfuscated-output`（產生檔案的目錄；預設為 main 套件目錄）。接受套件模式（例如`./...`）；若未提供，則改用目前目錄。 |
-| `generate icons` | 將來源 PNG 轉換為各平台的圖示格式。旗標：`-input`、`-windowsfilename`、`-macfilename`、`-iconcomposerinput`、`-macassetdir`。 |
+| `generate icons` | 將來源 PNG 轉換為 Windows、macOS 與 Linux 圖示格式。旗標： `-input`, `-windowsfilename`, `-macfilename`, `-sizes` (ICO 尺寸), `-linuxoutputdir`, `-linuxsizes`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | 根據`build/config.yml`產生`build/`目錄的內容（Taskfile 程式碼片段、NSIS 檔案、`Info.plist`、`.desktop`範本等）。 |
 | `generate runtime` | 重新產生隨附並提供給 webview 的預先建置`/wails/runtime.js`。 |
 | `generate syso` | 產生 Windows `.syso`資源檔案（圖示 + 資訊清單 + 版本資訊）。 |

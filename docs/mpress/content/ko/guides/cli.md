@@ -323,13 +323,32 @@ wails3 generate icons [flags]
 
 | 플래그 | 설명 | 기본값 |
 | --- | --- | --- |
-| `-input` | 입력 PNG 파일 | 필수 |
-| `-windowsfilename` | Windows 출력 파일 이름 |  |
-| `-macfilename` | macOS 출력 파일 이름 |  |
-| `-sizes` | 아이콘 크기(쉼표로 구분) | `256,128,64,48,32,16` |
+| `-input` | 입력 PNG 파일 | `build/appicon.png` |
+| `-windowsfilename` | Windows 출력 파일 이름 | `build/windows/icon.ico` |
+| `-macfilename` | macOS 출력 파일 이름 | `build/darwin/icon.icns` |
+| `-sizes` | Windows ICO 크기(쉼표로 구분) | `256,128,64,48,32,16` |
+| `-linuxoutputdir` | Linux hicolor PNG 출력 디렉터리 |  |
+| `-linuxsizes` | Linux PNG 크기(쉼표로 구분) | `16,32,48,64,128,256,512` |
 | `-example` | 예제 아이콘을 생성합니다 | `false` |
 | `-iconcomposerinput` | 입력 Icon Composer 파일(`.icon`) |  |
 | `-macassetdir` | Mac 자산의 출력 디렉터리(Assets.car + icns) |  |
+
+#### Linux hicolor 아이콘
+
+ImageMagick이나 다른 외부 이미지 도구 없이 완전한 Linux 데스크톱 아이콘 집합을 생성하세요.
+
+```bash
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons \
+  -linuxsizes 16,32,48,64,128,256,512
+```
+
+명령은 `48x48.png`, `128x128.png` 같은 파일을 출력 디렉터리에 기록합니다. 각 PNG는 정확한 정사각형이며, 정사각형이 아닌 원본 이미지는 종횡비를 유지하고 투명 여백을 넣어 가운데 정렬됩니다. 지원되는 모든 빌드 호스트에서 바이트 단위로 결정적인 결과가 생성됩니다.
+
+`build/appicon.png`를 기준 원본으로, Linux 출력 디렉터리를 삭제 후 다시 생성할 수 있는 결과물 집합으로 취급하세요. 기본 `generate:icons` 태스크는 각 크기를 출력으로 선언하므로 하나라도 삭제하면 전체 집합이 다시 생성됩니다.
+
+기본 DEB, RPM 및 Arch 패키지 설정은 기본 크기 7개를 모두 참조합니다. 생성된 태스크에서 `-linuxsizes`를 사용자 지정하면 같은 집합을 설치하도록 `build/linux/nfpm/nfpm.yaml`을 업데이트하세요.
 
 #### Icon Composer(macOS)
 

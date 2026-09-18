@@ -20,6 +20,7 @@ Esta página é uma referência simples dos arquivos criados quando você inicia
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # Conjunto gerado de ícones PNG hicolor
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ Esta página é uma referência simples dos arquivos criados quando você inicia
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
 ```
+
+Diretórios gerados como `frontend/dist`, `frontend/bindings` e `build/linux/icons` aparecem após a primeira execução da tarefa de compilação ou geração correspondente.
 
 @note{type="info" title="Arquivos do projeto de frontend"}
 Se você optar por usar um modelo inicial diferente, o conteúdo de `frontend/src` variará de acordo com o framework escolhido

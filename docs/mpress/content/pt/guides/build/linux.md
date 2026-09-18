@@ -58,6 +58,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### Ícones de desktop
+
+`build/appicon.png` é a origem canônica dos ícones. A tarefa compartilhada `generate:icons` cria PNGs determinísticos em `build/linux/icons/` nos tamanhos de 16, 32, 48, 64, 128, 256 e 512 pixels. Os pacotes DEB, RPM e Arch instalam cada imagem gerada no diretório `/usr/share/icons/hicolor/<size>x<size>/apps/` correspondente.
+
+A configuração nFPM gerada espera esse conjunto padrão de tamanhos. Se personalizar `-linuxsizes`, atualize as entradas de ícones em `build/linux/nfpm/nfpm.yaml` de acordo.
+
+Projetos criados antes da geração de ícones Linux mantêm o mapeamento de pacotes legado compatível quando `update build-assets` é executado, pois Wails não sobrescreve o Taskfile do projeto. Para aderir, atualize a tarefa comum `generate:icons` a partir de um projeto atual para que ela passe `-linuxoutputdir linux/icons`, declare cada PNG Linux em `generates` e execute:
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 A configuração do AppImage fica em `build/linux/appimage/`. O ícone do aplicativo vem de `build/appicon.png`.

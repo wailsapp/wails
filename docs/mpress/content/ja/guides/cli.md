@@ -323,13 +323,32 @@ wails3 generate icons [flags]
 
 | フラグ | 説明 | デフォルト |
 | --- | --- | --- |
-| `-input` | 入力PNGファイル | 必須 |
-| `-windowsfilename` | Windows用の出力ファイル名 |  |
-| `-macfilename` | macOS用の出力ファイル名 |  |
-| `-sizes` | アイコンサイズ（カンマ区切り） | `256,128,64,48,32,16` |
+| `-input` | 入力PNGファイル | `build/appicon.png` |
+| `-windowsfilename` | Windows用の出力ファイル名 | `build/windows/icon.ico` |
+| `-macfilename` | macOS用の出力ファイル名 | `build/darwin/icon.icns` |
+| `-sizes` | Windows ICO のサイズ（カンマ区切り） | `256,128,64,48,32,16` |
+| `-linuxoutputdir` | Linux hicolor PNG の出力ディレクトリ |  |
+| `-linuxsizes` | Linux PNG のサイズ（カンマ区切り） | `16,32,48,64,128,256,512` |
 | `-example` | サンプルアイコンを生成 | `false` |
 | `-iconcomposerinput` | 入力Icon Composerファイル（`.icon`） |  |
 | `-macassetdir` | Mac用アセット（Assets.car + icns）の出力ディレクトリ |  |
+
+#### Linux hicolor アイコン
+
+ImageMagick などの外部画像ツールを使わずに、Linux デスクトップ用の完全なアイコン一式を生成します。
+
+```bash
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons \
+  -linuxsizes 16,32,48,64,128,256,512
+```
+
+コマンドは `48x48.png` や `128x128.png` などのファイルを出力ディレクトリに書き込みます。各 PNG は正確な正方形です。正方形でないソース画像は縦横比を保ち、透明な余白で中央に配置されます。生成結果は、すべてのサポート対象ビルドホストでバイト単位まで決定的です。
+
+`build/appicon.png` を基準となるソース、Linux 出力ディレクトリを再生成可能な生成物一式として扱ってください。デフォルトの `generate:icons` タスクは各サイズを出力として宣言しているため、どれか1つを削除すると一式が再生成されます。
+
+DEB、RPM、Arch のデフォルトのパッケージ設定は、7つのデフォルトサイズすべてを参照します。生成されたタスクで `-linuxsizes` を変更する場合は、同じ一式をインストールするよう `build/linux/nfpm/nfpm.yaml` を更新してください。
 
 #### Icon Composer（macOS）
 

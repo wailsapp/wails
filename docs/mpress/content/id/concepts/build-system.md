@@ -228,11 +228,15 @@ wails3 task --list
 
 ### Ikon dan pengemasan
 
-Buat ikon platform (`build/icons.icns`, `build/icon.ico`, dan sebagainya) dari PNG sumber:
+Buat ikon Windows, macOS, dan Linux hicolor dari PNG sumber utama:
 
 ```bash
-wails3 generate icons -input appicon.png
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons
 ```
+
+PNG Linux adalah aset hasil generasi yang dapat direproduksi. Berkas berukuran tetap dipasang ke direktori hicolor yang sesuai oleh konfigurasi paket DEB, RPM, dan Arch default.
 
 Buat penginstal/paket khusus platform:
 

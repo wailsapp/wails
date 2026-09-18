@@ -228,11 +228,15 @@ wails3 task --list
 
 ### 圖示與封裝
 
-從來源 PNG 產生平台圖示（`build/icons.icns`、`build/icon.ico`等）：
+從標準來源 PNG 產生 Windows、macOS 與 Linux hicolor 圖示：
 
 ```bash
-wails3 generate icons -input appicon.png
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons
 ```
+
+Linux PNG 是可重現的產生資源。預設的 DEB、RPM 與 Arch 套件設定會將固定尺寸檔案安裝到對應的 hicolor 目錄。
 
 建置平台專屬的安裝程式／套件：
 

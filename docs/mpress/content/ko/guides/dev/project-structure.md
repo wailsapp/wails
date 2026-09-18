@@ -20,6 +20,7 @@ sourcePath: "guides/dev/project-structure.md"
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # 생성된 hicolor PNG 아이콘 집합
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ sourcePath: "guides/dev/project-structure.md"
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
 ```
+
+`frontend/dist`, `frontend/bindings`, `build/linux/icons` 같은 생성 디렉터리는 해당 빌드 또는 생성 태스크를 처음 실행한 뒤 나타납니다.
 
 @note{type="info" title="프런트엔드 프로젝트 파일"}
 다른 시작 템플릿을 사용하면 `frontend/src`의 내용은 선택한 프레임워크에 따라 달라집니다

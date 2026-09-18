@@ -228,11 +228,15 @@ wails3 task --list
 
 ### Значки и создание пакетов
 
-Создайте значки для платформ (`build/icons.icns`, `build/icon.ico` и т. д.) из исходного PNG-файла:
+Создайте значки Windows, macOS и Linux hicolor из основного исходного PNG-файла:
 
 ```bash
-wails3 generate icons -input appicon.png
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons
 ```
+
+PNG для Linux — воспроизводимые генерируемые ресурсы. Файлы фиксированных размеров устанавливаются в соответствующие каталоги hicolor стандартной конфигурацией пакетов DEB, RPM и Arch.
 
 Соберите установщики и пакеты для отдельных платформ:
 

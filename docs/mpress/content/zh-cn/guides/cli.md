@@ -323,13 +323,32 @@ wails3 generate icons [flags]
 
 | 选项 | 说明 | 默认值 |
 | --- | --- | --- |
-| `-input` | 输入 PNG 文件 | 必填 |
-| `-windowsfilename` | Windows 输出文件名 |  |
-| `-macfilename` | macOS 输出文件名 |  |
-| `-sizes` | 图标尺寸（以逗号分隔） | `256,128,64,48,32,16` |
+| `-input` | 输入 PNG 文件 | `build/appicon.png` |
+| `-windowsfilename` | Windows 输出文件名 | `build/windows/icon.ico` |
+| `-macfilename` | macOS 输出文件名 | `build/darwin/icon.icns` |
+| `-sizes` | Windows ICO 尺寸（逗号分隔） | `256,128,64,48,32,16` |
+| `-linuxoutputdir` | Linux hicolor PNG 输出目录 |  |
+| `-linuxsizes` | Linux PNG 尺寸（逗号分隔） | `16,32,48,64,128,256,512` |
 | `-example` | 生成示例图标 | `false` |
 | `-iconcomposerinput` | 输入 Icon Composer 文件（`.icon`） |  |
 | `-macassetdir` | Mac 资源的输出目录（Assets.car + icns） |  |
+
+#### Linux hicolor 图标
+
+无需 ImageMagick 或其他外部图像工具即可生成完整的 Linux 桌面图标集：
+
+```bash
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons \
+  -linuxsizes 16,32,48,64,128,256,512
+```
+
+命令会将 `48x48.png`、`128x128.png` 等文件写入输出目录。每个 PNG 都是精确的正方形；非正方形源图像会保留宽高比，并添加透明填充以居中。生成过程在每个受支持的构建主机上都具有字节级确定性。
+
+请将 `build/appicon.png` 作为标准源，将 Linux 输出目录视为可删除并重新生成的文件集。默认 `generate:icons` 任务将每个尺寸声明为输出，因此删除其中任何一个都会重新生成整个集合。
+
+默认 DEB、RPM 和 Arch 软件包配置引用全部七种默认尺寸。如果在生成的任务中自定义 `-linuxsizes`，请更新 `build/linux/nfpm/nfpm.yaml`，以安装相同的集合。
 
 #### Icon Composer（macOS）
 

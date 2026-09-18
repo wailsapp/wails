@@ -20,6 +20,7 @@ Halaman ini adalah referensi sederhana untuk file yang dibuat saat Anda memulai 
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # Kumpulan ikon PNG hicolor hasil generasi
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ Halaman ini adalah referensi sederhana untuk file yang dibuat saat Anda memulai 
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
 ```
+
+Direktori hasil generasi seperti `frontend/dist`, `frontend/bindings`, dan `build/linux/icons` muncul setelah task build atau generasi terkait pertama kali dijalankan.
 
 @note{type="info" title="File proyek frontend"}
 Jika Anda memilih templat awal yang berbeda, isi `frontend/src` akan berbeda tergantung pada framework yang Anda pilih

@@ -40,7 +40,7 @@ wails3 <command> --help
 | Sous-commande | Description |
 | --- | --- |
 | `generate bindings` | Générez les liaisons entre Go et le frontend. Options : `-d` (répertoire de sortie), `-models`, `-index`, `-ts`, `-i` (interfaces), `-b` (bundle), `-names` (émettre `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (`true` par défaut), `-f`, `-obfuscated` (générer `wails_obfuscated.gen.go` avec des identifiants de liaison stables pour les compilations avec Garble ; voir [Compilations obscurcies](/guides/build/obfuscation/)), `-obfuscated-output` (répertoire du fichier généré ; le répertoire du paquet principal est utilisé par défaut). Accepte les motifs de paquets (par exemple `./...`) ; si aucun n’est fourni, utilise le répertoire courant. |
-| `generate icons` | Convertissez un fichier PNG source aux formats d’icône propres aux différentes plateformes. Options : `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
+| `generate icons` | Convertissez un PNG source aux formats d’icône Windows, macOS et Linux. Options : `-input`, `-windowsfilename`, `-macfilename`, `-sizes` (tailles ICO), `-linuxoutputdir`, `-linuxsizes`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Générez le contenu du répertoire `build/` (extraits de Taskfile, fichiers NSIS, `Info.plist`, modèle `.desktop`, etc.) à partir de `build/config.yml`. |
 | `generate runtime` | Régénérez le fichier `/wails/runtime.js` précompilé fourni à la webview. |
 | `generate syso` | Générez le fichier de ressources Windows `.syso` (icône, manifeste et informations de version). |

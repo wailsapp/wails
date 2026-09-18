@@ -20,6 +20,7 @@ sourcePath: "guides/dev/project-structure.md"
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # Сгенерированный набор PNG-значков hicolor
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ sourcePath: "guides/dev/project-structure.md"
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
 ```
+
+Генерируемые каталоги, такие как `frontend/dist`, `frontend/bindings` и `build/linux/icons`, появляются после первого запуска соответствующей задачи сборки или генерации.
 
 @note{type="info" title="Файлы фронтенд-проекта"}
 Если вы выберете другой начальный шаблон, содержимое `frontend/src` будет отличаться в зависимости от выбранного фреймворка

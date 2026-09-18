@@ -20,6 +20,7 @@ sourcePath: "guides/dev/project-structure.md"
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # 生成的 hicolor PNG 图标集
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ sourcePath: "guides/dev/project-structure.md"
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
 ```
+
+`frontend/dist`、`frontend/bindings` 和 `build/linux/icons` 等生成目录会在对应构建或生成任务首次运行后出现。
 
 @note{type="info" title="前端项目文件"}
 如果选择其他入门模板，`frontend/src`的内容将因所选框架而异

@@ -40,7 +40,7 @@ wails3 <command> --help
 | Subperintah | Deskripsi |
 | --- | --- |
 | `generate bindings` | Buat binding dari Go ke frontend. Flag: `-d` (direktori output), `-models`, `-index`, `-ts`, `-i` (antarmuka), `-b` (bundel), `-names` (hasilkan `Call.ByName`), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (default `true`), `-f`, `-obfuscated` (buat `wails_obfuscated.gen.go` dengan ID binding yang stabil untuk build Garble; lihat [Build yang Diobfusikasi](/guides/build/obfuscation/)), `-obfuscated-output` (direktori untuk berkas yang dihasilkan; default-nya adalah direktori paket utama). Menerima pola paket (misalnya `./...`); jika tidak ada pola yang diberikan, perintah ini otomatis menggunakan direktori saat ini. |
-| `generate icons` | Konversikan PNG sumber ke format ikon platform. Flag: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
+| `generate icons` | Mengonversi PNG sumber ke format ikon Windows, macOS, dan Linux. Flag: `-input`, `-windowsfilename`, `-macfilename`, `-sizes` (ukuran ICO), `-linuxoutputdir`, `-linuxsizes`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Buat isi direktori `build/` (cuplikan Taskfile, berkas NSIS, `Info.plist`, templat `.desktop`, dan sebagainya) dari `build/config.yml`. |
 | `generate runtime` | Buat ulang `/wails/runtime.js` bawaan yang dikirimkan ke webview. |
 | `generate syso` | Buat berkas sumber daya `.syso` Windows (ikon + manifes + informasi versi). |

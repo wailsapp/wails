@@ -228,11 +228,15 @@ wails3 task --list
 
 ### Symbole und Paketierung
 
-Erzeugen Sie Plattformsymbole (`build/icons.icns`, `build/icon.ico` usw.) aus einer PNG-Quelldatei:
+Erzeugen Sie Windows-, macOS- und Linux-hicolor-Symbole aus der maßgeblichen PNG-Quelldatei:
 
 ```bash
-wails3 generate icons -input appicon.png
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons
 ```
+
+Die Linux-PNGs sind reproduzierbare generierte Dateien. Dateien mit festen Größen werden durch die Standardkonfiguration der DEB-, RPM- und Arch-Pakete in die entsprechenden hicolor-Verzeichnisse installiert.
 
 Erstellen Sie plattformspezifische Installationsprogramme und Pakete:
 

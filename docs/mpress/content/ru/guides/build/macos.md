@@ -115,7 +115,7 @@ wails3 task darwin:package:universal
 wails3 task common:generate:icons
 ```
 
-При этом `build/appicon.png` используется для создания `darwin/icons.icns` и `windows/icon.ico`. В macOS также можно предоставить `build/appicon.icon` (формат Icon Composer): задача передаёт `-iconcomposerinput appicon.icon -macassetdir darwin`, в результате чего из файла `.icon` создаются `Assets.car` и `darwin/icons.icns` (на платформах, отличных от macOS, этот шаг пропускается). При наличии `Assets.car` запустите задачу `update:build-assets`, чтобы соответствующим образом обновить `Info.plist` и `CFBundleIconName`:
+При этом `build/appicon.png` используется для создания `darwin/icons.icns`, `windows/icon.ico` и набора PNG Linux hicolor. В macOS также можно предоставить `build/appicon.icon` (формат Icon Composer): задача передаёт `-iconcomposerinput appicon.icon -macassetdir darwin`, в результате чего из файла `.icon` создаются `Assets.car` и `darwin/icons.icns` (на платформах, отличных от macOS, этот шаг пропускается). При наличии `Assets.car` запустите задачу `update:build-assets`, чтобы соответствующим образом обновить `Info.plist` и `CFBundleIconName`:
 
 ```bash
 wails3 task common:update:build-assets
@@ -125,7 +125,7 @@ wails3 task common:update:build-assets
 
 ```bash
 cd build
-wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin -linuxoutputdir linux/icons -linuxsizes 16,32,48,64,128,256,512
 ```
 
 ## Подписание кода

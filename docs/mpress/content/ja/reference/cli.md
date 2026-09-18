@@ -40,7 +40,7 @@ wails3 <command> --help
 | サブコマンド | 説明 |
 | --- | --- |
 | `generate bindings` | Go からフロントエンドへのバインディングを生成します。フラグ：`-d`（出力ディレクトリ）、`-models`、`-index`、`-ts`、`-i`（インターフェース）、`-b`（バンドル）、`-names`（`Call.ByName` を出力）、`-noevents`、`-noindex`、`-dry`、`-silent`、`-v`、`-clean`（デフォルトは `true`）、`-f`、`-obfuscated`（Garble ビルド用の安定したバインディング ID を含む `wails_obfuscated.gen.go` を生成。[難読化ビルド](/guides/build/obfuscation/)を参照）、`-obfuscated-output`（生成ファイルの格納先ディレクトリ。デフォルトは main パッケージのディレクトリ）。パッケージパターン（例：`./...`）を指定できます。何も指定しない場合は、現在のディレクトリを使用します。 |
-| `generate icons` | ソース PNG をプラットフォーム用のアイコン形式に変換します。フラグ：`-input`、`-windowsfilename`、`-macfilename`、`-iconcomposerinput`、`-macassetdir`。 |
+| `generate icons` | ソース PNG を Windows、macOS、Linux のアイコン形式に変換します。フラグ： `-input`, `-windowsfilename`, `-macfilename`, `-sizes` (ICO のサイズ), `-linuxoutputdir`, `-linuxsizes`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | `build/config.yml` から `build/` ディレクトリの内容（Taskfile スニペット、NSIS ファイル、`Info.plist`、`.desktop` テンプレートなど）を生成します。 |
 | `generate runtime` | WebView に提供されるビルド済みの `/wails/runtime.js` を再生成します。 |
 | `generate syso` | Windows 用の `.syso` リソースファイル（アイコン、マニフェスト、バージョン情報）を生成します。 |

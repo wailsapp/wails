@@ -58,6 +58,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### Icônes du bureau
+
+`build/appicon.png` est la source de référence des icônes. La tâche partagée `generate:icons` crée des PNG déterministes dans `build/linux/icons/` aux tailles de 16, 32, 48, 64, 128, 256 et 512 pixels. Les paquets DEB, RPM et Arch installent chaque image générée dans le répertoire `/usr/share/icons/hicolor/<size>x<size>/apps/` correspondant.
+
+La configuration nFPM générée attend cet ensemble de tailles par défaut. Si vous personnalisez `-linuxsizes`, adaptez les entrées d’icônes dans `build/linux/nfpm/nfpm.yaml`.
+
+Les projets créés avant la génération d’icônes Linux conservent leur configuration de paquet historique compatible lorsque `update build-assets` s’exécute, car Wails n’écrase pas le Taskfile d’un projet. Pour activer cette fonctionnalité, reprenez la tâche commune `generate:icons` d’un projet actuel afin qu’elle transmette `-linuxoutputdir linux/icons`, déclare chaque PNG Linux sous `generates`, puis exécutez :
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 La configuration d’AppImage se trouve dans `build/linux/appimage/`. L’icône de l’application provient de `build/appicon.png`.

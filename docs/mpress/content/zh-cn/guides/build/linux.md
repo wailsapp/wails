@@ -58,6 +58,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### 桌面图标
+
+`build/appicon.png` 是标准图标源。共享的 `generate:icons` 任务在 `build/linux/icons/` 中生成确定性的 PNG，尺寸为 16、32、48、64、128、256 和 512 像素。DEB、RPM 和 Arch 软件包会将每个生成图像安装到对应的 `/usr/share/icons/hicolor/<size>x<size>/apps/` 目录。
+
+生成的 nFPM 配置要求使用这组默认尺寸。如果自定义 `-linuxsizes`，请相应更新 `build/linux/nfpm/nfpm.yaml` 中的图标条目。
+
+由于 Wails 不会覆盖项目的 Taskfile，在引入 Linux 图标生成前创建的项目运行 `update build-assets` 时，会保留兼容的旧版软件包映射。要启用新功能，请从当前项目更新公共 `generate:icons` 任务，使其传递 `-linuxoutputdir linux/icons`，并在 `generates` 中声明每个 Linux PNG，然后运行：
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 AppImage 配置位于`build/linux/appimage/`中。应用图标来自`build/appicon.png`。

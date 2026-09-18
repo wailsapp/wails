@@ -58,6 +58,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### Значки рабочего стола
+
+`build/appicon.png` — основной источник значков. Общая задача `generate:icons` создаёт детерминированные PNG в `build/linux/icons/` размером 16, 32, 48, 64, 128, 256 и 512 пикселей. Пакеты DEB, RPM и Arch устанавливают каждое изображение в соответствующий каталог `/usr/share/icons/hicolor/<size>x<size>/apps/`.
+
+Сгенерированная конфигурация nFPM ожидает этот стандартный набор размеров. При изменении `-linuxsizes` соответственно обновите записи значков в `build/linux/nfpm/nfpm.yaml`.
+
+Проекты, созданные до появления генерации значков Linux, сохраняют совместимое прежнее сопоставление файлов пакета при запуске `update build-assets`, поскольку Wails не перезаписывает Taskfile проекта. Для включения возьмите общую задачу `generate:icons` из актуального проекта: она должна передавать `-linuxoutputdir linux/icons` и объявлять каждый PNG Linux в `generates`. Затем выполните:
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 Конфигурация AppImage находится в `build/linux/appimage/`. Значок приложения берётся из `build/appicon.png`.

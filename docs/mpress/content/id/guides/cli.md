@@ -323,13 +323,32 @@ wails3 generate icons [flags]
 
 | Flag | Deskripsi | Bawaan |
 | --- | --- | --- |
-| `-input` | Berkas PNG masukan | Wajib |
-| `-windowsfilename` | Nama berkas keluaran Windows |  |
-| `-macfilename` | Nama berkas keluaran macOS |  |
-| `-sizes` | Ukuran ikon (dipisahkan dengan koma) | `256,128,64,48,32,16` |
+| `-input` | Berkas PNG masukan | `build/appicon.png` |
+| `-windowsfilename` | Nama berkas keluaran Windows | `build/windows/icon.ico` |
+| `-macfilename` | Nama berkas keluaran macOS | `build/darwin/icon.icns` |
+| `-sizes` | Ukuran ICO Windows, dipisahkan koma | `256,128,64,48,32,16` |
+| `-linuxoutputdir` | Direktori keluaran PNG Linux hicolor |  |
+| `-linuxsizes` | Ukuran PNG Linux, dipisahkan koma | `16,32,48,64,128,256,512` |
 | `-example` | Buat ikon contoh | `false` |
 | `-iconcomposerinput` | Berkas Icon Composer masukan (`.icon`) |  |
 | `-macassetdir` | Direktori keluaran untuk aset Mac (Assets.car + icns) |  |
+
+#### Ikon Linux hicolor
+
+Buat kumpulan ikon desktop Linux lengkap tanpa ImageMagick atau alat gambar eksternal lainnya:
+
+```bash
+wails3 generate icons \
+  -input build/appicon.png \
+  -linuxoutputdir build/linux/icons \
+  -linuxsizes 16,32,48,64,128,256,512
+```
+
+Perintah menulis berkas seperti `48x48.png` dan `128x128.png` ke direktori keluaran. Setiap PNG berbentuk persegi tepat; gambar sumber yang tidak persegi mempertahankan rasio aspek dan mendapat padding transparan agar berada di tengah. Generasi bersifat deterministik hingga tingkat byte pada setiap host build yang didukung.
+
+Perlakukan `build/appicon.png` sebagai sumber utama dan direktori keluaran Linux sebagai kumpulan hasil generasi yang dapat dibuang. Task default `generate:icons` mendeklarasikan setiap ukuran sebagai keluaran, sehingga menghapus salah satunya akan membuat ulang seluruh kumpulan.
+
+Konfigurasi paket DEB, RPM, dan Arch default merujuk ketujuh ukuran default. Jika menyesuaikan `-linuxsizes` dalam task yang dihasilkan, perbarui `build/linux/nfpm/nfpm.yaml` untuk memasang kumpulan yang sama.
 
 #### Icon Composer (macOS)
 

@@ -58,6 +58,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### Desktop-Symbole
+
+`build/appicon.png` ist die maßgebliche Symbolquelle. Die gemeinsame Aufgabe `generate:icons` erstellt deterministische PNGs in `build/linux/icons/` mit 16, 32, 48, 64, 128, 256 und 512 Pixeln. DEB-, RPM- und Arch-Pakete installieren jedes generierte Bild in das passende Verzeichnis `/usr/share/icons/hicolor/<size>x<size>/apps/`.
+
+Die generierte nFPM-Konfiguration erwartet diese Standardgrößen. Wenn Sie `-linuxsizes` anpassen, ändern Sie die Symboleinträge in `build/linux/nfpm/nfpm.yaml` entsprechend.
+
+Projekte, die vor der Linux-Symbolgenerierung erstellt wurden, behalten beim Ausführen von `update build-assets` ihre kompatible bisherige Paketzuordnung, da Wails die Taskfile eines Projekts nicht überschreibt. Übernehmen Sie zum Aktivieren die gemeinsame Aufgabe `generate:icons` aus einem aktuellen Projekt, sodass sie `-linuxoutputdir linux/icons` übergibt und jedes Linux-PNG unter `generates` deklariert. Führen Sie anschließend Folgendes aus:
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 Die AppImage-Konfiguration befindet sich in `build/linux/appimage/`. Das Anwendungssymbol stammt aus `build/appicon.png`.

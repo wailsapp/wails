@@ -115,7 +115,7 @@ L’icône de l’application est générée à partir des ressources du répert
 wails3 task common:generate:icons
 ```
 
-Cette tâche utilise `build/appicon.png` pour produire `darwin/icons.icns` et `windows/icon.ico`. Sous macOS, vous pouvez également fournir `build/appicon.icon` (format Icon Composer) : la tâche transmet `-iconcomposerinput appicon.icon -macassetdir darwin`, ce qui produit `Assets.car` et `darwin/icons.icns` à partir du fichier `.icon` (cette étape est ignorée sur les plateformes autres que macOS). Lorsque `Assets.car` est présent, exécutez la tâche `update:build-assets` afin que `Info.plist` et `CFBundleIconName` soient mis à jour en conséquence :
+Cette tâche utilise `build/appicon.png` pour produire `darwin/icons.icns`, `windows/icon.ico` et l’ensemble de PNG Linux hicolor. Sous macOS, vous pouvez également fournir `build/appicon.icon` (format Icon Composer) : la tâche transmet `-iconcomposerinput appicon.icon -macassetdir darwin`, ce qui produit `Assets.car` et `darwin/icons.icns` à partir du fichier `.icon` (cette étape est ignorée sur les plateformes autres que macOS). Lorsque `Assets.car` est présent, exécutez la tâche `update:build-assets` afin que `Info.plist` et `CFBundleIconName` soient mis à jour en conséquence :
 
 ```bash
 wails3 task common:update:build-assets
@@ -125,7 +125,7 @@ Pour exécuter manuellement la commande relative aux icônes depuis le répertoi
 
 ```bash
 cd build
-wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin -linuxoutputdir linux/icons -linuxsizes 16,32,48,64,128,256,512
 ```
 
 ## Signature du code

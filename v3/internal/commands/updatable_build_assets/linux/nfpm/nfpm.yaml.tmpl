@@ -19,8 +19,25 @@ release: "1"
 contents:
   - src: "./bin/{{.BinaryName}}"
     dst: "/usr/local/bin/{{.BinaryName}}"
+{{if .LinuxHicolorIcons}}
+  - src: "./build/linux/icons/16x16.png"
+    dst: "/usr/share/icons/hicolor/16x16/apps/{{.BinaryName}}.png"
+  - src: "./build/linux/icons/32x32.png"
+    dst: "/usr/share/icons/hicolor/32x32/apps/{{.BinaryName}}.png"
+  - src: "./build/linux/icons/48x48.png"
+    dst: "/usr/share/icons/hicolor/48x48/apps/{{.BinaryName}}.png"
+  - src: "./build/linux/icons/64x64.png"
+    dst: "/usr/share/icons/hicolor/64x64/apps/{{.BinaryName}}.png"
+  - src: "./build/linux/icons/128x128.png"
+    dst: "/usr/share/icons/hicolor/128x128/apps/{{.BinaryName}}.png"
+  - src: "./build/linux/icons/256x256.png"
+    dst: "/usr/share/icons/hicolor/256x256/apps/{{.BinaryName}}.png"
+  - src: "./build/linux/icons/512x512.png"
+    dst: "/usr/share/icons/hicolor/512x512/apps/{{.BinaryName}}.png"
+{{else}}
   - src: "./build/appicon.png"
     dst: "/usr/share/icons/hicolor/128x128/apps/{{.BinaryName}}.png"
+{{end}}
   - src: "./build/linux/{{.BinaryName}}.desktop"
     dst: "/usr/share/applications/{{.BinaryName}}.desktop"
 

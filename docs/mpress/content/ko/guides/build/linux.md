@@ -58,6 +58,19 @@ homepage: https://example.com
 license: MIT
 ```
 
+### 데스크톱 아이콘
+
+`build/appicon.png`가 기준 아이콘 원본입니다. 공통 `generate:icons` 태스크는 `build/linux/icons/`에 16, 32, 48, 64, 128, 256, 512픽셀의 결정적인 PNG를 생성합니다. DEB, RPM 및 Arch 패키지는 생성된 각 이미지를 해당 `/usr/share/icons/hicolor/<size>x<size>/apps/` 디렉터리에 설치합니다.
+
+생성된 nFPM 설정은 이 기본 크기 집합을 예상합니다. `-linuxsizes`를 사용자 지정하면 `build/linux/nfpm/nfpm.yaml`의 아이콘 항목도 일치하도록 업데이트하세요.
+
+Wails는 프로젝트의 Taskfile을 덮어쓰지 않으므로 Linux 아이콘 생성 도입 전에 만든 프로젝트는 `update build-assets`를 실행해도 호환되는 기존 패키지 매핑을 유지합니다. 활성화하려면 현재 프로젝트의 공통 `generate:icons` 태스크를 가져와 `-linuxoutputdir linux/icons`를 전달하고 모든 Linux PNG를 `generates`에 선언하도록 업데이트한 다음 실행하세요.
+
+```bash
+wails3 task common:generate:icons
+wails3 task common:update:build-assets
+```
+
 ### AppImage
 
 AppImage 구성은 `build/linux/appimage/`에 있습니다. 앱 아이콘은 `build/appicon.png`에서 가져옵니다.

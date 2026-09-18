@@ -115,7 +115,7 @@ wails3 task darwin:package:universal
 wails3 task common:generate:icons
 ```
 
-이 태스크는 `build/appicon.png`을 사용하여 `darwin/icons.icns`과 `windows/icon.ico`을 생성합니다. macOS에서는 `build/appicon.icon`(Icon Composer 형식)도 제공할 수 있습니다. 이 경우 태스크가 `-iconcomposerinput appicon.icon -macassetdir darwin`를 전달하여 `.icon` 파일에서 `Assets.car`과 `darwin/icons.icns`을 생성합니다(macOS 이외의 플랫폼에서는 건너뜀). `Assets.car`이 있으면 `Info.plist`과 `CFBundleIconName`도 그에 맞게 업데이트되도록 `update:build-assets` 태스크를 실행하세요:
+이 태스크는 `build/appicon.png`를 사용해 `darwin/icons.icns`, `windows/icon.ico` 및 Linux hicolor PNG 집합을 생성합니다. macOS에서는 `build/appicon.icon`(Icon Composer 형식)도 제공할 수 있습니다. 이 경우 태스크가 `-iconcomposerinput appicon.icon -macassetdir darwin`를 전달하여 `.icon` 파일에서 `Assets.car`과 `darwin/icons.icns`을 생성합니다(macOS 이외의 플랫폼에서는 건너뜀). `Assets.car`이 있으면 `Info.plist`과 `CFBundleIconName`도 그에 맞게 업데이트되도록 `update:build-assets` 태스크를 실행하세요:
 
 ```bash
 wails3 task common:update:build-assets
@@ -125,7 +125,7 @@ wails3 task common:update:build-assets
 
 ```bash
 cd build
-wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin -linuxoutputdir linux/icons -linuxsizes 16,32,48,64,128,256,512
 ```
 
 ## 코드 서명

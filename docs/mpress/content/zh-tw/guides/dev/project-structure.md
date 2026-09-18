@@ -20,6 +20,7 @@ sourcePath: "guides/dev/project-structure.md"
 │   ├── darwin/             # macOS build config
 │   ├── windows/            # Windows build config
 │   ├── linux/              # Linux build config
+│   │   └── icons/          # 產生的 hicolor PNG 圖示集
 │   ├── android/            # Android build config
 │   ├── ios/                # iOS build config
 │   └── docker/             # Containerized build environment
@@ -36,6 +37,8 @@ sourcePath: "guides/dev/project-structure.md"
 ├── bin/                    # Compiled binaries
 └── .task/                  # Task runner cache
 ```
+
+`frontend/dist`、`frontend/bindings` 與 `build/linux/icons` 等產生目錄，會在對應的建置或產生任務首次執行後出現。
 
 @note{type="info" title="前端專案檔案"}
 如果選擇使用其他起始範本，`frontend/src`的內容將依您選擇的框架而有所不同

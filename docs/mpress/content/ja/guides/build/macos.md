@@ -115,7 +115,7 @@ wails3 task darwin:package:universal
 wails3 task common:generate:icons
 ```
 
-これは `build/appicon.png` を使用して、`darwin/icons.icns` と `windows/icon.ico` を生成します。macOS では `build/appicon.icon`（Icon Composer 形式）も指定できます。このタスクは `-iconcomposerinput appicon.icon -macassetdir darwin` を渡し、`.icon` ファイルから `Assets.car` と `darwin/icons.icns` を生成します（macOS 以外のプラットフォームではスキップされます）。`Assets.car` が存在する場合は、`Info.plist` と `CFBundleIconName` がそれに応じて更新されるよう、`update:build-assets` タスクを実行します。
+これは `build/appicon.png` を使用して、`darwin/icons.icns`、`windows/icon.ico`、Linux hicolor PNG 一式を生成します。 macOS では `build/appicon.icon`（Icon Composer 形式）も指定できます。このタスクは `-iconcomposerinput appicon.icon -macassetdir darwin` を渡し、`.icon` ファイルから `Assets.car` と `darwin/icons.icns` を生成します（macOS 以外のプラットフォームではスキップされます）。`Assets.car` が存在する場合は、`Info.plist` と `CFBundleIconName` がそれに応じて更新されるよう、`update:build-assets` タスクを実行します。
 
 ```bash
 wails3 task common:update:build-assets
@@ -125,7 +125,7 @@ wails3 task common:update:build-assets
 
 ```bash
 cd build
-wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin
+wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico -iconcomposerinput appicon.icon -macassetdir darwin -linuxoutputdir linux/icons -linuxsizes 16,32,48,64,128,256,512
 ```
 
 ## コード署名
