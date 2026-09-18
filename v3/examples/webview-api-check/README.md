@@ -15,10 +15,10 @@ Each engine supports different Web APIs. This tool helps you understand what API
 ## Building
 
 ```bash
-# Linux GTK4
-go build -tags gtk4 -o webview-api-check .
+# Linux GTK4 (default)
+go build -o webview-api-check .
 
-# Linux GTK3
+# Linux GTK3 (legacy, opt-in)
 go build -tags gtk3 -o webview-api-check .
 
 # Windows/macOS

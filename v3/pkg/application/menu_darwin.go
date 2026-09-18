@@ -23,10 +23,19 @@ void* createNSMenu(char* label) {
 	NSMenu *menu = [[NSMenu alloc] init];
 	if( label != NULL && strlen(label) > 0 ) {
 		menu.title = [NSString stringWithUTF8String:label];
+	}
+	if( label != NULL ) {
 		free(label);
 	}
 	[menu setAutoenablesItems:NO];
 	return (void*)menu;
+}
+
+// Release a menu created by createNSMenu once ownership has been
+// transferred (e.g. to an NSMenuItem via setSubmenu:)
+void releaseNSMenu(void* nsMenu) {
+	NSMenu *menu = (NSMenu *)nsMenu;
+	[menu release];
 }
 
 void addMenuItem(void* nsMenu, void* nsMenuItem) {
@@ -90,6 +99,13 @@ func (m *macosMenu) update() {
 
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	for _, item := range menu.items {
+		// A rebuild (Menu.Update) replaces every impl: release the previous
+		// NSMenuItem's owning reference first, or each update leaks one item
+		// (clearMenu's removeAllItems only drops the menu's retain, not the
+		// +1 from [MenuItem new]).
+		if old, ok := item.impl.(*macosMenuItem); ok && old != nil && old.nsMenuItem != nil {
+			old.destroy()
+		}
 		switch item.itemType {
 		case submenu:
 			submenu := item.submenu
@@ -105,6 +121,9 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			if item.role == WindowMenu {
 				C.addWindowsMenu(nsSubmenu)
 			}
+			// The NSMenuItem retains its submenu; drop the createNSMenu +1 so
+			// the subtree unwinds when the item goes away.
+			C.releaseNSMenu(nsSubmenu)
 		case text, checkbox, radio:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem

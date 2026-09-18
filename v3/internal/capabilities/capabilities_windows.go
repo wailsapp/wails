@@ -2,7 +2,7 @@
 
 package capabilities
 
-import "github.com/wailsapp/go-webview2/webviewloader"
+import "github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
 type version string
 

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "23f47f0c548dfa71eba9",
+  "sourceFile": "guides/advanced/wml.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "67346d2024838df7923aa61dac0bed50f825843a4b6543a1f0418908aef9a304",
+      "targetHash": "29215b3c1f035d393b872e4badb74af7b07de5d42e7da6ffb2b1d7feda41cbd8",
+      "machineHash": "29215b3c1f035d393b872e4badb74af7b07de5d42e7da6ffb2b1d7feda41cbd8",
+      "machineText": "이 페이지는 자리 표시자입니다. 전체 WML 콘텐츠는 곧 제공될 예정입니다.",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full WML content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:38Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "e8779f0a75e5b7f7664c5c2129429d73230c2a650eb475bc21b51068f028168f",
+      "targetHash": "ddb9dc1a33968ee92b7aff1f6017333216a21cc2c705ca31d633e2cc9222ae14",
+      "machineHash": "ddb9dc1a33968ee92b7aff1f6017333216a21cc2c705ca31d633e2cc9222ae14",
+      "machineText": "WML (Wails 마크업)은 Wails 사용자 인터페이스를 기술하기 위한 선언형 언어입니다. 마크업 구문과 사용 가능한 구성 요소에 관한 문서가 여기에 추가될 예정입니다.",
+      "status": "final",
+      "sourcePreview": "WML (Wails Markup) is a declarative language for describing Wails user interfaces. Documentation for…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:38Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "81b8912330ea9905cc7c096f1c524bf70f00e21e21fa363134542e7f32420b80",
+      "targetHash": "0a3ef0905da8f63628f23f3303273303afa3d1c3e261c7655169814760bc249b",
+      "machineHash": "0a3ef0905da8f63628f23f3303273303afa3d1c3e261c7655169814760bc249b",
+      "machineText": "Wails v3 사용자 인터페이스를 기술하기 위한 마크업 언어",
+      "status": "final",
+      "sourcePreview": "A markup language for describing Wails v3 user interfaces",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:38Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "a29008f9131597a579cd07aa4a8d1e382976a3632f9a1f4387c7af792afa979b",
+      "targetHash": "b293187afcc56951d431c868182ab2673d00c1deaa71b2582bf1eda44340a7cf",
+      "machineHash": "b293187afcc56951d431c868182ab2673d00c1deaa71b2582bf1eda44340a7cf",
+      "machineText": "WML (Wails 마크업)",
+      "status": "final",
+      "sourcePreview": "WML (Wails Markup)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:38Z"
+    }
+  }
+}

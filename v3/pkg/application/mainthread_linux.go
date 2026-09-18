@@ -7,12 +7,14 @@ func (a *linuxApp) dispatchOnMainThread(id uint) {
 }
 
 func executeOnMainThread(callbackID uint) {
-	mainThreadFunctionStoreLock.RLock()
+	mainThreadFunctionStoreLock.Lock()
 	fn := mainThreadFunctionStore[callbackID]
 	if fn == nil {
+		mainThreadFunctionStoreLock.Unlock()
 		Fatal("dispatchCallback called with invalid id: %v", callbackID)
+		return
 	}
 	delete(mainThreadFunctionStore, callbackID)
-	mainThreadFunctionStoreLock.RUnlock()
+	mainThreadFunctionStoreLock.Unlock()
 	fn()
 }

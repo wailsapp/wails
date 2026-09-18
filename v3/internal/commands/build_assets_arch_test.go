@@ -33,6 +33,10 @@ func TestBuildAssetsDefaultArchNotX64(t *testing.T) {
 	}
 
 	options := &BuildAssetsOptions{
+		// Dir must be set explicitly: the `default:"build"` tag is only applied by
+		// the CLI flag parser, not struct literals, so without this the assets are
+		// generated into the package's working dir (polluting the source tree).
+		Dir:                t.TempDir(),
 		Name:               "TestApp",
 		ProductName:        "Test App",
 		ProductDescription: "Test",

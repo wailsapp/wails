@@ -1,0 +1,81 @@
+name: Verify Runtime Assets
+
+# The bundled runtime (v3/internal/assetserver/bundledassets) is go:embed'ed
+# into every Wails v3 application, and minified JS cannot be reviewed by eye.
+# This check treats those files as an internal build product: any PR that
+# touches them, or the source they are built from, must contain exactly the
+# bytes a clean rebuild of that PR's source produces. Runs with a read-only
+# token and no secrets, so building untrusted PR source here is safe.
+#
+# The job runs on every PR (and self-skips when no runtime paths changed) so
+# it can be marked as a required status check without wedging unrelated PRs.
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-runtime-assets-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Bundled runtime matches source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR merge result
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect runtime asset or source changes
+        id: changed
+        run: |
+          # HEAD is the PR merge commit; HEAD^1 is the base branch tip.
+          if git diff --name-only HEAD^1 HEAD -- \
+              'v3/internal/assetserver/bundledassets' \
+              'v3/internal/runtime' | grep -q .; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "No bundled-runtime or runtime-source changes; nothing to verify."
+          fi
+
+      - name: Use Node.js 22
+        if: steps.changed.outputs.relevant == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Task
+        if: steps.changed.outputs.relevant == 'true'
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install runtime dependencies (lockfile-exact)
+        if: steps.changed.outputs.relevant == 'true'
+        working-directory: v3/internal/runtime/desktop/@wailsio/runtime
+        run: npm ci
+
+      - name: Rebuild bundled runtime from PR source
+        if: steps.changed.outputs.relevant == 'true'
+        working-directory: v3
+        run: task runtime:build:assets
+
+      - name: Verify committed bundles match the rebuild
+        if: steps.changed.outputs.relevant == 'true'
+        run: |
+          if ! git diff --exit-code -- v3/internal/assetserver/bundledassets; then
+            echo "::error::Committed bundled runtime does not match a clean rebuild of this PR's source."
+            echo "::error::Never hand-edit v3/internal/assetserver/bundledassets. To regenerate:"
+            echo "::error::  cd v3/internal/runtime/desktop/@wailsio/runtime && npm ci"
+            echo "::error::  cd ../../../.. && task runtime:build:assets   # from the v3 directory"
+            echo "::error::then commit the result."
+            exit 1
+          fi
+          echo "Bundled runtime matches its source."

@@ -146,8 +146,8 @@ func (imports *ImportMap) addTypeImpl(typ types.Type, visited map[*types.TypeNam
 			}
 			visited[obj] = true
 
-			// Special case: application.Void will render as TS void hence no dependencies and no model
-			if collector.IsVoidAlias(obj) {
+			// Special cases have a dedicated rendering path and do not require imports or model generation.
+			if collector.IsSpecialType(obj) {
 				return
 			}
 

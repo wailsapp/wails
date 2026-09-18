@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ebb78f638168e5ffdf0d",
+  "sourceFile": "guides/patterns/database.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "48156a472942928fcc5a0f4927f6328b6eaa8559effc6458800128031a6634ea",
+      "targetHash": "aa0601119cb7d5dbe02dd5c34b146554bb96de2e375aaf56c29d80f267aca69e",
+      "machineHash": "aa0601119cb7d5dbe02dd5c34b146554bb96de2e375aaf56c29d80f267aca69e",
+      "machineText": "此頁面目前為預留頁面。完整的資料庫整合內容即將推出。",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full database integration content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "9989f2f7ebde19c0531fa8bf720eb348bf4fd7a5bda29b63969eac0991e81b29",
+      "targetHash": "9810ef7a72d375581ba133778526009f6d8e17025f1d372697954aa318e7504e",
+      "machineHash": "9810ef7a72d375581ba133778526009f6d8e17025f1d372697954aa318e7504e",
+      "machineText": "Wails v3 應用程式就是 Go 應用程式，因此你可以在繫結的服務中使用任何標準 Go 資料庫驅動程式，包括 [SQLite](https://github.com/mattn/go-sqlite3)、[PostgreSQL](https://github.com/jackc/pgx) 和 [MySQL](https://github.com/go-sql-driver/mysql)。",
+      "status": "final",
+      "sourcePreview": "Wails v3 applications are Go applications, so you can use any standard Go database driver — includin…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9883cf56cdd6b6b93f4d4f5cbb41be7e28856a26677ccd24cf6657162d222941",
+      "targetHash": "144f51c5002cd48267fb73262ca052797a5255590fdd9c3154d91a41d36372b9",
+      "machineHash": "144f51c5002cd48267fb73262ca052797a5255590fdd9c3154d91a41d36372b9",
+      "machineText": "如需可實際運作的範例，請參閱[待辦事項教學](/tutorials/02-todo-vanilla/)，其中示範如何為完整的應用程式加入 SQLite 持久化功能。",
+      "status": "final",
+      "sourcePreview": "For a working example, see the [TODO tutorial](/tutorials/02-todo-vanilla/), which demonstrates addi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "7987957fb2e6e74f86e5306bcb37e60acda396bf7715e1d25ce339d7708d2fe2",
+      "targetHash": "5e352d4470458f1867c884291afad9c79bed0deb1ee6e8aa9b0a28300579ecc5",
+      "machineHash": "5e352d4470458f1867c884291afad9c79bed0deb1ee6e8aa9b0a28300579ecc5",
+      "machineText": "將 SQLite、PostgreSQL 及其他資料庫與 Wails v3 整合",
+      "status": "final",
+      "sourcePreview": "Integrating SQLite, PostgreSQL, and other databases with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "080b9c836c59a179f2be830de3453b7b756ec9f5977db00aecfc5193baa53d5c",
+      "targetHash": "c3dfc1a157e8ceadc45603f96f3bf808fbd4483acdd766378531a219f406ccfa",
+      "machineHash": "c3dfc1a157e8ceadc45603f96f3bf808fbd4483acdd766378531a219f406ccfa",
+      "machineText": "資料庫整合",
+      "status": "final",
+      "sourcePreview": "Database Integration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    }
+  }
+}

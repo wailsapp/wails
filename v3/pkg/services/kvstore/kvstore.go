@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"encoding/json"
-	"github.com/pkg/errors"
+	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -55,13 +55,19 @@ func (kvs *KVStoreService) ServiceName() string {
 // ServiceStartup loads the store from disk if it is associated with a file.
 // It returns a non-nil error in case of failure.
 func (kvs *KVStoreService) ServiceStartup(ctx context.Context, options application.ServiceOptions) error {
-	return errors.Wrap(kvs.Load(), "error loading store")
+	if err := kvs.Load(); err != nil {
+		return fmt.Errorf("error loading store: %w", err)
+	}
+	return nil
 }
 
 // ServiceShutdown saves the store to disk if it is associated with a file.
 // It returns a non-nil error in case of failure.
 func (kvs *KVStoreService) ServiceShutdown() error {
-	return errors.Wrap(kvs.Save(), "error saving store")
+	if err := kvs.Save(); err != nil {
+		return fmt.Errorf("error saving store: %w", err)
+	}
+	return nil
 }
 
 // Configure changes the store's configuration.

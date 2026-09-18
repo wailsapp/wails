@@ -43,7 +43,7 @@ type Controller interface {
 	Font() *Font
 	SetFont(font *Font)
 	InvokeRequired() bool
-	Invoke(func())
+	Invoke(func()) bool
 	PreTranslateMessage(msg *w32.MSG) bool
 	WndProc(msg uint32, wparam, lparam uintptr) uintptr
 

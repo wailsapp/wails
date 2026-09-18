@@ -1,0 +1,52 @@
+//go:build windows
+
+package webview2
+import (
+	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
+)
+
+type ICoreWebView2_3Vtbl struct {
+	IUnknownVtbl
+	GetIsSuspended ComProc
+}
+
+type ICoreWebView2_3 struct {
+	Vtbl *ICoreWebView2_3Vtbl
+}
+
+func (i *ICoreWebView2_3) AddRef() uintptr {
+	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return refCounter
+}
+
+
+func (i *ICoreWebView2) GetICoreWebView2_3() *ICoreWebView2_3 {
+	var result *ICoreWebView2_3
+
+	iidICoreWebView2_3 := NewGUID("{A0D6DF20-3B92-416D-AA0C-437A9C727857}")
+	_, _, _ = i.Vtbl.QueryInterface.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(iidICoreWebView2_3)),
+		uintptr(unsafe.Pointer(&result)))
+
+	return result
+}
+
+
+func (i *ICoreWebView2_3) GetIsSuspended() (bool, error) {
+	// Create int32 to hold bool result
+	var _isSuspended int32
+
+	hr, _, err := i.Vtbl.GetIsSuspended.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&_isSuspended)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return false, syscall.Errno(hr)
+	}
+	// Get result and cleanup
+    isSuspended := _isSuspended != 0
+	return isSuspended, err
+}

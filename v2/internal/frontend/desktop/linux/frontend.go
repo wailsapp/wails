@@ -65,6 +65,12 @@ static void install_signal_handlers()
 #if defined(SIGSEGV)
     fix_signal(SIGSEGV);
 #endif
+    // NOTE: Do NOT add SA_ONSTACK to SIGUSR1. WebKit's JavaScriptCore uses
+    // SIGUSR1 to suspend/resume threads for conservative GC stack scanning.
+    // Once JSC installs its own SIGUSR1 handler it owns the signal (Go no
+    // longer handles it), and forcing SA_ONSTACK makes that handler run on
+    // Go's alternate signal stack, breaking GC thread synchronisation and
+    // freezing WebKit during idle collection. See issue #5527.
 #if defined(SIGXCPU)
     fix_signal(SIGXCPU);
 #endif
@@ -79,8 +85,24 @@ static gboolean install_signal_handlers_idle(gpointer data) {
     return G_SOURCE_REMOVE;
 }
 
+// WebKit's JSC lazily installs signal handlers without SA_ONSTACK when
+// JavaScript first executes. This timer re-applies the fix every 50ms
+// for the first 5 seconds, covering the JSC initialization window.
+static gboolean install_signal_handlers_timeout(gpointer data) {
+    install_signal_handlers();
+    int *remaining = (int *)data;
+    (*remaining)--;
+    if (*remaining <= 0) {
+        return G_SOURCE_REMOVE;
+    }
+    return G_SOURCE_CONTINUE;
+}
+
 static void fix_signal_handlers_after_gtk_init() {
     g_idle_add(install_signal_handlers_idle, NULL);
+    int *remaining = (int *)g_malloc(sizeof(int));
+    *remaining = 100;
+    g_timeout_add_full(G_PRIORITY_DEFAULT, 50, install_signal_handlers_timeout, remaining, g_free);
 }
 
 */
@@ -442,6 +464,9 @@ var edgeMap = map[string]uintptr{
 
 func (f *Frontend) processMessage(message string) {
 	if message == "DomReady" {
+		// JSC is guaranteed to have initialised by page-load completion, so
+		// re-apply SA_ONSTACK now to cover any handlers it installed during load.
+		C.install_signal_handlers()
 		if f.frontendOptions.OnDomReady != nil {
 			f.frontendOptions.OnDomReady(f.ctx)
 		}

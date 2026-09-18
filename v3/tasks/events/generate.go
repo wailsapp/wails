@@ -52,7 +52,7 @@ func newWindowsEvents() windowsEvents {
 $$WINDOWSEVENTSVALUES	}
 }
 
-var iOS = newIOSEvents()
+var IOS = newIOSEvents()
 
 type iosEvents struct {
 $$IOSEVENTSDECL}
@@ -60,6 +60,16 @@ $$IOSEVENTSDECL}
 func newIOSEvents() iosEvents {
 	return iosEvents{
 $$IOSEVENTSVALUES	}
+}
+
+var Android = newAndroidEvents()
+
+type androidEvents struct {
+$$ANDROIDEVENTSDECL}
+
+func newAndroidEvents() androidEvents {
+	return androidEvents{
+$$ANDROIDEVENTSVALUES	}
 }
 
 func JSEvent(event uint) string {
@@ -129,10 +139,23 @@ $$MACJSEVENTS	}),
 $$LINUXJSEVENTS	}),
 	iOS: Object.freeze({
 $$IOSJSEVENTS	}),
+	Android: Object.freeze({
+$$ANDROIDJSEVENTS	}),
 	Common: Object.freeze({
 $$COMMONJSEVENTS	}),
 });
 `
+
+// splitLinesTrimTrailing splits content on newlines, dropping the trailing
+// empty element produced by a final newline so rewriting the file does not
+// accumulate blank lines.
+func splitLinesTrimTrailing(content []byte) [][]byte {
+	lines := bytes.Split(content, []byte{'\n'})
+	if len(lines) > 0 && len(lines[len(lines)-1]) == 0 {
+		lines = lines[:len(lines)-1]
+	}
+	return lines
+}
 
 func main() {
 	eventNames, err := os.ReadFile("../../pkg/events/events.txt")
@@ -160,6 +183,9 @@ func main() {
 	iosApplicationDelegateEvents := bytes.NewBufferString("")
 	iosWebviewDelegateEvents := bytes.NewBufferString("")
 
+	androidEventsDecl := bytes.NewBufferString("")
+	androidEventsValues := bytes.NewBufferString("")
+
 	commonEventsDecl := bytes.NewBufferString("")
 	commonEventsValues := bytes.NewBufferString("")
 
@@ -167,6 +193,7 @@ func main() {
 	macTSEvents := bytes.NewBufferString("")
 	windowsTSEvents := bytes.NewBufferString("")
 	iosTSEvents := bytes.NewBufferString("")
+	androidTSEvents := bytes.NewBufferString("")
 	commonTSEvents := bytes.NewBufferString("")
 
 	eventToJS := bytes.NewBufferString("")
@@ -271,6 +298,20 @@ func main() {
 
 `)
 			}
+		case "android":
+			eventType := "ApplicationEventType"
+			if strings.HasPrefix(event, "Window") {
+				eventType = "WindowEventType"
+			}
+			if strings.HasPrefix(event, "WebView") {
+				eventType = "WindowEventType"
+			}
+			androidEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
+			androidEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
+			androidTSEvents.WriteString("\t\t" + event + ": \"android:" + event + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"android:" + event + "\",\n")
+			// Android events are emitted from Go (JNI exports), so no C
+			// header defines or native delegate code are generated.
 		case "common":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -384,6 +425,8 @@ func main() {
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSVALUES", windowsEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSEVENTSDECL", iosEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSEVENTSVALUES", iosEventsValues.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$ANDROIDEVENTSDECL", androidEventsDecl.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$ANDROIDEVENTSVALUES", androidEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSDECL", commonEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSVALUES", commonEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTTOJS", eventToJS.String())
@@ -397,6 +440,7 @@ func main() {
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSJSEVENTS", windowsTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$LINUXJSEVENTS", linuxTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSJSEVENTS", iosTSEvents.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$ANDROIDJSEVENTS", androidTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONJSEVENTS", commonTSEvents.String())
 	err = os.WriteFile("../../internal/runtime/desktop/@wailsio/runtime/src/event_types.ts", []byte(templateToWrite), 0644)
 	if err != nil {
@@ -439,7 +483,7 @@ func main() {
 	// then we write the file
 	buffer.Reset()
 	inGeneratedEvents = false
-	for _, line := range bytes.Split(iosAppDelegate, []byte{'\n'}) {
+	for _, line := range splitLinesTrimTrailing(iosAppDelegate) {
 		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
 			inGeneratedEvents = true
 			buffer.WriteString("// GENERATED EVENTS START\n")
@@ -452,10 +496,8 @@ func main() {
 			continue
 		}
 		if !inGeneratedEvents {
-			if len(line) > 0 {
-				buffer.Write(line)
-				buffer.WriteString("\n")
-			}
+			buffer.Write(line)
+			buffer.WriteString("\n")
 		}
 	}
 	err = os.WriteFile("../../pkg/application/application_ios_delegate.m", buffer.Bytes(), 0755)
@@ -473,7 +515,7 @@ func main() {
 	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
 	// then we write the file
 	buffer.Reset()
-	for _, line := range bytes.Split(iosWebviewWindow, []byte{'\n'}) {
+	for _, line := range splitLinesTrimTrailing(iosWebviewWindow) {
 		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
 			inGeneratedEvents = true
 			buffer.WriteString("// GENERATED EVENTS START\n")
@@ -487,10 +529,8 @@ func main() {
 			continue
 		}
 		if !inGeneratedEvents {
-			if len(line) > 0 {
-				buffer.Write(line)
-				buffer.WriteString("\n")
-			}
+			buffer.Write(line)
+			buffer.WriteString("\n")
 		}
 	}
 	err = os.WriteFile("../../pkg/application/webview_window_ios.m", buffer.Bytes(), 0755)
@@ -508,7 +548,7 @@ func main() {
 	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
 	// then we write the file
 	buffer.Reset()
-	for _, line := range bytes.Split(windowDelegate, []byte{'\n'}) {
+	for _, line := range splitLinesTrimTrailing(windowDelegate) {
 		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
 			inGeneratedEvents = true
 			buffer.WriteString("// GENERATED EVENTS START\n")
@@ -522,10 +562,8 @@ func main() {
 			continue
 		}
 		if !inGeneratedEvents {
-			if len(line) > 0 {
-				buffer.Write(line)
-				buffer.WriteString("\n")
-			}
+			buffer.Write(line)
+			buffer.WriteString("\n")
 		}
 	}
 	err = os.WriteFile("../../pkg/application/webview_window_darwin.m", buffer.Bytes(), 0755)
@@ -543,7 +581,7 @@ func main() {
 	// then we iterate until we reach a line that says "// GENERATED EVENTS END"
 	// then we write the file
 	buffer.Reset()
-	for _, line := range bytes.Split(appDelegate, []byte{'\n'}) {
+	for _, line := range splitLinesTrimTrailing(appDelegate) {
 		if bytes.Contains(line, []byte("// GENERATED EVENTS START")) {
 			inGeneratedEvents = true
 			buffer.WriteString("// GENERATED EVENTS START\n")
@@ -556,10 +594,8 @@ func main() {
 			continue
 		}
 		if !inGeneratedEvents {
-			if len(line) > 0 {
-				buffer.Write(line)
-				buffer.WriteString("\n")
-			}
+			buffer.Write(line)
+			buffer.WriteString("\n")
 		}
 	}
 	err = os.WriteFile("../../pkg/application/application_darwin_delegate.m", buffer.Bytes(), 0755)
