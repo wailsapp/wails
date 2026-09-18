@@ -64,9 +64,6 @@ func New(appOptions Options) *App {
 		}
 	}
 
-	// Set up signal handling (platform-specific)
-	result.setupSignalHandler(appOptions)
-
 	result.logStartup()
 	result.logPlatformInfo()
 
@@ -373,6 +370,14 @@ func (r *webViewAssetRequest) URL() (string, error) {
 
 func (r *webViewAssetRequest) Method() (string, error) {
 	return r.Request.Method()
+}
+
+// Context preserves native request cancellation through the header-injecting wrapper.
+func (r *webViewAssetRequest) Context() context.Context {
+	if contextual, ok := r.Request.(interface{ Context() context.Context }); ok {
+		return contextual.Context()
+	}
+	return nil
 }
 
 func (r *webViewAssetRequest) Header() (http.Header, error) {
@@ -763,6 +768,9 @@ func (a *App) Run() error {
 	if err := startup(); err != nil {
 		return err
 	}
+	// Handle signals only after the application is ready to quit.
+	a.setupSignalHandler(a.options)
+
 	return a.impl.run()
 }
 
@@ -877,7 +885,15 @@ func (a *App) handleWindowEvent(event *windowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.RUnlock()
 	if !ok {
-		a.warning("Window #%d not found", event.WindowID)
+		// Post-removal lifecycle notifications are expected: the default
+		// WindowClosing listener removes the window from the manager, then
+		// AppKit (or the equivalent on other platforms) keeps posting
+		// windowWillClose / windowDidResignKey / etc. for the same window.
+		// On darwin hasListeners always returns true today, so those
+		// notifications are queued unconditionally and would warn here on
+		// every window close. The same applies to App.cleanup nilling the
+		// map during shutdown. None of these are bugs — just log them.
+		a.debug("Window event for unknown window", "windowID", event.WindowID, "eventID", event.EventID)
 		return
 	}
 	window.HandleWindowEvent(event.EventID)

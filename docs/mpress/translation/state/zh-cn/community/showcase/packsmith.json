@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "340eea887f00d84772f2",
+  "sourceFile": "community/showcase/packsmith.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "932e896430131c38239abc49a8f4e4899372301dfb4f64fe3d7d170795a72319",
+      "targetHash": "b2334df7eb44264272e67e0202cff93ab9cc52e97847a7e63c96217aac9edb1e",
+      "machineHash": "b2334df7eb44264272e67e0202cff93ab9cc52e97847a7e63c96217aac9edb1e",
+      "machineText": "![Packsmith 截图](/assets/showcase-images/packsmith-screenshot.webp)",
+      "status": "final",
+      "sourcePreview": "![Packsmith Screenshot](/assets/showcase-images/packsmith-screenshot.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "46111fe2df653c08911ac749296553db05a564dcbb66f435edc10fb54a9a04d6",
+      "targetHash": "c59166f2b1df1fecce7f405b3e9ae911da9c32f246e63ba4d1fc17200f39ae2b",
+      "machineHash": "c59166f2b1df1fecce7f405b3e9ae911da9c32f246e63ba4d1fc17200f39ae2b",
+      "machineText": "[Packsmith](https://github.com/sqot0/packsmith) 是一款用于管理 Minecraft 模组包的开源应用程序，可让你：",
+      "status": "final",
+      "sourcePreview": "[Packsmith](https://github.com/sqot0/packsmith) is an open source application for managing Minecraft…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "c8d2da6e4bc3bd6772a232352afab58dff5e816586545baaedc78ac056775f98",
+      "targetHash": "c3bbac7b34608ede46c297b153437db76697ab2efce350fd627c20df22b242fa",
+      "machineHash": "c3bbac7b34608ede46c297b153437db76697ab2efce350fd627c20df22b242fa",
+      "machineText": "使用 Forge、Fabric、Neoforge 或 Quilt 模组加载器管理模组包。",
+      "status": "final",
+      "sourcePreview": "Manage modpacks with Forge, Fabric, Neoforge, or Quilt mod loaders.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "e0999c02823685af1b1606fdfd868135d19b912334c6c18a9be902458adf39b3",
+      "targetHash": "fb67c4171500f6a004c73aa7d551a42e87e7bb8ec6b4410f846322abab24f847",
+      "machineHash": "fb67c4171500f6a004c73aa7d551a42e87e7bb8ec6b4410f846322abab24f847",
+      "machineText": "从 Modrinth 和 CurseForge 搜索并下载模组。",
+      "status": "final",
+      "sourcePreview": "Search and download mods from Modrinth and CurseForge.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "9123c223edc18ebff5904b418621e19b6b137bb04c6d177a500beaedffa67d2d",
+      "targetHash": "6dbb9fd56bde1bbbf2670b442a9a8c65fcdee282fc3cab094bd2871ad338af4e",
+      "machineHash": "6dbb9fd56bde1bbbf2670b442a9a8c65fcdee282fc3cab094bd2871ad338af4e",
+      "machineText": "将客户端模组与服务器模组分开管理。",
+      "status": "final",
+      "sourcePreview": "Separate mods for client and server.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "6413845d8d0a9778a0fa6e580d48199159d444809792a4c143616400e52a0e5e",
+      "targetHash": "8a788063eecd7b1c626732ec7514ff9ce11b6c4f62c0e4708aa17f70ec5b464f",
+      "machineHash": "8a788063eecd7b1c626732ec7514ff9ce11b6c4f62c0e4708aa17f70ec5b464f",
+      "machineText": "更新模组、切换模组版本，或从模组包中删除模组。",
+      "status": "final",
+      "sourcePreview": "Update, change versions, or delete mods from your modpack.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "targetHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "machineHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "machineText": "Packsmith",
+      "status": "final",
+      "sourcePreview": "Packsmith",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

@@ -305,7 +305,7 @@ func TestHandleStreamNameLimit(t *testing.T) {
 	mgr := newStreamManager(nil)
 	t.Cleanup(mgr.close)
 	a := &App{streams: mgr}
-	handler := func(*StreamConn) {}
+	handler := func(c *StreamConn) { <-c.Context().Done() }
 	maximum := strings.Repeat("m", streamMaxNameLen)
 	oversized := maximum + "x"
 

@@ -1,22 +1,6 @@
-# Version labels
-v2-only:
-  - '\[v2\]'
-  - '\(v2\)'
-  - 'v2:'
-  - 'version 2'
-  - 'wails v2'
-  - 'using v2'
-  - 'master branch'
-
-v3:
-  - '\[v3\]'
-  - '\(v3\)'
-  - 'v3:'
-  - 'v3 beta'
-  - 'version 3'
-  - 'wails v3'
-  - 'using v3'
-  - 'releases/v3-beta branch'
+# Version, type, and security labels are applied by the shared classifier in
+# scripts/label-github-items.sh. Keeping those decisions in one place prevents
+# an issue from receiving competing version or type labels.
 
 # Component labels
 webview2:
@@ -62,32 +46,7 @@ cli:
   - 'template'
   - 'scaffolding'
 
-# Type labels
-bug:
-  - 'bug'
-  - 'crash'
-  - 'broken'
-  - 'failure'
-  - 'error'
-  - 'failed'
-  - 'panic'
-  - 'segfault'
-  - 'issue'
-  - 'not working'
-  - 'problem'
-
-enhancement:
-  - 'feature'
-  - 'enhancement'
-  - 'request'
-  - 'add'
-  - 'new'
-  - 'improve'
-  - 'functionality'
-  - 'support for'
-  - 'please add'
-  - 'would be nice'
-
+# Content labels
 documentation:
   - 'docs'
   - 'documentation'
@@ -98,16 +57,6 @@ documentation:
   - 'explanation'
   - 'clarification'
   - 'instructions'
-
-security:
-  - 'security'
-  - 'vulnerability'
-  - 'exploit'
-  - 'hack'
-  - 'CVE'
-  - 'secure'
-  - 'encryption'
-  - 'hardening'
 
 performance:
   - 'performance'
