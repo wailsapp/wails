@@ -1,0 +1,37 @@
+<!doctype html><script>
+const scenario=new URLSearchParams(location.search).get('scenario');
+const slow=(name,options={})=>fetch('/slow?name='+name,options);
+const abort=(name,url='/slow?name='+name,options={})=>{const c=new AbortController();fetch(url,{...options,signal:c.signal}).catch(()=>{});setTimeout(()=>c.abort(),700)};
+setTimeout(()=>{
+ if(scenario==='main'){
+  abort('fetch');
+  const x=new XMLHttpRequest();x.open('GET','/slow?name=xhr');x.send();setTimeout(()=>x.abort(),700);
+  abort('redirect','/redirect');
+  abort('post',undefined,{method:'POST',headers:{'X-Probe':'preserved'},body:'upload body'});
+  abort('same-abort','/slow?name=same',{headers:{'X-Case':'same-abort'}});
+  slow('same',{headers:{'X-Case':'same-control'}});
+  slow('normal');
+  slow('app-shutdown').catch(()=>{});
+  new Worker('/worker.js');
+  const keptWorker=new Worker('/worker.js?name=worker-keepalive-terminated');setTimeout(()=>keptWorker.terminate(),1500);
+  const terminated=new Worker('/worker.js?name=worker-terminated');setTimeout(()=>terminated.terminate(),1500);
+  for(let i=0;i<20;i++){
+   abort('stress-'+i);
+   abort('stress-keepalive-'+i,undefined,{keepalive:true});
+  }
+  fetch('/external-redirect?name=external-keepalive',{keepalive:true}).then(r=>r.text()).then(()=>fetch('/client?name=external-keepalive-client&outcome=complete'),()=>fetch('/client?name=external-keepalive-client&outcome=failed'));
+
+  new Worker('/worker.js?name=worker-keepalive');
+  abort('keepalive-abort',undefined,{keepalive:true});
+  abort('keepalive-post',undefined,{keepalive:true,method:'POST',headers:{'X-Probe':'preserved'},body:'upload body'});
+  abort('keepalive-redirect-abort','/redirect?name=keepalive-redirect-abort',{keepalive:true});
+  fetch(new Request('/redirect?name=keepalive-redirect',{keepalive:true})).then(r=>fetch('/client?name=keepalive-url&outcome='+(r.url.includes('__wails_keepalive')?'marker-leaked':'complete'))).catch(()=>{});
+  fetch('/external-redirect?name=external').then(r=>r.text()).then(()=>fetch('/client?name=external-client&outcome=complete'),()=>fetch('/client?name=external-client&outcome=failed'));
+
+  const frame=document.createElement('iframe');frame.src='/?scenario=frame';document.body.append(frame);
+ }else if(scenario==='frame'){abort('frame')}
+ else if(scenario==='navigation'||scenario==='keepalive'||scenario==='http-keepalive'){
+  slow(scenario,{keepalive:scenario!=='navigation'}).catch(()=>{});setTimeout(()=>location.href='/done',700);
+ }else if(scenario==='close'){slow('close').catch(()=>{})}
+},500);
+</script><body>Windows request cancellation regression probe</body>
