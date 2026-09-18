@@ -123,6 +123,10 @@ git checkout -b feature/my-feature
 4. **Run tests** to ensure nothing breaks
 5. **Commit changes** with clear messages
 
+v3 changelog entries are generated automatically when your PR merges. To
+control the wording, add your own entry to `v3/UNRELEASED_CHANGELOG.md`
+and the automation will use it instead.
+
 ### Commit Guidelines
 
 ```bash

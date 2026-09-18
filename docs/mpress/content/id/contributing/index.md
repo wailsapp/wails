@@ -122,6 +122,8 @@ git checkout -b feature/my-feature
 4. **Jalankan pengujian** untuk memastikan tidak ada yang rusak
 5. **Commit perubahan** dengan pesan yang jelas
 
+Entri log perubahan v3 dibuat secara otomatis saat PR Anda digabungkan. Untuk menentukan redaksinya, tambahkan entri sendiri ke `v3/UNRELEASED_CHANGELOG.md`; otomatisasi akan menggunakan entri tersebut.
+
 ### Pedoman Commit
 
 ```bash

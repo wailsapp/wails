@@ -123,6 +123,8 @@ git checkout -b feature/my-feature
 4. **Exécutez les tests** pour vérifier que rien ne cesse de fonctionner
 5. **Validez les modifications** avec des messages clairs
 
+Les entrées du journal des modifications de v3 sont générées automatiquement lors de la fusion de votre PR. Pour choisir leur formulation, ajoutez votre propre entrée dans `v3/UNRELEASED_CHANGELOG.md` ; l’automatisation utilisera cette entrée.
+
 ### Règles relatives aux commits
 
 ```bash

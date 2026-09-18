@@ -122,6 +122,8 @@ git checkout -b feature/my-feature
 4. **Tests ausführen**, um sicherzustellen, dass nichts beschädigt wird
 5. **Änderungen committen** und klare Meldungen verwenden
 
+Changelog-Einträge für v3 werden automatisch erstellt, wenn dein PR zusammengeführt wird. Wenn du den Wortlaut festlegen möchtest, füge einen eigenen Eintrag zu `v3/UNRELEASED_CHANGELOG.md` hinzu; die Automatisierung verwendet dann diesen Eintrag.
+
 ### Commit-Richtlinien
 
 ```bash

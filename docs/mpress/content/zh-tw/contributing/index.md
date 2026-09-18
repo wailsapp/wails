@@ -122,6 +122,8 @@ git checkout -b feature/my-feature
 4. **執行測試**，確保沒有任何功能損壞
 5. 以清楚的訊息<strong>提交變更</strong>
 
+v3 的變更日誌項目會在 PR 合併時自動產生。如果希望自行指定措辭，請在 `v3/UNRELEASED_CHANGELOG.md` 中新增項目，自動化流程將改用該項目。
+
 ### 提交準則
 
 ```bash

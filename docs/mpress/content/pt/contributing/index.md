@@ -123,6 +123,8 @@ git checkout -b feature/my-feature
 4. **Execute os testes** para garantir que nada deixe de funcionar
 5. **Faça o commit das alterações** com mensagens claras
 
+As entradas do histórico de alterações da v3 são geradas automaticamente quando seu PR é integrado. Para controlar o texto, adicione sua própria entrada em `v3/UNRELEASED_CHANGELOG.md`; a automação usará essa entrada.
+
 ### Diretrizes para commits
 
 ```bash
