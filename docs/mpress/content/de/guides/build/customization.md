@@ -139,6 +139,57 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+### Variablen zur Anpassung von Go-Builds
+
+Generierte Projekte stellen additive Variablen für eigene Go-Build-Tags, Linker-Flags und CGO bereit. Tag-Werte müssen kommagetrennte Namen ohne die Option `-tags` sein. Wails kombiniert sie mit den Tags, die der gewählte Build-Modus und die Plattform benötigen.
+
+| Variable | Gilt für |
+| --- | --- |
+| `APP_TAGS` | Alle über Taskfiles ausgeführten Builds |
+| `APP_TAGS_LINUX` | Linux-Builds |
+| `APP_TAGS_DARWIN` | macOS-Builds |
+| `APP_TAGS_WINDOWS` | Windows-Builds |
+| `APP_TAGS_ANDROID` | Android-Builds |
+| `APP_TAGS_IOS` | iOS-Builds |
+| `APP_TAGS_SERVER` | Builds im Servermodus |
+| `APP_LDFLAGS` | Zusätzliche Linker-Flags für alle über Taskfiles ausgeführten Builds |
+| `APP_CGO_ENABLED` | Überschreibt CGO mit `0` oder `1` für Desktop- und Server-Builds |
+| `EXTRA_TAGS` | Zusätzliche Tags für einen einzelnen Aufruf |
+
+Zum Beispiel:
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+Legen Sie einen `APP_*`-Wert in der Stammdatei `Taskfile.yml` fest, wenn er dauerhaft als Projektstandard gelten soll. Ein mit dem Befehl übergebenes `KEY=value` hat die höchste Priorität und ersetzt die Variable für diesen Aufruf. Ein fest eingetragener Wert im Stamm-Taskfile hat Vorrang vor der gleichnamigen Umgebungsvariable des Prozesses. Bleibt der unten gezeigte Ausdruck mit Selbstreferenz und Standardwert erhalten, wird die Prozessumgebung verwendet, sofern kein Kommandozeilenwert angegeben ist. Verwenden Sie `EXTRA_TAGS`, um Tags für einen Build hinzuzufügen, ohne den dauerhaften `APP_TAGS`-Wert zu ersetzen.
+
+Ist `APP_CGO_ENABLED` leer, verwenden Linux und macOS standardmäßig `1`, Windows verwendet `0`, native Server-Builds behalten den Go-Standardwert des Hosts und Server-Builds mit Docker verwenden `0`. Android- und iOS-Builds benötigen immer CGO und behalten `CGO_ENABLED=1`; `APP_CGO_ENABLED` überschreibt diese mobilen Toolchains nicht. Docker-basierte Desktop-Cross-Compilation und Server-Builds erhalten dieselben jeweils anwendbaren `APP_*`-Werte wie ihre nativen Taskfile-Entsprechungen.
+
+@note{type="info" title="Bestehende Projekte"}
+Die Stammdatei `Taskfile.yml` gehört zum Projekt und wird daher von `wails3 update build-assets` nicht überschrieben. Projekte, die vor Einführung dieser Variablen erstellt wurden, müssen die folgenden Einträge manuell zu ihrem `vars`-Block im Stamm-Taskfile hinzufügen:
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+Ersetzen Sie einen Ausdruck mit Selbstreferenz und Standardwert durch einen festen Wert, um ihn dauerhaft als Projektstandard festzulegen.
+
+@end
+
+Diese Variablen werden von Taskfile-gesteuerten Builds verwendet. Die Build-Phase im generierten Xcode-Projekt ruft Go direkt auf und liegt außerhalb dieser Taskfile-Anpassung. Aus Xcode gestartete Builds verwenden diese Variablen daher derzeit nicht.
+
 ## Allgemeiner Build-Prozess
 
 Der Build-Prozess umfasst auf allen Plattformen üblicherweise die folgenden Schritte:

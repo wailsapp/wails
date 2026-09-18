@@ -139,6 +139,57 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+### Go ビルドのカスタマイズ変数
+
+生成されたプロジェクトには、独自の Go ビルドタグ、リンカーフラグ、CGO を設定するための追加用変数があります。タグは `-tags` オプションを付けず、名前をカンマで区切って指定します。Wails はこれらを、選択したビルドモードとプラットフォームに必要なタグと組み合わせます。
+
+| 変数 | 適用先 |
+| --- | --- |
+| `APP_TAGS` | Taskfile 経由のすべてのビルド |
+| `APP_TAGS_LINUX` | Linux ビルド |
+| `APP_TAGS_DARWIN` | macOS ビルド |
+| `APP_TAGS_WINDOWS` | Windows ビルド |
+| `APP_TAGS_ANDROID` | Android ビルド |
+| `APP_TAGS_IOS` | iOS ビルド |
+| `APP_TAGS_SERVER` | サーバーモードのビルド |
+| `APP_LDFLAGS` | Taskfile 経由のすべてのビルドに追加するリンカーフラグ |
+| `APP_CGO_ENABLED` | デスクトップおよびサーバービルドの CGO を `0` または `1` に上書き |
+| `EXTRA_TAGS` | 1 回の呼び出しに追加するタグ |
+
+例：
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+プロジェクトの永続的なデフォルト値にするには、ルートの `Taskfile.yml` に `APP_*` の値を設定します。コマンドで渡す `KEY=value` の優先順位が最も高く、その呼び出しでの変数の値を置き換えます。ルート Taskfile に指定したリテラル値は、同名のプロセス環境変数より優先されます。以下の自己参照とデフォルト値を使う式を維持すると、コマンドラインで値を指定しなかった場合にプロセス環境が使われます。永続的な `APP_TAGS` の値を置き換えずに 1 回のビルドにタグを追加するには、`EXTRA_TAGS` を使用します。
+
+`APP_CGO_ENABLED` が空の場合、Linux と macOS のデフォルトは `1`、Windows は `0` です。ネイティブのサーバービルドはホストの Go のデフォルトを維持し、Docker によるサーバービルドは `0` を使用します。Android と iOS のビルドは常に CGO を使用し、`CGO_ENABLED=1` を維持します。`APP_CGO_ENABLED` はこれらのモバイルツールチェーンを上書きしません。Docker を使うデスクトップのクロスコンパイルとサーバービルドには、対応するネイティブの Taskfile ビルドと同じ、適用対象の `APP_*` 値が渡されます。
+
+@note{type="info" title="既存のプロジェクト"}
+ルートの `Taskfile.yml` はプロジェクトが管理するため、`wails3 update build-assets` では上書きされません。これらの変数の導入前に作成されたプロジェクトでは、ルートの `vars` ブロックに以下の項目を手動で追加する必要があります。
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+自己参照とデフォルト値を使う式をリテラル値に置き換えると、プロジェクトの永続的なデフォルト値になります。
+
+@end
+
+これらの変数は Taskfile 経由のビルドで使用されます。生成された Xcode プロジェクトのビルドフェーズは Go を直接呼び出し、この Taskfile のカスタマイズ経路を通らないため、Xcode から実行するビルドでは現在これらの変数は使用されません。
+
 ## 共通のビルドプロセス
 
 すべてのプラットフォームに共通して、ビルドプロセスには通常、次の手順が含まれます。

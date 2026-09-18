@@ -139,6 +139,57 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+### Go 빌드 사용자 지정 변수
+
+생성된 프로젝트는 사용자 지정 Go 빌드 태그, 링커 플래그 및 CGO 설정을 추가할 수 있는 변수를 제공합니다. 태그 값은 `-tags` 옵션 없이 쉼표로 구분된 이름이어야 합니다. Wails는 이를 선택한 빌드 모드와 플랫폼에 필요한 태그와 결합합니다.
+
+| 변수 | 적용 대상 |
+| --- | --- |
+| `APP_TAGS` | Taskfile을 통해 실행되는 모든 빌드 |
+| `APP_TAGS_LINUX` | Linux 빌드 |
+| `APP_TAGS_DARWIN` | macOS 빌드 |
+| `APP_TAGS_WINDOWS` | Windows 빌드 |
+| `APP_TAGS_ANDROID` | Android 빌드 |
+| `APP_TAGS_IOS` | iOS 빌드 |
+| `APP_TAGS_SERVER` | 서버 모드 빌드 |
+| `APP_LDFLAGS` | Taskfile을 통해 실행되는 모든 빌드에 추가할 링커 플래그 |
+| `APP_CGO_ENABLED` | 데스크톱 및 서버 빌드의 CGO를 `0` 또는 `1`로 재정의 |
+| `EXTRA_TAGS` | 한 번의 호출에 추가할 태그 |
+
+예:
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+지속적으로 사용할 프로젝트 기본값은 루트 `Taskfile.yml`에 `APP_*` 값으로 설정하세요. 명령과 함께 전달한 `KEY=value`가 가장 높은 우선순위를 가지며 해당 호출에서 변수 값을 대체합니다. 루트 Taskfile의 리터럴 값은 같은 이름의 프로세스 환경 변수보다 우선합니다. 아래와 같이 자기 참조와 기본값을 사용하는 표현식을 유지하면 명령줄 값이 없을 때 프로세스 환경을 사용합니다. 지속적으로 사용하는 `APP_TAGS` 값을 대체하지 않고 한 번의 빌드에 태그를 추가하려면 `EXTRA_TAGS`를 사용하세요.
+
+`APP_CGO_ENABLED`가 비어 있으면 Linux와 macOS는 기본값 `1`, Windows는 `0`을 사용합니다. 네이티브 서버 빌드는 호스트의 Go 기본값을 유지하며 서버 Docker 빌드는 기본값 `0`을 사용합니다. Android 및 iOS 빌드는 항상 CGO를 사용하고 `CGO_ENABLED=1`을 유지합니다. `APP_CGO_ENABLED`는 이러한 모바일 도구 체인 설정을 재정의하지 않습니다. Docker 기반 데스크톱 크로스 컴파일과 서버 빌드는 해당 네이티브 Taskfile 빌드와 동일하게 적용 가능한 `APP_*` 값을 전달받습니다.
+
+@note{type="info" title="기존 프로젝트"}
+루트 `Taskfile.yml`은 프로젝트에서 관리하므로 `wails3 update build-assets`가 덮어쓰지 않습니다. 이 변수가 도입되기 전에 생성된 프로젝트는 루트 `vars` 블록에 다음 항목을 수동으로 추가해야 합니다.
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+자기 참조와 기본값을 사용하는 표현식을 리터럴 값으로 바꾸면 지속적으로 사용할 프로젝트 기본값이 됩니다.
+
+@end
+
+이 변수는 Taskfile을 통해 실행되는 빌드에서 사용됩니다. 생성된 Xcode 프로젝트의 빌드 단계는 Go를 직접 호출하며 이 Taskfile 사용자 지정 경로를 거치지 않으므로, Xcode에서 실행한 빌드는 현재 이 변수를 사용하지 않습니다.
+
 ## 공통 빌드 프로세스
 
 모든 플랫폼에서 빌드 프로세스는 일반적으로 다음 단계로 구성됩니다.

@@ -139,6 +139,57 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+### Go 建置自訂變數
+
+產生的專案提供用來追加自訂 Go 建置標籤、連結器旗標及設定 CGO 的變數。標籤值必須是以逗號分隔的名稱，不包含 `-tags` 選項；Wails 會將它們與所選建置模式及平台所需的標籤合併。
+
+| 變數 | 適用範圍 |
+| --- | --- |
+| `APP_TAGS` | 所有透過 Taskfile 執行的建置 |
+| `APP_TAGS_LINUX` | Linux 建置 |
+| `APP_TAGS_DARWIN` | macOS 建置 |
+| `APP_TAGS_WINDOWS` | Windows 建置 |
+| `APP_TAGS_ANDROID` | Android 建置 |
+| `APP_TAGS_IOS` | iOS 建置 |
+| `APP_TAGS_SERVER` | 伺服器模式建置 |
+| `APP_LDFLAGS` | 為所有透過 Taskfile 執行的建置追加連結器旗標 |
+| `APP_CGO_ENABLED` | 以 `0` 或 `1` 覆寫桌面及伺服器建置的 CGO 設定 |
+| `EXTRA_TAGS` | 為單次呼叫追加標籤 |
+
+例如：
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+若要設定持續使用的專案預設值，請在根目錄的 `Taskfile.yml` 中設定 `APP_*` 值。隨命令傳入的 `KEY=value` 優先順序最高，會在該次呼叫中取代變數的值。根 Taskfile 中的字面值優先於同名的處理程序環境變數。若保留下方所示的自我參照預設值運算式，則未提供命令列值時會使用處理程序環境。若只想為一次建置追加標籤而不取代持續使用的 `APP_TAGS` 值，請使用 `EXTRA_TAGS`。
+
+當 `APP_CGO_ENABLED` 為空時，Linux 與 macOS 預設為 `1`，Windows 預設為 `0`，原生伺服器建置保留 Go 在主機上的預設值，伺服器 Docker 建置則預設為 `0`。Android 與 iOS 建置一律使用 CGO，並維持 `CGO_ENABLED=1`；`APP_CGO_ENABLED` 不會覆寫這些行動工具鏈的設定。以 Docker 執行的桌面交叉編譯與伺服器建置，會接收與對應原生 Taskfile 建置相同的適用 `APP_*` 值。
+
+@note{type="info" title="現有專案"}
+根目錄的 `Taskfile.yml` 由專案管理，因此 `wails3 update build-assets` 不會覆寫它。在引入這些變數之前建立的專案，必須手動將下列項目加入根 Taskfile 的 `vars` 區塊：
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+將自我參照預設值運算式替換成字面值，即可設為持續使用的專案預設值。
+
+@end
+
+這些變數由透過 Taskfile 執行的建置使用。產生的 Xcode 專案在建置階段直接呼叫 Go，不會經過這套 Taskfile 自訂流程，因此從 Xcode 啟動的建置目前不會使用這些變數。
+
 ## 通用建置流程
 
 在所有平台上，建置流程通常包含以下步驟：

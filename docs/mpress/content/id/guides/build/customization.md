@@ -139,6 +139,57 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+### Variabel penyesuaian build Go
+
+Proyek yang dihasilkan menyediakan variabel aditif untuk tag build Go, flag linker, dan CGO. Nilai tag harus berupa nama yang dipisahkan koma, tanpa opsi `-tags`; Wails menggabungkannya dengan tag yang diperlukan oleh mode build dan platform yang dipilih.
+
+| Variabel | Berlaku untuk |
+| --- | --- |
+| `APP_TAGS` | Semua build yang dijalankan melalui Taskfile |
+| `APP_TAGS_LINUX` | Build Linux |
+| `APP_TAGS_DARWIN` | Build macOS |
+| `APP_TAGS_WINDOWS` | Build Windows |
+| `APP_TAGS_ANDROID` | Build Android |
+| `APP_TAGS_IOS` | Build iOS |
+| `APP_TAGS_SERVER` | Build mode server |
+| `APP_LDFLAGS` | Flag linker tambahan untuk semua build melalui Taskfile |
+| `APP_CGO_ENABLED` | Mengganti pengaturan CGO dengan `0` atau `1` untuk build desktop dan server |
+| `EXTRA_TAGS` | Tag tambahan untuk satu pemanggilan |
+
+Contohnya:
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+Tetapkan nilai `APP_*` di `Taskfile.yml` utama jika ingin menjadikannya nilai default proyek yang persisten. `KEY=value` yang diberikan bersama perintah memiliki prioritas tertinggi dan mengganti variabel tersebut untuk pemanggilan itu. Nilai literal di Taskfile utama memiliki prioritas lebih tinggi daripada variabel lingkungan proses dengan nama yang sama. Jika ekspresi yang merujuk dirinya sendiri dengan nilai default seperti di bawah tetap dipertahankan, lingkungan proses digunakan saat tidak ada nilai dari baris perintah. Gunakan `EXTRA_TAGS` untuk menambahkan tag bagi satu build tanpa mengganti nilai `APP_TAGS` yang persisten.
+
+Saat `APP_CGO_ENABLED` kosong, Linux dan macOS menggunakan default `1`, Windows menggunakan `0`, build server natif mempertahankan default Go pada host, dan build server Docker menggunakan `0`. Build Android dan iOS selalu menggunakan CGO dan mempertahankan `CGO_ENABLED=1`; `APP_CGO_ENABLED` tidak mengganti pengaturan toolchain seluler tersebut. Kompilasi silang desktop dan build server berbasis Docker menerima nilai `APP_*` yang sesuai, sama seperti build natif melalui Taskfile.
+
+@note{type="info" title="Proyek yang sudah ada"}
+`Taskfile.yml` utama dimiliki oleh proyek, sehingga `wails3 update build-assets` tidak menimpanya. Proyek yang dibuat sebelum variabel ini diperkenalkan harus menambahkan entri berikut secara manual ke blok `vars` utama:
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+Ganti ekspresi yang merujuk dirinya sendiri dengan nilai default menjadi nilai literal untuk menjadikannya default proyek yang persisten.
+
+@end
+
+Variabel ini digunakan oleh build yang dijalankan melalui Taskfile. Tahap build dalam proyek Xcode yang dihasilkan memanggil Go secara langsung dan berada di luar alur penyesuaian Taskfile ini, sehingga build yang dijalankan dari Xcode saat ini tidak menggunakan variabel tersebut.
+
 ## Proses Build Umum
 
 Di semua platform, proses build biasanya mencakup langkah-langkah berikut:

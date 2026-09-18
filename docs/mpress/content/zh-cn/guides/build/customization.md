@@ -139,6 +139,57 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+### Go 构建自定义变量
+
+生成的项目提供用于追加自定义 Go 构建标签、链接器参数以及配置 CGO 的变量。标签值必须是以逗号分隔的名称，不包含 `-tags` 选项；Wails 会将它们与所选构建模式和平台需要的标签组合起来。
+
+| 变量 | 适用范围 |
+| --- | --- |
+| `APP_TAGS` | 所有通过 Taskfile 执行的构建 |
+| `APP_TAGS_LINUX` | Linux 构建 |
+| `APP_TAGS_DARWIN` | macOS 构建 |
+| `APP_TAGS_WINDOWS` | Windows 构建 |
+| `APP_TAGS_ANDROID` | Android 构建 |
+| `APP_TAGS_IOS` | iOS 构建 |
+| `APP_TAGS_SERVER` | 服务器模式构建 |
+| `APP_LDFLAGS` | 为所有通过 Taskfile 执行的构建追加链接器参数 |
+| `APP_CGO_ENABLED` | 以 `0` 或 `1` 覆盖桌面和服务器构建的 CGO 设置 |
+| `EXTRA_TAGS` | 为单次调用追加标签 |
+
+例如：
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+如果要设置持久的项目默认值，请在根目录的 `Taskfile.yml` 中设置 `APP_*` 值。随命令传入的 `KEY=value` 优先级最高，会在本次调用中替换该变量。根 Taskfile 中的字面值优先于同名的进程环境变量。如果保留下方所示的自引用默认值表达式，则在未提供命令行值时使用进程环境。若只想为一次构建追加标签而不替换持久的 `APP_TAGS` 值，请使用 `EXTRA_TAGS`。
+
+当 `APP_CGO_ENABLED` 为空时，Linux 和 macOS 默认为 `1`，Windows 默认为 `0`，原生服务器构建保留 Go 在宿主机上的默认值，服务器 Docker 构建默认为 `0`。Android 和 iOS 构建始终使用 CGO，并保持 `CGO_ENABLED=1`；`APP_CGO_ENABLED` 不会覆盖这些移动工具链的设置。基于 Docker 的桌面交叉编译和服务器构建会接收与对应原生 Taskfile 构建相同的适用 `APP_*` 值。
+
+@note{type="info" title="现有项目"}
+根目录的 `Taskfile.yml` 由项目维护，因此 `wails3 update build-assets` 不会覆盖它。在引入这些变量之前创建的项目，需要手动将以下条目添加到根 Taskfile 的 `vars` 块中：
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+将自引用默认值表达式替换为字面值，即可设置持久的项目默认值。
+
+@end
+
+这些变量由通过 Taskfile 执行的构建使用。生成的 Xcode 项目在构建阶段直接调用 Go，不经过这套 Taskfile 自定义流程，因此从 Xcode 启动的构建目前不会使用这些变量。
+
 ## 通用构建流程
 
 在所有平台上，构建流程通常包括以下步骤：

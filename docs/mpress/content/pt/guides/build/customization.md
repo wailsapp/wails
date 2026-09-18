@@ -139,6 +139,57 @@ tasks:
       - go build -tags {{.CONFIG | default "debug"}} -o myapp
 ```
 
+### Variáveis de personalização da compilação Go
+
+Os projetos gerados oferecem variáveis aditivas para tags de compilação Go, flags do vinculador e CGO. Os valores das tags devem ser nomes separados por vírgulas, sem a opção `-tags`; o Wails os combina com as tags exigidas pelo modo de compilação e pela plataforma selecionados.
+
+| Variável | Aplica-se a |
+| --- | --- |
+| `APP_TAGS` | Todas as compilações executadas por Taskfiles |
+| `APP_TAGS_LINUX` | Compilações Linux |
+| `APP_TAGS_DARWIN` | Compilações macOS |
+| `APP_TAGS_WINDOWS` | Compilações Windows |
+| `APP_TAGS_ANDROID` | Compilações Android |
+| `APP_TAGS_IOS` | Compilações iOS |
+| `APP_TAGS_SERVER` | Compilações em modo servidor |
+| `APP_LDFLAGS` | Flags adicionais do vinculador para todas as compilações executadas por Taskfiles |
+| `APP_CGO_ENABLED` | Substitui a configuração CGO por `0` ou `1` nas compilações de desktop e servidor |
+| `EXTRA_TAGS` | Tags adicionais para uma única execução |
+
+Por exemplo:
+
+```bash
+wails3 build APP_TAGS=sqlite_fts5,netgo APP_TAGS_LINUX=myapp_linux
+wails3 build EXTRA_TAGS=diagnostics
+APP_LDFLAGS='-X example.com/myapp/internal/version.Value=1.2.3' wails3 build
+```
+
+Defina um valor `APP_*` no `Taskfile.yml` raiz para torná-lo um padrão persistente do projeto. Um `KEY=value` passado com o comando tem a maior precedência e substitui essa variável na execução. Um valor literal no Taskfile raiz tem precedência sobre a variável de ambiente do processo com o mesmo nome. Se a expressão autorreferente com valor padrão mostrada abaixo for mantida, o ambiente do processo será usado quando nenhum valor for fornecido na linha de comando. Use `EXTRA_TAGS` para adicionar tags a uma compilação sem substituir o valor persistente de `APP_TAGS`.
+
+Quando `APP_CGO_ENABLED` está vazio, Linux e macOS usam `1` por padrão, Windows usa `0`, as compilações nativas de servidor mantêm o padrão do Go no host e as compilações de servidor com Docker usam `0`. As compilações Android e iOS sempre usam CGO e mantêm `CGO_ENABLED=1`; `APP_CGO_ENABLED` não substitui a configuração dessas cadeias de ferramentas móveis. A compilação cruzada de desktop e as compilações de servidor baseadas em Docker recebem os mesmos valores `APP_*` aplicáveis que suas equivalentes nativas via Taskfile.
+
+@note{type="info" title="Projetos existentes"}
+O `Taskfile.yml` raiz pertence ao projeto, por isso `wails3 update build-assets` não o sobrescreve. Projetos criados antes da introdução dessas variáveis precisam adicionar manualmente as seguintes entradas ao bloco `vars` raiz:
+
+```yaml
+vars:
+  APP_TAGS: '{{.APP_TAGS | default ""}}'
+  APP_TAGS_LINUX: '{{.APP_TAGS_LINUX | default ""}}'
+  APP_TAGS_DARWIN: '{{.APP_TAGS_DARWIN | default ""}}'
+  APP_TAGS_WINDOWS: '{{.APP_TAGS_WINDOWS | default ""}}'
+  APP_TAGS_ANDROID: '{{.APP_TAGS_ANDROID | default ""}}'
+  APP_TAGS_IOS: '{{.APP_TAGS_IOS | default ""}}'
+  APP_TAGS_SERVER: '{{.APP_TAGS_SERVER | default ""}}'
+  APP_LDFLAGS: '{{.APP_LDFLAGS | default ""}}'
+  APP_CGO_ENABLED: '{{.APP_CGO_ENABLED | default ""}}'
+```
+
+Substitua uma expressão autorreferente com valor padrão por um valor literal para torná-lo um padrão persistente do projeto.
+
+@end
+
+Essas variáveis são usadas por compilações executadas por Taskfiles. A fase de compilação do projeto Xcode gerado chama Go diretamente e fica fora desse caminho de personalização dos Taskfiles; portanto, compilações iniciadas pelo Xcode atualmente não usam essas variáveis.
+
 ## Processo de compilação comum
 
 Em todas as plataformas, o processo de compilação normalmente inclui as seguintes etapas:
