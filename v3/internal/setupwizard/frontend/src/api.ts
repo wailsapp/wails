@@ -169,17 +169,33 @@ export async function validateNotarizationProfile(profile: string): Promise<{ va
   return response.json();
 }
 
+// createNotarizationProfile opens a Terminal window that runs `xcrun notarytool
+// store-credentials`. The app-specific password is typed into that window, so it
+// never reaches the browser; poll getNotarizationStatus until the window is done.
 export async function createNotarizationProfile(data: {
   profileName: string;
   appleID: string;
   teamID: string;
-  password: string;
-}): Promise<{ success: boolean; error?: string; output?: string }> {
+}): Promise<{ success: boolean; pending?: boolean; command?: string; error?: string }> {
   const response = await fetch(`${API_BASE}/signing/notarize/create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
+  return response.json();
+}
+
+export async function getNotarizationStatus(): Promise<{
+  state: 'idle' | 'running' | 'succeeded' | 'failed';
+  command?: string;
+  error?: string;
+}> {
+  const response = await fetch(`${API_BASE}/signing/notarize/status`);
+  return response.json();
+}
+
+export async function cancelNotarization(): Promise<{ success: boolean }> {
+  const response = await fetch(`${API_BASE}/signing/notarize/cancel`, { method: 'POST' });
   return response.json();
 }
 

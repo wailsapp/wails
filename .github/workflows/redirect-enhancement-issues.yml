@@ -1,0 +1,26 @@
+name: Redirect Enhancement Issues
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  redirect:
+    if: >-
+      github.event.label.name == 'Enhancement' &&
+      !contains(github.event.issue.labels.*.name, 'Bug') &&
+      !contains(github.event.issue.labels.*.name, 'Documentation')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Redirect to a WEP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          gh issue close "$ISSUE_NUMBER" --repo "$REPOSITORY" --comment \
+            'Thanks for the suggestion. Wails uses a WEP (Wails Enhancement Proposal) pull request for proposed functionality and changes to public behaviour, rather than feature-request issues. Please follow https://github.com/wailsapp/wails/blob/master/v3/wep/README.md to open a draft WEP PR. You are welcome to discuss the idea informally first in GitHub Discussions.'

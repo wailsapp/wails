@@ -8,7 +8,7 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-import { invoke, IsWindows, IsLinux } from "./system.js";
+import { invoke, IsWindows, IsLinux, IsMac } from "./system.js";
 import { GetFlag } from "./flags.js";
 import { canTrackButtons, eventTarget } from "./utils.js";
 
@@ -75,12 +75,37 @@ if (hasDOM) {
 }
 
 function suppressEvent(event: Event) {
+    if (
+        event.type === "dblclick"
+        && IsMac()
+        && window === window.top
+        && isDraggableEvent(event as MouseEvent)
+    ) {
+        event.stopImmediatePropagation();
+        event.stopPropagation();
+        event.preventDefault();
+        invoke("wails:drag:doubleclick");
+        return;
+    }
+
     // Suppress click events while resizing or dragging.
     if (dragging || resizing) {
         event.stopImmediatePropagation();
         event.stopPropagation();
         event.preventDefault();
     }
+}
+
+function isDraggableEvent(event: MouseEvent): boolean {
+    const target = eventTarget(event);
+    const style = window.getComputedStyle(target);
+    return (
+        style.getPropertyValue("--wails-draggable").trim() === "drag"
+        && event.offsetX >= 0
+        && event.offsetX < target.clientWidth
+        && event.offsetY >= 0
+        && event.offsetY < target.clientHeight
+    );
 }
 
 // Use constants to avoid comparing strings multiple times.
@@ -173,18 +198,9 @@ function primaryDown(event: MouseEvent): void {
     }
 
     // Retrieve target element
-    const target = eventTarget(event);
-
     // Ready to drag if the primary button was pressed for the first time on a draggable element.
     // Ignore clicks on the scrollbar.
-    const style = window.getComputedStyle(target);
-    canDrag = (
-        style.getPropertyValue("--wails-draggable").trim() === "drag"
-        && (
-            event.offsetX - parseFloat(style.paddingLeft) < target.clientWidth
-            && event.offsetY - parseFloat(style.paddingTop) < target.clientHeight
-        )
-    );
+    canDrag = isDraggableEvent(event);
 }
 
 function primaryUp(event: MouseEvent) {

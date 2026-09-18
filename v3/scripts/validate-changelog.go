@@ -2,15 +2,20 @@ package main
 
 import (
 	"bufio"
+	"context"
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"time"
 )
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: go run validate-changelog.go <changelog-file> <added-lines-file>")
+		fmt.Println("Usage: go run validate-changelog.go <changelog-file> <added-lines-file> [deleted-lines-file] [base-changelog-file]")
 		os.Exit(1)
 	}
 
@@ -33,6 +38,26 @@ func main() {
 
 	addedLines := strings.Split(addedContent, "\n")
 	fmt.Printf("📝 Lines added in this PR: %d\n", len(addedLines))
+	var deletedLines []string
+	if len(os.Args) >= 4 {
+		deletedContent, err := readFile(os.Args[3])
+		if err != nil {
+			fmt.Printf("ERROR: Failed to read deleted changelog lines: %v\n", err)
+			os.Exit(1)
+		}
+		deletedLines = strings.Split(deletedContent, "\n")
+		fmt.Printf("📝 Lines deleted in this PR: %d\n", len(deletedLines))
+	}
+	var deletedEntries []changelogEntry
+	if len(os.Args) >= 5 {
+		baseContent, err := readFile(os.Args[4])
+		if err != nil {
+			fmt.Printf("ERROR: Failed to read base changelog: %v\n", err)
+			os.Exit(1)
+		}
+		deletedEntries = deletedChangelogEntries(baseContent, content, deletedLines)
+		fmt.Printf("📝 Deleted changelog entries with section metadata: %d\n", len(deletedEntries))
+	}
 
 	// Parse changelog to find where added lines ended up
 	lines := strings.Split(content, "\n")
@@ -40,26 +65,34 @@ func main() {
 	// Find problematic entries - only check lines that were ADDED in this PR
 	var issues []Issue
 	currentSection := ""
+	publishedNotes := make(map[string]string)
 
 	for lineNum, line := range lines {
 		// Track current section
-		if strings.HasPrefix(line, "## ") {
-			if strings.Contains(line, "[Unreleased]") {
-				currentSection = "Unreleased"
-			} else if strings.Contains(line, "v3.0.0-") {
-				// Extract version from a released prerelease heading like
-				// "## v3.0.0-alpha.10 - 2025-07-06" or "## v3.0.0-beta.1 - 2026-07-06"
-				parts := strings.Split(strings.TrimSpace(line[3:]), " - ")
-				if len(parts) >= 1 {
-					currentSection = strings.TrimSpace(parts[0])
-				}
-			}
+		if section := releaseSection(line); section != "" {
+			currentSection = section
 		}
 
 		// Check if this line was added in this PR AND is in a released version
 		if currentSection != "" && currentSection != "Unreleased" &&
 			strings.HasPrefix(strings.TrimSpace(line), "- ") &&
 			wasAddedInThisPR(line, addedLines) {
+			if isSameSourceCorrection(line, currentSection, deletedEntries) {
+				fmt.Printf("✅ CORRECTION: Same-source replacement in %s: %s\n", currentSection, strings.TrimSpace(line))
+				continue
+			}
+
+			if _, loaded := publishedNotes[currentSection]; !loaded {
+				body, err := publishedReleaseNotes(currentSection)
+				if err != nil {
+					fmt.Printf("⚠️ Cannot verify published notes for %s: %v\n", currentSection, err)
+				}
+				publishedNotes[currentSection] = body
+			}
+			if isPublishedBackfill(line, currentSection, publishedNotes) {
+				fmt.Printf("✅ BACKFILL: Entry already published in %s: %s\n", currentSection, strings.TrimSpace(line))
+				continue
+			}
 
 			issues = append(issues, Issue{
 				Line:     lineNum,
@@ -99,6 +132,129 @@ func main() {
 		fmt.Println("❌ Cannot automatically fix changelog issues")
 		os.Exit(1)
 	}
+}
+
+var pullRequestReference = regexp.MustCompile(`^https://github\.com/wailsapp/wails/pull/[0-9]+$`)
+var shortIssueReference = regexp.MustCompile(`\(#([0-9]+)\)$`)
+
+// Multiword prose titles may move out of code spans so they can be translated.
+// Preserve every letter and space; do not strip punctuation from code or URLs.
+var inlineProseCode = regexp.MustCompile("`([A-Za-z]+(?: [A-Za-z]+)+)`")
+
+func pullRequestReferenceFromLine(line string) string {
+	const linkPrefix = "[PR]("
+	start := strings.Index(line, linkPrefix)
+	if start == -1 {
+		return ""
+	}
+	destination := line[start+len(linkPrefix):]
+	end := strings.IndexByte(destination, ')')
+	if end == -1 {
+		return ""
+	}
+	destination = destination[:end]
+	if !pullRequestReference.MatchString(destination) {
+		return ""
+	}
+	return destination
+}
+
+func changelogReferenceFromLine(line string) string {
+	if strings.Contains(line, "[PR](") {
+		return pullRequestReferenceFromLine(line)
+	}
+	if match := shortIssueReference.FindStringSubmatch(strings.TrimSpace(line)); match != nil {
+		return "https://github.com/wailsapp/wails/issues/" + match[1]
+	}
+	return ""
+}
+
+type changelogEntry struct {
+	Line    string
+	Section string
+}
+
+// deletedChangelogEntries attaches release-section provenance to deleted diff
+// lines. Comparing section-specific counts between the base and current files
+// prevents a line moved between releases from masquerading as a correction.
+func deletedChangelogEntries(baseContent, currentContent string, deletedLines []string) []changelogEntry {
+	deletedCounts := make(map[string]int)
+	for _, line := range deletedLines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "- ") {
+			deletedCounts[line]++
+		}
+	}
+
+	currentCounts := make(map[changelogEntry]int)
+	for _, entry := range changelogEntries(currentContent) {
+		currentCounts[entry]++
+	}
+
+	var result []changelogEntry
+	for _, entry := range changelogEntries(baseContent) {
+		if currentCounts[entry] > 0 {
+			currentCounts[entry]--
+			continue
+		}
+		if deletedCounts[entry.Line] == 0 {
+			continue
+		}
+		deletedCounts[entry.Line]--
+		result = append(result, entry)
+	}
+	return result
+}
+
+func changelogEntries(content string) []changelogEntry {
+	var entries []changelogEntry
+	currentSection := ""
+	for _, line := range strings.Split(content, "\n") {
+		if section := releaseSection(line); section != "" {
+			currentSection = section
+		}
+		line = strings.TrimSpace(line)
+		if currentSection != "" && strings.HasPrefix(line, "- ") {
+			entries = append(entries, changelogEntry{Line: line, Section: currentSection})
+		}
+	}
+	return entries
+}
+
+func releaseSection(line string) string {
+	if !strings.HasPrefix(line, "## ") {
+		return ""
+	}
+	if strings.Contains(line, "[Unreleased]") {
+		return "Unreleased"
+	}
+	if !strings.Contains(line, "v3.0.0-") {
+		return ""
+	}
+	parts := strings.Split(strings.TrimSpace(line[3:]), " - ")
+	return strings.TrimSpace(parts[0])
+}
+
+// isSameSourceCorrection distinguishes a historical correction from a new
+// entry added to a released section. Both lines must be changelog bullets in
+// the same released section and either cite the same immutable Wails issue or
+// pull request, or differ only in code-span versus emphasis markup around prose titles.
+func isSameSourceCorrection(addedLine, addedSection string, deletedEntries []changelogEntry) bool {
+	addedLine = strings.TrimSpace(addedLine)
+	if !strings.HasPrefix(addedLine, "- ") {
+		return false
+	}
+	reference := changelogReferenceFromLine(addedLine)
+	for _, deletedEntry := range deletedEntries {
+		if deletedEntry.Section != addedSection || deletedEntry.Line == addedLine {
+			continue
+		}
+		if reference != "" && changelogReferenceFromLine(deletedEntry.Line) == reference ||
+			inlineProseCode.ReplaceAllString(deletedEntry.Line, "*$1*") == addedLine {
+			return true
+		}
+	}
+	return false
 }
 
 type Issue struct {
@@ -252,6 +408,9 @@ func readFile(path string) (string, error) {
 
 	var content strings.Builder
 	scanner := bufio.NewScanner(file)
+	// M-Press changelog entries can contain generated links long enough to
+	// exceed Scanner's default 64 KiB token limit.
+	scanner.Buffer(make([]byte, 64*1024), 8*1024*1024)
 	for scanner.Scan() {
 		content.WriteString(scanner.Text())
 		content.WriteString("\n")
@@ -268,4 +427,46 @@ func writeFile(path, content string) error {
 	}
 
 	return os.WriteFile(path, []byte(content), 0644)
+}
+
+// publishedReleaseNotes reads maintainer-published evidence from the canonical
+// repository. Missing, draft, mismatched, or unavailable releases fail closed.
+func publishedReleaseNotes(section string) (string, error) {
+	if !regexp.MustCompile(`^v3\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$`).MatchString(section) {
+		return "", fmt.Errorf("invalid release tag %q", section)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	output, err := exec.CommandContext(ctx, "gh", "api", "--hostname", "github.com",
+		"repos/wailsapp/wails/releases/tags/"+section).Output()
+	if err != nil {
+		return "", fmt.Errorf("release lookup: %w", err)
+	}
+	var release struct {
+		TagName string `json:"tag_name"`
+		Body    string `json:"body"`
+		Draft   bool   `json:"draft"`
+	}
+	if err := json.Unmarshal(output, &release); err != nil {
+		return "", err
+	}
+	if release.Draft || release.TagName != section {
+		return "", fmt.Errorf("release is draft or tag does not match")
+	}
+	return release.Body, nil
+}
+
+// isPublishedBackfill accepts only an exact, PR-linked bullet in the published
+// notes for the same release; evidence from other releases cannot authorise it.
+func isPublishedBackfill(line, section string, notes map[string]string) bool {
+	line = strings.TrimSpace(line)
+	if !strings.HasPrefix(line, "- ") || pullRequestReferenceFromLine(line) == "" {
+		return false
+	}
+	for _, published := range strings.Split(notes[section], "\n") {
+		if strings.TrimSpace(published) == line {
+			return true
+		}
+	}
+	return false
 }
