@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "9a4861e1e4d8e7fdde70",
-  "sourceFile": "changelog.mpd",
+  "sourceFile": "changelog.md",
   "sourceLanguage": "en",
   "targetLanguage": "id",
   "segments": {
@@ -2810,12 +2810,12 @@
       "updatedAt": "2026-09-13T23:16:02Z"
     },
     "b0239-text-01": {
-      "sourceHash": "71732b4324d34509b014420d749e9be9aad6d1374d7c29e1ab35bae2081ef9bb",
-      "targetHash": "02ad1eb4f278e8b8a868d4a4f881c229d5380c801d0072c3cba38e20ce7caff6",
-      "machineHash": "02ad1eb4f278e8b8a868d4a4f881c229d5380c801d0072c3cba38e20ce7caff6",
-      "machineText": "Tambahkan dokumentasi why-wails.mdx dalam beberapa bahasa melalui [PR](https://github.com/wailsapp/wails/pull/5739) oleh @taliesin-ai",
+      "sourceHash": "55fd2d9ff3a86391b00e977bb42ba28db1314dc6bd643911733115d36a395ac8",
+      "targetHash": "7ec436c53dae7ac3239248d77a0327ccc72ee54777661b9e3f3d946a5f3e1a63",
+      "machineHash": "7ec436c53dae7ac3239248d77a0327ccc72ee54777661b9e3f3d946a5f3e1a63",
+      "machineText": "Tambahkan dokumentasi Why Wails dalam beberapa bahasa melalui [PR](https://github.com/wailsapp/wails/pull/5739) oleh @taliesin-ai",
       "status": "final",
-      "sourcePreview": "Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai",
+      "sourcePreview": "Add Why Wails documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/573…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
@@ -6098,12 +6098,12 @@
       "updatedAt": "2026-09-13T23:16:02Z"
     },
     "b0513-text-01": {
-      "sourceHash": "755404826e3f43acbc444ed42283d85b8670c98a694677dc2b4be4d2597a655c",
-      "targetHash": "8081cf8b9c9545da007506630035031a10391e209d6ecae94847f5e5dfe8cad7",
-      "machineHash": "8081cf8b9c9545da007506630035031a10391e209d6ecae94847f5e5dfe8cad7",
-      "machineText": "Menambahkan locale bahasa Jerman ke situs dokumentasi Astro dalam [PR](https://github.com/wailsapp/wails/pull/5343) oleh @leaanthony",
+      "sourceHash": "40a949335d7178a6e977b5d258234d37ef82ca7a787b3cf3726ec94993a6464a",
+      "targetHash": "6365b76c6be098a5710d5e62339456f9ecb6b7bbb5a1c52e30d115cd2fce95eb",
+      "machineHash": "6365b76c6be098a5710d5e62339456f9ecb6b7bbb5a1c52e30d115cd2fce95eb",
+      "machineText": "Menambahkan locale bahasa Jerman ke situs dokumentasi dalam [PR](https://github.com/wailsapp/wails/pull/5343) oleh @leaanthony",
       "status": "final",
-      "sourcePreview": "Add German locale to Astro documentation site in [PR](https://github.com/wailsapp/wails/pull/5343) by @leaanthony",
+      "sourcePreview": "Add German locale to the documentation site in [PR](https://github.com/wailsapp/wails/pull/5343) by …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
@@ -6122,12 +6122,12 @@
       "updatedAt": "2026-09-13T23:16:02Z"
     },
     "b0515-text-01": {
-      "sourceHash": "8a93768b8fdda5caf3d4881a26ff79a4ca3bcc0394e3eff993da89ba8258348c",
-      "targetHash": "eba9d7447d12354297ab440e43a5488bab9a356bf8b700e222af70e0d86d6bea",
-      "machineHash": "eba9d7447d12354297ab440e43a5488bab9a356bf8b700e222af70e0d86d6bea",
-      "machineText": "Mendaftarkan semua 8 locale terjemahan dalam konfigurasi Starlight dalam [PR](https://github.com/wailsapp/wails/pull/5347) oleh @leaanthony",
+      "sourceHash": "5119117e848bf7c0dfed21a8b5628a1a7131209d28c02db1aa0685f0f0a70fd5",
+      "targetHash": "bed1dbcbacf177583084dc22691e8d532330e9acc451eb92b86655856e0f35e9",
+      "machineHash": "bed1dbcbacf177583084dc22691e8d532330e9acc451eb92b86655856e0f35e9",
+      "machineText": "Mendaftarkan semua 8 locale terjemahan dalam konfigurasi dokumentasi dalam [PR](https://github.com/wailsapp/wails/pull/5347) oleh @leaanthony",
       "status": "final",
-      "sourcePreview": "Register all 8 translated locales in Starlight config in [PR](https://github.com/wailsapp/wails/pull/5347) by @leaanthony",
+      "sourcePreview": "Register all 8 translated locales in the documentation configuration in [PR](https://github.com/wail…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "15c787e5e251867cebbc",
-  "sourceFile": "contributing/binding-system.mpd",
+  "sourceFile": "contributing/binding-system.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-tw",
   "segments": {
@@ -42,12 +42,12 @@
       "updatedAt": "2026-09-13T23:13:52Z"
     },
     "b0004-text-01": {
-      "sourceHash": "a3ffba599380feff13f27e19ad45240fe779657f2589aaf9a9da590b2fc880e8",
-      "targetHash": "47e4e9cf6bfa73979a33a3a4f19304058e036164e1f07e941c65001918ce030a",
-      "machineHash": "47e4e9cf6bfa73979a33a3a4f19304058e036164e1f07e941c65001918ce030a",
-      "machineText": "如需以下內容，請參閱[`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/)：",
+      "sourceHash": "436122fa35ef898c1fad4d8d8be66b00e060858a6a1a653005d2ac9322089d54",
+      "targetHash": "b560fadec1e0758dbc2702d07494c7922baf2c11dd3e00b85b934de1e069c9ee",
+      "machineHash": "b560fadec1e0758dbc2702d07494c7922baf2c11dd3e00b85b934de1e069c9ee",
+      "machineText": "如需以下內容，請參閱[`contributing/architecture/bindings`](/contributing/architecture/bindings/)：",
       "status": "final",
-      "sourcePreview": "See [`contributing/architecture/bindings.mdx`](/contributing/architecture/bindings/) for",
+      "sourcePreview": "See [`contributing/architecture/bindings`](/contributing/architecture/bindings/) for",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

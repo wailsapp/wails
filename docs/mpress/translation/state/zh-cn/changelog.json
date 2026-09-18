@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "9a4861e1e4d8e7fdde70",
-  "sourceFile": "changelog.mpd",
+  "sourceFile": "changelog.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-cn",
   "segments": {
@@ -2810,12 +2810,12 @@
       "updatedAt": "2026-09-13T23:16:06Z"
     },
     "b0239-text-01": {
-      "sourceHash": "71732b4324d34509b014420d749e9be9aad6d1374d7c29e1ab35bae2081ef9bb",
-      "targetHash": "3ce5b545c994622dfb12daa504f00b7eb8275cdd0eadcd96c7edff880ee683bc",
-      "machineHash": "3ce5b545c994622dfb12daa504f00b7eb8275cdd0eadcd96c7edff880ee683bc",
-      "machineText": "在由 @taliesin-ai 提交的[PR](https://github.com/wailsapp/wails/pull/5739)中新增多语言 why-wails.mdx 文档",
+      "sourceHash": "55fd2d9ff3a86391b00e977bb42ba28db1314dc6bd643911733115d36a395ac8",
+      "targetHash": "b305a035fd36fd821558096de26bdbe0f0d3cb31eb2a7e6ab8c97600ff682f18",
+      "machineHash": "b305a035fd36fd821558096de26bdbe0f0d3cb31eb2a7e6ab8c97600ff682f18",
+      "machineText": "在由 @taliesin-ai 提交的[PR](https://github.com/wailsapp/wails/pull/5739)中新增多语言 Why Wails 文档",
       "status": "final",
-      "sourcePreview": "Add why-wails.mdx documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/5739) by @taliesin-ai",
+      "sourcePreview": "Add Why Wails documentation in multiple languages in [PR](https://github.com/wailsapp/wails/pull/573…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
@@ -6098,12 +6098,12 @@
       "updatedAt": "2026-09-13T23:16:06Z"
     },
     "b0513-text-01": {
-      "sourceHash": "755404826e3f43acbc444ed42283d85b8670c98a694677dc2b4be4d2597a655c",
-      "targetHash": "9e28900a2c12bbb1ca35b21c7a6a2bd28a377ec5bea4a7e89f67affeeb70bd27",
-      "machineHash": "9e28900a2c12bbb1ca35b21c7a6a2bd28a377ec5bea4a7e89f67affeeb70bd27",
-      "machineText": "在[PR](https://github.com/wailsapp/wails/pull/5343)中为 Astro 文档站点新增德语区域设置，贡献者：@leaanthony",
+      "sourceHash": "40a949335d7178a6e977b5d258234d37ef82ca7a787b3cf3726ec94993a6464a",
+      "targetHash": "32cdf9f1c927be105b25771e5ea284ec51a1f1d290c9be2bdca94ce8e2c98fbe",
+      "machineHash": "32cdf9f1c927be105b25771e5ea284ec51a1f1d290c9be2bdca94ce8e2c98fbe",
+      "machineText": "在[PR](https://github.com/wailsapp/wails/pull/5343)中为 文档站点新增德语区域设置，贡献者：@leaanthony",
       "status": "final",
-      "sourcePreview": "Add German locale to Astro documentation site in [PR](https://github.com/wailsapp/wails/pull/5343) by @leaanthony",
+      "sourcePreview": "Add German locale to the documentation site in [PR](https://github.com/wailsapp/wails/pull/5343) by …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
@@ -6122,12 +6122,12 @@
       "updatedAt": "2026-09-13T23:16:06Z"
     },
     "b0515-text-01": {
-      "sourceHash": "8a93768b8fdda5caf3d4881a26ff79a4ca3bcc0394e3eff993da89ba8258348c",
-      "targetHash": "0be22d483b3be95d68c084b6a06f1ed74be64774f52d60975ddfc47a827a0115",
-      "machineHash": "0be22d483b3be95d68c084b6a06f1ed74be64774f52d60975ddfc47a827a0115",
-      "machineText": "在[PR](https://github.com/wailsapp/wails/pull/5347)中将全部8个已翻译的区域设置注册到 Starlight 配置，贡献者：@leaanthony",
+      "sourceHash": "5119117e848bf7c0dfed21a8b5628a1a7131209d28c02db1aa0685f0f0a70fd5",
+      "targetHash": "5c10c67795a9599ee96fb759d413252a7a1c210cc773bb7b0d4e7d36dc427bef",
+      "machineHash": "5c10c67795a9599ee96fb759d413252a7a1c210cc773bb7b0d4e7d36dc427bef",
+      "machineText": "在[PR](https://github.com/wailsapp/wails/pull/5347)中将全部8个已翻译的区域设置注册到 文档配置，贡献者：@leaanthony",
       "status": "final",
-      "sourcePreview": "Register all 8 translated locales in Starlight config in [PR](https://github.com/wailsapp/wails/pull/5347) by @leaanthony",
+      "sourcePreview": "Register all 8 translated locales in the documentation configuration in [PR](https://github.com/wail…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
