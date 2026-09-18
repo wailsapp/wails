@@ -79,10 +79,10 @@ before changing that code — several of its decisions look arbitrary until you 
 measured bug they prevent.
 
 - **Streams** (`pkg/application/stream*.go`, `runtime/.../stream.ts`):
-  `docs/mpress/content/guides/advanced/streams-internals.mpd`. Covers the held-poll
+  `docs/mpress/content/guides/advanced/streams-internals.md`. Covers the held-poll
   design, the buffer constants and how to pick them, session and connection lifecycle,
   transport selection, and what is unfinished. To convert an existing WebSocket
-  implementation, follow `docs/mpress/content/guides/streams-from-websockets.mpd` —
+  implementation, follow `docs/mpress/content/guides/streams-from-websockets.md` —
   a mechanical checklist, including the differences that break silently.
 
 ## Landing the Plane (Session Completion)
