@@ -1,5 +1,86 @@
 [
   {
+    "language": "fr",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "03d73ff8f2c3012114c845c101acbe3edc872b8be55da652d2abe97e7b6596a8",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "d848900166e07286657c1ede4b971514de6eb525c64138ca36c9d548d9a2659b",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "6c3e3169a7650aa2e41f235b3e58157cbf9571a30594246b4f6eed7640584aaa",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "a0ff26f11411c18139fbbd84a79a26d86235e859f294e133b768a7bce25442f8",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "2920815d0d9e81d04fbd02f82b6e7484b44ca36d1c7dd642d7262b51a1814ed2",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "f10557f6b0abad3a4662de0de36e285548a6118701aba9da59333d9db579b603",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "457febd6d56522b04359d527ec2542b87544a5ea21f4fbd892c2755a853f9b40",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "1adbced724be4acfe2b9291117c1d652d8dab7cc64c189a9e39221bd3cd59198",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/wpm.md",
+    "segment": "fm-title-01",
+    "code": "untranslated",
+    "sourceSHA256": "6b54127bde731773f4424da8da50ed81d91a8ab0e85af44cfdc1fd5b343b28d6",
+    "targetSHA256": "bd6a70b43243a10bd566b8e60c5ebb0ae14d11a34efed29989bab15f9c1333c2",
+    "reason": "Reviewed unchanged title: wpm (塞壁纸) is the application’s proper name. The page description and explanatory prose are translated."
+  },
+  {
     "language": "de",
     "file": "_nav.yaml",
     "segment": "nav-label-095",

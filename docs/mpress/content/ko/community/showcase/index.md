@@ -11,6 +11,7 @@ sourcePath: "community/showcase/index.md"
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/community/showcase/wpm/"><img src="/assets/showcase-images/wpm.png" alt="wpm 스크린샷" loading="lazy"><span>wpm (塞壁纸)</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="BulletinBoard 스크린샷" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="CFN Tracker 스크린샷" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Clave 스크린샷" loading="lazy"><span>Clave</span></a>
