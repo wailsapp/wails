@@ -85,6 +85,8 @@
           link: "/features/events/window/"
         - label: "Événements personnalisés"
           link: "/features/events/custom/"
+        - label: "Événements en continu"
+          link: "/features/events/streaming/"
     - label: "Boîtes de dialogue"
       collapsed: true
       items:

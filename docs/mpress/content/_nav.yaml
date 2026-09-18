@@ -85,6 +85,8 @@
           link: "/features/events/window/"
         - label: "Custom Events"
           link: "/features/events/custom/"
+        - label: "Streaming Events"
+          link: "/features/events/streaming/"
     - label: "Dialogs"
       collapsed: true
       items:

@@ -85,6 +85,8 @@
           link: "/features/events/window/"
         - label: "Peristiwa Kustom"
           link: "/features/events/custom/"
+        - label: "Peristiwa streaming"
+          link: "/features/events/streaming/"
     - label: "Dialog"
       collapsed: true
       items:

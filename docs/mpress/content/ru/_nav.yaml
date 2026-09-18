@@ -85,6 +85,8 @@
           link: "/features/events/window/"
         - label: "Пользовательские события"
           link: "/features/events/custom/"
+        - label: "Потоковые события"
+          link: "/features/events/streaming/"
     - label: "Диалоговые окна"
       collapsed: true
       items:

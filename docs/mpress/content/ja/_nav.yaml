@@ -85,6 +85,8 @@
           link: "/features/events/window/"
         - label: "カスタムイベント"
           link: "/features/events/custom/"
+        - label: "ストリーミングイベント"
+          link: "/features/events/streaming/"
     - label: "ダイアログ"
       collapsed: true
       items:

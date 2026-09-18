@@ -85,6 +85,8 @@
           link: "/features/events/window/"
         - label: "自訂事件"
           link: "/features/events/custom/"
+        - label: "串流事件"
+          link: "/features/events/streaming/"
     - label: "對話方塊"
       collapsed: true
       items:

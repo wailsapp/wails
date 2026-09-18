@@ -85,6 +85,8 @@
           link: "/features/events/window/"
         - label: "사용자 정의 이벤트"
           link: "/features/events/custom/"
+        - label: "스트리밍 이벤트"
+          link: "/features/events/streaming/"
     - label: "대화 상자"
       collapsed: true
       items:
