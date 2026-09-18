@@ -195,6 +195,7 @@ export const Types = Object.freeze({
 		WindowZoomIn: "mac:WindowZoomIn",
 		WindowZoomOut: "mac:WindowZoomOut",
 		WindowZoomReset: "mac:WindowZoomReset",
+		WebViewWebContentProcessDidTerminate: "mac:WebViewWebContentProcessDidTerminate",
 	}),
 	Linux: Object.freeze({
 		ApplicationStartup: "linux:ApplicationStartup",

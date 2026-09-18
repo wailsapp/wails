@@ -6,10 +6,6 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: Unused imports
-import * as time$0 from "../../../../../../../../time/models.js";
-
 /**
  * AllTypes holds a field for every fundamental Go-to-TS type mapping.
  */
@@ -214,9 +210,9 @@ export class AllTypes {
             /**
              * maps to any
              * @member
-             * @type {time$0.Time}
+             * @type {string}
              */
-            this["Time"] = null;
+            this["Time"] = "0001-01-01T00:00:00.000Z";
         }
         if (!("Err" in $$source)) {
             /**
@@ -343,5 +339,10 @@ const $$createType6 = $Create.Nullable($$createType5);
 const $$createType7 = $Create.Struct({
     "MapByteBool": $$createType3,
 });
-const $$createType8 = GenericType.createFrom($Create.Any);
+var $$createType8 = /** @type {(...args: any[]) => any} */(function $$initCreateType8(...args) {
+    if ($$createType8 === $$initCreateType8) {
+        $$createType8 = GenericType.createFrom($Create.Any);
+    }
+    return $$createType8(...args);
+});
 const $$createType9 = /** @type {(...args: any[]) => any} */(($$createParamT) => $Create.Array($$createParamT));

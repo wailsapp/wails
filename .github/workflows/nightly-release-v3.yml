@@ -1,4 +1,4 @@
-name: Nightly Release v3-alpha
+name: Nightly Release v3
 
 on:
   schedule:
@@ -15,10 +15,16 @@ on:
         required: false
         default: true
         type: boolean
+      release_version:
+        description: 'Optional explicit version for an ad-hoc release (e.g. v3.0.0-beta.8)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   nightly-release:
     runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
     env:
       GOWORK: "off"
     
@@ -36,7 +42,7 @@ jobs:
         token: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
     
     - name: Setup Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: '1.25'
         cache: true
@@ -55,67 +61,6 @@ jobs:
         
         # Configure git to use the token for authentication
         git config --global url."https://x-access-token:${{ secrets.WAILS_REPO_TOKEN || github.token }}@github.com/".insteadOf "https://github.com/"
-
-    - name: Sync webview2 to latest release
-      # Ensure v3 always releases against the newest released webview2 module.
-      # Reads the latest webview2/v* tag; if v3/go.mod is behind, bumps it and
-      # adds a v3 changelog entry linking to the webview2 release notes (so they
-      # appear in the v3 release notes). Best-effort: a failure here must never
-      # block the v3 release — it just proceeds on the current version.
-      id: webview2_sync
-      run: |
-        set -e
-        LATEST_TAG=$(git tag -l "webview2/v*" | sort -V | tail -n 1)
-        if [ -z "$LATEST_TAG" ]; then
-          echo "No webview2 tag found — skipping."
-          exit 0
-        fi
-        LATEST="${LATEST_TAG#webview2/}"
-        CURRENT=$(awk '/wailsapp\/wails\/webview2 /{print $2}' v3/go.mod | head -n1)
-        echo "webview2: current=$CURRENT latest=$LATEST"
-        if [ "$LATEST" = "$CURRENT" ]; then
-          echo "Already on latest webview2 ($CURRENT)."
-          exit 0
-        fi
-        echo "Bumping webview2 $CURRENT -> $LATEST"
-        if ! (cd v3 && go get "github.com/wailsapp/wails/webview2@${LATEST}" && go mod tidy); then
-          echo "::warning::webview2 bump to ${LATEST} failed; continuing with ${CURRENT}"
-          git checkout -- v3/go.mod v3/go.sum 2>/dev/null || true
-          exit 0
-        fi
-        # Reference the webview2 release notes by link rather than embedding
-        # them. Each webview2 release body uses its own heading style (some are
-        # hand-written with "### Fixes", others are flat auto-generated bullet
-        # lists), so inlining produced inconsistent, messy changelog entries. A
-        # single link is uniform and always points at the authoritative notes.
-        # The tag contains a slash ("webview2/vX.Y.Z"), so URL-encode it as %2F.
-        RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/webview2%2F${LATEST}"
-        INSERT="- Bump \`webview2\` to ${LATEST} ([release notes](${RELEASE_URL}))."
-        # Insert the notes under "## Changed". If that anchor is ever missing,
-        # append the section so the notes are never silently dropped.
-        if grep -q '^## Changed' v3/UNRELEASED_CHANGELOG.md; then
-          awk -v ins="$INSERT" '
-            /^## Changed/ && !done { print; print ins; done=1; next }
-            { print }
-          ' v3/UNRELEASED_CHANGELOG.md > v3/UNRELEASED_CHANGELOG.md.tmp
-          mv v3/UNRELEASED_CHANGELOG.md.tmp v3/UNRELEASED_CHANGELOG.md
-        else
-          printf '\n## Changed\n%s\n' "$INSERT" >> v3/UNRELEASED_CHANGELOG.md
-        fi
-        git add v3/go.mod v3/go.sum v3/UNRELEASED_CHANGELOG.md
-        if git diff --cached --quiet; then
-          echo "No staged changes after bump — nothing to commit."
-          exit 0
-        fi
-        # Commit/push are best-effort too: a failure here must not block the v3
-        # release. Reset to the remote and continue on the current version.
-        if ! git commit -m "chore(v3): bump webview2 to ${LATEST}" || ! git push origin master; then
-          echo "::warning::webview2 sync commit/push failed; resetting and continuing without the bump"
-          git fetch origin master || true
-          git reset --hard origin/master || true
-          exit 0
-        fi
-        echo "bumped=true" >> "$GITHUB_OUTPUT"
 
     - name: Check for existing release tag
       id: check_tag
@@ -136,75 +81,51 @@ jobs:
         # Run the release script in check mode to see if there's content
         cd v3/tasks/release
         
-        # Use the release script itself to check for content
-        if go run release.go --check-only 2>/dev/null; then
+        # Use the release script itself to check for content. The script uses
+        # exit status 1 for the expected "no content" result, so preserve that
+        # result while allowing read/parse failures to fail this workflow.
+        set +e
+        CHECK_OUTPUT=$(go run release.go --check-only 2>&1)
+        CHECK_STATUS=$?
+        set -e
+
+        if [ "$CHECK_STATUS" -eq 0 ]; then
           echo "has_unreleased_content=true" >> $GITHUB_OUTPUT
           echo "✅ Found unreleased changelog content"
-        else
+        elif [ "$CHECK_STATUS" -eq 1 ] && grep -Fq "No unreleased changelog content found." <<< "$CHECK_OUTPUT"; then
           echo "has_unreleased_content=false" >> $GITHUB_OUTPUT
           echo "ℹ️  No unreleased changelog content found"
+        else
+          echo "$CHECK_OUTPUT" >&2
+          echo "❌ Changelog check failed (exit status $CHECK_STATUS)" >&2
+          exit "$CHECK_STATUS"
         fi
 
     - name: Quick change detection and early exit
       id: quick_check
       run: |
         echo "🔍 Quick check for changes to determine if we should continue..."
-        
-        # First check if we have unreleased changelog content
+        # The unreleased changelog is the release input. Do not infer that a
+        # release is needed from arbitrary commits after the previous tag:
+        # release bookkeeping, documentation automation, and other unrelated
+        # commits must not create a release by themselves.
         if [ "${{ steps.changelog_check.outputs.has_unreleased_content }}" == "true" ]; then
           echo "✅ Found unreleased changelog content, proceeding with release"
           echo "has_changes=true" >> $GITHUB_OUTPUT
           echo "should_continue=true" >> $GITHUB_OUTPUT
           echo "reason=Found unreleased changelog content" >> $GITHUB_OUTPUT
-          exit 0
-        fi
-        
-        # If no unreleased changelog content, check for git changes as fallback
-        echo "No unreleased changelog content found, checking for git changes..."
-        
-        # Check if current commit has a release tag
-        if git describe --tags --exact-match HEAD 2>/dev/null; then
-          CURRENT_TAG=$(git describe --tags --exact-match HEAD)
-          echo "Current commit has release tag: $CURRENT_TAG"
-          
-          # For tagged commits, check if there are changes since the tag
-          COMMIT_COUNT=$(git rev-list ${CURRENT_TAG}..HEAD --count)
-          if [ "$COMMIT_COUNT" -eq 0 ]; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "should_continue=false" >> $GITHUB_OUTPUT
-            echo "reason=No changes since existing tag $CURRENT_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "should_continue=true" >> $GITHUB_OUTPUT
-          fi
         else
-          # No current tag, check against latest release.
-          # Only consider the active "alpha2.*" series: it outranks the legacy
-          # "alpha.*" tags in semver, and on the very first run (no alpha2 tag
-          # yet) the empty result correctly forces the inaugural alpha2 release.
-          LATEST_TAG=$(git tag --list "v3.0.0-alpha2.*" | sort -V | tail -1)
-          if [ -z "$LATEST_TAG" ]; then
-            echo "No previous release found, proceeding with release"
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            echo "should_continue=true" >> $GITHUB_OUTPUT
-          else
-            COMMIT_COUNT=$(git rev-list ${LATEST_TAG}..HEAD --count)
-            if [ "$COMMIT_COUNT" -gt 0 ]; then
-              echo "Found $COMMIT_COUNT commits since $LATEST_TAG"
-              echo "has_changes=true" >> $GITHUB_OUTPUT
-              echo "should_continue=true" >> $GITHUB_OUTPUT
-            else
-              echo "has_changes=false" >> $GITHUB_OUTPUT
-              echo "should_continue=false" >> $GITHUB_OUTPUT
-              echo "reason=No changes since latest release $LATEST_TAG and no unreleased changelog content" >> $GITHUB_OUTPUT
-            fi
-          fi
+          echo "ℹ️  No unreleased changelog content found; skipping release."
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "should_continue=false" >> $GITHUB_OUTPUT
+          echo "reason=No unreleased changelog content" >> $GITHUB_OUTPUT
         fi
     
     - name: Early exit - No changes detected
       if: |
         steps.quick_check.outputs.should_continue == 'false' && 
-        github.event.inputs.force_release != 'true'
+        github.event.inputs.force_release != 'true' &&
+        inputs.release_version == ''
       run: |
         echo "🛑 EARLY EXIT: ${{ steps.quick_check.outputs.reason }}"
         echo ""
@@ -222,18 +143,31 @@ jobs:
     - name: Continue with release process
       if: |
         steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        github.event.inputs.force_release == 'true' ||
+        inputs.release_version != ''
       run: |
         echo "✅ Proceeding with release process..."
         if [ "${{ github.event.inputs.force_release }}" == "true" ]; then
           echo "🔨 FORCE RELEASE: Overriding change detection"
         fi
     
+    - name: Verify changelog workflow evidence
+      if: |
+        steps.quick_check.outputs.should_continue == 'true' ||
+        github.event.inputs.force_release == 'true' ||
+        inputs.release_version != ''
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        python3 -m unittest discover -s v3/scripts -p 'test_check_changelog_runs.py'
+        python3 v3/scripts/check-changelog-runs.py
+
     - name: Run release script
       id: release
       if: |
         steps.quick_check.outputs.should_continue == 'true' || 
-        github.event.inputs.force_release == 'true'
+        github.event.inputs.force_release == 'true' ||
+        inputs.release_version != ''
       env:
         # Keep these DISTINCT: the release script validates WAILS_REPO_TOKEN
         # against the API before pushing anything and falls back to
@@ -242,11 +176,16 @@ jobs:
         # PAT produced a half-release: tag pushed, no GitHub release.
         WAILS_REPO_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
+        DRY_RUN: ${{ inputs.dry_run }}
+        RELEASE_VERSION: ${{ inputs.release_version }}
       run: |
         cd v3/tasks/release
         ARGS=()
-        if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+        if [ "$DRY_RUN" == "true" ]; then
           ARGS+=(--dry-run)
+        fi
+        if [ -n "$RELEASE_VERSION" ]; then
+          ARGS+=(--version "$RELEASE_VERSION")
         fi
         go run release.go "${ARGS[@]}"
 

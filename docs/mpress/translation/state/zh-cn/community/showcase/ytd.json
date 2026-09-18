@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "bdd6c5c9cf122ef816b0",
+  "sourceFile": "community/showcase/ytd.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "92ddca4f62f7752720e1096ed152e9afd8eb60a6dd914c699a4f3c64c8302085",
+      "targetHash": "8393139d4f99b16850b0505f7c9ed9880cd7eb23c3e56a5f72efdab48e93eeb9",
+      "machineHash": "8393139d4f99b16850b0505f7c9ed9880cd7eb23c3e56a5f72efdab48e93eeb9",
+      "machineText": "![Ytd 截图](/assets/showcase-images/ytd.webp)",
+      "status": "final",
+      "sourcePreview": "![Ytd Screenshot](/assets/showcase-images/ytd.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2787e8aedc73c0ae53917767c3d98d379fd25ab4412d89ae8b0b46374fb88bd1",
+      "targetHash": "7c809fcd5d91da12e77cfcc723a530c1cdf579a760cfb9bb642ce44f0be088b1",
+      "machineHash": "7c809fcd5d91da12e77cfcc723a530c1cdf579a760cfb9bb642ce44f0be088b1",
+      "machineText": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) 是一款用于从 youtube 下载曲目、创建离线播放列表并与好友分享的应用程序。你的好友可以播放你的播放列表，也可以下载它们以供离线收听。该应用还内置了播放器。",
+      "status": "final",
+      "sourcePreview": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) is an app for\\ downloading tracks from yout…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "targetHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineText": "Ytd",
+      "status": "final",
+      "sourcePreview": "Ytd",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

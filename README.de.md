@@ -42,7 +42,7 @@ Erschaffe Desktop Anwendungen mit Go & Web Technologien.
 
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
-[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md)
+[Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) · [Bahasa Indonesia](README.id.md)
 
 </samp>
 </strong>
@@ -124,12 +124,8 @@ Dieses Projekt wird von diesen freundlichen Leuten und Firmen unterstützt:
 
 ## Sterne Überblick
 
-<a href="https://star-history.com/#wailsapp/wails&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wailsapp/wails&type=Date" />
-  </picture>
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Star History Chart" src="website/static/img/star-history.svg" width="800" />
 </a>
 
 ## Mitwirkende

@@ -82,7 +82,9 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
         didReceiveNotificationResponse(NULL, [errorMsg UTF8String]);
     } else {
         NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        // The Go side copies the C string during the call
         didReceiveNotificationResponse([jsonString UTF8String], NULL);
+        [jsonString release];
     }
     
     completionHandler();
@@ -143,61 +145,228 @@ void checkNotificationAuthorization(int channelID) {
     }];
 }
 
-// Helper function to create notification content
-UNMutableNotificationContent* createNotificationContent(const char *title, const char *subtitle, 
-                                                       const char *body, const char *data_json, NSError **contentError) {
-    NSString *nsTitle = [NSString stringWithUTF8String:title];
-    NSString *nsSubtitle = subtitle ? [NSString stringWithUTF8String:subtitle] : @"";
-    NSString *nsBody = [NSString stringWithUTF8String:body];
-    
-    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
-    content.title = nsTitle;
-    if (![nsSubtitle isEqualToString:@""]) {
-        content.subtitle = nsSubtitle;
+// parseOptions decodes the JSON-encoded NotificationOptions blob handed in
+// from Go. Returns nil and writes into *parseError on failure.
+static NSDictionary* parseOptions(const char *options_json, NSError **parseError) {
+    if (!options_json) {
+        if (parseError) {
+            *parseError = [NSError errorWithDomain:@"WailsNotifications"
+                                              code:1
+                                          userInfo:@{NSLocalizedDescriptionKey: @"options_json was NULL"}];
+        }
+        return nil;
     }
-    content.body = nsBody;
-    content.sound = [UNNotificationSound defaultSound];
-    
-    // Parse JSON data if provided
-    if (data_json) {
-        NSString *dataJsonStr = [NSString stringWithUTF8String:data_json];
-        NSData *jsonData = [dataJsonStr dataUsingEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSDictionary *parsedData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
-        if (!error && parsedData) {
-            content.userInfo = parsedData;
-        } else if (error) {
-            *contentError = error;
+    NSString *str = [NSString stringWithUTF8String:options_json];
+    NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:parseError];
+    if (![dict isKindOfClass:[NSDictionary class]]) {
+        if (parseError && !*parseError) {
+            *parseError = [NSError errorWithDomain:@"WailsNotifications"
+                                              code:2
+                                          userInfo:@{NSLocalizedDescriptionKey: @"options_json was not a JSON object"}];
+        }
+        return nil;
+    }
+    return dict;
+}
+
+// stringOrEmpty returns the value for `key` if it is a non-null NSString, else @"".
+static NSString* stringOrEmpty(NSDictionary *dict, NSString *key) {
+    id val = dict[key];
+    if ([val isKindOfClass:[NSString class]]) {
+        return (NSString *)val;
+    }
+    return @"";
+}
+
+// applySoundToContent honours the optional Sound field on NotificationOptions.
+//   nil  -> default sound (kept on content)
+//   {silent: true} -> no sound
+//   {name: "Ping"} -> [UNNotificationSound soundNamed:@"Ping"]
+static void applySoundToContent(UNMutableNotificationContent *content, NSDictionary *options) {
+    id raw = options[@"sound"];
+    if (![raw isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+    NSDictionary *sound = (NSDictionary *)raw;
+    id silent = sound[@"silent"];
+    if ([silent respondsToSelector:@selector(boolValue)] && [silent boolValue]) {
+        content.sound = nil;
+        return;
+    }
+    NSString *name = stringOrEmpty(sound, @"name");
+    if (name.length > 0) {
+        content.sound = [UNNotificationSound soundNamed:name];
+    }
+}
+
+// applyAttachmentsToContent translates each NotificationAttachment entry into
+// a UNNotificationAttachment. Failed attachments are skipped silently to avoid
+// breaking delivery for one bad entry; the failure is logged.
+static void applyAttachmentsToContent(UNMutableNotificationContent *content, NSDictionary *options) {
+    id raw = options[@"attachments"];
+    if (![raw isKindOfClass:[NSArray class]]) {
+        return;
+    }
+    NSMutableArray<UNNotificationAttachment *> *attachments = [NSMutableArray array];
+    for (id entry in (NSArray *)raw) {
+        if (![entry isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+        NSDictionary *att = (NSDictionary *)entry;
+        NSString *path = stringOrEmpty(att, @"path");
+        if (path.length == 0) {
+            continue;
+        }
+        NSString *attID = stringOrEmpty(att, @"id");
+        if (attID.length == 0) {
+            attID = [[NSUUID UUID] UUIDString];
+        }
+        NSURL *url = [path hasPrefix:@"file://"]
+            ? [NSURL URLWithString:path]
+            : [NSURL fileURLWithPath:path];
+        if (!url) continue;
+
+        // The Type field is overloaded: on Windows it carries placement
+        // hints like "hero" / "appLogoOverride" / "inline"; on macOS it is
+        // an optional UTI hint such as "public.png" / "public.audio".
+        // Only forward the value as a UTI hint when it actually looks like
+        // one (UTI strings always contain a "."). Otherwise let the
+        // notification center auto-infer the type from the file extension.
+        NSDictionary *attOptions = nil;
+        NSString *uti = stringOrEmpty(att, @"type");
+        if (uti.length > 0 && [uti containsString:@"."]) {
+            attOptions = @{UNNotificationAttachmentOptionsTypeHintKey: uti};
+        }
+
+        NSError *err = nil;
+        UNNotificationAttachment *a = [UNNotificationAttachment
+            attachmentWithIdentifier:attID URL:url options:attOptions error:&err];
+        if (err || !a) {
+            NSLog(@"wails/notifications: failed to attach %@: %@", path, err);
+            continue;
+        }
+        [attachments addObject:a];
+    }
+    if (attachments.count > 0) {
+        content.attachments = attachments;
+    }
+}
+
+// applyInterruptionLevelToContent maps the InterruptionLevel string onto
+// UNNotificationInterruptionLevel (macOS 12+). On older macOS it is a no-op.
+static void applyInterruptionLevelToContent(UNMutableNotificationContent *content, NSDictionary *options) {
+    NSString *level = stringOrEmpty(options, @"interruptionLevel");
+    if (level.length == 0) {
+        return;
+    }
+    if (@available(macOS 12.0, *)) {
+        if ([level isEqualToString:@"passive"]) {
+            content.interruptionLevel = UNNotificationInterruptionLevelPassive;
+        } else if ([level isEqualToString:@"active"]) {
+            content.interruptionLevel = UNNotificationInterruptionLevelActive;
+        } else if ([level isEqualToString:@"timeSensitive"]) {
+            content.interruptionLevel = UNNotificationInterruptionLevelTimeSensitive;
+        } else if ([level isEqualToString:@"critical"]) {
+            // Requires the Critical Alert entitlement; without it macOS
+            // silently downgrades to active.
+            content.interruptionLevel = UNNotificationInterruptionLevelCritical;
         }
     }
-    
+}
+
+// buildTriggerFromSchedule returns a UNCalendar/UNTimeInterval trigger built
+// from the optional Schedule field, or nil for immediate delivery.
+//   {delaySeconds: 30} -> UNTimeIntervalNotificationTrigger 30s
+//   {at: 1717181600}    -> UNCalendarNotificationTrigger at the corresponding date
+static UNNotificationTrigger* buildTriggerFromSchedule(NSDictionary *options) {
+    id raw = options[@"schedule"];
+    if (![raw isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    NSDictionary *schedule = (NSDictionary *)raw;
+
+    id delayObj = schedule[@"delaySeconds"];
+    if ([delayObj respondsToSelector:@selector(doubleValue)]) {
+        double delay = [delayObj doubleValue];
+        if (delay > 0) {
+            return [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:delay repeats:NO];
+        }
+    }
+
+    id atObj = schedule[@"at"];
+    if ([atObj respondsToSelector:@selector(doubleValue)]) {
+        double at = [atObj doubleValue];
+        if (at > 0) {
+            NSDate *date = [NSDate dateWithTimeIntervalSince1970:at];
+            NSCalendar *cal = [NSCalendar currentCalendar];
+            NSDateComponents *components = [cal components:
+                NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay |
+                NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond
+                fromDate:date];
+            return [UNCalendarNotificationTrigger triggerWithDateMatchingComponents:components repeats:NO];
+        }
+    }
+
+    return nil;
+}
+
+// createNotificationContentFromOptions builds the UNMutableNotificationContent
+// from a parsed NotificationOptions dict. Reads title/subtitle/body/userInfo
+// plus the optional sound, attachments, threadId, and interruptionLevel
+// fields. Schedule is handled separately by buildTriggerFromSchedule.
+static UNMutableNotificationContent* createNotificationContentFromOptions(NSDictionary *options) {
+    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+    content.title = stringOrEmpty(options, @"title");
+    NSString *subtitle = stringOrEmpty(options, @"subtitle");
+    if (subtitle.length > 0) {
+        content.subtitle = subtitle;
+    }
+    content.body = stringOrEmpty(options, @"body");
+    content.sound = [UNNotificationSound defaultSound];
+
+    id userInfo = options[@"data"];
+    if ([userInfo isKindOfClass:[NSDictionary class]]) {
+        content.userInfo = (NSDictionary *)userInfo;
+    }
+
+    NSString *threadId = stringOrEmpty(options, @"threadId");
+    if (threadId.length > 0) {
+        content.threadIdentifier = threadId;
+    }
+
+    applySoundToContent(content, options);
+    applyAttachmentsToContent(content, options);
+    applyInterruptionLevelToContent(content, options);
+
     return content;
 }
 
-void sendNotification(int channelID, const char *identifier, const char *title, const char *subtitle, const char *body, const char *data_json) {
+void sendNotification(int channelID, const char *options_json) {
     if (!ensureDelegateInitialized()) {
         NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
-    
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
-    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
-
-    NSError *contentError = nil;
-    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json, &contentError);
-    
-    if (contentError) {
-        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
+    NSError *parseError = nil;
+    NSDictionary *options = parseOptions(options_json, &parseError);
+    if (parseError || !options) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [parseError localizedDescription]];
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
 
-    UNTimeIntervalNotificationTrigger *trigger = nil;
-    
-    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
-    
+    NSString *identifier = stringOrEmpty(options, @"id");
+    UNMutableNotificationContent *content = createNotificationContentFromOptions(options);
+
+    UNNotificationTrigger *trigger = buildTriggerFromSchedule(options);
+
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+    // The request keeps its own copy of the content
+    [content release];
+
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
             NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];
@@ -208,34 +377,36 @@ void sendNotification(int channelID, const char *identifier, const char *title, 
     }];
 }
 
-void sendNotificationWithActions(int channelID, const char *identifier, const char *title, const char *subtitle, 
-                             const char *body, const char *categoryId, const char *data_json) {
+void sendNotificationWithActions(int channelID, const char *options_json) {
     if (!ensureDelegateInitialized()) {
         NSString *errorMsg = @"Notification delegate has been lost. Reinitialize the notification service.";
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
-    
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
 
-    NSString *nsIdentifier = [NSString stringWithUTF8String:identifier];
-    NSString *nsCategoryId = [NSString stringWithUTF8String:categoryId];
-    
-    NSError *contentError = nil;
-    UNMutableNotificationContent *content = createNotificationContent(title, subtitle, body, data_json, &contentError);
-    
-    if (contentError) {
-        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [contentError localizedDescription]];
+    NSError *parseError = nil;
+    NSDictionary *options = parseOptions(options_json, &parseError);
+    if (parseError || !options) {
+        NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [parseError localizedDescription]];
         captureResult(channelID, false, [errorMsg UTF8String]);
         return;
     }
 
-    content.categoryIdentifier = nsCategoryId;
-    
-    UNTimeIntervalNotificationTrigger *trigger = nil;
-    
-    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:nsIdentifier content:content trigger:trigger];
-    
+    NSString *identifier = stringOrEmpty(options, @"id");
+    NSString *categoryId = stringOrEmpty(options, @"categoryId");
+
+    UNMutableNotificationContent *content = createNotificationContentFromOptions(options);
+    if (categoryId.length > 0) {
+        content.categoryIdentifier = categoryId;
+    }
+
+    UNNotificationTrigger *trigger = buildTriggerFromSchedule(options);
+
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+    // The request keeps its own copy of the content
+    [content release];
+
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     [center addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
         if (error) {
             NSString *errorMsg = [NSString stringWithFormat:@"Error: %@", [error localizedDescription]];

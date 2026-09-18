@@ -54,23 +54,24 @@ func TestBuildCommandWithMCPEnvVar(t *testing.T) {
 	os.Unsetenv("GOARCH")
 	t.Setenv(mcpEnvVar, "1")
 
-	// WAILS_MCP=1 alone adds the mcp tag
+	// WAILS_MCP=1 alone adds the mcp tag. `build` is a root-dispatch verb, so it
+	// targets the root "build" task and passes GOOS/ARCH as variables (#5615).
 	err := Build(&flags.Build{}, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, currentOS+":build", capturedOptions.Name)
-	assert.Equal(t, []string{"EXTRA_TAGS=mcp", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, "build", capturedOptions.Name)
+	assert.Equal(t, []string{"EXTRA_TAGS=mcp", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 
 	// WAILS_MCP=1 merges with user-supplied tags
 	buildFlags := &flags.Build{}
 	buildFlags.Tags = "gtk4"
 	err = Build(buildFlags, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, []string{"EXTRA_TAGS=gtk4,mcp", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, []string{"EXTRA_TAGS=gtk4,mcp", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 
 	// No duplicate tag when the user already passed it
 	buildFlags = &flags.Build{}
 	buildFlags.Tags = "mcp"
 	err = Build(buildFlags, nil)
 	assert.NoError(t, err)
-	assert.Equal(t, []string{"EXTRA_TAGS=mcp", "ARCH=" + currentArch}, capturedOtherArgs)
+	assert.Equal(t, []string{"EXTRA_TAGS=mcp", "GOOS=" + currentOS, "ARCH=" + currentArch}, capturedOtherArgs)
 }

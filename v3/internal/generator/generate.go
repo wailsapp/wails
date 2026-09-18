@@ -80,7 +80,7 @@ func NewGenerator(options *flags.GenerateBindingsOptions, creator config.FileCre
 // The stats result field is never nil.
 //
 // The error result field is nil in case of complete success (no warning).
-// Otherwise, it may either report errors that occured while loading
+// Otherwise, it may either report errors that occurred while loading
 // the initial set of packages, or errors returned by the static analyser,
 // or be an [ErrorReport] instance.
 //
@@ -97,6 +97,12 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 
 	// Validate file names.
 	err = generator.validateFileNames()
+	if err != nil {
+		return
+	}
+
+	// Validate options.
+	err = generator.validateOptions()
 	if err != nil {
 		return
 	}
@@ -339,6 +345,22 @@ func buildDirToPkgPath(pkgs []*packages.Package) map[string]string {
 		out[filepath.Dir(pkg.GoFiles[0])] = pkg.PkgPath
 	}
 	return out
+}
+
+// validateOptions validates user-provided configuration options.
+func (generator *Generator) validateOptions() error {
+	switch generator.options.TimeType {
+	case "string":
+		// No special handling needed.
+	case "Date":
+		if generator.options.UseInterfaces {
+			return fmt.Errorf("time type '%s' is not supported in interface mode", generator.options.TimeType)
+		}
+	default:
+		return fmt.Errorf("invalid time type: %s (must be either 'string' or 'Date')", generator.options.TimeType)
+	}
+
+	return nil
 }
 
 // scheduler provides an implementation of the [collect.Scheduler] interface.

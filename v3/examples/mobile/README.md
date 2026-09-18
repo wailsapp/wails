@@ -17,22 +17,45 @@ The UI feature-detects the platform (`window.wails` on Android, the WKWebView
 message handler on iOS) and shows only the controls that platform supports —
 the **Mobile** and **Hardware** tabs appear on both iOS and Android.
 
+## Running on macOS with private APIs
+
+This example configures a translucent macOS backdrop. The webview transparency needed to reveal that backdrop requires the `private_mac_apis` build tag. Without it, the example runs with an opaque webview above the native backdrop.
+
+From this example directory, run:
+
+```bash
+GOWORK=off wails3 build -tags private_mac_apis
+GOWORK=off wails3 task run
+```
+
+The build command generates bindings and builds the frontend; the run task then launches the resulting app. It requires the Wails CLI, Node.js/npm, and the usual macOS build prerequisites. `GOWORK=off` selects this example’s module and its local Wails replacement. To use live reload instead, run `GOWORK=off EXTRA_TAGS=private_mac_apis wails3 dev`.
+
+Omit `-tags private_mac_apis` from the build command to run with public macOS APIs only. The tag has no effect on Windows, Linux, iOS, or Android. See the [shared private API guide](../README.md#private-macos-apis) for production builds and fallback details.
+
 ## Run it
 
 ```bash
 # iOS Simulator (requires full Xcode)
-wails3 task ios:run
+GOWORK=off wails3 task ios:run
 
 # Android emulator (requires the Android SDK + NDK + a JDK)
-wails3 task android:run
+GOWORK=off wails3 task android:run
+
+# Android physical device (USB debugging enabled)
+adb devices
+GOWORK=off DEVICE_ID=<serial> wails3 task android:run:device
+GOWORK=off DEVICE_ID=<serial> wails3 task android:deploy-device
 
 # Desktop
-wails3 task run
+GOWORK=off wails3 task run
 ```
 
-`wails3 task ios:package` / `android:package` produce release builds. See
+`GOWORK=off wails3 task ios:package` / `GOWORK=off wails3 task android:package`
+produce release builds. See
 [`../../IOS.md`](../../IOS.md) and [`../../ANDROID.md`](../../ANDROID.md) for the
-toolchain requirements and device/signing details.
+toolchain requirements and device/signing details. `GOWORK=off` is only needed
+when running this checked-in example from inside the Wails repository so Go uses
+the example module instead of the repository workspace.
 
 ## How it works
 

@@ -1,5 +1,8 @@
 name: Build + Test v3
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -7,9 +10,6 @@ on:
       - master
     paths:
       - 'v3/**'
-      - 'webview2/**'
-      - 'go.work'
-      - 'go.work.sum'
       - '.github/workflows/build-and-test-v3.yml'
   pull_request_review:
     types: [submitted]
@@ -109,18 +109,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install linux dependencies (GTK4 default)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
-          version: 1.0
+        run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
 
       - name: Install linux dependencies (GTK3 legacy)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev
-          version: 1.0
+        run: |
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -129,8 +128,6 @@ jobs:
           cache: true
           cache-dependency-path: |
             v3/go.sum
-            webview2/go.sum
-            go.work.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -180,7 +177,9 @@ jobs:
       - name: Run tests (ubuntu) - GTK3 legacy
         if: matrix.os == 'ubuntu-latest'
         working-directory: v3
-        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk3 -v -timeout 10m ./...
+        # Service lifecycle tests require a stable live GTK window/display and
+        # are already covered by the platform-specific test suites.
+        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk3 -v -timeout 10m -skip "TestService" ./...
 
       - name: Typecheck binding generator output
         working-directory: v3
@@ -223,18 +222,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install linux dependencies (GTK4 default)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
-          version: 1.0
+        run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
 
       - name: Install linux dependencies (GTK3 legacy)
-        uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
-        with:
-          packages: libgtk-3-dev libwebkit2gtk-4.1-dev
-          version: 1.0
+        run: |
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -243,8 +241,6 @@ jobs:
           cache: true
           cache-dependency-path: |
             v3/go.sum
-            webview2/go.sum
-            go.work.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -280,9 +276,6 @@ jobs:
           # Replace @wailsio/runtime version with local tarball
           npm pkg set dependencies.@wailsio/runtime="file://$RUNTIME_TGZ"
           cd ..
-          # Register the generated project in the workspace so Go 1.25 workspace
-          # mode does not reject packages in a module not listed in go.work.
-          go work use .
           wails3 build
 
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
@@ -291,19 +284,50 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     name: v3 Build Results
-    needs: [test_go, test_js, test_templates]
+    needs: [test_go, test_js, test_templates, test_mac_private_apis]
     steps:
       - run: |
           go_result="${{ needs.test_go.result }}"
           js_result="${{ needs.test_js.result }}"
           templates_result="${{ needs.test_templates.result }}"
+          mac_apis_result="${{ needs.test_mac_private_apis.result }}"
           
           if [[ $go_result == "success" || $go_result == "skipped" ]] && \
              [[ $js_result == "success" || $js_result == "skipped" ]] && \
-             [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
+             [[ $templates_result == "success" || $templates_result == "skipped" ]] && \
+             [[ $mac_apis_result == "success" || $mac_apis_result == "skipped" ]]; then
             echo "All required jobs succeeded or were skipped"
             exit 0
           else
             echo "One or more required jobs failed"
             exit 1
           fi
+
+  test_mac_private_apis:
+    name: macOS API variants (${{ matrix.tags || 'public' }})
+    if: github.base_ref == 'master'
+    runs-on: macos-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        tags:
+          - ''
+          - private_mac_apis
+          - production
+          - production,private_mac_apis
+          - production,devtools
+          - production,devtools,private_mac_apis
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: v3/go.mod
+          cache-dependency-path: v3/go.sum
+      - name: Test native bridges, binary isolation, and application package
+        working-directory: v3
+        env:
+          BUILD_TAGS: ${{ matrix.tags }}
+        run: go test -tags "$BUILD_TAGS" ./pkg/application -count=1

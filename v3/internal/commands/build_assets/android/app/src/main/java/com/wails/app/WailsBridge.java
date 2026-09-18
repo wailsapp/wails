@@ -74,6 +74,7 @@ import java.util.concurrent.Executor;
 public class WailsBridge {
     private static final String TAG = "WailsBridge";
     private static final boolean DEBUG = BuildConfig.DEBUG;
+    private static final int LOCATION_PERMISSION_REQUEST = 1002;
 
     static {
         // Load the native Go library
@@ -84,6 +85,8 @@ public class WailsBridge {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private WebView webView;
     private volatile boolean initialized = false;
+    private SharedPreferences cachedSecurePrefs;
+    private boolean securePrefsResolved = false;
 
     // Phase D state: sensor listeners, speech engine and keyboard watcher are
     // retained so they can be registered and torn down on demand.
@@ -97,6 +100,7 @@ public class WailsBridge {
     private boolean motionWanted = false;
     private boolean proximityWanted = false;
     private boolean torchOn = false;
+    private boolean pendingLocationRequest = false;
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
@@ -740,49 +744,107 @@ public class WailsBridge {
 
     /**
      * Backing store for secure storage. Uses EncryptedSharedPreferences (AES via
-     * the Android Keystore) on API 23+, falling back to plain prefs below that.
+     * the Android Keystore). Requires API 23+. Returns null if secure storage
+     * cannot be initialized — callers MUST check for null and report the error.
+     * The result is cached after the first call.
      */
     private SharedPreferences securePrefs() {
+        if (securePrefsResolved) {
+            return cachedSecurePrefs;
+        }
+        securePrefsResolved = true;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return null;
+        }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                MasterKey key = new MasterKey.Builder(activity)
-                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                        .build();
-                return EncryptedSharedPreferences.create(activity, "wails_secure", key,
-                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+            MasterKey key = new MasterKey.Builder(activity)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build();
+            cachedSecurePrefs = EncryptedSharedPreferences.create(activity, "wails_secure", key,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+        } catch (Exception e) {
+            Log.e(TAG, "securePrefs initialization failed", e);
+        }
+        return cachedSecurePrefs;
+    }
+
+    /** Build a JSON error envelope, safely handling null messages. */
+    private String secureError(String msg) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("ok", false);
+            o.put("error", msg != null ? msg : "unknown error");
+            return o.toString();
+        } catch (Exception ignored) {
+            return "{\"ok\":false,\"error\":\"unknown error\"}";
+        }
+    }
+
+    /** Store a value in secure storage. json: {"key":"...","value":"..."}. Returns JSON envelope. */
+    public String secureSet(final String json) {
+        try {
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
             }
-        } catch (Exception e) {
-            Log.e(TAG, "securePrefs failed, using plain prefs", e);
-        }
-        return activity.getSharedPreferences("wails_secure_plain", Context.MODE_PRIVATE);
-    }
-
-    /** Store a value in secure storage. json: {"key","value"}. */
-    public void secureSet(final String json) {
-        try {
             JSONObject o = new JSONObject(json);
-            securePrefs().edit().putString(o.optString("key"), o.optString("value")).apply();
+            String k = o.optString("key", "");
+            if (k.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            boolean ok = prefs.edit().putString(k, o.optString("value", "")).commit();
+            if (!ok) {
+                return "{\"ok\":false,\"error\":\"commit failed\"}";
+            }
+            return "{\"ok\":true}";
         } catch (Exception e) {
-            Log.e(TAG, "secureSet failed", e);
+            return secureError(e.getMessage());
         }
     }
 
-    /** Read a value from secure storage (empty if absent). */
+    /** Read a value from secure storage. Returns JSON envelope with found/value. */
     public String secureGet(final String key) {
         try {
-            return securePrefs().getString(key, "");
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
+            }
+            if (key == null || key.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            if (!prefs.contains(key)) {
+                return "{\"ok\":true,\"found\":false}";
+            }
+            String value = prefs.getString(key, "");
+            // JSON-encode value to prevent injection.
+            JSONObject result = new JSONObject();
+            result.put("ok", true);
+            result.put("found", true);
+            result.put("value", value);
+            return result.toString();
         } catch (Exception e) {
-            return "";
+            return secureError(e.getMessage());
         }
     }
 
-    /** Remove a value from secure storage. */
-    public void secureDelete(final String key) {
+    /** Remove a value from secure storage. Returns JSON envelope. */
+    public String secureDelete(final String key) {
         try {
-            securePrefs().edit().remove(key).apply();
+            SharedPreferences prefs = securePrefs();
+            if (prefs == null) {
+                return "{\"ok\":false,\"error\":\"secure storage unavailable\"}";
+            }
+            if (key == null || key.isEmpty()) {
+                return "{\"ok\":false,\"error\":\"empty key\"}";
+            }
+            boolean ok = prefs.edit().remove(key).commit();
+            if (!ok) {
+                return "{\"ok\":false,\"error\":\"commit failed\"}";
+            }
+            return "{\"ok\":true}";
         } catch (Exception e) {
-            Log.e(TAG, "secureDelete failed", e);
+            return secureError(e.getMessage());
         }
     }
 
@@ -826,6 +888,32 @@ public class WailsBridge {
         }
     }
 
+    private boolean hasLocationPermission() {
+        return hasFineLocationPermission()
+                || activity.checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION")
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean hasFineLocationPermission() {
+        return activity.checkSelfPermission("android.permission.ACCESS_FINE_LOCATION")
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public void onRequestPermissionsResult(int requestCode, int[] grantResults) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            boolean shouldResume = pendingLocationRequest;
+            pendingLocationRequest = false;
+            if (!shouldResume) {
+                return;
+            }
+            if (hasLocationPermission()) {
+                getLocation();
+            } else {
+                emitLocationError("location permission denied");
+            }
+        }
+    }
+
     /**
      * Request a one-shot location fix. Emits "common:location"
      * {lat,lng,accuracy} or {error}. Requests ACCESS_FINE_LOCATION on first use.
@@ -833,19 +921,22 @@ public class WailsBridge {
     public void getLocation() {
         mainHandler.post(() -> {
             try {
-                if (activity.checkSelfPermission("android.permission.ACCESS_FINE_LOCATION")
-                        != PackageManager.PERMISSION_GRANTED) {
+                if (!hasLocationPermission()) {
+                    pendingLocationRequest = true;
                     activity.requestPermissions(new String[]{
                             "android.permission.ACCESS_FINE_LOCATION",
-                            "android.permission.ACCESS_COARSE_LOCATION"}, 1002);
-                    emitLocationError("location permission requested — tap again once granted");
+                            "android.permission.ACCESS_COARSE_LOCATION"}, LOCATION_PERMISSION_REQUEST);
                     return;
                 }
                 LocationManager lm = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
                 if (lm == null) { emitLocationError("location unavailable"); return; }
                 Location best = null;
-                for (String provider : new String[]{LocationManager.GPS_PROVIDER,
-                        LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER}) {
+                boolean fineLocation = hasFineLocationPermission();
+                String[] providers = fineLocation
+                        ? new String[]{LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER,
+                        LocationManager.PASSIVE_PROVIDER}
+                        : new String[]{LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER};
+                for (String provider : providers) {
                     try {
                         Location l = lm.getLastKnownLocation(provider);
                         if (l != null && (best == null || l.getTime() > best.getTime())) best = l;
@@ -857,7 +948,7 @@ public class WailsBridge {
                     return;
                 }
                 // No cached fix: request a single update from whichever provider is enabled.
-                String provider = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                String provider = fineLocation && lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                         ? LocationManager.GPS_PROVIDER
                         : lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
                         ? LocationManager.NETWORK_PROVIDER : null;
