@@ -74,7 +74,7 @@ jobs:
         echo "Checking PR #${{ steps.pr_info.outputs.pr_number }} for changelog changes"
         git fetch origin ${{ steps.pr_info.outputs.base_ref }}
         
-        # Initial imports have no MPD baseline. Historical source preservation
+        # Initial imports have no documentation baseline. Historical source preservation
         # is reviewed with the migration; later changes use this guard.
         if git cat-file -e origin/${{ steps.pr_info.outputs.base_ref }}:docs/mpress/content/changelog.md 2>/dev/null &&
            git diff --name-only origin/${{ steps.pr_info.outputs.base_ref }}..HEAD | grep -q "docs/mpress/content/changelog.md"; then
