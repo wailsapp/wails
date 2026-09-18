@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "cfea5e0282b880b507fc",
+  "sourceFile": "features/events/application.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "26845c54881d15b95fb63f536e972bafeefb6c9394c973a519c2c45797b4184b",
+      "targetHash": "57ba736012ef1a5c8d0cfb93c65088adbb9119a02b1ccd6ee51c2cd36b865a90",
+      "machineHash": "57ba736012ef1a5c8d0cfb93c65088adbb9119a02b1ccd6ee51c2cd36b865a90",
+      "machineText": "應用程式事件會在整個應用程式的生命週期發生變更時發出，例如啟動、停止及視窗管理作業。",
+      "status": "final",
+      "sourcePreview": "Application events are emitted for application-wide lifecycle changes, such as starting, stopping, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "1efa622f8819d993fce125a504f1a43ab2a2ac1d710d31e6f8ad72bcc124f506",
+      "targetHash": "667c1a2311ba5d96c13256939554ff9489701751d8550479c78dba5066128c0e",
+      "machineHash": "667c1a2311ba5d96c13256939554ff9489701751d8550479c78dba5066128c0e",
+      "machineText": "如需應用程式事件的完整文件，請參閱[事件系統](/features/events/system/#application-events)指南。",
+      "status": "final",
+      "sourcePreview": "Full documentation of application events is available in the [Event System](/features/events/system/…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8f953b87b1423233ede5986386f01a89328dd1b2d026a2d9ef6c2db46177a718",
+      "targetHash": "73776b5f534e1522874273ad31488e830ca9c8f72774578ab640795e4d0e4923",
+      "machineHash": "73776b5f534e1522874273ad31488e830ca9c8f72774578ab640795e4d0e4923",
+      "machineText": "Wails v3 發出的應用程式層級事件",
+      "status": "final",
+      "sourcePreview": "Application-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "68477bfdc8087a71a72921a7960b4c6aec58b182e311175369a5953d6352c226",
+      "targetHash": "948581b76cdc5564f5b616ed9bf8bcc719aea500d541b188cce18538e36bf6a0",
+      "machineHash": "948581b76cdc5564f5b616ed9bf8bcc719aea500d541b188cce18538e36bf6a0",
+      "machineText": "應用程式事件",
+      "status": "final",
+      "sourcePreview": "Application Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    }
+  }
+}

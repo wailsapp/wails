@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "bdd6c5c9cf122ef816b0",
+  "sourceFile": "community/showcase/ytd.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "92ddca4f62f7752720e1096ed152e9afd8eb60a6dd914c699a4f3c64c8302085",
+      "targetHash": "c1de0d97a788f41eeffffe90b5b8a7ff961e4df2a6d650d854c71426cc12841e",
+      "machineHash": "c1de0d97a788f41eeffffe90b5b8a7ff961e4df2a6d650d854c71426cc12841e",
+      "machineText": "![Screenshot von Ytd](/assets/showcase-images/ytd.webp)",
+      "status": "final",
+      "sourcePreview": "![Ytd Screenshot](/assets/showcase-images/ytd.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2787e8aedc73c0ae53917767c3d98d379fd25ab4412d89ae8b0b46374fb88bd1",
+      "targetHash": "54361511d2edb3930a3614db93bab1dc49d9e7720a569e2c6033ed695628f2ec",
+      "machineHash": "54361511d2edb3930a3614db93bab1dc49d9e7720a569e2c6033ed695628f2ec",
+      "machineText": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) ist eine App zum Herunterladen von Titeln von YouTube und zum Erstellen von Offline-Wiedergabelisten, die Sie mit Ihren Freunden teilen können. Ihre Freunde können Ihre Wiedergabelisten abspielen oder zum Offline-Hören herunterladen. Die App verfügt über einen integrierten Player.",
+      "status": "final",
+      "sourcePreview": "[Ytd](https://github.com/marcio199226/ytd/tree/v2-wails) is an app for\\ downloading tracks from yout…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "97d115b835efd090084ae30921495a53a33a3a29db823c8ac6324c5a9cb82f27",
+      "machineHash": "97d115b835efd090084ae30921495a53a33a3a29db823c8ac6324c5a9cb82f27",
+      "machineText": "Eine mit Wails entwickelte Desktopanwendung",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "targetHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineHash": "52cc0dacc19dd28ac0244c4f6d2d09c346e529738db7c2d2dedef39e6499f8c2",
+      "machineText": "Ytd",
+      "status": "final",
+      "sourcePreview": "Ytd",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    }
+  }
+}

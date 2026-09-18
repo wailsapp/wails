@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ec859468161eafaf30f0",
+  "sourceFile": "guides/dev/workflow.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "c88156cd560c7b98c8b545414492f6696aa7cdcb450b18c2fda750e0af3d5e23",
+      "targetHash": "d4b4d6d4d6aed504117c5d7bb43ea72ad837fd7ee96b21c9cad10bdc4a5f1ce4",
+      "machineHash": "d4b4d6d4d6aed504117c5d7bb43ea72ad837fd7ee96b21c9cad10bdc4a5f1ce4",
+      "machineText": "このページはプレースホルダーです。開発ワークフローの詳しい内容は近日公開予定です。",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full development workflow content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "073c1eb86c8053ed17da72b57d768f19375f5279381d52b62b62d109ea5f39de",
+      "targetHash": "ef8e918e1961b310e3d802d50cbedefef853f7f0746208ef96a1cb909117f418",
+      "machineHash": "ef8e918e1961b310e3d802d50cbedefef853f7f0746208ef96a1cb909117f418",
+      "machineText": "Wailsアプリケーションの構成と開発については、以下を参照してください。",
+      "status": "final",
+      "sourcePreview": "For guidance on structuring and developing your Wails application, see:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "8d9addbf6041d5642330e18519a8f1468811ad4c4710c86c41cb31f451e48056",
+      "targetHash": "5e5954d30aed712d2226b0558b3da5cbd4099edd032c14ad694f70f9f3eea2b7",
+      "machineHash": "5e5954d30aed712d2226b0558b3da5cbd4099edd032c14ad694f70f9f3eea2b7",
+      "machineText": "[プロジェクト構成](/guides/dev/project-structure/)",
+      "status": "final",
+      "sourcePreview": "[Project Structure](/guides/dev/project-structure/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "fcbb38fa38f3bd9010f6b846293369cb9714f958c7c1435358c643ec0ca6035b",
+      "targetHash": "b5f9ac9b04d4261547bcfbdb7af4bec4ba520481de56182476fea93a32c7ba2c",
+      "machineHash": "b5f9ac9b04d4261547bcfbdb7af4bec4ba520481de56182476fea93a32c7ba2c",
+      "machineText": "[他のフレームワークを使用した開発](/guides/dev/frontend-frameworks/)",
+      "status": "final",
+      "sourcePreview": "[Development with Other Frameworks](/guides/dev/frontend-frameworks/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "26af0c79aa1c3596440808a3c777e53c721b51850a3dba2b73a83ec81d631052",
+      "targetHash": "d0ee92615a40090378e28f71a8af185af6887feb186719ce0f3e72f09a125393",
+      "machineHash": "d0ee92615a40090378e28f71a8af185af6887feb186719ce0f3e72f09a125393",
+      "machineText": "[デバッグ](/guides/dev/debugging/)",
+      "status": "final",
+      "sourcePreview": "[Debugging](/guides/dev/debugging/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "44250085c1b5acb2b97269c09f0f132e807e41d3fa354818f69a5d13bf096f5f",
+      "targetHash": "1c9ca2cebd4d0a6a0321f702707a5d852e0ff864d2b3b26c86a80c41e8d97624",
+      "machineHash": "1c9ca2cebd4d0a6a0321f702707a5d852e0ff864d2b3b26c86a80c41e8d97624",
+      "machineText": "[テスト](/guides/testing/)",
+      "status": "final",
+      "sourcePreview": "[Testing](/guides/testing/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8d9502ba2c70bb6736fba283f329e9ccdbc97790530a3b4a0cc7e4ffe8ee5f10",
+      "targetHash": "075fead7b5f7fa1f9e981106274c6e9242ee01ed615cd74e64b3c335d2c7456b",
+      "machineHash": "075fead7b5f7fa1f9e981106274c6e9242ee01ed615cd74e64b3c335d2c7456b",
+      "machineText": "Wails v3アプリケーションの開発に推奨されるワークフロー",
+      "status": "final",
+      "sourcePreview": "A recommended workflow for developing Wails v3 applications",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d47ba937699891e4f59ba78f0d1cd89950eaaf9eaec18b6e9ba193331ea33e44",
+      "targetHash": "695d1c38544f1849ee6cf7f729b6fd252c09975165199005e7957779b0e24570",
+      "machineHash": "695d1c38544f1849ee6cf7f729b6fd252c09975165199005e7957779b0e24570",
+      "machineText": "開発ワークフロー",
+      "status": "final",
+      "sourcePreview": "Development Workflow",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    }
+  }
+}

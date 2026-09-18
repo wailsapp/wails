@@ -22,9 +22,9 @@ import (
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{
@@ -39,6 +39,7 @@ var edgeMap = map[string]uintptr{
 }
 
 type windowsWebviewWindow struct {
+	requestCancellation      *windowsRequestCancellation
 	windowImpl               unsafe.Pointer
 	parent                   *WebviewWindow
 	hwnd                     w32.HWND
@@ -116,21 +117,60 @@ func (w *windowsWebviewWindow) setMenu(menu *Menu) {
 	if w.parent.options.Windows.DisableMenu {
 		return
 	}
+	// A nil menu means "no menu", which is what macOS makes of it. Update
+	// dereferences its receiver once the application is running, so without
+	// this the call panicked rather than doing nothing (#6104).
+	if menu == nil {
+		return
+	}
+	// The menu being replaced owns an HMENU, the HBITMAPs SetMenuIcons
+	// allocated while building it, and the submenu handles detached for hidden
+	// rows. Win32Menu.Update frees those, but only for the same object, and
+	// this builds a new one - so without freeing it here nothing ever does
+	// (#6102). Its runtime bitmaps are taken first, because building the
+	// replacement reassigns item.impl and would put them out of reach.
+	previous := w.menu
+	previousImpls := make(map[*MenuItem]menuItemImpl)
+	if previous != nil {
+		previous.takeRuntimeBitmaps()
+		for _, item := range previous.menuMapping {
+			previousImpls[item] = item.impl
+		}
+	}
 	menu.Update()
-	w.menu = NewApplicationMenu(w, menu)
-	w.menu.parentWindow = w
-	w32.SetMenu(w.hwnd, w.menu.menu)
+
+	replacement := NewApplicationMenu(w, menu)
+	if !w32.SetMenu(w.hwnd, replacement.menu) {
+		replacement.Destroy()
+		// Restore retained bindings and clear items from the rejected menu.
+		for _, item := range replacement.menuMapping {
+			item.impl = previousImpls[item]
+		}
+		return
+	}
+	w.menu = replacement
+
+	// Only once the window has been given the new menu: destroying one that is
+	// still assigned to a window leaves it pointing at a freed handle.
+	if previous != nil {
+		previous.Destroy()
+	}
 
 	// Set menu background if theme is active
 	if w.menubarTheme != nil {
 		globalApplication.debug("Applying menubar theme in setMenu", "window", w.parent.id)
 		w.menubarTheme.SetMenuBackground(w.menu.menu)
-		w32.DrawMenuBar(w.hwnd)
 		// Force a repaint of the menu area
 		w32.InvalidateRect(w.hwnd, nil, true)
 	} else {
 		globalApplication.debug("No menubar theme to apply in setMenu", "window", w.parent.id)
 	}
+
+	// Outside the branch above: the bar has to be redrawn whenever the menu
+	// changes, not only when a menubar theme happens to be set, or the window
+	// goes on showing the old one until something else forces a repaint
+	// (#6103).
+	w32.DrawMenuBar(w.hwnd)
 
 	// Check if using translucent background with Mica - this makes menubars invisible
 	if w.parent.options.BackgroundType == BackgroundTypeTranslucent &&
@@ -854,6 +894,7 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
+	w.requestCancellation.close()
 	// Re-enable parent window if this was a modal window
 	if w.parentHWND != 0 {
 		w32.EnableWindow(w.parentHWND, true)
@@ -1658,6 +1699,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}()
 
 		// Now do the actual close
+		w.requestCancellation.close()
 		w.chromium.ShuttingDown()
 		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
 	case w32.WM_SETCURSOR:
@@ -2359,6 +2401,9 @@ func (w *windowsWebviewWindow) processRequest(
 		return
 	}
 
+	if w.requestCancellation != nil && !w.requestCancellation.closed {
+		webviewRequest = w.requestCancellation.tracker.Wrap(webviewRequest)
+	}
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webviewRequest,
 		windowId:   w.parent.id,
@@ -2600,6 +2645,12 @@ func (w *windowsWebviewWindow) setupChromium() {
 		chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	}
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
+
+	w.startRequestCancellation(w.navigateInitialPage)
+}
+
+func (w *windowsWebviewWindow) navigateInitialPage() {
+	chromium := w.chromium
 
 	if w.parent.options.HTML != "" {
 		var script string
