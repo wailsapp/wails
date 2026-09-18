@@ -31,6 +31,9 @@ func init() {
 }
 
 func main() {
+	if os.Getenv("WAILS_MCP_CHILD") == "1" {
+		commands.DisableFooter = true
+	}
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
@@ -43,6 +46,7 @@ func main() {
 	})
 
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
+	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
 
 	pkg := app.NewSubCommand("package", "Package application")
 	var pkgFlags flags.Package
@@ -94,6 +98,8 @@ func main() {
 	plugin.NewSubCommandFunction("init", "Initialise a new service", commands.ServiceInit)
 
 	tool := app.NewSubCommand("tool", "Various tools")
+	tool.NewSubCommandFunction("msix", "Create a Windows MSIX package", commands.ToolMSIX)
+	tool.NewSubCommand("msix-install-tools", "Install Windows MSIX packaging tools").Action(commands.InstallMSIXTools)
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
@@ -137,6 +143,25 @@ func main() {
 	sign.Action(func() error {
 		return commands.SignWrapper(&signWrapperFlags, sign.OtherArgs())
 	})
+
+	// Updater publishing tools (the Wails Update Manifest protocol)
+	updaterCmd := app.NewSubCommand("updater", "Self-update publishing tools (keys, signing, manifests)")
+	updaterCmd.NewSubCommandFunction("genkey", "Generate an Ed25519 signing keypair for updates", commands.UpdaterGenKey)
+	updaterSign := updaterCmd.NewSubCommand("sign", "Compute digests and signatures for artifact files")
+	var updaterSignFlags commands.UpdaterSignOptions
+	updaterSign.AddFlags(&updaterSignFlags)
+	updaterSign.Action(func() error {
+		return commands.UpdaterSign(&updaterSignFlags, updaterSign.OtherArgs())
+	})
+	updaterSign.LongDescription("\nUsage: wails3 updater sign -key <private key> <files...>")
+	updaterManifest := updaterCmd.NewSubCommand("manifest", "Generate an update manifest for artifact files")
+	var updaterManifestFlags commands.UpdaterManifestOptions
+	updaterManifest.AddFlags(&updaterManifestFlags)
+	updaterManifest.Action(func() error {
+		return commands.UpdaterManifest(&updaterManifestFlags, updaterManifest.OtherArgs())
+	})
+	updaterManifest.LongDescription("\nUsage: wails3 updater manifest -version <version> [flags] <files or directories...>\n\nDigests every artifact, signs it when -key is given, infers platform/arch\nfrom the filenames and writes a Wails Update Manifest ready to upload\nalongside the artifacts.")
+	updaterCmd.NewSubCommandFunction("verify", "Verify a manifest against the artifact files and public key", commands.UpdaterVerify)
 
 	// iOS tools
 	ios := app.NewSubCommand("ios", "iOS tooling")

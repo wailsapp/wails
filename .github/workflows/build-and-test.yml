@@ -36,6 +36,8 @@ jobs:
       - name: Install apt packages (ubuntu-22.04)
         if: matrix.os == 'ubuntu-22.04'
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo mkdir -p $HOME/.apt-archives/partial
           sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
@@ -53,6 +55,8 @@ jobs:
       - name: Install apt packages (ubuntu-24.04)
         if: matrix.os == 'ubuntu-24.04'
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo mkdir -p $HOME/.apt-archives/partial
           sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config libegl1
@@ -161,6 +165,8 @@ jobs:
       - name: Install apt packages (ubuntu-22.04)
         if: matrix.os == 'ubuntu-22.04'
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo mkdir -p $HOME/.apt-archives/partial
           sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
@@ -182,6 +188,8 @@ jobs:
       - name: Install apt packages (ubuntu-24.04)
         if: matrix.os == 'ubuntu-24.04'
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo mkdir -p $HOME/.apt-archives/partial
           sudo apt-get -o Dir::Cache::Archives=$HOME/.apt-archives install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config libegl1
