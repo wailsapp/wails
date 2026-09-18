@@ -191,8 +191,8 @@ vars:
   DMG_BACKGROUND: build/darwin/dmg-background.png
   DMG_VOLUME_ICON: build/darwin/icons.icns
   DMG_FILE_ICON: build/darwin/dmg-file-icon.icns
-  # auto는 DMG 라이브러리가 모든 아이콘을 배치하도록 합니다. 수동 배치에는
-  # `manual`을 사용하고 모든 위치를 name=x,y;name=x,y 형식으로 지정하세요.
+  # auto lets the DMG library distribute every icon. For manual placement,
+  # use `manual` and specify every position as name=x,y;name=x,y.
   DMG_ICON_LAYOUT: auto
   DMG_ICON_POSITIONS: ""
   DMG_WINDOW_WIDTH: 540

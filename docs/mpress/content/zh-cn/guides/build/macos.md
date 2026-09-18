@@ -191,8 +191,8 @@ vars:
   DMG_BACKGROUND: build/darwin/dmg-background.png
   DMG_VOLUME_ICON: build/darwin/icons.icns
   DMG_FILE_ICON: build/darwin/dmg-file-icon.icns
-  # auto 让 DMG 库自动排列所有图标。若要手动放置，
-  # 请使用 `manual`，并以 name=x,y;name=x,y 的格式指定每个位置。
+  # auto lets the DMG library distribute every icon. For manual placement,
+  # use `manual` and specify every position as name=x,y;name=x,y.
   DMG_ICON_LAYOUT: auto
   DMG_ICON_POSITIONS: ""
   DMG_WINDOW_WIDTH: 540

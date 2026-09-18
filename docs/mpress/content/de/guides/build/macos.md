@@ -191,8 +191,8 @@ vars:
   DMG_BACKGROUND: build/darwin/dmg-background.png
   DMG_VOLUME_ICON: build/darwin/icons.icns
   DMG_FILE_ICON: build/darwin/dmg-file-icon.icns
-  # auto lässt die DMG-Bibliothek alle Symbole verteilen. Für eine manuelle
-  # Platzierung `manual` verwenden und jede Position als name=x,y;name=x,y angeben.
+  # auto lets the DMG library distribute every icon. For manual placement,
+  # use `manual` and specify every position as name=x,y;name=x,y.
   DMG_ICON_LAYOUT: auto
   DMG_ICON_POSITIONS: ""
   DMG_WINDOW_WIDTH: 540

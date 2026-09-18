@@ -191,8 +191,8 @@ vars:
   DMG_BACKGROUND: build/darwin/dmg-background.png
   DMG_VOLUME_ICON: build/darwin/icons.icns
   DMG_FILE_ICON: build/darwin/dmg-file-icon.icns
-  # auto では DMG ライブラリがすべてのアイコンを配置します。手動で配置する場合は、
-  # `manual` を使い、各位置を name=x,y;name=x,y の形式で指定します。
+  # auto lets the DMG library distribute every icon. For manual placement,
+  # use `manual` and specify every position as name=x,y;name=x,y.
   DMG_ICON_LAYOUT: auto
   DMG_ICON_POSITIONS: ""
   DMG_WINDOW_WIDTH: 540
