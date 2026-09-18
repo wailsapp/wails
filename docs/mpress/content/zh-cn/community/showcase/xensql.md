@@ -16,6 +16,7 @@ sourcePath: "community/showcase/xensql.md"
 - **流畅的数据编辑**——浏览表、在行内暂存更改、执行批量操作，以及安全地执行`INSERT`/`UPDATE`/`DELETE`操作，并支持`RETURNING`
 - **效率功能**——架构浏览器、已保存的查询、查询历史记录、快速搜索（`Ctrl+P`），以及键盘优先的工作流
 - **导出选项**——CSV、JSON、Markdown、SQL INSERT 语句
+- **自动更新**——内置更新系统，让应用始终拥有最新功能和修复
 
 完全离线且便于携带。所有内容都存储在一个随应用一起移动的本地`XenSQL-data/`文件夹中。
 

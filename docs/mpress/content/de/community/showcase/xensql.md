@@ -16,6 +16,7 @@ sourcePath: "community/showcase/xensql.md"
 - **Nahtlose Datenbearbeitung** – Tabellen durchsuchen, Änderungen inline vormerken, Massenvorgänge ausführen sowie sichere `INSERT`/`UPDATE`/`DELETE` mit Unterstützung für `RETURNING` verwenden
 - **Produktivitätsfunktionen** – Schema-Explorer, gespeicherte Abfragen, Abfrageverlauf, Schnellsuche (`Ctrl+P`) und tastaturorientierter Workflow
 - **Exportoptionen** – CSV, JSON, Markdown und SQL-INSERT-Anweisungen
+- **Automatische Updates** – Integriertes Update-System, das die App mit den neuesten Funktionen und Fehlerbehebungen auf dem aktuellen Stand hält
 
 Vollständig offline und portabel. Alles wird lokal in einem einzigen `XenSQL-data/`-Ordner gespeichert, der zusammen mit der App übertragen werden kann.
 

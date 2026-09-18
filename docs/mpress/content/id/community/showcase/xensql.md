@@ -16,6 +16,7 @@ sourcePath: "community/showcase/xensql.md"
 - **Pengeditan Data yang Mulus**—telusuri tabel, siapkan perubahan secara langsung, lakukan operasi massal, serta gunakan `INSERT`/`UPDATE`/`DELETE` dengan aman dan didukung oleh `RETURNING`
 - **Fitur Produktivitas**—penjelajah skema, kueri tersimpan, riwayat kueri, pencarian cepat (`Ctrl+P`), dan alur kerja yang mengutamakan keyboard
 - **Opsi Ekspor**—CSV, JSON, Markdown, SQL INSERT
+- **Pembaruan Otomatis**—sistem pembaruan bawaan untuk menjaga aplikasi tetap mutakhir dengan fitur dan perbaikan terbaru
 
 Sepenuhnya luring dan portabel. Semuanya disimpan secara lokal dalam satu folder `XenSQL-data/` yang dapat dibawa bersama aplikasi.
 

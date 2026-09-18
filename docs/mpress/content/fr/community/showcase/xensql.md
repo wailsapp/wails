@@ -16,6 +16,7 @@ sourcePath: "community/showcase/xensql.md"
 - **Modification fluide des données** — Parcourez les tables, préparez les modifications directement, effectuez des opérations groupées et utilisez en toute sécurité `INSERT`/`UPDATE`/`DELETE` avec la prise en charge de `RETURNING`
 - **Fonctionnalités de productivité** — Explorateur de schéma, requêtes enregistrées, historique des requêtes, recherche rapide (`Ctrl+P`) et flux de travail centré sur le clavier
 - **Options d’exportation** — CSV, JSON, Markdown, instructions SQL INSERT
+- **Mises à jour automatiques** — Système de mise à jour intégré pour maintenir l’application à jour avec les dernières fonctionnalités et corrections
 
 Entièrement hors ligne et portable. Toutes les données sont stockées localement dans un seul dossier `XenSQL-data/`, qui accompagne l’application.
 

@@ -16,6 +16,7 @@ O **[XenSQL](https://github.com/Bare7a/XenSQL)** é um **workbench SQL rápido p
 - **Edição de dados integrada** — Navegação por tabelas, preparação de alterações em linha, operações em massa e `INSERT`/`UPDATE`/`DELETE` seguros, com suporte a `RETURNING`
 - **Recursos de produtividade** — Explorador de esquemas, consultas salvas, histórico de consultas, pesquisa rápida (`Ctrl+P`) e fluxo de trabalho orientado pelo teclado
 - **Opções de exportação** — CSV, JSON, Markdown e instruções SQL INSERT
+- **Atualizações automáticas** — Sistema de atualização integrado para manter o aplicativo em dia com os recursos e correções mais recentes
 
 Totalmente offline e portátil. Tudo é armazenado localmente em uma única pasta `XenSQL-data/`, que acompanha o aplicativo.
 
