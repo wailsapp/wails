@@ -73,6 +73,53 @@ app := application.New(application.Options{
 - Les services sont des **singletons** (une seule instance)
 - Les méthodes peuvent renvoyer `(value, error)`
 
+### Exposer une interface sûre pour le frontend {#frontend-interface}
+
+Par défaut, toutes les méthodes exportées d’un service sont appelables depuis le frontend. Si un service possède également des méthodes réservées au backend, enregistrez-le via une interface nommée avec `NewServiceAs`:
+
+```go
+type FrontendAuth interface {
+    Login() wailspkceflow.AuthResult
+    Logout() wailspkceflow.AuthResult
+    AuthStatus() pkceflow.AuthStatusResult
+    IsAuthenticated() bool
+    Claims() (wailspkceflow.ClaimsDTO, wailspkceflow.AuthResult)
+    RestoreStatus() wailspkceflow.RestoreStatus
+}
+
+authService, err := wailspkceflow.New(options)
+if err != nil {
+    return err
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceAs[FrontendAuth](authService),
+    },
+})
+
+// Go keeps the full concrete API. Client is not callable from JavaScript.
+tokenFn := authService.Client().TokenFn(context.Background())
+```
+
+Wails génère des liaisons uniquement pour les méthodes de `FrontendAuth`, et le runtime applique la même liste d’autorisation aux appels de bas niveau, par nom comme par identifiant de méthode. Les méthodes exportées telles que `Client`, `Pause` ou `Resume` restent disponibles en Go, mais ne sont pas enregistrées auprès du pont frontend.
+
+Cette frontière refuse tout accès non explicitement autorisé : ajouter une méthode exportée à `AuthService` ne l’expose pas, sauf si elle est également ajoutée à `FrontendAuth`. Le compilateur vérifie que le service concret implémente l’interface.
+
+@note{type="caution"}
+Les directives du générateur telles que `//wails:ignore` contrôlent le JavaScript et le TypeScript générés, mais n’empêchent pas un appel de bas niveau au runtime. Utilisez une projection d’interface lorsque la visibilité des méthodes constitue une frontière de sécurité ou de confiance.
+@end
+
+Exigences et compromis de la projection :
+
+- Fournissez explicitement le type d’interface nommé : `NewServiceAs[FrontendAuth](authService)`.
+- Passez directement le pointeur vers le service concret pour que le générateur de liaisons puisse identifier son package et son type. La génération signale une erreur si ce pointeur est d’abord stocké dans une variable de type interface ou passé via une fonction générique intermédiaire.
+- Le module généré et les identifiants de méthodes conservent l’identité du service concret, ce qui préserve l’organisation habituelle des liaisons Wails et la prise en charge des builds obfusqués.
+- Les hooks du cycle de vie, le routage HTTP, le nommage du service et l’accès backend utilisent toujours l’instance concrète ; seul l’enregistrement des méthodes frontend est filtré.
+- L’interface constitue une déclaration d’API supplémentaire, mais elle remplace les structures de façade de transfert et facilite la revue et la simulation de l’API exposée.
+
+Utilisez `NewServiceAsWithOptions[FrontendAuth](authService, options)` lorsque le service projeté nécessite également des [options de service](#options-des-services).
+
 ### Service avec état
 
 ```go

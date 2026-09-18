@@ -73,6 +73,53 @@ app := application.New(application.Options{
 - Os serviços são **singletons** (uma única instância)
 - Os métodos podem retornar `(value, error)`
 
+### Expor uma interface segura para o frontend {#frontend-interface}
+
+Por padrão, todos os métodos exportados de um serviço podem ser chamados pelo frontend. Se um serviço também tiver métodos exclusivos do backend, registre-o por meio de uma interface nomeada com `NewServiceAs`:
+
+```go
+type FrontendAuth interface {
+    Login() wailspkceflow.AuthResult
+    Logout() wailspkceflow.AuthResult
+    AuthStatus() pkceflow.AuthStatusResult
+    IsAuthenticated() bool
+    Claims() (wailspkceflow.ClaimsDTO, wailspkceflow.AuthResult)
+    RestoreStatus() wailspkceflow.RestoreStatus
+}
+
+authService, err := wailspkceflow.New(options)
+if err != nil {
+    return err
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceAs[FrontendAuth](authService),
+    },
+})
+
+// Go keeps the full concrete API. Client is not callable from JavaScript.
+tokenFn := authService.Client().TokenFn(context.Background())
+```
+
+O Wails gera bindings apenas para os métodos de `FrontendAuth`, e o runtime impõe a mesma lista de permissões às chamadas de baixo nível tanto por nome quanto por ID do método. Métodos exportados como `Client`, `Pause` ou `Resume` continuam disponíveis em Go, mas não são registrados na ponte do frontend.
+
+Essa fronteira bloqueia tudo o que não foi explicitamente permitido: adicionar outro método exportado a `AuthService` não o expõe, a menos que o método também seja adicionado a `FrontendAuth`. O compilador verifica se o serviço concreto implementa a interface.
+
+@note{type="caution"}
+Diretivas do gerador como `//wails:ignore` controlam o JavaScript e o TypeScript gerados, mas não impedem uma chamada de baixo nível ao runtime. Use uma projeção de interface quando a visibilidade dos métodos for uma fronteira de segurança ou confiança.
+@end
+
+Requisitos e compromissos da projeção:
+
+- Forneça explicitamente o tipo de interface nomeada: `NewServiceAs[FrontendAuth](authService)`.
+- Passe diretamente o ponteiro do serviço concreto para que o gerador de bindings identifique seu pacote e tipo. A geração de bindings informa um erro se ele for primeiro armazenado em uma variável do tipo interface ou passado por um wrapper genérico.
+- O módulo gerado e os IDs dos métodos mantêm a identidade do serviço concreto, preservando a organização normal dos bindings do Wails e o suporte a builds ofuscados.
+- Hooks de ciclo de vida, roteamento HTTP, nomeação do serviço e acesso pelo backend continuam usando a instância concreta; apenas o registro de métodos do frontend é filtrado.
+- A interface é uma declaração adicional de API, mas substitui structs de fachada que encaminham chamadas e facilita a revisão e a criação de mocks da API exposta.
+
+Use `NewServiceAsWithOptions[FrontendAuth](authService, options)` quando o serviço projetado também precisar de [opções de serviço](#opes-de-servio).
+
 ### Serviço com estado
 
 ```go

@@ -73,6 +73,53 @@ app := application.New(application.Options{
 - 服务是<strong>单例</strong>（只有一个实例）
 - 方法可以返回`(value, error)`
 
+### 公开面向前端的安全接口 {#frontend-interface}
+
+默认情况下，前端可以调用服务的所有导出方法。如果服务还具有仅供后端使用的方法，请通过命名接口使用 `NewServiceAs` 注册它：
+
+```go
+type FrontendAuth interface {
+    Login() wailspkceflow.AuthResult
+    Logout() wailspkceflow.AuthResult
+    AuthStatus() pkceflow.AuthStatusResult
+    IsAuthenticated() bool
+    Claims() (wailspkceflow.ClaimsDTO, wailspkceflow.AuthResult)
+    RestoreStatus() wailspkceflow.RestoreStatus
+}
+
+authService, err := wailspkceflow.New(options)
+if err != nil {
+    return err
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceAs[FrontendAuth](authService),
+    },
+})
+
+// Go keeps the full concrete API. Client is not callable from JavaScript.
+tokenFn := authService.Client().TokenFn(context.Background())
+```
+
+Wails 仅为 `FrontendAuth` 中的方法生成绑定，运行时也对通过方法名和方法 ID 发起的底层调用执行相同的允许列表。导出方法（如 `Client`、`Pause` 或 `Resume`）仍可供 Go 使用，但不会注册到前端桥接层。
+
+这是默认拒绝未授权访问的边界：向 `AuthService` 添加新的导出方法不会公开该方法，除非同时将其添加到 `FrontendAuth`。编译器会验证具体服务是否实现了该接口。
+
+@note{type="caution"}
+生成器指令（如 `//wails:ignore`）控制生成的 JavaScript 和 TypeScript，但不能阻止底层运行时调用。如果方法可见性涉及安全或信任边界，请使用接口投影。
+@end
+
+投影的要求与权衡：
+
+- 显式提供命名接口类型：`NewServiceAs[FrontendAuth](authService)`。
+- 直接传入具体服务的指针，让绑定生成器能够识别其包和类型。如果先将其存储在接口类型的变量中，或通过泛型包装函数传递，绑定生成过程会报错。
+- 生成的模块和方法 ID 保留具体服务的标识，从而维持常规的 Wails 绑定布局及对混淆构建的支持。
+- 生命周期钩子、HTTP 路由、服务命名和后端访问仍使用具体实例；只有前端方法的注册会被过滤。
+- 接口是一项额外的 API 声明，但它取代了用于转发调用的门面结构体，让公开 API 更容易审查和模拟。
+
+当投影后的服务还需要[服务选项](#heading-8)时，请使用 `NewServiceAsWithOptions[FrontendAuth](authService, options)`。
+
 ### 有状态服务
 
 ```go

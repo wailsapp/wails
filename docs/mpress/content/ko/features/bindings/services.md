@@ -73,6 +73,53 @@ app := application.New(application.Options{
 - 서비스는 <strong>싱글턴</strong>입니다(인스턴스 하나).
 - 메서드는 `(value, error)`을(를) 반환할 수 있습니다.
 
+### 프런트엔드에 안전한 인터페이스 노출하기 {#frontend-interface}
+
+기본적으로 서비스의 모든 내보낸 메서드는 프런트엔드에서 호출할 수 있습니다. 백엔드 전용 메서드도 있는 서비스라면 이름이 있는 인터페이스를 통해 `NewServiceAs`로 등록하세요.
+
+```go
+type FrontendAuth interface {
+    Login() wailspkceflow.AuthResult
+    Logout() wailspkceflow.AuthResult
+    AuthStatus() pkceflow.AuthStatusResult
+    IsAuthenticated() bool
+    Claims() (wailspkceflow.ClaimsDTO, wailspkceflow.AuthResult)
+    RestoreStatus() wailspkceflow.RestoreStatus
+}
+
+authService, err := wailspkceflow.New(options)
+if err != nil {
+    return err
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceAs[FrontendAuth](authService),
+    },
+})
+
+// Go keeps the full concrete API. Client is not callable from JavaScript.
+tokenFn := authService.Client().TokenFn(context.Background())
+```
+
+Wails는 `FrontendAuth`에 포함된 메서드에 대해서만 바인딩을 생성하며, 런타임도 메서드 이름과 메서드 ID를 사용하는 저수준 호출에 동일한 허용 목록을 적용합니다. 내보낸 메서드인 `Client`, `Pause` 또는 `Resume`는 Go에서 계속 사용할 수 있지만 프런트엔드 브리지에는 등록되지 않습니다.
+
+이 경계는 명시적으로 허용되지 않은 접근을 차단합니다. `AuthService`에 내보낸 메서드를 추가해도 `FrontendAuth`에도 추가하지 않는 한 노출되지 않습니다. 컴파일러는 구체적인 서비스가 인터페이스를 구현하는지 확인합니다.
+
+@note{type="caution"}
+생성기 지시문인 `//wails:ignore` 등은 생성되는 JavaScript와 TypeScript를 제어하지만 저수준 런타임 호출을 막지는 않습니다. 메서드 가시성이 보안 또는 신뢰 경계라면 인터페이스 프로젝션을 사용하세요.
+@end
+
+프로젝션 요구 사항과 고려할 점:
+
+- 이름이 있는 인터페이스 타입을 명시적으로 지정하세요: `NewServiceAs[FrontendAuth](authService)`.
+- 바인딩 생성기가 패키지와 타입을 식별할 수 있도록 구체적인 서비스 포인터를 직접 전달하세요. 먼저 인터페이스 타입 변수에 저장하거나 제네릭 래퍼를 통해 전달하면 바인딩 생성 시 오류가 보고됩니다.
+- 생성된 모듈과 메서드 ID는 구체적인 서비스의 식별 정보를 유지하므로 일반적인 Wails 바인딩 구조와 난독화 빌드 지원이 보존됩니다.
+- 수명 주기 훅, HTTP 라우팅, 서비스 이름 지정, 백엔드 접근은 계속 구체적인 인스턴스를 사용하며 프런트엔드 메서드 등록만 필터링됩니다.
+- 인터페이스는 추가적인 API 선언이지만 호출을 전달하는 파사드 구조체를 대체하고 노출된 API를 검토하거나 모킹하기 쉽게 만듭니다.
+
+프로젝션된 서비스에 [서비스 옵션](#--4)도 필요하면 `NewServiceAsWithOptions[FrontendAuth](authService, options)`를 사용하세요.
+
 ### 상태가 있는 서비스
 
 ```go

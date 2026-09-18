@@ -73,6 +73,53 @@ app := application.New(application.Options{
 - Services sind **Singletons** (eine Instanz)
 - Methoden können `(value, error)` zurückgeben
 
+### Eine sichere Schnittstelle für das Frontend bereitstellen {#frontend-interface}
+
+Standardmäßig ist jede exportierte Methode eines Services vom Frontend aus aufrufbar. Wenn ein Service auch reine Backend-Methoden besitzt, registriere ihn über eine benannte Schnittstelle mit `NewServiceAs`:
+
+```go
+type FrontendAuth interface {
+    Login() wailspkceflow.AuthResult
+    Logout() wailspkceflow.AuthResult
+    AuthStatus() pkceflow.AuthStatusResult
+    IsAuthenticated() bool
+    Claims() (wailspkceflow.ClaimsDTO, wailspkceflow.AuthResult)
+    RestoreStatus() wailspkceflow.RestoreStatus
+}
+
+authService, err := wailspkceflow.New(options)
+if err != nil {
+    return err
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceAs[FrontendAuth](authService),
+    },
+})
+
+// Go keeps the full concrete API. Client is not callable from JavaScript.
+tokenFn := authService.Client().TokenFn(context.Background())
+```
+
+Wails generiert Bindings nur für Methoden in `FrontendAuth`, und die Laufzeit erzwingt dieselbe Positivliste für direkte Aufrufe sowohl per Methodenname als auch per Methoden-ID. Exportierte Methoden wie `Client`, `Pause` oder `Resume` bleiben in Go verfügbar, werden aber nicht an der Frontend-Bridge registriert.
+
+Diese Grenze sperrt alles, was nicht ausdrücklich freigegeben wurde: Eine neue exportierte Methode in `AuthService` wird erst verfügbar, wenn sie auch zu `FrontendAuth` hinzugefügt wird. Der Compiler prüft, ob der konkrete Service die Schnittstelle implementiert.
+
+@note{type="caution"}
+Generator-Direktiven wie `//wails:ignore` steuern das generierte JavaScript und TypeScript, verhindern aber keinen direkten Laufzeitaufruf. Verwende eine Schnittstellenprojektion, wenn die Sichtbarkeit der Methoden eine Sicherheits- oder Vertrauensgrenze bildet.
+@end
+
+Anforderungen und Abwägungen bei Projektionen:
+
+- Gib den benannten Schnittstellentyp explizit an: `NewServiceAs[FrontendAuth](authService)`.
+- Übergib den konkreten Service-Pointer direkt, damit der Binding-Generator dessen Paket und Typ ermitteln kann. Die Binding-Generierung meldet einen Fehler, wenn er zuerst in einer Variablen mit Schnittstellentyp gespeichert oder über einen generischen Wrapper übergeben wird.
+- Das generierte Modul und die Methoden-IDs behalten die Identität des konkreten Services. Dadurch bleiben die übliche Wails-Binding-Struktur und die Unterstützung obfuskierter Builds erhalten.
+- Lebenszyklus-Hooks, HTTP-Routing, Servicebenennung und Backend-Zugriff verwenden weiterhin die konkrete Instanz; nur die Registrierung der Frontend-Methoden wird gefiltert.
+- Die Schnittstelle ist eine zusätzliche API-Deklaration, ersetzt jedoch weiterleitende Fassadenstrukturen und erleichtert die Prüfung und das Mocking der freigegebenen API.
+
+Verwende `NewServiceAsWithOptions[FrontendAuth](authService, options)`, wenn der projizierte Service auch [Serviceoptionen](#serviceoptionen) benötigt.
+
 ### Service mit Zustand
 
 ```go

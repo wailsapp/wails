@@ -73,6 +73,53 @@ app := application.New(application.Options{
 - サービスは<strong>シングルトン</strong>です（インスタンスは1つ）
 - メソッドは`(value, error)`を返せます
 
+### フロントエンド向けの安全なインターフェースを公開する {#frontend-interface}
+
+既定では、サービスのすべてのエクスポートされたメソッドをフロントエンドから呼び出せます。バックエンド専用のメソッドも持つサービスは、名前付きインターフェースを通じて `NewServiceAs` で登録します。
+
+```go
+type FrontendAuth interface {
+    Login() wailspkceflow.AuthResult
+    Logout() wailspkceflow.AuthResult
+    AuthStatus() pkceflow.AuthStatusResult
+    IsAuthenticated() bool
+    Claims() (wailspkceflow.ClaimsDTO, wailspkceflow.AuthResult)
+    RestoreStatus() wailspkceflow.RestoreStatus
+}
+
+authService, err := wailspkceflow.New(options)
+if err != nil {
+    return err
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceAs[FrontendAuth](authService),
+    },
+})
+
+// Go keeps the full concrete API. Client is not callable from JavaScript.
+tokenFn := authService.Client().TokenFn(context.Background())
+```
+
+Wails は `FrontendAuth` のメソッドだけにバインディングを生成し、ランタイムもメソッド名とメソッド ID の両方による低レベル呼び出しに同じ許可リストを適用します。エクスポートされたメソッドである `Client`、`Pause`、または `Resume` は Go から引き続き使用できますが、フロントエンドブリッジには登録されません。
+
+この境界は明示的に許可されていないアクセスを拒否します。エクスポートされたメソッドを `AuthService` に追加しても、`FrontendAuth` にも追加しない限り公開されません。コンパイラは具象サービスがインターフェースを実装していることを検証します。
+
+@note{type="caution"}
+ジェネレーターのディレクティブである `//wails:ignore` などは、生成される JavaScript と TypeScript を制御しますが、ランタイムへの低レベル呼び出しを阻止しません。メソッドの可視性がセキュリティまたは信頼の境界となる場合は、インターフェース射影を使用してください。
+@end
+
+射影の要件とトレードオフ：
+
+- 名前付きインターフェース型を明示的に指定してください：`NewServiceAs[FrontendAuth](authService)`。
+- バインディングジェネレーターがパッケージと型を特定できるように、具象サービスのポインターを直接渡してください。先にインターフェース型の変数へ格納した場合や、ジェネリックなラッパー経由で渡した場合は、バインディング生成時にエラーが報告されます。
+- 生成されたモジュールとメソッド ID は具象サービスの識別情報を保持するため、通常の Wails バインディング構成と難読化ビルドへの対応が維持されます。
+- ライフサイクルフック、HTTP ルーティング、サービスの命名、バックエンドからのアクセスは引き続き具象インスタンスを使用します。フィルタリングされるのはフロントエンドのメソッド登録だけです。
+- インターフェースは追加の API 宣言になりますが、呼び出しを転送するファサード構造体を置き換え、公開する API のレビューやモック作成を容易にします。
+
+射影したサービスにも[サービスオプション](#heading-8)が必要な場合は `NewServiceAsWithOptions[FrontendAuth](authService, options)` を使用してください。
+
 ### 状態を持つサービス
 
 ```go

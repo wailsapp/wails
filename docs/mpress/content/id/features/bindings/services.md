@@ -73,6 +73,53 @@ app := application.New(application.Options{
 - Layanan merupakan **singleton** (satu instans)
 - Metode dapat mengembalikan `(value, error)`
 
+### Mengekspos antarmuka yang aman untuk frontend {#frontend-interface}
+
+Secara bawaan, setiap metode yang diekspor pada suatu layanan dapat dipanggil dari frontend. Jika layanan juga memiliki metode khusus backend, daftarkan melalui antarmuka bernama dengan `NewServiceAs`:
+
+```go
+type FrontendAuth interface {
+    Login() wailspkceflow.AuthResult
+    Logout() wailspkceflow.AuthResult
+    AuthStatus() pkceflow.AuthStatusResult
+    IsAuthenticated() bool
+    Claims() (wailspkceflow.ClaimsDTO, wailspkceflow.AuthResult)
+    RestoreStatus() wailspkceflow.RestoreStatus
+}
+
+authService, err := wailspkceflow.New(options)
+if err != nil {
+    return err
+}
+
+app := application.New(application.Options{
+    Services: []application.Service{
+        application.NewServiceAs[FrontendAuth](authService),
+    },
+})
+
+// Go keeps the full concrete API. Client is not callable from JavaScript.
+tokenFn := authService.Client().TokenFn(context.Background())
+```
+
+Wails menghasilkan binding hanya untuk metode dalam `FrontendAuth`, dan runtime menerapkan daftar izin yang sama pada panggilan tingkat rendah berdasarkan nama maupun ID metode. Metode yang diekspor seperti `Client`, `Pause`, atau `Resume` tetap tersedia bagi Go, tetapi tidak didaftarkan pada jembatan frontend.
+
+Batas ini menolak akses yang tidak diizinkan secara eksplisit: menambahkan metode ekspor lain ke `AuthService` tidak mengeksposnya kecuali metode itu juga ditambahkan ke `FrontendAuth`. Kompiler memastikan bahwa layanan konkret mengimplementasikan antarmuka tersebut.
+
+@note{type="caution"}
+Direktif generator seperti `//wails:ignore` mengendalikan JavaScript dan TypeScript yang dihasilkan, tetapi tidak mencegah panggilan runtime tingkat rendah. Gunakan proyeksi antarmuka ketika visibilitas metode menjadi batas keamanan atau kepercayaan.
+@end
+
+Persyaratan dan pertimbangan proyeksi:
+
+- Berikan tipe antarmuka bernama secara eksplisit: `NewServiceAs[FrontendAuth](authService)`.
+- Teruskan pointer layanan konkret secara langsung agar generator binding dapat mengidentifikasi paket dan tipenya. Pembuatan binding melaporkan kesalahan jika pointer terlebih dahulu disimpan dalam variabel bertipe antarmuka atau diteruskan melalui pembungkus generik.
+- Modul yang dihasilkan dan ID metode mempertahankan identitas layanan konkret, sehingga tata letak binding Wails yang biasa dan dukungan build terobfuskasi tetap terjaga.
+- Hook siklus hidup, perutean HTTP, penamaan layanan, dan akses backend tetap menggunakan instans konkret; hanya pendaftaran metode frontend yang difilter.
+- Antarmuka merupakan deklarasi API tambahan, tetapi menggantikan struct fasad penerus panggilan dan memudahkan peninjauan serta pembuatan mock untuk API yang diekspos.
+
+Gunakan `NewServiceAsWithOptions[FrontendAuth](authService, options)` ketika layanan yang diproyeksikan juga membutuhkan [opsi layanan](#opsi-layanan).
+
 ### Layanan dengan State
 
 ```go
