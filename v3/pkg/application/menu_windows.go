@@ -22,6 +22,10 @@ type windowsMenu struct {
 	// bitmaps tracks HBITMAP handles allocated by SetMenuIcons during
 	// processMenu so they can be released when the menu is rebuilt.
 	bitmaps []w32.HBITMAP
+
+	// detachedSubmenus owns submenu handles whose parent rows are hidden and
+	// therefore are not part of the hMenu tree destroyed by DestroyMenu.
+	detachedSubmenus detachedSubmenuSet
 }
 
 func (w *windowsMenu) freeBitmaps() {
@@ -31,8 +35,9 @@ func (w *windowsMenu) freeBitmaps() {
 
 func newMenuImpl(menu *Menu) *windowsMenu {
 	result := &windowsMenu{
-		menu:        menu,
-		menuMapping: make(map[int]*MenuItem),
+		menu:             menu,
+		menuMapping:      make(map[int]*MenuItem),
+		detachedSubmenus: make(detachedSubmenuSet),
 	}
 
 	return result
@@ -46,6 +51,7 @@ func (w *windowsMenu) update() {
 	oldHMENU := w.hMenu
 	oldMapping := w.menuMapping
 	oldBitmaps := w.bitmaps
+	oldDetachedSubmenus := w.detachedSubmenus
 
 	// Transfer runtime SetBitmap handles off the old impls now, before
 	// processMenu reassigns item.impl and makes them unreachable via the
@@ -61,17 +67,21 @@ func (w *windowsMenu) update() {
 	w.menuMapping = make(map[int]*MenuItem)
 	w.currentMenuID = 0
 	w.bitmaps = nil
+	w.detachedSubmenus = make(detachedSubmenuSet)
 
 	if err := w.processMenu(newHMENU, w.menu); err != nil {
 		globalApplication.error("menu rebuild failed, keeping previous menu: %v", err)
 		w.freeBitmaps()
+		w.detachedSubmenus.destroyAll()
 		w32.DestroyMenu(newHMENU)
 		w.hMenu = oldHMENU
 		w.menuMapping = oldMapping
 		w.bitmaps = oldBitmaps
+		w.detachedSubmenus = oldDetachedSubmenus
 		return
 	}
 
+	oldDetachedSubmenus.destroyAll()
 	if oldHMENU != 0 {
 		releaseMenuBitmaps(oldBitmaps, oldMapping)
 		w32.DestroyMenu(oldHMENU)
@@ -90,6 +100,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 
 		menuItemImpl := newMenuItemImpl(item, parentMenu, itemID)
 		menuItemImpl.parent = inputMenu
+		menuItemImpl.detachedSubmenus = w.detachedSubmenus
 		item.impl = menuItemImpl
 
 		if item.Hidden() {
@@ -126,6 +137,7 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 				return err
 			}
 			itemID = int(newSubmenu)
+			menuItemImpl.submenu = newSubmenu
 		}
 
 		thisText := item.Label()
@@ -143,14 +155,25 @@ func (w *windowsMenu) processMenu(parentMenu w32.HMENU, inputMenu *Menu) error {
 
 		// If the item is hidden, don't append
 		if item.Hidden() {
+			w.detachedSubmenus.add(menuItemImpl.submenu)
 			continue
 		}
 
 		if ok := w32.AppendMenu(parentMenu, flags, uintptr(itemID), menuText); !ok {
 			return fmt.Errorf("AppendMenu failed for %q: %v", thisText, syscall.GetLastError())
 		}
+		if item.submenu != nil {
+			// The append above passed the submenu HMENU as uIDNewItem, so this
+			// item currently has no command ID. Restore it, otherwise runtime
+			// updates to the submenu item itself are silently dropped.
+			if err := assignCommandID(parentMenu, menuItemImpl.id); err != nil {
+				return fmt.Errorf("assigning a command ID failed for %q: %w", thisText, err)
+			}
+		}
 		if item.bitmap != nil {
-			handles, err := w32.SetMenuIcons(parentMenu, itemID, item.bitmap, nil)
+			// Address the row by its command ID: itemID holds the child HMENU
+			// for submenu items, and SetMenuIcons looks up by MF_BYCOMMAND.
+			handles, err := w32.SetMenuIcons(parentMenu, menuItemImpl.id, item.bitmap, nil)
 			if err != nil {
 				return fmt.Errorf("SetMenuIcons failed for %q: %w", thisText, err)
 			}

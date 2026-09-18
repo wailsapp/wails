@@ -1,4 +1,4 @@
-//go:build windows && (!production || devtools)
+//go:build windows && !server && (!production || devtools)
 
 package application
 

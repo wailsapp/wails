@@ -1,0 +1,75 @@
+name: Generate Star History Image
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 2 * * 0" # Sundays at 02:17 UTC
+
+jobs:
+  generate-star-history:
+    name: Generate Star History
+    if: github.repository == 'wailsapp/wails'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/starhistory/go.mod
+
+      - name: Render star history
+        run: cd tools/starhistory && GOWORK=off go run .
+        env:
+          # The token must belong to a repository admin or collaborator so
+          # GitHub permits access to timestamped stargazers.
+          GITHUB_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || secrets.STAR_HISTORY_TOKEN || github.token }}
+
+      - name: Upload generated image
+        uses: actions/upload-artifact@v4
+        with:
+          name: star-history
+          path: website/static/img/star-history.svg
+
+  publish-star-history:
+    name: Publish Star History
+    if: github.event_name == 'workflow_dispatch'
+    needs: generate-star-history
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Publishing is restricted to an explicitly dispatched run.
+          persist-credentials: false
+
+      - name: Download generated image
+        uses: actions/download-artifact@v4
+        with:
+          name: star-history
+          path: website/static/img
+
+      - name: Commit updated image
+        id: commit-image
+        run: |
+          git config user.name "taliesin-ai"
+          git config user.email "bot@taliesin.ai"
+          if git diff --quiet -- website/static/img/star-history.svg; then
+            echo "No star-history changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git add website/static/img/star-history.svg
+          git commit -m "chore: update star history [skip ci]"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push updated image
+        if: steps.commit-image.outputs.changed == 'true'
+        env:
+          WAILS_PUSH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
+        run: git push "https://x-access-token:${WAILS_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"

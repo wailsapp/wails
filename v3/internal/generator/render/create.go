@@ -258,9 +258,55 @@ func (m *module) PostponedCreates() []string {
 			result[pp.index] = fmt.Sprintf("%s$Create.Map($Create.Any, %s)%s", pre, m.JSCreateWithParams(t.Elem(), pp.params), post)
 
 		case *types.Named:
-			if !collect.IsClass(key) {
-				// Creation functions for non-struct named types
-				// require an indirect assignment to break cycles.
+			var builder strings.Builder
+			isClass := collect.IsClass(key)
+			if isClass {
+				if t.Obj().Pkg().Path() == m.Imports.Self {
+					if m.Imports.ImportModels {
+						builder.WriteString("$models.")
+					}
+				} else {
+					builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
+					builder.WriteRune('.')
+				}
+				builder.WriteString(jsid(t.Obj().Name()))
+				builder.WriteString(".createFrom")
+
+				if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
+					builder.WriteString("(")
+					for i := range t.TypeArgs().Len() {
+						if i > 0 {
+							builder.WriteString(", ")
+						}
+						builder.WriteString(m.JSCreateWithParams(t.TypeArgs().At(i), pp.params))
+					}
+					builder.WriteString(")")
+				}
+			} else {
+				builder.WriteString(m.JSCreateWithParams(t.Underlying(), pp.params))
+			}
+
+			if isClass && pp.params != "" {
+				// Resolve recursive generic classes on first use, with a separate
+				// cached creator for each set of type-parameter converters.
+				declaration, sourceParam := "/** @type {((source: any) => any) | undefined} */ let $$create;", "/** @type {any} */ $$source"
+				if m.TS {
+					declaration, sourceParam = "let $$create: ((source: any) => any) | undefined;", "$$source: any"
+				}
+				result[pp.index] = fmt.Sprintf(`%s{
+    %s
+    return (%s) => {
+        $$create ??= %s;
+        return $$create($$source);
+    };
+}%s`, pre, declaration, sourceParam, builder.String(), post)
+				break
+			}
+
+			if !isClass || t.TypeArgs() != nil && t.TypeArgs().Len() > 0 &&
+				t.Obj().Pkg().Path() == m.Imports.Self && !m.Imports.ImportModels {
+				// Non-struct named types and concrete generic classes declared in
+				// this module require an indirect assignment to break cycles.
 
 				// Typescript cannot infer the return type on its own: add hints.
 				cast, argType, returnType := "", "", ""
@@ -280,42 +326,13 @@ func (m *module) PostponedCreates() []string {
 })`,
 					cast, pp.index, argType, returnType,
 					pp.index, pp.index,
-					pp.index, pre, m.JSCreateWithParams(t.Underlying(), pp.params), post,
+					pp.index, pre, builder.String(), post,
 					pp.index,
 				)[1:] // Remove initial newline.
-
-				// We're done.
 				break
 			}
 
-			var builder strings.Builder
-
-			builder.WriteString(pre)
-
-			if t.Obj().Pkg().Path() == m.Imports.Self {
-				if m.Imports.ImportModels {
-					builder.WriteString("$models.")
-				}
-			} else {
-				builder.WriteString(jsimport(m.Imports.External[t.Obj().Pkg().Path()]))
-				builder.WriteRune('.')
-			}
-			builder.WriteString(jsid(t.Obj().Name()))
-			builder.WriteString(".createFrom")
-
-			if t.TypeArgs() != nil && t.TypeArgs().Len() > 0 {
-				builder.WriteString("(")
-				for i := range t.TypeArgs().Len() {
-					if i > 0 {
-						builder.WriteString(", ")
-					}
-					builder.WriteString(m.JSCreateWithParams(t.TypeArgs().At(i), pp.params))
-				}
-				builder.WriteString(")")
-			}
-			builder.WriteString(post)
-
-			result[pp.index] = builder.String()
+			result[pp.index] = pre + builder.String() + post
 
 		case *types.Pointer:
 			result[pp.index] = fmt.Sprintf("%s$Create.Nullable(%s)%s", pre, m.JSCreateWithParams(t.Elem(), pp.params), post)
