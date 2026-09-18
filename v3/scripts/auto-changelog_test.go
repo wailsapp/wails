@@ -5,8 +5,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -120,17 +123,17 @@ func TestDocumentationURLForFile(t *testing.T) {
 	}{
 		{
 			name: "regular page",
-			file: "docs/src/content/docs/features/windows/options.mdx",
+			file: "docs/mpress/content/features/windows/options.mpd",
 			want: "https://v3.wails.io/features/windows/options",
 		},
 		{
 			name: "index page",
-			file: "docs/src/content/docs/guides/mobile/index.mdx",
+			file: "docs/mpress/content/guides/mobile/index.mpd",
 			want: "https://v3.wails.io/guides/mobile",
 		},
 		{
 			name: "localized page",
-			file: "docs/src/content/docs/de/quick-start/installation.mdx",
+			file: "docs/mpress/content/de/quick-start/installation.mpd",
 			want: "https://v3.wails.io/de/quick-start/installation",
 		},
 	}
@@ -149,7 +152,7 @@ func TestDocumentationURLForFile(t *testing.T) {
 }
 
 func TestDocumentationURLForSlug(t *testing.T) {
-	got, err := documentationURLFromPath("docs/src/content/docs/blog/legacy-name.md", "blog/the-road-to-wails-v3")
+	got, err := documentationURLFromPath("docs/mpress/content/blog/legacy-name.mpd", "blog/the-road-to-wails-v3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,11 +162,108 @@ func TestDocumentationURLForSlug(t *testing.T) {
 }
 
 func TestDocumentationURLForMissingFile(t *testing.T) {
-	got, err := documentationURLForFile("docs/src/content/docs/removed-by-pr.mdx")
+	got, err := documentationURLForFile("docs/mpress/content/removed-by-pr.mpd")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got != "" {
 		t.Fatalf("documentationURLForFile() = %q, want empty URL for a missing file", got)
+	}
+}
+
+func TestMPDFrontmatterSlug(t *testing.T) {
+	tests := []struct {
+		name, fields, want string
+		wantError          bool
+	}{
+		{name: "JSON objects", fields: `banner = {"content":"Welcome"}
+slug = "guides/custom-route"
+hero = {"actions":[{"text":"Start"}]}`, want: "guides/custom-route"},
+		{name: "no override", fields: `hero = {"slug":"not-a-page-route"}`},
+		{name: "JSON escaping", fields: `slug = "guides\u002fcustom-route"`, want: "guides/custom-route"},
+		{name: "invalid type", fields: `slug = {"path":"guide"}`, wantError: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			file := filepath.Join(t.TempDir(), "page.mpd")
+			source := "---\nschema = 1\n" + test.fields + "\n---\nBody"
+			if err := os.WriteFile(file, []byte(source), 0600); err != nil {
+				t.Fatal(err)
+			}
+			slug, err := readFrontmatterSlug(file)
+			if (err != nil) != test.wantError || slug != test.want {
+				t.Fatalf("slug = %q, err = %v; want %q, error %v", slug, err, test.want, test.wantError)
+			}
+		})
+	}
+}
+
+func TestDocumentationMetadataCorpus(t *testing.T) {
+	count := 0
+	err := filepath.WalkDir("../../docs/mpress/content", func(file string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() || filepath.Ext(file) != ".mpd" {
+			return nil
+		}
+		count++
+		_, err = readFrontmatterSlug(file)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count == 0 {
+		t.Fatal("no documentation pages checked")
+	}
+	t.Logf("checked metadata in %d documentation pages", count)
+}
+
+func TestLocalizedMPDSlug(t *testing.T) {
+	got, err := documentationURLFromPath("docs/mpress/content/id/contributing/index.mpd", "contributing")
+	if err != nil || got != "https://v3.wails.io/id/contributing" {
+		t.Fatalf("URL = %q, err = %v", got, err)
+	}
+}
+
+func TestDocumentationIgnoresNonMPD(t *testing.T) {
+	files := []string{"docs/legacy/guide.mdx", "docs/mpress/content/changelog.mpd", "docs/mpress/content/image.svg"}
+	for _, file := range files {
+		t.Run(file, func(t *testing.T) {
+			if isDocumentationPage(file) {
+				t.Errorf("%s must not produce a release-note documentation link", file)
+			}
+		})
+	}
+}
+
+func TestAppendDocumentationLinksKeepsFocusedChangesReadable(t *testing.T) {
+	entry := "Add a focused documentation page"
+	urls := []string{
+		"https://v3.wails.io/guides/one",
+		"https://v3.wails.io/guides/two",
+	}
+
+	got := appendDocumentationLinks(entry, urls)
+	want := entry + " — see [documentation](https://v3.wails.io/guides/one) and [documentation](https://v3.wails.io/guides/two)"
+	if got != want {
+		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
+	}
+}
+
+func TestAppendDocumentationLinksCollapsesBroadChanges(t *testing.T) {
+	entry := "Update the documentation translations"
+	urls := []string{
+		"https://v3.wails.io/one",
+		"https://v3.wails.io/two",
+		"https://v3.wails.io/three",
+		"https://v3.wails.io/four",
+	}
+
+	got := appendDocumentationLinks(entry, urls)
+	want := entry + " — see the [documentation site](https://v3.wails.io) (4 pages updated)"
+	if got != want {
+		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
 	}
 }
