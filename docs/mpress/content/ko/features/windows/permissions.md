@@ -75,11 +75,21 @@ WebView2에는 기본 권한 요청 메시지와 종류별 권한 API가 있습�
 
 즉, Windows에서 `Permissions`을 하나라도 구성하면 명시적으로 나열하지 않은 모든 기능은 사용자에게 알리지 않고 허용되는 대신 권한 요청 메시지를 표시합니다. 필요한 기능을 명시적으로 설정하십시오.
 
-### macOS (TCC)
+### macOS (WKWebView + TCC)
 
-macOS는 시스템 개인정보 보호 프레임워크를 통해 카메라, 마이크, 위치 정보 및 알림 접근을 관리합니다. 웹 콘텐츠에서 기능을 처음 요청하면 OS 메시지가 자동으로 표시되며, 사용자의 선택은 시스템 설정 → 개인정보 보호 및 보안에서 애플리케이션별로 기억됩니다.
+macOS에서는 두 계층의 허가가 필요합니다. WKWebView가 캡처 세션을 시작하기 전에 애플리케이션에 묻고, `Permissions` 맵이 이 요청에 응답합니다. 그 아래에서는 시스템 개인정보 보호 프레임워크 TCC가 장치 자체를 제어합니다. 앱이 실제로 카메라나 마이크에 처음 접근하면 OS 프롬프트가 표시되며, 선택은 시스템 설정 → 개인정보 보호 및 보안에 앱별로 저장됩니다.
 
-이는 `Permissions`을 구성하지 않아도 올바르게 작동합니다. 현재 macOS에서는 이 맵이 **무시됩니다**. 무엇을 설정하든 모든 요청이 TCC를 거칩니다. 실질적인 제약은 macOS에서 `PermissionDeny`이 아무 효과도 없다는 것입니다. TCC가 시스템 수준에서 이미 허용한 기능을 웹뷰에서 사용하지 못하도록 차단할 수 없습니다.
+Wails는 macOS 12 이상에서 **카메라와 마이크** 요청을 처리합니다. 위치 정보, 알림, 클립보드 읽기에는 해당하는 `WKUIDelegate`가 없어 연결되지 않았으며 TCC에 맡겨집니다. Linux와 마찬가지로 이 기능들에 설정한 정책은 효과가 없습니다.
+
+| 정책 | 카메라 / 마이크 | 위치 정보, 알림, 클립보드 |
+| --- | --- | --- |
+| `PermissionDefault` | WebKit 자체 권한 프롬프트 표시 | TCC만 적용 |
+| `PermissionAllow` | WebKit 프롬프트 생략 — **TCC는 계속 적용** | TCC만 적용 |
+| `PermissionDeny` | 장치에 접근하기 전에 거부 | TCC만 적용 |
+
+`PermissionAllow`는 웹뷰 요청을 허용하며 장치 자체를 허용하는 것은 아닙니다. 첫 캡처에서는 여전히 TCC 프롬프트가 표시되고, 사용자가 시스템 설정에서 거부한 앱은 계속 거부됩니다. 앱은 스스로 장치 접근 권한을 부여할 수 없습니다. `PermissionAllow`가 생략하는 것은 그 앞의 WebKit 프롬프트뿐입니다.
+
+macOS 12 미만에는 이 델리게이트 메서드가 없으므로 맵이 무시되고 모든 요청이 WebKit 프롬프트로 돌아갑니다.
 
 `Info.plist`에 적절한 사용 목적 설명 키가 포함되어 있는지 확인하십시오.
 
@@ -89,6 +99,21 @@ macOS는 시스템 개인정보 보호 프레임워크를 통해 카메라, 마�
 <key>NSCameraUsageDescription</key>
 <string>Used for video calls</string>
 ```
+
+@note{type="caution" title="Info.plist에 선언하지 않은 기능은 거부하세요"}
+
+사용 목적 설명 키 없이 요청이 AVFoundation에 도달하면 단순히 실패하는 것이 아니라 macOS가 앱을 종료합니다.
+
+`PermissionDefault`는 영 값입니다. 따라서 `{PermissionMicrophone: PermissionAllow}`만 설정하면 카메라는 WebKit 프롬프트를 계속 사용합니다. 사용자가 허용했는데 앱에 `NSMicrophoneUsageDescription`만 선언되어 있으면 앱이 종료됩니다. 사용 목적 설명이 없는 모든 기능에는 `PermissionDeny`를 명시하세요.
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionDeny,
+},
+```
+
+@end
 
 ## 일반적인 패턴
 
@@ -103,7 +128,7 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-<strong>Linux</strong>에서는 두 장치가 모두 명시적으로 허용되며, 다른 기능은 계속 거부됩니다. <strong>Windows</strong>에서는 두 기능이 모두 허용되며, 목록에 지정하지 않은 다른 기능에는 네이티브 프롬프트가 표시됩니다. <strong>macOS</strong>에서는 아무 효과가 없으며, 모든 권한은 TCC에서 처리합니다.
+<strong>Linux</strong>에서는 두 장치가 모두 명시적으로 허용되며, 다른 기능은 계속 거부됩니다. <strong>Windows</strong>에서는 두 기능이 모두 허용되며, 목록에 지정하지 않은 다른 기능에는 네이티브 프롬프트가 표시됩니다. **macOS**에서는 두 장치를 WebKit 계층에서 허용하여 브라우저 프롬프트가 표시되지 않습니다. TCC는 첫 사용 시 장치 자체에 대한 접근을 계속 묻고, 두 사용 목적 설명 키가 모두 `Info.plist`에 있어야 합니다.
 
 ### Linux에서 미디어 캡처 거부
 
@@ -182,11 +207,13 @@ Windows에서의 평가 순서는 다음과 같습니다.
 
 | 기능 | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| 마이크 | ✅ | ✅ | TCC에서만 처리 |
-| 카메라 | ✅ | ✅ | TCC에서만 처리 |
-| 위치 정보 | ❌ 아직 지원되지 않음 | ✅ | TCC에서만 처리 |
-| 알림 | ❌ 아직 지원되지 않음 | ✅ | TCC에서만 처리 |
-| 클립보드 읽기 | ❌ 아직 지원되지 않음 | ✅ | TCC에서만 처리 |
+| 마이크 | ✅ | ✅ | ✅ (macOS 12+) |
+| 카메라 | ✅ | ✅ | ✅ (macOS 12+) |
+| 위치 정보 | ❌ 아직 지원되지 않음 | ✅ | ❌ 아직 지원되지 않음 |
+| 알림 | ❌ 아직 지원되지 않음 | ✅ | ❌ 아직 지원되지 않음 |
+| 클립보드 읽기 | ❌ 아직 지원되지 않음 | ✅ | ❌ 아직 지원되지 않음 |
+
+macOS의 ✅는 정책이 WebKit 요청에 응답한다는 뜻이며 TCC가 추가로 장치를 제어합니다. ❌인 기능은 TCC에만 맡겨집니다.
 
 ## 문제 해결
 
@@ -200,7 +227,11 @@ Windows에서의 평가 순서는 다음과 같습니다.
 
 **macOS 권한이 작동하지 않음**
 
-`Permissions` 맵은 macOS에서 아무 효과가 없습니다. `Info.plist`에 올바른 사용 목적 설명 키(`NSMicrophoneUsageDescription`, `NSCameraUsageDescription` 등)가 포함되어 있는지, 그리고 사용자가 시스템 설정 → 개인정보 보호 및 보안에서 접근을 허용했는지 확인하세요.
+`Permissions`는 macOS 12 이상의 카메라와 마이크에 적용됩니다. 위치 정보, 알림, 클립보드 읽기는 아직 연결되지 않아 정책을 무시합니다. TCC는 계속 장치를 제어하므로 `PermissionAllow`는 WebKit 프롬프트만 없애고 시스템 프롬프트는 유지합니다. `Info.plist`의 `NSMicrophoneUsageDescription`, `NSCameraUsageDescription` 키와 시스템 설정 → 개인정보 보호 및 보안의 접근 허가를 확인하세요.
+
+**웹 콘텐츠가 카메라나 마이크를 요청하면 macOS 앱이 종료됩니다**
+
+사용 목적 설명 키 없이 요청이 AVFoundation에 도달하면 단순히 실패하는 것이 아니라 macOS가 앱을 종료합니다. 해당 키를 추가하거나 그 기능에 `PermissionDeny`를 설정하여 요청이 AVFoundation에 도달하지 않게 하세요. `PermissionDefault`는 사용자가 허용할 수 있는 WebKit 프롬프트를 남겨 둡니다.
 
 **Linux에서 위치 정보/알림/클립보드 설정이 적용되지 않음**
 
