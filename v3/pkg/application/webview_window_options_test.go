@@ -109,6 +109,100 @@ func TestMacBackdrop_Constants(t *testing.T) {
 	}
 }
 
+func TestMacWindowClassZeroValueCreatesWindow(t *testing.T) {
+	var options WebviewWindowOptions
+	if options.Mac.WindowClass != MacWindowClassWindow {
+		t.Fatalf("zero-value Mac.WindowClass = %d, want MacWindowClassWindow", options.Mac.WindowClass)
+	}
+	if options.Mac.PanelPreferences != (MacPanelPreferences{}) {
+		t.Fatalf("zero-value Mac.PanelPreferences = %#v, want empty preferences", options.Mac.PanelPreferences)
+	}
+}
+
+func TestEffectiveMacWindowLevel(t *testing.T) {
+	tests := []struct {
+		name    string
+		options WebviewWindowOptions
+		want    MacWindowLevel
+	}{
+		{
+			name: "zero value is normal",
+			want: MacWindowLevelNormal,
+		},
+		{
+			name: "always on top defaults to floating",
+			options: WebviewWindowOptions{
+				AlwaysOnTop: true,
+			},
+			want: MacWindowLevelFloating,
+		},
+		{
+			name: "floating panel defaults to floating",
+			options: WebviewWindowOptions{
+				Mac: MacWindow{
+					WindowClass: MacWindowClassPanel,
+					PanelPreferences: MacPanelPreferences{
+						FloatingPanel: true,
+					},
+				},
+			},
+			want: MacWindowLevelFloating,
+		},
+		{
+			name: "panel preferences are ignored for normal windows",
+			options: WebviewWindowOptions{
+				Mac: MacWindow{
+					PanelPreferences: MacPanelPreferences{
+						FloatingPanel: true,
+					},
+				},
+			},
+			want: MacWindowLevelNormal,
+		},
+		{
+			name: "explicit level overrides always on top",
+			options: WebviewWindowOptions{
+				AlwaysOnTop: true,
+				Mac: MacWindow{
+					WindowLevel: MacWindowLevelPopUpMenu,
+				},
+			},
+			want: MacWindowLevelPopUpMenu,
+		},
+		{
+			name: "explicit normal level overrides always on top",
+			options: WebviewWindowOptions{
+				AlwaysOnTop: true,
+				Mac: MacWindow{
+					WindowLevel: MacWindowLevelNormal,
+				},
+			},
+			want: MacWindowLevelNormal,
+		},
+		{
+			name: "explicit level overrides floating panel",
+			options: WebviewWindowOptions{
+				Mac: MacWindow{
+					WindowClass: MacWindowClassPanel,
+					WindowLevel: MacWindowLevelStatus,
+					PanelPreferences: MacPanelPreferences{
+						FloatingPanel: true,
+					},
+				},
+			},
+			want: MacWindowLevelStatus,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := effectiveMacWindowLevel(test.options); got != test.want {
+				t.Fatalf("effectiveMacWindowLevel() = %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
 func TestMacToolbarStyle_Constants(t *testing.T) {
 	if MacToolbarStyleAutomatic != 0 {
 		t.Error("MacToolbarStyleAutomatic should be 0")

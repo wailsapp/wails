@@ -31,6 +31,9 @@ func init() {
 }
 
 func main() {
+	if os.Getenv("WAILS_MCP_CHILD") == "1" {
+		commands.DisableFooter = true
+	}
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
@@ -43,6 +46,7 @@ func main() {
 	})
 
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
+	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
 
 	app.NewSubCommandFunction("migrate", "Migrate a Wails v2 project to v3 (experimental)", commands.Migrate)
 
@@ -96,6 +100,8 @@ func main() {
 	plugin.NewSubCommandFunction("init", "Initialise a new service", commands.ServiceInit)
 
 	tool := app.NewSubCommand("tool", "Various tools")
+	tool.NewSubCommandFunction("msix", "Create a Windows MSIX package", commands.ToolMSIX)
+	tool.NewSubCommand("msix-install-tools", "Install Windows MSIX packaging tools").Action(commands.InstallMSIXTools)
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)

@@ -390,6 +390,18 @@ func (w *linuxWebviewWindow) run() {
 	if w.parent.options.BackgroundType != BackgroundTypeSolid {
 		w.setTransparent()
 		w.setBackgroundColour(w.parent.options.BackgroundColour)
+	} else if w.parent.options.BackgroundColour.Alpha == 255 {
+		// Pin the webview's base colour for a solid window with an explicit opaque
+		// background, here — before setURL() below starts the first paint. WebKitGTK
+		// latches the base as the accelerated-compositing clear colour at first
+		// composite and does NOT refresh it from a later set_background_color call,
+		// so a base left at the WebKitGTK default (opaque white) is briefly exposed
+		// whenever the compositor re-tiles during animation: a periodic light flash
+		// on a dark page. (The page's own runtime theme repaint arrives after that
+		// first composite, so it can't fix the already-latched clear colour — the
+		// colour must be set now.) A zero/non-opaque colour is left to the WebKitGTK
+		// default so a solid window is never made accidentally see-through.
+		w.setBackgroundColour(w.parent.options.BackgroundColour)
 	}
 
 	w.setFrameless(w.parent.options.Frameless)

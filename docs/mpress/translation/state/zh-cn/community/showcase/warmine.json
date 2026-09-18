@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "6e901493ef796ab4cf3d",
+  "sourceFile": "community/showcase/warmine.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "8c5d08c28000f91e8034b2299418ed3905ac9613a81b957fc410966b885646d2",
+      "targetHash": "48f3d9c692052d0f66f7af1d64b6b3e858a02713065574eef6459b510c50f2a8",
+      "machineHash": "48f3d9c692052d0f66f7af1d64b6b3e858a02713065574eef6459b510c50f2a8",
+      "machineText": "![WarMine 截图](/assets/showcase-images/warmine1.png)\\\n![WarMine 截图](/assets/showcase-images/warmine2.png)",
+      "status": "final",
+      "sourcePreview": "![WarMine Screenshot](/assets/showcase-images/warmine1.png)\\ ![WarMine Screenshot](/assets/showcase-…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "79036e3fd9f0d92c72a77bdab1f5ea90e9e903ab22d9530d388ae5d121aee186",
+      "targetHash": "53feee8671a45415cca5238adeefb834294486e9f3c426c310cabe641a17525f",
+      "machineHash": "53feee8671a45415cca5238adeefb834294486e9f3c426c310cabe641a17525f",
+      "machineText": "[WarMine 的 Minecraft 启动器](https://warmine.ru/)是一款 Wails 应用程序，\\\n可让你轻松加入使用模组的游戏服务器并管理游戏账户。",
+      "status": "final",
+      "sourcePreview": "[Minecraft launcher for WarMine](https://warmine.ru/) is a Wails application,\\ that allows you to ea…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "38b6ff5a6329471d59360a012520bbc2465d0ad34d72c2d40f891e0b9e8de0a4",
+      "targetHash": "e71c03d8f7190c5433a8ad67765102ae2b4f6a64d16981db081d705eefa0a3e0",
+      "machineHash": "e71c03d8f7190c5433a8ad67765102ae2b4f6a64d16981db081d705eefa0a3e0",
+      "machineText": "该启动器会下载游戏文件、检查其完整性，并使用后端提供的丰富启动参数自定义选项\\\n启动游戏。",
+      "status": "final",
+      "sourcePreview": "The Launcher downloads the game files, checks their integrity and launches the\\ game with a wide ran…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "e5c9174e162156d69cd7fdbc5cc0d93f838bc98389d3c0d5a412cda5ee282a08",
+      "targetHash": "6d0c5972e26850a11fb57c301c1394cdd3486de277c981858cf70f38bbc1ce2f",
+      "machineHash": "6d0c5972e26850a11fb57c301c1394cdd3486de277c981858cf70f38bbc1ce2f",
+      "machineText": "前端使用 Svelte 编写，整个启动器大小仅为 9MB，并支持 Windows\\\n7-11。",
+      "status": "final",
+      "sourcePreview": "Frontend is written in Svelte, whole launcher fits in 9MB and supports Windows\\ 7-11.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "b8dc39642df62575ea6947be6b3be410d5b9dc980d622212afce873db5424d38",
+      "targetHash": "c33855555240893ee414eeeedf0aaff05c5241c5539747ca0e0217fedf36dd60",
+      "machineHash": "c33855555240893ee414eeeedf0aaff05c5241c5539747ca0e0217fedf36dd60",
+      "machineText": "WarMine 的 Minecraft 启动器",
+      "status": "final",
+      "sourcePreview": "Minecraft launcher for WarMine",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

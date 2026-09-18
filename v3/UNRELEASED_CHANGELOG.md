@@ -17,17 +17,12 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Document Phase 10 beta verification completion in implementation details in [PR](https://github.com/wailsapp/wails/pull/5881) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
-- Pass window handle to Windows dark-mode API and validate arguments in [PR](https://github.com/wailsapp/wails/pull/5877) by @leaanthony
-- Centralize macOS title-bar button state resolution for frameless windows in [PR](https://github.com/wailsapp/wails/pull/5870) by @taliesin-ai
-- Prevent unreadable native menu text when a Windows application requests dark mode while the Windows app theme is light. The menu now uses the matching light native background until Windows can render dark menu text.
-- Fix unreadable native menus on Windows 10 1809 / Windows Server 2019 (build 17763). The dark-mode uxtheme exports were gated on build 18334, so the app-level dark-mode opt-in never ran on those hosts: the menu background was painted dark but Windows kept drawing menu text in the light theme, leaving dark text on a dark background. The ordinals exist from 17763, so the gate now matches.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

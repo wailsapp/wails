@@ -61,6 +61,14 @@ tasks:
     cmds:
       - npm run build:docs:md
 
+  build:package:
+    desc: Build the @wailsio/runtime npm package (dist/) — what an app's frontend imports, as opposed to the bundles the webview loads.
+    dir: desktop/@wailsio/runtime
+    deps:
+      - install-deps
+    cmds:
+      - npm run build:code
+
   build:assets:
     desc: Rebuild only the embedded runtime bundles (bundledassets); CI verifies PR bundles against this exact output.
     deps:
