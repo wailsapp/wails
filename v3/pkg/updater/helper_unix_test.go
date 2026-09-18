@@ -273,6 +273,73 @@ func TestRunHelperSwap_CrossDeviceFile(t *testing.T) {
 	}
 }
 
+// dirNames returns the base names of dir's entries. Staging tests use it to
+// assert no temporary sibling survives a staged swap.
+func dirNames(t *testing.T, dir string) []string {
+	t.Helper()
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	names := make([]string, 0, len(entries))
+	for _, e := range entries {
+		names = append(names, e.Name())
+	}
+	return names
+}
+
+// TestRenameOrCopy_StagedFileSwap verifies the EXDEV file path lands via a
+// temporary sibling: dst ends complete, src is removed, and no staging file
+// is left behind.
+func TestRenameOrCopy_StagedFileSwap(t *testing.T) {
+	dir := t.TempDir()
+	src := filepath.Join(dir, "src.bin")
+	dst := filepath.Join(dir, "dst.bin")
+	writeFile(t, src, []byte("NEW"))
+	writeFile(t, dst, []byte("OLD"))
+	withRenameFunc(t, func(oldpath, newpath string) error {
+		return crossDeviceErr(oldpath, newpath)
+	})
+
+	if err := renameOrCopy(src, dst); err != nil {
+		t.Fatalf("renameOrCopy: %v", err)
+	}
+	if got := readFile(t, dst); string(got) != "NEW" {
+		t.Errorf("dst contents: %q (want NEW)", got)
+	}
+	if got := dirNames(t, dir); len(got) != 1 || got[0] != "dst.bin" {
+		t.Errorf("dir entries after swap: %q (want only dst.bin)", got)
+	}
+}
+
+// TestRenameOrCopy_StagingFailurePreservesDst forces the staged copy to fail
+// (unreadable src) and verifies dst keeps its complete original contents,
+// src is left alone, and the staging file is cleaned up.
+func TestRenameOrCopy_StagingFailurePreservesDst(t *testing.T) {
+	dir := t.TempDir()
+	src := filepath.Join(dir, "src.bin")
+	dst := filepath.Join(dir, "dst.bin")
+	writeFile(t, src, []byte("NEW"))
+	if err := os.Chmod(src, 0o000); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(src, 0o644) })
+	writeFile(t, dst, []byte("OLD"))
+	withRenameFunc(t, func(oldpath, newpath string) error {
+		return crossDeviceErr(oldpath, newpath)
+	})
+
+	if err := renameOrCopy(src, dst); err == nil {
+		t.Fatal("expected error for unreadable src")
+	}
+	if got := readFile(t, dst); string(got) != "OLD" {
+		t.Errorf("dst must keep its complete original, got %q", got)
+	}
+	if got := dirNames(t, dir); len(got) != 2 {
+		t.Errorf("dir entries after failed swap: %q (want src+dst only)", got)
+	}
+}
+
 // End-to-end recovery for a failed directory swap: after bothDirs clears the
 // target slot, a non-EXDEV rename failure must fall through to the backup
 // restore — original bundle back at target, relaunched, no helper env.

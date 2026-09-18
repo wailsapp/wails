@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"syscall"
 )
 
@@ -53,13 +54,20 @@ func replaceTarget(target, newPath string) error {
 
 // renameOrCopy attempts to move src to dst via rename. If it fails
 // specifically because src and dst are on different filesystems (EXDEV), it
-// transparently falls back to a copy-and-delete strategy reusing copyAny so
-// both files and .app directories are handled with modes and fsync intact.
+// transparently falls back to a copy-and-delete strategy.
+//
+// Files are staged through a temporary sibling beside dst that is synced
+// and then atomically renamed into place, so a crash mid-copy can never
+// leave a partial binary at dst: either the complete old file or the
+// complete new file is there. Directories (.app bundles) cannot be
+// atomically replaced on Unix, so those still copy straight onto the
+// cleared slot; every failure mode where the helper process survives is
+// covered by the outer backup/restore in runHelperSwap.
 //
 // All other rename errors (permission denied, missing source, etc.) are
 // returned as-is so the caller sees the real failure reason and —
 // critically — the original at dst is left untouched for the outer
-// backup/restore in runHelperSwap instead of being deleted first.
+// backup/restore instead of being deleted first.
 func renameOrCopy(src, dst string) error {
 	err := renameFunc(src, dst)
 	if err == nil {
@@ -69,11 +77,53 @@ func renameOrCopy(src, dst string) error {
 		return err
 	}
 
-	if err := copyAny(src, dst); err != nil {
+	info, err := os.Stat(src)
+	if err != nil {
 		return fmt.Errorf("cross-device copy %s -> %s: %w", src, dst, err)
+	}
+	if info.IsDir() {
+		if err := copyAny(src, dst); err != nil {
+			return fmt.Errorf("cross-device copy %s -> %s: %w", src, dst, err)
+		}
+	} else if err := stageFileCopy(src, dst, info.Mode()); err != nil {
+		return err
 	}
 
 	_ = os.RemoveAll(src)
+	return nil
+}
+
+// stageFileCopy copies the file at src to dst via a temporary sibling in
+// dst's directory. The staging file carries src's mode, is synced to stable
+// storage, and is then atomically renamed over dst — dst holds either the
+// complete old or the complete new file, never a partial write. Any staging
+// file left behind by a failure is removed before returning.
+func stageFileCopy(src, dst string, mode os.FileMode) error {
+	tmp, err := os.CreateTemp(filepath.Dir(dst), ".wails-update-*")
+	if err != nil {
+		return fmt.Errorf("cross-device copy %s -> %s: %w", src, dst, err)
+	}
+	tmpName := tmp.Name()
+	_ = tmp.Close()
+	cleanup := func() { _ = os.Remove(tmpName) }
+
+	// copyFile truncates the already-created staging file without
+	// re-applying the mode, so set it explicitly before the swap.
+	if err := copyFile(src, tmpName, mode); err != nil {
+		cleanup()
+		return fmt.Errorf("cross-device copy %s -> %s: %w", src, dst, err)
+	}
+	if err := os.Chmod(tmpName, mode); err != nil {
+		cleanup()
+		return fmt.Errorf("cross-device copy %s -> %s: %w", src, dst, err)
+	}
+	// Same-directory swap: provably the same filesystem, so this cannot
+	// EXDEV. Plain os.Rename (not renameFunc) is deliberate — renameFunc
+	// exists only to simulate the cross-device src→dst move under test.
+	if err := os.Rename(tmpName, dst); err != nil {
+		cleanup()
+		return fmt.Errorf("cross-device copy %s -> %s: %w", src, dst, err)
+	}
 	return nil
 }
 
