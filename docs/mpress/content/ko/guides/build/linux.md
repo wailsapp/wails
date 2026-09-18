@@ -154,7 +154,17 @@ go build -tags gtk3 -o myapp .
 
 설정을 확인하려면 `wails3 doctor`을 실행하세요. 플래그를 지정하지 않으면 기본값인 GTK4 / WebKitGTK 6.0를 확인합니다. 레거시 GTK3 / WebKit2GTK 4.1 패키지는 선택 사항으로 표시됩니다.
 
+## 오디오 및 비디오
+
+포함된 클립에는 [로컬 오디오 및 비디오 재생](/guides/linux-media/)에서 설명하는 `Media.SetSource`와 `Media.ClearSource`를 사용하세요. 이 안내서는 미디어 파일 시스템 등록, 로드 취소, blob 해제 및 크기 제한을 다룹니다. 전송은 수신 소켓을 열지 않고 Wails 스트림을 사용하며, 각 클립은 재생 전에 완전히 로드됩니다. 프런트엔드 기본 제한은 32 MiB입니다.
+
+배포 요구 사항에 미디어 형식에 필요한 GStreamer 코덱을 포함하세요. 전송 성공이 대상 시스템의 파일 디코딩 가능 여부를 보장하지는 않습니다. 지원하는 Linux 배포판에서 재생을 테스트하세요.
+
 ## 문제 해결
+
+### 로컬 오디오 또는 비디오가 재생되지 않음
+
+GStreamer가 **No URI handler implemented for "wails"**를 보고하면 [로컬 미디어 재생 안내서](/guides/linux-media/)를 따르세요. 클립은 로드되지만 재생에 실패하면 코덱 요구 사항과 플레이어의 `error` 이벤트를 확인하세요.
 
 ### AppImage가 실행되지 않음
 

@@ -154,7 +154,17 @@ go build -tags gtk3 -o myapp .
 
 Exécutez `wails3 doctor` pour vérifier votre configuration. Sans aucune option, cette commande vérifie la présence de GTK4 / WebKitGTK 6.0, qui sont utilisés par défaut. Les paquets hérités GTK3 / WebKit2GTK 4.1 sont indiqués comme facultatifs.
 
+## Audio et vidéo
+
+Pour les clips intégrés, utilisez `Media.SetSource` et `Media.ClearSource` comme indiqué dans [Lire des fichiers audio et vidéo locaux](/guides/linux-media/). Le guide couvre l’enregistrement d’un système de fichiers multimédias, l’annulation des chargements, la libération des blobs et les limites de taille. Les transferts utilisent les flux Wails sans ouvrir de socket d’écoute ; chaque clip est entièrement chargé avant la lecture, avec une limite frontend par défaut de 32 MiB.
+
+Incluez les codecs GStreamer nécessaires à vos formats multimédias dans les prérequis de distribution. Un transfert réussi ne garantit pas que le système cible puisse décoder le fichier. Testez la lecture sur les distributions Linux prises en charge.
+
 ## Dépannage
+
+### L’audio ou la vidéo locale ne se lit pas
+
+Si GStreamer indique **No URI handler implemented for "wails"**, suivez le [guide de lecture multimédia locale](/guides/linux-media/). Si le clip se charge mais ne se lit pas, vérifiez les codecs requis et l’événement `error` du lecteur.
 
 ### AppImage ne s’exécute pas
 

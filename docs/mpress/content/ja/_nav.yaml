@@ -168,6 +168,8 @@
           link: "/guides/dev/debugging/"
         - label: "テスト"
           link: "/guides/testing/"
+        - label: "ローカルの音声と動画を再生する"
+          link: "/guides/linux-media/"
     - label: "ビルドとパッケージ化"
       collapsed: true
       items:

@@ -168,6 +168,8 @@
           link: "/guides/dev/debugging/"
         - label: "Pengujian"
           link: "/guides/testing/"
+        - label: "Memutar Audio dan Video Lokal"
+          link: "/guides/linux-media/"
     - label: "Build & Pemaketan"
       collapsed: true
       items:
