@@ -6,7 +6,7 @@ sourcePath: "community/showcase/index.md"
 ---
 
 @note{type="tip" title="プロジェクトを追加する方法を見る"}
- [ショーケースにプロジェクトを追加する方法](#heading)のセクションを参照してください。
+[ショーケースにプロジェクトを追加する方法](#heading)のセクションを参照してください。
 
 @end
 
