@@ -16,7 +16,7 @@ export function processDefaultContextMenu(event) {
         case "hide":
             event.preventDefault();
             return;
-        default:
+        default: {
             // Check if contentEditable is true
             if (element.isContentEditable) {
                 return;
@@ -46,5 +46,6 @@ export function processDefaultContextMenu(event) {
 
             // hide default context menu
             event.preventDefault();
+        }
     }
 }

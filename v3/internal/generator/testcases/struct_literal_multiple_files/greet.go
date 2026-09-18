@@ -1,9 +1,5 @@
 package main
 
-import (
-	_ "embed"
-)
-
 type GreetService struct {
 	SomeVariable int
 	lowerCase    string

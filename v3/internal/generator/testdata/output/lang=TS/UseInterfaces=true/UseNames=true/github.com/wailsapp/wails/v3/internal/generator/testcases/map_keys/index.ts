@@ -7,22 +7,15 @@ export {
 };
 
 export type {
-    BasicCstrAlias,
-    ComparableCstrAlias,
     EmbeddedCustomInterface,
     EmbeddedOriginalInterface,
     EmbeddedPointer,
     EmbeddedPointerPtr,
     EmbeddedValue,
     EmbeddedValuePtr,
-    GoodTildeCstrAlias,
     IntAlias,
     IntType,
-    InterfaceCstrAlias,
     Maps,
-    MixedCstrAlias,
-    NonBasicCstrAlias,
-    PointableCstrAlias,
     PointerAlias,
     PointerTextMarshaler,
     StringAlias,

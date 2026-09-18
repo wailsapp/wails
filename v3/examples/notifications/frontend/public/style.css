@@ -43,6 +43,48 @@ a:hover {
 .controls {
     display: flex;
     gap: 1em;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.builder {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5em 1em;
+    max-width: 720px;
+    width: 100%;
+    margin: 0.5em 0;
+    text-align: left;
+}
+
+.builder label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85em;
+    gap: 0.25em;
+}
+
+.builder label.checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.builder input[type="text"],
+.builder input:not([type]),
+.builder input[type="number"],
+.builder select {
+    padding: 4px 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: inherit;
+}
+
+.builder .controls {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    margin-top: 0.5em;
 }
 
 button {
@@ -96,6 +138,13 @@ h1, h3 {
 
 .logo.vanilla:hover {
     filter: drop-shadow(0 0 2em #f7df1eaa);
+}
+
+.status {
+    margin-top: 1rem;
+    text-align: center;
+    font-style: italic;
+    opacity: 0.85;
 }
 
 .footer {

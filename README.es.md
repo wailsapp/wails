@@ -43,7 +43,7 @@
 [English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md) ·
 [한국어](README.ko.md) · [Español](README.es.md) · [Português](README.pt-br.md) ·
 [Русский](README.ru.md) · [Francais](README.fr.md) · [Uzbek](README.uz.md) · [Deutsch](README.de.md) ·
-[Türkçe](README.tr.md)
+[Türkçe](README.tr.md) · [Bahasa Indonesia](README.id.md)
 
 </samp>
 </strong>
@@ -137,7 +137,9 @@ Este Proyecto cuenta con el apoyo de estas amables personas/ compañías:
 
 ## Estrellas a lo Largo del Tiempo
 
-[![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Star History Chart" src="website/static/img/star-history.svg" width="800" />
+</a>
 
 ## Colaboradores
 

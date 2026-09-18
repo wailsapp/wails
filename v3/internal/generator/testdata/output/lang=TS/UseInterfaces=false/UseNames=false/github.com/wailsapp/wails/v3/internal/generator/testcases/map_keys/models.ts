@@ -5,10 +5,6 @@
 // @ts-ignore: Unused imports
 import { Create as $Create } from "/wails/runtime.js";
 
-export type BasicCstrAlias<S> = S;
-
-export type ComparableCstrAlias<R> = R;
-
 export type EmbeddedCustomInterface = string;
 
 export type EmbeddedOriginalInterface = string;
@@ -21,13 +17,9 @@ export type EmbeddedValue = string;
 
 export type EmbeddedValuePtr = string;
 
-export type GoodTildeCstrAlias<U> = U;
-
 export type IntAlias = number;
 
 export type IntType = number;
-
-export type InterfaceCstrAlias<Y> = Y;
 
 export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
@@ -478,17 +470,7 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Soft reject
      */
-    "GAR": { [_ in string]?: number };
-
-    /**
-     * Soft reject
-     */
     "GARPtr": { [_ in string]?: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAS": { [_ in string]?: number };
 
     /**
      * Soft reject
@@ -498,17 +480,7 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Soft reject
      */
-    "GAT": { [_ in string]?: number };
-
-    /**
-     * Soft reject
-     */
     "GATPtr": { [_ in string]?: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAU": { [_ in string]?: number };
 
     /**
      * Soft reject
@@ -516,19 +488,9 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     "GAUPtr": { [_ in string]?: number };
 
     /**
-     * Accept, hide
-     */
-    "GAV": { [_ in string]?: number };
-
-    /**
      * Soft reject
      */
     "GAVPtr": { [_ in string]?: number };
-
-    /**
-     * Soft reject
-     */
-    "GAW": { [_ in string]?: number };
 
     /**
      * Accept, hide
@@ -536,19 +498,9 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     "GAWPtr": { [_ in string]?: number };
 
     /**
-     * Accept, hide
-     */
-    "GAX": { [_ in string]?: number };
-
-    /**
      * Soft reject
      */
     "GAXPtr": { [_ in string]?: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAY": { [_ in string]?: number };
 
     /**
      * Soft reject
@@ -556,29 +508,9 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     "GAYPtr": { [_ in string]?: number };
 
     /**
-     * Accept, hide
-     */
-    "GAZ": { [_ in string]?: number };
-
-    /**
      * Soft reject
      */
     "GAZPtr": { [_ in string]?: number };
-
-    /**
-     * Accept
-     */
-    "GACi": { [_ in ComparableCstrAlias<number>]?: number };
-
-    /**
-     * Accept
-     */
-    "GACV": { [_ in ComparableCstrAlias<ValueTextMarshaler>]?: number };
-
-    /**
-     * Reject
-     */
-    "GACP": { [_ in string]?: number };
 
     /**
      * Reject
@@ -596,16 +528,6 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     "GACPPtr": { [_ in string]?: number };
 
     /**
-     * Accept
-     */
-    "GABi": { [_ in BasicCstrAlias<number>]?: number };
-
-    /**
-     * Accept
-     */
-    "GABs": { [_ in BasicCstrAlias<string>]?: number };
-
-    /**
      * Reject
      */
     "GABiPtr": { [_ in string]?: number };
@@ -613,32 +535,12 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     /**
      * Reject
      */
-    "GABT": { [_ in string]?: number };
-
-    /**
-     * Reject
-     */
     "GABTPtr": { [_ in string]?: number };
-
-    /**
-     * Accept
-     */
-    "GAGT": { [_ in GoodTildeCstrAlias<ValueTextMarshaler>]?: number };
 
     /**
      * Accept, hide
      */
     "GAGTPtr": { [_ in string]?: number };
-
-    /**
-     * Accept
-     */
-    "GANBV": { [_ in NonBasicCstrAlias<ValueTextMarshaler>]?: number };
-
-    /**
-     * Accept, hide
-     */
-    "GANBP": { [_ in string]?: number };
 
     /**
      * Accept, hide
@@ -651,26 +553,6 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     "GANBPPtr": { [_ in string]?: number };
 
     /**
-     * Accept
-     */
-    "GAPlV1": { [_ in PointableCstrAlias<ValueTextMarshaler>]?: number };
-
-    /**
-     * Accept
-     */
-    "GAPlV2": { [_ in PointableCstrAlias<ValueTextMarshaler>]?: number };
-
-    /**
-     * Reject
-     */
-    "GAPlP1": { [_ in string]?: number };
-
-    /**
-     * Accept
-     */
-    "GAPlP2": { [_ in PointableCstrAlias<PointerTextMarshaler>]?: number };
-
-    /**
      * Accept, hide
      */
     "GAPlVPtr": { [_ in string]?: number };
@@ -681,21 +563,6 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
     "GAPlPPtr": { [_ in string]?: number };
 
     /**
-     * Accept
-     */
-    "GAMi": { [_ in MixedCstrAlias<number>]?: number };
-
-    /**
-     * Accept
-     */
-    "GAMS": { [_ in MixedCstrAlias<StringType>]?: number };
-
-    /**
-     * Accept
-     */
-    "GAMV": { [_ in MixedCstrAlias<ValueTextMarshaler>]?: number };
-
-    /**
      * Reject
      */
     "GAMSPtr": { [_ in string]?: number };
@@ -704,21 +571,6 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
      * Accept, hide
      */
     "GAMVPtr": { [_ in string]?: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAII": { [_ in string]?: number };
-
-    /**
-     * Accept
-     */
-    "GAIV": { [_ in InterfaceCstrAlias<ValueTextMarshaler>]?: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAIP": { [_ in string]?: number };
 
     /**
      * Reject
@@ -734,16 +586,6 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
      * Reject
      */
     "GAIPPtr": { [_ in string]?: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAPrV": { [_ in string]?: number };
-
-    /**
-     * Accept, hide
-     */
-    "GAPrP": { [_ in string]?: number };
 
     /**
      * Reject
@@ -1024,68 +866,32 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         if (!("TPZPtr" in $$source)) {
             this["TPZPtr"] = {};
         }
-        if (!("GAR" in $$source)) {
-            this["GAR"] = {};
-        }
         if (!("GARPtr" in $$source)) {
             this["GARPtr"] = {};
-        }
-        if (!("GAS" in $$source)) {
-            this["GAS"] = {};
         }
         if (!("GASPtr" in $$source)) {
             this["GASPtr"] = {};
         }
-        if (!("GAT" in $$source)) {
-            this["GAT"] = {};
-        }
         if (!("GATPtr" in $$source)) {
             this["GATPtr"] = {};
-        }
-        if (!("GAU" in $$source)) {
-            this["GAU"] = {};
         }
         if (!("GAUPtr" in $$source)) {
             this["GAUPtr"] = {};
         }
-        if (!("GAV" in $$source)) {
-            this["GAV"] = {};
-        }
         if (!("GAVPtr" in $$source)) {
             this["GAVPtr"] = {};
-        }
-        if (!("GAW" in $$source)) {
-            this["GAW"] = {};
         }
         if (!("GAWPtr" in $$source)) {
             this["GAWPtr"] = {};
         }
-        if (!("GAX" in $$source)) {
-            this["GAX"] = {};
-        }
         if (!("GAXPtr" in $$source)) {
             this["GAXPtr"] = {};
-        }
-        if (!("GAY" in $$source)) {
-            this["GAY"] = {};
         }
         if (!("GAYPtr" in $$source)) {
             this["GAYPtr"] = {};
         }
-        if (!("GAZ" in $$source)) {
-            this["GAZ"] = {};
-        }
         if (!("GAZPtr" in $$source)) {
             this["GAZPtr"] = {};
-        }
-        if (!("GACi" in $$source)) {
-            this["GACi"] = {};
-        }
-        if (!("GACV" in $$source)) {
-            this["GACV"] = {};
-        }
-        if (!("GACP" in $$source)) {
-            this["GACP"] = {};
         }
         if (!("GACiPtr" in $$source)) {
             this["GACiPtr"] = {};
@@ -1096,32 +902,14 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         if (!("GACPPtr" in $$source)) {
             this["GACPPtr"] = {};
         }
-        if (!("GABi" in $$source)) {
-            this["GABi"] = {};
-        }
-        if (!("GABs" in $$source)) {
-            this["GABs"] = {};
-        }
         if (!("GABiPtr" in $$source)) {
             this["GABiPtr"] = {};
-        }
-        if (!("GABT" in $$source)) {
-            this["GABT"] = {};
         }
         if (!("GABTPtr" in $$source)) {
             this["GABTPtr"] = {};
         }
-        if (!("GAGT" in $$source)) {
-            this["GAGT"] = {};
-        }
         if (!("GAGTPtr" in $$source)) {
             this["GAGTPtr"] = {};
-        }
-        if (!("GANBV" in $$source)) {
-            this["GANBV"] = {};
-        }
-        if (!("GANBP" in $$source)) {
-            this["GANBP"] = {};
         }
         if (!("GANBVPtr" in $$source)) {
             this["GANBVPtr"] = {};
@@ -1129,47 +917,17 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         if (!("GANBPPtr" in $$source)) {
             this["GANBPPtr"] = {};
         }
-        if (!("GAPlV1" in $$source)) {
-            this["GAPlV1"] = {};
-        }
-        if (!("GAPlV2" in $$source)) {
-            this["GAPlV2"] = {};
-        }
-        if (!("GAPlP1" in $$source)) {
-            this["GAPlP1"] = {};
-        }
-        if (!("GAPlP2" in $$source)) {
-            this["GAPlP2"] = {};
-        }
         if (!("GAPlVPtr" in $$source)) {
             this["GAPlVPtr"] = {};
         }
         if (!("GAPlPPtr" in $$source)) {
             this["GAPlPPtr"] = {};
         }
-        if (!("GAMi" in $$source)) {
-            this["GAMi"] = {};
-        }
-        if (!("GAMS" in $$source)) {
-            this["GAMS"] = {};
-        }
-        if (!("GAMV" in $$source)) {
-            this["GAMV"] = {};
-        }
         if (!("GAMSPtr" in $$source)) {
             this["GAMSPtr"] = {};
         }
         if (!("GAMVPtr" in $$source)) {
             this["GAMVPtr"] = {};
-        }
-        if (!("GAII" in $$source)) {
-            this["GAII"] = {};
-        }
-        if (!("GAIV" in $$source)) {
-            this["GAIV"] = {};
-        }
-        if (!("GAIP" in $$source)) {
-            this["GAIP"] = {};
         }
         if (!("GAIIPtr" in $$source)) {
             this["GAIIPtr"] = {};
@@ -1179,12 +937,6 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         }
         if (!("GAIPPtr" in $$source)) {
             this["GAIPPtr"] = {};
-        }
-        if (!("GAPrV" in $$source)) {
-            this["GAPrV"] = {};
-        }
-        if (!("GAPrP" in $$source)) {
-            this["GAPrP"] = {};
         }
         if (!("GAPrVPtr" in $$source)) {
             this["GAPrVPtr"] = {};
@@ -1291,62 +1043,32 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
         const $$createField86_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
         const $$createField87_0 = $$createType75($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
         const $$createField88_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField89_0 = $$createType59($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField90_0 = $$createType60($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField91_0 = $$createType61($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField92_0 = $$createType62($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField93_0 = $$createType63($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField94_0 = $$createType64($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField95_0 = $$createType65($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField96_0 = $$createType66($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField97_0 = $$createType67($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField98_0 = $$createType68($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField99_0 = $$createType69($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField100_0 = $$createType70($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField101_0 = $$createType71($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField102_0 = $$createType72($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField103_0 = $$createType73($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField104_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField105_0 = $$createType75($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField106_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
-        const $$createField107_0 = $$createType1;
-        const $$createField108_0 = $$createType15;
-        const $$createField109_0 = $$createType17;
-        const $$createField110_0 = $$createType8;
+        const $$createField89_0 = $$createType60($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField90_0 = $$createType62($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField91_0 = $$createType64($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField92_0 = $$createType66($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField93_0 = $$createType68($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField94_0 = $$createType70($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField95_0 = $$createType72($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField96_0 = $$createType74($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField97_0 = $$createType76($$createParamR, $$createParamS, $$createParamT, $$createParamU, $$createParamV, $$createParamW, $$createParamX, $$createParamY, $$createParamZ);
+        const $$createField98_0 = $$createType8;
+        const $$createField99_0 = $$createType16;
+        const $$createField100_0 = $$createType18;
+        const $$createField101_0 = $$createType8;
+        const $$createField102_0 = $$createType77;
+        const $$createField103_0 = $$createType16;
+        const $$createField104_0 = $$createType16;
+        const $$createField105_0 = $$createType53;
+        const $$createField106_0 = $$createType16;
+        const $$createField107_0 = $$createType18;
+        const $$createField108_0 = $$createType78;
+        const $$createField109_0 = $$createType16;
+        const $$createField110_0 = $$createType24;
         const $$createField111_0 = $$createType16;
-        const $$createField112_0 = $$createType18;
-        const $$createField113_0 = $$createType1;
-        const $$createField114_0 = $$createType7;
-        const $$createField115_0 = $$createType8;
-        const $$createField116_0 = $$createType77;
-        const $$createField117_0 = $$createType78;
-        const $$createField118_0 = $$createType15;
-        const $$createField119_0 = $$createType16;
-        const $$createField120_0 = $$createType15;
-        const $$createField121_0 = $$createType18;
-        const $$createField122_0 = $$createType16;
-        const $$createField123_0 = $$createType53;
-        const $$createField124_0 = $$createType15;
-        const $$createField125_0 = $$createType16;
-        const $$createField126_0 = $$createType17;
-        const $$createField127_0 = $$createType18;
-        const $$createField128_0 = $$createType16;
-        const $$createField129_0 = $$createType18;
-        const $$createField130_0 = $$createType2;
-        const $$createField131_0 = $$createType42;
-        const $$createField132_0 = $$createType15;
-        const $$createField133_0 = $$createType79;
-        const $$createField134_0 = $$createType16;
-        const $$createField135_0 = $$createType23;
-        const $$createField136_0 = $$createType15;
-        const $$createField137_0 = $$createType18;
-        const $$createField138_0 = $$createType24;
-        const $$createField139_0 = $$createType16;
-        const $$createField140_0 = $$createType53;
-        const $$createField141_0 = $$createType16;
-        const $$createField142_0 = $$createType18;
-        const $$createField143_0 = $$createType48;
-        const $$createField144_0 = $$createType53;
+        const $$createField112_0 = $$createType53;
+        const $$createField113_0 = $$createType48;
+        const $$createField114_0 = $$createType53;
         return ($$source: any = {}) => {
             let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
             if ("Bool" in $$parsedSource) {
@@ -1616,184 +1338,88 @@ export class Maps<R, S, T, U, V, W, X, Y, Z> {
             if ("TPZPtr" in $$parsedSource) {
                 $$parsedSource["TPZPtr"] = $$createField88_0($$parsedSource["TPZPtr"]);
             }
-            if ("GAR" in $$parsedSource) {
-                $$parsedSource["GAR"] = $$createField89_0($$parsedSource["GAR"]);
-            }
             if ("GARPtr" in $$parsedSource) {
-                $$parsedSource["GARPtr"] = $$createField90_0($$parsedSource["GARPtr"]);
-            }
-            if ("GAS" in $$parsedSource) {
-                $$parsedSource["GAS"] = $$createField91_0($$parsedSource["GAS"]);
+                $$parsedSource["GARPtr"] = $$createField89_0($$parsedSource["GARPtr"]);
             }
             if ("GASPtr" in $$parsedSource) {
-                $$parsedSource["GASPtr"] = $$createField92_0($$parsedSource["GASPtr"]);
-            }
-            if ("GAT" in $$parsedSource) {
-                $$parsedSource["GAT"] = $$createField93_0($$parsedSource["GAT"]);
+                $$parsedSource["GASPtr"] = $$createField90_0($$parsedSource["GASPtr"]);
             }
             if ("GATPtr" in $$parsedSource) {
-                $$parsedSource["GATPtr"] = $$createField94_0($$parsedSource["GATPtr"]);
-            }
-            if ("GAU" in $$parsedSource) {
-                $$parsedSource["GAU"] = $$createField95_0($$parsedSource["GAU"]);
+                $$parsedSource["GATPtr"] = $$createField91_0($$parsedSource["GATPtr"]);
             }
             if ("GAUPtr" in $$parsedSource) {
-                $$parsedSource["GAUPtr"] = $$createField96_0($$parsedSource["GAUPtr"]);
-            }
-            if ("GAV" in $$parsedSource) {
-                $$parsedSource["GAV"] = $$createField97_0($$parsedSource["GAV"]);
+                $$parsedSource["GAUPtr"] = $$createField92_0($$parsedSource["GAUPtr"]);
             }
             if ("GAVPtr" in $$parsedSource) {
-                $$parsedSource["GAVPtr"] = $$createField98_0($$parsedSource["GAVPtr"]);
-            }
-            if ("GAW" in $$parsedSource) {
-                $$parsedSource["GAW"] = $$createField99_0($$parsedSource["GAW"]);
+                $$parsedSource["GAVPtr"] = $$createField93_0($$parsedSource["GAVPtr"]);
             }
             if ("GAWPtr" in $$parsedSource) {
-                $$parsedSource["GAWPtr"] = $$createField100_0($$parsedSource["GAWPtr"]);
-            }
-            if ("GAX" in $$parsedSource) {
-                $$parsedSource["GAX"] = $$createField101_0($$parsedSource["GAX"]);
+                $$parsedSource["GAWPtr"] = $$createField94_0($$parsedSource["GAWPtr"]);
             }
             if ("GAXPtr" in $$parsedSource) {
-                $$parsedSource["GAXPtr"] = $$createField102_0($$parsedSource["GAXPtr"]);
-            }
-            if ("GAY" in $$parsedSource) {
-                $$parsedSource["GAY"] = $$createField103_0($$parsedSource["GAY"]);
+                $$parsedSource["GAXPtr"] = $$createField95_0($$parsedSource["GAXPtr"]);
             }
             if ("GAYPtr" in $$parsedSource) {
-                $$parsedSource["GAYPtr"] = $$createField104_0($$parsedSource["GAYPtr"]);
-            }
-            if ("GAZ" in $$parsedSource) {
-                $$parsedSource["GAZ"] = $$createField105_0($$parsedSource["GAZ"]);
+                $$parsedSource["GAYPtr"] = $$createField96_0($$parsedSource["GAYPtr"]);
             }
             if ("GAZPtr" in $$parsedSource) {
-                $$parsedSource["GAZPtr"] = $$createField106_0($$parsedSource["GAZPtr"]);
-            }
-            if ("GACi" in $$parsedSource) {
-                $$parsedSource["GACi"] = $$createField107_0($$parsedSource["GACi"]);
-            }
-            if ("GACV" in $$parsedSource) {
-                $$parsedSource["GACV"] = $$createField108_0($$parsedSource["GACV"]);
-            }
-            if ("GACP" in $$parsedSource) {
-                $$parsedSource["GACP"] = $$createField109_0($$parsedSource["GACP"]);
+                $$parsedSource["GAZPtr"] = $$createField97_0($$parsedSource["GAZPtr"]);
             }
             if ("GACiPtr" in $$parsedSource) {
-                $$parsedSource["GACiPtr"] = $$createField110_0($$parsedSource["GACiPtr"]);
+                $$parsedSource["GACiPtr"] = $$createField98_0($$parsedSource["GACiPtr"]);
             }
             if ("GACVPtr" in $$parsedSource) {
-                $$parsedSource["GACVPtr"] = $$createField111_0($$parsedSource["GACVPtr"]);
+                $$parsedSource["GACVPtr"] = $$createField99_0($$parsedSource["GACVPtr"]);
             }
             if ("GACPPtr" in $$parsedSource) {
-                $$parsedSource["GACPPtr"] = $$createField112_0($$parsedSource["GACPPtr"]);
-            }
-            if ("GABi" in $$parsedSource) {
-                $$parsedSource["GABi"] = $$createField113_0($$parsedSource["GABi"]);
-            }
-            if ("GABs" in $$parsedSource) {
-                $$parsedSource["GABs"] = $$createField114_0($$parsedSource["GABs"]);
+                $$parsedSource["GACPPtr"] = $$createField100_0($$parsedSource["GACPPtr"]);
             }
             if ("GABiPtr" in $$parsedSource) {
-                $$parsedSource["GABiPtr"] = $$createField115_0($$parsedSource["GABiPtr"]);
-            }
-            if ("GABT" in $$parsedSource) {
-                $$parsedSource["GABT"] = $$createField116_0($$parsedSource["GABT"]);
+                $$parsedSource["GABiPtr"] = $$createField101_0($$parsedSource["GABiPtr"]);
             }
             if ("GABTPtr" in $$parsedSource) {
-                $$parsedSource["GABTPtr"] = $$createField117_0($$parsedSource["GABTPtr"]);
-            }
-            if ("GAGT" in $$parsedSource) {
-                $$parsedSource["GAGT"] = $$createField118_0($$parsedSource["GAGT"]);
+                $$parsedSource["GABTPtr"] = $$createField102_0($$parsedSource["GABTPtr"]);
             }
             if ("GAGTPtr" in $$parsedSource) {
-                $$parsedSource["GAGTPtr"] = $$createField119_0($$parsedSource["GAGTPtr"]);
-            }
-            if ("GANBV" in $$parsedSource) {
-                $$parsedSource["GANBV"] = $$createField120_0($$parsedSource["GANBV"]);
-            }
-            if ("GANBP" in $$parsedSource) {
-                $$parsedSource["GANBP"] = $$createField121_0($$parsedSource["GANBP"]);
+                $$parsedSource["GAGTPtr"] = $$createField103_0($$parsedSource["GAGTPtr"]);
             }
             if ("GANBVPtr" in $$parsedSource) {
-                $$parsedSource["GANBVPtr"] = $$createField122_0($$parsedSource["GANBVPtr"]);
+                $$parsedSource["GANBVPtr"] = $$createField104_0($$parsedSource["GANBVPtr"]);
             }
             if ("GANBPPtr" in $$parsedSource) {
-                $$parsedSource["GANBPPtr"] = $$createField123_0($$parsedSource["GANBPPtr"]);
-            }
-            if ("GAPlV1" in $$parsedSource) {
-                $$parsedSource["GAPlV1"] = $$createField124_0($$parsedSource["GAPlV1"]);
-            }
-            if ("GAPlV2" in $$parsedSource) {
-                $$parsedSource["GAPlV2"] = $$createField125_0($$parsedSource["GAPlV2"]);
-            }
-            if ("GAPlP1" in $$parsedSource) {
-                $$parsedSource["GAPlP1"] = $$createField126_0($$parsedSource["GAPlP1"]);
-            }
-            if ("GAPlP2" in $$parsedSource) {
-                $$parsedSource["GAPlP2"] = $$createField127_0($$parsedSource["GAPlP2"]);
+                $$parsedSource["GANBPPtr"] = $$createField105_0($$parsedSource["GANBPPtr"]);
             }
             if ("GAPlVPtr" in $$parsedSource) {
-                $$parsedSource["GAPlVPtr"] = $$createField128_0($$parsedSource["GAPlVPtr"]);
+                $$parsedSource["GAPlVPtr"] = $$createField106_0($$parsedSource["GAPlVPtr"]);
             }
             if ("GAPlPPtr" in $$parsedSource) {
-                $$parsedSource["GAPlPPtr"] = $$createField129_0($$parsedSource["GAPlPPtr"]);
-            }
-            if ("GAMi" in $$parsedSource) {
-                $$parsedSource["GAMi"] = $$createField130_0($$parsedSource["GAMi"]);
-            }
-            if ("GAMS" in $$parsedSource) {
-                $$parsedSource["GAMS"] = $$createField131_0($$parsedSource["GAMS"]);
-            }
-            if ("GAMV" in $$parsedSource) {
-                $$parsedSource["GAMV"] = $$createField132_0($$parsedSource["GAMV"]);
+                $$parsedSource["GAPlPPtr"] = $$createField107_0($$parsedSource["GAPlPPtr"]);
             }
             if ("GAMSPtr" in $$parsedSource) {
-                $$parsedSource["GAMSPtr"] = $$createField133_0($$parsedSource["GAMSPtr"]);
+                $$parsedSource["GAMSPtr"] = $$createField108_0($$parsedSource["GAMSPtr"]);
             }
             if ("GAMVPtr" in $$parsedSource) {
-                $$parsedSource["GAMVPtr"] = $$createField134_0($$parsedSource["GAMVPtr"]);
-            }
-            if ("GAII" in $$parsedSource) {
-                $$parsedSource["GAII"] = $$createField135_0($$parsedSource["GAII"]);
-            }
-            if ("GAIV" in $$parsedSource) {
-                $$parsedSource["GAIV"] = $$createField136_0($$parsedSource["GAIV"]);
-            }
-            if ("GAIP" in $$parsedSource) {
-                $$parsedSource["GAIP"] = $$createField137_0($$parsedSource["GAIP"]);
+                $$parsedSource["GAMVPtr"] = $$createField109_0($$parsedSource["GAMVPtr"]);
             }
             if ("GAIIPtr" in $$parsedSource) {
-                $$parsedSource["GAIIPtr"] = $$createField138_0($$parsedSource["GAIIPtr"]);
+                $$parsedSource["GAIIPtr"] = $$createField110_0($$parsedSource["GAIIPtr"]);
             }
             if ("GAIVPtr" in $$parsedSource) {
-                $$parsedSource["GAIVPtr"] = $$createField139_0($$parsedSource["GAIVPtr"]);
+                $$parsedSource["GAIVPtr"] = $$createField111_0($$parsedSource["GAIVPtr"]);
             }
             if ("GAIPPtr" in $$parsedSource) {
-                $$parsedSource["GAIPPtr"] = $$createField140_0($$parsedSource["GAIPPtr"]);
-            }
-            if ("GAPrV" in $$parsedSource) {
-                $$parsedSource["GAPrV"] = $$createField141_0($$parsedSource["GAPrV"]);
-            }
-            if ("GAPrP" in $$parsedSource) {
-                $$parsedSource["GAPrP"] = $$createField142_0($$parsedSource["GAPrP"]);
+                $$parsedSource["GAIPPtr"] = $$createField112_0($$parsedSource["GAIPPtr"]);
             }
             if ("GAPrVPtr" in $$parsedSource) {
-                $$parsedSource["GAPrVPtr"] = $$createField143_0($$parsedSource["GAPrVPtr"]);
+                $$parsedSource["GAPrVPtr"] = $$createField113_0($$parsedSource["GAPrVPtr"]);
             }
             if ("GAPrPPtr" in $$parsedSource) {
-                $$parsedSource["GAPrPPtr"] = $$createField144_0($$parsedSource["GAPrPPtr"]);
+                $$parsedSource["GAPrPPtr"] = $$createField114_0($$parsedSource["GAPrPPtr"]);
             }
             return new Maps<R, S, T, U, V, W, X, Y, Z>($$parsedSource as Partial<Maps<R, S, T, U, V, W, X, Y, Z>>);
         };
     }
 }
-
-export type MixedCstrAlias<X> = X;
-
-export type NonBasicCstrAlias<V> = V;
-
-export type PointableCstrAlias<W> = W;
 
 export type PointerAlias = PointerTextMarshaler;
 
@@ -1887,4 +1513,3 @@ const $$createType75 = ($$createParamR: any, $$createParamS: any, $$createParamT
 const $$createType76 = ($$createParamR: any, $$createParamS: any, $$createParamT: any, $$createParamU: any, $$createParamV: any, $$createParamW: any, $$createParamX: any, $$createParamY: any, $$createParamZ: any) => $Create.Map($Create.Any, $Create.Any);
 const $$createType77 = $Create.Map($Create.Any, $Create.Any);
 const $$createType78 = $Create.Map($Create.Any, $Create.Any);
-const $$createType79 = $Create.Map($Create.Any, $Create.Any);

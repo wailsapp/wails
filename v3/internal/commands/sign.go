@@ -9,9 +9,52 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/keychain"
 )
+
+// resolveSigningDefaults fills in any signing options not supplied via flags from
+// the global config (~/.config/wails/defaults.yaml). This makes the signing
+// configuration written by `wails3 setup` take effect at sign time for every
+// platform — flags (and therefore project Taskfile vars) still win when present.
+func resolveSigningDefaults(options *flags.Sign) {
+	cfg, err := defaults.Load()
+	if err != nil {
+		return
+	}
+
+	// macOS
+	if options.Identity == "" && cfg.Signing.Darwin.Identity != "" {
+		options.Identity = cfg.Signing.Darwin.Identity
+	}
+	if options.KeychainProfile == "" && cfg.Signing.Darwin.KeychainProfile != "" {
+		options.KeychainProfile = cfg.Signing.Darwin.KeychainProfile
+	}
+	if options.Entitlements == "" && cfg.Signing.Darwin.Entitlements != "" {
+		options.Entitlements = cfg.Signing.Darwin.Entitlements
+	}
+
+	// Windows
+	if options.Certificate == "" && cfg.Signing.Windows.CertificatePath != "" {
+		options.Certificate = cfg.Signing.Windows.CertificatePath
+	}
+	if options.Thumbprint == "" && cfg.Signing.Windows.Thumbprint != "" {
+		options.Thumbprint = cfg.Signing.Windows.Thumbprint
+	}
+	if options.Timestamp == "" && cfg.Signing.Windows.TimestampServer != "" {
+		options.Timestamp = cfg.Signing.Windows.TimestampServer
+	}
+
+	// Linux (PGP). The signer needs an exported key *file*, so use the stored
+	// key path; the bare key ID is not usable on its own.
+	if options.PGPKey == "" && cfg.Signing.Linux.GPGKeyPath != "" {
+		options.PGPKey = cfg.Signing.Linux.GPGKeyPath
+	}
+	if options.Role == "" && cfg.Signing.Linux.SignRole != "" {
+		options.Role = cfg.Signing.Linux.SignRole
+	}
+}
 
 // Sign signs a binary or package
 func Sign(options *flags.Sign) error {
@@ -24,6 +67,10 @@ func Sign(options *flags.Sign) error {
 	if err != nil {
 		return fmt.Errorf("input file not found: %w", err)
 	}
+
+	// Backfill any unset options from the global signing config so the values
+	// configured via `wails3 setup` are honored across all platforms.
+	resolveSigningDefaults(options)
 
 	// Determine what type of signing to do based on file extension and flags
 	ext := strings.ToLower(filepath.Ext(options.Input))
@@ -55,8 +102,9 @@ func Sign(options *flags.Sign) error {
 }
 
 func signMacOSApp(options *flags.Sign) error {
+	resolveSigningDefaults(options)
 	if options.Identity == "" {
-		return fmt.Errorf("--identity is required for macOS signing")
+		return fmt.Errorf("--identity is required for macOS signing (set via `wails3 setup` or --identity flag)")
 	}
 
 	if options.Verbose {
@@ -99,8 +147,9 @@ func signMacOSApp(options *flags.Sign) error {
 }
 
 func signMacOSBinary(options *flags.Sign) error {
+	resolveSigningDefaults(options)
 	if options.Identity == "" {
-		return fmt.Errorf("--identity is required for macOS signing")
+		return fmt.Errorf("--identity is required for macOS signing (set via `wails3 setup` or --identity flag)")
 	}
 
 	if options.Verbose {
@@ -136,7 +185,7 @@ func signMacOSBinary(options *flags.Sign) error {
 
 func notarizeMacOSApp(options *flags.Sign) error {
 	if options.KeychainProfile == "" {
-		return fmt.Errorf("--keychain-profile is required for notarization")
+		return fmt.Errorf("--keychain-profile is required for notarization (set via `wails3 setup` or --keychain-profile flag)")
 	}
 
 	if options.Verbose {
@@ -291,7 +340,7 @@ func signWindowsBuiltin(options *flags.Sign, password string) error {
 
 func signDEB(options *flags.Sign) error {
 	if options.PGPKey == "" {
-		return fmt.Errorf("--pgp-key is required for DEB signing")
+		return fmt.Errorf("no PGP signing key found for DEB signing — pass --pgp-key, set PGP_KEY in build/linux/Taskfile.yml, or run `wails3 setup` / `wails3 setup signing`")
 	}
 
 	// Get password from keychain if not provided
@@ -351,7 +400,7 @@ func signDEBWithGPG(options *flags.Sign, password, role string) error {
 
 func signRPM(options *flags.Sign) error {
 	if options.PGPKey == "" {
-		return fmt.Errorf("--pgp-key is required for RPM signing")
+		return fmt.Errorf("no PGP signing key found for RPM signing — pass --pgp-key, set PGP_KEY in build/linux/Taskfile.yml, or run `wails3 setup` / `wails3 setup signing`")
 	}
 
 	// Get password from keychain if not provided

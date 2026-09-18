@@ -4,7 +4,7 @@ package doctor
 
 import (
 	"bytes"
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/lo"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -60,4 +60,22 @@ func checkPlatformDependencies(result map[string]string, ok *bool) {
 	nsisVersion = bytes.TrimSpace(nsisVersion)
 
 	result["*NSIS"] = string(nsisVersion)
+
+	// iOS toolchain (optional - only needed for `wails3 task ios:*`)
+	xcodeVersion := "Not installed. iOS builds need full Xcode (App Store), not just the CLI tools."
+	if output, err := exec.Command("xcodebuild", "-version").Output(); err == nil {
+		xcodeVersion = strings.ReplaceAll(strings.TrimSpace(string(output)), "\n", ", ")
+	}
+	result["*Xcode (iOS)"] = xcodeVersion
+
+	for sdk, label := range map[string]string{
+		"iphonesimulator": "*iOS Simulator SDK",
+		"iphoneos":        "*iOS Device SDK",
+	} {
+		version := "Not found"
+		if output, err := exec.Command("xcrun", "--sdk", sdk, "--show-sdk-version").Output(); err == nil {
+			version = strings.TrimSpace(string(output))
+		}
+		result[label] = version
+	}
 }

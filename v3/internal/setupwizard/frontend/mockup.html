@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wails – Project Defaults (Mock)</title>
+  <style>
+    :root{
+      --bg0:#05070b;
+      --bg1:#070a11;
+      --panel:#0b0f18;
+      --panel2:#0a0e16;
+      --text: rgba(255,255,255,.92);
+      --text2: rgba(255,255,255,.62);
+      --line: rgba(255,255,255,.08);
+      --hover: rgba(255,255,255,.06);
+      --shadow: rgba(0,0,0,.55);
+      --accent:#e0242a;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(900px 600px at 60% 40%, rgba(255,0,40,.08), transparent 55%),
+        radial-gradient(1100px 900px at 65% 55%, rgba(255,255,255,.06), transparent 60%),
+        radial-gradient(900px 600px at 30% 60%, rgba(255,255,255,.04), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      color:var(--text);
+      display:grid;
+      place-items:center;
+    }
+
+    /* Window */
+    .window{
+      width:min(1160px, 96vw);
+      height:min(720px, 92vh);
+      border-radius:18px;
+      overflow:hidden;
+      position:relative;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      box-shadow:
+        0 30px 80px rgba(0,0,0,.65),
+        0 0 0 1px rgba(255,255,255,.06) inset;
+    }
+
+    .layout{
+      height:100%;
+      display:grid;
+      grid-template-columns: 320px 1fr;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      position:relative;
+      background:
+        radial-gradient(1000px 600px at 40% 20%, rgba(255,0,50,.10), transparent 55%),
+        linear-gradient(180deg, rgba(5,7,12,.92), rgba(5,7,12,.74));
+      box-shadow: 1px 0 0 rgba(255,255,255,.06) inset;
+      padding:28px 22px 18px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:10px;
+      padding-bottom:18px;
+    }
+
+    /* Placeholder "dragon" */
+    .logo{
+      width:90px; height:64px;
+      position:relative;
+      filter: drop-shadow(0 10px 18px rgba(224,36,42,.35));
+    }
+    .logo:before, .logo:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: conic-gradient(from 210deg, #ff4b4f, #b90f15, #ff4b4f);
+      clip-path: polygon(8% 65%, 40% 20%, 58% 30%, 78% 8%, 84% 30%, 64% 44%, 92% 52%, 70% 66%, 78% 88%, 55% 74%, 42% 92%, 34% 66%, 10% 82%);
+      border-radius:10px;
+    }
+    .logo:after{
+      inset:6px;
+      opacity:.55;
+      filter: blur(.2px);
+    }
+
+    .wordmark{
+      letter-spacing:.46em;
+      font-weight:700;
+      font-size:14px;
+      color: rgba(255,255,255,.88);
+      margin-left:4px;
+    }
+
+    .nav{
+      margin-top:8px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .nav a{
+      text-decoration:none;
+      color: rgba(255,255,255,.62);
+      font-size:18px;
+      padding:14px 14px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      transition: background-color .12s ease, color .12s ease;
+    }
+    .nav a.active{
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.92);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
+    }
+    .dot{
+      width:12px; height:12px; border-radius:999px;
+      background: rgba(255,255,255,.15);
+      flex:0 0 auto;
+    }
+
+    /* Main panel */
+    .main{
+      position:relative;
+      padding:48px 56px;
+      background:
+        radial-gradient(1200px 900px at 55% 40%, rgba(255,255,255,.05), transparent 60%),
+        linear-gradient(180deg, rgba(5,7,12,.40), rgba(5,7,12,.20));
+    }
+
+    .content{
+      max-width: 760px;
+      margin: 0 auto;
+      text-align:center;
+      padding-top: 6px;
+    }
+
+    h1{
+      margin:0;
+      font-size: 38px;
+      line-height: 44px;
+      letter-spacing: .01em;
+      font-weight: 650;
+      color: rgba(255,255,255,.92);
+    }
+
+    .sub{
+      margin:10px 0 26px 0;
+      font-size: 18px;
+      line-height: 26px;
+      color: rgba(255,255,255,.62);
+    }
+
+    /* Preference group */
+    .group{
+      width: 640px;
+      margin: 0 auto;
+      border-radius: 12px;
+      background: rgba(255,255,255,.12);
+      box-shadow:
+        0 12px 30px rgba(0,0,0,.35),
+        0 0 0 1px rgba(255,255,255,.06) inset;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      overflow:hidden;
+      text-align:left;
+    }
+
+    .row{
+      height: 52px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 0 20px;
+      cursor:pointer;
+      user-select:none;
+      transition: background-color .12s ease;
+    }
+    .row:hover{ background: var(--hover); }
+    .row + .row{ border-top: 1px solid var(--line); }
+
+    .label{
+      font-size: 13px;
+      font-weight: 550;
+      color: rgba(255,255,255,.90);
+    }
+
+    .value{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,.65);
+      max-width: 360px;
+    }
+    .value span{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      text-align:right;
+      display:block;
+      max-width: 330px;
+    }
+    .chev{
+      font-size: 12px;
+      color: rgba(255,255,255,.40);
+      transition: color .12s ease;
+      transform: translateY(-.5px);
+    }
+    .row:hover .chev{ color: rgba(255,255,255,.65); }
+
+    /* Continue button */
+    .actions{
+      margin-top: 86px;
+      display:flex;
+      justify-content:center;
+    }
+    button{
+      height: 44px;
+      padding: 0 34px;
+      border-radius: 12px;
+      border: 0;
+      background: linear-gradient(180deg, rgba(224,36,42,.95), rgba(184,16,22,.95));
+      color: rgba(255,255,255,.92);
+      font-size: 18px;
+      font-weight: 650;
+      letter-spacing: .01em;
+      box-shadow:
+        0 14px 30px rgba(224,36,42,.22),
+        0 0 0 1px rgba(255,255,255,.12) inset;
+      cursor:pointer;
+      transition: transform .08s ease, filter .12s ease;
+    }
+    button:active{ transform: translateY(1px); filter: brightness(.98); }
+
+    /* Optional: subtle film grain */
+    .grain{
+      pointer-events:none;
+      position:absolute;
+      inset:0;
+      opacity:.10;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      background-size: 220px 220px;
+    }
+  </style>
+</head>
+<body>
+  <div class="window" role="application" aria-label="Wails onboarding wizard">
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div class="wordmark">WAILS</div>
+        </div>
+
+        <nav class="nav" aria-label="Setup steps">
+          <a href="#" aria-current="false"><span class="dot"></span>Welcome</a>
+          <a href="#" aria-current="false"><span class="dot"></span>Dependencies</a>
+          <a href="#" aria-current="false"><span class="dot"></span>Platform</a>
+          <a class="active" href="#" aria-current="page"><span class="dot"></span>Defaults</a>
+          <a href="#" aria-current="false"><span class="dot"></span>Complete</a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <div class="content">
+          <h1>Project Defaults</h1>
+          <div class="sub">Choose how new Wails apps are created by default.</div>
+
+          <section class="group" aria-label="Project defaults">
+            <div class="row" tabindex="0" role="button" aria-label="Edit bundle identifier">
+              <div class="label">Bundle identifier</div>
+              <div class="value"><span>com.example</span><div class="chev">▸</div></div>
+            </div>
+            <div class="row" tabindex="0" role="button" aria-label="Edit version">
+              <div class="label">Version</div>
+              <div class="value"><span>0.1.0</span><div class="chev">▸</div></div>
+            </div>
+            <div class="row" tabindex="0" role="button" aria-label="Choose template">
+              <div class="label">Template</div>
+              <div class="value"><span>Vanilla (JavaScript)</span><div class="chev">▸</div></div>
+            </div>
+          </section>
+
+          <div class="actions">
+            <button type="button">Continue</button>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div class="grain"></div>
+  </div>
+
+  <script>
+    // Tiny affordance: allow Enter/Space to activate rows (no actual editing yet).
+    document.querySelectorAll(".row").forEach(row => {
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          row.click();
+        }
+      });
+      row.addEventListener("click", () => {
+        // Stub: replace with your routing / inline edit (Step 3).
+        console.log("Row activated:", row.querySelector(".label").textContent.trim());
+      });
+    });
+  </script>
+</body>
+</html>

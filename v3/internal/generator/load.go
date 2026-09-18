@@ -11,7 +11,7 @@ import (
 
 // ResolveSystemPaths resolves paths for stdlib and Wails packages.
 func ResolveSystemPaths(buildFlags []string) (paths *config.SystemPaths, err error) {
-	// Resolve context pkg path.
+	// Resolve std context pkg path.
 	contextPkgPaths, err := ResolvePatterns(buildFlags, "context")
 	if err != nil {
 		return
@@ -21,6 +21,18 @@ func ResolveSystemPaths(buildFlags []string) (paths *config.SystemPaths, err err
 	} else if len(contextPkgPaths) > 1 {
 		// This should never happen...
 		panic("context package path matched multiple packages")
+	}
+
+	// Resolve std time pkg path.
+	timePkgPaths, err := ResolvePatterns(buildFlags, "time")
+	if err != nil {
+		return
+	} else if len(timePkgPaths) < 1 {
+		err = ErrNoTimePackage
+		return
+	} else if len(timePkgPaths) > 1 {
+		// This should never happen...
+		panic("time package path matched multiple packages")
 	}
 
 	// Resolve wails app pkg path.
@@ -49,6 +61,7 @@ func ResolveSystemPaths(buildFlags []string) (paths *config.SystemPaths, err err
 
 	paths = &config.SystemPaths{
 		ContextPackage:     contextPkgPaths[0],
+		TimePackage:        timePkgPaths[0],
 		ApplicationPackage: wailsAppPkgPaths[0],
 		InternalPackage:    wailsInternalPkgPaths[0],
 	}

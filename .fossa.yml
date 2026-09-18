@@ -1,0 +1,19 @@
+version: 3
+
+# Exclude documentation-site build tooling from license scanning.
+# Docusaurus (website/) pulls in webpack-dev-server → selfsigned → node-forge
+# whose dual SPDX expression (BSD-3-Clause OR GPL-2.0) trips the org
+# license policy. node-forge is build-time only for serving the docs
+# site locally; it is not distributed with the Wails Go module or the
+# @wailsio/runtime npm package, so it is out of scope for the license
+# compliance posture we want FOSSA to enforce.
+# Example-app frontends are demo/development tooling; they are not
+# distributed as part of the Wails Go module or @wailsio/runtime and
+# are excluded to keep the compliance posture focused on distributed
+# artifacts.
+targets:
+  exclude:
+    - type: npm
+      path: website
+    - type: npm
+      path: v3/examples

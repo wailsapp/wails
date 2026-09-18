@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "79ceb4864966242788ef",
+  "sourceFile": "community/showcase/surge.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "0af05ee91a28062d2b28397a2a31a48e838b7764e9b2f9ee5f99225dd5e25c99",
+      "targetHash": "76d0a343add6051ba71a15f041e05dd24f4d41ce58f2ecf6cc90fddfa1ea963b",
+      "machineHash": "76d0a343add6051ba71a15f041e05dd24f4d41ce58f2ecf6cc90fddfa1ea963b",
+      "machineText": "![Surge 스크린샷](/assets/showcase-images/surge.png)",
+      "status": "final",
+      "sourcePreview": "![Surge Screenshot](/assets/showcase-images/surge.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "fddae11c6e8520c88e1862557a5fdda16a3a35e1d694ff5e1686eff194ea6282",
+      "targetHash": "e68212e2ce984c99453064f3ad3bf0dfafec4a9e866875786f9f39fb671b9066",
+      "machineHash": "e68212e2ce984c99453064f3ad3bf0dfafec4a9e866875786f9f39fb671b9066",
+      "machineText": "[Surge](https://getsurge.io/)는 블록체인 기술을 활용하여 100% 익명 파일 전송을 지원하도록 설계된 p2p 파일 공유 앱입니다. Surge는 종단 간 암호화가 적용된 탈중앙화 오픈 소스 앱입니다.",
+      "status": "final",
+      "sourcePreview": "[Surge](https://getsurge.io/) is a p2p filesharing app designed to utilize\\ blockchain technologies …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "4082237fd31a87c89b6215904b4e7304a46e421d4ea6f4b8b7ebaff6bddf68d6",
+      "targetHash": "4082237fd31a87c89b6215904b4e7304a46e421d4ea6f4b8b7ebaff6bddf68d6",
+      "machineHash": "4082237fd31a87c89b6215904b4e7304a46e421d4ea6f4b8b7ebaff6bddf68d6",
+      "machineText": "Surge",
+      "status": "final",
+      "sourcePreview": "Surge",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

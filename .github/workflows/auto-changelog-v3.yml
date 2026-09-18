@@ -13,19 +13,23 @@ on:
 
 jobs:
   auto-changelog:
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.repository == 'wailsapp/wails' && (github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
 
     permissions:
       contents: write
+      pull-requests: read   # GET /pulls/{n} and /pulls/{n}/files
+      issues: read          # GET /issues/{n}/comments (CodeRabbit summary)
 
     steps:
-    - name: Checkout v3-alpha
+    - name: Checkout master
       uses: actions/checkout@v4
       with:
         ref: master
         fetch-depth: 0
-        token: ${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.WAILS_REPO_TOKEN || secrets.GITHUB_TOKEN }}
 
     - name: Resolve PR number
       id: pr
@@ -61,6 +65,16 @@ jobs:
       with:
         go-version: '1.25'
 
+    - name: Test and build changelog helper
+      if: steps.check.outputs.skip == 'false'
+      working-directory: v3
+      run: |
+        go test scripts/auto-changelog.go scripts/auto-changelog_test.go
+        go build -o "$RUNNER_TEMP/wails-auto-changelog" scripts/auto-changelog.go
+
+    - name: Test changelog publication
+      run: python3 -m unittest discover -s v3/scripts -p 'test_publish_changelog.py'
+
     - name: Auto-fill changelog entry
       if: steps.check.outputs.skip == 'false'
       env:
@@ -68,7 +82,7 @@ jobs:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ steps.pr.outputs.number }}
-      run: go run v3/scripts/auto-changelog.go
+      run: '"$RUNNER_TEMP/wails-auto-changelog"'
 
     - name: Commit and push
       if: steps.check.outputs.skip == 'false'
@@ -78,6 +92,12 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add v3/UNRELEASED_CHANGELOG.md
-        git commit -m "chore(changelog): auto-add entry for PR #${PR_NUMBER} — ${PR_TITLE}"
-        git push https://x-access-token:${{ secrets.CHANGELOG_PUSH_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git master
+        python3 v3/scripts/publish-changelog.py
+
+    - name: Preserve changelog after publication failure
+      if: failure() && steps.check.outputs.skip == 'false'
+      uses: actions/upload-artifact@v4
+      with:
+        name: changelog-pr-${{ steps.pr.outputs.number }}-${{ github.run_attempt }}
+        path: v3/UNRELEASED_CHANGELOG.md
+        retention-days: 14

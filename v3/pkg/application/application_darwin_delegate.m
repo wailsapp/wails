@@ -37,6 +37,26 @@ extern void handleSecondInstanceData(char * message);
         processApplicationEvent(EventApplicationDidChangeTheme, NULL);
     }
 }
+- (void)workspaceWillSleep:(NSNotification *)notification {
+    if( hasListeners(EventApplicationWillSleep) ) {
+        processApplicationEvent(EventApplicationWillSleep, NULL);
+    }
+}
+- (void)workspaceDidWake:(NSNotification *)notification {
+    if( hasListeners(EventApplicationDidWake) ) {
+        processApplicationEvent(EventApplicationDidWake, NULL);
+    }
+}
+- (void)workspaceScreensDidSleep:(NSNotification *)notification {
+    if( hasListeners(EventApplicationScreensDidSleep) ) {
+        processApplicationEvent(EventApplicationScreensDidSleep, NULL);
+    }
+}
+- (void)workspaceScreensDidWake:(NSNotification *)notification {
+    if( hasListeners(EventApplicationScreensDidWake) ) {
+        processApplicationEvent(EventApplicationScreensDidWake, NULL);
+    }
+}
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
     if( ! shouldQuitApplication() ) {
         return NSTerminateCancel;
@@ -60,8 +80,8 @@ extern void handleSecondInstanceData(char * message);
 }
 - (void)handleSecondInstanceNotification:(NSNotification *)note;
 {
-   if (note.userInfo[@"message"] != nil) {
-        NSString *message = note.userInfo[@"message"];
+   if (note.object != nil) {
+        NSString *message = (NSString *)note.object;
         const char* utf8Message = message.UTF8String;
         handleSecondInstanceData((char*)utf8Message);
     }

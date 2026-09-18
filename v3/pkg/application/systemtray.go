@@ -3,9 +3,47 @@ package application
 import (
 	"errors"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
+
+// SystemTrayLabelPart is a segment of a system tray label with optional colour information.
+// FgColor and BgColor are hex strings (e.g. "#ff0000") or empty strings when not set.
+type SystemTrayLabelPart struct {
+	Text    string
+	FgColor string
+	BgColor string
+}
+
+// SystemTrayLabelParser is a function that splits a raw label string into styled parts.
+// It is called by the macOS system tray implementation when the label contains ANSI
+// escape codes. The default implementation strips escape codes and returns plain text.
+//
+// Replace this variable with a custom function to render colours in your system tray
+// labels. For example, wire in go-ansi-parser or any other ANSI library here.
+var SystemTrayLabelParser func(label string) ([]SystemTrayLabelPart, error) = stripANSI
+
+// stripANSI removes ANSI escape sequences from s and returns a single unstyled part.
+func stripANSI(s string) ([]SystemTrayLabelPart, error) {
+	// Remove all sequences matching \033[...m
+	var buf strings.Builder
+	for i := 0; i < len(s); {
+		if s[i] == '\033' && i+1 < len(s) && s[i+1] == '[' {
+			end := strings.IndexByte(s[i:], 'm')
+			if end == -1 {
+				buf.WriteByte(s[i])
+				i++
+				continue
+			}
+			i += end + 1
+			continue
+		}
+		buf.WriteByte(s[i])
+		i++
+	}
+	return []SystemTrayLabelPart{{Text: buf.String()}}, nil
+}
 
 type IconPosition int
 

@@ -56,10 +56,16 @@ func GenerateAppImage(options *GenerateAppImageOptions) error {
 			return err
 		}
 	}
-	var err error
-	options.OutputDir, err = filepath.Abs(options.OutputDir)
-	if err != nil {
-		return err
+	// Resolve every input path to absolute form up-front. The bundler does
+	// `s.CD` into the build directory partway through, so anything left as
+	// a relative path would be interpreted relative to the wrong CWD by
+	// downstream goroutines and shell-outs (e.g. `ldd <binary>`).
+	for _, p := range []*string{&options.OutputDir, &options.BuildDir, &options.Binary, &options.Icon, &options.DesktopFile} {
+		abs, err := filepath.Abs(*p)
+		if err != nil {
+			return err
+		}
+		*p = abs
 	}
 
 	term.Header("AppImage Generator")
@@ -137,9 +143,40 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 
 	wg.Wait()
 
+	// Determine which GTK stack the binary links against by ldd'ing the
+	// source binary. We need this before searching for runtime files,
+	// because GTK3 (WebKit2GTK 4.x) and GTK4 (WebKitGTK 6.0) ship the
+	// injected-bundle library under different names. The %q quoting keeps
+	// `s.EXEC`'s shlex split intact when the binary path contains spaces.
+	lddOutput, err := s.EXEC(fmt.Sprintf("ldd %q", options.Binary))
+	if err != nil {
+		println(string(lddOutput))
+		return err
+	}
+	lddString := string(lddOutput)
+	var DeployGtkVersion string
+	switch {
+	case s.CONTAINS(lddString, "libgtk-4.so"):
+		DeployGtkVersion = "4"
+	case s.CONTAINS(lddString, "libgtk-3.so"):
+		DeployGtkVersion = "3"
+	case s.CONTAINS(lddString, "libgtk-x11-2.0.so"):
+		DeployGtkVersion = "2"
+	default:
+		snippet := lddString
+		if len(snippet) > 200 {
+			snippet = snippet[:200] + "..."
+		}
+		return fmt.Errorf("unable to determine GTK version (looked for libgtk-4.so, libgtk-3.so, libgtk-x11-2.0.so in ldd %q output): %s", options.Binary, snippet)
+	}
+
 	// Processing GTK files
 	log(p, "Processing GTK files.")
-	filesNeeded := []string{"WebKitWebProcess", "WebKitNetworkProcess", "libwebkit2gtkinjectedbundle.so"}
+	injectedBundle := "libwebkit2gtkinjectedbundle.so"
+	if DeployGtkVersion == "4" {
+		injectedBundle = "libwebkitgtkinjectedbundle.so"
+	}
+	filesNeeded := []string{"WebKitWebProcess", "WebKitNetworkProcess", injectedBundle}
 	files, err := findGTKFiles(filesNeeded)
 	if err != nil {
 		return err
@@ -164,32 +201,23 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		return err
 	}
 
-	// Determine GTK Version
-	targetBinary := filepath.Join(appDir, "usr", "bin", options.Binary)
-	lddOutput, err := s.EXEC(fmt.Sprintf("ldd %s", targetBinary))
-	if err != nil {
-		println(string(lddOutput))
-		return err
-	}
-	lddString := string(lddOutput)
-	var DeployGtkVersion string
-	switch {
-	case s.CONTAINS(lddString, "libgtk-x11-2.0.so"):
-		DeployGtkVersion = "2"
-	case s.CONTAINS(lddString, "libgtk-3.so"):
-		DeployGtkVersion = "3"
-	case s.CONTAINS(lddString, "libgtk-4.so"):
-		DeployGtkVersion = "4"
-	default:
-		return fmt.Errorf("unable to determine GTK version")
-	}
-
 	// Run linuxdeploy to bundle the application
 	s.CD(options.BuildDir)
 	linuxdeployAppImage := filepath.Join(options.BuildDir, fmt.Sprintf("linuxdeploy-%s.AppImage", arch))
 
-	cmd := fmt.Sprintf("%s --appimage-extract-and-run --appdir %s --output appimage --plugin gtk", linuxdeployAppImage, appDir)
+	// Quote the executable and --appdir args so `s.EXEC`'s shlex split
+	// keeps them as single tokens when the user-supplied paths contain
+	// spaces.
+	cmd := fmt.Sprintf("%q --appimage-extract-and-run --appdir %q --output appimage --plugin gtk", linuxdeployAppImage, appDir)
 	s.SETENV("DEPLOY_GTK_VERSION", DeployGtkVersion)
+
+	// Force linuxdeploy's appimage plugin to write the AppImage to a known
+	// filename. Without this it derives the name from the desktop file's
+	// `Name=` field, which often doesn't match the binary basename and
+	// causes the subsequent move-to-output step to fail.
+	appImageName := fmt.Sprintf("%s-%s.AppImage", name, arch)
+	targetFile := filepath.Join(options.BuildDir, appImageName)
+	s.SETENV("OUTPUT", appImageName)
 
 	// Check if system libraries use .relr.dyn sections (modern toolchains)
 	// If so, disable stripping as linuxdeploy's bundled strip can't handle them
@@ -205,10 +233,9 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	}
 
 	// Move file to output directory
-	targetFile := filepath.Join(options.BuildDir, fmt.Sprintf("%s-%s.AppImage", name, arch))
 	s.MOVE(targetFile, options.OutputDir)
 
-	log(p, "AppImage created: "+targetFile)
+	log(p, "AppImage created: "+filepath.Join(options.OutputDir, appImageName))
 	return nil
 }
 
@@ -261,16 +288,25 @@ func findGTKFiles(files []string) ([]string, error) {
 // which are incompatible with linuxdeploy's bundled strip binary.
 // This is common on modern Linux distributions (Arch, Fedora 39+, Ubuntu 24.04+).
 func hasRelrDynSections() bool {
-	// Check common GTK library that will be bundled
+	// Check common GTK libraries that will be bundled. We probe both the
+	// GTK4 (default since v3.0.0-alpha.93) and GTK3 (legacy `-tags gtk3`)
+	// libraries because either may be present depending on the build.
 	testLibs := []string{
+		// GTK4
+		"/usr/lib/libgtk-4.so.1",
+		"/usr/lib64/libgtk-4.so.1",
+		"/usr/lib/x86_64-linux-gnu/libgtk-4.so.1",
+		"/usr/lib/aarch64-linux-gnu/libgtk-4.so.1",
+		// GTK3
 		"/usr/lib/libgtk-3.so.0",
 		"/usr/lib64/libgtk-3.so.0",
 		"/usr/lib/x86_64-linux-gnu/libgtk-3.so.0",
+		"/usr/lib/aarch64-linux-gnu/libgtk-3.so.0",
 	}
 
 	for _, lib := range testLibs {
 		if _, err := os.Stat(lib); err == nil {
-			output, err := s.EXEC(fmt.Sprintf("readelf -S %s", lib))
+			output, err := s.EXEC(fmt.Sprintf("readelf -S %q", lib))
 			if err == nil && strings.Contains(string(output), ".relr.dyn") {
 				return true
 			}

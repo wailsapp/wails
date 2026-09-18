@@ -13,7 +13,11 @@ import { IsDebug } from "./system.js";
 import { eventTarget } from "./utils.js";
 
 // setup
-window.addEventListener('contextmenu', contextMenuHandler);
+import { hasDOM } from "./environment.js";
+
+if (hasDOM) {
+    window.addEventListener('contextmenu', contextMenuHandler);
+}
 
 const call = newRuntimeCaller(objectNames.ContextMenu);
 

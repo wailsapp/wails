@@ -1,25 +1,19 @@
-/** 
- * This file tells your IDE where the root of your JavaScript project is, and sets some
- * options that it can use to provide autocompletion and other features.  
- */
 {
+  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
-    "allowJs": true,
-    "moduleResolution": "bundler",
-    /**
-     * The target and module can be set to ESNext to allow writing modern JavaScript, 
-     * and Vite will compile down to the level of "build.target" specified in the vite config file.
-     * Builds will error if you use a feature that cannot be compiled down to the target level.
-     */
     "target": "ESNext",
+    "useDefineForClassFields": true,
     "module": "ESNext",
     "resolveJsonModule": true,
     /**
-     * Enable checkJs if you'd like type checking in `.svelte` and `.js` files.
+     * Typecheck JS in `.svelte` and `.js` files by default.
+     * Disable checkJs if you'd like to use dynamic types in JS.
+     * Note that setting allowJs false does not prevent the use
+     * of JS in `.svelte` files.
      */
-    "checkJs": false,
-    "strict": true,
-    "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": true,
+    "isolatedModules": true
   },
-  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "bindings"]
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "bindings"],
 }

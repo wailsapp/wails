@@ -77,21 +77,65 @@ func (v *OriginValidator) matchesOriginPattern(pattern, origin string) bool {
 	return false
 }
 
-// wildcardPatternToRegex converts wildcard pattern to regex
+// wildcardPatternToRegex converts a wildcard pattern to an anchored regex.
+//
+// A '*' is treated as a wildcard only when it spans a COMPLETE origin
+// component — bounded on the left by "://", "." or ":" AND on the right by
+// ".", ":", "/" or the end of the pattern. Such a wildcard expands to a single
+// non-empty component matcher ([^.:/@]+) that cannot cross a scheme/host/port
+// or userinfo boundary. Any other '*' (a partial-label wildcard such as "myapp.com*",
+// "*myapp.com" or "myapp.*com") is treated as a literal character, so it
+// cannot widen the match — a misused trailing/partial wildcard simply fails
+// closed instead of allowing suffix or cross-boundary bypasses
+// (GHSA-47hv-j4px-h3c9). \A and \z anchor the whole string with no
+// trailing-newline leniency (unlike ^...$).
 func (v *OriginValidator) wildcardPatternToRegex(wildcardPattern string) string {
-	// Escape special regex characters except *
-	specialChars := []string{"\\", ".", "+", "?", "^", "$", "{", "}", "(", ")", "|", "[", "]"}
-
-	escaped := wildcardPattern
-	for _, specialChar := range specialChars {
-		escaped = strings.ReplaceAll(escaped, specialChar, "\\"+specialChar)
+	runes := []rune(wildcardPattern)
+	var b strings.Builder
+	b.WriteString(`\A`)
+	for i, c := range runes {
+		if c == '*' && isComponentWildcard(runes, i) {
+			// One non-empty component. '@' is excluded alongside the . : /
+			// separators so a wildcard component can never absorb a userinfo
+			// delimiter (e.g. "myapp.com:*" must not match
+			// "myapp.com:x@evilcom", whose real host is "evilcom").
+			b.WriteString(`[^.:/@]+`)
+			continue
+		}
+		b.WriteString(regexp.QuoteMeta(string(c)))
 	}
+	b.WriteString(`\z`)
+	return b.String()
+}
 
-	// Replace * with .* (matches any characters)
-	escaped = strings.ReplaceAll(escaped, "*", ".*")
-
-	// Anchor the pattern to match the entire string
-	return "^" + escaped + "$"
+// isComponentWildcard reports whether the '*' at index i spans a complete
+// origin component: a separator boundary ("://", "." or ":") immediately to its
+// left, and a separator boundary (".", ":", "/" or end of pattern) immediately
+// to its right. Only such wildcards are safe to expand; any other '*' would let
+// the wildcard bleed across a host/port boundary and is left literal.
+func isComponentWildcard(runes []rune, i int) bool {
+	// Left boundary.
+	leftOK := false
+	switch {
+	case i == 0:
+		leftOK = false
+	case runes[i-1] == '.' || runes[i-1] == ':':
+		leftOK = true
+	case runes[i-1] == '/' && i >= 3 && string(runes[i-3:i]) == "://":
+		leftOK = true
+	}
+	if !leftOK {
+		return false
+	}
+	// Right boundary.
+	if i == len(runes)-1 {
+		return true
+	}
+	switch runes[i+1] {
+	case '.', ':', '/':
+		return true
+	}
+	return false
 }
 
 // GetOriginFromURL extracts origin from URL string

@@ -73,11 +73,11 @@ func ToolVersion(options *ToolVersionOptions) error {
 	}
 
 	// Get the current version components
-	major := semver.Version.Major()
-	minor := semver.Version.Minor()
-	patch := semver.Version.Patch()
-	prerelease := semver.Version.Prerelease()
-	metadata := semver.Version.Metadata()
+	major := semver.Version.Major
+	minor := semver.Version.Minor
+	patch := semver.Version.Patch
+	prerelease := semver.Version.Prerelease
+	metadata := semver.Version.Metadata
 
 	// Check if at least one flag is specified
 	if !options.Major && !options.Minor && !options.Patch && !options.Prerelease {

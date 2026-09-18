@@ -3,7 +3,7 @@ package github
 import (
 	"fmt"
 
-	"github.com/Masterminds/semver"
+	"github.com/wailsapp/wails/v3/internal/semver"
 )
 
 const majorVersion = 3
@@ -26,18 +26,18 @@ func NewSemanticVersion(version string) (*SemanticVersion, error) {
 
 // IsRelease returns true if it's a release version
 func (s *SemanticVersion) IsRelease() bool {
-	if s.Version.Major() != majorVersion {
+	if s.Version.Major != majorVersion {
 		return false
 	}
-	return len(s.Version.Prerelease()) == 0 && len(s.Version.Metadata()) == 0
+	return len(s.Version.Prerelease) == 0 && len(s.Version.Metadata) == 0
 }
 
 // IsPreRelease returns true if it's a prerelease version
 func (s *SemanticVersion) IsPreRelease() bool {
-	if s.Version.Major() != majorVersion {
+	if s.Version.Major != majorVersion {
 		return false
 	}
-	return len(s.Version.Prerelease()) > 0
+	return len(s.Version.Prerelease) > 0
 }
 
 func (s *SemanticVersion) String() string {
@@ -46,40 +46,18 @@ func (s *SemanticVersion) String() string {
 
 // IsGreaterThan returns true if this version is greater than the given version
 func (s *SemanticVersion) IsGreaterThan(version *SemanticVersion) (bool, error) {
-	// Set up new constraint
-	constraint, err := semver.NewConstraint("> " + version.Version.String())
-	if err != nil {
-		return false, err
-	}
-
-	// Check if the desired one is greater than the requested on
-	success, msgs := constraint.Validate(s.Version)
-	if !success {
-		return false, msgs[0]
-	}
-	return true, nil
+	return s.Version.GreaterThan(version.Version), nil
 }
 
 // IsGreaterThanOrEqual returns true if this version is greater than or equal the given version
 func (s *SemanticVersion) IsGreaterThanOrEqual(version *SemanticVersion) (bool, error) {
-	// Set up new constraint
-	constraint, err := semver.NewConstraint(">= " + version.Version.String())
-	if err != nil {
-		return false, err
-	}
-
-	// Check if the desired one is greater than the requested on
-	success, msgs := constraint.Validate(s.Version)
-	if !success {
-		return false, msgs[0]
-	}
-	return true, nil
+	return s.Version.GreaterThanOrEqual(version.Version), nil
 }
 
 // MainVersion returns the main version of any version+prerelease+metadata
 // EG: MainVersion("1.2.3-pre") => "1.2.3"
 func (s *SemanticVersion) MainVersion() *SemanticVersion {
-	mainVersion := fmt.Sprintf("%d.%d.%d", s.Version.Major(), s.Version.Minor(), s.Version.Patch())
+	mainVersion := fmt.Sprintf("%d.%d.%d", s.Version.Major, s.Version.Minor, s.Version.Patch)
 	result, _ := NewSemanticVersion(mainVersion)
 	return result
 }
