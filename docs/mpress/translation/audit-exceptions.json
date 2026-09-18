@@ -12067,5 +12067,248 @@
     "sourceSHA256": "9ee59c92b3d832dcac49a64b81e0e7b689871d3f92f66b83c8f1e9111a3dcdc2",
     "targetSHA256": "046849641c0539fd237897392461d7823cca461c167422a5dfc07f561103dc3c",
     "reason": "French vous devez preserves the requirement to install the packaged application."
+  },
+  {
+    "language": "de",
+    "file": "features/windows/frameless.md",
+    "segment": "b0097-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "a47fc71350995e7f79357a84ebc9b31b4c21e7b9b72e2d7cc91726aa909d7f09",
+    "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "guides/streams.md",
+    "segment": "b0064-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "c61772004e3fc94b269bcfc429d6a0a52a562bc35b49498f13d6ecaf8bf9bed3",
+    "reason": "Reviewed unchanged text: *3117 MB/s*. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "quick-start/installation.md",
+    "segment": "b0012-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "019b56dbe1acefbca8d2936492204c324d2fba6d036fe0b72cb47b293de5f617",
+    "targetSHA256": "b09d7cfd4c8328a7a186594118997d1a11406aae667dc32577d81c38d394fb73",
+    "reason": "Reviewed unchanged text: *Option 2: Homebrew*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "quick-start/installation.md",
+    "segment": "b0050-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "019b56dbe1acefbca8d2936492204c324d2fba6d036fe0b72cb47b293de5f617",
+    "targetSHA256": "b09d7cfd4c8328a7a186594118997d1a11406aae667dc32577d81c38d394fb73",
+    "reason": "Reviewed unchanged text: *Option 2: Homebrew*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "quick-start/installation.md",
+    "segment": "b0052-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "019b56dbe1acefbca8d2936492204c324d2fba6d036fe0b72cb47b293de5f617",
+    "targetSHA256": "b09d7cfd4c8328a7a186594118997d1a11406aae667dc32577d81c38d394fb73",
+    "reason": "Reviewed unchanged text: *Option 1: NodeSource*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "features/windows/frameless.md",
+    "segment": "b0097-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "ec4259e26175aa7c6a0f1ee8501ff1e3e7cdac0f45ec7fc5058460e8f2357ec0",
+    "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "guides/streams.md",
+    "segment": "b0064-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "d5467144666ab9ce2577fa095d0ec06ec64f1e91602a5e9c43eba06db2b5de3d",
+    "reason": "Reviewed unchanged text: *3117 MB/s*. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "features/windows/frameless.md",
+    "segment": "b0097-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "b36d12561c801cd3ffd8cb504e316a294659ae29723352de4821d5c867864d67",
+    "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "guides/streams.md",
+    "segment": "b0064-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "da2ef62eef24e559af289bad11951c1a227f35aa669d0d16dd09109941448655",
+    "reason": "Reviewed unchanged text: *3117 MB/s*. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "features/windows/frameless.md",
+    "segment": "b0097-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "2d82ec1ba8fbc0be2451dcee9f444f79e0755ec2acec70d98944a888dc0a3d85",
+    "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "guides/streams.md",
+    "segment": "b0064-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "e2c08e0988f1db1c92d98ccc0a3f05441f290f28c19726386a20a4912bf4ff49",
+    "reason": "Reviewed unchanged text: *3117 MB/s*. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "guides/streams.md",
+    "segment": "b0064-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "e13b0d7279dc671ad289d258144c06ffaa59c64bbaa39771df0ecace20b37daa",
+    "reason": "Reviewed unchanged text: *3117 MB/s*. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "guides/streams.md",
+    "segment": "b0064-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "1ca574cf6652d885d0601c11a5d49c79e2ced5748b892a371f0da3458c0e862e",
+    "reason": "Reviewed unchanged text: *3117 MB/s*. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "features/windows/frameless.md",
+    "segment": "b0097-text-01",
+    "code": "untranslated",
+    "sourceSHA256": "02118d34b482a34d414f20b269dccd10ad60b090c22822a128a59fe26e41a4f6",
+    "targetSHA256": "bf065f542d43440ed707d99a615b14a8ec4a7e6c1a9550667337260c33e253ac",
+    "reason": "Reviewed unchanged text: *Snap Assist:*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "guides/streams.md",
+    "segment": "b0064-cell-01",
+    "code": "untranslated",
+    "sourceSHA256": "72114b34c3ad8383f8c793bd16a5a658103b317ded5df9604f139e4464f35909",
+    "targetSHA256": "184cc38ac1b6a6c4f0fea3ab9bd9a095d07f09f365a220186d16a0fc425805d0",
+    "reason": "Reviewed unchanged text: *3117 MB/s*. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "guides/updater.md",
+    "segment": "b0362-text-01",
+    "code": "requirement-language",
+    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
+    "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
+    "reason": "requires is part of the literal runtime error message. The following French impératives Définissez and modifiez preserve the required corrective actions."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-004",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: CFN Tracker. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-012",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: ESP Studio. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-024",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-038",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: Redis Viewer. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-042",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: Restic Browser. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-048",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: Snippet Expander. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-052",
+    "code": "untranslated",
+    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
+    "targetSHA256": "7be611c5c1957981a3b35845e81cb1ffc1cd77ddeedc677989ad2c0ce41293fc",
+    "reason": "Reviewed unchanged text: Tiny RDM. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   }
 ]
