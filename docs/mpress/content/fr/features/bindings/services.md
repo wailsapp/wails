@@ -120,7 +120,6 @@ Exigences et compromis de la projection :
 
 Utilisez `NewServiceAsWithOptions[FrontendAuth](authService, options)` lorsque le service projeté nécessite également des [options de service](#options-des-services).
 
-
 ### Service avec état
 
 ```go

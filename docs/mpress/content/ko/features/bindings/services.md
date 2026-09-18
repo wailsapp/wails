@@ -120,7 +120,6 @@ Wails는 `FrontendAuth`에 포함된 메서드에 대해서만 바인딩을 생�
 
 프로젝션된 서비스에 [서비스 옵션](#--4)도 필요하면 `NewServiceAsWithOptions[FrontendAuth](authService, options)`를 사용하세요.
 
-
 ### 상태가 있는 서비스
 
 ```go

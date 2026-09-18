@@ -120,7 +120,6 @@ Persyaratan dan pertimbangan proyeksi:
 
 Gunakan `NewServiceAsWithOptions[FrontendAuth](authService, options)` ketika layanan yang diproyeksikan juga membutuhkan [opsi layanan](#opsi-layanan).
 
-
 ### Layanan dengan State
 
 ```go

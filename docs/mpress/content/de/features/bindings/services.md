@@ -120,7 +120,6 @@ Anforderungen und Abwägungen bei Projektionen:
 
 Verwende `NewServiceAsWithOptions[FrontendAuth](authService, options)`, wenn der projizierte Service auch [Serviceoptionen](#serviceoptionen) benötigt.
 
-
 ### Service mit Zustand
 
 ```go

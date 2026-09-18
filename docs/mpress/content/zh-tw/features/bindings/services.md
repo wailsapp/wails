@@ -120,7 +120,6 @@ Wails 僅為 `FrontendAuth` 中的方法產生繫結，執行階段也對透過�
 
 當投影後的服務也需要[服務選項](#heading-8)時，請使用 `NewServiceAsWithOptions[FrontendAuth](authService, options)`。
 
-
 ### 具備狀態的服務
 
 ```go

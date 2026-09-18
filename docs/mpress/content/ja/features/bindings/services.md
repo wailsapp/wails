@@ -120,7 +120,6 @@ Wails は `FrontendAuth` のメソッドだけにバインディングを生成�
 
 射影したサービスにも[サービスオプション](#heading-8)が必要な場合は `NewServiceAsWithOptions[FrontendAuth](authService, options)` を使用してください。
 
-
 ### 状態を持つサービス
 
 ```go
