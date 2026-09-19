@@ -1,17 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Cloudflare and CI build the same pinned release, without Go or Node.js.
+# Cloudflare and CI download the latest release, without Go or Node.js.
 project_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
 build_tmp=$(mktemp -d)
 trap 'rm -rf "$build_tmp"' EXIT
-release_url="https://github.com/leaanthony/mpress/releases/download/v1.0.17"
+# Resolve latest once so the archive and checksums belong to the same release.
+release_page=$(curl --fail --location --silent --show-error --retry 3 --head \
+  --output /dev/null --write-out '%{url_effective}' \
+  https://github.com/leaanthony/mpress/releases/latest)
+release_tag="${release_page##*/}"
+release_url="https://github.com/leaanthony/mpress/releases/download/$release_tag"
 archive="mpress-linux-amd64.tar.gz"
-expected="2487460b868389075ab3b7d7aa5f894fcaa61204ca152293c843dfd40d1ea8a0"
+echo "Downloading M-Press $release_tag"
 curl --fail --location --silent --show-error --retry 3 "$release_url/$archive" -o "$build_tmp/$archive"
-echo "$expected  $build_tmp/$archive" | sha256sum --check --status
+curl --fail --location --silent --show-error --retry 3 "$release_url/checksums.txt" -o "$build_tmp/checksums.txt"
+awk -v archive="$archive" '$2 == archive {print}' "$build_tmp/checksums.txt" > "$build_tmp/$archive.sha256"
+(cd "$build_tmp" && sha256sum --check --strict "$archive.sha256")
 tar -xzf "$build_tmp/$archive" -C "$build_tmp"
-test "$("$build_tmp/mpress" version)" = "mpress 1.0.17"
+test "$("$build_tmp/mpress" version)" = "mpress ${release_tag#v}"
 cd "$project_root"
 python3 docs/mpress/scripts/check_translations.py --mpress "$build_tmp/mpress"
 # The imported home-page animation adds CSS classes at runtime.
