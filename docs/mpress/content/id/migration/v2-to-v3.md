@@ -17,6 +17,36 @@ Wails v3 merupakan **penulisan ulang secara menyeluruh** dengan peningkatan sign
 
 **Waktu migrasi:** 1-4 jam untuk aplikasi pada umumnya
 
+## Migrasi otomatis
+
+@note{type="warning" title="Eksperimental"}
+Perintah `wails3 migrate` disertakan dalam CLI V3, tetapi masih eksperimental. Struktur proyek umum didukung, namun hasil dapat berbeda: tinjau kode hasilnya dan uji aplikasi dengan menyeluruh. Jika bermasalah, [buka issue](https://github.com/wailsapp/wails/issues) dengan rinciannya. Pull request sangat diterima.
+@end
+
+CLI dapat mengerjakan sebagian besar langkah panduan ini:
+
+```bash
+wails3 migrate -d ./myv2project -o ./myv3project
+```
+
+Perintah memigrasikan bagian yang dapat dipetakan secara pasti dan mendokumentasikan sisanya. Logika aplikasi tidak ditulis ulang dan lapisan kompatibilitas tidak dibuat: kode API v2 tetap utuh, sedangkan setiap lokasinya dicatat dalam `MIGRATION.md` bersama pengganti v3 yang konkret.
+
+Yang dimigrasikan:
+
+- `main.go` diubah untuk memakai `application.New()` dan `app.Window.NewWithOptions()` dengan mempertahankan kode dan komentar Anda. Opsi, termasuk opsi jendela khusus platform, dipetakan ke padanannya di v3.
+- Struktur dalam `Bind` menjadi layanan v3; callback `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` dihubungkan ke padanan v3: peristiwa aplikasi, `OnShutdown`, dan `ShouldQuit`.
+- `wails.json` diganti dengan berkas proyek v3: sistem build Taskfile dan `build/config.yml` yang diisi metadata v2: informasi produk, asosiasi berkas, dan protokol.
+- `go.mod` mengganti `wails/v2` dengan `wails/v3` dan menaikkan direktif Go lama ke `go 1.25`, minimum yang dibutuhkan v3. Versi yang lebih baru dipertahankan.
+- Frontend disalin dan `@wailsio/runtime` ditambahkan sebagai dependensi. Direktori hasil generasi `wailsjs/` tidak disalin karena merupakan keluaran build v2 yang tidak bisa digunakan di v3.
+
+Yang didokumentasikan dalam `MIGRATION.md`:
+
+- Setiap panggilan paket `runtime` v2, dengan berkas, baris, dan pengganti v3; misalnya `runtime.EventsEmit(ctx, ...)` menjadi `app.Event.Emit(...)`. Proyek sengaja belum dapat dikompilasi sampai panggilan itu diporting; compiler menunjuk lokasi terkait.
+- Setiap impor frontend `wailsjs/runtime` atau `wailsjs/go/...`, padanan `@wailsio/runtime`, dan alur pembuatan binding melalui `wails3 generate bindings`.
+- Opsi yang memerlukan keputusan manusia, seperti menu, logger khusus, dan `EnumBind`, beserta petunjuknya.
+
+Bagian selanjutnya menjelaskan perubahan secara terperinci; gunakan bersama daftar periksa yang dihasilkan.
+
 ## Perubahan yang Tidak Kompatibel
 
 ### Inisialisasi Aplikasi
@@ -479,20 +509,20 @@ Events.Emit("action", data)
 }
 ```
 
-**v3 (wails.json):**
+**v3 (`build/config.yml`):**
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  }
-}
+```yaml
+version: '3'
+
+info:
+  productName: "myapp"
+  productIdentifier: "com.example.myapp"
+
+dev_mode:
+  root_path: .
 ```
+
+Perintah pengembangan dan build proyek V3 ditentukan dalam `Taskfile.yml` di akar proyek. Proyek hasil migrasi menyimpan perintah frontend di sana dan memakai `build/config.yml` untuk konfigurasi aplikasi serta pengemasan. Jangan membuat `wails.json` V3 dengan menyalin berkas V2.
 
 ## Pemetaan Fitur
 
@@ -671,6 +701,21 @@ wails3 generate bindings
 - **Dokumentasi yang lebih baik** - Panduan lengkap
 
 ## Mendapatkan Bantuan
+
+### Melaporkan masalah migrasi
+
+Kegagalan alat migrasi adalah bug. Sebelum membuka issue, perkecil masalah menjadi proyek V2 minimum yang dapat direproduksi dan sertakan:
+
+- versi Wails V2 dan versi atau commit CLI V3;
+- sistem operasi dan arsitektur;
+- perintah `wails3 migrate` persisnya;
+- keluaran perintah dan `MIGRATION.md` yang dihasilkan;
+- keluaran `wails3 doctor`;
+- proyek yang telah dibersihkan dari data privat atau reproduksi minimum jika kode bersifat privat.
+
+Gunakan templat bug di [pelacak Wails](https://github.com/wailsapp/wails/issues). Jangan lampirkan rahasia, kredensial penandatanganan, atau kode sumber privat.
+
+Untuk perubahan perilaku migrasi atau API V3, ajukan [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep) melalui pull request. Usulan produk bukan permintaan fitur biasa.
 
 ### Sumber Daya
 

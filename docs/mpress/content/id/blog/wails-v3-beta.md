@@ -75,7 +75,7 @@ v3 adalah versi mayor baru, dan migrasinya merupakan porting yang sesungguhnya, 
 
 Kami telah menerbitkan [panduan migrasi v2 ke v3](/migration/v2-to-v3/) yang menguraikan perubahan tersebut serta menyertakan pemetaan fitur dan daftar periksa pengujian. Panduan manual tersebut merupakan jalur migrasi yang didukung untuk versi beta ini. Jangan berasumsi bahwa setiap proyek v2 dapat dikonversi tanpa peninjauan: uji hasilnya, porting panggilan runtime Anda secara terencana, dan pertahankan v2 hingga aplikasi baru siap.
 
-Kami juga sedang mengevaluasi asisten migrasi eksperimental. Asisten ini bukan bagian dari rilis beta ini, dan kami hanya akan merekomendasikannya setelah divalidasi terhadap proyek v2 dunia nyata yang representatif.
+CLI beta juga menyertakan asisten migrasi eksperimental: `wails3 migrate -d /path/to/v2-project -o /path/to/v3-project`. Asisten membuat proyek V3 terpisah dan daftar periksa `MIGRATION.md`, tetapi tidak menjanjikan konversi tanpa campur tangan. Tinjau proyek hasilnya, porting panggilan API V2 yang terdaftar, dan laporkan masalah yang dapat direproduksi di pelacak issue.
 
 ## Catatan terbuka tentang perjalanan ini
 

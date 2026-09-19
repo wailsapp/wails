@@ -75,7 +75,7 @@ v3 ist eine neue Hauptversion, und die Migration ist eine echte Portierung, nich
 
 Wir haben einen [Leitfaden für die Migration von v2 zu v3](/migration/v2-to-v3/) veröffentlicht, der diese Änderungen erläutert und eine Funktionszuordnung sowie eine Testcheckliste enthält. Dieser manuelle Leitfaden ist der für diese Beta unterstützte Migrationsweg. Erwarten Sie bitte nicht, dass sich jedes v2-Projekt ohne Überprüfung konvertieren lässt: Testen Sie das Ergebnis, portieren Sie Ihre Runtime-Aufrufe bewusst und behalten Sie v2 bei, bis die neue Anwendung bereit ist.
 
-Wir evaluieren außerdem einen experimentellen Migrationsassistenten. Er ist nicht Teil dieser Betaversion, und wir werden ihn erst empfehlen, wenn er anhand repräsentativer realer v2-Projekte validiert wurde.
+Die Beta-CLI enthält auch einen experimentellen Migrationsassistenten: `wails3 migrate -d /path/to/v2-project -o /path/to/v3-project`. Er erstellt ein separates V3-Projekt und eine Checkliste in `MIGRATION.md`, verspricht aber keine vollautomatische Umstellung. Prüfen Sie das erzeugte Projekt, portieren Sie die aufgeführten V2-API-Aufrufe und melden Sie reproduzierbare Probleme im Issue-Tracker.
 
 ## Ein offenes Wort zum bisherigen Weg
 

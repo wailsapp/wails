@@ -57,6 +57,18 @@ wails3 init [flags]
 3. 更新`go.mod`中的模块名称，使其与仓库 URL 匹配
 4. 添加所有文件
 
+### `migrate`
+
+将 Wails v2 项目迁移到新的 Wails v3 项目。该命令仍属实验性功能，必须检查生成的项目。
+
+```bash
+wails3 migrate -d /path/to/v2-project -o /path/to/v3-project
+```
+
+源项目保持不变。命令会迁移可确定映射的项目元数据、构建资源、前端设置和配置，然后在输出目录写入 `MIGRATION.md` 报告。它不会重写应用逻辑或剩余的 V2 运行时调用。移植报告中的调用后，运行 `go mod tidy`、`wails3 doctor`、`wails3 generate bindings` 和 `wails3 dev`。
+
+通过 `wails3 migrate --help` 查看所有选项。请在[问题跟踪器](https://github.com/wailsapp/wails/issues)中报告可复现的迁移失败，附上命令、CLI 版本、操作系统、`wails3 doctor` 输出和生成的 `MIGRATION.md`。迁移行为的变更建议应提交为 [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep)。
+
 ### `dev`
 
 以开发模式运行应用。你可以实时查看前端代码，并在不必重新构建整个应用的情况下进行更改，所做的更改会反映在 正在运行的应用中。系统还会检测 Go 代码的更改，并自动重新构建和重新启动 应用。

@@ -57,6 +57,18 @@ Jika diberikan, flag ini akan:
 3. Memperbarui nama modul dalam `go.mod` agar sesuai dengan URL repositori
 4. Menambahkan semua berkas
 
+### `migrate`
+
+Memigrasikan proyek Wails v2 ke proyek Wails v3 baru. Perintah ini eksperimental dan proyek hasilnya selalu perlu ditinjau.
+
+```bash
+wails3 migrate -d /path/to/v2-project -o /path/to/v3-project
+```
+
+Proyek sumber tidak diubah. Perintah memetakan metadata, aset build, pengaturan frontend, dan konfigurasi yang dapat ditentukan secara pasti, lalu menulis laporan `MIGRATION.md` ke direktori keluaran. Logika aplikasi dan sisa panggilan runtime V2 tidak ditulis ulang. Porting panggilan yang terdaftar, lalu jalankan `go mod tidy`, `wails3 doctor`, `wails3 generate bindings`, dan `wails3 dev`.
+
+Lihat seluruh flag melalui `wails3 migrate --help`. Laporkan kegagalan yang dapat direproduksi di [pelacak issue](https://github.com/wailsapp/wails/issues) dengan perintah, versi CLI, sistem operasi, keluaran `wails3 doctor`, dan `MIGRATION.md`. Usulan perubahan perilaku harus memakai [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep).
+
 ### `dev`
 
 Menjalankan aplikasi dalam mode pengembangan. Dengan mode ini, Anda dapat melihat kode frontend secara langsung serta membuat perubahan dan melihat hasilnya pada aplikasi yang sedang berjalan tanpa perlu membangun ulang seluruh aplikasi. Perubahan pada kode Go juga akan terdeteksi, lalu aplikasi akan otomatis dibangun ulang dan dijalankan kembali.

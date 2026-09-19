@@ -21,6 +21,7 @@ wails3 <command> --help
 | 命令 | 说明 |
 | --- | --- |
 | `wails3 init` | 基于模板创建新项目。标志：`-n`（项目名称）、`-t`（模板，默认为`vanilla`）、`-p`（Go 包名称，默认为`main`）、`-d`（项目目录，默认为`.`）、`-q`（静默模式）、`-l`（列出模板）、`-mod`（Go 模块路径）、`--git`（Git 仓库 URL）、`--skipgomodtidy`、`-s`（跳过远程模板警告）、`--productname`/`--productdescription`/`--productversion`/`--productcompany`/`--productcopyright`/`--productcomments`/`--productidentifier`。 |
+| `wails3 migrate` | 将 V2 项目迁移到独立的 V3 输出目录。实验性：`-d` 指定 V2 项目，`-o` 指定输出目录，`-f` 允许非空输出目录，`-q` 静默输出，`-skipgomodtidy` 跳过依赖清理。请审查 `MIGRATION.md`；应用逻辑和剩余 V2 API 调用需要手动移植。 |
 | `wails3 dev` | 以开发模式运行应用程序，并启用前端热重载。标志：`--config`（默认为`./build/config.yml`）、`--port`（Vite 开发端口）、`-s`（启用 HTTPS）。 |
 | `wails3 build` | 构建项目。对 Taskfile 中`build`任务的轻量封装。标志：`--tags`（作为`EXTRA_TAGS=`转发）、`--obfuscated`（使用 Garble 构建；请参阅[混淆构建](/guides/build/obfuscation/)）、`--garbleargs`（在`build`子命令之前转发给`garble`的额外标志）。 |
 | `wails3 package` | 运行特定于平台的`package` Taskfile 任务。 |

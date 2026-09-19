@@ -21,6 +21,7 @@ wails3 <command> --help
 | 명령어 | 설명 |
 | --- | --- |
 | `wails3 init` | 템플릿으로 새 프로젝트를 생성합니다. 플래그: `-n`(프로젝트 이름), `-t`(템플릿, 기본값 `vanilla`), `-p`(Go 패키지 이름, 기본값 `main`), `-d`(프로젝트 디렉터리, 기본값 `.`), `-q`(출력 억제), `-l`(템플릿 목록 표시), `-mod`(Go 모듈 경로), `--git`(Git 저장소 URL), `--skipgomodtidy`, `-s`(원격 템플릿 경고 건너뛰기), `--productname`/`--productdescription`/`--productversion`/`--productcompany`/`--productcopyright`/`--productcomments`/`--productidentifier`. |
+| `wails3 migrate` | V2 프로젝트를 별도 V3 디렉터리로 이전합니다. 실험적: `-d`는 원본, `-o`는 출력 디렉터리, `-f`는 비어 있지 않은 출력 허용, `-q`는 출력 억제, `-skipgomodtidy`는 의존성 정리 생략입니다.`MIGRATION.md`를 검토하세요. 로직과 남은 V2 API 호출은 수동 포팅이 필요합니다. |
 | `wails3 dev` | 프런트엔드 핫 리로드를 사용하여 애플리케이션을 개발 모드로 실행합니다. 플래그: `--config`(기본값 `./build/config.yml`), `--port`(Vite 개발 포트), `-s`(HTTPS 활성화). |
 | `wails3 build` | 프로젝트를 빌드합니다. Taskfile의 `build` 태스크를 감싸는 간단한 래퍼입니다. 플래그: `--tags`(`EXTRA_TAGS=`로 전달), `--obfuscated`(Garble로 빌드, [난독화 빌드](/guides/build/obfuscation/) 참조), `--garbleargs`(`build` 하위 명령 앞에서 `garble`에 전달할 추가 플래그). |
 | `wails3 package` | 플랫폼별 `package` Taskfile 태스크를 실행합니다. |

@@ -17,6 +17,36 @@ O Wails v3 é uma **reescrita completa**, com melhorias significativas na arquit
 
 **Tempo de migração:** 1-4 horas para aplicativos típicos
 
+## Migração automatizada
+
+@note{type="warning" title="Experimental"}
+O comando `wails3 migrate` está incluído no CLI V3, mas é experimental. Ele atende estruturas comuns de projetos, porém os resultados podem variar: revise o código gerado e teste cuidadosamente o aplicativo. Se encontrar problemas, [abra uma issue](https://github.com/wailsapp/wails/issues) com detalhes. Pull requests são bem-vindos.
+@end
+
+O CLI pode realizar grande parte deste guia:
+
+```bash
+wails3 migrate -d ./myv2project -o ./myv3project
+```
+
+O comando migra o que tem correspondência determinística e documenta o restante. Não reescreve sua lógica nem gera camadas de compatibilidade: chamadas à API v2 ficam intactas e são listadas em `MIGRATION.md` com seus substitutos concretos em v3.
+
+O que é migrado:
+
+- `main.go` passa a usar `application.New()` e `app.Window.NewWithOptions()`, preservando seu código e comentários. As opções são mapeadas para seus equivalentes v3, inclusive as de janela específicas de plataforma.
+- Estruturas em `Bind` tornam-se serviços v3, e `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` são ligados aos equivalentes v3: eventos do aplicativo, `OnShutdown` e `ShouldQuit`.
+- `wails.json` é substituído pelos arquivos de projeto v3: o sistema de compilação Taskfile e `build/config.yml`, preenchido com metadados v2 de produto, associações de arquivos e protocolos.
+- `go.mod` troca `wails/v2` por `wails/v3` e eleva diretivas Go antigas para `go 1.25`, o mínimo da v3. Versões mais recentes são mantidas.
+- O frontend é copiado e `@wailsio/runtime` é adicionado às dependências. O diretório gerado `wailsjs/` não é copiado, pois é saída de compilação da v2 incompatível com v3.
+
+O que é documentado em `MIGRATION.md`:
+
+- Cada chamada ao pacote `runtime` v2, com arquivo, linha e substituto v3; por exemplo, `runtime.EventsEmit(ctx, ...)` vira `app.Event.Emit(...)`. O projeto não compila até essas chamadas serem portadas; o compilador aponta os locais.
+- Cada importação frontend de `wailsjs/runtime` ou `wailsjs/go/...`, com equivalente em `@wailsio/runtime` e o fluxo de geração de bindings com `wails3 generate bindings`.
+- Opções que exigem decisão humana, como menus, loggers personalizados e `EnumBind`, com instruções.
+
+O restante deste guia explica as mudanças em profundidade; use-o com a lista gerada.
+
 ## Mudanças incompatíveis
 
 ### Inicialização do aplicativo
@@ -479,20 +509,20 @@ Events.Emit("action", data)
 }
 ```
 
-**v3 (wails.json):**
+**v3 (`build/config.yml`):**
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  }
-}
+```yaml
+version: '3'
+
+info:
+  productName: "myapp"
+  productIdentifier: "com.example.myapp"
+
+dev_mode:
+  root_path: .
 ```
+
+Os comandos de desenvolvimento e compilação do projeto V3 ficam no `Taskfile.yml` raiz. O projeto gerado mantém ali os comandos frontend e usa `build/config.yml` para configuração do aplicativo e empacotamento. Não crie um `wails.json` V3 copiando o arquivo V2.
 
 ## Mapeamento de funcionalidades
 
@@ -671,6 +701,21 @@ wails3 generate bindings
 - **Documentação aprimorada** — Guias abrangentes
 
 ## Como obter ajuda
+
+### Relatar problemas de migração
+
+Falhas da ferramenta são bugs. Antes de abrir uma issue, reduza o problema ao menor projeto V2 reproduzível e inclua:
+
+- versão do Wails V2 e versão ou commit do CLI V3;
+- sistema operacional e arquitetura;
+- comando `wails3 migrate` exato;
+- saída do comando e `MIGRATION.md` gerado;
+- saída de `wails3 doctor`;
+- projeto sem dados privados ou reprodução mínima, se o código for privado.
+
+Use o modelo de bug no [rastreador Wails](https://github.com/wailsapp/wails/issues). Não anexe segredos, credenciais de assinatura nem código privado.
+
+Para propor mudanças na migração ou na API V3, envie uma [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep) por pull request. Propostas de produto não devem ser solicitações comuns de funcionalidades.
 
 ### Recursos
 

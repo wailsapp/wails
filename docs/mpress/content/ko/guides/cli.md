@@ -57,6 +57,18 @@ wails3 init [flags]
 3. `go.mod`의 모듈 이름을 저장소 URL과 일치하도록 업데이트합니다.
 4. 모든 파일을 추가합니다.
 
+### `migrate`
+
+Wails v2 프로젝트를 새 Wails v3 프로젝트로 이전합니다. 실험적인 명령이므로 생성된 프로젝트를 반드시 검토해야 합니다.
+
+```bash
+wails3 migrate -d /path/to/v2-project -o /path/to/v3-project
+```
+
+원본 프로젝트는 변경하지 않습니다. 명확히 대응되는 메타데이터, 빌드 자산, 프런트엔드 설정 및 구성을 변환한 뒤 출력 디렉터리에 `MIGRATION.md`를 씁니다. 애플리케이션 로직이나 남아 있는 V2 런타임 호출은 다시 쓰지 않습니다. 보고서의 호출을 포팅한 뒤 `go mod tidy`, `wails3 doctor`, `wails3 generate bindings`, `wails3 dev`를 실행하세요.
+
+모든 플래그는 `wails3 migrate --help`에서 확인합니다. 재현 가능한 실패는 명령, CLI 버전, 운영체제, `wails3 doctor` 출력, 생성된 `MIGRATION.md`와 함께 [이슈 트래커](https://github.com/wailsapp/wails/issues)에 보고하세요. 동작 변경 제안에는 [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep)을 사용합니다.
+
 ### `dev`
 
 애플리케이션을 개발 모드로 실행합니다. 프런트엔드 코드를 실시간으로 확인할 수 있으며, 애플리케이션 전체를 다시 빌드하지 않고도 변경 사항이 실행 중인 애플리케이션에 반영되는 것을 확인할 수 있습니다. Go 코드의 변경 사항도 감지하여 애플리케이션을 자동으로 다시 빌드하고 재실행합니다.

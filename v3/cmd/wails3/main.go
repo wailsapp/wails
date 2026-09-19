@@ -48,6 +48,8 @@ func main() {
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
 	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
 
+	app.NewSubCommandFunction("migrate", "Migrate a Wails v2 project to v3 (experimental)", commands.Migrate)
+
 	pkg := app.NewSubCommand("package", "Package application")
 	var pkgFlags flags.Package
 	pkg.AddFlags(&pkgFlags)
