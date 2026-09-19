@@ -47,6 +47,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="HappyTools のスクリーンショット" loading="lazy"><span>HappyTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Packsmith のスクリーンショット" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui のスクリーンショット" loading="lazy"><span>Condui</span></a>
+<a class="mpress-showcase-card" href="/ja/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio のスクリーンショット" loading="lazy"><span>MQ Studio</span></a>
 </div>
 
 ## ショーケースにプロジェクトを追加する方法
