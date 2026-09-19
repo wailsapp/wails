@@ -110,7 +110,97 @@ app := application.New(application.Options{
 })
 ```
 
-Wails 애플리케이션에서 패닉을 처리하는 완전한 실행 예제는 `v3/examples/panic-handling`의 panic-handling 예제를 참조하세요.
+## 직접 생성한 고루틴의 패닉 처리 {#user-goroutines}
+
+Wails는 프런트엔드에서 호출한 바인딩된 서비스 메서드나 내부 런타임 콜백처럼 자신이 제어하는 위치에만 지연 복구를 설치할 수 있습니다. 직접 작성한 코드가 다음과 같다면:
+
+```go
+go func() {
+    // your work
+}()
+```
+
+Wails는 그 고루틴에 `defer handlePanic()`을 삽입할 수 없습니다. 패닉이 발생하면 Go의 기본 동작에 따라 전체 프로세스가 종료되며 등록한 `PanicHandler`는 호출되지 **않습니다**.
+
+직접 생성한 고루틴의 패닉을 Wails가 감지한 패닉과 같은 핸들러로 보내려면, `PanicDetails`를 직접 만들고 `PanicHandler`로 등록한 함수를 호출하는 작은 헬퍼를 추가하세요:
+
+```go
+import (
+    "fmt"
+    "runtime/debug"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// reportPanic is the function you register as application.Options.PanicHandler.
+func reportPanic(pd *application.PanicDetails) {
+    // log to file / send to Sentry / show dialog / etc.
+}
+
+// recoverAndReport funnels goroutine panics to reportPanic. Defer it as the
+// first statement of every goroutine you spawn in user code.
+func recoverAndReport() {
+    r := recover()
+    if r == nil {
+        return
+    }
+    err, ok := r.(error)
+    if !ok {
+        err = fmt.Errorf("%v", r)
+    }
+    stack := string(debug.Stack())
+    reportPanic(&application.PanicDetails{
+        Error:          err,
+        Time:           time.Now(),
+        StackTrace:     stack,
+        FullStackTrace: stack,
+    })
+}
+```
+
+직접 관리하는 모든 고루틴의 시작 부분에서 사용하세요:
+
+```go
+go func() {
+    defer recoverAndReport()
+    // your work
+}()
+```
+
+이제 Wails가 감지한 패닉과 직접 생성한 고루틴의 패닉이 모두 `reportPanic`으로 전달되어 보고를 한곳에서 처리합니다.
+
+Wails에는 실행 가능한 예제가 두 개 포함되어 있습니다:
+
+- `v3/examples/panic-handling` — 바인딩된 메서드의 패닉만 `PanicHandler`로 전달하는 최소 예제입니다.
+- `v3/examples/user-panic-handling` — 바인딩된 메서드와 백그라운드 고루틴의 패닉을 같은 핸들러로 전달합니다.
+
+@note{type="caution" title="스택 추적의 정확성"}
+
+Wails는 자체 래퍼 프레임을 숨기고 사용자 코드가 맨 위에 오도록 `PanicDetails.StackTrace`를 잘라냅니다. `runtime/debug.Stack()`으로 직접 `PanicDetails`를 만들면 이러한 처리가 없으므로 `StackTrace`와 `FullStackTrace`는 동일하며 고루틴의 전체 스택을 포함합니다. 직접 생성한 고루틴에는 일반적으로 이 동작이 적합합니다.
+
+@end
+
+## 패닉 발생 시 진단 정보 수집 {#panic-diagnostics}
+
+`PanicHandler`는 패닉 자체를 받지만 나중에 상황을 재구성하려면 시스템 정보, 빌드 정보, 프로세스/메모리/모듈 상태 및 Windows 미니덤프 등 프로세스의 전체 상태도 수집하는 것이 좋습니다.
+
+Wails는 이를 위한 전용 패키지를 제공합니다. [충돌 디버깅](/guides/debugging-crashes/)을 참조하세요. 일반적인 통합 방식은 다음과 같습니다:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        report, _ := debug.Report(debug.WithDump())
+        // pd holds the wails-side panic info; report adds system context
+        // and (on Windows) a minidump at report.DumpPath.
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+`debug.Report`는 명시적으로 선택해야 합니다. 충돌 보고에는 사용자 동의나 개인 식별 정보 삭제가 필요할 수 있으므로 Wails는 덤프나 시스템 스냅샷을 자동 저장하지 않습니다. 전체 API는 [충돌 디버깅](/guides/debugging-crashes/) 가이드를 참조하세요.
 
 ## 마무리 참고 사항
 

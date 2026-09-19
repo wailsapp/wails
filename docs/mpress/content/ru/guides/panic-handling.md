@@ -110,7 +110,97 @@ app := application.New(application.Options{
 })
 ```
 
-Полный рабочий пример обработки паник в приложении Wails см. в примере panic-handling в `v3/examples/panic-handling`.
+## Обработка паник в собственных горутинах {#user-goroutines}
+
+Wails может установить отложенное восстановление только там, где контролирует выполнение: в связанных методах сервисов, вызываемых из фронтенда, внутренних обработчиках среды выполнения и подобных местах. Если ваш код делает следующее:
+
+```go
+go func() {
+    // your work
+}()
+```
+
+Wails не может внедрить `defer handlePanic()` в эту горутину. При её панике весь процесс аварийно завершается согласно стандартному поведению Go; зарегистрированный `PanicHandler` **не** вызывается.
+
+Чтобы направить паники собственных горутин в тот же обработчик, что и паники, перехваченные Wails, добавьте небольшую функцию, которая вручную создаёт `PanicDetails` и вызывает функцию, зарегистрированную как `PanicHandler`:
+
+```go
+import (
+    "fmt"
+    "runtime/debug"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// reportPanic is the function you register as application.Options.PanicHandler.
+func reportPanic(pd *application.PanicDetails) {
+    // log to file / send to Sentry / show dialog / etc.
+}
+
+// recoverAndReport funnels goroutine panics to reportPanic. Defer it as the
+// first statement of every goroutine you spawn in user code.
+func recoverAndReport() {
+    r := recover()
+    if r == nil {
+        return
+    }
+    err, ok := r.(error)
+    if !ok {
+        err = fmt.Errorf("%v", r)
+    }
+    stack := string(debug.Stack())
+    reportPanic(&application.PanicDetails{
+        Error:          err,
+        Time:           time.Now(),
+        StackTrace:     stack,
+        FullStackTrace: stack,
+    })
+}
+```
+
+Используйте её в начале каждой горутины, которую запускаете сами:
+
+```go
+go func() {
+    defer recoverAndReport()
+    // your work
+}()
+```
+
+Теперь и путь перехвата Wails, и путь пользовательской горутины приводят к `reportPanic`, сохраняя централизованную обработку отчётов.
+
+С Wails поставляются два запускаемых примера:
+
+- `v3/examples/panic-handling` — минимальный: только паника связанного метода, направляемая в `PanicHandler`.
+- `v3/examples/user-panic-handling` — паника связанного метода и паника фоновой горутины проходят через один обработчик.
+
+@note{type="caution" title="Точность трассировки стека"}
+
+`PanicDetails.StackTrace` сокращается Wails, чтобы скрыть собственные кадры обёрток и показать ваш код в начале трассировки. Если вы создаёте `PanicDetails` самостоятельно из `runtime/debug.Stack()`, сокращения нет: `StackTrace` и `FullStackTrace` будут одинаковыми и будут содержать полный стек вашей горутины. Для самостоятельно запущенных горутин обычно это и требуется.
+
+@end
+
+## Сбор диагностики при панике {#panic-diagnostics}
+
+Обработчик `PanicHandler` получает саму панику, но часто нужно сохранить полное состояние процесса: сведения о системе и сборке, состояние процесса, памяти и модулей, а в Windows ещё и минидамп, чтобы позднее восстановить произошедшее.
+
+Для этого Wails предоставляет отдельный пакет: [Отладка сбоев](/guides/debugging-crashes/). Типичная интеграция:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        report, _ := debug.Report(debug.WithDump())
+        // pd holds the wails-side panic info; report adds system context
+        // and (on Windows) a minidump at report.DumpPath.
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+`debug.Report` вызывается только по явному выбору: Wails никогда автоматически не сохраняет дамп или системный снимок, поскольку отчёты о сбоях часто требуют согласия пользователя или удаления персональных данных. Полный API описан в разделе [Отладка сбоев](/guides/debugging-crashes/).
 
 ## Заключительные замечания
 

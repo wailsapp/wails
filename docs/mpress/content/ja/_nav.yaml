@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "パニック処理"
           link: "/guides/panic-handling/"
+        - label: "クラッシュのデバッグ"
+          link: "/guides/debugging-crashes/"
         - label: "セキュリティのベストプラクティス"
           link: "/guides/security/"
 - label: "API リファレンス"

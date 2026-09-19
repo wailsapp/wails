@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "Panic-Behandlung"
           link: "/guides/panic-handling/"
+        - label: "Abstürze debuggen"
+          link: "/guides/debugging-crashes/"
         - label: "Bewährte Sicherheitsverfahren"
           link: "/guides/security/"
 - label: "API-Referenz"

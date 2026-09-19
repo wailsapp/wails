@@ -110,7 +110,97 @@ app := application.New(application.Options{
 })
 ```
 
-Untuk contoh lengkap yang dapat dijalankan mengenai penanganan panic dalam aplikasi Wails, lihat contoh panic-handling di `v3/examples/panic-handling`.
+## Menangani Panic di Goroutine Anda Sendiri {#user-goroutines}
+
+Wails hanya dapat memasang pemulihan tertunda pada lokasi yang dikendalikannya — metode layanan terikat yang dipanggil dari frontend, callback runtime internal, dan sebagainya. Jika kode Anda sendiri melakukan ini:
+
+```go
+go func() {
+    // your work
+}()
+```
+
+Wails tidak dapat menyisipkan `defer handlePanic()` ke goroutine tersebut. Jika terjadi panic, seluruh proses berhenti sesuai perilaku default Go — `PanicHandler` yang Anda daftarkan **tidak** dipanggil.
+
+Untuk mengarahkan panic goroutine pengguna ke handler yang sama dengan panic yang ditangkap Wails, tambahkan fungsi pembantu kecil yang membuat `PanicDetails` secara manual dan memanggil fungsi yang Anda daftarkan sebagai `PanicHandler`:
+
+```go
+import (
+    "fmt"
+    "runtime/debug"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// reportPanic is the function you register as application.Options.PanicHandler.
+func reportPanic(pd *application.PanicDetails) {
+    // log to file / send to Sentry / show dialog / etc.
+}
+
+// recoverAndReport funnels goroutine panics to reportPanic. Defer it as the
+// first statement of every goroutine you spawn in user code.
+func recoverAndReport() {
+    r := recover()
+    if r == nil {
+        return
+    }
+    err, ok := r.(error)
+    if !ok {
+        err = fmt.Errorf("%v", r)
+    }
+    stack := string(debug.Stack())
+    reportPanic(&application.PanicDetails{
+        Error:          err,
+        Time:           time.Now(),
+        StackTrace:     stack,
+        FullStackTrace: stack,
+    })
+}
+```
+
+Gunakan di awal setiap goroutine yang Anda kelola:
+
+```go
+go func() {
+    defer recoverAndReport()
+    // your work
+}()
+```
+
+Jalur panic yang ditangkap Wails maupun jalur goroutine pengguna kini berakhir di `reportPanic`, sehingga pelaporan tetap terpusat.
+
+Wails menyertakan dua contoh yang dapat dijalankan:
+
+- `v3/examples/panic-handling` — minimal: hanya panic pada metode terikat, diarahkan melalui `PanicHandler`.
+- `v3/examples/user-panic-handling` — panic pada metode terikat dan goroutine latar belakang mengalir melalui handler yang sama.
+
+@note{type="caution" title="Keutuhan stack trace"}
+
+Wails memangkas `PanicDetails.StackTrace` untuk menyembunyikan frame pembungkusnya sendiri agar kode Anda berada di bagian atas trace. Saat Anda membuat `PanicDetails` sendiri dari `runtime/debug.Stack()`, tidak ada pemangkasan — `StackTrace` dan `FullStackTrace` akan identik dan menyertakan seluruh stack goroutine. Biasanya inilah yang diperlukan untuk goroutine yang Anda buat.
+
+@end
+
+## Mengumpulkan Diagnostik Saat Panic {#panic-diagnostics}
+
+`PanicHandler` menerima panic itu sendiri, tetapi sering kali Anda juga perlu menangkap seluruh keadaan proses — informasi sistem, informasi build, keadaan proses/memori/modul, serta minidump di Windows — agar dapat merekonstruksi kejadian nanti.
+
+Wails menyediakan paket khusus untuk itu: [Men-debug Crash](/guides/debugging-crashes/). Integrasi umumnya:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        report, _ := debug.Report(debug.WithDump())
+        // pd holds the wails-side panic info; report adds system context
+        // and (on Windows) a minidump at report.DumpPath.
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+`debug.Report` harus diaktifkan secara eksplisit — Wails tidak akan menyimpan dump atau snapshot sistem secara otomatis karena pelaporan crash sering memerlukan persetujuan pengguna atau penyamaran informasi identitas pribadi. Lihat panduan [Men-debug Crash](/guides/debugging-crashes/) untuk API lengkap.
 
 ## Catatan Akhir
 

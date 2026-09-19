@@ -110,7 +110,97 @@ app := application.New(application.Options{
 })
 ```
 
-Wails アプリケーションでのパニック処理について、完全に動作する例は、`v3/examples/panic-handling`にある panic-handling の例を参照してください。
+## 自分で起動したゴルーチンのパニック処理 {#user-goroutines}
+
+Wails が遅延実行によるリカバリーを設定できるのは、自身が制御する箇所だけです。これにはフロントエンドから呼ばれるバインド済みサービスメソッドや内部ランタイムのコールバックなどが含まれます。自分のコードで次のように書いた場合を考えます。
+
+```go
+go func() {
+    // your work
+}()
+```
+
+Wails はそのゴルーチンに `defer handlePanic()` を挿入できません。そこでパニックが発生すると、Go の既定の動作に従ってプロセス全体がクラッシュし、登録した `PanicHandler` は**呼び出されません**。
+
+自分のゴルーチンのパニックを Wails が捕捉したパニックと同じハンドラーへ送るには、`PanicDetails` を手動で構築し、`PanicHandler` として登録した関数を呼び出す小さなヘルパーを追加します。
+
+```go
+import (
+    "fmt"
+    "runtime/debug"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// reportPanic is the function you register as application.Options.PanicHandler.
+func reportPanic(pd *application.PanicDetails) {
+    // log to file / send to Sentry / show dialog / etc.
+}
+
+// recoverAndReport funnels goroutine panics to reportPanic. Defer it as the
+// first statement of every goroutine you spawn in user code.
+func recoverAndReport() {
+    r := recover()
+    if r == nil {
+        return
+    }
+    err, ok := r.(error)
+    if !ok {
+        err = fmt.Errorf("%v", r)
+    }
+    stack := string(debug.Stack())
+    reportPanic(&application.PanicDetails{
+        Error:          err,
+        Time:           time.Now(),
+        StackTrace:     stack,
+        FullStackTrace: stack,
+    })
+}
+```
+
+自分で起動する各ゴルーチンの先頭で使用してください。
+
+```go
+go func() {
+    defer recoverAndReport()
+    // your work
+}()
+```
+
+Wails による捕捉経路と自分のゴルーチンの経路はどちらも `reportPanic` に到達し、報告処理を一元化できます。
+
+Wails には 2 つの実行可能なサンプルがあります。
+
+- `v3/examples/panic-handling` — 最小構成です。バインド済みメソッドのパニックだけを `PanicHandler` に送ります。
+- `v3/examples/user-panic-handling` — バインド済みメソッドとバックグラウンドゴルーチンのパニックを同じハンドラーに送ります。
+
+@note{type="caution" title="スタックトレースの忠実性"}
+
+`PanicDetails.StackTrace` は Wails 自身のラッパーフレームを隠し、先頭に自分のコードが表示されるように短縮されます。`runtime/debug.Stack()` から自分で `PanicDetails` を構築した場合、この短縮は行われません。`StackTrace` と `FullStackTrace` は同一になり、ゴルーチンのスタック全体が含まれます。自分で起動したゴルーチンでは、通常これが望ましい動作です。
+
+@end
+
+## パニック時の診断情報の取得 {#panic-diagnostics}
+
+`PanicHandler` はパニックそのものを受け取りますが、後から状況を再現するために、システム情報、ビルド情報、プロセス・メモリ・モジュールの状態、Windows ではミニダンプを含む、プロセス全体の状態も取得したい場合があります。
+
+Wails はそのための専用パッケージを提供しています。[クラッシュのデバッグ](/guides/debugging-crashes/)を参照してください。一般的な統合例は次のとおりです。
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        report, _ := debug.Report(debug.WithDump())
+        // pd holds the wails-side panic info; report adds system context
+        // and (on Windows) a minidump at report.DumpPath.
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+`debug.Report` は明示的に選択して使用します。クラッシュ報告にはユーザーの同意や個人情報の除去が必要なことが多いため、Wails がダンプやシステムスナップショットを自動保存することはありません。API 全体については[クラッシュのデバッグ](/guides/debugging-crashes/)を参照してください。
 
 ## 最後に
 

@@ -110,7 +110,97 @@ app := application.New(application.Options{
 })
 ```
 
-如需 Wails 應用程式中 panic 處理方式的完整可運作範例，請參閱`v3/examples/panic-handling`中的 panic-handling 範例。
+## 處理自行建立的 goroutine 中的 panic {#user-goroutines}
+
+Wails 只能在它控制的位置安裝延遲復原邏輯，例如從前端呼叫的繫結服務方法、內部執行階段回呼等。如果你自己的程式碼這樣做：
+
+```go
+go func() {
+    // your work
+}()
+```
+
+Wails 無法在該 goroutine 中插入 `defer handlePanic()`。若它發生 panic，整個處理程序會依 Go 的預設行為當機；你註冊的 `PanicHandler` **不會**被呼叫。
+
+若要讓使用者 goroutine 的 panic 與 Wails 捕捉的 panic 使用同一個處理函式，可加入小型輔助函式，手動建立 `PanicDetails`，再呼叫註冊為 `PanicHandler` 的函式：
+
+```go
+import (
+    "fmt"
+    "runtime/debug"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// reportPanic is the function you register as application.Options.PanicHandler.
+func reportPanic(pd *application.PanicDetails) {
+    // log to file / send to Sentry / show dialog / etc.
+}
+
+// recoverAndReport funnels goroutine panics to reportPanic. Defer it as the
+// first statement of every goroutine you spawn in user code.
+func recoverAndReport() {
+    r := recover()
+    if r == nil {
+        return
+    }
+    err, ok := r.(error)
+    if !ok {
+        err = fmt.Errorf("%v", r)
+    }
+    stack := string(debug.Stack())
+    reportPanic(&application.PanicDetails{
+        Error:          err,
+        Time:           time.Now(),
+        StackTrace:     stack,
+        FullStackTrace: stack,
+    })
+}
+```
+
+在你負責的每個 goroutine 開頭使用它：
+
+```go
+go func() {
+    defer recoverAndReport()
+    // your work
+}()
+```
+
+現在，Wails 捕捉的 panic 與使用者 goroutine 的 panic 都會進入 `reportPanic`，回報邏輯仍集中在一處。
+
+Wails 隨附兩個可執行的範例：
+
+- `v3/examples/panic-handling` — 最小範例：只透過 `PanicHandler` 處理繫結方法中的 panic。
+- `v3/examples/user-panic-handling` — 繫結方法與背景 goroutine 的 panic 都交給同一個處理函式。
+
+@note{type="caution" title="堆疊追蹤的完整性"}
+
+Wails 會裁剪 `PanicDetails.StackTrace`，隱藏自身的包裝框架，讓你的程式碼出現在追蹤頂端。若使用 `runtime/debug.Stack()` 自行建立 `PanicDetails`，則不會裁剪：`StackTrace` 與 `FullStackTrace` 相同，都包含該 goroutine 的完整堆疊。對於自行建立的 goroutine，這通常正是需要的行為。
+
+@end
+
+## 在 panic 時收集診斷資訊 {#panic-diagnostics}
+
+`PanicHandler` 接收 panic 本身，但通常還需要擷取處理程序的完整狀態，包括系統資訊、組建資訊、處理程序/記憶體/模組狀態，以及 Windows 上的小型傾印，以便之後重建當時的情況。
+
+Wails 為此提供專用套件：[偵錯當機](/guides/debugging-crashes/)。典型整合方式如下：
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        report, _ := debug.Report(debug.WithDump())
+        // pd holds the wails-side panic info; report adds system context
+        // and (on Windows) a minidump at report.DumpPath.
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+`debug.Report` 需要主動啟用。Wails 絕不會自動儲存傾印或系統快照，因為當機回報通常涉及使用者同意或個人識別資訊遮蔽。完整 API 請參閱[偵錯當機](/guides/debugging-crashes/)指南。
 
 ## 最後注意事項
 

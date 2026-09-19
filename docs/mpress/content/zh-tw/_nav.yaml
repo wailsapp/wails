@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "Panic 處理"
           link: "/guides/panic-handling/"
+        - label: "偵錯當機"
+          link: "/guides/debugging-crashes/"
         - label: "安全性最佳實務"
           link: "/guides/security/"
 - label: "API 參考"
