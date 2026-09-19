@@ -130,6 +130,9 @@ func newPlatformApp(app *App) *iosApp {
 	}
 	C.ios_set_disable_input_accessory(C.bool(disable))
 
+	// Safe area insets for WebView (Disable*)
+	C.ios_set_disable_safe_area_insets(C.bool(app.options.IOS.DisableSafeAreaInsets))
+
 	// Scrolling / Bounce / Indicators (defaults enabled; using Disable* flags)
 	C.ios_set_disable_scroll(C.bool(app.options.IOS.DisableScroll))
 	C.ios_set_disable_bounce(C.bool(app.options.IOS.DisableBounce))
