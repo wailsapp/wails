@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "Gestion des paniques"
           link: "/guides/panic-handling/"
+        - label: "Déboguer les plantages"
+          link: "/guides/debugging-crashes/"
         - label: "Bonnes pratiques de sécurité"
           link: "/guides/security/"
 - label: "Référence de l’API"

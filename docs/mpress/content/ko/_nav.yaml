@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "패닉 처리"
           link: "/guides/panic-handling/"
+        - label: "충돌 디버깅"
+          link: "/guides/debugging-crashes/"
         - label: "보안 모범 사례"
           link: "/guides/security/"
 - label: "API 참조"

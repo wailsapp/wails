@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "Penanganan Panic"
           link: "/guides/panic-handling/"
+        - label: "Men-debug Crash"
+          link: "/guides/debugging-crashes/"
         - label: "Praktik Terbaik Keamanan"
           link: "/guides/security/"
 - label: "Referensi API"

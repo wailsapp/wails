@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Panic Handler Demo</title>
+  <style>
+    body { color: white; font-family: system-ui, sans-serif; padding: 2rem; }
+    h1   { font-size: 1.2rem; }
+    p    { max-width: 48rem; line-height: 1.5; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
+    code { background: rgba(255,255,255,0.1); padding: 0 0.25rem; border-radius: 3px; }
+  </style>
+  <script src="/wails/runtime.js" type="module"></script>
+</head>
+<body>
+  <h1>Two panic paths, one handler</h1>
+  <p>
+    A background goroutine will panic ~3 seconds after launch — it is recovered
+    by <code>recoverAndReport()</code> in user code and routed to the same
+    handler as wails-caught panics. Check the terminal.
+  </p>
+  <p>
+    Click the button below to trigger a panic inside a bound service method.
+    Wails catches that one automatically and routes it to the same handler.
+  </p>
+  <button onclick="wails.Call.ByName('main.WindowService.GeneratePanic')">
+    Trigger bound-method panic
+  </button>
+</body>
+</html>

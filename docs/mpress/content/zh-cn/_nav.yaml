@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "Panic 处理"
           link: "/guides/panic-handling/"
+        - label: "调试崩溃"
+          link: "/guides/debugging-crashes/"
         - label: "安全最佳实践"
           link: "/guides/security/"
 - label: "API 参考"

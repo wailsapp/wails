@@ -110,7 +110,97 @@ app := application.New(application.Options{
 })
 ```
 
-Pour consulter un exemple fonctionnel complet de gestion des paniques dans une application Wails, reportez-vous à l’exemple panic-handling dans `v3/examples/panic-handling`.
+## Gérer les paniques de vos propres goroutines {#user-goroutines}
+
+Wails ne peut installer sa récupération différée qu’aux endroits qu’il contrôle : méthodes liées appelées depuis le frontend, fonctions de rappel internes du runtime, etc. Si votre propre code fait ceci :
+
+```go
+go func() {
+    // your work
+}()
+```
+
+Wails ne peut pas injecter un `defer handlePanic()` dans cette goroutine. Si elle panique, tout le processus plante conformément au comportement par défaut de Go : votre `PanicHandler` enregistré **n’est pas** appelé.
+
+Pour faire passer les paniques de vos goroutines par le même gestionnaire que celles interceptées par Wails, ajoutez une petite fonction qui construit manuellement un `PanicDetails` et appelle la fonction que vous avez enregistrée comme `PanicHandler` :
+
+```go
+import (
+    "fmt"
+    "runtime/debug"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// reportPanic is the function you register as application.Options.PanicHandler.
+func reportPanic(pd *application.PanicDetails) {
+    // log to file / send to Sentry / show dialog / etc.
+}
+
+// recoverAndReport funnels goroutine panics to reportPanic. Defer it as the
+// first statement of every goroutine you spawn in user code.
+func recoverAndReport() {
+    r := recover()
+    if r == nil {
+        return
+    }
+    err, ok := r.(error)
+    if !ok {
+        err = fmt.Errorf("%v", r)
+    }
+    stack := string(debug.Stack())
+    reportPanic(&application.PanicDetails{
+        Error:          err,
+        Time:           time.Now(),
+        StackTrace:     stack,
+        FullStackTrace: stack,
+    })
+}
+```
+
+Utilisez-la au début de chaque goroutine dont vous êtes responsable :
+
+```go
+go func() {
+    defer recoverAndReport()
+    // your work
+}()
+```
+
+Les paniques interceptées par Wails et celles de vos goroutines aboutissent maintenant à `reportPanic`, ce qui centralise le signalement.
+
+Wails fournit deux exemples exécutables :
+
+- `v3/examples/panic-handling` — exemple minimal : uniquement une panique dans une méthode liée, transmise à `PanicHandler`.
+- `v3/examples/user-panic-handling` — une panique dans une méthode liée et une panique dans une goroutine d’arrière-plan passent toutes deux par le même gestionnaire.
+
+@note{type="caution" title="Fidélité des traces de pile"}
+
+`PanicDetails.StackTrace` est raccourci par Wails pour masquer ses propres fonctions d’enveloppe et placer votre code en haut de la trace. Lorsque vous construisez vous-même un `PanicDetails` à partir de `runtime/debug.Stack()`, aucun raccourcissement n’est appliqué : `StackTrace` et `FullStackTrace` sont identiques et contiennent toute la pile de votre goroutine. C’est généralement ce que vous souhaitez pour les goroutines que vous créez.
+
+@end
+
+## Capturer des diagnostics lors d’une panique {#panic-diagnostics}
+
+Le `PanicHandler` reçoit la panique elle-même, mais vous souhaiterez souvent capturer l’état complet du processus : informations système et de build, état du processus, de la mémoire et des modules, ainsi qu’un minidump sous Windows, pour reconstituer les événements plus tard.
+
+Wails fournit un package dédié à cela : [Déboguer les plantages](/guides/debugging-crashes/). Intégration habituelle :
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        report, _ := debug.Report(debug.WithDump())
+        // pd holds the wails-side panic info; report adds system context
+        // and (on Windows) a minidump at report.DumpPath.
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+`debug.Report` est facultatif : Wails n’enregistre jamais automatiquement un dump ou un instantané système, car le signalement de plantages implique souvent le consentement de l’utilisateur ou la suppression de données personnelles. Consultez [Déboguer les plantages](/guides/debugging-crashes/) pour l’API complète.
 
 ## Remarques finales
 

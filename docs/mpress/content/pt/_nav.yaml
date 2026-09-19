@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "Tratamento de panics"
           link: "/guides/panic-handling/"
+        - label: "Depurar falhas"
+          link: "/guides/debugging-crashes/"
         - label: "Boas práticas de segurança"
           link: "/guides/security/"
 - label: "Referência da API"

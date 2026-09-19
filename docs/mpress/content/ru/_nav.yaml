@@ -226,6 +226,8 @@
           link: "/guides/advanced/wml/"
         - label: "Обработка паники"
           link: "/guides/panic-handling/"
+        - label: "Отладка сбоев"
+          link: "/guides/debugging-crashes/"
         - label: "Рекомендации по безопасности"
           link: "/guides/security/"
 - label: "Справочник API"

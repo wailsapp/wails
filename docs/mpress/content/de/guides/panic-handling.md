@@ -110,7 +110,97 @@ app := application.New(application.Options{
 })
 ```
 
-Ein vollständiges, funktionsfähiges Beispiel für die Panic-Behandlung in einer Wails-Anwendung finden Sie im Beispiel „panic-handling“ unter `v3/examples/panic-handling`.
+## Panics in eigenen Goroutinen behandeln {#user-goroutines}
+
+Wails kann seine verzögerte Wiederherstellung nur an Stellen einrichten, die es kontrolliert: gebundene, vom Frontend aufgerufene Servicemethoden, interne Laufzeit-Callbacks und Ähnliches. Wenn dein eigener Code Folgendes tut:
+
+```go
+go func() {
+    // your work
+}()
+```
+
+Wails kann kein `defer handlePanic()` in diese Goroutine einfügen. Bei einer Panic stürzt gemäß dem Standardverhalten von Go der gesamte Prozess ab. Dein registrierter `PanicHandler` wird **nicht** aufgerufen.
+
+Um Panics eigener Goroutinen durch denselben Handler wie von Wails abgefangene Panics zu leiten, ergänze eine kleine Hilfsfunktion, die manuell ein `PanicDetails` erstellt und die als `PanicHandler` registrierte Funktion aufruft:
+
+```go
+import (
+    "fmt"
+    "runtime/debug"
+    "time"
+
+    "github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// reportPanic is the function you register as application.Options.PanicHandler.
+func reportPanic(pd *application.PanicDetails) {
+    // log to file / send to Sentry / show dialog / etc.
+}
+
+// recoverAndReport funnels goroutine panics to reportPanic. Defer it as the
+// first statement of every goroutine you spawn in user code.
+func recoverAndReport() {
+    r := recover()
+    if r == nil {
+        return
+    }
+    err, ok := r.(error)
+    if !ok {
+        err = fmt.Errorf("%v", r)
+    }
+    stack := string(debug.Stack())
+    reportPanic(&application.PanicDetails{
+        Error:          err,
+        Time:           time.Now(),
+        StackTrace:     stack,
+        FullStackTrace: stack,
+    })
+}
+```
+
+Verwende sie am Anfang jeder von dir gestarteten Goroutine:
+
+```go
+go func() {
+    defer recoverAndReport()
+    // your work
+}()
+```
+
+Sowohl von Wails abgefangene Panics als auch Panics eigener Goroutinen gelangen nun zu `reportPanic`; die Berichterstattung bleibt zentralisiert.
+
+Wails enthält zwei ausführbare Beispiele:
+
+- `v3/examples/panic-handling` — minimal: nur eine Panic in einer gebundenen Methode, weitergeleitet an `PanicHandler`.
+- `v3/examples/user-panic-handling` — eine Panic in einer gebundenen Methode und eine in einer Hintergrund-Goroutine gelangen beide zum selben Handler.
+
+@note{type="caution" title="Genauigkeit des Stacktraces"}
+
+`PanicDetails.StackTrace` wird von Wails gekürzt, um eigene Wrapper-Frames auszublenden und deinen Code am Anfang anzuzeigen. Wenn du ein `PanicDetails` selbst aus `runtime/debug.Stack()` erstellst, findet keine Kürzung statt: `StackTrace` und `FullStackTrace` sind identisch und enthalten den vollständigen Stack deiner Goroutine. Für selbst gestartete Goroutinen ist das normalerweise erwünscht.
+
+@end
+
+## Diagnosedaten bei einer Panic erfassen {#panic-diagnostics}
+
+Der `PanicHandler` erhält die Panic selbst. Häufig möchtest du jedoch den vollständigen Prozesszustand erfassen: System- und Build-Informationen, Prozess-, Speicher- und Modulzustand sowie unter Windows einen Minidump, um den Ablauf später rekonstruieren zu können.
+
+Wails bietet dafür ein eigenes Paket: [Abstürze debuggen](/guides/debugging-crashes/). Typische Integration:
+
+```go
+import "github.com/wailsapp/wails/v3/pkg/debug"
+
+app := application.New(application.Options{
+    PanicHandler: func(pd *application.PanicDetails) {
+        report, _ := debug.Report(debug.WithDump())
+        // pd holds the wails-side panic info; report adds system context
+        // and (on Windows) a minidump at report.DumpPath.
+        mycrashservice.Upload(pd, report)
+    },
+})
+```
+
+`debug.Report` muss ausdrücklich aufgerufen werden. Wails speichert niemals automatisch einen Dump oder eine Systemaufnahme, da Absturzberichte oft die Zustimmung des Benutzers oder das Entfernen personenbezogener Daten erfordern. Die vollständige API beschreibt [Abstürze debuggen](/guides/debugging-crashes/).
 
 ## Abschließende Hinweise
 
