@@ -32,16 +32,22 @@ func NewExternalAssetsHandler(logger Logger, options assetserver.Options, url *u
 	}
 
 	proxy.ModifyResponse = func(res *http.Response) error {
-		if baseHandler == nil {
-			return nil
-		}
-
 		if res.StatusCode == http.StatusSwitchingProtocols {
 			return nil
 		}
 
 		if res.StatusCode == http.StatusNotFound || res.StatusCode == http.StatusMethodNotAllowed {
-			return errSkipProxy
+			if baseHandler != nil {
+				return errSkipProxy
+			}
+			return nil
+		}
+
+		ct := res.Header.Get(HeaderContentType)
+		if ct == "" || ct == "application/octet-stream" {
+			if mimeCt := GetMimetype(res.Request.URL.Path, nil); mimeCt != "" && mimeCt != "application/octet-stream" {
+				res.Header.Set(HeaderContentType, mimeCt)
+			}
 		}
 
 		return nil
