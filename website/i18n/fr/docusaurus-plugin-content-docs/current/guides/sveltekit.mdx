@@ -108,7 +108,7 @@ wails dev
 
 ##### Le runtime Wails se décharge avec des pages de navigation complètes !
 
-- Tout ce qui provoque la navigation de page complète : `window.location.href = '/<some>/<page>'` ou le menu contextuel se recharge lorsque vous utilisez wails dev.  Cela signifie que vous pouvez finir par perdre la possibilité d'appeler n'importe quel runtime cassant l'application. Il y a deux façons de contourner ce problème.
+- Tout ce qui provoque la navigation de page complète : \`window.location.href = '/<some>/<page>' ou le menu contextuel se recharge lorsque vous utilisez wails dev.  Cela signifie que vous pouvez finir par perdre la possibilité d'appeler n'importe quel runtime cassant l'application. Il y a deux façons de contourner ce problème.
 - Utilisez `import { goto } de '$app/navigation'` puis appelez `goto('/<some>/<page>')` dans votre +page.svelte. Cela empêchera la navigation de la page complète.
 - Si la navigation de la page complète ne peut pas être empêchée, le runtime Wails peut être ajouté à toutes les pages en ajoutant ce qui suit dans le `<head>` de myapp/frontend/src/app.html
 
