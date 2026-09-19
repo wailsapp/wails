@@ -63,6 +63,8 @@ That opens the framework's update window, checks GitHub, downloads the platform 
 
 You can read the current state with `app.Updater.State()` at any time. Every transition also emits a Wails event (see [Events](#events)).
 
+`Restart` waits for the helper to reach `application.New` before asking the running app to quit. The default startup timeout is 30 seconds. If your app performs lengthy initialization before `application.New`, set `Config.HelperReadyTimeout` to a longer duration, such as `time.Minute`. Zero selects the default; negative durations are rejected. If startup times out, `Restart` returns `updater.ErrHelperNotReady` and keeps the running app open.
+
 The default window reflects the current state automatically — for example, when `Check` returns no upgrade the user sees this and dismisses with **Close**:
 
 ![The default updater window in the Up-to-Date state — green checkmark, 'You're Up to Date' heading, single Close button.](/assets/updater/default-window-up-to-date.png)

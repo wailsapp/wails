@@ -34,7 +34,7 @@ but their historical segment audit is excluded until the generated release notes
 are re-synchronised. Translation audits remain strict for every other page.
 
 Markdown keeps headings, paragraphs, lists and fenced code readable. Preserve its
-`---` YAML metadata block and matching `:::...` / `:::` component boundaries. See
+`---` YAML metadata block and matching `@...` / `@end` component boundaries. See
 https://github.com/leaanthony/mpress for the authoring reference.
 
 The M-Press site is built from `docs/mpress/content/`; do not edit generated

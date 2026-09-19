@@ -27,7 +27,7 @@ mpress dev
 
 Bearbeite die `.md`-Quelldateien in `docs/mpress/content/`. Englisch ist die Standardsprache und befindet sich direkt in diesem Verzeichnis. Vorhandene Übersetzungen befinden sich in Sprachordnern wie `fr/` und `id/`. Die Vorschau wird beim Speichern neu erstellt.
 
-Behalte den Metadatenblock am Anfang jeder Seite sowie zusammengehörige `:::...`- und `:::`-Komponenten bei. Gewöhnliche Absätze, Überschriften, Listen und abgegrenzte Codeblöcke kannst du als Text bearbeiten. Bearbeite keine generierten Dateien in `docs/mpress/site/`.
+Behalte den Metadatenblock am Anfang jeder Seite sowie zusammengehörige `@...`- und `@end`-Komponenten bei. Gewöhnliche Absätze, Überschriften, Listen und abgegrenzte Codeblöcke kannst du als Text bearbeiten. Bearbeite keine generierten Dateien in `docs/mpress/site/`.
 
 ## Korrektur prüfen
 

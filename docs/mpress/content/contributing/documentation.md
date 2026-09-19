@@ -33,7 +33,7 @@ Edit `.md` source files in `docs/mpress/content/`. English is the default
 language and lives directly in that directory. Existing translations live in  
 language folders such as `fr/` and `id/`. The preview rebuilds as you save.
 
-Preserve the metadata block at the top of each page and paired `:::...` / `:::`  
+Preserve the metadata block at the top of each page and paired `@...` / `@end`  
 components. Ordinary paragraphs, headings, lists and fenced code are editable  
 as text. Do not edit generated files in `docs/mpress/site/`.
 

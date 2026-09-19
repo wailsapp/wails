@@ -5,7 +5,7 @@ slug: "contributing/build-packaging"
 sourcePath: "contributing/build-packaging.md"
 ---
 
-`wails3 build`은 의도적으로 **간결하게** 설계되었습니다. 호스트 프로젝트의 `build` 태스크에 추가 빌드 태그를 전달하는 Taskfile 래퍼입니다. 핵심 작업은 프로젝트 자체의 `build/Taskfile.yml`(`wails3 init`에서 생성), 베이크 시점 자산을 관리하는 `internal/commands/build-assets.go`, Linux nfpm 패키징을 담당하는 `internal/packager`, 그리고 플랫폼별 설치 프로그램을 담당하는 `internal/commands/{appimage,msix,dmg/,dot_desktop}.go`에서 수행됩니다.
+`wails3 build`은 의도적으로 **간결하게** 설계되었습니다. 호스트 프로젝트의 `build` 태스크에 추가 빌드 태그를 전달하는 Taskfile 래퍼입니다. 핵심 작업은 프로젝트 자체의 `build/Taskfile.yml`(`wails3 init`에서 생성), 베이크 시점 자산을 관리하는 `internal/commands/build-assets.go`, Linux nfpm 패키징을 담당하는 `internal/packager`, 그리고 플랫폼별 설치 프로그램을 담당하는 `internal/commands/appimage.go`, `internal/commands/msix.go`, `internal/commands/dmg/dmg.go`, 및 `internal/commands/dot_desktop.go`에서 수행됩니다.
 
 이 페이지에서 다루는 내용은 다음과 같습니다.
 
