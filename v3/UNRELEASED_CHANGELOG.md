@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix a system tray window being positioned over the taskbar on Linux by using the desktop work area rather than the full screen (#6019)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
