@@ -107,3 +107,35 @@ SingleInstance: &application.SingleInstanceOptions{
 Для блокировки единственного экземпляра используется [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Имя dbus формируется на основе указанного вами уникального идентификатора. Данные передаются первому экземпляру через [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
 
 @end
+
+## Дополнительные данные запуска
+
+`SingleInstanceOptions.ExitCode` управляет кодом завершения второго процесса; значение по умолчанию — `0`. Задайте `AdditionalData` при создании параметров для `application.New`: обнаружение единственного экземпляра и передача данных происходят при создании приложения, до `app.Run()`.
+
+`SecondInstanceData.Args` содержит `os.Args`, включая исполняемый файл по индексу ноль. `WorkingDir` относится ко второму процессу. См. [Ассоциации файлов](/guides/file-associations/) для обработки файловых аргументов.
+
+## Уведомление фронтенда
+
+После регистрации обработчика во фронтенде передавайте данные запуска через пользовательское событие. Используйте существующую переменную окна из примера управления окнами:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+Обработчик во фронтенде получает объект события. Читайте его свойство `data` этого объекта; `SecondInstanceData` использует JSON-имена `args`, `workingDir` и `additionalData` (последнее отсутствует, если оно пустое):
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

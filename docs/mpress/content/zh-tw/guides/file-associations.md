@@ -155,3 +155,26 @@ wails3 package
 - 必須安裝封裝後的應用程式，才能測試檔案關聯
 
 @end
+
+## 在執行中的執行個體開啟檔案
+
+請在 `app.Run()` 之前註冊檔案開啟事件處理常式。當第二個處理程序透過[單一執行個體](/guides/single-instance/)機制轉送啟動引數時，請在 `OnSecondInstanceLaunch` 中處理這些引數。
+
+`SecondInstanceData.Args` 的索引零包含執行檔。請略過它、驗證其餘引數，並以第二個處理程序的工作目錄 `data.WorkingDir` 為基準解析相對檔案路徑。以下回呼片段使用 `path/filepath`；請將 `openDocument` 替換為應用程式的檔案開啟函式：
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+請保留既有的檔案開啟事件處理常式，以處理作業系統的原生檔案開啟事件。如需 MSIX 註冊資訊，請參閱 [MSIX 封裝](/guides/build/msix/)。

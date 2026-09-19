@@ -107,3 +107,35 @@ SingleInstance: &application.SingleInstanceOptions{
 [dbus](https://www.freedesktop.org/wiki/Software/dbus/) を使用してシングルインスタンスをロックします。dbus名は、指定した一意のIDから生成されます。データは [dbus](https://www.freedesktop.org/wiki/Software/dbus/) を介して最初のインスタンスに渡されます。
 
 @end
+
+## 追加の起動データ
+
+`SingleInstanceOptions.ExitCode` は 2 番目のプロセスの終了コードを制御し、既定値は `0` です。`application.New` に渡すオプションを作成する際に `AdditionalData` を指定してください。単一インスタンスの検出と転送は `app.Run()` より前のアプリケーション作成時に行われます。
+
+`SecondInstanceData.Args` は `os.Args` を含み、インデックス 0 は実行ファイルです。`WorkingDir` は 2 番目のプロセスの作業ディレクトリです。ファイル引数の処理については[ファイルの関連付け](/guides/file-associations/)を参照してください。
+
+## フロントエンドへの通知
+
+フロントエンドのリスナーを登録した後、カスタムイベントで起動データを転送します。ウィンドウ管理の例にある既存のウィンドウ変数を使用してください。
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+フロントエンドのコールバックはイベントオブジェクトを受け取ります。その `data` プロパティを読み取ってください。`SecondInstanceData` は JSON 名として `args`、`workingDir`、および `additionalData` を使用します（最後の項目は空の場合に省略されます）。
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

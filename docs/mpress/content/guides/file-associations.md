@@ -155,3 +155,26 @@ The packaged application will be created in the `bin` directory. You can then in
 - Testing file associations requires installing the packaged application
 
 @end
+
+## Opening files in the running instance
+
+Register the file-open event handler before `app.Run()`. When a second process forwards its launch arguments through [Single Instance](/guides/single-instance/), handle those arguments in `OnSecondInstanceLaunch`.
+
+`SecondInstanceData.Args` includes the executable at index zero. Skip it, validate the remaining arguments, and resolve relative file paths against `data.WorkingDir`, the second process's working directory. This callback fragment uses `path/filepath`; replace `openDocument` with your application's file-opening function:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+Keep the existing file-open event handler for native OS file-open events. For MSIX registration, see [MSIX Packaging](/guides/build/msix/).

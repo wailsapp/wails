@@ -155,3 +155,26 @@ Die paketierte Anwendung wird im Verzeichnis `bin` erstellt. Anschließend könn
 - Zum Testen von Dateizuordnungen muss die paketierte Anwendung installiert werden
 
 @end
+
+## Dateien in der laufenden Instanz öffnen
+
+Registriere den Ereignishandler zum Öffnen von Dateien vor `app.Run()`. Wenn ein zweiter Prozess seine Startargumente über [Einzelinstanzbetrieb](/guides/single-instance/) weiterleitet, verarbeite sie in `OnSecondInstanceLaunch`.
+
+`SecondInstanceData.Args` enthält die ausführbare Datei am Index null. Überspringe sie, validiere die übrigen Argumente und löse relative Dateipfade anhand von `data.WorkingDir`, dem Arbeitsverzeichnis des zweiten Prozesses, auf. Dieses Callback-Fragment verwendet `path/filepath`; ersetze `openDocument` durch die Funktion deiner Anwendung zum Öffnen von Dateien:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+Behalte den vorhandenen Handler für native Dateiöffnungsereignisse des Betriebssystems bei. Zur MSIX-Registrierung siehe [MSIX-Paketierung](/guides/build/msix/).

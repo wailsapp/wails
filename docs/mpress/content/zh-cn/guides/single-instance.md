@@ -107,3 +107,35 @@ SingleInstance: &application.SingleInstanceOptions{
 使用[dbus](https://www.freedesktop.org/wiki/Software/dbus/)实现单实例锁。dbus名称根据你提供的唯一ID生成。数据通过[dbus](https://www.freedesktop.org/wiki/Software/dbus/)传递给第一个实例。
 
 @end
+
+## 额外的启动数据
+
+`SingleInstanceOptions.ExitCode` 控制第二个进程的退出状态，默认为 `0`。构造传给 `application.New` 的选项时就应提供 `AdditionalData`：单实例检测和转发发生在应用创建期间，即 `app.Run()` 之前。
+
+`SecondInstanceData.Args` 包含 `os.Args`，其中索引零为可执行文件。`WorkingDir` 属于第二个进程。请参阅[文件关联](/guides/file-associations/)，了解文件参数的处理方式。
+
+## 通知前端
+
+注册前端监听器后，使用自定义事件转发启动数据。请使用窗口管理示例中已有的窗口变量：
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+前端回调接收一个事件对象，请读取其 `data` 属性。`SecondInstanceData` 使用 JSON 名称 `args`、`workingDir` 和 `additionalData`（最后一个字段在为空时省略）：
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

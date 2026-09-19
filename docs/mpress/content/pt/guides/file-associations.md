@@ -155,3 +155,26 @@ O aplicativo empacotado será criado no diretório `bin`. Depois, você poderá 
 - Para testar as associações de arquivos, é necessário instalar o aplicativo empacotado
 
 @end
+
+## Abrir arquivos na instância em execução
+
+Registre o manipulador do evento de abertura de arquivo antes de `app.Run()`. Quando um segundo processo encaminhar seus argumentos de inicialização por meio de [Instância única](/guides/single-instance/), trate esses argumentos em `OnSecondInstanceLaunch`.
+
+`SecondInstanceData.Args` inclui o executável no índice zero. Ignore-o, valide os argumentos restantes e resolva caminhos relativos com base em `data.WorkingDir`, o diretório de trabalho do segundo processo. Este trecho de callback usa `path/filepath`; substitua `openDocument` pela função de abertura de arquivos do seu aplicativo:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+Mantenha o manipulador existente para eventos nativos de abertura de arquivos do sistema operacional. Para registro no MSIX, consulte [Empacotamento MSIX](/guides/build/msix/).

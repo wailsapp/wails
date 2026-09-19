@@ -107,3 +107,35 @@ Penguncian instans tunggal menggunakan mutex bernama. Nama mutex dibuat dari ID 
 Penguncian instans tunggal menggunakan [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Nama dbus dibuat dari ID unik yang Anda berikan. Data diteruskan ke instans pertama melalui [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
 
 @end
+
+## Data peluncuran tambahan
+
+`SingleInstanceOptions.ExitCode` mengatur status keluar proses kedua dan bernilai bawaan `0`. Berikan `AdditionalData` saat menyusun opsi yang diteruskan ke `application.New`: deteksi instans tunggal dan penerusan terjadi saat pembuatan aplikasi, sebelum `app.Run()`.
+
+`SecondInstanceData.Args` berisi `os.Args`, termasuk executable pada indeks nol. `WorkingDir` adalah milik proses kedua. Lihat [Asosiasi Berkas](/guides/file-associations/) untuk menangani argumen berkas.
+
+## Memberi tahu frontend
+
+Setelah listener frontend terdaftar, teruskan data peluncuran melalui peristiwa kustom. Gunakan variabel jendela yang sudah ada dari contoh pengelolaan jendela:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+Callback frontend menerima objek peristiwa. Baca properti `data` miliknya; `SecondInstanceData` menggunakan nama JSON `args`, `workingDir`, dan `additionalData` (yang terakhir dihilangkan jika kosong):
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

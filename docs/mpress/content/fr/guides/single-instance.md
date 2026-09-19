@@ -107,3 +107,35 @@ Le verrouillage d’instance unique utilise un mutex nommé. Le nom du mutex est
 Le verrouillage d’instance unique utilise [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Le nom dbus est généré à partir de l’identifiant unique que vous fournissez. Les données sont transmises à la première instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/).
 
 @end
+
+## Données de lancement supplémentaires
+
+`SingleInstanceOptions.ExitCode` contrôle le code de sortie du second processus et vaut `0` par défaut. Fournissez `AdditionalData` lors de la construction des options transmises à `application.New` : la détection d’instance unique et la transmission se produisent pendant la création de l’application, avant `app.Run()`.
+
+`SecondInstanceData.Args` contient `os.Args`, avec l’exécutable à l’index zéro. `WorkingDir` est le répertoire du second processus. Consultez [Associations de fichiers](/guides/file-associations/) pour traiter les arguments de fichiers.
+
+## Notifier le frontend
+
+Une fois l’écouteur du frontend enregistré, transmettez les données de lancement avec un événement personnalisé. Utilisez la variable de fenêtre existante de l’exemple de gestion des fenêtres :
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+La fonction de rappel du frontend reçoit un objet événement. Lisez sa propriété `data` de cet objet ; `SecondInstanceData` utilise les noms JSON `args`, `workingDir` et `additionalData` (ce dernier est omis lorsqu’il est vide) :
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

@@ -155,3 +155,26 @@ L’application empaquetée sera créée dans le répertoire `bin`. Vous pourrez
 - Pour tester les associations de fichiers, vous devez installer l’application empaquetée
 
 @end
+
+## Ouvrir les fichiers dans l’instance en cours
+
+Enregistrez le gestionnaire d’événements d’ouverture de fichier avant `app.Run()`. Lorsqu’un second processus transmet ses arguments de lancement via [Instance unique](/guides/single-instance/), traitez ces arguments dans `OnSecondInstanceLaunch`.
+
+`SecondInstanceData.Args` contient l’exécutable à l’index zéro. Ignorez-le, validez les arguments restants et résolvez les chemins relatifs à partir de `data.WorkingDir`, le répertoire de travail du second processus. Ce fragment de fonction de rappel utilise `path/filepath` ; remplacez `openDocument` par la fonction d’ouverture de fichiers de votre application :
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+Conservez le gestionnaire existant pour les événements natifs d’ouverture de fichier du système. Pour l’enregistrement MSIX, consultez [Création de packages MSIX](/guides/build/msix/).

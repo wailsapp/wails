@@ -107,3 +107,35 @@ Single instance lock using a named mutex. The mutex name is generated from the u
 Single instance lock using [dbus](https://www.freedesktop.org/wiki/Software/dbus/). The dbus name is generated from the unique id that you provide. Data is passed to the first instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
 
 @end
+
+## Additional launch data
+
+`SingleInstanceOptions.ExitCode` controls the second process's exit status and defaults to `0`. Supply `AdditionalData` when constructing the options passed to `application.New`: single-instance detection and forwarding happen during application creation, before `app.Run()`.
+
+`SecondInstanceData.Args` contains `os.Args`, including the executable at index zero. `WorkingDir` belongs to the second process. See [File Associations](/guides/file-associations/) for handling file arguments.
+
+## Notifying the frontend
+
+After your frontend listener is registered, forward launch data using a custom event. Use the existing window variable from the window-management example:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+The frontend callback receives an event object. Read its `data` property; `SecondInstanceData` uses the JSON names `args`, `workingDir` and `additionalData` (the last is omitted when empty):
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

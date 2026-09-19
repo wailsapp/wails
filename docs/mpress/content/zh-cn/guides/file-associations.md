@@ -155,3 +155,26 @@ wails3 package
 - 测试文件关联需要安装打包后的应用
 
 @end
+
+## 在运行中的实例中打开文件
+
+在 `app.Run()` 之前注册文件打开事件处理器。当第二个进程通过[单实例](/guides/single-instance/)机制转发启动参数时，请在 `OnSecondInstanceLaunch` 中处理这些参数。
+
+`SecondInstanceData.Args` 的索引零包含可执行文件。请跳过它，验证剩余参数，并以第二个进程的工作目录 `data.WorkingDir` 为基准解析相对文件路径。以下回调片段使用 `path/filepath`；请将 `openDocument` 替换为应用的文件打开函数：
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+保留现有文件打开事件处理器，以处理操作系统的原生文件打开事件。有关 MSIX 注册，请参阅 [MSIX 打包](/guides/build/msix/)。

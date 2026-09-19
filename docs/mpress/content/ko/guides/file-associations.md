@@ -155,3 +155,26 @@ wails3 package
 - 파일 연결을 테스트하려면 패키징된 애플리케이션을 설치해야 합니다.
 
 @end
+
+## 실행 중인 인스턴스에서 파일 열기
+
+`app.Run()` 전에 파일 열기 이벤트 핸들러를 등록하세요. 두 번째 프로세스가 [단일 인스턴스](/guides/single-instance/)를 통해 실행 인수를 전달하면 `OnSecondInstanceLaunch`에서 해당 인수를 처리하세요.
+
+`SecondInstanceData.Args`의 인덱스 0에는 실행 파일이 포함됩니다. 이를 건너뛰고 나머지 인수를 검증한 후 두 번째 프로세스의 작업 디렉터리인 `data.WorkingDir`을 기준으로 상대 파일 경로를 해석하세요. 이 콜백 예제는 `path/filepath`를 사용합니다. `openDocument`를 애플리케이션의 파일 열기 함수로 바꾸세요.
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+OS의 기본 파일 열기 이벤트에는 기존 이벤트 핸들러를 유지하세요. MSIX 등록은 [MSIX 패키징](/guides/build/msix/)을 참고하세요.

@@ -107,3 +107,35 @@ O bloqueio de instância única usa um mutex nomeado. O nome do mutex é gerado 
 O bloqueio de instância única usa [dbus](https://www.freedesktop.org/wiki/Software/dbus/). O nome do dbus é gerado a partir do identificador exclusivo fornecido. Os dados são passados para a primeira instância por meio de [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
 
 @end
+
+## Dados adicionais de inicialização
+
+`SingleInstanceOptions.ExitCode` controla o código de saída do segundo processo e tem `0` como padrão. Forneça `AdditionalData` ao construir as opções passadas a `application.New`: a detecção de instância única e o encaminhamento ocorrem durante a criação do aplicativo, antes de `app.Run()`.
+
+`SecondInstanceData.Args` contém `os.Args`, incluindo o executável no índice zero. `WorkingDir` pertence ao segundo processo. Consulte [Associações de arquivos](/guides/file-associations/) para tratar argumentos de arquivos.
+
+## Notificar o frontend
+
+Depois que o listener do frontend estiver registrado, encaminhe os dados de inicialização usando um evento personalizado. Use a variável de janela existente no exemplo de gerenciamento de janelas:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+O callback do frontend recebe um objeto de evento. Leia sua propriedade `data` do objeto; `SecondInstanceData` usa os nomes JSON `args`, `workingDir` e `additionalData` (o último é omitido quando vazio):
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

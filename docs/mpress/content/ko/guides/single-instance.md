@@ -107,3 +107,35 @@ SingleInstance: &application.SingleInstanceOptions{
 [dbus](https://www.freedesktop.org/wiki/Software/dbus/)를 사용해 단일 인스턴스를 잠급니다. dbus 이름은 사용자가 제공한 고유 ID로부터 생성됩니다. 데이터는 [dbus](https://www.freedesktop.org/wiki/Software/dbus/)를 통해 첫 번째 인스턴스에 전달됩니다.
 
 @end
+
+## 추가 실행 데이터
+
+`SingleInstanceOptions.ExitCode`는 두 번째 프로세스의 종료 코드를 제어하며 기본값은 `0`입니다. `application.New`에 전달할 옵션을 구성할 때 `AdditionalData`를 지정하세요. 단일 인스턴스 감지와 전달은 `app.Run()` 이전인 애플리케이션 생성 중에 이루어집니다.
+
+`SecondInstanceData.Args`는 `os.Args`를 포함하며 인덱스 0에는 실행 파일이 있습니다. `WorkingDir`은 두 번째 프로세스의 작업 디렉터리입니다. 파일 인수 처리는 [파일 연결](/guides/file-associations/)을 참고하세요.
+
+## 프런트엔드에 알림 보내기
+
+프런트엔드 리스너가 등록된 후 사용자 정의 이벤트로 실행 데이터를 전달하세요. 창 관리 예제에 있는 기존 창 변수를 사용하세요.
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+프런트엔드 콜백은 이벤트 객체를 받습니다. 해당 객체의 `data` 속성을 읽으세요. `SecondInstanceData`는 JSON 이름으로 `args`, `workingDir` 및 `additionalData`를 사용합니다. 마지막 항목은 비어 있으면 생략됩니다.
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

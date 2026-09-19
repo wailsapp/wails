@@ -155,3 +155,26 @@ wails3 package
 - Для тестирования ассоциаций файлов необходимо установить упакованное приложение
 
 @end
+
+## Открытие файлов в работающем экземпляре
+
+Зарегистрируйте обработчик события открытия файла до `app.Run()`. Когда второй процесс передаёт аргументы запуска через механизм [Единственного экземпляра](/guides/single-instance/), обрабатывайте их в `OnSecondInstanceLaunch`.
+
+`SecondInstanceData.Args` содержит исполняемый файл по индексу ноль. Пропустите его, проверьте остальные аргументы и разрешите относительные пути относительно `data.WorkingDir`, рабочего каталога второго процесса. Этот фрагмент обработчика использует `path/filepath`; замените `openDocument` функцией открытия файлов вашего приложения:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+Сохраните существующий обработчик для нативных событий открытия файлов ОС. О регистрации в MSIX см. [Создание пакетов MSIX](/guides/build/msix/).

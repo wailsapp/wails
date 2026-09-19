@@ -155,3 +155,26 @@ wails3 package
 - ファイルの関連付けをテストするには、パッケージ化されたアプリケーションをインストールする必要があります
 
 @end
+
+## 実行中のインスタンスでファイルを開く
+
+`app.Run()` の前にファイルオープンのイベントハンドラーを登録してください。2 番目のプロセスが[単一インスタンス](/guides/single-instance/)を通じて起動引数を転送する場合は、`OnSecondInstanceLaunch` でその引数を処理します。
+
+`SecondInstanceData.Args` のインデックス 0 には実行ファイルが含まれます。これをスキップして残りの引数を検証し、相対パスを 2 番目のプロセスの作業ディレクトリである `data.WorkingDir` を基準に解決してください。このコールバックの抜粋では `path/filepath` を使用しています。`openDocument` をアプリケーションのファイルオープン関数に置き換えてください。
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+OS ネイティブのファイルオープンイベントには、既存のイベントハンドラーを引き続き使用してください。MSIX への登録については [MSIX パッケージ化](/guides/build/msix/)を参照してください。

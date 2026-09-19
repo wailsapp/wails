@@ -107,3 +107,35 @@ Die Einzelinstanzsperre verwendet einen benannten Mutex. Der Mutexname wird aus 
 Die Einzelinstanzsperre verwendet [dbus](https://www.freedesktop.org/wiki/Software/dbus/). Der dbus-Name wird aus der von Ihnen angegebenen eindeutigen ID erzeugt. Die Daten werden über [dbus](https://www.freedesktop.org/wiki/Software/dbus/) an die erste Instanz übergeben.
 
 @end
+
+## Zusätzliche Startdaten
+
+`SingleInstanceOptions.ExitCode` steuert den Exitcode des zweiten Prozesses und ist standardmäßig `0`. Gib `AdditionalData` beim Erstellen der Optionen für `application.New` an: Einzelinstanzerkennung und Weiterleitung erfolgen bei der Erstellung der Anwendung, vor `app.Run()`.
+
+`SecondInstanceData.Args` enthält `os.Args`, einschließlich der ausführbaren Datei am Index null. `WorkingDir` gehört zum zweiten Prozess. Siehe [Dateizuordnungen](/guides/file-associations/) zur Verarbeitung von Dateiargumenten.
+
+## Das Frontend benachrichtigen
+
+Leite nach der Registrierung des Frontend-Listeners die Startdaten über ein benutzerdefiniertes Ereignis weiter. Verwende die vorhandene Fenstervariable aus dem Beispiel zur Fensterverwaltung:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+Der Frontend-Callback erhält ein Ereignisobjekt. Lies dessen Eigenschaft `data` des Objekts; `SecondInstanceData` verwendet die JSON-Namen `args`, `workingDir` und `additionalData` (Letzteres wird bei leerem Wert weggelassen):
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```

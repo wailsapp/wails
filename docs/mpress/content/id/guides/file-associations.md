@@ -155,3 +155,26 @@ Aplikasi yang telah dikemas akan dibuat dalam direktori `bin`. Setelah itu, Anda
 - Pengujian asosiasi file mengharuskan aplikasi yang telah dikemas untuk diinstal
 
 @end
+
+## Membuka berkas di instans yang sedang berjalan
+
+Daftarkan penangan peristiwa pembukaan berkas sebelum `app.Run()`. Saat proses kedua meneruskan argumen peluncurannya melalui [Instans Tunggal](/guides/single-instance/), tangani argumen tersebut di `OnSecondInstanceLaunch`.
+
+`SecondInstanceData.Args` menyertakan executable pada indeks nol. Lewati entri tersebut, validasi argumen lainnya, dan selesaikan jalur berkas relatif berdasarkan `data.WorkingDir`, direktori kerja proses kedua. Cuplikan callback ini menggunakan `path/filepath`; ganti `openDocument` dengan fungsi pembuka berkas aplikasi Anda:
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    for i, arg := range data.Args {
+        if i == 0 || filepath.Ext(arg) != ".myext" {
+            continue
+        }
+        filename := arg
+        if !filepath.IsAbs(filename) {
+            filename = filepath.Join(data.WorkingDir, filename)
+        }
+        openDocument(filename)
+    }
+},
+```
+
+Pertahankan penangan yang sudah ada untuk peristiwa pembukaan berkas native dari OS. Untuk pendaftaran MSIX, lihat [Pengemasan MSIX](/guides/build/msix/).

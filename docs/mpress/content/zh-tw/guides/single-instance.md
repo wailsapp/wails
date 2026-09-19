@@ -107,3 +107,35 @@ SingleInstance: &application.SingleInstanceOptions{
 使用 [dbus](https://www.freedesktop.org/wiki/Software/dbus/) 進行單一執行個體鎖定。dbus 名稱會根據您提供的唯一識別碼產生。資料透過 [dbus](https://www.freedesktop.org/wiki/Software/dbus/) 傳遞給第一個執行個體。
 
 @end
+
+## 額外的啟動資料
+
+`SingleInstanceOptions.ExitCode` 控制第二個處理程序的結束狀態，預設為 `0`。建立要傳入 `application.New` 的選項時，便應提供 `AdditionalData`：單一執行個體偵測與轉送發生在應用程式建立期間，也就是 `app.Run()` 之前。
+
+`SecondInstanceData.Args` 包含 `os.Args`，其中索引零為執行檔。`WorkingDir` 屬於第二個處理程序。請參閱[檔案關聯](/guides/file-associations/)，了解檔案引數的處理方式。
+
+## 通知前端
+
+註冊前端監聽器後，使用自訂事件轉送啟動資料。請使用視窗管理範例中既有的視窗變數：
+
+```go
+OnSecondInstanceLaunch: func(data application.SecondInstanceData) {
+    if mainWindow != nil {
+        mainWindow.Restore()
+        mainWindow.Focus()
+        mainWindow.EmitEvent("secondInstance", data)
+    }
+},
+```
+
+前端回呼會收到一個事件物件，請讀取其 `data` 屬性。`SecondInstanceData` 使用 JSON 名稱 `args`、`workingDir` 與 `additionalData`（最後一個欄位為空時會省略）：
+
+```typescript
+import { Events } from "@wailsio/runtime";
+
+Events.On("secondInstance", (event) => {
+    console.log(event.data.args);
+    console.log(event.data.workingDir);
+    console.log(event.data.additionalData);
+});
+```
