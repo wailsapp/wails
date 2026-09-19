@@ -2,10 +2,12 @@ package assetserver
 
 import (
 	"net/http"
+	"path/filepath"
 )
 
 type contentTypeSniffer struct {
-	rw http.ResponseWriter
+	rw      http.ResponseWriter
+	reqPath string
 
 	wroteHeader bool
 }
@@ -35,8 +37,23 @@ func (rw *contentTypeSniffer) writeHeader(b []byte) {
 
 	m := rw.rw.Header()
 	if _, hasType := m[HeaderContentType]; !hasType {
-		m.Set(HeaderContentType, http.DetectContentType(b))
+		ct := http.DetectContentType(b)
+		if rw.reqPath != "" {
+			if ext := filepath.Ext(rw.reqPath); ext != "" {
+				if custom := getMimeTypeByExt(ext); custom != "" {
+					ct = custom
+				}
+			}
+		}
+		m.Set(HeaderContentType, ct)
 	}
 
 	rw.WriteHeader(http.StatusOK)
+}
+
+func getMimeTypeByExt(ext string) string {
+	if ct, ok := mimeTypesByExt[ext]; ok {
+		return ct
+	}
+	return ""
 }
