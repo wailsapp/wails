@@ -39,6 +39,8 @@ The `SingleInstanceOptions` struct has the following fields:
   - `AdditionalData`: Any additional data passed from the second instance (if provided)
 
 - `AdditionalData`: Optional map of string key-value pairs that will be passed to the first instance when subsequent instances are launched
+- `ExitCode`: The exit code the second instance terminates with after notifying the first instance
+- `OnSecondInstanceExit`: A callback run in the second instance after it has notified the first instance and just before it exits. The exit uses `os.Exit`, so deferred functions in `main` never run; release or flush anything you opened before `application.New` here instead
 
 @note{type="danger" title="Warning"}
 The Single Instance feature implements an optional encryption protocol using AES-256-GCM. Without encryption enabled, data passed between instances is not secure. When using the single instance feature without encryption, your app should treat any data passed to it from second instance callback as untrusted. You should verify that args that you receive are valid and don't contain any malicious data.

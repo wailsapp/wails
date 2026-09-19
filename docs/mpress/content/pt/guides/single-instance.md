@@ -39,6 +39,8 @@ A struct `SingleInstanceOptions` tem os seguintes campos:
   - `AdditionalData`: quaisquer dados adicionais passados pela segunda instância (se fornecidos)
 
 - `AdditionalData`: mapa opcional de pares chave-valor de strings que será passado para a primeira instância quando instâncias subsequentes forem iniciadas
+- `ExitCode`: O código de saída usado pela segunda instância após notificar a primeira
+- `OnSecondInstanceExit`: Um callback executado na segunda instância após notificar a primeira, imediatamente antes de encerrar. O encerramento usa `os.Exit`, portanto as funções adiadas com defer em `main` nunca são executadas. Libere aqui os recursos ou descarregue os buffers abertos antes de `application.New` neste callback
 
 @note{type="danger" title="Aviso"}
 O recurso de instância única implementa um protocolo de criptografia opcional que usa AES-256-GCM. Sem a criptografia habilitada, os dados transmitidos entre as instâncias não são seguros. Ao usar o recurso de instância única sem criptografia, o aplicativo deve tratar como não confiáveis todos os dados que receber pelo callback da segunda instância. Verifique se os argumentos recebidos são válidos e não contêm dados maliciosos.

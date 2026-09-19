@@ -39,6 +39,8 @@ La structure `SingleInstanceOptions` comporte les champs suivants :
   - `AdditionalData` : toute donnée supplémentaire transmise par la deuxième instance (si elle est fournie)
 
 - `AdditionalData` : table de paires clé-valeur de chaînes facultative, transmise à la première instance lors du lancement d’instances ultérieures
+- `ExitCode`: Le code de sortie avec lequel la deuxième instance se termine après avoir averti la première
+- `OnSecondInstanceExit`: Un rappel exécuté dans la deuxième instance après avoir averti la première, juste avant de quitter. La sortie utilise `os.Exit`, donc les fonctions différées dans `main` ne sont donc jamais exécutées. Libérez ici les ressources ou videz les tampons ouverts avant `application.New` dans ce rappel
 
 @note{type="danger" title="Avertissement"}
 La fonctionnalité d’instance unique met en œuvre un protocole de chiffrement facultatif utilisant AES-256-GCM. Si le chiffrement n’est pas activé, les données transmises entre les instances ne sont pas sécurisées. Lorsque vous utilisez la fonctionnalité d’instance unique sans chiffrement, votre application devrait considérer comme non fiables toutes les données qui lui sont transmises par la fonction de rappel de la deuxième instance. Vous devriez vérifier que les arguments reçus sont valides et qu’ils ne contiennent aucune donnée malveillante.

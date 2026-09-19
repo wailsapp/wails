@@ -39,6 +39,8 @@ Die `SingleInstanceOptions`-Struktur enthält die folgenden Felder:
   - `AdditionalData`: Alle zusätzlichen Daten, die von der zweiten Instanz übergeben wurden (sofern vorhanden)
 
 - `AdditionalData`: Optionale Map mit Schlüssel-Wert-Paaren aus Zeichenfolgen, die beim Starten weiterer Instanzen an die erste Instanz übergeben wird
+- `ExitCode`: Der Exit-Code, mit dem die zweite Instanz nach der Benachrichtigung der ersten Instanz beendet wird
+- `OnSecondInstanceExit`: Ein Callback, der in der zweiten Instanz nach der Benachrichtigung der ersten Instanz und unmittelbar vor dem Beenden ausgeführt wird. Da das Beenden über `os.Exit` erfolgt, werden aufgeschobene Funktionen (defer) in `main` nicht ausgeführt. Gib hier Ressourcen frei oder leere Puffer, die du vor `application.New` geöffnet hast
 
 @note{type="danger" title="Warnung"}
 Die Einzelinstanzfunktion implementiert ein optionales Verschlüsselungsprotokoll mit AES-256-GCM. Ohne aktivierte Verschlüsselung sind die zwischen den Instanzen übertragenen Daten nicht sicher. Wenn Sie die Einzelinstanzfunktion ohne Verschlüsselung verwenden, sollte Ihre App alle Daten, die ihr über den Callback der zweiten Instanz übergeben werden, als nicht vertrauenswürdig behandeln. Prüfen Sie, ob die empfangenen Argumente gültig sind und keine schädlichen Daten enthalten.

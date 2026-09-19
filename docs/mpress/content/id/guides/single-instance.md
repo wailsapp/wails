@@ -39,6 +39,8 @@ Struct `SingleInstanceOptions` memiliki bidang berikut:
   - `AdditionalData`: Data tambahan apa pun yang diteruskan dari instans kedua (jika diberikan)
 
 - `AdditionalData`: Map opsional berisi pasangan kunci-nilai string yang akan diteruskan ke instans pertama saat instans berikutnya diluncurkan
+- `ExitCode`: Kode keluar yang digunakan instans kedua setelah memberi tahu instans pertama
+- `OnSecondInstanceExit`: Callback yang dijalankan di instans kedua setelah memberi tahu instans pertama, tepat sebelum keluar. Proses keluar menggunakan `os.Exit`, sehingga fungsi yang ditunda dengan defer di `main` tidak pernah dijalankan. Lepaskan sumber daya atau kosongkan buffer yang dibuka sebelum `application.New` di sini
 
 @note{type="danger" title="Peringatan"}
 Fitur Instans Tunggal menerapkan protokol enkripsi opsional menggunakan AES-256-GCM. Jika enkripsi tidak diaktifkan, data yang diteruskan antarinstans tidak aman. Saat menggunakan fitur instans tunggal tanpa enkripsi, aplikasi Anda sebaiknya memperlakukan setiap data yang diteruskan kepadanya melalui callback instans kedua sebagai data yang tidak tepercaya. Anda sebaiknya memverifikasi bahwa argumen yang diterima valid dan tidak mengandung data berbahaya.

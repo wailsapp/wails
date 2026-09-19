@@ -39,6 +39,8 @@ app := application.New(application.Options{
   - `AdditionalData`：從第二個執行個體傳遞的任何額外資料（若有提供）
 
 - `AdditionalData`：選用的字串鍵值配對映射，啟動後續執行個體時會將其傳遞給第一個執行個體
+- `ExitCode`: 第二個執行個體通知第一個執行個體後終止時使用的結束代碼
+- `OnSecondInstanceExit`: 在第二個執行個體通知第一個執行個體之後、結束之前執行的回呼。結束時使用 `os.Exit`，因此 `main` 中透過 defer 延後執行的函式不會執行。請在此釋放或刷新呼叫 `application.New` 之前開啟的資源
 
 @note{type="danger" title="警告"}
 單一執行個體功能使用 AES-256-GCM 實作選用的加密通訊協定。若未啟用加密， 執行個體之間傳遞的資料並不安全。在未加密的情況下使用單一執行個體功能時， 應用程式應將第二個執行個體回呼所傳遞的任何資料視為不受信任。 您應驗證收到的引數有效，且不含任何惡意資料。

@@ -39,6 +39,8 @@ app := application.New(application.Options{
   - `AdditionalData`：从第二个实例传递的任何附加数据（如果提供）
 
 - `AdditionalData`：可选的字符串键值对映射，启动后续实例时会将其传递给第一个实例
+- `ExitCode`: 第二个实例通知第一个实例后终止时使用的退出码
+- `OnSecondInstanceExit`: 在第二个实例中通知第一个实例之后、退出之前执行的回调。退出使用 `os.Exit`，因此 `main` 中通过 defer 延迟执行的函数不会运行。请在此释放或刷新调用 `application.New` 之前打开的资源
 
 @note{type="danger" title="警告"}
 单实例功能使用AES-256-GCM实现了一种可选的加密协议。未启用加密时， 实例之间传递的数据并不安全。在不加密的情况下使用单实例功能时， 应用应将第二个实例回调传递给它的任何数据视为不可信数据。 你应验证收到的参数是否有效，并确保其中不含任何恶意数据。
