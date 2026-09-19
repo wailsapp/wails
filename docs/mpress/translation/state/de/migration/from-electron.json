@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "39d0a279d6ddfab5304c",
-  "sourceFile": "migration/from-electron.mpd",
+  "sourceFile": "migration/from-electron.md",
   "sourceLanguage": "en",
   "targetLanguage": "de",
   "segments": {

@@ -1041,7 +1041,7 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 	}
 
 	// Create initial changelog
-	changelogFile := filepath.Join(projectRoot, "docs", "mpress", "content", "changelog.mpd")
+	changelogFile := filepath.Join(projectRoot, "docs", "mpress", "content", "changelog.md")
 	initialChangelog := `---
 schema = 1
 title = "Changelog"
@@ -1333,14 +1333,14 @@ func TestSyncRuntimePackageVersion(t *testing.T) {
 	}
 }
 
-func TestReleasePublishesMPDChangelog(t *testing.T) {
+func TestReleasePublishesMarkdownChangelog(t *testing.T) {
 	cleanup, root := setupTestEnvironment(t)
 	defer cleanup()
-	archive := filepath.Join(root, "docs/mpress/content/changelog.mpd")
+	archive := filepath.Join(root, "docs/mpress/content/changelog.md")
 	if err := os.MkdirAll(filepath.Dir(archive), 0755); err != nil {
 		t.Fatal(err)
 	}
-	original := "---\nschema = 1\ntitle = \"Changelog\"\n---\n\n## [Unreleased]\n\n## v3.0.0-beta.8\nOld notes\n"
+	original := "---\ntitle: \"Changelog\"\n---\n\n## [Unreleased]\n\n## v3.0.0-beta.8\nOld notes\n"
 	if err := os.WriteFile(archive, []byte(original), 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -1355,7 +1355,7 @@ func TestReleasePublishesMPDChangelog(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !strings.HasPrefix(string(data), strings.Split(original, "## [Unreleased]")[0]) || !strings.Contains(string(data), "## v3.0.0-beta.9") || !strings.Contains(string(data), "Old notes") {
-		t.Fatalf("Invalid published MPD: %s", data)
+		t.Fatalf("Invalid published Markdown: %s", data)
 	}
 	remaining, err := os.ReadFile(unreleasedChangelogFile)
 	if err != nil || strings.Contains(string(remaining), "- A fix") {

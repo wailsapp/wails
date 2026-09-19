@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "2edc59b59bb09a8d6e02",
-  "sourceFile": "contributing/documentation.mpd",
+  "sourceFile": "contributing/documentation.md",
   "sourceLanguage": "en",
   "targetLanguage": "ko",
   "segments": {
@@ -76,9 +76,9 @@
       "sourceHash": "f61b13db52f322df0280de40502a660d759dad2025a2af3bc3fefa8f8982332f",
       "targetHash": "2ece8e94c54e2ad244875bc3be3744176acefa5a2239370695eb85d989c0b964",
       "machineHash": "2ece8e94c54e2ad244875bc3be3744176acefa5a2239370695eb85d989c0b964",
-      "machineText": "`docs/mpress/content/`에 있는 `.mpd` 소스 파일을 편집하세요. 영어가 기본 언어이며 해당 디렉터리에 직접 저장됩니다. 기존 번역은 `fr/` 및 `id/` 같은 언어 폴더에 저장됩니다. 파일을 저장하면 미리 보기가 다시 빌드됩니다.",
+      "machineText": "`docs/mpress/content/`에 있는 `.md` 소스 파일을 편집하세요. 영어가 기본 언어이며 해당 디렉터리에 직접 저장됩니다. 기존 번역은 `fr/` 및 `id/` 같은 언어 폴더에 저장됩니다. 파일을 저장하면 미리 보기가 다시 빌드됩니다.",
       "status": "final",
-      "sourcePreview": "Edit `.mpd` source files in `docs/mpress/content/`. English is the default\nlanguage and lives directly in that directory. Existing translations live in\nlanguage",
+      "sourcePreview": "Edit `.md` source files in `docs/mpress/content/`. English is the default\nlanguage and lives directly in that directory. Existing translations live in\nlanguage",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
