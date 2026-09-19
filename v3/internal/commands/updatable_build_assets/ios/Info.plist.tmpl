@@ -61,5 +61,21 @@
     <key>CFBundleGetInfoString</key>
     <string>{{.ProductComments}}</string>
     {{end}}
+    <!-- Deep linking via a custom URL scheme (e.g. myapp://callback). Uncomment
+         and set your scheme to receive these URLs in Go via the
+         common:ApplicationLaunchedWithUrl event. For HTTPS Universal Links use
+         the associated-domains entitlement instead (see entitlements.plist).
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>{{.ProductIdentifier}}</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>myapp</string>
+            </array>
+        </dict>
+    </array>
+    -->
 </dict>
 </plist>
