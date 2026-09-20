@@ -119,47 +119,11 @@
   {
     "language": "de",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "8aeef1b6d984baf54a1f2de0a5905e5f81d474383789a601083a829f7cf0e9ed",
-    "reason": "Reviewed unchanged text: FileHound Export Utility. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "de",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "8aeef1b6d984baf54a1f2de0a5905e5f81d474383789a601083a829f7cf0e9ed",
     "reason": "Reviewed unchanged text: Minecraft Updater. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "de",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "8aeef1b6d984baf54a1f2de0a5905e5f81d474383789a601083a829f7cf0e9ed",
-    "reason": "Reviewed unchanged text: Minesweeper XP. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "de",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "8aeef1b6d984baf54a1f2de0a5905e5f81d474383789a601083a829f7cf0e9ed",
-    "reason": "Reviewed unchanged text: Modal File Manager. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "de",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "8aeef1b6d984baf54a1f2de0a5905e5f81d474383789a601083a829f7cf0e9ed",
-    "reason": "Reviewed unchanged text: Molly Wallet. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "de",
@@ -1280,47 +1244,11 @@
   {
     "language": "fr",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "1af3df515e6d1d9c1934579eddaf956d32b0547d73a66e2e2539feabd50bf3dd",
-    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "fr",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "1af3df515e6d1d9c1934579eddaf956d32b0547d73a66e2e2539feabd50bf3dd",
     "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "fr",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "1af3df515e6d1d9c1934579eddaf956d32b0547d73a66e2e2539feabd50bf3dd",
-    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "fr",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "1af3df515e6d1d9c1934579eddaf956d32b0547d73a66e2e2539feabd50bf3dd",
-    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "fr",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "1af3df515e6d1d9c1934579eddaf956d32b0547d73a66e2e2539feabd50bf3dd",
-    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "fr",
@@ -2225,47 +2153,11 @@
   {
     "language": "id",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "afd633e2c820f45242f9750fc71e6abb9de7030c1e3ac1b86b35877bea2c1403",
-    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "id",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "afd633e2c820f45242f9750fc71e6abb9de7030c1e3ac1b86b35877bea2c1403",
     "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "id",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "afd633e2c820f45242f9750fc71e6abb9de7030c1e3ac1b86b35877bea2c1403",
-    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "id",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "afd633e2c820f45242f9750fc71e6abb9de7030c1e3ac1b86b35877bea2c1403",
-    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "id",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "afd633e2c820f45242f9750fc71e6abb9de7030c1e3ac1b86b35877bea2c1403",
-    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "id",
@@ -3395,47 +3287,11 @@
   {
     "language": "ja",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "983b5b6e4c849b22f8bbbe1b93da030d4a2ed56ed5dee071a40b53dcd8f2fe2c",
-    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "ja",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "983b5b6e4c849b22f8bbbe1b93da030d4a2ed56ed5dee071a40b53dcd8f2fe2c",
     "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "ja",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "983b5b6e4c849b22f8bbbe1b93da030d4a2ed56ed5dee071a40b53dcd8f2fe2c",
-    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "ja",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "983b5b6e4c849b22f8bbbe1b93da030d4a2ed56ed5dee071a40b53dcd8f2fe2c",
-    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "ja",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "983b5b6e4c849b22f8bbbe1b93da030d4a2ed56ed5dee071a40b53dcd8f2fe2c",
-    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "ja",
@@ -4241,47 +4097,11 @@
   {
     "language": "ko",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "2ebe94ef165df0d4036a28e9202331ec2a01247315f5756be49b3e984d411324",
-    "reason": "Reviewed unchanged name or technical wording: FileHound Export Utility. Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
-  },
-  {
-    "language": "ko",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "2ebe94ef165df0d4036a28e9202331ec2a01247315f5756be49b3e984d411324",
     "reason": "Reviewed unchanged name or technical wording: Minecraft Updater. Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
-  },
-  {
-    "language": "ko",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "2ebe94ef165df0d4036a28e9202331ec2a01247315f5756be49b3e984d411324",
-    "reason": "Reviewed unchanged name or technical wording: Minesweeper XP. Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
-  },
-  {
-    "language": "ko",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "2ebe94ef165df0d4036a28e9202331ec2a01247315f5756be49b3e984d411324",
-    "reason": "Reviewed unchanged name or technical wording: Modal File Manager. Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
-  },
-  {
-    "language": "ko",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "2ebe94ef165df0d4036a28e9202331ec2a01247315f5756be49b3e984d411324",
-    "reason": "Reviewed unchanged name or technical wording: Molly Wallet. Preserve this product/platform/API name, literal command/error, or valid shared terminology in the translated text."
   },
   {
     "language": "ko",
@@ -5303,47 +5123,11 @@
   {
     "language": "pt",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "9cf3a7c7d2846b35c4087c542b157fb4593c5101585bbe8eb036216b6414fafb",
-    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "pt",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "9cf3a7c7d2846b35c4087c542b157fb4593c5101585bbe8eb036216b6414fafb",
     "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "pt",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "9cf3a7c7d2846b35c4087c542b157fb4593c5101585bbe8eb036216b6414fafb",
-    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "pt",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "9cf3a7c7d2846b35c4087c542b157fb4593c5101585bbe8eb036216b6414fafb",
-    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "pt",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "9cf3a7c7d2846b35c4087c542b157fb4593c5101585bbe8eb036216b6414fafb",
-    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "pt",
@@ -6392,47 +6176,11 @@
   {
     "language": "ru",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "90559b45226cd828f107b0e0821d9ac54fdac03b7de88a96d11c945e2d2060dc",
-    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "ru",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "90559b45226cd828f107b0e0821d9ac54fdac03b7de88a96d11c945e2d2060dc",
     "reason": "Reviewed unchanged text: Minecraft Updater. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "ru",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "90559b45226cd828f107b0e0821d9ac54fdac03b7de88a96d11c945e2d2060dc",
-    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "ru",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "90559b45226cd828f107b0e0821d9ac54fdac03b7de88a96d11c945e2d2060dc",
-    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
-  },
-  {
-    "language": "ru",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "90559b45226cd828f107b0e0821d9ac54fdac03b7de88a96d11c945e2d2060dc",
-    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "ru",
@@ -7346,47 +7094,11 @@
   {
     "language": "zh-cn",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "211ae6369050cc34cca5c22be25d3891c18dcebee3ab0f10916433005ed1cbd6",
-    "reason": "Reviewed unchanged text: FileHound Export Utility. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "zh-cn",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "211ae6369050cc34cca5c22be25d3891c18dcebee3ab0f10916433005ed1cbd6",
     "reason": "Reviewed unchanged text: Minecraft Updater. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "zh-cn",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "211ae6369050cc34cca5c22be25d3891c18dcebee3ab0f10916433005ed1cbd6",
-    "reason": "Reviewed unchanged text: Minesweeper XP. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "zh-cn",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "211ae6369050cc34cca5c22be25d3891c18dcebee3ab0f10916433005ed1cbd6",
-    "reason": "Reviewed unchanged text: Modal File Manager. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "zh-cn",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "211ae6369050cc34cca5c22be25d3891c18dcebee3ab0f10916433005ed1cbd6",
-    "reason": "Reviewed unchanged text: Molly Wallet. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "zh-cn",
@@ -7931,47 +7643,11 @@
   {
     "language": "zh-tw",
     "file": "community/showcase/index.md",
-    "segment": "h0001-text-014",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "3b2ffb1a0cc6f9229fbfb3fc5dafd794593fe090f9053cdeff86a06c3cce5114",
-    "reason": "Reviewed unchanged text: FileHound Export Utility. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "zh-tw",
-    "file": "community/showcase/index.md",
     "segment": "h0001-text-024",
     "code": "untranslated",
     "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
     "targetSHA256": "3b2ffb1a0cc6f9229fbfb3fc5dafd794593fe090f9053cdeff86a06c3cce5114",
     "reason": "Reviewed unchanged text: Minecraft Updater. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "zh-tw",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-026",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "3b2ffb1a0cc6f9229fbfb3fc5dafd794593fe090f9053cdeff86a06c3cce5114",
-    "reason": "Reviewed unchanged text: Minesweeper XP. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "zh-tw",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-028",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "3b2ffb1a0cc6f9229fbfb3fc5dafd794593fe090f9053cdeff86a06c3cce5114",
-    "reason": "Reviewed unchanged text: Modal File Manager. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
-  },
-  {
-    "language": "zh-tw",
-    "file": "community/showcase/index.md",
-    "segment": "h0001-text-030",
-    "code": "untranslated",
-    "sourceSHA256": "44bc2bbdaa1c6d78dfafeb221b337e798a275741b296ec2606a0d00bc2d8e715",
-    "targetSHA256": "3b2ffb1a0cc6f9229fbfb3fc5dafd794593fe090f9053cdeff86a06c3cce5114",
-    "reason": "Reviewed unchanged text: Molly Wallet. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "zh-tw",
@@ -12211,5 +11887,1058 @@
     "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
     "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
     "reason": "requires is part of the literal runtime error message. The following French impératives Définissez and modifiez preserve the required corrective actions."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-014",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: FileHound Export Utility. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-026",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: Minesweeper XP. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-028",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: Modal File Manager. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-030",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: Molly Wallet. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "730bbb3dabfdfb93ec1119493a3cf7996070e144c2b088f8c17cd706a07bcdc5",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "fr",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "9acdc8556fce84374c28fd93b16a272380872d8140a40602596840f65613f7cf",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "7aaad2f2c2276a3118bacaabf77da36177a150743b9b0125f929c73bf13e9e20",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "de",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "6d534631ad9521bf6db14bcc7cb91339713a8b0795ee1790a4edd9e5faa14ca3",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "be3524c3bd6f90663ad9e0e9ed3b813f5ad74b52c34d62e47732c52b6438d661",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "pt",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "4808ba054a0f089b916408de645d0f229def27c6d94dbd4d12b9a93d612289d5",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "f56bc9a44ba2ec8431577d73b3ff090a8eb9fe7a203e25909a639cef78c7b291",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ru",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "9a83692aaa05c78542e318603d197660d6728f9ebf77e541cc8c727172bc1978",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "48320c22c5c8acac8ab62a16a3f74fe4f882381ad038634a8b3b20f1da5f3cb2",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "86f93a2338ccd65e48bbe5a5d52ce942fb88ecddb52a102a7cd8525e4e9c922b",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "5110350a8c13eb4056d928efd8f8768e7ef95c5d10872a0394c4a370d2db7182",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ko",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "ab85ef25cdb534620dc3a24ef71ad31ba4d94e35143c18ee8daf344a283fdba0",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "740e436db187485d1e13119fd55dfb833d56fd3ceb7fd8943e59efbeab93f65a",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "f559a3b6a30ad337e849d7821da05d1755fb873ba1e827ec1ae81312014fb469",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "ece42e1e85bc4c54d7cd83e4867ff674c1987f6e0738c4ea49227cef2512d437",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "7a3d5285fbb6a13e2993c8354216f6f02ebb95297e1bf3632016706f2d57c17a",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-006",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: Clave. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-016",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: hiposter. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-032",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: October. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-040",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: Resizem. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-044",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: RiftShare. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-050",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: Surge. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-054",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: WailsTerm. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/index.md",
+    "segment": "h0001-text-074",
+    "code": "untranslated",
+    "sourceSHA256": "e89060bf26444723403b95615cbaefc691a3a2cee653fb5a8b180870aa0cdc6a",
+    "targetSHA256": "bd6b75679923f076182a9148050a9641edec8e639f38a09ced30a475594402eb",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "id",
+    "file": "community/showcase/mqstudio.md",
+    "segment": "fm-title",
+    "code": "untranslated",
+    "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
+    "targetSHA256": "2819e5684c766df9f803326ab74a0a21f0c3a76b0788eff099fc37864c60dbd2",
+    "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   }
 ]
