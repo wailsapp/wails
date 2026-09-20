@@ -75,11 +75,21 @@ WebView2 verfügt über eine native Berechtigungsabfrage und eine Berechtigungs-
 
 Wenn du `Permissions` unter Windows überhaupt konfigurierst, wird daher für jede nicht ausdrücklich aufgeführte Funktion eine Abfrage angezeigt, statt sie stillschweigend zuzulassen. Lege die benötigten Funktionen ausdrücklich fest.
 
-### macOS (TCC)
+### macOS (WKWebView + TCC)
 
-macOS verwaltet den Zugriff auf Kamera, Mikrofon, Standort und Benachrichtigungen über sein systemweites Datenschutz-Framework. Wenn Webinhalte erstmals eine Funktion anfordern, erscheint automatisch die Abfrage des Betriebssystems. Die Auswahl des Benutzers wird in den Systemeinstellungen unter „Datenschutz & Sicherheit“ anwendungsspezifisch gespeichert.
+Unter macOS müssen zwei Ebenen zustimmen. WKWebView fragt die Anwendung vor dem Start einer Aufnahmesitzung; diese Anfrage beantwortet die `Permissions`-Map. Darunter schützt das Datenschutz-Framework TCC das Gerät selbst: Beim ersten tatsächlichen Zugriff auf Kamera oder Mikrofon erscheint die Systemabfrage. Die Entscheidung wird pro Anwendung unter Systemeinstellungen → Datenschutz & Sicherheit gespeichert.
 
-Dies funktioniert auch ohne `Permissions`-Konfiguration ordnungsgemäß. Die Map wird unter macOS **derzeit ignoriert**: Unabhängig von den festgelegten Werten laufen alle Anfragen über TCC. In der Praxis bedeutet dies, dass `PermissionDeny` unter macOS wirkungslos ist: Du kannst ein Webview nicht daran hindern, eine Funktion zu verwenden, die TCC bereits auf Systemebene genehmigt hat.
+Wails verarbeitet **Kamera- und Mikrofonanfragen** ab macOS 12. Für Standort, Benachrichtigungen und das Lesen der Zwischenablage gibt es kein entsprechendes `WKUIDelegate`-Verfahren; sie sind nicht angebunden und bleiben TCC überlassen. Wie unter Linux hat die festgelegte Richtlinie für diese Funktionen keine Wirkung.
+
+| Richtlinie | Kamera / Mikrofon | Standort, Benachrichtigungen, Zwischenablage |
+| --- | --- | --- |
+| `PermissionDefault` | WebKit zeigt seine eigene Berechtigungsabfrage | Nur TCC |
+| `PermissionAllow` | WebKit-Abfrage entfällt — **TCC gilt weiterhin** | Nur TCC |
+| `PermissionDeny` | Vor dem Gerätezugriff verweigert | Nur TCC |
+
+`PermissionAllow` genehmigt die Webview-Anfrage, nicht den Gerätezugriff. Die erste Aufnahme löst weiterhin die TCC-Abfrage aus. Hat der Benutzer die Anwendung in den Systemeinstellungen abgelehnt, bleibt der Zugriff verweigert; keine Anwendung kann sich selbst Gerätezugriff gewähren. `PermissionAllow` entfernt nur die vorgeschaltete WebKit-Abfrage.
+
+Unter macOS-Versionen vor 12 existiert diese Delegate-Methode nicht. Dort wird die Map ignoriert und jede Anfrage fällt auf die WebKit-Abfrage zurück.
 
 Stelle sicher, dass deine `Info.plist` die entsprechenden Schlüssel für Verwendungsbeschreibungen enthält:
 
@@ -89,6 +99,21 @@ Stelle sicher, dass deine `Info.plist` die entsprechenden Schlüssel für Verwen
 <key>NSCameraUsageDescription</key>
 <string>Used for video calls</string>
 ```
+
+@note{type="caution" title="Verweigere Funktionen ohne Verwendungsbeschreibung in Info.plist"}
+
+Erreicht eine Anfrage AVFoundation ohne den passenden Schlüssel für die Verwendungsbeschreibung, schlägt sie nicht einfach fehl: macOS beendet die Anwendung.
+
+`PermissionDefault` ist der Nullwert. Daher lässt `{PermissionMicrophone: PermissionAllow}` allein die Kamera bei der WebKit-Abfrage. Stimmt der Benutzer zu und enthält die Anwendung nur `NSMicrophoneUsageDescription`, wird sie beendet. Setze `PermissionDeny` ausdrücklich für jede Funktion ohne Verwendungsbeschreibung:
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionDeny,
+},
+```
+
+@end
 
 ## Gängige Muster
 
@@ -103,7 +128,7 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-Unter **Linux** werden damit beide Geräte ausdrücklich zugelassen; andere Funktionen bleiben verweigert. Unter **Windows** werden damit beide zugelassen; für jede andere nicht aufgeführte Funktion wird eine native Abfrage angezeigt. Unter **macOS** hat dies keine Wirkung; TCC übernimmt alles.
+Unter **Linux** werden damit beide Geräte ausdrücklich zugelassen; andere Funktionen bleiben verweigert. Unter **Windows** werden damit beide zugelassen; für jede andere nicht aufgeführte Funktion wird eine native Abfrage angezeigt. Unter **macOS** werden beide Geräte auf WebKit-Ebene zugelassen, sodass keine Browserabfrage erscheint. TCC fragt beim ersten Zugriff weiterhin nach den Geräten selbst; beide Schlüssel für die Verwendungsbeschreibung müssen in `Info.plist` vorhanden sein.
 
 ### Medienaufnahme unter Linux verweigern
 
@@ -182,11 +207,13 @@ Die Auswertungsreihenfolge unter Windows lautet:
 
 | Funktion | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| Mikrofon | ✅ | ✅ | Nur TCC |
-| Kamera | ✅ | ✅ | Nur TCC |
-| Geolokalisierung | ❌ noch nicht | ✅ | Nur TCC |
-| Benachrichtigungen | ❌ noch nicht | ✅ | Nur TCC |
-| Lesen aus der Zwischenablage | ❌ noch nicht | ✅ | Nur TCC |
+| Mikrofon | ✅ | ✅ | ✅ (macOS 12+) |
+| Kamera | ✅ | ✅ | ✅ (macOS 12+) |
+| Geolokalisierung | ❌ noch nicht | ✅ | ❌ noch nicht |
+| Benachrichtigungen | ❌ noch nicht | ✅ | ❌ noch nicht |
+| Lesen aus der Zwischenablage | ❌ noch nicht | ✅ | ❌ noch nicht |
+
+Bei ✅ unter macOS beantwortet die Richtlinie die WebKit-Anfrage; TCC schützt zusätzlich das Gerät. Bei ❌ bleibt die Funktion allein TCC überlassen.
 
 ## Fehlerbehebung
 
@@ -200,7 +227,11 @@ Sobald `Permissions` einen Eintrag enthält, erteilt Wails nicht mehr die pausch
 
 **macOS-Berechtigungen funktionieren nicht**
 
-Die `Permissions`-Zuordnung hat unter macOS keine Wirkung. Stellen Sie sicher, dass `Info.plist` die richtigen Schlüssel für Nutzungsbeschreibungen enthält (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription` usw.) und dass der Benutzer den Zugriff unter Systemeinstellungen → Datenschutz & Sicherheit gewährt hat.
+`Permissions` berücksichtigt Kamera und Mikrofon ab macOS 12. Standort, Benachrichtigungen und das Lesen der Zwischenablage sind noch nicht angebunden und ignorieren die Richtlinie. TCC schützt weiterhin den Gerätezugriff: `PermissionAllow` entfernt die WebKit-Abfrage, nicht die Systemabfrage. Prüfe die Schlüssel `NSMicrophoneUsageDescription` und `NSCameraUsageDescription` in `Info.plist` und die Freigabe unter Systemeinstellungen → Datenschutz & Sicherheit.
+
+**Meine macOS-Anwendung wird beendet, wenn Webinhalte Kamera oder Mikrofon anfordern**
+
+Erreicht eine Anfrage AVFoundation ohne den passenden Schlüssel für die Verwendungsbeschreibung, schlägt sie nicht einfach fehl: macOS beendet die Anwendung. Ergänze den passenden Schlüssel oder setze für diese Funktion `PermissionDeny`, damit die Anfrage AVFoundation nicht erreicht. `PermissionDefault` lässt die WebKit-Abfrage zu, die der Benutzer bestätigen kann.
 
 **Geolokalisierung, Benachrichtigungen und Zwischenablage haben unter Linux keine Wirkung**
 

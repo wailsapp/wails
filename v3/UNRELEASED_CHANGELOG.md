@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix the `Permissions` option being ignored on macOS 12 and later: the `WKUIDelegate` media-capture method is now implemented, so `PermissionAllow` and `PermissionDeny` apply to camera and microphone requests as they do on Linux and Windows. `NSCameraUsageDescription` / `NSMicrophoneUsageDescription` and, where sandboxed, the matching device entitlements are still required
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

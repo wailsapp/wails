@@ -75,11 +75,21 @@ WebView2 には、ネイティブの権限プロンプトと、種類ごとの�
 
 つまり、Windows で `Permissions` を少しでも構成すると、明示的に指定していない機能は通知なしに許可されず、プロンプトが表示されます。必要な機能を明示的に設定してください。
 
-### macOS（TCC）
+### macOS (WKWebView + TCC)
 
-macOS は、システムのプライバシーフレームワークを通じて、カメラ、マイク、位置情報、通知へのアクセスを管理します。Web コンテンツが初めて機能へのアクセスを要求すると OS のプロンプトが自動的に表示され、ユーザーの選択は「システム設定」→「プライバシーとセキュリティ」にアプリ単位で記憶されます。
+macOS では 2 つの層で許可が必要です。WKWebView はキャプチャ開始前にアプリケーションへ確認し、その要求に `Permissions` マップが応答します。その下ではプライバシーフレームワーク TCC がデバイス自体へのアクセスを制御します。アプリが実際にカメラやマイクへ初めてアクセスすると OS の確認が表示され、選択はアプリごとに「システム設定」→「プライバシーとセキュリティ」に記憶されます。
 
-これは、`Permissions` を構成しなくても正しく動作します。現在、macOS では<strong>このマップは無視されます</strong>。設定内容にかかわらず、すべての要求が TCC を経由します。実際上の制約として、macOS では `PermissionDeny` が機能しません。TCC がシステムレベルですでに許可している機能を WebView が使用しないようにブロックすることはできません。
+Wails は macOS 12 以降で **カメラとマイク** の要求を処理します。位置情報、通知、クリップボードの読み取りには対応する `WKUIDelegate` がないため未接続で、TCC に委ねられます。Linux と同様、これらに設定したポリシーは効果がありません。
+
+| ポリシー | カメラ / マイク | 位置情報、通知、クリップボード |
+| --- | --- | --- |
+| `PermissionDefault` | WebKit 独自の確認を表示 | TCC のみ |
+| `PermissionAllow` | WebKit の確認を省略 — **TCC は引き続き適用** | TCC のみ |
+| `PermissionDeny` | デバイスにアクセスする前に拒否 | TCC のみ |
+
+`PermissionAllow` が許可するのは WebView の要求であり、デバイス自体ではありません。最初のキャプチャでは TCC の確認が表示され、システム設定で拒否されたアプリは拒否されたままです。アプリが自分自身にデバイスへのアクセスを許可することはできません。`PermissionAllow` が省略するのは、その手前にある WebKit の確認だけです。
+
+macOS 12 より前にはこのデリゲートメソッドがないため、マップは無視され、すべての要求は WebKit の確認に戻ります。
 
 `Info.plist` に適切な使用目的の説明キーが含まれていることを確認してください：
 
@@ -89,6 +99,21 @@ macOS は、システムのプライバシーフレームワークを通じて�
 <key>NSCameraUsageDescription</key>
 <string>Used for video calls</string>
 ```
+
+@note{type="caution" title="Info.plist に用途を宣言していない機能は拒否する"}
+
+対応する用途説明キーがないまま要求が AVFoundation に到達すると、単なる失敗ではなく macOS がアプリを終了します。
+
+`PermissionDefault` はゼロ値です。そのため `{PermissionMicrophone: PermissionAllow}` だけではカメラの WebKit 確認が残ります。ユーザーが許可し、アプリが `NSMicrophoneUsageDescription` しか宣言していなければ、アプリは終了します。用途説明のない機能には必ず `PermissionDeny` を明示してください。
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionDeny,
+},
+```
+
+@end
 
 ## 一般的なパターン
 
@@ -103,7 +128,7 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-**Linux** では、これにより両方のデバイスが明示的に許可されます。その他の機能は引き続き拒否されます。 **Windows** では、これにより両方が許可されます。リストに含めていないその他の機能については、ネイティブプロンプトが表示されます。 **macOS** では効果がありません。すべて TCC によって処理されます。
+**Linux** では、これにより両方のデバイスが明示的に許可されます。その他の機能は引き続き拒否されます。 **Windows** では、これにより両方が許可されます。リストに含めていないその他の機能については、ネイティブプロンプトが表示されます。 **macOS** では両方が WebKit 層で許可され、ブラウザーの確認は表示されません。ただし、初回使用時には TCC がデバイス自体へのアクセスを確認するため、両方の用途説明キーが `Info.plist` に必要です。
 
 ### Linux でメディアキャプチャを拒否する
 
@@ -182,11 +207,13 @@ Windows での評価順序は次のとおりです。
 
 | 機能 | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| マイク | ✅ | ✅ | TCC のみ |
-| カメラ | ✅ | ✅ | TCC のみ |
-| 位置情報 | ❌ 未対応 | ✅ | TCC のみ |
-| 通知 | ❌ 未対応 | ✅ | TCC のみ |
-| クリップボードの読み取り | ❌ 未対応 | ✅ | TCC のみ |
+| マイク | ✅ | ✅ | ✅ (macOS 12+) |
+| カメラ | ✅ | ✅ | ✅ (macOS 12+) |
+| 位置情報 | ❌ 未対応 | ✅ | ❌ 未対応 |
+| 通知 | ❌ 未対応 | ✅ | ❌ 未対応 |
+| クリップボードの読み取り | ❌ 未対応 | ✅ | ❌ 未対応 |
+
+macOS が ✅ の場合、ポリシーが WebKit の要求に応答し、さらに TCC がデバイスを制御します。❌ の場合は TCC のみに委ねられます。
 
 ## トラブルシューティング
 
@@ -200,7 +227,11 @@ Windows での評価順序は次のとおりです。
 
 **macOS のアクセス許可が機能しない**
 
-`Permissions` マップは macOS では効果がありません。`Info.plist` に正しい用途説明キー（`NSMicrophoneUsageDescription`、`NSCameraUsageDescription` など）が含まれていること、およびユーザーが「システム設定」→「プライバシーとセキュリティ」でアクセスを許可していることを確認してください。
+`Permissions` は macOS 12 以降のカメラとマイクに対応します。位置情報、通知、クリップボードの読み取りは未接続でポリシーを無視します。TCC は引き続きデバイスを制御し、`PermissionAllow` が省略するのは WebKit の確認であってシステムの確認ではありません。`Info.plist` の `NSMicrophoneUsageDescription` と `NSCameraUsageDescription`、および「システム設定」→「プライバシーとセキュリティ」の許可を確認してください。
+
+**Web コンテンツがカメラやマイクを要求すると macOS アプリが終了する**
+
+対応する用途説明キーがないまま要求が AVFoundation に到達すると、単なる失敗ではなく macOS がアプリを終了します。 対応するキーを追加するか、その機能に `PermissionDeny` を設定して要求が AVFoundation に届かないようにしてください。`PermissionDefault` は WebKit の確認を残すため、ユーザーが許可する可能性があります。
 
 **Linux で位置情報／通知／クリップボードが機能しない**
 
