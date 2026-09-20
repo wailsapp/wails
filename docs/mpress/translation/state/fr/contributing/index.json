@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "2fe8f9de33a7ad45a694",
-  "sourceFile": "contributing/index.mpd",
+  "sourceFile": "contributing/index.md",
   "sourceLanguage": "en",
   "targetLanguage": "fr",
   "segments": {
@@ -789,9 +789,9 @@
       "sourceHash": "5a05e1b86f9f30db0889ac44dbcdb9278b34cf3225c276e5acb7c83f69f1a78d",
       "targetHash": "dc05d476813b9a8b886ab6fbf60912dc5db5fae1f01c8cc7316f64c153d2dd92",
       "machineHash": "dc05d476813b9a8b886ab6fbf60912dc5db5fae1f01c8cc7316f64c153d2dd92",
-      "machineText": "La documentation utilise M-Press. Modifiez les fichiers `.mpd` situés dans\n`docs/mpress/content/`, puis prévisualisez-les et validez-les depuis la racine du dépôt :",
+      "machineText": "La documentation utilise M-Press. Modifiez les fichiers `.md` situés dans\n`docs/mpress/content/`, puis prévisualisez-les et validez-les depuis la racine du dépôt :",
       "status": "machine-translated",
-      "sourcePreview": "Documentation uses M-Press. Edit the `.mpd` files under `docs/mpress/content/`, then preview and val…",
+      "sourcePreview": "Documentation uses M-Press. Edit the `.md` files under `docs/mpress/content/`, then preview and val…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

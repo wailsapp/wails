@@ -1,0 +1,703 @@
+---
+title: "Bonnes pratiques pour les bindings"
+description: "Patrons de conception et bonnes pratiques pour les bindings Go-JavaScript"
+slug: "features/bindings/best-practices"
+sourcePath: "features/bindings/best-practices.md"
+---
+
+## Bonnes pratiques pour les bindings
+
+Suivez des **patrons éprouvés** lors de la conception afin de créer des bindings clairs, performants et sécurisés. Ce guide aborde les principes de conception des API, l’optimisation des performances, les patrons de sécurité, la gestion des erreurs et les stratégies de test pour des applications faciles à maintenir.
+
+## Principes de conception des API
+
+### 1. Responsabilité unique
+
+Chaque service devrait avoir un objectif clair et unique :
+
+```go
+// ❌ Bad: God object
+type AppService struct {
+    // Does everything
+}
+
+func (a *AppService) SaveFile(path string, data []byte) error
+func (a *AppService) GetUser(id int) (*User, error)
+func (a *AppService) SendEmail(to, subject, body string) error
+func (a *AppService) ProcessPayment(amount float64) error
+
+// ✅ Good: Focused services
+type FileService struct{}
+func (f *FileService) Save(path string, data []byte) error
+
+type UserService struct{}
+func (u *UserService) GetByID(id int) (*User, error)
+
+type EmailService struct{}
+func (e *EmailService) Send(to, subject, body string) error
+
+type PaymentService struct{}
+func (p *PaymentService) Process(amount float64) error
+```
+
+### 2. Noms de méthodes explicites
+
+Utilisez des noms descriptifs qui expriment une action :
+
+```go
+// ❌ Bad: Unclear names
+func (s *Service) Do(x string) error
+func (s *Service) Handle(data interface{}) interface{}
+func (s *Service) Process(input map[string]interface{}) bool
+
+// ✅ Good: Clear names
+func (s *FileService) SaveDocument(path string, content string) error
+func (s *UserService) AuthenticateUser(email, password string) (*User, error)
+func (s *OrderService) CreateOrder(items []Item) (*Order, error)
+```
+
+### 3. Types de retour cohérents
+
+Renvoyez toujours les erreurs explicitement :
+
+```go
+// ❌ Bad: Inconsistent error handling
+func (s *Service) GetData() interface{}  // How to handle errors?
+func (s *Service) SaveData(data string)  // Silent failures?
+
+// ✅ Good: Explicit errors
+func (s *Service) GetData() (Data, error)
+func (s *Service) SaveData(data string) error
+```
+
+### 4. Validation des entrées
+
+Validez toutes les entrées côté Go :
+
+```go
+// ❌ Bad: No validation
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    user := &User{Email: email, Password: password}
+    return s.db.Create(user)
+}
+
+// ✅ Good: Validate first
+func (s *UserService) CreateUser(email, password string) (*User, error) {
+    // Validate email
+    if !isValidEmail(email) {
+        return nil, errors.New("invalid email address")
+    }
+    
+    // Validate password
+    if len(password) < 8 {
+        return nil, errors.New("password must be at least 8 characters")
+    }
+    
+    // Hash password
+    hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+    
+    user := &User{
+        Email:        email,
+        PasswordHash: string(hash),
+    }
+    
+    return s.db.Create(user)
+}
+```
+
+## Patrons de performance
+
+### 1. Opérations par lots
+
+Réduisez les appels au pont en regroupant les opérations par lots :
+
+```go
+// ❌ Bad: N calls
+// JavaScript
+for (const item of items) {
+    await ProcessItem(item)  // N bridge calls
+}
+
+// ✅ Good: 1 call
+// Go
+func (s *Service) ProcessItems(items []Item) ([]Result, error) {
+    results := make([]Result, len(items))
+    for i, item := range items {
+        results[i] = s.processItem(item)
+    }
+    return results, nil
+}
+
+// JavaScript
+const results = await ProcessItems(items)  // 1 bridge call
+```
+
+### 2. Pagination
+
+Ne renvoyez pas d’énormes jeux de données :
+
+```go
+// ❌ Bad: Returns everything
+func (s *Service) GetAllUsers() ([]User, error) {
+    return s.db.FindAll()  // Could be millions
+}
+
+// ✅ Good: Paginated
+type PageRequest struct {
+    Page     int `json:"page"`
+    PageSize int `json:"pageSize"`
+}
+
+type PageResponse struct {
+    Items      []User `json:"items"`
+    TotalItems int    `json:"totalItems"`
+    TotalPages int    `json:"totalPages"`
+    Page       int    `json:"page"`
+}
+
+func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
+    // Validate
+    if req.Page < 1 {
+        req.Page = 1
+    }
+    if req.PageSize < 1 || req.PageSize > 100 {
+        req.PageSize = 20
+    }
+    
+    // Get total
+    total, err := s.db.Count()
+    if err != nil {
+        return nil, err
+    }
+    
+    // Get page
+    offset := (req.Page - 1) * req.PageSize
+    users, err := s.db.Find(offset, req.PageSize)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &PageResponse{
+        Items:      users,
+        TotalItems: total,
+        TotalPages: (total + req.PageSize - 1) / req.PageSize,
+        Page:       req.Page,
+    }, nil
+}
+```
+
+### 3. Mise en cache
+
+Mettez en cache les opérations coûteuses :
+
+```go
+type CachedService struct {
+    cache map[string]interface{}
+    mu    sync.RWMutex
+    ttl   time.Duration
+}
+
+func (s *CachedService) GetData(key string) (interface{}, error) {
+    // Check cache
+    s.mu.RLock()
+    if data, ok := s.cache[key]; ok {
+        s.mu.RUnlock()
+        return data, nil
+    }
+    s.mu.RUnlock()
+    
+    // Fetch data
+    data, err := s.fetchData(key)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Cache it
+    s.mu.Lock()
+    s.cache[key] = data
+    s.mu.Unlock()
+    
+    // Schedule expiry
+    go func() {
+        time.Sleep(s.ttl)
+        s.mu.Lock()
+        delete(s.cache, key)
+        s.mu.Unlock()
+    }()
+    
+    return data, nil
+}
+```
+
+### 4. Diffusion continue avec des événements
+
+Utilisez des événements pour diffuser les données en continu :
+
+```go
+// ❌ Bad: Polling
+func (s *Service) GetProgress() int {
+    return s.progress
+}
+
+// JavaScript polls
+setInterval(async () => {
+    const progress = await GetProgress()
+    updateUI(progress)
+}, 100)
+
+// ✅ Good: Events
+// Service must hold a reference to *application.App to emit events / log:
+//
+//   type Service struct {
+//       app *application.App
+//   }
+//
+//   func NewService(app *application.App) *Service {
+//       return &Service{app: app}
+//   }
+//
+//   app := application.New(application.Options{})
+//   app.RegisterService(application.NewService(NewService(app)))
+
+func (s *Service) ProcessLargeFile(path string) error {
+    file, err := os.Open(path)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
+    
+    scanner := bufio.NewScanner(file)
+    total := 0
+    processed := 0
+    
+    // Count lines
+    for scanner.Scan() {
+        total++
+    }
+    
+    // Process
+    file.Seek(0, 0)
+    scanner = bufio.NewScanner(file)
+    
+    for scanner.Scan() {
+        s.processLine(scanner.Text())
+        processed++
+        
+        // Emit progress
+        s.app.Event.Emit("progress", map[string]interface{}{
+            "processed": processed,
+            "total":     total,
+            "percent":   int(float64(processed) / float64(total) * 100),
+        })
+    }
+    
+    return scanner.Err()
+}
+
+// JavaScript listens
+import { Events } from '@wailsio/runtime'
+
+Events.On("progress", (event) => {
+    updateProgress(event.data.percent)
+})
+```
+
+## Patrons de sécurité
+
+### 1. Assainissement des entrées
+
+Assainissez toujours les entrées utilisateur :
+
+```go
+import (
+    "html"
+    "strings"
+)
+
+func (s *Service) SaveComment(text string) error {
+    // Sanitise
+    text = strings.TrimSpace(text)
+    text = html.EscapeString(text)
+    
+    // Validate length
+    if len(text) == 0 {
+        return errors.New("comment cannot be empty")
+    }
+    if len(text) > 1000 {
+        return errors.New("comment too long")
+    }
+    
+    return s.db.SaveComment(text)
+}
+```
+
+### 2. Authentification
+
+Protégez les opérations sensibles :
+
+```go
+type AuthService struct {
+    sessions map[string]*Session
+    mu       sync.RWMutex
+}
+
+func (a *AuthService) Login(email, password string) (string, error) {
+    user, err := a.db.FindByEmail(email)
+    if err != nil {
+        return "", errors.New("invalid credentials")
+    }
+    
+    if !a.verifyPassword(user.PasswordHash, password) {
+        return "", errors.New("invalid credentials")
+    }
+    
+    // Create session
+    token := generateToken()
+    a.mu.Lock()
+    a.sessions[token] = &Session{
+        UserID:    user.ID,
+        ExpiresAt: time.Now().Add(24 * time.Hour),
+    }
+    a.mu.Unlock()
+    
+    return token, nil
+}
+
+func (a *AuthService) requireAuth(token string) (*Session, error) {
+    a.mu.RLock()
+    session, ok := a.sessions[token]
+    a.mu.RUnlock()
+    
+    if !ok {
+        return nil, errors.New("not authenticated")
+    }
+    
+    if time.Now().After(session.ExpiresAt) {
+        return nil, errors.New("session expired")
+    }
+    
+    return session, nil
+}
+
+// Protected method
+func (a *AuthService) DeleteAccount(token string) error {
+    session, err := a.requireAuth(token)
+    if err != nil {
+        return err
+    }
+    
+    return a.db.DeleteUser(session.UserID)
+}
+```
+
+### 3. Limitation du débit
+
+Prévenez les abus :
+
+```go
+type RateLimiter struct {
+    requests map[string][]time.Time
+    mu       sync.Mutex
+    limit    int
+    window   time.Duration
+}
+
+func (r *RateLimiter) Allow(key string) bool {
+    r.mu.Lock()
+    defer r.mu.Unlock()
+    
+    now := time.Now()
+    
+    // Clean old requests
+    if requests, ok := r.requests[key]; ok {
+        var recent []time.Time
+        for _, t := range requests {
+            if now.Sub(t) < r.window {
+                recent = append(recent, t)
+            }
+        }
+        r.requests[key] = recent
+    }
+    
+    // Check limit
+    if len(r.requests[key]) >= r.limit {
+        return false
+    }
+    
+    // Add request
+    r.requests[key] = append(r.requests[key], now)
+    return true
+}
+
+// Usage
+func (s *Service) SendEmail(to, subject, body string) error {
+    if !s.rateLimiter.Allow(to) {
+        return errors.New("rate limit exceeded")
+    }
+    
+    return s.emailer.Send(to, subject, body)
+}
+```
+
+## Patrons de gestion des erreurs
+
+### 1. Erreurs descriptives
+
+Fournissez le contexte dans les erreurs :
+
+```go
+// ❌ Bad: Generic errors
+func (s *Service) LoadFile(path string) ([]byte, error) {
+    return os.ReadFile(path)  // "no such file or directory"
+}
+
+// ✅ Good: Contextual errors
+func (s *Service) LoadFile(path string) ([]byte, error) {
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return nil, fmt.Errorf("failed to load file %s: %w", path, err)
+    }
+    return data, nil
+}
+```
+
+### 2. Types d’erreurs
+
+Utilisez des erreurs typées pour appliquer un traitement spécifique :
+
+```go
+type ValidationError struct {
+    Field   string
+    Message string
+}
+
+func (e *ValidationError) Error() string {
+    return fmt.Sprintf("%s: %s", e.Field, e.Message)
+}
+
+type NotFoundError struct {
+    Resource string
+    ID       interface{}
+}
+
+func (e *NotFoundError) Error() string {
+    return fmt.Sprintf("%s not found: %v", e.Resource, e.ID)
+}
+
+// Usage
+func (s *UserService) GetUser(id int) (*User, error) {
+    if id <= 0 {
+        return nil, &ValidationError{
+            Field:   "id",
+            Message: "must be positive",
+        }
+    }
+    
+    user, err := s.db.Find(id)
+    if err == sql.ErrNoRows {
+        return nil, &NotFoundError{
+            Resource: "User",
+            ID:       id,
+        }
+    }
+    if err != nil {
+        return nil, fmt.Errorf("database error: %w", err)
+    }
+    
+    return user, nil
+}
+```
+
+### 3. Récupération après une erreur
+
+Gérez les erreurs avec élégance :
+
+```go
+func (s *Service) ProcessWithRetry(data string) error {
+    maxRetries := 3
+    
+    for attempt := 1; attempt <= maxRetries; attempt++ {
+        err := s.process(data)
+        if err == nil {
+            return nil
+        }
+        
+        // Log attempt
+        s.app.Logger.Warn("Process failed", 
+            "attempt", attempt, 
+            "error", err)
+        
+        // Don't retry on validation errors
+        if _, ok := err.(*ValidationError); ok {
+            return err
+        }
+        
+        // Wait before retry
+        if attempt < maxRetries {
+            time.Sleep(time.Duration(attempt) * time.Second)
+        }
+    }
+    
+    return fmt.Errorf("failed after %d attempts", maxRetries)
+}
+```
+
+## Patrons de test
+
+### 1. Tests unitaires
+
+Testez les services de manière isolée :
+
+```go
+func TestUserService_CreateUser(t *testing.T) {
+    // Setup
+    db := &MockDB{}
+    service := &UserService{db: db}
+    
+    // Test valid input
+    user, err := service.CreateUser("test@example.com", "password123")
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if user.Email != "test@example.com" {
+        t.Errorf("expected email test@example.com, got %s", user.Email)
+    }
+    
+    // Test invalid email
+    _, err = service.CreateUser("invalid", "password123")
+    if err == nil {
+        t.Error("expected error for invalid email")
+    }
+    
+    // Test short password
+    _, err = service.CreateUser("test@example.com", "short")
+    if err == nil {
+        t.Error("expected error for short password")
+    }
+}
+```
+
+### 2. Tests d’intégration
+
+Effectuez les tests avec les dépendances réelles :
+
+```go
+func TestUserService_Integration(t *testing.T) {
+    // Setup real database
+    db, err := sql.Open("sqlite3", ":memory:")
+    if err != nil {
+        t.Fatal(err)
+    }
+    defer db.Close()
+    
+    // Create schema
+    _, err = db.Exec(`CREATE TABLE users (...)`)
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // Test service
+    service := &UserService{db: db}
+    
+    user, err := service.CreateUser("test@example.com", "password123")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // Verify in database
+    var count int
+    db.QueryRow("SELECT COUNT(*) FROM users WHERE email = ?", 
+        user.Email).Scan(&count)
+    
+    if count != 1 {
+        t.Errorf("expected 1 user, got %d", count)
+    }
+}
+```
+
+### 3. Services simulés
+
+Créez des interfaces testables :
+
+```go
+type UserRepository interface {
+    Create(user *User) error
+    FindByEmail(email string) (*User, error)
+    Update(user *User) error
+    Delete(id int) error
+}
+
+type UserService struct {
+    repo UserRepository
+}
+
+// Mock for testing
+type MockUserRepository struct {
+    users map[string]*User
+}
+
+func (m *MockUserRepository) Create(user *User) error {
+    m.users[user.Email] = user
+    return nil
+}
+
+// Test with mock
+func TestUserService_WithMock(t *testing.T) {
+    mock := &MockUserRepository{
+        users: make(map[string]*User),
+    }
+    
+    service := &UserService{repo: mock}
+    
+    // Test
+    user, err := service.CreateUser("test@example.com", "password123")
+    if err != nil {
+        t.Fatal(err)
+    }
+    
+    // Verify mock was called
+    if len(mock.users) != 1 {
+        t.Error("expected 1 user in mock")
+    }
+}
+```
+
+## Récapitulatif des bonnes pratiques
+
+### ✅ À faire
+
+- **Appliquer le principe de responsabilité unique** — Un service, un objectif
+- **Choisir des noms explicites** — Des noms de méthodes descriptifs
+- **Valider les entrées** — Toujours côté Go
+- **Renvoyer les erreurs** — Une gestion explicite des erreurs
+- **Regrouper les opérations par lots** — Réduire les appels au pont
+- **Utiliser des événements** — Pour diffuser les données en continu
+- **Assainir les entrées** — Prévenir les injections
+- **Tester minutieusement** — Tests unitaires et d’intégration
+- **Documenter les méthodes** — Les commentaires deviennent de la documentation JSDoc
+- **Versionner votre API** — Anticiper les modifications
+
+### ❌ À ne pas faire
+
+- **Ne créez pas d’objets fourre-tout** — Conservez des services ciblés
+- **Ne faites pas confiance au frontend** — Validez tout
+- **Ne renvoyez pas d’énormes jeux de données** — Utilisez la pagination
+- **Ne bloquez pas l’exécution** — Utilisez des goroutines pour les opérations longues
+- **N’ignorez pas les erreurs** — Gérez tous les cas d’erreur
+- **Ne négligez pas les tests** — Testez tôt et souvent
+- **Ne codez pas les valeurs en dur** — Utilisez la configuration
+- **N’exposez pas les détails internes** — Gardez l’implémentation privée
+
+## Étapes suivantes
+
+- [Méthodes](/features/bindings/methods/) — Découvrez les bases de la liaison de méthodes
+- [Services](/features/bindings/services/) — Comprenez l’architecture des services
+- [Modèles](/features/bindings/models/) — Liez des structures de données complexes
+- [Événements](/features/events/system/) — Utilisez les événements pour la publication et l’abonnement
+
+---
+
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples de liaisons](https://github.com/wailsapp/wails/tree/master/v3/examples/binding).

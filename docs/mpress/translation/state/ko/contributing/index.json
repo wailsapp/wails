@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "2fe8f9de33a7ad45a694",
-  "sourceFile": "contributing/index.mpd",
+  "sourceFile": "contributing/index.md",
   "sourceLanguage": "en",
   "targetLanguage": "ko",
   "segments": {
@@ -789,9 +789,9 @@
       "sourceHash": "5a05e1b86f9f30db0889ac44dbcdb9278b34cf3225c276e5acb7c83f69f1a78d",
       "targetHash": "5b3612bcf9a93a48db4934a08e7f6cf1c8d30e55a9de533a589be86cd286abe0",
       "machineHash": "5b3612bcf9a93a48db4934a08e7f6cf1c8d30e55a9de533a589be86cd286abe0",
-      "machineText": "문서는 M-Press를 사용합니다. `docs/mpress/content/` 아래의 `.mpd` 파일을 편집한 다음, 저장소 루트에서 미리 보고 유효성을 검사하세요:",
+      "machineText": "문서는 M-Press를 사용합니다. `docs/mpress/content/` 아래의 `.md` 파일을 편집한 다음, 저장소 루트에서 미리 보고 유효성을 검사하세요:",
       "status": "machine-translated",
-      "sourcePreview": "Documentation uses M-Press. Edit the `.mpd` files under `docs/mpress/content/`, then preview and val…",
+      "sourcePreview": "Documentation uses M-Press. Edit the `.md` files under `docs/mpress/content/`, then preview and val…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

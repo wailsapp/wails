@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "2fe8f9de33a7ad45a694",
-  "sourceFile": "contributing/index.mpd",
+  "sourceFile": "contributing/index.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-tw",
   "segments": {
@@ -789,9 +789,9 @@
       "sourceHash": "5a05e1b86f9f30db0889ac44dbcdb9278b34cf3225c276e5acb7c83f69f1a78d",
       "targetHash": "ba8de5a0e067caf21418e85649981390af7a3a741fcf12f360dcad3e05921176",
       "machineHash": "ba8de5a0e067caf21418e85649981390af7a3a741fcf12f360dcad3e05921176",
-      "machineText": "文件使用 M-Press。請編輯 `docs/mpress/content/` 下的 `.mpd` 檔案，然後從儲存庫根目錄預覽並驗證：",
+      "machineText": "文件使用 M-Press。請編輯 `docs/mpress/content/` 下的 `.md` 檔案，然後從儲存庫根目錄預覽並驗證：",
       "status": "machine-translated",
-      "sourcePreview": "Documentation uses M-Press. Edit the `.mpd` files under `docs/mpress/content/`, then preview and val…",
+      "sourcePreview": "Documentation uses M-Press. Edit the `.md` files under `docs/mpress/content/`, then preview and val…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
