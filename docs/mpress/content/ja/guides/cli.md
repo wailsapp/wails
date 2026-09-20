@@ -57,6 +57,18 @@ wails3 init [flags]
 3. `go.mod` 内のモジュール名をリポジトリの URL に合わせて更新する
 4. すべてのファイルを追加する
 
+### `migrate`
+
+Wails v2 プロジェクトを新しい Wails v3 プロジェクトへ移行します。実験的なコマンドであり、生成されたプロジェクトの確認が必須です。
+
+```bash
+wails3 migrate -d /path/to/v2-project -o /path/to/v3-project
+```
+
+元のプロジェクトは変更しません。対応が一意に決まるメタデータ、ビルド用アセット、フロントエンド設定、構成を変換し、出力先に `MIGRATION.md` を作成します。アプリケーションのロジックや残っている V2 ランタイム呼び出しは書き換えません。記載された呼び出しを移植してから、`go mod tidy`、`wails3 doctor`、`wails3 generate bindings`、`wails3 dev` を実行してください。
+
+全フラグは `wails3 migrate --help` で確認できます。再現可能な失敗は、コマンド、CLI バージョン、OS、`wails3 doctor` の出力、`MIGRATION.md` とともに [issue トラッカー](https://github.com/wailsapp/wails/issues)へ報告してください。動作変更の提案には [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep) を使います。
+
 ### `dev`
 
 アプリケーションを開発モードで実行します。フロントエンドコードをリアルタイムで確認でき、アプリケーション全体を再ビルドせずに変更を実行中のアプリケーションへ反映できます。Go コードの変更も検出され、アプリケーションは自動的に再ビルドされて再起動します。

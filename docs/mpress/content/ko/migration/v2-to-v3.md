@@ -17,6 +17,36 @@ Wails v3는 아키텍처, 성능 및 개발자 경험을 크게 개선한 <stron
 
 **마이그레이션 소요 시간:** 일반적인 애플리케이션의 경우 1-4시간
 
+## 자동 마이그레이션
+
+@note{type="warning" title="실험적 기능"}
+`wails3 migrate`는 V3 CLI에 포함되지만 실험적입니다. 일반적인 프로젝트 구조를 지원하더라도 결과는 다를 수 있으므로 생성된 코드를 검토하고 충분히 테스트하세요. 문제가 있으면 자세한 내용과 함께 [이슈를 등록](https://github.com/wailsapp/wails/issues)해주세요. 풀 리퀘스트도 환영합니다.
+@end
+
+CLI가 이 가이드의 작업 대부분을 수행할 수 있습니다.
+
+```bash
+wails3 migrate -d ./myv2project -o ./myv3project
+```
+
+명확히 대응되는 부분은 이전하고 나머지는 문서화합니다. 애플리케이션 로직을 다시 쓰거나 호환 계층을 만들지 않습니다. v2 API 코드는 그대로 두고 해당 위치와 구체적인 v3 대체 항목을 `MIGRATION.md`에 기록합니다.
+
+자동으로 이전하는 항목:
+
+- `main.go`를 `application.New()`와 `app.Window.NewWithOptions()` 중심으로 변경하면서 사용자 코드와 주석을 보존합니다. 플랫폼별 창 옵션도 대응되는 v3 옵션으로 변환합니다.
+- `Bind` 구조체는 v3 서비스가 되고 `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` 콜백은 애플리케이션 이벤트, `OnShutdown`, `ShouldQuit` 등 v3 대응 항목에 연결됩니다.
+- `wails.json`은 v3 프로젝트 파일인 Taskfile 빌드 시스템과 `build/config.yml`로 대체되며 제품 정보, 파일 연결, 프로토콜 같은 v2 메타데이터가 반영됩니다.
+- `go.mod`에서 `wails/v2`를 `wails/v3`로 바꾸고 오래된 Go 지시문은 v3 최소 요구사항인 `go 1.25`로 높입니다. 더 최신 버전은 유지합니다.
+- 프런트엔드를 복사하고 `@wailsio/runtime`을 의존성에 추가합니다. 생성된 `wailsjs/`는 v3에서 작동하지 않는 v2 빌드 출력이므로 복사하지 않습니다.
+
+`MIGRATION.md`에 기록하는 항목:
+
+- v2 `runtime` 호출의 파일, 줄 번호 및 v3 대체 항목. 예를 들어 `runtime.EventsEmit(ctx, ...)`는 `app.Event.Emit(...)`가 됩니다. 이 호출을 포팅할 때까지 프로젝트는 컴파일되지 않으며 컴파일러가 해당 위치를 가리킵니다.
+- `wailsjs/runtime` 또는 `wailsjs/go/...` 프런트엔드 import, `@wailsio/runtime` 대응 항목, `wails3 generate bindings`를 통한 바인딩 생성 과정.
+- 메뉴, 사용자 정의 로거, `EnumBind` 등 사람의 판단이 필요한 옵션과 지침.
+
+이후 내용은 변경 사항을 자세히 설명합니다. 생성된 체크리스트와 함께 사용하세요.
+
 ## 호환성을 깨는 변경 사항
 
 ### 애플리케이션 초기화
@@ -479,20 +509,20 @@ Events.Emit("action", data)
 }
 ```
 
-**v3 (wails.json):**
+**v3 (`build/config.yml`):**
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  }
-}
+```yaml
+version: '3'
+
+info:
+  productName: "myapp"
+  productIdentifier: "com.example.myapp"
+
+dev_mode:
+  root_path: .
 ```
+
+V3 프로젝트의 개발 및 빌드 명령은 루트 `Taskfile.yml`에 정의됩니다. 생성된 프로젝트는 프런트엔드 명령도 여기에 두고 애플리케이션과 패키징 구성에는 `build/config.yml`을 사용합니다. V2 파일을 복사하여 V3 `wails.json`을 만들지 마세요.
 
 ## 기능 매핑
 
@@ -671,6 +701,21 @@ wails3 generate bindings
 - **향상된 문서** - 포괄적인 가이드
 
 ## 도움말 보기
+
+### 마이그레이션 문제 보고
+
+도구의 실패는 버그입니다. 이슈를 열기 전에 재현 가능한 가장 작은 V2 프로젝트로 줄이고 다음을 포함하세요.
+
+- Wails V2 버전과 V3 CLI 버전 또는 커밋.
+- 운영체제와 아키텍처.
+- 정확한 `wails3 migrate` 명령.
+- 명령 출력과 생성된 `MIGRATION.md`.
+- `wails3 doctor` 출력.
+- 비공개 코드가 있으면 민감한 내용을 제거한 프로젝트나 최소 재현 예제.
+
+[Wails 이슈 트래커](https://github.com/wailsapp/wails/issues)의 버그 보고 양식을 사용하세요. 비밀 정보, 서명 자격 증명, 비공개 소스 코드를 첨부하지 마세요.
+
+마이그레이션 동작이나 V3 API 변경은 [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep) 풀 리퀘스트로 제안하세요. 제품 제안을 일반 기능 요청으로 등록하지 마세요.
 
 ### 리소스
 

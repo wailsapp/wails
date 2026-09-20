@@ -17,6 +17,36 @@ Wails v3 是一次<strong>完全重写</strong>，在架构、性能和开发者
 
 <strong>迁移时间：</strong>典型应用程序需要1-4小时
 
+## 自动迁移
+
+@note{type="warning" title="实验性"}
+V3 CLI 包含 `wails3 migrate` 命令，但它仍是实验性的。它适用于常见项目结构，实际效果可能不同：请审查生成代码并全面测试应用。遇到问题时，请[提交 issue](https://github.com/wailsapp/wails/issues)并提供详细信息。欢迎提交 pull request。
+@end
+
+CLI 可以代为完成本指南中的大部分操作：
+
+```bash
+wails3 migrate -d ./myv2project -o ./myv3project
+```
+
+命令迁移可以确定映射的部分，并记录其余内容。它不会重写应用逻辑，也不会生成兼容层：仍使用 v2 API 的代码保持原样，所有位置及其具体 v3 替代方案会列入 `MIGRATION.md`。
+
+自动迁移的内容：
+
+- 将 `main.go` 改为基于 `application.New()` 和 `app.Window.NewWithOptions()`，保留你的代码和注释，并将选项（包括平台专用窗口选项）映射到对应的 v3 选项。
+- `Bind` 中的结构体变成 v3 服务；`OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` 回调连接到对应的 v3 应用事件、`OnShutdown` 和 `ShouldQuit`。
+- 用 v3 项目文件（Taskfile 构建系统和 `build/config.yml`）替换 `wails.json`，并填入 v2 产品信息、文件关联和协议等元数据。
+- `go.mod` 将 `wails/v2` 换为 `wails/v3`，将较旧的 Go 指令提升至 v3 所需的最低版本 `go 1.25`；较新版本保持不变。
+- 复制前端并添加 `@wailsio/runtime` 依赖。不复制生成的 `wailsjs/`，因为它是无法用于 v3 的 v2 构建产物。
+
+`MIGRATION.md` 记录的内容：
+
+- 每个 v2 `runtime` 调用的文件、行号和 v3 替代方式，例如将 `runtime.EventsEmit(ctx, ...)` 改为 `app.Event.Emit(...)`。在这些调用移植完成之前，项目有意保持无法编译，编译器会指出对应位置。
+- 每个 `wailsjs/runtime` 或 `wailsjs/go/...` 前端导入、对应的 `@wailsio/runtime` 用法，以及 `wails3 generate bindings` 绑定生成流程。
+- 菜单、自定义日志器、`EnumBind` 等需要人工决定的选项及操作说明。
+
+本指南其余部分详细解释底层变化，请结合生成的检查清单使用。
+
 ## 破坏性变更
 
 ### 应用程序初始化
@@ -479,20 +509,20 @@ Events.Emit("action", data)
 }
 ```
 
-**v3（wails.json）：**
+**v3 (`build/config.yml`):**
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  }
-}
+```yaml
+version: '3'
+
+info:
+  productName: "myapp"
+  productIdentifier: "com.example.myapp"
+
+dev_mode:
+  root_path: .
 ```
+
+V3 项目级开发和构建命令定义在根目录的 `Taskfile.yml` 中。生成项目也将前端命令保存在这里，使用 `build/config.yml` 配置应用和打包。不要复制 V2 文件来创建 V3 的 `wails.json`。
 
 ## 功能映射
 
@@ -671,6 +701,21 @@ wails3 generate bindings
 - **更完善的文档**——全面的指南
 
 ## 获取帮助
+
+### 报告迁移问题
+
+迁移工具失败属于 bug。提交 issue 前，请尽量缩小为可复现的最小 V2 项目，并提供：
+
+- Wails V2 版本和 V3 CLI 版本或提交；
+- 操作系统和架构；
+- 完整准确的 `wails3 migrate` 命令；
+- 命令输出和生成的 `MIGRATION.md`；
+- `wails3 doctor` 输出；
+- 若包含私有代码，提供脱敏项目或最小复现示例。
+
+使用 [Wails 问题跟踪器](https://github.com/wailsapp/wails/issues)的 bug 模板。不要附带秘密信息、签名凭据或私有源代码。
+
+若要提议修改迁移行为或 V3 API，请通过 pull request 提交 [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep)。产品建议不应作为普通功能请求提交。
 
 ### 资源
 

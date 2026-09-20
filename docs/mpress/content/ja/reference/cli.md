@@ -21,6 +21,7 @@ wails3 <command> --help
 | コマンド | 説明 |
 | --- | --- |
 | `wails3 init` | テンプレートから新しいプロジェクトを作成します。フラグ：`-n`（プロジェクト名）、`-t`（テンプレート、デフォルトは `vanilla`）、`-p`（Go パッケージ名、デフォルトは `main`）、`-d`（プロジェクトディレクトリ、デフォルトは `.`）、`-q`（出力を抑制）、`-l`（テンプレート一覧を表示）、`-mod`（Go モジュールパス）、`--git`（Git リポジトリ URL）、`--skipgomodtidy`、`-s`（リモートテンプレートの警告を省略）、`--productname`/`--productdescription`/`--productversion`/`--productcompany`/`--productcopyright`/`--productcomments`/`--productidentifier`。 |
+| `wails3 migrate` | V2 プロジェクトを独立した V3 出力先へ移行します。実験的：`-d` は元のプロジェクト、`-o` は出力先、`-f` は空でない出力先を許可、`-q` は出力を抑制、`-skipgomodtidy` は依存関係の整理を省略します。`MIGRATION.md` を確認し、ロジックと残る V2 API 呼び出しを手動で移植してください。 |
 | `wails3 dev` | フロントエンドのホットリロードを有効にして、アプリケーションを開発モードで実行します。フラグ：`--config`（デフォルトは `./build/config.yml`）、`--port`（Vite 開発ポート）、`-s`（HTTPS を有効化）。 |
 | `wails3 build` | プロジェクトをビルドします。Taskfile の `build` タスクを呼び出す薄いラッパーです。フラグ：`--tags`（`EXTRA_TAGS=` として転送）、`--obfuscated`（Garble を使用してビルド。[難読化ビルド](/guides/build/obfuscation/)を参照）、`--garbleargs`（`build` サブコマンドの前で `garble` に転送する追加フラグ）。 |
 | `wails3 package` | プラットフォーム固有の `package` Taskfile タスクを実行します。 |

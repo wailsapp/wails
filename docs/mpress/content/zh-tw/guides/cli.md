@@ -57,6 +57,18 @@ wails3 init [flags]
 3. 更新`go.mod`中的模組名稱，使其與儲存庫 URL 相符
 4. 加入所有檔案
 
+### `migrate`
+
+將 Wails v2 專案遷移至新的 Wails v3 專案。這個命令仍屬實驗性功能，必須檢查產生的專案。
+
+```bash
+wails3 migrate -d /path/to/v2-project -o /path/to/v3-project
+```
+
+來源專案維持不變。命令會遷移可確定對應的專案中繼資料、建置資源、前端設定與組態，然後在輸出目錄寫入 `MIGRATION.md` 報告。它不會重寫應用程式邏輯或剩餘的 V2 執行階段呼叫。移植報告中的呼叫後，執行 `go mod tidy`、`wails3 doctor`、`wails3 generate bindings` 與 `wails3 dev`。
+
+使用 `wails3 migrate --help` 查看所有選項。請在[問題追蹤器](https://github.com/wailsapp/wails/issues)回報可重現的遷移失敗，附上命令、CLI 版本、作業系統、`wails3 doctor` 輸出與產生的 `MIGRATION.md`。遷移行為的變更建議應提交為 [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep)。
+
 ### `dev`
 
 以開發模式執行應用程式。您可以即時檢視前端程式碼，並在執行中的應用程式內看到所做的變更，而無須重新建置整個應用程式。系統也會偵測 Go 程式碼的變更，並自動重新建置及啟動應用程式。

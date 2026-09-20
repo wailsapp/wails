@@ -75,7 +75,7 @@ v3 est une nouvelle version majeure : la migration nécessite un véritable por
 
 Nous avons publié un [guide de migration de v2 vers v3](/migration/v2-to-v3/) qui détaille ces changements et comprend une correspondance des fonctionnalités ainsi qu’une liste de contrôle pour les tests. Pour cette version bêta, ce guide manuel constitue la procédure de migration prise en charge. Ne vous attendez pas à pouvoir convertir chaque projet v2 sans vérification : testez le résultat, portez méthodiquement vos appels à l’environnement d’exécution et conservez v2 jusqu’à ce que la nouvelle application soit prête.
 
-Nous évaluons également un assistant de migration expérimental. Il ne fait pas partie de cette version bêta et nous ne le recommanderons qu’après l’avoir validé sur un ensemble représentatif de projets v2 réels.
+Le CLI bêta comprend aussi un assistant de migration expérimental : `wails3 migrate -d /path/to/v2-project -o /path/to/v3-project`. Il crée un projet V3 distinct et une liste de contrôle `MIGRATION.md`, sans promettre une conversion sans intervention. Vérifiez le projet généré, portez les appels d’API V2 répertoriés et signalez les problèmes reproductibles dans le suivi des tickets.
 
 ## Un point franc sur le chemin parcouru
 

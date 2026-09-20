@@ -21,6 +21,7 @@ wails3 <command> --help
 | 指令 | 說明 |
 | --- | --- |
 | `wails3 init` | 從範本建立新專案。旗標：`-n`（專案名稱）、`-t`（範本，預設為`vanilla`）、`-p`（Go 套件名稱，預設為`main`）、`-d`（專案目錄，預設為`.`）、`-q`（安靜模式）、`-l`（列出範本）、`-mod`（Go 模組路徑）、`--git`（Git 儲存庫 URL）、`--skipgomodtidy`、`-s`（略過遠端範本警告）、`--productname`/`--productdescription`/`--productversion`/`--productcompany`/`--productcopyright`/`--productcomments`/`--productidentifier`。 |
+| `wails3 migrate` | 將 V2 專案遷移至獨立的 V3 輸出目錄。實驗性：`-d` 指定 V2 專案，`-o` 指定輸出目錄，`-f` 允許非空輸出目錄，`-q` 隱藏輸出，`-skipgomodtidy` 略過相依性整理。請審查 `MIGRATION.md`；應用程式邏輯與剩餘 V2 API 呼叫需要手動移植。 |
 | `wails3 dev` | 以開發模式執行應用程式，並啟用前端熱重新載入。旗標：`--config`（預設為`./build/config.yml`）、`--port`（Vite 開發伺服器連接埠）、`-s`（啟用 HTTPS）。 |
 | `wails3 build` | 建置專案。這是 Taskfile `build`工作項目的薄層包裝。旗標：`--tags`（以`EXTRA_TAGS=`轉送）、`--obfuscated`（使用 Garble 建置；請參閱[混淆建置](/guides/build/obfuscation/)）、`--garbleargs`（在`build`子指令之前，將額外旗標轉送至`garble`）。 |
 | `wails3 package` | 執行平台專用的`package` Taskfile 工作項目。 |

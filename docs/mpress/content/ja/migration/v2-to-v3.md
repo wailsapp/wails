@@ -17,6 +17,36 @@ Wails v3 は、アーキテクチャ、パフォーマンス、開発者エク�
 
 <strong>移行時間：</strong>一般的なアプリケーションでは 1-4 時間
 
+## 自動移行
+
+@note{type="warning" title="実験的"}
+`wails3 migrate` は V3 CLI に含まれていますが、実験的です。一般的なプロジェクト構成に対応していますが、結果は環境により異なります。生成コードを確認し、十分にテストしてください。問題があれば詳細を添えて [issue を作成](https://github.com/wailsapp/wails/issues)してください。プルリクエストも歓迎します。
+@end
+
+CLI はこのガイドの作業の多くを実行できます：
+
+```bash
+wails3 migrate -d ./myv2project -o ./myv3project
+```
+
+対応が一意に決まる部分を移行し、残りを記録します。アプリケーションのロジックを書き換えたり互換レイヤーを生成したりはしません。v2 API を使うコードはそのまま残し、場所と具体的な v3 の置き換え先を `MIGRATION.md` に記載します。
+
+自動で移行するもの：
+
+- `main.go` を `application.New()` と `app.Window.NewWithOptions()` を使う形に変更し、独自のコードとコメントを保持します。プラットフォーム固有のウィンドウ設定を含め、オプションを対応する v3 のオプションへ変換します。
+- `Bind` の構造体は v3 サービスになり、`OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` は v3 の対応先であるアプリケーションイベント、`OnShutdown`、`ShouldQuit` へ接続します。
+- `wails.json` を v3 のプロジェクトファイル（Taskfile によるビルドシステムと `build/config.yml`）に置き換え、製品情報、ファイル関連付け、プロトコルなどの v2 メタデータを反映します。
+- `go.mod` の `wails/v2` を `wails/v3` に置き換え、古い Go ディレクティブを v3 の最低要件である `go 1.25` に引き上げます。新しいバージョンは保持します。
+- フロントエンドをコピーし、依存関係に `@wailsio/runtime` を追加します。生成済みの `wailsjs/` は v3 で使えない v2 のビルド生成物なのでコピーしません。
+
+`MIGRATION.md` に記録するもの：
+
+- v2 の `runtime` 呼び出しごとのファイル、行、v3 の置き換え先。例えば `runtime.EventsEmit(ctx, ...)` は `app.Event.Emit(...)` になります。移植するまではコンパイルできず、コンパイラーが該当箇所を示します。
+- フロントエンドの `wailsjs/runtime` や `wailsjs/go/...` のインポート、`@wailsio/runtime` の対応先、`wails3 generate bindings` によるバインディング生成手順。
+- メニュー、独自ロガー、`EnumBind` など、人の判断が必要なオプションと手順。
+
+以降は変更内容を詳しく説明します。生成されたチェックリストと併用してください。
+
 ## 破壊的変更
 
 ### アプリケーションの初期化
@@ -479,20 +509,20 @@ Events.Emit("action", data)
 }
 ```
 
-**v3（wails.json）：**
+**v3 (`build/config.yml`):**
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  }
-}
+```yaml
+version: '3'
+
+info:
+  productName: "myapp"
+  productIdentifier: "com.example.myapp"
+
+dev_mode:
+  root_path: .
 ```
+
+V3 の開発・ビルドコマンドはルートの `Taskfile.yml` で定義します。生成プロジェクトではフロントエンドのコマンドもここに置き、アプリケーションとパッケージ設定には `build/config.yml` を使います。V2 のファイルをコピーして V3 用の `wails.json` を作らないでください。
 
 ## 機能の対応関係
 
@@ -671,6 +701,21 @@ wails3 generate bindings
 - **ドキュメントの改善** - 包括的なガイド
 
 ## ヘルプを得る
+
+### 移行の問題を報告する
+
+移行ツールの失敗はバグとして扱います。issue の作成前に、再現できる最小の V2 プロジェクトへ絞り込み、次を含めてください。
+
+- Wails V2 のバージョンと V3 CLI のバージョンまたはコミット。
+- OS とアーキテクチャ。
+- 実行した正確な `wails3 migrate` コマンド。
+- コマンドの出力と生成された `MIGRATION.md`。
+- `wails3 doctor` の出力。
+- 非公開コードの場合は機密情報を取り除いたプロジェクトまたは最小の再現例。
+
+[Wails issue トラッカー](https://github.com/wailsapp/wails/issues)のバグ報告テンプレートを使ってください。秘密情報、署名用認証情報、非公開ソースコードは添付しないでください。
+
+移行の動作や V3 API の変更案は [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep) としてプルリクエストを送ってください。製品の提案を通常の機能要望として登録しないでください。
 
 ### リソース
 

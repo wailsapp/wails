@@ -17,6 +17,36 @@ Wails v3 wurde **vollständig neu entwickelt** und bietet erhebliche Verbesserun
 
 **Migrationsdauer:** 1-4 Stunden für typische Anwendungen
 
+## Automatisierte Migration
+
+@note{type="warning" title="Experimentell"}
+`wails3 migrate` ist in der V3-CLI enthalten, aber experimentell. Gängige Projektformen werden unterstützt, doch Ergebnisse können abweichen: Prüfen Sie den erzeugten Code und testen Sie Ihre Anwendung gründlich. Bei Problemen [eröffnen Sie ein Issue](https://github.com/wailsapp/wails/issues) mit Einzelheiten. Pull Requests sind willkommen.
+@end
+
+Die CLI kann einen Großteil dieses Leitfadens übernehmen:
+
+```bash
+wails3 migrate -d ./myv2project -o ./myv3project
+```
+
+Der Befehl migriert deterministisch zuordenbare Teile und dokumentiert den Rest. Er schreibt weder Ihre Anwendungslogik um noch erzeugt er Kompatibilitätsschichten. Verbleibende v2-API-Aufrufe bleiben unverändert; ihre Fundstellen und konkreten v3-Entsprechungen stehen in `MIGRATION.md`.
+
+Automatisch migriert werden:
+
+- `main.go` wird auf `application.New()` und `app.Window.NewWithOptions()` umgestellt; eigener Code und Kommentare bleiben erhalten. Die Optionen werden ihren v3-Entsprechungen zugeordnet, einschließlich plattformspezifischer Fensteroptionen.
+- Strukturen aus `Bind` werden zu v3-Diensten. `OnStartup`/`OnDomReady`/`OnShutdown`/`OnBeforeClose` werden mit ihren v3-Entsprechungen verbunden: Anwendungsereignisse, `OnShutdown` und `ShouldQuit`.
+- `wails.json` wird durch die v3-Projektdateien ersetzt: ein Taskfile-Buildsystem und `build/config.yml`, befüllt mit v2-Metadaten zu Produkt, Dateizuordnungen und Protokollen.
+- `go.mod` ersetzt `wails/v2` durch `wails/v3` und hebt ältere Go-Direktiven auf das von v3 benötigte Minimum `go 1.25` an. Neuere Versionen bleiben erhalten.
+- Das Frontend wird kopiert und `@wailsio/runtime` zu den Abhängigkeiten hinzugefügt. Das generierte Verzeichnis `wailsjs/` wird nicht übernommen, da es v2-Buildausgaben enthält, die mit v3 nicht funktionieren.
+
+In `MIGRATION.md` dokumentiert werden:
+
+- Alle Aufrufe des v2-Pakets `runtime` mit Datei, Zeile und v3-Ersatz, etwa `runtime.EventsEmit(ctx, ...)` durch `app.Event.Emit(...)`. Bis zur Portierung kompiliert das Projekt absichtlich nicht; der Compiler zeigt die betreffenden Stellen.
+- Frontend-Importe von `wailsjs/runtime` oder `wailsjs/go/...` mit der Entsprechung in `@wailsio/runtime` und dem Binding-Ablauf über `wails3 generate bindings`.
+- Optionen, die eine menschliche Entscheidung erfordern, etwa Menüs, eigene Logger und `EnumBind`, jeweils mit Anleitung.
+
+Der weitere Leitfaden erklärt die Änderungen im Detail; verwenden Sie ihn zusammen mit der erzeugten Checkliste.
+
 ## Inkompatible Änderungen
 
 ### Anwendungsinitialisierung
@@ -479,20 +509,20 @@ Events.Emit("action", data)
 }
 ```
 
-**v3 (wails.json):**
+**v3 (`build/config.yml`):**
 
-```json
-{
-  "name": "myapp",
-  "frontend": {
-    "dir": "./frontend",
-    "install": "npm install",
-    "build": "npm run build",
-    "dev": "npm run dev",
-    "devServerUrl": "http://localhost:5173"
-  }
-}
+```yaml
+version: '3'
+
+info:
+  productName: "myapp"
+  productIdentifier: "com.example.myapp"
+
+dev_mode:
+  root_path: .
 ```
+
+Die Entwicklungs- und Buildbefehle eines V3-Projekts stehen in der obersten `Taskfile.yml`. Dort bleiben auch die Frontend-Befehle; `build/config.yml` enthält die Anwendungs- und Paketkonfiguration. Erstellen Sie keine V3-`wails.json` durch Kopieren der V2-Datei.
 
 ## Funktionszuordnung
 
@@ -671,6 +701,21 @@ wails3 generate bindings
 - **Bessere Dokumentation** – umfassende Anleitungen
 
 ## Hilfe erhalten
+
+### Migrationsprobleme melden
+
+Fehler des Migrationstools sind Bugs. Reduzieren Sie das Problem vor einer Meldung auf das kleinste reproduzierbare V2-Projekt und geben Sie Folgendes an:
+
+- Wails-V2-Version und V3-CLI-Version oder Commit;
+- Betriebssystem und Architektur;
+- den genauen Befehl `wails3 migrate`;
+- Befehlsausgabe und erzeugte `MIGRATION.md`;
+- Ausgabe von `wails3 doctor`;
+- ein bereinigtes Projekt oder eine minimale Reproduktion bei privatem Code.
+
+Nutzen Sie die Bug-Vorlage im [Wails-Issue-Tracker](https://github.com/wailsapp/wails/issues). Fügen Sie keine Geheimnisse, Signierzugangsdaten oder privaten Quellcode bei.
+
+Änderungen des Migrationsverhaltens oder der V3-API schlagen Sie als [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep) per Pull Request vor. Produktvorschläge gehören nicht in gewöhnliche Feature-Anfragen.
 
 ### Ressourcen
 

@@ -57,6 +57,18 @@ Quando fornecida, essa opção:
 3. Atualiza o nome do módulo em `go.mod` para corresponder à URL do repositório
 4. Adiciona todos os arquivos
 
+### `migrate`
+
+Migra um projeto Wails v2 para um novo projeto Wails v3. O comando é experimental e sempre exige revisão do projeto gerado.
+
+```bash
+wails3 migrate -d /path/to/v2-project -o /path/to/v3-project
+```
+
+O projeto de origem permanece intacto. O comando converte metadados, recursos de compilação, configuração do frontend e configurações com correspondência determinística e grava `MIGRATION.md` no diretório de saída. Ele não reescreve a lógica do aplicativo nem chamadas restantes ao runtime V2. Porte as chamadas listadas e execute `go mod tidy`, `wails3 doctor`, `wails3 generate bindings` e `wails3 dev`.
+
+Consulte todas as opções em `wails3 migrate --help`. Relate falhas reproduzíveis no [rastreador de issues](https://github.com/wailsapp/wails/issues), incluindo comando, versão do CLI, sistema operacional, saída de `wails3 doctor` e `MIGRATION.md`. Propostas de mudança no comportamento devem usar uma [Wails Enhancement Proposal](https://github.com/wailsapp/wails/tree/master/v3/wep).
+
 ### `dev`
 
 Executa o aplicativo no modo de desenvolvimento. Isso oferece uma visualização em tempo real do código do frontend, permitindo fazer alterações e vê-las refletidas no aplicativo em execução sem precisar recompilar todo o aplicativo. As alterações no código Go também serão detectadas, e o aplicativo será recompilado e reiniciado automaticamente.

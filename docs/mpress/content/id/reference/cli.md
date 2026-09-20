@@ -21,6 +21,7 @@ wails3 <command> --help
 | Perintah | Deskripsi |
 | --- | --- |
 | `wails3 init` | Buat proyek baru dari templat. Flag: `-n` (nama proyek), `-t` (templat, default `vanilla`), `-p` (nama paket Go, default `main`), `-d` (direktori proyek, default `.`), `-q` (mode senyap), `-l` (tampilkan daftar templat), `-mod` (jalur modul Go), `--git` (URL repositori Git), `--skipgomodtidy`, `-s` (lewati peringatan templat jarak jauh), `--productname`/`--productdescription`/`--productversion`/`--productcompany`/`--productcopyright`/`--productcomments`/`--productidentifier`. |
+| `wails3 migrate` | Memigrasikan proyek V2 ke direktori V3 terpisah. Eksperimental: `-d` untuk proyek sumber, `-o` untuk keluaran, `-f` mengizinkan direktori tidak kosong, `-q` meniadakan keluaran, dan `-skipgomodtidy` melewati pembersihan dependensi. Tinjau `MIGRATION.md`; logika dan sisa panggilan API V2 memerlukan porting manual. |
 | `wails3 dev` | Jalankan aplikasi dalam mode pengembangan dengan pemuatan ulang langsung frontend. Flag: `--config` (default `./build/config.yml`), `--port` (port pengembangan Vite), `-s` (aktifkan HTTPS). |
 | `wails3 build` | Bangun proyek. Pembungkus tipis untuk tugas Taskfile `build`. Flag: `--tags` (diteruskan sebagai `EXTRA_TAGS=`), `--obfuscated` (bangun dengan Garble; lihat [Build yang Diobfusikasi](/guides/build/obfuscation/)), `--garbleargs` (flag tambahan yang diteruskan ke `garble` sebelum subperintah `build`). |
 | `wails3 package` | Jalankan tugas Taskfile `package` khusus platform. |
