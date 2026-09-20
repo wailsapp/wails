@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "2fe8f9de33a7ad45a694",
-  "sourceFile": "contributing/index.mpd",
+  "sourceFile": "contributing/index.md",
   "sourceLanguage": "en",
   "targetLanguage": "id",
   "segments": {
@@ -789,9 +789,9 @@
       "sourceHash": "5a05e1b86f9f30db0889ac44dbcdb9278b34cf3225c276e5acb7c83f69f1a78d",
       "targetHash": "016276c88b6e8a339b609116e4bc356fb029c77adeeaad8228e94e9a1b911970",
       "machineHash": "016276c88b6e8a339b609116e4bc356fb029c77adeeaad8228e94e9a1b911970",
-      "machineText": "Dokumentasi menggunakan M-Press. Edit file `.mpd` di bawah\n`docs/mpress/content/`, lalu pratinjau dan validasi dari direktori akar repositori:",
+      "machineText": "Dokumentasi menggunakan M-Press. Edit file `.md` di bawah\n`docs/mpress/content/`, lalu pratinjau dan validasi dari direktori akar repositori:",
       "status": "machine-translated",
-      "sourcePreview": "Documentation uses M-Press. Edit the `.mpd` files under `docs/mpress/content/`, then preview and val…",
+      "sourcePreview": "Documentation uses M-Press. Edit the `.md` files under `docs/mpress/content/`, then preview and val…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",

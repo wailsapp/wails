@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pageKey": "2edc59b59bb09a8d6e02",
-  "sourceFile": "contributing/documentation.mpd",
+  "sourceFile": "contributing/documentation.md",
   "sourceLanguage": "en",
   "targetLanguage": "zh-tw",
   "segments": {
@@ -76,9 +76,9 @@
       "sourceHash": "f61b13db52f322df0280de40502a660d759dad2025a2af3bc3fefa8f8982332f",
       "targetHash": "9ea3f977131efcf414328f6fdcf6955fcaf08db58d68608d7708057d33bc7f28",
       "machineHash": "9ea3f977131efcf414328f6fdcf6955fcaf08db58d68608d7708057d33bc7f28",
-      "machineText": "編輯 `docs/mpress/content/` 中的 `.mpd` 原始檔。英文是預設語言，其檔案直接位於該目錄中。現有翻譯位於 `fr/` 和 `id/` 等語言資料夾中。預覽會在您儲存時重新建置。",
+      "machineText": "編輯 `docs/mpress/content/` 中的 `.md` 原始檔。英文是預設語言，其檔案直接位於該目錄中。現有翻譯位於 `fr/` 和 `id/` 等語言資料夾中。預覽會在您儲存時重新建置。",
       "status": "final",
-      "sourcePreview": "Edit `.mpd` source files in `docs/mpress/content/`. English is the default\nlanguage and lives directly in that directory. Existing translations live in\nlanguage",
+      "sourcePreview": "Edit `.md` source files in `docs/mpress/content/`. English is the default\nlanguage and lives directly in that directory. Existing translations live in\nlanguage",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
