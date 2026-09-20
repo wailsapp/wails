@@ -191,6 +191,10 @@ vars:
   DMG_BACKGROUND: build/darwin/dmg-background.png
   DMG_VOLUME_ICON: build/darwin/icons.icns
   DMG_FILE_ICON: build/darwin/dmg-file-icon.icns
+  # auto lets the DMG library distribute every icon. For manual placement,
+  # use `manual` and specify every position as name=x,y;name=x,y.
+  DMG_ICON_LAYOUT: auto
+  DMG_ICON_POSITIONS: ""
   DMG_WINDOW_WIDTH: 540
   DMG_WINDOW_HEIGHT: 380
   DMG_FILES: "Install.command=build/darwin/Install.command,README.txt=README.md"
@@ -235,6 +239,8 @@ vars:
 由於 DMG 建立程序會使用 macOS 的磁碟映像檔與 Finder 工具，因此僅支援在 macOS 上建立。交叉編譯的`.app`套件可在其他平台上建立，但最終的 DMG 必須在 Mac 上產生。
 
 @end
+
+將 `DMG_ICON_LAYOUT` 設為 `auto`，讓 DMG 函式庫自動排列所有圖示，包括 `DMG_FILES` 中的檔案。若要自行指定配置，請設為 `manual` 並提供 `DMG_ICON_POSITIONS`，例如 `"MyApp.app=150,180;Applications=390,180;README.txt=270,300"`。座標代表圖示中心在 Finder 視窗中的像素位置。
 
 ## 疑難排解
 

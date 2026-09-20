@@ -191,6 +191,10 @@ vars:
   DMG_BACKGROUND: build/darwin/dmg-background.png
   DMG_VOLUME_ICON: build/darwin/icons.icns
   DMG_FILE_ICON: build/darwin/dmg-file-icon.icns
+  # auto lets the DMG library distribute every icon. For manual placement,
+  # use `manual` and specify every position as name=x,y;name=x,y.
+  DMG_ICON_LAYOUT: auto
+  DMG_ICON_POSITIONS: ""
   DMG_WINDOW_WIDTH: 540
   DMG_WINDOW_HEIGHT: 380
   DMG_FILES: "Install.command=build/darwin/Install.command,README.txt=README.md"
@@ -235,6 +239,8 @@ Setiap nama yang ditampilkan harus unik. File tambahan tidak dapat menggantikan 
 Pembuatan DMG hanya didukung di macOS karena menggunakan alat citra disk dan Finder dari macOS. Bundel `.app` hasil kompilasi silang dapat dibuat di platform lain, tetapi DMG akhir harus dibuat di Mac.
 
 @end
+
+Atur `DMG_ICON_LAYOUT` ke `auto` agar pustaka DMG menata semua ikon, termasuk file dari `DMG_FILES`. Untuk menentukan tata letak sendiri, gunakan `manual` dan isi `DMG_ICON_POSITIONS`, misalnya `"MyApp.app=150,180;Applications=390,180;README.txt=270,300"`. Koordinat menunjukkan titik tengah ikon dalam piksel jendela Finder.
 
 ## Pemecahan Masalah
 

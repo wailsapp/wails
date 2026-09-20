@@ -191,6 +191,10 @@ vars:
   DMG_BACKGROUND: build/darwin/dmg-background.png
   DMG_VOLUME_ICON: build/darwin/icons.icns
   DMG_FILE_ICON: build/darwin/dmg-file-icon.icns
+  # auto lets the DMG library distribute every icon. For manual placement,
+  # use `manual` and specify every position as name=x,y;name=x,y.
+  DMG_ICON_LAYOUT: auto
+  DMG_ICON_POSITIONS: ""
   DMG_WINDOW_WIDTH: 540
   DMG_WINDOW_HEIGHT: 380
   DMG_FILES: "Install.command=build/darwin/Install.command,README.txt=README.md"
@@ -235,6 +239,8 @@ vars:
 DMGの作成ではmacOSのディスクイメージツールとFinderツールを使用するため、macOSでのみサポートされます。クロスコンパイルした `.app` バンドルは他の環境でも作成できますが、最終的なDMGはMac上で生成する必要があります。
 
 @end
+
+`DMG_ICON_LAYOUT` を `auto` にすると、DMG ライブラリが `DMG_FILES` のファイルも含めたすべてのアイコンを配置します。配置を指定するには `manual` に設定し、`DMG_ICON_POSITIONS` に `"MyApp.app=150,180;Applications=390,180;README.txt=270,300"` のように指定します。座標は Finder ウインドウ内のアイコンの中心をピクセル単位で表します。
 
 ## トラブルシューティング
 
