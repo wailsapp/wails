@@ -28,6 +28,13 @@ _/
 
 ## [Unreleased]
 
+## v3.0.0-beta.24 - 2026-09-20
+
+## Security
+- Restrict GITHUB_TOKEN permissions in build and publish workflows to follow the principle of least privilege
+- Fix path traversal and symlink escapes in the screen example asset middleware
+- Keep setup wizard dependency installation functional while restricting it to approved package-manager commands
+
 ## v3.0.0-beta.23 - 2026-09-16
 
 ## Added
