@@ -79,7 +79,7 @@ La promesse est résolue lorsque la source est attribuée. Le lecteur la décode
 
 ## Remplacer ou libérer un clip
 
-Appelez à nouveau `Media.SetSource` pour changer de clip. Cela annule tout chargement précédent en attente pour ce lecteur, afin qu’une réponse lente ne remplace pas la dernière sélection. Le clip précédent reste disponible jusqu’au chargement réussi de son remplaçant. Son URL blob est alors révoquée.
+Appelez à nouveau `Media.SetSource` pour changer de clip. Cela annule tout chargement précédent en attente pour ce lecteur. Une réponse lente ne peut pas écraser la dernière sélection. Le clip précédent reste disponible jusqu’au chargement réussi de son remplaçant. Son URL blob est alors révoquée.
 
 Appelez `Media.ClearSource(player)` lorsque vous fermez un lecteur ou démontez son composant :
 

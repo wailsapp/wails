@@ -164,7 +164,7 @@ go build -tags gtk3 -o myapp .
 
 ### 로컬 오디오 또는 비디오가 재생되지 않음
 
-GStreamer가 **No URI handler implemented for "wails"**를 보고하면 [로컬 미디어 재생 안내서](/guides/linux-media/)를 따르세요. 클립은 로드되지만 재생에 실패하면 코덱 요구 사항과 플레이어의 `error` 이벤트를 확인하세요.
+GStreamer가 **No URI handler implemented for "wails"** 오류를 보고하면 [로컬 미디어 재생 안내서](/guides/linux-media/)를 따르세요. 클립은 로드되지만 재생에 실패하면 코덱 요구 사항과 플레이어의 `error` 이벤트를 확인하세요.
 
 ### AppImage가 실행되지 않음
 

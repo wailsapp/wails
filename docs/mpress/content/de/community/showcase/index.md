@@ -47,7 +47,7 @@ Sieh dir den Abschnitt [So fügst du dein Projekt zum Showcase hinzu](#so-fgst-d
 <a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="Screenshot von HappyTools" loading="lazy"><span>HappyTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Screenshot von Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Screenshot von Condui" loading="lazy"><span>Condui</span></a>
-<a class="mpress-showcase-card" href="/de/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Bildschirmaufnahme von MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Bildschirmaufnahme von MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 </div>
 
 ## So fügst du dein Projekt zum Showcase hinzu

@@ -126,7 +126,7 @@ await loading;
 
 ## Linux 재생 문제 해결
 
-- 직접 로컬 재생 시 **No URI handler implemented for "wails"**가 표시되면 `Media.SetSource`로 클립을 로드하세요. 기본 GTK4 스택과 레거시 `-tags gtk3` 스택 모두에 해당합니다.
+- 직접 로컬 재생 시 **No URI handler implemented for "wails"** 오류가 표시되면 `Media.SetSource`로 클립을 로드하세요. 기본 GTK4 스택과 레거시 `-tags gtk3` 스택 모두에 해당합니다.
 - 로드는 성공하지만 디코딩에 실패하면 대상 시스템에 설치된 GStreamer 코덱을 확인하세요. MP4에는 일반적으로 H.264 비디오 및 AAC 오디오 지원이 필요하고, MP3에는 MP3 디코더가 필요합니다. 지원하는 배포판에서 제공할 형식을 테스트하세요.
 - 전송에 실패하면 등록된 스트림 이름, 상대 파일 이름 및 파일 시스템 권한을 확인하세요. 전송 중 파일을 변경하면 불완전한 전송이 발생할 수 있으므로 쓰기가 끝난 후 다시 시도하세요.
 - 앱에 Content Security Policy가 설정되어 있다면 `connect-src`에서 Wails 자산 출처를, `media-src`에서 `blob:`을 허용하세요. 로컬 전용 정책에서는 `connect-src 'self'; media-src 'self' blob:`으로 지정할 수 있습니다. 다른 지시문은 유지하세요.
