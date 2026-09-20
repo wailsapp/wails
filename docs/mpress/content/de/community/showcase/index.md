@@ -11,6 +11,7 @@ Sieh dir den Abschnitt [So fügst du dein Projekt zum Showcase hinzu](#so-fgst-d
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/community/showcase/clipora/"><img src="/assets/showcase-images/clipora_1.png" alt="Screenshot von Clipora" loading="lazy"><span>Clipora</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="Screenshot von BulletinBoard" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="Screenshot von CFN Tracker" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Screenshot von Clave" loading="lazy"><span>Clave</span></a>
@@ -46,6 +47,7 @@ Sieh dir den Abschnitt [So fügst du dein Projekt zum Showcase hinzu](#so-fgst-d
 <a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="Screenshot von HappyTools" loading="lazy"><span>HappyTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Screenshot von Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Screenshot von Condui" loading="lazy"><span>Condui</span></a>
+<a class="mpress-showcase-card" href="/de/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Bildschirmaufnahme von MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 </div>
 
 ## So fügst du dein Projekt zum Showcase hinzu

@@ -216,13 +216,14 @@ func TestRunHelperSwap_ClearsHelperEnvBeforeLaunch(t *testing.T) {
 	t.Setenv(envHelperNew, newPath)
 	t.Setenv(envHelperPID, "1234")
 	t.Setenv(envHelperLog, filepath.Join(dir, "log"))
+	t.Setenv(envHelperReady, filepath.Join(dir, "ready"))
 
 	// envAtLaunch is captured by the launcher at the moment it would spawn the
 	// new binary — that's exactly the snapshot the inherited exec would see.
 	var envAtLaunch map[string]string
 	envCapturingLauncher := &funcLauncher{fn: func(path string) error {
 		envAtLaunch = map[string]string{}
-		for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog} {
+		for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady} {
 			envAtLaunch[k] = os.Getenv(k)
 		}
 		return nil
@@ -246,6 +247,29 @@ type funcLauncher struct {
 }
 
 func (f *funcLauncher) launch(path string) error { return f.fn(path) }
+
+func TestSignalHelperStatusWritesReadinessFile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ready")
+	if err := signalHelperStatus(path, "ready"); err != nil {
+		t.Fatalf("signalHelperStatus: %v", err)
+	}
+	if got := string(readFile(t, path)); got != "ready" {
+		t.Fatalf("readiness payload = %q, want ready", got)
+	}
+	if err := waitForHelperReady(path, time.Second); err != nil {
+		t.Fatalf("waitForHelperReady: %v", err)
+	}
+}
+
+func TestWaitForHelperReadyReturnsHelperError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "ready")
+	if err := signalHelperStatus(path, "error: staged artifact missing"); err != nil {
+		t.Fatalf("signalHelperStatus: %v", err)
+	}
+	if err := waitForHelperReady(path, time.Second); !errors.Is(err, ErrHelperNotReady) {
+		t.Fatalf("waitForHelperReady: want ErrHelperNotReady, got %v", err)
+	}
+}
 
 func TestHandleHelperMode_NoEnv_Returns(t *testing.T) {
 	// When the sentinel env var is absent the function must return

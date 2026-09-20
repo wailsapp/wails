@@ -11,6 +11,7 @@ sourcePath: "community/showcase/index.md"
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/community/showcase/clipora/"><img src="/assets/showcase-images/clipora_1.png" alt="Снимок экрана Clipora" loading="lazy"><span>Clipora</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="Снимок экрана BulletinBoard" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="Снимок экрана CFN Tracker" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Снимок экрана Clave" loading="lazy"><span>Clave</span></a>
@@ -46,6 +47,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="Снимок экрана HappyTools" loading="lazy"><span>HappyTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Снимок экрана Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Снимок экрана Condui" loading="lazy"><span>Condui</span></a>
+<a class="mpress-showcase-card" href="/ru/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Снимок экрана MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 </div>
 
 ## Как добавить свой проект в витрину
