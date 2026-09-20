@@ -150,6 +150,14 @@ func (i *ICoreWebView2Controller) NotifyParentWindowPositionChanged() error {
 	return nil
 }
 
+func (i *ICoreWebView2Controller) Close() error {
+	hr, _, _ := i.vtbl.Close.Call(uintptr(unsafe.Pointer(i)))
+	if windows.Handle(hr) != windows.S_OK {
+		return windows.Errno(hr)
+	}
+	return nil
+}
+
 func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
 	// put_ZoomFactor takes the double BY VALUE; the per-arch appendDoubleArg
 	// helpers pass it correctly for the target ABI.
