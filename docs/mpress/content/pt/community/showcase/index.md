@@ -11,6 +11,7 @@ Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-p
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/community/showcase/clipora/"><img src="/assets/showcase-images/clipora_1.png" alt="Captura de tela do Clipora" loading="lazy"><span>Clipora</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="Captura de tela do BulletinBoard" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="Captura de tela do CFN Tracker" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Captura de tela do Clave" loading="lazy"><span>Clave</span></a>
@@ -46,6 +47,7 @@ Consulte a seção [Como adicionar meu projeto à vitrine](#como-adicionar-meu-p
 <a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="Captura de tela do HappyTools" loading="lazy"><span>HappyTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Captura de tela do Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Captura de tela do Condui" loading="lazy"><span>Condui</span></a>
+<a class="mpress-showcase-card" href="/pt/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Captura de tela do MQ Studio" loading="lazy"><span>MQ Studio</span></a>
 </div>
 
 ## Como adicionar meu projeto à vitrine

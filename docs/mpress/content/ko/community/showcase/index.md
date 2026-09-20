@@ -11,6 +11,7 @@ sourcePath: "community/showcase/index.md"
 @end
 
 <div class="mpress-showcase-grid">
+<a class="mpress-showcase-card" href="/community/showcase/clipora/"><img src="/assets/showcase-images/clipora_1.png" alt="Clipora 스크린샷" loading="lazy"><span>Clipora</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/bulletinboard/"><img src="/assets/showcase-images/bboard.webp" alt="BulletinBoard 스크린샷" loading="lazy"><span>BulletinBoard</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/cfntracker/"><img src="/assets/showcase-images/cfntracker.webp" alt="CFN Tracker 스크린샷" loading="lazy"><span>CFN Tracker</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/clave/"><img src="/assets/showcase-images/clave.png" alt="Clave 스크린샷" loading="lazy"><span>Clave</span></a>
@@ -46,6 +47,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/happytools/"><img src="/assets/showcase-images/happytools.webp" alt="HappyTools 스크린샷" loading="lazy"><span>HappyTools</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Packsmith 스크린샷" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui 스크린샷" loading="lazy"><span>Condui</span></a>
+<a class="mpress-showcase-card" href="/ko/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio 스크린샷" loading="lazy"><span>MQ Studio</span></a>
 </div>
 
 ## 쇼케이스에 내 프로젝트를 추가하는 방법
@@ -53,7 +55,7 @@ sourcePath: "community/showcase/index.md"
 @steps
 ### 저장소를 포크합니다.
 ### 이미지를 `docs/mpress/static/showcase-images` 폴더에 추가합니다.
-### `docs/mpress/content/community/showcase` 폴더에 있는 기존 `.md` 쇼케이스 파일을 복사하세요.
+### 기존 `.md` 쇼케이스 파일을 복사하세요.
 `docs/mpress/content/community/showcase` 폴더입니다.
 
 ### 복사한 파일의 이름을 프로젝트 이름으로 변경합니다. (이름의 시작 부분에 사용하면 안 되는 문자는

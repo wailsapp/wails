@@ -81,7 +81,7 @@ def audit_language(mpress, repository, content, language, exceptions):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mpress", default="mpress", help="path to the pinned M-Press CLI")
+    parser.add_argument("--mpress", default="mpress", help="path to the M-Press CLI")
     args = parser.parse_args()
     repository = Path(__file__).resolve().parents[3]
     content = repository / "docs/mpress/content"
