@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Stop `wails3 dev` and its background processes when the primary application exits (#6048)
+- Expose the `@wailsio/runtime/cancellable` subpath export so `CancellablePromise` can be imported without evaluating the root runtime entry (#6152)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
