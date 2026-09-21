@@ -12,6 +12,10 @@
     "./plugins/*": {
       "types": "./types/plugins/*.d.ts",
       "default": "./dist/plugins/*.js"
+    },
+    "./cancellable": {
+      "types": "./types/cancellable.d.ts",
+      "default": "./dist/cancellable.js"
     }
   },
   "repository": {
