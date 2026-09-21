@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "cfea5e0282b880b507fc",
+  "sourceFile": "features/events/application.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "26845c54881d15b95fb63f536e972bafeefb6c9394c973a519c2c45797b4184b",
+      "targetHash": "230d4fd0e62d0338347a402cddd3e8841038db613ba66bb8791fdb9c851a51b6",
+      "machineHash": "230d4fd0e62d0338347a402cddd3e8841038db613ba66bb8791fdb9c851a51b6",
+      "machineText": "Anwendungsereignisse werden bei anwendungsweiten Änderungen des Lebenszyklus ausgegeben, etwa beim Starten und Beenden sowie bei Vorgängen zur Fensterverwaltung.",
+      "status": "final",
+      "sourcePreview": "Application events are emitted for application-wide lifecycle changes, such as starting, stopping, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:22Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "1efa622f8819d993fce125a504f1a43ab2a2ac1d710d31e6f8ad72bcc124f506",
+      "targetHash": "7702d4d34b5b060d224116afcd1ee6201d971cc1c57c355718291b6ec90f95b7",
+      "machineHash": "7702d4d34b5b060d224116afcd1ee6201d971cc1c57c355718291b6ec90f95b7",
+      "machineText": "Eine vollständige Dokumentation der Anwendungsereignisse finden Sie im Leitfaden zum [Ereignissystem](/features/events/system/#application-events).",
+      "status": "final",
+      "sourcePreview": "Full documentation of application events is available in the [Event System](/features/events/system/…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:22Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8f953b87b1423233ede5986386f01a89328dd1b2d026a2d9ef6c2db46177a718",
+      "targetHash": "138821daca3d90d616f66150fda852d7b8baec77024ed51014015d5d87f51950",
+      "machineHash": "138821daca3d90d616f66150fda852d7b8baec77024ed51014015d5d87f51950",
+      "machineText": "Von Wails v3 ausgegebene Ereignisse auf Anwendungsebene",
+      "status": "final",
+      "sourcePreview": "Application-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:22Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "68477bfdc8087a71a72921a7960b4c6aec58b182e311175369a5953d6352c226",
+      "targetHash": "f3780d24fcee5e90fb99e9f4af1225eaf72b8634f0215ffece60c4e3a688c0b0",
+      "machineHash": "f3780d24fcee5e90fb99e9f4af1225eaf72b8634f0215ffece60c4e3a688c0b0",
+      "machineText": "Anwendungsereignisse",
+      "status": "final",
+      "sourcePreview": "Application Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:22Z"
+    }
+  }
+}
