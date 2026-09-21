@@ -56,6 +56,13 @@ dev_mode:
       type: blocking
     - cmd: wails3 task common:dev:frontend
       type: background
+      # The standard frontend task waits up to 60s for HTTP 200 from
+      # FRONTEND_DEVSERVER_URL before starting the app. Override if needed;
+      # custom background commands can opt in with the same readiness block.
+      # readiness:
+      #   http: "http://localhost:5173/"
+      #   timeout: "60s"
+      #   interval: "200ms"
     - cmd: wails3 task run
       type: primary
       exit_policy: shutdown

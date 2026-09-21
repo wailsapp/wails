@@ -2,9 +2,11 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/atterpac/refresh/engine"
 	"github.com/atterpac/refresh/process"
@@ -58,6 +60,9 @@ func Watcher(options *WatcherOptions) error {
 
 	ensureIgnored(&devconfig.Config.Ignore.File, "*_test.go")
 	ensurePrimaryExitPolicy(devconfig.Config.ExecStruct)
+	if err := applyFrontendReadiness(&devconfig.Config, os.Getenv("FRONTEND_DEVSERVER_URL")); err != nil {
+		return err
+	}
 
 	watcherEngine, err := engine.NewEngineFromConfig(devconfig.Config)
 	if err != nil {
@@ -69,6 +74,25 @@ func Watcher(options *WatcherOptions) error {
 			return nil
 		}
 		return err
+	}
+	return nil
+}
+
+// Standard projects get startup ordering without rewriting their Taskfiles.
+// Custom commands and explicitly configured readiness remain user-owned.
+func applyFrontendReadiness(config *engine.Config, frontendURL string) error {
+	if frontendURL == "" {
+		return nil
+	}
+	for i := range config.ExecStruct {
+		step := &config.ExecStruct[i]
+		if step.Type != process.Background || step.Readiness != nil || len(step.Command) != 0 || strings.Join(strings.Fields(step.Cmd), " ") != "wails3 task common:dev:frontend" {
+			continue
+		}
+		step.Readiness = &process.Readiness{HTTP: frontendURL, Timeout: "60s"}
+		if err := step.Validate(); err != nil {
+			return fmt.Errorf("invalid frontend readiness: %w", err)
+		}
 	}
 	return nil
 }
