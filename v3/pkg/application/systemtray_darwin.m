@@ -46,9 +46,11 @@ void* systemTrayNew(long id) {
 	controller.id = id;
 	NSStatusItem *statusItem = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength] retain];
 	controller.statusItem = statusItem;
-	[statusItem setTarget:controller];
-	[statusItem setAction:@selector(statusItemClicked:)];
 	NSButton *button = statusItem.button;
+	// setTarget/setAction on NSStatusItem is deprecated since macOS 10.14 and
+	// stopped firing on macOS 27 (GoldenGate); set them on the button directly.
+	[button setTarget:controller];
+	[button setAction:@selector(statusItemClicked:)];
 	[button sendActionOn:(NSEventMaskLeftMouseDown|NSEventMaskRightMouseDown)];
 
 	// Install a local event monitor that fires BEFORE the button processes
@@ -187,7 +189,7 @@ void systemTrayDestroy(void* nsStatusItem) {
 	// Remove the status item from the status bar and its associated menu
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-		StatusItemController *controller = (StatusItemController *)[statusItem target];
+		StatusItemController *controller = (StatusItemController *)[statusItem.button target];
 		if (controller.eventMonitor) {
 			[NSEvent removeMonitor:controller.eventMonitor];
 			controller.eventMonitor = nil;
@@ -204,7 +206,7 @@ void showMenu(void* nsStatusItem, void *nsMenu) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
 		NSMenu *menu = (NSMenu *)nsMenu;
-		StatusItemController *controller = (StatusItemController *)[statusItem target];
+		StatusItemController *controller = (StatusItemController *)[statusItem.button target];
 
 		// Temporarily assign the menu for native tracking.
 		menu.delegate = controller;
@@ -233,7 +235,7 @@ void showMenu(void* nsStatusItem, void *nsMenu) {
 
 void systemTraySetCachedMenu(void* nsStatusItem, void *nsMenu) {
 	NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
-	StatusItemController *controller = (StatusItemController *)[statusItem target];
+	StatusItemController *controller = (StatusItemController *)[statusItem.button target];
 	controller.cachedMenu = (NSMenu *)nsMenu;
 }
 
