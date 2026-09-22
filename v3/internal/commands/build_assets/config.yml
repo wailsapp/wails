@@ -58,6 +58,7 @@ dev_mode:
       type: background
     - cmd: wails3 task run
       type: primary
+      exit_policy: shutdown
 
 # File Associations
 # More information at: https://v3.wails.io/noit/done/yet
