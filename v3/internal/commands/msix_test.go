@@ -1,7 +1,10 @@
 package commands
 
 import (
+	"bytes"
 	"encoding/xml"
+	"image"
+	"image/color"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -230,4 +233,55 @@ func validMSIXTestOptions(t *testing.T) MSIXOptions {
 		t.Fatal(err)
 	}
 	return options
+}
+
+func TestMSIXCustomAssets(t *testing.T) {
+	options := validMSIXTestOptions(t)
+	options.ProcessorArchitecture = "amd64"
+	if err := validateMSIXOptions(&options); err != nil {
+		t.Fatal(err)
+	}
+
+	// Prepare a project directory holding one custom MSIX asset.
+	options.CustomAssetsDir = filepath.Join(t.TempDir(), "build", "windows", "msix", "assets")
+	if err := os.MkdirAll(options.CustomAssetsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	custom := image.NewNRGBA(image.Rect(0, 0, 44, 44))
+	custom.Set(0, 0, color.NRGBA{R: 255, A: 255})
+	var customData bytes.Buffer
+	if err := png.Encode(&customData, custom); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(options.CustomAssetsDir, "Square44x44Logo.png"), customData.Bytes(), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	dir := t.TempDir()
+	if err := createMSIXPackageStructure(&options, dir); err != nil {
+		t.Fatal(err)
+	}
+
+	// The custom asset must be used verbatim instead of a generated placeholder.
+	got, err := os.ReadFile(filepath.Join(dir, "Assets", "Square44x44Logo.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(got, customData.Bytes()) {
+		t.Fatalf("custom asset was not used: packaged %d bytes, custom %d bytes", len(got), customData.Len())
+	}
+
+	// Assets without a custom file still fall back to generated placeholders.
+	f, err := os.Open(filepath.Join(dir, "Assets", "Square150x150Logo.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	placeholder, err := png.Decode(f)
+	f.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if placeholder.Bounds().Dx() != 150 || placeholder.Bounds().Dy() != 150 {
+		t.Fatalf("wrong placeholder dimensions: %v", placeholder.Bounds())
+	}
 }
