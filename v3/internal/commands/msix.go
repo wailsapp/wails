@@ -385,11 +385,14 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 		assetPath := filepath.Join(assetsDir, asset)
 		if options.CustomAssetsDir != "" {
 			customPath := filepath.Join(options.CustomAssetsDir, asset)
-			if _, err := os.Stat(customPath); err == nil {
+			_, err := os.Stat(customPath)
+			if err == nil {
 				if err := copyFile(customPath, assetPath); err != nil {
 					return fmt.Errorf("error copying custom asset %s: %w", asset, err)
 				}
 				continue
+			} else if !os.IsNotExist(err) {
+				return fmt.Errorf("error accessing custom asset %s: %w", asset, err)
 			}
 		}
 		if err := generatePlaceholderImage(assetPath); err != nil {

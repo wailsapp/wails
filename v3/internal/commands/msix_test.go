@@ -285,3 +285,41 @@ func TestMSIXCustomAssets(t *testing.T) {
 		t.Fatalf("wrong placeholder dimensions: %v", placeholder.Bounds())
 	}
 }
+
+func TestMSIXCustomAssetLookupError(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("directory permission bits do not produce access errors on Windows")
+	}
+	if os.Geteuid() == 0 {
+		t.Skip("root bypasses directory permission checks")
+	}
+
+	options := validMSIXTestOptions(t)
+	options.ProcessorArchitecture = "amd64"
+	if err := validateMSIXOptions(&options); err != nil {
+		t.Fatal(err)
+	}
+
+	// A custom asset directory that exists but cannot be read must surface an
+	// error instead of silently falling back to generated placeholders.
+	options.CustomAssetsDir = filepath.Join(t.TempDir(), "build", "windows", "msix", "assets")
+	if err := os.MkdirAll(options.CustomAssetsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(options.CustomAssetsDir, "Square44x44Logo.png"), []byte("data"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(options.CustomAssetsDir, 0000); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(options.CustomAssetsDir, 0755) })
+
+	dir := t.TempDir()
+	err := createMSIXPackageStructure(&options, dir)
+	if err == nil {
+		t.Fatal("expected an error when the custom asset directory cannot be read, got nil")
+	}
+	if !strings.Contains(err.Error(), "error accessing custom asset") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
