@@ -33,6 +33,10 @@ type MSIXOptions struct {
 	OutputPath            string `json:"outputPath"`
 	UseMsixPackagingTool  bool   `json:"useMsixPackagingTool"`
 	UseMakeAppx           bool   `json:"useMakeAppx"`
+	// CustomAssetsDir points at the project directory holding user-provided MSIX
+	// assets (build/windows/msix/assets). When an asset exists there it is used
+	// as-is instead of a generated placeholder.
+	CustomAssetsDir string `json:"customAssetsDir,omitempty"`
 }
 
 // ToolMSIX creates an MSIX package for Windows applications
@@ -79,6 +83,7 @@ func ToolMSIX(options *flags.ToolMSIX) error {
 		OutputPath:            options.OutputPath,
 		UseMsixPackagingTool:  options.UseMsixPackagingTool,
 		UseMakeAppx:           options.UseMakeAppx,
+		CustomAssetsDir:       filepath.Join(filepath.Dir(configPath), "windows", "msix", "assets"),
 	}
 
 	// Validate options
@@ -375,9 +380,21 @@ func createMSIXPackageStructure(options *MSIXOptions, outputDir string) error {
 		assets = append(assets, "FileIcon.png")
 	}
 
-	// Generate placeholder assets
+	// Use custom assets from the project when provided, otherwise generate placeholders
 	for _, asset := range assets {
 		assetPath := filepath.Join(assetsDir, asset)
+		if options.CustomAssetsDir != "" {
+			customPath := filepath.Join(options.CustomAssetsDir, asset)
+			_, err := os.Stat(customPath)
+			if err == nil {
+				if err := copyFile(customPath, assetPath); err != nil {
+					return fmt.Errorf("error copying custom asset %s: %w", asset, err)
+				}
+				continue
+			} else if !os.IsNotExist(err) {
+				return fmt.Errorf("error accessing custom asset %s: %w", asset, err)
+			}
+		}
 		if err := generatePlaceholderImage(assetPath); err != nil {
 			return fmt.Errorf("error generating placeholder image %s: %w", asset, err)
 		}
