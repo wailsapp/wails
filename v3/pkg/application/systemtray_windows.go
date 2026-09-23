@@ -55,10 +55,13 @@ func (s *windowsSystemTray) openMenu() {
 	}
 	// Get the system tray bounds
 	trayBounds, err := s.bounds()
-	if err != nil {
-		return
-	}
-	if trayBounds == nil {
+	if err != nil || trayBounds == nil {
+		// Shell_NotifyIconGetRect can fail while the icon lives in the
+		// overflow flyout; fall back to the cursor instead of dropping
+		// the menu silently.
+		if x, y, ok := w32.GetCursorPos(); ok {
+			s.menu.ShowAt(x, y)
+		}
 		return
 	}
 
@@ -460,7 +463,10 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 			if s.parent.clickHandler != nil {
 				s.parent.clickHandler()
 			}
-		case w32.WM_RBUTTONUP:
+		case w32.WM_RBUTTONUP, w32.WM_CONTEXTMENU:
+			// NOTIFYICON_VERSION_4 delivers a right-click as WM_CONTEXTMENU,
+			// not WM_RBUTTONUP (see NOTIFYICONDATAW docs); without this case
+			// the tray menu never opens on Windows.
 			if s.parent.rightClickHandler != nil {
 				s.parent.rightClickHandler()
 			}
