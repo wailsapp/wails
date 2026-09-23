@@ -443,3 +443,8 @@ html[data-theme="light"] .docs-page .mpress-admonition-danger { --notice: hsl(33
   border: 0;
   border-radius: 0;
 }
+
+/* M-Press 1.0.18 gives the accessibility popover `display: grid`, which beats the
+   browser's `display: none` for closed popovers. The closed panel stays invisible
+   but fixed over most of a phone screen, so touches on blog cards never scroll. */
+.mpress-accessibility-panel[popover]:not(:popover-open) { display: none; }
