@@ -28,6 +28,11 @@ _/
 
 ## [Unreleased]
 
+## v3.0.0-beta.25 - 2026-09-22
+
+## Fixed
+- Stop `wails3 dev` and its background processes when the primary application exits (#6048)
+
 ## v3.0.0-beta.24 - 2026-09-20
 
 ## Security
