@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "84220d31f800dcb22a5e",
+  "sourceFile": "community/showcase/scriptbar.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "targetHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "machineHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "machineText": "![ScriptBar](/assets/showcase-images/scriptbar.webp)",
+      "status": "final",
+      "sourcePreview": "![ScriptBar](/assets/showcase-images/scriptbar.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "055c47d2b759e5946aac414285f8bdc803175d60e9e482e2efd71b08f4a54ed6",
+      "targetHash": "b6087bdc1dc7177c9e5a571d2d88311afa9a19ed015a35d0f962f1559bb11931",
+      "machineHash": "b6087bdc1dc7177c9e5a571d2d88311afa9a19ed015a35d0f962f1559bb11931",
+      "machineText": "[ScriptBar](https://GitHub.com/raguay/ScriptBarApp) est un programme qui affiche la sortie de scripts ou d’un serveur [Node-Red](https://nodered.org). Il exécute les scripts définis dans le programme EmailIt et affiche leur sortie. Vous pouvez utiliser des scripts provenant de xBar ou de TextBar, mais actuellement, seuls les scripts TextBar fonctionnent correctement. Il affiche également la sortie des scripts présents sur votre système. ScriptBar ne les place pas dans la barre des menus, mais les regroupe dans une fenêtre pratique pour faciliter leur consultation. Vous pouvez ouvrir plusieurs onglets afin d’afficher de nombreux éléments différents. Vous pouvez également conserver les liens vers les sites web que vous consultez le plus souvent.",
+      "status": "final",
+      "sourcePreview": "[ScriptBar](https://GitHub.com/raguay/ScriptBarApp) is a program to show the\\ output of scripts or […",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineText": "Une application de bureau créée avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "targetHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "machineHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "machineText": "ScriptBar",
+      "status": "final",
+      "sourcePreview": "ScriptBar",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    }
+  }
+}

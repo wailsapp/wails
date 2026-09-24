@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "04544e12d7cb693c2199",
+  "sourceFile": "guides/build/msix.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "4b26b45f84604955445f433cba8e8dc2be7db16230d1d197fc02c29d69dc6c28",
+      "targetHash": "4814f5136fc482b8ceb3e24db98c9b8321afc0d6f6ab0027ca471f4add84d1c0",
+      "machineHash": "4814f5136fc482b8ceb3e24db98c9b8321afc0d6f6ab0027ca471f4add84d1c0",
+      "machineText": "MSIX 是現代化的 Windows 應用程式封裝格式。Wails 可在 Windows 建置過程中產生 MSIX 套件。",
+      "status": "final",
+      "sourcePreview": "MSIX is the modern Windows application packaging format. Wails can generate an MSIX package as part …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "9585850901a3a6bb394d4fb5a3516930f51d58983dace3c5c9a02bde39272f2e",
+      "targetHash": "817218f7d10c36b4bfc429ef26ad59eb1135cbdfd1370f06825442a9317bc145",
+      "machineHash": "817218f7d10c36b4bfc429ef26ad59eb1135cbdfd1370f06825442a9317bc145",
+      "machineText": "MSIX 封裝的操作說明請參閱[Windows 封裝](/guides/build/windows/#msix-package)指南。",
+      "status": "final",
+      "sourcePreview": "Instructions for MSIX packaging are documented in the [Windows Packaging](/guides/build/windows/#msi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "49a001a77dfe3b1f33fa83d848e8cc8eae7b2154dbb7f611585f6af58630e14e",
+      "targetHash": "6729b79cb42db4ce0dcb629f90440caf5f755aba007ffbe8e8ffeb5ab76c48b9",
+      "machineHash": "6729b79cb42db4ce0dcb629f90440caf5f755aba007ffbe8e8ffeb5ab76c48b9",
+      "machineText": "將您的 Wails v3 應用程式封裝為 MSIX 套件",
+      "status": "final",
+      "sourcePreview": "Packaging your Wails v3 application as an MSIX package",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "c2971ff534c0532d885a8af4d0faaad7c71f00dde3e802d5a92027a9156f8a1d",
+      "targetHash": "57476bbbb26d8edda19ece0066ed9afe14671345bf244d1305d5b9372f380539",
+      "machineHash": "57476bbbb26d8edda19ece0066ed9afe14671345bf244d1305d5b9372f380539",
+      "machineText": "MSIX 封裝",
+      "status": "final",
+      "sourcePreview": "MSIX Packaging",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    }
+  }
+}

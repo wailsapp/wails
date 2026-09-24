@@ -288,6 +288,8 @@
       link: "/community/links/"
     - label: "Templates"
       link: "/community/templates/"
+    - label: "Media"
+      link: "/community/media/"
     - label: "Showcase"
       collapsed: true
       items:
