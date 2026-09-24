@@ -975,6 +975,9 @@ func (w *windowsWebviewWindow) zoomOut() {
 
 func (w *windowsWebviewWindow) getZoom() float64 {
 	controller := w.chromium.GetController()
+	if controller == nil {
+		return -1
+	}
 	factor, err := controller.GetZoomFactor()
 	if err != nil {
 		return -1

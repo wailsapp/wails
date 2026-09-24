@@ -208,3 +208,13 @@ func TestRetryWebviewRecoveryStopsAfterWindowCloses(t *testing.T) {
 		t.Fatalf("attempted %d replacements after window closed", calls)
 	}
 }
+
+func TestZoomAfterFailedWebviewRecovery(t *testing.T) {
+	w := &windowsWebviewWindow{chromium: edge.NewChromium()}
+	w.chromium.Close()
+	if zoom := w.getZoom(); zoom != -1 {
+		t.Fatalf("zoom without a controller = %v, want -1", zoom)
+	}
+	w.zoomIn()
+	w.zoomOut()
+}
