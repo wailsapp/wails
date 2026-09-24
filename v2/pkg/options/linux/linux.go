@@ -43,6 +43,13 @@ type Options struct {
 	//
 	//[see the docs]: https://docs.gtk.org/glib/func.set_prgname.html
 	ProgramName string
+
+	// SpellCheckEnabled controls WebKitGTK spell checking for editable web content.
+	SpellCheckEnabled bool
+
+	// SpellCheckLanguages sets the preferred spellcheck languages in BCP 47 style,
+	// for example "en-AU" or "en-US". Empty values are ignored.
+	SpellCheckLanguages []string
 }
 
 type Messages struct {

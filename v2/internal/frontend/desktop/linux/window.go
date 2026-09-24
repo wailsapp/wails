@@ -91,12 +91,28 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 	C.SetupInvokeSignal(result.contentManager)
 
 	var webviewGpuPolicy int
+	spellCheckEnabled := false
+	spellCheckLanguagesCSV := ""
 	if appoptions.Linux != nil {
 		webviewGpuPolicy = int(appoptions.Linux.WebviewGpuPolicy)
+		spellCheckEnabled = appoptions.Linux.SpellCheckEnabled
+		if len(appoptions.Linux.SpellCheckLanguages) > 0 {
+			languages := make([]string, 0, len(appoptions.Linux.SpellCheckLanguages))
+			for _, language := range appoptions.Linux.SpellCheckLanguages {
+				language = strings.TrimSpace(language)
+				if language == "" {
+					continue
+				}
+				languages = append(languages, language)
+			}
+			spellCheckLanguagesCSV = strings.Join(languages, ",")
+		}
 	} else {
 		// workaround for https://github.com/wailsapp/wails/issues/2977
 		webviewGpuPolicy = int(linux.WebviewGpuPolicyNever)
 	}
+	spellCheckLanguages := C.CString(spellCheckLanguagesCSV)
+	defer C.free(unsafe.Pointer(spellCheckLanguages))
 
 	webview := C.SetupWebview(
 		result.contentManager,
@@ -105,6 +121,8 @@ func NewWindow(appoptions *options.App, debug bool, devtoolsEnabled bool) *Windo
 		C.int(webviewGpuPolicy),
 		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.DisableWebViewDrop),
 		bool2Cint(appoptions.DragAndDrop != nil && appoptions.DragAndDrop.EnableFileDrop),
+		bool2Cint(spellCheckEnabled),
+		spellCheckLanguages,
 	)
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")
