@@ -99,6 +99,24 @@ object: `IOS.Haptics.Impact(style)`, `IOS.Device.Info()`,
 `IOS.Scroll.SetEnabled(...)`, etc. Native tab selections arrive as a
 `nativeTabSelected` `CustomEvent` on `window`.
 
+Native tabs can also be controlled after startup from Go:
+
+```go
+application.IOS.SetNativeTabsEnabled(true)
+application.IOS.SelectNativeTab(1) // zero-based index
+enabled := application.IOS.NativeTabsIsEnabled()
+```
+
+Or from the frontend through the runtime package:
+
+```ts
+import { IOS } from "@wailsio/runtime";
+
+await IOS.NativeTabs.SetEnabled(true);
+await IOS.NativeTabs.Select(1); // zero-based index
+const enabled = await IOS.NativeTabs.IsEnabled();
+```
+
 ## Native mobile features
 
 Beyond the cross-platform runtime, iOS exposes a set of "genuinely mobile"
