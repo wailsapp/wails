@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "9517a90c7cbe4dee3f3d",
+  "sourceFile": "community/showcase/condui.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "targetHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "machineHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "machineText": "![Condui](/assets/showcase-images/condui.png)",
+      "status": "final",
+      "sourcePreview": "![Condui](/assets/showcase-images/condui.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ee2f0ea8cd31c3c2cff2e046ae5666a0a5804b9c50e0edcbae6adf679cd4b525",
+      "targetHash": "6ac0fe41eb46a02059cb94f84a7fe259db26b9f58fe80398d086dff3af738300",
+      "machineHash": "6ac0fe41eb46a02059cb94f84a7fe259db26b9f58fe80398d086dff3af738300",
+      "machineText": "O Condui é um gerenciador de conexões SSH com sincronização entre vários dispositivos e criptografia de ponta a ponta. Ele mantém suas conexões, seus túneis SSH e suas credenciais protegidas por cofre sincronizados em todos os dispositivos que você usa, sem que o servidor de sincronização jamais tenha acesso às suas credenciais em texto simples.",
+      "status": "final",
+      "sourcePreview": "Condui is an SSH connection manager with end-to-end encrypted, multi-device\\ sync. It keeps your con…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "1d4105a0707deabff58b0b90d8f5acf871e8536b40b762ca980f4f38eafb8ac0",
+      "targetHash": "592b30da07efa121f7eea79c4796c58c12a3fc65a47bd8c3fdc007debc98bce6",
+      "machineHash": "592b30da07efa121f7eea79c4796c58c12a3fc65a47bd8c3fdc007debc98bce6",
+      "machineText": "Principais recursos",
+      "status": "final",
+      "sourcePreview": "Key Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "be0559a49a6516aca836a901b9654646101a46300bfe13ab7244456461245621",
+      "targetHash": "7c5db5fe06e1095e49f69cafedab1ffa0c67cc3bdae86c42ce2629ab3c0653c9",
+      "machineHash": "7c5db5fe06e1095e49f69cafedab1ffa0c67cc3bdae86c42ce2629ab3c0653c9",
+      "machineText": "🔐 Cofre com criptografia de ponta a ponta para senhas SSH e frases secretas de chaves privadas",
+      "status": "final",
+      "sourcePreview": "🔐 End-to-end encrypted vault for SSH passwords and private key passphrases",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "dc66fe3ca06e989add74c24b635fca58fd8b3b0e3e40455610c2e147c9d26aec",
+      "targetHash": "171658b675f3e322e12ab03bd03be3ab72f31c3473ab8739b4d1d95d664bcd26",
+      "machineHash": "171658b675f3e322e12ab03bd03be3ab72f31c3473ab8739b4d1d95d664bcd26",
+      "machineText": "🔄 Sincronização de conexões, pastas e túneis SSH entre vários dispositivos",
+      "status": "final",
+      "sourcePreview": "🔄 Multi-device sync of connections, folders and SSH tunnels",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "195faa3f9a4df1b8dfe36c0f0627b71f938c73da525bb4407f570ff4e25e17ed",
+      "targetHash": "429b8963451f91bd9b1177b3a29c6c111a5de383f6a199c37db0b3a79bf99b93",
+      "machineHash": "429b8963451f91bd9b1177b3a29c6c111a5de383f6a199c37db0b3a79bf99b93",
+      "machineText": "🌐 Túneis de encaminhamento de portas locais mantidos por conexão",
+      "status": "final",
+      "sourcePreview": "🌐 Local port-forwarding tunnels persisted per connection",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0007-text-01": {
+      "sourceHash": "bfd07ecab0e319bb768ac7eea7c4e2cad4e2ea3b09e108dc3a0702f2ac41df5b",
+      "targetHash": "dd51badd2071c073a3c5ec0cea40093bfde93825f015dbaa94bee204ff9122ad",
+      "machineHash": "dd51badd2071c073a3c5ec0cea40093bfde93825f015dbaa94bee204ff9122ad",
+      "machineText": "🖥️ Ferramentas integradas para terminal, SFTP, Docker e bancos de dados",
+      "status": "final",
+      "sourcePreview": "🖥️ Integrated terminal, SFTP, Docker and database tooling",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0008-text-01": {
+      "sourceHash": "254799c3e57415264d9ee8f99c5ef5e02a8c1b0eee8cc20e21d079e6c96ada98",
+      "targetHash": "51e18cb6a7526b34aa986f28cdaf8f80e50ed4e93b3cdd06c48e3d06cfb2d1b2",
+      "machineHash": "51e18cb6a7526b34aa986f28cdaf8f80e50ed4e93b3cdd06c48e3d06cfb2d1b2",
+      "machineText": "💻 Disponível para macOS, Windows e Linux",
+      "status": "final",
+      "sourcePreview": "💻 Available for macOS, Windows and Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0009-text-01": {
+      "sourceHash": "3fcc66119619a2abf1bd46ce80a64f90d0b7ee5fbe487097c7a7d413b28a9036",
+      "targetHash": "2153cc1fd17c0e71c9aae28d1755bd8c36e53deb9d0839f94c1904f870c3e874",
+      "machineHash": "2153cc1fd17c0e71c9aae28d1755bd8c36e53deb9d0839f94c1904f870c3e874",
+      "machineText": "Experimente o Condui hoje mesmo!",
+      "status": "final",
+      "sourcePreview": "Try Condui Today!",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0010-text-01": {
+      "sourceHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "targetHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "machineHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "machineText": "💻 [https://condui.codeffeine.io/](https://condui.codeffeine.io/) | [GitHub](https://github.com/mgueregath/condui)",
+      "status": "final",
+      "sourcePreview": "💻 [https://condui.codeffeine.io/](https://condui.codeffeine.io/) | [GitHub](https://github.com/mguer…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineText": "Um aplicativo para desktop desenvolvido com Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "targetHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "machineHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "machineText": "Condui",
+      "status": "final",
+      "sourcePreview": "Condui",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}
