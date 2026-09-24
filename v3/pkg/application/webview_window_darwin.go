@@ -1212,8 +1212,9 @@ func (w *macosWebviewWindow) getZoom() float64 {
 }
 
 func (w *macosWebviewWindow) setZoom(zoom float64) {
-	if zoom < 1.0 {
-		zoom = 1.0
+	zoom, ok := zoomFactor(zoom, w.parent.options.Frameless)
+	if !ok {
+		return
 	}
 	C.windowZoomSet(w.nsWindow, C.double(zoom))
 }

@@ -952,8 +952,9 @@ func (w *windowsWebviewWindow) getZoom() float64 {
 }
 
 func (w *windowsWebviewWindow) setZoom(zoom float64) {
-	if zoom < 1.0 {
-		zoom = 1.0
+	zoom, ok := zoomFactor(zoom, w.parent.options.Frameless)
+	if !ok {
+		return
 	}
 	w.chromium.PutZoomFactor(zoom)
 }
