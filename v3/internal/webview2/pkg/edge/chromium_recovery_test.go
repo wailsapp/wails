@@ -170,3 +170,69 @@ func TestInitializeControllerFailureReleasesPartialController(t *testing.T) {
 		t.Fatalf("partial controller leaked: refs=%d closes=%d", refs, closes)
 	}
 }
+
+func TestRecoveryConfigurationReturnsCOMErrors(t *testing.T) {
+	const failure = uintptr(0x80004005)
+	e := NewChromium()
+	e.SetErrorCallback(func(err error) { t.Fatalf("fatal callback: %v", err) })
+	released := 0
+	controller2 := &ICoreWebView2Controller2{vtbl: &_ICoreWebView2Controller2Vtbl{
+		_IUnknownVtbl: _IUnknownVtbl{
+			Release: NewComProc(func(uintptr) uintptr { released++; return 0 }),
+		},
+		PutDefaultBackgroundColor: NewComProc(func(uintptr, uintptr) uintptr { return failure }),
+	}}
+	e.controller = &ICoreWebView2Controller{vtbl: &_ICoreWebView2ControllerVtbl{
+		_IUnknownVtbl: _IUnknownVtbl{
+			QueryInterface: NewComProc(func(_, _ uintptr, result **ICoreWebView2Controller2) uintptr {
+				*result = controller2
+				return 0
+			}),
+		},
+	}}
+	if err := e.SetBackgroundColourWithError(1, 2, 3, 255); err == nil {
+		t.Fatal("background configuration swallowed the COM failure")
+	}
+	if released != 1 {
+		t.Fatalf("queried controller release count = %d, want 1", released)
+	}
+	e.webview = &ICoreWebView2{vtbl: &iCoreWebView2Vtbl{
+		AddWebResourceRequestedFilter: NewComProc(func(uintptr, uintptr, uintptr) uintptr { return failure }),
+	}}
+	if err := e.AddWebResourceRequestedFilterWithError("*", COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL); err == nil {
+		t.Fatal("resource filter configuration swallowed the COM failure")
+	}
+}
+
+func TestCloseAfterRecoveryFailureIsIdempotent(t *testing.T) {
+	e := NewChromium()
+	closes, releases := 0, 0
+	e.controller = &ICoreWebView2Controller{vtbl: &_ICoreWebView2ControllerVtbl{
+		_IUnknownVtbl: _IUnknownVtbl{
+			Release: NewComProc(func(uintptr) uintptr { releases++; return 0 }),
+		},
+		Close: NewComProc(func(uintptr) uintptr { closes++; return 0 }),
+	}}
+	atomic.StoreUintptr(&e.inited, 1)
+	e.Close()
+	e.Close()
+	if closes != 1 || releases != 1 || e.controller != nil || e.IsReady() || !e.shuttingDown {
+		t.Fatalf("closed controller state: closes=%d releases=%d controller=%p ready=%v shuttingDown=%v", closes, releases, e.controller, e.IsReady(), e.shuttingDown)
+	}
+	// Native window callbacks and app commands may arrive after the budget ends.
+	e.Resize()
+	e.Focus()
+	e.Navigate("http://wails.localhost")
+	e.NavigateToString("<p>test</p>")
+	e.Init("void 0")
+	e.Eval("void 0")
+	e.PutZoomFactor(1)
+	e.OpenDevToolsWindow()
+	e.SetBackgroundColour(0, 0, 0, 255)
+	if err := e.Show(); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Hide(); err != nil {
+		t.Fatal(err)
+	}
+}

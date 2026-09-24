@@ -2444,8 +2444,6 @@ func (w *windowsWebviewWindow) processRequest(
 
 func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 	chromium := w.chromium
-	debugMode := globalApplication.isDebugMode
-
 	opts := w.parent.options.Windows
 
 	webview2version, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(
@@ -2485,7 +2483,6 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 
 	// Apply the cross-platform Permissions map first; the WebView2-specific
 	// Windows.Permissions map below can override individual kinds.
-	hasPermissionPolicy := len(w.parent.options.Permissions) > 0 || len(opts.Permissions) > 0
 	for permission, state := range w.parent.options.Permissions {
 		chromium.SetPermission(crossPermissionToWebView2Kind(permission),
 			edge.CoreWebView2PermissionState(state))
@@ -2515,6 +2512,25 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 	} else if !chromium.Embed(w.hwnd) {
 		return false
 	}
+
+	if err := w.configureChromium(); err != nil {
+		if !recovering {
+			globalApplication.handleFatalError(err)
+		}
+		chromium.Close()
+		globalApplication.error("webview2: configuring replacement controller failed: %v", err)
+		return false
+	}
+	w.startRequestCancellation(w.navigateInitialPage)
+	return true
+}
+
+// configureChromium returns setup failures so recovery can discard the controller
+// and retry without invoking the fatal startup error handler.
+func (w *windowsWebviewWindow) configureChromium() error {
+	chromium := w.chromium
+	opts := w.parent.options.Windows
+	debugMode := globalApplication.isDebugMode
 
 	// Configure who owns the WebView2 rasterization scale on a monitor-DPI
 	// change. Two hosting modes need opposite answers:
@@ -2586,7 +2602,7 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 	if chromium.HasCapability(edge.SwipeNavigation) {
 		err := chromium.PutIsSwipeNavigationEnabled(opts.EnableSwipeGestures)
 		if err != nil {
-			globalApplication.handleFatalError(err)
+			return err
 		}
 	}
 
@@ -2605,12 +2621,12 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 	// - JS runtime checks window._wails.flags.enableFileDrop and shows "no drop" cursor
 	// - The enableFileDrop flag is injected in navigationCompleted callback
 
-	err = chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
+	err := chromium.PutIsGeneralAutofillEnabled(opts.GeneralAutofillEnabled)
 	if err != nil {
 		if errors.Is(err, edge.UnsupportedCapabilityError) {
 			globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
 		} else {
-			globalApplication.handleFatalError(err)
+			return err
 		}
 	}
 
@@ -2619,46 +2635,49 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 		if errors.Is(err, edge.UnsupportedCapabilityError) {
 			globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
 		} else {
-			globalApplication.handleFatalError(err)
+			return err
 		}
 	}
 
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return err
 	}
 	if settings == nil {
-		globalApplication.fatal("error getting settings")
+		return errors.New("error getting settings")
 	}
+	defer settings.Release()
 	err = settings.PutAreDefaultContextMenusEnabled(
 		debugMode || !w.parent.options.DefaultContextMenuDisabled,
 	)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return err
 	}
 
-	w.enableDevTools(settings)
+	if err := w.enableDevTools(settings); err != nil {
+		return err
+	}
 
 	if w.parent.options.Zoom > 0.0 {
 		chromium.PutZoomFactor(w.parent.options.Zoom)
 	}
 	err = settings.PutIsZoomControlEnabled(w.parent.options.ZoomControlEnabled)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return err
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return err
 	}
 	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return err
 	}
 	err = settings.PutIsSwipeNavigationEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return err
 	}
 
 	if debugMode && w.parent.options.OpenInspectorOnStartup {
@@ -2666,13 +2685,18 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 	}
 
 	// Set background colour
-	w.setBackgroundColour(w.parent.options.BackgroundColour)
-	chromium.SetBackgroundColour(
+	if w.parent.options.BackgroundType == BackgroundTypeSolid {
+		colour := w.parent.options.BackgroundColour
+		w32.SetBackgroundColour(w.hwnd, colour.Red, colour.Green, colour.Blue)
+	}
+	if err := chromium.SetBackgroundColourWithError(
 		w.parent.options.BackgroundColour.Red,
 		w.parent.options.BackgroundColour.Green,
 		w.parent.options.BackgroundColour.Blue,
 		w.parent.options.BackgroundColour.Alpha,
-	)
+	); err != nil {
+		return err
+	}
 
 	// WebView2's PermissionRequested handler checks the global permission
 	// before the per-kind map, so the blanket "allow all" must only be set
@@ -2680,13 +2704,10 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 	// Permissions map and a configured PermissionDeny would be ignored. When a
 	// policy is present, unset kinds fall through to PermissionDefault (the
 	// platform's native prompt).
-	if !hasPermissionPolicy {
+	if len(w.parent.options.Permissions) == 0 && len(opts.Permissions) == 0 {
 		chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	}
-	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-
-	w.startRequestCancellation(w.navigateInitialPage)
-	return true
+	return chromium.AddWebResourceRequestedFilterWithError("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 }
 
 func (w *windowsWebviewWindow) navigateInitialPage() {
@@ -3218,7 +3239,7 @@ func shouldResetWebviewRecoveryBudget(isSuccess bool, err error) bool {
 // handler, a dead browser process leaves the controller in a permanent
 // invalid state: every subsequent COM call fails with ERROR_INVALID_STATE
 // (0x8007139F), the window renders blank, and only an app restart recovers.
-// Work is deferred out of the callback via InvokeAsync, per WebView2 guidance
+// Work is posted out of the callback from another goroutine, per WebView2 guidance
 // about not calling controller methods reentrantly from an event handler.
 func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
 	if w.webviewRecoveryPending || w.parent.isDestroyed() || w.hwnd == 0 {
@@ -3238,7 +3259,7 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 
 	// Work out what recovery would actually do before spending an attempt from
 	// the budget, so a no-op does not eat into it.
-	var restore func()
+	var restore func() bool
 	switch action {
 	case webviewRecoveryRebuild:
 		restore = w.rebuildWebView
@@ -3247,9 +3268,9 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 			globalApplication.error("webview2: no navigation available for renderer recovery")
 			return
 		}
-		restore = func() {
+		restore = func() bool {
 			if w.parent.isDestroyed() || w.hwnd == 0 {
-				return
+				return true
 			}
 			if w.lastNavigatedURL != "" {
 				w.setURL(w.lastNavigatedURL)
@@ -3257,6 +3278,7 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 				w.webviewNavigationCompleted = false
 				w.chromium.NavigateToString(w.parent.options.HTML)
 			}
+			return true
 		}
 	}
 
@@ -3275,8 +3297,27 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 	w.webviewRecoveryPending = true
 	go InvokeAsync(func() {
 		defer func() { w.webviewRecoveryPending = false }()
-		restore()
+		if !w.retryWebviewRecovery(restore) {
+			globalApplication.error("webview2: controller recovery exhausted %d attempts", maxWebviewRecoveryAttempts)
+		}
 	})
+}
+
+// retryWebviewRecovery spends the remaining budget on initialization failures,
+// which cannot generate another ProcessFailed notification after cleanup.
+// The first attempt was already counted when the recovery callback was queued.
+func (w *windowsWebviewWindow) retryWebviewRecovery(restore func() bool) bool {
+	for {
+		if w.parent.isDestroyed() || w.hwnd == 0 {
+			return true
+		}
+		if restore() {
+			return true
+		}
+		if !w.beginWebviewRecovery() {
+			return false
+		}
+	}
 }
 
 // rebuildWebView replaces a dead WebView2 controller with a fresh one.
@@ -3288,12 +3329,12 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 // edge.Chromium.Embed's init-wait loop keys on a per-instance flag that a used
 // instance has already set, so re-embedding the same instance would return
 // before the new controller exists.
-func (w *windowsWebviewWindow) rebuildWebView() {
+func (w *windowsWebviewWindow) rebuildWebView() bool {
 	// A window destroyed between the failure and this callback has no HWND to
 	// embed into — shutting the app down kills the WebView2 processes, so a
 	// process failure racing teardown is expected rather than exceptional.
 	if w.parent.isDestroyed() || w.hwnd == 0 {
-		return
+		return true
 	}
 	globalApplication.info("webview2: rebuilding controller after browser process exit")
 	// The abandoned instance's DComp target stays bound to the HWND, and an
@@ -3302,12 +3343,11 @@ func (w *windowsWebviewWindow) rebuildWebView() {
 	// silently falls back to windowed hosting, so a WebView2CompositionHosting
 	// window would come back with the wrong hosting mode.
 	w.requestCancellation.close()
-	previous := w.chromium
-	previous.ShuttingDown()
-	previous.ReleaseCompositionResources()
+	w.chromium.Close()
 	w.chromium = w.newChromium()
 	if !w.setupChromium(true) {
-		// Keep window callbacks away from a partially initialized replacement.
-		w.chromium = previous
+		w.chromium.Close()
+		return false
 	}
+	return true
 }

@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Keep Windows WebView2 recovery configuration failures non-fatal, release failed controllers, and retry initialization within the recovery budget. Fixes #6167.
 - Recover from WebView2 process failures instead of leaving a blank window in [PR](https://github.com/wailsapp/wails/pull/6002) by @taliesin-ai
 
 ## Deprecated

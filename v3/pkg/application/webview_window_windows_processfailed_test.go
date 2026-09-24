@@ -167,3 +167,44 @@ func TestProcessFailedDoesNotQueueOverlappingRecovery(t *testing.T) {
 		t.Fatal("overlapping failure spent another recovery attempt")
 	}
 }
+
+func TestRetryWebviewRecovery(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		succeedOn   int
+		wantCalls   int
+		wantSuccess bool
+	}{
+		{"first replacement succeeds", 1, 1, true},
+		{"failed initialization retries", 2, 2, true},
+		{"last attempt succeeds", 3, 3, true},
+		{"permanent failure stops", 0, maxWebviewRecoveryAttempts, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			w := &windowsWebviewWindow{parent: &WebviewWindow{}, hwnd: 1}
+			w.beginWebviewRecovery()
+			calls := 0
+			got := w.retryWebviewRecovery(func() bool {
+				calls++
+				return calls == tc.succeedOn
+			})
+			if got != tc.wantSuccess || calls != tc.wantCalls || w.webviewRecoveryAttempts != tc.wantCalls {
+				t.Fatalf("recovery = %v, calls = %d, attempts = %d; want %v, %d, %d", got, calls, w.webviewRecoveryAttempts, tc.wantSuccess, tc.wantCalls, tc.wantCalls)
+			}
+		})
+	}
+}
+
+func TestRetryWebviewRecoveryStopsAfterWindowCloses(t *testing.T) {
+	w := &windowsWebviewWindow{parent: &WebviewWindow{}, hwnd: 1}
+	w.beginWebviewRecovery()
+	calls := 0
+	w.retryWebviewRecovery(func() bool {
+		calls++
+		w.parent.destroyed = true
+		return false
+	})
+	if calls != 1 {
+		t.Fatalf("attempted %d replacements after window closed", calls)
+	}
+}
