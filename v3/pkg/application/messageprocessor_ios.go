@@ -16,6 +16,9 @@ const (
 	IOSLinksSetPreviewEnabled           = 6
 	IOSDebugSetInspectableEnabled       = 7
 	IOSUserAgentSet                     = 8
+	IOSNativeTabsSetEnabled             = 9
+	IOSNativeTabsIsEnabled              = 10
+	IOSNativeTabsSelect                 = 11
 )
 
 // androidMethodNames is referenced by the shared messageprocessor debug logging;
@@ -32,6 +35,9 @@ var iosMethodNames = map[int]string{
 	IOSLinksSetPreviewEnabled:           "Links.SetPreviewEnabled",
 	IOSDebugSetInspectableEnabled:       "Debug.SetInspectableEnabled",
 	IOSUserAgentSet:                     "UserAgent.Set",
+	IOSNativeTabsSetEnabled:             "NativeTabs.SetEnabled",
+	IOSNativeTabsIsEnabled:              "NativeTabs.IsEnabled",
+	IOSNativeTabsSelect:                 "NativeTabs.Select",
 }
 
 func (m *MessageProcessor) processIOSMethod(req *RuntimeRequest, window Window) (any, error) {
@@ -97,6 +103,22 @@ func (m *MessageProcessor) processIOSMethod(req *RuntimeRequest, window Window) 
 			ua = *s2
 		}
 		iosSetCustomUserAgent(ua)
+		return unit, nil
+	case IOSNativeTabsSetEnabled:
+		enabled := true
+		if b := args.Bool("enabled"); b != nil {
+			enabled = *b
+		}
+		iosSetNativeTabsEnabled(enabled)
+		return unit, nil
+	case IOSNativeTabsIsEnabled:
+		return iosNativeTabsIsEnabled(), nil
+	case IOSNativeTabsSelect:
+		index := 0
+		if i := args.Int("index"); i != nil {
+			index = *i
+		}
+		iosSelectNativeTab(index)
 		return unit, nil
 	default:
 		return nil, errs.NewInvalidIOSCallErrorf("unknown method: %d", req.Method)
