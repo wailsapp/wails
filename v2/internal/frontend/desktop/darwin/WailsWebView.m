@@ -33,8 +33,14 @@
     return [super performDragOperation: sender];
 
   // getting all NSURL types
+  //
+  // NSPasteboardURLReadingFileURLsOnlyKey is required, not optional: without
+  // it the pasteboard also yields non-file URLs -- a drag of an <img> inside
+  // the webview carries its `data:` or `http:` src -- and
+  // -fileSystemRepresentation returns NULL for those, which crashes the
+  // process on the next line.
   NSArray<Class> *url_class = @[[NSURL class]];
-  NSDictionary *options = @{};
+  NSDictionary *options = @{NSPasteboardURLReadingFileURLsOnlyKey: @YES};
   NSArray<NSURL*> *files = [pboard readObjectsForClasses:url_class options:options];
 
   // collecting all file paths
@@ -42,6 +48,8 @@
   for (NSURL *url in files)
   {
     const char *fs_path = [url fileSystemRepresentation];  //Will be UTF-8 encoded
+    if ( fs_path == NULL )  // defensive: -initWithCString: with NULL crashes
+      continue;
     NSString *fs_path_str = [[NSString alloc] initWithCString:fs_path encoding:NSUTF8StringEncoding];
     [files_strs addObject:fs_path_str];
 //     NSLog( @"performDragOperation: file path: %s", fs_path );
