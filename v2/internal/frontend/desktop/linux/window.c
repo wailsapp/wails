@@ -7,6 +7,35 @@
 #include <string.h>
 #include <locale.h>
 #include "window.h"
+#include <signal.h>
+
+/*
+ * fix_webkit_signals - Re-apply SA_ONSTACK to WebKit signal handlers.
+ *
+ * webkit_web_view_new_with_user_content_manager() installs C-level handlers
+ * for SIGSEGV, SIGBUS, SIGFPE and related signals via sigaction(2) without
+ * the SA_ONSTACK flag.  The Go runtime requires SA_ONSTACK on every signal
+ * handler it does not own; its absence causes an immediate fatal throw:
+ *
+ *   fatal error: non-Go code set up signal handler without SA_ONSTACK flag
+ *
+ * This function reads each installed handler and ORs SA_ONSTACK into its
+ * flags.  It is called once, immediately after webview creation, so the fix
+ * is in place before any JIT-triggered or Gigacage-triggered signal fires.
+ *
+ * Only signals with a real handler (not SIG_DFL / SIG_IGN) are modified;
+ * signals not yet claimed by WebKit are left unchanged.
+ */
+static void fix_webkit_signals(void) {
+    struct sigaction sa;
+    int sigs[] = {SIGSEGV, SIGBUS, SIGFPE, SIGILL, SIGABRT, SIGTRAP, 0};
+    for (int i = 0; sigs[i]; i++) {
+        if (sigaction(sigs[i], NULL, &sa) == 0) {
+            sa.sa_flags |= SA_ONSTACK;
+            sigaction(sigs[i], &sa, NULL);
+        }
+    }
+}
 
 // These are the x,y,time & button of the last mouse down event
 // It's used for window dragging
@@ -558,6 +587,7 @@ static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gin
 GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy, int disableWebViewDragAndDrop, int enableDragAndDrop)
 {
     GtkWidget *webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager *)contentManager);
+    fix_webkit_signals(); /* Patch SA_ONSTACK after WebKit initializes */
 
     // Store webview reference in the content manager
     g_object_set_data(G_OBJECT((WebKitUserContentManager *)contentManager), "webview", webview);
