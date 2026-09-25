@@ -45,6 +45,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "debug", true)
 	ctx = context.WithValue(ctx, "devtoolsEnabled", true)
+	ctx = injectProductInfo(ctx)
 
 	// Set up logger if the appoptions.LogLevel is an invalid value, set it to the default log level
 	appoptions.LogLevel, err = pkglogger.StringToLogLevel(appoptions.LogLevel.String())
