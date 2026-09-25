@@ -6,6 +6,9 @@ extern void processApplicationEvent(unsigned int, void* data);
 extern void processWindowEvent(unsigned int, unsigned int);
 extern bool hasListeners(unsigned int);
 extern void iosApplicationDidLaunch(void);
+// Delivers a Universal Link / custom-scheme URL to the Go event bus as the
+// cross-platform common:ApplicationLaunchedWithUrl event.
+extern void iosHandleDeepLink(char* url);
 // WailsIOSMain (app's generated main_ios.go) runs the user's main()/app.Run().
 // The delegate starts it AFTER UIKit has launched (see below).
 extern void WailsIOSMain(void);
@@ -66,6 +69,34 @@ extern void ios_notifications_init(void);
         WailsIOSMain();
     });
     return YES;
+}
+
+// Universal Links. On cold launch iOS invokes this after
+// didFinishLaunchingWithOptions returns YES, so it also covers the cold-start
+// case; the Go side buffers URLs that arrive before listeners are wired.
+- (BOOL)application:(UIApplication *)application
+        continueUserActivity:(NSUserActivity *)userActivity
+        restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler {
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        NSURL *url = userActivity.webpageURL;
+        if (url != nil) {
+            iosHandleDeepLink((char *)[url.absoluteString UTF8String]);
+            return YES;
+        }
+    }
+    return NO;
+}
+
+// Custom URL schemes (e.g. myapp://callback). Also fires on cold launch after
+// didFinishLaunchingWithOptions.
+- (BOOL)application:(UIApplication *)application
+        openURL:(NSURL *)url
+        options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
+    if (url != nil) {
+        iosHandleDeepLink((char *)[url.absoluteString UTF8String]);
+        return YES;
+    }
+    return NO;
 }
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(UIApplication *)application {
