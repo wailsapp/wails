@@ -1,15 +1,14 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2DevToolsProtocolEventReceivedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2DevToolsProtocolEventReceivedEventArgsVtbl
 	GetSessionId ComProc
 }
 
@@ -17,30 +16,43 @@ type ICoreWebView2DevToolsProtocolEventReceivedEventArgs2 struct {
 	Vtbl *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2Vtbl
 }
 
-func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2) AddRef() uintptr {
+func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2DevToolsProtocolEventReceivedEventArgs2() *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2 {
+func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2DevToolsProtocolEventReceivedEventArgs2 queries the object for its ICoreWebView2DevToolsProtocolEventReceivedEventArgs2 interface. The receiver
+// is the root of ICoreWebView2DevToolsProtocolEventReceivedEventArgs2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs) GetICoreWebView2DevToolsProtocolEventReceivedEventArgs2() (*ICoreWebView2DevToolsProtocolEventReceivedEventArgs2, error) {
 	var result *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2
 
 	iidICoreWebView2DevToolsProtocolEventReceivedEventArgs2 := NewGUID("{2dc4959d-1494-4393-95ba-bea4cb9ebd1b}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2DevToolsProtocolEventReceivedEventArgs2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2DevToolsProtocolEventReceivedEventArgs2) GetSessionId() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetSessionId.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)

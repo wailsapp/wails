@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2IsMutedChangedEventHandler struct {
 	impl ICoreWebView2IsMutedChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2IsMutedChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2IsMutedChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2IsMutedChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2IsMutedChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2IsMutedChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2IsMutedChangedEventHandlerIUnknownQueryInterface(this *ICoreWe
 }
 
 func ICoreWebView2IsMutedChangedEventHandlerIUnknownAddRef(this *ICoreWebView2IsMutedChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2IsMutedChangedEventHandlerIUnknownRelease(this *ICoreWebView2IsMutedChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2IsMutedChangedEventHandlerInvoke(this *ICoreWebView2IsMutedChangedEventHandler, sender *ICoreWebView2, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2IsMutedChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2IsMutedChangedEventHandlerFn = ICoreWebView2IsMutedChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2IsMutedChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2IsMutedChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2IsMutedChangedEventHandlerIUnknownRelease),

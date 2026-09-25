@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2FaviconChangedEventHandler struct {
 	impl ICoreWebView2FaviconChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2FaviconChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2FaviconChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2FaviconChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2FaviconChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2FaviconChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2FaviconChangedEventHandlerIUnknownQueryInterface(this *ICoreWe
 }
 
 func ICoreWebView2FaviconChangedEventHandlerIUnknownAddRef(this *ICoreWebView2FaviconChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2FaviconChangedEventHandlerIUnknownRelease(this *ICoreWebView2FaviconChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2FaviconChangedEventHandlerInvoke(this *ICoreWebView2FaviconChangedEventHandler, sender *ICoreWebView2, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2FaviconChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2FaviconChangedEventHandlerFn = ICoreWebView2FaviconChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2FaviconChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2FaviconChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2FaviconChangedEventHandlerIUnknownRelease),

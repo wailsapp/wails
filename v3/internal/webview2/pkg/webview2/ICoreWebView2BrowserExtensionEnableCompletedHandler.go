@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2BrowserExtensionEnableCompletedHandler struct {
 	impl ICoreWebView2BrowserExtensionEnableCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2BrowserExtensionEnableCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2BrowserExtensionEnableCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2BrowserExtensionEnableCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2BrowserExtensionEnableCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2BrowserExtensionEnableCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2BrowserExtensionEnableCompletedHandlerIUnknownQueryInterface(t
 }
 
 func ICoreWebView2BrowserExtensionEnableCompletedHandlerIUnknownAddRef(this *ICoreWebView2BrowserExtensionEnableCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2BrowserExtensionEnableCompletedHandlerIUnknownRelease(this *ICoreWebView2BrowserExtensionEnableCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2BrowserExtensionEnableCompletedHandlerInvoke(this *ICoreWebView2BrowserExtensionEnableCompletedHandler, errorCode uintptr) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2BrowserExtensionEnableCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2BrowserExtensionEnableCompletedHandlerFn = ICoreWebView2BrowserExtensionEnableCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2BrowserExtensionEnableCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2BrowserExtensionEnableCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2BrowserExtensionEnableCompletedHandlerIUnknownRelease),

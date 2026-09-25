@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2DownloadStartingEventHandler struct {
 	impl ICoreWebView2DownloadStartingEventHandlerImpl
 }
 
-func (i *ICoreWebView2DownloadStartingEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2DownloadStartingEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2DownloadStartingEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2DownloadStartingEventHandlerIUnknownQueryInterface(this *ICoreWebView2DownloadStartingEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2DownloadStartingEventHandlerIUnknownQueryInterface(this *ICore
 }
 
 func ICoreWebView2DownloadStartingEventHandlerIUnknownAddRef(this *ICoreWebView2DownloadStartingEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2DownloadStartingEventHandlerIUnknownRelease(this *ICoreWebView2DownloadStartingEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2DownloadStartingEventHandlerInvoke(this *ICoreWebView2DownloadStartingEventHandler, sender *ICoreWebView2, args *ICoreWebView2DownloadStartingEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2DownloadStartingEventHandlerImpl interface {
 }
 
 var ICoreWebView2DownloadStartingEventHandlerFn = ICoreWebView2DownloadStartingEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2DownloadStartingEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2DownloadStartingEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2DownloadStartingEventHandlerIUnknownRelease),

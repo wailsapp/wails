@@ -1,18 +1,17 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ProcessFailedEventArgs2Vtbl struct {
-	IUnknownVtbl
-	GetReason                     ComProc
-	GetExitCode                   ComProc
-	GetProcessDescription         ComProc
+	ICoreWebView2ProcessFailedEventArgsVtbl
+	GetReason ComProc
+	GetExitCode ComProc
+	GetProcessDescription ComProc
 	GetFrameInfosForFailedProcess ComProc
 }
 
@@ -20,22 +19,34 @@ type ICoreWebView2ProcessFailedEventArgs2 struct {
 	Vtbl *ICoreWebView2ProcessFailedEventArgs2Vtbl
 }
 
-func (i *ICoreWebView2ProcessFailedEventArgs2) AddRef() uintptr {
+func (i *ICoreWebView2ProcessFailedEventArgs2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2ProcessFailedEventArgs2() *ICoreWebView2ProcessFailedEventArgs2 {
+func (i *ICoreWebView2ProcessFailedEventArgs2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2ProcessFailedEventArgs2 queries the object for its ICoreWebView2ProcessFailedEventArgs2 interface. The receiver
+// is the root of ICoreWebView2ProcessFailedEventArgs2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2ProcessFailedEventArgs) GetICoreWebView2ProcessFailedEventArgs2() (*ICoreWebView2ProcessFailedEventArgs2, error) {
 	var result *ICoreWebView2ProcessFailedEventArgs2
 
 	iidICoreWebView2ProcessFailedEventArgs2 := NewGUID("{4dab9422-46fa-4c3e-a5d2-41d2071d3680}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2ProcessFailedEventArgs2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2ProcessFailedEventArgs2) GetReason() (COREWEBVIEW2_PROCESS_FAILED_REASON, error) {
 
@@ -57,7 +68,7 @@ func (i *ICoreWebView2ProcessFailedEventArgs2) GetExitCode() (int, error) {
 
 	hr, _, _ := i.Vtbl.GetExitCode.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(exitCode),
+		uintptr(unsafe.Pointer(&exitCode)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
@@ -69,9 +80,10 @@ func (i *ICoreWebView2ProcessFailedEventArgs2) GetProcessDescription() (string, 
 	// Create *uint16 to hold result
 	var _processDescription *uint16
 
+
 	hr, _, _ := i.Vtbl.GetProcessDescription.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_processDescription)),
+		uintptr(unsafe.Pointer(&_processDescription)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)

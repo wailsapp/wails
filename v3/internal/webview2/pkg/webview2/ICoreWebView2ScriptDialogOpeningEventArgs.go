@@ -1,41 +1,47 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ScriptDialogOpeningEventArgsVtbl struct {
 	IUnknownVtbl
-	GetUri         ComProc
-	GetKind        ComProc
-	GetMessage     ComProc
-	Accept         ComProc
+	GetUri ComProc
+	GetKind ComProc
+	GetMessage ComProc
+	Accept ComProc
 	GetDefaultText ComProc
-	GetResultText  ComProc
-	PutResultText  ComProc
-	GetDeferral    ComProc
+	GetResultText ComProc
+	PutResultText ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2ScriptDialogOpeningEventArgs struct {
 	Vtbl *ICoreWebView2ScriptDialogOpeningEventArgsVtbl
 }
 
-func (i *ICoreWebView2ScriptDialogOpeningEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2ScriptDialogOpeningEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ScriptDialogOpeningEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ScriptDialogOpeningEventArgs) GetUri() (string, error) {
 	// Create *uint16 to hold result
 	var _uri *uint16
 
+
 	hr, _, _ := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_uri)),
+		uintptr(unsafe.Pointer(&_uri)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -64,9 +70,10 @@ func (i *ICoreWebView2ScriptDialogOpeningEventArgs) GetMessage() (string, error)
 	// Create *uint16 to hold result
 	var _message *uint16
 
+
 	hr, _, _ := i.Vtbl.GetMessage.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_message)),
+		uintptr(unsafe.Pointer(&_message)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -78,6 +85,7 @@ func (i *ICoreWebView2ScriptDialogOpeningEventArgs) GetMessage() (string, error)
 }
 
 func (i *ICoreWebView2ScriptDialogOpeningEventArgs) Accept() error {
+
 
 	hr, _, _ := i.Vtbl.Accept.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -92,9 +100,10 @@ func (i *ICoreWebView2ScriptDialogOpeningEventArgs) GetDefaultText() (string, er
 	// Create *uint16 to hold result
 	var _defaultText *uint16
 
+
 	hr, _, _ := i.Vtbl.GetDefaultText.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_defaultText)),
+		uintptr(unsafe.Pointer(&_defaultText)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -109,9 +118,10 @@ func (i *ICoreWebView2ScriptDialogOpeningEventArgs) GetResultText() (string, err
 	// Create *uint16 to hold result
 	var _resultText *uint16
 
+
 	hr, _, _ := i.Vtbl.GetResultText.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_resultText)),
+		uintptr(unsafe.Pointer(&_resultText)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)

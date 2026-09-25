@@ -1,19 +1,18 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2WebResourceRequestVtbl struct {
 	IUnknownVtbl
-	GetUri     ComProc
-	PutUri     ComProc
-	GetMethod  ComProc
-	PutMethod  ComProc
+	GetUri ComProc
+	PutUri ComProc
+	GetMethod ComProc
+	PutMethod ComProc
 	GetContent ComProc
 	PutContent ComProc
 	GetHeaders ComProc
@@ -23,18 +22,25 @@ type ICoreWebView2WebResourceRequest struct {
 	Vtbl *ICoreWebView2WebResourceRequestVtbl
 }
 
-func (i *ICoreWebView2WebResourceRequest) AddRef() uintptr {
+func (i *ICoreWebView2WebResourceRequest) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2WebResourceRequest) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2WebResourceRequest) GetUri() (string, error) {
 	// Create *uint16 to hold result
 	var _uri *uint16
 
+
 	hr, _, _ := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_uri)),
+		uintptr(unsafe.Pointer(&_uri)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -67,9 +73,10 @@ func (i *ICoreWebView2WebResourceRequest) GetMethod() (string, error) {
 	// Create *uint16 to hold result
 	var _method *uint16
 
+
 	hr, _, _ := i.Vtbl.GetMethod.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_method)),
+		uintptr(unsafe.Pointer(&_method)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -113,6 +120,7 @@ func (i *ICoreWebView2WebResourceRequest) GetContent() (*IStream, error) {
 }
 
 func (i *ICoreWebView2WebResourceRequest) PutContent(content *IStream) error {
+
 
 	hr, _, _ := i.Vtbl.PutContent.Call(
 		uintptr(unsafe.Pointer(i)),

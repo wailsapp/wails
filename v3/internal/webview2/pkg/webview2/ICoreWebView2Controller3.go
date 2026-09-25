@@ -1,46 +1,57 @@
 //go:build windows
 
 package webview2
-
 import (
-	"syscall"
 	"unsafe"
-
+	"math"
+	"syscall"
 	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Controller3Vtbl struct {
-	IUnknownVtbl
-	GetRasterizationScale              ComProc
-	PutRasterizationScale              ComProc
+	ICoreWebView2Controller2Vtbl
+	GetRasterizationScale ComProc
+	PutRasterizationScale ComProc
 	GetShouldDetectMonitorScaleChanges ComProc
 	PutShouldDetectMonitorScaleChanges ComProc
-	AddRasterizationScaleChanged       ComProc
-	RemoveRasterizationScaleChanged    ComProc
-	GetBoundsMode                      ComProc
-	PutBoundsMode                      ComProc
+	AddRasterizationScaleChanged ComProc
+	RemoveRasterizationScaleChanged ComProc
+	GetBoundsMode ComProc
+	PutBoundsMode ComProc
 }
 
 type ICoreWebView2Controller3 struct {
 	Vtbl *ICoreWebView2Controller3Vtbl
 }
 
-func (i *ICoreWebView2Controller3) AddRef() uintptr {
+func (i *ICoreWebView2Controller3) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Controller3() *ICoreWebView2Controller3 {
+func (i *ICoreWebView2Controller3) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2Controller3 queries the object for its ICoreWebView2Controller3 interface. The receiver
+// is the root of ICoreWebView2Controller3's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Controller) GetICoreWebView2Controller3() (*ICoreWebView2Controller3, error) {
 	var result *ICoreWebView2Controller3
 
 	iidICoreWebView2Controller3 := NewGUID("{f9614724-5d2b-41dc-aef7-73d62b51543b}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Controller3)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 
@@ -57,16 +68,23 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
-	// The double parameter is passed BY VALUE: a pointer here reaches the
-	// callee as a near 0.0 double value, giving a degenerate rasterization
-	// scale (blank content). The per-arch appendDoubleArg helpers pass it
-	// correctly for the target ABI.
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, scale)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
+
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.PutRasterizationScale.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(uint32(math.Float64bits(scale))),
+			uintptr(uint32(math.Float64bits(scale)>>32)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.PutRasterizationScale.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(math.Float64bits(scale)),
+		)
 	}
-	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -85,21 +103,21 @@ func (i *ICoreWebView2Controller3) GetShouldDetectMonitorScaleChanges() (bool, e
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2Controller3) PutShouldDetectMonitorScaleChanges(value bool) error {
-	var intValue uintptr
+
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		intValue = 1
-	} else {
-		intValue = 0
+		_value = 1
 	}
 
 	hr, _, _ := i.Vtbl.PutShouldDetectMonitorScaleChanges.Call(
 		uintptr(unsafe.Pointer(i)),
-		intValue,
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -124,10 +142,22 @@ func (i *ICoreWebView2Controller3) AddRasterizationScaleChanged(eventHandler *IC
 
 func (i *ICoreWebView2Controller3) RemoveRasterizationScaleChanged(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveRasterizationScaleChanged.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveRasterizationScaleChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveRasterizationScaleChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -149,6 +179,7 @@ func (i *ICoreWebView2Controller3) GetBoundsMode() (COREWEBVIEW2_BOUNDS_MODE, er
 }
 
 func (i *ICoreWebView2Controller3) PutBoundsMode(boundsMode COREWEBVIEW2_BOUNDS_MODE) error {
+
 
 	hr, _, _ := i.Vtbl.PutBoundsMode.Call(
 		uintptr(unsafe.Pointer(i)),

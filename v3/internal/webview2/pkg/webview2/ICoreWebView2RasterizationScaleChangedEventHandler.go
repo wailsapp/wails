@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2RasterizationScaleChangedEventHandler struct {
 	impl ICoreWebView2RasterizationScaleChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2RasterizationScaleChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2RasterizationScaleChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2RasterizationScaleChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2RasterizationScaleChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2RasterizationScaleChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2RasterizationScaleChangedEventHandlerIUnknownQueryInterface(th
 }
 
 func ICoreWebView2RasterizationScaleChangedEventHandlerIUnknownAddRef(this *ICoreWebView2RasterizationScaleChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2RasterizationScaleChangedEventHandlerIUnknownRelease(this *ICoreWebView2RasterizationScaleChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2RasterizationScaleChangedEventHandlerInvoke(this *ICoreWebView2RasterizationScaleChangedEventHandler, sender *ICoreWebView2Controller, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2RasterizationScaleChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2RasterizationScaleChangedEventHandlerFn = ICoreWebView2RasterizationScaleChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2RasterizationScaleChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2RasterizationScaleChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2RasterizationScaleChangedEventHandlerIUnknownRelease),

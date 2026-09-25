@@ -1,29 +1,34 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2EnvironmentOptions7Vtbl struct {
 	IUnknownVtbl
 	GetChannelSearchKind ComProc
 	PutChannelSearchKind ComProc
-	GetReleaseChannels   ComProc
-	PutReleaseChannels   ComProc
+	GetReleaseChannels ComProc
+	PutReleaseChannels ComProc
 }
 
 type ICoreWebView2EnvironmentOptions7 struct {
 	Vtbl *ICoreWebView2EnvironmentOptions7Vtbl
 }
 
-func (i *ICoreWebView2EnvironmentOptions7) AddRef() uintptr {
+func (i *ICoreWebView2EnvironmentOptions7) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2EnvironmentOptions7) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2EnvironmentOptions7) GetChannelSearchKind() (COREWEBVIEW2_CHANNEL_SEARCH_KIND, error) {
 
@@ -40,6 +45,7 @@ func (i *ICoreWebView2EnvironmentOptions7) GetChannelSearchKind() (COREWEBVIEW2_
 }
 
 func (i *ICoreWebView2EnvironmentOptions7) PutChannelSearchKind(value COREWEBVIEW2_CHANNEL_SEARCH_KIND) error {
+
 
 	hr, _, _ := i.Vtbl.PutChannelSearchKind.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -66,6 +72,7 @@ func (i *ICoreWebView2EnvironmentOptions7) GetReleaseChannels() (COREWEBVIEW2_RE
 }
 
 func (i *ICoreWebView2EnvironmentOptions7) PutReleaseChannels(value COREWEBVIEW2_RELEASE_CHANNELS) error {
+
 
 	hr, _, _ := i.Vtbl.PutReleaseChannels.Call(
 		uintptr(unsafe.Pointer(i)),

@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ZoomFactorChangedEventHandler struct {
 	impl ICoreWebView2ZoomFactorChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2ZoomFactorChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2ZoomFactorChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ZoomFactorChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ZoomFactorChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2ZoomFactorChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ZoomFactorChangedEventHandlerIUnknownQueryInterface(this *ICor
 }
 
 func ICoreWebView2ZoomFactorChangedEventHandlerIUnknownAddRef(this *ICoreWebView2ZoomFactorChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ZoomFactorChangedEventHandlerIUnknownRelease(this *ICoreWebView2ZoomFactorChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ZoomFactorChangedEventHandlerInvoke(this *ICoreWebView2ZoomFactorChangedEventHandler, sender *ICoreWebView2Controller, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ZoomFactorChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2ZoomFactorChangedEventHandlerFn = ICoreWebView2ZoomFactorChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ZoomFactorChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ZoomFactorChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ZoomFactorChangedEventHandlerIUnknownRelease),

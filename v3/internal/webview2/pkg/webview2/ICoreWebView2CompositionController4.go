@@ -1,18 +1,17 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2CompositionController4Vtbl struct {
-	IUnknownVtbl
-	GetNonClientRegionAtPoint    ComProc
-	QueryNonClientRegion         ComProc
-	AddNonClientRegionChanged    ComProc
+	ICoreWebView2CompositionController3Vtbl
+	GetNonClientRegionAtPoint ComProc
+	QueryNonClientRegion ComProc
+	AddNonClientRegionChanged ComProc
 	RemoveNonClientRegionChanged ComProc
 }
 
@@ -20,32 +19,56 @@ type ICoreWebView2CompositionController4 struct {
 	Vtbl *ICoreWebView2CompositionController4Vtbl
 }
 
-func (i *ICoreWebView2CompositionController4) AddRef() uintptr {
+func (i *ICoreWebView2CompositionController4) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2CompositionController4() *ICoreWebView2CompositionController4 {
+func (i *ICoreWebView2CompositionController4) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2CompositionController4 queries the object for its ICoreWebView2CompositionController4 interface. The receiver
+// is the root of ICoreWebView2CompositionController4's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2CompositionController) GetICoreWebView2CompositionController4() (*ICoreWebView2CompositionController4, error) {
 	var result *ICoreWebView2CompositionController4
 
 	iidICoreWebView2CompositionController4 := NewGUID("{7C367B9B-3D2B-450F-9E58-D61A20F486AA}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2CompositionController4)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2CompositionController4) GetNonClientRegionAtPoint(point POINT) (COREWEBVIEW2_NON_CLIENT_REGION_KIND, error) {
 
 	var value COREWEBVIEW2_NON_CLIENT_REGION_KIND
-
-	hr, _, _ := i.Vtbl.GetNonClientRegionAtPoint.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&point)),
-		uintptr(unsafe.Pointer(&value)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.GetNonClientRegionAtPoint.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&point)))[1]),
+			uintptr(unsafe.Pointer(&value)),
+		)
+	default:
+		hr, _, _ = i.Vtbl.GetNonClientRegionAtPoint.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&point))),
+			uintptr(unsafe.Pointer(&value)),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
@@ -84,10 +107,22 @@ func (i *ICoreWebView2CompositionController4) AddNonClientRegionChanged(eventHan
 
 func (i *ICoreWebView2CompositionController4) RemoveNonClientRegionChanged(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveNonClientRegionChanged.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveNonClientRegionChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveNonClientRegionChanged.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

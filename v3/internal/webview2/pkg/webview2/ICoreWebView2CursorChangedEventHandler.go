@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2CursorChangedEventHandler struct {
 	impl ICoreWebView2CursorChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2CursorChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2CursorChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2CursorChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2CursorChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2CursorChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2CursorChangedEventHandlerIUnknownQueryInterface(this *ICoreWeb
 }
 
 func ICoreWebView2CursorChangedEventHandlerIUnknownAddRef(this *ICoreWebView2CursorChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2CursorChangedEventHandlerIUnknownRelease(this *ICoreWebView2CursorChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2CursorChangedEventHandlerInvoke(this *ICoreWebView2CursorChangedEventHandler, sender *ICoreWebView2CompositionController, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2CursorChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2CursorChangedEventHandlerFn = ICoreWebView2CursorChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2CursorChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2CursorChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2CursorChangedEventHandlerIUnknownRelease),

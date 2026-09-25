@@ -1,28 +1,33 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2FrameInfoCollectionIteratorVtbl struct {
 	IUnknownVtbl
 	GetHasCurrent ComProc
-	GetCurrent    ComProc
-	MoveNext      ComProc
+	GetCurrent ComProc
+	MoveNext ComProc
 }
 
 type ICoreWebView2FrameInfoCollectionIterator struct {
 	Vtbl *ICoreWebView2FrameInfoCollectionIteratorVtbl
 }
 
-func (i *ICoreWebView2FrameInfoCollectionIterator) AddRef() uintptr {
+func (i *ICoreWebView2FrameInfoCollectionIterator) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2FrameInfoCollectionIterator) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2FrameInfoCollectionIterator) GetHasCurrent() (bool, error) {
 	// Create int32 to hold bool result
@@ -36,7 +41,7 @@ func (i *ICoreWebView2FrameInfoCollectionIterator) GetHasCurrent() (bool, error)
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -66,6 +71,6 @@ func (i *ICoreWebView2FrameInfoCollectionIterator) MoveNext() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }

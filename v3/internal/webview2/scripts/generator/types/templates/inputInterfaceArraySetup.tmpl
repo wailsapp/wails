@@ -1,0 +1,5 @@
+	// Convert {{.Param.GoType}} '{{.Param.Name}}' to a pointer to its first element (T**)
+	var {{.Param.LocalName}} *{{.Param.ArrayElementType}}
+	if len({{.Param.Name}}) > 0 {
+		{{.Param.LocalName}} = &{{.Param.Name}}[0]
+	}

@@ -1,19 +1,18 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2WebResourceRequestedEventArgsVtbl struct {
 	IUnknownVtbl
-	GetRequest         ComProc
-	GetResponse        ComProc
-	PutResponse        ComProc
-	GetDeferral        ComProc
+	GetRequest ComProc
+	GetResponse ComProc
+	PutResponse ComProc
+	GetDeferral ComProc
 	GetResourceContext ComProc
 }
 
@@ -21,10 +20,16 @@ type ICoreWebView2WebResourceRequestedEventArgs struct {
 	Vtbl *ICoreWebView2WebResourceRequestedEventArgsVtbl
 }
 
-func (i *ICoreWebView2WebResourceRequestedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2WebResourceRequestedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2WebResourceRequestedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2WebResourceRequestedEventArgs) GetRequest() (*ICoreWebView2WebResourceRequest, error) {
 
@@ -55,6 +60,7 @@ func (i *ICoreWebView2WebResourceRequestedEventArgs) GetResponse() (*ICoreWebVie
 }
 
 func (i *ICoreWebView2WebResourceRequestedEventArgs) PutResponse(response *ICoreWebView2WebResourceResponse) error {
+
 
 	hr, _, _ := i.Vtbl.PutResponse.Call(
 		uintptr(unsafe.Pointer(i)),

@@ -1,50 +1,61 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Frame2Vtbl struct {
-	IUnknownVtbl
-	AddNavigationStarting     ComProc
-	RemoveNavigationStarting  ComProc
-	AddContentLoading         ComProc
-	RemoveContentLoading      ComProc
-	AddNavigationCompleted    ComProc
+	ICoreWebView2FrameVtbl
+	AddNavigationStarting ComProc
+	RemoveNavigationStarting ComProc
+	AddContentLoading ComProc
+	RemoveContentLoading ComProc
+	AddNavigationCompleted ComProc
 	RemoveNavigationCompleted ComProc
-	AddDOMContentLoaded       ComProc
-	RemoveDOMContentLoaded    ComProc
-	ExecuteScript             ComProc
-	PostWebMessageAsJson      ComProc
-	PostWebMessageAsString    ComProc
-	AddWebMessageReceived     ComProc
-	RemoveWebMessageReceived  ComProc
+	AddDOMContentLoaded ComProc
+	RemoveDOMContentLoaded ComProc
+	ExecuteScript ComProc
+	PostWebMessageAsJson ComProc
+	PostWebMessageAsString ComProc
+	AddWebMessageReceived ComProc
+	RemoveWebMessageReceived ComProc
 }
 
 type ICoreWebView2Frame2 struct {
 	Vtbl *ICoreWebView2Frame2Vtbl
 }
 
-func (i *ICoreWebView2Frame2) AddRef() uintptr {
+func (i *ICoreWebView2Frame2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Frame2() *ICoreWebView2Frame2 {
+func (i *ICoreWebView2Frame2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2Frame2 queries the object for its ICoreWebView2Frame2 interface. The receiver
+// is the root of ICoreWebView2Frame2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Frame) GetICoreWebView2Frame2() (*ICoreWebView2Frame2, error) {
 	var result *ICoreWebView2Frame2
 
 	iidICoreWebView2Frame2 := NewGUID("{7a6a5834-d185-4dbf-b63f-4a9bc43107d4}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Frame2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Frame2) AddNavigationStarting(eventHandler *ICoreWebView2FrameNavigationStartingEventHandler) (EventRegistrationToken, error) {
 
@@ -63,10 +74,22 @@ func (i *ICoreWebView2Frame2) AddNavigationStarting(eventHandler *ICoreWebView2F
 
 func (i *ICoreWebView2Frame2) RemoveNavigationStarting(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveNavigationStarting.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveNavigationStarting.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveNavigationStarting.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -90,10 +113,22 @@ func (i *ICoreWebView2Frame2) AddContentLoading(eventHandler *ICoreWebView2Frame
 
 func (i *ICoreWebView2Frame2) RemoveContentLoading(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveContentLoading.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveContentLoading.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveContentLoading.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -117,10 +152,22 @@ func (i *ICoreWebView2Frame2) AddNavigationCompleted(eventHandler *ICoreWebView2
 
 func (i *ICoreWebView2Frame2) RemoveNavigationCompleted(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveNavigationCompleted.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveNavigationCompleted.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveNavigationCompleted.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -144,10 +191,22 @@ func (i *ICoreWebView2Frame2) AddDOMContentLoaded(eventHandler *ICoreWebView2Fra
 
 func (i *ICoreWebView2Frame2) RemoveDOMContentLoaded(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveDOMContentLoaded.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveDOMContentLoaded.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveDOMContentLoaded.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -226,10 +285,22 @@ func (i *ICoreWebView2Frame2) AddWebMessageReceived(handler *ICoreWebView2FrameW
 
 func (i *ICoreWebView2Frame2) RemoveWebMessageReceived(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveWebMessageReceived.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveWebMessageReceived.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveWebMessageReceived.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

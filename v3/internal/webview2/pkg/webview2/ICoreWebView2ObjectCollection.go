@@ -1,15 +1,14 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ObjectCollectionVtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ObjectCollectionViewVtbl
 	RemoveValueAtIndex ComProc
 	InsertValueAtIndex ComProc
 }
@@ -18,28 +17,41 @@ type ICoreWebView2ObjectCollection struct {
 	Vtbl *ICoreWebView2ObjectCollectionVtbl
 }
 
-func (i *ICoreWebView2ObjectCollection) AddRef() uintptr {
+func (i *ICoreWebView2ObjectCollection) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2ObjectCollection() *ICoreWebView2ObjectCollection {
+func (i *ICoreWebView2ObjectCollection) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2ObjectCollection queries the object for its ICoreWebView2ObjectCollection interface. The receiver
+// is the root of ICoreWebView2ObjectCollection's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2ObjectCollectionView) GetICoreWebView2ObjectCollection() (*ICoreWebView2ObjectCollection, error) {
 	var result *ICoreWebView2ObjectCollection
 
 	iidICoreWebView2ObjectCollection := NewGUID("{5cfec11c-25bd-4e8d-9e1a-7acdaeeec047}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2ObjectCollection)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2ObjectCollection) RemoveValueAtIndex(index uint32) error {
 
+
 	hr, _, _ := i.Vtbl.RemoveValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&index)),
+		uintptr(index),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -49,9 +61,10 @@ func (i *ICoreWebView2ObjectCollection) RemoveValueAtIndex(index uint32) error {
 
 func (i *ICoreWebView2ObjectCollection) InsertValueAtIndex(index uint32, value *IUnknown) error {
 
+
 	hr, _, _ := i.Vtbl.InsertValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&index)),
+		uintptr(index),
 		uintptr(unsafe.Pointer(value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {

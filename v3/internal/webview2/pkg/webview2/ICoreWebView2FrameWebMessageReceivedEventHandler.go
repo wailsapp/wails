@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2FrameWebMessageReceivedEventHandler struct {
 	impl ICoreWebView2FrameWebMessageReceivedEventHandlerImpl
 }
 
-func (i *ICoreWebView2FrameWebMessageReceivedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2FrameWebMessageReceivedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2FrameWebMessageReceivedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2FrameWebMessageReceivedEventHandlerIUnknownQueryInterface(this *ICoreWebView2FrameWebMessageReceivedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2FrameWebMessageReceivedEventHandlerIUnknownQueryInterface(this
 }
 
 func ICoreWebView2FrameWebMessageReceivedEventHandlerIUnknownAddRef(this *ICoreWebView2FrameWebMessageReceivedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2FrameWebMessageReceivedEventHandlerIUnknownRelease(this *ICoreWebView2FrameWebMessageReceivedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2FrameWebMessageReceivedEventHandlerInvoke(this *ICoreWebView2FrameWebMessageReceivedEventHandler, sender *ICoreWebView2Frame, args *ICoreWebView2WebMessageReceivedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2FrameWebMessageReceivedEventHandlerImpl interface {
 }
 
 var ICoreWebView2FrameWebMessageReceivedEventHandlerFn = ICoreWebView2FrameWebMessageReceivedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2FrameWebMessageReceivedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2FrameWebMessageReceivedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2FrameWebMessageReceivedEventHandlerIUnknownRelease),

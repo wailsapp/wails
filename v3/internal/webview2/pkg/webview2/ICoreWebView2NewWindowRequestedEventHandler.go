@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2NewWindowRequestedEventHandler struct {
 	impl ICoreWebView2NewWindowRequestedEventHandlerImpl
 }
 
-func (i *ICoreWebView2NewWindowRequestedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2NewWindowRequestedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2NewWindowRequestedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2NewWindowRequestedEventHandlerIUnknownQueryInterface(this *ICoreWebView2NewWindowRequestedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2NewWindowRequestedEventHandlerIUnknownQueryInterface(this *ICo
 }
 
 func ICoreWebView2NewWindowRequestedEventHandlerIUnknownAddRef(this *ICoreWebView2NewWindowRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2NewWindowRequestedEventHandlerIUnknownRelease(this *ICoreWebView2NewWindowRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2NewWindowRequestedEventHandlerInvoke(this *ICoreWebView2NewWindowRequestedEventHandler, sender *ICoreWebView2, args *ICoreWebView2NewWindowRequestedEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2NewWindowRequestedEventHandlerImpl interface {
 }
 
 var ICoreWebView2NewWindowRequestedEventHandlerFn = ICoreWebView2NewWindowRequestedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2NewWindowRequestedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2NewWindowRequestedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2NewWindowRequestedEventHandlerIUnknownRelease),

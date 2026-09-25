@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2EstimatedEndTimeChangedEventHandler struct {
 	impl ICoreWebView2EstimatedEndTimeChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2EstimatedEndTimeChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2EstimatedEndTimeChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2EstimatedEndTimeChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2EstimatedEndTimeChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2EstimatedEndTimeChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2EstimatedEndTimeChangedEventHandlerIUnknownQueryInterface(this
 }
 
 func ICoreWebView2EstimatedEndTimeChangedEventHandlerIUnknownAddRef(this *ICoreWebView2EstimatedEndTimeChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2EstimatedEndTimeChangedEventHandlerIUnknownRelease(this *ICoreWebView2EstimatedEndTimeChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2EstimatedEndTimeChangedEventHandlerInvoke(this *ICoreWebView2EstimatedEndTimeChangedEventHandler, sender *ICoreWebView2DownloadOperation, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2EstimatedEndTimeChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2EstimatedEndTimeChangedEventHandlerFn = ICoreWebView2EstimatedEndTimeChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2EstimatedEndTimeChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2EstimatedEndTimeChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2EstimatedEndTimeChangedEventHandlerIUnknownRelease),

@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler struct {
 	impl ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerIUnknownQueryInt
 }
 
 func ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerIUnknownAddRef(this *ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerIUnknownRelease(this *ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerInvoke(this *ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandler, sender *ICoreWebView2, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerFn = ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2IsDefaultDownloadDialogOpenChangedEventHandlerIUnknownRelease),

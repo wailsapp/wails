@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ScreenCaptureStartingEventHandler struct {
 	impl ICoreWebView2ScreenCaptureStartingEventHandlerImpl
 }
 
-func (i *ICoreWebView2ScreenCaptureStartingEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2ScreenCaptureStartingEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ScreenCaptureStartingEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ScreenCaptureStartingEventHandlerIUnknownQueryInterface(this *ICoreWebView2ScreenCaptureStartingEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ScreenCaptureStartingEventHandlerIUnknownQueryInterface(this *
 }
 
 func ICoreWebView2ScreenCaptureStartingEventHandlerIUnknownAddRef(this *ICoreWebView2ScreenCaptureStartingEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ScreenCaptureStartingEventHandlerIUnknownRelease(this *ICoreWebView2ScreenCaptureStartingEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ScreenCaptureStartingEventHandlerInvoke(this *ICoreWebView2ScreenCaptureStartingEventHandler, sender *ICoreWebView2, args *ICoreWebView2ScreenCaptureStartingEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ScreenCaptureStartingEventHandlerImpl interface {
 }
 
 var ICoreWebView2ScreenCaptureStartingEventHandlerFn = ICoreWebView2ScreenCaptureStartingEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ScreenCaptureStartingEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ScreenCaptureStartingEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ScreenCaptureStartingEventHandlerIUnknownRelease),
