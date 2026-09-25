@@ -2,10 +2,10 @@
   {
     "language": "de",
     "file": "_nav.yaml",
-    "segment": "nav-label-095",
+    "segment": "nav-label-096",
     "code": "untranslated",
-    "sourceSHA256": "f1f7722f293f0504510c1012f9ddd1e511af23c9d30bcf3cae2a9a9bde6fc32b",
-    "targetSHA256": "a0b98328d95e3bb34dbf58a6e093f8887cf7324d0cb41db68cb6e48367d17e48",
+    "sourceSHA256": "9fbb729eb2bc015cfdf3f0c3fb0bfdefe8a154196ea47520f9fc83305ca52f11",
+    "targetSHA256": "826c37fd5b25e44424c5308cf5637dbcb5a6ace7336485a7ea7ea1073b4e6711",
     "reason": "Reviewed unchanged text: WML (Wails Markup). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -11767,26 +11767,26 @@
     "file": "quick-start/installation.md",
     "segment": "b0012-text-01",
     "code": "untranslated",
-    "sourceSHA256": "019b56dbe1acefbca8d2936492204c324d2fba6d036fe0b72cb47b293de5f617",
-    "targetSHA256": "b09d7cfd4c8328a7a186594118997d1a11406aae667dc32577d81c38d394fb73",
+    "sourceSHA256": "efa73b6bf9fee59173f1e324cecde8b4925118ea8632013ccf044f3d5afc7d64",
+    "targetSHA256": "9f9795bd770d80940bc6f6780ffe52638929d94fc56a2e75dbd315f8c8e155ee",
     "reason": "Reviewed unchanged text: *Option 2: Homebrew*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "de",
     "file": "quick-start/installation.md",
-    "segment": "b0050-text-01",
+    "segment": "b0051-text-01",
     "code": "untranslated",
-    "sourceSHA256": "019b56dbe1acefbca8d2936492204c324d2fba6d036fe0b72cb47b293de5f617",
-    "targetSHA256": "b09d7cfd4c8328a7a186594118997d1a11406aae667dc32577d81c38d394fb73",
+    "sourceSHA256": "efa73b6bf9fee59173f1e324cecde8b4925118ea8632013ccf044f3d5afc7d64",
+    "targetSHA256": "9f9795bd770d80940bc6f6780ffe52638929d94fc56a2e75dbd315f8c8e155ee",
     "reason": "Reviewed unchanged text: *Option 2: Homebrew*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "de",
     "file": "quick-start/installation.md",
-    "segment": "b0052-text-01",
+    "segment": "b0053-text-01",
     "code": "untranslated",
-    "sourceSHA256": "019b56dbe1acefbca8d2936492204c324d2fba6d036fe0b72cb47b293de5f617",
-    "targetSHA256": "b09d7cfd4c8328a7a186594118997d1a11406aae667dc32577d81c38d394fb73",
+    "sourceSHA256": "efa73b6bf9fee59173f1e324cecde8b4925118ea8632013ccf044f3d5afc7d64",
+    "targetSHA256": "9f9795bd770d80940bc6f6780ffe52638929d94fc56a2e75dbd315f8c8e155ee",
     "reason": "Reviewed unchanged text: *Option 1: NodeSource*. This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {

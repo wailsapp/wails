@@ -188,6 +188,8 @@ Execute `wails3 doctor` após instalar o Wails — ele mostrará os pacotes exat
 
 @end
 
+Aplicativos que reproduzem áudio ou vídeo também precisam dos codecs GStreamer para os formatos escolhidos. Consulte [Reproduzir áudio e vídeo locais](/guides/linux-media/) para configuração e solução de problemas de reprodução local.
+
 @note{type="info" title="Pilha GTK3 legada"}
 Se a distribuição de destino ainda não fornecer o WebKitGTK 6.0 (por exemplo, Ubuntu 22.04 LTS, Debian 12), instale as bibliotecas de desenvolvimento do GTK3 + WebKit2GTK 4.1 (`libgtk-3-dev libwebkit2gtk-4.1-dev` no Debian/Ubuntu; equivalentes em outras distribuições) e compile com `wails3 build -tags gtk3`. O caminho legado será compatível durante toda a série v3.0.x e será removido na v3.1. Consulte [Empacotamento para Linux — compatibilidade com GTK3 legado](/guides/build/linux/#legacy-gtk3-support) para obter detalhes.
 

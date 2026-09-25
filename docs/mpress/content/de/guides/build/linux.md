@@ -154,7 +154,17 @@ go build -tags gtk3 -o myapp .
 
 Führen Sie `wails3 doctor` aus, um Ihre Konfiguration zu überprüfen. Ohne Flags wird nach GTK4/WebKitGTK 6.0 gesucht (Standardeinstellung). Die veralteten GTK3-/WebKit2GTK-4.1-Pakete werden als optional aufgeführt.
 
+## Audio und Video
+
+Verwenden Sie für eingebundene Clips `Media.SetSource` und `Media.ClearSource` wie unter [Lokale Audio- und Videodateien abspielen](/guides/linux-media/) beschrieben. Die Anleitung behandelt das Registrieren eines Mediendateisystems, das Abbrechen von Ladevorgängen, die Freigabe von Blobs und Größenbeschränkungen. Die Übertragung nutzt Wails-Streams ohne lauschenden Socket; jeder Clip wird vor der Wiedergabe vollständig geladen, bei einer standardmäßigen Frontend-Grenze von 32 MiB.
+
+Nehmen Sie die für Ihre Medienformate benötigten GStreamer-Codecs in die Distributionsanforderungen auf. Eine erfolgreiche Übertragung garantiert nicht, dass das Zielsystem die Datei dekodieren kann. Testen Sie die Wiedergabe auf den unterstützten Linux-Distributionen.
+
 ## Fehlerbehebung
+
+### Lokales Audio oder Video wird nicht abgespielt
+
+Meldet GStreamer **No URI handler implemented for "wails"**, folgen Sie der [Anleitung zur lokalen Medienwiedergabe](/guides/linux-media/). Wird der Clip geladen, aber nicht abgespielt, prüfen Sie die Codec-Anforderungen und das `error`-Ereignis des Players.
 
 ### AppImage wird nicht ausgeführt
 

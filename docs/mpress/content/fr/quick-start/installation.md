@@ -188,6 +188,8 @@ Exécutez `wails3 doctor` après avoir installé Wails : cette commande indiquer
 
 @end
 
+Les applications lisant de l’audio ou de la vidéo ont également besoin des codecs GStreamer correspondant aux formats choisis. Consultez [Lire des fichiers audio et vidéo locaux](/guides/linux-media/) pour la configuration et le dépannage de la lecture locale.
+
 @note{type="info" title="Pile GTK3 héritée"}
 Si votre distribution cible ne fournit pas encore WebKitGTK 6.0 (par exemple Ubuntu 22.04 LTS ou Debian 12), installez plutôt les bibliothèques de développement GTK3 et WebKit2GTK 4.1 (`libgtk-3-dev libwebkit2gtk-4.1-dev` sous Debian/Ubuntu ; leurs équivalents sous les autres distributions), puis compilez avec `wails3 build -tags gtk3`. La voie héritée est prise en charge jusqu’à la branche v3.0.x et sera supprimée dans v3.1. Pour en savoir plus, consultez [Empaquetage sous Linux — prise en charge de l’ancienne pile GTK3](/guides/build/linux/#legacy-gtk3-support).
 
