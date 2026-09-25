@@ -1,134 +1,414 @@
----
-sidebar_position: 2
----
-
-# Creating a Project
-
-## Project Generation
-
-Now that the CLI is installed, you can generate a new project by using the `wails init` command.
-
-:::tip[Performance Tip for Windows 11 Users]
-Consider using [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) to store your projects. Dev Drives are optimized for developer workloads and can significantly improve build times and disk access speeds by up to 30% compared to regular NTFS drives.
-:::
-
-Pick your favourite framework:
-
-```mdx-code-block
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
-<Tabs
-    defaultValue="Svelte"
-    values={[
-        {label: "Svelte", value: "Svelte"},
-        {label: "React", value: "React"},
-        {label: "Vue", value: "Vue"},
-        {label: "Preact", value: "Preact"},
-        {label: "Lit", value: "Lit"},
-        {label: "Vanilla", value: "Vanilla"},
-    ]}
->
-<TabItem value="Svelte">
-    Generate a <a href={"https://svelte.dev/"}>Svelte</a> project using JavaScript with:<br/><br/>
-
-    wails init -n myproject -t svelte
-
-If you would rather use TypeScript:<br/>
-
-    wails init -n myproject -t svelte-ts
-
-</TabItem>
-<TabItem value="React">
-    Generate a <a href={"https://reactjs.org/"}>React</a> project using JavaScript with:<br/><br/>
-
-    wails init -n myproject -t react
-
-If you would rather use TypeScript:<br/>
-
-    wails init -n myproject -t react-ts
-
-</TabItem>
-<TabItem value="Vue">
-    Generate a <a href={"https://vuejs.org/"}>Vue</a> project using JavaScript with:<br/><br/>
-
-    wails init -n myproject -t vue
-
-If you would rather use TypeScript:<br/>
-
-    wails init -n myproject -t vue-ts
-
-</TabItem>
-<TabItem value="Preact">
-    Generate a <a href={"https://preactjs.com/"}>Preact</a> project using JavaScript with:<br/><br/>
-
-    wails init -n myproject -t preact
-
-If you would rather use TypeScript:<br/>
-
-    wails init -n myproject -t preact-ts
-
-</TabItem>
-<TabItem value="Lit">
-    Generate a <a href={"https://lit.dev/"}>Lit</a> project using JavaScript with:<br/><br/>
-
-    wails init -n myproject -t lit
-
-If you would rather use TypeScript:<br/>
-
-    wails init -n myproject -t lit-ts
-
-</TabItem>
-<TabItem value="Vanilla">
-    Generate a Vanilla project using JavaScript with:<br/><br/>
-
-    wails init -n myproject -t vanilla
-
-If you would rather use TypeScript:<br/>
-
-    wails init -n myproject -t vanilla-ts
-
-</TabItem>
-</Tabs>
-```
-
-<hr />
-
-There are also [community templates](../community/templates.mdx) available that offer different capabilities and frameworks.
-
-To see the other options available, you can run `wails init -help`.
-More details can be found in the [CLI Reference](../reference/cli.mdx#init).
-
-## Project Layout
-
-Wails projects have the following layout:
-
-```
-.
-├── build/
-│   ├── appicon.png
-│   ├── darwin/
-│   └── windows/
-├── frontend/
-├── go.mod
-├── go.sum
+naver-keyword-tool/
+├── app.go
 ├── main.go
-└── wails.json
-```
+├── go.mod
+├── scraper/
+│   └── naver.go
+└── frontend/
+    └── src/
+        ├── App.svelte
+        └── lib/
+package main
 
-### Project structure rundown
+type Product struct {
+	Rank     int      `json:"rank"`
+	Title    string   `json:"title"`
+	Price    string   `json:"price"`
+	Link     string   `json:"link"`
+	Tags     []string `json:"tags"`
+	Ad       bool     `json:"ad"`
+}
 
-- `/main.go` - The main application
-- `/frontend/` - Frontend project files
-- `/build/` - Project build directory
-- `/build/appicon.png` - The application icon
-- `/build/darwin/` - Mac specific project files
-- `/build/windows/` - Windows specific project files
-- `/wails.json` - The project configuration
-- `/go.mod` - Go module file
-- `/go.sum` - Go module checksum file
+type SearchResult struct {
+	Keyword  string    `json:"keyword"`
+	Products []Product `json:"products"`
+}
+package main
 
-The `frontend` directory has nothing specific to Wails and can be any frontend project of your choosing.
+import (
+	"context"
+)
 
-The `build` directory is used during the build process. These files may be updated to customise your builds. If
-files are removed from the build directory, default versions will be regenerated.
+type App struct {
+	ctx context.Context
+}
+
+func NewApp() *App {
+	return &App{}
+}
+
+func (a *App) startup(ctx context.Context) {
+	a.ctx = ctx
+}
+
+func (a *App) SearchNaver(keyword string) (*SearchResult, error) {
+
+	// 실제 네이버 검색 수집 로직
+	products, err := SearchProducts(keyword)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &SearchResult{
+		Keyword:  keyword,
+		Products: products,
+	}, nil
+}
+func SearchProducts(keyword string) ([]Product, error) {
+
+	url := "https://search.shopping.naver.com/search/all?query=" +
+		url.QueryEscape(keyword)
+
+	// 브라우저 실행
+	// 페이지 이동
+	// 상품 영역 로딩 대기
+	// 상품 DOM 추출
+
+	// ...
+
+	return products, nil
+}
+func IsAdvertisement(text string) bool {
+
+	adKeywords := []string{
+		"광고",
+		"AD",
+		"Sponsored",
+	}
+
+	for _, keyword := range adKeywords {
+		if strings.Contains(
+			strings.ToLower(text),
+			strings.ToLower(keyword),
+		) {
+			return true
+		}
+	}
+
+	return false
+}
+filtered := []Product{}
+
+for _, product := range products {
+
+	if IsAdvertisement(product.Title) {
+		continue
+	}
+
+	product.Rank = len(filtered) + 1
+
+	filtered = append(filtered, product)
+
+	if len(filtered) >= 10 {
+		break
+	}
+}
+광고
+광고
+상품 A
+상품 B
+상품 C
+...
+1위 상품 A
+2위 상품 B
+3위 상품 C
+...
+10위 상품
+삼성전자 갤럭시북5 프로 16인치 노트북 울트라7
+삼성전자
+갤럭시북5
+프로
+16인치
+노트북
+울트라7
+func ExtractTags(title string) []string {
+
+	title = strings.ReplaceAll(title, "[", " ")
+	title = strings.ReplaceAll(title, "]", " ")
+	title = strings.ReplaceAll(title, "(", " ")
+	title = strings.ReplaceAll(title, ")", " ")
+	title = strings.ReplaceAll(title, "/", " ")
+
+	words := strings.Fields(title)
+
+	seen := make(map[string]bool)
+	tags := []string{}
+
+	for _, word := range words {
+
+		if len([]rune(word)) < 2 {
+			continue
+		}
+
+		if seen[word] {
+			continue
+		}
+
+		seen[word] = true
+		tags = append(tags, word)
+	}
+
+	return tags
+}
+{
+  "rank": 1,
+  "title": "삼성전자 갤럭시북5 프로 16인치 노트북",
+  "tags": [
+    "삼성전자",
+    "갤럭시북5",
+    "프로",
+    "16인치",
+    "노트북"
+  ]
+}
+<script>
+    import { SearchNaver } from "../wailsjs/go/main/App";
+
+    let keyword = "";
+    let loading = false;
+    let result = null;
+    let error = "";
+
+    async function search() {
+
+        if (!keyword.trim()) {
+            return;
+        }
+
+        loading = true;
+        error = "";
+
+        try {
+
+            result = await SearchNaver(keyword);
+
+        } catch (e) {
+
+            console.error(e);
+            error = "검색 중 오류가 발생했습니다.";
+
+        } finally {
+
+            loading = false;
+        }
+    }
+</script>
+
+<div class="container">
+
+    <h1>네이버 쇼핑 키워드 분석기</h1>
+
+    <div class="search-box">
+
+        <input
+            bind:value={keyword}
+            placeholder="검색 키워드를 입력하세요"
+            on:keydown={(e) => e.key === "Enter" && search()}
+        />
+
+        <button on:click={search} disabled={loading}>
+
+            {loading ? "검색 중..." : "검색"}
+
+        </button>
+
+    </div>
+
+    {#if error}
+        <div class="error">
+            {error}
+        </div>
+    {/if}
+
+    {#if result}
+
+        <h2>
+            "{result.keyword}" 검색 결과
+        </h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>순위</th>
+                    <th>상품명</th>
+                    <th>가격</th>
+                    <th>태그</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {#each result.products as product}
+
+                    <tr>
+
+                        <td>
+                            {product.rank}
+                        </td>
+
+                        <td>
+                            {product.title}
+                        </td>
+
+                        <td>
+                            {product.price}
+                        </td>
+
+                        <td>
+
+                            {#each product.tags as tag}
+
+                                <span class="tag">
+                                    #{tag}
+                                </span>
+
+                            {/each}
+
+                        </td>
+
+                    </tr>
+
+                {/each}
+
+            </tbody>
+
+        </table>
+
+    {/if}
+
+</div>
+.container {
+    width: 1100px;
+    margin: 40px auto;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    margin-bottom: 30px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.search-box button {
+    width: 120px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 14px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+th {
+    background: #f5f5f5;
+}
+
+.tag {
+    display: inline-block;
+    margin: 3px;
+    padding: 5px 8px;
+    background: #f1f1f1;
+    border-radius: 5px;
+    font-size: 13px;
+}
+
+.error {
+    padding: 15px;
+    background: #ffecec;
+    color: #c00;
+}
+무선청소기
+삼성전자 BESPOKE 무선청소기 220W
+LG 코드제로 오브제컬렉션 무선청소기
+샤오미 미지아 무선청소기
+다이슨 V12 무선청소기
+무선청소기
+삼성전자
+LG
+코드제로
+오브제컬렉션
+샤오미
+미지아
+다이슨
+V12
+220W
+무선청소기     10
+삼성전자        4
+LG              3
+코드제로        3
+다이슨          2
+샤오미          2
+220W            2
+...
+┌─────────────────────────────────────────┐
+│        네이버 쇼핑 키워드 분석기         │
+├─────────────────────────────────────────┤
+│                                         │
+│ [ 무선청소기                         ] │
+│                         [ 검색 ]        │
+│                                         │
+├─────────────────────────────────────────┤
+│ 검색 결과                               │
+│                                         │
+│ 1위  삼성전자 BESPOKE 무선청소기        │
+│     #삼성전자 #BESPOKE #무선청소기      │
+│                                         │
+│ 2위  LG 코드제로 무선청소기             │
+│     #LG #코드제로 #무선청소기            │
+│                                         │
+│ ...                                     │
+│                                         │
+│ 10위                                     │
+├─────────────────────────────────────────┤
+│                                         │
+│ 🔥 상위 상품 공통 키워드                 │
+│                                         │
+│ #무선청소기 #삼성전자 #LG #코드제로      │
+│ #다이슨 #샤오미 #220W                    │
+│                                         │
+│             [태그 복사] [CSV 저장]       │
+└─────────────────────────────────────────┘
+키워드 입력
+     ↓
+검색
+     ↓
+상품 30~50개 수집
+     ↓
+광고/원치 않는 상품 제외
+     ↓
+실제 표시 순서 기준 상위 10개
+     ↓
+상품명 형태소/단어 분석
+     ↓
+중복 키워드 제거
+     ↓
+빈도수 계산
+     ↓
+핵심 태그 10~30개
+     ↓
+[전체 복사]
+[CSV 저장]
