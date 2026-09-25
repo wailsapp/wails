@@ -1,0 +1,80 @@
+# Lightweight per-PR mobile compile check.
+#
+# The full mobile cross-compile lives in cross-compile-test-v3.yml and, like the
+# desktop cross-compile, runs on PR approval (it does a full `task <os>:build`).
+# This companion workflow gives fast per-PR feedback: a pure package compile of
+# pkg/application (which contains all the mobile-tagged Go plus the Objective-C
+# iOS app delegate) for android/arm64 and ios/arm64. It catches compile/link
+# regressions in seconds without npm, Gradle, or the Xcode overlay pipeline.
+#
+# Both toolchains ship preinstalled on the GitHub-hosted runners:
+#   - ubuntu-latest: Android SDK + NDK (cross-compile from Linux via the NDK)
+#   - macos-latest:  Xcode + iOS SDK (the only target that needs a Mac)
+
+name: Mobile Compile Check (pkg/application only)
+
+on:
+  pull_request:
+    paths:
+      - 'v3/**'
+      - '.github/workflows/mobile-compile-check.yml'
+  workflow_dispatch:
+
+jobs:
+  compile:
+    name: Compile pkg/application (${{ matrix.target_os }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target_os: android
+            runner: ubuntu-latest
+          - target_os: ios
+            runner: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: |
+            v3/go.sum
+            go.work.sum
+
+      - name: Compile for Android (arm64)
+        if: matrix.target_os == 'android'
+        working-directory: v3
+        run: |
+          set -euo pipefail
+          NDK="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_ROOT}"
+          echo "Using preinstalled Android NDK: $NDK"
+          export GOOS=android
+          export GOARCH=arm64
+          export CGO_ENABLED=1
+          export CC="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang"
+          echo "Compiling pkg/application for android/arm64..."
+          go build ./pkg/application/
+          echo "Android compile OK"
+
+      - name: Compile for iOS (arm64)
+        if: matrix.target_os == 'ios'
+        working-directory: v3
+        run: |
+          set -euo pipefail
+          SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path)"
+          echo "iPhoneOS SDK: $SDK_PATH"
+          export GOOS=ios
+          export GOARCH=arm64
+          export CGO_ENABLED=1
+          export CGO_CFLAGS="-isysroot ${SDK_PATH} -target arm64-apple-ios15.0"
+          export CGO_LDFLAGS="-isysroot ${SDK_PATH} -target arm64-apple-ios15.0"
+          echo "Compiling pkg/application for ios/arm64..."
+          go build ./pkg/application/
+          echo "iOS compile OK"
