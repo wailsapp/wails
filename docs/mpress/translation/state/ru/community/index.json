@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "d6a0fba96db935aefa28",
+  "sourceFile": "community/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
+      "targetHash": "557e75a8a37ad9dc3764ca41f4af1923539c8aa4895be13b312d6e0df663deb1",
+      "machineHash": "557e75a8a37ad9dc3764ca41f4af1923539c8aa4895be13b312d6e0df663deb1",
+      "machineText": "Сообщество",
+      "status": "final",
+      "sourcePreview": "Community",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "bb501d7877eb7ddbd40baf7990e8058212e8140a2e6ceaaf2d54a6412b770bfd",
+      "targetHash": "557e75a8a37ad9dc3764ca41f4af1923539c8aa4895be13b312d6e0df663deb1",
+      "machineHash": "557e75a8a37ad9dc3764ca41f4af1923539c8aa4895be13b312d6e0df663deb1",
+      "machineText": "Сообщество",
+      "status": "final",
+      "sourcePreview": "Community",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:43Z"
+    }
+  }
+}

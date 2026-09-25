@@ -1,0 +1,47 @@
+name: Wails v3 documentation
+
+on:
+  pull_request:
+    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', '.github/workflows/auto-changelog-v3.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**']
+  push:
+    paths: ['docs/mpress/**', 'mpress.yaml', '.github/workflows/docs-mpress.yml', '.github/workflows/auto-changelog-v3.yml', 'v3/scripts/*changelog*', 'v3/tasks/release/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-mpress-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Build and validate with latest M-Press
+        run: bash docs/mpress/scripts/build.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: wails-v3-docs
+          path: docs/mpress/site/
+          if-no-files-found: error
+
+  automation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: '1.25'
+          cache-dependency-path: v3/go.sum
+      - name: Test documentation and release automation
+        working-directory: v3
+        env:
+          GOWORK: 'off'
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          go test scripts/auto-changelog.go scripts/auto-changelog_test.go
+          go test scripts/validate-changelog.go scripts/validate-changelog_test.go
+          go test ./tasks/release
+          python3 -m unittest discover -s scripts -p 'test_publish_changelog.py'

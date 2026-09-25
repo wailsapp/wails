@@ -1,5 +1,11 @@
 package application
 
+import "errors"
+
+// ErrSecureStorageUnsupported is returned by secure-storage methods on
+// platforms that do not support Keychain/Keystore-backed storage.
+var ErrSecureStorageUnsupported = errors.New("secure storage is not supported on this platform")
+
 // MobileManager is the cross-platform surface common to the iOS and Android
 // native-feature managers. The package-level Mobile singleton implements it,
 // dispatching to the IOS or Android manager on the respective platform and to a
@@ -10,9 +16,9 @@ package application
 // Only capabilities whose signature is identical on both platforms live here.
 // Features that differ in shape between iOS and Android — brightness
 // (float64 vs int), the orientation/brightness getters, notifications
-// (PostNotification vs Notify), SecureSet (key+value vs JSON) and background
-// execution (background task vs foreground service) — are intentionally left
-// off; reach for application.IOS / application.Android directly for those.
+// (PostNotification vs Notify) and background execution (background task vs
+// foreground service) — are intentionally left off; reach for application.IOS /
+// application.Android directly for those.
 //
 // Because both managers must satisfy this interface, adding a method here also
 // guarantees the two platform managers keep that method signature-identical: if
@@ -36,9 +42,15 @@ type MobileManager interface {
 
 	// Permissions / async results (delivered as common:* events)
 	BiometricAuthenticate(reason string)
-	SecureGet(key string) string
-	SecureDelete(key string)
 	GetLocation()
+
+	// Secure storage (Keychain on iOS, Keystore-backed on Android).
+	// An empty stored value is valid (found=true). A missing key returns
+	// ("", false, nil). An empty key is invalid and returns an error.
+	// Delete of a missing key succeeds. Native failures are never masked.
+	SecureSet(key, value string) error
+	SecureGet(key string) (value string, found bool, err error)
+	SecureDelete(key string) error
 
 	// Sensors & hardware
 	Haptic(hapticType string)
