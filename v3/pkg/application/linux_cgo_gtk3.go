@@ -1986,8 +1986,9 @@ func (w *linuxWebviewWindow) reload() {
 }
 
 func (w *linuxWebviewWindow) setZoom(zoom float64) {
-	if zoom < 1 { // 1.0 is the smallest allowable
-		zoom = 1
+	zoom, ok := zoomFactor(zoom, w.parent.options.Frameless)
+	if !ok {
+		return
 	}
 	C.webkit_web_view_set_zoom_level(w.webKitWebView(), C.double(zoom))
 }

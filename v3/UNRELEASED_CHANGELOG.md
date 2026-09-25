@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- `Window.SetZoom` no longer raises factors below 1.0 to 1.0 on framed windows (Windows, macOS, Linux): WebView2 `ZoomFactor`, WKWebView `magnification` and WebKitGTK's zoom level accept any positive value, and the `Zoom` window option already passed such values through. Frameless windows keep the 1.0 floor because their drag and resize regions are not adjusted for zoom ([#4590](https://github.com/wailsapp/wails/issues/4590)); non-positive, NaN and Inf factors are now ignored instead of being raised to 1.0 — by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
