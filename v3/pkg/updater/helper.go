@@ -109,7 +109,23 @@ var swapRetryDelay = 500 * time.Millisecond
 
 // runHelperSwap implements the actual swap logic. It is unexported and
 // dependency-injected so unit tests can drive every branch without process
-// spawning. Returns the exit code the helper should use.
+// spawning. Returns the exit code the helper should use:
+//
+//	 0  swapped and relaunched
+//	10  target missing          11  staged payload missing
+//	12  backup failed (original untouched and relaunched)
+//	13  swap failed; the intact original relaunched, or the backup restored
+//	14  swap failed AND restore failed — the install is broken
+//	15  new application would not launch, backup restored
+//	16  launch failed AND restore failed — the install is broken
+//	17  parent never exited; nothing was touched, original relaunched
+//	18  staged payload was not installable; original untouched and relaunched
+//	19  installed application failed validation, backup restored
+//	20  validation failed AND restore failed — the install is broken
+//
+// Only 14, 16 and 20 leave the user without a working application, and each is
+// a restore that itself failed after an earlier failure. Every other code has
+// either changed nothing or rolled back to what was there before.
 func runHelperSwap(target, newPath string, parentPID int, logPath string, wait processWaiter, l launcher) int {
 	lg := openHelperLog(logPath)
 	defer lg.Close()
@@ -154,6 +170,21 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 	// so both the new application and any recovered original boot normally.
 	clearHelperEnv()
 
+	// Re-validate the payload now the wait is over. The stat at the top of this
+	// function ran before the parent quit, and the parent spends that interval
+	// running its own shutdown — which is ample time for it to have torn the
+	// staging directory down. Because a staged .app is a directory, an emptied
+	// one still renames cleanly, so nothing downstream would notice. The target
+	// has not been touched yet, so there is nothing to undo: relaunch what is
+	// already installed and leave it alone.
+	if err := validatePayload(newPath); err != nil {
+		lg.logf("staged update is not installable: %v — aborting swap", err)
+		if err := l.launch(target); err != nil {
+			lg.logf("relaunch original failed: %v", err)
+		}
+		return 18
+	}
+
 	backup := target + ".bak"
 	_ = os.RemoveAll(backup)
 
@@ -185,8 +216,14 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 	// even with the loader still mapping its image.
 	swapped := false
 	for i := 0; i < 20; i++ {
+		// replaceTarget re-validates the payload on every attempt, immediately
+		// before it disturbs the target. A payload that has stopped being
+		// installable will not recover, so that ends the loop at once.
 		if err := replaceTarget(target, newPath); err != nil {
 			lg.logf("replace (attempt %d): %v", i+1, err)
+			if errors.Is(err, errNotInstallable) {
+				break
+			}
 			time.Sleep(swapRetryDelay)
 			continue
 		}
@@ -228,6 +265,21 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 			return 14
 		}
 		return 13
+	}
+
+	// The payload is now installed, and the backup is still standing. This is
+	// the last moment at which the old application can be recovered, so it is
+	// where the new one has to prove itself — structurally, then against the
+	// signature, which covers every sealed file and so catches damage the
+	// layout check cannot see. The backup is the yardstick for the signature:
+	// a check the original fails is not one the update is held to.
+	if err := validateInstalled(target, backup, lg); err != nil {
+		lg.logf("installed application failed validation: %v — restoring backup", err)
+		if err := restoreFromBackup(backup, target, l); err != nil {
+			lg.logf("restore failed: %v", err)
+			return 20
+		}
+		return 19
 	}
 
 	if err := l.launch(target); err != nil {
