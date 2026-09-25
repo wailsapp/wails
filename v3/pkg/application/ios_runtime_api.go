@@ -14,3 +14,12 @@ func (iosManager) SetBackForwardGesturesEnabled(enabled bool) {
 func (iosManager) SetLinkPreviewEnabled(enabled bool) { iosSetLinkPreviewEnabled(enabled) }
 func (iosManager) SetInspectableEnabled(enabled bool) { iosSetInspectableEnabled(enabled) }
 func (iosManager) SetCustomUserAgent(ua string)       { iosSetCustomUserAgent(ua) }
+
+// SetNativeTabsEnabled shows or hides the configured native tab bar at runtime.
+func (iosManager) SetNativeTabsEnabled(enabled bool) { iosSetNativeTabsEnabled(enabled) }
+
+// NativeTabsIsEnabled reports whether the native tab bar is currently enabled.
+func (iosManager) NativeTabsIsEnabled() bool { return iosNativeTabsIsEnabled() }
+
+// SelectNativeTab selects the native tab at the zero-based index.
+func (iosManager) SelectNativeTab(index int) { iosSelectNativeTab(index) }
