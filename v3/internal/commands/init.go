@@ -254,9 +254,18 @@ func Init(options *flags.Init) error {
 		}
 	}
 
+	remoteTemplate := templates.IsRemoteTemplate(options.TemplateName)
 	err := templates.Install(options)
 	if err != nil {
 		return err
+	}
+
+	remoteConfigPath := ""
+	if remoteTemplate {
+		remoteConfigPath, err = prepareRemoteTemplateConfig(options.ProjectDir)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Rename gitignore to .gitignore
@@ -286,10 +295,14 @@ func Init(options *flags.Init) error {
 		ProductComments:    options.ProductComments,
 		Typescript:         isTypescript,
 		UseInterfaces:      options.UseInterfaces,
+		PreserveConfig:     remoteConfigPath != "",
 	}
 	err = GenerateBuildAssets(buildAssetsOptions)
 	if err != nil {
 		return err
+	}
+	if remoteConfigPath != "" {
+		term.Warningf("Copied %s from the remote template. Please review this file before using the project.\n", filepath.ToSlash(remoteConfigPath))
 	}
 
 	// In UI mode the wizard is explicitly about the project config, so write the
@@ -312,6 +325,44 @@ func Init(options *flags.Init) error {
 		}
 	}
 	return nil
+}
+
+// prepareRemoteTemplateConfig keeps a remote template's build configuration
+// from being replaced by the default build assets. Wails uses config.yml as
+// the default path, so a config.yaml supplied by a template is also copied to
+// that canonical path while retaining the original file.
+func prepareRemoteTemplateConfig(projectDir string) (string, error) {
+	buildDir := filepath.Join(projectDir, "build")
+	for _, name := range []string{"config.yml", "config.yaml"} {
+		path := filepath.Join(buildDir, name)
+		info, err := os.Lstat(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return "", err
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return "", errors.New("remote template build configuration must not be a symbolic link")
+		}
+
+		if name == "config.yaml" {
+			canonicalPath := filepath.Join(buildDir, "config.yml")
+			if _, err := os.Stat(canonicalPath); os.IsNotExist(err) {
+				data, err := os.ReadFile(path)
+				if err != nil {
+					return "", err
+				}
+				if err := os.WriteFile(canonicalPath, data, 0o644); err != nil {
+					return "", err
+				}
+			}
+		}
+
+		return filepath.ToSlash(filepath.Join("build", name)), nil
+	}
+
+	return "", nil
 }
 
 // writeProjectConfigYML rewrites the `info:` values in the freshly scaffolded
