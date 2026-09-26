@@ -9,7 +9,7 @@ import "unsafe"
 // COM method on this architecture.
 //
 // arm64: a 16-byte struct is passed by value in two registers.
-func appendRectArg(args []uintptr, bounds *RECT) ([]uintptr, bool) {
+func appendRectArg(args []uintptr, bounds *RECT) []uintptr {
 	words := (*[2]uintptr)(unsafe.Pointer(bounds))
-	return append(args, words[0], words[1]), true
+	return append(args, words[0], words[1])
 }
