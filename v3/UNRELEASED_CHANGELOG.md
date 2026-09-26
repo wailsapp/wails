@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `DisablePinchZoom` to the `WindowsWindow` options: disables pinch-to-zoom on touch devices (WebView2 `IsPinchZoomEnabled`), the v3 counterpart of the v2 option — [#2021](https://github.com/wailsapp/wails/issues/2021) by @APshenkin
 
 ## Changed
 <!-- Changes in existing functionality -->
