@@ -238,6 +238,14 @@ DMG creation is supported only on macOS because it uses macOS disk-image and Fin
 
 ## Troubleshooting
 
+### Cannot generate `Assets.car` despite having Xcode
+
+Your active developer directory is using the standalone Command Line Tools but, to work properly `actool` needs to use the main Xcode installation
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+```
+
 ### "App is damaged and can't be opened"
 
 The app isn't signed. Either sign it with a Developer ID certificate, or users can bypass Gatekeeper:
