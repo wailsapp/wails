@@ -243,6 +243,7 @@ DMG creation is supported only on macOS because it uses macOS disk-image and Fin
 Your active developer directory is using the standalone Command Line Tools but, to work properly `actool` needs to use the main Xcode installation
 
 ```bash
+If Xcode is installed elsewhere, replace `/Applications/Xcode.app` with its installation path.
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
 
