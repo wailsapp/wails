@@ -58,6 +58,9 @@ type BuildAssetsOptions struct {
 type TemplateEnrichment struct {
 	Cls string `description:"A helper for using close template tags safely }}" default:"}}"`
 	Opn string `description:"A helper for using open template tags safely {{" default:"{{"`
+	// LinuxHicolorIcons indicates that the project's preserved common Taskfile
+	// generates the complete Linux hicolor icon set used by the nfpm template.
+	LinuxHicolorIcons bool `yaml:"-"`
 	// BackgroundModes feeds the iOS Info.plist template's UIBackgroundModes block.
 	// It's populated by the iOS Xcode generator from ios.backgroundModes in
 	// build/config.yml; the generic build-assets path leaves it empty (like
@@ -113,6 +116,7 @@ func GenerateBuildAssets(options *BuildAssetsOptions) error {
 	var config BuildConfig
 	config.Cls = "}}"
 	config.Opn = "{{"
+	config.LinuxHicolorIcons = true
 
 	if options.ProductComments == "" {
 		options.ProductComments = fmt.Sprintf("(c) %d %s", time.Now().Year(), options.ProductCompany)
@@ -278,6 +282,7 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 
 	config.Cls = "}}"
 	config.Opn = "{{"
+	config.LinuxHicolorIcons = taskfileSupportsLinuxHicolorIcons(options.Dir)
 
 	// If directory doesn't exist, create it
 	if _, err := os.Stat(options.Dir); os.IsNotExist(err) {
@@ -330,6 +335,26 @@ func UpdateBuildAssets(options *UpdateBuildAssetsOptions) error {
 	}
 
 	return nil
+}
+
+func taskfileSupportsLinuxHicolorIcons(buildDir string) bool {
+	data, err := os.ReadFile(filepath.Join(buildDir, "Taskfile.yml"))
+	if err != nil {
+		return false
+	}
+	content := string(data)
+	if !strings.Contains(content, "-linuxoutputdir linux/icons") {
+		return false
+	}
+	if strings.Contains(content, "-linuxsizes") && !strings.Contains(content, "-linuxsizes "+defaultLinuxIconSizes) {
+		return false
+	}
+	for _, size := range strings.Split(defaultLinuxIconSizes, ",") {
+		if !strings.Contains(content, "linux/icons/"+size+"x"+size+".png") {
+			return false
+		}
+	}
+	return true
 }
 
 func normaliseName(name string) string {
