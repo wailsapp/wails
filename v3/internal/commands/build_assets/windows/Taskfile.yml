@@ -18,17 +18,22 @@ tasks:
   build:
     summary: Builds the application for Windows
     cmds:
-      # Auto-detect CGO: if CGO_ENABLED=1, use Docker; otherwise use native Go cross-compile
-      - task: '{{if and (ne OS "windows") (eq .CGO_ENABLED "1")}}build:docker{{else}}build:native{{end}}'
+      # Auto-detect CGO: if the effective CGO is enabled, cross-compile via Docker;
+      # otherwise use native Go. APP_CGO_ENABLED must be resolved before this
+      # dispatch so the native/docker choice matches the build environment.
+      - task: '{{if and (ne OS "windows") (eq .EFFECTIVE_CGO_ENABLED "1")}}build:docker{{else}}build:native{{end}}'
         vars:
           ARCH: '{{.ARCH}}'
           DEV: '{{.DEV}}'
           EXTRA_TAGS: '{{.EXTRA_TAGS}}'
           OBFUSCATED: '{{.OBFUSCATED}}'
           GARBLE_ARGS: '{{.GARBLE_ARGS}}'
+          CGO_ENABLED: '{{.EFFECTIVE_CGO_ENABLED}}'
     vars:
-      # Default to CGO_ENABLED=0 if not explicitly set
-      CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
+      # APP_CGO_ENABLED (root Taskfile) overrides the ad-hoc/default CGO_ENABLED.
+      # Resolve the effective value here so both the native/docker dispatch above
+      # and the build environment use the same setting.
+      EFFECTIVE_CGO_ENABLED: '{{if and (hasKey . "APP_CGO_ENABLED") (ne (toString .APP_CGO_ENABLED) "")}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "0"}}{{end}}'
 
   build:native:
     summary: Builds the application using native Go cross-compilation
@@ -51,16 +56,19 @@ tasks:
       - task: generate:syso
         vars:
           ARCH: '{{.ARCH}}'
-      - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.BIN_DIR}}/{{.APP_NAME}}.exe"'
+      - 'CGO_ENABLED={{.EFFECTIVE_CGO_ENABLED | toString | q}} {{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.BIN_DIR}}/{{.APP_NAME}}.exe"'
       - cmd: powershell Remove-item *.syso
         platforms: [windows]
       - cmd: rm -f *.syso
         platforms: [linux, darwin]
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui"{{end}}'
+      DEV_TAGS: '{{ list (ternary "wails_obfuscated" "" (eq .OBFUSCATED "true")) .APP_TAGS .APP_TAGS_WINDOWS .EXTRA_TAGS | compact | join "," }}'
+      PRODUCTION_TAGS: '{{ list "production" (ternary "wails_obfuscated" "" (eq .OBFUSCATED "true")) .APP_TAGS .APP_TAGS_WINDOWS .EXTRA_TAGS | compact | join "," }}'
+      PRODUCTION_LDFLAGS: '-w -s -H windowsgui{{with .APP_LDFLAGS}} {{.}}{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{with .DEV_TAGS}}-tags {{. | q}} {{end}}-buildvcs=false -gcflags=all="-l"{{with .APP_LDFLAGS}} -ldflags={{. | q}}{{end}}{{else}}-tags {{.PRODUCTION_TAGS | q}} -trimpath -buildvcs=false -ldflags={{.PRODUCTION_LDFLAGS | q}}{{end}}'
+      EFFECTIVE_CGO_ENABLED: '{{if and (hasKey . "APP_CGO_ENABLED") (ne (toString .APP_CGO_ENABLED) "")}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "0"}}{{end}}'
     env:
       GOOS: windows
-      CGO_ENABLED: '{{.CGO_ENABLED | default "0"}}'
       GOARCH: '{{.ARCH | default ARCH}}'
 
   build:docker:
@@ -69,6 +77,8 @@ tasks:
     deps:
       - task: common:build:frontend
         vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
           OBFUSCATED:
             ref: .OBFUSCATED
       - task: common:generate:icons
@@ -83,11 +93,15 @@ tasks:
       - task: generate:syso
         vars:
           ARCH: '{{.ARCH}}'
-      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.DOCKER_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" {{if .EXTRA_TAGS}}-e EXTRA_TAGS="{{.EXTRA_TAGS}}"{{end}} {{if eq .OBFUSCATED "true"}}-e OBFUSCATED=true{{end}} {{if .GARBLE_ARGS}}-e GARBLE_ARGS="{{.GARBLE_ARGS}}"{{end}} {{.CROSS_IMAGE}} windows {{.DOCKER_ARCH}}
+      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.DOCKER_MOUNTS}} -e APP_NAME={{.APP_NAME | q}} -e APP_TAGS={{.APP_TAGS | default "" | q}} -e APP_PLATFORM_TAGS={{.APP_TAGS_WINDOWS | default "" | q}} -e APP_LDFLAGS={{.APP_LDFLAGS | default "" | q}} -e EXTRA_TAGS={{.EXTRA_TAGS | default "" | q}} -e OBFUSCATED={{.OBFUSCATED | default "" | q}} -e GARBLE_ARGS={{.GARBLE_ARGS | default "" | q}} -e CGO_ENABLED={{.EFFECTIVE_CGO_ENABLED | toString | q}} {{.CROSS_IMAGE}} windows {{.DOCKER_ARCH}}
       - cmd: docker run --rm -v "{{.ROOT_DIR}}:/app" alpine chown -R $(id -u):$(id -g) /app/bin
         platforms: [linux, darwin]
       - rm -f *.syso
     vars:
+      PRODUCTION_TAGS: '{{ list "production" (ternary "wails_obfuscated" "" (eq .OBFUSCATED "true")) .APP_TAGS .APP_TAGS_WINDOWS .EXTRA_TAGS | compact | join "," }}'
+      PRODUCTION_LDFLAGS: '-w -s -H windowsgui{{with .APP_LDFLAGS}} {{.}}{{end}}'
+      BUILD_FLAGS: '-tags {{.PRODUCTION_TAGS | q}} -trimpath -buildvcs=false -ldflags={{.PRODUCTION_LDFLAGS | q}}'
+      EFFECTIVE_CGO_ENABLED: '{{if and (hasKey . "APP_CGO_ENABLED") (ne (toString .APP_CGO_ENABLED) "")}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "0"}}{{end}}'
       DOCKER_ARCH: '{{.ARCH | default "amd64"}}'
       # Generate Docker volume mounts: Go module cache + go.mod replace directives
       # Uses wails3 tool docker-mounts for cross-platform compatibility (Windows/Linux/macOS)

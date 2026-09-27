@@ -19,9 +19,11 @@ tasks:
           EXTRA_TAGS: '{{.EXTRA_TAGS}}'
           OBFUSCATED: '{{.OBFUSCATED}}'
           GARBLE_ARGS: '{{.GARBLE_ARGS}}'
+          CGO_ENABLED: '{{.EFFECTIVE_CGO_ENABLED}}'
     vars:
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
+      EFFECTIVE_CGO_ENABLED: '{{if and (hasKey . "APP_CGO_ENABLED") (ne (toString .APP_CGO_ENABLED) "")}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "1"}}{{end}}'
 
   build:native:
     summary: Builds the application natively on macOS
@@ -41,14 +43,17 @@ tasks:
       - sh: '{{if eq .OBFUSCATED "true"}}command -v garble >/dev/null 2>&1{{else}}true{{end}}'
         msg: "garble is required for obfuscated builds. Install it with: go install mvdan.cc/garble@v0.16.0 (requires Go 1.24+). See https://github.com/burrowers/garble/releases for version/toolchain compatibility."
     cmds:
-      - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.OUTPUT}}"'
+      - 'CGO_ENABLED={{.EFFECTIVE_CGO_ENABLED | toString | q}} {{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{end}} {{.BUILD_FLAGS}} -o "{{.OUTPUT}}"'
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s"{{end}}'
+      DEV_TAGS: '{{ list (ternary "wails_obfuscated" "" (eq .OBFUSCATED "true")) .APP_TAGS .APP_TAGS_DARWIN .EXTRA_TAGS | compact | join "," }}'
+      PRODUCTION_TAGS: '{{ list "production" (ternary "wails_obfuscated" "" (eq .OBFUSCATED "true")) .APP_TAGS .APP_TAGS_DARWIN .EXTRA_TAGS | compact | join "," }}'
+      PRODUCTION_LDFLAGS: '-w -s{{with .APP_LDFLAGS}} {{.}}{{end}}'
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{with .DEV_TAGS}}-tags {{. | q}} {{end}}-buildvcs=false -gcflags=all="-l"{{with .APP_LDFLAGS}} -ldflags={{. | q}}{{end}}{{else}}-tags {{.PRODUCTION_TAGS | q}} -trimpath -buildvcs=false -ldflags={{.PRODUCTION_LDFLAGS | q}}{{end}}'
+      EFFECTIVE_CGO_ENABLED: '{{if and (hasKey . "APP_CGO_ENABLED") (ne (toString .APP_CGO_ENABLED) "")}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "1"}}{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
     env:
       GOOS: darwin
-      CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default ARCH}}'
       CGO_CFLAGS: "-mmacosx-version-min=12.0"
       CGO_LDFLAGS: "-mmacosx-version-min=12.0"
@@ -60,6 +65,8 @@ tasks:
     deps:
       - task: common:build:frontend
         vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
           OBFUSCATED:
             ref: .OBFUSCATED
       - task: common:generate:icons
@@ -71,12 +78,16 @@ tasks:
           Docker image '{{.CROSS_IMAGE}}' not found.
           Build it first: wails3 task setup:docker
     cmds:
-      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.DOCKER_MOUNTS}} -e APP_NAME="{{.APP_NAME}}" {{if .EXTRA_TAGS}}-e EXTRA_TAGS="{{.EXTRA_TAGS}}"{{end}} {{if eq .OBFUSCATED "true"}}-e OBFUSCATED=true{{end}} {{if .GARBLE_ARGS}}-e GARBLE_ARGS="{{.GARBLE_ARGS}}"{{end}} {{.CROSS_IMAGE}} darwin {{.DOCKER_ARCH}}
+      - docker run --rm -v "{{.ROOT_DIR}}:/app" {{.DOCKER_MOUNTS}} -e APP_NAME={{.APP_NAME | q}} -e APP_TAGS={{.APP_TAGS | default "" | q}} -e APP_PLATFORM_TAGS={{.APP_TAGS_DARWIN | default "" | q}} -e APP_LDFLAGS={{.APP_LDFLAGS | default "" | q}} -e EXTRA_TAGS={{.EXTRA_TAGS | default "" | q}} -e OBFUSCATED={{.OBFUSCATED | default "" | q}} -e GARBLE_ARGS={{.GARBLE_ARGS | default "" | q}} -e CGO_ENABLED={{.EFFECTIVE_CGO_ENABLED | toString | q}} {{.CROSS_IMAGE}} darwin {{.DOCKER_ARCH}}
       - cmd: docker run --rm -v "{{.ROOT_DIR}}:/app" alpine chown -R $(id -u):$(id -g) /app/bin
         platforms: [linux, darwin]
       - mkdir -p {{.BIN_DIR}}
       - mv "bin/{{.APP_NAME}}-darwin-{{.DOCKER_ARCH}}" "{{.OUTPUT}}"
     vars:
+      PRODUCTION_TAGS: '{{ list "production" (ternary "wails_obfuscated" "" (eq .OBFUSCATED "true")) .APP_TAGS .APP_TAGS_DARWIN .EXTRA_TAGS | compact | join "," }}'
+      PRODUCTION_LDFLAGS: '-w -s{{with .APP_LDFLAGS}} {{.}}{{end}}'
+      BUILD_FLAGS: '-tags {{.PRODUCTION_TAGS | q}} -trimpath -buildvcs=false -ldflags={{.PRODUCTION_LDFLAGS | q}}'
+      EFFECTIVE_CGO_ENABLED: '{{if and (hasKey . "APP_CGO_ENABLED") (ne (toString .APP_CGO_ENABLED) "")}}{{.APP_CGO_ENABLED}}{{else}}{{.CGO_ENABLED | default "1"}}{{end}}'
       DOCKER_ARCH: '{{if eq .ARCH "arm64"}}arm64{{else if eq .ARCH "amd64"}}amd64{{else}}arm64{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
