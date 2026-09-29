@@ -35,6 +35,16 @@ db, _ := sql.Open("sqlite", filepath.Join(dbDir, "app.db"))
 @note{type="note"}
 Off-device (desktop builds) every `Mobile` method is a no-op and every query returns its zero value (`""` for strings). This is what lets cross-platform code call `application.Mobile.*` unconditionally. When you need a real path on desktop too, branch on the platform and fall back to `os.UserConfigDir()` or similar.
 
+`Timezone()` returns the device's current IANA timezone ID (e.g. `"Asia/Shanghai"`), or `""` on desktop or if the bridge call fails. Wails does not apply it automatically — Go's `time.Local` remains UTC on Android by default (a long-standing gap in the Go runtime's Android support), so call `time.LoadLocation` yourself early in `main()`:
+
+```go
+if tz := application.Mobile.Timezone(); tz != "" {
+    if loc, err := time.LoadLocation(tz); err == nil {
+        time.Local = loc
+    }
+}
+```
+
 @end
 
 ## Capabilities
@@ -53,6 +63,7 @@ The `Mobile` manager exposes the capabilities whose signatures are identical on 
 | Status bar | `Mobile.SetStatusBar(json)` | style + visibility |
 | Storage info | `Mobile.StorageJSON()` | `{free,total}` bytes |
 | Storage path | `Mobile.StoragePath()` | App-private files directory |
+| Timezone | `Mobile.Timezone()` | IANA ID, e.g. `"Asia/Shanghai"` |
 | Power / battery | `Mobile.PowerJSON()` | `{level,charging,lowPower}` |
 | Network status | `Mobile.NetworkJSON()` | `{connected,type}` |
 | Biometrics | `Mobile.BiometricAuthenticate(reason)` | → `common:biometric` |

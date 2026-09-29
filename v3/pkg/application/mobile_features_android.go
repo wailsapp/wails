@@ -196,6 +196,11 @@ func (androidManager) StorageJSON() string { s, _ := androidBridgeString("getSto
 // persistent files. The directory always exists.
 func (androidManager) StoragePath() string { s, _ := androidBridgeString("getStoragePath"); return s }
 
+// Timezone returns the device's current IANA timezone ID (e.g. "Asia/Shanghai"),
+// suitable for time.LoadLocation. Falls back to an empty string if the bridge
+// call fails; callers should check for that before calling time.LoadLocation.
+func (androidManager) Timezone() string { s, _ := androidBridgeString("getTimezone"); return s }
+
 // PowerJSON returns {"level":0-1,"charging":bool,"lowPower":bool}.
 func (androidManager) PowerJSON() string { s, _ := androidBridgeString("getPowerJson"); return s }
 
