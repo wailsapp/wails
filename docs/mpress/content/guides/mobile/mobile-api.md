@@ -32,9 +32,6 @@ db, _ := sql.Open("sqlite", filepath.Join(dbDir, "app.db"))
 
 `StoragePath()` returns the absolute path to the app's private files directory — `getFilesDir()` on Android, the Application Support directory on iOS — the recommended home for databases and other persistent files. It returns an empty string on desktop, and on device if the directory is unavailable (on iOS, if it cannot be created), so check for `""` before using it.
 
-@note{type="note"}
-Off-device (desktop builds) every `Mobile` method is a no-op and every query returns its zero value (`""` for strings). This is what lets cross-platform code call `application.Mobile.*` unconditionally. When you need a real path on desktop too, branch on the platform and fall back to `os.UserConfigDir()` or similar.
-
 `Timezone()` returns the device's current IANA timezone ID (e.g. `"Asia/Shanghai"`), or `""` on desktop or if the bridge call fails. Wails does not apply it automatically — Go's `time.Local` remains UTC on Android by default (a long-standing gap in the Go runtime's Android support), so call `time.LoadLocation` yourself early in `main()`:
 
 ```go
@@ -44,6 +41,9 @@ if tz := application.Mobile.Timezone(); tz != "" {
     }
 }
 ```
+
+@note{type="note"}
+Off-device (desktop builds) every `Mobile` method is a no-op and every query returns its zero value (`""` for strings). This is what lets cross-platform code call `application.Mobile.*` unconditionally. When you need a real path on desktop too, branch on the platform and fall back to `os.UserConfigDir()` or similar.
 
 @end
 
