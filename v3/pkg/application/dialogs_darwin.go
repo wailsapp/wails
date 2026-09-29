@@ -264,6 +264,8 @@ static void showSaveFileDialog(unsigned int dialogID,
 	bool hideExtension,
 	bool treatsFilePackagesAsDirectories,
 	bool allowOtherFileTypes,
+	char *filterPatterns,
+	unsigned int filterPatternsCount,
 	char* message,
 	char* directory,
 	char* buttonText,
@@ -271,6 +273,35 @@ static void showSaveFileDialog(unsigned int dialogID,
 	void *window) {
 
 	NSSavePanel *panel = [NSSavePanel savePanel];
+
+	if (filterPatternsCount > 0) {
+		NSString *filterPatternsString = [[NSString alloc] initWithBytes:filterPatterns length:filterPatternsCount encoding:NSUTF8StringEncoding];
+		NSArray *allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
+		[filterPatternsString release];
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+		if (@available(macOS 11, *)) {
+			NSMutableArray *filterTypes = [NSMutableArray array];
+
+			for (NSString *filterType in allowedExtensions) {
+				UTType *utType = [UTType typeWithFilenameExtension:filterType];
+				if (utType != nil) {
+					[filterTypes addObject:utType];
+				}
+			}
+
+			if ([filterTypes count] > 0) {
+				[panel setAllowedContentTypes:filterTypes];
+			}
+		} else {
+			[panel setAllowedFileTypes:allowedExtensions];
+		}
+#else
+		[panel setAllowedFileTypes:allowedExtensions];
+#endif
+
+		free(filterPatterns);
+	}
 
 	if (message != NULL) {
 		[panel setMessage:[NSString stringWithUTF8String:message]];
@@ -578,6 +609,24 @@ func newSaveFileDialogImpl(d *SaveFileDialogStruct) *macosSaveFileDialog {
 	}
 }
 
+func saveDialogExtensions(filters []FileFilter) string {
+	var extensions []string
+	for _, filter := range filters {
+		for _, pattern := range strings.Split(filter.Pattern, ";") {
+			extension := strings.TrimPrefix(strings.TrimSpace(pattern), "*.")
+
+			// The panel appends the first extension to a bare filename, so "*.*" would
+			// turn "report" into "report.*"; a dotted one like "tar.gz" it cannot use at all.
+			if extension == "" || strings.ContainsAny(extension, "*?.") {
+				continue
+			}
+
+			extensions = append(extensions, extension)
+		}
+	}
+	return strings.Join(extensions, ";")
+}
+
 func (m *macosSaveFileDialog) show() (chan string, error) {
 	saveFileResponses[m.dialog.id] = make(chan string)
 	nsWindow := unsafe.Pointer(nil)
@@ -585,6 +634,8 @@ func (m *macosSaveFileDialog) show() (chan string, error) {
 		// get NSWindow from window
 		nsWindow = m.dialog.window.NativeWindow()
 	}
+
+	filterPatterns := saveDialogExtensions(m.dialog.filters)
 	C.showSaveFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canCreateDirectories),
 		C.bool(m.dialog.showHiddenFiles),
@@ -592,6 +643,8 @@ func (m *macosSaveFileDialog) show() (chan string, error) {
 		C.bool(m.dialog.hideExtension),
 		C.bool(m.dialog.treatsFilePackagesAsDirectories),
 		C.bool(m.dialog.allowOtherFileTypes),
+		toCString(filterPatterns),
+		C.uint(len(filterPatterns)),
 		toCString(m.dialog.message),
 		toCString(m.dialog.directory),
 		toCString(m.dialog.buttonText),
