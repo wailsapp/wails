@@ -63,7 +63,6 @@ The `Mobile` manager exposes the capabilities whose signatures are identical on 
 | Status bar | `Mobile.SetStatusBar(json)` | style + visibility |
 | Storage info | `Mobile.StorageJSON()` | `{free,total}` bytes |
 | Storage path | `Mobile.StoragePath()` | App-private files directory |
-| Timezone | `Mobile.Timezone()` | IANA ID, e.g. `"Asia/Shanghai"` |
 | Power / battery | `Mobile.PowerJSON()` | `{level,charging,lowPower}` |
 | Network status | `Mobile.NetworkJSON()` | `{connected,type}` |
 | Biometrics | `Mobile.BiometricAuthenticate(reason)` | → `common:biometric` |
@@ -76,6 +75,7 @@ The `Mobile` manager exposes the capabilities whose signatures are identical on 
 | Keyboard insets | `Mobile.SetKeyboardWatch(bool)` | → `common:keyboard` |
 | Screen-capture | `Mobile.SetScreenProtect(bool)` | → `common:screenCapture` |
 | Camera | `Mobile.CapturePhoto()` / `Mobile.CaptureVideo()` | → `common:capture` |
+| Timezone | `Mobile.Timezone()` | IANA ID, e.g. `"Asia/Shanghai"` |
 
 Asynchronous results arrive as `common:*` events, exactly as with the per-platform managers — see [Events](/guides/mobile/ios/#events) for the payloads.
 
