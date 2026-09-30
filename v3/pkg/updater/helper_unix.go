@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"syscall"
 )
 
@@ -68,6 +69,23 @@ func renameOrCopy(src, dst string) error {
 		_ = os.RemoveAll(tmp)
 		return err
 	}
+	// Make the rename durable before deleting the only other copy.
+	if err := syncDir(filepath.Dir(dst)); err != nil {
+		return fmt.Errorf("sync %s: %w", filepath.Dir(dst), err)
+	}
 	_ = os.RemoveAll(src)
 	return nil
+}
+
+func syncDir(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	// Some filesystems cannot fsync a directory; there is nothing more to do there.
+	if err := d.Sync(); err != nil && !errors.Is(err, syscall.EINVAL) && !errors.Is(err, syscall.ENOTSUP) {
+		_ = d.Close()
+		return err
+	}
+	return d.Close()
 }
