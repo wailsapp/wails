@@ -65,7 +65,7 @@ You can read the current state with `app.Updater.State()` at any time. Every tra
 
 `Restart` waits for the helper to reach `application.New` before asking the running app to quit. The default startup timeout is 30 seconds. If your app performs lengthy initialization before `application.New`, set `Config.HelperReadyTimeout` to a longer duration, such as `time.Minute`. Zero selects the default; negative durations are rejected. If startup times out, `Restart` returns `updater.ErrHelperNotReady` and keeps the running app open.
 
-The update is staged in a `wails-update-*` directory beside the installed binary, so the directory holding it must be writable.
+The update is staged in a `wails-update-*` directory beside the installed binary (on macOS, beside the `.app` bundle), so that directory must be writable.
 
 The default window reflects the current state automatically — for example, when `Check` returns no upgrade the user sees this and dismisses with **Close**:
 
