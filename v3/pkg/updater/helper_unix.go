@@ -3,6 +3,8 @@
 package updater
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"syscall"
 )
@@ -27,5 +29,30 @@ func replaceTarget(target, newPath string) error {
 	if err := os.RemoveAll(target); err != nil {
 		return err
 	}
-	return os.Rename(newPath, target)
+	return renameOrCopy(newPath, target)
+}
+
+// rename is os.Rename, swappable so tests can simulate EXDEV.
+var rename = os.Rename
+
+// renameOrCopy moves src to dst. When they sit on different filesystems it
+// copies to a sibling of dst, fsyncs, and renames that into place, so dst
+// never holds a partial copy.
+func renameOrCopy(src, dst string) error {
+	err := rename(src, dst)
+	if !errors.Is(err, syscall.EXDEV) {
+		return err
+	}
+	tmp := dst + ".wails-new"
+	_ = os.RemoveAll(tmp)
+	if err := copyAny(src, tmp); err != nil {
+		_ = os.RemoveAll(tmp)
+		return fmt.Errorf("cross-device copy %s -> %s: %w", src, tmp, err)
+	}
+	if err := rename(tmp, dst); err != nil {
+		_ = os.RemoveAll(tmp)
+		return err
+	}
+	_ = os.RemoveAll(src)
+	return nil
 }
