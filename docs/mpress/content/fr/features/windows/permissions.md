@@ -85,9 +85,9 @@ Wails traite les demandes de **caméra et de microphone** sous macOS 12 et versi
 | --- | --- | --- |
 | `PermissionDefault` | WebKit affiche sa propre invite | TCC uniquement |
 | `PermissionAllow` | L’invite WebKit est supprimée — **TCC s’applique toujours** | TCC uniquement |
-| `PermissionDeny` | Refus avant tout accès au périphérique | TCC uniquement |
+| `PermissionDeny` | Refusé par WebKit ; l’autorisation système est indépendante | TCC uniquement |
 
-`PermissionAllow` autorise la demande de la vue web, pas le périphérique. La première capture déclenche toujours l’invite TCC et une application refusée dans Réglages Système reste refusée : aucune application ne peut s’accorder l’accès à un périphérique. `PermissionAllow` supprime uniquement l’invite WebKit préalable.
+`PermissionAllow` autorise la demande de la vue web, pas l’accès au périphérique. L’autorisation système reste indépendante et une application refusée dans Réglages Système reste refusée. Seule l’invite propre à WebKit est supprimée.
 
 Avant macOS 12, cette méthode de délégué n’existe pas : la table est ignorée et chaque demande revient à l’invite WebKit.
 
@@ -100,18 +100,11 @@ Vérifiez que votre `Info.plist` comprend les clés de description d’utilisati
 <string>Used for video calls</string>
 ```
 
-@note{type="caution" title="Refusez ce que votre Info.plist ne déclare pas"}
+@note{type="caution" title="Les descriptions d’utilisation sont obligatoires"}
 
-Une demande qui atteint AVFoundation sans la clé de description d’utilisation correspondante ne se contente pas d’échouer : macOS termine l’application.
+WebKit peut demander l’autorisation système avant d’appeler le délégué de permissions de Wails. `PermissionDeny` bloque la demande WebKit, mais ne garantit pas l’absence d’une invite TCC ou d’une demande d’autorisation AVFoundation.
 
-`PermissionDefault` est la valeur zéro. Ainsi, `{PermissionMicrophone: PermissionAllow}` seul laisse la caméra soumise à l’invite WebKit. Si l’utilisateur accepte et que l’application déclare uniquement `NSMicrophoneUsageDescription`, elle se termine. Définissez explicitement `PermissionDeny` pour chaque fonctionnalité sans description d’utilisation :
-
-```go
-Permissions: map[application.PermissionType]application.Permission{
-    application.PermissionMicrophone: application.PermissionAllow,
-    application.PermissionCamera:     application.PermissionDeny,
-},
-```
+Ajoutez les descriptions d’utilisation des périphériques demandés par votre application et les entitlements correspondants si elle est sandboxée. N’utilisez pas `PermissionDeny` à la place de ces déclarations.
 
 @end
 
@@ -231,7 +224,7 @@ Dès qu’une entrée figure dans `Permissions`, Wails n’accorde plus l’auto
 
 **Mon application macOS quitte lorsque le contenu web demande la caméra ou le microphone**
 
-Une demande qui atteint AVFoundation sans la clé de description d’utilisation correspondante ne se contente pas d’échouer : macOS termine l’application. Ajoutez la clé correspondante ou définissez `PermissionDeny` pour cette fonctionnalité afin que la demande n’atteigne pas AVFoundation. `PermissionDefault` conserve l’invite WebKit, que l’utilisateur peut accepter.
+Vérifiez que `Info.plist` contient `NSCameraUsageDescription` ou `NSMicrophoneUsageDescription` pour chaque périphérique demandé. Une description manquante peut entraîner le rejet de la demande ; un accès à AVFoundation sans description obligatoire peut terminer l’application. `PermissionDeny` contrôle la décision WebKit et ne remplace pas ces clés.
 
 **La géolocalisation, les notifications et le presse-papiers n’ont aucun effet sous Linux**
 
