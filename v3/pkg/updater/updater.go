@@ -107,11 +107,12 @@ func New(host Host) *Updater {
 // already been called, or a validation error if cfg is malformed.
 func (u *Updater) Init(cfg Config) error {
 	u.mu.Lock()
-	defer u.mu.Unlock()
 	if u.cfg != nil {
+		u.mu.Unlock()
 		return ErrAlreadyConfigured
 	}
 	if err := cfg.validate(); err != nil {
+		u.mu.Unlock()
 		return err
 	}
 	if cfg.Platform == "" {
@@ -127,6 +128,13 @@ func (u *Updater) Init(cfg Config) error {
 		u.periodicCtx, u.periodicCancel = context.WithCancel(context.Background())
 		u.periodicDone = make(chan struct{})
 		go u.periodicCheckLoop(cfg.CheckInterval)
+	}
+	u.mu.Unlock()
+
+	// Consume the marker even without a callback so a later build that adds
+	// one is not told about an old update.
+	if from, ok := consumeAppliedMarker(); ok && cfg.OnUpdateApplied != nil {
+		cfg.OnUpdateApplied(from)
 	}
 	return nil
 }
@@ -395,6 +403,7 @@ func (u *Updater) CheckAndInstall(ctx context.Context) error {
 func (u *Updater) Restart(_ context.Context) error {
 	u.mu.RLock()
 	staged := u.resolved
+	current := u.current
 	timeout := helperReadyTimeout
 	if u.cfg != nil && u.cfg.HelperReadyTimeout > 0 {
 		timeout = u.cfg.HelperReadyTimeout
@@ -423,6 +432,7 @@ func (u *Updater) Restart(_ context.Context) error {
 		envHelperPID+"="+itoa(os.Getpid()),
 		envHelperLog+"="+logPath,
 		envHelperReady+"="+readyPath,
+		envHelperFrom+"="+current,
 	)
 
 	cmd := newDetachedCommand(self)
