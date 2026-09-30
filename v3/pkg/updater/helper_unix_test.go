@@ -61,6 +61,9 @@ func TestReplaceTarget_CrossDevice_Directory(t *testing.T) {
 }
 
 func TestReplaceTarget_CrossDevice_CopyFailureKeepsTarget(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root bypasses the permission-based failure injection")
+	}
 	target := filepath.Join(t.TempDir(), "app")
 	newPath := filepath.Join(t.TempDir(), "app.new")
 	writeFile(t, target, []byte("OLD"))
@@ -82,6 +85,9 @@ func TestReplaceTarget_CrossDevice_CopyFailureKeepsTarget(t *testing.T) {
 }
 
 func TestReplaceTarget_CrossDevice_StaleIntermediateNotMerged(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root bypasses the permission-based failure injection")
+	}
 	target := filepath.Join(t.TempDir(), "App.app")
 	newPath := filepath.Join(t.TempDir(), "App.app")
 	writeFile(t, filepath.Join(target, "Contents", "MacOS", "App"), []byte("OLD"))
