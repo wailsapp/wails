@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix the updater trying to replace the read-only mount of an AppImage instead of the `.AppImage` file
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
