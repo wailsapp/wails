@@ -39,6 +39,11 @@ tasks:
     cmds:
       - wails3 dev -config ./build/config.yml -port {{.Opn}}.VITE_PORT{{.Cls}}
 
+  install:msix:tools:
+    summary: Installs tools required for Windows MSIX packaging
+    cmds:
+      - task: windows:install:msix:tools
+
   setup:docker:
     summary: Builds Docker image for cross-compilation (~800MB download)
     cmds:

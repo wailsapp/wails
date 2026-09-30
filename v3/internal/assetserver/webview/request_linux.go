@@ -7,28 +7,11 @@ package webview
 
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
-
-static gboolean unref_request_on_main(gpointer data) {
-	if (data != NULL) {
-		g_object_unref(data);
-	}
-	return G_SOURCE_REMOVE;
-}
-
-// releaseRequestOnMainThread schedules the WebKitURISchemeRequest unref on the
-// GTK main context. Close() runs on the assetserver goroutine, and dropping
-// what may be the last reference finalizes a WebKit GObject — only safe on the
-// UI thread (see #5557).
-static void releaseRequestOnMainThread(WebKitURISchemeRequest *request) {
-	if (request == NULL) {
-		return;
-	}
-	g_main_context_invoke(NULL, unref_request_on_main, request);
-}
 */
 import "C"
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"unsafe"
@@ -36,16 +19,17 @@ import (
 
 func NewRequest(webKitURISchemeRequest unsafe.Pointer) Request {
 	webkitReq := (*C.WebKitURISchemeRequest)(webKitURISchemeRequest)
-	C.g_object_ref(C.gpointer(webkitReq))
+	lifetime := retainRequest(webKitURISchemeRequest)
 
-	req := &request{req: webkitReq}
+	req := &request{req: webkitReq, lifetime: lifetime}
 	return newRequestFinalizer(req)
 }
 
 var _ Request = &request{}
 
 type request struct {
-	req *C.WebKitURISchemeRequest
+	lifetime *requestLifetime
+	req      *C.WebKitURISchemeRequest
 
 	header http.Header
 	body   io.ReadCloser
@@ -101,6 +85,8 @@ func (r *request) Close() error {
 		err = r.body.Close()
 	}
 	r.Response().Finish()
-	C.releaseRequestOnMainThread(r.req)
+	r.lifetime.close()
 	return err
 }
+
+func (r *request) Context() context.Context { return r.lifetime.Context }

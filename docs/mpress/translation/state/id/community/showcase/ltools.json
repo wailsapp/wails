@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "5e7a1c01e96025e83741",
+  "sourceFile": "community/showcase/ltools.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "targetHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineText": "![LTools](/assets/showcase-images/ltools.webp)",
+      "status": "final",
+      "sourcePreview": "![LTools](/assets/showcase-images/ltools.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3d44d172c582bf4192eb6e09f248b8b205aee3d07d604e51be3aa53c2ae9d7eb",
+      "targetHash": "1f3793d38267f273e27b68cce488c92545c5354d5d82faa6815b873f77351b36",
+      "machineHash": "1f3793d38267f273e27b68cce488c92545c5354d5d82faa6815b873f77351b36",
+      "machineText": "[LTools](https://github.com/lian-yang/ltools) adalah kotak alat desktop lintas platform berbasis plugin yang dibuat dengan Wails v3 dan terinspirasi oleh uTools. Aplikasi ini menyediakan pusat terpadu untuk berbagai utilitas pengembang melalui arsitektur plugin modular.",
+      "status": "final",
+      "sourcePreview": "[LTools](https://github.com/lian-yang/ltools) is a plugin-based cross-platform desktop toolbox built…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9bd63b2eaf30cfc2d45360da03525be5e97b07ee39b106a4dbf83da6e7245a52",
+      "targetHash": "c74b84dd0a8ed7b612ce96180e91a3af6af1050b6f485880af7b4f5edb53b115",
+      "machineHash": "c74b84dd0a8ed7b612ce96180e91a3af6af1050b6f485880af7b4f5edb53b115",
+      "machineText": "Fitur-fiturnya mencakup bilah pencarian global bergaya Spotlight, integrasi baki sistem, serta plugin bawaan seperti pengelola papan klip, alat tangkapan layar dengan anotasi, editor JSON, kalkulator, pemantau sistem, dan lainnya. Alat baru dapat ditambahkan melalui sistem pluginnya yang dapat diperluas.",
+      "status": "final",
+      "sourcePreview": "It features a global search bar (Spotlight-style), system tray integration, and built-in plugins inc…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8918e7a1e1826c9a096776538f8971d5ba645deee81f1523cb1ab36170d71273",
+      "targetHash": "bd92b6a3ff473e3ec51c76c0a2fb3f02df118dcddd86547eecbd59ff6cabda08",
+      "machineHash": "bd92b6a3ff473e3ec51c76c0a2fb3f02df118dcddd86547eecbd59ff6cabda08",
+      "machineText": "Kotak alat desktop lintas platform berbasis plugin yang dibuat dengan Wails v3",
+      "status": "final",
+      "sourcePreview": "A plugin-based cross-platform desktop toolbox built with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "targetHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineText": "LTools",
+      "status": "final",
+      "sourcePreview": "LTools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}

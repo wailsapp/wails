@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "41585e3f481d83cb5d34",
+  "sourceFile": "concepts/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "0d0a8c6df3ace225e9a8e34274e5c1c1116d1db8319aa5357a8448e8a9ad732f",
+      "targetHash": "dc8f6f5eea590519e0c29532ee7ce6dc9a04805a768925665d4a11abd9925a16",
+      "machineHash": "dc8f6f5eea590519e0c29532ee7ce6dc9a04805a768925665d4a11abd9925a16",
+      "machineText": "Konzepte",
+      "status": "final",
+      "sourcePreview": "Concepts",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "0d0a8c6df3ace225e9a8e34274e5c1c1116d1db8319aa5357a8448e8a9ad732f",
+      "targetHash": "dc8f6f5eea590519e0c29532ee7ce6dc9a04805a768925665d4a11abd9925a16",
+      "machineHash": "dc8f6f5eea590519e0c29532ee7ce6dc9a04805a768925665d4a11abd9925a16",
+      "machineText": "Konzepte",
+      "status": "final",
+      "sourcePreview": "Concepts",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:21Z"
+    }
+  }
+}

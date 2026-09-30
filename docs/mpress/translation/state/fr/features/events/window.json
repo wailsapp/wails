@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "a98946db8adbbf8142a4",
+  "sourceFile": "features/events/window.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "5500bfaa8a5998136a8b4a213f0c906e9be38a3e519a2ed443a50d09c7cb4e25",
+      "targetHash": "21cf025f767b85a526b13595d7056564d4bf3edd044d6ebd70766b893d7fc757",
+      "machineHash": "21cf025f767b85a526b13595d7056564d4bf3edd044d6ebd70766b893d7fc757",
+      "machineText": "Les événements de fenêtre sont émis lors des changements liés au cycle de vie et aux interactions de la fenêtre, tels que son ouverture, sa fermeture, son déplacement et son redimensionnement.",
+      "status": "final",
+      "sourcePreview": "Window events are emitted for window lifecycle and interaction changes, such as open, close, move, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2efdc4095d1e2f19bd70bb10ada31b7b610bb74792c56dce87efd656010465d3",
+      "targetHash": "aa87b3578ad7c80c814acc47c83f88b913297f32b0160f65e9113453c9a7fa4f",
+      "machineHash": "aa87b3578ad7c80c814acc47c83f88b913297f32b0160f65e9113453c9a7fa4f",
+      "machineText": "La documentation complète sur les événements de fenêtre est disponible dans le guide [Système d’événements](/features/events/system/#window-events).",
+      "status": "final",
+      "sourcePreview": "Full documentation of window events is available in the [Event System](/features/events/system/#wind…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "68507c5f68b935c56fcfbce22a1195c9a3cb29ac055177bf1dff5cd50e24b3a2",
+      "targetHash": "98d09bf7087a5cc97d5c24b26aef1151eb134a2a06ec1908720d3d954f338840",
+      "machineHash": "98d09bf7087a5cc97d5c24b26aef1151eb134a2a06ec1908720d3d954f338840",
+      "machineText": "Événements au niveau de la fenêtre émis par Wails v3",
+      "status": "final",
+      "sourcePreview": "Window-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "5bd8ee53ff4b64ce063cc8385b536755b4cdb229223a839b880d27b4bd8b076a",
+      "targetHash": "716796cf21d1d8764e4309b8b5707cf7dd3352517dbff76a5ba6f821c43d5e5f",
+      "machineHash": "716796cf21d1d8764e4309b8b5707cf7dd3352517dbff76a5ba6f821c43d5e5f",
+      "machineText": "Événements de fenêtre",
+      "status": "final",
+      "sourcePreview": "Window Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    }
+  }
+}

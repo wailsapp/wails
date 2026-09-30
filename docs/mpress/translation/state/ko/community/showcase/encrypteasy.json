@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2cdf2b79a635456c1953",
+  "sourceFile": "community/showcase/encrypteasy.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "targetHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineText": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "status": "final",
+      "sourcePreview": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "f708f0f6355975a3a4c96db96e2019f05b2c048eb63d482204bcb2711ea07cb6",
+      "targetHash": "83f1800a5032a78920ac7a64cfa028de3800e6b8921c5415763a77971637b499",
+      "machineHash": "83f1800a5032a78920ac7a64cfa028de3800e6b8921c5415763a77971637b499",
+      "machineText": "*[EncryptEasy](https://www.encrypteasy.app)는 본인과 연락처의 모든 키를 관리할 수 있는 간단하고 사용하기 쉬운 PGP\\\n암호화 도구입니다. 암호화는 간단해야 합니다. Wails로 개발했습니다.*",
+      "status": "final",
+      "sourcePreview": "*[EncryptEasy](https://www.encrypteasy.app) is a simple and easy to use PGP\\ encryption tool, managi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "bac75003e20e8935cc50f947b2125378184467253ebb05ea4c856e27f6f2592f",
+      "targetHash": "6fe43e32203995d4cc2227bf87871c598a2a3bbc656c2a33dd1feceecae9389e",
+      "machineHash": "6fe43e32203995d4cc2227bf87871c598a2a3bbc656c2a33dd1feceecae9389e",
+      "machineText": "PGP를 사용한 메시지 암호화는 업계 표준입니다. 모든 사용자에게는 개인 키와\\\n공개 키가 있습니다. 개인 키는 이름 그대로 비공개로 안전하게 보관해야 하며, 그래야 본인만\\\n메시지를 읽을 수 있습니다. 공개 키는 본인에게 비밀 메시지를 암호화해 보내려는\\\n사람에게 배포합니다. 키 관리와 메시지 암호화 및\\\n복호화는 원활해야 합니다. EncryptEasy는\\\n이 모든 작업을 쉽게 만드는 데 중점을 둡니다.",
+      "status": "final",
+      "sourcePreview": "Encrypting messages using PGP is the industry standard. Everyone has a private\\ and a public key. Yo…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "targetHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineText": "EncryptEasy",
+      "status": "final",
+      "sourcePreview": "EncryptEasy",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

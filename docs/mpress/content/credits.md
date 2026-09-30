@@ -1,0 +1,50 @@
+---
+title: "Credits"
+description: "Acknowledge the contributors and projects behind Wails"
+slug: "credits"
+sourcePath: "credits.md"
+---
+
+- [Lea Anthony](https://github.com/leaanthony) - Project owner, lead developer
+- [Stffabi](https://github.com/stffabi) - Technical lead, developer and maintainer
+- [Travis McLane](https://github.com/tmclane) - Cross-compilation work, MacOS testing
+- [Atterpac](https://github.com/atterpac) - Developer, support guru, powerhouse
+- [Simon Thomas](mailto:enquiries@wails.io) - Growth Hacker
+- [Lyimmi](https://github.com/Lyimmi) - All things Linux
+- [fbbdev](https://github.com/fbbdev) - Bindings Generator guru & core contributor
+
+## Sponsors
+
+<object type="image/svg+xml" data="https://wails.io/img/sponsors.svg" aria-label="Sponsors" style="margin: auto; width: 100%; max-width: 800px" >
+  <img src="https://wails.io/img/sponsors.svg" alt="Sponsors" style="width: 100%" />
+</object>
+
+Special thanks:
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 2rem">
+  <img
+    src="/sponsors/jetbrains-grayscale.webp"
+    style="width: 100px"
+    alt="JetBrains"
+  />
+  <a href="https://zsa.io/">
+    <img src="/sponsors/zsa.png" style="width: 100px" alt="ZSA" />
+  </a>
+</div>
+
+## Contributors
+
+<object type="image/svg+xml" data="https://wails.io/img/contributors.svg" aria-label="Wails contributors" style="margin: auto; width: 100%; max-width: 800px" >
+  <img src="https://wails.io/img/contributors.svg" alt="Wails contributors" style="width: 100%" />
+</object>
+
+## Special Mentions
+
+- [John Chadwick](https://github.com/jchv) - His amazing work on [go-webview2](https://github.com/jchv/go-webview2) and [go-winloader](https://github.com/jchv/go-winloader) have made the Windows version possible.
+- [Tad Vizbaras](https://github.com/tadvi) - His winc project was the first step down the path to a pure Go Wails.
+- [Mat Ryer](https://github.com/matryer) - For advice, support and bants.
+- [Byron Chris](https://github.com/bh90210) - For his long term contributions to this project.
+- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been invaluable.
+- [Justen Walker](https://github.com/justenwalker/) - For helping wrangle COM issues which got v2 over the line.
+- [Wang, Chi](https://github.com/patr0nus/) - The DeskGap project was a huge influence on the direction of Wails v2.
+- [Serge Zaitsev](https://github.com/zserge) - Whilst Wails does not use the Webview project, it is still a source of inspiration.

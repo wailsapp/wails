@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ebb78f638168e5ffdf0d",
+  "sourceFile": "guides/patterns/database.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "48156a472942928fcc5a0f4927f6328b6eaa8559effc6458800128031a6634ea",
+      "targetHash": "65bf68297c11afe481b98bf1ccb8c6decbef3d97a32c3b455fe8b7378e0c5e9b",
+      "machineHash": "65bf68297c11afe481b98bf1ccb8c6decbef3d97a32c3b455fe8b7378e0c5e9b",
+      "machineText": "Halaman ini masih berupa pengganti sementara. Konten lengkap tentang integrasi basis data akan segera tersedia.",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full database integration content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "9989f2f7ebde19c0531fa8bf720eb348bf4fd7a5bda29b63969eac0991e81b29",
+      "targetHash": "5ee594f0048f75ed08d3406a387e0dff3dc444cd4093a7453a5ed5fb8f3efcd6",
+      "machineHash": "5ee594f0048f75ed08d3406a387e0dff3dc444cd4093a7453a5ed5fb8f3efcd6",
+      "machineText": "Aplikasi Wails v3 adalah aplikasi Go, sehingga Anda dapat menggunakan driver basis data Go standar apa pun — termasuk [SQLite](https://github.com/mattn/go-sqlite3), [PostgreSQL](https://github.com/jackc/pgx), dan [MySQL](https://github.com/go-sql-driver/mysql) — di dalam layanan terikat Anda.",
+      "status": "final",
+      "sourcePreview": "Wails v3 applications are Go applications, so you can use any standard Go database driver — includin…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9883cf56cdd6b6b93f4d4f5cbb41be7e28856a26677ccd24cf6657162d222941",
+      "targetHash": "5cbd8826ea8948a319615757ae2e7a4f745c0052f7d976afa947034a5da6b8b6",
+      "machineHash": "5cbd8826ea8948a319615757ae2e7a4f745c0052f7d976afa947034a5da6b8b6",
+      "machineText": "Untuk melihat contoh yang dapat dijalankan, lihat [tutorial TODO](/tutorials/02-todo-vanilla/), yang menunjukkan cara menambahkan persistensi SQLite ke aplikasi lengkap.",
+      "status": "final",
+      "sourcePreview": "For a working example, see the [TODO tutorial](/tutorials/02-todo-vanilla/), which demonstrates addi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "7987957fb2e6e74f86e5306bcb37e60acda396bf7715e1d25ce339d7708d2fe2",
+      "targetHash": "982e0af6f50cb7781db5499ae4e37b018ccbaecb8fbe8e097c1625733ea8e5e7",
+      "machineHash": "982e0af6f50cb7781db5499ae4e37b018ccbaecb8fbe8e097c1625733ea8e5e7",
+      "machineText": "Mengintegrasikan SQLite, PostgreSQL, dan basis data lainnya dengan Wails v3",
+      "status": "final",
+      "sourcePreview": "Integrating SQLite, PostgreSQL, and other databases with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "080b9c836c59a179f2be830de3453b7b756ec9f5977db00aecfc5193baa53d5c",
+      "targetHash": "8f39b733b354174a8524bf922e900e796724093406c5a6afe8146360c61b4158",
+      "machineHash": "8f39b733b354174a8524bf922e900e796724093406c5a6afe8146360c61b4158",
+      "machineText": "Integrasi Basis Data",
+      "status": "final",
+      "sourcePreview": "Database Integration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    }
+  }
+}

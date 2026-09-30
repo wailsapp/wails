@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "6e901493ef796ab4cf3d",
+  "sourceFile": "community/showcase/warmine.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "8c5d08c28000f91e8034b2299418ed3905ac9613a81b957fc410966b885646d2",
+      "targetHash": "045f4b4af229b01a8f228192d9be82a0afcd4c2129269e2290a868d999200904",
+      "machineHash": "045f4b4af229b01a8f228192d9be82a0afcd4c2129269e2290a868d999200904",
+      "machineText": "![Captura de tela do WarMine](/assets/showcase-images/warmine1.png)\\\n![Captura de tela do WarMine](/assets/showcase-images/warmine2.png)",
+      "status": "final",
+      "sourcePreview": "![WarMine Screenshot](/assets/showcase-images/warmine1.png)\\ ![WarMine Screenshot](/assets/showcase-…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "79036e3fd9f0d92c72a77bdab1f5ea90e9e903ab22d9530d388ae5d121aee186",
+      "targetHash": "8c47040c9618ff2854e49a6d73181511d59577d5ae3ab718d5a923725f3adc85",
+      "machineHash": "8c47040c9618ff2854e49a6d73181511d59577d5ae3ab718d5a923725f3adc85",
+      "machineText": "O [launcher do Minecraft para WarMine](https://warmine.ru/) é um aplicativo Wails que permite entrar facilmente em servidores de jogo com mods e gerenciar suas contas do jogo.",
+      "status": "final",
+      "sourcePreview": "[Minecraft launcher for WarMine](https://warmine.ru/) is a Wails application,\\ that allows you to ea…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "38b6ff5a6329471d59360a012520bbc2465d0ad34d72c2d40f891e0b9e8de0a4",
+      "targetHash": "e898538b004799c918f510316b858fa052c614ae1f430b02c72079fa4b3790ed",
+      "machineHash": "e898538b004799c918f510316b858fa052c614ae1f430b02c72079fa4b3790ed",
+      "machineText": "O launcher baixa os arquivos do jogo, verifica a integridade deles e inicia o jogo com uma ampla variedade de opções de personalização dos argumentos de inicialização fornecidos pelo backend.",
+      "status": "final",
+      "sourcePreview": "The Launcher downloads the game files, checks their integrity and launches the\\ game with a wide ran…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "e5c9174e162156d69cd7fdbc5cc0d93f838bc98389d3c0d5a412cda5ee282a08",
+      "targetHash": "6fac9e53da37a0425d8822a97280403757a669cdddf7855d08d0cef50a787d69",
+      "machineHash": "6fac9e53da37a0425d8822a97280403757a669cdddf7855d08d0cef50a787d69",
+      "machineText": "O frontend foi desenvolvido em Svelte, o launcher inteiro ocupa 9 MB e é compatível com Windows 7-11.",
+      "status": "final",
+      "sourcePreview": "Frontend is written in Svelte, whole launcher fits in 9MB and supports Windows\\ 7-11.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "934bcbb89b7b754ece789bcb110fd08e51a58fccce2988681360f308ead0f8e7",
+      "machineHash": "934bcbb89b7b754ece789bcb110fd08e51a58fccce2988681360f308ead0f8e7",
+      "machineText": "Um aplicativo de desktop desenvolvido com Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "b8dc39642df62575ea6947be6b3be410d5b9dc980d622212afce873db5424d38",
+      "targetHash": "e9af6c69ee1e2656b0d84c62230ba8386ef77383419452f60e2fe73bdb21f96d",
+      "machineHash": "e9af6c69ee1e2656b0d84c62230ba8386ef77383419452f60e2fe73bdb21f96d",
+      "machineText": "Launcher do Minecraft para WarMine",
+      "status": "final",
+      "sourcePreview": "Minecraft launcher for WarMine",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}

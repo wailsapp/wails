@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2cdf2b79a635456c1953",
+  "sourceFile": "community/showcase/encrypteasy.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "targetHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineText": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "status": "final",
+      "sourcePreview": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "f708f0f6355975a3a4c96db96e2019f05b2c048eb63d482204bcb2711ea07cb6",
+      "targetHash": "525244ee5d14d208c878460661dbc7e46fef42d794ffe71a1983b12acd8606ab",
+      "machineHash": "525244ee5d14d208c878460661dbc7e46fef42d794ffe71a1983b12acd8606ab",
+      "machineText": "*[EncryptEasy](https://www.encrypteasy.app) adalah alat enkripsi PGP yang sederhana dan mudah digunakan untuk mengelola semua kunci milik Anda dan kontak Anda. Enkripsi seharusnya sederhana. Dikembangkan dengan Wails.*",
+      "status": "final",
+      "sourcePreview": "*[EncryptEasy](https://www.encrypteasy.app) is a simple and easy to use PGP\\ encryption tool, managi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "bac75003e20e8935cc50f947b2125378184467253ebb05ea4c856e27f6f2592f",
+      "targetHash": "45abf9af7d3472349084c98b6c8539d32463d710f0f16f6bed74f397aff6c6fa",
+      "machineHash": "45abf9af7d3472349084c98b6c8539d32463d710f0f16f6bed74f397aff6c6fa",
+      "machineText": "Mengenkripsi pesan menggunakan PGP merupakan standar industri. Setiap orang memiliki kunci privat dan kunci publik. Kunci privat Anda harus tetap dirahasiakan agar hanya Anda yang dapat membaca pesan. Kunci publik Anda dibagikan kepada siapa pun yang ingin mengirimi Anda pesan rahasia yang terenkripsi. Mengelola kunci, mengenkripsi pesan, dan mendekripsi pesan seharusnya terasa lancar. EncryptEasy hadir untuk mempermudah semuanya.",
+      "status": "final",
+      "sourcePreview": "Encrypting messages using PGP is the industry standard. Everyone has a private\\ and a public key. Yo…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "targetHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineText": "EncryptEasy",
+      "status": "final",
+      "sourcePreview": "EncryptEasy",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}

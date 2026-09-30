@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "31fb7f1012156713856e",
+  "sourceFile": "migration/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "cc149190687e0c3fcc7a9ee1c83d2da2a0dbbd63a897daeb4f217f8f5b79388b",
+      "targetHash": "32584e82087fc6ad848528e5d6e75265e98678dbcb21a13f578f01dece408bc7",
+      "machineHash": "32584e82087fc6ad848528e5d6e75265e98678dbcb21a13f578f01dece408bc7",
+      "machineText": "移行",
+      "status": "final",
+      "sourcePreview": "Migration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "cc149190687e0c3fcc7a9ee1c83d2da2a0dbbd63a897daeb4f217f8f5b79388b",
+      "targetHash": "32584e82087fc6ad848528e5d6e75265e98678dbcb21a13f578f01dece408bc7",
+      "machineHash": "32584e82087fc6ad848528e5d6e75265e98678dbcb21a13f578f01dece408bc7",
+      "machineText": "移行",
+      "status": "final",
+      "sourcePreview": "Migration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    }
+  }
+}

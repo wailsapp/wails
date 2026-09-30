@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ec859468161eafaf30f0",
+  "sourceFile": "guides/dev/workflow.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "c88156cd560c7b98c8b545414492f6696aa7cdcb450b18c2fda750e0af3d5e23",
+      "targetHash": "19af4557993d9d5925ace8a63b182071bae61a7b610431d424fa01601d344104",
+      "machineHash": "19af4557993d9d5925ace8a63b182071bae61a7b610431d424fa01601d344104",
+      "machineText": "此页面暂为占位内容。完整的开发工作流内容即将发布。",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full development workflow content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "073c1eb86c8053ed17da72b57d768f19375f5279381d52b62b62d109ea5f39de",
+      "targetHash": "1983382d23000fd4e44042772094b061fbfcf796a39cd1202910c8b757a0c775",
+      "machineHash": "1983382d23000fd4e44042772094b061fbfcf796a39cd1202910c8b757a0c775",
+      "machineText": "有关如何组织和开发 Wails 应用程序的指导，请参阅：",
+      "status": "final",
+      "sourcePreview": "For guidance on structuring and developing your Wails application, see:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "8d9addbf6041d5642330e18519a8f1468811ad4c4710c86c41cb31f451e48056",
+      "targetHash": "41fc62d593906083da030e27f30a1256c3221a433128495a2636da4a7f0d6fb5",
+      "machineHash": "41fc62d593906083da030e27f30a1256c3221a433128495a2636da4a7f0d6fb5",
+      "machineText": "[项目结构](/guides/dev/project-structure/)",
+      "status": "final",
+      "sourcePreview": "[Project Structure](/guides/dev/project-structure/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "fcbb38fa38f3bd9010f6b846293369cb9714f958c7c1435358c643ec0ca6035b",
+      "targetHash": "72faafaa1d5e322d3e48e779fe941ae4181b2dacf323520c909f3e8e9c5f31e1",
+      "machineHash": "72faafaa1d5e322d3e48e779fe941ae4181b2dacf323520c909f3e8e9c5f31e1",
+      "machineText": "[使用其他框架进行开发](/guides/dev/frontend-frameworks/)",
+      "status": "final",
+      "sourcePreview": "[Development with Other Frameworks](/guides/dev/frontend-frameworks/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "26af0c79aa1c3596440808a3c777e53c721b51850a3dba2b73a83ec81d631052",
+      "targetHash": "1c75bbd8962b880da8ede22ff0f6c613c3245e1fcfa2452b4ec8b0e2ed5cf197",
+      "machineHash": "1c75bbd8962b880da8ede22ff0f6c613c3245e1fcfa2452b4ec8b0e2ed5cf197",
+      "machineText": "[调试](/guides/dev/debugging/)",
+      "status": "final",
+      "sourcePreview": "[Debugging](/guides/dev/debugging/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "44250085c1b5acb2b97269c09f0f132e807e41d3fa354818f69a5d13bf096f5f",
+      "targetHash": "0fb41d526837db3707a8815c75c41619b3561842abaeef034e95afe870397538",
+      "machineHash": "0fb41d526837db3707a8815c75c41619b3561842abaeef034e95afe870397538",
+      "machineText": "[测试](/guides/testing/)",
+      "status": "final",
+      "sourcePreview": "[Testing](/guides/testing/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8d9502ba2c70bb6736fba283f329e9ccdbc97790530a3b4a0cc7e4ffe8ee5f10",
+      "targetHash": "8140644173ce9d3dc0a942ef154b8c03f12fd13d1739406093211101e2fad4df",
+      "machineHash": "8140644173ce9d3dc0a942ef154b8c03f12fd13d1739406093211101e2fad4df",
+      "machineText": "开发 Wails v3 应用程序的推荐工作流",
+      "status": "final",
+      "sourcePreview": "A recommended workflow for developing Wails v3 applications",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d47ba937699891e4f59ba78f0d1cd89950eaaf9eaec18b6e9ba193331ea33e44",
+      "targetHash": "547de3f50a3597375f2882f9839aa9834ffa5ef596ccb89eeb8fb08b61965520",
+      "machineHash": "547de3f50a3597375f2882f9839aa9834ffa5ef596ccb89eeb8fb08b61965520",
+      "machineText": "开发工作流",
+      "status": "final",
+      "sourcePreview": "Development Workflow",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "84220d31f800dcb22a5e",
+  "sourceFile": "community/showcase/scriptbar.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "targetHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "machineHash": "0cbce28325865db8b1d0834e60509289e4e6e05fe5a08325480b411d32bb9ee0",
+      "machineText": "![ScriptBar](/assets/showcase-images/scriptbar.webp)",
+      "status": "final",
+      "sourcePreview": "![ScriptBar](/assets/showcase-images/scriptbar.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "055c47d2b759e5946aac414285f8bdc803175d60e9e482e2efd71b08f4a54ed6",
+      "targetHash": "a722f30b7b28218717ae622df17eb5d5a1b2d52015c7290a43442c63115721f3",
+      "machineHash": "a722f30b7b28218717ae622df17eb5d5a1b2d52015c7290a43442c63115721f3",
+      "machineText": "[ScriptBar](https://GitHub.com/raguay/ScriptBarApp) 是一個用來顯示指令碼或 [Node-Red](https://nodered.org) 伺服器輸出的程式。它會執行 EmailIt 程式中定義的指令碼，並顯示其輸出。您可以使用 xBar 或 TextBar 的指令碼，但目前只有 TextBar 指令碼能正常運作。它也會顯示您系統上指令碼的輸出。ScriptBar 不會將這些輸出放在選單列中，而是全部集中於一個方便檢視的視窗。您可以使用多個分頁來顯示許多不同的內容，也可以保留最常造訪網站的連結。",
+      "status": "final",
+      "sourcePreview": "[ScriptBar](https://GitHub.com/raguay/ScriptBarApp) is a program to show the\\ output of scripts or […",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineText": "使用 Wails 建置的桌面應用程式",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "targetHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "machineHash": "8d80a42e215dff5c3b2248af2c3820f0f740f5742279e4ea7ee53c51238f87e2",
+      "machineText": "ScriptBar",
+      "status": "final",
+      "sourcePreview": "ScriptBar",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}

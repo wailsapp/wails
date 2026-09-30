@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "312182e060a9be59072d",
+  "sourceFile": "features/events/custom.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7101896334776ea2527d0eb9ad7ad7dfc21a5ad407a6398fe9ec415375b3a7da",
+      "targetHash": "dc661c34c2a030e40890867d8ef7bff4e8ed192bc784314ecef229863a7815cf",
+      "machineHash": "dc661c34c2a030e40890867d8ef7bff4e8ed192bc784314ecef229863a7815cf",
+      "machineText": "사용자 정의 이벤트를 사용하면 이벤트 시스템을 통해 Go 백엔드와 프런트엔드 간에 데이터를 전송할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "Custom events let you send data between your Go backend and frontend using the event system.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:37Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ad3a8e429939a4b24472033c630d7a7ae9374eadfc208d1ba95bb53fa6708fe0",
+      "targetHash": "59f527dc51343be5d78db547c3813f3be15177f7b4630f2e261c2115f75fc0a2",
+      "machineHash": "59f527dc51343be5d78db547c3813f3be15177f7b4630f2e261c2115f75fc0a2",
+      "machineText": "사용자 정의 이벤트에 관한 전체 문서는 [이벤트 시스템](/features/events/system/#custom-events) 가이드에서 확인할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "Full documentation of custom events is available in the [Event System](/features/events/system/#cust…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:37Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "b6806ad873c1c4fc4051dee73af18115f50bbf4038b85008af2bea878889f5dd",
+      "targetHash": "d85cb3290e2cfd97cf759f59dd25f3736c89dceb01195b12b7c02979571c6852",
+      "machineHash": "d85cb3290e2cfd97cf759f59dd25f3736c89dceb01195b12b7c02979571c6852",
+      "machineText": "Wails v3에서 자체 이벤트 발생 및 수신하기",
+      "status": "final",
+      "sourcePreview": "Emitting and listening to your own events in Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:37Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "dc46c41d4485638ccd949134dd26edf81a3f9f8be08411ff1caf3d2320e26c15",
+      "targetHash": "0a2a34134f608bb20b9f3663bd10f426b5876f94ceec598301e46814054494ba",
+      "machineHash": "0a2a34134f608bb20b9f3663bd10f426b5876f94ceec598301e46814054494ba",
+      "machineText": "사용자 정의 이벤트",
+      "status": "final",
+      "sourcePreview": "Custom Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:37Z"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "78412c2a3c8910079a87",
+  "sourceFile": "community/showcase/bulletinboard.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "targetHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "machineHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "machineText": "![BulletinBoard](/assets/showcase-images/bboard.webp)",
+      "status": "final",
+      "sourcePreview": "![BulletinBoard](/assets/showcase-images/bboard.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "101473fcfd92f30446c502de0bc357dbde219775d10357ce617a323129af3031",
+      "targetHash": "e8244387a296b0edb544fe89c1a76d913b337358e83b3d00cc89badd4fa925c9",
+      "machineHash": "e8244387a296b0edb544fe89c1a76d913b337358e83b3d00cc89badd4fa925c9",
+      "machineText": "[BulletinBoard](https://github.com/raguay/BulletinBoard) 애플리케이션은 정적 메시지를 표시하거나 스크립트에서 사용할 정보를 사용자에게 받는 대화 상자를 제공하는 다용도 메시지 보드입니다. 새 대화 상자를 만드는 TUI가 있으며, 이렇게 만든 대화 상자는 나중에 사용자에게 정보를 받는 데 사용할 수 있습니다. 시스템에서 계속 실행되다가 필요할 때 정보를 표시한 후 다시 숨도록 설계되었습니다. 제 시스템에서는 파일을 감시하다가 파일이 변경되면 그 내용을 BulletinBoard로 보내는 프로세스를 사용합니다. 제 워크플로와 매우 잘 맞습니다. 프로그램에 정보를 보내는 [Alfred 워크플로](https://github.com/raguay/MyAlfred/blob/master/Alfred%205/EmailIt.alfredworkflow)도 있습니다. 이 워크플로는 [EmailIt](https://github.com/raguay/EmailIt)과 함께 사용하는 용도로도 제공됩니다.",
+      "status": "final",
+      "sourcePreview": "The [BulletinBoard](https://github.com/raguay/BulletinBoard) application is a\\ versital message boar…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "targetHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "machineHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "machineText": "BulletinBoard",
+      "status": "final",
+      "sourcePreview": "BulletinBoard",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

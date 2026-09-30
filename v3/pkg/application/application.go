@@ -64,9 +64,6 @@ func New(appOptions Options) *App {
 		}
 	}
 
-	// Set up signal handling (platform-specific)
-	result.setupSignalHandler(appOptions)
-
 	result.logStartup()
 	result.logPlatformInfo()
 
@@ -771,6 +768,9 @@ func (a *App) Run() error {
 	if err := startup(); err != nil {
 		return err
 	}
+	// Handle signals only after the application is ready to quit.
+	a.setupSignalHandler(a.options)
+
 	return a.impl.run()
 }
 

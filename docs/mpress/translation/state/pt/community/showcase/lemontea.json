@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "37dcc2cbff6ddaf56d0e",
+  "sourceFile": "community/showcase/lemontea.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "targetHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "machineHash": "bb664e0e6ed56c3a1cce10a3a6da8e579b90b5740737f9358cc8f60238166006",
+      "machineText": "![lemontea](/assets/showcase-images/lemontea_1.png)",
+      "status": "final",
+      "sourcePreview": "![lemontea](/assets/showcase-images/lemontea_1.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "c179846817f47c12a67eadff23312b049ad4d536ff23cbc6b157493cbbd3247e",
+      "targetHash": "32020d852c1d610fca4273e0fb3c8436ce38f1810b2db85d4470904e37dd6126",
+      "machineHash": "32020d852c1d610fca4273e0fb3c8436ce38f1810b2db85d4470904e37dd6126",
+      "machineText": "[lemontea](https://github.com/MikeLINGxZ/lemontea) — Um cliente de IA para desktop multiplataforma desenvolvido com Wails v3, Go, React e TypeScript. Ele se concentra em chat, chamadas de ferramentas, execução de fluxos de trabalho com vários agentes e integração local com o desktop.",
+      "status": "final",
+      "sourcePreview": "[lemontea](https://github.com/MikeLINGxZ/lemontea) - A cross-platform AI desktop client built with W…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "9f9cced83647ef87825107c75c62a16bfb0c0e507928081ddca26fb41797b092",
+      "targetHash": "bdd5eb6c0e843b1555509957ddb471ed566c551ab56dcb163826b66f4ab91da2",
+      "machineHash": "bdd5eb6c0e843b1555509957ddb471ed566c551ab56dcb163826b66f4ab91da2",
+      "machineText": "Um cliente de IA para desktop multiplataforma desenvolvido com Wails v3.",
+      "status": "final",
+      "sourcePreview": "A cross-platform AI desktop client built with Wails v3.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "targetHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "machineHash": "415bcad1cc4d4cdee7ac6e734d12d3284dd55b4b14bdd9fcf8f196c4066ea89f",
+      "machineText": "lemontea",
+      "status": "final",
+      "sourcePreview": "lemontea",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "a3f36f3e6216adb8b026",
+  "sourceFile": "community/showcase/snippetexpander.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ad46622b8630296d91339cd8837101c0a1f500da5ec2e92e7ea1e25582ca9af2",
+      "targetHash": "728638680b0d35ddd644723e143051098f83256461ddd3fd8cbc42a0ba7ae205",
+      "machineHash": "728638680b0d35ddd644723e143051098f83256461ddd3fd8cbc42a0ba7ae205",
+      "machineText": "![Captura de tela do Snippet Expander](/assets/showcase-images/snippetexpandergui-select-snippet.png)",
+      "status": "final",
+      "sourcePreview": "![Snippet Expander Screenshot](/assets/showcase-images/snippetexpandergui-select-snippet.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "c1e3c97770cb243b46168f2b2a4004bfa22369c1693265807023f2dc6883f569",
+      "targetHash": "cc2ee9cbbb745ca3eaf04e993e95ffe26d4915bbe725e8731d14b41d264912d1",
+      "machineHash": "cc2ee9cbbb745ca3eaf04e993e95ffe26d4915bbe725e8731d14b41d264912d1",
+      "machineText": "Captura de tela da janela Select Snippet do Snippet Expander",
+      "status": "final",
+      "sourcePreview": "Screenshot of Snippet Expander's Select Snippet window",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "6fe249dbf706e39753e1a6c9054a82fc76676d297a5dc344fe0d12699ea2d528",
+      "targetHash": "89664081f2cf83b7a1efcb4104e1734eb1867691fa80187ea3dff60538b58fd1",
+      "machineHash": "89664081f2cf83b7a1efcb4104e1734eb1867691fa80187ea3dff60538b58fd1",
+      "machineText": "![Captura de tela do Snippet Expander](/assets/showcase-images/snippetexpandergui-add-snippet.png)",
+      "status": "final",
+      "sourcePreview": "![Snippet Expander Screenshot](/assets/showcase-images/snippetexpandergui-add-snippet.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "7c53e7f78938393dddfa6304592e865d751c55cb9d1104923229ac7895862fd6",
+      "targetHash": "feff42ad7687304ae288497c8b1e6db3d47dc07ae5a28e5b9ca68df4fb0d3100",
+      "machineHash": "feff42ad7687304ae288497c8b1e6db3d47dc07ae5a28e5b9ca68df4fb0d3100",
+      "machineText": "Captura de tela da tela Add Snippet do Snippet Expander",
+      "status": "final",
+      "sourcePreview": "Screenshot of Snippet Expander's Add Snippet screen",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "eccac77f3af258e4b7b3e8117ad21af3d6612daaefee28efa5908701d853cbdc",
+      "targetHash": "bd04233f2abec091413ab0f95d3dbd9a8c05d5c0c79254efefd96f575873c945",
+      "machineHash": "bd04233f2abec091413ab0f95d3dbd9a8c05d5c0c79254efefd96f575873c945",
+      "machineText": "![Captura de tela do Snippet Expander](/assets/showcase-images/snippetexpandergui-search-and-paste.png)",
+      "status": "final",
+      "sourcePreview": "![Snippet Expander Screenshot](/assets/showcase-images/snippetexpandergui-search-and-paste.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "67c3990ba0350b2220f2e4f564322cbfc371fe76b11ca020113df769c74ffe27",
+      "targetHash": "6650f539c2c558f279d88267d71d326fe0fe167a8617e6da19f388d503cbdb0f",
+      "machineHash": "6650f539c2c558f279d88267d71d326fe0fe167a8617e6da19f388d503cbdb0f",
+      "machineText": "Captura de tela da janela Search \u0026 Paste do Snippet Expander",
+      "status": "final",
+      "sourcePreview": "Screenshot of Snippet Expander's Search \u0026 Paste window",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0007-text-01": {
+      "sourceHash": "2fe4335991f369d99265fd9d0eb4373f885aa0112896c6647cd75fe502cf8fb0",
+      "targetHash": "e203c2f78dd2c25de90760360ac0ffadf1ff8799ee9a1a5544e2acee5b973939",
+      "machineHash": "e203c2f78dd2c25de90760360ac0ffadf1ff8799ee9a1a5544e2acee5b973939",
+      "machineText": "[Snippet Expander](https://snippetexpander.org) é o «seu pequeno assistente de expansão de trechos de texto» para Linux.",
+      "status": "final",
+      "sourcePreview": "[Snippet Expander](https://snippetexpander.org) is \"Your little expandable text\\ snippets helper\", f…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0008-text-01": {
+      "sourceHash": "957f26dc1361991a0c3b87d15b0d85304eca2e12b3c429fa0632869fbe137d58",
+      "targetHash": "f21cda5a56497acfb491409b4eee94f44a2a54bd7bca55bb113e09e3b6523d27",
+      "machineHash": "f21cda5a56497acfb491409b4eee94f44a2a54bd7bca55bb113e09e3b6523d27",
+      "machineText": "O Snippet Expander consiste em um aplicativo com interface gráfica criado com Wails para gerenciar trechos e configurações, além de um modo de janela Search \u0026 Paste para selecionar e colar rapidamente um trecho.",
+      "status": "final",
+      "sourcePreview": "Snippet Expander comprises of a GUI application built with Wails for managing\\ snippets and settings…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0009-text-01": {
+      "sourceHash": "54913ac4ef127e1014f3bf9925cad5c29e332a53d0787c0ff624f58d51973abc",
+      "targetHash": "15652357487f3af7640f4ad6588de2033ac93c4670328ac16f1e9c2b32b2161d",
+      "machineHash": "15652357487f3af7640f4ad6588de2033ac93c4670328ac16f1e9c2b32b2161d",
+      "machineText": "A interface gráfica baseada em Wails, a CLI em go-lang e o daemon de expansão automática em vala-lang se comunicam com um daemon em go-lang via D-Bus. O daemon realiza a maior parte do trabalho: gerencia o banco de dados de trechos e as configurações comuns e fornece serviços para expandir e colar trechos, entre outras tarefas.",
+      "status": "final",
+      "sourcePreview": "The Wails based GUI, go-lang CLI and vala-lang auto expander daemon all\\ communicate with a go-lang …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0010-text-01": {
+      "sourceHash": "9186f5fd4a6b899d853428739e2576257338c5290f35e51669ed63efff1a8bd3",
+      "targetHash": "8806ab482828600f742026880c0c75d759883b204fda7da26e3b5fad798b6e27",
+      "machineHash": "8806ab482828600f742026880c0c75d759883b204fda7da26e3b5fad798b6e27",
+      "machineText": "Consulte o [código-fonte](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38) para ver como o aplicativo Wails envia mensagens da interface do usuário ao backend, que depois são encaminhadas ao daemon, e como assina um evento D-Bus para monitorar alterações feitas nos trechos por outra instância do aplicativo ou pela CLI e exibi-las instantaneamente na interface por meio de um evento do Wails.",
+      "status": "final",
+      "sourcePreview": "Check out the\\ [source code](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippe…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "015186fbbc9e878e2b9ac5b6a407cfc65aebc6308df648b5496030d16f7e952a",
+      "machineHash": "015186fbbc9e878e2b9ac5b6a407cfc65aebc6308df648b5496030d16f7e952a",
+      "machineText": "Um aplicativo para desktop criado com Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "61e7fc36cab6517f06beced9254747e272591684bc933c2c3b60860a0726460f",
+      "targetHash": "61e7fc36cab6517f06beced9254747e272591684bc933c2c3b60860a0726460f",
+      "machineHash": "61e7fc36cab6517f06beced9254747e272591684bc933c2c3b60860a0726460f",
+      "machineText": "Snippet Expander",
+      "status": "final",
+      "sourcePreview": "Snippet Expander",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "38d341732f0c7bab1aad",
+  "sourceFile": "community/showcase/hiposter.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7ea7924ffe105e62309c874f497b19b73041e930326e931cfc839ca297dfcb9e",
+      "targetHash": "7ea7924ffe105e62309c874f497b19b73041e930326e931cfc839ca297dfcb9e",
+      "machineHash": "7ea7924ffe105e62309c874f497b19b73041e930326e931cfc839ca297dfcb9e",
+      "machineText": "![hiposter](/assets/showcase-images/hiposter.webp)",
+      "status": "final",
+      "sourcePreview": "![hiposter](/assets/showcase-images/hiposter.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "4f8eaa26ab7f076d017fa57669556b3f0b6f2794c37259063abb2988aee0a763",
+      "targetHash": "a5113427599810a8b1edd8897696bb158eeb190b3acbadc1bc5ff14cce56b859",
+      "machineHash": "a5113427599810a8b1edd8897696bb158eeb190b3acbadc1bc5ff14cce56b859",
+      "machineText": "[hiposter](https://github.com/obity/hiposter) est un outil client simple et efficace pour tester les API http. Il repose sur Wails, Go et sveltejs.",
+      "status": "final",
+      "sourcePreview": "[hiposter](https://github.com/obity/hiposter) is a simple and efficient http API\\ testing client too…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "9878e83ddd3682f95b400f0c08e10e03c2e1b8152e31e40c312e49260fde38f9",
+      "machineHash": "9878e83ddd3682f95b400f0c08e10e03c2e1b8152e31e40c312e49260fde38f9",
+      "machineText": "Une application de bureau développée avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "ce663866cb7bcbfe070a4570dc8305a837332c1e3223f3034826954e2b6f8fbf",
+      "targetHash": "ce663866cb7bcbfe070a4570dc8305a837332c1e3223f3034826954e2b6f8fbf",
+      "machineHash": "ce663866cb7bcbfe070a4570dc8305a837332c1e3223f3034826954e2b6f8fbf",
+      "machineText": "hiposter",
+      "status": "final",
+      "sourcePreview": "hiposter",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    }
+  }
+}

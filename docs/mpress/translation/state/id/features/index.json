@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4bc85eb5a97009954582",
+  "sourceFile": "features/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "5697d03daef4de9cf8db7cb11755f71358a32b4acca94909a9d449f71040d2dd",
+      "targetHash": "7f1056e7c29d1db573b4dc724c17766a1946297fc2ab928abb362febd9869e98",
+      "machineHash": "7f1056e7c29d1db573b4dc724c17766a1946297fc2ab928abb362febd9869e98",
+      "machineText": "Fitur",
+      "status": "final",
+      "sourcePreview": "Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "5697d03daef4de9cf8db7cb11755f71358a32b4acca94909a9d449f71040d2dd",
+      "targetHash": "7f1056e7c29d1db573b4dc724c17766a1946297fc2ab928abb362febd9869e98",
+      "machineHash": "7f1056e7c29d1db573b4dc724c17766a1946297fc2ab928abb362febd9869e98",
+      "machineText": "Fitur",
+      "status": "final",
+      "sourcePreview": "Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2d6d331b2bbc42d1ed8a",
+  "sourceFile": "community/showcase/wally.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "a124cbd17b231fbfcaa3bc6d26abebaefa4def935c1ec73149cec7faddc21f40",
+      "targetHash": "01afb41fd9eca6f473368f189e8b181d53c9d736ca9d828896361442bda2dc67",
+      "machineHash": "01afb41fd9eca6f473368f189e8b181d53c9d736ca9d828896361442bda2dc67",
+      "machineText": "![Captura de tela do Wally](/assets/showcase-images/wally.webp)",
+      "status": "final",
+      "sourcePreview": "![Wally Screenshot](/assets/showcase-images/wally.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2d2a05322d283648c7a9c276b5c012f87b095e3988571ba2cb5824a6fe4d0656",
+      "targetHash": "84322fe564c797a4d03c21872a96e66f3975cafa238bc4bf9a249e5c7c206597",
+      "machineHash": "84322fe564c797a4d03c21872a96e66f3975cafa238bc4bf9a249e5c7c206597",
+      "machineText": "[Wally](https://ergodox-ez.com/pages/wally) é o gravador oficial de firmware para teclados \\\n[Ergodox](https://ergodox-ez.com/). Ele tem uma ótima aparência e é um excelente \\\nexemplo do que você pode fazer com o Wails: combinar o poder do \\\nGo com as avançadas ferramentas gráficas do mundo do desenvolvimento web.",
+      "status": "final",
+      "sourcePreview": "[Wally](https://ergodox-ez.com/pages/wally) is the official firmware flasher for\\ [Ergodox](https://…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineText": "Um aplicativo para desktop desenvolvido com Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "targetHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "machineHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "machineText": "Wally",
+      "status": "final",
+      "sourcePreview": "Wally",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}

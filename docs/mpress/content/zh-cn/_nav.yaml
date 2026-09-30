@@ -1,0 +1,310 @@
+- label: "首页"
+  link: "/"
+- label: "为什么选择 Wails？"
+  link: "/quick-start/why-wails/"
+- label: "快速入门"
+  collapsed: false
+  items:
+    - label: "安装"
+      link: "/quick-start/installation/"
+    - label: "创建第一个应用"
+      link: "/quick-start/first-app/"
+    - label: "后续步骤"
+      link: "/quick-start/next-steps/"
+- label: "教程"
+  collapsed: true
+  autogenerate:
+    directory: "tutorials"
+- label: "核心概念"
+  collapsed: true
+  items:
+    - label: "Wails 工作原理"
+      link: "/concepts/architecture/"
+    - label: "管理器 API"
+      link: "/concepts/manager-api/"
+    - label: "应用生命周期"
+      link: "/concepts/lifecycle/"
+    - label: "Go 与前端之间的桥接"
+      link: "/concepts/bridge/"
+    - label: "构建系统"
+      link: "/concepts/build-system/"
+- label: "功能"
+  collapsed: true
+  items:
+    - label: "窗口"
+      collapsed: true
+      items:
+        - label: "窗口基础"
+          link: "/features/windows/basics/"
+        - label: "窗口选项"
+          link: "/features/windows/options/"
+        - label: "刘海屏窗口"
+          link: "/features/windows/notch-windows/"
+        - label: "权限"
+          link: "/features/windows/permissions/"
+        - label: "多窗口"
+          link: "/features/windows/multiple/"
+        - label: "无边框窗口"
+          link: "/features/windows/frameless/"
+        - label: "窗口事件"
+          link: "/features/windows/events/"
+    - label: "菜单"
+      collapsed: true
+      items:
+        - label: "应用菜单"
+          link: "/features/menus/application/"
+        - label: "上下文菜单"
+          link: "/features/menus/context/"
+        - label: "系统托盘菜单"
+          link: "/features/menus/systray/"
+        - label: "菜单参考"
+          link: "/features/menus/reference/"
+    - label: "绑定与服务"
+      collapsed: true
+      items:
+        - label: "方法绑定"
+          link: "/features/bindings/methods/"
+        - label: "服务"
+          link: "/features/bindings/services/"
+        - label: "数据模型"
+          link: "/features/bindings/models/"
+        - label: "枚举"
+          link: "/features/bindings/enums/"
+        - label: "高级绑定"
+          link: "/features/bindings/advanced/"
+        - label: "最佳实践"
+          link: "/features/bindings/best-practices/"
+    - label: "事件"
+      collapsed: true
+      items:
+        - label: "事件系统"
+          link: "/features/events/system/"
+        - label: "应用事件"
+          link: "/features/events/application/"
+        - label: "窗口事件"
+          link: "/features/events/window/"
+        - label: "自定义事件"
+          link: "/features/events/custom/"
+    - label: "对话框"
+      collapsed: true
+      items:
+        - label: "文件对话框"
+          link: "/features/dialogs/file/"
+        - label: "消息对话框"
+          link: "/features/dialogs/message/"
+        - label: "自定义对话框"
+          link: "/features/dialogs/custom/"
+    - label: "开机自启动"
+      collapsed: true
+      autogenerate:
+        directory: "features/autostart"
+    - label: "剪贴板"
+      collapsed: true
+      autogenerate:
+        directory: "features/clipboard"
+    - label: "浏览器"
+      collapsed: true
+      autogenerate:
+        directory: "features/browser"
+    - label: "拖放"
+      collapsed: true
+      autogenerate:
+        directory: "features/drag-and-drop"
+    - label: "键盘"
+      collapsed: true
+      autogenerate:
+        directory: "features/keyboard"
+    - label: "通知"
+      collapsed: true
+      autogenerate:
+        directory: "features/notifications"
+    - label: "屏幕"
+      collapsed: true
+      autogenerate:
+        directory: "features/screens"
+    - label: "环境"
+      collapsed: true
+      autogenerate:
+        directory: "features/environment"
+    - label: "平台特定功能"
+      collapsed: true
+      autogenerate:
+        directory: "features/platform"
+- label: "移动端"
+  collapsed: true
+  items:
+    - label: "概述"
+      link: "/guides/mobile/"
+    - label: "创建第一个移动应用"
+      link: "/guides/mobile/first-mobile-app/"
+    - label: "iOS"
+      link: "/guides/mobile/ios/"
+    - label: "Android"
+      link: "/guides/mobile/android/"
+    - label: "移动端 API"
+      link: "/guides/mobile/mobile-api/"
+- label: "实验性功能"
+  collapsed: true
+  items:
+    - label: "概述"
+      link: "/experimental/"
+    - label: "Wake"
+      link: "/experimental/wake/"
+    - label: "LLM 控制（MCP）"
+      link: "/guides/mcp-service/"
+- label: "指南"
+  collapsed: true
+  items:
+    - label: "开发"
+      collapsed: true
+      items:
+        - label: "项目结构"
+          link: "/guides/dev/project-structure/"
+        - label: "开发工作流"
+          link: "/guides/dev/workflow/"
+        - label: "其他框架"
+          link: "/guides/dev/frontend-frameworks/"
+        - label: "调试"
+          link: "/guides/dev/debugging/"
+        - label: "测试"
+          link: "/guides/testing/"
+    - label: "构建与打包"
+      collapsed: true
+      items:
+        - label: "构建应用"
+          link: "/guides/build/building/"
+        - label: "自定义构建"
+          link: "/guides/build/customization/"
+        - label: "跨平台构建"
+          link: "/guides/build/cross-platform/"
+        - label: "代码签名"
+          link: "/guides/build/signing/"
+        - label: "Windows 打包"
+          link: "/guides/build/windows/"
+        - label: "macOS 打包"
+          link: "/guides/build/macos/"
+        - label: "私有 macOS API"
+          link: "/guides/build/private-macos-apis/"
+        - label: "Linux 打包"
+          link: "/guides/build/linux/"
+        - label: "MSIX 打包"
+          link: "/guides/build/msix/"
+        - label: "混淆构建"
+          link: "/guides/build/obfuscation/"
+    - label: "分发"
+      collapsed: true
+      items:
+        - label: "应用内更新程序"
+          link: "/guides/updater/"
+        - label: "文件关联"
+          link: "/guides/file-associations/"
+        - label: "自定义协议"
+          link: "/guides/distribution/custom-protocols/"
+        - label: "单实例"
+          link: "/guides/single-instance/"
+    - label: "集成模式"
+      collapsed: true
+      items:
+        - label: "前端路由"
+          link: "/guides/routing/"
+        - label: "使用 Gin 路由器"
+          link: "/guides/gin-routing/"
+        - label: "Gin 服务"
+          link: "/guides/gin-services/"
+        - label: "数据库集成"
+          link: "/guides/patterns/database/"
+        - label: "REST API"
+          link: "/guides/patterns/rest-api/"
+    - label: "高级主题"
+      collapsed: true
+      items:
+        - label: "服务器构建"
+          link: "/guides/server-build/"
+        - label: "自定义模板"
+          link: "/guides/advanced/custom-templates/"
+        - label: "WML（Wails 标记语言）"
+          link: "/guides/advanced/wml/"
+        - label: "Panic 处理"
+          link: "/guides/panic-handling/"
+        - label: "安全最佳实践"
+          link: "/guides/security/"
+- label: "API 参考"
+  collapsed: true
+  items:
+    - label: "概述"
+      link: "/reference/overview/"
+    - label: "应用"
+      link: "/reference/application/"
+    - label: "窗口"
+      link: "/reference/window/"
+    - label: "菜单"
+      link: "/reference/menu/"
+    - label: "事件"
+      link: "/reference/events/"
+    - label: "对话框"
+      link: "/reference/dialogs/"
+    - label: "前端运行时"
+      link: "/reference/frontend-runtime/"
+    - label: "CLI"
+      link: "/reference/cli/"
+    - label: "更新清单协议"
+      link: "/reference/update-manifest/"
+- label: "参与贡献"
+  collapsed: true
+  items:
+    - label: "修正文档"
+      link: "/contributing/documentation/"
+    - label: "贡献指南"
+      link: "/contributing/"
+    - label: "技术概述"
+      link: "/contributing/overview/"
+    - label: "入门"
+      link: "/contributing/getting-started/"
+    - label: "开发环境设置"
+      link: "/contributing/setup/"
+    - label: "编码规范"
+      link: "/contributing/standards/"
+- label: "迁移"
+  collapsed: true
+  items:
+    - label: "从 v2 迁移到 v3"
+      link: "/migration/v2-to-v3/"
+    - label: "从 Electron 迁移"
+      link: "/migration/from-electron/"
+- label: "故障排除"
+  collapsed: true
+  items:
+    - label: "macOS 上的 Syso 文件"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "RDP 问题"
+          link: "/troubleshooting/windows/rdp/"
+- label: "社区"
+  collapsed: true
+  items:
+    - label: "链接"
+      link: "/community/links/"
+    - label: "模板"
+      link: "/community/templates/"
+    - label: "媒体素材"
+      link: "/community/media/"
+    - label: "案例展示"
+      collapsed: true
+      items:
+        - label: "概述"
+          link: "/community/showcase/"
+        - label: "应用"
+          autogenerate:
+            directory: "community/showcase"
+- label: "新功能"
+  link: "/whats-new/"
+- label: "状态"
+  link: "/status/"
+- label: "更新日志"
+  link: "/changelog/"
+- label: "赞助"
+  link: "https://github.com/sponsors/leaanthony"
+- label: "致谢"
+  link: "/credits/"

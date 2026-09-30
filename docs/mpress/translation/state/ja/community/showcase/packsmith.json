@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "340eea887f00d84772f2",
+  "sourceFile": "community/showcase/packsmith.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "932e896430131c38239abc49a8f4e4899372301dfb4f64fe3d7d170795a72319",
+      "targetHash": "e954825e369464932f577ed15aa9981a867a52c8fd4daf7c6825b59271c53eac",
+      "machineHash": "e954825e369464932f577ed15aa9981a867a52c8fd4daf7c6825b59271c53eac",
+      "machineText": "![Packsmithのスクリーンショット](/assets/showcase-images/packsmith-screenshot.webp)",
+      "status": "final",
+      "sourcePreview": "![Packsmith Screenshot](/assets/showcase-images/packsmith-screenshot.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "46111fe2df653c08911ac749296553db05a564dcbb66f435edc10fb54a9a04d6",
+      "targetHash": "c555de73f7bec68a70a821f8fde9a61f14e5db1a3835ad04933dde48b3280506",
+      "machineHash": "c555de73f7bec68a70a821f8fde9a61f14e5db1a3835ad04933dde48b3280506",
+      "machineText": "[Packsmith](https://github.com/sqot0/packsmith)は、Minecraftのmodパックを管理するためのオープンソースアプリケーションです。以下のことができます。",
+      "status": "final",
+      "sourcePreview": "[Packsmith](https://github.com/sqot0/packsmith) is an open source application for managing Minecraft…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "c8d2da6e4bc3bd6772a232352afab58dff5e816586545baaedc78ac056775f98",
+      "targetHash": "d59926fe281499b6c0a90f3c18b4b44dae8d5d6591bfb14e047a82aca367f7f0",
+      "machineHash": "d59926fe281499b6c0a90f3c18b4b44dae8d5d6591bfb14e047a82aca367f7f0",
+      "machineText": "Forge、Fabric、Neoforge、Quiltの各modローダーを使用してmodパックを管理できます。",
+      "status": "final",
+      "sourcePreview": "Manage modpacks with Forge, Fabric, Neoforge, or Quilt mod loaders.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "e0999c02823685af1b1606fdfd868135d19b912334c6c18a9be902458adf39b3",
+      "targetHash": "9378d93069e3ae258ec6dbf45a3b28e79716526a0f67772e0d46354483c5a343",
+      "machineHash": "9378d93069e3ae258ec6dbf45a3b28e79716526a0f67772e0d46354483c5a343",
+      "machineText": "ModrinthとCurseForgeからmodを検索してダウンロードできます。",
+      "status": "final",
+      "sourcePreview": "Search and download mods from Modrinth and CurseForge.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "9123c223edc18ebff5904b418621e19b6b137bb04c6d177a500beaedffa67d2d",
+      "targetHash": "cbba1c65a43d729a6cf391ae4a522d5093e932856bf7b95dd027f1e8cd88a730",
+      "machineHash": "cbba1c65a43d729a6cf391ae4a522d5093e932856bf7b95dd027f1e8cd88a730",
+      "machineText": "クライアント用とサーバー用のmodを分けて管理できます。",
+      "status": "final",
+      "sourcePreview": "Separate mods for client and server.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "6413845d8d0a9778a0fa6e580d48199159d444809792a4c143616400e52a0e5e",
+      "targetHash": "f2cc74d7604a7a713e53ea7e05be709f789a8c2fed584c68d9b79937fe6aa6c7",
+      "machineHash": "f2cc74d7604a7a713e53ea7e05be709f789a8c2fed584c68d9b79937fe6aa6c7",
+      "machineText": "modパック内のmodを更新したり、バージョンを変更したり、削除したりできます。",
+      "status": "final",
+      "sourcePreview": "Update, change versions, or delete mods from your modpack.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "4f260277d0f7d25b36a1e8739f194f7bafaa73fc391cc1ac0bd1c36270a70c7d",
+      "machineHash": "4f260277d0f7d25b36a1e8739f194f7bafaa73fc391cc1ac0bd1c36270a70c7d",
+      "machineText": "Wailsで構築されたデスクトップアプリケーション",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "targetHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "machineHash": "eaa74cf4bed9c9738d43f00ca16a7b4383e22e31dfc32b64a39b6b342b2974bd",
+      "machineText": "Packsmith",
+      "status": "final",
+      "sourcePreview": "Packsmith",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    }
+  }
+}

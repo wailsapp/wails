@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "c0bffb400051f6f092c1",
+  "sourceFile": "community/showcase/tinyrdm.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "fdd37cab9b411fc9e8b97c96a815db54edb8b8ced13a3820f110a0f3ccb9886e",
+      "targetHash": "9c6f70b02cb2671b127ca9a8e1b2a29c8904ef11d779452a93eb187ce32cefeb",
+      "machineHash": "9c6f70b02cb2671b127ca9a8e1b2a29c8904ef11d779452a93eb187ce32cefeb",
+      "machineText": "![Capture d’écran de Tiny RDM](/assets/showcase-images/tiny-rdm1.webp)\\\n![Capture d’écran de Tiny RDM](/assets/showcase-images/tiny-rdm2.webp)",
+      "status": "final",
+      "sourcePreview": "![Tiny RDM Screenshot](/assets/showcase-images/tiny-rdm1.webp)\\ ![Tiny RDM Screenshot](/assets/showc…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "7dca47eaee2bd183bed31a0c0541a299a05fb69f31634f95ad7370cd924f985e",
+      "targetHash": "109c67cd984201408b7d12fac057f02954db74cda1621685035a7b4749faf92d",
+      "machineHash": "109c67cd984201408b7d12fac057f02954db74cda1621685035a7b4749faf92d",
+      "machineText": "L’application [Tiny RDM](https://redis.tinycraft.cc/) est une interface graphique Redis open source,\\\nmoderne et légère. Elle offre une belle interface utilisateur et une gestion intuitive des bases de données\\\nRedis, et elle est compatible avec Windows, Mac et Linux. Elle permet d’effectuer visuellement\\\ndes opérations sur les données clé-valeur, prend en charge diverses options de décodage et d’affichage des données,\\\nintègre une console pour exécuter des commandes, permet de consulter les journaux des requêtes lentes, et bien plus encore.",
+      "status": "final",
+      "sourcePreview": "The [Tiny RDM](https://redis.tinycraft.cc/) application is an open-source,\\ modern lightweight Redis…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineText": "Une application de bureau créée avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "targetHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "machineHash": "fdc96e09d197a7231fcb84276d71503083a18c4b2cc306a11f44b5e0f6b1be75",
+      "machineText": "Tiny RDM",
+      "status": "final",
+      "sourcePreview": "Tiny RDM",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:25Z"
+    }
+  }
+}

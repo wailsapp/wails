@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "5f724385ad4dd83aa31a",
+  "sourceFile": "community/showcase/mollywallet.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "70e433b1b50629d3eea9cf9d909523c5fbf5b45f3646fc727dc70896f84eddf8",
+      "targetHash": "70e433b1b50629d3eea9cf9d909523c5fbf5b45f3646fc727dc70896f84eddf8",
+      "machineHash": "70e433b1b50629d3eea9cf9d909523c5fbf5b45f3646fc727dc70896f84eddf8",
+      "machineText": "![Molly Wallet](/assets/showcase-images/mollywallet.webp)",
+      "status": "final",
+      "sourcePreview": "![Molly Wallet](/assets/showcase-images/mollywallet.webp)",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3dac986c0f5076a4654ee15ce01d3b9e27c1850d3a94b52158fb6c61342b7249",
+      "targetHash": "af5403033dff1f28a04335eb781ca8b018f731b78f6379e08cae38bb405c23a4",
+      "machineHash": "af5403033dff1f28a04335eb781ca8b018f731b78f6379e08cae38bb405c23a4",
+      "machineText": "[Molly Wallet](https://github.com/grvlle/constellation_wallet/), a carteira oficial de\\\n$DAG da Constellation Network. Ela permitirá que os usuários interajam com a\\\nHypergraph Network de várias maneiras, não se limitando à realização de transações de $DAG.",
+      "status": "final",
+      "sourcePreview": "[Molly Wallet](https://github.com/grvlle/constellation_wallet/) the official\\ $DAG wallet of the Con…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineText": "Um aplicativo para desktop desenvolvido com Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
+      "targetHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
+      "machineHash": "ea5bef64605c980549932920c8af94cc562ba97c9336885244385284344792cf",
+      "machineText": "Molley Wallet",
+      "status": "final",
+      "sourcePreview": "Molley Wallet",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}

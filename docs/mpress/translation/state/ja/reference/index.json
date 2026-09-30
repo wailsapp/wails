@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4e79d065c144e1493b4e",
+  "sourceFile": "reference/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "71bf90935fc231d20126e2087eeb583c6aa419fc3dd1b6847bfe376b9200eaa0",
+      "targetHash": "3a3ef37dc7973bae5e44ddf4eeb4a386f3f0c80c0e00ba1ee6e109c878d6d2fb",
+      "machineHash": "3a3ef37dc7973bae5e44ddf4eeb4a386f3f0c80c0e00ba1ee6e109c878d6d2fb",
+      "machineText": "リファレンス",
+      "status": "final",
+      "sourcePreview": "Reference",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "71bf90935fc231d20126e2087eeb583c6aa419fc3dd1b6847bfe376b9200eaa0",
+      "targetHash": "3a3ef37dc7973bae5e44ddf4eeb4a386f3f0c80c0e00ba1ee6e109c878d6d2fb",
+      "machineHash": "3a3ef37dc7973bae5e44ddf4eeb4a386f3f0c80c0e00ba1ee6e109c878d6d2fb",
+      "machineText": "リファレンス",
+      "status": "final",
+      "sourcePreview": "Reference",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    }
+  }
+}

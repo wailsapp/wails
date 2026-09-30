@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f823ce1a2e0d6c4f2552",
+  "sourceFile": "community/showcase/modalfilemanager.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "targetHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "machineHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "machineText": "![Modal File Manager](/assets/showcase-images/modalfilemanager.webp)",
+      "status": "final",
+      "sourcePreview": "![Modal File Manager](/assets/showcase-images/modalfilemanager.webp)",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "06cd1a6c3ce63c22e1d8b0c9661be754cb24103592b1890d35702e0a559d6f3f",
+      "targetHash": "66903ad87af5e5711c016ec5139bdc6b6985ad3294a06ac5ed4f6d0a58c556fd",
+      "machineHash": "66903ad87af5e5711c016ec5139bdc6b6985ad3294a06ac5ed4f6d0a58c556fd",
+      "machineText": "[Modal File Manager](https://github.com/raguay/ModalFileManager)는 웹 기술을 사용하는 이중 창 파일 관리자입니다. 제가 처음 설계한 버전은 NW.js를 기반으로 했으며 [여기](https://github.com/raguay/ModalFileManager-NWjs)에서 확인할 수 있습니다. 이 버전은 동일한 Svelte 기반 프런트엔드 코드를 사용하지만(NW.js에서 벗어난 후 크게 수정되었습니다), 백엔드는 [Wails 2](https://wails.io/) 구현입니다. 이 구현을 사용하면서 저는 더 이상 명령줄 `rm`, `cp` 등의 명령을 사용하지 않지만, 테마와 확장 기능을 다운로드하려면 시스템에 git이 설치되어 있어야 합니다. 전체가 Go로 작성되었으며 이전 버전보다 훨씬 빠르게 실행됩니다.",
+      "status": "final",
+      "sourcePreview": "[Modal File Manager](https://github.com/raguay/ModalFileManager) is a dual pane\\ file manager using …",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "99ddc7fca550958f0a6fa1ab392be75c6d154ba33da7da797d3c3f31a0a5e549",
+      "targetHash": "b50d2d956e6bdec0696973ff856dd6a7d13cd727bc491a324f271729e0140ccc",
+      "machineHash": "b50d2d956e6bdec0696973ff856dd6a7d13cd727bc491a324f271729e0140ccc",
+      "machineText": "이 파일 관리자는 Vim과 같은 원칙, 즉 상태로 제어되는 키보드 동작을 중심으로 설계되었습니다. 상태 수는 고정되어 있지 않으며 매우 자유롭게 프로그래밍할 수 있습니다. 따라서 무한히 많은 키보드 구성을 만들어 사용할 수 있습니다. 이것이 다른 파일 관리자와의 주요 차이점입니다. GitHub에서 테마와 확장 기능을 다운로드할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "This file manager is designed around the same principle as Vim: a state\\ controlled keyboard actions…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "targetHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "machineHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "machineText": "Modal File Manager",
+      "status": "final",
+      "sourcePreview": "Modal File Manager",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

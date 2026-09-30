@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "a98946db8adbbf8142a4",
+  "sourceFile": "features/events/window.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "5500bfaa8a5998136a8b4a213f0c906e9be38a3e519a2ed443a50d09c7cb4e25",
+      "targetHash": "f02ac8f2edb1076994f43bd8ac384df6025ff16e618e08a47290c89cd174d2f3",
+      "machineHash": "f02ac8f2edb1076994f43bd8ac384df6025ff16e618e08a47290c89cd174d2f3",
+      "machineText": "창 이벤트는 열기, 닫기, 이동, 크기 조절과 같은 창 수명 주기 및 상호 작용 변경 시 발생합니다.",
+      "status": "final",
+      "sourcePreview": "Window events are emitted for window lifecycle and interaction changes, such as open, close, move, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:37Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2efdc4095d1e2f19bd70bb10ada31b7b610bb74792c56dce87efd656010465d3",
+      "targetHash": "8b9798edf68fb45a61412b26e2ecb9eadc5d8a5fb54370dcbfe7713768a7c4bb",
+      "machineHash": "8b9798edf68fb45a61412b26e2ecb9eadc5d8a5fb54370dcbfe7713768a7c4bb",
+      "machineText": "창 이벤트에 관한 전체 문서는 [이벤트 시스템](/features/events/system/#window-events) 가이드에서 확인할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "Full documentation of window events is available in the [Event System](/features/events/system/#wind…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:37Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "68507c5f68b935c56fcfbce22a1195c9a3cb29ac055177bf1dff5cd50e24b3a2",
+      "targetHash": "b849965dc2c4c7c5764cef9af5ee53e61fbf3a6c7bbae01177eff537b0047f0a",
+      "machineHash": "b849965dc2c4c7c5764cef9af5ee53e61fbf3a6c7bbae01177eff537b0047f0a",
+      "machineText": "Wails v3에서 발생하는 창 수준 이벤트",
+      "status": "final",
+      "sourcePreview": "Window-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:37Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "5bd8ee53ff4b64ce063cc8385b536755b4cdb229223a839b880d27b4bd8b076a",
+      "targetHash": "ca3bd9de45d2f3acfcf8e60cefac59928e827449410022204b067f1a6fb3f1a3",
+      "machineHash": "ca3bd9de45d2f3acfcf8e60cefac59928e827449410022204b067f1a6fb3f1a3",
+      "machineText": "창 이벤트",
+      "status": "final",
+      "sourcePreview": "Window Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:37Z"
+    }
+  }
+}

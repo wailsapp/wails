@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ebb78f638168e5ffdf0d",
+  "sourceFile": "guides/patterns/database.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "48156a472942928fcc5a0f4927f6328b6eaa8559effc6458800128031a6634ea",
+      "targetHash": "a09e5a9d18ab9e1274422624d7efaa54e2fc66ce97df15a1ca188317a3b8dc69",
+      "machineHash": "a09e5a9d18ab9e1274422624d7efaa54e2fc66ce97df15a1ca188317a3b8dc69",
+      "machineText": "このページはプレースホルダーです。データベース統合に関する詳しい内容は近日公開予定です。",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full database integration content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "9989f2f7ebde19c0531fa8bf720eb348bf4fd7a5bda29b63969eac0991e81b29",
+      "targetHash": "2079ebb69f003da69ffa61135971e3fe6972ed24393255c34f3f2bed8c67cb94",
+      "machineHash": "2079ebb69f003da69ffa61135971e3fe6972ed24393255c34f3f2bed8c67cb94",
+      "machineText": "Wails v3 アプリケーションは Go アプリケーションであるため、バインドされたサービス内で、[SQLite](https://github.com/mattn/go-sqlite3)、[PostgreSQL](https://github.com/jackc/pgx)、[MySQL](https://github.com/go-sql-driver/mysql) など、標準的な Go データベースドライバーを自由に使用できます。",
+      "status": "final",
+      "sourcePreview": "Wails v3 applications are Go applications, so you can use any standard Go database driver — includin…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9883cf56cdd6b6b93f4d4f5cbb41be7e28856a26677ccd24cf6657162d222941",
+      "targetHash": "a9914921d3c99cd87cb9d5f00b5e78b72c2ab3828e6c30c5c3d28f20cf72e816",
+      "machineHash": "a9914921d3c99cd87cb9d5f00b5e78b72c2ab3828e6c30c5c3d28f20cf72e816",
+      "machineText": "実際に動作する例については、完全なアプリケーションに SQLite による永続化を追加する方法を示す[TODO チュートリアル](/tutorials/02-todo-vanilla/)を参照してください。",
+      "status": "final",
+      "sourcePreview": "For a working example, see the [TODO tutorial](/tutorials/02-todo-vanilla/), which demonstrates addi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "7987957fb2e6e74f86e5306bcb37e60acda396bf7715e1d25ce339d7708d2fe2",
+      "targetHash": "9bd07b4c95901c2a807213763abc88ba39f5796db2af70b54c25ec7a861da61f",
+      "machineHash": "9bd07b4c95901c2a807213763abc88ba39f5796db2af70b54c25ec7a861da61f",
+      "machineText": "Wails v3 での SQLite、PostgreSQL、その他のデータベースの統合",
+      "status": "final",
+      "sourcePreview": "Integrating SQLite, PostgreSQL, and other databases with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "080b9c836c59a179f2be830de3453b7b756ec9f5977db00aecfc5193baa53d5c",
+      "targetHash": "5c92a67871798189715000539e9192a07da99046aa8b61cc26b444510b4e2f20",
+      "machineHash": "5c92a67871798189715000539e9192a07da99046aa8b61cc26b444510b4e2f20",
+      "machineText": "データベース統合",
+      "status": "final",
+      "sourcePreview": "Database Integration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    }
+  }
+}

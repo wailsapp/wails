@@ -16,7 +16,7 @@ import (
 // main fetches current stargazer data and atomically replaces the chart SVG.
 func main() {
 	repo := flag.String("repo", "wailsapp/wails", "GitHub repository in owner/name form")
-	background := flag.String("background", "../../docs/public/digital_wales_master.webp", "background image to embed in the SVG")
+	background := flag.String("background", "digital_wales_master.webp", "background image to embed in the SVG")
 	logo := flag.String("logo", "../../website/static/img/wails-logo-horizontal-dark.svg", "horizontal Wails logo to embed in the SVG")
 	out := flag.String("out", "../../website/static/img/star-history.svg", "output SVG path")
 	flag.Parse()

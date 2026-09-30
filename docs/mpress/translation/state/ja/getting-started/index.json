@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "e59467c77349e0006ec0",
+  "sourceFile": "getting-started/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
+      "targetHash": "e37d85b08738f1b4e26ab1a35876fdab9f59b0b8733ac1a4482226986ab07462",
+      "machineHash": "e37d85b08738f1b4e26ab1a35876fdab9f59b0b8733ac1a4482226986ab07462",
+      "machineText": "はじめに",
+      "status": "final",
+      "sourcePreview": "Getting Started",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
+      "targetHash": "e37d85b08738f1b4e26ab1a35876fdab9f59b0b8733ac1a4482226986ab07462",
+      "machineHash": "e37d85b08738f1b4e26ab1a35876fdab9f59b0b8733ac1a4482226986ab07462",
+      "machineText": "はじめに",
+      "status": "final",
+      "sourcePreview": "Getting Started",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    }
+  }
+}

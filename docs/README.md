@@ -1,77 +1,43 @@
-# Wails v3 Documentation
+# Wails v3 documentation
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+The M-Press documentation lives in `docs/mpress/`, with English as the default
+language at `/` and existing translations under their language codes.
+[Correction PRs are welcome](mpress/CONTRIBUTING.md), including typos, links,
+examples, and translations. No issue or failing code test is required for a
+documentation-only correction.
 
-## Prerequisites
+## Preview and validate
 
-* [D2 Diagram Library](https://d2lang.com/). You can download the binary manually from [Github releases](https://github.com/terrastruct/d2/releases) or use the following
-
-```
-# Use install script:
-curl -fsSL https://d2lang.com/install.sh | sh -s --
-
-# Install from source with Go
-go install oss.terrastruct.com/d2@latest
-```
-
-World-class documentation for Wails v3, redesigned following Netflix documentation principles.
-
-## 📚 Documentation Redesign (2025-10-01)
-
-This documentation has been completely redesigned to follow the **Netflix approach** to developer documentation:
-
-- **Problem-first framing** - Start with why, not what
-- **Progressive disclosure** - Multiple entry points for different skill levels
-- **Real production examples** - No toy code
-- **Story-Code-Context pattern** - Why → How → When
-- **Scannable content** - Clear structure, visual aids
-
-**Status:** Foundation complete (~20%), ready for content migration
-
-See [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for full details.
-
-## 🚀 Project Structure
-
-Inside of your Astro + Starlight project, you'll see the following folders and
-files:
+Install [M-Press v1.0.17](https://github.com/leaanthony/mpress/releases/tag/v1.0.17)
+from a release archive, or use Go:
 
 ```sh
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   ├── docs/
-│   │   └── config.ts
-│   └── env.d.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory.
-Each file is exposed as a route based on its file name.
+From the repository root:
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative
-link.
+```sh
+mpress dev
+mpress build --strict --no-purge-css
+mpress check
+```
 
-Static assets, like favicons, can be placed in the `public/` directory.
+The root `mpress.yaml` points to `docs/mpress/content`, static assets, and CSS.
+This entry point lets the contribution command work from a cloned repository.
+`docs/mpress/mpress.yaml` also supports a standalone build from that directory;
+its local contribution wizard is disabled because its paths are project-relative.
+Keep both configurations aligned when changing site settings.
 
-## 🧞 Commands
+English source files live in `docs/mpress/content/`; translated files live under
+folders such as `fr/`, `id/`, and `zh-cn/`. Output goes to `docs/mpress/site/`.
+The build retains CSS because the imported home-page animation creates classes
+at runtime. Contributors do not need deployment credentials, Node.js, private
+services, or a translation provider to preview or edit the documentation.
 
-All commands are run from the root of the project, from a terminal:
+See the [M-Press contribution guide](mpress/CONTRIBUTING.md) for the complete
+correction and validation workflow.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read
-[the Astro documentation](https://docs.astro.build), or jump into the
-[Astro Discord server](https://astro.build/chat).
+M-Press is the only supported v3 documentation source. The nightly release
+publisher writes `docs/mpress/content/changelog.md`, and generated release
+notes use Markdown paths and metadata.

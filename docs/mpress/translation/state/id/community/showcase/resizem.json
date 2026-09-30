@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "6761f02ef820b1de4c5c",
+  "sourceFile": "community/showcase/resizem.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "d49bcd5edad747bbd705185060a55fb4f77d342230a7782af9e7ac09cd553b87",
+      "targetHash": "10b61631f2d1068fc2afd12257e592c7526647dd1c5825e83b804f6c1faa76a0",
+      "machineHash": "10b61631f2d1068fc2afd12257e592c7526647dd1c5825e83b804f6c1faa76a0",
+      "machineText": "![Tangkapan Layar Resizem](/assets/showcase-images/resizem.webp)",
+      "status": "final",
+      "sourcePreview": "![Resizem Screenshot](/assets/showcase-images/resizem.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "de10c6f2050734194f8cfd57ad113f790d11eb7c5ebd50b04f9438edf9d3eafd",
+      "targetHash": "12a8744f1c4d52ee099b6ff913df35ebda2908a530f051d79b924706eb560d84",
+      "machineHash": "12a8744f1c4d52ee099b6ff913df35ebda2908a530f051d79b924706eb560d84",
+      "machineText": "[Resizem](https://github.com/barats/resizem) adalah aplikasi yang dirancang untuk memproses gambar secara massal. Aplikasi ini sangat berguna bagi pengguna yang perlu mengubah ukuran, mengonversi, dan mengelola banyak file gambar sekaligus.",
+      "status": "final",
+      "sourcePreview": "[Resizem](https://github.com/barats/resizem) - is an app designed for bulk image\\ process. It is par…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "e3dd9015cb2bba36da396d183061688092d6828a0fe7eeffa9d411016d83eb46",
+      "targetHash": "e3dd9015cb2bba36da396d183061688092d6828a0fe7eeffa9d411016d83eb46",
+      "machineHash": "e3dd9015cb2bba36da396d183061688092d6828a0fe7eeffa9d411016d83eb46",
+      "machineText": "Resizem",
+      "status": "final",
+      "sourcePreview": "Resizem",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}

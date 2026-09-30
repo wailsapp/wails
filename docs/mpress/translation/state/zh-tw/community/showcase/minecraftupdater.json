@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2d4aae76b6e6ad6c46ae",
+  "sourceFile": "community/showcase/minecraftupdater.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7e7654bde622f5bfa46842adc28dfa0c83dfb33064d2ebd579b25ec1588e95a3",
+      "targetHash": "f4396c6b55d82448de5db4c90afa88ca98ce7c103dbf2e3acf03ec364d3d7c7a",
+      "machineHash": "f4396c6b55d82448de5db4c90afa88ca98ce7c103dbf2e3acf03ec364d3d7c7a",
+      "machineText": "![Minecraft 更新程式](/assets/showcase-images/minecraft-mod-updater.webp)",
+      "status": "final",
+      "sourcePreview": "![Minecraft Updater](/assets/showcase-images/minecraft-mod-updater.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "93f856a7b29bc5ed606c111ef45f5220f4082501da07a3cf0f4a0a35f7ed7198",
+      "targetHash": "86a30851b5d6c02c046f3ed2be4536a3db9a329c6aa031cf63da67231d3a24c9",
+      "machineHash": "86a30851b5d6c02c046f3ed2be4536a3db9a329c6aa031cf63da67231d3a24c9",
+      "machineText": "[Minecraft 更新程式](https://github.com/Gurkengewuerz/MinecraftModUpdater)是一款公用工具，可為您的使用者群更新及同步 Minecraft 模組。它使用 Wails2 和 React 建置，並以[antd](https://ant.design/)作為前端框架。",
+      "status": "final",
+      "sourcePreview": "[Minecraft Updater](https://github.com/Gurkengewuerz/MinecraftModUpdater) is a\\ utility tool to upda…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineText": "使用 Wails 建置的桌面應用程式",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "6706bd6325c6d2f91d28611c1d38deb8e2e0d21dfde9635afca75846c8b83bbe",
+      "targetHash": "d5734a51cac0311d608df6ecae54c1a9cbfd0b1bb306feed32bd32b2c6d905f9",
+      "machineHash": "d5734a51cac0311d608df6ecae54c1a9cbfd0b1bb306feed32bd32b2c6d905f9",
+      "machineText": "Minecraft 更新程式",
+      "status": "final",
+      "sourcePreview": "Minecraft Updater",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}

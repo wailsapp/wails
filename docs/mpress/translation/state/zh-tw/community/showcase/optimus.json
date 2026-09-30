@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f3df2fe79f2e00919df3",
+  "sourceFile": "community/showcase/optimus.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+      "targetHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+      "machineHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+      "machineText": "![Optimus](/assets/showcase-images/optimus.webp)",
+      "status": "final",
+      "sourcePreview": "![Optimus](/assets/showcase-images/optimus.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "6b9aae2a0a94c87b1187e3e02d60ad7201582cfd09bcad3840848da3a376d926",
+      "targetHash": "e6d51916421410b5a1ec982f9ed98d9212a294842a6ffabb090e373a7bb8c7b3",
+      "machineHash": "e6d51916421410b5a1ec982f9ed98d9212a294842a6ffabb090e373a7bb8c7b3",
+      "machineText": "[Optimus](https://github.com/splode/optimus) 是一款桌面影像最佳化應用程式。它支援 WebP、JPEG 與 PNG 影像格式之間的轉換與壓縮。",
+      "status": "final",
+      "sourcePreview": "[Optimus](https://github.com/splode/optimus) is a desktop image optimization\\ application. It suppor…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineText": "使用 Wails 建置的桌面應用程式",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+      "targetHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+      "machineHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+      "machineText": "Optimus",
+      "status": "final",
+      "sourcePreview": "Optimus",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "d5629e2a8c20a01e2f42",
+  "sourceFile": "community/media.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "f44d45fde1bf1bf95d39db032cb07f371489adfb19cf8de96822dd500a3df258",
+      "targetHash": "1190b1471c3b84623db61a5ffb6ab8a6028d157a5410697a89c4feba3b10c54c",
+      "status": "final",
+      "sourcePreview": "Use the official Wails assets when sharing a project built with Wails. The buttons below link to [wails.io](https://wails.io) and remain hosted by Wails, so you do not need to copy the image into your project.",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0002-heading-01": {
+      "sourceHash": "1c7168b1394c6d0d05c38821d6c4708687e3b52052c41f44eb8503812e95c725",
+      "targetHash": "72941660f25e7600c6d60c5cc4350647b8bfbd5f78c3cbb4eac507ed836115a3",
+      "status": "final",
+      "sourcePreview": "Built with Wails",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "b92ac438b1db2ecd36b9e19cac9df14f2cbc0ee3ddf6a0ba08674644e6ceee2a",
+      "targetHash": "286c5514cd8c2a1d4ff00f6cfb9038e2f784723ff0eb1f5f213bfff23b470ae9",
+      "status": "final",
+      "sourcePreview": "Choose the version with sufficient contrast for its background. Each preview is the exact linked image that your visitors will see.",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0004-heading-01": {
+      "sourceHash": "fa74b4ee4c0697ab127ac5b5ae4fc3af15c0275052e46570a805333a6185eb87",
+      "targetHash": "a740960eea5f98392e0bca9860b0e92ad4742e3e8787fa265fdb9c69362a202c",
+      "status": "final",
+      "sourcePreview": "Light background",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "850580ab7f4a27207b8e07c175acf6f989d75a07586fbb3c0b914181c14d875f",
+      "targetHash": "32f750b8378cedfb793b84268186e9e0e43e2d8e6175c343efcc39f053462fc4",
+      "status": "final",
+      "sourcePreview": "\u003cdiv class=\"wails-media-preview wails-media-preview-light\"\u003e\n\u003cp\u003eStandard (\u003ccode\u003e180\u003c/code\u003e × \u003ccode\u003e48\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-light.svg\" width=\"180\" height=\"48\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003cp\u003eCompact (\u003ccode\u003e90\u003c/code\u003e × \u003ccode\u003e24\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-light.svg\" width=\"90\" height=\"24\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003c/div\u003e",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0006-heading-01": {
+      "sourceHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+      "targetHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+      "status": "final",
+      "sourcePreview": "HTML",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0007-text-01": {
+      "sourceHash": "c1267c2baae5898a90a277657931b4dd16061f540e69ad76418b60578e940561",
+      "targetHash": "9511159ef920cc0eb97d243d89cf37e9bba06664be2aa47b4ce94ba0060d9fed",
+      "status": "final",
+      "sourcePreview": "For the compact version, use `width=\"90\" height=\"24\"`.",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0008-heading-01": {
+      "sourceHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+      "targetHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+      "status": "final",
+      "sourcePreview": "Markdown",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0009-heading-01": {
+      "sourceHash": "b552a277da96cf5f72467f62d6a935a287ef763ceafb2b27cf56cc2f43124927",
+      "targetHash": "33180f3eff1135909fcb7b3df9cb05f2f25edaa694538303a9d025acd6bd8395",
+      "status": "final",
+      "sourcePreview": "Dark background",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0010-text-01": {
+      "sourceHash": "9b16ab4c5e89b9a01ceb2c8a09cdc2d54d1f76a9228d9fd79c7ed0d1ae8d2ce8",
+      "targetHash": "d4aa850e6b6ef68f38e1a9efbd87f4e629abcf9292d0fb908bda6fcb76bc690c",
+      "status": "final",
+      "sourcePreview": "\u003cdiv class=\"wails-media-preview wails-media-preview-dark\"\u003e\n\u003cp\u003eStandard (\u003ccode\u003e180\u003c/code\u003e × \u003ccode\u003e48\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-dark.svg\" width=\"180\" height=\"48\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003cp\u003eCompact (\u003ccode\u003e90\u003c/code\u003e × \u003ccode\u003e24\u003c/code\u003e px):\u003c/p\u003e\n\u003ca href=\"https://wails.io\"\u003e\u003cimg src=\"/img/wails-button-dark.svg\" width=\"90\" height=\"24\" alt=\"Built with Wails\" /\u003e\u003c/a\u003e\n\u003c/div\u003e",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0011-heading-01": {
+      "sourceHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+      "targetHash": "07239dbd2a1a1dd793be9062a205eb6be88c36af3fe7e4d6426aea45aa253815",
+      "status": "final",
+      "sourcePreview": "HTML",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0012-text-01": {
+      "sourceHash": "c1267c2baae5898a90a277657931b4dd16061f540e69ad76418b60578e940561",
+      "targetHash": "9511159ef920cc0eb97d243d89cf37e9bba06664be2aa47b4ce94ba0060d9fed",
+      "status": "final",
+      "sourcePreview": "For the compact version, use `width=\"90\" height=\"24\"`.",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0013-heading-01": {
+      "sourceHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+      "targetHash": "0e52f6b9d02515c59bb4fdeec2762fdbe701080c82986fc4dfbefcb1e2389817",
+      "status": "final",
+      "sourcePreview": "Markdown",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "b0014-text-01": {
+      "sourceHash": "e34c0a94cc99cbfe05869a2f8899da53fbd7656d47b8a3fc2bd66f878f2c0f2a",
+      "targetHash": "54e75ced69ab2c9423f51413d19219311302ce216920bc95ca2f6163fb9c622b",
+      "status": "final",
+      "sourcePreview": "Markdown renders the image at its intrinsic `180` by `48` pixel size. Use the HTML version when you need to set a different display size. Keep the buttons at their original `15:4` proportions.",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "95facfb1b960a42d85d8334e58e34b6519246dc59cb5ce3dbc57542924572e9c",
+      "targetHash": "635fa68c4df41eaaa1ce5da0cfb9b54078598798dbf82a8af70120011130f593",
+      "status": "final",
+      "sourcePreview": "Official Wails buttons with previews and HTML and Markdown embeds",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d357175cfe8978d39b0f86552dcd9404973493e2816101d9ff6c05ee248ef6bd",
+      "targetHash": "0031e3624efbc466d4d85f667fb92b2910019df24b9e7729ceef729180d8836c",
+      "status": "final",
+      "sourcePreview": "Media",
+      "provider": "manual",
+      "updatedAt": "2026-09-14T12:01:23Z"
+    }
+  }
+}

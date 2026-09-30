@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "312182e060a9be59072d",
+  "sourceFile": "features/events/custom.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7101896334776ea2527d0eb9ad7ad7dfc21a5ad407a6398fe9ec415375b3a7da",
+      "targetHash": "2724d105ba78f1fde778a4c485676baadd6cb976145e7904608030d8cf0c5c5f",
+      "machineHash": "2724d105ba78f1fde778a4c485676baadd6cb976145e7904608030d8cf0c5c5f",
+      "machineText": "自訂事件可讓您使用事件系統，在 Go 後端與前端之間傳送資料。",
+      "status": "final",
+      "sourcePreview": "Custom events let you send data between your Go backend and frontend using the event system.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ad3a8e429939a4b24472033c630d7a7ae9374eadfc208d1ba95bb53fa6708fe0",
+      "targetHash": "14f6d87020f05ff6584d641215b370c7cac1a5d4d4be93818d939f245197f077",
+      "machineHash": "14f6d87020f05ff6584d641215b370c7cac1a5d4d4be93818d939f245197f077",
+      "machineText": "自訂事件的完整說明文件請參閱[事件系統](/features/events/system/#custom-events)指南。",
+      "status": "final",
+      "sourcePreview": "Full documentation of custom events is available in the [Event System](/features/events/system/#cust…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "b6806ad873c1c4fc4051dee73af18115f50bbf4038b85008af2bea878889f5dd",
+      "targetHash": "514a766ba6b9219c3c4388f5a831cf5bb99e810b9bb502fb12a72997b7274ad4",
+      "machineHash": "514a766ba6b9219c3c4388f5a831cf5bb99e810b9bb502fb12a72997b7274ad4",
+      "machineText": "在 Wails v3 中發出及監聽您自己的事件",
+      "status": "final",
+      "sourcePreview": "Emitting and listening to your own events in Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "dc46c41d4485638ccd949134dd26edf81a3f9f8be08411ff1caf3d2320e26c15",
+      "targetHash": "0850c7304f785fc6b6721943c680522ddd16a58ec112be84c8112425280af683",
+      "machineHash": "0850c7304f785fc6b6721943c680522ddd16a58ec112be84c8112425280af683",
+      "machineText": "自訂事件",
+      "status": "final",
+      "sourcePreview": "Custom Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    }
+  }
+}

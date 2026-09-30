@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ec859468161eafaf30f0",
+  "sourceFile": "guides/dev/workflow.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "c88156cd560c7b98c8b545414492f6696aa7cdcb450b18c2fda750e0af3d5e23",
+      "targetHash": "7120bf1bbb34f98d935477cca2504aff9f29c3c3e754af6938c95619872defc4",
+      "machineHash": "7120bf1bbb34f98d935477cca2504aff9f29c3c3e754af6938c95619872defc4",
+      "machineText": "Diese Seite ist ein Platzhalter. Vollständige Inhalte zum Entwicklungsworkflow folgen in Kürze.",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full development workflow content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:23Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "073c1eb86c8053ed17da72b57d768f19375f5279381d52b62b62d109ea5f39de",
+      "targetHash": "34f8e2ae217f040618e2148173bd09b917d628bd4b5ff56327fcb9c3ede511bb",
+      "machineHash": "34f8e2ae217f040618e2148173bd09b917d628bd4b5ff56327fcb9c3ede511bb",
+      "machineText": "Hinweise zur Strukturierung und Entwicklung Ihrer Wails-Anwendung finden Sie unter:",
+      "status": "final",
+      "sourcePreview": "For guidance on structuring and developing your Wails application, see:",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:23Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "8d9addbf6041d5642330e18519a8f1468811ad4c4710c86c41cb31f451e48056",
+      "targetHash": "6eb0d8b99547ab043198a2dd47b80969d39ccee039c9c8f46152b3e1d168d8bc",
+      "machineHash": "6eb0d8b99547ab043198a2dd47b80969d39ccee039c9c8f46152b3e1d168d8bc",
+      "machineText": "[Projektstruktur](/guides/dev/project-structure/)",
+      "status": "final",
+      "sourcePreview": "[Project Structure](/guides/dev/project-structure/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:23Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "fcbb38fa38f3bd9010f6b846293369cb9714f958c7c1435358c643ec0ca6035b",
+      "targetHash": "a3a0cbda2f68111a712aaed5362da697a675fe60a8af47034a029397c713093c",
+      "machineHash": "a3a0cbda2f68111a712aaed5362da697a675fe60a8af47034a029397c713093c",
+      "machineText": "[Entwicklung mit anderen Frameworks](/guides/dev/frontend-frameworks/)",
+      "status": "final",
+      "sourcePreview": "[Development with Other Frameworks](/guides/dev/frontend-frameworks/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:23Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "26af0c79aa1c3596440808a3c777e53c721b51850a3dba2b73a83ec81d631052",
+      "targetHash": "26af0c79aa1c3596440808a3c777e53c721b51850a3dba2b73a83ec81d631052",
+      "machineHash": "26af0c79aa1c3596440808a3c777e53c721b51850a3dba2b73a83ec81d631052",
+      "machineText": "[Debugging](/guides/dev/debugging/)",
+      "status": "final",
+      "sourcePreview": "[Debugging](/guides/dev/debugging/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:23Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "44250085c1b5acb2b97269c09f0f132e807e41d3fa354818f69a5d13bf096f5f",
+      "targetHash": "6eba605fc4088d628a3d4eb5e1ea1141b843a6e94b2ba8edb5fe7a3ae940cc62",
+      "machineHash": "6eba605fc4088d628a3d4eb5e1ea1141b843a6e94b2ba8edb5fe7a3ae940cc62",
+      "machineText": "[Tests](/guides/testing/)",
+      "status": "final",
+      "sourcePreview": "[Testing](/guides/testing/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:23Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8d9502ba2c70bb6736fba283f329e9ccdbc97790530a3b4a0cc7e4ffe8ee5f10",
+      "targetHash": "d0ab1f2d55e0cb4f14fd1d1e49e5811560097700b06e11732174ab8243129208",
+      "machineHash": "d0ab1f2d55e0cb4f14fd1d1e49e5811560097700b06e11732174ab8243129208",
+      "machineText": "Ein empfohlener Workflow für die Entwicklung von Wails-v3-Anwendungen",
+      "status": "final",
+      "sourcePreview": "A recommended workflow for developing Wails v3 applications",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:23Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d47ba937699891e4f59ba78f0d1cd89950eaaf9eaec18b6e9ba193331ea33e44",
+      "targetHash": "96c04cb3303ca3febce1b3be6a612b0a4f6e08d1d002ff3e314b041122ecc089",
+      "machineHash": "96c04cb3303ca3febce1b3be6a612b0a4f6e08d1d002ff3e314b041122ecc089",
+      "machineText": "Entwicklungsworkflow",
+      "status": "final",
+      "sourcePreview": "Development Workflow",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:23Z"
+    }
+  }
+}

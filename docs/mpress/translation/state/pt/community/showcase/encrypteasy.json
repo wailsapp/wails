@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2cdf2b79a635456c1953",
+  "sourceFile": "community/showcase/encrypteasy.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "targetHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineText": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "status": "final",
+      "sourcePreview": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "f708f0f6355975a3a4c96db96e2019f05b2c048eb63d482204bcb2711ea07cb6",
+      "targetHash": "d3d372afcdea28ea944e9f11d55fa80ca8917e887777ba1a1cf0171fcecc76a5",
+      "machineHash": "d3d372afcdea28ea944e9f11d55fa80ca8917e887777ba1a1cf0171fcecc76a5",
+      "machineText": "*[EncryptEasy](https://www.encrypteasy.app) é uma ferramenta de criptografia PGP simples e fácil de usar, que gerencia todas as suas chaves e as de seus contatos. Criptografar deve ser simples. Desenvolvido com Wails.*",
+      "status": "final",
+      "sourcePreview": "*[EncryptEasy](https://www.encrypteasy.app) is a simple and easy to use PGP\\ encryption tool, managi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "bac75003e20e8935cc50f947b2125378184467253ebb05ea4c856e27f6f2592f",
+      "targetHash": "6441689793147215777108859086ad6d80f1157d6b0763ca00ca4d41a017c0ac",
+      "machineHash": "6441689793147215777108859086ad6d80f1157d6b0763ca00ca4d41a017c0ac",
+      "machineText": "Criptografar mensagens usando PGP é o padrão do setor. Todos têm uma chave privada e uma pública. Sua chave privada precisa ser mantida em sigilo para que somente você possa ler as mensagens. Sua chave pública é distribuída a qualquer pessoa que queira enviar mensagens secretas e criptografadas para você. Gerenciar chaves, criptografar mensagens e descriptografá-las deve ser uma experiência simples e fluida. O objetivo do EncryptEasy é facilitar tudo isso.",
+      "status": "final",
+      "sourcePreview": "Encrypting messages using PGP is the industry standard. Everyone has a private\\ and a public key. Yo…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineHash": "9bc2a265a15f0601245668f84f8776db1aef85ae08fb4e7bd519fce4975a857c",
+      "machineText": "Um aplicativo para desktop desenvolvido com Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "targetHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineText": "EncryptEasy",
+      "status": "final",
+      "sourcePreview": "EncryptEasy",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:40Z"
+    }
+  }
+}

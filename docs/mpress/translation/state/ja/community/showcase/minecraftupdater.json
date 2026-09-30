@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2d4aae76b6e6ad6c46ae",
+  "sourceFile": "community/showcase/minecraftupdater.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7e7654bde622f5bfa46842adc28dfa0c83dfb33064d2ebd579b25ec1588e95a3",
+      "targetHash": "7e7654bde622f5bfa46842adc28dfa0c83dfb33064d2ebd579b25ec1588e95a3",
+      "machineHash": "7e7654bde622f5bfa46842adc28dfa0c83dfb33064d2ebd579b25ec1588e95a3",
+      "machineText": "![Minecraft Updater](/assets/showcase-images/minecraft-mod-updater.webp)",
+      "status": "final",
+      "sourcePreview": "![Minecraft Updater](/assets/showcase-images/minecraft-mod-updater.webp)",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "93f856a7b29bc5ed606c111ef45f5220f4082501da07a3cf0f4a0a35f7ed7198",
+      "targetHash": "14aae4da91210f7a67be875ab104eb86abbcc2b3024a4c123678edf404294f5b",
+      "machineHash": "14aae4da91210f7a67be875ab104eb86abbcc2b3024a4c123678edf404294f5b",
+      "machineText": "[Minecraft Updater](https://github.com/Gurkengewuerz/MinecraftModUpdater)は、ユーザーベース向けの Minecraft Mod を更新および同期するためのユーティリティツールです。フロントエンドフレームワークとして[antd](https://ant.design/)を使用し、Wails2 と React で構築されています。",
+      "status": "final",
+      "sourcePreview": "[Minecraft Updater](https://github.com/Gurkengewuerz/MinecraftModUpdater) is a\\ utility tool to upda…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "686c660e2dd9934eb10e706a44ba2bfa37e84f3fd8da9fd907175fbfe0fd94c6",
+      "machineHash": "686c660e2dd9934eb10e706a44ba2bfa37e84f3fd8da9fd907175fbfe0fd94c6",
+      "machineText": "Wails で構築されたデスクトップアプリケーション",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "6706bd6325c6d2f91d28611c1d38deb8e2e0d21dfde9635afca75846c8b83bbe",
+      "targetHash": "6706bd6325c6d2f91d28611c1d38deb8e2e0d21dfde9635afca75846c8b83bbe",
+      "machineHash": "6706bd6325c6d2f91d28611c1d38deb8e2e0d21dfde9635afca75846c8b83bbe",
+      "machineText": "Minecraft Updater",
+      "status": "final",
+      "sourcePreview": "Minecraft Updater",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    }
+  }
+}

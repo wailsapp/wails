@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ee0273cc17b7c70d88d3",
+  "sourceFile": "community/showcase/portfall.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "17425cf355f7f036eb761f62a8a1c9b7209adac0930a2c80d3ef1cefe89e4084",
+      "targetHash": "17425cf355f7f036eb761f62a8a1c9b7209adac0930a2c80d3ef1cefe89e4084",
+      "machineHash": "17425cf355f7f036eb761f62a8a1c9b7209adac0930a2c80d3ef1cefe89e4084",
+      "machineText": "![Portfall](/assets/showcase-images/portfall.webp)",
+      "status": "final",
+      "sourcePreview": "![Portfall](/assets/showcase-images/portfall.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "c32a5a68abde01940c5931efb9d72fa99b826537c5e889af240011b4f9a858fa",
+      "targetHash": "7daffdc34938109c10984fc322fbd2e09265cc98d83ba25c2c2c074d69d48307",
+      "machineHash": "7daffdc34938109c10984fc322fbd2e09265cc98d83ba25c2c2c074d69d48307",
+      "machineText": "[Portfall](https://github.com/rekon-oss/portfall) - Portal penerusan port k8s desktop untuk memudahkan akses ke semua UI klaster Anda",
+      "status": "final",
+      "sourcePreview": "[Portfall](https://github.com/rekon-oss/portfall) - A desktop k8s\\ port-forwarding portal for easy a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
+      "targetHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
+      "machineHash": "75d87ec24c8030a0c61ec7f2c75e33ec0b4734f8534160a5e0b3695856c736c2",
+      "machineText": "Portfall",
+      "status": "final",
+      "sourcePreview": "Portfall",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}

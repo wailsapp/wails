@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "5e7a1c01e96025e83741",
+  "sourceFile": "community/showcase/ltools.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "targetHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineText": "![LTools](/assets/showcase-images/ltools.webp)",
+      "status": "final",
+      "sourcePreview": "![LTools](/assets/showcase-images/ltools.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3d44d172c582bf4192eb6e09f248b8b205aee3d07d604e51be3aa53c2ae9d7eb",
+      "targetHash": "65c13f1bbe644734c4665ccd870c76255eaa7ef2996a0baf32a84e2cca73fe3a",
+      "machineHash": "65c13f1bbe644734c4665ccd870c76255eaa7ef2996a0baf32a84e2cca73fe3a",
+      "machineText": "[LTools](https://github.com/lian-yang/ltools) 是一款使用 Wails v3 建置、採用外掛程式架構的跨平台桌面工具箱，其靈感源自 uTools。它透過模組化外掛程式架構，提供整合各種開發人員工具的統一中樞。",
+      "status": "final",
+      "sourcePreview": "[LTools](https://github.com/lian-yang/ltools) is a plugin-based cross-platform desktop toolbox built…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9bd63b2eaf30cfc2d45360da03525be5e97b07ee39b106a4dbf83da6e7245a52",
+      "targetHash": "d615f1fc59e8b56a48090bab02068a551769edd05da5ac5061ed8917c0269f53",
+      "machineHash": "d615f1fc59e8b56a48090bab02068a551769edd05da5ac5061ed8917c0269f53",
+      "machineText": "其功能包括全域搜尋列（類似 Spotlight）、系統匣整合，以及剪貼簿管理員、具備標註功能的螢幕擷取工具、JSON 編輯器、計算機、系統監視器等內建外掛程式。您可以透過其可擴充的外掛程式系統加入新工具。",
+      "status": "final",
+      "sourcePreview": "It features a global search bar (Spotlight-style), system tray integration, and built-in plugins inc…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8918e7a1e1826c9a096776538f8971d5ba645deee81f1523cb1ab36170d71273",
+      "targetHash": "0e4cf24f8d8124c35e38d0cb6cc69da519d1616a8ea46d7c1ee4852104c54f8a",
+      "machineHash": "0e4cf24f8d8124c35e38d0cb6cc69da519d1616a8ea46d7c1ee4852104c54f8a",
+      "machineText": "使用 Wails v3 建置、採用外掛程式架構的跨平台桌面工具箱",
+      "status": "final",
+      "sourcePreview": "A plugin-based cross-platform desktop toolbox built with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "targetHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineText": "LTools",
+      "status": "final",
+      "sourcePreview": "LTools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}

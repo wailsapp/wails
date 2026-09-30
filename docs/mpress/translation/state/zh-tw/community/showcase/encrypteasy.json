@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2cdf2b79a635456c1953",
+  "sourceFile": "community/showcase/encrypteasy.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "targetHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineText": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "status": "final",
+      "sourcePreview": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "f708f0f6355975a3a4c96db96e2019f05b2c048eb63d482204bcb2711ea07cb6",
+      "targetHash": "5b99ccc4ed6cb083598de429b58c2f1e15837b204eac29892945f4a6266c1fcf",
+      "machineHash": "5b99ccc4ed6cb083598de429b58c2f1e15837b204eac29892945f4a6266c1fcf",
+      "machineText": "*[EncryptEasy](https://www.encrypteasy.app) 是一款簡單易用的 PGP\\\n加密工具，可管理您與聯絡人的所有金鑰。加密理應\\\n簡單。使用 Wails 開發。*",
+      "status": "final",
+      "sourcePreview": "*[EncryptEasy](https://www.encrypteasy.app) is a simple and easy to use PGP\\ encryption tool, managi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "bac75003e20e8935cc50f947b2125378184467253ebb05ea4c856e27f6f2592f",
+      "targetHash": "755b52423ce749b889d7612a51558fb0168425aa2672da360e6eb5797b4bc47f",
+      "machineHash": "755b52423ce749b889d7612a51558fb0168425aa2672da360e6eb5797b4bc47f",
+      "machineText": "使用 PGP 加密訊息是業界標準。每個人都有一把私密\\\n金鑰和一把公開金鑰。顧名思義，您的私密金鑰必須妥善保密，確保只有您\\\n能讀取訊息。您的公開金鑰則會提供給任何想向您傳送\\\n機密加密訊息的人。管理金鑰、加密訊息及\\\n解密訊息都應該是流暢的體驗。EncryptEasy 的宗旨就是\\\n讓這一切變得簡單。",
+      "status": "final",
+      "sourcePreview": "Encrypting messages using PGP is the industry standard. Everyone has a private\\ and a public key. Yo…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineText": "使用 Wails 建置的桌面應用程式",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "targetHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineText": "EncryptEasy",
+      "status": "final",
+      "sourcePreview": "EncryptEasy",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}
