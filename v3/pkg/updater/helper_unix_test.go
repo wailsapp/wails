@@ -59,3 +59,24 @@ func TestReplaceTarget_CrossDevice_Directory(t *testing.T) {
 		t.Errorf("bundle contents: %q", got)
 	}
 }
+
+func TestReplaceTarget_CrossDevice_CopyFailureKeepsTarget(t *testing.T) {
+	target := filepath.Join(t.TempDir(), "app")
+	newPath := filepath.Join(t.TempDir(), "app.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+	if err := os.Chmod(newPath, 0); err != nil {
+		t.Fatal(err)
+	}
+	failCrossDevice(t, newPath)
+
+	if err := replaceTarget(target, newPath); err == nil {
+		t.Fatal("replaceTarget succeeded with an unreadable source")
+	}
+	if got := readFile(t, target); string(got) != "OLD" {
+		t.Errorf("target contents after failed copy: %q", got)
+	}
+	if _, err := os.Stat(target + ".wails-old"); !os.IsNotExist(err) {
+		t.Errorf("aside left behind: %v", err)
+	}
+}

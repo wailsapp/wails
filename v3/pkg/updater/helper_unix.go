@@ -5,6 +5,7 @@ package updater
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"syscall"
 )
@@ -20,16 +21,26 @@ func platformIsAlive(pid int) bool {
 	return proc.Signal(syscall.Signal(0)) == nil
 }
 
-// replaceTarget removes the existing file or directory at target and renames
-// newPath into its place. On Unix this is straightforward: open file handles
-// remain valid against the unlinked inode, so we can delete a running binary
-// and immediately put a new one at its path. macOS .app bundles are
-// directories, hence RemoveAll rather than Remove.
+// replaceTarget moves the existing file or directory at target aside,
+// renames newPath into its place, and then deletes the aside. On Unix a
+// running binary can be renamed and unlinked because open handles stay valid
+// against the inode. Keeping the aside until the new payload is in place
+// means a failed or slow cross-device copy never leaves target missing.
+// macOS .app bundles are directories, hence RemoveAll.
 func replaceTarget(target, newPath string) error {
-	if err := os.RemoveAll(target); err != nil {
+	aside := target + ".wails-old"
+	if err := os.RemoveAll(aside); err != nil {
 		return err
 	}
-	return renameOrCopy(newPath, target)
+	if err := rename(target, aside); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	if err := renameOrCopy(newPath, target); err != nil {
+		_ = rename(aside, target)
+		return err
+	}
+	_ = os.RemoveAll(aside)
+	return nil
 }
 
 // rename is os.Rename, swappable so tests can simulate EXDEV.
