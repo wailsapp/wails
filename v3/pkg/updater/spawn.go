@@ -35,6 +35,16 @@ func appImageOr(exe string) string {
 	return img
 }
 
+// resolveTarget returns the path the helper replaces: the running
+// executable, or its enclosing .app bundle on macOS.
+func resolveTarget() (string, error) {
+	self, err := selfExecutable()
+	if err != nil {
+		return "", err
+	}
+	return bundleTarget(self), nil
+}
+
 // newDetachedCommand builds an exec.Cmd for the helper invocation. Stdio is
 // disconnected from the parent so the helper survives the parent's exit on
 // every platform. Held in a package-level var so tests can substitute a
