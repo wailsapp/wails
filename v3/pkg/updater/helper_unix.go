@@ -55,7 +55,11 @@ func renameOrCopy(src, dst string) error {
 		return err
 	}
 	tmp := dst + ".wails-new"
-	_ = os.RemoveAll(tmp)
+	// copyTree merges into an existing directory, so a stale intermediate
+	// must be gone before copying or its extra files would ship.
+	if err := os.RemoveAll(tmp); err != nil {
+		return fmt.Errorf("clear %s: %w", tmp, err)
+	}
 	if err := copyAny(src, tmp); err != nil {
 		_ = os.RemoveAll(tmp)
 		return fmt.Errorf("cross-device copy %s -> %s: %w", src, tmp, err)
