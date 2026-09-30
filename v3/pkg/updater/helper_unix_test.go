@@ -80,3 +80,27 @@ func TestReplaceTarget_CrossDevice_CopyFailureKeepsTarget(t *testing.T) {
 		t.Errorf("aside left behind: %v", err)
 	}
 }
+
+func TestReplaceTarget_CrossDevice_StaleIntermediateNotMerged(t *testing.T) {
+	target := filepath.Join(t.TempDir(), "App.app")
+	newPath := filepath.Join(t.TempDir(), "App.app")
+	writeFile(t, filepath.Join(target, "Contents", "MacOS", "App"), []byte("OLD"))
+	writeFile(t, filepath.Join(newPath, "Contents", "MacOS", "App"), []byte("NEW"))
+	stale := filepath.Join(target+".wails-new", "locked", "stale")
+	writeFile(t, stale, []byte("STALE"))
+	if err := os.Chmod(filepath.Dir(stale), 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(filepath.Dir(stale), 0o700) })
+	failCrossDevice(t, newPath)
+
+	if err := replaceTarget(target, newPath); err == nil {
+		t.Fatal("replaceTarget succeeded despite an undeletable intermediate")
+	}
+	if got := readFile(t, filepath.Join(target, "Contents", "MacOS", "App")); string(got) != "OLD" {
+		t.Errorf("bundle contents: %q", got)
+	}
+	if _, err := os.Stat(filepath.Join(target, "locked")); !os.IsNotExist(err) {
+		t.Errorf("stale intermediate merged into target: %v", err)
+	}
+}
