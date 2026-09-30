@@ -28,6 +28,26 @@ _/
 
 ## [Unreleased]
 
+## v3.0.0-beta.26 - 2026-09-25
+
+## Added
+- Watcher applies HTTP readiness checks to frontend dev server in [PR](https://github.com/wailsapp/wails/pull/6150) by @atterpac
+
+## Fixed
+- Recover from WebView2 process failures instead of leaving a blank window in [PR](https://github.com/wailsapp/wails/pull/6002) by @taliesin-ai
+
+## v3.0.0-beta.25 - 2026-09-22
+
+## Fixed
+- Stop `wails3 dev` and its background processes when the primary application exits (#6048)
+
+## v3.0.0-beta.24 - 2026-09-20
+
+## Security
+- Restrict GITHUB_TOKEN permissions in build and publish workflows to follow the principle of least privilege
+- Fix path traversal and symlink escapes in the screen example asset middleware
+- Keep setup wizard dependency installation functional while restricting it to approved package-manager commands
+
 ## v3.0.0-beta.23 - 2026-09-16
 
 ## Added
