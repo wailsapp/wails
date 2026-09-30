@@ -75,11 +75,21 @@ WebView2 memiliki permintaan izin bawaan dan API izin untuk setiap jenis. Kelima
 
 Artinya, jika Anda mengonfigurasi `Permissions` di Windows, kapabilitas apa pun yang tidak Anda cantumkan secara eksplisit akan menampilkan permintaan izin, bukan diizinkan tanpa pemberitahuan. Tetapkan secara eksplisit kapabilitas yang Anda perlukan.
 
-### macOS (TCC)
+### macOS (WKWebView + TCC)
 
-macOS mengelola akses kamera, mikrofon, geolokasi, dan notifikasi melalui kerangka kerja privasi sistemnya. Permintaan izin OS muncul secara otomatis saat konten web pertama kali meminta suatu kapabilitas, dan pilihan pengguna disimpan per aplikasi di System Settings → Privacy & Security.
+Dua lapisan harus sepakat di macOS. WKWebView menanyakan aplikasi sebelum memulai sesi capture, dan permintaan itulah yang dijawab oleh map `Permissions`. Di bawahnya, framework privasi sistem (TCC) menjaga perangkatnya sendiri: prompt OS muncul saat aplikasi benar-benar mengakses kamera atau mikrofon untuk pertama kali, dan pilihan pengguna diingat per-aplikasi di System Settings → Privacy & Security.
 
-Ini berfungsi dengan benar tanpa konfigurasi `Permissions` apa pun. Peta tersebut **saat ini diabaikan di macOS**—semua permintaan diproses melalui TCC, apa pun yang Anda tetapkan. Keterbatasan praktisnya adalah `PermissionDeny` tidak berpengaruh di macOS: Anda tidak dapat mencegah webview menggunakan kapabilitas yang sudah diizinkan TCC pada tingkat sistem.
+Wails menangani permintaan **kamera dan mikrofon** di macOS 12 dan yang lebih baru. Geolokasi, notifikasi, dan clipboard read tidak memiliki padanan `WKUIDelegate`, sehingga belum dihubungkan dan diserahkan sepenuhnya ke TCC — seperti di Linux, kebijakan yang Anda setel untuk ketiganya tidak berpengaruh.
+
+| Kebijakan | Kamera / Mikrofon | Geolokasi, Notifikasi, Clipboard |
+| --- | --- | --- |
+| `PermissionDefault` | WebKit menampilkan prompt permission-nya sendiri | TCC saja |
+| `PermissionAllow` | Prompt WebKit dilewati — **TCC tetap berlaku** | TCC saja |
+| `PermissionDeny` | Ditolak sebelum perangkat disentuh | TCC saja |
+
+`PermissionAllow` mengizinkan permintaan webview, bukan perangkatnya. Capture pertama tetap memunculkan prompt TCC, dan aplikasi yang ditolak pengguna di System Settings tetap ditolak — tidak ada aplikasi yang dapat memberikan akses perangkat kepada dirinya sendiri. Yang dihilangkan `PermissionAllow` adalah prompt WebKit di depannya.
+
+Di bawah macOS 12 metode delegate tersebut tidak ada, sehingga map diabaikan di sana dan setiap permintaan kembali ke prompt WebKit.
 
 Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang sesuai:
 
@@ -89,6 +99,21 @@ Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang sesuai:
 <key>NSCameraUsageDescription</key>
 <string>Used for video calls</string>
 ```
+
+@note{type="caution" title="Tolak apa yang tidak dideklarasikan Info.plist Anda"}
+
+Kemampuan yang mencapai AVFoundation tanpa kunci deskripsi penggunaannya tidak gagal — macOS menghentikan aplikasi.
+
+`PermissionDefault` adalah nilai nol, jadi `{PermissionMicrophone: PermissionAllow}` saja membiarkan kamera pada prompt WebKit. Jika pengguna menerima prompt itu dan aplikasi hanya mendeklarasikan `NSMicrophoneUsageDescription`, aplikasi akan mati. Setel `PermissionDeny` secara eksplisit untuk setiap kemampuan yang tidak Anda sertakan deskripsi penggunaannya:
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionDeny,
+},
+```
+
+@end
 
 ## Pola Umum
 
@@ -103,7 +128,7 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-Di **Linux**, pengaturan ini secara eksplisit mengizinkan kedua perangkat; kapabilitas lainnya tetap ditolak. Di **Windows**, pengaturan ini mengizinkan keduanya; kapabilitas lain yang tidak Anda cantumkan akan menampilkan dialog izin native. Di **macOS**, pengaturan ini tidak berpengaruh; TCC menangani semuanya.
+Di **Linux**, pengaturan ini secara eksplisit mengizinkan kedua perangkat; kapabilitas lainnya tetap ditolak. Di **Windows**, pengaturan ini mengizinkan keduanya; kapabilitas lain yang tidak Anda cantumkan akan menampilkan dialog izin native. Di **macOS** ini mengizinkan keduanya di lapisan WebKit, sehingga tidak ada prompt browser yang muncul; TCC tetap menanyakan perangkatnya sendiri saat pertama kali digunakan, dan kedua kunci deskripsi penggunaan harus ada di `Info.plist`.
 
 ### Menolak pengambilan media di Linux
 
@@ -182,11 +207,13 @@ Urutan evaluasi di Windows adalah:
 
 | Kapabilitas | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| Mikrofon | ✅ | ✅ | Hanya TCC |
-| Kamera | ✅ | ✅ | Hanya TCC |
-| Geolokasi | ❌ belum didukung | ✅ | Hanya TCC |
-| Notifikasi | ❌ belum didukung | ✅ | Hanya TCC |
-| Pembacaan Papan Klip | ❌ belum didukung | ✅ | Hanya TCC |
+| Mikrofon | ✅ | ✅ | ✅ (macOS 12+) |
+| Kamera | ✅ | ✅ | ✅ (macOS 12+) |
+| Geolokasi | ❌ belum didukung | ✅ | ❌ belum didukung |
+| Notifikasi | ❌ belum didukung | ✅ | ❌ belum didukung |
+| Pembacaan Papan Klip | ❌ belum didukung | ✅ | ❌ belum didukung |
+
+Di tempat macOS bertanda ✅, kebijakan menjawab permintaan WebKit; TCC tetap menjaga perangkat di atasnya. Di tempat bertanda ❌, kemampuan diserahkan sepenuhnya ke TCC.
 
 ## Pemecahan Masalah
 
@@ -200,7 +227,11 @@ Setelah ada entri apa pun di `Permissions`, Wails tidak lagi menetapkan pemberia
 
 **Izin macOS tidak berfungsi**
 
-Peta `Permissions` tidak berpengaruh di macOS. Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang benar (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, dan sebagainya) serta pengguna telah memberikan akses di Pengaturan Sistem → Privasi & Keamanan.
+`Permissions` mencakup kamera dan mikrofon di macOS 12 dan yang lebih baru; geolokasi, notifikasi, dan clipboard read belum dihubungkan dan mengabaikan kebijakan. Di tempat kebijakan dihormati, TCC tetap menjaga perangkat di atasnya: `PermissionAllow` menghilangkan prompt WebKit, bukan prompt sistem. Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang benar (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`) dan pengguna telah memberikan akses di System Settings → Privacy & Security.
+
+**Aplikasi macOS saya keluar saat konten web meminta kamera atau mikrofon**
+
+macOS menghentikan aplikasi yang mencapai AVFoundation tanpa kunci deskripsi penggunaan yang sesuai. Tambahkan kuncinya, atau setel `PermissionDeny` untuk kemampuan tersebut agar permintaannya tidak pernah sampai sejauh itu — `PermissionDefault` membiarkannya pada prompt WebKit, yang dapat diterima pengguna.
 
 **Geolokasi/notifikasi/papan klip tidak berpengaruh di Linux**
 
