@@ -62,6 +62,8 @@ import org.json.JSONObject;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 
+import java.util.TimeZone;
+
 /**
  * WailsBridge manages the connection between the Java/Android side and the Go
  * native library. It handles:
@@ -1100,6 +1102,11 @@ public class WailsBridge {
     public String getStoragePath() {
         java.io.File dir = activity.getFilesDir();
         return dir != null ? dir.getAbsolutePath() : "";
+    }
+
+    /** Device's current IANA timezone ID (e.g. "Asia/Shanghai"), for time.LoadLocation. */
+    public String getTimezone() {
+        return java.util.TimeZone.getDefault().getID();
     }
 
     /** Battery/power state as {"level":0-1,"charging":bool,"lowPower":bool}. */

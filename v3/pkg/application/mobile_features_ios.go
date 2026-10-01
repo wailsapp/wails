@@ -228,6 +228,10 @@ func (iosManager) StorageJSON() string { return cStr(C.ios_storage_json()) }
 // of Android's getFilesDir()). The directory is created if it does not yet exist.
 func (iosManager) StoragePath() string { return cStr(C.ios_storage_path()) }
 
+// Timezone returns the device's current IANA timezone ID (e.g. "Asia/Shanghai"),
+// suitable for time.LoadLocation.
+func (iosManager) Timezone() string { return cStr(C.ios_timezone()) }
+
 // PowerJSON returns {"level":0-1,"charging":bool,"lowPower":bool}.
 func (iosManager) PowerJSON() string { return cStr(C.ios_power_json()) }
 

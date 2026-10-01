@@ -706,6 +706,10 @@ const char* ios_storage_path(void) {
     return mfDup(dir);
 }
 
+const char* ios_timezone(void) {
+    return mfDup([[NSTimeZone localTimeZone] name]);
+}
+
 // MARK: - Power / battery state
 
 const char* ios_power_json(void) {
