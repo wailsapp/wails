@@ -251,9 +251,10 @@ type Bindings struct {
 }
 
 type TsGeneration struct {
-	Prefix     string `json:"prefix"`
-	Suffix     string `json:"suffix"`
-	OutputType string `json:"outputType"`
+	Prefix            string `json:"prefix"`
+	Suffix            string `json:"suffix"`
+	OutputType        string `json:"outputType"`
+	UseNullableSlices bool   `json:"useNullableSlices"`
 }
 
 // Parse the given JSON data into a Project struct
