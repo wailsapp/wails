@@ -1,6 +1,7 @@
 package notifications
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -79,5 +80,37 @@ func TestConcurrentCategoryChangesPersist(t *testing.T) {
 	}
 	if !reflect.DeepEqual(reloaded.categories, notifier.categories) {
 		t.Error("saved categories differ from the final in-memory categories")
+	}
+}
+
+func TestUnreadableCategoriesAreNotOverwritten(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", root)
+	const appName = "wails-category-test"
+	dir := filepath.Join(root, appName)
+	if err := os.Mkdir(dir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	file := filepath.Join(dir, "notification-categories.json")
+	const damaged = "{not json"
+	if err := os.WriteFile(file, []byte(damaged), 0600); err != nil {
+		t.Fatal(err)
+	}
+	notifier := &linuxNotifier{appName: appName, categories: map[string]NotificationCategory{}}
+	if err := notifier.loadCategories(); err == nil {
+		t.Fatal("damaged category file loaded")
+	}
+	if err := notifier.RegisterNotificationCategory(NotificationCategory{ID: "new"}); !errors.Is(err, errCategoriesUnreadable) {
+		t.Fatalf("register returned %v", err)
+	}
+	if err := notifier.Shutdown(); err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != damaged {
+		t.Errorf("category file overwritten: %q", got)
 	}
 }
