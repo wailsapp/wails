@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix the save dialog ignoring its filters on macOS: `SaveFileDialogOptions.Filters` and `AddFilter()` now set the allowed content types of the `NSSavePanel`, so a filename entered without an extension gets the extension of the first filter, as on Windows and in Wails v2 ([#6195](https://github.com/wailsapp/wails/issues/6195)) by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
