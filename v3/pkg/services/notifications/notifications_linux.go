@@ -4,6 +4,7 @@ package notifications
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -31,6 +32,8 @@ type linuxNotifier struct {
 	// actions is set when the server advertises the "actions" capability: a click then arrives
 	// as ActionInvoked, so a NotificationClosed with reason 2 is a dismissal.
 	actions bool
+	// categoriesUnreadable keeps saves from replacing a category file this run could not read.
+	categoriesUnreadable bool
 }
 
 type notificationData struct {
@@ -66,13 +69,26 @@ func New() *NotificationService {
 	return NotificationService_
 }
 
+// errNoSessionBus is returned by sends, scheduled ones included, when Startup found no session bus.
+var errNoSessionBus = errors.New("notifications are unavailable: no D-Bus session bus")
+
+var errCategoriesUnreadable = errors.New("saved notification categories could not be read, so the file was left alone")
+
 // Startup is called when the service is loaded.
 func (ln *linuxNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
 	ln.appName = application.Get().Config().Name
 
+	// Loaded before the bus check: Shutdown saves the categories either way, and must not overwrite them with none.
+	if err := ln.loadCategories(); err != nil {
+		fmt.Printf("Failed to load notification categories: %v\n", err)
+	}
+
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
-		return fmt.Errorf("failed to connect to session bus: %w", err)
+		// Without a session bus there is no notification daemon to talk to; the app still runs, and sending a
+		// notification reports errNoSessionBus.
+		fmt.Fprintf(os.Stderr, "wails: notifications disabled: failed to connect to session bus: %v\n", err)
+		return nil
 	}
 	ln.conn = conn
 
@@ -84,10 +100,6 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 		ln.actions = slices.Contains(caps, "actions")
 	}
 	cancelCaps()
-
-	if err := ln.loadCategories(); err != nil {
-		fmt.Printf("Failed to load notification categories: %v\n", err)
-	}
 
 	var signalCtx context.Context
 	signalCtx, ln.cancel = context.WithCancel(context.Background())
@@ -138,6 +150,9 @@ func (ln *linuxNotifier) CheckNotificationAuthorization() (bool, error) {
 
 // SendNotification sends a basic notification with a unique identifier, title, subtitle, and body.
 func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
+	if ln.conn == nil {
+		return errNoSessionBus
+	}
 	if delay, ok := scheduleDelay(options.Schedule); ok && delay > 0 {
 		ln.parkSchedule(options.ID, delay, func() error {
 			opts := options
@@ -162,6 +177,9 @@ func (ln *linuxNotifier) SendNotification(options NotificationOptions) error {
 
 // SendNotificationWithActions sends a notification with additional actions.
 func (ln *linuxNotifier) SendNotificationWithActions(options NotificationOptions) error {
+	if ln.conn == nil {
+		return errNoSessionBus
+	}
 	ln.categoriesLock.RLock()
 	category, exists := ln.categories[options.CategoryID]
 	ln.categoriesLock.RUnlock()
@@ -371,11 +389,7 @@ func (ln *linuxNotifier) RegisterNotificationCategory(category NotificationCateg
 	ln.categories[category.ID] = category
 	ln.categoriesLock.Unlock()
 
-	if err := ln.saveCategories(); err != nil {
-		fmt.Printf("Failed to save notification categories: %v\n", err)
-	}
-
-	return nil
+	return ln.saveCategories()
 }
 
 // RemoveNotificationCategory removes a previously registered NotificationCategory.
@@ -384,11 +398,7 @@ func (ln *linuxNotifier) RemoveNotificationCategory(categoryId string) error {
 	delete(ln.categories, categoryId)
 	ln.categoriesLock.Unlock()
 
-	if err := ln.saveCategories(); err != nil {
-		fmt.Printf("Failed to save notification categories: %v\n", err)
-	}
-
-	return nil
+	return ln.saveCategories()
 }
 
 // RemoveAllPendingNotifications cancels any in-process scheduled timers AND
@@ -492,6 +502,10 @@ func (ln *linuxNotifier) saveCategories() error {
 	ln.categoriesLock.Lock()
 	defer ln.categoriesLock.Unlock()
 
+	if ln.categoriesUnreadable {
+		return errCategoriesUnreadable
+	}
+
 	configDir, err := ln.getConfigDir()
 	if err != nil {
 		return err
@@ -513,7 +527,12 @@ func (ln *linuxNotifier) saveCategories() error {
 }
 
 // Load notification categories.
-func (ln *linuxNotifier) loadCategories() error {
+func (ln *linuxNotifier) loadCategories() (err error) {
+	// Held throughout so a save cannot run before the outcome is known.
+	ln.categoriesLock.Lock()
+	defer ln.categoriesLock.Unlock()
+	defer func() { ln.categoriesUnreadable = err != nil }()
+
 	configDir, err := ln.getConfigDir()
 	if err != nil {
 		return err
@@ -535,9 +554,7 @@ func (ln *linuxNotifier) loadCategories() error {
 		return fmt.Errorf("failed to unmarshal notification categories: %w", err)
 	}
 
-	ln.categoriesLock.Lock()
 	ln.categories = categories
-	ln.categoriesLock.Unlock()
 
 	return nil
 }
