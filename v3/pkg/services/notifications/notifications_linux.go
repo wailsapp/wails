@@ -4,6 +4,7 @@ package notifications
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -62,13 +63,19 @@ func New() *NotificationService {
 	return NotificationService_
 }
 
+// errNoSessionBus is returned by notification calls when Startup found no session bus.
+var errNoSessionBus = errors.New("notifications are unavailable: no D-Bus session bus")
+
 // Startup is called when the service is loaded.
 func (ln *linuxNotifier) Startup(ctx context.Context, options application.ServiceOptions) error {
 	ln.appName = application.Get().Config().Name
 
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
-		return fmt.Errorf("failed to connect to session bus: %w", err)
+		// Without a session bus there is no notification daemon to talk to; the app still runs, and sending a
+		// notification reports errNoSessionBus.
+		fmt.Fprintf(os.Stderr, "wails: notifications disabled: failed to connect to session bus: %v\n", err)
+		return nil
 	}
 	ln.conn = conn
 
@@ -260,6 +267,9 @@ func (ln *linuxNotifier) notify(options NotificationOptions, actions []string, a
 	}
 	ln.notificationsLock.RUnlock()
 
+	if ln.conn == nil {
+		return errNoSessionBus
+	}
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
 	call := obj.Call(
 		dbusNotificationInterface+".Notify",
@@ -449,6 +459,9 @@ func (ln *linuxNotifier) RemoveNotification(identifier string) error {
 
 // Helper method to close a notification.
 func (ln *linuxNotifier) closeNotification(id uint32) error {
+	if ln.conn == nil {
+		return errNoSessionBus
+	}
 	obj := ln.conn.Object(dbusNotificationInterface, dbusNotificationPath)
 	call := obj.Call(dbusNotificationInterface+".CloseNotification", 0, id)
 
