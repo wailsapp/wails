@@ -642,13 +642,14 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 		}
 	}
 
-	if s.menu != nil {
-		props["Menu"] = &prop.Prop{
-			Value:    dbus.ObjectPath(menuPath),
-			Writable: true,
-			Emit:     prop.EmitTrue,
-			Callback: nil,
-		}
+	// The dbusmenu object is exported at menuPath whether or not a menu is set yet. A tray created after
+	// the app runs registers before SetMenu, and hosts such as GNOME's AppIndicator extension drop an
+	// item whose Menu property is missing.
+	props["Menu"] = &prop.Prop{
+		Value:    dbus.ObjectPath(menuPath),
+		Writable: true,
+		Emit:     prop.EmitTrue,
+		Callback: nil,
 	}
 
 	return map[string]map[string]*prop.Prop{
