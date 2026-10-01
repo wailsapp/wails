@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a macOS crash when dragging an element inside the webview while `EnableFileDrop` is set: the drop handler read non-file URLs off the pasteboard and called `-fileSystemRepresentation` on them, which returns `NULL` and crashed the process on the following `-initWithCString:` by @JaesonMart
+
 ## v2.16.0 - 2026-09-14
 
 ### Fixed
