@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Local audio and video</title>
+    <style>
+        body { max-width: 680px; margin: 2rem auto; padding: 0 1rem; font: 16px system-ui; }
+        video { width: 100%; max-height: 300px; background: #111; }
+        audio { width: 100%; }
+        button { padding: .5rem 1rem; }
+    </style>
+</head>
+<body>
+    <h1>Local audio and video</h1>
+    <p>Load the bundled clips, then use the player controls to play or seek.</p>
+    <h2>Video</h2>
+    <video id="video" controls preload="metadata" aria-label="Wails video"></video>
+    <h2>Audio</h2>
+    <audio id="audio" controls preload="metadata" aria-label="Wails audio"></audio>
+    <p><button id="load">Load clips</button> <button id="clear">Clear clips</button></p>
+    <p id="status" role="status">Clips have not been loaded.</p>
+    <script type="module">
+        import { Media } from '/wails/runtime.js';
+
+        const video = document.getElementById('video');
+        const audio = document.getElementById('audio');
+        const status = document.getElementById('status');
+        let selection = 0;
+
+        document.getElementById('load').addEventListener('click', async () => {
+            const current = ++selection;
+            status.textContent = 'Loading clips…';
+            try {
+                await Promise.all([
+                    Media.SetSource(video, 'media', 'wails.mp4'),
+                    Media.SetSource(audio, 'media', 'wails.mp3'),
+                ]);
+                if (current === selection) status.textContent = 'Clips loaded. Use the controls to play.';
+            } catch (error) {
+                if (current === selection && error.name !== 'AbortError') status.textContent = error.message;
+            }
+        });
+        function clear() {
+            ++selection;
+            Media.ClearSource(video);
+            Media.ClearSource(audio);
+            status.textContent = 'Clips cleared.';
+        }
+        document.getElementById('clear').addEventListener('click', clear);
+        window.addEventListener('pagehide', clear);
+        for (const player of [video, audio]) {
+            player.addEventListener('error', () => {
+                status.textContent = 'Playback failed. Check that the required media codecs are installed.';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -188,6 +188,8 @@ buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 
 @end
 
+播放音訊或影片的應用程式也需要所選格式的 GStreamer 編解碼器。關於本機媒體設定與播放疑難排解，請參閱[播放本機音訊與影片](/guides/linux-media/)。
+
 @note{type="info" title="舊版 GTK3 技術堆疊"}
 如果目標發行版尚未隨附 WebKitGTK 6.0（例如 Ubuntu 22.04 LTS、Debian 12），請改為安裝 GTK3 + WebKit2GTK 4.1 開發程式庫（Debian/Ubuntu 使用 `libgtk-3-dev libwebkit2gtk-4.1-dev`，其他發行版則使用對應套件），並使用 `wails3 build -tags gtk3` 建置。舊版建置途徑支援至 v3.0.x 系列，並將於 v3.1 移除。如需詳細資訊，請參閱 [Linux 封裝－舊版 GTK3 支援](/guides/build/linux/#legacy-gtk3-support)。
 

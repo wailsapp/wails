@@ -154,7 +154,17 @@ go build -tags gtk3 -o myapp .
 
 运行`wails3 doctor`以验证环境配置。不指定标志时，它会检查 GTK4 / WebKitGTK 6.0（默认配置）。旧版 GTK3 / WebKit2GTK 4.1软件包会列为可选项。
 
+## 音频和视频
+
+对于随应用分发的片段，请按[播放本地音频和视频](/guides/linux-media/)使用 `Media.SetSource` 和 `Media.ClearSource`。指南涵盖媒体文件系统注册、取消加载、释放 blob 和设置大小限制。传输使用 Wails 流，不会打开监听套接字；每个片段在播放前会完整加载，前端默认限制为 32 MiB。
+
+请将媒体格式所需的 GStreamer 编解码器纳入分发要求。传输成功并不保证目标系统能解码文件。请在支持的 Linux 发行版上测试播放。
+
 ## 故障排除
+
+### 本地音频或视频无法播放
+
+如果 GStreamer 报告 **No URI handler implemented for "wails"**，请遵循[本地媒体播放指南](/guides/linux-media/)。如果片段加载成功但播放失败，请检查编解码器要求及播放器的 `error` 事件。
 
 ### AppImage 无法运行
 

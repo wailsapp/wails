@@ -168,6 +168,8 @@
           link: "/guides/dev/debugging/"
         - label: "测试"
           link: "/guides/testing/"
+        - label: "播放本地音频和视频"
+          link: "/guides/linux-media/"
     - label: "构建与打包"
       collapsed: true
       items:

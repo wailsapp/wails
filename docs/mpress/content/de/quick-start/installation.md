@@ -188,6 +188,8 @@ Führen Sie nach der Installation von Wails `wails3 doctor` aus – der Befehl z
 
 @end
 
+Anwendungen mit Audio- oder Videowiedergabe benötigen außerdem GStreamer-Codecs für die gewählten Formate. Hinweise zur Einrichtung und Fehlerbehebung finden Sie unter [Lokale Audio- und Videodateien abspielen](/guides/linux-media/).
+
 @note{type="info" title="Legacy-GTK3-Stack"}
 Falls Ihre Zieldistribution WebKitGTK 6.0 noch nicht bereitstellt (z. B. Ubuntu 22.04 LTS oder Debian 12), installieren Sie stattdessen die Entwicklungsbibliotheken für GTK3 und WebKit2GTK 4.1 (`libgtk-3-dev libwebkit2gtk-4.1-dev` unter Debian/Ubuntu; entsprechende Pakete bei anderen Distributionen) und bauen Sie mit `wails3 build -tags gtk3`. Der Legacy-Pfad wird bis einschließlich der Versionsreihe v3.0.x unterstützt und in v3.1 entfernt. Weitere Informationen finden Sie unter [Linux-Paketierung – Legacy-GTK3-Unterstützung](/guides/build/linux/#legacy-gtk3-support).
 
