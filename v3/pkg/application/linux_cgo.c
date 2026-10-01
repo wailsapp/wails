@@ -566,7 +566,17 @@ static gboolean on_drop(GtkDropTarget *target, const GValue *value, gdouble x, g
     return TRUE;
 }
 
+// The motion controller sees every drag over the webview, including WebKit's own
+// in-page HTML drags, so only a drag that carries files counts as a file drop.
+static gboolean drag_has_files(GtkDropControllerMotion *ctrl) {
+    GdkDrop *drop = gtk_drop_controller_motion_get_drop(ctrl);
+    return drop != NULL && gdk_content_formats_contain_gtype(gdk_drop_get_formats(drop), GDK_TYPE_FILE_LIST);
+}
+
 static void on_motion_enter(GtkDropControllerMotion *ctrl, gdouble x, gdouble y, gpointer data) {
+    if (!drag_has_files(ctrl)) {
+        return;
+    }
     onDropEnter((uintptr_t)data);
 }
 
@@ -575,6 +585,9 @@ static void on_motion_leave(GtkDropControllerMotion *ctrl, gpointer data) {
 }
 
 static void on_motion_motion(GtkDropControllerMotion *ctrl, gdouble x, gdouble y, gpointer data) {
+    if (!drag_has_files(ctrl)) {
+        return;
+    }
     onDropMotion((gint)x, (gint)y, (uintptr_t)data);
 }
 
