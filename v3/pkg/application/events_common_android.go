@@ -9,6 +9,10 @@ import "github.com/wailsapp/wails/v3/pkg/events"
 // the Android side (battery level, theme, …) rides along to the common event.
 var commonApplicationEventMap = map[events.ApplicationEventType]events.ApplicationEventType{
 	events.Android.ActivityCreated:      events.Common.ApplicationStarted,
+	events.Android.ActivityResumed:      events.Common.ApplicationResumed,
+	events.Android.ActivityPaused:       events.Common.ApplicationPaused,
+	events.Android.ActivityStopped:      events.Common.ApplicationBackgrounded,
+	events.Android.ActivityStarted:      events.Common.ApplicationForegrounded,
 	events.Android.ApplicationLowMemory: events.Common.LowMemory,
 	events.Android.BatteryChanged:       events.Common.BatteryChanged,
 	events.Android.NetworkChanged:       events.Common.NetworkChanged,
