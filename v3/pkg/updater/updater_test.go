@@ -415,6 +415,33 @@ func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
 	}
 }
 
+// A provider error during the transfer itself (connection cut, context
+// cancelled) happens after download has created the staging dir, so download
+// has to remove it on its own: the caller never sees the path.
+func TestDownloadAndInstall_DownloadError_RemovesStagingDir(t *testing.T) {
+	host := &fakeHost{}
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: 1024},
+	}
+	p := &fakeProvider{name: "p", rel: rel, dlErr: io.ErrUnexpectedEOF}
+	u := newConfigured(t, host, p)
+
+	before := countStagingDirs(t)
+
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Fatalf("expected the provider error, got %v", err)
+	}
+
+	after := countStagingDirs(t)
+	if after > before {
+		t.Errorf("staging dir leaked: %d → %d wails-update-* directories under %s", before, after, os.TempDir())
+	}
+}
+
 // countStagingDirs returns the number of `wails-update-*` directories under
 // os.TempDir. Used to detect leaks across the download/install flow without
 // being sensitive to absolute paths.
