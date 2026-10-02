@@ -759,11 +759,6 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
         processWindowEvent(self.windowId, EventWindowDidResize);
     }
 }
-- (void)windowDidUpdate:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidUpdate) ) {
-        processWindowEvent(self.windowId, EventWindowDidUpdate);
-    }
-}
 - (void)windowDidUpdateAlpha:(NSNotification *)notification {
     if( hasListeners(EventWindowDidUpdateAlpha) ) {
         processWindowEvent(self.windowId, EventWindowDidUpdateAlpha);
@@ -882,11 +877,6 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
 - (void)windowWillUnfocus:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUnfocus) ) {
         processWindowEvent(self.windowId, EventWindowWillUnfocus);
-    }
-}
-- (void)windowWillUpdate:(NSNotification *)notification {
-    if( hasListeners(EventWindowWillUpdate) ) {
-        processWindowEvent(self.windowId, EventWindowWillUpdate);
     }
 }
 - (void)windowWillUpdateAlpha:(NSNotification *)notification {

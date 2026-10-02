@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Stop posting `WindowDidUpdate` and `WindowWillUpdate` on macOS: `NSWindowDidUpdateNotification` fires on every run-loop pass, so the page received ~120 empty `evaluateJavaScript:` calls per second, and on macOS 27.0 each of them consumed the transient activation of the user's click — `navigator.clipboard.writeText()` and other activation-gated APIs rejected with `NotAllowedError` from real clicks ([#6170](https://github.com/wailsapp/wails/issues/6170)) by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
