@@ -118,7 +118,7 @@ func TestAnalyser(t *testing.T) {
 			}
 
 			for obj := range services {
-				got = append(got, types.TypeString(obj.Type(), nil))
+				got = append(got, types.TypeString(obj.Type.Type(), nil))
 			}
 
 			slices.Sort(got)
