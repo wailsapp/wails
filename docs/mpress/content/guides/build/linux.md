@@ -62,6 +62,8 @@ license: MIT
 
 AppImage configuration is in `build/linux/appimage/`. The app icon comes from `build/appicon.png`.
 
+The AppImage bundles WebKit and its helper processes, and patches the bundled library to start them from inside the AppImage. With GTK4 (WebKitGTK 6.0), WebKit's bubblewrap sandbox cannot run from there, so the AppImage starts the app with `WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1`. GTK3 builds (WebKit2GTK 4.1) have the sandbox off by default. If your app loads remote content, ship a DEB, RPM or Flatpak, which use the system WebKit with its sandbox.
+
 ## Signing Packages
 
 Sign DEB and RPM packages with a PGP key:

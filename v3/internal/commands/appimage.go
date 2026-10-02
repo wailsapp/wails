@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"bytes"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 
@@ -182,7 +184,11 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		return err
 	}
 	s.CD(appDir)
+	var helperDirs []string
 	for _, file := range files {
+		if strings.HasPrefix(filepath.Base(file), "WebKit") && !slices.Contains(helperDirs, filepath.Dir(file)) {
+			helperDirs = append(helperDirs, filepath.Dir(file))
+		}
 		targetDir := filepath.Dir(file)
 		if targetDir[0] == '/' {
 			targetDir = targetDir[1:]
@@ -193,6 +199,21 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		}
 		s.MKDIR(targetDir)
 		s.COPY(file, targetDir)
+	}
+
+	if DeployGtkVersion == "4" {
+		// WebKitGTK 6.0 always runs its helpers inside a bubblewrap sandbox,
+		// which bind-mounts the helper directory at the same path and fails
+		// on the relative path relocateWebKitHelpers writes into the library.
+		// The environment variable is the only way to turn it off in 6.0.
+		appRun := filepath.Join(appDir, "AppRun")
+		if err := os.Rename(appRun, appRun+".wrapped"); err != nil {
+			return err
+		}
+		wrapper := "#!/bin/sh\nexport WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1\nexec \"$(dirname \"$(readlink -f \"$0\")\")/AppRun.wrapped\" \"$@\"\n"
+		if err := os.WriteFile(appRun, []byte(wrapper), 0755); err != nil {
+			return err
+		}
 	}
 
 	// Copy GTK Plugin
@@ -207,8 +228,9 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 
 	// Quote the executable and --appdir args so `s.EXEC`'s shlex split
 	// keeps them as single tokens when the user-supplied paths contain
-	// spaces.
-	cmd := fmt.Sprintf("%q --appimage-extract-and-run --appdir %q --output appimage --plugin gtk", linuxdeployAppImage, appDir)
+	// spaces. linuxdeploy runs twice: the bundled WebKit library has to be
+	// patched after it is deployed and before the AppImage is packed.
+	linuxdeploy := fmt.Sprintf("%q --appimage-extract-and-run --appdir %q", linuxdeployAppImage, appDir)
 	s.SETENV("DEPLOY_GTK_VERSION", DeployGtkVersion)
 
 	// Force linuxdeploy's appimage plugin to write the AppImage to a known
@@ -226,7 +248,15 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 		s.SETENV("NO_STRIP", "1")
 	}
 
-	output, err := s.EXEC(cmd)
+	output, err := s.EXEC(linuxdeploy + " --plugin gtk")
+	if err != nil {
+		fmt.Println(string(output))
+		return err
+	}
+	if err := relocateWebKitHelpers(filepath.Join(appDir, "usr", "lib"), helperDirs); err != nil {
+		return err
+	}
+	output, err = s.EXEC(linuxdeploy + " --output appimage")
 	if err != nil {
 		fmt.Println(string(output))
 		return err
@@ -236,6 +266,48 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	s.MOVE(targetFile, options.OutputDir)
 
 	log(p, "AppImage created: "+filepath.Join(options.OutputDir, appImageName))
+	return nil
+}
+
+// relocateWebKitHelpers points the bundled WebKit library at the helper
+// processes copied into the AppDir. WebKitGTK looks for them in a directory
+// compiled into the library (only developer builds honour WEBKIT_EXEC_PATH),
+// so as deployed the AppImage only starts where the build machine's path
+// exists, e.g. /usr/lib/x86_64-linux-gnu on Debian and Ubuntu, and there it
+// runs the system's helpers. Everywhere else WebKit fails with "Unable to spawn
+// a new child process". The leading "/usr" becomes "././", which keeps the
+// string length and resolves inside the AppDir because AppRun changes
+// directory to $APPDIR/usr before starting the application.
+func relocateWebKitHelpers(libDir string, helperDirs []string) error {
+	libs, err := filepath.Glob(filepath.Join(libDir, "libwebkit*gtk-*.so*"))
+	if err != nil {
+		return err
+	}
+	relocated := false
+	for _, lib := range libs {
+		data, err := os.ReadFile(lib)
+		if err != nil {
+			return err
+		}
+		patched := data
+		for _, dir := range helperDirs {
+			patched = bytes.ReplaceAll(patched, []byte(dir), []byte("././"+strings.TrimPrefix(dir, "/usr")))
+		}
+		if bytes.Equal(patched, data) {
+			continue
+		}
+		info, err := os.Stat(lib)
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(lib, patched, info.Mode().Perm()); err != nil {
+			return err
+		}
+		relocated = true
+	}
+	if !relocated {
+		return fmt.Errorf("no WebKit library in %s references the helper directories %v", libDir, helperDirs)
+	}
 	return nil
 }
 

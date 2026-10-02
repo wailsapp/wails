@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix AppImages from `wails3 generate appimage` crashing on start outside Debian and Ubuntu with "Unable to spawn a new child process: … WebKitNetworkProcess". The bundled WebKit now runs the helper processes shipped in the AppImage. With GTK4, WebKit's bubblewrap sandbox is disabled inside the AppImage
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
