@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix transparent and translucent windows rendering opaque on Linux with GTK4 by clearing the GTK window and child backgrounds, as GTK3 already does
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
