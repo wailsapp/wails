@@ -210,17 +210,21 @@ func SYMLINK(source string, target string) {
 	checkError(err)
 }
 
-// COPY file from source to target
+// COPY file from source to target, keeping the source's permission bits
 func COPY(source string, target string) {
 	log("COPY %s -> %s", source, target)
 	src, err := os.Open(source)
 	checkError(err)
 	defer closefile(src)
+	info, err := src.Stat()
+	checkError(err)
 	if ISDIR(target) {
 		target = filepath.Join(target, filepath.Base(source))
 	}
 	d, err := os.Create(target)
 	checkError(err)
+	defer closefile(d)
+	checkError(d.Chmod(info.Mode().Perm()))
 	_, err = io.Copy(d, src)
 	checkError(err)
 }
