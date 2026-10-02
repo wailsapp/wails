@@ -40,11 +40,19 @@ func checkPkgConfig() *packagemanager.Dependency {
 
 func checkLocallyInstalled(checker func() *packagemanager.Dependency, dependency *packagemanager.Dependency) {
 	if !dependency.Installed {
-		locallyInstalled := checker()
-		if locallyInstalled.Installed {
-			dependency.Installed = true
-			dependency.Version = locallyInstalled.Version
-		}
+		applyLocalCheck(dependency, checker())
+	}
+}
+
+func applyLocalCheck(dependency, locallyInstalled *packagemanager.Dependency) {
+	if !locallyInstalled.Installed {
+		return
+	}
+	dependency.Installed = true
+	dependency.Version = locallyInstalled.Version
+	// doctor reports a dependency without a package name as "Not Found".
+	if dependency.PackageName == "" {
+		dependency.PackageName = locallyInstalled.PackageName
 	}
 }
 
@@ -80,11 +88,7 @@ func (i *Info) discover() error {
 				checkLocallyInstalled(checker, dep)
 			}
 			if dep.Name == "nsis" {
-				locallyInstalled := checkNSIS()
-				if locallyInstalled.Installed {
-					dep.Installed = true
-					dep.Version = locallyInstalled.Version
-				}
+				applyLocalCheck(dep, checkNSIS())
 			}
 		}
 		i.Dependencies = dependencies
