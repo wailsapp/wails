@@ -183,6 +183,16 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	if err != nil {
 		return err
 	}
+	// WebKit builds with the GPU process compiled in can start it on demand,
+	// and once relocated they look for it in the AppDir too.
+	for _, file := range files {
+		if filepath.Base(file) != "WebKitWebProcess" {
+			continue
+		}
+		if gpu := filepath.Join(filepath.Dir(file), "WebKitGPUProcess"); s.EXISTS(gpu) {
+			files = append(files, gpu)
+		}
+	}
 	s.CD(appDir)
 	var helperDirs []string
 	for _, file := range files {

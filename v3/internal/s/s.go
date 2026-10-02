@@ -221,9 +221,10 @@ func COPY(source string, target string) {
 	if ISDIR(target) {
 		target = filepath.Join(target, filepath.Base(source))
 	}
-	d, err := os.OpenFile(target, os.O_RDWR|os.O_CREATE|os.O_TRUNC, info.Mode().Perm())
+	d, err := os.Create(target)
 	checkError(err)
 	defer closefile(d)
+	checkError(d.Chmod(info.Mode().Perm()))
 	_, err = io.Copy(d, src)
 	checkError(err)
 }

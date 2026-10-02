@@ -14,6 +14,9 @@ func TestRelocateWebKitHelpers(t *testing.T) {
 	if err := os.WriteFile(lib, original, 0755); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.Chmod(lib, 0755); err != nil { // independent of the umask
+		t.Fatal(err)
+	}
 	other := filepath.Join(libDir, "libgtk-4.so.1")
 	if err := os.WriteFile(other, original, 0644); err != nil {
 		t.Fatal(err)
