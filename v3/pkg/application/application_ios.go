@@ -214,6 +214,10 @@ func (a *iosApp) run() error {
 
 		// Emit the launch event now that listeners are wired and UIKit is up.
 		applicationEvents <- newApplicationEvent(events.IOS.ApplicationDidFinishLaunching)
+
+		// Deep-link listeners are now wired; deliver any URL that arrived during
+		// cold launch and allow subsequent deep links to emit immediately.
+		flushIOSPendingDeepLinks()
 	}()
 
 	// Hand the main thread to UIKit. platformRun calls UIApplicationMain and does
@@ -422,6 +426,56 @@ func processApplicationEvent(eventID C.uint, data unsafe.Pointer) {
 
 	// Send to the applicationEvents channel for processing
 	applicationEvents <- event
+}
+
+// iOS deep-link (Universal Link / custom scheme) delivery. The delegate's
+// continueUserActivity/openURL callbacks can fire before the Go event listeners
+// are wired (notably on cold launch), so URLs received before the runtime is
+// ready are buffered and flushed once listeners are up (see flushIOSPendingDeepLinks).
+var (
+	iosDeepLinkLock     sync.Mutex
+	iosDeepLinkReady    bool
+	iosPendingDeepLinks []string
+)
+
+func emitIOSDeepLink(url string) {
+	event := newApplicationEvent(events.Common.ApplicationLaunchedWithUrl)
+	event.Context().setURL(url)
+	applicationEvents <- event
+}
+
+// flushIOSPendingDeepLinks marks deep-link delivery ready and emits any URLs
+// that arrived before the event listeners were wired. Called once from the
+// startup goroutine after ApplicationDidFinishLaunching is emitted.
+func flushIOSPendingDeepLinks() {
+	iosDeepLinkLock.Lock()
+	iosDeepLinkReady = true
+	pending := iosPendingDeepLinks
+	iosPendingDeepLinks = nil
+	iosDeepLinkLock.Unlock()
+	for _, url := range pending {
+		emitIOSDeepLink(url)
+	}
+}
+
+// iosHandleDeepLink is called from the Objective-C app delegate when the app is
+// opened via a Universal Link or custom-scheme URL. It delivers the URL as the
+// cross-platform common:ApplicationLaunchedWithUrl application event.
+//
+//export iosHandleDeepLink
+func iosHandleDeepLink(curl *C.char) {
+	url := C.GoString(curl)
+	if url == "" {
+		return
+	}
+	iosDeepLinkLock.Lock()
+	if !iosDeepLinkReady {
+		iosPendingDeepLinks = append(iosPendingDeepLinks, url)
+		iosDeepLinkLock.Unlock()
+		return
+	}
+	iosDeepLinkLock.Unlock()
+	emitIOSDeepLink(url)
 }
 
 //export processWindowEvent
