@@ -350,7 +350,7 @@ func (s *windowsSystemTray) updateIcon() {
 		// last-error is 0 that is panic(nil), which on Go 1.21+ surfaces as
 		// "panic called with nil argument" and crashes the host app.
 		//
-		// Match the other NIM_MODIFY callers (Show/Hide/setTooltip): log and
+		// Match the other NIM_MODIFY callers (Show/Hide/updateTooltip): log and
 		// return. Roll back currentIcon so the next updateIcon retries once the
 		// icon is registered again; keep the old handle (do not release it).
 		globalApplication.warning("ShellNotifyIcon NIM_MODIFY failed in updateIcon (icon not registered): %v", syscall.GetLastError())
@@ -506,14 +506,22 @@ func (s *windowsSystemTray) updateMenu(menu *Menu) {
 	s.menu.onMenuClose = s.parent.onMenuClose
 }
 
-func (s *windowsSystemTray) setTooltip(tooltip string) {
+// setTooltip and setLabel both show SystemTray.tooltipOrLabel rather than their
+// argument: an explicit tooltip wins, and clearing it falls back to the label. The
+// value is read when the dispatched call runs, so rapid SetLabel/SetTooltip calls
+// cannot leave an older value on the icon.
+func (s *windowsSystemTray) setTooltip(string) { s.updateTooltip() }
+
+func (s *windowsSystemTray) setLabel(string) { s.updateTooltip() }
+
+func (s *windowsSystemTray) updateTooltip() {
 	// Create a new NOTIFYICONDATA structure
 	nid := s.newNotifyIconData()
 	nid.UFlags = w32.NIF_TIP | w32.NIF_SHOWTIP
 
 	// Ensure the tooltip length is within the limit (128 characters including null terminate characters for szTip for Windows 2000 and later)
 	// https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-notifyicondataw
-	tooltipUTF16, err := w32.StringToUTF16(truncateUTF16(tooltip, 127))
+	tooltipUTF16, err := w32.StringToUTF16(truncateUTF16(s.parent.tooltipOrLabel(), 127))
 	if err != nil {
 		return
 	}
@@ -527,8 +535,6 @@ func (s *windowsSystemTray) setTooltip(tooltip string) {
 }
 
 // ---- Unsupported ----
-func (s *windowsSystemTray) setLabel(label string) {}
-
 func (s *windowsSystemTray) setTemplateIcon(_ []byte) {
 	// Unsupported - do nothing
 }
@@ -624,8 +630,9 @@ func (s *windowsSystemTray) show() (w32.NOTIFYICONDATA, error) {
 
 	s.updateIcon()
 
-	if s.parent.tooltip != "" {
-		s.setTooltip(s.parent.tooltip)
+	// A label set before Run has to reach the tooltip too, see updateTooltip.
+	if s.parent.tooltipOrLabel() != "" {
+		s.updateTooltip()
 	}
 
 	return nid, nil
