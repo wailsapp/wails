@@ -63,8 +63,6 @@ type linuxApp struct {
 	windowMap     map[windowPointer]uint
 	windowMapLock sync.Mutex
 
-	theme string
-
 	icon pointer
 }
 
@@ -190,10 +188,6 @@ func (a *linuxApp) registerWindow(window pointer, id uint) {
 	a.windowMapLock.Lock()
 	a.windowMap[windowPointer(window)] = id
 	a.windowMapLock.Unlock()
-}
-
-func (a *linuxApp) isDarkMode() bool {
-	return strings.Contains(a.theme, "dark")
 }
 
 func (a *linuxApp) getAccentColor() string {

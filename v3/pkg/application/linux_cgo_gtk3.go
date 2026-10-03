@@ -598,11 +598,6 @@ func processApplicationEvent(eventID C.uint, data pointer) {
 	//	}
 	//}
 
-	switch event.Id {
-	case uint(events.Linux.SystemThemeChanged):
-		isDark := globalApplication.Env.IsDarkMode()
-		event.Context().setIsDarkMode(isDark)
-	}
 	applicationEvents <- event
 }
 
