@@ -4,7 +4,8 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0
+#cgo !webkit_6 pkg-config: gtk+-3.0
+#cgo webkit_6 pkg-config: gtk4
 
 #include <stdio.h>
 #include "gtk/gtk.h"
