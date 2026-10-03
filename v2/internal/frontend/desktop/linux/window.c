@@ -557,6 +557,7 @@ static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gin
 // WebView
 GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowOnClose, int gpuPolicy, int disableWebViewDragAndDrop, int enableDragAndDrop)
 {
+    (void)disableWebViewDragAndDrop;
     GtkWidget *webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager *)contentManager);
 
     // Store webview reference in the content manager
@@ -566,13 +567,18 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
     g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
 
-    if(disableWebViewDragAndDrop)
-    {
-        gtk_drag_dest_unset(webview);
-    }
+    // Always unset the default GTK drag destination to allow WebKit
+    // to handle HTML5 drag-and-drop events (dragover, dragleave, drop).
+    // Without this, GTK intercepts drag events before WebKit processes them,
+    // preventing standard HTML5 drag-and-drop from working (issue #4673).
+    gtk_drag_dest_unset(webview);
 
     if(enableDragAndDrop)
     {
+        // Re-enable GTK drag destination specifically for file URI drops
+        // when the Wails file drop feature is enabled.
+        GtkTargetEntry targets[] = { { "text/uri-list", 0, 2 } };
+        gtk_drag_dest_set(webview, GTK_DEST_DEFAULT_ALL, targets, 1, GDK_ACTION_COPY);
         g_signal_connect(G_OBJECT(webview), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
         g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
     }
