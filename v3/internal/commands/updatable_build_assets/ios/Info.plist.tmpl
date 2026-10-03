@@ -61,5 +61,26 @@
     <key>CFBundleGetInfoString</key>
     <string>{{.ProductComments}}</string>
     {{end}}
+    <!--
+      Privacy usage descriptions. iOS hard-crashes (and the App Store rejects the
+      build) the moment a permission-gated API is called without the matching
+      key. The Wails runtime exposes camera, microphone, photo library, location,
+      motion and biometric APIs; uncomment the key for each feature your app
+      actually uses and replace the string with a real, user-facing reason. Only
+      ship keys for features you use — unused keys draw App Store review scrutiny.
+
+    <key>NSCameraUsageDescription</key>
+    <string>This app uses the camera to capture photos and videos.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app uses the microphone when recording video.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app accesses your photo library to select images.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app uses your location while you are using it.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>This app uses motion data from device sensors.</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>This app uses Face ID to authenticate you.</string>
+    -->
 </dict>
 </plist>
