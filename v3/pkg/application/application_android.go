@@ -729,6 +729,59 @@ func Java_com_wails_app_WailsBridge_nativeOnLowMemory(env *C.JNIEnv, obj C.jobje
 	emitAndroidApplicationEvent(events.Android.ApplicationLowMemory)
 }
 
+// Java_com_wails_app_WailsBridge_nativeOnBackPressed is called from MainActivity
+// when the user presses the back button/gesture. It emits the cross-platform
+// common:BackButtonPressed event and returns true if a registered hook cancelled
+// it (meaning Java should NOT perform the default goBack/exit behavior).
+//
+// To intercept the back button, register a hook (not a listener):
+//
+//	app.Event.RegisterApplicationEventHook(events.Common.BackButtonPressed, func(e *application.ApplicationEvent) {
+//	    e.Cancel() // suppress default back navigation
+//	})
+//
+// Hooks run synchronously before the JNI call returns; listeners run
+// asynchronously and cannot reliably cancel in time.
+//
+//export Java_com_wails_app_WailsBridge_nativeOnBackPressed
+func Java_com_wails_app_WailsBridge_nativeOnBackPressed(env *C.JNIEnv, obj C.jobject) C.jboolean {
+	globalAppLock.RLock()
+	app := globalApp
+	globalAppLock.RUnlock()
+	if app == nil {
+		return C.JNI_FALSE
+	}
+
+	event := newApplicationEvent(events.Common.BackButtonPressed)
+	eventID := uint(events.Common.BackButtonPressed)
+
+	// Run hooks synchronously. We cannot use handleApplicationEvent because
+	// it returns early if no listeners are registered (before reaching hooks).
+	// Hooks are the correct cancellation mechanism here.
+	app.applicationEventHooksLock.RLock()
+	hooks := app.applicationEventHooks[eventID]
+	app.applicationEventHooksLock.RUnlock()
+	for _, hook := range hooks {
+		hook.callback(event)
+		if event.IsCancelled() {
+			return C.JNI_TRUE
+		}
+	}
+
+	// Also dispatch to listeners (async, non-cancelable) for observability.
+	app.applicationEventListenersLock.RLock()
+	listeners := app.applicationEventListeners[eventID]
+	app.applicationEventListenersLock.RUnlock()
+	for _, listener := range listeners {
+		go func() {
+			defer func() { recover() }()
+			listener.callback(event)
+		}()
+	}
+
+	return C.JNI_FALSE
+}
+
 // Java_com_wails_app_WailsBridge_nativeEmitSystemEvent is the funnel the
 // Android system-event receivers (battery, network, lock, theme) call to
 // deliver a typed android: application event with its JSON payload.
