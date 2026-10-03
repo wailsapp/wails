@@ -86,7 +86,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 
 	// We can't use os.Pipe here, because that returns files with a finalizer for closing the FD. But the control over the
 	// read FD is given to the InputStream and will be closed there.
-	// Furthermore we especially don't want to have the FD_CLOEXEC
 	rFD, w, err := pipe()
 	if err != nil {
 		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to open pipe: %s", err))
@@ -144,9 +143,13 @@ type nopCloser struct {
 
 func (nopCloser) Close() error { return nil }
 
+// pipe creates the response body pipe with O_CLOEXEC on both ends. Without it, a
+// child process forked while a response is in flight (os/exec, a helper the app
+// spawns, ...) inherits the write end, and WebKit never sees EOF on the body
+// until that child exits, so fetch() stalls although the handler has returned.
 func pipe() (r int, w *os.File, err error) {
 	var p [2]int
-	e := syscall.Pipe2(p[0:], 0)
+	e := syscall.Pipe2(p[0:], syscall.O_CLOEXEC)
 	if e != nil {
 		return 0, nil, fmt.Errorf("pipe2: %s", e)
 	}
