@@ -185,8 +185,14 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	req.Header = header
 
 	if req.RemoteAddr == "" {
-		// 192.0.2.0/24 is "TEST-NET" in RFC 5737
-		req.RemoteAddr = "192.0.2.1:1234"
+		// A webview request originates from the embedded webview on this
+		// machine, not from a routable peer, so give it a loopback RemoteAddr:
+		// a handler that gates on request origin (net.ParseIP(host).IsLoopback())
+		// then sees it as the local request it is. The previous placeholder
+		// (192.0.2.1, RFC 5737 TEST-NET) is non-loopback — the same address the
+		// host checks elsewhere in this tree treat as the canonical remote peer
+		// — so it made the most-local surface look remote.
+		req.RemoteAddr = "127.0.0.1:0"
 	}
 
 	if req.RequestURI == "" && req.URL != nil {
