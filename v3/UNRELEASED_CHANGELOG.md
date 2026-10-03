@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix by-value `double` arguments to WebView2 COM methods on windows/arm64 — `ZoomFactor`, `RasterizationScale` and cookie `Expires` were silently ignored there: the call now goes through a `runtime.cgocall` trampoline that loads `d0`, which Go's syscall path cannot (golang.org/issue/62583) by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
