@@ -1,30 +1,35 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2SharedBufferVtbl struct {
 	IUnknownVtbl
-	GetSize              ComProc
-	GetBuffer            ComProc
-	OpenStream           ComProc
+	GetSize ComProc
+	GetBuffer ComProc
+	OpenStream ComProc
 	GetFileMappingHandle ComProc
-	Close                ComProc
+	Close ComProc
 }
 
 type ICoreWebView2SharedBuffer struct {
 	Vtbl *ICoreWebView2SharedBufferVtbl
 }
 
-func (i *ICoreWebView2SharedBuffer) AddRef() uintptr {
+func (i *ICoreWebView2SharedBuffer) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2SharedBuffer) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2SharedBuffer) GetSize() (uint64, error) {
 
@@ -83,6 +88,7 @@ func (i *ICoreWebView2SharedBuffer) GetFileMappingHandle() (HANDLE, error) {
 }
 
 func (i *ICoreWebView2SharedBuffer) Close() error {
+
 
 	hr, _, _ := i.Vtbl.Close.Call(
 		uintptr(unsafe.Pointer(i)),

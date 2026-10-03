@@ -1,33 +1,38 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2CookieManagerVtbl struct {
 	IUnknownVtbl
-	CreateCookie                   ComProc
-	CopyCookie                     ComProc
-	GetCookies                     ComProc
-	AddOrUpdateCookie              ComProc
-	DeleteCookie                   ComProc
-	DeleteCookies                  ComProc
+	CreateCookie ComProc
+	CopyCookie ComProc
+	GetCookies ComProc
+	AddOrUpdateCookie ComProc
+	DeleteCookie ComProc
+	DeleteCookies ComProc
 	DeleteCookiesWithDomainAndPath ComProc
-	DeleteAllCookies               ComProc
+	DeleteAllCookies ComProc
 }
 
 type ICoreWebView2CookieManager struct {
 	Vtbl *ICoreWebView2CookieManagerVtbl
 }
 
-func (i *ICoreWebView2CookieManager) AddRef() uintptr {
+func (i *ICoreWebView2CookieManager) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2CookieManager) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2CookieManager) CreateCookie(name string, value string, domain string, path string) (*ICoreWebView2Cookie, error) {
 
@@ -103,6 +108,7 @@ func (i *ICoreWebView2CookieManager) GetCookies(uri string, handler *ICoreWebVie
 
 func (i *ICoreWebView2CookieManager) AddOrUpdateCookie(cookie *ICoreWebView2Cookie) error {
 
+
 	hr, _, _ := i.Vtbl.AddOrUpdateCookie.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(cookie)),
@@ -114,6 +120,7 @@ func (i *ICoreWebView2CookieManager) AddOrUpdateCookie(cookie *ICoreWebView2Cook
 }
 
 func (i *ICoreWebView2CookieManager) DeleteCookie(cookie *ICoreWebView2Cookie) error {
+
 
 	hr, _, _ := i.Vtbl.DeleteCookie.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -180,6 +187,7 @@ func (i *ICoreWebView2CookieManager) DeleteCookiesWithDomainAndPath(name string,
 }
 
 func (i *ICoreWebView2CookieManager) DeleteAllCookies() error {
+
 
 	hr, _, _ := i.Vtbl.DeleteAllCookies.Call(
 		uintptr(unsafe.Pointer(i)),

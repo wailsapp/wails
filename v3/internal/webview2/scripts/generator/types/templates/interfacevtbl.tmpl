@@ -11,7 +11,7 @@ import (
 {{- end}}
 
 type {{.Name}}Vtbl struct {
-	IUnknownVtbl
+	{{.BaseVtbl}}
 	{{- range .Methods}}
 	{{.ProcessedName}} ComProc
 	{{- end}}
@@ -24,22 +24,32 @@ type {{.Name}} struct {
 	{{- end}}
 }
 
-func (i *{{.Name}}) AddRef() uintptr {
+func (i *{{.Name}}) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *{{.Name}}) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 {{if .BaseClass }}
-func (i *ICoreWebView2) Get{{.Name}}() *{{.Name}} {
+// Get{{.Name}} queries the object for its {{.Name}} interface. The receiver
+// is the root of {{.Name}}'s inheritance chain — the object that actually
+// implements it.
+func (i *{{.QIReceiver}}) Get{{.Name}}() (*{{.Name}}, error) {
 	var result *{{.Name}}
 
 	iid{{.Name}} := NewGUID({{.Header.AsString}})
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iid{{.Name}})),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
 
 {{end}}

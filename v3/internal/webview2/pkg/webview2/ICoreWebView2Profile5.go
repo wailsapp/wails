@@ -1,15 +1,14 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Profile5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile4Vtbl
 	GetCookieManager ComProc
 }
 
@@ -17,22 +16,34 @@ type ICoreWebView2Profile5 struct {
 	Vtbl *ICoreWebView2Profile5Vtbl
 }
 
-func (i *ICoreWebView2Profile5) AddRef() uintptr {
+func (i *ICoreWebView2Profile5) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Profile5() *ICoreWebView2Profile5 {
+func (i *ICoreWebView2Profile5) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2Profile5 queries the object for its ICoreWebView2Profile5 interface. The receiver
+// is the root of ICoreWebView2Profile5's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Profile) GetICoreWebView2Profile5() (*ICoreWebView2Profile5, error) {
 	var result *ICoreWebView2Profile5
 
 	iidICoreWebView2Profile5 := NewGUID("{2ee5b76e-6e80-4df2-bcd3-d4ec3340a01b}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Profile5)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Profile5) GetCookieManager() (*ICoreWebView2CookieManager, error) {
 

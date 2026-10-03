@@ -1,28 +1,33 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2HttpHeadersCollectionIteratorVtbl struct {
 	IUnknownVtbl
-	GetCurrentHeader    ComProc
+	GetCurrentHeader ComProc
 	GetHasCurrentHeader ComProc
-	MoveNext            ComProc
+	MoveNext ComProc
 }
 
 type ICoreWebView2HttpHeadersCollectionIterator struct {
 	Vtbl *ICoreWebView2HttpHeadersCollectionIteratorVtbl
 }
 
-func (i *ICoreWebView2HttpHeadersCollectionIterator) AddRef() uintptr {
+func (i *ICoreWebView2HttpHeadersCollectionIterator) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2HttpHeadersCollectionIterator) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2HttpHeadersCollectionIterator) GetCurrentHeader() (string, string, error) {
 	// Create *uint16 to hold result
@@ -30,10 +35,11 @@ func (i *ICoreWebView2HttpHeadersCollectionIterator) GetCurrentHeader() (string,
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetCurrentHeader.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_name)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_name)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", "", syscall.Errno(hr)
@@ -59,7 +65,7 @@ func (i *ICoreWebView2HttpHeadersCollectionIterator) GetHasCurrentHeader() (bool
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	hasCurrent := _hasCurrent != 0
+    hasCurrent := _hasCurrent != 0
 	return hasCurrent, nil
 }
 
@@ -75,6 +81,6 @@ func (i *ICoreWebView2HttpHeadersCollectionIterator) MoveNext() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	hasNext := _hasNext != 0
+    hasNext := _hasNext != 0
 	return hasNext, nil
 }

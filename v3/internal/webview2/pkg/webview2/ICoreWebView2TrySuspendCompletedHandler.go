@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2TrySuspendCompletedHandler struct {
 	impl ICoreWebView2TrySuspendCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2TrySuspendCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2TrySuspendCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2TrySuspendCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2TrySuspendCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2TrySuspendCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2TrySuspendCompletedHandlerIUnknownQueryInterface(this *ICoreWe
 }
 
 func ICoreWebView2TrySuspendCompletedHandlerIUnknownAddRef(this *ICoreWebView2TrySuspendCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2TrySuspendCompletedHandlerIUnknownRelease(this *ICoreWebView2TrySuspendCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2TrySuspendCompletedHandlerInvoke(this *ICoreWebView2TrySuspendCompletedHandler, errorCode uintptr, result bool) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2TrySuspendCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2TrySuspendCompletedHandlerFn = ICoreWebView2TrySuspendCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2TrySuspendCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2TrySuspendCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2TrySuspendCompletedHandlerIUnknownRelease),

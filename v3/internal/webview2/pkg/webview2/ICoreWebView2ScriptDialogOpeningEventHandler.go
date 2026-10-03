@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ScriptDialogOpeningEventHandler struct {
 	impl ICoreWebView2ScriptDialogOpeningEventHandlerImpl
 }
 
-func (i *ICoreWebView2ScriptDialogOpeningEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2ScriptDialogOpeningEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ScriptDialogOpeningEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ScriptDialogOpeningEventHandlerIUnknownQueryInterface(this *ICoreWebView2ScriptDialogOpeningEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ScriptDialogOpeningEventHandlerIUnknownQueryInterface(this *IC
 }
 
 func ICoreWebView2ScriptDialogOpeningEventHandlerIUnknownAddRef(this *ICoreWebView2ScriptDialogOpeningEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ScriptDialogOpeningEventHandlerIUnknownRelease(this *ICoreWebView2ScriptDialogOpeningEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ScriptDialogOpeningEventHandlerInvoke(this *ICoreWebView2ScriptDialogOpeningEventHandler, sender *ICoreWebView2, args *ICoreWebView2ScriptDialogOpeningEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ScriptDialogOpeningEventHandlerImpl interface {
 }
 
 var ICoreWebView2ScriptDialogOpeningEventHandlerFn = ICoreWebView2ScriptDialogOpeningEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ScriptDialogOpeningEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ScriptDialogOpeningEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ScriptDialogOpeningEventHandlerIUnknownRelease),
