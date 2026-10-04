@@ -2,6 +2,7 @@ package s
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"unicode"
 )
 
@@ -237,7 +239,41 @@ func MOVE(source string, target string) {
 	}
 	log("MOVE %s -> %s", source, target)
 	err := os.Rename(source, target)
+	if errors.Is(err, syscall.EXDEV) {
+		err = copyAcrossDevices(source, target)
+	}
 	checkError(err)
+}
+
+// copyAcrossDevices moves a regular file when rename cannot, e.g. from a tmpfs
+// build dir to an on-disk output dir. The file mode is kept so an AppImage
+// stays executable.
+func copyAcrossDevices(source, target string) error {
+	src, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+	info, err := src.Stat()
+	if err != nil {
+		return err
+	}
+	dst, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, info.Mode().Perm())
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(dst, src)
+	if cerr := dst.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Chmod(target, info.Mode().Perm())
+	}
+	if err != nil {
+		_ = os.Remove(target)
+		return err
+	}
+	return os.Remove(source)
 }
 
 func CWD() string {
