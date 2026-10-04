@@ -156,7 +156,13 @@ func (h *serverApp) run() error {
 	defer cancel()
 
 	// A signal ends server mode here rather than through Quit, so the app's shutdown hooks (OnShutdown) run now.
-	defer h.app.cleanup()
+	// The same signal also reaches the default signal handler, and a Quit cancels the context this select waits
+	// on, so another goroutine may already be running the hooks; Run must not return, letting the process exit,
+	// until they have finished.
+	defer func() {
+		h.app.cleanup()
+		h.app.waitForCleanup()
+	}()
 	if err := h.server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown error: %w", err)
 	}
