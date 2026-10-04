@@ -155,6 +155,8 @@ func (h *serverApp) run() error {
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
+	// A signal ends server mode here rather than through Quit, so the app's shutdown hooks (OnShutdown) run now.
+	defer h.app.cleanup()
 	if err := h.server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown error: %w", err)
 	}
