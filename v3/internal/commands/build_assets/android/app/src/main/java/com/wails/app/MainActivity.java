@@ -29,6 +29,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,12 +67,21 @@ public class MainActivity extends AppCompatActivity {
     private WebViewAssetLoader assetLoader;
 
     // The Go-side dialog ID of the in-flight file picker (-1 when idle)
-    private int pendingFilePickerCallbackID = -1;
+    // Pending native requests are process-scoped (static) so they survive the
+    // Activity being recreated while the picker/camera is open: the Go request
+    // waiting on them lives as long as the process, not the Activity.
+    private static int pendingFilePickerCallbackID = -1;
+
+    // Renderer-crash recovery bookkeeping (process-scoped, survives recreate()).
+    private static final int MAX_RENDER_CRASH_RECOVERIES = 3;
+    private static final long RENDER_CRASH_WINDOW_MS = 60_000;
+    private static int renderCrashCount = 0;
+    private static long renderCrashWindowStart = 0;
     private static final int PHOTO_CAPTURE_REQUEST = 7002;
     private static final int VIDEO_CAPTURE_REQUEST = 7003;
     private static final int CAMERA_PERMISSION_REQUEST = 7010;
-    private File pendingCaptureFile;
-    private boolean pendingCaptureIsVideo;
+    private static File pendingCaptureFile;
+    private static boolean pendingCaptureIsVideo;
 
     // System-event sources (battery/power, screen lock, network). Registered in
     // onCreate, torn down in onDestroy. Each forwards a "system:*" event to JS
@@ -202,7 +212,6 @@ public class MainActivity extends AppCompatActivity {
                 // takes the whole app down. Drop the dead WebView and recreate
                 // the Activity instead: the Go app keeps running and the new
                 // Activity reattaches to it with a fresh WebView.
-                Log.e(TAG, "WebView render process gone (crashed: " + detail.didCrash() + "); recreating activity");
                 if (webView == view) {
                     webView = null;
                 }
@@ -210,6 +219,24 @@ public class MainActivity extends AppCompatActivity {
                     ((ViewGroup) view.getParent()).removeView(view);
                 }
                 view.destroy();
+                // Don't loop forever if the page crashes the renderer every
+                // time it loads: give up after a few crashes in a short window.
+                long now = android.os.SystemClock.elapsedRealtime();
+                if (now - renderCrashWindowStart > RENDER_CRASH_WINDOW_MS) {
+                    renderCrashWindowStart = now;
+                    renderCrashCount = 0;
+                }
+                renderCrashCount++;
+                if (renderCrashCount > MAX_RENDER_CRASH_RECOVERIES) {
+                    Log.e(TAG, "WebView render process gone (crashed: " + detail.didCrash() + "); giving up after " + MAX_RENDER_CRASH_RECOVERIES + " recoveries");
+                    TextView message = new TextView(MainActivity.this);
+                    message.setText("The app's content stopped unexpectedly. Please restart the app.");
+                    message.setGravity(android.view.Gravity.CENTER);
+                    message.setPadding(48, 48, 48, 48);
+                    setContentView(message);
+                    return true;
+                }
+                Log.e(TAG, "WebView render process gone (crashed: " + detail.didCrash() + "); recreating activity");
                 recreate();
                 return true;
             }

@@ -22,4 +22,12 @@ func TestAndroidActivityRecreationKeepsGoAppRunning(t *testing.T) {
 	// taking the whole app down.
 	assert.Contains(t, mainActivityJava, "public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail)")
 	assert.Contains(t, mainActivityJava, "recreate();")
+
+	// Then: renderer-crash recovery is bounded so a page that crashes the
+	// renderer on every load cannot loop forever.
+	assert.Contains(t, mainActivityJava, "if (renderCrashCount > MAX_RENDER_CRASH_RECOVERIES) {")
+
+	// Then: pending picker/camera requests outlive a recreated Activity.
+	assert.Contains(t, mainActivityJava, "private static int pendingFilePickerCallbackID = -1;")
+	assert.Contains(t, mainActivityJava, "private static File pendingCaptureFile;")
 }

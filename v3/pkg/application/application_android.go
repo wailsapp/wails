@@ -7,12 +7,16 @@ package application
 #include <stdlib.h>
 #include <string.h>
 #include <android/log.h>
+#include <pthread.h>
 
 // Global JavaVM reference for thread attachment
 static JavaVM* g_jvm = NULL;
 
-// Global reference to the WailsBridge object (must be a global ref, not local)
+// Global reference to the WailsBridge object (must be a global ref, not local).
+// It is replaced when Android recreates the Activity, so readers must go
+// through acquireBridge() rather than using it directly.
 static jobject g_bridge = NULL;
+static pthread_mutex_t g_bridgeLock = PTHREAD_MUTEX_INITIALIZER;
 
 // Cached method ID for the hot executeJavaScript path
 static jmethodID g_executeJsMethod = NULL;
@@ -69,12 +73,16 @@ static void storeBridgeRef(JNIEnv *env, jobject bridge) {
         WLOGE("storeBridgeRef: NewGlobalRef failed");
         return;
     }
+    pthread_mutex_lock(&g_bridgeLock);
     jobject oldBridge = g_bridge;
     g_bridge = newBridge;
+    pthread_mutex_unlock(&g_bridgeLock);
+    // Safe to release now: callers only use the bridge through local
+    // references taken under g_bridgeLock, which keep the old object alive.
     if (oldBridge != NULL) {
         (*env)->DeleteGlobalRef(env, oldBridge);
     }
-    jclass bridgeClass = (*env)->GetObjectClass(env, g_bridge);
+    jclass bridgeClass = (*env)->GetObjectClass(env, newBridge);
     if (bridgeClass != NULL) {
         g_executeJsMethod = (*env)->GetMethodID(env, bridgeClass, "executeJavaScript", "(Ljava/lang/String;)V");
         (*env)->DeleteLocalRef(env, bridgeClass);
@@ -115,19 +123,32 @@ static void clearException(JNIEnv* env, const char* where) {
     }
 }
 
+// Return a local reference to the current bridge (caller deletes it), or NULL.
+// The local reference stays valid even if the bridge is replaced meanwhile.
+static jobject acquireBridge(JNIEnv* env) {
+    pthread_mutex_lock(&g_bridgeLock);
+    jobject bridge = g_bridge != NULL ? (*env)->NewLocalRef(env, g_bridge) : NULL;
+    pthread_mutex_unlock(&g_bridgeLock);
+    return bridge;
+}
+
 // Call `String name()` on the bridge. Returns a malloc'd C string (caller
 // frees) or NULL.
 static char* callBridgeStringMethod(const char* name) {
-    if (g_bridge == NULL) return NULL;
     int detach = 0;
     JNIEnv* env = wailsGetEnv(&detach);
     if (env == NULL) return NULL;
+    jobject bridge = acquireBridge(env);
+    if (bridge == NULL) {
+        wailsReleaseEnv(detach);
+        return NULL;
+    }
     char* result = NULL;
-    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    jclass cls = (*env)->GetObjectClass(env, bridge);
     if (cls != NULL) {
         jmethodID mid = (*env)->GetMethodID(env, cls, name, "()Ljava/lang/String;");
         if (mid != NULL) {
-            jstring jresult = (jstring)(*env)->CallObjectMethod(env, g_bridge, mid);
+            jstring jresult = (jstring)(*env)->CallObjectMethod(env, bridge, mid);
             clearException(env, name);
             if (jresult != NULL) {
                 const char* chars = (*env)->GetStringUTFChars(env, jresult, NULL);
@@ -142,6 +163,7 @@ static char* callBridgeStringMethod(const char* name) {
         }
         (*env)->DeleteLocalRef(env, cls);
     }
+    (*env)->DeleteLocalRef(env, bridge);
     wailsReleaseEnv(detach);
     return result;
 }
@@ -149,17 +171,21 @@ static char* callBridgeStringMethod(const char* name) {
 // Call `String name(String)` on the bridge. Returns a malloc'd C string
 // (caller frees) or NULL.
 static char* callBridgeStringStringMethod(const char* name, const char* arg) {
-    if (g_bridge == NULL) return NULL;
     int detach = 0;
     JNIEnv* env = wailsGetEnv(&detach);
     if (env == NULL) return NULL;
+    jobject bridge = acquireBridge(env);
+    if (bridge == NULL) {
+        wailsReleaseEnv(detach);
+        return NULL;
+    }
     char* result = NULL;
-    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    jclass cls = (*env)->GetObjectClass(env, bridge);
     if (cls != NULL) {
         jmethodID mid = (*env)->GetMethodID(env, cls, name, "(Ljava/lang/String;)Ljava/lang/String;");
         if (mid != NULL) {
             jstring jarg = (*env)->NewStringUTF(env, arg);
-            jstring jresult = (jstring)(*env)->CallObjectMethod(env, g_bridge, mid, jarg);
+            jstring jresult = (jstring)(*env)->CallObjectMethod(env, bridge, mid, jarg);
             clearException(env, name);
             if (jresult != NULL) {
                 const char* chars = (*env)->GetStringUTFChars(env, jresult, NULL);
@@ -175,42 +201,52 @@ static char* callBridgeStringStringMethod(const char* name, const char* arg) {
         }
         (*env)->DeleteLocalRef(env, cls);
     }
+    (*env)->DeleteLocalRef(env, bridge);
     wailsReleaseEnv(detach);
     return result;
 }
 
 // Call `void name()` on the bridge.
 static void callBridgeVoidMethod(const char* name) {
-    if (g_bridge == NULL) return;
     int detach = 0;
     JNIEnv* env = wailsGetEnv(&detach);
     if (env == NULL) return;
-    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    jobject bridge = acquireBridge(env);
+    if (bridge == NULL) {
+        wailsReleaseEnv(detach);
+        return;
+    }
+    jclass cls = (*env)->GetObjectClass(env, bridge);
     if (cls != NULL) {
         jmethodID mid = (*env)->GetMethodID(env, cls, name, "()V");
         if (mid != NULL) {
-            (*env)->CallVoidMethod(env, g_bridge, mid);
+            (*env)->CallVoidMethod(env, bridge, mid);
             clearException(env, name);
         } else {
             clearException(env, name);
         }
         (*env)->DeleteLocalRef(env, cls);
     }
+    (*env)->DeleteLocalRef(env, bridge);
     wailsReleaseEnv(detach);
 }
 
 // Call `void name(String)` on the bridge.
 static void callBridgeVoidString(const char* name, const char* arg) {
-    if (g_bridge == NULL) return;
     int detach = 0;
     JNIEnv* env = wailsGetEnv(&detach);
     if (env == NULL) return;
-    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    jobject bridge = acquireBridge(env);
+    if (bridge == NULL) {
+        wailsReleaseEnv(detach);
+        return;
+    }
+    jclass cls = (*env)->GetObjectClass(env, bridge);
     if (cls != NULL) {
         jmethodID mid = (*env)->GetMethodID(env, cls, name, "(Ljava/lang/String;)V");
         if (mid != NULL) {
             jstring jarg = (*env)->NewStringUTF(env, arg);
-            (*env)->CallVoidMethod(env, g_bridge, mid, jarg);
+            (*env)->CallVoidMethod(env, bridge, mid, jarg);
             clearException(env, name);
             if (jarg != NULL) (*env)->DeleteLocalRef(env, jarg);
         } else {
@@ -218,41 +254,51 @@ static void callBridgeVoidString(const char* name, const char* arg) {
         }
         (*env)->DeleteLocalRef(env, cls);
     }
+    (*env)->DeleteLocalRef(env, bridge);
     wailsReleaseEnv(detach);
 }
 
 // Call `void name(int)` on the bridge.
 static void callBridgeVoidInt(const char* name, int v) {
-    if (g_bridge == NULL) return;
     int detach = 0;
     JNIEnv* env = wailsGetEnv(&detach);
     if (env == NULL) return;
-    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    jobject bridge = acquireBridge(env);
+    if (bridge == NULL) {
+        wailsReleaseEnv(detach);
+        return;
+    }
+    jclass cls = (*env)->GetObjectClass(env, bridge);
     if (cls != NULL) {
         jmethodID mid = (*env)->GetMethodID(env, cls, name, "(I)V");
         if (mid != NULL) {
-            (*env)->CallVoidMethod(env, g_bridge, mid, (jint)v);
+            (*env)->CallVoidMethod(env, bridge, mid, (jint)v);
             clearException(env, name);
         } else {
             clearException(env, name);
         }
         (*env)->DeleteLocalRef(env, cls);
     }
+    (*env)->DeleteLocalRef(env, bridge);
     wailsReleaseEnv(detach);
 }
 
 // Call `void name(int, String)` on the bridge.
 static void callBridgeVoidIntString(const char* name, int id, const char* arg) {
-    if (g_bridge == NULL) return;
     int detach = 0;
     JNIEnv* env = wailsGetEnv(&detach);
     if (env == NULL) return;
-    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    jobject bridge = acquireBridge(env);
+    if (bridge == NULL) {
+        wailsReleaseEnv(detach);
+        return;
+    }
+    jclass cls = (*env)->GetObjectClass(env, bridge);
     if (cls != NULL) {
         jmethodID mid = (*env)->GetMethodID(env, cls, name, "(ILjava/lang/String;)V");
         if (mid != NULL) {
             jstring jarg = (*env)->NewStringUTF(env, arg);
-            (*env)->CallVoidMethod(env, g_bridge, mid, (jint)id, jarg);
+            (*env)->CallVoidMethod(env, bridge, mid, (jint)id, jarg);
             clearException(env, name);
             if (jarg != NULL) (*env)->DeleteLocalRef(env, jarg);
         } else {
@@ -260,46 +306,58 @@ static void callBridgeVoidIntString(const char* name, int id, const char* arg) {
         }
         (*env)->DeleteLocalRef(env, cls);
     }
+    (*env)->DeleteLocalRef(env, bridge);
     wailsReleaseEnv(detach);
 }
 
 // Call `boolean name()` on the bridge.
 static int callBridgeBoolMethod(const char* name) {
-    if (g_bridge == NULL) return 0;
     int detach = 0;
     JNIEnv* env = wailsGetEnv(&detach);
     if (env == NULL) return 0;
+    jobject bridge = acquireBridge(env);
+    if (bridge == NULL) {
+        wailsReleaseEnv(detach);
+        return 0;
+    }
     int result = 0;
-    jclass cls = (*env)->GetObjectClass(env, g_bridge);
+    jclass cls = (*env)->GetObjectClass(env, bridge);
     if (cls != NULL) {
         jmethodID mid = (*env)->GetMethodID(env, cls, name, "()Z");
         if (mid != NULL) {
-            result = (*env)->CallBooleanMethod(env, g_bridge, mid) == JNI_TRUE;
+            result = (*env)->CallBooleanMethod(env, bridge, mid) == JNI_TRUE;
             clearException(env, name);
         } else {
             clearException(env, name);
         }
         (*env)->DeleteLocalRef(env, cls);
     }
+    (*env)->DeleteLocalRef(env, bridge);
     wailsReleaseEnv(detach);
     return result;
 }
 
 // Execute JavaScript via the bridge - can be called from any thread.
 static void executeJavaScriptOnBridge(const char* js) {
-    if (g_bridge == NULL || g_executeJsMethod == NULL || js == NULL) {
+    if (g_executeJsMethod == NULL || js == NULL) {
         WLOGE("executeJavaScriptOnBridge: bridge not ready");
         return;
     }
     int detach = 0;
     JNIEnv* env = wailsGetEnv(&detach);
     if (env == NULL) return;
+    jobject bridge = acquireBridge(env);
+    if (bridge == NULL) {
+        wailsReleaseEnv(detach);
+        return;
+    }
     jstring jJs = (*env)->NewStringUTF(env, js);
     if (jJs != NULL) {
-        (*env)->CallVoidMethod(env, g_bridge, g_executeJsMethod, jJs);
+        (*env)->CallVoidMethod(env, bridge, g_executeJsMethod, jJs);
         clearException(env, "executeJavaScript");
         (*env)->DeleteLocalRef(env, jJs);
     }
+    (*env)->DeleteLocalRef(env, bridge);
     wailsReleaseEnv(detach);
 }
 */
