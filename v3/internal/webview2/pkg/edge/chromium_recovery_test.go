@@ -143,6 +143,50 @@ func TestEmbedPumpPreservesQuit(t *testing.T) {
 	}
 }
 
+// SetBackgroundColourWithError and AddWebResourceRequestedFilterWithError
+// exist so setupChromium can route a failed post-embed configuration call
+// back to its caller during WebView2 controller recovery instead of through
+// SetBackgroundColour/AddWebResourceRequestedFilter's SetErrorCallback path,
+// which always terminates the process, recovering or not (#6167).
+
+func TestSetBackgroundColourWithErrorReportsFailure(t *testing.T) {
+	const failure = uintptr(0x80004005)
+	controller2 := &ICoreWebView2Controller2{vtbl: &_ICoreWebView2Controller2Vtbl{
+		PutDefaultBackgroundColor: NewComProc(func(uintptr, uintptr) uintptr { return failure }),
+	}}
+	controller := &ICoreWebView2Controller{vtbl: &_ICoreWebView2ControllerVtbl{
+		_IUnknownVtbl: _IUnknownVtbl{
+			QueryInterface: NewComProc(func(_, _, ppvObject uintptr) uintptr {
+				*(**ICoreWebView2Controller2)(unsafe.Pointer(ppvObject)) = controller2
+				return 0
+			}),
+		},
+	}}
+
+	e := NewChromium()
+	e.SetErrorCallback(func(err error) { t.Fatalf("fatal callback: %v", err) })
+	e.controller = controller
+
+	if err := e.SetBackgroundColourWithError(0, 0, 0, 0); err == nil {
+		t.Fatal("want error from a failed PutDefaultBackgroundColor, got nil")
+	}
+}
+
+func TestAddWebResourceRequestedFilterWithErrorReportsFailure(t *testing.T) {
+	const failure = uintptr(0x80004005)
+	webview := &ICoreWebView2{vtbl: &iCoreWebView2Vtbl{
+		AddWebResourceRequestedFilter: NewComProc(func(uintptr, uintptr, uintptr) uintptr { return failure }),
+	}}
+
+	e := NewChromium()
+	e.SetErrorCallback(func(err error) { t.Fatalf("fatal callback: %v", err) })
+	e.webview = webview
+
+	if err := e.AddWebResourceRequestedFilterWithError("*", COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL); err == nil {
+		t.Fatal("want error from a failed AddWebResourceRequestedFilter, got nil")
+	}
+}
+
 func TestInitializeControllerFailureReleasesPartialController(t *testing.T) {
 	e := NewChromium()
 	e.DataPath = t.TempDir()

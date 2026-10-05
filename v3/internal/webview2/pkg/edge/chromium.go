@@ -736,6 +736,16 @@ func (e *Chromium) SetPermission(kind CoreWebView2PermissionKind, state CoreWebV
 }
 
 func (e *Chromium) SetBackgroundColour(R, G, B, A uint8) {
+	if err := e.SetBackgroundColourWithError(R, G, B, A); err != nil {
+		e.errorCallback(err)
+	}
+}
+
+// SetBackgroundColourWithError behaves like SetBackgroundColour but reports
+// failure to the caller instead of terminating the process, mirroring
+// EmbedWithError for callers (WebView2 controller recovery) that must not
+// treat a single failed COM call as fatal.
+func (e *Chromium) SetBackgroundColourWithError(R, G, B, A uint8) error {
 	controller := e.GetController()
 	controller2 := controller.GetICoreWebView2Controller2()
 
@@ -751,10 +761,7 @@ func (e *Chromium) SetBackgroundColour(R, G, B, A uint8) {
 		backgroundCol.A = 255
 	}
 
-	err := controller2.PutDefaultBackgroundColor(backgroundCol)
-	if err != nil {
-		e.errorCallback(err)
-	}
+	return controller2.PutDefaultBackgroundColor(backgroundCol)
 }
 
 func (e *Chromium) SetGlobalPermission(state CoreWebView2PermissionState) {
@@ -804,10 +811,17 @@ func (e *Chromium) WebResourceRequested(sender *ICoreWebView2, args *ICoreWebVie
 }
 
 func (e *Chromium) AddWebResourceRequestedFilter(filter string, ctx COREWEBVIEW2_WEB_RESOURCE_CONTEXT) {
-	err := e.webview.AddWebResourceRequestedFilter(filter, ctx)
-	if err != nil {
+	if err := e.AddWebResourceRequestedFilterWithError(filter, ctx); err != nil {
 		e.errorCallback(err)
 	}
+}
+
+// AddWebResourceRequestedFilterWithError behaves like
+// AddWebResourceRequestedFilter but reports failure to the caller instead of
+// terminating the process, mirroring EmbedWithError for callers (WebView2
+// controller recovery) that must not treat a single failed COM call as fatal.
+func (e *Chromium) AddWebResourceRequestedFilterWithError(filter string, ctx COREWEBVIEW2_WEB_RESOURCE_CONTEXT) error {
+	return e.webview.AddWebResourceRequestedFilter(filter, ctx)
 }
 
 func (e *Chromium) Environment() *ICoreWebView2Environment {

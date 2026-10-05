@@ -3,6 +3,9 @@
 package application
 
 import (
+	"errors"
+	"io"
+	"log/slog"
 	"testing"
 
 	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
@@ -165,5 +168,24 @@ func TestProcessFailedDoesNotQueueOverlappingRecovery(t *testing.T) {
 	w.processFailed(nil, nil)
 	if w.webviewRecoveryAttempts != 1 {
 		t.Fatal("overlapping failure spent another recovery attempt")
+	}
+}
+
+// A WebView2 configuration COM call (GetSettings, a settings setter,
+// background colour, the resource filter, ...) failing while recovering must
+// return to rebuildWebView, not exit the host: os.Exit(1) here would prove
+// the opposite of what the test checks and there would be no way to tell
+// startup's fatal behaviour (also handleFatalError, also os.Exit) apart from
+// a correct non-fatal return. That startup path is exercised implicitly by
+// every other test in this package: any regression there already exits the
+// whole test binary. See #6167.
+func TestSetupChromiumConfigErrorDuringRecoveryDoesNotTerminate(t *testing.T) {
+	previous := globalApplication
+	globalApplication = &App{Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}
+	t.Cleanup(func() { globalApplication = previous })
+
+	w := &windowsWebviewWindow{}
+	if got := w.setupChromiumConfigError(true, errors.New("boom")); got {
+		t.Fatal("setupChromiumConfigError(recovering=true, ...) = true, want false")
 	}
 }
