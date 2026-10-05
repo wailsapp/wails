@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Correct macOS media authorization guidance in [PR](https://github.com/wailsapp/wails/pull/6221) by @taliesin-ai
 - Fix right-clicking a Linux system tray icon running the click handler as well as opening the menu, so an attached window toggled on every right-click (#6018)
 - Keep WebView2 callback handlers alive until native release on Windows in [PR](https://github.com/wailsapp/wails/pull/6184) by @taliesin-ai
 
