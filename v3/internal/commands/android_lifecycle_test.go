@@ -41,5 +41,7 @@ func TestAndroidActivityRecreationKeepsGoAppRunning(t *testing.T) {
 	assert.Contains(t, wailsBridgeJava, "screenProtectWanted = enabled != 0;")
 	assert.Contains(t, wailsBridgeJava, "windowActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);")
 	assert.Contains(t, wailsBridgeJava, "private static volatile boolean motionWanted = false;")
+	assert.Contains(t, mainActivityJava, "bridge.release();")
+	assert.Contains(t, wailsBridgeJava, "current.setMotion(enabled);")
 	assert.Contains(t, wailsBridgeJava, "private static boolean pendingLocationRequest = false;")
 }

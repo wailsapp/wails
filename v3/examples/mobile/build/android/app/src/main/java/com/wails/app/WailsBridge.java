@@ -132,18 +132,35 @@ public class WailsBridge {
     private static volatile boolean screenProtectWanted = false;
     private static volatile boolean keepAwakeWanted = false;
     private static volatile int brightnessWanted = -1;
-    // The Activity whose window currently hosts the app. Window-flag updates
-    // run on the UI thread against this, not against the (possibly already
-    // replaced) Activity of whichever bridge the Go call happened to use.
-    private static volatile Activity currentActivity;
+    // The bridge of the Activity that currently hosts the app. Window-flag and
+    // sensor updates run on the UI thread against it, not against the
+    // (possibly already replaced) bridge the Go call happened to use.
+    private static volatile WailsBridge currentBridge;
 
     public WailsBridge(Activity activity) {
         this.activity = activity;
     }
 
     private Activity windowActivity() {
-        Activity current = currentActivity;
-        return current != null ? current : activity;
+        WailsBridge current = currentBridge;
+        return current != null ? current.activity : activity;
+    }
+
+    /** The current bridge if this one has been replaced, otherwise null. */
+    private WailsBridge replacement() {
+        WailsBridge current = currentBridge;
+        return current != null && current != this ? current : null;
+    }
+
+    /**
+     * Drop the static reference to this bridge (and its Activity) when the
+     * Activity is destroyed. Call from onDestroy on every destroy; a recreated
+     * Activity registers its own bridge in restoreWindowState().
+     */
+    public void release() {
+        if (currentBridge == this) {
+            currentBridge = null;
+        }
     }
 
     /**
@@ -151,7 +168,7 @@ public class WailsBridge {
      * Activity. Call from onCreate, before the window is shown.
      */
     public void restoreWindowState() {
-        currentActivity = activity;
+        currentBridge = this;
         if (screenProtectWanted) {
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
@@ -1021,6 +1038,14 @@ public class WailsBridge {
     public void setMotion(final int enabled) {
         motionWanted = enabled != 0;
         mainHandler.post(() -> {
+            // A replaced bridge must not register listeners nobody will
+            // unregister; hand the request to the current bridge instead.
+            WailsBridge current = replacement();
+            if (current != null) {
+                current.setMotion(enabled);
+                return;
+            }
+            if (activity.isDestroyed()) return;
             SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
             if (sm == null) return;
             if (enabled != 0) {
@@ -1053,6 +1078,14 @@ public class WailsBridge {
     public void setProximity(final int enabled) {
         proximityWanted = enabled != 0;
         mainHandler.post(() -> {
+            // A replaced bridge must not register listeners nobody will
+            // unregister; hand the request to the current bridge instead.
+            WailsBridge current = replacement();
+            if (current != null) {
+                current.setProximity(enabled);
+                return;
+            }
+            if (activity.isDestroyed()) return;
             SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
             if (sm == null) return;
             if (enabled != 0) {
