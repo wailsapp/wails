@@ -100,7 +100,9 @@ public class WailsBridge {
     private boolean motionWanted = false;
     private boolean proximityWanted = false;
     private boolean torchOn = false;
-    private boolean pendingLocationRequest = false;
+    // Process-scoped so a permission result delivered to a recreated Activity
+    // (and its new bridge) still completes the location request.
+    private static boolean pendingLocationRequest = false;
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);

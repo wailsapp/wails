@@ -29,7 +29,7 @@ func TestAndroidActivityRecreationKeepsGoAppRunning(t *testing.T) {
 
 	// Then: renderer-crash recovery is bounded so a page that crashes the
 	// renderer on every load cannot loop forever.
-	assert.Contains(t, mainActivityJava, "if (renderCrashCount > MAX_RENDER_CRASH_RECOVERIES) {")
+	assert.Contains(t, mainActivityJava, "if (renderCrashTimes.size() > MAX_RENDER_CRASH_RECOVERIES) {")
 
 	// Then: pending picker/camera requests outlive a recreated Activity.
 	assert.Contains(t, mainActivityJava, "private static int pendingFilePickerCallbackID = -1;")
@@ -40,4 +40,5 @@ func TestAndroidActivityRecreationKeepsGoAppRunning(t *testing.T) {
 	assert.Contains(t, mainActivityJava, "bridge.restoreWindowState();")
 	assert.Contains(t, wailsBridgeJava, "screenProtectWanted = enabled != 0;")
 	assert.Contains(t, wailsBridgeJava, "activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);")
+	assert.Contains(t, wailsBridgeJava, "private static boolean pendingLocationRequest = false;")
 }

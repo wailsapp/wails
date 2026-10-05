@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
     // Renderer-crash recovery bookkeeping (process-scoped, survives recreate()).
     private static final int MAX_RENDER_CRASH_RECOVERIES = 3;
     private static final long RENDER_CRASH_WINDOW_MS = 60_000;
-    private static int renderCrashCount = 0;
-    private static long renderCrashWindowStart = 0;
+    // Timestamps (elapsedRealtime) of recent recoveries, oldest first.
+    private static final java.util.ArrayDeque<Long> renderCrashTimes = new java.util.ArrayDeque<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,12 +176,11 @@ public class MainActivity extends AppCompatActivity {
                 // Don't loop forever if the page crashes the renderer every
                 // time it loads: give up after a few crashes in a short window.
                 long now = android.os.SystemClock.elapsedRealtime();
-                if (now - renderCrashWindowStart > RENDER_CRASH_WINDOW_MS) {
-                    renderCrashWindowStart = now;
-                    renderCrashCount = 0;
+                while (!renderCrashTimes.isEmpty() && now - renderCrashTimes.peekFirst() > RENDER_CRASH_WINDOW_MS) {
+                    renderCrashTimes.pollFirst();
                 }
-                renderCrashCount++;
-                if (renderCrashCount > MAX_RENDER_CRASH_RECOVERIES) {
+                renderCrashTimes.addLast(now);
+                if (renderCrashTimes.size() > MAX_RENDER_CRASH_RECOVERIES) {
                     Log.e(TAG, "WebView render process gone (crashed: " + detail.didCrash() + "); giving up after " + MAX_RENDER_CRASH_RECOVERIES + " recoveries");
                     TextView message = new TextView(MainActivity.this);
                     message.setText("The app's content stopped unexpectedly. Please restart the app.");

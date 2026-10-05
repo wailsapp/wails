@@ -27,7 +27,7 @@ func TestAndroidPermissionGatedActionsResumeAfterGrant(t *testing.T) {
 
 	assert.NotContains(t, wailsBridgeJava, "tap again once granted")
 	assert.Contains(t, wailsBridgeJava, "private static final int LOCATION_PERMISSION_REQUEST = 1002")
-	assert.Contains(t, wailsBridgeJava, "private boolean pendingLocationRequest")
+	assert.Contains(t, wailsBridgeJava, "private static boolean pendingLocationRequest")
 	assert.Contains(t, wailsBridgeJava, "pendingLocationRequest = true")
 	assert.Contains(t, wailsBridgeJava, "pendingLocationRequest = false")
 	assert.Contains(t, wailsBridgeJava, "public void onRequestPermissionsResult")
