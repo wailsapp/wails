@@ -975,6 +975,9 @@ func (w *windowsWebviewWindow) zoomOut() {
 
 func (w *windowsWebviewWindow) getZoom() float64 {
 	controller := w.chromium.GetController()
+	if controller == nil {
+		return -1
+	}
 	factor, err := controller.GetZoomFactor()
 	if err != nil {
 		return -1
@@ -2458,8 +2461,13 @@ func (w *windowsWebviewWindow) setupChromiumConfigError(recovering bool, err err
 	return false
 }
 
-func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
+func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 	chromium := w.chromium
+	defer func() {
+		if recovering && !ready {
+			chromium.Close()
+		}
+	}()
 	debugMode := globalApplication.isDebugMode
 
 	opts := w.parent.options.Windows
@@ -2647,6 +2655,7 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 	if settings == nil {
 		return w.setupChromiumConfigError(recovering, errors.New("error getting settings"))
 	}
+	defer settings.Release()
 	err = settings.PutAreDefaultContextMenusEnabled(
 		debugMode || !w.parent.options.DefaultContextMenuDisabled,
 	)
@@ -2654,7 +2663,9 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 		return w.setupChromiumConfigError(recovering, err)
 	}
 
-	w.enableDevTools(settings)
+	if err := w.enableDevTools(settings); err != nil {
+		return w.setupChromiumConfigError(recovering, err)
+	}
 
 	if w.parent.options.Zoom > 0.0 {
 		chromium.PutZoomFactor(w.parent.options.Zoom)
@@ -2681,14 +2692,15 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) bool {
 		chromium.OpenDevToolsWindow()
 	}
 
-	// Set background colour
-	w.setBackgroundColour(w.parent.options.BackgroundColour)
-	if err := chromium.SetBackgroundColourWithError(
-		w.parent.options.BackgroundColour.Red,
-		w.parent.options.BackgroundColour.Green,
-		w.parent.options.BackgroundColour.Blue,
-		w.parent.options.BackgroundColour.Alpha,
-	); err != nil {
+	// Keep the native window and WebView backgrounds consistent on recovery.
+	colour := w.parent.options.BackgroundColour
+	switch w.parent.options.BackgroundType {
+	case BackgroundTypeSolid:
+		w32.SetBackgroundColour(w.hwnd, colour.Red, colour.Green, colour.Blue)
+	case BackgroundTypeTransparent, BackgroundTypeTranslucent:
+		colour = RGBA{}
+	}
+	if err := chromium.SetBackgroundColourWithError(colour.Red, colour.Green, colour.Blue, colour.Alpha); err != nil {
 		return w.setupChromiumConfigError(recovering, err)
 	}
 
@@ -3330,8 +3342,7 @@ func (w *windowsWebviewWindow) rebuildWebView() {
 		// silently falls back to windowed hosting, so a WebView2CompositionHosting
 		// window would come back with the wrong hosting mode.
 		w.requestCancellation.close()
-		w.chromium.ShuttingDown()
-		w.chromium.ReleaseCompositionResources()
+		w.chromium.Close()
 		w.chromium = w.newChromium()
 		if w.setupChromium(true) {
 			return
