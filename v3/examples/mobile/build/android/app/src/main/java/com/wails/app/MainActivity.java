@@ -22,6 +22,8 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ViewGroup;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -192,6 +194,24 @@ public class MainActivity extends AppCompatActivity {
                 // Now that JS listeners are mounted, push a snapshot of the
                 // current battery / network / theme so the UI starts populated.
                 emitSystemSnapshot();
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                // Without this override, a crashed or killed WebView renderer
+                // takes the whole app down. Drop the dead WebView and recreate
+                // the Activity instead: the Go app keeps running and the new
+                // Activity reattaches to it with a fresh WebView.
+                Log.e(TAG, "WebView render process gone (crashed: " + detail.didCrash() + "); recreating activity");
+                if (webView == view) {
+                    webView = null;
+                }
+                if (view.getParent() instanceof ViewGroup) {
+                    ((ViewGroup) view.getParent()).removeView(view);
+                }
+                view.destroy();
+                recreate();
+                return true;
             }
         });
 
