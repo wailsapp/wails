@@ -316,7 +316,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (bridge != null) {
+        // Only shut the Go app down when the Activity is really going away.
+        // A recreation (configuration or theme overlay change) keeps the
+        // process, and with it the running Go app, alive; the new Activity
+        // reattaches to it in onCreate.
+        if (bridge != null && isFinishing() && !isChangingConfigurations()) {
             bridge.shutdown();
         }
         if (webView != null) {

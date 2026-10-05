@@ -62,10 +62,17 @@ static void storeBridgeRef(JNIEnv *env, jobject bridge) {
         WLOGE("storeBridgeRef: GetJavaVM failed");
         return;
     }
-    g_bridge = (*env)->NewGlobalRef(env, bridge);
-    if (g_bridge == NULL) {
+    // A recreated Activity brings a new bridge: swap it in, then release the
+    // previous one so the destroyed Activity can be collected.
+    jobject newBridge = (*env)->NewGlobalRef(env, bridge);
+    if (newBridge == NULL) {
         WLOGE("storeBridgeRef: NewGlobalRef failed");
         return;
+    }
+    jobject oldBridge = g_bridge;
+    g_bridge = newBridge;
+    if (oldBridge != NULL) {
+        (*env)->DeleteGlobalRef(env, oldBridge);
     }
     jclass bridgeClass = (*env)->GetObjectClass(env, g_bridge);
     if (bridgeClass != NULL) {
@@ -322,6 +329,10 @@ var (
 	// Android main function registration
 	androidMainFunc func()
 	androidMainLock sync.Mutex
+	// androidMainStarted guards against re-running main when Android
+	// recreates the Activity (configuration change, theme overlay change,
+	// ...) in a process whose Go runtime, and therefore App, is still alive.
+	androidMainStarted bool
 
 	// App ready signal
 	appReady     = make(chan struct{})
@@ -682,14 +693,25 @@ func Java_com_wails_app_WailsBridge_nativeInit(env *C.JNIEnv, obj C.jobject, bri
 	// Store JavaVM and bridge global reference for JNI callbacks
 	C.storeBridgeRef(env, bridge)
 
-	// Start the registered main function in a goroutine
+	// Start the registered main function in a goroutine. nativeInit runs
+	// again whenever Android recreates the Activity while the process (and
+	// the Go app) is still alive; re-running main would make App.Run fail
+	// with "application is running" and the app exit, so only the bridge
+	// reference is refreshed in that case.
 	androidMainLock.Lock()
 	mainFunc := androidMainFunc
+	alreadyStarted := androidMainStarted
+	if mainFunc != nil {
+		androidMainStarted = true
+	}
 	androidMainLock.Unlock()
 
-	if mainFunc != nil {
+	switch {
+	case alreadyStarted:
+		androidLogf("info", "Activity recreated; reattached bridge to running app")
+	case mainFunc != nil:
 		go mainFunc()
-	} else {
+	default:
 		androidLogf("error", "No main function registered! Call application.RegisterAndroidMain(main) in init()")
 	}
 }
