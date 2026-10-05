@@ -8,8 +8,8 @@ Guidelines:
 - Follow the "Keep a Changelog" format (https://keepachangelog.com/)
 - Write clear, concise descriptions of changes
 - Include the impact on users when relevant
-- Use present tense ("Add feature" not "Added feature")
-- Reference issue/PR numbers when applicable
+- Use present tense ("Add feature" not "Added feature").
+- Reference issue/PR numbers when applicable.
 
 This file is automatically processed by the nightly release workflow.
 After processing, the content will be moved to the main changelog and this file will be reset.
@@ -23,32 +23,15 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix right-clicking a Linux system tray icon running the click handler as well as opening the menu, so an attached window toggled on every right-click (#6018)
 - Keep Windows WebView2 recovery configuration failures non-fatal, release failed controllers, and retry initialization within the recovery budget. Fixes #6167.
+- Keep WebView2 callback handlers alive until native release on Windows in [PR](https://github.com/wailsapp/wails/pull/6184) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
 
 ## Removed
-<!-- Features removed in this release -->
+<!-- Features removed in the release -->
 
 ## Security
 <!-- Security-related changes -->
-
----
-
-### Example Entries:
-
-**Added:**
-- Add support for custom window icons in application options
-- Add new `SetWindowIcon()` method to runtime API (#1234)
-
-**Changed:**
-- Update minimum Go version requirement to 1.21
-- Improve error messages for invalid configuration files
-
-**Fixed:**
-- Fix memory leak in event system during window close operations (#5678)
-- Fix crash when using context menus on Linux with Wayland
-
-**Security:**
-- Update dependencies to address CVE-2024-12345 in third-party library

@@ -160,6 +160,19 @@ func NewChromium() *Chromium {
 func (e *Chromium) ShuttingDown() {
 	e.shuttingDown = true
 	atomic.StoreUintptr(&e.inited, 0)
+	// WebView2 may keep this instance's handlers, and therefore the instance,
+	// alive until it releases them. Drop the host callbacks so that retention
+	// does not extend to the window that owned it.
+	e.MessageCallback = nil
+	e.MessageWithAdditionalObjectsCallback = nil
+	e.WebResourceRequestedCallback = nil
+	e.NavigationStartingCallback = nil
+	e.NavigationCompletedCallback = nil
+	e.ProcessFailedCallback = nil
+	e.ContainsFullScreenElementChangedCallback = nil
+	e.AcceleratorKeyCallback = nil
+	e.CursorChangedCallback = nil
+	e.globalErrorCallback = globalErrorHandler
 }
 
 // Close abandons this instance and releases its controller and environment.
@@ -433,16 +446,13 @@ func (e *Chromium) Hide() error {
 	return e.controller.PutIsVisible(false)
 }
 
+// Handler queries are not expected; count them so tests notice a native
+// reference that bypasses AddRef.
+var handlerQueryInterfaces atomic.Uint64
+
 func (e *Chromium) QueryInterface(_, _ uintptr) uintptr {
+	handlerQueryInterfaces.Add(1)
 	return 0
-}
-
-func (e *Chromium) AddRef() uintptr {
-	return 1
-}
-
-func (e *Chromium) Release() uintptr {
-	return 1
 }
 
 func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environment) uintptr {
