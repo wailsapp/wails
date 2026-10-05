@@ -28,6 +28,19 @@ _/
 
 ## [Unreleased]
 
+## v3.0.0-beta.27 - 2026-10-01
+
+## Fixed
+- Fix the `Permissions` option being ignored on macOS 12 and later: the `WKUIDelegate` media-capture method is now implemented, so `PermissionAllow` and `PermissionDeny` apply to camera and microphone requests as they do on Linux and Windows. `NSCameraUsageDescription` / `NSMicrophoneUsageDescription` and, where sandboxed, the matching device entitlements are still required
+
+## v3.0.0-beta.26 - 2026-09-25
+
+## Added
+- Watcher applies HTTP readiness checks to frontend dev server in [PR](https://github.com/wailsapp/wails/pull/6150) by @atterpac
+
+## Fixed
+- Recover from WebView2 process failures instead of leaving a blank window in [PR](https://github.com/wailsapp/wails/pull/6002) by @taliesin-ai
+
 ## v3.0.0-beta.25 - 2026-09-22
 
 ## Fixed

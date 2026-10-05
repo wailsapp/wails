@@ -75,11 +75,21 @@ WebView2 具有原生權限提示，以及依權限種類區分的權限 API。�
 
 這表示在 Windows 上，只要你設定了任何`Permissions`項目，未明確列出的功能就會顯示提示，而非無聲地獲准。請明確設定所需的功能。
 
-### macOS（TCC）
+### macOS (WKWebView + TCC)
 
-macOS 透過其系統隱私權架構管理相機、麥克風、地理位置和通知的存取權。網頁內容首次請求某項功能時，作業系統會自動顯示提示，並在「系統設定」→「隱私權與安全性」中依應用程式記住使用者的選擇。
+macOS 上需要兩層授權。WKWebView 在啟動擷取工作階段前詢問應用程式，由 `Permissions` 對應表回答該請求。在其下層，系統隱私權架構 TCC 控制裝置本身：應用程式首次實際存取相機或麥克風時會顯示系統提示，使用者的選擇依應用程式儲存在「系統設定 → 隱私權與安全性」中。
 
-即使完全不設定`Permissions`，此機制也能正常運作。目前 macOS 會<strong>忽略此對應表</strong>；無論如何設定，所有請求都會交由 TCC 處理。實際的功能缺口是`PermissionDeny`在 macOS 上不起作用：若 TCC 已在系統層級授予某項功能的權限，你便無法阻止 WebView 使用該功能。
+Wails 在 macOS 12 及更新版本上處理**相機和麥克風**請求。地理位置、通知和剪貼簿讀取沒有對應的 `WKUIDelegate` 介面，因此尚未串接，仍交由 TCC 處理。與 Linux 一樣，為這些功能設定的原則沒有作用。
+
+| 原則 | 相機 / 麥克風 | 地理位置、通知、剪貼簿 |
+| --- | --- | --- |
+| `PermissionDefault` | WebKit 顯示自己的權限提示 | 僅限 TCC |
+| `PermissionAllow` | 略過 WebKit 提示 — **TCC 仍然適用** | 僅限 TCC |
+| `PermissionDeny` | 在存取裝置之前拒絕 | 僅限 TCC |
+
+`PermissionAllow` 允許的是 WebView 請求，而不是裝置本身。首次擷取仍會觸發 TCC 提示；使用者在系統設定中拒絕的應用程式仍會被拒絕，應用程式無法自行授予裝置存取權。`PermissionAllow` 省略的只有前置的 WebKit 提示。
+
+macOS 12 之前不存在此委派方法，因此會忽略對應表，所有請求都回到 WebKit 提示。
 
 請確保你的`Info.plist`包含適當的用途說明鍵：
 
@@ -89,6 +99,21 @@ macOS 透過其系統隱私權架構管理相機、麥克風、地理位置和�
 <key>NSCameraUsageDescription</key>
 <string>Used for video calls</string>
 ```
+
+@note{type="caution" title="拒絕 Info.plist 未宣告用途的功能"}
+
+如果請求在缺少對應用途說明鍵的情況下到達 AVFoundation，結果不只是請求失敗：macOS 會終止應用程式。
+
+`PermissionDefault` 是零值，因此只設定 `{PermissionMicrophone: PermissionAllow}` 會讓相機繼續使用 WebKit 提示。如果使用者接受提示，而應用程式只宣告了 `NSMicrophoneUsageDescription`，應用程式就會終止。請為每個沒有用途說明的功能明確設定 `PermissionDeny`：
+
+```go
+Permissions: map[application.PermissionType]application.Permission{
+    application.PermissionMicrophone: application.PermissionAllow,
+    application.PermissionCamera:     application.PermissionDeny,
+},
+```
+
+@end
 
 ## 常見模式
 
@@ -103,7 +128,7 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-在<strong>Linux</strong>上，這會明確允許使用這兩種裝置；其他功能仍會遭到拒絕。 在<strong>Windows</strong>上，這會允許使用這兩種裝置；任何未列出的其他功能都會顯示原生提示。 在<strong>macOS</strong>上，這項設定不會生效；所有權限均由 TCC 處理。
+在<strong>Linux</strong>上，這會明確允許使用這兩種裝置；其他功能仍會遭到拒絕。 在<strong>Windows</strong>上，這會允許使用這兩種裝置；任何未列出的其他功能都會顯示原生提示。 在 **macOS** 上，這會在 WebKit 層允許兩者，不顯示瀏覽器提示。首次使用時，TCC 仍會詢問裝置本身的存取權，且 `Info.plist` 必須包含兩個用途說明鍵。
 
 ### 在 Linux 上拒絕媒體擷取
 
@@ -182,11 +207,13 @@ Windows 上的評估順序如下：
 
 | 功能 | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| 麥克風 | ✅ | ✅ | 僅限 TCC |
-| 攝影機 | ✅ | ✅ | 僅限 TCC |
-| 地理位置 | ❌ 尚未支援 | ✅ | 僅限 TCC |
-| 通知 | ❌ 尚未支援 | ✅ | 僅限 TCC |
-| 讀取剪貼簿 | ❌ 尚未支援 | ✅ | 僅限 TCC |
+| 麥克風 | ✅ | ✅ | ✅ (macOS 12+) |
+| 攝影機 | ✅ | ✅ | ✅ (macOS 12+) |
+| 地理位置 | ❌ 尚未支援 | ✅ | ❌ 尚未支援 |
+| 通知 | ❌ 尚未支援 | ✅ | ❌ 尚未支援 |
+| 讀取剪貼簿 | ❌ 尚未支援 | ✅ | ❌ 尚未支援 |
+
+macOS 欄為 ✅ 時，原則回答 WebKit 請求，TCC 仍額外控制裝置。為 ❌ 時，該功能僅交由 TCC 處理。
 
 ## 疑難排解
 
@@ -200,7 +227,11 @@ Windows 上的評估順序如下：
 
 **macOS 權限無法運作**
 
-`Permissions`對應表在 macOS 上不會生效。請確認`Info.plist`包含正確的用途說明鍵（`NSMicrophoneUsageDescription`、`NSCameraUsageDescription`等），而且使用者已在「系統設定」→「隱私權與安全性」中授予存取權。
+`Permissions` 支援 macOS 12 及更新版本的相機和麥克風；地理位置、通知和剪貼簿讀取尚未串接，會忽略原則。TCC 仍控制裝置：`PermissionAllow` 只移除 WebKit 提示，不移除系統提示。請檢查 `Info.plist` 中的 `NSMicrophoneUsageDescription`、`NSCameraUsageDescription`，以及「系統設定 → 隱私權與安全性」中的授權。
+
+**網頁內容請求相機或麥克風時，macOS 應用程式結束**
+
+如果請求在缺少對應用途說明鍵的情況下到達 AVFoundation，結果不只是請求失敗：macOS 會終止應用程式。 請加入對應的鍵，或為該功能設定 `PermissionDeny`，使請求無法到達 AVFoundation。`PermissionDefault` 會保留使用者可以接受的 WebKit 提示。
 
 **地理位置、通知和剪貼簿在 Linux 上不會生效**
 
