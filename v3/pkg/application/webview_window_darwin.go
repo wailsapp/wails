@@ -413,42 +413,51 @@ void windowSetMaxSize(void* nsWindow, int width, int height) {
 	[window setMaxSize:size];
 }
 
+static double webViewGetPageZoom(WKWebView* webView) {
+	if (@available(macOS 11.0, *)) {
+		return webView.pageZoom;
+	}
+	return webView.magnification;
+}
+
+static void webViewSetPageZoom(WKWebView* webView, double zoom) {
+	if (@available(macOS 11.0, *)) {
+		webView.pageZoom = zoom;
+		return;
+	}
+	[webView setMagnification:zoom];
+}
+
 // windowZoomReset
 void windowZoomReset(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
+	webViewSetPageZoom(window.webView, 1.0);
 	[window.webView setMagnification:1.0];
 }
 
 // windowZoomSet
 void windowZoomSet(void* nsWindow, double zoom) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Reset zoom
-	[window.webView setMagnification:zoom];
+	webViewSetPageZoom(window.webView, zoom);
 }
 
 // windowZoomGet
 float windowZoomGet(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Get zoom
-	return [window.webView magnification];
+	return webViewGetPageZoom(window.webView);
 }
 
 // windowZoomIn
 void windowZoomIn(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Zoom in
-	[window.webView setMagnification:window.webView.magnification + 0.05];
+	webViewSetPageZoom(window.webView, webViewGetPageZoom(window.webView) + 0.05);
 }
 
 // windowZoomOut
 void windowZoomOut(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Zoom out
-	if( window.webView.magnification > 1.05 ) {
-		[window.webView setMagnification:window.webView.magnification - 0.05];
-	} else {
-		[window.webView setMagnification:1.0];
-	}
+	double zoom = webViewGetPageZoom(window.webView);
+	webViewSetPageZoom(window.webView, zoom > 1.05 ? zoom - 0.05 : 1.0);
 }
 
 // windowReload reloads the current page using the cached version.
