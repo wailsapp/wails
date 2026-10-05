@@ -39,6 +39,7 @@ func TestAndroidActivityRecreationKeepsGoAppRunning(t *testing.T) {
 	// protection, keep-awake, brightness) is re-applied to the new window.
 	assert.Contains(t, mainActivityJava, "bridge.restoreWindowState();")
 	assert.Contains(t, wailsBridgeJava, "screenProtectWanted = enabled != 0;")
-	assert.Contains(t, wailsBridgeJava, "activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);")
+	assert.Contains(t, wailsBridgeJava, "windowActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);")
+	assert.Contains(t, wailsBridgeJava, "private static volatile boolean motionWanted = false;")
 	assert.Contains(t, wailsBridgeJava, "private static boolean pendingLocationRequest = false;")
 }

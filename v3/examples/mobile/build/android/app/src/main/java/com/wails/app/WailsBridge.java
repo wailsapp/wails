@@ -97,8 +97,10 @@ public class WailsBridge {
     private View.OnApplyWindowInsetsListener keyboardListener;
     // Battery: remember the user's intent so sensors paused while the app is
     // backgrounded can be restored on foreground; the torch is switched off.
-    private boolean motionWanted = false;
-    private boolean proximityWanted = false;
+    // Process-scoped so a bridge created for a recreated Activity resumes the
+    // sensor streams the running Go app asked for (see onStart).
+    private static volatile boolean motionWanted = false;
+    private static volatile boolean proximityWanted = false;
     private boolean torchOn = false;
     // Process-scoped so a permission result delivered to a recreated Activity
     // (and its new bridge) still completes the location request.
@@ -127,12 +129,21 @@ public class WailsBridge {
     // Window-level state requested from Go. Window flags belong to the
     // Activity's window, so they are lost when Android recreates the Activity
     // while the Go app keeps running; restoreWindowState() re-applies them.
-    private static boolean screenProtectWanted = false;
-    private static boolean keepAwakeWanted = false;
-    private static int brightnessWanted = -1;
+    private static volatile boolean screenProtectWanted = false;
+    private static volatile boolean keepAwakeWanted = false;
+    private static volatile int brightnessWanted = -1;
+    // The Activity whose window currently hosts the app. Window-flag updates
+    // run on the UI thread against this, not against the (possibly already
+    // replaced) Activity of whichever bridge the Go call happened to use.
+    private static volatile Activity currentActivity;
 
     public WailsBridge(Activity activity) {
         this.activity = activity;
+    }
+
+    private Activity windowActivity() {
+        Activity current = currentActivity;
+        return current != null ? current : activity;
     }
 
     /**
@@ -140,6 +151,7 @@ public class WailsBridge {
      * Activity. Call from onCreate, before the window is shown.
      */
     public void restoreWindowState() {
+        currentActivity = activity;
         if (screenProtectWanted) {
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
@@ -499,9 +511,9 @@ public class WailsBridge {
         keepAwakeWanted = enabled != 0;
         mainHandler.post(() -> {
             if (enabled != 0) {
-                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                windowActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             } else {
-                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                windowActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         });
     }
@@ -568,10 +580,10 @@ public class WailsBridge {
         brightnessWanted = pct < 0 ? -1 : pct;
         mainHandler.post(() -> {
             try {
-                WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+                WindowManager.LayoutParams lp = windowActivity().getWindow().getAttributes();
                 lp.screenBrightness = pct < 0 ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
                                               : Math.max(0.01f, Math.min(1f, pct / 100f));
-                activity.getWindow().setAttributes(lp);
+                windowActivity().getWindow().setAttributes(lp);
             } catch (Exception e) {
                 Log.e(TAG, "setBrightness failed", e);
             }
@@ -1228,9 +1240,9 @@ public class WailsBridge {
         screenProtectWanted = enabled != 0;
         mainHandler.post(() -> {
             if (enabled != 0) {
-                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                windowActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
             } else {
-                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                windowActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
             }
             emitEvent("common:screenCapture",
                     "{\"protected\":" + (enabled != 0 ? "true" : "false") + "}");
