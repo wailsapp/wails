@@ -151,7 +151,9 @@ func TestEmbedPumpPreservesQuit(t *testing.T) {
 
 func TestSetBackgroundColourWithErrorReportsFailure(t *testing.T) {
 	const failure = uintptr(0x80004005)
+	released := 0
 	controller2 := &ICoreWebView2Controller2{vtbl: &_ICoreWebView2Controller2Vtbl{
+		_IUnknownVtbl:             _IUnknownVtbl{Release: NewComProc(func(uintptr) uintptr { released++; return 0 })},
 		PutDefaultBackgroundColor: NewComProc(func(uintptr, uintptr) uintptr { return failure }),
 	}}
 	controller := &ICoreWebView2Controller{vtbl: &_ICoreWebView2ControllerVtbl{
@@ -169,6 +171,9 @@ func TestSetBackgroundColourWithErrorReportsFailure(t *testing.T) {
 
 	if err := e.SetBackgroundColourWithError(0, 0, 0, 0); err == nil {
 		t.Fatal("want error from a failed PutDefaultBackgroundColor, got nil")
+	}
+	if released != 1 {
+		t.Fatalf("queried controller released %d times, want 1", released)
 	}
 }
 
@@ -212,5 +217,38 @@ func TestInitializeControllerFailureReleasesPartialController(t *testing.T) {
 	}
 	if refs != 0 || closes != 1 || e.controller != nil {
 		t.Fatalf("partial controller leaked: refs=%d closes=%d", refs, closes)
+	}
+}
+
+func TestCloseAfterRecoveryFailureIsIdempotent(t *testing.T) {
+	e := NewChromium()
+	closes, releases := 0, 0
+	e.controller = &ICoreWebView2Controller{vtbl: &_ICoreWebView2ControllerVtbl{
+		_IUnknownVtbl: _IUnknownVtbl{
+			Release: NewComProc(func(uintptr) uintptr { releases++; return 0 }),
+		},
+		Close: NewComProc(func(uintptr) uintptr { closes++; return 0 }),
+	}}
+	atomic.StoreUintptr(&e.inited, 1)
+	e.Close()
+	e.Close()
+	if closes != 1 || releases != 1 || e.controller != nil || e.IsReady() || !e.shuttingDown {
+		t.Fatalf("closed controller state: closes=%d releases=%d controller=%p ready=%v shuttingDown=%v", closes, releases, e.controller, e.IsReady(), e.shuttingDown)
+	}
+	// Native window callbacks and app commands may arrive after the budget ends.
+	e.Resize()
+	e.Focus()
+	e.Navigate("http://wails.localhost")
+	e.NavigateToString("<p>test</p>")
+	e.Init("void 0")
+	e.Eval("void 0")
+	e.PutZoomFactor(1)
+	e.OpenDevToolsWindow()
+	e.SetBackgroundColour(0, 0, 0, 255)
+	if err := e.Show(); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Hide(); err != nil {
+		t.Fatal(err)
 	}
 }

@@ -88,24 +88,6 @@ func embedLive(t *testing.T, hwnd uintptr) *Chromium {
 	return e
 }
 
-func closeLive(e *Chromium) {
-	e.ShuttingDown()
-	e.ReleaseCompositionResources()
-	if e.controller != nil {
-		_ = e.controller.Close()
-		e.controller.Release()
-		e.controller = nil
-	}
-	if e.webview != nil {
-		e.webview.Release()
-		e.webview = nil
-	}
-	if e.environment != nil {
-		e.environment.Release()
-		e.environment = nil
-	}
-}
-
 func eventHandlers(e *Chromium) map[string]unsafe.Pointer {
 	return map[string]unsafe.Pointer{
 		"controllerCompleted":              unsafe.Pointer(e.controllerCompleted),
@@ -171,7 +153,7 @@ func TestLiveDelayedControllerCallbackAfterAbandon(t *testing.T) {
 	lockWebView2Thread(t)
 	queries, releases := handlerQueryInterfaces.Load(), unbalancedHandlerReleases.Load()
 	host := embedLive(t, newLiveTestWindow(t))
-	defer closeLive(host)
+	defer host.Close()
 
 	handler, instance := startAbandonedController(t, host.environment, newLiveTestWindow(t))
 	collectGarbage() // No messages are pumped, so the completion is still pending.
@@ -202,7 +184,7 @@ func embedAndClose(t *testing.T, hwnd uintptr) (map[string]comAddr, weak.Pointer
 	} else {
 		t.Logf("native references while embedded: %v", held)
 	}
-	closeLive(e)
+	e.Close()
 	return addrs, weak.Make(e), weak.Make(w)
 }
 
@@ -223,8 +205,8 @@ func TestLiveClosedChromiumReleasesHandlers(t *testing.T) {
 	checkNoStrayReferences(t, queries, releases)
 }
 
-// replaceChromium mirrors rebuildWebView: the previous instance is abandoned
-// without closing its controller and a fresh instance embeds into the window.
+// replaceChromium mirrors rebuildWebView: close the abandoned controller
+// before embedding its replacement into the same window.
 //
 //go:noinline
 func replaceChromium(t *testing.T, hwnd uintptr) (*Chromium, map[string]comAddr, weak.Pointer[Chromium], weak.Pointer[hostWindow]) {
@@ -233,16 +215,15 @@ func replaceChromium(t *testing.T, hwnd uintptr) (*Chromium, map[string]comAddr,
 	previous.NavigationCompletedCallback = func(*ICoreWebView2, *ICoreWebView2NavigationCompletedEventArgs) { w.events++ }
 	previous.ProcessFailedCallback = func(*ICoreWebView2, *ICoreWebView2ProcessFailedEventArgs) { w.events++ }
 	addrs := handlerAddrs(previous)
-	previous.ShuttingDown()
-	previous.ReleaseCompositionResources()
+	previous.Close()
 	return embedLive(t, hwnd), addrs, weak.Make(previous), weak.Make(w)
 }
 
-func TestLiveReplacementKeepsAbandonedHandlersSafe(t *testing.T) {
+func TestLiveReplacementReleasesAbandonedHandlers(t *testing.T) {
 	lockWebView2Thread(t)
 	queries, releases := handlerQueryInterfaces.Load(), unbalancedHandlerReleases.Load()
 	replacement, addrs, previous, window := replaceChromium(t, newLiveTestWindow(t))
-	defer closeLive(replacement)
+	defer replacement.Close()
 
 	navigated := false
 	replacement.NavigationCompletedCallback = func(*ICoreWebView2, *ICoreWebView2NavigationCompletedEventArgs) { navigated = true }
@@ -253,12 +234,12 @@ func TestLiveReplacementKeepsAbandonedHandlersSafe(t *testing.T) {
 	if !waitCollected(window) {
 		t.Fatal("abandoned Chromium retained its window")
 	}
-	// The abandoned controller is still open, so WebView2 may call its handlers.
-	if total, held := liveRefs(addrs); total != 0 {
-		t.Logf("native references held by the abandoned controller: %v", held)
-		if previous.Value() == nil {
-			t.Fatal("abandoned Chromium was collected while WebView2 referenced its handlers")
-		}
+	if !pumpUntil(30*time.Second, func() bool { total, _ := liveRefs(addrs); return total == 0 }) {
+		_, held := liveRefs(addrs)
+		t.Fatalf("replacement retained abandoned controller handlers: %v", held)
+	}
+	if !waitCollected(previous) {
+		t.Fatal("abandoned Chromium was retained after replacement")
 	}
 	checkNoStrayReferences(t, queries, releases)
 }
