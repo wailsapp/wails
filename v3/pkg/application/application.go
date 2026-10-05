@@ -461,6 +461,9 @@ type App struct {
 
 	// platform app
 	impl platformApp
+	// earlyDispatch holds main-thread work sent before Run created impl; Run hands it on once impl exists.
+	earlyDispatchLock sync.Mutex
+	earlyDispatch     []func()
 
 	// The main application menu (private - use app.Menu.GetApplicationMenu/SetApplicationMenu)
 	applicationMenu *Menu
@@ -661,7 +664,14 @@ func (a *App) Run() error {
 		return err
 	}
 
+	a.earlyDispatchLock.Lock()
 	a.impl = newPlatformApp(a)
+	early := a.earlyDispatch
+	a.earlyDispatch = nil
+	a.earlyDispatchLock.Unlock()
+	for _, fn := range early {
+		a.dispatchOnMainThread(fn)
+	}
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -979,6 +989,14 @@ func (a *App) SetIcon(icon []byte) {
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {
+	// Before Run there is no main loop to run fn on, so it waits for one.
+	a.earlyDispatchLock.Lock()
+	if a.impl == nil {
+		a.earlyDispatch = append(a.earlyDispatch, fn)
+		a.earlyDispatchLock.Unlock()
+		return
+	}
+	a.earlyDispatchLock.Unlock()
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
 		fn()

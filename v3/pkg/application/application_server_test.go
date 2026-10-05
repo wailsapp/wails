@@ -166,3 +166,44 @@ func TestServerMode_Defaults(t *testing.T) {
 		t.Error("timeout waiting for app shutdown")
 	}
 }
+
+// Work sent to the main thread before Run, as an event listener can, waits for Run instead of panicking.
+func TestServerMode_InvokeSyncBeforeRun(t *testing.T) {
+	resetGlobalApp()
+	app := New(Options{
+		Name:   "Test Early Dispatch",
+		Server: ServerOptions{Host: "127.0.0.1", Port: 18089},
+	})
+	ran := make(chan struct{})
+	go InvokeSync(func() { close(ran) })
+	time.Sleep(50 * time.Millisecond)
+	select {
+	case <-ran:
+		t.Fatal("ran before Run")
+	default:
+	}
+	errCh := make(chan error, 1)
+	go func() { errCh <- app.Run() }()
+	select {
+	case <-ran:
+	case <-time.After(2 * time.Second):
+		t.Fatal("work sent before Run never ran")
+	}
+	// Quit only once the server is up, as the other tests do.
+	for range 40 {
+		if resp, err := http.Get("http://127.0.0.1:18089/health"); err == nil {
+			resp.Body.Close()
+			break
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+	app.Quit()
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Errorf("app.Run() returned error: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Error("timeout waiting for app shutdown")
+	}
+}
