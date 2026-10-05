@@ -85,9 +85,9 @@ Wails menangani permintaan **kamera dan mikrofon** di macOS 12 dan yang lebih ba
 | --- | --- | --- |
 | `PermissionDefault` | WebKit menampilkan prompt permission-nya sendiri | TCC saja |
 | `PermissionAllow` | Prompt WebKit dilewati — **TCC tetap berlaku** | TCC saja |
-| `PermissionDeny` | Ditolak sebelum perangkat disentuh | TCC saja |
+| `PermissionDeny` | Ditolak oleh WebKit; otorisasi sistem terpisah | TCC saja |
 
-`PermissionAllow` mengizinkan permintaan webview, bukan perangkatnya. Capture pertama tetap memunculkan prompt TCC, dan aplikasi yang ditolak pengguna di System Settings tetap ditolak — tidak ada aplikasi yang dapat memberikan akses perangkat kepada dirinya sendiri. Yang dihilangkan `PermissionAllow` adalah prompt WebKit di depannya.
+`PermissionAllow` mengizinkan permintaan webview, bukan akses perangkat. Otorisasi sistem tetap berlaku secara terpisah, dan aplikasi yang ditolak di System Settings tetap ditolak. Hanya prompt WebKit sendiri yang dilewati.
 
 Di bawah macOS 12 metode delegate tersebut tidak ada, sehingga map diabaikan di sana dan setiap permintaan kembali ke prompt WebKit.
 
@@ -100,18 +100,11 @@ Pastikan `Info.plist` Anda menyertakan kunci deskripsi penggunaan yang sesuai:
 <string>Used for video calls</string>
 ```
 
-@note{type="caution" title="Tolak apa yang tidak dideklarasikan Info.plist Anda"}
+@note{type="caution" title="Deskripsi penggunaan tetap diperlukan"}
 
-Kemampuan yang mencapai AVFoundation tanpa kunci deskripsi penggunaannya tidak gagal — macOS menghentikan aplikasi.
+WebKit dapat meminta otorisasi sistem sebelum memanggil delegate permission Wails. `PermissionDeny` memblokir permintaan WebKit, tetapi tidak menjamin bahwa prompt TCC atau permintaan otorisasi AVFoundation tidak akan muncul.
 
-`PermissionDefault` adalah nilai nol, jadi `{PermissionMicrophone: PermissionAllow}` saja membiarkan kamera pada prompt WebKit. Jika pengguna menerima prompt itu dan aplikasi hanya mendeklarasikan `NSMicrophoneUsageDescription`, aplikasi akan mati. Setel `PermissionDeny` secara eksplisit untuk setiap kemampuan yang tidak Anda sertakan deskripsi penggunaannya:
-
-```go
-Permissions: map[application.PermissionType]application.Permission{
-    application.PermissionMicrophone: application.PermissionAllow,
-    application.PermissionCamera:     application.PermissionDeny,
-},
-```
+Sertakan deskripsi penggunaan untuk perangkat yang diminta aplikasi Anda, serta entitlement perangkat yang sesuai jika menggunakan sandbox. Jangan gunakan `PermissionDeny` sebagai pengganti deklarasi ini.
 
 @end
 
@@ -231,7 +224,7 @@ Setelah ada entri apa pun di `Permissions`, Wails tidak lagi menetapkan pemberia
 
 **Aplikasi macOS saya keluar saat konten web meminta kamera atau mikrofon**
 
-macOS menghentikan aplikasi yang mencapai AVFoundation tanpa kunci deskripsi penggunaan yang sesuai. Tambahkan kuncinya, atau setel `PermissionDeny` untuk kemampuan tersebut agar permintaannya tidak pernah sampai sejauh itu — `PermissionDefault` membiarkannya pada prompt WebKit, yang dapat diterima pengguna.
+Periksa bahwa `Info.plist` menyertakan `NSCameraUsageDescription` atau `NSMicrophoneUsageDescription` untuk setiap perangkat yang diminta aplikasi. Deskripsi yang tidak ada dapat menyebabkan penolakan permintaan; akses AVFoundation tanpa deskripsi yang diwajibkan dapat menghentikan aplikasi. `PermissionDeny` mengontrol keputusan WebKit dan tidak menggantikan kunci-kunci tersebut.
 
 **Geolokasi/notifikasi/papan klip tidak berpengaruh di Linux**
 
