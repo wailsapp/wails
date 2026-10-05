@@ -30,6 +30,9 @@ func recoveryTestHRESULT(kind string, actual uintptr) uintptr {
     }
     return actual
 }
+func recoveryTestBackgroundColour(colour uint32) {
+    fmt.Fprintf(os.Stderr, "BACKGROUND_COLOUR 0x%x\n", colour)
+}
 '@
 
 $targets = @(
@@ -48,6 +51,10 @@ try {
         # The real COM method runs first; replace its HRESULT at the error check.
         $patched = Add-FaultInjection $source "func (i *$($target[1])) $($target[2])(" `
             "`tif windows.Handle(hr)" "`thr = recoveryTestHRESULT(`"$($target[3])`", hr)`n"
+        if ($target[3] -eq 'background') {
+            $patched = Add-FaultInjection $patched "func (i *$($target[1])) $($target[2])(" `
+                "`tif windows.Handle(hr)" "`trecoveryTestBackgroundColour(col)`n"
+        }
         $path = Join-Path $temporary $target[0]
         [IO.File]::WriteAllText($path, $patched, $utf8)
         $replacements[$original] = $path

@@ -2692,17 +2692,15 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 		chromium.OpenDevToolsWindow()
 	}
 
-	// Set background colour
-	if w.parent.options.BackgroundType == BackgroundTypeSolid {
-		colour := w.parent.options.BackgroundColour
+	// Keep the native window and WebView backgrounds consistent on recovery.
+	colour := w.parent.options.BackgroundColour
+	switch w.parent.options.BackgroundType {
+	case BackgroundTypeSolid:
 		w32.SetBackgroundColour(w.hwnd, colour.Red, colour.Green, colour.Blue)
+	case BackgroundTypeTransparent, BackgroundTypeTranslucent:
+		colour = RGBA{}
 	}
-	if err := chromium.SetBackgroundColourWithError(
-		w.parent.options.BackgroundColour.Red,
-		w.parent.options.BackgroundColour.Green,
-		w.parent.options.BackgroundColour.Blue,
-		w.parent.options.BackgroundColour.Alpha,
-	); err != nil {
+	if err := chromium.SetBackgroundColourWithError(colour.Red, colour.Green, colour.Blue, colour.Alpha); err != nil {
 		return w.setupChromiumConfigError(recovering, err)
 	}
 

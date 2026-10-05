@@ -3,8 +3,8 @@
 package application
 
 import (
+	"bytes"
 	"errors"
-	"golang.org/x/sys/windows"
 	"io"
 	"log/slog"
 	"os"
@@ -14,6 +14,7 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
+	"golang.org/x/sys/windows"
 )
 
 // The recovery decision and the attempt budget are the two pieces of the
@@ -190,7 +191,7 @@ func TestSetupChromiumConfigErrorDuringRecoveryDoesNotTerminate(t *testing.T) {
 
 func TestSetupChromiumConfigErrorOnStartupTerminates(t *testing.T) {
 	if os.Getenv("WAILS_TEST_FATAL_RECOVERY") == "1" {
-		globalApplication = &App{Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}
+		globalApplication = &App{Logger: slog.New(slog.NewTextHandler(os.Stderr, nil))}
 		(&windowsWebviewWindow{}).setupChromiumConfigError(false, errors.New("startup failure"))
 		return
 	}
@@ -202,7 +203,7 @@ func TestSetupChromiumConfigErrorOnStartupTerminates(t *testing.T) {
 	cmd.Env = append(os.Environ(), "WAILS_TEST_FATAL_RECOVERY=1")
 	output, err := cmd.CombinedOutput()
 	var exit *exec.ExitError
-	if !errors.As(err, &exit) || exit.ExitCode() != 1 {
+	if !errors.As(err, &exit) || exit.ExitCode() != 1 || !bytes.Contains(output, []byte("startup failure")) {
 		t.Fatalf("startup failure: %v, want exit 1; output: %s", err, output)
 	}
 }

@@ -4,9 +4,6 @@ package application
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
-	"github.com/wailsapp/wails/v3/pkg/w32"
-	"golang.org/x/sys/windows"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -14,6 +11,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
+	"github.com/wailsapp/wails/v3/pkg/w32"
+	"golang.org/x/sys/windows"
 )
 
 // Run with powershell -File scripts/test-webview2-recovery.ps1 on an interactive Windows desktop.
@@ -30,6 +31,12 @@ func TestLiveWebviewRecoveryFailures(t *testing.T) {
 			ErrorHandler: func(err error) { fmt.Fprintln(os.Stderr, "ERROR_HANDLER", err) },
 		}}
 		w.parent.options.BackgroundColour = RGBA{Red: 255, Green: 255, Blue: 255, Alpha: 255}
+		switch os.Getenv("WAILS_RECOVERY_TEST_BACKGROUND") {
+		case "transparent":
+			w.parent.options.BackgroundType = BackgroundTypeTransparent
+		case "translucent":
+			w.parent.options.BackgroundType = BackgroundTypeTranslucent
+		}
 		w.parent.options.HTML = "<p>Recovered</p>"
 		w.chromium = w.newChromium()
 		if !w.setupChromium(true) {
@@ -79,21 +86,35 @@ func TestLiveWebviewRecoveryFailures(t *testing.T) {
 		fmt.Fprintf(os.Stderr, "RECOVERY_SURVIVED mode=%s transient=%v attempts=%d\n", mode, once, w.webviewRecoveryAttempts)
 		return
 	}
-	for _, mode := range []string{"background", "devtools", "resource", "embed"} {
-		for _, once := range []string{"0", "1"} {
-			t.Run(mode+"/transient="+once, func(t *testing.T) {
-				exe, err := os.Executable()
-				if err != nil {
-					t.Fatal(err)
-				}
-				cmd := exec.Command(exe, "-test.run=^TestLiveWebviewRecoveryFailures$", "-test.v")
-				cmd.Env = append(os.Environ(), "WAILS_RECOVERY_TEST_CHILD=1", "WAILS_RECOVERY_TEST_MODE="+mode, "WAILS_RECOVERY_TEST_ONCE="+once)
-				out, err := cmd.CombinedOutput()
-				t.Logf("%s", out)
-				if err != nil || !strings.Contains(string(out), "RECOVERY_SURVIVED") || !strings.Contains(string(out), "INJECT_HRESULT "+mode) {
-					t.Fatalf("recovery failed: %v", err)
-				}
-			})
+	for _, background := range []string{"solid", "transparent", "translucent"} {
+		for _, mode := range []string{"background", "devtools", "resource", "embed"} {
+			for _, once := range []string{"0", "1"} {
+				t.Run(background+"/"+mode+"/transient="+once, func(t *testing.T) {
+					exe, err := os.Executable()
+					if err != nil {
+						t.Fatal(err)
+					}
+					cmd := exec.Command(exe, "-test.run=^TestLiveWebviewRecoveryFailures$", "-test.v")
+					cmd.Env = append(os.Environ(), "WAILS_RECOVERY_TEST_CHILD=1", "WAILS_RECOVERY_TEST_MODE="+mode, "WAILS_RECOVERY_TEST_ONCE="+once, "WAILS_RECOVERY_TEST_BACKGROUND="+background)
+					out, err := cmd.CombinedOutput()
+					t.Logf("%s", out)
+					wantColour := "BACKGROUND_COLOUR 0xffffffff"
+					if background != "solid" {
+						wantColour = "BACKGROUND_COLOUR 0x0"
+					}
+					if !strings.Contains(string(out), wantColour) {
+						t.Fatal("no expected native background colour observed")
+					}
+					for _, line := range strings.Split(string(out), "\n") {
+						if strings.HasPrefix(line, "BACKGROUND_COLOUR ") && strings.TrimSpace(line) != wantColour {
+							t.Fatalf("%s used %s, want %s", background, line, wantColour)
+						}
+					}
+					if err != nil || !strings.Contains(string(out), "RECOVERY_SURVIVED") || !strings.Contains(string(out), "INJECT_HRESULT "+mode) {
+						t.Fatalf("recovery failed: %v", err)
+					}
+				})
+			}
 		}
 	}
 }
