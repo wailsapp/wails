@@ -19,8 +19,8 @@ import (
 	"github.com/wailsapp/wails/v3/internal/buildinfo"
 
 	"github.com/jaypipes/ghw"
-	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v3/internal/git"
 	"github.com/wailsapp/wails/v3/internal/lo"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
@@ -97,7 +97,7 @@ func collectReport(quiet bool) (*DoctorReport, error) {
 		return setting.Key, setting.Value
 	})
 
-	info, err := operatingsystem.Info()
+	system, platformOK, err := collectSystemInfo()
 	if err != nil {
 		if spinner != nil {
 			spinner.Fail()
@@ -118,58 +118,13 @@ func collectReport(quiet bool) (*DoctorReport, error) {
 		}
 	}
 
-	platformExtras, platformOK := getInfo()
 	if !platformOK {
 		report.Ready = false
 	}
 
 	checkPlatformDependencies(report.Dependencies, &report.Ready)
 
-	report.System = SystemReport{
-		Name:         info.Name,
-		Version:      info.Version,
-		ID:           info.ID,
-		Branding:     info.Branding,
-		Platform:     runtime.GOOS,
-		Architecture: runtime.GOARCH,
-		Extras:       platformExtras,
-	}
-
-	cpus, _ := ghw.CPU()
-	if cpus != nil && len(cpus.Processors) > 0 {
-		report.System.CPU = cpus.Processors[0].Model
-	}
-
-	gpu, _ := ghw.GPU(ghw.WithDisableWarnings())
-	if gpu != nil && len(gpu.GraphicsCards) > 0 {
-		card := gpu.GraphicsCards[0]
-		if card.DeviceInfo != nil {
-			report.System.GPU = fmt.Sprintf("%s (%s)", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name)
-		}
-	} else if runtime.GOOS == "darwin" {
-		cmd := exec.Command("sh", "-c", "ioreg -l | grep gpu-core-count")
-		output, err := cmd.Output()
-		if err == nil {
-			re := regexp.MustCompile(`= *(\d+)`)
-			matches := re.FindAllStringSubmatch(string(output), -1)
-			if len(matches) > 0 {
-				report.System.GPU = matches[0][1] + " cores"
-			}
-		}
-	}
-
-	memory, _ := ghw.Memory()
-	if memory != nil {
-		report.System.Memory = strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"
-	} else if runtime.GOOS == "darwin" {
-		cmd := exec.Command("sh", "-c", "system_profiler SPHardwareDataType | grep 'Memory'")
-		output, err := cmd.Output()
-		if err == nil {
-			output = bytes.Replace(output, []byte("Memory: "), []byte(""), 1)
-			report.System.Memory = strings.TrimSpace(string(output))
-		}
-	}
-
+	report.System = system
 	report.Build = BuildReport{
 		WailsVersion: wailsVersion,
 		GoVersion:    runtime.Version(),
@@ -188,6 +143,67 @@ func collectReport(quiet bool) (*DoctorReport, error) {
 	}
 
 	return report, nil
+}
+
+// CollectSystemInfo exposes the same system details used by doctor to other
+// local tools, including the setup wizard. Missing optional hardware data is
+// represented by empty fields.
+func CollectSystemInfo() (SystemReport, error) {
+	system, _, err := collectSystemInfo()
+	return system, err
+}
+
+func collectSystemInfo() (SystemReport, bool, error) {
+	info, err := operatingsystem.Info()
+	if err != nil {
+		return SystemReport{}, false, err
+	}
+	platformExtras, platformOK := getInfo()
+	system := SystemReport{
+		Name:         info.Name,
+		Version:      info.Version,
+		ID:           info.ID,
+		Branding:     info.Branding,
+		Platform:     runtime.GOOS,
+		Architecture: runtime.GOARCH,
+		Extras:       platformExtras,
+	}
+
+	cpus, _ := ghw.CPU()
+	if cpus != nil && len(cpus.Processors) > 0 {
+		system.CPU = cpus.Processors[0].Model
+	}
+
+	gpu, _ := ghw.GPU(ghw.WithDisableWarnings())
+	if gpu != nil && len(gpu.GraphicsCards) > 0 {
+		card := gpu.GraphicsCards[0]
+		if card.DeviceInfo != nil {
+			system.GPU = fmt.Sprintf("%s (%s)", card.DeviceInfo.Product.Name, card.DeviceInfo.Vendor.Name)
+		}
+	} else if runtime.GOOS == "darwin" {
+		cmd := exec.Command("sh", "-c", "ioreg -l | grep gpu-core-count")
+		output, err := cmd.Output()
+		if err == nil {
+			re := regexp.MustCompile(`= *(\d+)`)
+			matches := re.FindAllStringSubmatch(string(output), -1)
+			if len(matches) > 0 {
+				system.GPU = matches[0][1] + " cores"
+			}
+		}
+	}
+
+	memory, _ := ghw.Memory()
+	if memory != nil {
+		system.Memory = strconv.Itoa(int(memory.TotalPhysicalBytes/1024/1024/1024)) + "GB"
+	} else if runtime.GOOS == "darwin" {
+		cmd := exec.Command("sh", "-c", "system_profiler SPHardwareDataType | grep 'Memory'")
+		output, err := cmd.Output()
+		if err == nil {
+			output = bytes.Replace(output, []byte("Memory: "), []byte(""), 1)
+			system.Memory = strings.TrimSpace(string(output))
+		}
+	}
+	return system, platformOK, nil
 }
 
 func renderReport(report *DoctorReport) error {
