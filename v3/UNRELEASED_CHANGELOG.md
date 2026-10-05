@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Keep macOS app output outside file providers in [PR](https://github.com/wailsapp/wails/pull/6225) by @taliesin-ai
 - Complete setup wizard and show system details in [PR](https://github.com/wailsapp/wails/pull/6224) by @taliesin-ai
 - Improve WebView2 recovery error handling and resource cleanup on Windows in [PR](https://github.com/wailsapp/wails/pull/6222) by @leaanthony
 - Improve WebView2 recovery on Windows to prevent app crashes and controller strandings in [PR](https://github.com/wailsapp/wails/pull/6220) by @taliesin-ai
