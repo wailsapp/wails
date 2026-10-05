@@ -122,8 +122,33 @@ public class WailsBridge {
     private static native void nativeEmitSystemEvent(String name, String json);
     private static native void nativeEmitEvent(String name, String json);
 
+    // Window-level state requested from Go. Window flags belong to the
+    // Activity's window, so they are lost when Android recreates the Activity
+    // while the Go app keeps running; restoreWindowState() re-applies them.
+    private static boolean screenProtectWanted = false;
+    private static boolean keepAwakeWanted = false;
+    private static int brightnessWanted = -1;
+
     public WailsBridge(Activity activity) {
         this.activity = activity;
+    }
+
+    /**
+     * Re-apply window state requested by the running Go app to a recreated
+     * Activity. Call from onCreate, before the window is shown.
+     */
+    public void restoreWindowState() {
+        if (screenProtectWanted) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        }
+        if (keepAwakeWanted) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+        if (brightnessWanted >= 0) {
+            WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+            lp.screenBrightness = Math.max(0.01f, Math.min(1f, brightnessWanted / 100f));
+            activity.getWindow().setAttributes(lp);
+        }
     }
 
     /**
@@ -469,6 +494,7 @@ public class WailsBridge {
      * Keep the screen on (1) or release the hold (0) via FLAG_KEEP_SCREEN_ON.
      */
     public void setKeepAwake(final int enabled) {
+        keepAwakeWanted = enabled != 0;
         mainHandler.post(() -> {
             if (enabled != 0) {
                 activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -537,6 +563,7 @@ public class WailsBridge {
      * Set window brightness, 0-100. A negative value restores the system default.
      */
     public void setBrightness(final int pct) {
+        brightnessWanted = pct < 0 ? -1 : pct;
         mainHandler.post(() -> {
             try {
                 WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
@@ -1196,6 +1223,7 @@ public class WailsBridge {
      * state as "common:screenCapture" {protected}.
      */
     public void setScreenProtect(final int enabled) {
+        screenProtectWanted = enabled != 0;
         mainHandler.post(() -> {
             if (enabled != 0) {
                 activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);

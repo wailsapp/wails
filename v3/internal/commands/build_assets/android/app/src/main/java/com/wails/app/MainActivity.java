@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize the native Go library
         bridge = new WailsBridge(this);
+        bridge.restoreWindowState();
         bridge.initialize();
 
         // Set up WebView
