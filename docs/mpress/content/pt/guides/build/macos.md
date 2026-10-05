@@ -33,6 +33,16 @@ Isso cria `bin/<AppName>.app`, que contém:
 - O ícone do aplicativo em `Contents/Resources/` (proveniente de `icons.icns` ou, quando presente, de um catálogo de recursos `Assets.car`)
 - `Info.plist` com os metadados do aplicativo
 
+### Projetos em pastas sincronizadas
+
+Alguns provedores de arquivos do macOS adicionam metadados do Finder aos diretórios `.app` e fazem com que o `codesign` rejeite o pacote ou invalidam sua assinatura após a assinatura. Apenas remover os metadados não é suficiente quando o provedor os adiciona novamente.
+
+As tarefas de compilação geradas para macOS verificam esse comportamento. Quando ele é detectado, o Wails move o diretório de saída gerado do projeto para `~/Library/Application Support/Wails/build-output/<project>-<hash>` e substitui o diretório de saída original por um link simbólico. Os arquivos de saída existentes são preservados, e `bin/<AppName>.app` continua sendo o caminho usado para empacotamento, assinatura e modo de desenvolvimento. A CLI informa o local de armazenamento quando realiza a movimentação.
+
+Defina `WAILS_MACOS_OUTPUT_ROOT` para escolher outro local de armazenamento local e não sincronizado. O diretório raiz de destino deve estar no mesmo sistema de arquivos que o projeto. Um `BIN_DIR` explicitamente definido fora do projeto é usado conforme configurado. Projetos existentes precisam do arquivo `build/darwin/Taskfile.yml` atualizado para usar esse tratamento.
+
+Para distribuir o aplicativo, copie `bin/<AppName>.app` ou crie um DMG. Copiar apenas o link simbólico `bin` não inclui os artefatos da compilação. O comando direto `wails3 tool sign` informa um erro se a pasta de entrada adicionar os metadados novamente; mova esse pacote para uma pasta não sincronizada antes de assiná-lo.
+
 ## Recursos do pacote
 
 `Contents/Resources/` é o local padrão para arquivos somente leitura distribuídos com um aplicativo macOS. Use-o para modelos maiores, dados iniciais, mídia, pacotes de idiomas ou outros conteúdos que devam ser abertos sob demanda, em vez de compilados no executável Go com `embed`.
