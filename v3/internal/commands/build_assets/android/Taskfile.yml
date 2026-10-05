@@ -52,7 +52,9 @@ tasks:
         vars:
           ARCH: '{{.ARCH | default .HOST_ARCH}}'
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+      BUILD_TAGS: '{{if eq .PRODUCTION "true"}}{{ list "production" "android" .APP_TAGS .APP_TAGS_ANDROID .EXTRA_TAGS | compact | join "," }}{{else}}{{ list "android" "debug" .APP_TAGS .APP_TAGS_ANDROID .EXTRA_TAGS | compact | join "," }}{{end}}'
+      PRODUCTION_LDFLAGS: '-w -s{{with .APP_LDFLAGS}} {{.}}{{end}}'
+      BUILD_FLAGS: '-tags {{.BUILD_TAGS | q}}{{if eq .PRODUCTION "true"}} -trimpath -buildvcs=false -ldflags={{.PRODUCTION_LDFLAGS | q}}{{else}} -buildvcs=false -gcflags=all="-l"{{with .APP_LDFLAGS}} -ldflags={{. | q}}{{end}}{{end}}'
     env:
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
 
@@ -110,7 +112,9 @@ tasks:
         go build -buildmode=c-shared -overlay build/android/overlay.json {{.BUILD_FLAGS}} \
           -o build/android/app/src/main/jniLibs/$JNI_DIR/libwails.so
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+      BUILD_TAGS: '{{if eq .PRODUCTION "true"}}{{ list "production" "android" .APP_TAGS .APP_TAGS_ANDROID .EXTRA_TAGS | compact | join "," }}{{else}}{{ list "android" "debug" .APP_TAGS .APP_TAGS_ANDROID .EXTRA_TAGS | compact | join "," }}{{end}}'
+      PRODUCTION_LDFLAGS: '-w -s{{with .APP_LDFLAGS}} {{.}}{{end}}'
+      BUILD_FLAGS: '-tags {{.BUILD_TAGS | q}}{{if eq .PRODUCTION "true"}} -trimpath -buildvcs=false -ldflags={{.PRODUCTION_LDFLAGS | q}}{{else}} -buildvcs=false -gcflags=all="-l"{{with .APP_LDFLAGS}} -ldflags={{. | q}}{{end}}{{end}}'
 
   compile:go:all-archs:
     summary: Compile Go code for all Android architectures (fat APK)

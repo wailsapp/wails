@@ -11,15 +11,23 @@
 #                -f build/docker/Dockerfile.server .
 # CGO needs a C toolchain in the builder and a libc in the runtime image; keep
 # the builder and runtime libc compatible (a glibc builder -> a glibc runtime).
-# The Taskfile passes these through: task build:docker CGO_ENABLED=1 GO_IMAGE=... RUNTIME_IMAGE=...
+# The Taskfile passes these through: task build:docker APP_CGO_ENABLED=1 GO_IMAGE=... RUNTIME_IMAGE=...
 
 ARG GO_IMAGE=golang:alpine
 ARG RUNTIME_IMAGE=gcr.io/distroless/static-debian12
 ARG CGO_ENABLED=0
+ARG APP_TAGS
+ARG APP_PLATFORM_TAGS
+ARG APP_LDFLAGS
+ARG EXTRA_TAGS
 
 # Build stage
 FROM ${GO_IMAGE} AS builder
 ARG CGO_ENABLED
+ARG APP_TAGS
+ARG APP_PLATFORM_TAGS
+ARG APP_LDFLAGS
+ARG EXTRA_TAGS
 
 WORKDIR /app
 
@@ -45,7 +53,13 @@ RUN go mod tidy
 #   logger/asset middleware), matching the desktop production build.
 # - CGO_ENABLED defaults to 0 for a fully static binary (distroless/static);
 #   override with --build-arg CGO_ENABLED=1 (see header) for CGO apps.
-RUN CGO_ENABLED=${CGO_ENABLED} go build -tags server,production -trimpath -buildvcs=false -ldflags="-s -w" -o server .
+RUN TAGS="server,production"; \
+    if [ -n "$APP_TAGS" ]; then TAGS="${TAGS},${APP_TAGS}"; fi; \
+    if [ -n "$APP_PLATFORM_TAGS" ]; then TAGS="${TAGS},${APP_PLATFORM_TAGS}"; fi; \
+    if [ -n "$EXTRA_TAGS" ]; then TAGS="${TAGS},${EXTRA_TAGS}"; fi; \
+    LDFLAGS="-s -w"; \
+    if [ -n "$APP_LDFLAGS" ]; then LDFLAGS="${LDFLAGS} ${APP_LDFLAGS}"; fi; \
+    CGO_ENABLED=${CGO_ENABLED} go build -tags "$TAGS" -trimpath -buildvcs=false -ldflags="$LDFLAGS" -o server .
 
 # Runtime stage - minimal image
 FROM ${RUNTIME_IMAGE}
