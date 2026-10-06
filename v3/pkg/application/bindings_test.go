@@ -280,3 +280,42 @@ func TestBoundMethodPanic(t *testing.T) {
 		})
 	}
 }
+
+func TestBoundMethodMarshalErrorFallback(t *testing.T) {
+	// init globalApplication
+	_ = application.New(application.Options{})
+
+	appMarshal := func(error) []byte { return []byte(`"app"`) }
+	tests := []struct {
+		name    string
+		service func(error) []byte
+		want    string
+	}{
+		{"app marshaler when the service has none", nil, `"app"`},
+		{"service marshaler wins", func(error) []byte { return []byte(`"service"`) }, `"service"`},
+		{"app marshaler when the service returns nil", func(error) []byte { return nil }, `"app"`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bindings := application.NewBindings(appMarshal, nil)
+			service := application.NewServiceWithOptions(&TestService{}, application.ServiceOptions{MarshalError: tt.service})
+			if err := bindings.Add(service); err != nil {
+				t.Fatalf("bindings.Add() error = %v", err)
+			}
+
+			method := bindings.Get(&application.CallOptions{
+				MethodName: "github.com/wailsapp/wails/v3/pkg/application_test.TestService.StructError",
+			})
+			_, err := method.Call(context.TODO(), newArgs(`{ "name": "alice" }`))
+
+			var cerr *application.CallError
+			if !errors.As(err, &cerr) {
+				t.Fatalf("error = %#v, expected *CallError", err)
+			}
+			if got := string(cerr.Cause.(json.RawMessage)); got != tt.want {
+				t.Fatalf("cause = %s, expected %s", got, tt.want)
+			}
+		})
+	}
+}

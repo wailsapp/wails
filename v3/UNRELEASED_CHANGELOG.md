@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix service methods ignoring the application-wide `Options.MarshalError` when the service sets no `MarshalError` of its own, so their errors used the default marshaller
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
