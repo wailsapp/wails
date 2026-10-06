@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix a second instance launched while the first is quitting handing its launch to the exiting app on Linux, by releasing the single-instance D-Bus name at the start of shutdown
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

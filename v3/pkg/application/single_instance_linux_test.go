@@ -2,7 +2,13 @@
 
 package application
 
-import "testing"
+import (
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/godbus/dbus/v5"
+)
 
 func TestSingleInstanceNames(t *testing.T) {
 	tests := []struct {
@@ -88,5 +94,34 @@ func TestSingleInstanceNamesRejectsInvalidIDs(t *testing.T) {
 				t.Errorf("singleInstanceNames(%q) succeeded, want an error", tt.uniqueID)
 			}
 		})
+	}
+}
+
+// A quitting app must give up the bus name before its shutdown work, or an
+// instance started meanwhile hands its launch to an app that is exiting.
+func TestLinuxLockReleaseFreesTheBusName(t *testing.T) {
+	other, err := dbus.ConnectSessionBus()
+	if err != nil {
+		t.Skipf("no session bus: %v", err)
+	}
+	defer other.Close()
+
+	uniqueID := fmt.Sprintf("org.wails.test.release.p%d", os.Getpid())
+	lock := &linuxLock{manager: &singleInstanceManager{options: &SingleInstanceOptions{}}}
+	if err := lock.acquire(uniqueID); err != nil {
+		t.Fatalf("acquire: %v", err)
+	}
+	busName := uniqueID + ".SingleInstance"
+
+	reply, err := other.RequestName(busName, dbus.NameFlagDoNotQueue)
+	if err != nil || reply != dbus.RequestNameReplyExists {
+		t.Fatalf("while held: reply %d, err %v; want the name taken", reply, err)
+	}
+
+	lock.release()
+
+	reply, err = other.RequestName(busName, dbus.NameFlagDoNotQueue)
+	if err != nil || reply != dbus.RequestNameReplyPrimaryOwner {
+		t.Fatalf("after release: reply %d, err %v; want the name free", reply, err)
 	}
 }

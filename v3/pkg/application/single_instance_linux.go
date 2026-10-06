@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"syscall"
 
 	"github.com/godbus/dbus/v5"
 )
@@ -23,7 +22,7 @@ func (f dbusHandler) SendMessage(message string) *dbus.Error {
 }
 
 type linuxLock struct {
-	file          *os.File
+	conn          *dbus.Conn
 	uniqueID      string
 	dbusPath      string
 	dbusName      string
@@ -106,6 +105,7 @@ func (l *linuxLock) acquire(uniqueID string) error {
 		return err
 	}
 
+	l.conn = conn
 	reply, err := conn.RequestName(l.dbusName, dbus.NameFlagDoNotQueue)
 	if err != nil {
 		// A sandbox that refuses the name fails here. Say so, rather than
@@ -125,13 +125,15 @@ func (l *linuxLock) acquire(uniqueID string) error {
 	}
 }
 
+// release gives up the bus name while the app shuts down, so an instance
+// started meanwhile runs as the first one instead of handing its arguments to
+// an app that is about to exit.
 func (l *linuxLock) release() {
-	if l.file != nil {
-		syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
-		l.file.Close()
-		os.Remove(l.file.Name())
-		l.file = nil
+	if l.conn == nil {
+		return
 	}
+	_, _ = l.conn.ReleaseName(l.dbusName)
+	l.conn = nil
 }
 
 func (l *linuxLock) notify(data string) error {
