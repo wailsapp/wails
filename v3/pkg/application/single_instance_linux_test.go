@@ -118,7 +118,11 @@ func TestLinuxLockReleaseFreesTheBusName(t *testing.T) {
 		t.Fatalf("while held: reply %d, err %v; want the name taken", reply, err)
 	}
 
+	conn := lock.conn
 	lock.release()
+	if conn.Connected() {
+		t.Fatal("release left the lock's bus connection open")
+	}
 
 	reply, err = other.RequestName(busName, dbus.NameFlagDoNotQueue)
 	if err != nil || reply != dbus.RequestNameReplyPrimaryOwner {

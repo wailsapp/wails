@@ -133,6 +133,9 @@ func (l *linuxLock) release() {
 		return
 	}
 	_, _ = l.conn.ReleaseName(l.dbusName)
+	// The connection is private to this lock. Closing it also makes the bus
+	// drop the name if ReleaseName failed.
+	_ = l.conn.Close()
 	l.conn = nil
 }
 
