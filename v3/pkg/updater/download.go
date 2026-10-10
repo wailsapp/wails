@@ -25,17 +25,19 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (path,
 	u.transition(StateDownloading)
 	u.host.Emit(EventDownloadStarted, rel)
 
-	dir, err = os.MkdirTemp("", "wails-update-*")
+	// tmpDir, not the named result: every error path returns "", "", err,
+	// which clears dir before the deferred cleanup reads it.
+	tmpDir, err := os.MkdirTemp("", "wails-update-*")
 	if err != nil {
 		return "", "", fmt.Errorf("updater: temp dir: %w", err)
 	}
-	tmpPath := filepath.Join(dir, ".artifact")
+	tmpPath := filepath.Join(tmpDir, ".artifact")
 
 	// Track success — on every error path we tear the directory down.
 	success := false
 	defer func() {
 		if !success {
-			_ = os.RemoveAll(dir)
+			_ = os.RemoveAll(tmpDir)
 		}
 	}()
 
@@ -108,7 +110,7 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (path,
 		u.mu.Unlock()
 	}
 	success = true
-	return tmpPath, dir, nil
+	return tmpPath, tmpDir, nil
 }
 
 // verify runs the configured verification rules against the digest computed
