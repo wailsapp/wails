@@ -42,6 +42,30 @@ window.getDeviceInfo = async () => {
     }
 }
 
+window.selectNativeTab = async (index) => {
+    if (!IOS?.NativeTabs?.Select) {
+        console.warn('IOS native tabs runtime is not available.');
+        return;
+    }
+    try {
+        await IOS.NativeTabs.Select(index);
+    } catch (e) {
+        console.error('Unable to select native tab:', e);
+    }
+}
+
+window.setNativeTabsEnabled = async (enabled) => {
+    if (!IOS?.NativeTabs?.SetEnabled) {
+        console.warn('IOS native tabs runtime is not available.');
+        return;
+    }
+    try {
+        await IOS.NativeTabs.SetEnabled(enabled);
+    } catch (e) {
+        console.error('Unable to update native tabs:', e);
+    }
+}
+
 // Generic caller for IOS.<Group>.<Method>(args)
 window.iosJsSet = async (methodPath, args) => {
     if (!IOS) {
@@ -111,5 +135,4 @@ window.addEventListener('nativeTabSelected', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
   showPaneByIndex(0);
 });
-
 
