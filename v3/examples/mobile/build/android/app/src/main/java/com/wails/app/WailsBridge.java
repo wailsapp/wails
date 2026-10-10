@@ -97,10 +97,14 @@ public class WailsBridge {
     private View.OnApplyWindowInsetsListener keyboardListener;
     // Battery: remember the user's intent so sensors paused while the app is
     // backgrounded can be restored on foreground; the torch is switched off.
-    private boolean motionWanted = false;
-    private boolean proximityWanted = false;
+    // Process-scoped so a bridge created for a recreated Activity resumes the
+    // sensor streams the running Go app asked for (see onStart).
+    private static volatile boolean motionWanted = false;
+    private static volatile boolean proximityWanted = false;
     private boolean torchOn = false;
-    private boolean pendingLocationRequest = false;
+    // Process-scoped so a permission result delivered to a recreated Activity
+    // (and its new bridge) still completes the location request.
+    private static boolean pendingLocationRequest = false;
 
     // Native methods - implemented in Go
     private static native void nativeInit(WailsBridge bridge);
@@ -122,8 +126,60 @@ public class WailsBridge {
     private static native void nativeEmitSystemEvent(String name, String json);
     private static native void nativeEmitEvent(String name, String json);
 
+    // Window-level state requested from Go. Window flags belong to the
+    // Activity's window, so they are lost when Android recreates the Activity
+    // while the Go app keeps running; restoreWindowState() re-applies them.
+    private static volatile boolean screenProtectWanted = false;
+    private static volatile boolean keepAwakeWanted = false;
+    private static volatile int brightnessWanted = -1;
+    // The bridge of the Activity that currently hosts the app. Window-flag and
+    // sensor updates run on the UI thread against it, not against the
+    // (possibly already replaced) bridge the Go call happened to use.
+    private static volatile WailsBridge currentBridge;
+
     public WailsBridge(Activity activity) {
         this.activity = activity;
+    }
+
+    private Activity windowActivity() {
+        WailsBridge current = currentBridge;
+        return current != null ? current.activity : activity;
+    }
+
+    /** The current bridge if this one has been replaced, otherwise null. */
+    private WailsBridge replacement() {
+        WailsBridge current = currentBridge;
+        return current != null && current != this ? current : null;
+    }
+
+    /**
+     * Drop the static reference to this bridge (and its Activity) when the
+     * Activity is destroyed. Call from onDestroy on every destroy; a recreated
+     * Activity registers its own bridge in restoreWindowState().
+     */
+    public void release() {
+        if (currentBridge == this) {
+            currentBridge = null;
+        }
+    }
+
+    /**
+     * Re-apply window state requested by the running Go app to a recreated
+     * Activity. Call from onCreate, before the window is shown.
+     */
+    public void restoreWindowState() {
+        currentBridge = this;
+        if (screenProtectWanted) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        }
+        if (keepAwakeWanted) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+        if (brightnessWanted >= 0) {
+            WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+            lp.screenBrightness = Math.max(0.01f, Math.min(1f, brightnessWanted / 100f));
+            activity.getWindow().setAttributes(lp);
+        }
     }
 
     /**
@@ -469,11 +525,12 @@ public class WailsBridge {
      * Keep the screen on (1) or release the hold (0) via FLAG_KEEP_SCREEN_ON.
      */
     public void setKeepAwake(final int enabled) {
+        keepAwakeWanted = enabled != 0;
         mainHandler.post(() -> {
             if (enabled != 0) {
-                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                windowActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             } else {
-                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                windowActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }
         });
     }
@@ -537,12 +594,13 @@ public class WailsBridge {
      * Set window brightness, 0-100. A negative value restores the system default.
      */
     public void setBrightness(final int pct) {
+        brightnessWanted = pct < 0 ? -1 : pct;
         mainHandler.post(() -> {
             try {
-                WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+                WindowManager.LayoutParams lp = windowActivity().getWindow().getAttributes();
                 lp.screenBrightness = pct < 0 ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
                                               : Math.max(0.01f, Math.min(1f, pct / 100f));
-                activity.getWindow().setAttributes(lp);
+                windowActivity().getWindow().setAttributes(lp);
             } catch (Exception e) {
                 Log.e(TAG, "setBrightness failed", e);
             }
@@ -980,6 +1038,14 @@ public class WailsBridge {
     public void setMotion(final int enabled) {
         motionWanted = enabled != 0;
         mainHandler.post(() -> {
+            // A replaced bridge must not register listeners nobody will
+            // unregister; hand the request to the current bridge instead.
+            WailsBridge current = replacement();
+            if (current != null) {
+                current.setMotion(enabled);
+                return;
+            }
+            if (activity.isDestroyed()) return;
             SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
             if (sm == null) return;
             if (enabled != 0) {
@@ -1012,6 +1078,14 @@ public class WailsBridge {
     public void setProximity(final int enabled) {
         proximityWanted = enabled != 0;
         mainHandler.post(() -> {
+            // A replaced bridge must not register listeners nobody will
+            // unregister; hand the request to the current bridge instead.
+            WailsBridge current = replacement();
+            if (current != null) {
+                current.setProximity(enabled);
+                return;
+            }
+            if (activity.isDestroyed()) return;
             SensorManager sm = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
             if (sm == null) return;
             if (enabled != 0) {
@@ -1196,11 +1270,12 @@ public class WailsBridge {
      * state as "common:screenCapture" {protected}.
      */
     public void setScreenProtect(final int enabled) {
+        screenProtectWanted = enabled != 0;
         mainHandler.post(() -> {
             if (enabled != 0) {
-                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                windowActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
             } else {
-                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                windowActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
             }
             emitEvent("common:screenCapture",
                     "{\"protected\":" + (enabled != 0 ? "true" : "false") + "}");

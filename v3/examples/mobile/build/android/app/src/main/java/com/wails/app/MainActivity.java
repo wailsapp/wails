@@ -22,11 +22,14 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ViewGroup;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -64,12 +67,21 @@ public class MainActivity extends AppCompatActivity {
     private WebViewAssetLoader assetLoader;
 
     // The Go-side dialog ID of the in-flight file picker (-1 when idle)
-    private int pendingFilePickerCallbackID = -1;
+    // Pending native requests are process-scoped (static) so they survive the
+    // Activity being recreated while the picker/camera is open: the Go request
+    // waiting on them lives as long as the process, not the Activity.
+    private static int pendingFilePickerCallbackID = -1;
+
+    // Renderer-crash recovery bookkeeping (process-scoped, survives recreate()).
+    private static final int MAX_RENDER_CRASH_RECOVERIES = 3;
+    private static final long RENDER_CRASH_WINDOW_MS = 60_000;
+    // Timestamps (elapsedRealtime) of recent recoveries, oldest first.
+    private static final java.util.ArrayDeque<Long> renderCrashTimes = new java.util.ArrayDeque<>();
     private static final int PHOTO_CAPTURE_REQUEST = 7002;
     private static final int VIDEO_CAPTURE_REQUEST = 7003;
     private static final int CAMERA_PERMISSION_REQUEST = 7010;
-    private File pendingCaptureFile;
-    private boolean pendingCaptureIsVideo;
+    private static File pendingCaptureFile;
+    private static boolean pendingCaptureIsVideo;
 
     // System-event sources (battery/power, screen lock, network). Registered in
     // onCreate, torn down in onDestroy. Each forwards a "system:*" event to JS
@@ -87,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize the native Go library
         bridge = new WailsBridge(this);
+        bridge.restoreWindowState();
         bridge.initialize();
 
         // Set up WebView
@@ -192,6 +205,40 @@ public class MainActivity extends AppCompatActivity {
                 // Now that JS listeners are mounted, push a snapshot of the
                 // current battery / network / theme so the UI starts populated.
                 emitSystemSnapshot();
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                // Without this override, a crashed or killed WebView renderer
+                // takes the whole app down. Drop the dead WebView and recreate
+                // the Activity instead: the Go app keeps running and the new
+                // Activity reattaches to it with a fresh WebView.
+                if (webView == view) {
+                    webView = null;
+                }
+                if (view.getParent() instanceof ViewGroup) {
+                    ((ViewGroup) view.getParent()).removeView(view);
+                }
+                view.destroy();
+                // Don't loop forever if the page crashes the renderer every
+                // time it loads: give up after a few crashes in a short window.
+                long now = android.os.SystemClock.elapsedRealtime();
+                while (!renderCrashTimes.isEmpty() && now - renderCrashTimes.peekFirst() > RENDER_CRASH_WINDOW_MS) {
+                    renderCrashTimes.pollFirst();
+                }
+                renderCrashTimes.addLast(now);
+                if (renderCrashTimes.size() > MAX_RENDER_CRASH_RECOVERIES) {
+                    Log.e(TAG, "WebView render process gone (crashed: " + detail.didCrash() + "); giving up after " + MAX_RENDER_CRASH_RECOVERIES + " recoveries");
+                    TextView message = new TextView(MainActivity.this);
+                    message.setText("The app's content stopped unexpectedly. Please restart the app.");
+                    message.setGravity(android.view.Gravity.CENTER);
+                    message.setPadding(48, 48, 48, 48);
+                    setContentView(message);
+                    return true;
+                }
+                Log.e(TAG, "WebView render process gone (crashed: " + detail.didCrash() + "); recreating activity");
+                recreate();
+                return true;
             }
         });
 
@@ -803,6 +850,13 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         unregisterSystemEventReceivers();
         if (bridge != null) {
+            bridge.release();
+        }
+        // Only shut the Go app down when the Activity is really going away.
+        // A recreation (configuration or theme overlay change) keeps the
+        // process, and with it the running Go app, alive; the new Activity
+        // reattaches to it in onCreate.
+        if (bridge != null && isFinishing() && !isChangingConfigurations()) {
             bridge.shutdown();
         }
         if (webView != null) {
