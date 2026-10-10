@@ -65,9 +65,28 @@ import TabItem from "@theme/TabItem";
     <br/><br/>
     After installing Wails via Go, ensure you run the following commands to update your PATH:
     <br/>
+<Tabs
+  defaultValue="bash"
+  values={[
+    { label: "Bash", value: "bash" },
+    { label: "Zsh", value: "zsh" },
+    { label: "Fish", value: "fish" },
+  ]}
+>
+  <TabItem value="bash">
     <code>export PATH=$PATH:$(go env GOPATH)/bin</code>
     <br/>
-    <code>source ~/.bashrc</code> or <code>source ~/.zshrc</code>
+    <code>bash: source ~/.bashrc</code>
+  </TabItem>
+  <TabItem value="zsh">
+    <code>export PATH=$PATH:$(go env GOPATH)/bin</code>
+    <br/>
+    <code>zsh: source ~/.zshrc</code> 
+  </TabItem>
+  <TabItem value="fish">
+    <code>fish_add_path ~/go/bin</code>
+   </TabItem>
+    
   </TabItem>
 </Tabs>
 ```
