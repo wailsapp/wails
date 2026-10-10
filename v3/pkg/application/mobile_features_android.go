@@ -76,7 +76,7 @@ func (androidManager) OrientationJSON() string {
 }
 
 // SetStatusBar sets the status-bar appearance. JSON: {"style":"light|dark|
-// default","hidden":bool}.
+// default","hidden":bool,"color":"#RRGGBB"(optional, Android only)}.
 func (androidManager) SetStatusBar(jsonPayload string) {
 	androidBridgeVoidString("setStatusBar", jsonPayload)
 }
