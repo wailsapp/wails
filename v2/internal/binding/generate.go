@@ -145,9 +145,20 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 	return nil
 }
 
+var customTypeMap = map[string]string{
+	"time.Time": "string",
+	"url.URL":   "string",
+	"uuid.UUID": "string",
+}
+
 func fullyQualifiedName(packageName string, typeName string) string {
+	fullType := typeName
 	if len(packageName) > 0 {
-		return packageName + "." + typeName
+		fullType = packageName + "." + typeName
+	}
+
+	if tsType, ok := customTypeMap[fullType]; ok {
+		return tsType
 	}
 
 	switch true {
@@ -173,6 +184,7 @@ func fullyQualifiedName(packageName string, typeName string) string {
 
 var (
 	jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
+	genericTypePattern    = regexp.MustCompile(`^(.*)\[(.*)\]$`)
 )
 
 func arrayifyValue(valueArray string, valueType string) string {
@@ -190,52 +202,105 @@ func arrayifyValue(valueArray string, valueType string) string {
 	return "Array<" + valueType + ">"
 }
 
-func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
-	matches := mapRegex.FindStringSubmatch(input)
-	keyPackage := matches[keyPackageIndex]
-	keyType := matches[keyTypeIndex]
-	valueArray := matches[valueArrayIndex]
-	valuePackage := matches[valuePackageIndex]
-	valueType := matches[valueTypeIndex]
-	// fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valueArray=%s, valuePackage=%s, valueType=%s\n",
-	//	input,
-	//	keyPackage,
-	//	keyType,
-	//	valueArray,
-	//	valuePackage,
-	//	valueType)
+// goTypeToJSDocType converts a Go type string to a JSDoc/TypeScript type string.
+func goTypeToJSDocType(goType string) string {
+	goType = strings.TrimSpace(goType)
 
-	// byte array is special case
-	if valueArray == "[]" && valueType == "byte" {
+	// Handle pointers
+	for strings.HasPrefix(goType, "*") {
+		goType = strings.TrimPrefix(goType, "*")
+		goType = strings.TrimSpace(goType)
+	}
+
+	// Special-case []byte -> string
+	if goType == "[]byte" {
 		return "string"
 	}
 
-	// if any packages, make sure they're saved
-	if len(keyPackage) > 0 {
-		importNamespaces.Add(keyPackage)
+	// Handle arrays/slices in legacy "Array<>" style
+	if strings.HasPrefix(goType, "[]") {
+		elemType := strings.TrimPrefix(goType, "[]")
+		elemJS := goTypeToJSDocType(elemType)
+		return fmt.Sprintf("Array<%s>", elemJS)
 	}
 
-	if len(valuePackage) > 0 {
-		importNamespaces.Add(valuePackage)
+	// Handle maps with bracket-depth logic
+	if strings.HasPrefix(goType, "map[") {
+		keyStart := len("map[")
+		depth := 1
+		keyEnd := -1
+		for i, r := range goType[keyStart:] {
+			switch r {
+			case '[':
+				depth++
+			case ']':
+				depth--
+				if depth == 0 {
+					keyEnd = keyStart + i
+					break
+				}
+			}
+			if keyEnd != -1 {
+				break
+			}
+		}
+		if keyEnd == -1 || keyEnd+1 >= len(goType) {
+			return "any"
+		}
+		keyType := goType[keyStart:keyEnd]
+		valType := strings.TrimSpace(goType[keyEnd+1:])
+		return fmt.Sprintf("Record<%s, %s>", goTypeToJSDocType(keyType), goTypeToJSDocType(valType))
 	}
 
-	key := fullyQualifiedName(keyPackage, keyType)
-	var value string
-	if strings.HasPrefix(valueType, "map") {
-		value = goTypeToJSDocType(valueType, importNamespaces)
-	} else {
-		value = fullyQualifiedName(valuePackage, valueType)
+	// Generic type pattern (legacy underscore flattening)
+	// Note: This pattern matches the innermost brackets for nested generics.
+	// Nested generics like Outer[Inner[T]] are not currently supported.
+	if matches := genericTypePattern.FindStringSubmatch(goType); len(matches) == 3 {
+		base := matches[1]
+		inner := jsVariableUnsafeChars.ReplaceAllLiteralString(matches[2], "_")
+		inner = strings.TrimPrefix(inner, "_") // remove leading underscore if any
+		return fmt.Sprintf("%s_%s_", base, inner)
 	}
 
-	if len(key) > 0 {
-		return fmt.Sprintf("Record<%s, %s>", key, arrayifyValue(valueArray, value))
+	// If fully qualified and not in customTypeMap, use name unchanged
+	if strings.Contains(goType, ".") {
+		// Check if this is a custom type that should be mapped
+		if tsType, ok := customTypeMap[goType]; ok {
+			return tsType
+		}
+
+		// Normal fully-qualified name (main.SomeType)
+		if !strings.Contains(goType, "[") {
+			return goType
+		}
 	}
 
-	return arrayifyValue(valueArray, value)
+	// customTypeMap lookup for base name
+	if mapped, ok := customTypeMap[goType]; ok {
+		return mapped
+	}
+
+	// Basic mappings
+	switch goType {
+	case "string":
+		return "string"
+	case "error":
+		return "Error"
+	case "bool":
+		return "boolean"
+	case "interface{}":
+		return "any"
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float32", "float64":
+		return "number"
+	}
+
+	return "any"
 }
 
-func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer) string {
-	return goTypeToJSDocType(input, importNamespaces)
+func goTypeToTypescriptType(input string, _ *slicer.StringSlicer) string {
+	return goTypeToJSDocType(input)
 }
 
 func entityFullReturnType(input, prefix, suffix string, importNamespaces *slicer.StringSlicer) string {
