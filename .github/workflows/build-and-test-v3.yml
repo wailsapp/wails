@@ -13,11 +13,7 @@ on:
       - '.github/workflows/build-and-test-v3.yml'
   pull_request_review:
     types: [submitted]
-    branches:
-      - master
 
-permissions:
-  contents: read
 
 jobs:
   test_js:
@@ -287,7 +283,7 @@ jobs:
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
 
   build_results:
-    if: ${{ always() }}
+    if: ${{ always() && github.base_ref == 'master' }}
     runs-on: ubuntu-latest
     name: v3 Build Results
     permissions: {}
