@@ -201,10 +201,10 @@ func (generator *Generator) Generate(patterns ...string) (stats *collect.Stats, 
 	}
 
 	// Schedule code generation for each found service.
-	for obj := range services {
+	for binding := range services {
 		serviceOrEventFound()
 		generator.scheduler.Schedule(func() {
-			generator.generateService(obj)
+			generator.generateService(binding)
 		})
 	}
 
