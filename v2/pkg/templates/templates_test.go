@@ -97,3 +97,33 @@ func TestInstallSucceedsInEmptyDirectory(t *testing.T) {
 	_, _, err = Install(options)
 	is2.NoErr(err) // Should succeed in empty directory
 }
+
+func TestInstallWailsjsPermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("file modes are not applicable on Windows")
+	}
+	is2 := is.New(t)
+
+	tempDir := t.TempDir()
+	_, _, err := Install(&Options{
+		ProjectName:  "test",
+		TemplateName: "vanilla-ts",
+		TargetDir:    tempDir,
+	})
+	is2.NoErr(err)
+
+	// Must match what `wails generate module` leaves behind (#6192)
+	count := 0
+	err = filepath.Walk(filepath.Join(tempDir, "frontend", "wailsjs"), func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		count++
+		if got := info.Mode().Perm(); got != 0o755 {
+			t.Errorf("%s: mode = %o, want 755", path, got)
+		}
+		return nil
+	})
+	is2.NoErr(err)
+	is2.True(count > 2) // wailsjs was installed by the template
+}

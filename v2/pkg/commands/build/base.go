@@ -441,7 +441,8 @@ func generateRuntimeWrapper(options *Options) error {
 		return err
 	}
 
-	return nil
+	// Match the permissions `wails generate module` applies to wailsjs
+	return fs.SetPermissions(wrapperDir, 0755)
 }
 
 // NpmInstall runs "npm install" in the given directory
