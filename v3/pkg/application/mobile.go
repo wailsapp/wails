@@ -37,6 +37,7 @@ type MobileManager interface {
 	SetStatusBar(jsonPayload string)
 	StorageJSON() string
 	StoragePath() string
+	Timezone() string
 	PowerJSON() string
 	NetworkJSON() string
 
