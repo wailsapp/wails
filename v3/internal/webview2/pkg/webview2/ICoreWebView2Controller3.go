@@ -6,6 +6,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/doublecall"
 	"golang.org/x/sys/windows"
 )
 
@@ -57,16 +58,10 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
-	// The double parameter is passed BY VALUE: a pointer here reaches the
-	// callee as a near 0.0 double value, giving a degenerate rasterization
-	// scale (blank content). The per-arch appendDoubleArg helpers pass it
-	// correctly for the target ABI.
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, scale)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(args...)
+	// The double parameter is passed BY VALUE: a pointer here reaches the callee
+	// as a near 0.0 double value, giving a degenerate rasterization scale (blank
+	// content). doublecall.Call passes it the way the target ABI expects.
+	hr := doublecall.Call(uintptr(i.Vtbl.PutRasterizationScale), scale, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

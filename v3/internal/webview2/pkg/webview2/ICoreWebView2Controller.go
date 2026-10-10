@@ -6,6 +6,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/doublecall"
 	"golang.org/x/sys/windows"
 )
 
@@ -120,15 +121,10 @@ func (i *ICoreWebView2Controller) GetZoomFactor() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
-	// The double parameter is passed BY VALUE: a pointer here reaches the
-	// callee as a near 0.0 double value. The per-arch appendDoubleArg helpers
-	// pass it correctly for the target ABI.
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, zoomFactor)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutZoomFactor.Call(args...)
+	// The double parameter is passed BY VALUE: a pointer here reaches the callee
+	// as a near 0.0 double value. doublecall.Call passes it the way the target
+	// ABI expects.
+	hr := doublecall.Call(uintptr(i.Vtbl.PutZoomFactor), zoomFactor, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -165,17 +161,9 @@ func (i *ICoreWebView2Controller) RemoveZoomFactorChanged(token EventRegistratio
 func (i *ICoreWebView2Controller) SetBoundsAndZoomFactor(bounds RECT, zoomFactor float64) error {
 	// Both parameters are passed BY VALUE: the 16-byte RECT per the target
 	// ABI's aggregate rules (appendRectArg) and the double per its
-	// floating-point rules (appendDoubleArg).
-	args, ok := appendRectArg([]uintptr{uintptr(unsafe.Pointer(i))}, &bounds)
-	if !ok {
-		return ErrDoubleArgUnsupported
-	}
-	args, ok = appendDoubleArg(args, zoomFactor)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.SetBoundsAndZoomFactor.Call(args...)
+	// floating-point rules (doublecall.Call).
+	args := appendRectArg([]uintptr{uintptr(unsafe.Pointer(i))}, &bounds)
+	hr := doublecall.Call(uintptr(i.Vtbl.SetBoundsAndZoomFactor), zoomFactor, args...)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
