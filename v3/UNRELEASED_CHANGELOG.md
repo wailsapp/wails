@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Give a webview request a loopback `RemoteAddr` (`127.0.0.1:0`) instead of the `192.0.2.1:1234` (RFC 5737 TEST-NET) placeholder. A webview request originates on the local machine, so a user `Handler` that gates on request origin now sees it as loopback rather than as a remote peer.
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
