@@ -37,6 +37,7 @@ const char* ios_storage_json(void);         // {"free":bytes,"total":bytes}
 const char* ios_storage_path(void);         // absolute path to the app's Application Support directory
 const char* ios_power_json(void);           // {"level":0-1,"charging":bool,"lowPower":bool}
 const char* ios_network_json(void);         // {"connected":bool,"type":"wifi|cellular|none"}
+const char* ios_system_locale(void);        // BCP-47 language tag (e.g. "nb-NO")
 void ios_set_keyboard_watch(bool enabled);  // keyboard insets → "common:keyboard" {visible,height}
 void ios_set_screen_protect(bool enabled);  // screenshot/recording detection → "common:screenCapture"
 

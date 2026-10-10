@@ -747,6 +747,25 @@ const char* ios_network_json(void) {
     return mfDup(json);
 }
 
+const char* ios_system_locale(void) {
+    // Use languageIdentifier which returns a clean BCP-47 tag (e.g. "en-US"),
+    // unlike localeIdentifier which can include POSIX modifiers and currency info.
+    if (@available(iOS 16, *)) {
+        NSString *tag = [[NSLocale currentLocale] languageIdentifier];
+        return mfDup(tag);
+    }
+    // Fallback for iOS < 16: build from components to preserve script subtags
+    // (e.g. zh-Hant-TW, not just zh-TW).
+    NSLocale *locale = [NSLocale currentLocale];
+    NSString *lang = [locale languageCode];
+    NSString *script = [locale scriptCode];
+    NSString *country = [locale countryCode];
+    NSMutableString *tag = [NSMutableString stringWithString:lang ?: @"en"];
+    if (script.length > 0) [tag appendFormat:@"-%@", script];
+    if (country.length > 0) [tag appendFormat:@"-%@", country];
+    return mfDup(tag);
+}
+
 // MARK: - Keyboard insets
 
 static id g_mfKeyboardShowObs = nil;
