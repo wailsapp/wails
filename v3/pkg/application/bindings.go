@@ -137,7 +137,7 @@ func (b *Bindings) Add(service Service) error {
 		return err
 	}
 
-	marshalError := wrapErrorMarshaler(service.options.MarshalError, defaultMarshalError)
+	marshalError := wrapErrorMarshaler(service.options.MarshalError, b.marshalError)
 
 	// Validate and log methods.
 	for _, method := range methods {

@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix the application-level `MarshalError` option never being applied: `Bindings.Add` fell back from `ServiceOptions.MarshalError` straight to the default marshaler, so an error returned by a service method reached the frontend as `json.Marshal` of the error value (`{}` for an error type without exported fields) unless every service set its own `MarshalError`; the fallback chain is now service → application → default, as documented on both options by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
