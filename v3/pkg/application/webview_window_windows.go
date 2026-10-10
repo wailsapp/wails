@@ -2675,6 +2675,11 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 		return w.setupChromiumConfigError(recovering, err)
 	}
 
+	err = settings.PutIsPinchZoomEnabled(!w.parent.options.Windows.DisablePinchZoom)
+	if err != nil {
+		globalApplication.handleFatalError(err)
+	}
+
 	err = settings.PutIsStatusBarEnabled(false)
 	if err != nil {
 		return w.setupChromiumConfigError(recovering, err)

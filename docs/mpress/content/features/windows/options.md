@@ -1009,6 +1009,7 @@ The per-window struct is `application.WindowsWindow` — **not** `WindowsOptions
 Windows: application.WindowsWindow{
     DisableIcon:                       false,
     DisableMenu:                       false,
+    DisablePinchZoom:                  false,
     BackdropType:                      application.Auto,
     CustomTheme:                       application.ThemeSettings{},
     DisableFramelessWindowDecorations: false,
@@ -1024,6 +1025,11 @@ Windows: application.WindowsWindow{
 **DisableMenu** (`bool`)
 
 - Disable the menu bar for the window. When `true`, the window does not display a menu bar even if one is configured.
+- Default: `false`
+
+**DisablePinchZoom** (`bool`)
+
+- Disable pinch-to-zoom on touch input devices (WebView2 `IsPinchZoomEnabled`). Keyboard and Ctrl+wheel zoom are governed by the window-level `ZoomControlEnabled` option, not by this one.
 - Default: `false`
 
 **BackdropType** (`BackdropType`)
