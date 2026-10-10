@@ -34,6 +34,7 @@ typedef struct CallbackID
 } CallbackID;
 
 extern void dispatchOnMainThreadCallback(unsigned int);
+extern void handleMenuDestroy(void *, void *);
 
 static gboolean dispatchCallback(gpointer data) {
     struct CallbackID *args = data;
@@ -769,6 +770,27 @@ func clipboardSet(text string) {
 }
 
 // Menu
+// Accessed only on the GTK thread. The destroy signal releases the Go state
+// before a later rebuild can reuse a pointer to a destroyed widget.
+var menuDestroyCallbacks = make(map[pointer]func())
+
+func menuOnDestroy(widget pointer, callback func()) {
+	menuDestroyCallbacks[widget] = callback
+	signal := C.CString("destroy")
+	defer C.free(unsafe.Pointer(signal))
+	C.g_signal_connect_data(C.gpointer(widget), signal, C.GCallback(C.handleMenuDestroy), nil, nil, 0)
+}
+
+//export handleMenuDestroy
+func handleMenuDestroy(widget unsafe.Pointer, _ unsafe.Pointer) {
+	key := pointer(widget)
+	callback := menuDestroyCallbacks[key]
+	delete(menuDestroyCallbacks, key)
+	if callback != nil {
+		callback()
+	}
+}
+
 func menuAddSeparator(menu *Menu) {
 	C.gtk_menu_shell_append(
 		(*C.GtkMenuShell)((menu.impl).(*linuxMenu).native),
