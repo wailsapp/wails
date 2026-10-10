@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2NonClientRegionChangedEventArgsVtbl struct {
@@ -17,10 +16,16 @@ type ICoreWebView2NonClientRegionChangedEventArgs struct {
 	Vtbl *ICoreWebView2NonClientRegionChangedEventArgsVtbl
 }
 
-func (i *ICoreWebView2NonClientRegionChangedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2NonClientRegionChangedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2NonClientRegionChangedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2NonClientRegionChangedEventArgs) GetRegionKind() (COREWEBVIEW2_NON_CLIENT_REGION_KIND, error) {
 

@@ -1,19 +1,18 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2EnvironmentVtbl struct {
 	IUnknownVtbl
-	CreateCoreWebView2Controller     ComProc
-	CreateWebResourceResponse        ComProc
-	GetBrowserVersionString          ComProc
-	AddNewBrowserVersionAvailable    ComProc
+	CreateCoreWebView2Controller ComProc
+	CreateWebResourceResponse ComProc
+	GetBrowserVersionString ComProc
+	AddNewBrowserVersionAvailable ComProc
 	RemoveNewBrowserVersionAvailable ComProc
 }
 
@@ -21,16 +20,23 @@ type ICoreWebView2Environment struct {
 	Vtbl *ICoreWebView2EnvironmentVtbl
 }
 
-func (i *ICoreWebView2Environment) AddRef() uintptr {
+func (i *ICoreWebView2Environment) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2Environment) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2Environment) CreateCoreWebView2Controller(parentWindow HWND, handler *ICoreWebView2CreateCoreWebView2ControllerCompletedHandler) error {
 
+
 	hr, _, _ := i.Vtbl.CreateCoreWebView2Controller.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&parentWindow)),
+		uintptr(parentWindow),
 		uintptr(unsafe.Pointer(handler)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
@@ -71,9 +77,10 @@ func (i *ICoreWebView2Environment) GetBrowserVersionString() (string, error) {
 	// Create *uint16 to hold result
 	var _versionInfo *uint16
 
+
 	hr, _, _ := i.Vtbl.GetBrowserVersionString.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_versionInfo)),
+		uintptr(unsafe.Pointer(&_versionInfo)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -101,10 +108,22 @@ func (i *ICoreWebView2Environment) AddNewBrowserVersionAvailable(eventHandler *I
 
 func (i *ICoreWebView2Environment) RemoveNewBrowserVersionAvailable(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveNewBrowserVersionAvailable.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveNewBrowserVersionAvailable.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveNewBrowserVersionAvailable.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

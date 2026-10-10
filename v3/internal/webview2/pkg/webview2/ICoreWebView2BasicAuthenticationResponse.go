@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2BasicAuthenticationResponseVtbl struct {
@@ -20,18 +19,25 @@ type ICoreWebView2BasicAuthenticationResponse struct {
 	Vtbl *ICoreWebView2BasicAuthenticationResponseVtbl
 }
 
-func (i *ICoreWebView2BasicAuthenticationResponse) AddRef() uintptr {
+func (i *ICoreWebView2BasicAuthenticationResponse) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2BasicAuthenticationResponse) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2BasicAuthenticationResponse) GetUserName() (string, error) {
 	// Create *uint16 to hold result
 	var _userName *uint16
 
+
 	hr, _, _ := i.Vtbl.GetUserName.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_userName)),
+		uintptr(unsafe.Pointer(&_userName)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -64,9 +70,10 @@ func (i *ICoreWebView2BasicAuthenticationResponse) GetPassword() (string, error)
 	// Create *uint16 to hold result
 	var _password *uint16
 
+
 	hr, _, _ := i.Vtbl.GetPassword.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_password)),
+		uintptr(unsafe.Pointer(&_password)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)

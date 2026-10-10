@@ -1,28 +1,33 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2PermissionSettingVtbl struct {
 	IUnknownVtbl
-	GetPermissionKind   ComProc
+	GetPermissionKind ComProc
 	GetPermissionOrigin ComProc
-	GetPermissionState  ComProc
+	GetPermissionState ComProc
 }
 
 type ICoreWebView2PermissionSetting struct {
 	Vtbl *ICoreWebView2PermissionSettingVtbl
 }
 
-func (i *ICoreWebView2PermissionSetting) AddRef() uintptr {
+func (i *ICoreWebView2PermissionSetting) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2PermissionSetting) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2PermissionSetting) GetPermissionKind() (COREWEBVIEW2_PERMISSION_KIND, error) {
 
@@ -42,9 +47,10 @@ func (i *ICoreWebView2PermissionSetting) GetPermissionOrigin() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetPermissionOrigin.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)

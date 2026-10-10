@@ -1,24 +1,23 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2WindowFeaturesVtbl struct {
 	IUnknownVtbl
-	GetHasPosition             ComProc
-	GetHasSize                 ComProc
-	GetLeft                    ComProc
-	GetTop                     ComProc
-	GetHeight                  ComProc
-	GetWidth                   ComProc
-	GetShouldDisplayMenuBar    ComProc
-	GetShouldDisplayStatus     ComProc
-	GetShouldDisplayToolbar    ComProc
+	GetHasPosition ComProc
+	GetHasSize ComProc
+	GetLeft ComProc
+	GetTop ComProc
+	GetHeight ComProc
+	GetWidth ComProc
+	GetShouldDisplayMenuBar ComProc
+	GetShouldDisplayStatus ComProc
+	GetShouldDisplayToolbar ComProc
 	GetShouldDisplayScrollBars ComProc
 }
 
@@ -26,10 +25,16 @@ type ICoreWebView2WindowFeatures struct {
 	Vtbl *ICoreWebView2WindowFeaturesVtbl
 }
 
-func (i *ICoreWebView2WindowFeatures) AddRef() uintptr {
+func (i *ICoreWebView2WindowFeatures) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2WindowFeatures) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2WindowFeatures) GetHasPosition() (bool, error) {
 	// Create int32 to hold bool result
@@ -43,7 +48,7 @@ func (i *ICoreWebView2WindowFeatures) GetHasPosition() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -59,7 +64,7 @@ func (i *ICoreWebView2WindowFeatures) GetHasSize() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -131,7 +136,7 @@ func (i *ICoreWebView2WindowFeatures) GetShouldDisplayMenuBar() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -147,7 +152,7 @@ func (i *ICoreWebView2WindowFeatures) GetShouldDisplayStatus() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -163,7 +168,7 @@ func (i *ICoreWebView2WindowFeatures) GetShouldDisplayToolbar() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -179,6 +184,6 @@ func (i *ICoreWebView2WindowFeatures) GetShouldDisplayScrollBars() (bool, error)
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }

@@ -1,0 +1,3 @@
+# Compiled webview2gen binary — never commit, build artifact only.
+/scripts/webview2gen
+/scripts/cmd/webview2gen/webview2gen

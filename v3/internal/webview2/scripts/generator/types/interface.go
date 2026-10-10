@@ -2,11 +2,11 @@ package types
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/leaanthony/slicer"
 	"io"
-	"log"
+	"slices"
 	"strings"
-	"text/template"
 )
 
 type InterfaceDeclaration struct {
@@ -71,21 +71,42 @@ func (d *InterfaceDeclaration) generateVtbl(packageName string, w io.Writer) err
 		HasInvokeMethod bool
 		Includes        []string
 		BaseClass       string
+		BaseVtbl        string
+		QIReceiver      string
 		Header          *InterfaceHeader
 	}{
 		PackageName:     packageName,
 		BaseClass:       d.BaseClass,
+		BaseVtbl:        "IUnknownVtbl",
 		Header:          d.Header,
 		Name:            d.Name,
 		Methods:         d.Methods,
 		HasInvokeMethod: d.HasInvokeMethod(),
 		Includes:        d.includes.AsSlice(),
 	}
+	library := d.decl.library
 	if d.BaseClass == "IUnknown" {
 		data.BaseClass = ""
+	} else {
+		// COM vtbls are flat: a derived interface's table starts with every
+		// slot of its base. Embedding the base's vtbl struct (recursively
+		// down to IUnknownVtbl) reproduces that layout; embedding only
+		// IUnknownVtbl would shift every method onto the wrong slot.
+		if _, ok := library.interfaceBases[d.BaseClass]; !ok {
+			return fmt.Errorf("interface %s derives from %s which is not declared in the IDL", d.Name, d.BaseClass)
+		}
+		data.BaseVtbl = d.BaseClass + "Vtbl"
+		// QueryInterface helpers must run against the object that actually
+		// implements the interface: the root of the inheritance chain (e.g.
+		// ICoreWebView2Controller for ICoreWebView2Controller2), not
+		// ICoreWebView2 unconditionally.
+		root, err := library.chainRoot(d.Name)
+		if err != nil {
+			return err
+		}
+		data.QIReceiver = root
 	}
-	mustTemplate("Interface Vtbl", "interfacevtbl.tmpl", &data, w)
-	return nil
+	return renderTemplate("Interface Vtbl", "interfacevtbl.tmpl", &data, w)
 }
 
 func (d *InterfaceDeclaration) GetBaseClass() string {
@@ -108,27 +129,11 @@ func (d *InterfaceDeclaration) generateInvoke(w io.Writer) error {
 		Name:         d.Name,
 		InvokeMethod: d.InvokeMethod,
 	}
-	mustTemplate("Interface Invoke", "interfaceInvoke.tmpl", &data, w)
-	return nil
+	return renderTemplate("Interface Invoke", "interfaceInvoke.tmpl", &data, w)
 }
 
 func (d *InterfaceDeclaration) HasInvokeMethod() bool {
 	return d.InvokeMethod != nil
-}
-
-func mustTemplate(templateName string, filename string, data interface{}, w io.Writer) {
-	templateData, err := templates.ReadFile("templates/" + filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	tmpl, err := template.New(templateName).Parse(string(templateData))
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func (d *InterfaceDeclaration) generateInterfaceMethods(w io.Writer) error {
@@ -143,7 +148,9 @@ func (d *InterfaceDeclaration) generateInterfaceMethods(w io.Writer) error {
 			Name:   d.Name,
 			Method: method,
 		}
-		mustTemplate("Interface Methods", "interfaceMethod.tmpl", &data, w)
+		if err := renderTemplate("Interface Methods", "interfaceMethod.tmpl", &data, w); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -182,12 +189,10 @@ func (m *InterfaceMethod) Process(decl *InterfaceDeclaration) error {
 	if m.Prop != nil {
 		m.ProcessedName = string(*m.Prop) + m.ProcessedName
 	}
-	m.processParams()
-
-	return nil
+	return m.processParams()
 }
 
-func (m *InterfaceMethod) processParams() {
+func (m *InterfaceMethod) processParams() error {
 	for _, param := range m.Params {
 		param.Process(m)
 		if param.IsOutputParam() {
@@ -197,23 +202,31 @@ func (m *InterfaceMethod) processParams() {
 		}
 	}
 
-	m.processInputParams()
-	m.processOutputParams()
+	if err := m.processInputParams(); err != nil {
+		return fmt.Errorf("%s.%s: %w", m.decl.Name, m.ProcessedName, err)
+	}
+	if err := m.processOutputParams(); err != nil {
+		return fmt.Errorf("%s.%s: %w", m.decl.Name, m.ProcessedName, err)
+	}
+	return nil
 }
 
-func (m *InterfaceMethod) processInputParams() {
+func (m *InterfaceMethod) processInputParams() error {
 	var inputs slicer.StringSlicer
 	var inputParamNames slicer.StringSlicer
 	for _, param := range m.inputParams {
 		inputs.Add(param.Name + " " + param.AsInputType())
 		inputParamNames.Add(param.Name)
-		param.processSetup()
+		if err := param.processSetup(); err != nil {
+			return err
+		}
 	}
 	m.GoInputs = inputs.Join(", ")
 	m.InputParamNames = inputParamNames.Join(", ")
+	return nil
 }
 
-func (m *InterfaceMethod) processOutputParams() {
+func (m *InterfaceMethod) processOutputParams() error {
 	var outputs slicer.StringSlicer
 	var outputParamNames slicer.StringSlicer
 	var outputParamTypes slicer.StringSlicer
@@ -221,7 +234,9 @@ func (m *InterfaceMethod) processOutputParams() {
 		outputs.Add(param.Name + " " + param.GoType)
 		outputParamNames.Add(param.Name)
 		outputParamTypes.Add(param.GoType)
-		param.processSetup()
+		if err := param.processSetup(); err != nil {
+			return err
+		}
 	}
 	// Add the mandatory error
 	outputs.Add("err error")
@@ -234,30 +249,84 @@ func (m *InterfaceMethod) processOutputParams() {
 	if outputParamTypes.Length() > 1 {
 		m.GoReturnTypes = "(" + m.GoReturnTypes + ")"
 	}
+	return nil
 }
 
-func (m *InterfaceMethod) SetupCode() string {
+// SetupCode renders every parameter's setup snippet. Its (string, error)
+// signature is honoured by text/template: a non-nil error aborts execution of
+// the calling template.
+func (m *InterfaceMethod) SetupCode() (string, error) {
 	var buffer bytes.Buffer
 	for _, param := range m.Params {
-		param.SetupCode(&buffer)
+		if err := param.SetupCode(&buffer); err != nil {
+			return "", err
+		}
 	}
-	return buffer.String()
+	return buffer.String(), nil
 }
 
-func (m *InterfaceMethod) CleanupCode() string {
+// CleanupCode renders every parameter's cleanup snippet. See SetupCode for the
+// (string, error) contract.
+func (m *InterfaceMethod) CleanupCode() (string, error) {
 	var buffer bytes.Buffer
 	for _, param := range m.Params {
-		param.CleanupCode(&buffer)
+		if err := param.CleanupCode(&buffer); err != nil {
+			return "", err
+		}
+	}
+	return buffer.String(), nil
+}
+
+// NeedsArchSplit reports whether any parameter marshals differently across
+// architectures (8-byte values on 386, 16-byte aggregates everywhere), which
+// requires emitting one vtable call per architecture group.
+func (m *InterfaceMethod) NeedsArchSplit() bool {
+	for _, p := range m.Params {
+		if !slices.Equal(p.callWordsAMD64, p.callWordsARM64) ||
+			!slices.Equal(p.callWordsAMD64, p.callWords386) {
+			return true
+		}
+	}
+	return false
+}
+
+// NeedsARM64Variant reports whether arm64 marshalling differs from amd64
+// (only true for 9-16 byte aggregates, which arm64 passes in a register pair
+// where amd64 passes a pointer to a copy). When false, the arm64 case is
+// folded into the default branch of the generated switch.
+func (m *InterfaceMethod) NeedsARM64Variant() bool {
+	for _, p := range m.Params {
+		if !slices.Equal(p.callWordsAMD64, p.callWordsARM64) {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *InterfaceMethod) joinCallWords(indent string, words func(*Param) []string) string {
+	var buffer bytes.Buffer
+	for _, input := range m.Params {
+		for _, word := range words(input) {
+			buffer.WriteString(indent + word + ",\n")
+		}
 	}
 	return buffer.String()
 }
 
 func (m *InterfaceMethod) VtableCallInputs() string {
-	var buffer bytes.Buffer
-	for _, input := range m.Params {
-		buffer.WriteString("\t\t" + input.VtableCallInput + ",\n")
-	}
-	return buffer.String()
+	return m.joinCallWords("\t\t", func(p *Param) []string { return p.callWordsAMD64 })
+}
+
+func (m *InterfaceMethod) VtableCallInputsAMD64() string {
+	return m.joinCallWords("\t\t\t", func(p *Param) []string { return p.callWordsAMD64 })
+}
+
+func (m *InterfaceMethod) VtableCallInputsARM64() string {
+	return m.joinCallWords("\t\t\t", func(p *Param) []string { return p.callWordsARM64 })
+}
+
+func (m *InterfaceMethod) VtableCallInputs386() string {
+	return m.joinCallWords("\t\t\t", func(p *Param) []string { return p.callWords386 })
 }
 
 func (m *InterfaceMethod) ReturnsHRESULT() bool {
@@ -292,12 +361,64 @@ func (m *InterfaceMethod) GetHResultVariable() string {
 	return "_"
 }
 
+// InvokeGoInputs renders the parameter list for the C-side trampoline that
+// windows.NewCallback wraps. Strings are passed as *uint16 because
+// windows.NewCallback panics at init if any parameter is wider than a uintptr
+// (Go strings are 2-word fat pointers and slices are 3-word).
+func (m *InterfaceMethod) InvokeGoInputs() string {
+	var inputs slicer.StringSlicer
+	for _, p := range m.inputParams {
+		t := p.AsInputType()
+		if t == "string" {
+			t = "*uint16"
+		}
+		inputs.Add(p.Name + " " + t)
+	}
+	return inputs.Join(", ")
+}
+
+// InvokeConversionCode emits the Go statements that convert *uint16 trampoline
+// parameters back into Go strings before the impl call. Empty if the Invoke
+// method has no string parameters.
+func (m *InterfaceMethod) InvokeConversionCode() string {
+	var buf bytes.Buffer
+	for _, p := range m.inputParams {
+		if p.AsInputType() == "string" {
+			buf.WriteString("\t_")
+			buf.WriteString(p.Name)
+			buf.WriteString(" := UTF16PtrToString(")
+			buf.WriteString(p.Name)
+			buf.WriteString(")\n")
+		}
+	}
+	return buf.String()
+}
+
+// InvokeInputParamNames is the InputParamNames variant for the Invoke
+// trampoline — string params become `_name` (the converted Go string),
+// everything else stays as `name`.
+func (m *InterfaceMethod) InvokeInputParamNames() string {
+	var names slicer.StringSlicer
+	for _, p := range m.inputParams {
+		name := p.Name
+		if p.AsInputType() == "string" {
+			name = "_" + name
+		}
+		names.Add(name)
+	}
+	return names.Join(", ")
+}
+
 func (m *InterfaceMethod) SuccessValues() string {
+	// The third return from syscall.Call is GetLastError, which is non-nil after
+	// every call regardless of HRESULT — using it as the method's err return causes
+	// successful calls to surface stale Win32 errors from prior unrelated syscalls.
+	// The template binds the third return to `_`; the success path returns nil.
 	var successValues slicer.StringSlicer
 	for _, outputParam := range m.outputParams {
 		successValues.Add(outputParam.GetReturnVariableName())
 	}
-	successValues.Add("err")
+	successValues.Add("nil")
 	return successValues.Join(", ")
 }
 

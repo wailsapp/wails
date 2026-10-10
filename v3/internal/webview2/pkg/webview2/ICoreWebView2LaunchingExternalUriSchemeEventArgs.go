@@ -1,39 +1,45 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2LaunchingExternalUriSchemeEventArgsVtbl struct {
 	IUnknownVtbl
-	GetUri              ComProc
+	GetUri ComProc
 	GetInitiatingOrigin ComProc
-	GetIsUserInitiated  ComProc
-	GetCancel           ComProc
-	PutCancel           ComProc
-	GetDeferral         ComProc
+	GetIsUserInitiated ComProc
+	GetCancel ComProc
+	PutCancel ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2LaunchingExternalUriSchemeEventArgs struct {
 	Vtbl *ICoreWebView2LaunchingExternalUriSchemeEventArgsVtbl
 }
 
-func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -48,9 +54,10 @@ func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetInitiatingOrigin()
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetInitiatingOrigin.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -73,7 +80,7 @@ func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetIsUserInitiated() 
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -89,21 +96,21 @@ func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) GetCancel() (bool, er
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2LaunchingExternalUriSchemeEventArgs) PutCancel(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutCancel.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

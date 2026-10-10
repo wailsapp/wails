@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2WebResourceResponseViewGetContentCompletedHandler struct {
 	impl ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2WebResourceResponseViewGetContentCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2WebResourceResponseViewGetContentCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2WebResourceResponseViewGetContentCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2WebResourceResponseViewGetContentCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerIUnknownQuery
 }
 
 func ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerIUnknownAddRef(this *ICoreWebView2WebResourceResponseViewGetContentCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerIUnknownRelease(this *ICoreWebView2WebResourceResponseViewGetContentCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerInvoke(this *ICoreWebView2WebResourceResponseViewGetContentCompletedHandler, errorCode uintptr, result *IStream) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerImpl interfac
 }
 
 var ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerFn = ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2WebResourceResponseViewGetContentCompletedHandlerIUnknownRelease),

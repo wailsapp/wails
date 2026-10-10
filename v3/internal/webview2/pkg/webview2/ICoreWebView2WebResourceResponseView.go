@@ -1,29 +1,34 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2WebResourceResponseViewVtbl struct {
 	IUnknownVtbl
-	GetHeaders      ComProc
-	GetStatusCode   ComProc
+	GetHeaders ComProc
+	GetStatusCode ComProc
 	GetReasonPhrase ComProc
-	GetContent      ComProc
+	GetContent ComProc
 }
 
 type ICoreWebView2WebResourceResponseView struct {
 	Vtbl *ICoreWebView2WebResourceResponseViewVtbl
 }
 
-func (i *ICoreWebView2WebResourceResponseView) AddRef() uintptr {
+func (i *ICoreWebView2WebResourceResponseView) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2WebResourceResponseView) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2WebResourceResponseView) GetHeaders() (*ICoreWebView2HttpResponseHeaders, error) {
 
@@ -45,7 +50,7 @@ func (i *ICoreWebView2WebResourceResponseView) GetStatusCode() (int, error) {
 
 	hr, _, _ := i.Vtbl.GetStatusCode.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(statusCode),
+		uintptr(unsafe.Pointer(&statusCode)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
@@ -57,9 +62,10 @@ func (i *ICoreWebView2WebResourceResponseView) GetReasonPhrase() (string, error)
 	// Create *uint16 to hold result
 	var _reasonPhrase *uint16
 
+
 	hr, _, _ := i.Vtbl.GetReasonPhrase.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_reasonPhrase)),
+		uintptr(unsafe.Pointer(&_reasonPhrase)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -71,6 +77,7 @@ func (i *ICoreWebView2WebResourceResponseView) GetReasonPhrase() (string, error)
 }
 
 func (i *ICoreWebView2WebResourceResponseView) GetContent(handler *ICoreWebView2WebResourceResponseViewGetContentCompletedHandler) error {
+
 
 	hr, _, _ := i.Vtbl.GetContent.Call(
 		uintptr(unsafe.Pointer(i)),
