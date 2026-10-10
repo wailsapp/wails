@@ -8,6 +8,21 @@ import (
 	"testing/fstest"
 )
 
+func TestIsRemoteTemplate(t *testing.T) {
+	if IsRemoteTemplate("vanilla") {
+		t.Error("built-in template should not be treated as remote")
+	}
+	if !IsRemoteTemplate("https://github.com/example/template") {
+		t.Error("URL template should be treated as remote")
+	}
+	if !IsRemoteTemplate(filepath.Join(t.TempDir(), "missing-template")) {
+		t.Error("missing local path should be treated as remote")
+	}
+	if IsRemoteTemplate(t.TempDir()) {
+		t.Error("existing local directory should not be treated as remote")
+	}
+}
+
 // --- parseTemplate ---
 
 func TestParseTemplate_YAML_Valid(t *testing.T) {
@@ -280,4 +295,3 @@ func TestGenerateTemplate_GeneratedTemplateCanBeInstalled(t *testing.T) {
 		t.Errorf("WailsVersion = %d, want 3", tmpl.WailsVersion)
 	}
 }
-
