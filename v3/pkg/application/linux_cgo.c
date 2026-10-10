@@ -4,6 +4,7 @@
 
 #ifdef GDK_WINDOWING_X11
 #include <gdk/x11/gdkx.h>
+#include <X11/Xatom.h>
 #include <dlfcn.h>
 
 // Function pointer types for Xlib functions loaded at runtime via dlsym.
@@ -14,12 +15,20 @@ typedef int (*WailsXFlushFunc)(Display*);
 typedef Bool (*WailsXTranslateCoordinatesFunc)(Display*, Window, Window, int, int, int*, int*, Window*);
 typedef Status (*WailsXSendEventFunc)(Display*, Window, Bool, long, XEvent*);
 typedef Atom (*WailsXInternAtomFunc)(Display*, const char*, Bool);
+typedef Display* (*WailsXOpenDisplayFunc)(const char*);
+typedef int (*WailsXCloseDisplayFunc)(Display*);
+typedef int (*WailsXGetWindowPropertyFunc)(Display*, Window, Atom, long, long, Bool, Atom, Atom*, int*, unsigned long*, unsigned long*, unsigned char**);
+typedef int (*WailsXFreeFunc)(void*);
 
 static WailsXMoveWindowFunc wails_XMoveWindow = NULL;
 static WailsXFlushFunc wails_XFlush = NULL;
 static WailsXTranslateCoordinatesFunc wails_XTranslateCoordinates = NULL;
 static WailsXSendEventFunc wails_XSendEvent = NULL;
 static WailsXInternAtomFunc wails_XInternAtom = NULL;
+static WailsXOpenDisplayFunc wails_XOpenDisplay = NULL;
+static WailsXCloseDisplayFunc wails_XCloseDisplay = NULL;
+static WailsXGetWindowPropertyFunc wails_XGetWindowProperty = NULL;
+static WailsXFreeFunc wails_XFree = NULL;
 static gboolean x11_funcs_resolved = FALSE;
 
 static void resolve_x11_funcs(void) {
@@ -30,6 +39,10 @@ static void resolve_x11_funcs(void) {
     wails_XTranslateCoordinates = (WailsXTranslateCoordinatesFunc)dlsym(RTLD_DEFAULT, "XTranslateCoordinates");
     wails_XSendEvent = (WailsXSendEventFunc)dlsym(RTLD_DEFAULT, "XSendEvent");
     wails_XInternAtom = (WailsXInternAtomFunc)dlsym(RTLD_DEFAULT, "XInternAtom");
+    wails_XOpenDisplay = (WailsXOpenDisplayFunc)dlsym(RTLD_DEFAULT, "XOpenDisplay");
+    wails_XCloseDisplay = (WailsXCloseDisplayFunc)dlsym(RTLD_DEFAULT, "XCloseDisplay");
+    wails_XGetWindowProperty = (WailsXGetWindowPropertyFunc)dlsym(RTLD_DEFAULT, "XGetWindowProperty");
+    wails_XFree = (WailsXFreeFunc)dlsym(RTLD_DEFAULT, "XFree");
 }
 #endif
 
@@ -995,6 +1008,61 @@ void clipboard_free_text(char *text) {
 // ============================================================================
 // Window position (X11 only)
 // ============================================================================
+
+
+// screen_work_area reports the desktop area left free by panels and docks.
+// GTK4 removed gdk_monitor_get_workarea and Wayland has no protocol for it, so
+// Screen.WorkArea is the whole monitor on this backend and anything positioning
+// itself lands under the taskbar.
+//
+// The window manager still publishes _NET_WORKAREA on the X11 root window, and
+// a Wayland session keeps it current through XWayland, so it is read from there
+// — including from a Wayland app, whose process already has libX11 mapped
+// because GTK links both backends. Returns FALSE when there is no X display at
+// all, leaving the caller on the full monitor as before.
+gboolean screen_work_area(int *x, int *y, int *width, int *height) {
+#ifdef GDK_WINDOWING_X11
+    resolve_x11_funcs();
+    if (wails_XOpenDisplay == NULL || wails_XGetWindowProperty == NULL ||
+        wails_XInternAtom == NULL || wails_XCloseDisplay == NULL) {
+        return FALSE;
+    }
+
+    Display *display = wails_XOpenDisplay(NULL);
+    if (display == NULL) return FALSE;
+
+    gboolean ok = FALSE;
+    Atom property = wails_XInternAtom(display, "_NET_WORKAREA", True);
+    if (property != None) {
+        Atom type = None;
+        int format = 0;
+        unsigned long items = 0, after = 0;
+        unsigned char *data = NULL;
+
+        // Only the first desktop's rectangle is read: a per-desktop work area
+        // is a concept no other platform here has.
+        if (wails_XGetWindowProperty(display, DefaultRootWindow(display), property,
+                                     0, 4, False, XA_CARDINAL,
+                                     &type, &format, &items, &after, &data) == Success) {
+            if (data != NULL && items >= 4 && format == 32) {
+                long *area = (long *)data;
+                *x = (int)area[0];
+                *y = (int)area[1];
+                *width = (int)area[2];
+                *height = (int)area[3];
+                ok = *width > 0 && *height > 0;
+            }
+            if (data != NULL && wails_XFree != NULL) wails_XFree(data);
+        }
+    }
+
+    wails_XCloseDisplay(display);
+    return ok;
+#else
+    (void)x; (void)y; (void)width; (void)height;
+    return FALSE;
+#endif
+}
 
 void window_move_x11(GtkWindow *window, int x, int y) {
 #ifdef GDK_WINDOWING_X11
