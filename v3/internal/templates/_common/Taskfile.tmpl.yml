@@ -9,6 +9,31 @@ vars:
   # by `wails3 build GOOS=...` (or the GOOS env var) for cross-compilation. The
   # tasks below dispatch to the matching platform Taskfile via this variable.
   GOOS: '{{.Opn}}.GOOS | default OS{{.Cls}}'
+  BUILD_ID: '{{.Opn}}.build_id | default ""{{.Cls}}'
+  # Get GIT tag from current commit if available
+  GIT_COMMIT_TAG:
+    sh: |
+      if [ "{{.Opn}}OS{{.Cls}}" = "windows" ]; then
+        powershell -NoProfile -Command "(git tag --points-at HEAD | Select-Object -First 1)"
+      else
+        git tag --points-at HEAD | head -n 1
+      fi
+  CURRENT_DATE:
+    sh: |
+      if [ "{{.Opn}}OS{{.Cls}}" = "windows" ]; then
+        powershell -NoProfile -Command "Get-Date -Format yyyyMMddHHmmss"
+      else
+        date +%Y%m%d%H%M%S
+      fi
+  # Pass extra arguments to the Go Linker at compilation. Uncomment and amend the
+  # examples below to inject useful information in to your app at compilation time
+  GO_LINKER_FLAGS: >-
+    -X main.Greeting=Hello
+  #  -X github.com/example/core.CommitHash={{.Opn}}.GIT_COMMIT{{.Cls}}
+  #  -X github.com/example/core.BuildDate={{.Opn}}.BUILD_DATE{{.Cls}}
+  #  {{.Opn}}if .BUILD_ID{{.Cls}}-X github.com/example/core.BuildID={{.Opn}}.BUILD_ID{{.Cls}}
+  #  {{.Opn}}else if .GIT_COMMIT_TAG{{.Cls}}-X github.com/example/core.BuildID={{.Opn}}.GIT_COMMIT_TAG{{.Cls}}
+  #  {{.Opn}}else{{.Cls}}-X github.com/example/core.BuildID=development{{.Opn}}end{{.Cls}}
 
 includes:
   common: ./build/Taskfile.yml
