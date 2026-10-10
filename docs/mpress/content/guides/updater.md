@@ -65,6 +65,8 @@ You can read the current state with `app.Updater.State()` at any time. Every tra
 
 `Restart` waits for the helper to reach `application.New` before asking the running app to quit. The default startup timeout is 30 seconds. If your app performs lengthy initialization before `application.New`, set `Config.HelperReadyTimeout` to a longer duration, such as `time.Minute`. Zero selects the default; negative durations are rejected. If startup times out, `Restart` returns `updater.ErrHelperNotReady` and keeps the running app open.
 
+To run bookkeeping after an update, such as rewriting the version an installer registered with the operating system, set `Config.OnUpdateApplied`. `Init` calls it once, on the first launch after `Restart` replaced the application, with the version that was replaced.
+
 The default window reflects the current state automatically — for example, when `Check` returns no upgrade the user sees this and dismisses with **Close**:
 
 ![The default updater window in the Up-to-Date state — green checkmark, 'You're Up to Date' heading, single Close button.](/assets/updater/default-window-up-to-date.png)

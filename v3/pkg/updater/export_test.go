@@ -14,6 +14,10 @@ func SetSelfExecutableForTest(f func() (string, error)) (restore func()) {
 	return func() { selfExecutable = prev }
 }
 
+// AppliedMarkerForTest exposes the path where the helper records the
+// replaced version for target.
+var AppliedMarkerForTest = appliedMarker
+
 // SetNewDetachedCommandForTest replaces the package-level command builder
 // for the duration of a test. Used to substitute a benign command (e.g.
 // /usr/bin/true) so Restart's spawn succeeds without re-execing the test

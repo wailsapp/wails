@@ -1,6 +1,8 @@
 package updater
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -32,6 +34,7 @@ const (
 	envHelperPID    = "WAILS_UPDATER_HELPER_PID"    // parent PID to wait for
 	envHelperLog    = "WAILS_UPDATER_HELPER_LOG"    // optional log file path
 	envHelperReady  = "WAILS_UPDATER_HELPER_READY"  // readiness status file path
+	envHelperFrom   = "WAILS_UPDATER_HELPER_FROM"   // version being replaced
 )
 
 // HandleHelperMode returns immediately when the current process was not
@@ -138,6 +141,7 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 
 	// The parent has exited. Clear helper mode before backup or replacement
 	// so both the new application and any recovered original boot normally.
+	from := os.Getenv(envHelperFrom)
 	clearHelperEnv()
 
 	backup := target + ".bak"
@@ -197,7 +201,15 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 		return 13
 	}
 
+	marker := appliedMarker(target)
+	if from != "" {
+		if err := os.WriteFile(marker, []byte(from), 0o600); err != nil {
+			lg.logf("applied marker: %v (non-fatal)", err)
+		}
+	}
+
 	if err := l.launch(target); err != nil {
+		_ = os.Remove(marker)
 		lg.logf("launch new failed: %v — restoring backup", err)
 		if err := restoreFromBackup(backup, target, l); err != nil {
 			lg.logf("restore failed: %v", err)
@@ -226,6 +238,30 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 
 	lg.logf("helper done")
 	return 0
+}
+
+// appliedMarker is where the helper tells the relaunched application which
+// version it replaced. It lives in the temp dir, keyed by target, because
+// environment variables do not survive a relaunch through `open` on macOS.
+func appliedMarker(target string) string {
+	sum := sha256.Sum256([]byte(target))
+	return filepath.Join(os.TempDir(), "wails-updated-"+hex.EncodeToString(sum[:8]))
+}
+
+// consumeAppliedMarker returns the version recorded by the helper that just
+// replaced this application, removing the marker so it is reported once.
+func consumeAppliedMarker() (string, bool) {
+	target, err := resolveTarget()
+	if err != nil {
+		return "", false
+	}
+	path := appliedMarker(target)
+	from, err := os.ReadFile(path)
+	if err != nil {
+		return "", false
+	}
+	_ = os.Remove(path)
+	return string(from), true
 }
 
 func restoreFromBackup(backup, target string, l launcher) error {
@@ -368,7 +404,7 @@ func (h *helperLog) Close() {
 // process. Called after the parent exits and before backup or replacement,
 // so both the new application and any recovered original boot normally.
 func clearHelperEnv() {
-	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady} {
+	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady, envHelperFrom} {
 		_ = os.Unsetenv(k)
 	}
 }

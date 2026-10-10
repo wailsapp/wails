@@ -46,6 +46,12 @@ type Config struct {
 	Arch     string
 	Channel  string
 
+	// OnUpdateApplied, when set, is called by Init on the first launch after
+	// Restart replaced the application, with the version that was replaced.
+	// Use it for bookkeeping outside the binary, such as the version an
+	// installer registered with the operating system.
+	OnUpdateApplied func(previousVersion string)
+
 	// Window controls how the update UI is rendered. Not yet wired in v1 of
 	// the package; see the upcoming Window option types.
 	Window WindowOption

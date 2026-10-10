@@ -203,6 +203,32 @@ func TestInit_RejectsNilProvider(t *testing.T) {
 	}
 }
 
+func TestInit_OnUpdateApplied(t *testing.T) {
+	target := filepath.Join(t.TempDir(), "app")
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) { return target, nil }))
+	marker := updater.AppliedMarkerForTest(target)
+	if err := os.WriteFile(marker, []byte("1.0.0"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(marker) })
+
+	var got []string
+	cfg := updater.Config{
+		CurrentVersion:  "2.0.0",
+		Providers:       []updater.Provider{&fakeProvider{name: "f"}},
+		OnUpdateApplied: func(prev string) { got = append(got, prev) },
+	}
+	if err := updater.New(&fakeHost{}).Init(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if err := updater.New(&fakeHost{}).Init(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0] != "1.0.0" {
+		t.Errorf("OnUpdateApplied calls: %q, want exactly [1.0.0]", got)
+	}
+}
+
 // Config.CheckInterval starts a background poll loop that invokes
 // CheckAndInstall on each tick. Verify that an Init with a short interval
 // produces ticks against the provider and that StopPeriodicCheck cleanly
