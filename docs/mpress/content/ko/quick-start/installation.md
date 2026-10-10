@@ -188,6 +188,8 @@ Wails를 설치한 후 `wails3 doctor`을 실행하세요. 사용 중인 배포�
 
 @end
 
+오디오 또는 비디오를 재생하는 앱은 선택한 형식의 GStreamer 코덱도 필요합니다. 로컬 미디어 설정 및 재생 문제 해결은 [로컬 오디오 및 비디오 재생](/guides/linux-media/)을 참고하세요.
+
 @note{type="info" title="레거시 GTK3 스택"}
 대상 배포판에서 아직 WebKitGTK 6.0를 제공하지 않는 경우(예: Ubuntu 22.04 LTS, Debian 12), 대신 GTK3 + WebKit2GTK 4.1 개발 라이브러리(Debian/Ubuntu에서는 `libgtk-3-dev libwebkit2gtk-4.1-dev`, 다른 배포판에서는 이에 해당하는 패키지)를 설치하고 `wails3 build -tags gtk3` 옵션으로 빌드하세요. 레거시 경로는 v3.0.x 계열까지 지원되며 v3.1에서 제거됩니다. 자세한 내용은 [Linux 패키징 - 레거시 GTK3 지원](/guides/build/linux/#legacy-gtk3-support)을 참조하세요.
 

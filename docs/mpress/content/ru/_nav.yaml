@@ -168,6 +168,8 @@
           link: "/guides/dev/debugging/"
         - label: "Тестирование"
           link: "/guides/testing/"
+        - label: "Воспроизведение локального аудио и видео"
+          link: "/guides/linux-media/"
     - label: "Сборка & упаковка"
       collapsed: true
       items:

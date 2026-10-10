@@ -154,7 +154,17 @@ go build -tags gtk3 -o myapp .
 
 Jalankan `wails3 doctor` untuk memverifikasi penyiapan Anda. Tanpa flag, perintah ini memeriksa GTK4 / WebKitGTK 6.0 (default). Paket GTK3 / WebKit2GTK 4.1 lama dicantumkan sebagai opsional.
 
+## Audio dan Video
+
+Untuk klip bawaan, gunakan `Media.SetSource` dan `Media.ClearSource` seperti dijelaskan dalam [Memutar Audio dan Video Lokal](/guides/linux-media/). Panduan mencakup pendaftaran sistem berkas media, pembatalan pemuatan, pelepasan blob, dan batas ukuran. Transfer menggunakan stream Wails tanpa membuka socket pendengar; setiap klip dimuat sepenuhnya sebelum diputar, dengan batas frontend default 32 MiB.
+
+Sertakan codec GStreamer yang diperlukan format media dalam persyaratan distribusi. Transfer berhasil tidak menjamin sistem target dapat mendekode berkas. Uji pemutaran pada distribusi Linux yang didukung.
+
 ## Pemecahan Masalah
+
+### Audio atau video lokal tidak dapat diputar
+
+Jika GStreamer melaporkan **No URI handler implemented for "wails"**, ikuti [panduan pemutaran media lokal](/guides/linux-media/). Jika klip dimuat tetapi gagal diputar, periksa persyaratan codec dan peristiwa `error` pemutar.
 
 ### AppImage tidak dapat dijalankan
 
