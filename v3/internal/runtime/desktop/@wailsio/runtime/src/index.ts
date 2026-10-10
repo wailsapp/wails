@@ -37,6 +37,8 @@ import Window, { handleDragEnter, handleDragLeave, handleDragOver } from "./wind
 import * as WML from "./wml.js";
 import { Stream, JSONStream, WailsSocket, type JSONSocket } from "./stream.js";
 
+export { Panel } from "./panel.js";
+
 export {
     Application,
     Browser,
