@@ -307,7 +307,16 @@ func (w *linuxWebviewWindow) setMenu(menu *Menu) {
 		return
 	}
 	w.parent.options.Linux.Menu = menu
-	w.gtkmenu = (menu.impl).(*linuxMenu).native
+	// NewMenu leaves impl nil until Update. Callers must not have to know
+	// that sequence: initialize on the GTK thread before reading native (#6232).
+	InvokeSync(func() {
+		menu.Update()
+	})
+	impl, ok := menu.impl.(*linuxMenu)
+	if !ok || impl == nil {
+		return
+	}
+	w.gtkmenu = impl.native
 }
 
 func (w *linuxWebviewWindow) run() {
