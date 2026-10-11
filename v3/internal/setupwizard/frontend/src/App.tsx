@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DependencyStatus, SystemInfo, DockerStatus, GlobalDefaults, InitData } from './types';
-import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, getInit } from './api';
+import { checkDependencies, checkMobileDependencies, installDependency, getState, getDockerStatus, buildDockerImage, getDefaults, saveDefaults, subscribeDockerStatus, getInit, complete } from './api';
 import wailsLogoWhite from './assets/wails-logo-white-text.svg';
 import wailsLogoBlack from './assets/wails-logo-black-text.svg';
 import SigningStep from './components/SigningStep';
@@ -515,7 +515,38 @@ function CheckingPage() {
   );
 }
 
-function DepsReadyPage({ onNext, onBack, canGoBack }: { onNext: () => void; onBack?: () => void; canGoBack?: boolean }) {
+function SystemDetails({ system }: { system: SystemInfo | null }) {
+  if (!system) return null;
+  const details = system.details;
+  const rows = [
+    ['OS', [details?.name || system.osName || system.os, details?.version || system.osVersion].filter(Boolean).join(' ')],
+    ['Architecture', details?.architecture || system.arch],
+    ['CPU', details?.cpu],
+    ['GPU', details?.gpu],
+    ['Memory', details?.memory],
+    ['Go', system.goVersion],
+    ['Wails', system.wailsVersion],
+    ...Object.entries(details?.extras || {})
+      .filter(([key]) => !['CPU', 'GPU', 'Memory'].includes(key))
+      .sort(([a], [b]) => a.localeCompare(b)),
+  ].filter(([, value]) => value);
+
+  return (
+    <details className="w-full max-w-lg mb-6 rounded-lg border border-gray-200 dark:border-gray-700 p-3 text-left">
+      <summary className="cursor-pointer text-sm font-medium text-gray-800 dark:text-gray-200">System and environment details</summary>
+      <dl className="mt-3 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-xs">
+        {rows.map(([label, value]) => (
+          <div key={label} className="contents">
+            <dt className="text-gray-500 dark:text-gray-400">{label}</dt>
+            <dd className="break-words text-gray-800 dark:text-gray-200">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  );
+}
+
+function DepsReadyPage({ onNext, onBack, canGoBack, system }: { onNext: () => void; onBack?: () => void; canGoBack?: boolean; system: SystemInfo | null }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -556,6 +587,8 @@ function DepsReadyPage({ onNext, onBack, canGoBack }: { onNext: () => void; onBa
         Your system has everything needed to build Wails apps
       </p>
 
+      <SystemDetails system={system} />
+
       <div className="flex items-center gap-3" role="group" aria-label="Navigation">
         {canGoBack && onBack && (
           <button
@@ -582,13 +615,15 @@ function DepsMissingPage({
   onRetry,
   onContinue,
   onBack,
-  canGoBack
+  canGoBack,
+  system
 }: {
   dependencies: DependencyStatus[];
   onRetry: () => void;
   onContinue: () => void;
   onBack?: () => void;
   canGoBack?: boolean;
+  system: SystemInfo | null;
 }) {
   const [copied, setCopied] = useState(false);
   const missingDeps = dependencies.filter(d => !d.installed && d.required);
@@ -648,6 +683,7 @@ function DepsMissingPage({
       onBack={onBack}
       canGoBack={canGoBack}
     >
+      <SystemDetails system={system} />
       {/* Missing dependencies list */}
       <div className="bg-gray-100 dark:bg-gray-900/50 rounded-lg p-4 mb-4">
         {missingDeps.map(dep => (
@@ -2071,8 +2107,48 @@ function ProjectsPage({
   );
 }
 
-function CompletePage() {
+function useSetupCompletion(onFinished: () => void) {
+  const [finishing, setFinishing] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [dockerBuilding, setDockerBuilding] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (finished) return;
+    const finishOnExit = () => {
+      const body = new Blob([], { type: 'text/plain' });
+      if (!navigator.sendBeacon?.('/api/complete', body)) {
+        void fetch('/api/complete', { method: 'POST', keepalive: true })
+          .catch((cause) => console.warn('Could not finish setup while leaving the page', cause));
+      }
+    };
+    window.addEventListener('pagehide', finishOnExit);
+    return () => window.removeEventListener('pagehide', finishOnExit);
+  }, [finished]);
+
+  const finish = async () => {
+    if (finishing || finished) return;
+    setFinishing(true);
+    setError('');
+    try {
+      const result = await complete();
+      if (result.status !== 'complete') throw new Error('The wizard did not confirm completion');
+      setDockerBuilding(result.dockerBuilding);
+      setFinished(true);
+      onFinished();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not finish setup');
+    } finally {
+      setFinishing(false);
+    }
+  };
+
+  return { finishing, finished, dockerBuilding, error, finish };
+}
+
+function CompletePage({ onFinished }: { onFinished: () => void }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const { finishing, finished, dockerBuilding, error, finish } = useSetupCompletion(onFinished);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -2080,6 +2156,7 @@ function CompletePage() {
 
   const handleStartBuilding = () => {
     window.open('https://v3alpha.wails.io/quick-start/first-app/', '_blank', 'noopener,noreferrer');
+    void finish();
   };
 
   return (
@@ -2112,14 +2189,36 @@ function CompletePage() {
         You're ready to build!
       </h2>
 
-      <button
-        onClick={handleStartBuilding}
-        className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-      >
-        Start Building
-      </button>
+      <div className="flex gap-3">
+        <button
+          onClick={() => void finish()}
+          disabled={finishing || finished}
+          className="px-5 py-2 rounded-lg bg-red-600 text-white text-sm font-medium disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+        >
+          {finishing ? 'Finishing...' : finished ? 'Setup finished' : 'Finish setup'}
+        </button>
+        <button
+          onClick={handleStartBuilding}
+          disabled={finishing}
+          className="px-5 py-2 rounded-lg border border-red-500 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-500/10 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+        >
+          Start Building
+        </button>
+      </div>
+      <CompletionFeedback finished={finished} dockerBuilding={dockerBuilding} error={error} />
     </motion.main>
   );
+}
+
+function CompletionFeedback({ finished, dockerBuilding, error }: { finished: boolean; dockerBuilding: boolean; error: string }) {
+  return <>
+    {finished && <p className="mt-4 text-sm text-gray-600 dark:text-gray-300" role="status">
+      {dockerBuilding ? 'Setup will close after the background Docker download finishes. You can close this tab.' : 'Setup is finished. You can close this tab.'}
+    </p>}
+    {error && <p className="mt-4 text-sm text-red-600 dark:text-red-400" role="alert">
+      {error}. Try Finish setup again, or press Ctrl+C in the terminal to stop the wizard.
+    </p>}
+  </>;
 }
 
 // Main App
@@ -2127,7 +2226,7 @@ export default function App() {
   const [step, setStep] = useState<OOBEStep>('splash');
   const [stepHistory, setStepHistory] = useState<OOBEStep[]>([]);
   const [dependencies, setDependencies] = useState<DependencyStatus[]>([]);
-  const [_system, setSystem] = useState<SystemInfo | null>(null);
+  const [system, setSystem] = useState<SystemInfo | null>(null);
   const [dockerStatus, setDockerStatus] = useState<DockerStatus | null>(null);
   const [buildingImage, setBuildingImage] = useState(false);
   const [defaults, setDefaults] = useState<GlobalDefaults>({
@@ -2184,7 +2283,7 @@ export default function App() {
     setStep(previousStep);
   };
 
-  const canGoBack = stepHistory.length > 0 && step !== 'splash' && step !== 'checking';
+  const canGoBack = stepHistory.length > 0 && step !== 'splash' && step !== 'checking' && step !== 'complete';
 
   const toggleTheme = () => {
     setTheme(prev => {
@@ -2467,7 +2566,7 @@ export default function App() {
 
   // Stream Docker status in background via SSE
   useEffect(() => {
-    if (backgroundDockerStarted && (buildingImage || (dockerStatus && dockerStatus.pullStatus === 'pulling'))) {
+    if (step !== 'complete' && backgroundDockerStarted && (buildingImage || (dockerStatus && dockerStatus.pullStatus === 'pulling'))) {
       const unsubscribe = subscribeDockerStatus((status) => {
         setDockerStatus(status);
         if (status.pullStatus !== 'pulling') {
@@ -2476,7 +2575,7 @@ export default function App() {
       });
       return unsubscribe;
     }
-  }, [backgroundDockerStarted, buildingImage, dockerStatus?.pullStatus]);
+  }, [step, backgroundDockerStarted, buildingImage, dockerStatus?.pullStatus]);
 
   useEffect(() => {
     if (prevDockerPullStatus === 'pulling' && dockerStatus?.pullStatus === 'complete' && step !== 'docker-setup') {
@@ -2569,7 +2668,7 @@ export default function App() {
                   <CheckingPage key="checking" />
                 )}
                 {step === 'deps-ready' && (
-                  <DepsReadyPage key="deps-ready" onNext={handleDepsReadyNext} onBack={goBack} canGoBack={canGoBack} />
+                  <DepsReadyPage key="deps-ready" onNext={handleDepsReadyNext} onBack={goBack} canGoBack={canGoBack} system={system} />
                 )}
                 {step === 'deps-missing' && (
                   <DepsMissingPage
@@ -2579,6 +2678,7 @@ export default function App() {
                     onContinue={handleDepsMissingContinue}
                     onBack={goBack}
                     canGoBack={canGoBack}
+                    system={system}
                   />
                 )}
                 {step === 'cross-platform' && (
@@ -2701,7 +2801,7 @@ export default function App() {
                   />
                 )}
                 {step === 'complete' && (
-                  <CompletePage key="complete" />
+                  <CompletePage key="complete" onFinished={() => setShowDockerToast(false)} />
                 )}
               </AnimatePresence>
             </div>

@@ -28,6 +28,30 @@ _/
 
 ## [Unreleased]
 
+## v3.0.0-beta.28 - 2026-10-05
+
+## Fixed
+- Keep macOS app output outside file providers in [PR](https://github.com/wailsapp/wails/pull/6225) by @taliesin-ai
+- Complete setup wizard and show system details in [PR](https://github.com/wailsapp/wails/pull/6224) by @taliesin-ai
+- Improve WebView2 recovery error handling and resource cleanup on Windows in [PR](https://github.com/wailsapp/wails/pull/6222) by @leaanthony
+- Improve WebView2 recovery on Windows to prevent app crashes and controller strandings in [PR](https://github.com/wailsapp/wails/pull/6220) by @taliesin-ai
+- Correct macOS media authorization guidance in [PR](https://github.com/wailsapp/wails/pull/6221) by @taliesin-ai
+- Fix right-clicking a Linux system tray icon running the click handler as well as opening the menu, so an attached window toggled on every right-click (#6018)
+- Keep WebView2 callback handlers alive until native release on Windows in [PR](https://github.com/wailsapp/wails/pull/6184) by @taliesin-ai
+
+## v3.0.0-beta.27 - 2026-10-01
+
+## Fixed
+- Fix the `Permissions` option being ignored on macOS 12 and later: the `WKUIDelegate` media-capture method is now implemented, so `PermissionAllow` and `PermissionDeny` apply to camera and microphone requests as they do on Linux and Windows. `NSCameraUsageDescription` / `NSMicrophoneUsageDescription` and, where sandboxed, the matching device entitlements are still required
+
+## v3.0.0-beta.26 - 2026-09-25
+
+## Added
+- Watcher applies HTTP readiness checks to frontend dev server in [PR](https://github.com/wailsapp/wails/pull/6150) by @atterpac
+
+## Fixed
+- Recover from WebView2 process failures instead of leaving a blank window in [PR](https://github.com/wailsapp/wails/pull/6002) by @taliesin-ai
+
 ## v3.0.0-beta.25 - 2026-09-22
 
 ## Fixed

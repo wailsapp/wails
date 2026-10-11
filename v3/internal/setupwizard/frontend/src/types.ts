@@ -60,6 +60,18 @@ export interface SystemInfo {
   osVersion?: string;
   gitName?: string;
   gitEmail?: string;
+  details?: {
+    name: string;
+    version: string;
+    id: string;
+    branding?: string;
+    platform: string;
+    architecture: string;
+    cpu?: string;
+    gpu?: string;
+    memory?: string;
+    extras?: Record<string, string>;
+  };
 }
 
 export interface WizardState {

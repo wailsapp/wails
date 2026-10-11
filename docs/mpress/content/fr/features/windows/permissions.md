@@ -75,11 +75,21 @@ WebView2 dispose d’une invite d’autorisation native et d’une API d’autor
 
 Par conséquent, sous Windows, dès que vous configurez `Permissions`, toute fonctionnalité que vous ne répertoriez pas explicitement affiche une invite au lieu d’être autorisée silencieusement. Définissez explicitement les fonctionnalités dont vous avez besoin.
 
-### macOS (TCC)
+### macOS (WKWebView + TCC)
 
-macOS gère l’accès à la caméra, au microphone, à la géolocalisation et aux notifications au moyen de son infrastructure système de confidentialité. L’invite du système d’exploitation s’affiche automatiquement la première fois que le contenu web demande une fonctionnalité, et le choix de l’utilisateur est mémorisé pour chaque application dans Réglages Système → Confidentialité et sécurité.
+Deux couches doivent donner leur accord sous macOS. WKWebView interroge l’application avant de lancer une capture ; la table `Permissions` répond à cette demande. En dessous, l’infrastructure de confidentialité TCC contrôle le périphérique lui-même : l’invite système apparaît au premier accès réel à la caméra ou au microphone, et le choix est mémorisé par application dans Réglages Système → Confidentialité et sécurité.
 
-Cela fonctionne correctement sans aucune configuration de `Permissions`. La table est **actuellement ignorée sous macOS** : toutes les demandes passent par TCC, quelle que soit la valeur définie. En pratique, `PermissionDeny` est sans effet sous macOS : vous ne pouvez pas empêcher une vue web d’utiliser une fonctionnalité déjà autorisée par TCC au niveau du système.
+Wails traite les demandes de **caméra et de microphone** sous macOS 12 et versions ultérieures. La géolocalisation, les notifications et la lecture du presse-papiers n’ont pas d’équivalent `WKUIDelegate` : elles ne sont pas raccordées et restent confiées à TCC. Comme sous Linux, la politique définie pour elles est sans effet.
+
+| Politique | Caméra / Microphone | Géolocalisation, Notifications, Presse-papiers |
+| --- | --- | --- |
+| `PermissionDefault` | WebKit affiche sa propre invite | TCC uniquement |
+| `PermissionAllow` | L’invite WebKit est supprimée — **TCC s’applique toujours** | TCC uniquement |
+| `PermissionDeny` | Refusé par WebKit ; l’autorisation système est indépendante | TCC uniquement |
+
+`PermissionAllow` autorise la demande de la vue web, pas l’accès au périphérique. L’autorisation système reste indépendante et une application refusée dans Réglages Système reste refusée. Seule l’invite propre à WebKit est supprimée.
+
+Avant macOS 12, cette méthode de délégué n’existe pas : la table est ignorée et chaque demande revient à l’invite WebKit.
 
 Vérifiez que votre `Info.plist` comprend les clés de description d’utilisation appropriées :
 
@@ -89,6 +99,14 @@ Vérifiez que votre `Info.plist` comprend les clés de description d’utilisati
 <key>NSCameraUsageDescription</key>
 <string>Used for video calls</string>
 ```
+
+@note{type="caution" title="Les descriptions d’utilisation sont obligatoires"}
+
+WebKit peut demander l’autorisation système avant d’appeler le délégué de permissions de Wails. `PermissionDeny` bloque la demande WebKit, mais ne garantit pas l’absence d’une invite TCC ou d’une demande d’autorisation AVFoundation.
+
+Ajoutez les descriptions d’utilisation des périphériques demandés par votre application et les entitlements correspondants si elle est sandboxée. N’utilisez pas `PermissionDeny` à la place de ces déclarations.
+
+@end
 
 ## Scénarios courants
 
@@ -103,7 +121,7 @@ Permissions: map[application.PermissionType]application.Permission{
 },
 ```
 
-Sous **Linux**, cela autorise explicitement les deux périphériques ; les autres fonctionnalités restent refusées. Sous **Windows**, cela autorise les deux ; toute autre fonctionnalité non répertoriée déclenchera une invite native. Sous **macOS**, cela n’a aucun effet ; TCC gère tout.
+Sous **Linux**, cela autorise explicitement les deux périphériques ; les autres fonctionnalités restent refusées. Sous **Windows**, cela autorise les deux ; toute autre fonctionnalité non répertoriée déclenchera une invite native. Sous **macOS**, les deux périphériques sont autorisés au niveau WebKit, sans invite du navigateur. TCC demande toujours l’accès aux périphériques lors de la première utilisation, et les deux clés de description d’utilisation doivent figurer dans `Info.plist`.
 
 ### Refuser la capture multimédia sous Linux
 
@@ -182,11 +200,13 @@ Sous Windows, l’ordre d’évaluation est le suivant :
 
 | Fonctionnalité | Linux | Windows | macOS |
 | --- | --- | --- | --- |
-| Microphone | ✅ | ✅ | TCC uniquement |
-| Caméra | ✅ | ✅ | TCC uniquement |
-| Géolocalisation | ❌ pas encore | ✅ | TCC uniquement |
-| Notifications | ❌ pas encore | ✅ | TCC uniquement |
-| Lecture du presse-papiers | ❌ pas encore | ✅ | TCC uniquement |
+| Microphone | ✅ | ✅ | ✅ (macOS 12+) |
+| Caméra | ✅ | ✅ | ✅ (macOS 12+) |
+| Géolocalisation | ❌ pas encore | ✅ | ❌ pas encore |
+| Notifications | ❌ pas encore | ✅ | ❌ pas encore |
+| Lecture du presse-papiers | ❌ pas encore | ✅ | ❌ pas encore |
+
+Pour ✅ sous macOS, la politique répond à WebKit ; TCC contrôle en plus le périphérique. Pour ❌, la fonctionnalité reste confiée à TCC uniquement.
 
 ## Dépannage
 
@@ -200,7 +220,11 @@ Dès qu’une entrée figure dans `Permissions`, Wails n’accorde plus l’auto
 
 **Les autorisations macOS ne fonctionnent pas**
 
-La table `Permissions` n’a aucun effet sous macOS. Vérifiez que votre `Info.plist` contient les clés de description d’utilisation appropriées (`NSMicrophoneUsageDescription`, `NSCameraUsageDescription`, etc.) et que l’utilisateur a accordé l’accès dans Réglages Système → Confidentialité et sécurité.
+`Permissions` couvre la caméra et le microphone sous macOS 12 et versions ultérieures. La géolocalisation, les notifications et la lecture du presse-papiers ne sont pas encore raccordées et ignorent la politique. TCC contrôle toujours le périphérique : `PermissionAllow` supprime l’invite WebKit, pas celle du système. Vérifiez les clés `NSMicrophoneUsageDescription` et `NSCameraUsageDescription` dans `Info.plist` et l’autorisation dans Réglages Système → Confidentialité et sécurité.
+
+**Mon application macOS quitte lorsque le contenu web demande la caméra ou le microphone**
+
+Vérifiez que `Info.plist` contient `NSCameraUsageDescription` ou `NSMicrophoneUsageDescription` pour chaque périphérique demandé. Une description manquante peut entraîner le rejet de la demande ; un accès à AVFoundation sans description obligatoire peut terminer l’application. `PermissionDeny` contrôle la décision WebKit et ne remplace pas ces clés.
 
 **La géolocalisation, les notifications et le presse-papiers n’ont aucun effet sous Linux**
 

@@ -109,6 +109,7 @@ func main() {
 	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
 	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
 	tool.NewSubCommandFunction("docker-mounts", "Generate Docker volume mount flags for cross-compilation", commands.ToolDockerMounts)
+	tool.NewSubCommandFunction("prepare-macos-output", "Keep macOS app bundles signable in file-provider-backed projects", commands.ToolPrepareMacOSOutput)
 	tool.NewSubCommandFunction("has", "Check if a tool is available in PATH (e.g. wails3 tool has git, wails3 tool has gcc|clang)", commands.ToolHas)
 	tool.NewSubCommandFunction("has-cc", "Deprecated: use 'wails3 tool has gcc|clang' instead", commands.ToolHasCC)
 

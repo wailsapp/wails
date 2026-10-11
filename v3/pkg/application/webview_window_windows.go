@@ -63,6 +63,20 @@ type windowsWebviewWindow struct {
 	// the scale during a mixed-DPI monitor cross is exactly the transient
 	// the re-enable exists to avoid. Main-thread only.
 	monitorScaleDetectionOn bool
+	// lastNavigatedURL is the most recent URL passed to setURL. It is what
+	// setupChromium restores after a WebView2 process failure: the live
+	// webview cannot be queried at that point (its COM objects are dead),
+	// so the last host-requested navigation is the only reliable record.
+	// Main-thread only, like the rest of the webview state.
+	lastNavigatedURL string
+	// webviewRecoveryAttempts counts consecutive process-failure recoveries
+	// that have not yet produced a completed navigation. navigationCompleted
+	// resets it, so a recovery that works costs nothing; a controller that
+	// dies again on every rebuild gives up after maxWebviewRecoveryAttempts
+	// rather than respawning WebView2 processes forever.
+	// Main-thread only, like the rest of the webview state.
+	webviewRecoveryAttempts int
+	webviewRecoveryPending  bool
 
 	// Window visibility management - robust fallback for issue #2861
 	showRequested     bool        // Track if show() was called before navigation completed
@@ -366,6 +380,7 @@ func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 func (w *windowsWebviewWindow) setURL(url string) {
 	// Navigate to the given URL in the webview
 	w.webviewNavigationCompleted = false
+	w.lastNavigatedURL = url
 	w.chromium.Navigate(url)
 }
 
@@ -422,6 +437,25 @@ func (w *windowsWebviewWindow) extendFrameIntoClientArea(extend bool) error {
 	})
 }
 
+// newChromium creates a Chromium instance configured from this window's
+// options. Everything set here has to be set *before* Embed, so it cannot live
+// in setupChromium. Both start-up and the post-process-failure rebuild go
+// through this one function: when the rebuild carried its own copy of this
+// construction the two drifted, and a rebuilt window silently lost non-client
+// region support, composition hosting and cursor handling.
+func (w *windowsWebviewWindow) newChromium() *edge.Chromium {
+	options := w.parent.options
+
+	chromium := edge.NewChromium()
+	chromium.NonClientRegionSupportEnabled = options.Windows.NonClientRegionSupport
+	chromium.CompositionControllerEnabled = options.Windows.WebView2CompositionHosting
+	chromium.SetCursorChangedCallback(w.applyCompositionCursor)
+	if globalApplication.options.ErrorHandler != nil {
+		chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
+	}
+	return chromium
+}
+
 func (w *windowsWebviewWindow) run() {
 
 	options := w.parent.options
@@ -430,13 +464,7 @@ func (w *windowsWebviewWindow) run() {
 	// Non-hidden windows should be shown by default
 	w.showRequested = !options.Hidden
 
-	w.chromium = edge.NewChromium()
-	w.chromium.NonClientRegionSupportEnabled = options.Windows.NonClientRegionSupport
-	w.chromium.CompositionControllerEnabled = options.Windows.WebView2CompositionHosting
-	w.chromium.SetCursorChangedCallback(w.applyCompositionCursor)
-	if globalApplication.options.ErrorHandler != nil {
-		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
-	}
+	w.chromium = w.newChromium()
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
@@ -545,7 +573,10 @@ func (w *windowsWebviewWindow) run() {
 		w.setSize(options.Width, options.Height)
 	}
 
-	w.setupChromium()
+	if !w.setupChromium(false) {
+		globalApplication.fatal("unable to initialise WebView2 for window %q", options.Title)
+		return
+	}
 
 	if options.Windows.WindowDidMoveDebounceMS == 0 {
 		options.Windows.WindowDidMoveDebounceMS = 50
@@ -944,6 +975,9 @@ func (w *windowsWebviewWindow) zoomOut() {
 
 func (w *windowsWebviewWindow) getZoom() float64 {
 	controller := w.chromium.GetController()
+	if controller == nil {
+		return -1
+	}
 	factor, err := controller.GetZoomFactor()
 	if err != nil {
 		return -1
@@ -2411,8 +2445,29 @@ func (w *windowsWebviewWindow) processRequest(
 	}
 }
 
-func (w *windowsWebviewWindow) setupChromium() {
+// setupChromiumConfigError reports a WebView2 configuration failure from
+// inside setupChromium. Initial startup keeps the existing fatal behaviour —
+// a controller that cannot be configured cannot serve the window at all.
+// During post-recovery reconfiguration (recovering) it instead returns to
+// rebuildWebView so the partially configured replacement controller can be
+// discarded and retried within the existing attempt budget, rather than a
+// single failed settings COM call taking down the whole host (#6167).
+func (w *windowsWebviewWindow) setupChromiumConfigError(recovering bool, err error) bool {
+	if !recovering {
+		globalApplication.handleFatalError(err)
+		return false
+	}
+	globalApplication.error("webview2: controller recovery configuration failed: %v", err)
+	return false
+}
+
+func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 	chromium := w.chromium
+	defer func() {
+		if recovering && !ready {
+			chromium.Close()
+		}
+	}()
 	debugMode := globalApplication.isDebugMode
 
 	opts := w.parent.options.Windows
@@ -2422,7 +2477,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	)
 	if err != nil {
 		globalApplication.error("error getting WebView2 version: %w", err)
-		return
+		return false
 	}
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
 
@@ -2474,8 +2529,16 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.NavigationStartingCallback = w.navigationStarting
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
+	chromium.ProcessFailedCallback = w.processFailed
 
-	chromium.Embed(w.hwnd)
+	if recovering {
+		if err := chromium.EmbedWithError(w.hwnd); err != nil {
+			globalApplication.error("webview2: controller recovery failed: %v", err)
+			return false
+		}
+	} else if !chromium.Embed(w.hwnd) {
+		return false
+	}
 
 	// Configure who owns the WebView2 rasterization scale on a monitor-DPI
 	// change. Two hosting modes need opposite answers:
@@ -2547,7 +2610,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if chromium.HasCapability(edge.SwipeNavigation) {
 		err := chromium.PutIsSwipeNavigationEnabled(opts.EnableSwipeGestures)
 		if err != nil {
-			globalApplication.handleFatalError(err)
+			return w.setupChromiumConfigError(recovering, err)
 		}
 	}
 
@@ -2571,7 +2634,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if errors.Is(err, edge.UnsupportedCapabilityError) {
 			globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
 		} else {
-			globalApplication.handleFatalError(err)
+			return w.setupChromiumConfigError(recovering, err)
 		}
 	}
 
@@ -2580,60 +2643,66 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if errors.Is(err, edge.UnsupportedCapabilityError) {
 			globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
 		} else {
-			globalApplication.handleFatalError(err)
+			return w.setupChromiumConfigError(recovering, err)
 		}
 	}
 
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 	if settings == nil {
-		globalApplication.fatal("error getting settings")
+		return w.setupChromiumConfigError(recovering, errors.New("error getting settings"))
 	}
+	defer settings.Release()
 	err = settings.PutAreDefaultContextMenusEnabled(
 		debugMode || !w.parent.options.DefaultContextMenuDisabled,
 	)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 
-	w.enableDevTools(settings)
+	if err := w.enableDevTools(settings); err != nil {
+		return w.setupChromiumConfigError(recovering, err)
+	}
 
 	if w.parent.options.Zoom > 0.0 {
 		chromium.PutZoomFactor(w.parent.options.Zoom)
 	}
 	err = settings.PutIsZoomControlEnabled(w.parent.options.ZoomControlEnabled)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 	err = settings.PutIsSwipeNavigationEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 
 	if debugMode && w.parent.options.OpenInspectorOnStartup {
 		chromium.OpenDevToolsWindow()
 	}
 
-	// Set background colour
-	w.setBackgroundColour(w.parent.options.BackgroundColour)
-	chromium.SetBackgroundColour(
-		w.parent.options.BackgroundColour.Red,
-		w.parent.options.BackgroundColour.Green,
-		w.parent.options.BackgroundColour.Blue,
-		w.parent.options.BackgroundColour.Alpha,
-	)
+	// Keep the native window and WebView backgrounds consistent on recovery.
+	colour := w.parent.options.BackgroundColour
+	switch w.parent.options.BackgroundType {
+	case BackgroundTypeSolid:
+		w32.SetBackgroundColour(w.hwnd, colour.Red, colour.Green, colour.Blue)
+	case BackgroundTypeTransparent, BackgroundTypeTranslucent:
+		colour = RGBA{}
+	}
+	if err := chromium.SetBackgroundColourWithError(colour.Red, colour.Green, colour.Blue, colour.Alpha); err != nil {
+		return w.setupChromiumConfigError(recovering, err)
+	}
 
 	// WebView2's PermissionRequested handler checks the global permission
 	// before the per-kind map, so the blanket "allow all" must only be set
@@ -2644,15 +2713,23 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if !hasPermissionPolicy {
 		chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	}
-	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
+	if err := chromium.AddWebResourceRequestedFilterWithError("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL); err != nil {
+		return w.setupChromiumConfigError(recovering, err)
+	}
 
 	w.startRequestCancellation(w.navigateInitialPage)
+	return true
 }
 
 func (w *windowsWebviewWindow) navigateInitialPage() {
 	chromium := w.chromium
 
-	if w.parent.options.HTML != "" {
+	// Restore the last URL directly after a rebuild. Reset navigation state in
+	// every branch so the replacement receives the visibility workaround.
+	switch {
+	case w.lastNavigatedURL != "":
+		w.setURL(w.lastNavigatedURL)
+	case w.parent.options.HTML != "":
 		var script string
 		if w.parent.options.JS != "" {
 			script = w.parent.options.JS
@@ -2666,14 +2743,14 @@ func (w *windowsWebviewWindow) navigateInitialPage() {
 		if script != "" {
 			chromium.Init(script)
 		}
+		w.webviewNavigationCompleted = false
 		chromium.NavigateToString(w.parent.options.HTML)
-	} else {
+	default:
 		startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 		if err != nil {
 			globalApplication.handleFatalError(err)
 		}
-		w.webviewNavigationCompleted = false
-		chromium.Navigate(startURL)
+		w.setURL(startURL)
 	}
 
 }
@@ -2705,6 +2782,19 @@ func (w *windowsWebviewWindow) navigationCompleted(
 	sender *edge.ICoreWebView2,
 	args *edge.ICoreWebView2NavigationCompletedEventArgs,
 ) {
+	// Only a *successful* load means recovery worked. A dead render process
+	// leaves WebView2 on an error page, and that error page fires this callback
+	// too — resetting on it would hand a crash-looping renderer a fresh budget
+	// on every cycle and the attempt bound would never trip, which is the
+	// runaway it exists to stop. Treat an unreadable IsSuccess as unsuccessful
+	// for the same reason.
+	isSuccess, navigationErr := args.GetIsSuccess()
+	if navigationErr != nil {
+		globalApplication.error("webview2: reading navigation success: %v", navigationErr)
+	}
+	if shouldResetWebviewRecoveryBudget(isSuccess, navigationErr) {
+		w.resetWebviewRecoveryBudget()
+	}
 
 	// Inject runtime core and window-specific flags together so side-effect
 	// runtime modules see a consistent _wails configuration at startup.
@@ -3080,4 +3170,191 @@ func (w *windowsWebviewWindow) applyDisplayAffinity(affinity uint32) bool {
 		return false
 	}
 	return true
+}
+
+// webviewRecoveryAction is what a WebView2 process failure calls for.
+type webviewRecoveryAction int
+
+const (
+	// webviewRecoveryNone leaves the failure to the browser process.
+	webviewRecoveryNone webviewRecoveryAction = iota
+	// webviewRecoveryRenavigate re-navigates the existing controller.
+	webviewRecoveryRenavigate
+	// webviewRecoveryRebuild replaces the controller entirely.
+	webviewRecoveryRebuild
+)
+
+// maxWebviewRecoveryAttempts bounds consecutive recovery attempts that never
+// reach a completed navigation. Without a bound, a controller that dies again
+// as soon as it is rebuilt turns recovery into a hot loop spawning WebView2
+// processes; with one, a permanently broken runtime costs a few attempts and
+// then leaves the window as it would have been without any recovery at all.
+const maxWebviewRecoveryAttempts = 3
+
+// webviewRecoveryActionFor maps a WebView2 process-failure kind to the recovery
+// it needs.
+//
+// A browser-process exit invalidates the whole controller — every subsequent
+// COM call returns ERROR_INVALID_STATE (0x8007139F) — so nothing short of a new
+// controller recovers it. Renderer failures leave the controller usable and a
+// re-navigation is enough.
+//
+// Everything else is deliberately left alone. GPU, utility and sandbox-helper
+// processes are restarted by Chromium itself, and if it gives up on them it
+// exits the browser process, which arrives back here as
+// BROWSER_PROCESS_EXITED. An out-of-process iframe (FRAME_RENDER_PROCESS_EXITED)
+// is likewise the browser's to re-create, and reloading the whole window over
+// one dead subframe would be far more destructive than the failure.
+func webviewRecoveryActionFor(kind edge.COREWEBVIEW2_PROCESS_FAILED_KIND) webviewRecoveryAction {
+	switch kind {
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED:
+		return webviewRecoveryRebuild
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
+		edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_UNRESPONSIVE:
+		return webviewRecoveryRenavigate
+	default:
+		return webviewRecoveryNone
+	}
+}
+
+// beginWebviewRecovery reports whether another recovery attempt is allowed,
+// counting it when it is. The counter is cleared by navigationCompleted, so it
+// only ever accumulates across failures that never managed to load anything —
+// which is exactly the runaway case maxWebviewRecoveryAttempts exists to stop.
+// RENDER_PROCESS_UNRESPONSIVE in particular re-fires for as long as the
+// renderer stays hung, so the bound applies to re-navigation as well as to
+// rebuilds.
+func (w *windowsWebviewWindow) beginWebviewRecovery() bool {
+	if w.webviewRecoveryAttempts >= maxWebviewRecoveryAttempts {
+		return false
+	}
+	w.webviewRecoveryAttempts++
+	return true
+}
+
+// resetWebviewRecoveryBudget restores the full attempt budget. Called from
+// navigationCompleted: the webview loaded something, so whatever recovery led
+// there worked, and a later unrelated failure should get a full set of attempts
+// of its own rather than inheriting a spent counter.
+func (w *windowsWebviewWindow) resetWebviewRecoveryBudget() {
+	w.webviewRecoveryAttempts = 0
+}
+
+// shouldResetWebviewRecoveryBudget reports whether a navigation completion
+// represents a successful recovery and can replenish the retry budget.
+func shouldResetWebviewRecoveryBudget(isSuccess bool, err error) bool {
+	return err == nil && isSuccess
+}
+
+// processFailed handles WebView2 process-failure notifications. Without a
+// handler, a dead browser process leaves the controller in a permanent
+// invalid state: every subsequent COM call fails with ERROR_INVALID_STATE
+// (0x8007139F), the window renders blank, and only an app restart recovers.
+// Work is deferred out of the callback via InvokeAsync, per WebView2 guidance
+// about not calling controller methods reentrantly from an event handler.
+func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
+	if w.webviewRecoveryPending || w.parent.isDestroyed() || w.hwnd == 0 {
+		return
+	}
+	kind, err := args.GetProcessFailedKind()
+	if err != nil {
+		globalApplication.error("webview2: process failed and failure kind unavailable: %v", err)
+		return
+	}
+
+	action := webviewRecoveryActionFor(kind)
+	if action == webviewRecoveryNone {
+		globalApplication.info("webview2: process failed (kind=%d); leaving recovery to the browser process", kind)
+		return
+	}
+
+	// Work out what recovery would actually do before spending an attempt from
+	// the budget, so a no-op does not eat into it.
+	var restore func()
+	switch action {
+	case webviewRecoveryRebuild:
+		restore = w.rebuildWebView
+	case webviewRecoveryRenavigate:
+		if w.lastNavigatedURL == "" && w.parent.options.HTML == "" {
+			globalApplication.error("webview2: no navigation available for renderer recovery")
+			return
+		}
+		restore = func() {
+			if w.parent.isDestroyed() || w.hwnd == 0 {
+				return
+			}
+			if w.lastNavigatedURL != "" {
+				w.setURL(w.lastNavigatedURL)
+			} else {
+				w.webviewNavigationCompleted = false
+				w.chromium.NavigateToString(w.parent.options.HTML)
+			}
+		}
+	}
+
+	if !w.beginWebviewRecovery() {
+		globalApplication.error(
+			"webview2: process failed (kind=%d) and %d consecutive recovery attempts have not restored the webview; giving up, the window will stay blank until the application restarts",
+			kind, maxWebviewRecoveryAttempts,
+		)
+		return
+	}
+	globalApplication.error("webview2: process failed (kind=%d); recovery attempt %d of %d",
+		kind, w.webviewRecoveryAttempts, maxWebviewRecoveryAttempts)
+
+	// InvokeAsync runs inline on the UI thread; the goroutine forces a post
+	// so controller creation happens after the WebView2 event handler returns.
+	w.webviewRecoveryPending = true
+	go InvokeAsync(func() {
+		defer func() { w.webviewRecoveryPending = false }()
+		restore()
+	})
+}
+
+// rebuildWebView replaces a dead WebView2 controller with a fresh one.
+// setupChromium re-applies every setting and restores lastNavigatedURL, so
+// this only has to supply the controller.
+//
+// The old Chromium instance is abandoned rather than re-embedded: after a
+// browser-process exit every COM reference it holds is dangling, and
+// edge.Chromium.Embed's init-wait loop keys on a per-instance flag that a used
+// instance has already set, so re-embedding the same instance would return
+// before the new controller exists.
+//
+// A replacement that fails setupChromium is abandoned the same way, never
+// restored: it is already shut down, and edge.Chromium.ProcessFailed no-ops
+// once ShuttingDown has run, so putting it back in place of w.chromium would
+// silently swallow every future process failure and leave the window blank
+// until the application restarts. Instead, while the recovery attempt budget
+// allows, a fresh instance is tried in its place (#6167).
+func (w *windowsWebviewWindow) rebuildWebView() {
+	for {
+		// A window destroyed between the failure and this callback has no HWND to
+		// embed into — shutting the app down kills the WebView2 processes, so a
+		// process failure racing teardown is expected rather than exceptional.
+		if w.parent.isDestroyed() || w.hwnd == 0 {
+			return
+		}
+		globalApplication.info("webview2: rebuilding controller after browser process exit")
+		// The abandoned instance's DComp target stays bound to the HWND, and an
+		// HWND can only carry one: without this release the replacement fails
+		// composition setup with DCOMPOSITION_ERROR_WINDOW_ALREADY_COMPOSED and
+		// silently falls back to windowed hosting, so a WebView2CompositionHosting
+		// window would come back with the wrong hosting mode.
+		w.requestCancellation.close()
+		w.chromium.Close()
+		w.chromium = w.newChromium()
+		if w.setupChromium(true) {
+			return
+		}
+		if !w.beginWebviewRecovery() {
+			globalApplication.error(
+				"webview2: %d consecutive recovery attempts have not restored the webview; giving up, the window will stay blank until the application restarts",
+				maxWebviewRecoveryAttempts,
+			)
+			return
+		}
+		globalApplication.error("webview2: controller rebuild failed; recovery attempt %d of %d",
+			w.webviewRecoveryAttempts, maxWebviewRecoveryAttempts)
+	}
 }

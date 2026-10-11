@@ -86,8 +86,9 @@ export async function saveConfig(config: UserConfig): Promise<{ status: string }
   return response.json();
 }
 
-export async function complete(): Promise<{ status: string; duration: string }> {
-  const response = await fetch(`${API_BASE}/complete`);
+export async function complete(): Promise<{ status: string; duration: string; dockerBuilding: boolean }> {
+  const response = await fetch(`${API_BASE}/complete`, { method: 'POST' });
+  if (!response.ok) throw new Error(`Could not finish setup (HTTP ${response.status})`);
   return response.json();
 }
 

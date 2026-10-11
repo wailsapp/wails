@@ -60,6 +60,7 @@ type Chromium struct {
 	compositionController4           *ICoreWebView2CompositionController4
 	webview                          *ICoreWebView2
 	inited                           uintptr
+	initErr                          error
 	envCompleted                     *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler
 	controllerCompleted              *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler
 	compositionControllerCompleted   *iCoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler
@@ -158,6 +159,40 @@ func NewChromium() *Chromium {
 
 func (e *Chromium) ShuttingDown() {
 	e.shuttingDown = true
+	atomic.StoreUintptr(&e.inited, 0)
+	// WebView2 may keep this instance's handlers, and therefore the instance,
+	// alive until it releases them. Drop the host callbacks so that retention
+	// does not extend to the window that owned it.
+	e.MessageCallback = nil
+	e.MessageWithAdditionalObjectsCallback = nil
+	e.WebResourceRequestedCallback = nil
+	e.NavigationStartingCallback = nil
+	e.NavigationCompletedCallback = nil
+	e.ProcessFailedCallback = nil
+	e.ContainsFullScreenElementChangedCallback = nil
+	e.AcceleratorKeyCallback = nil
+	e.CursorChangedCallback = nil
+	e.globalErrorCallback = globalErrorHandler
+}
+
+// Close abandons this instance and releases its controller and environment.
+// It is safe after partial initialization and may be called more than once.
+func (e *Chromium) Close() {
+	e.ShuttingDown()
+	e.ReleaseCompositionResources()
+	if e.controller != nil {
+		_ = e.controller.Close()
+		e.controller.Release()
+		e.controller = nil
+	}
+	if e.webview != nil {
+		e.webview.Release()
+		e.webview = nil
+	}
+	if e.environment != nil {
+		e.environment.Release()
+		e.environment = nil
+	}
 }
 
 func (e *Chromium) errorCallback(err error) {
@@ -177,10 +212,23 @@ func (e *Chromium) SetCursorChangedCallback(callback func(cursor HCURSOR, system
 	}
 }
 
+// Embed retains the fatal startup behaviour for callers that require a webview.
 func (e *Chromium) Embed(hwnd uintptr) bool {
+	if err := e.EmbedWithError(hwnd); err != nil {
+		e.errorCallback(err)
+		return false
+	}
+	return true
+}
 
-	var err error
-
+// EmbedWithError creates a controller without terminating the process on failure.
+// Use a fresh Chromium on the UI thread; a failed instance cannot be reused.
+func (e *Chromium) EmbedWithError(hwnd uintptr) (err error) {
+	defer func() {
+		if err != nil {
+			e.Close()
+		}
+	}()
 	e.hwnd = hwnd
 
 	dataPath := e.DataPath
@@ -188,47 +236,45 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		currentExePath := make([]uint16, windows.MAX_PATH)
 		_, err = windows.GetModuleFileName(windows.Handle(0), &currentExePath[0], windows.MAX_PATH)
 		if err != nil {
-			e.errorCallback(err)
+			return err
 		}
 		currentExeName := filepath.Base(windows.UTF16ToString(currentExePath))
 		dataPath = filepath.Join(os.Getenv("AppData"), currentExeName)
 	}
 
 	if e.BrowserPath != "" {
-		if _, err = os.Stat(e.BrowserPath); errors.Is(err, os.ErrNotExist) {
-			e.errorCallback(fmt.Errorf("browser path '%s' does not exist", e.BrowserPath))
+		if _, err = os.Stat(e.BrowserPath); err != nil {
+			return fmt.Errorf("invalid browser path %q: %w", e.BrowserPath, err)
 		}
 	}
 
-	browserArgs := strings.Join(e.AdditionalBrowserArgs, " ")
-	if err := createCoreWebView2EnvironmentWithOptions(e.BrowserPath, dataPath, e.envCompleted, browserArgs); err != nil {
-		e.errorCallback(fmt.Errorf("error calling Webview2Loader: %s", err.Error()))
-	}
-
+	// Check the runtime before starting asynchronous environment creation.
 	e.webview2RuntimeVersion, err = webviewloader.GetAvailableCoreWebView2BrowserVersionString(e.BrowserPath)
 	if err != nil {
-		e.errorCallback(fmt.Errorf("error getting Webview2 runtime version: %s", err.Error()))
+		return fmt.Errorf("error getting Webview2 runtime version: %w", err)
+	}
+	browserArgs := strings.Join(e.AdditionalBrowserArgs, " ")
+	if err := createCoreWebView2EnvironmentWithOptions(e.BrowserPath, dataPath, e.envCompleted, browserArgs); err != nil {
+		return fmt.Errorf("error calling Webview2Loader: %w", err)
 	}
 
-	// Pump until the controller reports ready, but never without a deadline.
-	//
-	// CreateCoreWebView2Controller is asynchronous and is not guaranteed to
-	// call back at all: in a session with no interactive window station it
-	// returns success, reports no error, and simply never completes. A
-	// GetMessageW loop keyed only on e.inited then blocks forever, so the
-	// failure presents as a hung window with nothing logged. Wait on the
-	// message queue with a timeout instead, so it fails loudly and promptly.
-	//
-	// A webview that never initialises leaves nothing to host the application,
-	// so this is fatal by design: errorCallback reports and exits, and nothing
-	// below runs.
 	if !e.pumpUntilInited(embedTimeout) {
-		e.errorCallback(fmt.Errorf("timed out after %s waiting for the WebView2 controller; "+
-			"the WebView2 runtime did not complete initialisation", embedTimeout))
+		if e.initErr != nil {
+			return e.initErr
+		}
+		return fmt.Errorf("WebView2 controller did not complete initialisation within %s", embedTimeout)
 	}
-
 	e.Init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}")
-	return true
+	return nil
+}
+
+// Initialization callbacks return to the message pump, which reports the first
+// failure to EmbedWithError. They must stop before using incomplete COM objects.
+func (e *Chromium) initializationFailed(err error) uintptr {
+	if e.initErr == nil {
+		e.initErr = err
+	}
+	return 0
 }
 
 // embedTimeout bounds how long Embed waits for CreateCoreWebView2Controller to
@@ -244,6 +290,9 @@ func (e *Chromium) pumpUntilInited(timeout time.Duration) bool {
 	deadline := time.Now().Add(timeout)
 
 	for {
+		if e.initErr != nil || e.shuttingDown {
+			return false
+		}
 		if atomic.LoadUintptr(&e.inited) != 0 {
 			return true
 		}
@@ -255,16 +304,21 @@ func (e *Chromium) pumpUntilInited(timeout time.Duration) bool {
 
 		// Wake on any queued message or when the deadline expires, whichever
 		// comes first. Unlike GetMessageW this cannot park indefinitely.
-		r, _, _ := w32.User32MsgWaitForMultipleObjects.Call(
-			0, 0, 0,
+		// MWMO_INPUTAVAILABLE is load-bearing: without it the wait ignores
+		// messages already in the queue at entry, so a completion posted
+		// between the drain below and this wait sleeps the full deadline.
+		// (Note the Ex signature has no fWaitAll parameter.)
+		r, _, _ := w32.User32MsgWaitForMultipleObjectsEx.Call(
+			0, 0,
 			uintptr(uint32(remaining.Milliseconds())),
 			w32.QS_ALLINPUT,
+			w32.MWMO_INPUTAVAILABLE,
 		)
 		if r == w32.WAIT_TIMEOUT {
 			continue // re-check inited once more, then fail on the deadline
 		}
 
-		// MsgWaitForMultipleObjects only signals that the queue is non-empty;
+		// MsgWaitForMultipleObjectsEx only signals that the queue is non-empty;
 		// it does not remove anything. Drain what is there before waiting again,
 		// or the next wait returns immediately on the same message.
 		for {
@@ -275,7 +329,9 @@ func (e *Chromium) pumpUntilInited(timeout time.Duration) bool {
 				break
 			}
 			if msg.Message == w32.WM_QUIT {
-				return atomic.LoadUintptr(&e.inited) != 0
+				// Recovery may return to an outer application loop; preserve its quit.
+				w32.User32PostQuitMessage.Call(msg.WParam)
+				return false
 			}
 			w32.User32TranslateMessage.Call(uintptr(unsafe.Pointer(&msg)))
 			w32.User32DispatchMessageW.Call(uintptr(unsafe.Pointer(&msg)))
@@ -328,6 +384,9 @@ func (e *Chromium) Resize() {
 }
 
 func (e *Chromium) Navigate(url string) {
+	if e.webview == nil || e.shuttingDown {
+		return
+	}
 	err := e.webview.Navigate(url)
 	if err != nil {
 		// A failed navigation is recoverable (the previous content stays
@@ -337,6 +396,9 @@ func (e *Chromium) Navigate(url string) {
 }
 
 func (e *Chromium) NavigateToString(content string) {
+	if e.webview == nil || e.shuttingDown {
+		return
+	}
 	err := e.webview.NavigateToString(content)
 	if err != nil {
 		log.Printf("[WebView2] NavigateToString failed: %v", err)
@@ -344,6 +406,9 @@ func (e *Chromium) NavigateToString(content string) {
 }
 
 func (e *Chromium) Init(script string) {
+	if e.webview == nil || e.shuttingDown {
+		return
+	}
 	err := e.webview.AddScriptToExecuteOnDocumentCreated(script, nil)
 	if err != nil {
 		log.Printf("[WebView2] Init script registration failed: %v", err)
@@ -368,33 +433,34 @@ func (e *Chromium) Eval(script string) {
 }
 
 func (e *Chromium) Show() error {
+	if e.controller == nil || e.shuttingDown {
+		return nil
+	}
 	return e.controller.PutIsVisible(true)
 }
 
 func (e *Chromium) Hide() error {
+	if e.controller == nil || e.shuttingDown {
+		return nil
+	}
 	return e.controller.PutIsVisible(false)
 }
 
+// Handler queries are not expected; count them so tests notice a native
+// reference that bypasses AddRef.
+var handlerQueryInterfaces atomic.Uint64
+
 func (e *Chromium) QueryInterface(_, _ uintptr) uintptr {
+	handlerQueryInterfaces.Add(1)
 	return 0
 }
 
-func (e *Chromium) AddRef() uintptr {
-	return 1
-}
-
-func (e *Chromium) Release() uintptr {
-	return 1
-}
-
 func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environment) uintptr {
-	if env == nil {
-		err := syscall.Errno(res)
-		log.Printf("[WebView2] Environment creation failed with error code %v: %v\n", res, err)
-		if e.globalErrorCallback != nil {
-			e.globalErrorCallback(fmt.Errorf("failed to create WebView2 environment: %w", err))
-		}
-		return res
+	if e.shuttingDown || e.initErr != nil {
+		return 0
+	}
+	if int32(res) < 0 || env == nil {
+		return e.initializationFailed(fmt.Errorf("failed to create WebView2 environment: HRESULT 0x%08x", res))
 	}
 
 	log.Printf("[WebView2] Environment created successfully\n")
@@ -412,14 +478,20 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 		}
 	}
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	return 0
 }
 
 func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller *ICoreWebView2Controller) uintptr {
-	if int32(res) < 0 {
-		e.errorCallback(fmt.Errorf("error creating controller with %08x: %s", res, syscall.Errno(res)))
+	if e.shuttingDown || e.initErr != nil {
+		if controller != nil {
+			_ = controller.Close()
+		}
+		return 0
+	}
+	if int32(res) < 0 || controller == nil {
+		return e.initializationFailed(fmt.Errorf("error creating controller with %08x: %s", res, syscall.Errno(res)))
 	}
 
 	return e.initializeController(controller)
@@ -442,16 +514,25 @@ func (e *Chromium) createCoreWebView2CompositionController(env *ICoreWebView2Env
 }
 
 func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr, compositionController *ICoreWebView2CompositionController) uintptr {
+	if e.shuttingDown || e.initErr != nil {
+		if compositionController != nil {
+			if controller := compositionController.GetICoreWebView2Controller(); controller != nil {
+				_ = controller.Close()
+				controller.Release()
+			}
+		}
+		return 0
+	}
 	if int32(res) < 0 {
 		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("error creating composition controller with %08x: %s", res, syscall.Errno(res))); err != nil {
-			e.errorCallback(err)
+			return e.initializationFailed(err)
 		}
 		return 0
 	}
 
 	if compositionController == nil {
 		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("composition controller completed without a controller")); err != nil {
-			e.errorCallback(err)
+			return e.initializationFailed(err)
 		}
 		return 0
 	}
@@ -462,7 +543,7 @@ func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr,
 
 	if err := e.compositionHost.attachController(e.compositionController); err != nil {
 		if fallbackErr := e.fallbackToCoreWebView2Controller(fmt.Errorf("attaching composition controller failed: %w", err)); fallbackErr != nil {
-			e.errorCallback(fallbackErr)
+			return e.initializationFailed(fallbackErr)
 		}
 		return 0
 	}
@@ -470,11 +551,12 @@ func (e *Chromium) CreateCoreWebView2CompositionControllerCompleted(res uintptr,
 	controller := compositionController.GetICoreWebView2Controller()
 	if controller == nil {
 		if err := e.fallbackToCoreWebView2Controller(fmt.Errorf("error getting controller from composition controller")); err != nil {
-			e.errorCallback(err)
+			return e.initializationFailed(err)
 		}
 		return 0
 	}
 
+	defer controller.Release()
 	return e.initializeController(controller)
 }
 
@@ -492,6 +574,17 @@ func (e *Chromium) fallbackToCoreWebView2Controller(reason error) error {
 		return fmt.Errorf("composition hosting failed (%v), and HWND controller fallback failed: %w", reason, err)
 	}
 	return nil
+}
+
+// ReleaseCompositionResources drops the composition controller and the DComp
+// host targeting this Chromium's HWND. An HWND can carry only one DComp
+// target: while the old one exists, a replacement Chromium's composition
+// setup fails with DCOMPOSITION_ERROR_WINDOW_ALREADY_COMPOSED and silently
+// falls back to windowed hosting. A controller rebuild must call this on the
+// abandoned instance before creating its replacement.
+func (e *Chromium) ReleaseCompositionResources() {
+	e.releaseCompositionController()
+	e.releaseCompositionHost()
 }
 
 func (e *Chromium) releaseCompositionController() {
@@ -528,10 +621,11 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	// reasserting RasterizationScale during monitor transitions can leave that
 	// surface black after DPI increases.
 	if controller3 := e.controller.GetICoreWebView2Controller3(); controller3 != nil {
+		defer func() { controller3.Vtbl.Release.Call(uintptr(unsafe.Pointer(controller3))) }()
 		if !e.CompositionControllerEnabled {
 			// Use raw pixels mode for better performance during resize.
 			if err := controller3.PutBoundsMode(COREWEBVIEW2_BOUNDS_MODE_USE_RAW_PIXELS); err != nil {
-				e.errorCallback(err)
+				return e.initializationFailed(err)
 			}
 
 			// ShouldDetectMonitorScaleChanges is deliberately left at its default
@@ -550,53 +644,52 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	var token _EventRegistrationToken
 	e.webview, err = e.controller.GetCoreWebView2()
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 
-	e.webview.AddRef()
 	if e.NonClientRegionSupportEnabled {
 		if err := e.PutIsNonClientRegionSupportEnabled(true); err != nil {
 			if !errors.Is(err, UnsupportedCapabilityError) {
-				e.errorCallback(err)
+				return e.initializationFailed(err)
 			}
 		}
 	}
 	err = e.webview.AddWebMessageReceived(e.webMessageReceived, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	err = e.webview.AddPermissionRequested(e.permissionRequested, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	err = e.webview.AddWebResourceRequested(e.webResourceRequested, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	err = e.webview.AddNavigationStarting(e.navigationStarting, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	err = e.webview.AddNavigationCompleted(e.navigationCompleted, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	err = e.webview.AddProcessFailed(e.processFailed, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	err = e.webview.AddContainsFullScreenElementChanged(e.containsFullScreenElementChanged, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	err = e.controller.AddAcceleratorKeyPressed(e.acceleratorKeyPressed, &token)
 	if err != nil {
-		e.errorCallback(err)
+		return e.initializationFailed(err)
 	}
 	if e.compositionController != nil {
 		err = e.compositionController.AddCursorChanged(e.cursorChanged, &token)
 		if err != nil {
-			e.errorCallback(err)
+			return e.initializationFailed(err)
 		}
 	}
 
@@ -674,8 +767,25 @@ func (e *Chromium) SetPermission(kind CoreWebView2PermissionKind, state CoreWebV
 }
 
 func (e *Chromium) SetBackgroundColour(R, G, B, A uint8) {
+	if e.shuttingDown {
+		return
+	}
+	if err := e.SetBackgroundColourWithError(R, G, B, A); err != nil {
+		e.errorCallback(err)
+	}
+}
+
+// SetBackgroundColourWithError applies the colour without terminating the app.
+func (e *Chromium) SetBackgroundColourWithError(R, G, B, A uint8) error {
 	controller := e.GetController()
+	if controller == nil {
+		return errors.New("webview2 controller is not initialized")
+	}
 	controller2 := controller.GetICoreWebView2Controller2()
+	if controller2 == nil {
+		return UnsupportedCapabilityError
+	}
+	defer controller2.vtbl.Release.Call(uintptr(unsafe.Pointer(controller2)))
 
 	backgroundCol := COREWEBVIEW2_COLOR{
 		A: A,
@@ -689,10 +799,7 @@ func (e *Chromium) SetBackgroundColour(R, G, B, A uint8) {
 		backgroundCol.A = 255
 	}
 
-	err := controller2.PutDefaultBackgroundColor(backgroundCol)
-	if err != nil {
-		e.errorCallback(err)
-	}
+	return controller2.PutDefaultBackgroundColor(backgroundCol)
 }
 
 func (e *Chromium) SetGlobalPermission(state CoreWebView2PermissionState) {
@@ -742,10 +849,17 @@ func (e *Chromium) WebResourceRequested(sender *ICoreWebView2, args *ICoreWebVie
 }
 
 func (e *Chromium) AddWebResourceRequestedFilter(filter string, ctx COREWEBVIEW2_WEB_RESOURCE_CONTEXT) {
-	err := e.webview.AddWebResourceRequestedFilter(filter, ctx)
-	if err != nil {
+	if err := e.AddWebResourceRequestedFilterWithError(filter, ctx); err != nil {
 		e.errorCallback(err)
 	}
+}
+
+// AddWebResourceRequestedFilterWithError reports setup errors to the caller.
+func (e *Chromium) AddWebResourceRequestedFilterWithError(filter string, ctx COREWEBVIEW2_WEB_RESOURCE_CONTEXT) error {
+	if e.webview == nil {
+		return errors.New("webview2 is not initialized")
+	}
+	return e.webview.AddWebResourceRequestedFilter(filter, ctx)
 }
 
 func (e *Chromium) Environment() *ICoreWebView2Environment {
@@ -781,6 +895,9 @@ func (e *Chromium) AcceleratorKeyPressed(sender *ICoreWebView2Controller, args *
 }
 
 func (e *Chromium) GetSettings() (*ICoreWebViewSettings, error) {
+	if e.webview == nil {
+		return nil, errors.New("webview2 is not initialized")
+	}
 	return e.webview.GetSettings()
 }
 
@@ -806,21 +923,21 @@ func boolToInt(input bool) int {
 }
 
 func (e *Chromium) NavigationStarting(sender *ICoreWebView2, _ *IUnknown) uintptr {
-	if e.NavigationStartingCallback != nil {
+	if !e.shuttingDown && e.NavigationStartingCallback != nil {
 		e.NavigationStartingCallback(sender)
 	}
 	return 0
 }
 
 func (e *Chromium) NavigationCompleted(sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs) uintptr {
-	if e.NavigationCompletedCallback != nil {
+	if !e.shuttingDown && e.NavigationCompletedCallback != nil {
 		e.NavigationCompletedCallback(sender, args)
 	}
 	return 0
 }
 
 func (e *Chromium) ProcessFailed(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs) uintptr {
-	if e.ProcessFailedCallback != nil {
+	if !e.shuttingDown && e.ProcessFailedCallback != nil {
 		e.ProcessFailedCallback(sender, args)
 	}
 	return 0
@@ -870,6 +987,9 @@ func (e *Chromium) Focus() {
 }
 
 func (e *Chromium) PutZoomFactor(zoomFactor float64) {
+	if e.controller == nil || e.shuttingDown {
+		return
+	}
 	err := e.controller.PutZoomFactor(zoomFactor)
 	if err != nil {
 		log.Printf("[WebView2] PutZoomFactor failed: %v", err)
@@ -877,6 +997,9 @@ func (e *Chromium) PutZoomFactor(zoomFactor float64) {
 }
 
 func (e *Chromium) OpenDevToolsWindow() {
+	if e.webview == nil || e.shuttingDown {
+		return
+	}
 	err := e.webview.OpenDevToolsWindow()
 	if err != nil {
 		log.Printf("[WebView2] OpenDevToolsWindow failed: %v", err)

@@ -33,6 +33,16 @@ Cette opération crée `bin/<AppName>.app`, qui contient :
 - L’icône de l’application dans `Contents/Resources/` (provenant de `icons.icns` ou, s’il est présent, d’un catalogue de ressources `Assets.car`)
 - `Info.plist` contenant les métadonnées de l’application
 
+### Projets dans des dossiers synchronisés
+
+Certains fournisseurs de fichiers macOS ajoutent des métadonnées Finder aux répertoires `.app` et font que `codesign` rejette le paquet, ou invalident sa signature après la signature. Supprimer les métadonnées ne suffit pas si le fournisseur les ajoute à nouveau.
+
+Les tâches de compilation macOS générées vérifient ce comportement. Lorsqu’il est détecté, Wails déplace le répertoire de sortie généré du projet vers `~/Library/Application Support/Wails/build-output/<project>-<hash>` et remplace le répertoire de sortie d’origine par un lien symbolique. Les fichiers de sortie existants sont conservés, et `bin/<AppName>.app` reste le chemin utilisé pour la création du paquet, la signature et le mode développement. La CLI affiche l’emplacement de stockage local lorsqu’elle effectue le déplacement.
+
+Définissez `WAILS_MACOS_OUTPUT_ROOT` pour choisir un autre emplacement de stockage local non synchronisé. Le répertoire racine de destination doit se trouver sur le même système de fichiers que le projet. Un `BIN_DIR` explicitement défini en dehors du projet est utilisé tel qu’il est configuré. Les projets existants ont besoin du fichier `build/darwin/Taskfile.yml` mis à jour pour bénéficier de ce traitement.
+
+Pour distribuer l’application, copiez `bin/<AppName>.app` ou créez un DMG. Copier uniquement le lien symbolique `bin` n’inclut pas les fichiers générés par la compilation. La commande directe `wails3 tool sign` signale une erreur si son dossier d’entrée ajoute à nouveau des métadonnées ; déplacez ce paquet vers un dossier non synchronisé avant de le signer.
+
 ## Ressources du paquet
 
 `Contents/Resources/` est l’emplacement standard des fichiers en lecture seule distribués avec une application macOS. Utilisez-le pour les modèles volumineux, les données initiales, les médias, les packs linguistiques ou les autres contenus qui devraient être ouverts à la demande plutôt que compilés dans l’exécutable Go avec `embed`.
