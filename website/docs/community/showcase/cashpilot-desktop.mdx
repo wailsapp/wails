@@ -1,0 +1,17 @@
+# CashPilot Desktop
+
+```mdx-code-block
+<p style={{ "text-align": "center" }}>
+  <img src={require("@site/static/img/showcase/cashpilot-desktop.png").default} />
+  <br />
+</p>
+```
+
+[CashPilot Desktop](https://github.com/GeiserX/CashPilot-Desktop) is a local-first desktop app for macOS (Apple Silicon), Windows and Linux that deploys and monitors passive-income and DePIN services. It runs either as the full CashPilot dashboard or as a Worker Node that joins an existing CashPilot instance; the services themselves run in Docker or Podman. Built with Wails v2 and Go.
+
+- Guided setup wizard with Docker detection and installation guidance
+- Catalog of 39 active services; the Docker-deployable ones are started as containers from the app
+- Live earnings, service health, container stats and node uptime
+- Aggregate view across a fleet of CashPilot nodes from one window
+- Credentials encrypted at rest with AES-256-GCM, master key in the OS keychain
+- System tray on macOS
