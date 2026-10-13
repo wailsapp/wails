@@ -11,7 +11,6 @@ import (
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/internal/shell"
 	"github.com/wailsapp/wails/v2/internal/system"
-	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 	"github.com/wailsapp/wails/v2/internal/tui"
 )
 
@@ -155,7 +154,6 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	tui.Section("Dependencies")
 
 	var dependenciesMissing []string
-	var externalPackages []*packagemanager.Dependency
 	dependenciesAvailableRequired := 0
 	dependenciesAvailableOptional := 0
 
@@ -193,10 +191,6 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 			if !dependency.Optional {
 				dependenciesMissing = append(dependenciesMissing, dependency.Name)
 			}
-
-			if dependency.External {
-				externalPackages = append(externalPackages, dependency)
-			}
 		}
 
 		dependenciesTableData = append(dependenciesTableData, []string{name, packageName, status, dependency.Version})
@@ -207,7 +201,6 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	if hasOptionalDependencies {
 		fmt.Println("\n  " + tui.Gray("*") + " = Optional Dependency")
 	}
-	_ = externalPackages
 
 	tui.Section("Diagnosis")
 

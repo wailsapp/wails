@@ -19,8 +19,8 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/jaypipes/ghw v0.21.3
+	github.com/kungfusheep/glyph v0.6.0
 	github.com/labstack/echo/v4 v4.13.3
-	github.com/labstack/gommon v0.4.2
 	github.com/leaanthony/clir v1.3.0
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.6.1
@@ -38,7 +38,6 @@ require (
 	github.com/tc-hib/winres v0.3.1
 	github.com/tidwall/sjson v1.2.5
 	github.com/tkrajina/go-reflector v0.5.8
-	github.com/kungfusheep/glyph v0.6.0
 	github.com/wailsapp/go-webview2 v1.0.22
 	github.com/wailsapp/mimetype v1.4.1
 	golang.org/x/mod v0.26.0
@@ -81,6 +80,7 @@ require (
 	github.com/junegunn/fzf v0.67.0 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/kungfusheep/riffkey v0.0.0-20260216102013-df19649e3a0d // indirect
+	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

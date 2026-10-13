@@ -8,10 +8,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
-	"time"
-
-	"github.com/kungfusheep/glyph"
 )
 
 // ColourEnabled controls whether ANSI colors and TUI effects are used.
@@ -55,22 +51,22 @@ func Fatal(message string) {
 
 // Error prints an error message.
 func Error(message string) {
-	fmt.Println(ansi("91", "  ✗")+" "+message)
+	fmt.Println(ansi("91", "  ✗") + " " + message)
 }
 
 // Success prints a success message.
 func Success(message string) {
-	fmt.Println(ansi("92", "  ✓")+" "+message)
+	fmt.Println(ansi("92", "  ✓") + " " + message)
 }
 
 // Info prints an informational message.
 func Info(message string) {
-	fmt.Println(ansi("94", "  →")+" "+message)
+	fmt.Println(ansi("94", "  →") + " " + message)
 }
 
 // Warning prints a warning message.
 func Warning(message string) {
-	fmt.Println(ansi("93", "  !")+" "+message)
+	fmt.Println(ansi("93", "  !") + " " + message)
 }
 
 // Println prints text followed by a newline.
@@ -184,72 +180,27 @@ func BoxedTable(title string, rows [][]string) {
 	Table(rows)
 }
 
-// spinnerFrames are the braille spinner animation frames.
-var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+// runPlain runs fn and reports progress as plain text lines (no animation).
+func runPlain(message string, fn func() error) error {
+	fmt.Println(message + "...")
+	err := fn()
+	if err != nil {
+		fmt.Println("  Failed: " + err.Error())
+	} else {
+		fmt.Println("  Done.")
+	}
+	return err
+}
 
 // WithSpinner runs fn while displaying an animated spinner.
 // On completion, a success or failure indicator replaces the spinner.
 // In non-TTY mode it prints a plain start/done message instead.
 func WithSpinner(message string, fn func() error) error {
 	if !ColourEnabled {
-		fmt.Println(message + "...")
-		err := fn()
-		if err != nil {
-			fmt.Println("  Failed: " + err.Error())
-		} else {
-			fmt.Println("  Done.")
-		}
-		return err
+		return runPlain(message, fn)
 	}
 
-	var (
-		done   bool
-		runErr error
-		mu     sync.Mutex
-		frame  int
-	)
-
-	displayMsg := message
-	app := glyph.NewInlineApp()
-	app.Height(1)
-	app.SetView(
-		glyph.HBox(
-			glyph.Spinner(&frame).Frames(glyph.SpinnerBraille).FG(glyph.Cyan),
-			glyph.SpaceW(1),
-			glyph.Text(&displayMsg),
-		),
-	)
-
-	go func() {
-		for {
-			mu.Lock()
-			d := done
-			mu.Unlock()
-			if d {
-				return
-			}
-			frame++
-			app.RequestRender()
-			time.Sleep(80 * time.Millisecond)
-		}
-	}()
-
-	go func() {
-		runErr = fn()
-		mu.Lock()
-		done = true
-		mu.Unlock()
-		app.Stop()
-	}()
-
-	_ = app.RunNonInteractive()
-
-	if runErr != nil {
-		fmt.Println(ansi("91", "  ✗") + " " + message)
-	} else {
-		fmt.Println(ansi("92", "  ✓") + " " + message)
-	}
-	return runErr
+	return runSpinner(message, fn)
 }
 
 // Green returns green-colored text when colour is enabled.

@@ -223,15 +223,12 @@ func buildApplication(f *flags.Build) error {
 		if !f.DryRun {
 			start := time.Now()
 
-			var compiledBinary string
-			err := tui.WithSpinner(
-				fmt.Sprintf("Compiling %s/%s", buildOptions.Platform, buildOptions.Arch),
-				func() error {
-					var buildErr error
-					compiledBinary, buildErr = build.Build(buildOptions)
-					return buildErr
-				},
-			)
+			// No spinner: build.Build writes progress to stdout through the
+			// logger and a spinner redraw would race with that output.
+			if !quiet {
+				tui.Info(fmt.Sprintf("Compiling %s/%s...", buildOptions.Platform, buildOptions.Arch))
+			}
+			compiledBinary, err := build.Build(buildOptions)
 			if err != nil {
 				tui.Error(err.Error())
 				targetErr = err

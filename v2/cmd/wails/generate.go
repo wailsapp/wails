@@ -13,7 +13,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/internal/tui"
-	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 )
@@ -22,10 +21,6 @@ func generateModule(f *flags.GenerateModule) error {
 	if f.NoColour {
 		tui.SetNoColour()
 	}
-
-	quiet := f.Verbosity == flags.Quiet
-	logger := clilogger.New(os.Stdout)
-	logger.Mute(quiet)
 
 	buildTags, err := buildtags.Parse(f.Tags)
 	if err != nil {
@@ -62,11 +57,6 @@ func generateTemplate(f *flags.GenerateTemplate) error {
 	if f.NoColour {
 		tui.SetNoColour()
 	}
-
-	quiet := f.Quiet
-	logger := clilogger.New(os.Stdout)
-	logger.Mute(quiet)
-	_ = logger
 
 	if f.Name == "" {
 		return fmt.Errorf("please provide a template name using the -name flag")

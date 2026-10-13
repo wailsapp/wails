@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -128,15 +129,19 @@ func initProject(f *flags.Init) error {
 	}
 
 	if !f.CIMode {
+		// Capture subprocess output so it cannot corrupt the spinner display.
+		var tidyStdout, tidyStderr bytes.Buffer
 		err = tui.WithSpinner("Running go mod tidy", func() error {
 			cmd := exec.Command("go", "mod", "tidy")
 			cmd.Dir = options.TargetDir
-			cmd.Stderr = os.Stderr
-			if !quiet {
-				cmd.Stdout = os.Stdout
-			}
+			cmd.Stderr = &tidyStderr
+			cmd.Stdout = &tidyStdout
 			return cmd.Run()
 		})
+		_, _ = os.Stderr.Write(tidyStderr.Bytes())
+		if !quiet {
+			_, _ = os.Stdout.Write(tidyStdout.Bytes())
+		}
 		if err != nil {
 			return err
 		}
