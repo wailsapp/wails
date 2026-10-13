@@ -24,6 +24,10 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Initialize native menu before setting it on Linux in [PR](https://github.com/wailsapp/wails/pull/6233) by @abhicodes-007
+- Resolve macOS GA readiness regressions in output handling and setup wizard in [PR](https://github.com/wailsapp/wails/pull/6237) by @taliesin-ai
+- Fix WebView2 COM `AddRef`/`Release` wrappers on Windows reporting a stale thread last-error as a failure. They now return the reference count, so a release can no longer abort the application or fail an asset request (#3931)
+- Fix `ICoreWebView2Deferral.Release` calling the `AddRef` slot, which leaked the deferral of every deferred asset request on Windows (#3931)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

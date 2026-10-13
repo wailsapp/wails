@@ -5,7 +5,7 @@ slug: "contributing/build-packaging"
 sourcePath: "contributing/build-packaging.md"
 ---
 
-`wails3 build` est volontairement **minimal** : il s’agit d’une enveloppe Taskfile qui transmet les balises de compilation supplémentaires à la tâche `build` du projet hôte. L’essentiel du travail est effectué dans le propre fichier `build/Taskfile.yml` du projet (généré par `wails3 init`), dans `internal/commands/build-assets.go` (qui gère les ressources intégrées lors de la compilation), ainsi que dans `internal/packager` (packaging Linux avec nfpm) et `internal/commands/{appimage,msix,dmg/,dot_desktop}.go` (programmes d’installation propres à chaque plateforme).
+`wails3 build` est volontairement **minimal** : il s’agit d’une enveloppe Taskfile qui transmet les balises de compilation supplémentaires à la tâche `build` du projet hôte. L’essentiel du travail est effectué dans le propre fichier `build/Taskfile.yml` du projet (généré par `wails3 init`), dans `internal/commands/build-assets.go` (qui gère les ressources intégrées lors de la compilation), ainsi que dans `internal/packager` (packaging Linux avec nfpm) et `internal/commands/appimage.go`, `internal/commands/msix.go`, `internal/commands/dmg/dmg.go`, et `internal/commands/dot_desktop.go` (programmes d’installation propres à chaque plateforme).
 
 Cette page aborde les sujets suivants :
 

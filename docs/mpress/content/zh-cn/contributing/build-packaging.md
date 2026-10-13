@@ -5,8 +5,7 @@ slug: "contributing/build-packaging"
 sourcePath: "contributing/build-packaging.md"
 ---
 
-`wails3 build`有意保持<strong>轻量</strong>：它是一个 Taskfile 包装器，会将额外的构建标签转发给宿主项目的`build`任务。繁重的工作由项目自身的`build/Taskfile.yml`（由`wails3 init`生成）、`internal/commands/build-assets.go`（管理烘焙时资源）、`internal/packager`（Linux nfpm 打包）以及`internal/commands/{appimage,  
-msix,dmg/,dot_desktop}.go`（各平台的安装程序）完成。
+`wails3 build`有意保持<strong>轻量</strong>：它是一个 Taskfile 包装器，会将额外的构建标签转发给宿主项目的`build`任务。繁重的工作由项目自身的`build/Taskfile.yml`（由`wails3 init`生成）、`internal/commands/build-assets.go`（管理烘焙时资源）、`internal/packager`（Linux nfpm 打包）以及`internal/commands/appimage.go`、`internal/commands/msix.go`、`internal/commands/dmg/dmg.go`、`internal/commands/dot_desktop.go`（各平台的安装程序）完成。
 
 本页涵盖：
 

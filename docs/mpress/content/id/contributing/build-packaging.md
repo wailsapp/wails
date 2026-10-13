@@ -5,7 +5,7 @@ slug: "contributing/build-packaging"
 sourcePath: "contributing/build-packaging.md"
 ---
 
-`wails3 build` sengaja dibuat **ringkas**: ini adalah pembungkus Taskfile yang meneruskan tag build tambahan ke tugas `build` milik proyek host. Pekerjaan utamanya berada di `build/Taskfile.yml` milik proyek itu sendiri (yang dihasilkan oleh `wails3 init`), di `internal/commands/build-assets.go` (yang mengelola aset pada waktu bake), serta di `internal/packager` (pemaketan nfpm Linux) dan `internal/commands/{appimage, msix,dmg/,dot_desktop}.go` (penginstal per platform).
+`wails3 build` sengaja dibuat **ringkas**: ini adalah pembungkus Taskfile yang meneruskan tag build tambahan ke tugas `build` milik proyek host. Pekerjaan utamanya berada di `build/Taskfile.yml` milik proyek itu sendiri (yang dihasilkan oleh `wails3 init`), di `internal/commands/build-assets.go` (yang mengelola aset pada waktu bake), serta di `internal/packager` (pemaketan nfpm Linux) dan `internal/commands/appimage.go`, `internal/commands/msix.go`, `internal/commands/dmg/dmg.go`, dan `internal/commands/dot_desktop.go` (penginstal per platform).
 
 Halaman ini membahas:
 

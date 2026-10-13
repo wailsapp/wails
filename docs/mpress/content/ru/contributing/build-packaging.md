@@ -5,8 +5,7 @@ slug: "contributing/build-packaging"
 sourcePath: "contributing/build-packaging.md"
 ---
 
-`wails3 build` намеренно сделана **тонкой**: это обёртка над Taskfile, которая передаёт дополнительные теги сборки задаче `build` основного проекта. Основная работа выполняется в собственном файле `build/Taskfile.yml` проекта (созданном командой `wails3 init`), в `internal/commands/build-assets.go` (управляющем ресурсами, внедряемыми при сборке), а также в `internal/packager` (упаковка для Linux с помощью nfpm) и `internal/commands/{appimage,  
-msix,dmg/,dot_desktop}.go` (установщики для отдельных платформ).
+`wails3 build` намеренно сделана **тонкой**: это обёртка над Taskfile, которая передаёт дополнительные теги сборки задаче `build` основного проекта. Основная работа выполняется в собственном файле `build/Taskfile.yml` проекта (созданном командой `wails3 init`), в `internal/commands/build-assets.go` (управляющем ресурсами, внедряемыми при сборке), а также в `internal/packager` (упаковка для Linux с помощью nfpm) и `internal/commands/appimage.go`, `internal/commands/msix.go`, `internal/commands/dmg/dmg.go`, и `internal/commands/dot_desktop.go` (установщики для отдельных платформ).
 
 На этой странице рассматриваются:
 

@@ -5,8 +5,7 @@ slug: "contributing/build-packaging"
 sourcePath: "contributing/build-packaging.md"
 ---
 
-`wails3 build` は意図的に<strong>薄い</strong>実装になっています。これは、追加のビルドタグをホストプロジェクトの `build` タスクに転送する Taskfile ラッパーです。主要な処理は、プロジェクト独自の `build/Taskfile.yml`（`wails3 init` によって生成）、`internal/commands/build-assets.go`（ベイク時のアセットを管理）、`internal/packager`（Linux の nfpm パッケージング）、および `internal/commands/{appimage,  
-msix,dmg/,dot_desktop}.go`（プラットフォーム別インストーラー）にあります。
+`wails3 build` は意図的に<strong>薄い</strong>実装になっています。これは、追加のビルドタグをホストプロジェクトの `build` タスクに転送する Taskfile ラッパーです。主要な処理は、プロジェクト独自の `build/Taskfile.yml`（`wails3 init` によって生成）、`internal/commands/build-assets.go`（ベイク時のアセットを管理）、`internal/packager`（Linux の nfpm パッケージング）、および `internal/commands/appimage.go`、`internal/commands/msix.go`、`internal/commands/dmg/dmg.go`、`internal/commands/dot_desktop.go`（プラットフォーム別インストーラー）にあります。
 
 このページでは、次の内容を説明します。
 
