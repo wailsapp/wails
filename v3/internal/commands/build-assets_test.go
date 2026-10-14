@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -924,5 +925,38 @@ func TestPreserveOriginallyEmptyContainers(t *testing.T) {
 				t.Errorf("sanitizePlistDict() got\n%v\nexpected\n%v", result, tt.expected)
 			}
 		})
+	}
+}
+
+func TestWindowsInfoJSON(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "build")
+	err := GenerateBuildAssets(&BuildAssetsOptions{
+		Dir:            dir,
+		Name:           "TestApp",
+		ProductName:    "Test Application",
+		ProductVersion: "1.2.3",
+		Silent:         true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(dir, "windows", "info.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var info struct {
+		Info map[string]map[string]string `json:"info"`
+	}
+	if err := json.Unmarshal(data, &info); err != nil {
+		t.Fatal(err)
+	}
+	if len(info.Info) == 0 {
+		t.Fatalf("no string table in %s", data)
+	}
+	for lang, table := range info.Info {
+		if table["FileVersion"] != "1.2.3" {
+			t.Errorf("%s: FileVersion = %q, want %q", lang, table["FileVersion"], "1.2.3")
+		}
 	}
 }
