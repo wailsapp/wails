@@ -434,6 +434,11 @@ type WindowsWindow struct {
 
 	// PasswordAutosaveEnabled enables autosaving passwords
 	PasswordAutosaveEnabled bool
+
+	// A separate data path gives this window its own WebView2 browser and GPU
+	// process. AdditionalBrowserArgs are appended after the application's, so they win.
+	WebviewUserDataPath   string
+	AdditionalBrowserArgs []string
 }
 
 type Theme int
