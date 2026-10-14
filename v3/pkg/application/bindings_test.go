@@ -280,3 +280,81 @@ func TestBoundMethodPanic(t *testing.T) {
 		})
 	}
 }
+
+func TestBoundMethodCallMarshalError(t *testing.T) {
+	marshaler := func(scope string) func(error) []byte {
+		return func(err error) []byte {
+			return []byte(`{"scope":"` + scope + `","message":"` + err.Error() + `"}`)
+		}
+	}
+	none := func(error) []byte { return nil }
+
+	tests := []struct {
+		name     string
+		app      func(error) []byte
+		service  func(error) []byte
+		expected string
+	}{
+		{
+			name:     "application marshaler applies to services without their own",
+			app:      marshaler("application"),
+			expected: `{"scope":"application","message":"error"}`,
+		},
+		{
+			name:     "service marshaler overrides the application one",
+			app:      marshaler("application"),
+			service:  marshaler("service"),
+			expected: `{"scope":"service","message":"error"}`,
+		},
+		{
+			name:     "service marshaler returning nil falls back to the application one",
+			app:      marshaler("application"),
+			service:  none,
+			expected: `{"scope":"application","message":"error"}`,
+		},
+		{
+			name:     "application marshaler returning nil falls back to the default",
+			app:      none,
+			service:  none,
+			expected: `{}`,
+		},
+	}
+
+	// init globalApplication
+	_ = application.New(application.Options{})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bindings := application.NewBindings(tt.app, nil)
+
+			service := application.NewServiceWithOptions(&TestService{}, application.ServiceOptions{MarshalError: tt.service})
+			if err := bindings.Add(service); err != nil {
+				t.Fatalf("bindings.Add() error = %v\n", err)
+			}
+
+			method := bindings.Get(&application.CallOptions{
+				MethodName: "github.com/wailsapp/wails/v3/pkg/application_test.TestService.StructError",
+			})
+			if method == nil {
+				t.Fatal("bound method not found")
+			}
+
+			_, err := method.Call(context.TODO(), newArgs(`{"name":"alice"}`))
+
+			var cerr *application.CallError
+			if !errors.As(err, &cerr) {
+				t.Fatalf("error: %#v, expected *application.CallError", err)
+			}
+			if cerr.Kind != application.RuntimeError {
+				t.Fatalf("kind: %v, expected %v", cerr.Kind, application.RuntimeError)
+			}
+			cause, ok := cerr.Cause.(json.RawMessage)
+			if !ok {
+				t.Fatalf("cause: %#v, expected json.RawMessage", cerr.Cause)
+			}
+			if string(cause) != tt.expected {
+				t.Fatalf("cause: %s, expected: %s", cause, tt.expected)
+			}
+		})
+	}
+}
