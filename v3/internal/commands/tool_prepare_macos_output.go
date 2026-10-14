@@ -84,13 +84,16 @@ func isProjectOutputDirectory(projectRoot, binPath string) (bool, error) {
 }
 
 func isFileProviderDirectory(binPath string) (bool, error) {
+	if provider, err := hasFileProviderAncestor(binPath); provider || err != nil {
+		return provider, err
+	}
 	probe, err := os.MkdirTemp(binPath, "wails-probe-*.app")
 	if err != nil {
 		return false, err
 	}
 	defer os.Remove(probe)
-	// File providers attach FinderInfo asynchronously. Probe once per project
-	// path; ordinary builds use the marker above and pay no detection delay.
+	// Probe as a fallback for providers without domain metadata. A cached result
+	// still checks ancestors so asynchronously attached metadata revokes trust.
 	time.Sleep(2500 * time.Millisecond)
 	output, err := exec.Command("xattr", probe).Output()
 	if err != nil {
@@ -99,6 +102,23 @@ func isFileProviderDirectory(binPath string) (bool, error) {
 	attributes := strings.Split(strings.TrimSpace(string(output)), "\n")
 	return slices.Contains(attributes, "com.apple.fileprovider.fpfs#P") ||
 		slices.Contains(attributes, "com.apple.FinderInfo"), nil
+}
+
+func hasFileProviderAncestor(path string) (bool, error) {
+	resolved, err := resolveMacOSOutput(path)
+	if err != nil {
+		return false, err
+	}
+	for {
+		if provider, err := macOSDirectoryHasFileProviderMetadata(resolved); provider || err != nil {
+			return provider, err
+		}
+		parent := filepath.Dir(resolved)
+		if parent == resolved {
+			return false, nil
+		}
+		resolved = parent
+	}
 }
 
 func localMacOSOutputRoot() (string, error) {
@@ -181,7 +201,11 @@ func macOSOutputIsLocal(path string) bool {
 		return false
 	}
 	data, err := os.ReadFile(filepath.Join(resolved, ".wails-provider-checked"))
-	return err == nil && string(data) == resolved
+	if err != nil || string(data) != "v2\n"+resolved {
+		return false
+	}
+	provider, err := hasFileProviderAncestor(resolved)
+	return err == nil && !provider
 }
 
 func markMacOSOutputLocal(path string) error {
@@ -189,7 +213,7 @@ func markMacOSOutputLocal(path string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(resolved, ".wails-provider-checked"), []byte(resolved), 0o644)
+	return os.WriteFile(filepath.Join(resolved, ".wails-provider-checked"), []byte("v2\n"+resolved), 0o644)
 }
 
 func resolveMacOSOutput(path string) (string, error) {
