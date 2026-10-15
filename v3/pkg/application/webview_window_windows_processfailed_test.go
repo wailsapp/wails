@@ -3,9 +3,18 @@
 package application
 
 import (
+	"bytes"
+	"errors"
+	"io"
+	"log/slog"
+	"os"
+	"os/exec"
+	"runtime"
 	"testing"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
+	"golang.org/x/sys/windows"
 )
 
 // The recovery decision and the attempt budget are the two pieces of the
@@ -165,5 +174,73 @@ func TestProcessFailedDoesNotQueueOverlappingRecovery(t *testing.T) {
 	w.processFailed(nil, nil)
 	if w.webviewRecoveryAttempts != 1 {
 		t.Fatal("overlapping failure spent another recovery attempt")
+	}
+}
+
+// Recovery errors must return without invoking the fatal startup handler.
+func TestSetupChromiumConfigErrorDuringRecoveryDoesNotTerminate(t *testing.T) {
+	previous := globalApplication
+	globalApplication = &App{Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}
+	t.Cleanup(func() { globalApplication = previous })
+
+	w := &windowsWebviewWindow{}
+	if got := w.setupChromiumConfigError(true, errors.New("boom")); got {
+		t.Fatal("setupChromiumConfigError(recovering=true, ...) = true, want false")
+	}
+}
+
+func TestSetupChromiumConfigErrorOnStartupTerminates(t *testing.T) {
+	if os.Getenv("WAILS_TEST_FATAL_RECOVERY") == "1" {
+		globalApplication = &App{Logger: slog.New(slog.NewTextHandler(os.Stderr, nil))}
+		(&windowsWebviewWindow{}).setupChromiumConfigError(false, errors.New("startup failure"))
+		return
+	}
+	executable, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command(executable, "-test.run=^TestSetupChromiumConfigErrorOnStartupTerminates$")
+	cmd.Env = append(os.Environ(), "WAILS_TEST_FATAL_RECOVERY=1")
+	output, err := cmd.CombinedOutput()
+	var exit *exec.ExitError
+	if !errors.As(err, &exit) || exit.ExitCode() != 1 || !bytes.Contains(output, []byte("startup failure")) {
+		t.Fatalf("startup failure: %v, want exit 1; output: %s", err, output)
+	}
+}
+
+func TestEnableDevToolsReturnsCOMFailure(t *testing.T) {
+	// ICoreWebView2Settings inherits three IUnknown slots. Its DevTools setter
+	// is slot 12; use the native ABI so both build-tag implementations are tested.
+	vtable := [13]edge.ComProc{}
+	vtable[12] = edge.NewComProc(func(uintptr, uintptr) uintptr { return 0x80004005 })
+	object := struct{ vtable unsafe.Pointer }{unsafe.Pointer(&vtable)}
+	settings := (*edge.ICoreWebViewSettings)(unsafe.Pointer(&object))
+	err := (&windowsWebviewWindow{}).enableDevTools(settings)
+	runtime.KeepAlive(vtable)
+	if !errors.Is(err, windows.Errno(0x80004005)) {
+		t.Fatalf("DevTools configuration error = %v, want E_FAIL", err)
+	}
+}
+
+func TestZoomAfterFailedWebviewRecovery(t *testing.T) {
+	w := &windowsWebviewWindow{chromium: edge.NewChromium()}
+	w.chromium.Close()
+	if zoom := w.getZoom(); zoom != -1 {
+		t.Fatalf("zoom without controller = %v, want -1", zoom)
+	}
+	w.zoomIn()
+	w.zoomOut()
+}
+
+func TestRebuildWebViewStopsAfterWindowCloses(t *testing.T) {
+	for _, w := range []*windowsWebviewWindow{
+		{parent: &WebviewWindow{destroyed: true}, hwnd: 1},
+		{parent: &WebviewWindow{}, hwnd: 0},
+	} {
+		w.webviewRecoveryAttempts = 1
+		w.rebuildWebView()
+		if w.webviewRecoveryAttempts != 1 {
+			t.Fatal("closed window spent a recovery attempt")
+		}
 	}
 }

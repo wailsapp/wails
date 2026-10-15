@@ -33,11 +33,11 @@ func _ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownQu
 }
 
 func iCoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownAddRef(this *iCoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerIUnknownRelease(this *iCoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandlerInvoke(this *iCoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler, errorCode uintptr, addedScript *ICoreWebView2Controller) uintptr {
