@@ -36,6 +36,7 @@ After processing, the content will be moved to the main changelog and this file 
 - Prevent duplicate window teardown on macOS in [PR](https://github.com/wailsapp/wails/pull/6159) by @charlesbalderson
 - Handle WM_CONTEXTMENU for systray menu to open on right-click in [PR](https://github.com/wailsapp/wails/pull/6162) by @wzk2025
 - Fix all five `InvokeSync*` variants blocking their caller forever when the dispatched callback panics, fixing [#6107](https://github.com/wailsapp/wails/issues/6107), in [PR](https://github.com/wailsapp/wails/pull/6108) by @RALIST
+- Rebuilds destroyed GTK3 submenus safely in [PR](https://github.com/wailsapp/wails/pull/6236) by @leaanthony
 - Implement Windows worker forwarding shim for nested workers in [PR](https://github.com/wailsapp/wails/pull/6261) by @taliesin-ai
 - Fix `OpenFile()` on Windows ignoring `PromptForMultipleSelection()` when `CanChooseDirectories(true)`: users can now pick several folders at once, as on macOS and Linux (#6263)
 - Fix by-value `double` arguments to WebView2 COM methods on windows/arm64 — `ZoomFactor`, `RasterizationScale`, cookie `Expires`, and the print settings scale, page size and margins were affected there (the print-settings setters previously returned `ErrDoubleArgUnsupported`): affected calls now goes through a `runtime.cgocall` trampoline that loads `d0`, which Go's syscall path cannot (golang.org/issue/62583) by @APshenkin
