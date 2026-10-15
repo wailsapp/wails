@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -924,5 +925,49 @@ func TestPreserveOriginallyEmptyContainers(t *testing.T) {
 				t.Errorf("sanitizePlistDict() got\n%v\nexpected\n%v", result, tt.expected)
 			}
 		})
+	}
+}
+
+// TestWindowsInfoJSONLanguage verifies that the rendered Windows info.json
+// uses language code 0409 (en-US) so Explorer shows version details.
+// See: https://github.com/wailsapp/wails/issues/6210
+func TestWindowsInfoJSONLanguage(t *testing.T) {
+	dir := t.TempDir()
+
+	err := GenerateBuildAssets(&BuildAssetsOptions{
+		Dir:                filepath.Join(dir, "build"),
+		Name:               "InfoJSONLangApp",
+		ProductName:        "InfoJSONLangApp",
+		ProductDescription: "A test application",
+		ProductVersion:     "1.0.0",
+		ProductCompany:     "Test Company",
+		ProductCopyright:   "© 2024 Test Company",
+		ProductComments:    "Test comments",
+		Silent:             true,
+	})
+	if err != nil {
+		t.Fatalf("GenerateBuildAssets failed: %v", err)
+	}
+
+	content, err := os.ReadFile(filepath.Join(dir, "build", "windows", "info.json"))
+	if err != nil {
+		t.Fatalf("Failed to read rendered windows/info.json: %v", err)
+	}
+
+	var rendered struct {
+		Info map[string]map[string]string `json:"info"`
+	}
+	if err := json.Unmarshal(content, &rendered); err != nil {
+		t.Fatalf("Failed to parse rendered windows/info.json: %v", err)
+	}
+
+	if len(rendered.Info) != 1 {
+		t.Fatalf("Expected info to have exactly 1 language entry, got %d", len(rendered.Info))
+	}
+	if _, ok := rendered.Info["0409"]; !ok {
+		t.Errorf("Expected info to contain language key \"0409\"")
+	}
+	if _, ok := rendered.Info["0000"]; ok {
+		t.Errorf("Rendered info.json must not contain language key \"0000\" - Explorer hides version details for the neutral language")
 	}
 }
