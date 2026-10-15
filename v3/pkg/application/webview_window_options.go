@@ -416,6 +416,10 @@ type WindowsWindow struct {
 	// Default: false
 	EnableSwipeGestures bool
 
+	// DisablePinchZoom disables pinch-to-zoom on touch input devices (WebView2 IsPinchZoomEnabled)
+	// Default: false
+	DisablePinchZoom bool
+
 	// Menu is the menu to use for the window.
 	Menu *Menu
 
