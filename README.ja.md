@@ -121,7 +121,9 @@ Wails では Go のコードとウェブフロントエンドを単一のバイ�
 
 ## スター数の推移
 
-[![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Star History Chart" src="website/static/img/star-history.svg" width="800" />
+</a>
 
 ## コントリビューター
 
@@ -149,4 +151,3 @@ Wails では Go のコードとウェブフロントエンドを単一のバイ�
 - [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
-

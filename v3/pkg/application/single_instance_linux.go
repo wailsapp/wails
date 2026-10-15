@@ -4,6 +4,7 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -22,11 +23,48 @@ func (f dbusHandler) SendMessage(message string) *dbus.Error {
 }
 
 type linuxLock struct {
-	file     *os.File
-	uniqueID string
-	dbusPath string
-	dbusName string
-	manager  *singleInstanceManager
+	file          *os.File
+	uniqueID      string
+	dbusPath      string
+	dbusName      string
+	dbusInterface string
+	manager       *singleInstanceManager
+}
+
+// singleInstanceNames derives the three D-Bus identifiers the lock needs from
+// UniqueID. They cannot all be the same string, because D-Bus spells them
+// differently: bus names may contain hyphens, interface names may not, and
+// object paths separate elements with "/" and allow neither hyphens nor dots.
+//
+// The bus name keeps UniqueID verbatim. That matters for sandboxed builds: a
+// flatpak may only own names prefixed with its own app id, so an app that
+// follows the documented convention for UniqueID ("unique per application, e.g.
+// com.myapp.myapplication") claims a name it is allowed to own and needs no
+// extra portal permission.
+func singleInstanceNames(uniqueID string) (busName, interfaceName, objectPath string, err error) {
+	for _, element := range strings.Split(uniqueID, ".") {
+		if element == "" {
+			return "", "", "", fmt.Errorf("UniqueID %q has an empty element; it must be a dot-separated name such as com.myapp.myapplication", uniqueID)
+		}
+		if element[0] >= '0' && element[0] <= '9' {
+			return "", "", "", fmt.Errorf("UniqueID %q has an element starting with a digit (%q), which D-Bus does not allow", uniqueID, element)
+		}
+		for _, r := range element {
+			if r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '_' || r == '-' {
+				continue
+			}
+			return "", "", "", fmt.Errorf("UniqueID %q contains %q, which D-Bus does not allow in a name", uniqueID, r)
+		}
+	}
+
+	// Hyphens are legal in a bus name but not in an interface name or an object
+	// path, so those two are built from a hyphen-free form.
+	unhyphenated := strings.ReplaceAll(uniqueID, "-", "_")
+
+	busName = uniqueID + ".SingleInstance"
+	interfaceName = unhyphenated + ".SingleInstance"
+	objectPath = "/" + strings.ReplaceAll(unhyphenated, ".", "/") + "/SingleInstance"
+	return busName, interfaceName, objectPath, nil
 }
 
 func newPlatformLock(manager *singleInstanceManager) (platformLock, error) {
@@ -40,10 +78,15 @@ func (l *linuxLock) acquire(uniqueID string) error {
 		return errors.New("UniqueID is required for single instance lock")
 	}
 
-	id := "wails_app_" + strings.ReplaceAll(strings.ReplaceAll(uniqueID, "-", "_"), ".", "_")
+	busName, interfaceName, objectPath, err := singleInstanceNames(uniqueID)
+	if err != nil {
+		return err
+	}
 
-	l.dbusName = "org." + id + ".SingleInstance"
-	l.dbusPath = "/org/" + id + "/SingleInstance"
+	l.uniqueID = uniqueID
+	l.dbusName = busName
+	l.dbusInterface = interfaceName
+	l.dbusPath = objectPath
 
 	conn, err := dbus.ConnectSessionBus()
 	// if we will reach any error during establishing connection or sending message we will just continue.
@@ -57,7 +100,7 @@ func (l *linuxLock) acquire(uniqueID string) error {
 			secondInstanceBuffer <- message
 		})
 
-		err = conn.Export(f, dbus.ObjectPath(l.dbusPath), l.dbusName)
+		err = conn.Export(f, dbus.ObjectPath(l.dbusPath), l.dbusInterface)
 	})
 	if err != nil {
 		return err
@@ -65,14 +108,21 @@ func (l *linuxLock) acquire(uniqueID string) error {
 
 	reply, err := conn.RequestName(l.dbusName, dbus.NameFlagDoNotQueue)
 	if err != nil {
-		return err
+		// A sandbox that refuses the name fails here. Say so, rather than
+		// letting the caller read it as a second instance and exit silently.
+		return fmt.Errorf("could not claim the single instance name %q: %w", l.dbusName, err)
 	}
 
-	// if name already taken, try to send args to existing instance, if no success just launch new instance
-	if reply == dbus.RequestNameReplyExists {
+	switch reply {
+	case dbus.RequestNameReplyPrimaryOwner, dbus.RequestNameReplyAlreadyOwner:
+		return nil
+	case dbus.RequestNameReplyExists:
+		// Someone else holds the name, so this is a second instance. The caller
+		// hands off to the first one and exits.
 		return alreadyRunningError
+	default:
+		return fmt.Errorf("unexpected reply %d when claiming the single instance name %q", reply, l.dbusName)
 	}
-	return nil
 }
 
 func (l *linuxLock) release() {
@@ -92,7 +142,7 @@ func (l *linuxLock) notify(data string) error {
 		return err
 	}
 
-	err = conn.Object(l.dbusName, dbus.ObjectPath(l.dbusPath)).Call(l.dbusName+".SendMessage", 0, data).Store()
+	err = conn.Object(l.dbusName, dbus.ObjectPath(l.dbusPath)).Call(l.dbusInterface+".SendMessage", 0, data).Store()
 	if err != nil {
 		return err
 	}

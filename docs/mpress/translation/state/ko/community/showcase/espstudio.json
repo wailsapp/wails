@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "8309aa955c1624430091",
+  "sourceFile": "community/showcase/espstudio.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "df75cc01b1e895bd0fbadcdfe440bb48ead181d5553eeb3439180eb2049f4433",
+      "targetHash": "df75cc01b1e895bd0fbadcdfe440bb48ead181d5553eeb3439180eb2049f4433",
+      "machineHash": "df75cc01b1e895bd0fbadcdfe440bb48ead181d5553eeb3439180eb2049f4433",
+      "machineText": "![ESP Studio](/assets/showcase-images/esp-studio.png)",
+      "status": "final",
+      "sourcePreview": "![ESP Studio](/assets/showcase-images/esp-studio.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "1957f19e0f89b1c4d7dd8effdb6f69b003fdd8e171192de67d7f56e5bf24bde3",
+      "targetHash": "dfba38747a3500f6dc46ae0a9f46f8fde4fb2e3a69ee9ae0975d13b543801944",
+      "machineHash": "dfba38747a3500f6dc46ae0a9f46f8fde4fb2e3a69ee9ae0975d13b543801944",
+      "machineText": "[ESP Studio](https://github.com/torabian/esp-studio) - ESP/Arduino 장치를 제어하고 복잡한 IoT 워크플로 및 제어 시스템을 구축하기 위한 크로스 플랫폼 데스크톱, 클라우드 및 임베디드 소프트웨어",
+      "status": "final",
+      "sourcePreview": "[ESP Studio](https://github.com/torabian/esp-studio) - Cross platform, Desktop,\\ Cloud, and Embedded…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "77fc9e8b238ba3454f369d73e4a899d390556a43b533e08b8ad4903c10d1bcdd",
+      "machineHash": "77fc9e8b238ba3454f369d73e4a899d390556a43b533e08b8ad4903c10d1bcdd",
+      "machineText": "Wails로 구축한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
+      "targetHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
+      "machineHash": "3dd69333ba8cadc59e2964379c4c7cd21bc280aeb620f2b43e01e71c1438b506",
+      "machineText": "ESP Studio",
+      "status": "final",
+      "sourcePreview": "ESP Studio",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

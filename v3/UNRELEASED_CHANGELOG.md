@@ -17,18 +17,16 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Add macOS autoplay preference to disable user action requirement for media playback in [PR](https://github.com/wailsapp/wails/pull/5512) by @Eyalm321
-- Move mailbox changelog entry to Unreleased in [PR](https://github.com/wailsapp/wails/pull/5935) by @leaanthony
+- Expose the `@wailsio/runtime/cancellable` subpath export so `CancellablePromise` can be imported without evaluating the root runtime entry (#6153)
 
 ## Changed
 <!-- Changes in existing functionality -->
-- macOS zoom animation uses CADisplayLink or NSTimer for smoother performance in [PR](https://github.com/wailsapp/wails/pull/5945) by @savely-krasovsky
 
 ## Fixed
 <!-- Bug fixes -->
-- Configure iOS Xcode project to retain inherited linker flags and add -ObjC in [PR](https://github.com/wailsapp/wails/pull/5915) by @mortenolsrud
-- Fix excessive TCP connection churn in the `wails3 dev` asset proxy on large frontends, which could exhaust the host's ephemeral ports and make unrelated processes fail with `EADDRNOTAVAIL`
-- Queue per-window event JavaScript for ordered dispatch and backpressure in [PR](https://github.com/wailsapp/wails/pull/5934) by @leaanthony
+- Implement Windows worker forwarding shim for nested workers in [PR](https://github.com/wailsapp/wails/pull/6261) by @taliesin-ai
+- Fix `OpenFile()` on Windows ignoring `PromptForMultipleSelection()` when `CanChooseDirectories(true)`: users can now pick several folders at once, as on macOS and Linux (#6263)
+- Fix by-value `double` arguments to WebView2 COM methods on windows/arm64 — `ZoomFactor`, `RasterizationScale`, cookie `Expires`, and the print settings scale, page size and margins were affected there (the print-settings setters previously returned `ErrDoubleArgUnsupported`): affected calls now goes through a `runtime.cgocall` trampoline that loads `d0`, which Go's syscall path cannot (golang.org/issue/62583) by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

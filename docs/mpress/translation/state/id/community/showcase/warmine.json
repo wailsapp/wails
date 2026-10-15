@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "6e901493ef796ab4cf3d",
+  "sourceFile": "community/showcase/warmine.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "8c5d08c28000f91e8034b2299418ed3905ac9613a81b957fc410966b885646d2",
+      "targetHash": "6ee368a1b8e6d70c8318373032ae7b8abf9408799c07257f3cea4b054e42f492",
+      "machineHash": "6ee368a1b8e6d70c8318373032ae7b8abf9408799c07257f3cea4b054e42f492",
+      "machineText": "![Tangkapan Layar WarMine](/assets/showcase-images/warmine1.png)\\\n![Tangkapan Layar WarMine](/assets/showcase-images/warmine2.png)",
+      "status": "final",
+      "sourcePreview": "![WarMine Screenshot](/assets/showcase-images/warmine1.png)\\ ![WarMine Screenshot](/assets/showcase-…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "79036e3fd9f0d92c72a77bdab1f5ea90e9e903ab22d9530d388ae5d121aee186",
+      "targetHash": "a0deb20ae203f8beec629183b89d03f32bb320c1b1b66e9bbb8ff0d801dddcb8",
+      "machineHash": "a0deb20ae203f8beec629183b89d03f32bb320c1b1b66e9bbb8ff0d801dddcb8",
+      "machineText": "[Peluncur Minecraft untuk WarMine](https://warmine.ru/) adalah aplikasi Wails yang\\\nmemudahkan Anda bergabung dengan server game yang telah dimodifikasi dan mengelola\\\nakun game Anda.",
+      "status": "final",
+      "sourcePreview": "[Minecraft launcher for WarMine](https://warmine.ru/) is a Wails application,\\ that allows you to ea…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "38b6ff5a6329471d59360a012520bbc2465d0ad34d72c2d40f891e0b9e8de0a4",
+      "targetHash": "4762286f384ae312982293565a29e73edc57c9b87cfefb9e8557e76860fd1291",
+      "machineHash": "4762286f384ae312982293565a29e73edc57c9b87cfefb9e8557e76860fd1291",
+      "machineText": "Peluncur ini mengunduh file game, memeriksa integritasnya, dan menjalankan\\\ngame dengan beragam opsi penyesuaian argumen peluncuran dari\\\nbackend.",
+      "status": "final",
+      "sourcePreview": "The Launcher downloads the game files, checks their integrity and launches the\\ game with a wide ran…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "e5c9174e162156d69cd7fdbc5cc0d93f838bc98389d3c0d5a412cda5ee282a08",
+      "targetHash": "b99b2cb42cc07d957f3f3ee5571e0f16d14e2c38cc61b534e5d7d7f543f97822",
+      "machineHash": "b99b2cb42cc07d957f3f3ee5571e0f16d14e2c38cc61b534e5d7d7f543f97822",
+      "machineText": "Frontend ditulis menggunakan Svelte, seluruh peluncur hanya berukuran 9 MB dan mendukung Windows\\\n7-11.",
+      "status": "final",
+      "sourcePreview": "Frontend is written in Svelte, whole launcher fits in 9MB and supports Windows\\ 7-11.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "b8dc39642df62575ea6947be6b3be410d5b9dc980d622212afce873db5424d38",
+      "targetHash": "27b6c93ec92b3aab511a4c453f83ddacfe0c6022e2c526a77d795dd966bdf326",
+      "machineHash": "27b6c93ec92b3aab511a4c453f83ddacfe0c6022e2c526a77d795dd966bdf326",
+      "machineText": "Peluncur Minecraft untuk WarMine",
+      "status": "final",
+      "sourcePreview": "Minecraft launcher for WarMine",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    }
+  }
+}

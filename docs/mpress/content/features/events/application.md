@@ -1,0 +1,10 @@
+---
+title: "Application Events"
+description: "Application-level events emitted by Wails v3"
+slug: "features/events/application"
+sourcePath: "features/events/application.md"
+---
+
+Application events are emitted for application-wide lifecycle changes, such as starting, stopping, and window management operations.
+
+Full documentation of application events is available in the [Event System](/features/events/system/#application-events) guide.

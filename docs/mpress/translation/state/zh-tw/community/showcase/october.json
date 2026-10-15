@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "d5430270e8a0f07efe7c",
+  "sourceFile": "community/showcase/october.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "targetHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "machineHash": "7519d0c3c89579401e3e7a78244edf7d79f5613576c22a965d8fea7a3299c3b1",
+      "machineText": "![October](/assets/showcase-images/october.webp)",
+      "status": "final",
+      "sourcePreview": "![October](/assets/showcase-images/october.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "8abb59d117fa8d9809a5ab1d3a56cc5d6c49258aaf2c0eafcfe677cdb00c0e81",
+      "targetHash": "100f5ebd4ae41d234dce3b76fb831a8ed1411c7dd259381eb0e065773e130092",
+      "machineHash": "100f5ebd4ae41d234dce3b76fb831a8ed1411c7dd259381eb0e065773e130092",
+      "machineText": "[October](https://october.utf9k.net) 是一款小型 Wails 應用程式，讓您可以非常輕鬆地從\\\n[Kobo 電子閱讀器](https://en.wikipedia.org/wiki/Kobo_eReader)擷取重點標示，然後將其轉送至 [Readwise](https://readwise.io)。",
+      "status": "final",
+      "sourcePreview": "[October](https://october.utf9k.net) is a small Wails application that makes it\\ really easy to extr…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "29d79eaad378274371e8c6e65a98996328a635b81e486b835ab2ce5091c69988",
+      "targetHash": "315a1147af49327bae6bae86feeb35abd13dec8dc5a3ca24bc1aa08e8345de61",
+      "machineHash": "315a1147af49327bae6bae86feeb35abd13dec8dc5a3ca24bc1aa08e8345de61",
+      "machineText": "它的功能範圍相對精簡，所有平台版本的大小都不到\\\n10MB，而且這還是在未啟用 [UPX 壓縮](https://upx.github.io/)的情況下！",
+      "status": "final",
+      "sourcePreview": "It has a relatively small scope with all platform versions weighing in under\\ 10MB, and that's witho…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "168bd9cc70124dd7b3bf65ceac42f0331f43bfd6fbf6adab523d968cd82b6468",
+      "targetHash": "2df68e59ad9eadfb4bcac105222f29aaf1cf322612b9b2ca8ea0bc0ace0fb396",
+      "machineHash": "2df68e59ad9eadfb4bcac105222f29aaf1cf322612b9b2ca8ea0bc0ace0fb396",
+      "machineText": "相較之下，作者先前使用 Electron 的嘗試很快就膨脹到\\\n數百 MB。",
+      "status": "final",
+      "sourcePreview": "In contrast, the author's previous attempts with Electron quickly bloated to\\ several hundred megaby…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineText": "使用 Wails 建置的桌面應用程式",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "targetHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "machineHash": "fdd791787b64d22386b9e4fe2fa037792bb86d9b2905f245626eda8e7450c4d4",
+      "machineText": "October",
+      "status": "final",
+      "sourcePreview": "October",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}

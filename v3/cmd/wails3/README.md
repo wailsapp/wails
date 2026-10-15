@@ -3,6 +3,53 @@
 The Wails CLI is a command line tool that allows you to create, build and run Wails applications.
 There are a number of commands related to tooling, such as icon generation and asset bundling.
 
+## MCP project server
+
+`wails3 mcp` starts a local Model Context Protocol server for agent-assisted project
+management. It is separate from the experimental MCP server compiled into a running
+Wails application: this server manages the project lifecycle, while the application
+server controls the running WebView.
+
+Transport is selected automatically. When an MCP host launches the command with
+piped stdin/stdout, Wails uses stdio. When a person runs it in a terminal, Wails
+uses Streamable HTTP on loopback and an OS-selected free port. Use `-stdio` or
+`-http` to override this behavior; `-port 0` selects a free loopback port.
+
+The server is confined to the current working directory by default. An explicit root
+may be supplied with `-root`; paths and symlinks that escape that root are rejected.
+Mutating and process-control tools require a per-process session token. If `-token`
+and `WAILS_MCP_TOKEN` are both absent, a cryptographically random token is generated
+and disclosed in the MCP initialize instructions (and on stderr for human operators).
+
+```bash
+cd /path/to/project-or-workspace
+wails3 mcp
+```
+
+In terminal mode, the command prints the endpoint and bearer token to stderr. In
+stdio mode, the token is included in the MCP initialize instructions.
+
+Example agent configuration:
+
+```json
+{
+  "mcpServers": {
+    "wails3": {
+      "command": "wails3",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Available tools include project inspection and initialization, diagnostics, task
+listing and execution, builds, development-mode startup, binding generation, and
+the `wails_job_status` and `wails_job_stop` tools; status returns bounded output.
+The server does not expose arbitrary shell execution. Remote templates and Git
+remotes require `allowExternal=true`; signing,
+publishing, and deployment are not exposed and should be approved explicitly by the
+user when added in a future capability.
+
 ## Commands
 
 ### task

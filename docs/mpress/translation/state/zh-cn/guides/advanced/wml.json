@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "23f47f0c548dfa71eba9",
+  "sourceFile": "guides/advanced/wml.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "67346d2024838df7923aa61dac0bed50f825843a4b6543a1f0418908aef9a304",
+      "targetHash": "9f719336241547455734c7be607b53a0bd31847ad558082fce376a87a126b91b",
+      "machineHash": "9f719336241547455734c7be607b53a0bd31847ad558082fce376a87a126b91b",
+      "machineText": "此页面为占位页面。完整的 WML 内容即将推出。",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full WML content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "e8779f0a75e5b7f7664c5c2129429d73230c2a650eb475bc21b51068f028168f",
+      "targetHash": "9274ef4f0797d2403af439203cf1828b90842592e11c22546cdff0f036f67e76",
+      "machineHash": "9274ef4f0797d2403af439203cf1828b90842592e11c22546cdff0f036f67e76",
+      "machineText": "WML（Wails 标记语言）是一种用于描述 Wails 用户界面的声明式语言。此处将添加标记语法和可用组件的文档。",
+      "status": "final",
+      "sourcePreview": "WML (Wails Markup) is a declarative language for describing Wails user interfaces. Documentation for…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "81b8912330ea9905cc7c096f1c524bf70f00e21e21fa363134542e7f32420b80",
+      "targetHash": "4479436a957c753155befd58e476905241d7e688fa6f4fc2f56f07f65e8b4f9e",
+      "machineHash": "4479436a957c753155befd58e476905241d7e688fa6f4fc2f56f07f65e8b4f9e",
+      "machineText": "用于描述 Wails v3 用户界面的标记语言",
+      "status": "final",
+      "sourcePreview": "A markup language for describing Wails v3 user interfaces",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "a29008f9131597a579cd07aa4a8d1e382976a3632f9a1f4387c7af792afa979b",
+      "targetHash": "7d27a69d07d10be51117dc2c7f34a3b3628df4710e8b0aaffc01a3c9ebc18631",
+      "machineHash": "7d27a69d07d10be51117dc2c7f34a3b3628df4710e8b0aaffc01a3c9ebc18631",
+      "machineText": "WML（Wails 标记语言）",
+      "status": "final",
+      "sourcePreview": "WML (Wails Markup)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:50Z"
+    }
+  }
+}

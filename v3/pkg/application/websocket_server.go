@@ -51,6 +51,18 @@ func NewWebSocketBroadcaster(app *App) *WebSocketBroadcaster {
 	}
 }
 
+// websocketAcceptOptions applies one origin policy to every server-mode
+// WebSocket endpoint. coder/websocket always permits the request host; the
+// configured patterns add deliberate cross-origin clients, while allowing all
+// origins requires an explicit opt-in because it exposes handlers to CSRF.
+func (a *App) websocketAcceptOptions() *websocket.AcceptOptions {
+	server := a.options.Server
+	return &websocket.AcceptOptions{
+		OriginPatterns:     append([]string(nil), server.WebSocketOriginPatterns...),
+		InsecureSkipVerify: server.WebSocketAllowAllOrigins,
+	}
+}
+
 // GetBrowserWindow returns the BrowserWindow for a given runtime clientId.
 // Returns nil if not found.
 func (b *WebSocketBroadcaster) GetBrowserWindow(clientId string) *BrowserWindow {
@@ -61,10 +73,7 @@ func (b *WebSocketBroadcaster) GetBrowserWindow(clientId string) *BrowserWindow 
 
 // ServeHTTP handles WebSocket upgrade requests.
 func (b *WebSocketBroadcaster) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-		// Allow connections from any origin in server mode
-		InsecureSkipVerify: true,
-	})
+	conn, err := websocket.Accept(w, r, b.app.websocketAcceptOptions())
 	if err != nil {
 		b.app.error("WebSocket accept error: %v", err)
 		return

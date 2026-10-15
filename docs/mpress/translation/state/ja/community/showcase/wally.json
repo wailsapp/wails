@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2d6d331b2bbc42d1ed8a",
+  "sourceFile": "community/showcase/wally.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "a124cbd17b231fbfcaa3bc6d26abebaefa4def935c1ec73149cec7faddc21f40",
+      "targetHash": "1c194e27e510561aaa31da598e9d8067fd8aab2a501f1c7e67ccdb2a66401655",
+      "machineHash": "1c194e27e510561aaa31da598e9d8067fd8aab2a501f1c7e67ccdb2a66401655",
+      "machineText": "![Wallyのスクリーンショット](/assets/showcase-images/wally.webp)",
+      "status": "final",
+      "sourcePreview": "![Wally Screenshot](/assets/showcase-images/wally.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2d2a05322d283648c7a9c276b5c012f87b095e3988571ba2cb5824a6fe4d0656",
+      "targetHash": "4c3624578c305cb89888c2bb623dba87147d50719c4bc2f70ef5a8720c46f5c6",
+      "machineHash": "4c3624578c305cb89888c2bb623dba87147d50719c4bc2f70ef5a8720c46f5c6",
+      "machineText": "[Wally](https://ergodox-ez.com/pages/wally)は、[Ergodox](https://ergodox-ez.com/)キーボード用の公式ファームウェア書き込みツールです。優れた外観を備え、Goの能力とWeb開発の世界にある豊富なグラフィカルツールを組み合わせるという、Wailsで実現できることを見事に示しています。",
+      "status": "final",
+      "sourcePreview": "[Wally](https://ergodox-ez.com/pages/wally) is the official firmware flasher for\\ [Ergodox](https://…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "4f260277d0f7d25b36a1e8739f194f7bafaa73fc391cc1ac0bd1c36270a70c7d",
+      "machineHash": "4f260277d0f7d25b36a1e8739f194f7bafaa73fc391cc1ac0bd1c36270a70c7d",
+      "machineText": "Wailsで構築されたデスクトップアプリケーション",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "targetHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "machineHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "machineText": "Wally",
+      "status": "final",
+      "sourcePreview": "Wally",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    }
+  }
+}

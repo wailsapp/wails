@@ -3,6 +3,7 @@
 package updater
 
 import (
+	"fmt"
 	"os/exec"
 	"syscall"
 )
@@ -14,4 +15,12 @@ func applyDetachAttrs(cmd *exec.Cmd) {
 		cmd.SysProcAttr = &syscall.SysProcAttr{}
 	}
 	cmd.SysProcAttr.Setsid = true
+}
+
+func wrapHelperSpawnError(err error) error {
+	return fmt.Errorf("updater: spawn helper: %w", err)
+}
+
+func startHelper(cmd *exec.Cmd) error {
+	return cmd.Start()
 }

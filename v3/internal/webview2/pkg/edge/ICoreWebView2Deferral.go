@@ -3,7 +3,6 @@
 package edge
 
 import (
-	"errors"
 	"syscall"
 	"unsafe"
 
@@ -20,23 +19,21 @@ type ICoreWebView2Deferral struct {
 }
 
 // AddRef increments the reference count of ICoreWebView2Deferral interface
-func (i *ICoreWebView2Deferral) AddRef() error {
-	_, _, err := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	if err != nil && !errors.Is(err, windows.ERROR_SUCCESS) {
-		return err
-	}
-
-	return nil
+func (i *ICoreWebView2Deferral) AddRef() uint32 {
+	// The return value is the new reference count, as documented for IUnknown::AddRef.
+	// It is for diagnostics only. The Errno returned by Call is just the thread's
+	// last-error and says nothing about success, so it is ignored.
+	r, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(r)
 }
 
 // Release decrements the reference count of ICoreWebView2Deferral interface
-func (i *ICoreWebView2Deferral) Release() error {
-	_, _, err := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	if err != nil && !errors.Is(err, windows.ERROR_SUCCESS) {
-		return err
-	}
-
-	return nil
+func (i *ICoreWebView2Deferral) Release() uint32 {
+	// The return value is the new reference count, as documented for IUnknown::Release.
+	// It is for diagnostics only. The Errno returned by Call is just the thread's
+	// last-error and says nothing about success, so it is ignored.
+	r, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(r)
 }
 
 func (i *ICoreWebView2Deferral) Complete() error {
