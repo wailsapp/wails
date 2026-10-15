@@ -39,6 +39,19 @@ function bootstrap({ href, forwarded, blobs, fetches, revoked, importScripts, cr
             created.push({ url: String(url), options: options || {} });
         }
         terminate() { this.terminated = true; }
+        addEventListener(type, listener, options) {
+            (this._listeners ??= {})[type] ??= [];
+            this._listeners[type].push({ listener, once: !!(options && options.once) });
+        }
+        dispatchEvent(event) {
+            for (const entry of [...((this._listeners && this._listeners[event.type]) || [])]) {
+                entry.listener.call(this, event);
+                if (entry.once) {
+                    this._listeners[event.type] = this._listeners[event.type].filter(candidate => candidate !== entry);
+                }
+            }
+            return true;
+        }
     }
     const sandbox = {
         URL: blobs ? recordingURL(blobs, revoked) : URL,
@@ -113,6 +126,17 @@ const blobText = blob => blob.text();
     assert.equal(box.__created[0].url, "blob:http://wails.localhost/existing");
     assert.equal(box.__created[1].url, "https://example.com/worker.js");
     assert.equal(blobs.length, 0, "unsupported URLs must not be forwarded");
+}
+
+// A worker attached on another HTTP(S) origin keeps the native constructor even
+// for a same-origin nested URL: only the asset-server origin is affected, and a
+// worker-src 'self' policy must never see the blob replacement.
+{
+    const blobs = [];
+    const box = bootstrap({ href: "https://example.com/parent.js", blobs });
+    new box.Worker("./child.js");
+    assert.equal(box.__created[0].url, "https://example.com/child.js", "a non-asset origin must not be forwarded");
+    assert.equal(blobs.length, 0, "a non-asset origin must not create a blob");
 }
 
 // A forwarded worker resolves relative URLs against the original script URL.
@@ -208,6 +232,21 @@ const blobText = blob => blob.text();
     assert.throws(() => new box.Worker("./child.js"), /construction failed/);
     assert.equal(blobs.length, 1);
     assert.deepEqual(revoked, ["blob:http://wails.localhost/1"]);
+}
+
+// A forwarded worker that reports a startup error after the constructor
+// returned releases its object URL, without relying on terminate().
+{
+    const blobs = [];
+    const revoked = [];
+    const box = bootstrap({ href: "http://wails.localhost/parent.js", blobs, revoked });
+    const worker = new box.Worker("./child.js");
+    const objectURL = worker.__wailsObjectURL;
+    assert.match(objectURL, /^blob:/);
+    worker.dispatchEvent({ type: "error" });
+    assert.deepEqual(revoked, [objectURL], "a startup error must release the object URL");
+    worker.terminate();
+    assert.deepEqual(revoked, [objectURL], "terminate after a startup error must not double release");
 }
 
 // Installing twice must not double-wrap (the marker is checked and set).

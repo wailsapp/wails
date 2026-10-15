@@ -52,6 +52,16 @@
         try { return new URL(value).origin === new URL(reference).origin; } catch (_) { return false; }
     };
 
+    // Only the Wails asset-server origin is affected by the WebView2
+    // limitation, so only its worker URLs need forwarding. A worker attached on
+    // any other HTTP(S) origin keeps the native constructor: its requests go
+    // through the normal network stack and a worker-src 'self' policy would
+    // reject the replacement blob worker that the original URL satisfies.
+    // This mirrors the asset host bound into the Fetch interception patterns.
+    const affectedOrigin = value => {
+        try { return new URL(value).hostname === 'wails.localhost'; } catch (_) { return false; }
+    };
+
     const forward = (target, module) =>
         'globalThis.__wailsWorkerBase = ' + JSON.stringify(target) + ';\n' +
         (module
@@ -75,7 +85,7 @@
                 return;
             }
             const target = resolve(script);
-            const forwardable = /^https?:/i.test(target) && sameOrigin(target);
+            const forwardable = /^https?:/i.test(target) && sameOrigin(target) && affectedOrigin(target);
             if (!forwardable) {
                 super(target, settings);
                 return;
@@ -89,6 +99,18 @@
                 throw error;
             }
             this.__wailsObjectURL = objectURL;
+            // A script that fails to load can report its error after the
+            // constructor returns, so the catch above would not run. Release the
+            // blob when the child reports that error instead of retaining it for
+            // the parent's lifetime. A separate listener never clobbers the
+            // caller's own onerror handler.
+            this.addEventListener('error', () => {
+                const pending = this.__wailsObjectURL;
+                if (pending) {
+                    this.__wailsObjectURL = undefined;
+                    URL.revokeObjectURL(pending);
+                }
+            }, { once: true });
         }
 
         terminate() {

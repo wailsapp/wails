@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -98,9 +99,16 @@ func main() {
 		_, _ = w.Write([]byte(childJS))
 	})
 	mux.HandleFunc("/report", func(w http.ResponseWriter, r *http.Request) {
-		buf := make([]byte, 8192)
-		n, _ := r.Body.Read(buf)
-		body := string(buf[:n])
+		// A single Read may return fewer bytes than the body holds, which would
+		// truncate the report or drop a later field. Read the whole (bounded)
+		// body to EOF and surface a read error instead of reporting a partial
+		// result.
+		raw, err := io.ReadAll(io.LimitReader(r.Body, 8192))
+		if err != nil {
+			http.Error(w, "reading report body", http.StatusBadRequest)
+			return
+		}
+		body := string(raw)
 		switch r.URL.Query().Get("kind") {
 		case "ready":
 			select {
@@ -209,7 +217,10 @@ func main() {
 		// Reported signature: error event with undefined message, not an ErrorEvent.
 		silentSig := strings.Contains(res, `isErrorEvent=false`)
 
-		bug := !urlModuleOk || !urlClassicOk
+		// Issue #6128 expects every recorded check to succeed, so any failing
+		// check (the nested URL workers under test, or the fetch/blob controls)
+		// is a failure and must drive the exit status.
+		bug := !fetchOk || !urlModuleOk || !urlClassicOk || !blobImportOk || !blobInlineOk
 		shown := fmt.Sprintf("fetchOk=%v urlModuleOk=%v urlClassicOk=%v blobImportOk=%v blobInlineOk=%v silentSignature=%v bugObserved=%v",
 			fetchOk, urlModuleOk, urlClassicOk, blobImportOk, blobInlineOk, silentSig, bug)
 		win.ExecJS(fmt.Sprintf(`window.__phase('trigger-done', %q);`, shown))
@@ -235,7 +246,8 @@ func main() {
 			return
 		}
 		if bug {
-			fmt.Printf("REPRO_ASSERTION: expected nestedUrlModuleOk=true nestedUrlClassicOk=true, actual nestedUrlModuleOk=%v nestedUrlClassicOk=%v silentSignature=%v\n", urlModuleOk, urlClassicOk, silentSig)
+			fmt.Printf("REPRO_ASSERTION: expected fetchOk=true nestedUrlModuleOk=true nestedUrlClassicOk=true nestedBlobImportOk=true nestedBlobInlineOk=true, actual fetchOk=%v nestedUrlModuleOk=%v nestedUrlClassicOk=%v nestedBlobImportOk=%v nestedBlobInlineOk=%v silentSignature=%v\n",
+				fetchOk, urlModuleOk, urlClassicOk, blobImportOk, blobInlineOk, silentSig)
 			fmt.Println("REPRO_DONE: fail")
 			exitCode.Store(1)
 		} else {
