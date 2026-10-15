@@ -85,9 +85,9 @@ Wails는 macOS 12 이상에서 **카메라와 마이크** 요청을 처리합니
 | --- | --- | --- |
 | `PermissionDefault` | WebKit 자체 권한 프롬프트 표시 | TCC만 적용 |
 | `PermissionAllow` | WebKit 프롬프트 생략 — **TCC는 계속 적용** | TCC만 적용 |
-| `PermissionDeny` | 장치에 접근하기 전에 거부 | TCC만 적용 |
+| `PermissionDeny` | WebKit에서 거부; 시스템 승인은 별도로 적용 | TCC만 적용 |
 
-`PermissionAllow`는 웹뷰 요청을 허용하며 장치 자체를 허용하는 것은 아닙니다. 첫 캡처에서는 여전히 TCC 프롬프트가 표시되고, 사용자가 시스템 설정에서 거부한 앱은 계속 거부됩니다. 앱은 스스로 장치 접근 권한을 부여할 수 없습니다. `PermissionAllow`가 생략하는 것은 그 앞의 WebKit 프롬프트뿐입니다.
+`PermissionAllow`는 웹뷰 요청을 허용하며 장치 접근 권한을 부여하는 것은 아닙니다. 시스템 승인은 독립적으로 적용되며, 시스템 설정에서 거부한 앱은 계속 거부됩니다. WebKit 자체 프롬프트만 생략됩니다.
 
 macOS 12 미만에는 이 델리게이트 메서드가 없으므로 맵이 무시되고 모든 요청이 WebKit 프롬프트로 돌아갑니다.
 
@@ -100,18 +100,11 @@ macOS 12 미만에는 이 델리게이트 메서드가 없으므로 맵이 무�
 <string>Used for video calls</string>
 ```
 
-@note{type="caution" title="Info.plist에 선언하지 않은 기능은 거부하세요"}
+@note{type="caution" title="사용 목적 설명은 필수입니다"}
 
-사용 목적 설명 키 없이 요청이 AVFoundation에 도달하면 단순히 실패하는 것이 아니라 macOS가 앱을 종료합니다.
+WebKit은 Wails 권한 델리게이트를 호출하기 전에 시스템 승인을 요청할 수 있습니다. `PermissionDeny`는 WebKit 요청을 차단하지만 TCC 프롬프트나 AVFoundation 승인 요청이 발생하지 않는다고 보장하지는 않습니다.
 
-`PermissionDefault`는 영 값입니다. 따라서 `{PermissionMicrophone: PermissionAllow}`만 설정하면 카메라는 WebKit 프롬프트를 계속 사용합니다. 사용자가 허용했는데 앱에 `NSMicrophoneUsageDescription`만 선언되어 있으면 앱이 종료됩니다. 사용 목적 설명이 없는 모든 기능에는 `PermissionDeny`를 명시하세요.
-
-```go
-Permissions: map[application.PermissionType]application.Permission{
-    application.PermissionMicrophone: application.PermissionAllow,
-    application.PermissionCamera:     application.PermissionDeny,
-},
-```
+앱이 요청하는 장치의 사용 목적 설명을 추가하고, 샌드박스를 사용하는 경우 해당 장치의 인타이틀먼트도 추가하세요. 이러한 선언 대신 `PermissionDeny`를 사용하지 마세요.
 
 @end
 
@@ -231,7 +224,7 @@ macOS의 ✅는 정책이 WebKit 요청에 응답한다는 뜻이며 TCC가 추�
 
 **웹 콘텐츠가 카메라나 마이크를 요청하면 macOS 앱이 종료됩니다**
 
-사용 목적 설명 키 없이 요청이 AVFoundation에 도달하면 단순히 실패하는 것이 아니라 macOS가 앱을 종료합니다. 해당 키를 추가하거나 그 기능에 `PermissionDeny`를 설정하여 요청이 AVFoundation에 도달하지 않게 하세요. `PermissionDefault`는 사용자가 허용할 수 있는 WebKit 프롬프트를 남겨 둡니다.
+앱이 요청하는 각 장치에 대해 `Info.plist`에 `NSCameraUsageDescription` 또는 `NSMicrophoneUsageDescription`이 포함되어 있는지 확인하세요. 설명이 없으면 요청이 거부될 수 있으며, 필수 설명 없이 AVFoundation에 접근하면 앱이 종료될 수 있습니다. `PermissionDeny`는 WebKit의 결정을 제어하며 이러한 키를 대신하지 않습니다.
 
 **Linux에서 위치 정보/알림/클립보드 설정이 적용되지 않음**
 

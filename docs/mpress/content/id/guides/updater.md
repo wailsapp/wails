@@ -65,6 +65,8 @@ Anda dapat membaca status saat ini menggunakan `app.Updater.State()` kapan saja.
 
 `Restart` menunggu helper mencapai `application.New` sebelum meminta aplikasi yang sedang berjalan untuk keluar. Batas waktu startup default adalah 30 detik. Jika aplikasi melakukan inisialisasi panjang sebelum `application.New`, atur `Config.HelperReadyTimeout` ke durasi yang lebih lama, seperti `time.Minute`. Nilai nol menggunakan default; durasi negatif ditolak. Jika startup melewati batas waktu, `Restart` mengembalikan `updater.ErrHelperNotReady` dan membiarkan aplikasi tetap terbuka.
 
+Di dalam AppImage, pembaru mengganti dan menjalankan ulang berkas `.AppImage` yang ditunjuk oleh `$APPIMAGE`, bukan mount baca-saja.
+
 Jendela bawaan mencerminkan status saat ini secara otomatis — misalnya, ketika `Check` menyatakan tidak ada peningkatan, pengguna akan melihat tampilan berikut dan menutupnya dengan **Tutup**:
 
 ![Jendela pembaruan bawaan dalam status Versi Terkini — tanda centang hijau, judul 'Versi Anda Sudah Terkini', dan satu tombol Tutup.](/assets/updater/default-window-up-to-date.png)
