@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix default Windows info.json language to en-US (0409) so Explorer shows version details (#6210)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
