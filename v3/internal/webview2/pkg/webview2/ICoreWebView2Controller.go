@@ -3,6 +3,7 @@
 package webview2
 
 import (
+	"runtime"
 	"syscall"
 	"unsafe"
 
@@ -164,6 +165,7 @@ func (i *ICoreWebView2Controller) SetBoundsAndZoomFactor(bounds RECT, zoomFactor
 	// floating-point rules (doublecall.Call).
 	args := appendRectArg([]uintptr{uintptr(unsafe.Pointer(i))}, &bounds)
 	hr := doublecall.Call(uintptr(i.Vtbl.SetBoundsAndZoomFactor), zoomFactor, args...)
+	runtime.KeepAlive(i)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
