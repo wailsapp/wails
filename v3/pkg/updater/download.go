@@ -37,11 +37,16 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (path,
 	}
 	tmpPath := filepath.Join(dir, ".artifact")
 
+	// Capture the directory in a local: the named result dir is reset to ""
+	// by the error-path returns, which would make a deferred RemoveAll(dir)
+	// a no-op and leave the temp directory (and partial artifact) behind.
+	tmpDir := dir
+
 	// Track success — on every error path we tear the directory down.
 	success := false
 	defer func() {
 		if !success {
-			_ = os.RemoveAll(dir)
+			_ = os.RemoveAll(tmpDir)
 		}
 	}()
 
