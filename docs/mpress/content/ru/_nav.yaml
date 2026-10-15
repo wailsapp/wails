@@ -1,0 +1,310 @@
+- label: "Главная"
+  link: "/"
+- label: "Почему Wails?"
+  link: "/quick-start/why-wails/"
+- label: "Быстрый старт"
+  collapsed: false
+  items:
+    - label: "Установка"
+      link: "/quick-start/installation/"
+    - label: "Ваше первое приложение"
+      link: "/quick-start/first-app/"
+    - label: "Следующие шаги"
+      link: "/quick-start/next-steps/"
+- label: "Учебные руководства"
+  collapsed: true
+  autogenerate:
+    directory: "tutorials"
+- label: "Основные концепции"
+  collapsed: true
+  items:
+    - label: "Как работает Wails"
+      link: "/concepts/architecture/"
+    - label: "API менеджера"
+      link: "/concepts/manager-api/"
+    - label: "Жизненный цикл приложения"
+      link: "/concepts/lifecycle/"
+    - label: "Мост между Go и фронтендом"
+      link: "/concepts/bridge/"
+    - label: "Система сборки"
+      link: "/concepts/build-system/"
+- label: "Возможности"
+  collapsed: true
+  items:
+    - label: "Окна"
+      collapsed: true
+      items:
+        - label: "Основы работы с окнами"
+          link: "/features/windows/basics/"
+        - label: "Параметры окна"
+          link: "/features/windows/options/"
+        - label: "Окна с вырезом"
+          link: "/features/windows/notch-windows/"
+        - label: "Разрешения"
+          link: "/features/windows/permissions/"
+        - label: "Несколько окон"
+          link: "/features/windows/multiple/"
+        - label: "Окна без рамки"
+          link: "/features/windows/frameless/"
+        - label: "События окна"
+          link: "/features/windows/events/"
+    - label: "Меню"
+      collapsed: true
+      items:
+        - label: "Меню приложения"
+          link: "/features/menus/application/"
+        - label: "Контекстные меню"
+          link: "/features/menus/context/"
+        - label: "Меню в системном трее"
+          link: "/features/menus/systray/"
+        - label: "Справочник по меню"
+          link: "/features/menus/reference/"
+    - label: "Привязки & сервисы"
+      collapsed: true
+      items:
+        - label: "Привязка методов"
+          link: "/features/bindings/methods/"
+        - label: "Сервисы"
+          link: "/features/bindings/services/"
+        - label: "Модели данных"
+          link: "/features/bindings/models/"
+        - label: "Перечисления"
+          link: "/features/bindings/enums/"
+        - label: "Расширенная привязка"
+          link: "/features/bindings/advanced/"
+        - label: "Рекомендации"
+          link: "/features/bindings/best-practices/"
+    - label: "События"
+      collapsed: true
+      items:
+        - label: "Система событий"
+          link: "/features/events/system/"
+        - label: "События приложения"
+          link: "/features/events/application/"
+        - label: "События окна"
+          link: "/features/events/window/"
+        - label: "Пользовательские события"
+          link: "/features/events/custom/"
+    - label: "Диалоговые окна"
+      collapsed: true
+      items:
+        - label: "Диалоговые окна выбора файлов"
+          link: "/features/dialogs/file/"
+        - label: "Диалоговые окна сообщений"
+          link: "/features/dialogs/message/"
+        - label: "Пользовательские диалоговые окна"
+          link: "/features/dialogs/custom/"
+    - label: "Автозапуск"
+      collapsed: true
+      autogenerate:
+        directory: "features/autostart"
+    - label: "Буфер обмена"
+      collapsed: true
+      autogenerate:
+        directory: "features/clipboard"
+    - label: "Браузер"
+      collapsed: true
+      autogenerate:
+        directory: "features/browser"
+    - label: "Перетаскивание & сброс"
+      collapsed: true
+      autogenerate:
+        directory: "features/drag-and-drop"
+    - label: "Клавиатура"
+      collapsed: true
+      autogenerate:
+        directory: "features/keyboard"
+    - label: "Уведомления"
+      collapsed: true
+      autogenerate:
+        directory: "features/notifications"
+    - label: "Экраны"
+      collapsed: true
+      autogenerate:
+        directory: "features/screens"
+    - label: "Окружение"
+      collapsed: true
+      autogenerate:
+        directory: "features/environment"
+    - label: "Особенности платформ"
+      collapsed: true
+      autogenerate:
+        directory: "features/platform"
+- label: "Мобильные приложения"
+  collapsed: true
+  items:
+    - label: "Обзор"
+      link: "/guides/mobile/"
+    - label: "Ваше первое мобильное приложение"
+      link: "/guides/mobile/first-mobile-app/"
+    - label: "iOS"
+      link: "/guides/mobile/ios/"
+    - label: "Android"
+      link: "/guides/mobile/android/"
+    - label: "Мобильный API"
+      link: "/guides/mobile/mobile-api/"
+- label: "Экспериментальные возможности"
+  collapsed: true
+  items:
+    - label: "Обзор"
+      link: "/experimental/"
+    - label: "Wake"
+      link: "/experimental/wake/"
+    - label: "Управление через LLM (MCP)"
+      link: "/guides/mcp-service/"
+- label: "Руководства"
+  collapsed: true
+  items:
+    - label: "Разработка"
+      collapsed: true
+      items:
+        - label: "Структура проекта"
+          link: "/guides/dev/project-structure/"
+        - label: "Процесс разработки"
+          link: "/guides/dev/workflow/"
+        - label: "Другие фреймворки"
+          link: "/guides/dev/frontend-frameworks/"
+        - label: "Отладка"
+          link: "/guides/dev/debugging/"
+        - label: "Тестирование"
+          link: "/guides/testing/"
+    - label: "Сборка & упаковка"
+      collapsed: true
+      items:
+        - label: "Сборка приложений"
+          link: "/guides/build/building/"
+        - label: "Настройка сборки"
+          link: "/guides/build/customization/"
+        - label: "Кроссплатформенная сборка"
+          link: "/guides/build/cross-platform/"
+        - label: "Подписание кода"
+          link: "/guides/build/signing/"
+        - label: "Упаковка для Windows"
+          link: "/guides/build/windows/"
+        - label: "Упаковка для macOS"
+          link: "/guides/build/macos/"
+        - label: "Закрытые API macOS"
+          link: "/guides/build/private-macos-apis/"
+        - label: "Упаковка для Linux"
+          link: "/guides/build/linux/"
+        - label: "Упаковка MSIX"
+          link: "/guides/build/msix/"
+        - label: "Обфусцированные сборки"
+          link: "/guides/build/obfuscation/"
+    - label: "Распространение"
+      collapsed: true
+      items:
+        - label: "Встроенное обновление"
+          link: "/guides/updater/"
+        - label: "Ассоциации файлов"
+          link: "/guides/file-associations/"
+        - label: "Пользовательские протоколы"
+          link: "/guides/distribution/custom-protocols/"
+        - label: "Единственный экземпляр"
+          link: "/guides/single-instance/"
+    - label: "Шаблоны интеграции"
+      collapsed: true
+      items:
+        - label: "Маршрутизация фронтенда"
+          link: "/guides/routing/"
+        - label: "Использование маршрутизатора Gin"
+          link: "/guides/gin-routing/"
+        - label: "Сервисы Gin"
+          link: "/guides/gin-services/"
+        - label: "Интеграция с базами данных"
+          link: "/guides/patterns/database/"
+        - label: "REST API"
+          link: "/guides/patterns/rest-api/"
+    - label: "Расширенные темы"
+      collapsed: true
+      items:
+        - label: "Серверная сборка"
+          link: "/guides/server-build/"
+        - label: "Пользовательские шаблоны"
+          link: "/guides/advanced/custom-templates/"
+        - label: "WML (разметка Wails)"
+          link: "/guides/advanced/wml/"
+        - label: "Обработка паники"
+          link: "/guides/panic-handling/"
+        - label: "Рекомендации по безопасности"
+          link: "/guides/security/"
+- label: "Справочник API"
+  collapsed: true
+  items:
+    - label: "Обзор"
+      link: "/reference/overview/"
+    - label: "Приложение"
+      link: "/reference/application/"
+    - label: "Окно"
+      link: "/reference/window/"
+    - label: "Меню"
+      link: "/reference/menu/"
+    - label: "События"
+      link: "/reference/events/"
+    - label: "Диалоговые окна"
+      link: "/reference/dialogs/"
+    - label: "Среда выполнения фронтенда"
+      link: "/reference/frontend-runtime/"
+    - label: "CLI"
+      link: "/reference/cli/"
+    - label: "Протокол манифеста обновления"
+      link: "/reference/update-manifest/"
+- label: "Участие в разработке"
+  collapsed: true
+  items:
+    - label: "Исправление документации"
+      link: "/contributing/documentation/"
+    - label: "Руководство по участию в разработке"
+      link: "/contributing/"
+    - label: "Технический обзор"
+      link: "/contributing/overview/"
+    - label: "Начало работы"
+      link: "/contributing/getting-started/"
+    - label: "Настройка среды разработки"
+      link: "/contributing/setup/"
+    - label: "Стандарты кодирования"
+      link: "/contributing/standards/"
+- label: "Миграция"
+  collapsed: true
+  items:
+    - label: "С v2 на v3"
+      link: "/migration/v2-to-v3/"
+    - label: "С Electron"
+      link: "/migration/from-electron/"
+- label: "Устранение неполадок"
+  collapsed: true
+  items:
+    - label: "Файлы Syso в macOS"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "Проблемы с RDP"
+          link: "/troubleshooting/windows/rdp/"
+- label: "Сообщество"
+  collapsed: true
+  items:
+    - label: "Ссылки"
+      link: "/community/links/"
+    - label: "Шаблоны"
+      link: "/community/templates/"
+    - label: "Медиаматериалы"
+      link: "/community/media/"
+    - label: "Галерея"
+      collapsed: true
+      items:
+        - label: "Обзор"
+          link: "/community/showcase/"
+        - label: "Приложения"
+          autogenerate:
+            directory: "community/showcase"
+- label: "Что нового"
+  link: "/whats-new/"
+- label: "Статус"
+  link: "/status/"
+- label: "Журнал изменений"
+  link: "/changelog/"
+- label: "Спонсорство"
+  link: "https://github.com/sponsors/leaanthony"
+- label: "Благодарности"
+  link: "/credits/"

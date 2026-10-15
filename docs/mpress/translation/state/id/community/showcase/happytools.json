@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "4506a9e3c5ae02b7ae65",
+  "sourceFile": "community/showcase/happytools.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "71b0065b19f403632553a038da45743d08af1de11b80993861c1d6db5078e37c",
+      "targetHash": "fc330aac5e584555d30fdbfb2b6baa5dfd799a635962b11dac9c7c46a8eda7f0",
+      "machineHash": "fc330aac5e584555d30fdbfb2b6baa5dfd799a635962b11dac9c7c46a8eda7f0",
+      "machineText": "![Tangkapan Layar HappyTools](/assets/showcase-images/happytools.webp)",
+      "status": "final",
+      "sourcePreview": "![HappyTools Screenshot](/assets/showcase-images/happytools.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ffb6941ee2fb43c4f06e222d23903994e47550c1f54399fb74f006ce73c3fad8",
+      "targetHash": "47b7ed1529f381d5a04d6a5de7e312a42eed9b13736658f2d4c13e9aca8fba64",
+      "machineHash": "47b7ed1529f381d5a04d6a5de7e312a42eed9b13736658f2d4c13e9aca8fba64",
+      "machineText": "[HappyTools](https://github.com/Aliuyanfeng/happytools) adalah aplikasi desktop kaya fitur yang mengintegrasikan berbagai fungsi praktis, seperti pengelolaan daftar tugas, kategori, laporan harian, pemantauan sistem, dan pengaturan aplikasi. Dengan desain antarmuka modern dan pengalaman pengguna yang lancar, aplikasi ini membantu pengguna mengelola tugas sehari-hari dan kehidupan mereka dengan lebih baik. Aplikasi desktop lintas platform ini dikembangkan menggunakan Wails v3 + Vue 3 dengan tujuan meningkatkan kebahagiaan dan efisiensi kerja pengguna.",
+      "status": "final",
+      "sourcePreview": "[HappyTools](https://github.com/Aliuyanfeng/happytools) is a feature-rich desktop application that i…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "629d14a8435baa886edc8d545db968057259dc472434ebabfcef0e52d3383d17",
+      "targetHash": "d3cd5f01a70164ddf366c9d52dd3a97dac0325b37e467b3fdfb59c3ef10b6826",
+      "machineHash": "d3cd5f01a70164ddf366c9d52dd3a97dac0325b37e467b3fdfb59c3ef10b6826",
+      "machineText": "⚡ Ringan \u0026 Cepat\\",
+      "status": "final",
+      "sourcePreview": "⚡ Lightweight \u0026 Fast\\",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "6318a87b6930b0624f5d8869468cb243eb612725951b2aecccdb984b1f2b6422",
+      "targetHash": "5788ca94e3ccf8931933324f7c2f2f0e976a692f14644353fa930e6dc48027df",
+      "machineHash": "5788ca94e3ccf8931933324f7c2f2f0e976a692f14644353fa930e6dc48027df",
+      "machineText": "🔒 Aman \u0026 Andal\\",
+      "status": "final",
+      "sourcePreview": "🔒 Secure \u0026 Reliable\\",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "ba8b0b3e9112c250d619fa873a433e87f16981781e7b1c92a3a412467312a9c6",
+      "targetHash": "cdce2724fadbd253d86313aad4fe0fea62fbf782141b6648cc474b2861f42709",
+      "machineHash": "cdce2724fadbd253d86313aad4fe0fea62fbf782141b6648cc474b2861f42709",
+      "machineText": "🎯 Sederhana \u0026 Efisien\\",
+      "status": "final",
+      "sourcePreview": "🎯 Simple \u0026 Efficient\\",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "f6d499974e5b7108f00949d056d27758192a444c6656215f3c4e8dee3396e556",
+      "targetHash": "f6d499974e5b7108f00949d056d27758192a444c6656215f3c4e8dee3396e556",
+      "machineHash": "f6d499974e5b7108f00949d056d27758192a444c6656215f3c4e8dee3396e556",
+      "machineText": "HappyTools",
+      "status": "final",
+      "sourcePreview": "HappyTools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  }
+}
