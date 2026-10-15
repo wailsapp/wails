@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `OpenFile()` on Windows ignoring `PromptForMultipleSelection()` when `CanChooseDirectories(true)`: users can now pick several folders at once, as on macOS and Linux (#6263)
 - Fix by-value `double` arguments to WebView2 COM methods on windows/arm64 — `ZoomFactor`, `RasterizationScale`, cookie `Expires`, and the print settings scale, page size and margins were affected there (the print-settings setters previously returned `ErrDoubleArgUnsupported`): affected calls now goes through a `runtime.cgocall` trampoline that loads `d0`, which Go's syscall path cannot (golang.org/issue/62583) by @APshenkin
 
 ## Deprecated
