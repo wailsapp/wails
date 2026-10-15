@@ -6,6 +6,7 @@ import (
 	"math"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/doublecall"
 	"golang.org/x/sys/windows"
 )
 
@@ -129,14 +130,9 @@ func (i *ICoreWebView2Cookie) GetExpires() (float64, error) {
 
 // PutExpires sets the cookie expiration time
 func (i *ICoreWebView2Cookie) PutExpires(expires float64) error {
-	// put_Expires takes the double BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI.
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, expires)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.vtbl.PutExpires.Call(args...)
+	// put_Expires takes the double BY VALUE; doublecall.Call passes it the way
+	// the target ABI expects.
+	hr := doublecall.Call(uintptr(i.vtbl.PutExpires), expires, uintptr(unsafe.Pointer(i)))
 	if hr != 0 {
 		return windows.Errno(hr)
 	}

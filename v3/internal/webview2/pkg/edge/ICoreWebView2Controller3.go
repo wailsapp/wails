@@ -6,6 +6,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/doublecall"
 	"golang.org/x/sys/windows"
 )
 
@@ -82,17 +83,12 @@ func (i *ICoreWebView2Controller3) GetRasterizationScale() (float64, error) {
 }
 
 func (i *ICoreWebView2Controller3) PutRasterizationScale(scale float64) error {
-	// put_RasterizationScale takes the double BY VALUE. Pass its bit pattern
-	// (see the per-arch appendDoubleArg helpers). Passing &scale here handed
-	// the callee a heap ADDRESS reinterpreted as a double (a near 0.0 value),
-	// silently setting the rasterization scale, blank content, then Chromium
-	// CHECK crashes (0x80000003)
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, scale)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutRasterizationScale.Call(args...)
+	// put_RasterizationScale takes the double BY VALUE. doublecall.Call passes
+	// it the way the target ABI expects. Passing &scale here handed the callee a
+	// heap ADDRESS reinterpreted as a double (a near 0.0 value), silently
+	// setting the rasterization scale, blank content, then Chromium CHECK
+	// crashes (0x80000003)
+	hr := doublecall.Call(uintptr(i.Vtbl.PutRasterizationScale), scale, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
