@@ -67,6 +67,8 @@ You can read the current state with `app.Updater.State()` at any time. Every tra
 
 The update is staged in a `wails-update-*` directory beside the installed binary (on macOS, beside the `.app` bundle), so that directory must be writable.
 
+Inside an AppImage the updater replaces and relaunches the `.AppImage` file named by `$APPIMAGE` rather than the read-only mount.
+
 The default window reflects the current state automatically — for example, when `Check` returns no upgrade the user sees this and dismisses with **Close**:
 
 ![The default updater window in the Up-to-Date state — green checkmark, 'You're Up to Date' heading, single Close button.](/assets/updater/default-window-up-to-date.png)

@@ -11,7 +11,7 @@ type Step = 'project' | 'framework' | 'language' | 'bindings' | 'details' | 'don
 const pageVariants = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } };
 
 const inputCls =
-  'w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500';
+  'w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500';
 
 const FRAMEWORKS = [
   { id: 'vanilla', name: 'Vanilla', description: 'Plain JavaScript / TypeScript', icon: 'javascript' },
@@ -32,12 +32,12 @@ function Page({ title, subtitle, children, onBack, onNext, nextLabel = 'Continue
 }) {
   return (
     <motion.main variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.25 }} className="flex-1 flex flex-col">
-      <header className="text-center mb-6 flex-shrink-0 px-10 pt-10">
+      <header className="text-center mb-6 shrink-0 px-10 pt-10">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight">{title}</h1>
         <p className="text-base text-gray-500 dark:text-gray-400">{subtitle}</p>
       </header>
       <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-10 flex flex-col justify-center">{children}</div>
-      <div className="flex-shrink-0 pt-4 pb-6 flex items-center justify-center gap-3">
+      <div className="shrink-0 pt-4 pb-6 flex items-center justify-center gap-3">
         {onBack && (
           <button onClick={onBack} disabled={busy}
             className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50">Back</button>
@@ -129,7 +129,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
       <div className="relative min-h-full min-w-full w-fit flex items-center justify-center p-4">
         <div className="glass-card rounded-2xl flex overflow-hidden relative z-10" style={{ aspectRatio: '3 / 2', width: 'clamp(48rem, min(100vw - 2rem, (100vh - 2rem) * 1.5), 75rem)' }}>
           {/* Sidebar */}
-          <aside className="w-48 flex-shrink-0 bg-gray-100/50 dark:bg-[#0a0e16]/40 backdrop-blur-[50px] backdrop-saturate-[1.8] border-r border-gray-200 dark:border-white/10 flex flex-col">
+          <aside className="w-48 shrink-0 bg-gray-100/50 dark:bg-[#0a0e16]/40 backdrop-blur-[50px] backdrop-saturate-[1.8] border-r border-gray-200 dark:border-white/10 flex flex-col">
             <div className="p-6 flex justify-center">
               <img src={theme === 'dark' ? wailsLogoWhite : wailsLogoBlack} alt="Wails logo" className="h-24 object-contain" />
             </div>
@@ -142,7 +142,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
                   return (
                     <li key={s.key}>
                       <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${isCurrent ? 'bg-white dark:bg-gray-800/80' : ''}`}>
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 ${isDone ? 'bg-green-500 text-white' : isCurrent ? 'bg-red-500 text-white' : 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-400'}`}>{isDone ? '✓' : i + 1}</div>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${isDone ? 'bg-green-500 text-white' : isCurrent ? 'bg-red-500 text-white' : 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-400'}`}>{isDone ? '✓' : i + 1}</div>
                         <span className={`text-sm font-medium ${isCurrent ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>{s.label}</span>
                       </div>
                     </li>
@@ -192,7 +192,7 @@ export default function InitFlow({ data, theme, toggleTheme }: { data: InitData;
                       return (
                         <button key={fw.id} type="button" role="radio" aria-checked={selected} onClick={() => setFramework(fw.id)}
                           className={`flex items-center gap-4 text-left rounded-xl p-4 transition-all border-2 ${selected ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/10' : 'border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10'}`}>
-                          <img src={`/logos/${logo}.svg`} alt="" aria-hidden="true" className="w-10 h-10 flex-shrink-0" />
+                          <img src={`/logos/${logo}.svg`} alt="" aria-hidden="true" className="w-10 h-10 shrink-0" />
                           <span className="min-w-0">
                             <span className="block text-sm font-semibold text-gray-900 dark:text-white">{fw.name}</span>
                             <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">{fw.description}</span>
