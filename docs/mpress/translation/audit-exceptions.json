@@ -3037,8 +3037,8 @@
     "file": "guides/updater.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "880a4ae8a1a6cbb68edfcba5876c83307d4f37d753b503ac4e6a29366bc97918",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "43a92476b4fb0ceb8e29aa91ba9547b963ddce4237ed85b1ec84601c0df2c43c",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3046,8 +3046,8 @@
     "file": "guides/updater.md",
     "segment": "b0038-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "880a4ae8a1a6cbb68edfcba5876c83307d4f37d753b503ac4e6a29366bc97918",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "43a92476b4fb0ceb8e29aa91ba9547b963ddce4237ed85b1ec84601c0df2c43c",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3055,8 +3055,8 @@
     "file": "guides/updater.md",
     "segment": "b0041-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "880a4ae8a1a6cbb68edfcba5876c83307d4f37d753b503ac4e6a29366bc97918",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "43a92476b4fb0ceb8e29aa91ba9547b963ddce4237ed85b1ec84601c0df2c43c",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3064,8 +3064,8 @@
     "file": "guides/updater.md",
     "segment": "b0044-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "880a4ae8a1a6cbb68edfcba5876c83307d4f37d753b503ac4e6a29366bc97918",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "43a92476b4fb0ceb8e29aa91ba9547b963ddce4237ed85b1ec84601c0df2c43c",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3910,8 +3910,8 @@
     "file": "guides/updater.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "4b58a1f91b53a4f1166260435dc4511902e757d074b82ea47e7a5f44ad9c138f",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "27cbd072d0aa25584cd9b6c5e5e910b09549745a0234681b12acb26ea2a3b28d",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3919,8 +3919,8 @@
     "file": "guides/updater.md",
     "segment": "b0038-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "4b58a1f91b53a4f1166260435dc4511902e757d074b82ea47e7a5f44ad9c138f",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "27cbd072d0aa25584cd9b6c5e5e910b09549745a0234681b12acb26ea2a3b28d",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3928,8 +3928,8 @@
     "file": "guides/updater.md",
     "segment": "b0041-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "4b58a1f91b53a4f1166260435dc4511902e757d074b82ea47e7a5f44ad9c138f",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "27cbd072d0aa25584cd9b6c5e5e910b09549745a0234681b12acb26ea2a3b28d",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -3937,8 +3937,8 @@
     "file": "guides/updater.md",
     "segment": "b0044-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "4b58a1f91b53a4f1166260435dc4511902e757d074b82ea47e7a5f44ad9c138f",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "27cbd072d0aa25584cd9b6c5e5e910b09549745a0234681b12acb26ea2a3b28d",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -4900,8 +4900,8 @@
     "file": "guides/updater.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "670e361f32fe552688518b33010e1d882af0c6232a3edbf43905cdf433db113d",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "15234ceda0639524528b5bf65ce34f065773becf77325ad52ffef101c163d4e0",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -4909,8 +4909,8 @@
     "file": "guides/updater.md",
     "segment": "b0038-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "670e361f32fe552688518b33010e1d882af0c6232a3edbf43905cdf433db113d",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "15234ceda0639524528b5bf65ce34f065773becf77325ad52ffef101c163d4e0",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -4918,8 +4918,8 @@
     "file": "guides/updater.md",
     "segment": "b0041-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "670e361f32fe552688518b33010e1d882af0c6232a3edbf43905cdf433db113d",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "15234ceda0639524528b5bf65ce34f065773becf77325ad52ffef101c163d4e0",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -4927,8 +4927,8 @@
     "file": "guides/updater.md",
     "segment": "b0044-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "670e361f32fe552688518b33010e1d882af0c6232a3edbf43905cdf433db113d",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "15234ceda0639524528b5bf65ce34f065773becf77325ad52ffef101c163d4e0",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -5944,8 +5944,8 @@
     "file": "guides/updater.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "db30b67eeb62337643b405985e40f253c79560065ad7a3f4827715230191004d",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9f488f475ecf953e16fc0602c300aaf032945070ffba777858210cff17c9f133",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -5953,8 +5953,8 @@
     "file": "guides/updater.md",
     "segment": "b0038-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "db30b67eeb62337643b405985e40f253c79560065ad7a3f4827715230191004d",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9f488f475ecf953e16fc0602c300aaf032945070ffba777858210cff17c9f133",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -5962,8 +5962,8 @@
     "file": "guides/updater.md",
     "segment": "b0041-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "db30b67eeb62337643b405985e40f253c79560065ad7a3f4827715230191004d",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9f488f475ecf953e16fc0602c300aaf032945070ffba777858210cff17c9f133",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -5971,8 +5971,8 @@
     "file": "guides/updater.md",
     "segment": "b0044-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "db30b67eeb62337643b405985e40f253c79560065ad7a3f4827715230191004d",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9f488f475ecf953e16fc0602c300aaf032945070ffba777858210cff17c9f133",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -6889,8 +6889,8 @@
     "file": "guides/updater.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "2ac520c3b422427e8d0ce9b116e656e6764feb0fd6aef25e7fad7a78b9a0b815",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "99165c8bff6b17d1d9e11c74f5df7c12656afc5e8ddfe6ee60a4933fb9559b6c",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -6898,8 +6898,8 @@
     "file": "guides/updater.md",
     "segment": "b0038-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "2ac520c3b422427e8d0ce9b116e656e6764feb0fd6aef25e7fad7a78b9a0b815",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "99165c8bff6b17d1d9e11c74f5df7c12656afc5e8ddfe6ee60a4933fb9559b6c",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -6907,8 +6907,8 @@
     "file": "guides/updater.md",
     "segment": "b0041-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "2ac520c3b422427e8d0ce9b116e656e6764feb0fd6aef25e7fad7a78b9a0b815",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "99165c8bff6b17d1d9e11c74f5df7c12656afc5e8ddfe6ee60a4933fb9559b6c",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -6916,8 +6916,8 @@
     "file": "guides/updater.md",
     "segment": "b0044-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "2ac520c3b422427e8d0ce9b116e656e6764feb0fd6aef25e7fad7a78b9a0b815",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "99165c8bff6b17d1d9e11c74f5df7c12656afc5e8ddfe6ee60a4933fb9559b6c",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -8212,8 +8212,8 @@
     "file": "guides/updater.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "087060addb2dbf1c98655ae8d41147faa9886d162ddca12926491232d31517df",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9e176ca805d5e1752c5b0e1e0aa65ec7f69a82ea1e2ba9d69e139f6638c59bdc",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8221,8 +8221,8 @@
     "file": "guides/updater.md",
     "segment": "b0038-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "087060addb2dbf1c98655ae8d41147faa9886d162ddca12926491232d31517df",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9e176ca805d5e1752c5b0e1e0aa65ec7f69a82ea1e2ba9d69e139f6638c59bdc",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8230,8 +8230,8 @@
     "file": "guides/updater.md",
     "segment": "b0041-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "087060addb2dbf1c98655ae8d41147faa9886d162ddca12926491232d31517df",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9e176ca805d5e1752c5b0e1e0aa65ec7f69a82ea1e2ba9d69e139f6638c59bdc",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8239,8 +8239,8 @@
     "file": "guides/updater.md",
     "segment": "b0361-text-01",
     "code": "requirement-language",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "087060addb2dbf1c98655ae8d41147faa9886d162ddca12926491232d31517df",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9e176ca805d5e1752c5b0e1e0aa65ec7f69a82ea1e2ba9d69e139f6638c59bdc",
     "reason": "requires is part of the literal runtime error message. The following French impératives Définissez and modifiez preserve the required corrective actions."
   },
   {
@@ -8500,8 +8500,8 @@
     "file": "guides/updater.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "8866bccb5dce6fda6c9282157643270b44bb02c3ff4aa9636c9d8e71b18728db",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "70f166e204e1d74277bba3ec14e32e3ccfc76f817431aa6e49cf10da58b5a404",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8509,8 +8509,8 @@
     "file": "guides/updater.md",
     "segment": "b0038-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "8866bccb5dce6fda6c9282157643270b44bb02c3ff4aa9636c9d8e71b18728db",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "70f166e204e1d74277bba3ec14e32e3ccfc76f817431aa6e49cf10da58b5a404",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8518,8 +8518,8 @@
     "file": "guides/updater.md",
     "segment": "b0041-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "8866bccb5dce6fda6c9282157643270b44bb02c3ff4aa9636c9d8e71b18728db",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "70f166e204e1d74277bba3ec14e32e3ccfc76f817431aa6e49cf10da58b5a404",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8734,8 +8734,8 @@
     "file": "guides/updater.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "611e1ee30516649034c6e426d8704bcd04defc26be4c65f84b6235e9db7d268f",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "5f7ba92361c4cc0acb9570c507a9ace07a08f0df28750b17fb7bcc753d67566a",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8743,8 +8743,8 @@
     "file": "guides/updater.md",
     "segment": "b0038-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "611e1ee30516649034c6e426d8704bcd04defc26be4c65f84b6235e9db7d268f",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "5f7ba92361c4cc0acb9570c507a9ace07a08f0df28750b17fb7bcc753d67566a",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -8752,8 +8752,8 @@
     "file": "guides/updater.md",
     "segment": "b0041-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "9e7c0cc9ce7f7493d26b676abf6edb1f0865533927f3b38935170614534baab8",
-    "targetSHA256": "611e1ee30516649034c6e426d8704bcd04defc26be4c65f84b6235e9db7d268f",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "5f7ba92361c4cc0acb9570c507a9ace07a08f0df28750b17fb7bcc753d67566a",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -9263,28 +9263,28 @@
   {
     "language": "fr",
     "file": "guides/updater.md",
-    "segment": "b0036-heading-01",
+    "segment": "b0037-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9e176ca805d5e1752c5b0e1e0aa65ec7f69a82ea1e2ba9d69e139f6638c59bdc",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "fr",
     "file": "guides/updater.md",
-    "segment": "b0039-heading-01",
+    "segment": "b0040-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9e176ca805d5e1752c5b0e1e0aa65ec7f69a82ea1e2ba9d69e139f6638c59bdc",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "fr",
     "file": "guides/updater.md",
-    "segment": "b0042-heading-01",
+    "segment": "b0043-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9e176ca805d5e1752c5b0e1e0aa65ec7f69a82ea1e2ba9d69e139f6638c59bdc",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -9848,37 +9848,37 @@
   {
     "language": "pt",
     "file": "guides/updater.md",
-    "segment": "b0036-heading-01",
+    "segment": "b0037-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "fc458bc45fda20ab3fa27b0441bad98d67a5e7fbb29f5314ebaaaa2b9bce792c",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9f488f475ecf953e16fc0602c300aaf032945070ffba777858210cff17c9f133",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "pt",
     "file": "guides/updater.md",
-    "segment": "b0039-heading-01",
+    "segment": "b0040-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "fc458bc45fda20ab3fa27b0441bad98d67a5e7fbb29f5314ebaaaa2b9bce792c",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9f488f475ecf953e16fc0602c300aaf032945070ffba777858210cff17c9f133",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "pt",
     "file": "guides/updater.md",
-    "segment": "b0042-heading-01",
+    "segment": "b0043-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "fc458bc45fda20ab3fa27b0441bad98d67a5e7fbb29f5314ebaaaa2b9bce792c",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9f488f475ecf953e16fc0602c300aaf032945070ffba777858210cff17c9f133",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "pt",
     "file": "guides/updater.md",
-    "segment": "b0045-heading-01",
+    "segment": "b0046-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "fc458bc45fda20ab3fa27b0441bad98d67a5e7fbb29f5314ebaaaa2b9bce792c",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9f488f475ecf953e16fc0602c300aaf032945070ffba777858210cff17c9f133",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -10154,37 +10154,37 @@
   {
     "language": "ru",
     "file": "guides/updater.md",
-    "segment": "b0036-heading-01",
+    "segment": "b0037-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "41e75f84685c93f46e25e6470a8208a869d33a2e27eadd1621c54241a2b83c33",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "99165c8bff6b17d1d9e11c74f5df7c12656afc5e8ddfe6ee60a4933fb9559b6c",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ru",
     "file": "guides/updater.md",
-    "segment": "b0039-heading-01",
+    "segment": "b0040-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "41e75f84685c93f46e25e6470a8208a869d33a2e27eadd1621c54241a2b83c33",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "99165c8bff6b17d1d9e11c74f5df7c12656afc5e8ddfe6ee60a4933fb9559b6c",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ru",
     "file": "guides/updater.md",
-    "segment": "b0042-heading-01",
+    "segment": "b0043-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "41e75f84685c93f46e25e6470a8208a869d33a2e27eadd1621c54241a2b83c33",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "99165c8bff6b17d1d9e11c74f5df7c12656afc5e8ddfe6ee60a4933fb9559b6c",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ru",
     "file": "guides/updater.md",
-    "segment": "b0045-heading-01",
+    "segment": "b0046-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "41e75f84685c93f46e25e6470a8208a869d33a2e27eadd1621c54241a2b83c33",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "99165c8bff6b17d1d9e11c74f5df7c12656afc5e8ddfe6ee60a4933fb9559b6c",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -10478,37 +10478,37 @@
   {
     "language": "ja",
     "file": "guides/updater.md",
-    "segment": "b0036-heading-01",
+    "segment": "b0037-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "cad9ba1778643c2738581a7e3c9a8eefe0978d12274937fcf941a69f7c5543c0",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "27cbd072d0aa25584cd9b6c5e5e910b09549745a0234681b12acb26ea2a3b28d",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ja",
     "file": "guides/updater.md",
-    "segment": "b0039-heading-01",
+    "segment": "b0040-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "cad9ba1778643c2738581a7e3c9a8eefe0978d12274937fcf941a69f7c5543c0",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "27cbd072d0aa25584cd9b6c5e5e910b09549745a0234681b12acb26ea2a3b28d",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ja",
     "file": "guides/updater.md",
-    "segment": "b0042-heading-01",
+    "segment": "b0043-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "cad9ba1778643c2738581a7e3c9a8eefe0978d12274937fcf941a69f7c5543c0",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "27cbd072d0aa25584cd9b6c5e5e910b09549745a0234681b12acb26ea2a3b28d",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ja",
     "file": "guides/updater.md",
-    "segment": "b0045-heading-01",
+    "segment": "b0046-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "cad9ba1778643c2738581a7e3c9a8eefe0978d12274937fcf941a69f7c5543c0",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "27cbd072d0aa25584cd9b6c5e5e910b09549745a0234681b12acb26ea2a3b28d",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -10811,37 +10811,37 @@
   {
     "language": "ko",
     "file": "guides/updater.md",
-    "segment": "b0036-heading-01",
+    "segment": "b0037-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "bfba301658055ad4fd23d1179e1877a29987104d11c4348f05ca0d7f29a42a64",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "15234ceda0639524528b5bf65ce34f065773becf77325ad52ffef101c163d4e0",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ko",
     "file": "guides/updater.md",
-    "segment": "b0039-heading-01",
+    "segment": "b0040-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "bfba301658055ad4fd23d1179e1877a29987104d11c4348f05ca0d7f29a42a64",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "15234ceda0639524528b5bf65ce34f065773becf77325ad52ffef101c163d4e0",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ko",
     "file": "guides/updater.md",
-    "segment": "b0042-heading-01",
+    "segment": "b0043-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "bfba301658055ad4fd23d1179e1877a29987104d11c4348f05ca0d7f29a42a64",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "15234ceda0639524528b5bf65ce34f065773becf77325ad52ffef101c163d4e0",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "ko",
     "file": "guides/updater.md",
-    "segment": "b0045-heading-01",
+    "segment": "b0046-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "bfba301658055ad4fd23d1179e1877a29987104d11c4348f05ca0d7f29a42a64",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "15234ceda0639524528b5bf65ce34f065773becf77325ad52ffef101c163d4e0",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -11072,28 +11072,28 @@
   {
     "language": "zh-cn",
     "file": "guides/updater.md",
-    "segment": "b0036-heading-01",
+    "segment": "b0037-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "ba830416a1644a31a5ddeaf61e67e23ccd64aaba7c5bf614c9f6f60f45693611",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "70f166e204e1d74277bba3ec14e32e3ccfc76f817431aa6e49cf10da58b5a404",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "zh-cn",
     "file": "guides/updater.md",
-    "segment": "b0039-heading-01",
+    "segment": "b0040-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "ba830416a1644a31a5ddeaf61e67e23ccd64aaba7c5bf614c9f6f60f45693611",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "70f166e204e1d74277bba3ec14e32e3ccfc76f817431aa6e49cf10da58b5a404",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "zh-cn",
     "file": "guides/updater.md",
-    "segment": "b0042-heading-01",
+    "segment": "b0043-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "ba830416a1644a31a5ddeaf61e67e23ccd64aaba7c5bf614c9f6f60f45693611",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "70f166e204e1d74277bba3ec14e32e3ccfc76f817431aa6e49cf10da58b5a404",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -11333,28 +11333,28 @@
   {
     "language": "zh-tw",
     "file": "guides/updater.md",
-    "segment": "b0036-heading-01",
+    "segment": "b0037-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "a8c9daa5ac5c16902d8b09d6fc700a98fa3e9acdfe2799bf1f84efaf32dc7a68",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "5f7ba92361c4cc0acb9570c507a9ace07a08f0df28750b17fb7bcc753d67566a",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "zh-tw",
     "file": "guides/updater.md",
-    "segment": "b0039-heading-01",
+    "segment": "b0040-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "a8c9daa5ac5c16902d8b09d6fc700a98fa3e9acdfe2799bf1f84efaf32dc7a68",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "5f7ba92361c4cc0acb9570c507a9ace07a08f0df28750b17fb7bcc753d67566a",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "zh-tw",
     "file": "guides/updater.md",
-    "segment": "b0042-heading-01",
+    "segment": "b0043-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "a8c9daa5ac5c16902d8b09d6fc700a98fa3e9acdfe2799bf1f84efaf32dc7a68",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "5f7ba92361c4cc0acb9570c507a9ace07a08f0df28750b17fb7bcc753d67566a",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. This is a product/platform/API name, literal command, unit, type, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -11684,37 +11684,37 @@
   {
     "language": "id",
     "file": "guides/updater.md",
-    "segment": "b0036-heading-01",
+    "segment": "b0037-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "9b2f1c65fc0fda447af669ad7fd79ff0659db53a0ddfd63dc1ebccabf44e8dc4",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "43a92476b4fb0ceb8e29aa91ba9547b963ddce4237ed85b1ec84601c0df2c43c",
     "reason": "Reviewed unchanged text: GitHub Releases — `updater/providers/github`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "id",
     "file": "guides/updater.md",
-    "segment": "b0039-heading-01",
+    "segment": "b0040-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "9b2f1c65fc0fda447af669ad7fd79ff0659db53a0ddfd63dc1ebccabf44e8dc4",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "43a92476b4fb0ceb8e29aa91ba9547b963ddce4237ed85b1ec84601c0df2c43c",
     "reason": "Reviewed unchanged text: keygen.sh — `updater/providers/keygen`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "id",
     "file": "guides/updater.md",
-    "segment": "b0042-heading-01",
+    "segment": "b0043-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "9b2f1c65fc0fda447af669ad7fd79ff0659db53a0ddfd63dc1ebccabf44e8dc4",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "43a92476b4fb0ceb8e29aa91ba9547b963ddce4237ed85b1ec84601c0df2c43c",
     "reason": "Reviewed unchanged text: Sparkle AppCast — `updater/providers/appcast`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
     "language": "id",
     "file": "guides/updater.md",
-    "segment": "b0045-heading-01",
+    "segment": "b0046-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "9b2f1c65fc0fda447af669ad7fd79ff0659db53a0ddfd63dc1ebccabf44e8dc4",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "43a92476b4fb0ceb8e29aa91ba9547b963ddce4237ed85b1ec84601c0df2c43c",
     "reason": "Reviewed unchanged text: Wails Update Manifest — `updater/providers/endpoint`. Product or API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
   },
   {
@@ -11882,10 +11882,10 @@
   {
     "language": "fr",
     "file": "guides/updater.md",
-    "segment": "b0362-text-01",
+    "segment": "b0363-text-01",
     "code": "requirement-language",
-    "sourceSHA256": "4a829439080e2f77f35c5e1413264281ff7d13124ddfa666c7e059ea1dd715e9",
-    "targetSHA256": "16a9d15bdf130c33d93f24ada59aa7a52ff38eedcf4c1a5cceab683ee65abee2",
+    "sourceSHA256": "1c31ebc458fbfc2980fcef5e7fde7e60c199409218e794ddd037d4671e87bc79",
+    "targetSHA256": "9e176ca805d5e1752c5b0e1e0aa65ec7f69a82ea1e2ba9d69e139f6638c59bdc",
     "reason": "requires is part of the literal runtime error message. The following French impératives Définissez and modifiez preserve the required corrective actions."
   },
   {
