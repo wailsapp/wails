@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix default Windows info.json language to en-US (0409) so Explorer shows version details (#6210)
 - Handle cross-device rename failures in Linux updater with staged copy fallback in [PR](https://github.com/wailsapp/wails/pull/6135) by @john-okeefe
 - Fix `WebviewWindow.SetMenu` on Windows not redrawing the menu bar unless a menubar theme was configured, fixing [#6103](https://github.com/wailsapp/wails/issues/6103)
 - Fix `WebviewWindow.SetMenu(nil)` panicking on Windows instead of being a no-op like on macOS, fixing [#6104](https://github.com/wailsapp/wails/issues/6104)
