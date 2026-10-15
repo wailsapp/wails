@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "78412c2a3c8910079a87",
+  "sourceFile": "community/showcase/bulletinboard.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "targetHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "machineHash": "ec5d7c87a1ce14c0a05f9abc3ada04e564dc700c809b41aeed87b093685906fe",
+      "machineText": "![BulletinBoard](/assets/showcase-images/bboard.webp)",
+      "status": "final",
+      "sourcePreview": "![BulletinBoard](/assets/showcase-images/bboard.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "101473fcfd92f30446c502de0bc357dbde219775d10357ce617a323129af3031",
+      "targetHash": "c58bd82c874df199e4a33ac1145fa7254763f882f1de0d59f96779a4bfa4a3ba",
+      "machineHash": "c58bd82c874df199e4a33ac1145fa7254763f882f1de0d59f96779a4bfa4a3ba",
+      "machineText": "L’application [BulletinBoard](https://github.com/raguay/BulletinBoard) est un tableau d’affichage polyvalent qui permet de présenter des messages statiques ou des boîtes de dialogue afin de recueillir auprès de l’utilisateur des informations destinées à un script. Elle dispose d’une interface utilisateur en mode texte (TUI) pour créer de nouvelles boîtes de dialogue qui pourront ensuite servir à recueillir des informations auprès de l’utilisateur. Elle est conçue pour rester active sur votre système, afficher les informations lorsque nécessaire, puis se masquer. Sur mon système, j’utilise un processus qui surveille un fichier et envoie son contenu à BulletinBoard lorsqu’il est modifié. Il s’intègre parfaitement à mes flux de travail. Un [workflow Alfred](https://github.com/raguay/MyAlfred/blob/master/Alfred%205/EmailIt.alfredworkflow) permet également d’envoyer des informations au programme. Ce workflow fonctionne aussi avec [EmailIt](https://github.com/raguay/EmailIt).",
+      "status": "final",
+      "sourcePreview": "The [BulletinBoard](https://github.com/raguay/BulletinBoard) application is a\\ versital message boar…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineText": "Une application de bureau créée avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "targetHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "machineHash": "4f31a7a17d162e898e7d9d45ea63c2fc7c8f630f020c3c39d6156a7c571239b7",
+      "machineText": "BulletinBoard",
+      "status": "final",
+      "sourcePreview": "BulletinBoard",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    }
+  }
+}

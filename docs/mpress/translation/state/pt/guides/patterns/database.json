@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "ebb78f638168e5ffdf0d",
+  "sourceFile": "guides/patterns/database.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "48156a472942928fcc5a0f4927f6328b6eaa8559effc6458800128031a6634ea",
+      "targetHash": "990777065fca2b0fe4c7b0877eb5190b6b2bbbeda4eba539a4ab4c2dc35ec15d",
+      "machineHash": "990777065fca2b0fe4c7b0877eb5190b6b2bbbeda4eba539a4ab4c2dc35ec15d",
+      "machineText": "Esta página é provisória. O conteúdo completo sobre integração com bancos de dados estará disponível em breve.",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full database integration content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "9989f2f7ebde19c0531fa8bf720eb348bf4fd7a5bda29b63969eac0991e81b29",
+      "targetHash": "2251519e38d50437e753a33213a3cfe8907e5e4df26fa2fd176d2c62ea4c9f5c",
+      "machineHash": "2251519e38d50437e753a33213a3cfe8907e5e4df26fa2fd176d2c62ea4c9f5c",
+      "machineText": "Os aplicativos Wails v3 são aplicativos Go, portanto, você pode usar qualquer driver de banco de dados padrão do Go — incluindo [SQLite](https://github.com/mattn/go-sqlite3), [PostgreSQL](https://github.com/jackc/pgx) e [MySQL](https://github.com/go-sql-driver/mysql) — nos serviços vinculados.",
+      "status": "final",
+      "sourcePreview": "Wails v3 applications are Go applications, so you can use any standard Go database driver — includin…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9883cf56cdd6b6b93f4d4f5cbb41be7e28856a26677ccd24cf6657162d222941",
+      "targetHash": "fda307fd4d6e5244e7bbe8ecc04a7389f16a9d0cc9aefd14c52614b3eb4d3c25",
+      "machineHash": "fda307fd4d6e5244e7bbe8ecc04a7389f16a9d0cc9aefd14c52614b3eb4d3c25",
+      "machineText": "Para ver um exemplo funcional, consulte o [tutorial de TODO](/tutorials/02-todo-vanilla/), que demonstra como adicionar persistência com SQLite a um aplicativo completo.",
+      "status": "final",
+      "sourcePreview": "For a working example, see the [TODO tutorial](/tutorials/02-todo-vanilla/), which demonstrates addi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "7987957fb2e6e74f86e5306bcb37e60acda396bf7715e1d25ce339d7708d2fe2",
+      "targetHash": "f66049ae6cb99d32af123f21e439fd4185ff7b9672c4bbac120258cdf26d19a7",
+      "machineHash": "f66049ae6cb99d32af123f21e439fd4185ff7b9672c4bbac120258cdf26d19a7",
+      "machineText": "Integração do SQLite, PostgreSQL e outros bancos de dados com o Wails v3",
+      "status": "final",
+      "sourcePreview": "Integrating SQLite, PostgreSQL, and other databases with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "080b9c836c59a179f2be830de3453b7b756ec9f5977db00aecfc5193baa53d5c",
+      "targetHash": "e25275bec1a629e9171f6d51c5b41b63462413b59893c3a1821ebda3da594f3a",
+      "machineHash": "e25275bec1a629e9171f6d51c5b41b63462413b59893c3a1821ebda3da594f3a",
+      "machineText": "Integração com bancos de dados",
+      "status": "final",
+      "sourcePreview": "Database Integration",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    }
+  }
+}

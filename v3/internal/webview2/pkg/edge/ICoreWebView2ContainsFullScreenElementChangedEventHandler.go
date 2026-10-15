@@ -26,11 +26,11 @@ func _ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownQueryInte
 }
 
 func _ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownAddRef(this *ICoreWebView2ContainsFullScreenElementChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2ContainsFullScreenElementChangedEventHandlerIUnknownRelease(this *ICoreWebView2ContainsFullScreenElementChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2ContainsFullScreenElementChangedEventHandlerInvoke(this *ICoreWebView2ContainsFullScreenElementChangedEventHandler, sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs) uintptr {

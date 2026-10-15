@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f823ce1a2e0d6c4f2552",
+  "sourceFile": "community/showcase/modalfilemanager.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "targetHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "machineHash": "dccc62d8bddfa52431f44f07ee2c988abd66c38d7919ac703a877fea7f1bdf54",
+      "machineText": "![Modal File Manager](/assets/showcase-images/modalfilemanager.webp)",
+      "status": "final",
+      "sourcePreview": "![Modal File Manager](/assets/showcase-images/modalfilemanager.webp)",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "06cd1a6c3ce63c22e1d8b0c9661be754cb24103592b1890d35702e0a559d6f3f",
+      "targetHash": "3d2a064dd0972144fd76cf136150c543ca9b02d85a49f6d295355dc0c9dab4a0",
+      "machineHash": "3d2a064dd0972144fd76cf136150c543ca9b02d85a49f6d295355dc0c9dab4a0",
+      "machineText": "[Modal File Manager](https://github.com/raguay/ModalFileManager)是一款使用 Web 技术的双窗格\\\n文件管理器。我最初的设计基于 NW.js，可以在[此处](https://github.com/raguay/ModalFileManager-NWjs)找到。此\\\n版本使用相同的基于 Svelte 的前端代码（但自从弃用 NW.js 后，代码已经过大幅修改），\\\n后端则采用[Wails 2](https://wails.io/)实现。使用此实现后，我不再\\\n使用命令行`rm`、`cp`等命令，但系统中必须安装 git，\\\n才能下载主题和扩展。它完全使用 Go 编写，运行速度比以前的版本快得多。",
+      "status": "final",
+      "sourcePreview": "[Modal File Manager](https://github.com/raguay/ModalFileManager) is a dual pane\\ file manager using …",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "99ddc7fca550958f0a6fa1ab392be75c6d154ba33da7da797d3c3f31a0a5e549",
+      "targetHash": "c6840aa0d04bc49e2bc03f24d9641fd7ca9228f6e2eec7ea83d7521e36a7d439",
+      "machineHash": "c6840aa0d04bc49e2bc03f24d9641fd7ca9228f6e2eec7ea83d7521e36a7d439",
+      "machineText": "此文件管理器的设计遵循与 Vim 相同的原则：由状态控制的键盘操作。状态\\\n数量并不固定，而且具有很强的可编程性。因此，可以创建和使用无限多种键盘\\\n配置。这是它与其他文件管理器的主要区别。可从 GitHub 下载主题和扩展。",
+      "status": "final",
+      "sourcePreview": "This file manager is designed around the same principle as Vim: a state\\ controlled keyboard actions…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "targetHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "machineHash": "9c051c8fd29c7ff630b6715a138fbd3f2e2ea4cc45b772cd6dcfb10f0e3fb37c",
+      "machineText": "Modal File Manager",
+      "status": "final",
+      "sourcePreview": "Modal File Manager",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

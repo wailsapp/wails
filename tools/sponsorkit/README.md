@@ -57,7 +57,7 @@ package. It fetches live GitHub data and renders two self-contained SVGs:
 cd tools/sponsorkit
 SPONSORKIT_GITHUB_TOKEN=<token> GOWORK=off go run . -out ../../website/static/img/sponsors.svg
 SPONSORKIT_GITHUB_TOKEN=<token> GOWORK=off go run . -mode contributors -metric prs \
-  -changelogs ../../docs/src/content/docs/changelog.mdx,../../website/src/pages/changelog.mdx \
+  -changelogs ../../docs/mpress/content/changelog.md,../../website/src/pages/changelog.mdx \
   -out ../../website/static/img/contributors.svg
 ```
 
@@ -98,7 +98,7 @@ The single source of truth is `website/static/img/` (deployed to
 - v2 docs (`website/src/pages/credits.mdx` and the 11
   `website/i18n/*/docusaurus-plugin-content-pages/credits.mdx` copies) — `object`
   embeds of `/img/sponsors.svg` and `/img/contributors.svg`.
-- v3 docs (`docs/src/content/docs/credits.mdx` and the 9 locale copies) — `object`
+- v3 docs (`docs/mpress/content/credits.md` and the 9 locale copies) — `object`
   embeds of `https://wails.io/img/sponsors.svg` and
   `https://wails.io/img/contributors.svg`, so they always show the latest
   deployed images.

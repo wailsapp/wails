@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "5e7a1c01e96025e83741",
+  "sourceFile": "community/showcase/ltools.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "targetHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineText": "![LTools](/assets/showcase-images/ltools.webp)",
+      "status": "final",
+      "sourcePreview": "![LTools](/assets/showcase-images/ltools.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3d44d172c582bf4192eb6e09f248b8b205aee3d07d604e51be3aa53c2ae9d7eb",
+      "targetHash": "07db06e62c6459d5b72c5b6c1210c51d62c89dc017dabde4f88ddb93874d43f1",
+      "machineHash": "07db06e62c6459d5b72c5b6c1210c51d62c89dc017dabde4f88ddb93874d43f1",
+      "machineText": "[LTools](https://github.com/lian-yang/ltools) 是一款受 uTools 启发、使用 Wails v3 构建的基于插件的跨平台桌面工具箱。它采用模块化插件架构，为开发者实用工具提供统一入口。",
+      "status": "final",
+      "sourcePreview": "[LTools](https://github.com/lian-yang/ltools) is a plugin-based cross-platform desktop toolbox built…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9bd63b2eaf30cfc2d45360da03525be5e97b07ee39b106a4dbf83da6e7245a52",
+      "targetHash": "5639c0116bf3d704156fed5729377d36ab4e8d6e9528c2a5906ebe70f78bb729",
+      "machineHash": "5639c0116bf3d704156fed5729377d36ab4e8d6e9528c2a5906ebe70f78bb729",
+      "machineText": "它提供全局搜索栏（类似 Spotlight）、系统托盘集成，以及剪贴板管理器、带标注功能的截图工具、JSON 编辑器、计算器、系统监视器等内置插件。还可通过其可扩展的插件系统添加新工具。",
+      "status": "final",
+      "sourcePreview": "It features a global search bar (Spotlight-style), system tray integration, and built-in plugins inc…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8918e7a1e1826c9a096776538f8971d5ba645deee81f1523cb1ab36170d71273",
+      "targetHash": "b3e793af4d9ffc9c402c81eedd1fb393572da7234954c01f292dd39ea4cdc171",
+      "machineHash": "b3e793af4d9ffc9c402c81eedd1fb393572da7234954c01f292dd39ea4cdc171",
+      "machineText": "使用 Wails v3 构建、基于插件的跨平台桌面工具箱",
+      "status": "final",
+      "sourcePreview": "A plugin-based cross-platform desktop toolbox built with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "targetHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineText": "LTools",
+      "status": "final",
+      "sourcePreview": "LTools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

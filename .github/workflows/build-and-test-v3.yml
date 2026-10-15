@@ -13,13 +13,13 @@ on:
       - '.github/workflows/build-and-test-v3.yml'
   pull_request_review:
     types: [submitted]
-    branches:
-      - master
+
+
 jobs:
   test_js:
     name: Run JS Tests
     runs-on: ubuntu-latest
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     strategy:
       matrix:
         node-version: [20.x]
@@ -96,7 +96,7 @@ jobs:
     name: Run Go Tests v3
     needs: [test_js]
     runs-on: ${{ matrix.os }}
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -190,6 +190,8 @@ jobs:
     if: always()
     needs: [test_js, test_go, test_templates]
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
       - uses: geekyeggo/delete-artifact@v5
         with:
@@ -202,7 +204,7 @@ jobs:
     name: Test Templates
     needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     strategy:
       fail-fast: false
       matrix:
@@ -281,9 +283,10 @@ jobs:
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
 
   build_results:
-    if: ${{ always() }}
+    if: ${{ always() && github.event.pull_request.base.ref == 'master' }}
     runs-on: ubuntu-latest
     name: v3 Build Results
+    permissions: {}
     needs: [test_go, test_js, test_templates, test_mac_private_apis]
     steps:
       - run: |
@@ -305,7 +308,7 @@ jobs:
 
   test_mac_private_apis:
     name: macOS API variants (${{ matrix.tags || 'public' }})
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     runs-on: macos-latest
     timeout-minutes: 15
     strategy:
