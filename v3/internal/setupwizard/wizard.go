@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/browser"
+	"github.com/wailsapp/wails/v3/internal/doctor"
 	"github.com/wailsapp/wails/v3/internal/operatingsystem"
 	"github.com/wailsapp/wails/v3/internal/version"
 	"gopkg.in/yaml.v3"
@@ -219,15 +220,16 @@ type WailsConfig struct {
 
 // SystemInfo contains detected system information
 type SystemInfo struct {
-	OS           string `json:"os"`
-	Arch         string `json:"arch"`
-	WailsVersion string `json:"wailsVersion"`
-	GoVersion    string `json:"goVersion"`
-	HomeDir      string `json:"homeDir"`
-	OSName       string `json:"osName,omitempty"`
-	OSVersion    string `json:"osVersion,omitempty"`
-	GitName      string `json:"gitName,omitempty"`
-	GitEmail     string `json:"gitEmail,omitempty"`
+	OS           string               `json:"os"`
+	Arch         string               `json:"arch"`
+	WailsVersion string               `json:"wailsVersion"`
+	GoVersion    string               `json:"goVersion"`
+	HomeDir      string               `json:"homeDir"`
+	OSName       string               `json:"osName,omitempty"`
+	OSVersion    string               `json:"osVersion,omitempty"`
+	GitName      string               `json:"gitName,omitempty"`
+	GitEmail     string               `json:"gitEmail,omitempty"`
+	Details      *doctor.SystemReport `json:"details,omitempty"`
 }
 
 // WizardState represents the complete wizard state
@@ -246,6 +248,7 @@ type Wizard struct {
 	dockerStatus    DockerStatus
 	dockerBuildLogs string
 	dockerMu        sync.RWMutex
+	stopping        bool
 	done            chan struct{}
 	doneOnce        sync.Once
 	shutdown        chan struct{}
@@ -428,6 +431,7 @@ func staticContentType(path string) string {
 }
 
 func (w *Wizard) initSystemInfo() {
+	details, detailsErr := doctor.CollectSystemInfo()
 	w.stateMu.Lock()
 	defer w.stateMu.Unlock()
 
@@ -440,11 +444,18 @@ func (w *Wizard) initSystemInfo() {
 		GoVersion:    runtime.Version(),
 		HomeDir:      homeDir,
 	}
+	if detailsErr == nil {
+		w.state.System.Details = &details
+		w.state.System.OSName = details.Name
+		w.state.System.OSVersion = details.Version
+	}
 
 	// Get OS details
-	if info, err := operatingsystem.Info(); err == nil {
-		w.state.System.OSName = info.Name
-		w.state.System.OSVersion = info.Version
+	if detailsErr != nil {
+		if info, err := operatingsystem.Info(); err == nil {
+			w.state.System.OSName = info.Name
+			w.state.System.OSVersion = info.Version
+		}
 	}
 
 	// Pre-fill author identity from git config (effective config: local repo
@@ -564,6 +575,19 @@ func findWailsConfig() string {
 }
 
 func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !w.isWizardOrigin(r) {
+		http.Error(rw, "Origin not allowed", http.StatusForbidden)
+		return
+	}
+	w.dockerMu.Lock()
+	w.stopping = true
+	dockerBuilding := w.dockerStatus.PullStatus == "pulling"
+	w.dockerMu.Unlock()
+
 	w.stateMu.RLock()
 	state := w.state
 	w.stateMu.RUnlock()
@@ -571,23 +595,28 @@ func (w *Wizard) handleComplete(rw http.ResponseWriter, r *http.Request) {
 	duration := time.Since(state.StartTime)
 
 	response := map[string]interface{}{
-		"status":   "complete",
-		"duration": duration.String(),
+		"status":         "complete",
+		"duration":       duration.String(),
+		"dockerBuilding": dockerBuilding,
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(rw).Encode(response)
 
-	w.doneOnce.Do(func() { close(w.done) })
+	go func() {
+		w.buildWg.Wait()
+		w.doneOnce.Do(func() { close(w.done) })
+	}()
 }
 
 func (w *Wizard) handleClose(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	// Check if Docker build is in progress
-	w.dockerMu.RLock()
+	w.dockerMu.Lock()
+	w.stopping = true
 	dockerBuilding := w.dockerStatus.PullStatus == "pulling"
-	w.dockerMu.RUnlock()
+	w.dockerMu.Unlock()
 
 	response := map[string]interface{}{
 		"status":         "closing",
@@ -789,7 +818,7 @@ type layerProgress struct {
 
 func (w *Wizard) startDockerPull() {
 	w.dockerMu.Lock()
-	if w.dockerStatus.PullStatus == "pulling" {
+	if w.stopping || w.dockerStatus.PullStatus == "pulling" {
 		w.dockerMu.Unlock()
 		return
 	}
@@ -803,9 +832,9 @@ func (w *Wizard) startDockerPull() {
 	w.dockerStatus.LayerCount = 0
 	w.dockerStatus.LayersDone = 0
 	w.dockerBuildLogs = ""
+	w.buildWg.Add(1)
 	w.dockerMu.Unlock()
 
-	w.buildWg.Add(1)
 	go func() {
 		defer w.buildWg.Done()
 

@@ -33,6 +33,16 @@ wails3 package GOOS=darwin
 - 位于 `Contents/Resources/` 中的应用图标（来自 `icons.icns`；如果存在资产目录 `Assets.car`，则来自该目录）
 - 包含应用元数据的 `Info.plist`
 
+### 同步文件夹中的项目
+
+某些 macOS 文件提供程序会向 `.app` 目录添加 Finder 元数据。这会导致 `codesign` 拒绝应用包，或使签名在完成签名后失效。如果提供程序会再次添加元数据，仅删除元数据是不够的。
+
+生成的 macOS 构建任务会检查这种行为。检测到后，Wails 会将项目的生成输出目录移至 `~/Library/Application Support/Wails/build-output/<project>-<hash>` ，并用符号链接替换原来的输出目录。现有输出文件会保留，打包、签名和开发模式仍使用 `bin/<AppName>.app` 路径。CLI 在移动时会显示本地存储位置。
+
+设置 `WAILS_MACOS_OUTPUT_ROOT` 可选择其他不参与同步的本地存储位置。移动目标的根目录必须与项目位于同一文件系统。显式指定在项目之外的 `BIN_DIR` 会按配置使用。现有项目需要更新后的 `build/darwin/Taskfile.yml` 才能使用此处理方式。
+
+分发时，请复制 `bin/<AppName>.app` 或创建 DMG。仅复制 `bin` 符号链接不会包含构建产物。直接执行 `wails3 tool sign` 命令时，如果输入文件夹再次添加元数据，命令会报告错误；请先将该应用包移至不参与同步的文件夹，再进行签名。
+
 ## 应用包资源
 
 `Contents/Resources/` 是存放随 macOS 应用分发的只读文件的标准位置。可在其中存放较大的模板、种子数据、媒体、语言包或其他应按需打开而非通过 `embed` 编译进 Go 可执行文件的载荷。

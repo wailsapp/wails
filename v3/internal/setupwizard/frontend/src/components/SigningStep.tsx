@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { selectSigningIdentity } from '../signing';
 import type { SigningStatus, SigningDefaults } from '../types';
 import { getSigningStatus, getSigning, saveSigning, getState, createNotarizationProfile, getNotarizationStatus, cancelNotarization, createGPGKey, createWindowsCert, exportGPGKey } from '../api';
 
@@ -84,7 +85,7 @@ function CopyableCommand({ cmd }: { cmd: string }) {
       <button
         type="button"
         onClick={() => { navigator.clipboard.writeText(cmd); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-        className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-1.5 flex-shrink-0"
+        className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-1.5 shrink-0"
         title="Copy command"
         aria-label="Copy command"
       >
@@ -107,7 +108,7 @@ function ToolStatus({ toolKey, available, host }: { toolKey: string; available: 
   return (
     <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800">
       <div className="flex items-center gap-2">
-        <span className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${available ? 'bg-green-500/20' : 'bg-amber-500/20'}`}>
+        <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${available ? 'bg-green-500/20' : 'bg-amber-500/20'}`}>
           {available ? (
             <svg className="w-3 h-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
           ) : (
@@ -156,12 +157,6 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
   const [configStep, setConfigStep] = useState<'status' | 'identity' | 'notarize'>('status');
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  // Extract Team ID from identity string like "Developer ID Application: Name (TEAMID)"
-  const extractTeamID = (identity: string): string => {
-    const match = identity.match(/\(([A-Z0-9]+)\)$/);
-    return match ? match[1] : '';
-  };
-
   useEffect(() => {
     headingRef.current?.focus();
     loadData();
@@ -193,11 +188,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
         const identity = status.darwin.identities[0];
         setConfig({
           ...config,
-          darwin: {
-            ...config.darwin,
-            identity,
-            teamID: config.darwin?.teamID || extractTeamID(identity),
-          }
+          darwin: selectSigningIdentity(config.darwin, identity)
         });
       }
     }
@@ -264,14 +255,10 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                       const identity = e.target.value;
                       setConfig({
                         ...config,
-                        darwin: {
-                          ...config.darwin,
-                          identity,
-                          teamID: config.darwin?.teamID || extractTeamID(identity),
-                        }
+                        darwin: selectSigningIdentity(config.darwin, identity)
                       });
                     }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
                   >
                     <option value="" disabled>Select a signing identity...</option>
                     {status.darwin.identities.map((id) => (
@@ -292,15 +279,11 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                     const identity = e.target.value;
                     setConfig({
                       ...config,
-                      darwin: {
-                        ...config.darwin,
-                        identity,
-                        teamID: config.darwin?.teamID || extractTeamID(identity),
-                      }
+                      darwin: selectSigningIdentity(config.darwin, identity)
                     });
                   }}
                   placeholder="Developer ID Application: Your Name (TEAMID)"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
                 />
                 {isOnMac && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -323,8 +306,11 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 darwin: { ...config.darwin, teamID: e.target.value }
               })}
               placeholder="ABCD1234EF"
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
             />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Certificate names supply the Team ID. For a SHA-1 identity, enter the Team ID manually.
+            </p>
           </div>
 
           {!isOnMac && (
@@ -340,7 +326,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                   darwin: { ...config.darwin, p12Path: e.target.value }
                 })}
                 placeholder="/path/to/certificate.p12"
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Export from Keychain Access on a Mac, or generate via Apple Developer Portal
@@ -367,7 +353,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                     darwin: { ...config.darwin, apiKeyID: e.target.value }
                   })}
                   placeholder="ABC123DEF4"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -382,7 +368,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                     darwin: { ...config.darwin, apiIssuerID: e.target.value }
                   })}
                   placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
@@ -397,7 +383,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                     darwin: { ...config.darwin, apiKeyPath: e.target.value }
                   })}
                   placeholder="/path/to/AuthKey_ABC123DEF4.p8"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Create at{' '}
@@ -445,7 +431,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 windows: { ...config.windows, certificatePath: e.target.value }
               })}
               placeholder="/path/to/certificate.pfx"
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
             />
           </div>
 
@@ -463,7 +449,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 windows: { ...config.windows, thumbprint: e.target.value }
               })}
               placeholder="ABC123DEF456..."
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
             />
           </div>
 
@@ -478,7 +464,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 ...config,
                 windows: { ...config.windows, timestampServer: e.target.value }
               })}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
             />
           </div>
         </div>
@@ -507,7 +493,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                       // mismatch the id (and the export prompt can re-appear).
                       linux: { ...config.linux, gpgKeyID: e.target.value, gpgKeyPath: '' }
                     })}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
                   >
                     <option value="" disabled>Select a GPG key...</option>
                     {gpgKeys.map((k) => (
@@ -552,7 +538,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
                 linux: { ...config.linux, gpgKeyPath: e.target.value }
               })}
               placeholder="~/.gnupg/private-key.asc"
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Only needed to import a key from a file (e.g. in CI).
@@ -661,7 +647,7 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
           <h1
             ref={headingRef}
             id="signing-title"
-            className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight focus:outline-none"
+            className="text-2xl font-semibold text-gray-900 dark:text-white mb-1.5 tracking-tight focus:outline-hidden"
             tabIndex={-1}
           >
             Code Signing
@@ -828,26 +814,26 @@ export default function SigningStep({ onNext, onSkip, onBack, canGoBack }: Props
       </div>
 
       {configStep === 'status' && (
-        <div className="flex-shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5">
+        <div className="shrink-0 pt-4 pb-6 flex flex-col items-center gap-1.5">
           <div className="flex items-center gap-3">
             {canGoBack && onBack && (
               <button
                 onClick={onBack}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
               >
                 Back
               </button>
             )}
             <button
               onClick={onNext}
-              className="px-5 py-2 rounded-lg text-sm font-medium transition-colors border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+              className="px-5 py-2 rounded-lg text-sm font-medium transition-colors border border-red-500 text-red-600 dark:text-red-400 hover:bg-red-500/10 focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
             >
               Continue
             </button>
           </div>
           <button
             onClick={onSkip}
-            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded"
           >
             Set up later
           </button>
@@ -1015,7 +1001,7 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
           value={profileName}
           onChange={(e) => setProfileName(e.target.value)}
           placeholder="wails-notary"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
         />
       </div>
 
@@ -1026,7 +1012,7 @@ function NotarizationSetup({ config, setConfig, teamID, onDone, onSkip, onBack }
           value={appleID}
           onChange={(e) => setAppleID(e.target.value)}
           placeholder="you@example.com"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
         />
       </div>
 
@@ -1139,7 +1125,7 @@ function GPGExportNotice({ keyID, onExported }: { keyID: string; onExported: () 
                 value={passphrase}
                 onChange={(e) => setPassphrase(e.target.value)}
                 placeholder="Key passphrase"
-                className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
               />
               <button
                 type="button"
@@ -1226,17 +1212,17 @@ function GPGKeySetup({ defaultName, defaultEmail, onCreated, startOpen }: {
       <div>
         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your Name"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500" />
       </div>
       <div>
         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500" />
       </div>
       <div>
         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Passphrase (optional)</label>
         <input type="password" value={passphrase} onChange={(e) => setPassphrase(e.target.value)} placeholder="Leave blank for no passphrase"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500" />
       </div>
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       <div className="flex gap-2">
@@ -1318,12 +1304,12 @@ function WindowsCertSetup({ config, setConfig, onCreated }: {
       <div>
         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Certificate Name (CN)</label>
         <input type="text" value={commonName} onChange={(e) => setCommonName(e.target.value)} placeholder="My Company"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500" />
       </div>
       <div>
         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">.pfx Password</label>
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Protects the generated .pfx"
-          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500" />
       </div>
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       <div className="flex gap-2">
