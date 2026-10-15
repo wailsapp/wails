@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// download streams the artifact for rel from p into a temp file, computing
+// download streams the artifact for rel from p into a staging file, computing
 // the verification digest while the bytes flow past. Returns the temp file
 // path and the temp directory enclosing it; the caller is responsible for
 // verifying then renaming or removing the directory (RemoveAll on dir tears
@@ -25,9 +25,15 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (path,
 	u.transition(StateDownloading)
 	u.host.Emit(EventDownloadStarted, rel)
 
-	dir, err = os.MkdirTemp("", "wails-update-*")
+	target, err := resolveTarget()
 	if err != nil {
-		return "", "", fmt.Errorf("updater: temp dir: %w", err)
+		return "", "", fmt.Errorf("updater: resolve self: %w", err)
+	}
+	// Stage beside the target so the helper's swap is a same-filesystem
+	// rename; os.TempDir is often a tmpfs.
+	dir, err = os.MkdirTemp(filepath.Dir(target), "wails-update-*")
+	if err != nil {
+		return "", "", fmt.Errorf("updater: staging dir: %w", err)
 	}
 	tmpPath := filepath.Join(dir, ".artifact")
 
