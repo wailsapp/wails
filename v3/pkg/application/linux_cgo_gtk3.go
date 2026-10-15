@@ -770,12 +770,19 @@ func clipboardSet(text string) {
 }
 
 // Menu
-// Accessed only on the GTK thread. The destroy signal releases the Go state
-// before a later rebuild can reuse a pointer to a destroyed widget.
-var menuDestroyCallbacks = make(map[pointer]func())
+// The destroy signal releases the Go state before a later rebuild can reuse a
+// pointer to a destroyed widget. Callbacks run on the GTK thread; the mutex
+// protects the registry from menus constructed on other goroutines.
+var (
+	menuDestroyCallbacks   = make(map[pointer]func())
+	menuDestroyCallbacksMu sync.Mutex
+)
 
+// menuOnDestroy registers callback to run when the GTK widget is destroyed.
 func menuOnDestroy(widget pointer, callback func()) {
+	menuDestroyCallbacksMu.Lock()
 	menuDestroyCallbacks[widget] = callback
+	menuDestroyCallbacksMu.Unlock()
 	signal := C.CString("destroy")
 	defer C.free(unsafe.Pointer(signal))
 	C.g_signal_connect_data(C.gpointer(widget), signal, C.GCallback(C.handleMenuDestroy), nil, nil, 0)
@@ -784,8 +791,10 @@ func menuOnDestroy(widget pointer, callback func()) {
 //export handleMenuDestroy
 func handleMenuDestroy(widget unsafe.Pointer, _ unsafe.Pointer) {
 	key := pointer(widget)
+	menuDestroyCallbacksMu.Lock()
 	callback := menuDestroyCallbacks[key]
 	delete(menuDestroyCallbacks, key)
+	menuDestroyCallbacksMu.Unlock()
 	if callback != nil {
 		callback()
 	}

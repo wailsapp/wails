@@ -17,11 +17,16 @@ func gtkMenuTestLabels(menu *Menu) []string {
 	defer C.g_list_free(children)
 	var labels []string
 	for child := children; child != nil; child = child.next {
-		box := C.gtk_bin_get_child((*C.GtkBin)(child.data))
-		contents := C.gtk_container_get_children((*C.GtkContainer)(unsafe.Pointer(box)))
-		label := (*C.GtkLabel)(C.g_list_last(contents).data)
-		labels = append(labels, C.GoString(C.gtk_label_get_text(label)))
-		C.g_list_free(contents)
+		text := ""
+		if box := C.gtk_bin_get_child((*C.GtkBin)(child.data)); box != nil {
+			if contents := C.gtk_container_get_children((*C.GtkContainer)(unsafe.Pointer(box))); contents != nil {
+				if last := C.g_list_last(contents); last != nil {
+					text = C.GoString(C.gtk_label_get_text((*C.GtkLabel)(last.data)))
+				}
+				C.g_list_free(contents)
+			}
+		}
+		labels = append(labels, text)
 	}
 	return labels
 }

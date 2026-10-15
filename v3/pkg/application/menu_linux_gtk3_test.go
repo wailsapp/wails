@@ -70,7 +70,7 @@ func TestGTK3MenuRebuildProcess(t *testing.T) {
 			if id != item.id {
 				t.Fatalf("activation id = %d, want %d", id, item.id)
 			}
-		default:
+		case <-time.After(time.Second):
 			t.Fatal("rebuilt menu item did not activate")
 		}
 	}
