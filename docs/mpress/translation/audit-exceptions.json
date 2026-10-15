@@ -625,8 +625,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "e258bae285e747bb758770f0aa60f33d961c411ec1e51df6ff21f842fffef178",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "be96a4f582cbb3fcaa03244a6be7fb5382c6f2dcc225f0d3aec2a29043ed99f0",
     "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -634,8 +634,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0050-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "e258bae285e747bb758770f0aa60f33d961c411ec1e51df6ff21f842fffef178",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "be96a4f582cbb3fcaa03244a6be7fb5382c6f2dcc225f0d3aec2a29043ed99f0",
     "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -643,9 +643,9 @@
     "file": "features/windows/permissions.md",
     "segment": "b0062-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "e258bae285e747bb758770f0aa60f33d961c411ec1e51df6ff21f842fffef178",
-    "reason": "Reviewed unchanged text: macOS (TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "be96a4f582cbb3fcaa03244a6be7fb5382c6f2dcc225f0d3aec2a29043ed99f0",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "de",
@@ -1678,8 +1678,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "19710a97be1fc7ed93fb9b6797395313e7fe20c0f64f2e9ce603a327896c5402",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "7e7f9835e4a34e6318a32418c885b340856454eca2a3e69c9b28bc60a9d79977",
     "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1687,8 +1687,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0050-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "19710a97be1fc7ed93fb9b6797395313e7fe20c0f64f2e9ce603a327896c5402",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "7e7f9835e4a34e6318a32418c885b340856454eca2a3e69c9b28bc60a9d79977",
     "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -1696,9 +1696,9 @@
     "file": "features/windows/permissions.md",
     "segment": "b0062-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "19710a97be1fc7ed93fb9b6797395313e7fe20c0f64f2e9ce603a327896c5402",
-    "reason": "Reviewed unchanged text: macOS (TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "7e7f9835e4a34e6318a32418c885b340856454eca2a3e69c9b28bc60a9d79977",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "fr",
@@ -2677,8 +2677,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "bb18f98c6f0c983f1c575f9efc42e9324d62ccaab54d8237589575ddf44316a4",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "58e4532605470a71d8bfdb858592b351016796abd03f41e4dec50b78a73dc01f",
     "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -2686,8 +2686,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0050-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "bb18f98c6f0c983f1c575f9efc42e9324d62ccaab54d8237589575ddf44316a4",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "58e4532605470a71d8bfdb858592b351016796abd03f41e4dec50b78a73dc01f",
     "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -2695,9 +2695,9 @@
     "file": "features/windows/permissions.md",
     "segment": "b0062-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "bb18f98c6f0c983f1c575f9efc42e9324d62ccaab54d8237589575ddf44316a4",
-    "reason": "Reviewed unchanged text: macOS (TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "58e4532605470a71d8bfdb858592b351016796abd03f41e4dec50b78a73dc01f",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "id",
@@ -4513,8 +4513,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "4e2e5df067c8166acffc12da7ce1365f9b4598a2004eacbb6fd3e8d72aeeb4b4",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "273c11858d369a048f15813187d7506f85ae19857e829dcf2bce309e5e5e8512",
     "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -4522,8 +4522,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0050-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "4e2e5df067c8166acffc12da7ce1365f9b4598a2004eacbb6fd3e8d72aeeb4b4",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "273c11858d369a048f15813187d7506f85ae19857e829dcf2bce309e5e5e8512",
     "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -4531,9 +4531,9 @@
     "file": "features/windows/permissions.md",
     "segment": "b0062-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "4e2e5df067c8166acffc12da7ce1365f9b4598a2004eacbb6fd3e8d72aeeb4b4",
-    "reason": "Reviewed unchanged text: macOS (TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "273c11858d369a048f15813187d7506f85ae19857e829dcf2bce309e5e5e8512",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "ko",
@@ -5602,8 +5602,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "0a4fbae7d3bf8f3e2eb1b33e9127c041ec01f65351ff1a0e205b8604ab5e4c20",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "2d33af5434145080f3487285f9e7e8602e58448f4455665fc53f27d14dee08e3",
     "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -5611,8 +5611,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0050-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "0a4fbae7d3bf8f3e2eb1b33e9127c041ec01f65351ff1a0e205b8604ab5e4c20",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "2d33af5434145080f3487285f9e7e8602e58448f4455665fc53f27d14dee08e3",
     "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -5620,9 +5620,9 @@
     "file": "features/windows/permissions.md",
     "segment": "b0062-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "0a4fbae7d3bf8f3e2eb1b33e9127c041ec01f65351ff1a0e205b8604ab5e4c20",
-    "reason": "Reviewed unchanged text: macOS (TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "2d33af5434145080f3487285f9e7e8602e58448f4455665fc53f27d14dee08e3",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "pt",
@@ -6547,8 +6547,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0035-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "6e9bcad58a29b7463a99af8056ec3d3bd164f7626de57fd0d463517f0cdaec99",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "f2878eac9a152ba0b0ec5cd108273cdc72a4dfe5b492b729ea466738b8949796",
     "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -6556,8 +6556,8 @@
     "file": "features/windows/permissions.md",
     "segment": "b0050-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "6e9bcad58a29b7463a99af8056ec3d3bd164f7626de57fd0d463517f0cdaec99",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "f2878eac9a152ba0b0ec5cd108273cdc72a4dfe5b492b729ea466738b8949796",
     "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
@@ -6565,9 +6565,9 @@
     "file": "features/windows/permissions.md",
     "segment": "b0062-heading-01",
     "code": "untranslated",
-    "sourceSHA256": "da705d114ce73e6490970ab263a5b1fb3d88e26b8f3237bd15c96762b286680a",
-    "targetSHA256": "6e9bcad58a29b7463a99af8056ec3d3bd164f7626de57fd0d463517f0cdaec99",
-    "reason": "Reviewed unchanged text: macOS (TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "f2878eac9a152ba0b0ec5cd108273cdc72a4dfe5b492b729ea466738b8949796",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   },
   {
     "language": "ru",
@@ -12940,5 +12940,86 @@
     "sourceSHA256": "fdc7792265aebac6d763e973aac6ed4bb2e1f51a5f5594428a10feec89d4ac42",
     "targetSHA256": "2819e5684c766df9f803326ab74a0a21f0c3a76b0788eff099fc37864c60dbd2",
     "reason": "Reviewed unchanged text: MQ Studio. This is a product/platform/API name, literal code, platform identifier, or established technical term in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "features/windows/permissions.md",
+    "segment": "b0035-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "8020fba776d418741d6ea4fd3da86a0bc9bfed0473d80de1c21d82fb8850f442",
+    "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "features/windows/permissions.md",
+    "segment": "b0050-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "8020fba776d418741d6ea4fd3da86a0bc9bfed0473d80de1c21d82fb8850f442",
+    "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "ja",
+    "file": "features/windows/permissions.md",
+    "segment": "b0062-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "8020fba776d418741d6ea4fd3da86a0bc9bfed0473d80de1c21d82fb8850f442",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "features/windows/permissions.md",
+    "segment": "b0035-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "1bd87e104acfe6c33c79e253bed731a095a596b1ca0f6e904b7b9d72477ec152",
+    "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "features/windows/permissions.md",
+    "segment": "b0050-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "1bd87e104acfe6c33c79e253bed731a095a596b1ca0f6e904b7b9d72477ec152",
+    "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-cn",
+    "file": "features/windows/permissions.md",
+    "segment": "b0062-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "1bd87e104acfe6c33c79e253bed731a095a596b1ca0f6e904b7b9d72477ec152",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "features/windows/permissions.md",
+    "segment": "b0035-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "1b7b215e9ed42dba45a25196166f25624ae004c53c6232e1ccb0706fb9e7b4bd",
+    "reason": "Reviewed unchanged text: Linux (WebKitGTK). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "features/windows/permissions.md",
+    "segment": "b0050-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "1b7b215e9ed42dba45a25196166f25624ae004c53c6232e1ccb0706fb9e7b4bd",
+    "reason": "Reviewed unchanged text: Windows (WebView2). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
+  },
+  {
+    "language": "zh-tw",
+    "file": "features/windows/permissions.md",
+    "segment": "b0062-heading-01",
+    "code": "untranslated",
+    "sourceSHA256": "e34f1abd8e923676356e6f38d13e7f9de652a259efe08b451442aab924378e20",
+    "targetSHA256": "1b7b215e9ed42dba45a25196166f25624ae004c53c6232e1ccb0706fb9e7b4bd",
+    "reason": "Reviewed unchanged text: macOS (WKWebView + TCC). This is a product/platform/API name, literal command/error, or valid shared technical wording in this language; surrounding prose is translated."
   }
 ]
