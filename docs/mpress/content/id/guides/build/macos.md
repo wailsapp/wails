@@ -33,6 +33,16 @@ Tindakan ini membuat `bin/<AppName>.app` yang berisi:
 - Ikon aplikasi di `Contents/Resources/` (dari `icons.icns` atau, jika tersedia, dari katalog aset `Assets.car`)
 - `Info.plist` dengan metadata aplikasi
 
+### Proyek dalam folder tersinkronisasi
+
+Beberapa penyedia file macOS menambahkan metadata Finder ke direktori `.app` sehingga `codesign` menolak bundel, atau tanda tangannya menjadi tidak valid setelah penandatanganan. Menghapus metadata saja tidak cukup jika penyedia menambahkannya kembali.
+
+Task build macOS yang dihasilkan memeriksa perilaku ini. Saat terdeteksi, Wails memindahkan direktori keluaran build proyek ke `~/Library/Application Support/Wails/build-output/<project>-<hash>` dan mengganti direktori keluaran asli dengan tautan simbolis. File keluaran yang sudah ada tetap dipertahankan, dan `bin/<AppName>.app` tetap menjadi jalur yang digunakan untuk pengemasan, penandatanganan, dan mode pengembangan. CLI menampilkan lokasi penyimpanan lokal saat melakukan pemindahan.
+
+Tetapkan `WAILS_MACOS_OUTPUT_ROOT` untuk memilih lokasi penyimpanan lokal lain yang tidak disinkronkan. Direktori akar tujuan pemindahan harus berada pada sistem file yang sama dengan proyek. `BIN_DIR` yang secara eksplisit ditetapkan di luar proyek digunakan sesuai konfigurasi. Proyek yang sudah ada memerlukan `build/darwin/Taskfile.yml` yang diperbarui untuk menggunakan penanganan ini.
+
+Untuk distribusi, salin `bin/<AppName>.app` atau buat DMG. Menyalin tautan simbolis `bin` saja tidak menyertakan artefak build. Perintah langsung `wails3 tool sign` melaporkan kesalahan jika folder masukannya menambahkan kembali metadata; pindahkan bundel tersebut ke folder yang tidak disinkronkan sebelum menandatanganinya.
+
 ## Sumber Daya Bundel
 
 `Contents/Resources/` adalah lokasi standar untuk file hanya-baca yang disertakan bersama aplikasi macOS. Gunakan lokasi ini untuk templat berukuran besar, data awal, media, paket bahasa, atau muatan lain yang sebaiknya dibuka sesuai kebutuhan, bukan dikompilasi ke dalam executable Go dengan `embed`.

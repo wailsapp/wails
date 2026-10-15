@@ -33,6 +33,16 @@ Dadurch wird `bin/<AppName>.app` mit folgendem Inhalt erstellt:
 - Das App-Symbol in `Contents/Resources/` (aus `icons.icns` oder, sofern vorhanden, aus dem Asset-Katalog `Assets.car`)
 - `Info.plist` mit App-Metadaten
 
+### Projekte in synchronisierten Ordnern
+
+Einige macOS-Dateianbieter fügen Verzeichnissen mit der Endung `.app` Finder-Metadaten hinzu. Dadurch lehnt `codesign` das Bundle ab, oder die Signatur wird nach dem Signieren ungültig. Das Entfernen der Metadaten allein reicht nicht aus, wenn der Anbieter sie erneut hinzufügt.
+
+Die generierten macOS-Build-Aufgaben prüfen dieses Verhalten. Wird es erkannt, verschiebt Wails das generierte Ausgabeverzeichnis des Projekts nach `~/Library/Application Support/Wails/build-output/<project>-<hash>` und ersetzt das ursprüngliche Ausgabeverzeichnis durch einen symbolischen Link. Vorhandene Ausgabedateien bleiben erhalten, und `bin/<AppName>.app` bleibt der Pfad für Paketierung, Signierung und Entwicklungsmodus. Die CLI gibt beim Verschieben den lokalen Speicherort aus.
+
+Mit `WAILS_MACOS_OUTPUT_ROOT` wählen Sie einen anderen lokalen, nicht synchronisierten Speicherort. Das Zielverzeichnis für die Verschiebung muss auf demselben Dateisystem wie das Projekt liegen. Ein ausdrücklich konfiguriertes `BIN_DIR` außerhalb des Projekts wird wie eingestellt verwendet. Bestehende Projekte benötigen die aktualisierte Datei `build/darwin/Taskfile.yml` , um dieses Verhalten zu nutzen.
+
+Kopieren Sie zur Verteilung `bin/<AppName>.app` , oder erstellen Sie ein DMG. Das Kopieren allein des symbolischen Links `bin` schließt die Build-Artefakte nicht ein. Der direkte Befehl `wails3 tool sign` meldet einen Fehler, wenn sein Eingabeordner Metadaten erneut anfügt; verschieben Sie dieses Bundle vor dem Signieren in einen nicht synchronisierten Ordner.
+
 ## Bundle-Ressourcen
 
 `Contents/Resources/` ist der Standardort für schreibgeschützte Dateien, die mit einer macOS-App ausgeliefert werden. Verwenden Sie ihn für größere Vorlagen, Ausgangsdaten, Medien, Sprachpakete oder andere Nutzdaten, die bei Bedarf geöffnet und nicht mit `embed` in die ausführbare Go-Datei kompiliert werden sollen.
