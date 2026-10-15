@@ -168,6 +168,8 @@
           link: "/guides/dev/debugging/"
         - label: "Tests"
           link: "/guides/testing/"
+        - label: "Lokale Audio- und Videodateien abspielen"
+          link: "/guides/linux-media/"
     - label: "Build und Paketierung"
       collapsed: true
       items:

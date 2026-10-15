@@ -168,6 +168,8 @@
           link: "/guides/dev/debugging/"
         - label: "測試"
           link: "/guides/testing/"
+        - label: "播放本機音訊與影片"
+          link: "/guides/linux-media/"
     - label: "建置與封裝"
       collapsed: true
       items:

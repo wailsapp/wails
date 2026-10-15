@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Enable short local audio/video clips on Linux with `Media.SetSource` and `Media.ClearSource`: bounded transfers over Wails streams, cancellation and blob cleanup. Include a media playback guide and example. Related to #4412.
 
 ## Changed
 <!-- Changes in existing functionality -->
