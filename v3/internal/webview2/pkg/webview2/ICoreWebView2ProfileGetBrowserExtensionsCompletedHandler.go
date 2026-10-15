@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler struct {
 	impl ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerIUnknownQueryInterf
 }
 
 func ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerIUnknownAddRef(this *ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerIUnknownRelease(this *ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerInvoke(this *ICoreWebView2ProfileGetBrowserExtensionsCompletedHandler, errorCode uintptr, result *ICoreWebView2BrowserExtensionList) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerFn = ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ProfileGetBrowserExtensionsCompletedHandlerIUnknownRelease),

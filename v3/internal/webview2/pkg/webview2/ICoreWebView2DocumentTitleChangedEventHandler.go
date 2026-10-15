@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2DocumentTitleChangedEventHandler struct {
 	impl ICoreWebView2DocumentTitleChangedEventHandlerImpl
 }
 
-func (i *ICoreWebView2DocumentTitleChangedEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2DocumentTitleChangedEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2DocumentTitleChangedEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2DocumentTitleChangedEventHandlerIUnknownQueryInterface(this *ICoreWebView2DocumentTitleChangedEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2DocumentTitleChangedEventHandlerIUnknownQueryInterface(this *I
 }
 
 func ICoreWebView2DocumentTitleChangedEventHandlerIUnknownAddRef(this *ICoreWebView2DocumentTitleChangedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2DocumentTitleChangedEventHandlerIUnknownRelease(this *ICoreWebView2DocumentTitleChangedEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2DocumentTitleChangedEventHandlerInvoke(this *ICoreWebView2DocumentTitleChangedEventHandler, sender *ICoreWebView2, args *IUnknown) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2DocumentTitleChangedEventHandlerImpl interface {
 }
 
 var ICoreWebView2DocumentTitleChangedEventHandlerFn = ICoreWebView2DocumentTitleChangedEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2DocumentTitleChangedEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2DocumentTitleChangedEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2DocumentTitleChangedEventHandlerIUnknownRelease),

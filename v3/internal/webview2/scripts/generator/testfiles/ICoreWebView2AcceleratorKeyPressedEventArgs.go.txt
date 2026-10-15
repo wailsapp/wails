@@ -16,9 +16,14 @@ type ICoreWebView2AcceleratorKeyPressedEventArgs struct {
 	Vtbl *ICoreWebView2AcceleratorKeyPressedEventArgsVtbl
 }
 
-func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 
@@ -26,12 +31,12 @@ func (i *ICoreWebView2AcceleratorKeyPressedEventArgs) GetKeyEventKind() (COREWEB
 
 	var keyEventKind COREWEBVIEW2_KEY_EVENT_KIND
 
-	hr, _, err := i.Vtbl.GetKeyEventKind.Call(
+	hr, _, _ := i.Vtbl.GetKeyEventKind.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&keyEventKind)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
 	}
-	return keyEventKind, err
+	return keyEventKind, nil
 }

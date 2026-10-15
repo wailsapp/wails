@@ -1,28 +1,33 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2NavigationCompletedEventArgsVtbl struct {
 	IUnknownVtbl
-	GetIsSuccess      ComProc
+	GetIsSuccess ComProc
 	GetWebErrorStatus ComProc
-	GetNavigationId   ComProc
+	GetNavigationId ComProc
 }
 
 type ICoreWebView2NavigationCompletedEventArgs struct {
 	Vtbl *ICoreWebView2NavigationCompletedEventArgsVtbl
 }
 
-func (i *ICoreWebView2NavigationCompletedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2NavigationCompletedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2NavigationCompletedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2NavigationCompletedEventArgs) GetIsSuccess() (bool, error) {
 	// Create int32 to hold bool result
@@ -36,7 +41,7 @@ func (i *ICoreWebView2NavigationCompletedEventArgs) GetIsSuccess() (bool, error)
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	isSuccess := _isSuccess != 0
+    isSuccess := _isSuccess != 0
 	return isSuccess, nil
 }
 

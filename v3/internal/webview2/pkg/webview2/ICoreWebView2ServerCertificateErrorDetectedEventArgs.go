@@ -1,31 +1,36 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ServerCertificateErrorDetectedEventArgsVtbl struct {
 	IUnknownVtbl
-	GetErrorStatus       ComProc
-	GetRequestUri        ComProc
+	GetErrorStatus ComProc
+	GetRequestUri ComProc
 	GetServerCertificate ComProc
-	GetAction            ComProc
-	PutAction            ComProc
-	GetDeferral          ComProc
+	GetAction ComProc
+	PutAction ComProc
+	GetDeferral ComProc
 }
 
 type ICoreWebView2ServerCertificateErrorDetectedEventArgs struct {
 	Vtbl *ICoreWebView2ServerCertificateErrorDetectedEventArgsVtbl
 }
 
-func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetErrorStatus() (COREWEBVIEW2_WEB_ERROR_STATUS, error) {
 
@@ -45,9 +50,10 @@ func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetRequestUri() (
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetRequestUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -87,6 +93,7 @@ func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) GetAction() (CORE
 }
 
 func (i *ICoreWebView2ServerCertificateErrorDetectedEventArgs) PutAction(value COREWEBVIEW2_SERVER_CERTIFICATE_ERROR_ACTION) error {
+
 
 	hr, _, _ := i.Vtbl.PutAction.Call(
 		uintptr(unsafe.Pointer(i)),

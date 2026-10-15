@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2GetFaviconCompletedHandler struct {
 	impl ICoreWebView2GetFaviconCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2GetFaviconCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2GetFaviconCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2GetFaviconCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2GetFaviconCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2GetFaviconCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2GetFaviconCompletedHandlerIUnknownQueryInterface(this *ICoreWe
 }
 
 func ICoreWebView2GetFaviconCompletedHandlerIUnknownAddRef(this *ICoreWebView2GetFaviconCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2GetFaviconCompletedHandlerIUnknownRelease(this *ICoreWebView2GetFaviconCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2GetFaviconCompletedHandlerInvoke(this *ICoreWebView2GetFaviconCompletedHandler, errorCode uintptr, result *IStream) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2GetFaviconCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2GetFaviconCompletedHandlerFn = ICoreWebView2GetFaviconCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2GetFaviconCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2GetFaviconCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2GetFaviconCompletedHandlerIUnknownRelease),

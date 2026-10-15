@@ -1,27 +1,32 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2PermissionSettingCollectionViewVtbl struct {
 	IUnknownVtbl
 	GetValueAtIndex ComProc
-	GetCount        ComProc
+	GetCount ComProc
 }
 
 type ICoreWebView2PermissionSettingCollectionView struct {
 	Vtbl *ICoreWebView2PermissionSettingCollectionViewVtbl
 }
 
-func (i *ICoreWebView2PermissionSettingCollectionView) AddRef() uintptr {
+func (i *ICoreWebView2PermissionSettingCollectionView) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2PermissionSettingCollectionView) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2PermissionSettingCollectionView) GetValueAtIndex(index uint32) (*ICoreWebView2PermissionSetting, error) {
 
@@ -29,7 +34,7 @@ func (i *ICoreWebView2PermissionSettingCollectionView) GetValueAtIndex(index uin
 
 	hr, _, _ := i.Vtbl.GetValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&index)),
+		uintptr(index),
 		uintptr(unsafe.Pointer(&permissionSetting)),
 	)
 	if windows.Handle(hr) != windows.S_OK {

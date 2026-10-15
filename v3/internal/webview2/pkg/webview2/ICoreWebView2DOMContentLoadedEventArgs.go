@@ -1,11 +1,10 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2DOMContentLoadedEventArgsVtbl struct {
@@ -17,10 +16,16 @@ type ICoreWebView2DOMContentLoadedEventArgs struct {
 	Vtbl *ICoreWebView2DOMContentLoadedEventArgsVtbl
 }
 
-func (i *ICoreWebView2DOMContentLoadedEventArgs) AddRef() uintptr {
+func (i *ICoreWebView2DOMContentLoadedEventArgs) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2DOMContentLoadedEventArgs) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2DOMContentLoadedEventArgs) GetNavigationId() (uint64, error) {
 

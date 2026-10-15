@@ -1,38 +1,43 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ContextMenuTargetVtbl struct {
 	IUnknownVtbl
-	GetKind                    ComProc
-	GetIsEditable              ComProc
+	GetKind ComProc
+	GetIsEditable ComProc
 	GetIsRequestedForMainFrame ComProc
-	GetPageUri                 ComProc
-	GetFrameUri                ComProc
-	GetHasLinkUri              ComProc
-	GetLinkUri                 ComProc
-	GetHasLinkText             ComProc
-	GetLinkText                ComProc
-	GetHasSourceUri            ComProc
-	GetSourceUri               ComProc
-	GetHasSelection            ComProc
-	GetSelectionText           ComProc
+	GetPageUri ComProc
+	GetFrameUri ComProc
+	GetHasLinkUri ComProc
+	GetLinkUri ComProc
+	GetHasLinkText ComProc
+	GetLinkText ComProc
+	GetHasSourceUri ComProc
+	GetSourceUri ComProc
+	GetHasSelection ComProc
+	GetSelectionText ComProc
 }
 
 type ICoreWebView2ContextMenuTarget struct {
 	Vtbl *ICoreWebView2ContextMenuTargetVtbl
 }
 
-func (i *ICoreWebView2ContextMenuTarget) AddRef() uintptr {
+func (i *ICoreWebView2ContextMenuTarget) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ContextMenuTarget) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ContextMenuTarget) GetKind() (COREWEBVIEW2_CONTEXT_MENU_TARGET_KIND, error) {
 
@@ -60,7 +65,7 @@ func (i *ICoreWebView2ContextMenuTarget) GetIsEditable() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -76,7 +81,7 @@ func (i *ICoreWebView2ContextMenuTarget) GetIsRequestedForMainFrame() (bool, err
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -84,9 +89,10 @@ func (i *ICoreWebView2ContextMenuTarget) GetPageUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetPageUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -101,9 +107,10 @@ func (i *ICoreWebView2ContextMenuTarget) GetFrameUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetFrameUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -126,7 +133,7 @@ func (i *ICoreWebView2ContextMenuTarget) GetHasLinkUri() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -134,9 +141,10 @@ func (i *ICoreWebView2ContextMenuTarget) GetLinkUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetLinkUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -159,7 +167,7 @@ func (i *ICoreWebView2ContextMenuTarget) GetHasLinkText() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -167,9 +175,10 @@ func (i *ICoreWebView2ContextMenuTarget) GetLinkText() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetLinkText.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -192,7 +201,7 @@ func (i *ICoreWebView2ContextMenuTarget) GetHasSourceUri() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -200,9 +209,10 @@ func (i *ICoreWebView2ContextMenuTarget) GetSourceUri() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetSourceUri.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -225,7 +235,7 @@ func (i *ICoreWebView2ContextMenuTarget) GetHasSelection() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
@@ -233,9 +243,10 @@ func (i *ICoreWebView2ContextMenuTarget) GetSelectionText() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetSelectionText.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)

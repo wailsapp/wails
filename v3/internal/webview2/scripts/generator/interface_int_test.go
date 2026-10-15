@@ -19,7 +19,7 @@ func TestInterfaceInt(t *testing.T) {
 library WebView2 {
 
 	[uuid(4dab9422-46fa-4c3e-a5d2-41d2071d3680), object, pointer_default(unique)]
-	interface ICoreWebView2ProcessFailedEventArgs2 : ICoreWebView2ProcessFailedEventArgs {
+	interface ICoreWebView2ProcessFailedEventArgs2 : IUnknown {
 	
 		[propget] HRESULT ExitCode(
 		[out, retval] int* exitCode);
@@ -38,6 +38,10 @@ library WebView2 {
 
 	// Remove the `com.go` filename
 	files = files[1:]
+
+	//for _, file := range files {
+	//	os.WriteFile("testfiles/"+file.FileName+".txt", file.Content.Bytes(), 0644)
+	//}
 
 	expected := []*types.GeneratedFile{
 		{

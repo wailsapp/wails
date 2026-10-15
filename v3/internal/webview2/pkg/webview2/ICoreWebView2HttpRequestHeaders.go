@@ -1,45 +1,51 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2HttpRequestHeadersVtbl struct {
 	IUnknownVtbl
-	GetHeader    ComProc
-	GetHeaders   ComProc
-	Contains     ComProc
-	SetHeader    ComProc
+	GetHeader ComProc
+	GetHeaders ComProc
+	Contains ComProc
+	SetHeader ComProc
 	RemoveHeader ComProc
-	GetIterator  ComProc
+	GetIterator ComProc
 }
 
 type ICoreWebView2HttpRequestHeaders struct {
 	Vtbl *ICoreWebView2HttpRequestHeadersVtbl
 }
 
-func (i *ICoreWebView2HttpRequestHeaders) AddRef() uintptr {
+func (i *ICoreWebView2HttpRequestHeaders) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2HttpRequestHeaders) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2HttpRequestHeaders) GetHeader(name string) (string, error) {
 
 	// Convert string 'name' to *uint16
 	_name, err := UTF16PtrFromString(name)
 	if err != nil {
-		return "", nil
-	} // Create *uint16 to hold result
+		return "", err
+	}	// Create *uint16 to hold result
 	var _value *uint16
+
 
 	hr, _, _ := i.Vtbl.GetHeader.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(_name)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -75,8 +81,8 @@ func (i *ICoreWebView2HttpRequestHeaders) Contains(name string) (bool, error) {
 	// Convert string 'name' to *uint16
 	_name, err := UTF16PtrFromString(name)
 	if err != nil {
-		return false, nil
-	} // Create int32 to hold bool result
+		return false, err
+	}	// Create int32 to hold bool result
 	var _value int32
 
 	hr, _, _ := i.Vtbl.Contains.Call(
@@ -88,7 +94,7 @@ func (i *ICoreWebView2HttpRequestHeaders) Contains(name string) (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 

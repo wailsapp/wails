@@ -1,41 +1,52 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2Settings4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings3Vtbl
 	GetIsPasswordAutosaveEnabled ComProc
 	PutIsPasswordAutosaveEnabled ComProc
-	GetIsGeneralAutofillEnabled  ComProc
-	PutIsGeneralAutofillEnabled  ComProc
+	GetIsGeneralAutofillEnabled ComProc
+	PutIsGeneralAutofillEnabled ComProc
 }
 
 type ICoreWebView2Settings4 struct {
 	Vtbl *ICoreWebView2Settings4Vtbl
 }
 
-func (i *ICoreWebView2Settings4) AddRef() uintptr {
+func (i *ICoreWebView2Settings4) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2Settings4() *ICoreWebView2Settings4 {
+func (i *ICoreWebView2Settings4) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2Settings4 queries the object for its ICoreWebView2Settings4 interface. The receiver
+// is the root of ICoreWebView2Settings4's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2Settings) GetICoreWebView2Settings4() (*ICoreWebView2Settings4, error) {
 	var result *ICoreWebView2Settings4
 
 	iidICoreWebView2Settings4 := NewGUID("{cb56846c-4168-4d53-b04f-03b6d6796ff2}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2Settings4)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2Settings4) GetIsPasswordAutosaveEnabled() (bool, error) {
 	// Create int32 to hold bool result
@@ -49,21 +60,21 @@ func (i *ICoreWebView2Settings4) GetIsPasswordAutosaveEnabled() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2Settings4) PutIsPasswordAutosaveEnabled(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutIsPasswordAutosaveEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
@@ -83,21 +94,21 @@ func (i *ICoreWebView2Settings4) GetIsGeneralAutofillEnabled() (bool, error) {
 		return false, syscall.Errno(hr)
 	}
 	// Get result and cleanup
-	value := _value != 0
+    value := _value != 0
 	return value, nil
 }
 
 func (i *ICoreWebView2Settings4) PutIsGeneralAutofillEnabled(value bool) error {
 
-	// BOOL is a 4-byte by-value parameter: pass the value, not a pointer
-	// to a 1-byte Go bool.
-	var _valueInt int32
+	// Convert Go bool to COM BOOL (int32)
+	var _value int32
 	if value {
-		_valueInt = 1
+		_value = 1
 	}
+
 	hr, _, _ := i.Vtbl.PutIsGeneralAutofillEnabled.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(_valueInt),
+		uintptr(_value),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)

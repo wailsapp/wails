@@ -1,44 +1,55 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2_2Vtbl struct {
-	IUnknownVtbl
-	AddWebResourceResponseReceived    ComProc
+	ICoreWebView2Vtbl
+	AddWebResourceResponseReceived ComProc
 	RemoveWebResourceResponseReceived ComProc
-	NavigateWithWebResourceRequest    ComProc
-	AddDOMContentLoaded               ComProc
-	RemoveDOMContentLoaded            ComProc
-	GetCookieManager                  ComProc
-	GetEnvironment                    ComProc
+	NavigateWithWebResourceRequest ComProc
+	AddDOMContentLoaded ComProc
+	RemoveDOMContentLoaded ComProc
+	GetCookieManager ComProc
+	GetEnvironment ComProc
 }
 
 type ICoreWebView2_2 struct {
 	Vtbl *ICoreWebView2_2Vtbl
 }
 
-func (i *ICoreWebView2_2) AddRef() uintptr {
+func (i *ICoreWebView2_2) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
 
-func (i *ICoreWebView2) GetICoreWebView2_2() *ICoreWebView2_2 {
+func (i *ICoreWebView2_2) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
+
+// GetICoreWebView2_2 queries the object for its ICoreWebView2_2 interface. The receiver
+// is the root of ICoreWebView2_2's inheritance chain — the object that actually
+// implements it.
+func (i *ICoreWebView2) GetICoreWebView2_2() (*ICoreWebView2_2, error) {
 	var result *ICoreWebView2_2
 
 	iidICoreWebView2_2 := NewGUID("{9E8F0CF8-E670-4B5E-B2BC-73E061E3184C}")
-	_, _, _ = i.Vtbl.QueryInterface.Call(
+	hr, _, _ := i.Vtbl.QueryInterface.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(iidICoreWebView2_2)),
 		uintptr(unsafe.Pointer(&result)))
-
-	return result
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+	return result, nil
 }
+
 
 func (i *ICoreWebView2_2) AddWebResourceResponseReceived(eventHandler *ICoreWebView2WebResourceResponseReceivedEventHandler) (EventRegistrationToken, error) {
 
@@ -57,10 +68,22 @@ func (i *ICoreWebView2_2) AddWebResourceResponseReceived(eventHandler *ICoreWebV
 
 func (i *ICoreWebView2_2) RemoveWebResourceResponseReceived(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveWebResourceResponseReceived.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveWebResourceResponseReceived.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveWebResourceResponseReceived.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -68,6 +91,7 @@ func (i *ICoreWebView2_2) RemoveWebResourceResponseReceived(token EventRegistrat
 }
 
 func (i *ICoreWebView2_2) NavigateWithWebResourceRequest(request *ICoreWebView2WebResourceRequest) error {
+
 
 	hr, _, _ := i.Vtbl.NavigateWithWebResourceRequest.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -96,10 +120,22 @@ func (i *ICoreWebView2_2) AddDOMContentLoaded(eventHandler *ICoreWebView2DOMCont
 
 func (i *ICoreWebView2_2) RemoveDOMContentLoaded(token EventRegistrationToken) error {
 
-	hr, _, _ := i.Vtbl.RemoveDOMContentLoaded.Call(
-		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&token)),
-	)
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var hr uintptr
+	switch {
+	case archIs386:
+		hr, _, _ = i.Vtbl.RemoveDOMContentLoaded.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[0]),
+			uintptr((*(*[2]uint32)(unsafe.Pointer(&token)))[1]),
+		)
+	default:
+		hr, _, _ = i.Vtbl.RemoveDOMContentLoaded.Call(
+			uintptr(unsafe.Pointer(i)),
+			uintptr(*(*uint64)(unsafe.Pointer(&token))),
+		)
+	}
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}

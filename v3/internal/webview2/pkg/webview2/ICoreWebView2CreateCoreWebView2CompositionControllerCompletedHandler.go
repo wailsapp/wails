@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler struct
 	impl ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknow
 }
 
 func ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownAddRef(this *ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownRelease(this *ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerInvoke(this *ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler, errorCode uintptr, result *ICoreWebView2CompositionController) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerImpl in
 }
 
 var ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerFn = ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandlerIUnknownRelease),

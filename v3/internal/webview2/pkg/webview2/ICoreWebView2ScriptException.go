@@ -1,30 +1,35 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ScriptExceptionVtbl struct {
 	IUnknownVtbl
-	GetLineNumber   ComProc
+	GetLineNumber ComProc
 	GetColumnNumber ComProc
-	GetName         ComProc
-	GetMessage      ComProc
-	GetToJson       ComProc
+	GetName ComProc
+	GetMessage ComProc
+	GetToJson ComProc
 }
 
 type ICoreWebView2ScriptException struct {
 	Vtbl *ICoreWebView2ScriptExceptionVtbl
 }
 
-func (i *ICoreWebView2ScriptException) AddRef() uintptr {
+func (i *ICoreWebView2ScriptException) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ScriptException) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ScriptException) GetLineNumber() (uint32, error) {
 
@@ -58,9 +63,10 @@ func (i *ICoreWebView2ScriptException) GetName() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetName.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -75,9 +81,10 @@ func (i *ICoreWebView2ScriptException) GetMessage() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetMessage.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
@@ -92,9 +99,10 @@ func (i *ICoreWebView2ScriptException) GetToJson() (string, error) {
 	// Create *uint16 to hold result
 	var _value *uint16
 
+
 	hr, _, _ := i.Vtbl.GetToJson.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_value)),
+		uintptr(unsafe.Pointer(&_value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)

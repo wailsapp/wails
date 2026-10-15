@@ -1,10 +1,32 @@
 
 func (i *{{.Name}}) {{.Method.ProcessedName}}({{.Method.GoInputs}}) {{.Method.GoReturnTypes}} {
 {{ .Method.SetupCode}}
+{{- if .Method.NeedsArchSplit}}
+	// 8/16-byte by-value arguments encode differently per architecture; the
+	// arch consts are compile-time constants so dead branches are eliminated.
+	var {{ .Method.GetHResultVariable }} uintptr
+	switch {
+	case archIs386:
+		{{ .Method.GetHResultVariable }}, _, _ = i.Vtbl.{{.Method.ProcessedName}}.Call(
+			uintptr(unsafe.Pointer(i)),
+{{ .Method.VtableCallInputs386}}		)
+{{- if .Method.NeedsARM64Variant}}
+	case archIsARM64:
+		{{ .Method.GetHResultVariable }}, _, _ = i.Vtbl.{{.Method.ProcessedName}}.Call(
+			uintptr(unsafe.Pointer(i)),
+{{ .Method.VtableCallInputsARM64}}		)
+{{- end}}
+	default:
+		{{ .Method.GetHResultVariable }}, _, _ = i.Vtbl.{{.Method.ProcessedName}}.Call(
+			uintptr(unsafe.Pointer(i)),
+{{ .Method.VtableCallInputsAMD64}}		)
+	}
+{{- else}}
 
-	{{ .Method.GetHResultVariable }}, _, err := i.Vtbl.{{.Method.ProcessedName}}.Call(
+	{{ .Method.GetHResultVariable }}, _, _ := i.Vtbl.{{.Method.ProcessedName}}.Call(
 		uintptr(unsafe.Pointer(i)),
 {{ .Method.VtableCallInputs}}	)
+{{- end}}
 
 {{- if .Method.ReturnsHRESULT}}
 	if windows.Handle(hr) != windows.S_OK {

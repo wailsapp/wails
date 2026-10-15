@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2SaveFileSecurityCheckStartingEventHandler struct {
 	impl ICoreWebView2SaveFileSecurityCheckStartingEventHandlerImpl
 }
 
-func (i *ICoreWebView2SaveFileSecurityCheckStartingEventHandler) AddRef() uintptr {
+func (i *ICoreWebView2SaveFileSecurityCheckStartingEventHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2SaveFileSecurityCheckStartingEventHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2SaveFileSecurityCheckStartingEventHandlerIUnknownQueryInterface(this *ICoreWebView2SaveFileSecurityCheckStartingEventHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2SaveFileSecurityCheckStartingEventHandlerIUnknownQueryInterfac
 }
 
 func ICoreWebView2SaveFileSecurityCheckStartingEventHandlerIUnknownAddRef(this *ICoreWebView2SaveFileSecurityCheckStartingEventHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2SaveFileSecurityCheckStartingEventHandlerIUnknownRelease(this *ICoreWebView2SaveFileSecurityCheckStartingEventHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2SaveFileSecurityCheckStartingEventHandlerInvoke(this *ICoreWebView2SaveFileSecurityCheckStartingEventHandler, sender *ICoreWebView2, args *ICoreWebView2SaveFileSecurityCheckStartingEventArgs) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2SaveFileSecurityCheckStartingEventHandlerImpl interface {
 }
 
 var ICoreWebView2SaveFileSecurityCheckStartingEventHandlerFn = ICoreWebView2SaveFileSecurityCheckStartingEventHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2SaveFileSecurityCheckStartingEventHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2SaveFileSecurityCheckStartingEventHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2SaveFileSecurityCheckStartingEventHandlerIUnknownRelease),

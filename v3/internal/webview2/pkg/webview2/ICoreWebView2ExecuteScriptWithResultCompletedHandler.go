@@ -1,7 +1,6 @@
 //go:build windows
 
 package webview2
-
 import (
 	"unsafe"
 )
@@ -16,9 +15,14 @@ type ICoreWebView2ExecuteScriptWithResultCompletedHandler struct {
 	impl ICoreWebView2ExecuteScriptWithResultCompletedHandlerImpl
 }
 
-func (i *ICoreWebView2ExecuteScriptWithResultCompletedHandler) AddRef() uintptr {
+func (i *ICoreWebView2ExecuteScriptWithResultCompletedHandler) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
+}
+
+func (i *ICoreWebView2ExecuteScriptWithResultCompletedHandler) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
 }
 
 func ICoreWebView2ExecuteScriptWithResultCompletedHandlerIUnknownQueryInterface(this *ICoreWebView2ExecuteScriptWithResultCompletedHandler, refiid, object uintptr) uintptr {
@@ -26,11 +30,11 @@ func ICoreWebView2ExecuteScriptWithResultCompletedHandlerIUnknownQueryInterface(
 }
 
 func ICoreWebView2ExecuteScriptWithResultCompletedHandlerIUnknownAddRef(this *ICoreWebView2ExecuteScriptWithResultCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return uintptr(this.impl.AddRef())
 }
 
 func ICoreWebView2ExecuteScriptWithResultCompletedHandlerIUnknownRelease(this *ICoreWebView2ExecuteScriptWithResultCompletedHandler) uintptr {
-	return this.impl.Release()
+	return uintptr(this.impl.Release())
 }
 
 func ICoreWebView2ExecuteScriptWithResultCompletedHandlerInvoke(this *ICoreWebView2ExecuteScriptWithResultCompletedHandler, errorCode uintptr, result *ICoreWebView2ExecuteScriptResult) uintptr {
@@ -43,7 +47,7 @@ type ICoreWebView2ExecuteScriptWithResultCompletedHandlerImpl interface {
 }
 
 var ICoreWebView2ExecuteScriptWithResultCompletedHandlerFn = ICoreWebView2ExecuteScriptWithResultCompletedHandlerVtbl{
-	IUnknownVtbl{
+	IUnknownVtbl {
 		NewComProc(ICoreWebView2ExecuteScriptWithResultCompletedHandlerIUnknownQueryInterface),
 		NewComProc(ICoreWebView2ExecuteScriptWithResultCompletedHandlerIUnknownAddRef),
 		NewComProc(ICoreWebView2ExecuteScriptWithResultCompletedHandlerIUnknownRelease),

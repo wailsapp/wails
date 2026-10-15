@@ -1,16 +1,15 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2ObjectCollectionViewVtbl struct {
 	IUnknownVtbl
-	GetCount        ComProc
+	GetCount ComProc
 	GetValueAtIndex ComProc
 }
 
@@ -18,10 +17,16 @@ type ICoreWebView2ObjectCollectionView struct {
 	Vtbl *ICoreWebView2ObjectCollectionViewVtbl
 }
 
-func (i *ICoreWebView2ObjectCollectionView) AddRef() uintptr {
+func (i *ICoreWebView2ObjectCollectionView) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2ObjectCollectionView) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2ObjectCollectionView) GetCount() (uint32, error) {
 
@@ -43,7 +48,7 @@ func (i *ICoreWebView2ObjectCollectionView) GetValueAtIndex(index uint32) (*IUnk
 
 	hr, _, _ := i.Vtbl.GetValueAtIndex.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(&index)),
+		uintptr(index),
 		uintptr(unsafe.Pointer(&value)),
 	)
 	if windows.Handle(hr) != windows.S_OK {

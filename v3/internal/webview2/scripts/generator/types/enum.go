@@ -2,9 +2,7 @@ package types
 
 import (
 	"io"
-	"log"
 	"strconv"
-	"text/template"
 )
 
 type EnumDeclaration struct {
@@ -56,13 +54,5 @@ func (d *EnumDeclaration) Generate(packageName string, w io.Writer) error {
 		Name:        d.Name,
 		Values:      d.Values,
 	}
-	templateData, err := templates.ReadFile("templates/enum.tmpl")
-	if err != nil {
-		return err
-	}
-	tmpl, err := template.New("Enum").Parse(string(templateData))
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return tmpl.Execute(w, &data)
+	return renderTemplate("Enum", "enum.tmpl", &data, w)
 }

@@ -1,20 +1,19 @@
 //go:build windows
 
 package webview2
-
 import (
-	"golang.org/x/sys/windows"
-	"syscall"
 	"unsafe"
+	"syscall"
+	"golang.org/x/sys/windows"
 )
 
 type ICoreWebView2WebResourceResponseVtbl struct {
 	IUnknownVtbl
-	GetContent      ComProc
-	PutContent      ComProc
-	GetHeaders      ComProc
-	GetStatusCode   ComProc
-	PutStatusCode   ComProc
+	GetContent ComProc
+	PutContent ComProc
+	GetHeaders ComProc
+	GetStatusCode ComProc
+	PutStatusCode ComProc
 	GetReasonPhrase ComProc
 	PutReasonPhrase ComProc
 }
@@ -23,10 +22,16 @@ type ICoreWebView2WebResourceResponse struct {
 	Vtbl *ICoreWebView2WebResourceResponseVtbl
 }
 
-func (i *ICoreWebView2WebResourceResponse) AddRef() uintptr {
+func (i *ICoreWebView2WebResourceResponse) AddRef() uint32 {
 	refCounter, _, _ := i.Vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	return refCounter
+	return uint32(refCounter)
 }
+
+func (i *ICoreWebView2WebResourceResponse) Release() uint32 {
+	refCounter, _, _ := i.Vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(refCounter)
+}
+
 
 func (i *ICoreWebView2WebResourceResponse) GetContent() (*IStream, error) {
 
@@ -43,6 +48,7 @@ func (i *ICoreWebView2WebResourceResponse) GetContent() (*IStream, error) {
 }
 
 func (i *ICoreWebView2WebResourceResponse) PutContent(content *IStream) error {
+
 
 	hr, _, _ := i.Vtbl.PutContent.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -74,7 +80,7 @@ func (i *ICoreWebView2WebResourceResponse) GetStatusCode() (int, error) {
 
 	hr, _, _ := i.Vtbl.GetStatusCode.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(statusCode),
+		uintptr(unsafe.Pointer(&statusCode)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return 0, syscall.Errno(hr)
@@ -83,6 +89,7 @@ func (i *ICoreWebView2WebResourceResponse) GetStatusCode() (int, error) {
 }
 
 func (i *ICoreWebView2WebResourceResponse) PutStatusCode(statusCode int) error {
+
 
 	hr, _, _ := i.Vtbl.PutStatusCode.Call(
 		uintptr(unsafe.Pointer(i)),
@@ -98,9 +105,10 @@ func (i *ICoreWebView2WebResourceResponse) GetReasonPhrase() (string, error) {
 	// Create *uint16 to hold result
 	var _reasonPhrase *uint16
 
+
 	hr, _, _ := i.Vtbl.GetReasonPhrase.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(unsafe.Pointer(_reasonPhrase)),
+		uintptr(unsafe.Pointer(&_reasonPhrase)),
 	)
 	if windows.Handle(hr) != windows.S_OK {
 		return "", syscall.Errno(hr)
