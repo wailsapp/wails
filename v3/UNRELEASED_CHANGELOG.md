@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Prevent duplicate window teardown on macOS in [PR](https://github.com/wailsapp/wails/pull/6159) by @charlesbalderson
 - Handle WM_CONTEXTMENU for systray menu to open on right-click in [PR](https://github.com/wailsapp/wails/pull/6162) by @wzk2025
 - Fix all five `InvokeSync*` variants blocking their caller forever when the dispatched callback panics, fixing [#6107](https://github.com/wailsapp/wails/issues/6107), in [PR](https://github.com/wailsapp/wails/pull/6108) by @RALIST
 
