@@ -1,14 +1,16 @@
 """The publication gate must reject fallback files and stale audit exceptions."""
 
+import io
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from unittest.mock import patch
 from types import SimpleNamespace
 
-from check_translations import (AUDIT_EXCLUDED_FILES, accepted_finding,
-                                audit_language, check_coverage, file_digest)
+from check_translations import (AUDIT_EXCLUDED_FILES, AuditError, accepted_finding,
+                                audit_language, check_coverage, file_digest, main)
 
 
 class TranslationChecks(unittest.TestCase):
@@ -68,6 +70,33 @@ class TranslationChecks(unittest.TestCase):
             errors = audit_language("mpress", self.content, self.content, "fr", [])
         self.assertIn("changelog.md", AUDIT_EXCLUDED_FILES)
         self.assertEqual(errors, ["fr/guide.md title: structure: current issue"])
+
+    def test_broken_audit_run_always_fails(self):
+        with patch("check_translations.subprocess.run") as run:
+            run.return_value = SimpleNamespace(stdout="not json", stderr="boom", returncode=2)
+            with self.assertRaises(AuditError):
+                audit_language("mpress", self.content, self.content, "fr", [])
+
+    def run_main(self, *argv):
+        out = io.StringIO()
+        with patch("check_translations.check_coverage", return_value=[]), \
+                patch("check_translations.audit_language", return_value=["fr/guide.md: stale"]), \
+                patch("sys.argv", ["check_translations.py", *argv]), \
+                redirect_stdout(out), redirect_stderr(io.StringIO()):
+            failed = main()
+        return failed, json.loads(out.getvalue())
+
+    def test_audit_findings_warn_by_default(self):
+        failed, report = self.run_main()
+        self.assertFalse(failed)
+        self.assertEqual(report["errors"], [])
+        self.assertEqual(len(report["warnings"]), 9)
+
+    def test_strict_mode_fails_on_audit_findings(self):
+        failed, report = self.run_main("--strict")
+        self.assertTrue(failed)
+        self.assertEqual(len(report["errors"]), 9)
+        self.assertEqual(report["warnings"], [])
 
 
 if __name__ == "__main__":

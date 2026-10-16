@@ -1,4 +1,4 @@
-//go:build production && !ios && !android
+//go:build production && ((!ios && !android) || server)
 
 package application
 
