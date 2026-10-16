@@ -147,7 +147,9 @@ func (u *Updater) periodicCheckLoop(d time.Duration) {
 			return
 		case <-t.C:
 			s := u.State()
-			if s == StateChecking || s == StateDownloading || s == StateVerifying || s == StateInstalling {
+			// StateReady: an update is already staged and waits for Restart;
+			// checking again would download the same release on every tick.
+			if s == StateChecking || s == StateDownloading || s == StateVerifying || s == StateInstalling || s == StateReady {
 				continue
 			}
 			_ = u.CheckAndInstall(u.periodicCtx)
