@@ -84,7 +84,10 @@ func GetMenuItemInfo(hmenu HMENU, item uint32, fByPosition bool, lpmii *MENUITEM
 
 func GetMenuItemCount(hmenu HMENU) int {
 	ret, _, _ := procGetMenuItemCount.Call(uintptr(hmenu))
-	return int(ret)
+	// GetMenuItemCount returns a signed Win32 int and uses -1 for failure.
+	// syscall.Proc.Call returns uintptr, so preserve the 32-bit sign when
+	// converting on 64-bit Windows.
+	return int(int32(ret))
 }
 
 func GetMenuItemRect(hwnd HWND, hmenu HMENU, item uint32, rect *RECT) bool {

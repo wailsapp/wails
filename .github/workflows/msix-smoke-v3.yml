@@ -1,0 +1,33 @@
+name: MSIX packaging v3
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'v3/**'
+      - '.github/workflows/msix-smoke-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: v3/go.mod
+          cache-dependency-path: v3/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Initialize, build and validate MSIX package
+        shell: pwsh
+        run: ./v3/scripts/test-msix.ps1 -Arch '${{ matrix.arch }}' -WorkDir '${{ runner.temp }}/msix smoke'

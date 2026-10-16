@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2d6d331b2bbc42d1ed8a",
+  "sourceFile": "community/showcase/wally.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "a124cbd17b231fbfcaa3bc6d26abebaefa4def935c1ec73149cec7faddc21f40",
+      "targetHash": "a14b2f86bb323c97109767c9c2a2365706eb6b8a35efc1476d0d9cbe39bc23de",
+      "machineHash": "a14b2f86bb323c97109767c9c2a2365706eb6b8a35efc1476d0d9cbe39bc23de",
+      "machineText": "![Wally 截图](/assets/showcase-images/wally.webp)",
+      "status": "final",
+      "sourcePreview": "![Wally Screenshot](/assets/showcase-images/wally.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2d2a05322d283648c7a9c276b5c012f87b095e3988571ba2cb5824a6fe4d0656",
+      "targetHash": "46457a8c8a8e854c9d45b06f2fea04029a56817db0f3a81113bc953b4ca62572",
+      "machineHash": "46457a8c8a8e854c9d45b06f2fea04029a56817db0f3a81113bc953b4ca62572",
+      "machineText": "[Wally](https://ergodox-ez.com/pages/wally) 是用于为\\\n[Ergodox](https://ergodox-ez.com/) 键盘刷写固件的官方工具。它外观出色，充分展示了使用 Wails 可以实现的功能：将 Go 的强大能力与 Web 开发领域丰富的图形工具相结合。",
+      "status": "final",
+      "sourcePreview": "[Wally](https://ergodox-ez.com/pages/wally) is the official firmware flasher for\\ [Ergodox](https://…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "targetHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "machineHash": "42e546fddcccc9c2251fea5bd7763e678932c385acadbdff1ec5f28da06c5538",
+      "machineText": "Wally",
+      "status": "final",
+      "sourcePreview": "Wally",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

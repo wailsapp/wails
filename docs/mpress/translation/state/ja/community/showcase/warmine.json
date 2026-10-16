@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "6e901493ef796ab4cf3d",
+  "sourceFile": "community/showcase/warmine.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "8c5d08c28000f91e8034b2299418ed3905ac9613a81b957fc410966b885646d2",
+      "targetHash": "b77a9125908cdd8cf7d362622133fbd2a1792dfcf7c1aac8eb8169c6ce26a384",
+      "machineHash": "b77a9125908cdd8cf7d362622133fbd2a1792dfcf7c1aac8eb8169c6ce26a384",
+      "machineText": "![WarMine のスクリーンショット](/assets/showcase-images/warmine1.png)\\\n![WarMine のスクリーンショット](/assets/showcase-images/warmine2.png)",
+      "status": "final",
+      "sourcePreview": "![WarMine Screenshot](/assets/showcase-images/warmine1.png)\\ ![WarMine Screenshot](/assets/showcase-…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "79036e3fd9f0d92c72a77bdab1f5ea90e9e903ab22d9530d388ae5d121aee186",
+      "targetHash": "7593cf2bee6d57b8e1f3c84722157ec17a918dc5495a50aeb90fa799f279acad",
+      "machineHash": "7593cf2bee6d57b8e1f3c84722157ec17a918dc5495a50aeb90fa799f279acad",
+      "machineText": "[WarMine 用 Minecraft ランチャー](https://warmine.ru/)は Wails アプリケーションです。\\\nMod を導入したゲームサーバーへの参加や、ゲームアカウントの管理を\\\n簡単に行えます。",
+      "status": "final",
+      "sourcePreview": "[Minecraft launcher for WarMine](https://warmine.ru/) is a Wails application,\\ that allows you to ea…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "38b6ff5a6329471d59360a012520bbc2465d0ad34d72c2d40f891e0b9e8de0a4",
+      "targetHash": "4d4bc5395adfb74d2294f2dcb84dc182d902478adf717a6e44e175aabb104d4e",
+      "machineHash": "4d4bc5395adfb74d2294f2dcb84dc182d902478adf717a6e44e175aabb104d4e",
+      "machineText": "このランチャーはゲームファイルをダウンロードして整合性を確認し、\\\nバックエンドから起動引数を幅広くカスタマイズできる状態で\\\nゲームを起動します。",
+      "status": "final",
+      "sourcePreview": "The Launcher downloads the game files, checks their integrity and launches the\\ game with a wide ran…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "e5c9174e162156d69cd7fdbc5cc0d93f838bc98389d3c0d5a412cda5ee282a08",
+      "targetHash": "ffc8ab860df6485ff47c62e297924a3789e78c72d34ee9452b493c312f4e238a",
+      "machineHash": "ffc8ab860df6485ff47c62e297924a3789e78c72d34ee9452b493c312f4e238a",
+      "machineText": "フロントエンドは Svelte で記述されています。ランチャー全体のサイズは 9MB に収まり、Windows\\\n7-11をサポートしています。",
+      "status": "final",
+      "sourcePreview": "Frontend is written in Svelte, whole launcher fits in 9MB and supports Windows\\ 7-11.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "686c660e2dd9934eb10e706a44ba2bfa37e84f3fd8da9fd907175fbfe0fd94c6",
+      "machineHash": "686c660e2dd9934eb10e706a44ba2bfa37e84f3fd8da9fd907175fbfe0fd94c6",
+      "machineText": "Wails で構築されたデスクトップアプリケーション",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "b8dc39642df62575ea6947be6b3be410d5b9dc980d622212afce873db5424d38",
+      "targetHash": "b5cb3be9880db9a6b2d328f12ad754f1b0302cbcda6392b142e402fc9d96240d",
+      "machineHash": "b5cb3be9880db9a6b2d328f12ad754f1b0302cbcda6392b142e402fc9d96240d",
+      "machineText": "WarMine 用 Minecraft ランチャー",
+      "status": "final",
+      "sourcePreview": "Minecraft launcher for WarMine",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:33Z"
+    }
+  }
+}

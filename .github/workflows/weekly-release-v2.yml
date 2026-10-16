@@ -204,23 +204,52 @@ jobs:
         GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN || github.token }}
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.version }}"
+        PREVIOUS_TAG="${{ steps.commit_check.outputs.latest_tag }}"
+
+        # GitHub's generated-notes API uses the whole tag range. Master also
+        # carries v3, so restrict the generated PR bullets to commits touching v2/.
+        V2_PR_PATTERN=$(git log --format='%s' "${PREVIOUS_TAG}..HEAD" -- v2/ \
+          | grep -oE '#[0-9]+' \
+          | tr -d '#' \
+          | sort -u \
+          | paste -sd'|' -)
+
+        if [ -z "${V2_PR_PATTERN}" ]; then
+          echo "::error::No v2 pull requests found between ${PREVIOUS_TAG} and ${NEW_VERSION}"
+          exit 1
+        fi
+        echo "v2 PR filter: ${V2_PR_PATTERN}"
+
+        GENERATED_NOTES=$(gh api --method POST \
+          "repos/wailsapp/wails/releases/generate-notes" \
+          -f tag_name="${NEW_VERSION}" \
+          -f previous_tag_name="${PREVIOUS_TAG}" \
+          --jq '.body')
 
         {
           echo "## Installation"
-          echo ""
+          echo
           echo '```bash'
           echo "go install github.com/wailsapp/wails/v2/cmd/wails@${NEW_VERSION}"
           echo '```'
-          echo ""
+          echo
           echo "## Changes"
-          echo ""
-          cat /tmp/unreleased_changelog.md
+          echo
+          printf '%s\n' "${GENERATED_NOTES}" | awk -v pattern="${V2_PR_PATTERN}" '
+            /^## What's Changed$/ { print; in_changes=1; next }
+            /^## New Contributors$/ { print; in_changes=0; in_contributors=1; next }
+            /^\*\*Full Changelog\*\*/ { print; next }
+            in_changes && ($0 ~ "pull/(" pattern ")([^0-9]|$)") { print; next }
+            in_contributors && ($0 ~ "pull/(" pattern ")([^0-9]|$)") { print; next }
+          '
         } > /tmp/release_notes.md
 
         gh release create "${NEW_VERSION}" \
           --repo wailsapp/wails \
           --title "Wails ${NEW_VERSION}" \
           --notes-file /tmp/release_notes.md \
+          --verify-tag \
+          --fail-on-no-commits \
           --latest
 
     - name: Dry run summary

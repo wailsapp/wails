@@ -1,0 +1,81 @@
+# Single Instance Lock
+
+Single instance lock is a mechanism that allows you to prevent multiple instances of your app from running at the same time.
+It is useful for apps that are designed to open files from the command line or from the OS file explorer.
+
+## Important
+
+Single Instance Lock does not implement a secure communications protocol between instances. When using single instance lock,
+your app should treat any data passed to it from second instance callback as untrusted.
+You should verify that args that you receive are valid and don't contain any malicious data.
+
+## How it works
+
+Windows: Single instance lock is implemented using a named mutex. The mutex name is generated from the unique id that you provide. Data is passed to the first instance via a shared window using [SendMessage](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage)
+macOS: Single instance lock is implemented using a named mutex. The mutex name is generated from the unique id that you provide. Data is passed to the first instance via [NSDistributedNotificationCenter](https://developer.apple.com/documentation/foundation/nsdistributednotificationcenter)
+Linux: Single instance lock is implemented using [dbus](https://www.freedesktop.org/wiki/Software/dbus/). The dbus name is generated from the unique id that you provide. Data is passed to the first instance via [dbus](https://www.freedesktop.org/wiki/Software/dbus/)
+
+## Usage
+
+When creating your app, you can enable single instance lock by passing a `SingleInstanceLock` struct to the `App` struct.
+Use the `UniqueId` field to specify a unique id for your app.
+This id is used to generate the mutex name on Windows and macOS and the dbus name on Linux. Use a UUID to ensure that the id is unique.
+The `OnSecondInstanceLaunch` field is used to specify a callback that is called when a second instance of your app is launched.
+The callback receives a `SecondInstanceData` struct that contains the command line arguments passed to the second instance and the working directory of the second instance.
+
+Note that OnSecondInstanceLaunch don't trigger windows focus.
+You need to call `runtime.WindowUnminimise` and `runtime.Show` to bring your app to the front.
+Note that on linux systems window managers may prevent your app from being brought to the front to avoid stealing focus.
+
+```go title="main.go"
+var wailsContext *context.Context
+
+// NewApp creates a new App application struct
+func NewApp() *App {
+	return &App{}
+}
+
+// startup is called when the app starts. The context is saved
+// so we can call the runtime methods
+func (a *App) startup(ctx context.Context) {
+	wailsContext = &ctx
+}
+
+func (a *App) onSecondInstanceLaunch(secondInstanceData options.SecondInstanceData) {
+	secondInstanceArgs = secondInstanceData.Args
+
+	println("user opened second instance", strings.Join(secondInstanceData.Args, ","))
+	println("user opened second from", secondInstanceData.WorkingDirectory)
+	runtime.WindowUnminimise(*wailsContext)
+	runtime.Show(*wailsContext)
+	go runtime.EventsEmit(*wailsContext, "launchArgs", secondInstanceArgs)
+}
+
+func main() {
+	// Create an instance of the app structure
+	app := NewApp()
+
+	// Create application with options
+	err := wails.Run(&options.App{
+		Title:  "wails-open-file",
+		Width:  1024,
+		Height: 768,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
+		OnStartup:        app.startup,
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "e3984e08-28dc-4e3d-b70a-45e961589cdc",
+			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		},
+		Bind: []interface{}{
+			app,
+		},
+	})
+
+	if err != nil {
+		println("Error:", err.Error())
+	}
+}
+```

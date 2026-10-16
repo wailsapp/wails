@@ -1,0 +1,310 @@
+- label: "Início"
+  link: "/"
+- label: "Por que usar o Wails?"
+  link: "/quick-start/why-wails/"
+- label: "Início rápido"
+  collapsed: false
+  items:
+    - label: "Instalação"
+      link: "/quick-start/installation/"
+    - label: "Seu primeiro aplicativo"
+      link: "/quick-start/first-app/"
+    - label: "Próximos passos"
+      link: "/quick-start/next-steps/"
+- label: "Tutoriais"
+  collapsed: true
+  autogenerate:
+    directory: "tutorials"
+- label: "Conceitos fundamentais"
+  collapsed: true
+  items:
+    - label: "Como o Wails funciona"
+      link: "/concepts/architecture/"
+    - label: "API do gerenciador"
+      link: "/concepts/manager-api/"
+    - label: "Ciclo de vida do aplicativo"
+      link: "/concepts/lifecycle/"
+    - label: "Ponte entre Go e frontend"
+      link: "/concepts/bridge/"
+    - label: "Sistema de compilação"
+      link: "/concepts/build-system/"
+- label: "Recursos"
+  collapsed: true
+  items:
+    - label: "Janelas"
+      collapsed: true
+      items:
+        - label: "Conceitos básicos de janelas"
+          link: "/features/windows/basics/"
+        - label: "Opções de janela"
+          link: "/features/windows/options/"
+        - label: "Janelas com entalhe"
+          link: "/features/windows/notch-windows/"
+        - label: "Permissões"
+          link: "/features/windows/permissions/"
+        - label: "Várias janelas"
+          link: "/features/windows/multiple/"
+        - label: "Janelas sem moldura"
+          link: "/features/windows/frameless/"
+        - label: "Eventos de janela"
+          link: "/features/windows/events/"
+    - label: "Menus"
+      collapsed: true
+      items:
+        - label: "Menus do aplicativo"
+          link: "/features/menus/application/"
+        - label: "Menus de contexto"
+          link: "/features/menus/context/"
+        - label: "Menus da bandeja do sistema"
+          link: "/features/menus/systray/"
+        - label: "Referência de menus"
+          link: "/features/menus/reference/"
+    - label: "Vinculações e serviços"
+      collapsed: true
+      items:
+        - label: "Vinculação de métodos"
+          link: "/features/bindings/methods/"
+        - label: "Serviços"
+          link: "/features/bindings/services/"
+        - label: "Modelos de dados"
+          link: "/features/bindings/models/"
+        - label: "Enumerações"
+          link: "/features/bindings/enums/"
+        - label: "Vinculação avançada"
+          link: "/features/bindings/advanced/"
+        - label: "Boas práticas"
+          link: "/features/bindings/best-practices/"
+    - label: "Eventos"
+      collapsed: true
+      items:
+        - label: "Sistema de eventos"
+          link: "/features/events/system/"
+        - label: "Eventos do aplicativo"
+          link: "/features/events/application/"
+        - label: "Eventos de janela"
+          link: "/features/events/window/"
+        - label: "Eventos personalizados"
+          link: "/features/events/custom/"
+    - label: "Caixas de diálogo"
+      collapsed: true
+      items:
+        - label: "Caixas de diálogo de arquivos"
+          link: "/features/dialogs/file/"
+        - label: "Caixas de diálogo de mensagens"
+          link: "/features/dialogs/message/"
+        - label: "Caixas de diálogo personalizadas"
+          link: "/features/dialogs/custom/"
+    - label: "Inicialização automática"
+      collapsed: true
+      autogenerate:
+        directory: "features/autostart"
+    - label: "Área de transferência"
+      collapsed: true
+      autogenerate:
+        directory: "features/clipboard"
+    - label: "Navegador"
+      collapsed: true
+      autogenerate:
+        directory: "features/browser"
+    - label: "Arrastar e soltar"
+      collapsed: true
+      autogenerate:
+        directory: "features/drag-and-drop"
+    - label: "Teclado"
+      collapsed: true
+      autogenerate:
+        directory: "features/keyboard"
+    - label: "Notificações"
+      collapsed: true
+      autogenerate:
+        directory: "features/notifications"
+    - label: "Telas"
+      collapsed: true
+      autogenerate:
+        directory: "features/screens"
+    - label: "Ambiente"
+      collapsed: true
+      autogenerate:
+        directory: "features/environment"
+    - label: "Específico da plataforma"
+      collapsed: true
+      autogenerate:
+        directory: "features/platform"
+- label: "Dispositivos móveis"
+  collapsed: true
+  items:
+    - label: "Visão geral"
+      link: "/guides/mobile/"
+    - label: "Seu primeiro aplicativo móvel"
+      link: "/guides/mobile/first-mobile-app/"
+    - label: "iOS"
+      link: "/guides/mobile/ios/"
+    - label: "Android"
+      link: "/guides/mobile/android/"
+    - label: "API para dispositivos móveis"
+      link: "/guides/mobile/mobile-api/"
+- label: "Experimental"
+  collapsed: true
+  items:
+    - label: "Visão geral"
+      link: "/experimental/"
+    - label: "Wake"
+      link: "/experimental/wake/"
+    - label: "Controle por LLM (MCP)"
+      link: "/guides/mcp-service/"
+- label: "Guias"
+  collapsed: true
+  items:
+    - label: "Desenvolvimento"
+      collapsed: true
+      items:
+        - label: "Estrutura do projeto"
+          link: "/guides/dev/project-structure/"
+        - label: "Fluxo de trabalho de desenvolvimento"
+          link: "/guides/dev/workflow/"
+        - label: "Outros frameworks"
+          link: "/guides/dev/frontend-frameworks/"
+        - label: "Depuração"
+          link: "/guides/dev/debugging/"
+        - label: "Testes"
+          link: "/guides/testing/"
+    - label: "Compilação e empacotamento"
+      collapsed: true
+      items:
+        - label: "Compilação de aplicativos"
+          link: "/guides/build/building/"
+        - label: "Personalização da compilação"
+          link: "/guides/build/customization/"
+        - label: "Compilações multiplataforma"
+          link: "/guides/build/cross-platform/"
+        - label: "Assinatura de código"
+          link: "/guides/build/signing/"
+        - label: "Empacotamento para Windows"
+          link: "/guides/build/windows/"
+        - label: "Empacotamento para macOS"
+          link: "/guides/build/macos/"
+        - label: "APIs privadas do macOS"
+          link: "/guides/build/private-macos-apis/"
+        - label: "Empacotamento para Linux"
+          link: "/guides/build/linux/"
+        - label: "Empacotamento MSIX"
+          link: "/guides/build/msix/"
+        - label: "Compilações ofuscadas"
+          link: "/guides/build/obfuscation/"
+    - label: "Distribuição"
+      collapsed: true
+      items:
+        - label: "Atualizador integrado ao aplicativo"
+          link: "/guides/updater/"
+        - label: "Associações de arquivos"
+          link: "/guides/file-associations/"
+        - label: "Protocolos personalizados"
+          link: "/guides/distribution/custom-protocols/"
+        - label: "Instância única"
+          link: "/guides/single-instance/"
+    - label: "Padrões de integração"
+      collapsed: true
+      items:
+        - label: "Roteamento no frontend"
+          link: "/guides/routing/"
+        - label: "Como usar o roteador Gin"
+          link: "/guides/gin-routing/"
+        - label: "Serviços Gin"
+          link: "/guides/gin-services/"
+        - label: "Integração com bancos de dados"
+          link: "/guides/patterns/database/"
+        - label: "APIs REST"
+          link: "/guides/patterns/rest-api/"
+    - label: "Tópicos avançados"
+      collapsed: true
+      items:
+        - label: "Compilação para servidor"
+          link: "/guides/server-build/"
+        - label: "Modelos personalizados"
+          link: "/guides/advanced/custom-templates/"
+        - label: "WML (marcação do Wails)"
+          link: "/guides/advanced/wml/"
+        - label: "Tratamento de panics"
+          link: "/guides/panic-handling/"
+        - label: "Boas práticas de segurança"
+          link: "/guides/security/"
+- label: "Referência da API"
+  collapsed: true
+  items:
+    - label: "Visão geral"
+      link: "/reference/overview/"
+    - label: "Aplicativo"
+      link: "/reference/application/"
+    - label: "Janela"
+      link: "/reference/window/"
+    - label: "Menu"
+      link: "/reference/menu/"
+    - label: "Eventos"
+      link: "/reference/events/"
+    - label: "Caixas de diálogo"
+      link: "/reference/dialogs/"
+    - label: "Runtime do frontend"
+      link: "/reference/frontend-runtime/"
+    - label: "CLI"
+      link: "/reference/cli/"
+    - label: "Protocolo do manifesto de atualização"
+      link: "/reference/update-manifest/"
+- label: "Como contribuir"
+  collapsed: true
+  items:
+    - label: "Corrigir a documentação"
+      link: "/contributing/documentation/"
+    - label: "Guia de contribuição"
+      link: "/contributing/"
+    - label: "Visão geral técnica"
+      link: "/contributing/overview/"
+    - label: "Primeiros passos"
+      link: "/contributing/getting-started/"
+    - label: "Configuração do ambiente de desenvolvimento"
+      link: "/contributing/setup/"
+    - label: "Padrões de codificação"
+      link: "/contributing/standards/"
+- label: "Migração"
+  collapsed: true
+  items:
+    - label: "Da v2 para a v3"
+      link: "/migration/v2-to-v3/"
+    - label: "Do Electron"
+      link: "/migration/from-electron/"
+- label: "Solução de problemas"
+  collapsed: true
+  items:
+    - label: "Arquivos Syso no macOS"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "Problemas com RDP"
+          link: "/troubleshooting/windows/rdp/"
+- label: "Comunidade"
+  collapsed: true
+  items:
+    - label: "Links"
+      link: "/community/links/"
+    - label: "Modelos"
+      link: "/community/templates/"
+    - label: "Mídia"
+      link: "/community/media/"
+    - label: "Vitrine"
+      collapsed: true
+      items:
+        - label: "Visão geral"
+          link: "/community/showcase/"
+        - label: "Aplicativos"
+          autogenerate:
+            directory: "community/showcase"
+- label: "Novidades"
+  link: "/whats-new/"
+- label: "Status"
+  link: "/status/"
+- label: "Registro de alterações"
+  link: "/changelog/"
+- label: "Patrocine"
+  link: "https://github.com/sponsors/leaanthony"
+- label: "Créditos"
+  link: "/credits/"

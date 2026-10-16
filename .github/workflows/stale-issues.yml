@@ -39,7 +39,7 @@ jobs:
         days-before-pr-close: -1  # Disable PR closing
         
         # Exemptions
-        exempt-issue-labels: 'pinned,security,onhold,inprogress,Selected For Development,bug,high-priority'
+        exempt-issue-labels: 'pinned,security,onhold,inprogress,Selected For Development,bug,high-priority,v3'
         exempt-all-issue-milestones: true
         exempt-all-issue-assignees: true
         

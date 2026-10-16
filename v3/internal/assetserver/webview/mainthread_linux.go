@@ -54,6 +54,9 @@ static gboolean webview_main_sync_trampoline(gpointer data) {
 
 // webview_invoke_on_main_sync schedules the Go callback identified by id on the
 // default GTK main context and blocks the calling thread until it has finished.
+// When run_if_disabled is false, it returns FALSE instead of running the
+// callback inline after the GTK loop has stopped. That is required for native
+// object releases that must never run on a worker goroutine during shutdown.
 //
 // WebKit2GTK objects may only be touched on the thread running the GTK main loop
 // (g_application_run). Asset-server responses are produced on worker goroutines,
@@ -64,13 +67,7 @@ static gboolean webview_main_sync_trampoline(gpointer data) {
 //
 // If the caller is already the main thread, g_main_context_invoke runs the
 // trampoline inline, so the wait completes immediately without deadlocking.
-static void webview_invoke_on_main_sync(uintptr_t id) {
-	webviewMainSyncCall call;
-	call.id = id;
-	call.done = FALSE;
-	g_mutex_init(&call.mutex);
-	g_cond_init(&call.cond);
-
+static gboolean webview_invoke_on_main_sync(uintptr_t id, gboolean run_if_disabled) {
 	// The enabled-check and the g_main_context_invoke that acts on it must be
 	// atomic with respect to webview_disable_main_dispatch. Holding
 	// webview_dispatch_mu across both means a worker either schedules onto a live
@@ -81,17 +78,24 @@ static void webview_invoke_on_main_sync(uintptr_t id) {
 	// self-deadlock.
 	g_mutex_lock(&webview_dispatch_mu);
 	if (!webview_main_dispatch_enabled) {
+		g_mutex_unlock(&webview_dispatch_mu);
+		if (!run_if_disabled) {
+			return FALSE;
+		}
 		// The GTK main loop has stopped: a scheduled source would never run. The
 		// loop is no longer iterating, so the cross-thread race that makes
 		// main-thread confinement necessary is gone — running the callback inline
 		// on the worker lets in-flight asset requests drain during shutdown
 		// instead of wedging. See #5631 (review question 5).
-		g_mutex_unlock(&webview_dispatch_mu);
 		webviewMainThreadCallback(id);
-		g_mutex_clear(&call.mutex);
-		g_cond_clear(&call.cond);
-		return;
+		return TRUE;
 	}
+
+	webviewMainSyncCall call;
+	call.id = id;
+	call.done = FALSE;
+	g_mutex_init(&call.mutex);
+	g_cond_init(&call.cond);
 	g_main_context_invoke(NULL, webview_main_sync_trampoline, &call);
 	g_mutex_unlock(&webview_dispatch_mu);
 
@@ -103,6 +107,7 @@ static void webview_invoke_on_main_sync(uintptr_t id) {
 
 	g_mutex_clear(&call.mutex);
 	g_cond_clear(&call.cond);
+	return TRUE;
 }
 */
 import "C"
@@ -126,7 +131,27 @@ func invokeOnMainSync(fn func()) {
 	mainSyncCallbacks[id] = fn
 	mainSyncMu.Unlock()
 
-	C.webview_invoke_on_main_sync(C.uintptr_t(id))
+	C.webview_invoke_on_main_sync(C.uintptr_t(id), C.gboolean(1))
+}
+
+// invokeOnMainSyncIfEnabled runs fn on the GTK main thread while the main loop
+// is active. It returns false after shutdown has disabled dispatch and leaves
+// fn uncalled, allowing callers that release native objects to avoid touching
+// them from a worker goroutine.
+func invokeOnMainSyncIfEnabled(fn func()) bool {
+	mainSyncMu.Lock()
+	mainSyncNextID++
+	id := mainSyncNextID
+	mainSyncCallbacks[id] = fn
+	mainSyncMu.Unlock()
+
+	if C.webview_invoke_on_main_sync(C.uintptr_t(id), C.gboolean(0)) == 0 {
+		mainSyncMu.Lock()
+		delete(mainSyncCallbacks, id)
+		mainSyncMu.Unlock()
+		return false
+	}
+	return true
 }
 
 // DisableMainThreadDispatch marks the GTK main loop as stopped. After it is

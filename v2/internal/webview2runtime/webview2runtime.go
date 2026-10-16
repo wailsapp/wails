@@ -43,22 +43,29 @@ func (i *Info) IsOlderThan(requiredVersion string) (bool, error) {
 	return result == -1, nil
 }
 
-func downloadBootstrapper() (string, error) {
+func downloadBootstrapper() (path string, err error) {
 	bootstrapperURL := `https://go.microsoft.com/fwlink/p/?LinkId=2124703`
 	installer := filepath.Join(os.TempDir(), `MicrosoftEdgeWebview2Setup.exe`)
 
 	// Download installer
 	out, err := os.Create(installer)
-	defer out.Close()
 	if err != nil {
 		return "", err
 	}
+	// The caller executes this file, so a failed flush must not be reported as
+	// a usable path. Never mask an error that happened earlier.
+	defer func() {
+		if cerr := out.Close(); cerr != nil && err == nil {
+			path, err = "", cerr
+		}
+	}()
+
 	resp, err := http.Get(bootstrapperURL)
-	defer resp.Body.Close()
 	if err != nil {
-		err = out.Close()
 		return "", err
 	}
+	defer resp.Body.Close()
+
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return "", err
