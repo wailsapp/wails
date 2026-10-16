@@ -120,6 +120,23 @@ systray.SetTemplateIcon(iconBytes)
 - Name file with `Template` suffix: `iconTemplate.png`
 - [Design guide](https://bjango.com/articles/designingmenubarextras/)
 
+### Themed Icons (Linux)
+
+On Linux, `SetIcon` sends the tray a bitmap, which each desktop scales to fit its panel. KDE Plasma fills the slot edge to edge, so an icon without padding can look larger than the icons beside it. Naming an icon from the icon theme instead lets the desktop draw it at its native panel size, like the system's own icons:
+
+```go
+systray.SetIcon(icon)                       // The icon on Windows and macOS
+systray.SetIconName("myapp-connected-symbolic")
+```
+
+Install the icon into the theme with your package, for example as `/usr/share/icons/hicolor/scalable/status/myapp-connected-symbolic.svg`. Icons whose names end in `-symbolic` are recoloured to match light and dark panels. For icons outside the system theme directories, add their directory to the search path:
+
+```go
+systray.SetIconThemePath("/opt/myapp/icons")
+```
+
+Desktops show the named icon whenever one is set. What happens when the name can't be found depends on the desktop: KDE Plasma falls back to the `SetIcon` bitmap, while GNOME's AppIndicator extension shows a placeholder, so make sure the icon is installed. To switch icons at runtime, call `SetIconName` with the new name; `SetIconName("")` goes back to the bitmap. Both setters do nothing on Windows and macOS.
+
 ## Adding Menus
 
 System tray menus work like application menus:

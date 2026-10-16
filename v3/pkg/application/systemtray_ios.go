@@ -54,6 +54,14 @@ func (s *iosSystemTray) setDarkModeIcon(_ []byte) {
 	// iOS doesn't have system tray
 }
 
+func (s *iosSystemTray) setIconName(_ string) {
+	// iOS doesn't have system tray
+}
+
+func (s *iosSystemTray) setIconThemePath(_ string) {
+	// iOS doesn't have system tray
+}
+
 func (s *iosSystemTray) destroy() {
 	// iOS doesn't have system tray
 }

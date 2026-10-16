@@ -539,6 +539,14 @@ func (s *windowsSystemTray) setTemplateIcon(_ []byte) {
 	// Unsupported - do nothing
 }
 
+func (s *windowsSystemTray) setIconName(_ string) {
+	// Unsupported - do nothing
+}
+
+func (s *windowsSystemTray) setIconThemePath(_ string) {
+	// Unsupported - do nothing
+}
+
 func (s *windowsSystemTray) setIconPosition(position IconPosition) {
 	// Unsupported - do nothing
 }
