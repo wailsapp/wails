@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.23.25",
@@ -17,10 +18,10 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^6.0.2",
-    "autoprefixer": "^10.4.20",
     "postcss": "^8.5.25",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "^4.3.3",
     "typescript": "~5.6.2",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "@tailwindcss/postcss": "^4.3.3"
   }
 }

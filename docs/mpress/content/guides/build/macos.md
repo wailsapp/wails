@@ -33,6 +33,16 @@ This creates `bin/<AppName>.app` containing:
 - App icon in `Contents/Resources/` (from `icons.icns` or, when present, from an asset catalog `Assets.car`)
 - `Info.plist` with app metadata
 
+### Projects in synced folders
+
+Some macOS file providers add Finder metadata to `.app` directories. This causes `codesign` to reject the bundle, or invalidates its signature after signing. Removing the metadata alone is insufficient when the provider adds it again.
+
+The generated macOS build tasks check for this behavior. When detected, Wails moves the project's generated output directory to `~/Library/Application Support/Wails/build-output/<project>-<hash>` and replaces the original output directory with a symlink. Existing output files are preserved, and `bin/<AppName>.app` remains the path used by packaging, signing, and dev mode. The CLI prints the local storage location when it performs the move.
+
+Set `WAILS_MACOS_OUTPUT_ROOT` to choose another local, unsynced storage location. The relocation root must be on the same filesystem as the project. An explicit `BIN_DIR` outside the project is used as configured. Existing projects need the updated `build/darwin/Taskfile.yml` to use this handling.
+
+For distribution, copy `bin/<AppName>.app` or create a DMG. Copying the `bin` symlink alone does not include the build artifacts. The direct `wails3 tool sign` command reports an error if its input folder reattaches metadata; move that bundle to an unsynced folder before signing it.
+
 ## Bundle Resources
 
 `Contents/Resources/` is the standard place for read-only files that ship with a macOS app. Use it for larger templates, seed data, media, language packs, or other payloads that should be opened on demand rather than compiled into the Go executable with `embed`.
