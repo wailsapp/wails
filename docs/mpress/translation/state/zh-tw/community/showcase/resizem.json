@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "6761f02ef820b1de4c5c",
+  "sourceFile": "community/showcase/resizem.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "d49bcd5edad747bbd705185060a55fb4f77d342230a7782af9e7ac09cd553b87",
+      "targetHash": "5abd756fa88cdcfe055c254e3145c1df29dafdd465009b10281144aa2507d9f5",
+      "machineHash": "5abd756fa88cdcfe055c254e3145c1df29dafdd465009b10281144aa2507d9f5",
+      "machineText": "![Resizem 螢幕截圖](/assets/showcase-images/resizem.webp)",
+      "status": "final",
+      "sourcePreview": "![Resizem Screenshot](/assets/showcase-images/resizem.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "de10c6f2050734194f8cfd57ad113f790d11eb7c5ebd50b04f9438edf9d3eafd",
+      "targetHash": "ef358d4d5b5a2a9bf23add48b9d87ef7e507f69f1d56a19989e2151f77f542ff",
+      "machineHash": "ef358d4d5b5a2a9bf23add48b9d87ef7e507f69f1d56a19989e2151f77f542ff",
+      "machineText": "[Resizem](https://github.com/barats/resizem) 是專為批次處理圖片而設計的應用程式。它特別適合需要一次調整大小、轉換及管理大量圖片檔案的使用者。",
+      "status": "final",
+      "sourcePreview": "[Resizem](https://github.com/barats/resizem) - is an app designed for bulk image\\ process. It is par…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineHash": "f5c72020007a12f7bf2c5c042cc9c23ae537594fcd17224e721d0ec2b5c5bff6",
+      "machineText": "使用 Wails 建置的桌面應用程式",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "e3dd9015cb2bba36da396d183061688092d6828a0fe7eeffa9d411016d83eb46",
+      "targetHash": "e3dd9015cb2bba36da396d183061688092d6828a0fe7eeffa9d411016d83eb46",
+      "machineHash": "e3dd9015cb2bba36da396d183061688092d6828a0fe7eeffa9d411016d83eb46",
+      "machineText": "Resizem",
+      "status": "final",
+      "sourcePreview": "Resizem",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:52Z"
+    }
+  }
+}

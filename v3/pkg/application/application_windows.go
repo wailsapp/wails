@@ -46,8 +46,9 @@ type windowsApp struct {
 	focusedWindow w32.HWND
 
 	// system theme
-	isCurrentlyDarkMode bool
-	currentWindowID     uint
+	isCurrentlyDarkMode       bool
+	isSystemCurrentlyDarkMode bool
+	currentWindowID           uint
 
 	// Restart taskbar flag
 	restartingTaskbar atomic.Bool
@@ -223,6 +224,7 @@ func (m *windowsApp) init() {
 		panic(syscall.GetLastError())
 	}
 	m.isCurrentlyDarkMode = w32.IsCurrentlyDarkMode()
+	m.isSystemCurrentlyDarkMode = w32.IsSystemCurrentlyDarkMode()
 }
 
 func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) uintptr {
@@ -279,14 +281,17 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
 		if settingChanged == "ImmersiveColorSet" {
 			isDarkMode := w32.IsCurrentlyDarkMode()
-			if isDarkMode != m.isCurrentlyDarkMode {
+			isSystemDarkMode := w32.IsSystemCurrentlyDarkMode()
+			if isDarkMode != m.isCurrentlyDarkMode || isSystemDarkMode != m.isSystemCurrentlyDarkMode {
+				m.isCurrentlyDarkMode = isDarkMode
+				m.isSystemCurrentlyDarkMode = isSystemDarkMode
+
 				eventContext := newApplicationEventContext()
 				eventContext.setIsDarkMode(isDarkMode)
 				applicationEvents <- &ApplicationEvent{
 					Id:  uint(events.Windows.SystemThemeChanged),
 					ctx: eventContext,
 				}
-				m.isCurrentlyDarkMode = isDarkMode
 			}
 		}
 		return 0

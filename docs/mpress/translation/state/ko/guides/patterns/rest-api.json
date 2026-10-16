@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "7656bd35984863e801e9",
+  "sourceFile": "guides/patterns/rest-api.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "6ec87e9d01d822b94eb0ecce5af234931aa212dd3955886677915508ecd91da8",
+      "targetHash": "44611951a74db022d1e98089df38491008802bffd484b943a7835c00006564a5",
+      "machineHash": "44611951a74db022d1e98089df38491008802bffd484b943a7835c00006564a5",
+      "machineText": "이 페이지는 자리 표시자입니다. 전체 REST API 콘텐츠는 곧 제공될 예정입니다.",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full REST API content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "04b3ac026184b259586a801c9bc111780f93695c8bd4bc8ad0e229bc8b2dffa7",
+      "targetHash": "11f0a842e0c465a9101003d0581c32781df703fe4ea98228a5cfbaa57510c0a9",
+      "machineHash": "11f0a842e0c465a9101003d0581c32781df703fe4ea98228a5cfbaa57510c0a9",
+      "machineText": "표준 Go `net/http` 핸들러나 [Gin](/guides/gin-routing/) 같은 프레임워크를 사용하여 Wails v3 애플리케이션에서 RESTful API를 제공할 수 있습니다. Wails는 애셋 핸들러를 통해 프런트엔드를 제공하므로, 모든 HTTP 핸들러를 마운트하여 UI나 다른 클라이언트에서 접근할 수 있습니다.",
+      "status": "final",
+      "sourcePreview": "You can expose RESTful APIs from your Wails v3 application using standard Go `net/http` handlers or …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "c9c465f83eeef141d3bccff82e31f7e09f455ac0ec1321cfc53b61b3f6ee79a8",
+      "targetHash": "d60b3920073c75aba54e8d10033be4b42089c5485332af764ab8ffec7bed7b99",
+      "machineHash": "d60b3920073c75aba54e8d10033be4b42089c5485332af764ab8ffec7bed7b99",
+      "machineText": "Wails v3 애플리케이션에서 RESTful API 제공하기",
+      "status": "final",
+      "sourcePreview": "Exposing RESTful APIs from your Wails v3 application",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "324f92a9b7c1751f068323cd960359f91459fee2f0c229815fea8e3fdc143bdc",
+      "targetHash": "41a52587276c392bfdf0c5086b78662e089895fe2bf22e3d413af8e75f98bc3d",
+      "machineHash": "41a52587276c392bfdf0c5086b78662e089895fe2bf22e3d413af8e75f98bc3d",
+      "machineText": "REST API",
+      "status": "final",
+      "sourcePreview": "REST APIs",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:39Z"
+    }
+  }
+}

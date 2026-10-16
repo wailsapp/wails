@@ -39,6 +39,11 @@ func TestDestroyMenuReturnsFalseForZeroHandle(t *testing.T) {
 	is.Equal(w32.DestroyMenu(0), false)
 }
 
+func TestGetMenuItemCountPreservesFailureValue(t *testing.T) {
+	is := is.New(t)
+	is.Equal(w32.GetMenuItemCount(0), -1)
+}
+
 // TestMenuHandleLifecycleDoesNotLeak exercises the Create+Append+Destroy
 // cycle many times and asserts that USER-object handle usage does not
 // grow unboundedly. Under the pre-fix DestroyMenu, handle count grows by

@@ -1,0 +1,22 @@
+name: Changelog publication tests
+
+on:
+  pull_request:
+    paths:
+      - 'v3/scripts/*changelog*.py'
+      - '.github/workflows/auto-changelog-v3.yml'
+      - '.github/workflows/nightly-release-v3.yml'
+      - '.github/workflows/changelog-publication-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  publication:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test competing pushes and release evidence
+        run: python3 -m unittest discover -s v3/scripts -p 'test_*changelog*.py'

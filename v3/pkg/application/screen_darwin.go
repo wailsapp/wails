@@ -106,7 +106,7 @@ Screen processScreen(NSScreen* screen, CGFloat primaryHeight){
 	NSDictionary* screenDictionary = [screen deviceDescription];
 	NSNumber* screenID = [screenDictionary objectForKey:@"NSScreenNumber"];
 	CGDirectDisplayID displayID = [screenID unsignedIntValue];
-	returnScreen.id = strdupOrNull([[NSString stringWithFormat:@"%d", displayID] UTF8String]);
+	returnScreen.id = strdupOrNull([[NSString stringWithFormat:@"%u", displayID] UTF8String]);
 
 	// Get physical monitor size
 	NSValue *sizeValue = [screenDictionary objectForKey:@"NSDeviceSize"];

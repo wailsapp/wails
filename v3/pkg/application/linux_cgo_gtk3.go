@@ -3,6 +3,7 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -33,6 +34,7 @@ typedef struct CallbackID
 } CallbackID;
 
 extern void dispatchOnMainThreadCallback(unsigned int);
+extern void handleMenuDestroy(void *, void *);
 
 static gboolean dispatchCallback(gpointer data) {
     struct CallbackID *args = data;
@@ -618,9 +620,8 @@ func appName() string {
 	return C.GoString(name)
 }
 
-func appNew(name string) pointer {
-	// Name is already sanitized by sanitizeAppName() in application_linux.go
-	appId := fmt.Sprintf("org.wails.%s", name)
+func appNew(appId string) pointer {
+	// Already resolved by applicationID() in application_linux_appid.go.
 	nameC := C.CString(appId)
 	defer C.free(unsafe.Pointer(nameC))
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
@@ -657,6 +658,7 @@ func appRun(app pointer) error {
 }
 
 func appDestroy(application pointer) {
+	webview.CloseActiveRequests()
 	C.g_application_quit((*C.GApplication)(application))
 }
 
@@ -768,6 +770,36 @@ func clipboardSet(text string) {
 }
 
 // Menu
+// The destroy signal releases the Go state before a later rebuild can reuse a
+// pointer to a destroyed widget. Callbacks run on the GTK thread; the mutex
+// protects the registry from menus constructed on other goroutines.
+var (
+	menuDestroyCallbacks   = make(map[pointer]func())
+	menuDestroyCallbacksMu sync.Mutex
+)
+
+// menuOnDestroy registers callback to run when the GTK widget is destroyed.
+func menuOnDestroy(widget pointer, callback func()) {
+	menuDestroyCallbacksMu.Lock()
+	menuDestroyCallbacks[widget] = callback
+	menuDestroyCallbacksMu.Unlock()
+	signal := C.CString("destroy")
+	defer C.free(unsafe.Pointer(signal))
+	C.g_signal_connect_data(C.gpointer(widget), signal, C.GCallback(C.handleMenuDestroy), nil, nil, 0)
+}
+
+//export handleMenuDestroy
+func handleMenuDestroy(widget unsafe.Pointer, _ unsafe.Pointer) {
+	key := pointer(widget)
+	menuDestroyCallbacksMu.Lock()
+	callback := menuDestroyCallbacks[key]
+	delete(menuDestroyCallbacks, key)
+	menuDestroyCallbacksMu.Unlock()
+	if callback != nil {
+		callback()
+	}
+}
+
 func menuAddSeparator(menu *Menu) {
 	C.gtk_menu_shell_append(
 		(*C.GtkMenuShell)((menu.impl).(*linuxMenu).native),
@@ -1029,6 +1061,8 @@ func menuRadioItemNew(group *GSList, label string) pointer {
 
 // screen related
 
+var errScreenDisplayUnavailable = errors.New("screen display unavailable")
+
 func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	monitor := C.gdk_display_get_monitor(display, C.int(index))
 
@@ -1101,16 +1135,37 @@ func getScreenByIndex(display *C.struct__GdkDisplay, index int) *Screen {
 	}
 }
 
-func getScreens(app pointer) ([]*Screen, error) {
+func getScreensForDisplay(display pointer) ([]*Screen, error) {
+	if display == nil {
+		return nil, errScreenDisplayUnavailable
+	}
+
 	var screens []*Screen
-	window := C.gtk_application_get_active_window((*C.GtkApplication)(app))
-	gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(unsafe.Pointer(window)))
-	display := C.gdk_window_get_display(gdkWindow)
-	count := C.gdk_display_get_n_monitors(display)
+	gdkDisplay := (*C.GdkDisplay)(display)
+	count := C.gdk_display_get_n_monitors(gdkDisplay)
 	for i := 0; i < int(count); i++ {
-		screens = append(screens, getScreenByIndex(display, i))
+		screens = append(screens, getScreenByIndex(gdkDisplay, i))
 	}
 	return screens, nil
+}
+
+func getScreens(app pointer) ([]*Screen, error) {
+	// Service-only applications can reach screen discovery before GTK has an
+	// active (or realised) window. Prefer that window's display when available,
+	// but never pass a nil window/display through the GTK/GDK C API.
+	if app != nil {
+		window := C.gtk_application_get_active_window((*C.GtkApplication)(app))
+		if window != nil {
+			gdkWindow := C.gtk_widget_get_window((*C.GtkWidget)(unsafe.Pointer(window)))
+			if gdkWindow != nil {
+				if display := C.gdk_window_get_display(gdkWindow); display != nil {
+					return getScreensForDisplay(pointer(display))
+				}
+			}
+		}
+	}
+
+	return getScreensForDisplay(pointer(C.gdk_display_get_default()))
 }
 
 // widgets
@@ -1133,6 +1188,9 @@ func widgetSetVisible(widget pointer, hidden bool) {
 }
 
 func (w *linuxWebviewWindow) close() {
+	// Stop active loads before destroying the view so outstanding custom
+	// scheme requests release their native references and cancel their handlers.
+	C.webkit_web_view_stop_loading(C.webkit_web_view((*C.GtkWidget)(w.webview)))
 	C.gtk_widget_destroy(w.gtkWidget())
 	getNativeApplication().unregisterWindow(windowPointer(w.window))
 }
@@ -1264,6 +1322,9 @@ func (w *linuxWebviewWindow) destroy() {
 		w.gtkmenu = nil
 	}
 	// Free window
+	// Stop active loads before destroying the view so outstanding custom
+	// scheme requests release their native references and cancel their handlers.
+	C.webkit_web_view_stop_loading(C.webkit_web_view((*C.GtkWidget)(w.webview)))
 	C.gtk_widget_destroy(w.gtkWidget())
 }
 
@@ -1428,6 +1489,14 @@ func (w *linuxWebviewWindow) isMinimised() bool {
 }
 
 func (w *linuxWebviewWindow) isVisible() bool {
+	// The GTK widget is created lazily in run() (windowNew), so there is a
+	// startup window in which w.impl != nil (set at the top of WebviewWindow.Run)
+	// but w.window is still NULL. A window whose widget does not exist yet is, by
+	// definition, not visible; without this guard a visibility poll during that
+	// gap calls gtk_widget_is_visible(NULL), which trips a GTK-CRITICAL assertion.
+	if w.window == nil {
+		return false
+	}
 	if C.gtk_widget_is_visible(w.gtkWidget()) == 1 {
 		return true
 	}

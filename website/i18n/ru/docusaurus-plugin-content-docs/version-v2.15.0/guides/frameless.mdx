@@ -1,0 +1,87 @@
+# Безрамочные приложения
+
+Wails поддерживает приложения, не имеющие рамок. Этого можно добиться, используя поле [frameless](../reference/options.mdx#frameless) в [опциях приложения](../reference/options.mdx#application-options).
+
+Wails предоставляет легкое решение для перемещения окна: любой HTML элемент имеющий стиль `--wails-draggable:drag` будет работать как "ручка для перетаскивания". Это свойство применяется для всех дочерних элементов. Если вам необходимо указать, что вложенный элемент не должен перестаскивать окно, то используйте атрибут '--wails-draggable:no-drag' на этом элементе.
+
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="/main.css" />
+  </head>
+
+  <body style="--wails-draggable:drag">
+    <div id="logo"></div>
+    <div id="input" style="--wails-draggable:no-drag">
+      <input id="name" type="text" />
+      <button onclick="greet()">Greet</button>
+    </div>
+    <div id="result"></div>
+
+    <script src="/main.js"></script>
+  </body>
+</html>
+```
+
+Для некоторых проектов использование CSS переменной может оказаться невозможным из-за динамических стилей. В этом случае вы можете использовать параметры `CSSDragProperty` и `CSSDragValue` в опциях приожения для определения свойства и значения, которые будут использоваться для указания перетаскиваемых областей:
+
+```go title=main.go
+package main
+
+import (
+    "embed"
+
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+)
+
+//go:embed all:frontend/dist
+var assets embed.FS
+
+func main() {
+    // Создаем экземляр структуры приложения
+    app := NewApp()
+
+    // Создаем приложение с опциями
+    err := wails.Run(&options.App{
+        Title:  "alwaysontop",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+          Assets: assets,
+        },
+        Frameless:       true,
+        CSSDragProperty: "widows",
+        CSSDragValue:    "1",
+        Bind: []interface{}{
+          app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+```html title=index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>alwaysontop</title>
+  </head>
+  <body style="widows: 1">
+    <div id="app"></div>
+    <script src="./src/main.js" type="module"></script>
+  </body>
+</html>
+```
+
+:::info Fullscreen
+
+Если вы разрешите приложению перейти в полноэкранный режим, функция перетаскивания будет отключена.
+
+:::
