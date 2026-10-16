@@ -215,6 +215,13 @@ In server mode, window-related APIs are safely handled:
 
 This allows code that references windows to run without crashing, though window operations have no effect.
 
+### Supported Platforms
+
+Server mode is pure Go and compiles for every `GOOS` Wails supports, including `android` and `ios`, without CGO. On mobile targets it builds a headless server only:
+
+- The native mobile APIs, `application.Android` and `application.IOS`, are not available. Code that uses them must be excluded from server builds with a `!server` build constraint.
+- The default logger is the desktop one, which writes to stderr in development builds, rather than logcat or the WebView console.
+
 ## Building for Production
 
 ### Using Task (Recommended)
