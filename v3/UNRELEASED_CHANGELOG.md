@@ -26,6 +26,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Fix AppImages from `wails3 generate appimage` crashing on start outside Debian and Ubuntu with "Unable to spawn a new child process: … WebKitNetworkProcess". The bundled WebKit now runs the helper processes shipped in the AppImage. WebKit's bubblewrap sandbox stays on
 - Fix `-tags server` builds failing to compile for Android and iOS, fixing [#6271](https://github.com/wailsapp/wails/issues/6271)
+- Fix a data race between `Event.Emit` and `RegisterHook` (or removing a hook): `Emit` read the hook list without `hookLock` while it was rewritten in place, by @DevLumuz
 - Fix the updater failing to swap on Linux when the temp dir is on another filesystem (such as a tmpfs `/tmp`) by staging beside the installed binary and copying across filesystems
 - Fix the updater trying to replace the read-only mount of an AppImage instead of the `.AppImage` file
 - Stop posting `WindowDidUpdate` and `WindowWillUpdate` on macOS: `NSWindowDidUpdateNotification` fires on every run-loop pass, so the page received ~120 empty `evaluateJavaScript:` calls per second, and on macOS 27.0 each of them consumed the transient activation of the user's click — `navigator.clipboard.writeText()` and other activation-gated APIs rejected with `NotAllowedError` from real clicks ([#6170](https://github.com/wailsapp/wails/issues/6170)) by @APshenkin
