@@ -33,6 +33,16 @@ wails3 package GOOS=darwin
 - 位於`Contents/Resources/`中的應用程式圖示（來自`icons.icns`；若有資產目錄`Assets.car`，則從該目錄取得）
 - 包含應用程式中繼資料的`Info.plist`
 
+### 同步資料夾中的專案
+
+某些 macOS 檔案提供者會在 `.app` 目錄中加入 Finder 中繼資料。這會導致 `codesign` 拒絕套件組合，或使簽章在簽署後失效。如果提供者會再次加入中繼資料，僅移除中繼資料並不足夠。
+
+產生的 macOS 建置任務會檢查這種行為。偵測到後，Wails 會將專案產生的輸出目錄移至 `~/Library/Application Support/Wails/build-output/<project>-<hash>` ，並以符號連結取代原本的輸出目錄。既有的輸出檔案會保留，封裝、簽署和開發模式仍使用 `bin/<AppName>.app` 路徑。CLI 會在移動時顯示本機儲存位置。
+
+設定 `WAILS_MACOS_OUTPUT_ROOT` 可選擇其他不參與同步的本機儲存位置。移動目的地的根目錄必須與專案位於同一個檔案系統。明確指定在專案外部的 `BIN_DIR` 會依照設定使用。既有專案需要更新後的 `build/darwin/Taskfile.yml` ，才能使用這項處理方式。
+
+散布時，請複製 `bin/<AppName>.app` 或建立 DMG。僅複製 `bin` 符號連結不會包含建置產物。直接執行 `wails3 tool sign` 命令時，如果輸入資料夾再次加入中繼資料，命令會回報錯誤；請先將該套件組合移至不參與同步的資料夾，再進行簽署。
+
 ## 套件組合資源
 
 `Contents/Resources/`是 macOS 應用程式隨附唯讀檔案的標準位置。請將其用於較大的範本、種子資料、媒體、語言套件，或其他應按需開啟、而非透過`embed`編譯至 Go 可執行檔中的內容。

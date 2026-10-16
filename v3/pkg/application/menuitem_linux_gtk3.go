@@ -21,11 +21,12 @@ func (l linuxMenuItem) setTooltip(tooltip string) {
 	})
 }
 
-func (l linuxMenuItem) destroy() {
+func (l *linuxMenuItem) destroy() {
 	InvokeSync(func() {
-		l.blockSignal()
-		defer l.unBlockSignal()
-		menuItemDestroy(l.native)
+		if l.native != nil {
+			l.blockSignal()
+			menuItemDestroy(l.native)
+		}
 	})
 }
 
@@ -118,6 +119,7 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 		panic(fmt.Sprintf("Unknown menu type: %v", item.itemType))
 	}
 	result.setDisabled(result.menuItem.disabled)
+	result.trackDestroy()
 	return result
 }
 
@@ -128,7 +130,21 @@ func newRadioItemImpl(item *MenuItem, group GSListPointer) *linuxMenuItem {
 	}
 	result.setChecked(item.checked)
 	result.setDisabled(result.menuItem.disabled)
+	result.trackDestroy()
 	return result
+}
+
+// GTK destroys descendants when their parent menu item is removed. Clear the
+// Go implementation too, including items removed from the Go menu before Update.
+func (l *linuxMenuItem) trackDestroy() {
+	menuOnDestroy(l.native, func() {
+		l.native = nil
+		l.handlerId = 0
+		if l.menuItem.impl == l {
+			l.menuItem.impl = nil
+			delete(gtkSignalToMenuItem, l.menuItem.id)
+		}
+	})
 }
 
 func newSpeechMenu() *MenuItem {

@@ -85,9 +85,9 @@ Wails は macOS 12 以降で **カメラとマイク** の要求を処理しま�
 | --- | --- | --- |
 | `PermissionDefault` | WebKit 独自の確認を表示 | TCC のみ |
 | `PermissionAllow` | WebKit の確認を省略 — **TCC は引き続き適用** | TCC のみ |
-| `PermissionDeny` | デバイスにアクセスする前に拒否 | TCC のみ |
+| `PermissionDeny` | WebKit が拒否。システムの認可は別途適用 | TCC のみ |
 
-`PermissionAllow` が許可するのは WebView の要求であり、デバイス自体ではありません。最初のキャプチャでは TCC の確認が表示され、システム設定で拒否されたアプリは拒否されたままです。アプリが自分自身にデバイスへのアクセスを許可することはできません。`PermissionAllow` が省略するのは、その手前にある WebKit の確認だけです。
+`PermissionAllow` が許可するのは WebView の要求であり、デバイスへのアクセスではありません。システムの認可は独立して適用され、システム設定で拒否されたアプリは拒否されたままです。省略されるのは WebKit 独自の確認だけです。
 
 macOS 12 より前にはこのデリゲートメソッドがないため、マップは無視され、すべての要求は WebKit の確認に戻ります。
 
@@ -100,18 +100,11 @@ macOS 12 より前にはこのデリゲートメソッドがないため、マ�
 <string>Used for video calls</string>
 ```
 
-@note{type="caution" title="Info.plist に用途を宣言していない機能は拒否する"}
+@note{type="caution" title="使用目的の説明は必須です"}
 
-対応する用途説明キーがないまま要求が AVFoundation に到達すると、単なる失敗ではなく macOS がアプリを終了します。
+WebKit は Wails の権限デリゲートを呼び出す前に、システムの認可を要求する場合があります。`PermissionDeny` は WebKit の要求を拒否しますが、TCC の確認や AVFoundation の認可要求が発生しないことを保証するものではありません。
 
-`PermissionDefault` はゼロ値です。そのため `{PermissionMicrophone: PermissionAllow}` だけではカメラの WebKit 確認が残ります。ユーザーが許可し、アプリが `NSMicrophoneUsageDescription` しか宣言していなければ、アプリは終了します。用途説明のない機能には必ず `PermissionDeny` を明示してください。
-
-```go
-Permissions: map[application.PermissionType]application.Permission{
-    application.PermissionMicrophone: application.PermissionAllow,
-    application.PermissionCamera:     application.PermissionDeny,
-},
-```
+アプリが要求するデバイスの使用目的の説明を追加し、サンドボックスを使用する場合は対応するデバイスのエンタイトルメントも追加してください。これらの宣言の代わりに `PermissionDeny` を使用しないでください。
 
 @end
 
@@ -231,7 +224,7 @@ macOS が ✅ の場合、ポリシーが WebKit の要求に応答し、さら�
 
 **Web コンテンツがカメラやマイクを要求すると macOS アプリが終了する**
 
-対応する用途説明キーがないまま要求が AVFoundation に到達すると、単なる失敗ではなく macOS がアプリを終了します。 対応するキーを追加するか、その機能に `PermissionDeny` を設定して要求が AVFoundation に届かないようにしてください。`PermissionDefault` は WebKit の確認を残すため、ユーザーが許可する可能性があります。
+アプリが要求する各デバイスについて、`Info.plist` に `NSCameraUsageDescription` または `NSMicrophoneUsageDescription` が含まれているか確認してください。説明がないと要求が拒否される場合があり、必須の説明なしで AVFoundation にアクセスするとアプリが終了する場合があります。`PermissionDeny` は WebKit の判断を制御するもので、これらのキーの代わりにはなりません。
 
 **Linux で位置情報／通知／クリップボードが機能しない**
 

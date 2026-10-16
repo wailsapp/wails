@@ -123,7 +123,8 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 	}
 
 	var result []string
-	if m.dialog.allowsMultipleSelection && !m.dialog.canChooseDirectories {
+	switch openDialogKindFor(m.dialog.canChooseDirectories, m.dialog.allowsMultipleSelection) {
+	case openMultipleFiles:
 		temp, err := showCfdDialog(
 			func() (cfd.Dialog, error) {
 				return cfd.NewOpenMultipleFilesDialog(config)
@@ -132,26 +133,33 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 			return nil, err
 		}
 		result = temp.([]string)
-	} else {
-		if m.dialog.canChooseDirectories {
-			temp, err := showCfdDialog(
-				func() (cfd.Dialog, error) {
-					return cfd.NewSelectFolderDialog(config)
-				}, false, m.dialog.window)
-			if err != nil {
-				return nil, err
-			}
-			result = []string{temp.(string)}
-		} else {
-			temp, err := showCfdDialog(
-				func() (cfd.Dialog, error) {
-					return cfd.NewOpenFileDialog(config)
-				}, false, m.dialog.window)
-			if err != nil {
-				return nil, err
-			}
-			result = []string{temp.(string)}
+	case openMultipleFolders:
+		temp, err := showCfdDialog(
+			func() (cfd.Dialog, error) {
+				return cfd.NewSelectMultipleFoldersDialog(config)
+			}, true, m.dialog.window)
+		if err != nil {
+			return nil, err
 		}
+		result = temp.([]string)
+	case openSingleFolder:
+		temp, err := showCfdDialog(
+			func() (cfd.Dialog, error) {
+				return cfd.NewSelectFolderDialog(config)
+			}, false, m.dialog.window)
+		if err != nil {
+			return nil, err
+		}
+		result = []string{temp.(string)}
+	default:
+		temp, err := showCfdDialog(
+			func() (cfd.Dialog, error) {
+				return cfd.NewOpenFileDialog(config)
+			}, false, m.dialog.window)
+		if err != nil {
+			return nil, err
+		}
+		result = []string{temp.(string)}
 	}
 
 	files := make(chan string)
@@ -163,6 +171,33 @@ func (m *windowOpenFileDialog) show() (chan string, error) {
 		close(files)
 	}()
 	return files, nil
+}
+
+// openDialogKind is the Common Item Dialog an OpenFile dialog is shown as.
+type openDialogKind int
+
+const (
+	openSingleFile openDialogKind = iota
+	openMultipleFiles
+	openSingleFolder
+	openMultipleFolders
+)
+
+// openDialogKindFor picks the dialog for an OpenFile request. The Windows
+// dialog cannot mix files and folders, so directories take precedence when
+// both are allowed (unchanged); multiple selection applies to folders as well
+// as files, matching macOS and Linux.
+func openDialogKindFor(canChooseDirectories, allowsMultipleSelection bool) openDialogKind {
+	switch {
+	case canChooseDirectories && allowsMultipleSelection:
+		return openMultipleFolders
+	case canChooseDirectories:
+		return openSingleFolder
+	case allowsMultipleSelection:
+		return openMultipleFiles
+	default:
+		return openSingleFile
+	}
 }
 
 type windowSaveFileDialog struct {

@@ -27,11 +27,11 @@ func _ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownQueryInte
 }
 
 func _ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownAddRef(this *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerIUnknownRelease(this *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerInvoke(this *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler, errorCode uintptr, createdController *ICoreWebView2Controller) uintptr {

@@ -63,6 +63,31 @@ func NewSelectFolderDialog(config DialogConfig) (SelectFolderDialog, error) {
 	return openDialog, nil
 }
 
+// NewSelectMultipleFoldersDialog creates a folder picker that accepts
+// several folders at once (FOS_PICKFOLDERS with FOS_ALLOWMULTISELECT).
+// Read the selection with ShowAndGetResults.
+func NewSelectMultipleFoldersDialog(config DialogConfig) (OpenMultipleFilesDialog, error) {
+	initialize()
+
+	openDialog, err := newIFileOpenDialog()
+	if err != nil {
+		return nil, err
+	}
+	err = config.apply(openDialog)
+	if err != nil {
+		return nil, err
+	}
+	err = openDialog.setPickFolders(true)
+	if err != nil {
+		return nil, err
+	}
+	err = openDialog.setIsMultiselect(true)
+	if err != nil {
+		return nil, err
+	}
+	return openDialog, nil
+}
+
 // TODO doc
 func NewSaveFileDialog(config DialogConfig) (SaveFileDialog, error) {
 	initialize()

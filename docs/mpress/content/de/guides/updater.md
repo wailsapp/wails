@@ -65,6 +65,10 @@ Sie können den aktuellen Zustand jederzeit mit `app.Updater.State()` abrufen. J
 
 `Restart` wartet, bis der Hilfsprozess `application.New` erreicht, bevor die laufende Anwendung zum Beenden aufgefordert wird. Das standardmäßige Startzeitlimit beträgt 30 Sekunden. Wenn Ihre Anwendung vor `application.New` eine längere Initialisierung durchführt, setzen Sie `Config.HelperReadyTimeout` auf eine längere Dauer, beispielsweise `time.Minute`. Null wählt den Standardwert; negative Zeitspannen werden abgelehnt. Bei Überschreitung des Startzeitlimits gibt `Restart` den Fehler `updater.ErrHelperNotReady` zurück und lässt die laufende Anwendung geöffnet.
 
+Das Update wird in einem Verzeichnis `wails-update-*` neben der installierten Binärdatei bereitgestellt (unter macOS neben dem `.app`-Bundle); dieses Verzeichnis muss daher beschreibbar sein.
+
+Innerhalb eines AppImage ersetzt der Updater die durch `$APPIMAGE` benannte `.AppImage`-Datei und startet sie neu, nicht das schreibgeschützte Mount.
+
 Das Standardfenster zeigt automatisch den aktuellen Zustand an. Wenn `Check` beispielsweise kein Upgrade zurückgibt, wird dies dem Benutzer angezeigt und er schließt das Fenster mit **Schließen**:
 
 ![Das standardmäßige Updater-Fenster im Zustand „Aktuell“ – grünes Häkchen, Überschrift „Sie sind auf dem aktuellen Stand“ und eine einzige Schaltfläche „Schließen“.](/assets/updater/default-window-up-to-date.png)
