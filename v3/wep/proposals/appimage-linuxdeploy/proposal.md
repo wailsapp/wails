@@ -26,13 +26,13 @@ A new field on `GenerateAppImageOptions`:
 LinuxDeploy string `description:"Path to a linuxdeploy executable to use instead of downloading one (env WAILS_APPIMAGE_LINUXDEPLOY)"`
 ```
 
-A helper resolves the value: the flag, else the environment variable, made absolute; empty means download. When a path is supplied the existing download-if-missing step is skipped, the file is marked executable, and it is the executable the command runs (still with `--appimage-extract-and-run`, so a linuxdeploy AppImage works without FUSE). The helper is the same one used by the `-apprun` proposal.
+A helper resolves the value: the flag, else the environment variable, made absolute; empty means download. When a path is supplied the existing download-if-missing step is skipped, the file is marked executable, and it is the executable the command runs, for both linuxdeploy passes when [#6213](https://github.com/wailsapp/wails/pull/6213) is in (still with `--appimage-extract-and-run`, so a linuxdeploy AppImage works without FUSE).
 
 Documentation: a row in the `generate appimage` flag table of the CLI guide and an `Added` entry in the unreleased changelog.
 
 ## Non-Goals
 
-Does not change how AppRun is obtained (see the `-apprun` WEP), does not manage linuxdeploy plugins, and does not verify the supplied binary.
+Does not change how AppRun is obtained, does not manage linuxdeploy plugins, and does not verify the supplied binary.
 
 ## Platform Considerations
 
@@ -56,7 +56,7 @@ The supplied executable is run with the user's privileges. The option replaces a
 
 ## Test Plan
 
-A unit test of the shared path helper: flag over environment over empty, result absolute. Manual check: run the command with a locally downloaded linuxdeploy and the network blocked, and confirm no download is attempted and the AppImage is produced.
+A unit test of the path helper: flag over environment over empty, result absolute. Manual check: run the command with a locally downloaded linuxdeploy and the network blocked, and confirm no download is attempted and the AppImage is produced.
 
 ## Reference Implementation
 
