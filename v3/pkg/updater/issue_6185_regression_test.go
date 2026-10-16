@@ -24,8 +24,9 @@ func (workflowReproHost) OnEvent(string, func(any)) func() {
 func (workflowReproHost) OpenWindow(updater.WindowOptions) updater.WindowHandle { return nil }
 func (workflowReproHost) Quit()                                                 {}
 
-// workflowReproCountLeftovers counts wails-update-* directories directly under
-// root, and how many of them contain an .artifact file.
+// workflowReproCountLeftovers counts wails-update-* staging directories
+// directly under root (the directory holding the target executable), and how
+// many of them contain an .artifact file.
 func workflowReproCountLeftovers(root string) (dirs, artifacts int, err error) {
 	entries, err := os.ReadDir(root)
 	if err != nil {
@@ -85,10 +86,14 @@ func (p *workflowReproProvider) Download(_ context.Context, _ *updater.Release, 
 }
 
 func TestWorkflowReproDownloadFailureLeavesTempArtifacts(t *testing.T) {
+	// The updater stages downloads beside the target executable (not under
+	// os.TempDir) so the final swap is a same-filesystem rename. Point the
+	// executable resolver into an isolated directory so every wails-update-*
+	// staging dir this test produces lands under root.
 	root := t.TempDir()
-	t.Setenv("TMPDIR", root)
-	t.Setenv("TEMP", root)
-	t.Setenv("TMP", root)
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		return filepath.Join(root, "app"), nil
+	}))
 
 	full := []byte("0123456789abcdefghij0123456789abcdefghij")
 	prov := &workflowReproProvider{root: root, full: full, part: full[:len(full)/2]}

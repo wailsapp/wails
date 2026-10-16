@@ -1,4 +1,4 @@
-//go:build ios
+//go:build ios && !server
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
