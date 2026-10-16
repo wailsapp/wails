@@ -101,7 +101,11 @@ wails3 package GOOS=linux GOARCH=arm64
 
 @note type="note"
 
-ARM64 builds from x86_64 hosts use Docker for CGO cross-compilation.
+Linux builds use purego by default, including cross-compilation. No C compiler, development headers, or Docker image is needed to build a Linux application. The target machine still needs GTK and WebKitGTK runtime libraries.
+
+```bash
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o myapp .
+```
 
 @end
 
@@ -117,20 +121,20 @@ The GTK3 / WebKit2GTK 4.1 path is supported through the v3.0.x line. Plan to mig
 
 ### Dependencies
 
-Install GTK3 and WebKit2GTK 4.1 development libraries:
+Install GTK3 and WebKit2GTK 4.1 runtime libraries on the machine running the application:
 
 ```bash
 # Ubuntu/Debian
-sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev
+sudo apt install libgtk-3-0 libwebkit2gtk-4.1-0
 
 # Fedora
-sudo dnf install gtk3-devel webkit2gtk4.1-devel
+sudo dnf install gtk3 webkit2gtk4.1
 
 # Arch
 sudo pacman -S gtk3 webkit2gtk-4.1
 ```
 
-The required pkg-config packages are `gtk+-3.0` and `webkit2gtk-4.1`.
+Development libraries and pkg-config are needed only to regenerate bindings or build the reference CGo backend.
 
 ### Building with GTK3
 
@@ -143,8 +147,10 @@ wails3 build -tags gtk3
 Or directly with Go:
 
 ```bash
-go build -tags gtk3 -o myapp .
+CGO_ENABLED=0 go build -tags gtk3 -o myapp .
 ```
+
+For backend comparisons, the reference implementation remains available with `CGO_ENABLED=1 go build -tags wailscgo` (GTK4) or `CGO_ENABLED=1 go build -tags wailscgo,gtk3`. Those builds require the corresponding development libraries.
 
 ### Known Differences from GTK4
 

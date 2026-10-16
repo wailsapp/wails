@@ -1,0 +1,1117 @@
+{
+  "package": "application",
+  "build": "linux && !wailscgo && !gtk3 && !android && !server",
+  "headers": [
+    "gtk/gtk.h",
+    "webkit/webkit.h",
+    "jsc/jsc.h",
+    "signal.h",
+    "gio/gunixinputstream.h",
+    "gdk/x11/gdkx.h"
+  ],
+  "pkg_config": [
+    "gtk4",
+    "webkitgtk-6.0",
+    "gio-unix-2.0"
+  ],
+  "functions": [
+    {
+      "name": "g_action_get_state",
+      "library": "libGio"
+    },
+    {
+      "name": "g_action_map_add_action",
+      "library": "libGio"
+    },
+    {
+      "name": "g_action_map_lookup_action",
+      "library": "libGio",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "g_application_hold",
+      "library": "libGio"
+    },
+    {
+      "name": "g_application_quit",
+      "library": "libGio"
+    },
+    {
+      "name": "g_application_release",
+      "library": "libGio"
+    },
+    {
+      "name": "g_application_run",
+      "library": "libGio"
+    },
+    {
+      "name": "g_bytes_new",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_bytes_unref",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_error_free",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_error_new_literal",
+      "library": "libGLib",
+      "strings": [
+        2
+      ]
+    },
+    {
+      "name": "g_file_get_path",
+      "library": "libGio"
+    },
+    {
+      "name": "g_file_new_for_path",
+      "library": "libGio",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_free",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_get_application_name",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_idle_add",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_input_stream_close",
+      "library": "libGio"
+    },
+    {
+      "name": "g_input_stream_read_all",
+      "library": "libGio"
+    },
+    {
+      "name": "g_list_model_get_item",
+      "library": "libGio"
+    },
+    {
+      "name": "g_list_model_get_n_items",
+      "library": "libGio"
+    },
+    {
+      "name": "g_list_store_append",
+      "library": "libGio"
+    },
+    {
+      "name": "g_list_store_new",
+      "library": "libGio"
+    },
+    {
+      "name": "g_main_context_default",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_main_context_invoke",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_main_context_iteration",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_malloc0",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_menu_append_item",
+      "library": "libGio"
+    },
+    {
+      "name": "g_menu_append_section",
+      "library": "libGio"
+    },
+    {
+      "name": "g_menu_insert_item",
+      "library": "libGio"
+    },
+    {
+      "name": "g_menu_item_new",
+      "library": "libGio",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_menu_item_set_action_and_target_value",
+      "library": "libGio",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "g_menu_item_set_label",
+      "library": "libGio",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "g_menu_item_set_submenu",
+      "library": "libGio"
+    },
+    {
+      "name": "g_menu_new",
+      "library": "libGio"
+    },
+    {
+      "name": "g_menu_remove",
+      "library": "libGio"
+    },
+    {
+      "name": "g_menu_remove_all",
+      "library": "libGio"
+    },
+    {
+      "name": "g_object_get_data",
+      "library": "libGObject",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "g_object_new_with_properties",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_object_ref",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_object_ref_sink",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_object_set_data",
+      "library": "libGObject",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "g_object_unref",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_quark_from_static_string",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_set_prgname",
+      "library": "libGLib",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_signal_connect_data",
+      "library": "libGObject",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "g_simple_action_group_new",
+      "library": "libGio"
+    },
+    {
+      "name": "g_simple_action_new",
+      "library": "libGio",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_simple_action_new_stateful",
+      "library": "libGio",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_simple_action_set_enabled",
+      "library": "libGio"
+    },
+    {
+      "name": "g_simple_action_set_state",
+      "library": "libGio"
+    },
+    {
+      "name": "g_slist_length",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_strdup",
+      "library": "libGLib",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_thread_self",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_timeout_add_full",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_type_check_instance_is_a",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_type_check_value_holds",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_type_from_name",
+      "library": "libGObject",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_unix_input_stream_new",
+      "library": "libGio"
+    },
+    {
+      "name": "g_value_get_boxed",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_value_init",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_value_set_object",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_value_set_string",
+      "library": "libGObject",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "g_value_unset",
+      "library": "libGObject"
+    },
+    {
+      "name": "g_variant_get_boolean",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_variant_get_string",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_variant_new_boolean",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_variant_new_string",
+      "library": "libGLib",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_variant_type_free",
+      "library": "libGLib"
+    },
+    {
+      "name": "g_variant_type_new",
+      "library": "libGLib",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "g_variant_unref",
+      "library": "libGLib"
+    },
+    {
+      "name": "gdk_clipboard_read_text_async",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_clipboard_read_text_finish",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_clipboard_set_text",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gdk_content_formats_contain_gtype",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_display_get_clipboard",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_display_get_default",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_display_get_default_seat",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_display_get_monitor_at_surface",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_display_get_monitors",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_drop_get_formats",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_file_list_get_type",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_monitor_get_geometry",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_monitor_get_model",
+      "library": "libGtk",
+      "string_result": true
+    },
+    {
+      "name": "gdk_monitor_get_scale",
+      "library": "libGtk",
+      "optional": true
+    },
+    {
+      "name": "gdk_monitor_get_scale_factor",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_seat_get_pointer",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_surface_get_display",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_surface_get_height",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_surface_get_width",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_texture_get_width",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_texture_new_from_bytes",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_toplevel_begin_move",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_toplevel_begin_resize",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_toplevel_get_state",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_unicode_to_keyval",
+      "library": "libGtk"
+    },
+    {
+      "name": "gdk_x11_display_get_xdisplay",
+      "library": "libGtk",
+      "optional": true
+    },
+    {
+      "name": "gdk_x11_surface_get_xid",
+      "library": "libGtk",
+      "optional": true
+    },
+    {
+      "name": "gtk_accelerator_name",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_accessible_update_property_value",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_application_get_active_window",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_application_get_windows",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_application_new",
+      "library": "libGtk",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "gtk_application_set_accels_for_action",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_application_window_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_box_append",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_box_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_box_prepend",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_button_new_with_label",
+      "library": "libGtk",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "gtk_css_provider_load_from_data",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_css_provider_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_drop_controller_motion_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_drop_target_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_event_controller_focus_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_event_controller_key_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_event_controller_set_propagation_phase",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_open",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_open_finish",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_open_multiple",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_open_multiple_finish",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_save",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_save_finish",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_select_folder",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_select_folder_finish",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_select_multiple_folders",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_select_multiple_folders_finish",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_set_accept_label",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_file_dialog_set_filters",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_set_initial_folder",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_dialog_set_title",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_file_filter_add_pattern",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_file_filter_get_type",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_filter_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_file_filter_set_name",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_gesture_click_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_gesture_single_get_current_button",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_gesture_single_set_button",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_get_major_version",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_get_micro_version",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_get_minor_version",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_header_bar_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_header_bar_pack_end",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_image_new_from_icon_name",
+      "library": "libGtk",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "gtk_image_new_from_paintable",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_image_set_pixel_size",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_label_new",
+      "library": "libGtk",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "gtk_label_set_max_width_chars",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_label_set_wrap",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_menu_button_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_menu_button_set_icon_name",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_menu_button_set_menu_model",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_native_get_surface",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_popover_menu_bar_new_from_model",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_popover_menu_new_from_model",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_popover_popup",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_popover_set_has_arrow",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_popover_set_pointing_to",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_popover_set_position",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_style_context_add_provider_for_display",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_activate",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_add_controller",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_add_css_class",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_widget_get_display",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_get_height",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_get_native",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_get_realized",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_get_width",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_grab_focus",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_insert_action_group",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_widget_is_visible",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_remove_css_class",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_widget_set_halign",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_hexpand",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_margin_bottom",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_margin_end",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_margin_start",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_margin_top",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_name",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_widget_set_opacity",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_parent",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_sensitive",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_size_request",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_tooltip_text",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_widget_set_vexpand",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_set_visible",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_widget_unparent",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_destroy",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_fullscreen",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_get_default_size",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_is_active",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_is_fullscreen",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_is_maximized",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_maximize",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_minimize",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_new",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_present",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_set_child",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_set_decorated",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_set_default_size",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_set_default_widget",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_set_modal",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_set_resizable",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_set_title",
+      "library": "libGtk",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "gtk_window_set_titlebar",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_set_transient_for",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_unfullscreen",
+      "library": "libGtk"
+    },
+    {
+      "name": "gtk_window_unmaximize",
+      "library": "libGtk"
+    },
+    {
+      "name": "jsc_value_to_string",
+      "library": "libJSC"
+    },
+    {
+      "name": "webkit_get_major_version",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_get_micro_version",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_get_minor_version",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_network_session_get_default",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_permission_request_allow",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_permission_request_deny",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_settings_get_enable_developer_extras",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_settings_new",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_settings_set_enable_developer_extras",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_settings_set_hardware_acceleration_policy",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_uri_scheme_request_get_web_view",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_user_content_manager_add_script",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_user_content_manager_new",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_user_content_manager_register_script_message_handler",
+      "library": "libWebKit",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "webkit_user_media_permission_is_for_audio_device",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_user_media_permission_is_for_video_device",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_user_media_permission_request_get_type",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_user_script_new",
+      "library": "libWebKit",
+      "strings": [
+        0
+      ]
+    },
+    {
+      "name": "webkit_user_script_unref",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_context_register_uri_scheme",
+      "library": "libWebKit",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "webkit_web_inspector_show",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_evaluate_javascript",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_get_context",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_get_inspector",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_get_settings",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_get_type",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_get_uri",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_get_user_content_manager",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_get_zoom_level",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_load_alternate_html",
+      "library": "libWebKit",
+      "strings": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "name": "webkit_web_view_load_uri",
+      "library": "libWebKit",
+      "strings": [
+        1
+      ]
+    },
+    {
+      "name": "webkit_web_view_set_background_color",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_set_settings",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_set_zoom_level",
+      "library": "libWebKit"
+    },
+    {
+      "name": "webkit_web_view_stop_loading",
+      "library": "libWebKit"
+    }
+  ]
+}
