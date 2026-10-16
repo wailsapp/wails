@@ -210,8 +210,8 @@ func TestInit_RejectsNilProvider(t *testing.T) {
 func TestInit_CheckInterval_TicksProviderAndStops(t *testing.T) {
 	host := &fakeHost{}
 	rel := &updater.Release{
-		Version:  "2.0.0",
-		Artifact: updater.Artifact{Filename: "app.bin"},
+		Version:      "2.0.0",
+		Artifact:     updater.Artifact{Filename: "app.bin"},
 		Verification: &updater.Verification{DigestAlgo: "sha256", Digest: sha256.New().Sum(nil)},
 	}
 	// Pre-compute matching digest so Check finds + DownloadAndInstall succeeds.
@@ -350,6 +350,10 @@ func TestDownloadAndInstall_NoPendingRelease(t *testing.T) {
 }
 
 func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
+	appDir := t.TempDir()
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		return filepath.Join(appDir, "app"), nil
+	}))
 	host := &fakeHost{}
 	body := []byte("hello-end-to-end")
 	rel := &updater.Release{
@@ -368,6 +372,10 @@ func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
 	if u.State() != updater.StateReady {
 		t.Errorf("state: %s", u.State())
 	}
+	// Staged beside the target so the swap never crosses filesystems.
+	if got := filepath.Dir(filepath.Dir(u.DownloadedPath())); got != appDir {
+		t.Errorf("staged under %s, want %s", got, appDir)
+	}
 	wantOrder := []string{
 		updater.EventCheckStarted,
 		updater.EventUpdateAvailable,
@@ -382,10 +390,14 @@ func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
 }
 
 // On any failure between download and ready (verify mismatch, unknown
-// digest algo, etc.) the temp staging directory created under
-// os.TempDir/wails-update-* must be removed; otherwise repeated update
+// digest algo, etc.) the staging directory created beside the target as
+// wails-update-* must be removed; otherwise repeated update
 // attempts accumulate orphan directories.
 func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
+	appDir := t.TempDir()
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		return filepath.Join(appDir, "app"), nil
+	}))
 	host := &fakeHost{}
 	body := []byte("real-bytes")
 	wrong := sha256.Sum256([]byte("different-bytes"))
@@ -400,7 +412,7 @@ func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
 	p := &fakeProvider{name: "p", rel: rel, body: body}
 	u := newConfigured(t, host, p)
 
-	before := countStagingDirs(t)
+	before := countStagingDirs(t, appDir)
 
 	if _, err := u.Check(context.Background()); err != nil {
 		t.Fatal(err)
@@ -409,20 +421,19 @@ func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
 		t.Fatal("expected error from digest mismatch")
 	}
 
-	after := countStagingDirs(t)
+	after := countStagingDirs(t, appDir)
 	if after > before {
-		t.Errorf("staging dir leaked: %d → %d wails-update-* directories under %s", before, after, os.TempDir())
+		t.Errorf("staging dir leaked: %d → %d wails-update-* directories under %s", before, after, appDir)
 	}
 }
 
 // countStagingDirs returns the number of `wails-update-*` directories under
-// os.TempDir. Used to detect leaks across the download/install flow without
-// being sensitive to absolute paths.
-func countStagingDirs(t *testing.T) int {
+// dir. Used to detect leaks across the download/install flow.
+func countStagingDirs(t *testing.T, dir string) int {
 	t.Helper()
-	entries, err := os.ReadDir(os.TempDir())
+	entries, err := os.ReadDir(dir)
 	if err != nil {
-		t.Fatalf("read tempdir: %v", err)
+		t.Fatalf("read %s: %v", dir, err)
 	}
 	n := 0
 	for _, e := range entries {
@@ -491,6 +502,9 @@ func TestRestart_QuitsAfterSpawn(t *testing.T) {
 	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
 		return exec.Command(path, "-test.run=^$")
 	}))
+	t.Cleanup(updater.SetWaitForHelperReadyForTest(func(string, time.Duration) error {
+		return nil
+	}))
 
 	host := &fakeHost{}
 	body := []byte("payload")
@@ -524,6 +538,37 @@ func TestRestart_QuitsAfterSpawn(t *testing.T) {
 	defer host.mu.Unlock()
 	if host.quits != 1 {
 		t.Errorf("Quit dispatch count: got %d, want 1", host.quits)
+	}
+}
+
+func TestRestart_DoesNotQuitBeforeHelperReady(t *testing.T) {
+	t.Cleanup(updater.SetSelfExecutableForTest(os.Executable))
+	t.Cleanup(updater.SetNewDetachedCommandForTest(func(path string) *exec.Cmd {
+		return exec.Command(path, "-test.run=^$")
+	}))
+	t.Cleanup(updater.SetWaitForHelperReadyForTest(func(string, time.Duration) error {
+		return updater.ErrHelperNotReady
+	}))
+
+	host := &fakeHost{}
+	body := []byte("payload")
+	p := &fakeProvider{name: "p", rel: &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}, body: body}
+	u := newConfigured(t, host, p)
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatalf("DownloadAndInstall: %v", err)
+	}
+
+	if err := u.Restart(context.Background()); !errors.Is(err, updater.ErrHelperNotReady) {
+		t.Fatalf("Restart: want ErrHelperNotReady, got %v", err)
+	}
+	if host.quits != 0 {
+		t.Fatalf("Quit dispatched before helper readiness: %d", host.quits)
 	}
 }
 
@@ -993,4 +1038,4 @@ func slicesEqualIgnoringProgressRepeats(a, b []string) bool {
 }
 
 func osRemoveAll(p string) error { return removeAllOS(p) }
-func parentOf(p string) string  { return filepath.Dir(p) }
+func parentOf(p string) string   { return filepath.Dir(p) }

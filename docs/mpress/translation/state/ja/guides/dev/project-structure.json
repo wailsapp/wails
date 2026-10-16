@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f9161f96c9def64b7650",
+  "sourceFile": "guides/dev/project-structure.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "a0001-title-01": {
+      "sourceHash": "6182fb7f4677ae02e233dc74f0294fe645ebe92b3657c34e8deea157fa2c90d3",
+      "targetHash": "473a97978d18cada82c3684af9561a6f53a98257091304066187423a4254d364",
+      "machineHash": "473a97978d18cada82c3684af9561a6f53a98257091304066187423a4254d364",
+      "machineText": "フロントエンドプロジェクトのファイル",
+      "status": "final",
+      "sourcePreview": "Frontend project files",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "b0001-text-01": {
+      "sourceHash": "44b9294068221fd8669c6918b2c192f8a366d4a1075ea58ca7e246d8790cb402",
+      "targetHash": "4f19f2396dde4a8e3b409532069c85d5aa5c20ce6b7fb3cce558ee828a29a886",
+      "machineHash": "4f19f2396dde4a8e3b409532069c85d5aa5c20ce6b7fb3cce558ee828a29a886",
+      "machineText": "このページは、Vanilla テンプレートを使用して新しいプロジェクトを作成したときに生成されるファイルの簡単なリファレンスです",
+      "status": "final",
+      "sourcePreview": "This page is a simple reference to the files created when you initiate a new project using the Vanil…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "4e66e1910d82ca8e6b2d220d76581f1ac77a574461d47041f24a5ee6cdb615a9",
+      "targetHash": "1b9db10ba3e0c5cb1075800222f75614213e36939991c61940bec88ff959fe86",
+      "machineHash": "1b9db10ba3e0c5cb1075800222f75614213e36939991c61940bec88ff959fe86",
+      "machineText": "別のスターターテンプレートを使用する場合、`frontend/src` の内容は選択したフレームワークによって異なります",
+      "status": "final",
+      "sourcePreview": "If you choose to use a different starter template, contents of `frontend/src` will differ depending …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "7b6ffba19464fadd57a58d9beb5ee8d93801f37378dc8989a8fc02d7f543171e",
+      "targetHash": "b63f2551cba9e1f41e309f390102d7004be1998c2c4a0a5f523a6aeff60b355c",
+      "machineHash": "b63f2551cba9e1f41e309f390102d7004be1998c2c4a0a5f523a6aeff60b355c",
+      "machineText": "一般的な Wails プロジェクトのファイル構成について説明します",
+      "status": "final",
+      "sourcePreview": "Understand the file layout for a typical Wails project",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "7f12b80d8cb4e011294db2c84e27bad2e9feb76e556f33a6f671e085df8f13af",
+      "targetHash": "b7ada7c66ca882eb7cee65df190cb8fce7842fba2c97240e36dedcc6d9eb6280",
+      "machineHash": "b7ada7c66ca882eb7cee65df190cb8fce7842fba2c97240e36dedcc6d9eb6280",
+      "machineText": "プロジェクト構成",
+      "status": "final",
+      "sourcePreview": "Project Structure",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:34Z"
+    }
+  }
+}

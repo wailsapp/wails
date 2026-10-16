@@ -9,7 +9,7 @@ import (
 // setupSignalHandler sets up signal handling for Android
 // On Android, we don't handle Unix signals directly as the app lifecycle
 // is managed by the Android runtime
-func setupSignalHandler() {
+func (a *App) setupSignalHandler(options Options) {
 	// No-op on Android - lifecycle managed by Android framework
 }
 

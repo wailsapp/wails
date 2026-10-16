@@ -1,13 +1,6 @@
 # File path specific labels (actions/labeler v5 configuration format)
-v2-only:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'v2/**/*'
-
-v3:
-  - changed-files:
-      - any-glob-to-any-file:
-          - 'v3/**/*'
+# Version labels are applied by scripts/label-github-items.sh so issues and
+# pull requests use the same classifier.
 
 windows:
   - changed-files:
