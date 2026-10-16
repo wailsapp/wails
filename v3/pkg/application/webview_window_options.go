@@ -33,6 +33,43 @@ func effectiveZoomButtonState(a, b ButtonState) ButtonState {
 	return a
 }
 
+// useDarkNativeWindowsMenu reports whether Windows can draw a dark native menu
+// for a dark application window. A menu background can be selected per window,
+// but Windows selects native menu text from its process-level colour policy. If
+// the system policy is light, retaining a dark background makes the text
+// unreadable, so callers must fall back to the matching light menu instead.
+func useDarkNativeWindowsMenu(windowIsDark bool, systemAppsUseDarkMode func() bool) bool {
+	return windowIsDark && (systemAppsUseDarkMode == nil || systemAppsUseDarkMode())
+}
+
+type macWindowButtonStates struct {
+	minimise ButtonState
+	close    ButtonState
+	zoom     ButtonState
+}
+
+// usesNativeMacFramelessFrame reports whether frameless windows retain the
+// standard AppKit frame to preserve its native rounded corners.
+func usesNativeMacFramelessFrame(options MacWindow) bool {
+	return options.CornerType == MacWindowCornerTypeRounded && options.CornerRadius == 0
+}
+
+// effectiveMacWindowButtonStates returns the configured macOS title-bar button
+// states, hiding all controls while the native AppKit frame is used frameless.
+func effectiveMacWindowButtonStates(options WebviewWindowOptions) macWindowButtonStates {
+	result := macWindowButtonStates{
+		minimise: options.MinimiseButtonState,
+		close:    options.CloseButtonState,
+		zoom:     effectiveZoomButtonState(options.MaximiseButtonState, options.FullscreenButtonState),
+	}
+	if options.Frameless && usesNativeMacFramelessFrame(options.Mac) {
+		result.minimise = ButtonHidden
+		result.close = ButtonHidden
+		result.zoom = ButtonHidden
+	}
+	return result
+}
+
 type WindowStartPosition int
 
 const (
@@ -158,6 +195,9 @@ type WebviewWindowOptions struct {
 	Permissions map[PermissionType]Permission
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
+	// On macOS this uses a private WebKit API and is ignored unless built with
+	// -tags private_mac_apis. Safari inspection remains available on macOS 13.3+
+	// in development builds or with -tags devtools.
 	OpenInspectorOnStartup bool
 
 	// Mac options
@@ -344,6 +384,21 @@ type WindowsWindow struct {
 	// Default: false
 	WindowMaskDraggable bool
 
+	// NonClientRegionSupport enables WebView2's native non-client region support
+	// for this window when the installed WebView2 Runtime supports it. This is
+	// primarily intended to make app-region: drag style custom titlebars work
+	// with native non-client hit testing.
+	// Default: false
+	NonClientRegionSupport bool
+
+	// WebView2CompositionHosting creates WebView2 with visual hosting using
+	// ICoreWebView2CompositionController and DirectComposition instead of the
+	// HWND-hosted controller. This is intended for custom host-owned non-client
+	// hit-testing, for example manual caption-button regions rendered in web
+	// content and resolved through GetNonClientRegionAtPoint / SendMouseInput.
+	// Default: false
+	WebView2CompositionHosting bool
+
 	// WindowDidMoveDebounceMS is the amount of time to debounce the WindowDidMove event
 	// when moving the window
 	// Default: 0
@@ -446,7 +501,8 @@ type ThemeSettings struct {
 
 /****** Mac Options *******/
 
-// MacBackdrop is the backdrop type for macOS
+// MacBackdrop is the backdrop type for macOS. Making the webview transparent
+// requires -tags private_mac_apis; otherwise it remains opaque above the backdrop.
 type MacBackdrop int
 
 const (
@@ -476,7 +532,9 @@ const (
 	MacToolbarStyleUnifiedCompact
 )
 
-// MacLiquidGlassStyle defines the style of the Liquid Glass effect
+// MacLiquidGlassStyle defines the style of the Liquid Glass effect.
+// Without -tags private_mac_apis, styles use public regular/clear values and
+// light/dark appearances instead of undocumented native style values.
 type MacLiquidGlassStyle int
 
 const (
@@ -530,12 +588,28 @@ type MacLiquidGlass struct {
 	// Tint color for the glass (optional, nil for no tint)
 	TintColor *RGBA
 
-	// Group identifier for merging multiple glass windows
+	// Group identifier for merging multiple glass windows.
+	// This uses a private AppKit API and is ignored unless built with
+	// -tags private_mac_apis.
 	GroupID string
 
-	// Spacing between grouped glass elements (in points)
+	// Spacing between grouped glass elements (in points).
+	// This uses a private AppKit API and is ignored unless built with
+	// -tags private_mac_apis.
 	GroupSpacing float64
 }
+
+// MacWindowCornerType controls the corner shape of a frameless macOS window.
+type MacWindowCornerType int
+
+const (
+	// MacWindowCornerTypeRounded preserves the standard AppKit window corners by
+	// default. Set CornerRadius to use a custom rounded radius.
+	MacWindowCornerTypeRounded MacWindowCornerType = iota
+	// MacWindowCornerTypeSquare creates a true borderless window with square
+	// corners. CornerRadius is ignored.
+	MacWindowCornerTypeSquare
+)
 
 // MacWindow contains macOS specific options for Webview Windows
 type MacWindow struct {
@@ -543,6 +617,13 @@ type MacWindow struct {
 	Backdrop MacBackdrop
 	// DisableShadow will disable the window shadow
 	DisableShadow bool
+	// CornerType controls the corner shape of a frameless window.
+	// Default: MacWindowCornerTypeRounded.
+	CornerType MacWindowCornerType
+	// CornerRadius controls the custom corner radius, in points, of a rounded
+	// frameless window. A value of 0 (the default) preserves AppKit's standard
+	// rounded corners. Ignored when CornerType is MacWindowCornerTypeSquare.
+	CornerRadius float64
 	// TitleBar contains options for the Mac titlebar
 	TitleBar MacTitleBar
 	// Appearance is the appearance type for the window
@@ -576,6 +657,53 @@ type MacWindow struct {
 	// web content (e.g. modals with Esc-to-close behaviour) to handle Esc directly.
 	// Default false preserves standard macOS behaviour where Esc exits fullscreen.
 	DisableEscapeExitsFullscreen bool
+
+	// WindowClass selects the native AppKit window class.
+	// The zero value creates the standard NSWindow-backed Wails window.
+	WindowClass MacWindowClass
+
+	// PanelPreferences configures NSPanel-specific behaviour when WindowClass is
+	// MacWindowClassPanel. It is ignored for standard windows.
+	PanelPreferences MacPanelPreferences
+}
+
+// MacWindowClass selects the native AppKit class used for a webview window.
+type MacWindowClass int
+
+const (
+	// MacWindowClassWindow creates the standard NSWindow-backed Wails window.
+	MacWindowClassWindow MacWindowClass = iota
+	// MacWindowClassPanel creates an NSPanel-backed auxiliary window.
+	MacWindowClassPanel
+)
+
+// MacPanelPreferences contains options that apply only to MacWindowClassPanel.
+type MacPanelPreferences struct {
+	// FloatingPanel gives the NSPanel AppKit's floating-panel behaviour. An
+	// explicit MacWindow.WindowLevel still takes precedence over its level.
+	FloatingPanel bool
+	// BecomesKeyOnlyIfNeeded makes a non-activating panel take key status only
+	// when the clicked view needs keyboard input.
+	BecomesKeyOnlyIfNeeded bool
+	// NonActivating applies NSWindowStyleMaskNonactivatingPanel. Showing or
+	// focusing the panel then leaves the currently active application active.
+	NonActivating bool
+	// UtilityWindow applies NSWindowStyleMaskUtilityWindow.
+	UtilityWindow bool
+}
+
+// effectiveMacWindowLevel resolves the initial native window level once.
+// A caller-selected level is more specific than the AlwaysOnTop convenience
+// option, while FloatingPanel supplies the natural default for floating panels.
+func effectiveMacWindowLevel(options WebviewWindowOptions) MacWindowLevel {
+	if options.Mac.WindowLevel != "" {
+		return options.Mac.WindowLevel
+	}
+	if options.AlwaysOnTop ||
+		(options.Mac.WindowClass == MacWindowClassPanel && options.Mac.PanelPreferences.FloatingPanel) {
+		return MacWindowLevelFloating
+	}
+	return MacWindowLevelNormal
 }
 
 type MacWindowLevel string

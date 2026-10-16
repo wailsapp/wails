@@ -41,6 +41,16 @@ var (
 	User32SetWindowLongPtrW  = user32.NewProc("SetWindowLongPtrW")
 	User32AdjustWindowRect   = user32.NewProc("AdjustWindowRect")
 	User32SetWindowPos       = user32.NewProc("SetWindowPos")
+
+	// GetMessageW blocks until a message arrives, which makes any loop built on
+	// it unbounded. These two allow a message loop to wait with a deadline
+	// instead: MsgWaitForMultipleObjectsEx returns on input or timeout, and
+	// PeekMessageW then drains whatever arrived. The Ex variant is required
+	// for MWMO_INPUTAVAILABLE; without that flag the wait ignores messages
+	// that were already queued when it was entered, so a message landing
+	// between the drain and the next wait sleeps the full timeout.
+	User32MsgWaitForMultipleObjectsEx = user32.NewProc("MsgWaitForMultipleObjectsEx")
+	User32PeekMessageW                = user32.NewProc("PeekMessageW")
 )
 
 const (
@@ -57,6 +67,21 @@ const (
 
 const (
 	SWShow = 5
+)
+
+const (
+	WM_QUIT = 0x0012
+
+	PM_REMOVE = 0x0001
+
+	// QS_ALLINPUT wakes MsgWaitForMultipleObjectsEx for any queued message.
+	QS_ALLINPUT = 0x04FF
+
+	// MWMO_INPUTAVAILABLE makes MsgWaitForMultipleObjectsEx return when
+	// matching input is already available, not only when new input arrives.
+	MWMO_INPUTAVAILABLE = 0x0004
+
+	WAIT_TIMEOUT = 0x00000102
 )
 
 const (

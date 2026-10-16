@@ -20,14 +20,18 @@
         return YES;
     }
 
-    NSString *extension = [url.pathExtension lowercaseString];
-    if (extension == nil || [extension isEqualToString:@""]) {
+    NSString *filename = [[url lastPathComponent] lowercaseString];
+    if (filename == nil || [filename isEqualToString:@""]) {
         return NO;
     }
 
     // Check if the extension is in our allowed list (case insensitive)
     for (NSString *allowedExt in self.allowedExtensions) {
-        if ([[allowedExt lowercaseString] isEqualToString:extension]) {
+        NSString *allowed = [allowedExt lowercaseString];
+        if ([allowed length] == 0) {
+            continue;
+        }
+        if ([filename hasSuffix:[@"." stringByAppendingString:allowed]]) {
             return YES;
         }
     }

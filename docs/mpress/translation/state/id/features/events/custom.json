@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "312182e060a9be59072d",
+  "sourceFile": "features/events/custom.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "7101896334776ea2527d0eb9ad7ad7dfc21a5ad407a6398fe9ec415375b3a7da",
+      "targetHash": "b327d14b90393fea742fb8c5f24be871c68508e7c543e855d7cea6c8f6fcea90",
+      "machineHash": "b327d14b90393fea742fb8c5f24be871c68508e7c543e855d7cea6c8f6fcea90",
+      "machineText": "Peristiwa kustom memungkinkan Anda mengirim data antara backend Go dan frontend menggunakan sistem peristiwa.",
+      "status": "final",
+      "sourcePreview": "Custom events let you send data between your Go backend and frontend using the event system.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ad3a8e429939a4b24472033c630d7a7ae9374eadfc208d1ba95bb53fa6708fe0",
+      "targetHash": "3435e9062bf2139ba1f1a0ed061c129f6d6a566302487fcb13dec2be3a3fdf10",
+      "machineHash": "3435e9062bf2139ba1f1a0ed061c129f6d6a566302487fcb13dec2be3a3fdf10",
+      "machineText": "Dokumentasi lengkap tentang peristiwa kustom tersedia dalam panduan [Sistem Peristiwa](/features/events/system/#custom-events).",
+      "status": "final",
+      "sourcePreview": "Full documentation of custom events is available in the [Event System](/features/events/system/#cust…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "b6806ad873c1c4fc4051dee73af18115f50bbf4038b85008af2bea878889f5dd",
+      "targetHash": "5167fa3f84c84b909c7c3d519b69eba311586c94cb181ebdc52de89dc8ef4266",
+      "machineHash": "5167fa3f84c84b909c7c3d519b69eba311586c94cb181ebdc52de89dc8ef4266",
+      "machineText": "Memancarkan dan mendengarkan peristiwa Anda sendiri di Wails v3",
+      "status": "final",
+      "sourcePreview": "Emitting and listening to your own events in Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "dc46c41d4485638ccd949134dd26edf81a3f9f8be08411ff1caf3d2320e26c15",
+      "targetHash": "574498fee8251d868d7e9ce5c3a4c2959c09d1f91b6a76a50bd4369722a07bf8",
+      "machineHash": "574498fee8251d868d7e9ce5c3a4c2959c09d1f91b6a76a50bd4369722a07bf8",
+      "machineText": "Peristiwa Kustom",
+      "status": "final",
+      "sourcePreview": "Custom Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:30Z"
+    }
+  }
+}

@@ -39,6 +39,11 @@ type IUnknownImpl interface {
 type POINT struct {
 	X, Y int32
 }
+
+func (p POINT) uintptr() uintptr {
+	return uintptr(uint32(p.X)) | uintptr(uint64(uint32(p.Y))<<32)
+}
+
 type RECT struct {
 	Left   int32
 	Top    int32

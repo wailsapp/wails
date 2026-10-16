@@ -112,8 +112,6 @@ type _IUnknownVtbl struct {
 
 type _IUnknownImpl interface {
 	QueryInterface(refiid, object uintptr) uintptr
-	AddRef() uintptr
-	Release() uintptr
 }
 
 // ICoreWebView2
@@ -198,6 +196,19 @@ func (i *ICoreWebView2) Release() uint32 {
 
 func (i *ICoreWebView2) AddContainsFullScreenElementChanged(eventHandler *ICoreWebView2ContainsFullScreenElementChangedEventHandler, token *_EventRegistrationToken) error {
 	hr, _, _ := i.vtbl.AddContainsFullScreenElementChanged.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(eventHandler)),
+		uintptr(unsafe.Pointer(token)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return windows.Errno(hr)
+	}
+
+	return nil
+}
+
+func (i *ICoreWebView2) AddNavigationStarting(eventHandler *ICoreWebView2NavigationStartingEventHandler, token *_EventRegistrationToken) error {
+	hr, _, _ := i.vtbl.AddNavigationStarting.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(eventHandler)),
 		uintptr(unsafe.Pointer(token)),
@@ -434,6 +445,18 @@ type ICoreWebView2Environment struct {
 	vtbl *iCoreWebView2EnvironmentVtbl
 }
 
+func (e *ICoreWebView2Environment) AddRef() uintptr {
+	ret, _, _ := e.vtbl.AddRef.Call(uintptr(unsafe.Pointer(e)))
+
+	return ret
+}
+
+func (e *ICoreWebView2Environment) Release() uintptr {
+	ret, _, _ := e.vtbl.Release.Call(uintptr(unsafe.Pointer(e)))
+
+	return ret
+}
+
 // CreateCoreWebView2Controller asynchronously creates a new WebView.
 func (e *ICoreWebView2Environment) CreateCoreWebView2Controller(parentWindow uintptr, handler *iCoreWebView2CreateCoreWebView2ControllerCompletedHandler) error {
 	hr, _, _ := e.vtbl.CreateCoreWebView2Controller.Call(
@@ -559,11 +582,11 @@ func _ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerIUnknownQueryInt
 }
 
 func _ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerIUnknownAddRef(this *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerIUnknownRelease(this *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerInvoke(this *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler, res uintptr, env *ICoreWebView2Environment) uintptr {
@@ -608,11 +631,11 @@ func _ICoreWebView2PermissionRequestedEventHandlerIUnknownQueryInterface(this *i
 }
 
 func _ICoreWebView2PermissionRequestedEventHandlerIUnknownAddRef(this *iCoreWebView2PermissionRequestedEventHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2PermissionRequestedEventHandlerIUnknownRelease(this *iCoreWebView2PermissionRequestedEventHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2PermissionRequestedEventHandlerInvoke(this *iCoreWebView2PermissionRequestedEventHandler, sender *ICoreWebView2, args *iCoreWebView2PermissionRequestedEventArgs) uintptr {

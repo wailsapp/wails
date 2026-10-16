@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "a98946db8adbbf8142a4",
+  "sourceFile": "features/events/window.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ru",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "5500bfaa8a5998136a8b4a213f0c906e9be38a3e519a2ed443a50d09c7cb4e25",
+      "targetHash": "c1c16669f2587f167908f2f31dfebffa9e2b7f10a887f541f7ce2b3deb5f6563",
+      "machineHash": "c1c16669f2587f167908f2f31dfebffa9e2b7f10a887f541f7ce2b3deb5f6563",
+      "machineText": "События окна генерируются при изменениях жизненного цикла окна и взаимодействиях с ним, например при открытии, закрытии, перемещении и изменении размера.",
+      "status": "final",
+      "sourcePreview": "Window events are emitted for window lifecycle and interaction changes, such as open, close, move, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:45Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2efdc4095d1e2f19bd70bb10ada31b7b610bb74792c56dce87efd656010465d3",
+      "targetHash": "02929a9a78cf173ccb1210b295c8393bc5f4f8d02f8076800a21aabe1356da1b",
+      "machineHash": "02929a9a78cf173ccb1210b295c8393bc5f4f8d02f8076800a21aabe1356da1b",
+      "machineText": "Полная документация по событиям окна приведена в руководстве [«Система событий»](/features/events/system/#window-events).",
+      "status": "final",
+      "sourcePreview": "Full documentation of window events is available in the [Event System](/features/events/system/#wind…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:45Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "68507c5f68b935c56fcfbce22a1195c9a3cb29ac055177bf1dff5cd50e24b3a2",
+      "targetHash": "c9e9a8ff12cc18ebb2a886e3dca4192460652249e21176afe4f5f39ff2e3a18f",
+      "machineHash": "c9e9a8ff12cc18ebb2a886e3dca4192460652249e21176afe4f5f39ff2e3a18f",
+      "machineText": "События уровня окна, генерируемые Wails v3",
+      "status": "final",
+      "sourcePreview": "Window-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:45Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "5bd8ee53ff4b64ce063cc8385b536755b4cdb229223a839b880d27b4bd8b076a",
+      "targetHash": "6f74eaf1b8be849eecaa43adfe33fcf724e9c75fcdea923cb3041792964bba6f",
+      "machineHash": "6f74eaf1b8be849eecaa43adfe33fcf724e9c75fcdea923cb3041792964bba6f",
+      "machineText": "События окна",
+      "status": "final",
+      "sourcePreview": "Window Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:45Z"
+    }
+  }
+}

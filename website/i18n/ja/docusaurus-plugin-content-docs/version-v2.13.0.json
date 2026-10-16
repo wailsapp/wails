@@ -1,0 +1,38 @@
+{
+  "version.label": {
+    "message": "次期バージョン 🚧",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.Getting Started": {
+    "message": "はじめよう",
+    "description": "The label for category Getting Started in sidebar docs"
+  },
+  "sidebar.docs.category.Reference": {
+    "message": "リファレンス",
+    "description": "The label for category Reference in sidebar docs"
+  },
+  "sidebar.docs.category.Runtime": {
+    "message": "ランタイム",
+    "description": "The label for category Runtime in sidebar docs"
+  },
+  "sidebar.docs.category.Community": {
+    "message": "コミュニティ",
+    "description": "The label for category Community in sidebar docs"
+  },
+  "sidebar.docs.category.Showcase": {
+    "message": "事例紹介",
+    "description": "The label for category Showcase in sidebar docs"
+  },
+  "sidebar.docs.category.Guides": {
+    "message": "ガイド",
+    "description": "The label for category Guides in sidebar docs"
+  },
+  "sidebar.docs.category.Tutorials": {
+    "message": "チュートリアル",
+    "description": "The label for category Tutorials in sidebar docs"
+  },
+  "sidebar.docs.link.Contributing": {
+    "message": "コントリビューション",
+    "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
+  }
+}

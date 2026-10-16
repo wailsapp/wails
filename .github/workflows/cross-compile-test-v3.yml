@@ -7,9 +7,6 @@ on:
       - master
     paths:
       - 'v3/**'
-      - 'webview2/**'
-      - 'go.work'
-      - 'go.work.sum'
       - '.github/workflows/cross-compile-test-v3.yml'
   workflow_dispatch:
     inputs:
@@ -82,8 +79,6 @@ jobs:
           cache: true
           cache-dependency-path: |
             v3/go.sum
-            webview2/go.sum
-            go.work.sum
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -93,6 +88,8 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
 

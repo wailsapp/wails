@@ -22,6 +22,13 @@ extern void macosOnDragOver(unsigned int windowId, int x, int y);
     return self;
 }
 
+// Pass mouse events through to the WKWebView underneath so CSS :hover,
+// mousemove, and cursor updates work. Drag-and-drop delivery uses
+// registerForDraggedTypes + geometry, not hitTest, so file drop is unaffected.
+- (NSView *)hitTest:(NSPoint)point {
+    return nil;
+}
+
 // draggingEntered:
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
     NSPasteboard *pasteboard = [sender draggingPasteboard];

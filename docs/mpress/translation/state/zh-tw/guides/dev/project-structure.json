@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "f9161f96c9def64b7650",
+  "sourceFile": "guides/dev/project-structure.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "a0001-title-01": {
+      "sourceHash": "6182fb7f4677ae02e233dc74f0294fe645ebe92b3657c34e8deea157fa2c90d3",
+      "targetHash": "3f400ab54f6c950a898b4ce2576b3fa4e496b2ca6c6488a4d0a733672fd520d3",
+      "machineHash": "3f400ab54f6c950a898b4ce2576b3fa4e496b2ca6c6488a4d0a733672fd520d3",
+      "machineText": "前端專案檔案",
+      "status": "final",
+      "sourcePreview": "Frontend project files",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "b0001-text-01": {
+      "sourceHash": "44b9294068221fd8669c6918b2c192f8a366d4a1075ea58ca7e246d8790cb402",
+      "targetHash": "26eac4cc58457addba1acfeffa00f2bd3d29736acbb544a4c93a99a79002037f",
+      "machineHash": "26eac4cc58457addba1acfeffa00f2bd3d29736acbb544a4c93a99a79002037f",
+      "machineText": "本頁簡要說明使用 Vanilla 範本建立新專案時所產生的檔案",
+      "status": "final",
+      "sourcePreview": "This page is a simple reference to the files created when you initiate a new project using the Vanil…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "4e66e1910d82ca8e6b2d220d76581f1ac77a574461d47041f24a5ee6cdb615a9",
+      "targetHash": "6f0713fc21eddbf8496d8b8631b6bbf3d346922506ce78de5c52a818217dec7a",
+      "machineHash": "6f0713fc21eddbf8496d8b8631b6bbf3d346922506ce78de5c52a818217dec7a",
+      "machineText": "如果選擇使用其他起始範本，`frontend/src`的內容將依您選擇的框架而有所不同",
+      "status": "final",
+      "sourcePreview": "If you choose to use a different starter template, contents of `frontend/src` will differ depending …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "7b6ffba19464fadd57a58d9beb5ee8d93801f37378dc8989a8fc02d7f543171e",
+      "targetHash": "76adaa0f68d76c2a68e3f4b97ae6b32a1811824acb23c8087e5a79d3e1607456",
+      "machineHash": "76adaa0f68d76c2a68e3f4b97ae6b32a1811824acb23c8087e5a79d3e1607456",
+      "machineText": "瞭解典型 Wails 專案的檔案配置",
+      "status": "final",
+      "sourcePreview": "Understand the file layout for a typical Wails project",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "7f12b80d8cb4e011294db2c84e27bad2e9feb76e556f33a6f671e085df8f13af",
+      "targetHash": "5b29e7842433ef1af337c0c94c44821a70bbbcc9f528fa11ecfcab1fadf90cf1",
+      "machineHash": "5b29e7842433ef1af337c0c94c44821a70bbbcc9f528fa11ecfcab1fadf90cf1",
+      "machineText": "專案結構",
+      "status": "final",
+      "sourcePreview": "Project Structure",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:54Z"
+    }
+  }
+}

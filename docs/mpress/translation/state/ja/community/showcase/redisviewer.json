@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "e4f964aa8e27e32a9fcd",
+  "sourceFile": "community/showcase/redisviewer.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "d930e8a2b5248faceab66a0679aff6347760a43a79443c093d64578cdae6e61a",
+      "targetHash": "5c179924fb18685ed84778ec398edd755f33b34ca26963a4c5c6e1dc79ae61be",
+      "machineHash": "5c179924fb18685ed84778ec398edd755f33b34ca26963a4c5c6e1dc79ae61be",
+      "machineText": "![RedisViewer のスクリーンショット](/assets/showcase-images/redisviewer-overview1.webp)",
+      "status": "final",
+      "sourcePreview": "![RedisViewer Screenshot](/assets/showcase-images/redisviewer-overview1.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "b27d3c226e4519da5d620f88d5fc2eb6e3b0b05cb8ac88387cd8376ae67f6eeb",
+      "targetHash": "492dbfaf022fa43cc1619c6397dba176a03461a4bd2f085bfed4fe767cb62333",
+      "machineHash": "492dbfaf022fa43cc1619c6397dba176a03461a4bd2f085bfed4fe767cb62333",
+      "machineText": "![RedisViewer のスクリーンショット](/assets/showcase-images/redisviewer-overview2.webp)",
+      "status": "final",
+      "sourcePreview": "![RedisViewer Screenshot](/assets/showcase-images/redisviewer-overview2.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "575284aad16a7c42d789295540f3ed10bd1122837baaa6ea314244ad9e412b7c",
+      "targetHash": "be397c1e0ed8b3cfe8548691bc0b86c1736544c34c443704e3473f8fc4ca4fe8",
+      "machineHash": "be397c1e0ed8b3cfe8548691bc0b86c1736544c34c443704e3473f8fc4ca4fe8",
+      "machineText": "[RedisViewer](https://redisviewer.com/) は、Wails で構築されたモダンなデスクトップ向け Redis GUI です。操作性を損なうことなく、複雑な値の調査、コマンドの実行、Redis のパフォーマンス分析を行えます。",
+      "status": "final",
+      "sourcePreview": "[RedisViewer](https://redisviewer.com/) is a modern Redis desktop GUI built with Wails. Use it to in…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "02697cb537d2b8f33ab5eaa18a346b9a1cd09e24f192271dfb8993d4c39de17b",
+      "targetHash": "c632f3cbe04dd0e7570aa0147aed2012bb9c8b7a819edaffc91f78dc8b40f7c0",
+      "machineHash": "c632f3cbe04dd0e7570aa0147aed2012bb9c8b7a819edaffc91f78dc8b40f7c0",
+      "machineText": "Wails の WebView + Go アーキテクチャを中心に設計されており、大規模なキースペースやサイズの大きいペイロードをすべてフロントエンドへ送るのではなく、Go バックエンドに保持します。これにより、Go のメモリモデルを活用し、JS を多用するクライアントで一般的なヒープ負荷やメモリリークのリスクを回避します。UI は画面上に表示される内容だけをレンダリングするよう最適化されているため、膨大なデータセットを閲覧しても高い応答性が保たれ、ネイティブのデスクトップアプリに近い操作感を得られます。",
+      "status": "final",
+      "sourcePreview": "Designed around Wails' WebView + Go architecture, it keeps large keyspaces and heavy payloads in the…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "566922c42e5bb889533e602266f348665195e5890d19956e5b59c730064bad63",
+      "targetHash": "f6af46b6f10779d6f2f84aa30a2ab973acb17871c8ffcf47d21b661fa578ca12",
+      "machineHash": "f6af46b6f10779d6f2f84aa30a2ab973acb17871c8ffcf47d21b661fa578ca12",
+      "machineText": "[プロジェクトの Web サイトを見る](https://redisviewer.com/)",
+      "status": "final",
+      "sourcePreview": "[Visit Project Website](https://redisviewer.com/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "ba9a7b58d078585e87dc0c51d822ab114492c04e4230de2d434df44553a5d0b9",
+      "targetHash": "a0a9de08d84b5d14790ba0fdbb1fee1ef0ba931602ddd62c82863fd72f951ac3",
+      "machineHash": "a0a9de08d84b5d14790ba0fdbb1fee1ef0ba931602ddd62c82863fd72f951ac3",
+      "machineText": "Wails で構築されたデスクトップ向け Redis GUI",
+      "status": "final",
+      "sourcePreview": "A desktop Redis GUI built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "targetHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "machineHash": "92c3b4357055c943be7a6af386b5f54c7ed19f68fc3ac07066e3939c0e2b7903",
+      "machineText": "Redis Viewer",
+      "status": "final",
+      "sourcePreview": "Redis Viewer",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    }
+  }
+}

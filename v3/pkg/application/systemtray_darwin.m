@@ -7,12 +7,28 @@
 extern void systrayClickCallback(long, int);
 extern int systrayPreClickCallback(long, int);
 
+// Bit returned by +[NSEvent pressedMouseButtons] for the right mouse button.
+static const NSUInteger kRightMouseButtonBit = 1UL << 1;
+
+// See systemtray_darwin.h for the #5752 rationale.
+int systemTrayCoerceEventType(int rawEventType, unsigned long pressedMouseButtons) {
+	if (rawEventType == NSEventTypeLeftMouseDown || rawEventType == NSEventTypeRightMouseDown) {
+		return rawEventType;
+	}
+	if (pressedMouseButtons & kRightMouseButtonBit) {
+		return (int)NSEventTypeRightMouseDown;
+	}
+	return (int)NSEventTypeLeftMouseDown;
+}
+
 // StatusItemController.m
 @implementation StatusItemController
 
 - (void)statusItemClicked:(id)sender {
 	NSEvent *event = [NSApp currentEvent];
-	systrayClickCallback(self.id, event.type);
+	systrayClickCallback(self.id,
+		systemTrayCoerceEventType((int)event.type,
+		                          (unsigned long)[NSEvent pressedMouseButtons]));
 }
 
 - (void)menuDidClose:(NSMenu *)menu {

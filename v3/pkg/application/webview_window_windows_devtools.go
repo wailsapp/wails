@@ -1,4 +1,4 @@
-//go:build windows && (!production || devtools)
+//go:build windows && !server && (!production || devtools)
 
 package application
 
@@ -8,9 +8,6 @@ func (w *windowsWebviewWindow) openDevTools() {
 	w.chromium.OpenDevToolsWindow()
 }
 
-func (w *windowsWebviewWindow) enableDevTools(settings *edge.ICoreWebViewSettings) {
-	err := settings.PutAreDevToolsEnabled(true)
-	if err != nil {
-		globalApplication.handleFatalError(err)
-	}
+func (w *windowsWebviewWindow) enableDevTools(settings *edge.ICoreWebViewSettings) error {
+	return settings.PutAreDevToolsEnabled(true)
 }

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "b8a91e42f35515e5af10",
+  "sourceFile": "community/showcase/minesweeper-xp.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-cn",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "194e480326c0b2f4c1ed827ab8ac09b9d3071a7686406dce51fe7e13abe218ba",
+      "targetHash": "b8f0f018025bca59ff2aecbfbd5e6abd74f94822126824a4cbc474cd8c6a4ac9",
+      "machineHash": "b8f0f018025bca59ff2aecbfbd5e6abd74f94822126824a4cbc474cd8c6a4ac9",
+      "machineText": "![扫雷 XP](/assets/showcase-images/minesweeper-xp.webp)",
+      "status": "final",
+      "sourcePreview": "![Minesweeper XP](/assets/showcase-images/minesweeper-xp.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3e6dcda2d5e72519853225a88af6da7604bd9aaa58bed65ab66ae0bfdb2fa1c8",
+      "targetHash": "f68f22e686dc08e8470ba8375d76d1aa3bb7d238460f2dff76220a412011dd63",
+      "machineHash": "f68f22e686dc08e8470ba8375d76d1aa3bb7d238460f2dff76220a412011dd63",
+      "machineText": "[Minesweeper-XP](https://git.new/Minesweeper-XP) 让你可以在 macOS、Windows 和 Linux 上体验经典的扫雷 XP（以及 98 和 3.1）！",
+      "status": "final",
+      "sourcePreview": "[Minesweeper-XP](https://git.new/Minesweeper-XP) allows you to experience the\\ classic Minesweeper X…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineHash": "782ee7dddd748380bc4db656763b4972fd2df2a5df83909c72246e2d3a1380da",
+      "machineText": "使用 Wails 构建的桌面应用程序",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "26b490675a0ac473cd38f779d11f08ad6a1f19247fb5abe5e82f8293bde1fab3",
+      "targetHash": "1a7f7ec80f899b8784ee1ce7b71bf6a900e8060b28261315e441b41f536a06f5",
+      "machineHash": "1a7f7ec80f899b8784ee1ce7b71bf6a900e8060b28261315e441b41f536a06f5",
+      "machineText": "扫雷 XP",
+      "status": "final",
+      "sourcePreview": "Minesweeper XP",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:48Z"
+    }
+  }
+}

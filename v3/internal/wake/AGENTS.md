@@ -179,6 +179,5 @@ Current results (badge example, no-op cached build): wake **~20ms** vs task CLI 
 ## Development Rules
 
 - Experimental code stays on feature branches, never pushed to `master`
-- Use `bd` for all issue tracking (see root AGENTS.md)
 - Run `go test ./internal/wake/...` and `go vet ./internal/wake/...` before committing
 - Store planning docs in `history/` directory

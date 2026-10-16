@@ -22,9 +22,9 @@ void ios_set_status_bar(const char* json);  // {"style":"light|dark|default","hi
 void ios_biometric_authenticate(const char* reason);
 void ios_post_notification(const char* json); // {"title":"","body":"","delay":seconds}
 void ios_notifications_init(void);             // register the UNUserNotificationCenter delegate (call once, at launch)
-void ios_secure_set(const char* key, const char* value);
+const char* ios_secure_set(const char* key, const char* value);
 const char* ios_secure_get(const char* key);
-void ios_secure_delete(const char* key);
+const char* ios_secure_delete(const char* key);
 
 // Phase D — sensors & hardware
 void ios_haptic(const char* type);          // impact-light|impact-medium|impact-heavy|success|warning|error|selection

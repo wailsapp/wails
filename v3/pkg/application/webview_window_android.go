@@ -1,4 +1,4 @@
-//go:build android
+//go:build android && !server
 
 package application
 
@@ -339,6 +339,9 @@ func (w *androidWebviewWindow) setCloseButtonState(_ ButtonState) {
 
 func (w *androidWebviewWindow) setContentProtection(_ bool) {
 	// Android content protection - could be implemented with FLAG_SECURE
+}
+
+func (w *androidWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
 }
 
 func (w *androidWebviewWindow) setHTML(_ string) {

@@ -2,8 +2,13 @@
 
 ## Title
 
+**WEP Number**: (leave blank, assigned on acceptance)  
+**Status**: Draft  
 **Author**: [Your Name]  
-**Created**: [YYYY-MM-DD]
+**Created**: [YYYY-MM-DD]  
+**Discussion**: [optional link to any prior discussion of the idea]  
+**Implementor**: [who has agreed to implement this, may be the author]
+**Target**: Wails v3
 
 ## Summary
 
@@ -21,6 +26,17 @@ Provide a detailed description of the proposed feature, including:
 - Implementation steps
 - Potential impact on existing functionality
 
+## Non-Goals
+
+State what this WEP intentionally does not cover.
+
+## Platform Considerations
+
+Describe how the feature behaves on each platform (Windows, macOS, Linux, and mobile where relevant). Include:
+
+- Platform-specific behaviour, limitations or API differences
+- Any platform where the feature is unsupported, and why
+
 ## Pros/Cons
 
 List the pros and cons of the proposed solution.
@@ -32,6 +48,11 @@ Discuss alternative solutions or approaches that were considered.
 ## Backwards Compatibility
 
 Address any potential backward compatibility issues.
+
+## Security and Privacy
+
+Describe relevant security, privacy, permissions, or data-handling effects. If
+there are none, say so.
 
 ## Test Plan
 

@@ -1,4 +1,4 @@
-//go:build ios
+//go:build ios && !server
 
 package application
 
@@ -388,6 +388,9 @@ func (w *iosWebviewWindow) setFullscreenButtonState(_ ButtonState) {
 
 func (w *iosWebviewWindow) setContentProtection(_ bool) {
 	// iOS content protection - could be implemented with UIScreen captured notifications
+}
+
+func (w *iosWebviewWindow) setNonClientHitTestRegions([]nonClientHitTestRegion) {
 }
 
 func (w *iosWebviewWindow) setHTML(html string) {

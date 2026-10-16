@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "beac950f78189046d4c7",
+  "sourceFile": "blog/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ca8682fbf96dc8fe164259aaaf72388790201e4a7ded9b6bf2194868787a0742",
+      "targetHash": "92ff89161c47a1a644dbfbba74ad6356d9259977b8fef622dc4cd69645843d4c",
+      "machineHash": "92ff89161c47a1a644dbfbba74ad6356d9259977b8fef622dc4cd69645843d4c",
+      "machineText": "[Wails v3 베타: Go 데스크톱 애플리케이션을 위한 새로운 기반](/blog/wails-v3-beta/)",
+      "status": "final",
+      "sourcePreview": "[Wails v3 Beta: a new foundation for Go desktop applications](/blog/wails-v3-beta/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "547fc3564602f5550e9d2b297bb44633a2120106b350e3d3d5f14ead0af8be98",
+      "targetHash": "c8eef7c694591dc5aa39f26eeff062ae81e981350584bb27ba8f279061cadab0",
+      "machineHash": "c8eef7c694591dc5aa39f26eeff062ae81e981350584bb27ba8f279061cadab0",
+      "machineText": "[문서](/blog/wails-v2-released/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/wails-v2-released/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "ef499b047f439374c6627828329b46d1c5b33c78aef5a2c67b32943d6ea65749",
+      "targetHash": "cdada3b19ff6b7e1f24dbcd5c8eae4de13f18f9035bb58e8e37d3477018454e0",
+      "machineHash": "cdada3b19ff6b7e1f24dbcd5c8eae4de13f18f9035bb58e8e37d3477018454e0",
+      "machineText": "[문서](/blog/wails-v2-beta-for-windows/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/wails-v2-beta-for-windows/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "0a4c85d06fefdc4dbac3df4ba26445fe659ac8b0f43171a9847811704eed4355",
+      "targetHash": "873b205ff37b562f076db2e50e0876f34bf3776e48701531d5202b961a7ebb36",
+      "machineHash": "873b205ff37b562f076db2e50e0876f34bf3776e48701531d5202b961a7ebb36",
+      "machineText": "[문서](/blog/wails-v2-beta-for-mac/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/wails-v2-beta-for-mac/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "fe765b69bea94b54ea92ffea0ccbd984daa6d7ce03a71db4c9aac6a235bcbbdb",
+      "targetHash": "fb3267a88e09e626f8404a08848b085dee2a1b82b6eb4b477f416846f8a8b527",
+      "machineHash": "fb3267a88e09e626f8404a08848b085dee2a1b82b6eb4b477f416846f8a8b527",
+      "machineText": "[문서](/blog/wails-v2-beta-for-linux/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/wails-v2-beta-for-linux/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "e11baa3cdb74761fba22784c5ba5919eaceb9b809d4a841067341f0c66b68aee",
+      "targetHash": "b6c838a1dd3232bb343b8606355a75938cd75042db50c94b9f1b5222c11b5414",
+      "machineHash": "b6c838a1dd3232bb343b8606355a75938cd75042db50c94b9f1b5222c11b5414",
+      "machineText": "[문서](/blog/the-road-to-wails-v3/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/the-road-to-wails-v3/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0007-text-01": {
+      "sourceHash": "36492130577cd7d5dbf8de13e5681ecc3f11c4c772d04f4320dc05a6c326713c",
+      "targetHash": "b1907424e62477789a61fea25d6c81276417bae6cfdf705e5214bc54ddd2c551",
+      "machineHash": "b1907424e62477789a61fea25d6c81276417bae6cfdf705e5214bc54ddd2c551",
+      "machineText": "[문서](/blog/2024-12-03-alpha10-and-new-release-strategy/)",
+      "status": "final",
+      "sourcePreview": "[Article](/blog/2024-12-03-alpha10-and-new-release-strategy/)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "a338b3b343646573fb89b80207c76989d89c11e9ab0bc28a5c7c1068df0f6909",
+      "targetHash": "9ce225d5a65173bc482e998f98f1bf1c3ca891ed96d3798c04aed378f4699663",
+      "machineHash": "9ce225d5a65173bc482e998f98f1bf1c3ca891ed96d3798c04aed378f4699663",
+      "machineText": "뉴스, 릴리스 및 프로젝트 업데이트입니다.",
+      "status": "final",
+      "sourcePreview": "News, releases, and project updates.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "8c6bc099534a0251b576f6b88bd2db124ae9497c64bd9242e92a6aec23e6a73a",
+      "targetHash": "202cc44b7a897f3182e8655508479d3c7ff3cdd4182352b9129f324102ad1902",
+      "machineHash": "202cc44b7a897f3182e8655508479d3c7ff3cdd4182352b9129f324102ad1902",
+      "machineText": "블로그",
+      "status": "final",
+      "sourcePreview": "Blog",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

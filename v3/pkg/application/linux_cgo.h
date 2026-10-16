@@ -14,7 +14,12 @@
 #include <string.h>
 
 // Application flags for GTK4
-#define APPLICATION_DEFAULT_FLAGS G_APPLICATION_DEFAULT_FLAGS
+// NON_UNIQUE, as in the GTK3 path. With uniqueness on, a launch that finds the
+// bus name already taken joins the owner as a remote instance: "activate" is
+// forwarded to the primary and never fires locally, so waitForActivation in
+// WebviewWindow.Run blocks and no window is ever built. Single instance
+// behaviour is handled separately, through SingleInstanceOptions.
+#define APPLICATION_DEFAULT_FLAGS G_APPLICATION_NON_UNIQUE
 
 // ============================================================================
 // Type definitions
@@ -52,7 +57,8 @@ typedef struct AlertDialogData {
 extern void dispatchOnMainThreadCallback(unsigned int);
 extern void emit(WindowEvent* data);
 extern gboolean handleCloseRequest(GtkWindow*, uintptr_t);
-extern void handleNotifyState(GObject*, GParamSpec*, uintptr_t);
+extern void handleSurfaceSizeChanged(GObject*, GParamSpec*, uintptr_t);
+extern void handleSurfaceStateChanged(GObject*, GParamSpec*, uintptr_t);
 extern gboolean handleFocusEnter(GtkEventController*, uintptr_t);
 extern gboolean handleFocusLeave(GtkEventController*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);

@@ -1,0 +1,10 @@
+---
+title: "Window Events"
+description: "Window-level events emitted by Wails v3"
+slug: "features/events/window"
+sourcePath: "features/events/window.md"
+---
+
+Window events are emitted for window lifecycle and interaction changes, such as open, close, move, and resize.
+
+Full documentation of window events is available in the [Event System](/features/events/system/#window-events) guide.

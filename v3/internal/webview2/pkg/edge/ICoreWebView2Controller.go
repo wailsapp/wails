@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/webview2/internal/w32"
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/doublecall"
 	"golang.org/x/sys/windows"
 )
 
@@ -150,15 +151,18 @@ func (i *ICoreWebView2Controller) NotifyParentWindowPositionChanged() error {
 	return nil
 }
 
-func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
-	// put_ZoomFactor takes the double BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI.
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, zoomFactor)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
+func (i *ICoreWebView2Controller) Close() error {
+	hr, _, _ := i.vtbl.Close.Call(uintptr(unsafe.Pointer(i)))
+	if windows.Handle(hr) != windows.S_OK {
+		return windows.Errno(hr)
 	}
-	hr, _, _ := i.vtbl.PutZoomFactor.Call(args...)
+	return nil
+}
+
+func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
+	// put_ZoomFactor takes the double BY VALUE; doublecall.Call passes it the
+	// way the target ABI expects.
+	hr := doublecall.Call(uintptr(i.vtbl.PutZoomFactor), zoomFactor, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return windows.Errno(hr)
 	}

@@ -1,4 +1,4 @@
-//go:build windows
+//go:build windows && !server
 
 package application
 
@@ -22,9 +22,9 @@ import (
 	"github.com/wailsapp/wails/v3/internal/sliceutil"
 	"github.com/wailsapp/wails/v3/internal/webview2/webviewloader"
 
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
-	"github.com/wailsapp/wails/v3/internal/webview2/pkg/edge"
 )
 
 var edgeMap = map[string]uintptr{
@@ -39,6 +39,7 @@ var edgeMap = map[string]uintptr{
 }
 
 type windowsWebviewWindow struct {
+	requestCancellation      *windowsRequestCancellation
 	windowImpl               unsafe.Pointer
 	parent                   *WebviewWindow
 	hwnd                     w32.HWND
@@ -62,6 +63,20 @@ type windowsWebviewWindow struct {
 	// the scale during a mixed-DPI monitor cross is exactly the transient
 	// the re-enable exists to avoid. Main-thread only.
 	monitorScaleDetectionOn bool
+	// lastNavigatedURL is the most recent URL passed to setURL. It is what
+	// setupChromium restores after a WebView2 process failure: the live
+	// webview cannot be queried at that point (its COM objects are dead),
+	// so the last host-requested navigation is the only reliable record.
+	// Main-thread only, like the rest of the webview state.
+	lastNavigatedURL string
+	// webviewRecoveryAttempts counts consecutive process-failure recoveries
+	// that have not yet produced a completed navigation. navigationCompleted
+	// resets it, so a recovery that works costs nothing; a controller that
+	// dies again on every rebuild gives up after maxWebviewRecoveryAttempts
+	// rather than respawning WebView2 processes forever.
+	// Main-thread only, like the rest of the webview state.
+	webviewRecoveryAttempts int
+	webviewRecoveryPending  bool
 
 	// Window visibility management - robust fallback for issue #2861
 	showRequested     bool        // Track if show() was called before navigation completed
@@ -70,11 +85,8 @@ type windowsWebviewWindow struct {
 	// Track whether content protection has been applied to the native window yet
 	contentProtectionApplied bool
 
-	// resizeBorder* is the width/height of the resize border in pixels.
-	resizeBorderWidth  int32
-	resizeBorderHeight int32
-	focusingChromium   bool
-	onceDo             sync.Once
+	focusingChromium bool
+	onceDo           sync.Once
 
 	// Window move debouncer
 	moveDebouncer func(func())
@@ -88,6 +100,14 @@ type windowsWebviewWindow struct {
 	// on every SIZE_RESTORED during live drag-resize. WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE
 	// cannot be used for this because keyboard snap (Win+Left) bypasses those messages.
 	lastSizeWParam uintptr
+
+	nonClientHitTest nonClientHitTestState
+	// Tracks the caption button currently pressed through forwarded non-client input.
+	// Once capture is active, Windows reports movement as normal client mouse input,
+	// so we need this state to keep WebView hover/pressed transitions native-like.
+	activeNonClientButton        uintptr
+	activeNonClientButtonHovered bool
+	compositionCursor            w32.HCURSOR
 
 	// lastKnownDPI is the window's DPI the last time it was in a non-minimised
 	// state. It is used on the un-minimise path to decide whether the WebView2
@@ -108,24 +128,67 @@ type windowsWebviewWindow struct {
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	if menu == nil {
+		// Match macOS, where SetMenu(nil) is a no-op.
+		return
+	}
 	if w.parent.options.Windows.DisableMenu {
 		return
 	}
+	// A nil menu means "no menu", which is what macOS makes of it. Update
+	// dereferences its receiver once the application is running, so without
+	// this the call panicked rather than doing nothing (#6104).
+	if menu == nil {
+		return
+	}
+	// The menu being replaced owns an HMENU, the HBITMAPs SetMenuIcons
+	// allocated while building it, and the submenu handles detached for hidden
+	// rows. Win32Menu.Update frees those, but only for the same object, and
+	// this builds a new one - so without freeing it here nothing ever does
+	// (#6102). Its runtime bitmaps are taken first, because building the
+	// replacement reassigns item.impl and would put them out of reach.
+	previous := w.menu
+	previousImpls := make(map[*MenuItem]menuItemImpl)
+	if previous != nil {
+		previous.takeRuntimeBitmaps()
+		for _, item := range previous.menuMapping {
+			previousImpls[item] = item.impl
+		}
+	}
 	menu.Update()
-	w.menu = NewApplicationMenu(w, menu)
-	w.menu.parentWindow = w
-	w32.SetMenu(w.hwnd, w.menu.menu)
+
+	replacement := NewApplicationMenu(w, menu)
+	if !w32.SetMenu(w.hwnd, replacement.menu) {
+		replacement.Destroy()
+		// Restore retained bindings and clear items from the rejected menu.
+		for _, item := range replacement.menuMapping {
+			item.impl = previousImpls[item]
+		}
+		return
+	}
+	w.menu = replacement
+
+	// Only once the window has been given the new menu: destroying one that is
+	// still assigned to a window leaves it pointing at a freed handle.
+	if previous != nil {
+		previous.Destroy()
+	}
 
 	// Set menu background if theme is active
 	if w.menubarTheme != nil {
 		globalApplication.debug("Applying menubar theme in setMenu", "window", w.parent.id)
 		w.menubarTheme.SetMenuBackground(w.menu.menu)
-		w32.DrawMenuBar(w.hwnd)
 		// Force a repaint of the menu area
 		w32.InvalidateRect(w.hwnd, nil, true)
 	} else {
 		globalApplication.debug("No menubar theme to apply in setMenu", "window", w.parent.id)
 	}
+
+	// Outside the branch above: the bar has to be redrawn whenever the menu
+	// changes, not only when a menubar theme happens to be set, or the window
+	// goes on showing the old one until something else forces a repaint
+	// (#6103).
+	w32.DrawMenuBar(w.hwnd)
 
 	// Check if using translucent background with Mica - this makes menubars invisible
 	if w.parent.options.BackgroundType == BackgroundTypeTranslucent &&
@@ -321,6 +384,7 @@ func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 func (w *windowsWebviewWindow) setURL(url string) {
 	// Navigate to the given URL in the webview
 	w.webviewNavigationCompleted = false
+	w.lastNavigatedURL = url
 	w.chromium.Navigate(url)
 }
 
@@ -362,6 +426,40 @@ func (w *windowsWebviewWindow) framelessWithDecorations() bool {
 	return w.parent.options.Frameless && !w.parent.options.Windows.DisableFramelessWindowDecorations
 }
 
+func (w *windowsWebviewWindow) extendFrameIntoClientArea(extend bool) error {
+	if !extend || !w.chromium.CompositionControllerEnabled {
+		return w32.ExtendFrameIntoClientArea(w.hwnd, extend)
+	}
+
+	// Leave the top edge unextended for composition-hosted non-client regions so
+	// the Windows 11 Snap Layout flyout does not cover custom HTMAXBUTTON areas.
+	return w32.ExtendFrameIntoClientAreaWithMargins(w.hwnd, w32.MARGINS{
+		CxLeftWidth:    1,
+		CxRightWidth:   1,
+		CyTopHeight:    0,
+		CyBottomHeight: 1,
+	})
+}
+
+// newChromium creates a Chromium instance configured from this window's
+// options. Everything set here has to be set *before* Embed, so it cannot live
+// in setupChromium. Both start-up and the post-process-failure rebuild go
+// through this one function: when the rebuild carried its own copy of this
+// construction the two drifted, and a rebuilt window silently lost non-client
+// region support, composition hosting and cursor handling.
+func (w *windowsWebviewWindow) newChromium() *edge.Chromium {
+	options := w.parent.options
+
+	chromium := edge.NewChromium()
+	chromium.NonClientRegionSupportEnabled = options.Windows.NonClientRegionSupport
+	chromium.CompositionControllerEnabled = options.Windows.WebView2CompositionHosting
+	chromium.SetCursorChangedCallback(w.applyCompositionCursor)
+	if globalApplication.options.ErrorHandler != nil {
+		chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
+	}
+	return chromium
+}
+
 func (w *windowsWebviewWindow) run() {
 
 	options := w.parent.options
@@ -370,10 +468,7 @@ func (w *windowsWebviewWindow) run() {
 	// Non-hidden windows should be shown by default
 	w.showRequested = !options.Hidden
 
-	w.chromium = edge.NewChromium()
-	if globalApplication.options.ErrorHandler != nil {
-		w.chromium.SetErrorCallback(globalApplication.options.ErrorHandler)
-	}
+	w.chromium = w.newChromium()
 
 	exStyle := w32.WS_EX_CONTROLPARENT
 	if options.BackgroundType != BackgroundTypeSolid {
@@ -482,7 +577,10 @@ func (w *windowsWebviewWindow) run() {
 		w.setSize(options.Width, options.Height)
 	}
 
-	w.setupChromium()
+	if !w.setupChromium(false) {
+		globalApplication.fatal("unable to initialise WebView2 for window %q", options.Title)
+		return
+	}
 
 	if options.Windows.WindowDidMoveDebounceMS == 0 {
 		options.Windows.WindowDidMoveDebounceMS = 50
@@ -541,7 +639,7 @@ func (w *windowsWebviewWindow) run() {
 	case SystemDefault:
 		isDark := w32.IsCurrentlyDarkMode()
 		if isDark {
-			w32.AllowDarkModeForWindow(w.hwnd, true)
+			w.applyDarkMode()
 		}
 		w.updateTheme(isDark)
 		// Don't initialize default dark theme here if custom theme might be set
@@ -554,7 +652,7 @@ func (w *windowsWebviewWindow) run() {
 	case Light:
 		w.updateTheme(false)
 	case Dark:
-		w32.AllowDarkModeForWindow(w.hwnd, true)
+		w.applyDarkMode()
 		w.updateTheme(true)
 		// Don't initialize default dark theme here if custom theme might be set
 		// The updateTheme call above will handle custom themes
@@ -831,6 +929,7 @@ func (w *windowsWebviewWindow) setRelativePosition(x int, y int) {
 }
 
 func (w *windowsWebviewWindow) destroy() {
+	w.requestCancellation.close()
 	// Re-enable parent window if this was a modal window
 	if w.parentHWND != 0 {
 		w32.EnableWindow(w.parentHWND, true)
@@ -880,6 +979,9 @@ func (w *windowsWebviewWindow) zoomOut() {
 
 func (w *windowsWebviewWindow) getZoom() float64 {
 	controller := w.chromium.GetController()
+	if controller == nil {
+		return -1
+	}
 	factor, err := controller.GetZoomFactor()
 	if err != nil {
 		return -1
@@ -967,7 +1069,7 @@ func (w *windowsWebviewWindow) fullscreen() {
 		return
 	}
 	if w.framelessWithDecorations() {
-		err := w32.ExtendFrameIntoClientArea(w.hwnd, false)
+		err := w.extendFrameIntoClientArea(false)
 		if err != nil {
 			globalApplication.handleFatalError(err)
 		}
@@ -1017,7 +1119,7 @@ func (w *windowsWebviewWindow) unfullscreen() {
 		return
 	}
 	if w.framelessWithDecorations() {
-		err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+		err := w.extendFrameIntoClientArea(true)
 		if err != nil {
 			globalApplication.handleFatalError(err)
 		}
@@ -1345,9 +1447,7 @@ func (w *windowsWebviewWindow) setFrameless(b bool) {
 
 func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 	result := &windowsWebviewWindow{
-		parent:             parent,
-		resizeBorderWidth:  int32(w32.GetSystemMetrics(w32.SM_CXSIZEFRAME)),
-		resizeBorderHeight: int32(w32.GetSystemMetrics(w32.SM_CYSIZEFRAME)),
+		parent: parent,
 		// Initialize visibility tracking fields
 		showRequested:     false,
 		visibilityTimeout: nil,
@@ -1426,6 +1526,16 @@ func (w *windowsWebviewWindow) disableIcon() {
 	)
 }
 
+// applyDarkMode opts the window into dark mode via the uxtheme
+// AllowDarkModeForWindow export. That export is only loaded on Windows builds
+// that provide it (>= 17763); on older builds it is nil, so this guards the
+// call to avoid a nil-pointer panic on startup.
+func (w *windowsWebviewWindow) applyDarkMode() {
+	if w32.AllowDarkModeForWindow != nil {
+		w32.AllowDarkModeForWindow(w.hwnd, true)
+	}
+}
+
 func (w *windowsWebviewWindow) processThemeColour(fn func(w32.HWND, uint32), value *uint32) {
 	if value == nil {
 		return
@@ -1449,9 +1559,13 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	}
 
 	w32.SetTheme(w.hwnd, isDarkMode)
+	// Native popup-menu text follows Windows' process-level colour policy, not
+	// the per-window DWM theme. Do not paint a dark menu background when that
+	// policy is light, otherwise Windows draws dark text on dark backgrounds.
+	menuIsDarkMode := useDarkNativeWindowsMenu(isDarkMode, w32.ShouldAppsUseDarkMode)
 
 	// Clear any existing theme first
-	if w.menubarTheme != nil && !isDarkMode {
+	if w.menubarTheme != nil && !menuIsDarkMode {
 		// Reset menu to default Windows theme when switching to light mode
 		w.menubarTheme = nil
 		if w.menu != nil {
@@ -1469,7 +1583,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 	// Custom theme
 	if w32.SupportsCustomThemes() {
 		var userTheme *MenuBarTheme
-		if isDarkMode {
+		if menuIsDarkMode {
 			userTheme = customTheme.DarkModeMenuBar
 		} else {
 			userTheme = customTheme.LightModeMenuBar
@@ -1477,7 +1591,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 
 		if userTheme != nil {
 			modeStr := "light"
-			if isDarkMode {
+			if menuIsDarkMode {
 				modeStr = "dark"
 			}
 			globalApplication.debug("Setting custom "+modeStr+" menubar theme", "window", w.parent.id)
@@ -1498,7 +1612,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				w32.DrawMenuBar(w.hwnd)
 				w32.InvalidateRect(w.hwnd, nil, true)
 			}
-		} else if userTheme == nil && isDarkMode {
+		} else if userTheme == nil && menuIsDarkMode {
 			// Use default dark theme if no custom theme provided
 			globalApplication.debug("Setting default dark menubar theme", "window", w.parent.id)
 			w.menubarTheme = &w32.MenuBarTheme{
@@ -1518,7 +1632,7 @@ func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
 				w32.DrawMenuBar(w.hwnd)
 				w32.InvalidateRect(w.hwnd, nil, true)
 			}
-		} else if userTheme == nil && !isDarkMode && w.menu != nil {
+		} else if userTheme == nil && !menuIsDarkMode && w.menu != nil {
 			// No custom theme for light mode - ensure menu is reset to default
 			globalApplication.debug("Resetting menu to default light theme", "window", w.parent.id)
 			var mi w32.MENUINFO
@@ -1569,6 +1683,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		return w32.HTCLIENT
 	}
 
+	if w.parent.options.Windows.WebView2CompositionHosting && w.chromium != nil && w.chromium.CompositionControllerReady() {
+		if result, handled := w.routeNonClientInput(msg, wparam, lparam); handled {
+			return result
+		}
+
+		if w.routeCompositionMouseInput(msg, wparam, lparam) {
+			return 0
+		}
+	}
+
 	switch msg {
 	case w32.WM_ACTIVATE:
 		if int(wparam&0xffff) == w32.WA_INACTIVE {
@@ -1587,7 +1711,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// As a result we have hidden the titlebar but still have the default window frame styling.
 		// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
 		if w.framelessWithDecorations() {
-			err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+			err := w.extendFrameIntoClientArea(true)
 			if err != nil {
 				globalApplication.handleFatalError(err)
 			}
@@ -1613,9 +1737,14 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}()
 
 		// Now do the actual close
+		w.requestCancellation.close()
 		w.chromium.ShuttingDown()
 		return w32.DefWindowProc(w.hwnd, w32.WM_CLOSE, 0, 0)
-
+	case w32.WM_SETCURSOR:
+		if w.compositionCursor != 0 && w32.LOWORD(uint32(lparam)) == w32.HTCLIENT {
+			w32.SetCursor(w.compositionCursor)
+			return 1
+		}
 	case w32.WM_KILLFOCUS:
 		if w.focusingChromium {
 			return 0
@@ -1666,11 +1795,16 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if w.parent.options.BackgroundType == BackgroundTypeSolid {
 			col := w.parent.options.BackgroundColour
 			hdc := w32.HDC(wparam)
-			rc := w32.GetClientRect(w.hwnd)
-			colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
-			hbrush := w32.CreateSolidBrush(colorRef)
-			w32.FillRect(hdc, rc, hbrush)
-			w32.DeleteObject(w32.HGDIOBJ(hbrush))
+			// GetClientRect can legitimately return nil for a window in a
+			// transient state (minimise/restore transitions are especially
+			// prone to triggering it). FillRect with a nil rect crashes, so it
+			// must be checked before painting.
+			if rc := w32.GetClientRect(w.hwnd); rc != nil {
+				colorRef := w32.COLORREF(uint32(col.Red) | uint32(col.Green)<<8 | uint32(col.Blue)<<16)
+				hbrush := w32.CreateSolidBrush(colorRef)
+				w32.FillRect(hdc, rc, hbrush)
+				w32.DeleteObject(w32.HGDIOBJ(hbrush))
+			}
 		}
 		return 1
 	// WM_UAHDRAWMENUITEM is handled by MenuBarWndProc at the top of this function
@@ -1873,7 +2007,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// For frameless windows with decorations, re-extend the frame into client area
 			// to ensure proper window frame styling after DPI change.
 			if w.framelessWithDecorations() {
-				if err := w32.ExtendFrameIntoClientArea(w.hwnd, true); err != nil {
+				if err := w.extendFrameIntoClientArea(true); err != nil {
 					globalApplication.handleFatalError(err)
 				}
 			}
@@ -1887,11 +2021,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		// DPI changes manually — but only while non-minimised. When detection
 		// was re-enabled in setupChromium, the resync below is a no-op (Edge
 		// owns the scale) and only lastKnownDPI tracking runs.
-		// While minimised the window sits off its restore
-		// monitor, so GetDpiForWindow can report a different monitor's DPI, which
-		// would push a wrong scale
-		// onto the controller (one the restore-time DPI gate then won't correct,
-		// since DPI == lastKnownDPI) and would make a COM call into a possibly
+		// While minimised the window sits off its restore monitor, so
+		// GetDpiForWindow can report a different monitor's DPI, which would
+		// push a wrong scale onto the controller (one the restore-time DPI gate
+		// then won't correct, since DPI == lastKnownDPI) and would make a COM
+		// call into a possibly
 		// suspended controller (#5605). A genuine DPI difference is instead
 		// caught on restore by resyncWebviewDPIAfterUnminimiseIfDPIChanged.
 		if !w.isMinimizing {
@@ -1963,7 +2097,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
 			if w.framelessWithDecorations() {
-				err := w32.ExtendFrameIntoClientArea(w.hwnd, true)
+				err := w.extendFrameIntoClientArea(true)
 				if err != nil {
 					globalApplication.handleFatalError(err)
 				}
@@ -2040,10 +2174,9 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 
 // resyncWebviewRasterizationScale re-asserts the window's actual DPI on the
 // WebView2 controller and reports whether the scale was out of sync. Wails
-// runs WebView2 in raw-pixels bounds mode with ShouldDetectMonitorScaleChanges
-// disabled, so keeping the rasterization scale in step with the window's DPI
-// is the application's responsibility. It is a no-op when the controller is
-// unavailable or already in sync.
+// keeps this as a fallback for controllers where monitor-scale detection could
+// not be re-enabled; when WebView2 owns monitor scale detection, the host-side
+// resync stands down.
 func (w *windowsWebviewWindow) resyncWebviewRasterizationScale() bool {
 	// With monitor-scale detection re-enabled (setupChromium), WebView2 owns
 	// the rasterization scale and updates it on monitor crossings itself. A
@@ -2268,10 +2401,7 @@ func (w *windowsWebviewWindow) processRequest(
 		if err != nil {
 			globalApplication.fatal("error setting WindowId header: %w", err)
 		}
-		err = reqHeaders.Release()
-		if err != nil {
-			globalApplication.fatal("error releasing headers: %w", err)
-		}
+		reqHeaders.Release()
 	}
 
 	if globalApplication.assets == nil {
@@ -2306,6 +2436,9 @@ func (w *windowsWebviewWindow) processRequest(
 		return
 	}
 
+	if w.requestCancellation != nil && !w.requestCancellation.closed {
+		webviewRequest = w.requestCancellation.tracker.Wrap(webviewRequest)
+	}
 	webviewRequests <- &webViewAssetRequest{
 		Request:    webviewRequest,
 		windowId:   w.parent.id,
@@ -2313,8 +2446,29 @@ func (w *windowsWebviewWindow) processRequest(
 	}
 }
 
-func (w *windowsWebviewWindow) setupChromium() {
+// setupChromiumConfigError reports a WebView2 configuration failure from
+// inside setupChromium. Initial startup keeps the existing fatal behaviour —
+// a controller that cannot be configured cannot serve the window at all.
+// During post-recovery reconfiguration (recovering) it instead returns to
+// rebuildWebView so the partially configured replacement controller can be
+// discarded and retried within the existing attempt budget, rather than a
+// single failed settings COM call taking down the whole host (#6167).
+func (w *windowsWebviewWindow) setupChromiumConfigError(recovering bool, err error) bool {
+	if !recovering {
+		globalApplication.handleFatalError(err)
+		return false
+	}
+	globalApplication.error("webview2: controller recovery configuration failed: %v", err)
+	return false
+}
+
+func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 	chromium := w.chromium
+	defer func() {
+		if recovering && !ready {
+			chromium.Close()
+		}
+	}()
 	debugMode := globalApplication.isDebugMode
 
 	opts := w.parent.options.Windows
@@ -2324,7 +2478,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	)
 	if err != nil {
 		globalApplication.error("error getting WebView2 version: %w", err)
-		return
+		return false
 	}
 	globalApplication.capabilities = capabilities.NewCapabilities(webview2version)
 
@@ -2373,33 +2527,73 @@ func (w *windowsWebviewWindow) setupChromium() {
 	chromium.MessageWithAdditionalObjectsCallback = w.processMessageWithAdditionalObjects
 	chromium.WebResourceRequestedCallback = w.processRequest
 	chromium.ContainsFullScreenElementChangedCallback = w.fullscreenChanged
+	chromium.NavigationStartingCallback = w.navigationStarting
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
+	chromium.ProcessFailedCallback = w.processFailed
 
-	chromium.Embed(w.hwnd)
+	if recovering {
+		if err := chromium.EmbedWithError(w.hwnd); err != nil {
+			globalApplication.error("webview2: controller recovery failed: %v", err)
+			return false
+		}
+	} else if !chromium.Embed(w.hwnd) {
+		return false
+	}
 
-	// Ensure automatic monitor-scale detection is on. Published webview2
-	// module versions up to v1.0.27 disable ShouldDetectMonitorScaleChanges
-	// at controller creation (the in-repo module no longer does), leaving
-	// rasterization-scale updates entirely to the host's WM_DPICHANGED
-	// handling. In that
-	// host-managed mode, dragging the window across a mixed-DPI monitor
-	// boundary can make the embedded browser compute a degenerate
-	// scale(0,0) transform (ui/gfx/geometry/transform.cc NOTREACHED
-	// "is not invertible"); the resulting compositor frame is rejected by
-	// the viz process as a malformed Mojo message, which kills the GPU
-	// process, and after enough repeat kills the browser process gives up
-	// ("GPU process isn't usable. Goodbye.") taking the controller with
-	// it. Detection-on is the WebView2 default and keeps monitor-cross
-	// scale updates inside Edge, where that path is actually exercised;
-	// bounds stay raw-pixels. While detection is on, the host-side
-	// WM_DPICHANGED / un-minimise scale resyncs stand down (see
+	// Configure who owns the WebView2 rasterization scale on a monitor-DPI
+	// change. Two hosting modes need opposite answers:
+	//
+	// Windowed (HWND-child) hosting — the default: enable automatic
+	// monitor-scale detection. Published webview2 module versions up to
+	// v1.0.27 disabled ShouldDetectMonitorScaleChanges at controller creation
+	// (the in-repo module no longer does), leaving rasterization-scale updates
+	// entirely to the host's WM_DPICHANGED handling. In that host-managed mode,
+	// dragging the window across a mixed-DPI monitor boundary can make the
+	// embedded browser compute a degenerate scale(0,0) transform
+	// (ui/gfx/geometry/transform.cc NOTREACHED "is not invertible"); the
+	// resulting compositor frame is rejected by the viz process as a malformed
+	// Mojo message, which kills the GPU process, and after enough repeat kills
+	// the browser process gives up ("GPU process isn't usable. Goodbye.")
+	// taking the controller with it. Detection-on is the WebView2 default and
+	// keeps monitor-cross scale updates inside Edge, where that path is
+	// actually exercised; bounds stay raw-pixels. While detection is on, the
+	// host-side WM_DPICHANGED / un-minimise scale resyncs stand down (see
 	// monitorScaleDetectionOn) so the scale has exactly one writer.
+	//
+	// Visual hosting (UseVisualHosting -> COREWEBVIEW2_HOSTING_MODE_WINDOW_TO_VISUAL):
+	// the content is a DirectComposition visual, decoupled from the child HWND
+	// that automatic detection tracks. Across a mixed-DPI boundary detection
+	// then reads the wrong monitor and settles the visual on a stale scale, so
+	// the whole UI renders shrunk. There the host must own the scale via
+	// resyncWebviewRasterizationScale (correct per WebView2Feedback #3665, and
+	// reliable now that the by-value PutRasterizationScale bug is fixed). The
+	// module leaves detection at its platform default (enabled), so visual
+	// hosting must disable it *explicitly* — merely skipping the enable would
+	// leave detection on AND the host resync running, i.e. two writers racing,
+	// which is the scale(0,0) crash above. With detection off the host owns the
+	// scale via resyncWebviewRasterizationScale.
+	//
+	// Whichever mode: monitorScaleDetectionOn is set from the controller's
+	// *actual* ShouldDetectMonitorScaleChanges after the Put, never from the
+	// value we asked for. A failed Put can leave detection at its platform
+	// default (enabled) while we intended off; keying the flag off intent would
+	// then run the host resync against a detecting Edge — the exact two-writer
+	// race this guards against. The host stands down whenever detection is on so
+	// the rasterization scale keeps exactly one writer.
 	if controller := chromium.GetController(); controller != nil {
 		if c3 := controller.GetICoreWebView2Controller3(); c3 != nil {
-			if err := c3.PutShouldDetectMonitorScaleChanges(true); err != nil {
-				globalApplication.error("webview2: enable monitor scale detection: %v", err)
+			wantDetection := !globalApplication.options.Windows.UseVisualHosting
+			if err := c3.PutShouldDetectMonitorScaleChanges(wantDetection); err != nil {
+				globalApplication.error("webview2: set monitor scale detection to %v: %v", wantDetection, err)
+			}
+			if on, err := c3.GetShouldDetectMonitorScaleChanges(); err == nil {
+				w.monitorScaleDetectionOn = on
 			} else {
+				// Can't confirm the state: assume detection may be on and stand
+				// the host resync down. A cosmetic stale scale beats risking the
+				// two-writer GPU-process crash.
+				globalApplication.error("webview2: query monitor scale detection: %v", err)
 				w.monitorScaleDetectionOn = true
 			}
 		}
@@ -2417,7 +2611,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if chromium.HasCapability(edge.SwipeNavigation) {
 		err := chromium.PutIsSwipeNavigationEnabled(opts.EnableSwipeGestures)
 		if err != nil {
-			globalApplication.handleFatalError(err)
+			return w.setupChromiumConfigError(recovering, err)
 		}
 	}
 
@@ -2441,7 +2635,7 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if errors.Is(err, edge.UnsupportedCapabilityError) {
 			globalApplication.warning("unsupported capability: GeneralAutofillEnabled")
 		} else {
-			globalApplication.handleFatalError(err)
+			return w.setupChromiumConfigError(recovering, err)
 		}
 	}
 
@@ -2450,60 +2644,66 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if errors.Is(err, edge.UnsupportedCapabilityError) {
 			globalApplication.warning("unsupported capability: PasswordAutosaveEnabled")
 		} else {
-			globalApplication.handleFatalError(err)
+			return w.setupChromiumConfigError(recovering, err)
 		}
 	}
 
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 	if settings == nil {
-		globalApplication.fatal("error getting settings")
+		return w.setupChromiumConfigError(recovering, errors.New("error getting settings"))
 	}
+	defer settings.Release()
 	err = settings.PutAreDefaultContextMenusEnabled(
 		debugMode || !w.parent.options.DefaultContextMenuDisabled,
 	)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 
-	w.enableDevTools(settings)
+	if err := w.enableDevTools(settings); err != nil {
+		return w.setupChromiumConfigError(recovering, err)
+	}
 
 	if w.parent.options.Zoom > 0.0 {
 		chromium.PutZoomFactor(w.parent.options.Zoom)
 	}
 	err = settings.PutIsZoomControlEnabled(w.parent.options.ZoomControlEnabled)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 	err = settings.PutIsSwipeNavigationEnabled(false)
 	if err != nil {
-		globalApplication.handleFatalError(err)
+		return w.setupChromiumConfigError(recovering, err)
 	}
 
 	if debugMode && w.parent.options.OpenInspectorOnStartup {
 		chromium.OpenDevToolsWindow()
 	}
 
-	// Set background colour
-	w.setBackgroundColour(w.parent.options.BackgroundColour)
-	chromium.SetBackgroundColour(
-		w.parent.options.BackgroundColour.Red,
-		w.parent.options.BackgroundColour.Green,
-		w.parent.options.BackgroundColour.Blue,
-		w.parent.options.BackgroundColour.Alpha,
-	)
+	// Keep the native window and WebView backgrounds consistent on recovery.
+	colour := w.parent.options.BackgroundColour
+	switch w.parent.options.BackgroundType {
+	case BackgroundTypeSolid:
+		w32.SetBackgroundColour(w.hwnd, colour.Red, colour.Green, colour.Blue)
+	case BackgroundTypeTransparent, BackgroundTypeTranslucent:
+		colour = RGBA{}
+	}
+	if err := chromium.SetBackgroundColourWithError(colour.Red, colour.Green, colour.Blue, colour.Alpha); err != nil {
+		return w.setupChromiumConfigError(recovering, err)
+	}
 
 	// WebView2's PermissionRequested handler checks the global permission
 	// before the per-kind map, so the blanket "allow all" must only be set
@@ -2514,9 +2714,23 @@ func (w *windowsWebviewWindow) setupChromium() {
 	if !hasPermissionPolicy {
 		chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	}
-	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
+	if err := chromium.AddWebResourceRequestedFilterWithError("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL); err != nil {
+		return w.setupChromiumConfigError(recovering, err)
+	}
 
-	if w.parent.options.HTML != "" {
+	w.startRequestCancellation(w.navigateInitialPage)
+	return true
+}
+
+func (w *windowsWebviewWindow) navigateInitialPage() {
+	chromium := w.chromium
+
+	// Restore the last URL directly after a rebuild. Reset navigation state in
+	// every branch so the replacement receives the visibility workaround.
+	switch {
+	case w.lastNavigatedURL != "":
+		w.setURL(w.lastNavigatedURL)
+	case w.parent.options.HTML != "":
 		var script string
 		if w.parent.options.JS != "" {
 			script = w.parent.options.JS
@@ -2530,14 +2744,14 @@ func (w *windowsWebviewWindow) setupChromium() {
 		if script != "" {
 			chromium.Init(script)
 		}
+		w.webviewNavigationCompleted = false
 		chromium.NavigateToString(w.parent.options.HTML)
-	} else {
+	default:
 		startURL, err := assetserver.GetStartURL(w.parent.options.URL)
 		if err != nil {
 			globalApplication.handleFatalError(err)
 		}
-		w.webviewNavigationCompleted = false
-		chromium.Navigate(startURL)
+		w.setURL(startURL)
 	}
 
 }
@@ -2561,17 +2775,37 @@ func (w *windowsWebviewWindow) flash(enabled bool) {
 	w32.FlashWindow(w.hwnd, enabled)
 }
 
+func (w *windowsWebviewWindow) navigationStarting(_ *edge.ICoreWebView2) {
+	w.setNonClientHitTestRegions(nil)
+}
+
 func (w *windowsWebviewWindow) navigationCompleted(
 	sender *edge.ICoreWebView2,
 	args *edge.ICoreWebView2NavigationCompletedEventArgs,
 ) {
+	// Only a *successful* load means recovery worked. A dead render process
+	// leaves WebView2 on an error page, and that error page fires this callback
+	// too — resetting on it would hand a crash-looping renderer a fresh budget
+	// on every cycle and the attempt bound would never trip, which is the
+	// runaway it exists to stop. Treat an unreadable IsSuccess as unsuccessful
+	// for the same reason.
+	isSuccess, navigationErr := args.GetIsSuccess()
+	if navigationErr != nil {
+		globalApplication.error("webview2: reading navigation success: %v", navigationErr)
+	}
+	if shouldResetWebviewRecoveryBudget(isSuccess, navigationErr) {
+		w.resetWebviewRecoveryBudget()
+	}
 
-	// Install the runtime core
-	w.execJS(runtime.Core(globalApplication.impl.GetFlags(globalApplication.options)))
-
-	// Set the EnableFileDrop flag for this window (Windows-specific)
-	// The JS runtime checks this before processing file drops
-	w.execJS(fmt.Sprintf("window._wails.flags.enableFileDrop = %v;", w.parent.options.EnableFileDrop))
+	// Inject runtime core and window-specific flags together so side-effect
+	// runtime modules see a consistent _wails configuration at startup.
+	js := runtime.Core(globalApplication.impl.GetFlags(globalApplication.options))
+	js += fmt.Sprintf(
+		"window._wails.flags.enableFileDrop = %v; window._wails.flags.nonClientRegionTracking = %v;",
+		w.parent.options.EnableFileDrop,
+		w.parent.options.Windows.WebView2CompositionHosting,
+	)
+	w.execJS(js)
 
 	// EmitEvent DomReady ApplicationEvent
 	windowEvents <- &windowEvent{EventID: uint(events.Windows.WebViewNavigationCompleted), WindowID: w.parent.id}
@@ -2695,12 +2929,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 			return
 		}
 
-		defer func() {
-			err = objs.Release()
-			if err != nil {
-				globalApplication.error("error releasing objects: %w", err)
-			}
-		}()
+		defer objs.Release()
 
 		count, err := objs.GetCount()
 		if err != nil {
@@ -2806,15 +3035,6 @@ func (w *windowsWebviewWindow) disableRedrawWithCallback(callback func()) {
 	callback()
 	w.enableRedraw()
 
-}
-
-func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {
-	var err error
-	var result w32.HICON
-	if result = w32.LoadIconWithResourceID(instance, resId); result == 0 {
-		err = fmt.Errorf("cannot load icon from resource with id %v", resId)
-	}
-	return result, err
 }
 
 func (w *windowsWebviewWindow) setMinimiseButtonState(state ButtonState) {
@@ -2946,4 +3166,191 @@ func (w *windowsWebviewWindow) applyDisplayAffinity(affinity uint32) bool {
 		return false
 	}
 	return true
+}
+
+// webviewRecoveryAction is what a WebView2 process failure calls for.
+type webviewRecoveryAction int
+
+const (
+	// webviewRecoveryNone leaves the failure to the browser process.
+	webviewRecoveryNone webviewRecoveryAction = iota
+	// webviewRecoveryRenavigate re-navigates the existing controller.
+	webviewRecoveryRenavigate
+	// webviewRecoveryRebuild replaces the controller entirely.
+	webviewRecoveryRebuild
+)
+
+// maxWebviewRecoveryAttempts bounds consecutive recovery attempts that never
+// reach a completed navigation. Without a bound, a controller that dies again
+// as soon as it is rebuilt turns recovery into a hot loop spawning WebView2
+// processes; with one, a permanently broken runtime costs a few attempts and
+// then leaves the window as it would have been without any recovery at all.
+const maxWebviewRecoveryAttempts = 3
+
+// webviewRecoveryActionFor maps a WebView2 process-failure kind to the recovery
+// it needs.
+//
+// A browser-process exit invalidates the whole controller — every subsequent
+// COM call returns ERROR_INVALID_STATE (0x8007139F) — so nothing short of a new
+// controller recovers it. Renderer failures leave the controller usable and a
+// re-navigation is enough.
+//
+// Everything else is deliberately left alone. GPU, utility and sandbox-helper
+// processes are restarted by Chromium itself, and if it gives up on them it
+// exits the browser process, which arrives back here as
+// BROWSER_PROCESS_EXITED. An out-of-process iframe (FRAME_RENDER_PROCESS_EXITED)
+// is likewise the browser's to re-create, and reloading the whole window over
+// one dead subframe would be far more destructive than the failure.
+func webviewRecoveryActionFor(kind edge.COREWEBVIEW2_PROCESS_FAILED_KIND) webviewRecoveryAction {
+	switch kind {
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED:
+		return webviewRecoveryRebuild
+	case edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_EXITED,
+		edge.COREWEBVIEW2_PROCESS_FAILED_KIND_RENDER_PROCESS_UNRESPONSIVE:
+		return webviewRecoveryRenavigate
+	default:
+		return webviewRecoveryNone
+	}
+}
+
+// beginWebviewRecovery reports whether another recovery attempt is allowed,
+// counting it when it is. The counter is cleared by navigationCompleted, so it
+// only ever accumulates across failures that never managed to load anything —
+// which is exactly the runaway case maxWebviewRecoveryAttempts exists to stop.
+// RENDER_PROCESS_UNRESPONSIVE in particular re-fires for as long as the
+// renderer stays hung, so the bound applies to re-navigation as well as to
+// rebuilds.
+func (w *windowsWebviewWindow) beginWebviewRecovery() bool {
+	if w.webviewRecoveryAttempts >= maxWebviewRecoveryAttempts {
+		return false
+	}
+	w.webviewRecoveryAttempts++
+	return true
+}
+
+// resetWebviewRecoveryBudget restores the full attempt budget. Called from
+// navigationCompleted: the webview loaded something, so whatever recovery led
+// there worked, and a later unrelated failure should get a full set of attempts
+// of its own rather than inheriting a spent counter.
+func (w *windowsWebviewWindow) resetWebviewRecoveryBudget() {
+	w.webviewRecoveryAttempts = 0
+}
+
+// shouldResetWebviewRecoveryBudget reports whether a navigation completion
+// represents a successful recovery and can replenish the retry budget.
+func shouldResetWebviewRecoveryBudget(isSuccess bool, err error) bool {
+	return err == nil && isSuccess
+}
+
+// processFailed handles WebView2 process-failure notifications. Without a
+// handler, a dead browser process leaves the controller in a permanent
+// invalid state: every subsequent COM call fails with ERROR_INVALID_STATE
+// (0x8007139F), the window renders blank, and only an app restart recovers.
+// Work is deferred out of the callback via InvokeAsync, per WebView2 guidance
+// about not calling controller methods reentrantly from an event handler.
+func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.ICoreWebView2ProcessFailedEventArgs) {
+	if w.webviewRecoveryPending || w.parent.isDestroyed() || w.hwnd == 0 {
+		return
+	}
+	kind, err := args.GetProcessFailedKind()
+	if err != nil {
+		globalApplication.error("webview2: process failed and failure kind unavailable: %v", err)
+		return
+	}
+
+	action := webviewRecoveryActionFor(kind)
+	if action == webviewRecoveryNone {
+		globalApplication.info("webview2: process failed (kind=%d); leaving recovery to the browser process", kind)
+		return
+	}
+
+	// Work out what recovery would actually do before spending an attempt from
+	// the budget, so a no-op does not eat into it.
+	var restore func()
+	switch action {
+	case webviewRecoveryRebuild:
+		restore = w.rebuildWebView
+	case webviewRecoveryRenavigate:
+		if w.lastNavigatedURL == "" && w.parent.options.HTML == "" {
+			globalApplication.error("webview2: no navigation available for renderer recovery")
+			return
+		}
+		restore = func() {
+			if w.parent.isDestroyed() || w.hwnd == 0 {
+				return
+			}
+			if w.lastNavigatedURL != "" {
+				w.setURL(w.lastNavigatedURL)
+			} else {
+				w.webviewNavigationCompleted = false
+				w.chromium.NavigateToString(w.parent.options.HTML)
+			}
+		}
+	}
+
+	if !w.beginWebviewRecovery() {
+		globalApplication.error(
+			"webview2: process failed (kind=%d) and %d consecutive recovery attempts have not restored the webview; giving up, the window will stay blank until the application restarts",
+			kind, maxWebviewRecoveryAttempts,
+		)
+		return
+	}
+	globalApplication.error("webview2: process failed (kind=%d); recovery attempt %d of %d",
+		kind, w.webviewRecoveryAttempts, maxWebviewRecoveryAttempts)
+
+	// InvokeAsync runs inline on the UI thread; the goroutine forces a post
+	// so controller creation happens after the WebView2 event handler returns.
+	w.webviewRecoveryPending = true
+	go InvokeAsync(func() {
+		defer func() { w.webviewRecoveryPending = false }()
+		restore()
+	})
+}
+
+// rebuildWebView replaces a dead WebView2 controller with a fresh one.
+// setupChromium re-applies every setting and restores lastNavigatedURL, so
+// this only has to supply the controller.
+//
+// The old Chromium instance is abandoned rather than re-embedded: after a
+// browser-process exit every COM reference it holds is dangling, and
+// edge.Chromium.Embed's init-wait loop keys on a per-instance flag that a used
+// instance has already set, so re-embedding the same instance would return
+// before the new controller exists.
+//
+// A replacement that fails setupChromium is abandoned the same way, never
+// restored: it is already shut down, and edge.Chromium.ProcessFailed no-ops
+// once ShuttingDown has run, so putting it back in place of w.chromium would
+// silently swallow every future process failure and leave the window blank
+// until the application restarts. Instead, while the recovery attempt budget
+// allows, a fresh instance is tried in its place (#6167).
+func (w *windowsWebviewWindow) rebuildWebView() {
+	for {
+		// A window destroyed between the failure and this callback has no HWND to
+		// embed into — shutting the app down kills the WebView2 processes, so a
+		// process failure racing teardown is expected rather than exceptional.
+		if w.parent.isDestroyed() || w.hwnd == 0 {
+			return
+		}
+		globalApplication.info("webview2: rebuilding controller after browser process exit")
+		// The abandoned instance's DComp target stays bound to the HWND, and an
+		// HWND can only carry one: without this release the replacement fails
+		// composition setup with DCOMPOSITION_ERROR_WINDOW_ALREADY_COMPOSED and
+		// silently falls back to windowed hosting, so a WebView2CompositionHosting
+		// window would come back with the wrong hosting mode.
+		w.requestCancellation.close()
+		w.chromium.Close()
+		w.chromium = w.newChromium()
+		if w.setupChromium(true) {
+			return
+		}
+		if !w.beginWebviewRecovery() {
+			globalApplication.error(
+				"webview2: %d consecutive recovery attempts have not restored the webview; giving up, the window will stay blank until the application restarts",
+				maxWebviewRecoveryAttempts,
+			)
+			return
+		}
+		globalApplication.error("webview2: controller rebuild failed; recovery attempt %d of %d",
+			w.webviewRecoveryAttempts, maxWebviewRecoveryAttempts)
+	}
 }
