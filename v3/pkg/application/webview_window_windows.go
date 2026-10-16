@@ -128,6 +128,10 @@ type windowsWebviewWindow struct {
 }
 
 func (w *windowsWebviewWindow) setMenu(menu *Menu) {
+	if menu == nil {
+		// Match macOS, where SetMenu(nil) is a no-op.
+		return
+	}
 	if w.parent.options.Windows.DisableMenu {
 		return
 	}
@@ -2397,10 +2401,7 @@ func (w *windowsWebviewWindow) processRequest(
 		if err != nil {
 			globalApplication.fatal("error setting WindowId header: %w", err)
 		}
-		err = reqHeaders.Release()
-		if err != nil {
-			globalApplication.fatal("error releasing headers: %w", err)
-		}
+		reqHeaders.Release()
 	}
 
 	if globalApplication.assets == nil {
@@ -2928,12 +2929,7 @@ func (w *windowsWebviewWindow) processMessageWithAdditionalObjects(
 			return
 		}
 
-		defer func() {
-			err = objs.Release()
-			if err != nil {
-				globalApplication.error("error releasing objects: %w", err)
-			}
-		}()
+		defer objs.Release()
 
 		count, err := objs.GetCount()
 		if err != nil {
