@@ -1,7 +1,7 @@
 {
   "name": "@wailsio/runtime",
   "type": "module",
-  "version": "3.0.0-beta.29",
+  "version": "3.0.0-beta.30",
   "description": "Wails Runtime",
   "types": "types/index.d.ts",
   "exports": {
@@ -12,6 +12,10 @@
     "./plugins/*": {
       "types": "./types/plugins/*.d.ts",
       "default": "./dist/plugins/*.js"
+    },
+    "./cancellable": {
+      "types": "./types/cancellable.d.ts",
+      "default": "./dist/cancellable.js"
     }
   },
   "repository": {
