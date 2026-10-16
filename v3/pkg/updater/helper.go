@@ -201,8 +201,16 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 
 	marker := appliedMarker(target)
 	if from != "" {
+		// Without the marker the new version never sees OnUpdateApplied, so its post-update bookkeeping would be
+		// skipped; the old version runs again instead and the update can be retried.
 		if err := os.WriteFile(marker, []byte(from), 0o600); err != nil {
-			lg.logf("applied marker: %v (non-fatal)", err)
+			_ = os.Remove(marker)
+			lg.logf("applied marker: %v — restoring backup", err)
+			if err := restoreFromBackup(backup, target, l); err != nil {
+				lg.logf("restore failed: %v", err)
+				return 16
+			}
+			return 15
 		}
 	}
 

@@ -136,6 +136,32 @@ func TestRunHelperSwap_LaunchFails_RestoresBackup(t *testing.T) {
 	}
 }
 
+func TestRunHelperSwap_MarkerWriteFails_RestoresBackup(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+	t.Setenv(envHelperFrom, "v1.0.0")
+	// A directory where the marker goes makes writing it fail.
+	if err := os.MkdirAll(appliedMarker(target), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	l := &fakeLauncher{}
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 15 {
+		t.Fatalf("code: %d (want 15)", code)
+	}
+	if got := readFile(t, target); string(got) != "OLD" {
+		t.Errorf("after restore target contents: %q (want OLD)", got)
+	}
+	// Only the restored old version is launched, never the new one without its marker.
+	if len(l.calls) != 1 {
+		t.Errorf("expected 1 launch attempt, got %d: %+v", len(l.calls), l.calls)
+	}
+}
+
 func TestRunHelperSwap_AppBundleDirectory(t *testing.T) {
 	dir := t.TempDir()
 	target := filepath.Join(dir, "App.app")
