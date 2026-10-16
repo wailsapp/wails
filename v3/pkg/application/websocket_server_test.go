@@ -3,12 +3,34 @@
 package application
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/coder/websocket"
 	"github.com/wailsapp/wails/v3/internal/mailbox"
 )
+
+func TestWebSocketBroadcasterRejectsCrossOriginByDefault(t *testing.T) {
+	a := newServerTestApp(t)
+	srv := httptest.NewServer(NewWebSocketBroadcaster(a))
+	defer srv.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	conn, resp, err := websocket.Dial(ctx, wsURL(srv.URL), &websocket.DialOptions{
+		HTTPHeader: http.Header{"Origin": []string{"https://untrusted.example"}},
+	})
+	if err == nil {
+		conn.CloseNow()
+		t.Fatal("cross-origin event WebSocket unexpectedly connected")
+	}
+	if resp == nil || resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("rejected response = %#v, want HTTP %d", resp, http.StatusForbidden)
+	}
+}
 
 func TestWebSocketBroadcasterPreservesOrderPerClient(t *testing.T) {
 	firstStarted := make(chan struct{})

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "5e7a1c01e96025e83741",
+  "sourceFile": "community/showcase/ltools.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "de",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "targetHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineHash": "55a9540e705a92e8ab5b865fc87b1162a1d399fdba63a49c229078e5c3174236",
+      "machineText": "![LTools](/assets/showcase-images/ltools.webp)",
+      "status": "final",
+      "sourcePreview": "![LTools](/assets/showcase-images/ltools.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:20Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "3d44d172c582bf4192eb6e09f248b8b205aee3d07d604e51be3aa53c2ae9d7eb",
+      "targetHash": "1e13c9a4c1374f6e19d121f872d0871fa6a71abdb4926a2d85c130d48f53bf54",
+      "machineHash": "1e13c9a4c1374f6e19d121f872d0871fa6a71abdb4926a2d85c130d48f53bf54",
+      "machineText": "[LTools](https://github.com/lian-yang/ltools) ist ein von uTools inspirierter, Plugin-basierter plattformübergreifender Desktop-Werkzeugkasten, der mit Wails v3 erstellt wurde. Eine modulare Plugin-Architektur bündelt darin verschiedene Dienstprogramme für Entwickler an einem zentralen Ort.",
+      "status": "final",
+      "sourcePreview": "[LTools](https://github.com/lian-yang/ltools) is a plugin-based cross-platform desktop toolbox built…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:20Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "9bd63b2eaf30cfc2d45360da03525be5e97b07ee39b106a4dbf83da6e7245a52",
+      "targetHash": "ec907f75a0a49826ec8f1665fbe058b663e007c8c63c90803e8db4c1c32fd001",
+      "machineHash": "ec907f75a0a49826ec8f1665fbe058b663e007c8c63c90803e8db4c1c32fd001",
+      "machineText": "LTools bietet eine globale Suchleiste im Stil von Spotlight, eine Integration in den Systembereich der Taskleiste sowie integrierte Plugins, darunter eine Zwischenablageverwaltung, ein Screenshot-Werkzeug mit Anmerkungsfunktion, einen JSON-Editor, einen Taschenrechner, eine Systemüberwachung und weitere Werkzeuge. Über das erweiterbare Plugin-System lassen sich neue Werkzeuge hinzufügen.",
+      "status": "final",
+      "sourcePreview": "It features a global search bar (Spotlight-style), system tray integration, and built-in plugins inc…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:20Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8918e7a1e1826c9a096776538f8971d5ba645deee81f1523cb1ab36170d71273",
+      "targetHash": "ffa5004914dba9eac08726cf8c5c13c94fda069591f04d23583be3b593030163",
+      "machineHash": "ffa5004914dba9eac08726cf8c5c13c94fda069591f04d23583be3b593030163",
+      "machineText": "Ein mit Wails v3 erstellter, Plugin-basierter plattformübergreifender Desktop-Werkzeugkasten",
+      "status": "final",
+      "sourcePreview": "A plugin-based cross-platform desktop toolbox built with Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:20Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "targetHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineHash": "d9474393db5c6837068f0c72a88d4ad2c20ffa274df5f433ec06eaef0df361d8",
+      "machineText": "LTools",
+      "status": "final",
+      "sourcePreview": "LTools",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:20Z"
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "2cdf2b79a635456c1953",
+  "sourceFile": "community/showcase/encrypteasy.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "targetHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineHash": "6dc8c18e02f031583cf6cdd72e6bc611849c19e35d8e3f0e4a3a073b19287940",
+      "machineText": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "status": "final",
+      "sourcePreview": "![EncryptEasy](/assets/showcase-images/encrypteasy.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "f708f0f6355975a3a4c96db96e2019f05b2c048eb63d482204bcb2711ea07cb6",
+      "targetHash": "5d382a86380672678ec945d887f72fa8aecc39d88c127408e054cd2e337f79aa",
+      "machineHash": "5d382a86380672678ec945d887f72fa8aecc39d88c127408e054cd2e337f79aa",
+      "machineText": "*[EncryptEasy](https://www.encrypteasy.app)は、使いやすくシンプルなPGP\\\n暗号化ツールです。自分と連絡先のすべての鍵を管理できます。暗号化は\\\nシンプルであるべきです。Wailsで開発されています。*",
+      "status": "final",
+      "sourcePreview": "*[EncryptEasy](https://www.encrypteasy.app) is a simple and easy to use PGP\\ encryption tool, managi…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "bac75003e20e8935cc50f947b2125378184467253ebb05ea4c856e27f6f2592f",
+      "targetHash": "e5183c805b31ec025e1148dc49a0e4158916611cffc7f94b6ed97e28ea5aa919",
+      "machineHash": "e5183c805b31ec025e1148dc49a0e4158916611cffc7f94b6ed97e28ea5aa919",
+      "machineText": "PGPによるメッセージの暗号化は、業界標準です。誰もが秘密鍵と\\\n公開鍵を持ちます。秘密鍵は、その名のとおり、自分だけがメッセージを\\\n読めるように秘密にしておく必要があります。公開鍵は、あなたに秘密の暗号化された\\\nメッセージを送りたい人に配布します。鍵の管理、メッセージの暗号化、\\\nメッセージの復号は、スムーズに行えるべきです。EncryptEasyは、\\\nこれらを簡単にするためのツールです。",
+      "status": "final",
+      "sourcePreview": "Encrypting messages using PGP is the industry standard. Everyone has a private\\ and a public key. Yo…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "4f260277d0f7d25b36a1e8739f194f7bafaa73fc391cc1ac0bd1c36270a70c7d",
+      "machineHash": "4f260277d0f7d25b36a1e8739f194f7bafaa73fc391cc1ac0bd1c36270a70c7d",
+      "machineText": "Wailsで構築されたデスクトップアプリケーション",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "targetHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineHash": "9178ce51eec385025b3b9b2c2f231bf141fdf1bcf8a07e853c5361a7e960fb8a",
+      "machineText": "EncryptEasy",
+      "status": "final",
+      "sourcePreview": "EncryptEasy",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    }
+  }
+}

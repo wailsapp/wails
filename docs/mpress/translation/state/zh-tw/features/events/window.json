@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "a98946db8adbbf8142a4",
+  "sourceFile": "features/events/window.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "zh-tw",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "5500bfaa8a5998136a8b4a213f0c906e9be38a3e519a2ed443a50d09c7cb4e25",
+      "targetHash": "9ef3c4b70f3944a9164cc04afee2dcd2f49095b07b7b58b3b59445555053998f",
+      "machineHash": "9ef3c4b70f3944a9164cc04afee2dcd2f49095b07b7b58b3b59445555053998f",
+      "machineText": "視窗事件會在視窗生命週期和互動狀態發生變更時發出，例如開啟、關閉、移動和調整大小。",
+      "status": "final",
+      "sourcePreview": "Window events are emitted for window lifecycle and interaction changes, such as open, close, move, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "2efdc4095d1e2f19bd70bb10ada31b7b610bb74792c56dce87efd656010465d3",
+      "targetHash": "532333ea53913b03b1c71e4d7d18ec9a5ad0c16238e01de34a769e87fa7555ab",
+      "machineHash": "532333ea53913b03b1c71e4d7d18ec9a5ad0c16238e01de34a769e87fa7555ab",
+      "machineText": "如需視窗事件的完整文件，請參閱[事件系統](/features/events/system/#window-events)指南。",
+      "status": "final",
+      "sourcePreview": "Full documentation of window events is available in the [Event System](/features/events/system/#wind…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "68507c5f68b935c56fcfbce22a1195c9a3cb29ac055177bf1dff5cd50e24b3a2",
+      "targetHash": "e0a7e6a84f350c311e7543a8773f37d5dd1c542b277cfea9707a15e88a95e9be",
+      "machineHash": "e0a7e6a84f350c311e7543a8773f37d5dd1c542b277cfea9707a15e88a95e9be",
+      "machineText": "由 Wails v3 發出的視窗層級事件",
+      "status": "final",
+      "sourcePreview": "Window-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "5bd8ee53ff4b64ce063cc8385b536755b4cdb229223a839b880d27b4bd8b076a",
+      "targetHash": "582cf796b2a5a2eedfd44de6674951442db650e124ff403396883b5ca107aacd",
+      "machineHash": "582cf796b2a5a2eedfd44de6674951442db650e124ff403396883b5ca107aacd",
+      "machineText": "視窗事件",
+      "status": "final",
+      "sourcePreview": "Window Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:53Z"
+    }
+  }
+}

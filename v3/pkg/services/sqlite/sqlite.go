@@ -292,11 +292,15 @@ func (s *SQLiteService) PrepareContext(ctx context.Context, query string) (*Stmt
 		return nil, errors.New("no open database connection")
 	}
 
-	id := nextId.Load()
-	for id != 0 && !nextId.CompareAndSwap(id, id+1) {
-	}
-	if id == 0 {
-		return nil, errors.New("prepared statement ids exhausted")
+	var id uint64
+	for {
+		id = nextId.Load()
+		if id == 0 {
+			return nil, errors.New("prepared statement ids exhausted")
+		}
+		if nextId.CompareAndSwap(id, id+1) {
+			break
+		}
 	}
 
 	stmt, err := conn.PrepareContext(ctx, query)

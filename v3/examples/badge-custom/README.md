@@ -1,6 +1,21 @@
 # Welcome to Your New Wails3 Project!
 Now that you have your project set up, it's time to explore the custom badge features that Wails3 offers on **Windows**.
 
+## Running on macOS with private APIs
+
+This example configures a translucent macOS backdrop. The webview transparency needed to reveal that backdrop requires the `private_mac_apis` build tag. Without it, the example runs with an opaque webview above the native backdrop.
+
+From this example directory, run:
+
+```bash
+wails3 build -tags private_mac_apis
+wails3 task run
+```
+
+The build command generates bindings and builds the frontend; the run task then launches the resulting app. It requires the Wails CLI, Node.js/npm, and the usual macOS build prerequisites. To use live reload instead, run `EXTRA_TAGS=private_mac_apis wails3 dev`.
+
+Omit `-tags private_mac_apis` from the build command to run with public macOS APIs only. The tag has no effect on Windows, Linux, iOS, or Android. See the [shared private API guide](../README.md#private-macos-apis) for production builds and fallback details.
+
 ## Exploring Custom Badge Features
 
 ### Creating the Service with Custom Options (Windows Only)
