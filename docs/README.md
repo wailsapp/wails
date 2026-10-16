@@ -13,11 +13,11 @@ documentation-only correction.
 
 ## Preview and validate
 
-Install [M-Press v1.0.17](https://github.com/leaanthony/mpress/releases/tag/v1.0.17)
+Install [M-Press v1.0.19](https://github.com/leaanthony/mpress/releases/tag/v1.0.19)
 from a release archive, or use Go:
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 ```
 
 From the repository root:

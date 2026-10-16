@@ -5,10 +5,10 @@ update an example, or correct a translation. You do not need to open an issue
 or add a failing code test for a documentation-only correction.
 
 1. Fork `wailsapp/wails` and create a documentation branch from `releases/v3.0.0`.
-2. Install M-Press v1.0.17 from its release archives, or run:
+2. Install M-Press v1.0.19 from its release archives, or run:
 
    ```sh
-   go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+   go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
    ```
 
 3. From the repository root, run `mpress dev`. Edit the `.md` files in

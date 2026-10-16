@@ -108,6 +108,8 @@ This project is supported by these kind people / companies:
 
 [![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSource)
 
+Thanks to [CodeRabbit](https://www.coderabbit.ai/oss) for supporting Wails with AI code reviews.
+
 ## FAQ
 
 - Is this an alternative to Electron?
