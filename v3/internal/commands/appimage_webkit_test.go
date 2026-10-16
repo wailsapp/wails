@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -43,7 +44,8 @@ func TestRelocateWebKitHelpers(t *testing.T) {
 	if !bytes.Equal(got, want) {
 		t.Errorf("library not relocated:\n got %q\nwant %q", got, want)
 	}
-	if info, err := os.Stat(lib); err != nil || info.Mode().Perm() != 0755 {
+	// Windows has no permission bits to keep; AppImages are built on Linux.
+	if info, err := os.Stat(lib); runtime.GOOS != "windows" && (err != nil || info.Mode().Perm() != 0755) {
 		t.Errorf("library mode changed: %v %v", info.Mode(), err)
 	}
 	if got, _ := os.ReadFile(other); !bytes.Equal(got, original) {
