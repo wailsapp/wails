@@ -244,6 +244,9 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 // appRun starts the application from $APPDIR/usr/lib, where the path relocateWebKitHelpers writes into the WebKit
 // library resolves, and sets the environment AppImageKit's AppRun would. AppImageKit's AppRun changes directory to
 // $APPDIR/usr instead, which cannot be made to work with WebKit's sandbox.
+// WEBKIT_INJECTED_BUNDLE_PATH, which release builds honour, points WebKit at the
+// bundled injected bundle: the path compiled into the library is the build
+// machine's, missing on other distros and a different WebKit build on the same one.
 const appRun = `#!/bin/sh
 set -e
 
@@ -255,6 +258,12 @@ export PATH="$usr/bin:$PATH"
 export LD_LIBRARY_PATH="$usr/lib:$usr/lib/x86_64-linux-gnu:$usr/lib/aarch64-linux-gnu:$usr/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export XDG_DATA_DIRS="$usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 export GSETTINGS_SCHEMA_DIR="$usr/share/glib-2.0/schemas"
+for bundle in "$usr"/lib*/webkit*gtk-*/injected-bundle/*.so "$usr"/lib*/*/webkit*gtk-*/injected-bundle/*.so; do
+	if [ -e "$bundle" ]; then
+		export WEBKIT_INJECTED_BUNDLE_PATH="${bundle%%/*}/"
+		break
+	fi
+done
 cd "$usr/lib"
 exec "$usr/bin/%s" "$@"
 `
@@ -276,9 +285,8 @@ exec "$usr/bin/%s" "$@"
 // which WebKit binds at the same absolute path, so the exec path resolves inside
 // the sandbox too. Only the whole NUL-terminated string is rewritten: the
 // injected-bundle directory shares the prefix on Debian-family systems and must
-// stay absolute, because a relative bind destination there fails the same way.
-// WebKit only logs that the bundle is missing, and Wails does not use web
-// process extensions.
+// stay absolute, because a relative bind destination there fails the same way;
+// appRun redirects it to the bundled copy.
 func relocateWebKitHelpers(appDir string, helperDirs []string) error {
 	libDir := filepath.Join(appDir, "usr", "lib")
 	libs, err := filepath.Glob(filepath.Join(libDir, "libwebkit*gtk-*.so*"))
