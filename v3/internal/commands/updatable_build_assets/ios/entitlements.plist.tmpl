@@ -7,5 +7,15 @@
          (e.g. aps-environment) as your app needs them. -->
     <key>get-task-allow</key>
     <true/>
+    <!-- Universal Links (HTTPS deep linking). Uncomment and set your own domain
+         to receive verified https://<domain>/... links in Go via the
+         common:ApplicationLaunchedWithUrl event. You must also host
+         https://<domain>/.well-known/apple-app-site-association pointing at this
+         app's <TeamID>.<CFBundleIdentifier>.
+    <key>com.apple.developer.associated-domains</key>
+    <array>
+        <string>applinks:your-app.example.com</string>
+    </array>
+    -->
 </dict>
 </plist>
