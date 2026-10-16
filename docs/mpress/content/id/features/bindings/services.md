@@ -801,4 +801,4 @@ func main() {
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh layanan](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh layanan](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

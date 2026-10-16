@@ -94,7 +94,7 @@ API `Template.Load()` / `Template.CopyTo()` / `Template.Validate()` не сущ�
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | Флаг `-n` / имя каталога |
 | `{{.ModulePath}}` | `github.com/me/myapp` | Флаг `-mod` или значение, полученное из `-git` |
-| `{{.WailsVersion}}` | `v3.0.0-…` | Встроенная при компиляции константа из `internal/version` |
+| `{{.WailsVersion}}` | `v3.0.0` | Встроенная при компиляции константа из `internal/version` |
 | `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Метаданные, добавляемые при сборке | соответствующие флаги `-product*` |
 
 Если нужен новый заполнитель, добавьте поле в данные шаблона в `internal/templates/templates.go` и соответствующее поле или флаг в `internal/flags/init.go` (либо задайте его из `internal/commands/init.go`).

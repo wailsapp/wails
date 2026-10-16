@@ -34,7 +34,7 @@ Jika Anda memiliki perbaikan untuk bug atau peningkatan dokumentasi, silakan:
 [Peningkatan]
 Fungsionalitas baru dan perubahan pada perilaku publik diusulkan melalui draft pull request **WEP (Wails Enhancement Proposal)**, bukan melalui issue permintaan fitur.
 
-- Baca [proses WEP](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+- Baca [proses WEP](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 - Salin templat, lalu buka draft PR berjudul `[WEP] <title>` yang hanya berisi WEP dan materi pendukung.
 - Anda dapat terlebih dahulu mendiskusikan ide secara informal di [GitHub Discussions](https://github.com/wailsapp/wails/discussions) atau kanal Discord [#v3](https://discord.gg/bdj28QNHmT), tetapi PR WEP wajib diajukan agar maintainer dapat mengambil keputusan.
 

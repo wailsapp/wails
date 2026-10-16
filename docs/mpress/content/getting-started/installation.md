@@ -72,7 +72,7 @@ Linux requires the standard `gcc` build tools plus `gtk4` and `webkitgtk-6.0`. R
 To install the Wails CLI using Go Modules, run the following commands:
 
 ```shell
-go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 If you would like to install the latest development version, run the following commands:

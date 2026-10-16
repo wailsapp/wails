@@ -222,11 +222,11 @@ O comportamento específico de cada plataforma está documentado em cada seção
 
 O Wails v3 segue o versionamento semântico:
 
-- **Principal** (v3.x.x): alterações incompatíveis
-- **Secundária** (v3.x.x): novos recursos, com compatibilidade retroativa
-- **Correção** (v3.x.x): correções de bugs, com compatibilidade retroativa
+- **Principal** (v4.0.0): alterações incompatíveis
+- **Secundária** (v3.1.0): novos recursos, com compatibilidade retroativa
+- **Correção** (v3.0.1): correções de bugs, com compatibilidade retroativa
 
-**Status atual:** Beta (API estável, aprimoramentos em andamento)
+**Wails v3.0.0:** Estável
 
 ## Política de descontinuação
 
@@ -250,22 +250,22 @@ Estas APIs são estáveis e seguras para uso em produção:
 - Caixas de diálogo de arquivos
 - Bindings de serviços
 
-### APIs instáveis ⚠️
+### APIs experimentais ⚠️
 
-Estas APIs podem mudar antes da versão final:
+Somente APIs explicitamente documentadas como experimentais estão fora do contrato de compatibilidade estável para desktop:
 
-- Algumas opções avançadas de janela
-- Recursos específicos da plataforma
-- Recursos experimentais
+- Suporte a Android
+- Suporte a iOS
+- Outras APIs explicitamente marcadas como experimentais
 
-As APIs instáveis são identificadas na documentação.
+As APIs experimentais são identificadas na documentação.
 
 ## Como obter ajuda
 
 ### Dúvidas sobre a API
 
 1. **Consulte esta referência** — Documentação completa da API
-2. **Consulte os exemplos** — [Exemplos no GitHub](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **Consulte os exemplos** — [Exemplos no GitHub](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Pesquise no Discord** — [Servidor do Discord](https://discord.gg/JDdSxwjhGf)
 4. **Pergunte à comunidade** — Canal #help do Discord
 
@@ -282,7 +282,7 @@ Encontrou um bug ou uma inconsistência?
 - [Tutoriais](/tutorials/overview/) — Aprenda criando aplicativos reais
 - [Guias](/guides/architecture/) — Guias orientados a tarefas para cenários comuns
 - [Recursos](/features/windows/basics/) — Documentação de cada recurso
-- [Exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples) — Exemplos de código funcionais no GitHub
+- [Exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — Exemplos de código funcionais no GitHub
 
 ---
 

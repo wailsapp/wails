@@ -34,7 +34,7 @@ Wails 是一套使用 Go 與 Web 技術建置桌面應用程式的框架。應�
 
 ### Wails v3 已可用於正式環境嗎？
 
-Wails v3 是測試版軟體，具備穩定的桌面 API。目前已有應用程式使用它在正式環境中執行，但在我們完成 3.0 的最後修整期間，您仍應在部署前進行完整測試。最新狀況請參閱[專案狀態頁面](/status/)。Wails v2 是目前的穩定版本，並會繼續獲得修正。
+Wails v3.0.0 是適用於 Windows、macOS 和 Linux 桌面應用程式的穩定版本。 Android 和 iOS 支援仍屬實驗性質，不在穩定桌面版的相容性保證範圍內。 參閱 [專案狀態頁面](/status/).
 
 ## 開發
 
@@ -187,7 +187,7 @@ wails3 doctor
 
 1. `go mod tidy`
 2. `cd frontend && npm install`（最常見的原因是缺少`node_modules`）
-3. 更新 CLI：`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+3. 更新 CLI：`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`
 4. 在 Linux 上，檢查`wails3 doctor`是否顯示缺少 GTK/WebKit 套件
 
 ### 繫結遺失或已過期
@@ -214,7 +214,7 @@ v3 帶來多視窗支援、更簡潔的服務型 API、內建更新程式、靈�
 
 ### v2 會繼續維護嗎？
 
-會。在 v3 邁向穩定版本期間，v2 會繼續獲得修正。
+是的。Wails v2 會繼續獲得重要更新。新專案應使用 Wails v3.0.0。
 
 ### 我可以並行使用 v2 和 v3 嗎？
 
@@ -230,11 +230,11 @@ v3 帶來多視窗支援、更簡潔的服務型 API、內建更新程式、靈�
 
 ### 如何貢獻？
 
-請參閱[貢獻指南](/contributing/)。隨時歡迎提交錯誤修正；新增功能和變更公開行為時，則需透過[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)草案 PR。您也可以選擇先在 Discord 或 GitHub Discussions 上進行非正式討論。
+請參閱[貢獻指南](/contributing/)。隨時歡迎提交錯誤修正；新增功能和變更公開行為時，則需透過[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)草案 PR。您也可以選擇先在 Discord 或 GitHub Discussions 上進行非正式討論。
 
 ### 在哪裡可以找到範例？
 
-儲存庫隨附超過60個可執行範例，涵蓋視窗、對話方塊、事件、系統匣、服務等內容：[v3/examples](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+儲存庫隨附超過60個可執行範例，涵蓋視窗、對話方塊、事件、系統匣、服務等內容：[v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
 
 ## 仍有疑問嗎？
 

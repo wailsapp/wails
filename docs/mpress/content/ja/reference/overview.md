@@ -222,11 +222,11 @@ export function MyMethod(arg: string): Promise<string>
 
 Wails v3 はセマンティックバージョニングに従います。
 
-- **メジャー**（v3.x.x）：破壊的変更
-- **マイナー**（v3.x.x）：後方互換性のある新機能
-- **パッチ**（v3.x.x）：後方互換性のあるバグ修正
+- **メジャー**（v4.0.0）：破壊的変更
+- **マイナー**（v3.1.0）：後方互換性のある新機能
+- **パッチ**（v3.0.1）：後方互換性のあるバグ修正
 
-<strong>現在のステータス：</strong>ベータ（API は安定、改良は継続中）
+**Wails v3.0.0:** 安定版
 
 ## 非推奨化ポリシー
 
@@ -250,22 +250,22 @@ API が非推奨になった場合：
 - ファイルダイアログ
 - サービスバインディング
 
-### 不安定版 API ⚠️
+### 実験的 API ⚠️
 
-以下の API は正式リリースまでに変更される可能性があります。
+実験的であるとドキュメントに明記された API のみが、安定版デスクトップの互換性保証の対象外です。
 
-- 一部の高度なウィンドウオプション
-- プラットフォーム固有の機能
-- 実験的機能
+- Android のサポート
+- iOS のサポート
+- その他、実験的であると明記された API
 
-不安定版 API はドキュメントに明記されています。
+実験的 API はドキュメントに明記されています。
 
 ## ヘルプの利用
 
 ### API に関する質問
 
 1. **このリファレンスを確認** — 完全な API ドキュメント
-2. **サンプルを確認** — [GitHub のサンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **サンプルを確認** — [GitHub のサンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Discord を検索** — [Discord サーバー](https://discord.gg/JDdSxwjhGf)
 4. **コミュニティに質問** — Discord の #help チャンネル
 
@@ -282,7 +282,7 @@ API が非推奨になった場合：
 - [チュートリアル](/tutorials/overview/) — 実際のアプリケーションを構築しながら学習
 - [ガイド](/guides/architecture/) — 一般的なシナリオ向けのタスク別ガイド
 - [機能](/features/windows/basics/) — 機能ごとのドキュメント
-- [サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples) — GitHub 上の動作するコード例
+- [サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — GitHub 上の動作するコード例
 
 ---
 

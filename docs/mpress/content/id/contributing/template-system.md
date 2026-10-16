@@ -94,7 +94,7 @@ Placeholder merupakan direktif templat Go standar — awalan `.` adalah bagian d
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | Flag `-n` / nama direktori |
 | `{{.ModulePath}}` | `github.com/me/myapp` | Flag `-mod` atau diturunkan dari `-git` |
-| `{{.WailsVersion}}` | `v3.0.0-…` | Konstanta bawaan hasil kompilasi dari `internal/version` |
+| `{{.WailsVersion}}` | `v3.0.0` | Konstanta bawaan hasil kompilasi dari `internal/version` |
 | `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Metadata saat bake | Flag `-product*` yang sesuai |
 
 Jika memerlukan placeholder baru, tambahkan sebuah field ke data templat di  

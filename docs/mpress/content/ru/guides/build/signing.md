@@ -506,7 +506,7 @@ jobs:
           go-version: '1.23'
 
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
       - name: Import Certificate
         env:
@@ -567,7 +567,7 @@ jobs:
           go-version: '1.23'
 
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
       - name: Import Certificate
         env:
@@ -613,7 +613,7 @@ jobs:
           go-version: '1.23'
 
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
       - name: Install Build Dependencies
         run: |

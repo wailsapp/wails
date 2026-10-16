@@ -1,4 +1,9 @@
-# Wails v3 documentation
+# Wails v3.0.0 documentation
+
+This branch prepares the documentation for the Wails v3.0.0 release. Installation
+examples target `v3.0.0`; those commands require the release tag to be published.
+To work on the release before publication, follow the [source setup guide](mpress/content/contributing/setup.md)
+using the `releases/v3.0.0` branch.
 
 The M-Press documentation lives in `docs/mpress/`, with English as the default
 language at `/` and existing translations under their language codes.

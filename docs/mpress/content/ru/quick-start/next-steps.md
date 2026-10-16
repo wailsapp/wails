@@ -30,5 +30,5 @@ Wails предоставляет нативные возможности для 
 ## Получить помощь
 
 - [Discord](https://discord.gg/JDdSxwjhGf) — задавайте вопросы и делитесь проектами
-- [Примеры](https://github.com/wailsapp/wails/tree/master/v3/examples) — более 50 рабочих примеров
+- [Примеры](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — более 50 рабочих примеров
 - [Справочник API](/reference/overview/) — полная документация

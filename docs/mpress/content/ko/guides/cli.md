@@ -547,7 +547,7 @@ wails3 tool version [flags]
 wails3 tool version -v 1.2.3 -major      # Output: 2.0.0
 wails3 tool version -v v1.2.3 -minor     # Output: v1.3.0
 wails3 tool version -v 1.2.3-alpha -patch # Output: 1.2.4-alpha
-wails3 tool version -v v3.0.0-alpha.5 -prerelease # Output: v3.0.0-alpha.6
+wails3 tool version -v v3.1.0-alpha.5 -prerelease # Output: v3.1.0-alpha.6
 ```
 
 ### `tool package`

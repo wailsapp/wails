@@ -17,7 +17,7 @@ sourcePath: "tutorials/04-self-update-a-wails-app.md"
 
 @note{type="tip" title="事前準備"}
 - Go 1.25或更新版本
-- 已安裝`wails3` CLI（`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`）
+- 已安裝`wails3` CLI（`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`）
 - 一個可供你推送發行版本的 GitHub 儲存庫
 - 熟悉[QR Code 服務教學](/tutorials/01-creating-a-service/)會有所幫助，但並非必要條件
 
@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## 後續步驟
 
 - [更新程式指南](/guides/updater/)包含完整的 API 參考、所有事件、所有設定選項，以及輔助模式的替換機制。
-- 請查看[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)，其中提供可供複製的完整運作範例。
+- 請查看[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)，其中提供可供複製的完整運作範例。
 - 測試目標儲存庫[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)展示了建議的發行資產配置。
 
 ## 正式環境中的注意事項

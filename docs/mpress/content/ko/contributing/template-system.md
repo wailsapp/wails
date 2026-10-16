@@ -94,7 +94,7 @@ go mod tidy (unless --skipgomodtidy / -skipgomodtidy)
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | `-n` 플래그 / 디렉터리 이름 |
 | `{{.ModulePath}}` | `github.com/me/myapp` | `-mod` 플래그 또는 `-git`에서 파생 |
-| `{{.WailsVersion}}` | `v3.0.0-…` | `internal/version`의 컴파일 시 포함되는 상수 |
+| `{{.WailsVersion}}` | `v3.0.0` | `internal/version`의 컴파일 시 포함되는 상수 |
 | `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | 빌드 시점 메타데이터 | 해당 `-product*` 플래그 |
 
 새 플레이스홀더가 필요하면 `internal/templates/templates.go`의 템플릿 데이터에 필드를 추가하고, `internal/flags/init.go`에 일치하는 필드와 플래그를 추가하세요(또는 `internal/commands/init.go`에서 값을 설정하세요).

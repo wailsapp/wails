@@ -143,7 +143,7 @@ Resolva os comentários da revisão e atualize sua PR conforme necessário.
 [WEP (aprimoramento)]
 @steps
 ### Escreva uma WEP
-- Leia o processo de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)
+- Leia o processo de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
 - Copie o modelo de WEP para `v3/wep/proposals/<name>/proposal.md`
 - Abra uma PR de rascunho intitulada `[WEP] <title>` contendo apenas a WEP
 - Aguarde a decisão de um mantenedor antes de implementar

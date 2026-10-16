@@ -48,12 +48,12 @@ Contribuez au code au moyen de pull requests :
 Les nouvelles fonctionnalités et les modifications du comportement public suivent le processus de proposition d’amélioration de Wails (Wails Enhancement Proposal, WEP). Ce processus garantit la transparence du développement des fonctionnalités et qu’un responsable de l’implémentation est désigné pour chaque proposition acceptée. N’ouvrez pas de ticket de demande de fonctionnalité.
 
 1. Vous pouvez éventuellement présenter votre idée dans la catégorie [Idées](https://github.com/wailsapp/wails/discussions/categories/ideas) des discussions GitHub ou sur [Discord](https://discord.gg/JDdSxwjhGf) afin d’évaluer l’intérêt qu’elle suscite.
-2. Copiez [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) dans `v3/wep/proposals/<proposal name>/proposal.md` et remplissez chaque section.
+2. Copiez [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) dans `v3/wep/proposals/<proposal name>/proposal.md` et remplissez chaque section.
 3. Ouvrez une pull request en brouillon intitulée `[WEP] <title>` et contenant uniquement la proposition. Cette PR constitue l’espace officiel pour en discuter.
 4. Recueillez des retours et des marques de soutien (commentaires et réactions 👍 sur la PR). Prévoyez au moins deux semaines de discussion et convenez de la personne qui implémentera la proposition.
 5. Indiquez que la PR est prête à être examinée. Les responsables de la maintenance prennent la décision finale : les propositions acceptées reçoivent un numéro WEP et sont fusionnées.
 
-Le processus complet est documenté dans [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Le processus complet est documenté dans [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 
 ## Bien démarrer
 

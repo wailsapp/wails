@@ -34,7 +34,7 @@ Wails는 Go와 웹 기술로 데스크톱 애플리케이션을 빌드하기 위
 
 ### Wails v3는 프로덕션 환경에서 사용할 준비가 되었나요?
 
-Wails v3는 안정적인 데스크톱 API를 갖춘 베타 소프트웨어입니다. 이미 이를 사용해 프로덕션 환경에서 실행되는 애플리케이션이 있지만, 저희가 3.0을 위한 최종 마무리 작업을 진행하는 동안에는 배포 전에 철저히 테스트하는 것이 좋습니다. 현재 상황은 [프로젝트 상태 페이지](/status/)를 참조하세요. Wails v2는 현재 안정 릴리스이며 계속해서 수정 사항이 제공됩니다.
+Wails v3.0.0은 Windows, macOS, Linux 데스크톱 애플리케이션용 안정 버전입니다. Android 및 iOS 지원은 계속 실험 단계이며 안정적인 데스크톱 호환성 보장에 포함되지 않습니다. 참고: [프로젝트 상태 페이지](/status/).
 
 ## 개발
 
@@ -187,7 +187,7 @@ wails3 doctor
 
 1. `go mod tidy`
 2. `cd frontend && npm install`(`node_modules` 누락이 가장 흔한 원인입니다)
-3. CLI를 업데이트하세요: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+3. CLI를 업데이트하세요: `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`
 4. Linux에서는 누락된 GTK/WebKit 패키지가 있는지 `wails3 doctor`에서 확인하세요
 
 ### 바인딩이 누락되었거나 최신 상태가 아닙니다
@@ -214,7 +214,7 @@ v3는 다중 창 지원, 더 깔끔한 서비스 기반 API, 내장 업데이터
 
 ### v2는 계속 유지 관리되나요?
 
-예. v3가 안정 릴리스를 향해 나아가는 동안에도 v2에는 계속 수정 사항이 제공됩니다.
+예. Wails v2는 계속 중요 업데이트를 받습니다. 새 프로젝트는 Wails v3.0.0을 사용하세요.
 
 ### v2와 v3를 나란히 실행할 수 있나요?
 
@@ -230,11 +230,11 @@ v3는 다중 창 지원, 더 깔끔한 서비스 기반 API, 내장 업데이터
 
 ### 어떻게 기여할 수 있나요?
 
-[기여 가이드](/contributing/)를 참조하세요. 버그 수정은 언제든 환영합니다. 새로운 기능과 공개 동작의 변경에는 [WEP(Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) 초안 PR을 사용합니다. Discord 또는 GitHub Discussions에서의 비공식 논의는 선택 사항입니다.
+[기여 가이드](/contributing/)를 참조하세요. 버그 수정은 언제든 환영합니다. 새로운 기능과 공개 동작의 변경에는 [WEP(Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) 초안 PR을 사용합니다. Discord 또는 GitHub Discussions에서의 비공식 논의는 선택 사항입니다.
 
 ### 예제는 어디에서 찾을 수 있나요?
 
-저장소에는 창, 대화 상자, 이벤트, 시스템 트레이, 서비스 등을 다루는 실행 가능한 예제가 60개 넘게 포함되어 있습니다: [v3/examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+저장소에는 창, 대화 상자, 이벤트, 시스템 트레이, 서비스 등을 다루는 실행 가능한 예제가 60개 넘게 포함되어 있습니다: [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
 
 ## 질문이 더 있으신가요?
 

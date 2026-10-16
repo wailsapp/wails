@@ -17,7 +17,7 @@ Wir verwenden **GitHub Releases** als Aktualisierungsquelle, da der Dienst koste
 
 @note{type="tip" title="Voraussetzungen"}
 - Go 1.25 oder neuer
-- Installierte `wails3`-CLI (`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`)
+- Installierte `wails3`-CLI (`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`)
 - Ein GitHub-Repository, in das Sie Releases übertragen können
 - Kenntnisse aus dem [Tutorial zum QR-Code-Dienst](/tutorials/01-creating-a-service/) sind hilfreich, aber nicht erforderlich
 
@@ -365,7 +365,7 @@ Sie haben jetzt eine Wails-App, die:
 ## Nächste Schritte
 
 - Der [Updater-Leitfaden](/guides/updater/) enthält die vollständige API-Referenz, sämtliche Ereignisse und Konfigurationsoptionen sowie die Austauschmechanik des Hilfsmodus.
-- Ein vollständiges, funktionsfähiges Beispiel zum Klonen finden Sie unter [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater).
+- Ein vollständiges, funktionsfähiges Beispiel zum Klonen finden Sie unter [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater).
 - Das Testziel-Repository [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) zeigt die empfohlene Anordnung der Release-Assets.
 
 ## Wichtige Hinweise für den Produktivbetrieb

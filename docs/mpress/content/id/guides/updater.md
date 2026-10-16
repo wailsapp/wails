@@ -652,6 +652,6 @@ Sebelum memublikasikan rilis yang akan dipasang oleh pemutakhir:
 
 ## Lihat juga
 
-- Contoh yang dapat dijalankan: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- Contoh yang dapat dijalankan: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - Repositori demo pengujian: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - Tutorial: [Menambahkan pembaruan mandiri ke aplikasi Wails](/tutorials/04-self-update-a-wails-app/)

@@ -222,11 +222,11 @@ export function MyMethod(arg: string): Promise<string>
 
 Wails v3 遵循语义化版本控制：
 
-- **主版本**（v3.x.x）：破坏性变更
-- **次版本**（v3.x.x）：新增功能，向后兼容
-- **补丁版本**（v3.x.x）：错误修复，向后兼容
+- **主版本**（v4.0.0）：破坏性变更
+- **次版本**（v3.1.0）：新增功能，向后兼容
+- **补丁版本**（v3.0.1）：错误修复，向后兼容
 
-<strong>当前状态：</strong>Beta（API 已稳定，仍在持续完善）
+**Wails v3.0.0:** 稳定版
 
 ## 弃用政策
 
@@ -250,22 +250,22 @@ API 被弃用时：
 - 文件对话框
 - 服务绑定
 
-### 不稳定 API ⚠️
+### 实验性 API ⚠️
 
-以下 API 在正式发布前可能发生变化：
+只有文档中明确标记为实验性的 API 不在稳定桌面版的兼容性保证范围内：
 
-- 部分高级窗口选项
-- 平台特定功能
-- 实验性功能
+- Android 支持
+- iOS 支持
+- 其他明确标记为实验性的 API
 
-不稳定 API 会在文档中标明。
+实验性 API 会在文档中标明。
 
 ## 获取帮助
 
 ### API 问题
 
 1. **查阅此参考文档** — 完整的 API 文档
-2. **查看示例** — [GitHub 示例](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **查看示例** — [GitHub 示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **搜索 Discord** — [Discord 服务器](https://discord.gg/JDdSxwjhGf)
 4. **向社区提问** — Discord #help 频道
 
@@ -282,7 +282,7 @@ API 被弃用时：
 - [教程](/tutorials/overview/) — 通过构建真实应用进行学习
 - [指南](/guides/architecture/) — 面向常见场景的任务型指南
 - [功能](/features/windows/basics/) — 按功能逐项介绍的文档
-- [示例](https://github.com/wailsapp/wails/tree/master/v3/examples) — GitHub 上可运行的代码示例
+- [示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — GitHub 上可运行的代码示例
 
 ---
 

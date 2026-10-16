@@ -94,7 +94,7 @@ go mod tidy (unless --skipgomodtidy / -skipgomodtidy)
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | `-n`旗標／目錄名稱 |
 | `{{.ModulePath}}` | `github.com/me/myapp` | `-mod`旗標，或衍生自`-git` |
-| `{{.WailsVersion}}` | `v3.0.0-…` | 來自`internal/version`的編譯時內嵌常數 |
+| `{{.WailsVersion}}` | `v3.0.0` | 來自`internal/version`的編譯時內嵌常數 |
 | `{{.ProductName}}`、`{{.ProductDescription}}`、`{{.ProductVersion}}`、`{{.ProductCompany}}`、`{{.ProductCopyright}}`、`{{.ProductComments}}`、`{{.ProductIdentifier}}` | 建置時中繼資料 | 對應的`-product*`旗標 |
 
 如果需要新的預留位置，請在`internal/templates/templates.go`的範本資料中新增欄位，並在`internal/flags/init.go`中新增相符的欄位／旗標（或從`internal/commands/init.go`設定）。

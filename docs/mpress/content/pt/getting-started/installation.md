@@ -72,7 +72,7 @@ O Linux requer as ferramentas de compilação `gcc` padrão, além de `gtk4` e `
 Para instalar a CLI do Wails usando Go Modules, execute os seguintes comandos:
 
 ```shell
-go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 Se quiser instalar a versão de desenvolvimento mais recente, execute os seguintes comandos:

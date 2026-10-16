@@ -94,7 +94,7 @@ go mod tidy (unless --skipgomodtidy / -skipgomodtidy)
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | `-n` 标志/目录名 |
 | `{{.ModulePath}}` | `github.com/me/myapp` | `-mod` 标志，或从 `-git` 派生 |
-| `{{.WailsVersion}}` | `v3.0.0-…` | 来自 `internal/version` 的编译时常量 |
+| `{{.WailsVersion}}` | `v3.0.0` | 来自 `internal/version` 的编译时常量 |
 | `{{.ProductName}}`、`{{.ProductDescription}}`、`{{.ProductVersion}}`、`{{.ProductCompany}}`、`{{.ProductCopyright}}`、`{{.ProductComments}}`、`{{.ProductIdentifier}}` | 构建时元数据 | 对应的 `-product*` 标志 |
 
 如果需要新的占位符，请在 `internal/templates/templates.go` 的模板数据中添加字段，并在 `internal/flags/init.go` 中添加匹配的字段/标志（或通过 `internal/commands/init.go` 设置该字段）。

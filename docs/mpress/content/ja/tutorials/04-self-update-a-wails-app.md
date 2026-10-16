@@ -17,7 +17,7 @@ sourcePath: "tutorials/04-self-update-a-wails-app.md"
 
 @note{type="tip" title="前提条件"}
 - Go 1.25 以降
-- `wails3` CLI がインストール済みであること（`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`）
+- `wails3` CLI がインストール済みであること（`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`）
 - リリースをプッシュできる GitHub リポジトリ
 - [QR Code Service チュートリアル](/tutorials/01-creating-a-service/)の知識があると役立ちますが、必須ではありません
 
@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## 次のステップ
 
 - [アップデーターガイド](/guides/updater/)には、完全な API リファレンス、すべてのイベント、すべての設定オプション、およびヘルパーモードでの置換メカニズムが掲載されています。
-- クローン可能な完全な動作例については、[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)を参照してください。
+- クローン可能な完全な動作例については、[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)を参照してください。
 - テスト対象リポジトリ [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) では、推奨されるリリースアセットの構成を確認できます。
 
 ## 本番環境での注意事項

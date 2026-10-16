@@ -143,7 +143,7 @@ PR の説明には、以下を記載してください。
 [WEP（機能拡張）]
 @steps
 ### WEP の作成
-- [WEP（Wails Enhancement Proposal）のプロセス](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)を確認してください
+- [WEP（Wails Enhancement Proposal）のプロセス](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)を確認してください
 - WEP テンプレートを `v3/wep/proposals/<name>/proposal.md` にコピーしてください
 - タイトルを `[WEP] <title>` とし、WEP のみを含むドラフト PR を作成してください
 - 実装を開始する前に、メンテナーの決定を待ってください

@@ -72,7 +72,7 @@ Linux では、標準の `gcc` ビルドツールに加えて、`gtk4` と `webk
 Go Modules を使用して Wails CLI をインストールするには、次のコマンドを実行します。
 
 ```shell
-go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 最新の開発版をインストールする場合は、次のコマンドを実行します。

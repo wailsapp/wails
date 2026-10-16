@@ -47,12 +47,12 @@ sourcePath: "contributing/index.md"
 Новая функциональность и изменения общедоступного поведения проходят процедуру Wails Enhancement Proposal (WEP). Она делает разработку функций прозрачной и гарантирует, что у каждого принятого предложения будет исполнитель. Не создавайте задачу с запросом новой функции.
 
 1. При желании предварительно изложите свою идею в категории [«Идеи»](https://github.com/wailsapp/wails/discussions/categories/ideas) в GitHub Discussions или в [Discord](https://discord.gg/JDdSxwjhGf), чтобы оценить интерес к ней.
-2. Скопируйте [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) в `v3/wep/proposals/<proposal name>/proposal.md` и заполните каждый раздел.
+2. Скопируйте [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) в `v3/wep/proposals/<proposal name>/proposal.md` и заполните каждый раздел.
 3. Создайте черновик пул-реквеста с заголовком `[WEP] <title>`, содержащий только предложение. Этот пул-реквест является официальным местом его обсуждения.
 4. Соберите отзывы и поддержку — комментарии и реакции «палец вверх» в пул-реквесте. Отведите на обсуждение не менее двух недель и договоритесь о том, кто реализует предложение.
 5. Пометьте пул-реквест как готовый к проверке. Окончательное решение принимают сопровождающие: принятым предложениям присваивают номер WEP, после чего их сливают.
 
-Полная процедура описана в [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Полная процедура описана в [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 
 ## Начало работы
 

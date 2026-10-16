@@ -10,7 +10,7 @@ sourcePath: "quick-start/installation.md"
 @note{type="tip" title="Resumo — desenvolvedores experientes"}
 ```bash
 # Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -197,7 +197,7 @@ Se a distribuição de destino ainda não fornecer o WebKitGTK 6.0 (por exemplo,
 
 ### Instalar a CLI do Wails
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 Isso instala o comando `wails3` em `~/go/bin` (ou `%USERPROFILE%\go\bin` no Windows).
@@ -222,7 +222,7 @@ wails3 doctor
 **Saída esperada (ou semelhante):**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -422,7 +422,7 @@ Quer usar o código mais recente da ramificação principal de desenvolvimento? 
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```

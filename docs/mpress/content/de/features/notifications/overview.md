@@ -416,7 +416,7 @@ Unter Linux gelten für Benachrichtigungen folgende Punkte:
 
 Dieses Beispiel ansehen:
 
-- [Benachrichtigungen](https://github.com/wailsapp/wails/tree/master/v3/examples/notifications)
+- [Benachrichtigungen](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notifications)
 
 ## API-Referenz
 

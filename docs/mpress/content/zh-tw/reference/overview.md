@@ -222,11 +222,11 @@ export function MyMethod(arg: string): Promise<string>
 
 Wails v3 遵循語意化版本規範：
 
-- **主要版本**（v3.x.x）：破壞性變更
-- **次要版本**（v3.x.x）：新增功能，向下相容
-- **修訂版本**（v3.x.x）：錯誤修正，向下相容
+- **主要版本**（v4.0.0）：破壞性變更
+- **次要版本**（v3.1.0）：新增功能，向下相容
+- **修訂版本**（v3.0.1）：錯誤修正，向下相容
 
-<strong>目前狀態：</strong>Beta（API 已穩定，仍在持續改進）
+**Wails v3.0.0:** 穩定版
 
 ## 棄用政策
 
@@ -250,22 +250,22 @@ API 棄用時：
 - 檔案對話方塊
 - 服務繫結
 
-### 不穩定的 API ⚠️
+### 實驗性 API ⚠️
 
-以下 API 在正式版本發布前可能有所變更：
+只有文件中明確標示為實驗性的 API 不在穩定桌面版的相容性保證範圍內：
 
-- 部分進階視窗選項
-- 平台特定功能
-- 實驗性功能
+- Android 支援
+- iOS 支援
+- 其他明確標示為實驗性的 API
 
-不穩定的 API 會在文件中標示。
+實驗性 API 會在文件中標示。
 
 ## 取得協助
 
 ### API 問題
 
 1. **查閱本參考文件** — 完整的 API 文件
-2. **查看範例** — [GitHub 範例](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **查看範例** — [GitHub 範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **搜尋 Discord** — [Discord 伺服器](https://discord.gg/JDdSxwjhGf)
 4. **向社群提問** — Discord #help 頻道
 
@@ -282,7 +282,7 @@ API 棄用時：
 - [教學](/tutorials/overview/) — 透過建置實際應用程式來學習
 - [指南](/guides/architecture/) — 適用於常見情境的任務導向指南
 - [功能](/features/windows/basics/) — 逐項介紹各項功能的文件
-- [範例](https://github.com/wailsapp/wails/tree/master/v3/examples) — GitHub 上可運作的程式碼範例
+- [範例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — GitHub 上可運作的程式碼範例
 
 ---
 

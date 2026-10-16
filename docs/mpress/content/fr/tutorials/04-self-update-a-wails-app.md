@@ -17,7 +17,7 @@ Nous utiliserons les **versions GitHub** comme source des mises à jour, car ell
 
 @note{type="tip" title="Prérequis"}
 - Go 1.25 ou version ultérieure
-- CLI `wails3` installée (`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`)
+- CLI `wails3` installée (`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`)
 - Un dépôt GitHub dans lequel vous pouvez publier des versions
 - Il est utile, mais pas indispensable, de connaître le [tutoriel du service de codes QR](/tutorials/01-creating-a-service/)
 
@@ -365,7 +365,7 @@ Vous disposez maintenant d’une application Wails qui :
 ## Étapes suivantes
 
 - Le [guide du programme de mise à jour](/guides/updater/) contient la documentation de référence complète de l’API, tous les événements, toutes les options de configuration et le mécanisme de remplacement en mode auxiliaire.
-- Consultez [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater) pour obtenir un exemple fonctionnel complet que vous pouvez cloner.
+- Consultez [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater) pour obtenir un exemple fonctionnel complet que vous pouvez cloner.
 - Le dépôt cible de test [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) illustre l’organisation recommandée des artefacts de version.
 
 ## Points à surveiller en production

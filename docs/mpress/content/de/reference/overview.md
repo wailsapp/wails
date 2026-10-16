@@ -222,11 +222,11 @@ Plattformspezifisches Verhalten ist im jeweiligen API-Abschnitt dokumentiert.
 
 Wails v3 folgt der semantischen Versionierung:
 
-- **Hauptversion** (v3.x.x): Inkompatible Änderungen
-- **Nebenversion** (v3.x.x): Neue, abwärtskompatible Funktionen
-- **Patchversion** (v3.x.x): Abwärtskompatible Fehlerbehebungen
+- **Hauptversion** (v4.0.0): Inkompatible Änderungen
+- **Nebenversion** (v3.1.0): Neue, abwärtskompatible Funktionen
+- **Patchversion** (v3.0.1): Abwärtskompatible Fehlerbehebungen
 
-**Aktueller Status:** Beta (API stabil, weitere Verbesserungen laufen)
+**Wails v3.0.0:** Stabil
 
 ## Richtlinie zur Kennzeichnung veralteter APIs
 
@@ -250,22 +250,22 @@ Diese APIs sind stabil und für den produktiven Einsatz geeignet:
 - Dateidialoge
 - Service-Bindings
 
-### Instabile APIs ⚠️
+### Experimentelle APIs ⚠️
 
-Diese APIs können sich vor der endgültigen Veröffentlichung noch ändern:
+Nur ausdrücklich als experimentell dokumentierte APIs fallen nicht unter die stabile Desktop-Kompatibilitätszusage:
 
-- Einige erweiterte Fensteroptionen
-- Plattformspezifische Funktionen
-- Experimentelle Funktionen
+- Android-Unterstützung
+- iOS-Unterstützung
+- Andere ausdrücklich als experimentell gekennzeichnete APIs
 
-Instabile APIs sind in der Dokumentation gekennzeichnet.
+Experimentelle APIs sind in der Dokumentation gekennzeichnet.
 
 ## Hilfe erhalten
 
 ### Fragen zur API
 
 1. **Diese Referenz lesen** – vollständige API-Dokumentation
-2. **Beispiele ansehen** – [GitHub-Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **Beispiele ansehen** – [GitHub-Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Discord durchsuchen** – [Discord-Server](https://discord.gg/JDdSxwjhGf)
 4. **Die Community fragen** – Discord-Kanal #help
 
@@ -282,7 +282,7 @@ Einen Fehler oder eine Unstimmigkeit gefunden?
 - [Tutorials](/tutorials/overview/) – durch die Entwicklung realer Anwendungen lernen
 - [Anleitungen](/guides/architecture/) – aufgabenorientierte Anleitungen für häufige Szenarien
 - [Funktionen](/features/windows/basics/) – Dokumentation der einzelnen Funktionen
-- [Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) – ausführbare Codebeispiele auf GitHub
+- [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) – ausführbare Codebeispiele auf GitHub
 
 ---
 

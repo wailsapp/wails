@@ -262,14 +262,14 @@ module myapp
 go 1.25.0
 
 require (
-    github.com/wailsapp/wails/v3 v3.0.0-beta.0
+    github.com/wailsapp/wails/v3 v3.0.0
 )
 ```
 
 **Perbarui:**
 
 ```bash
-go get github.com/wailsapp/wails/v3@latest
+go get github.com/wailsapp/wails/v3@v3.0.0
 go mod tidy
 ```
 
@@ -677,13 +677,13 @@ wails3 generate bindings
 - [Dokumentasi](/quick-start/why-wails/)
 - [Komunitas Discord](https://discord.gg/JDdSxwjhGf)
 - [Issue GitHub](https://github.com/wailsapp/wails/issues)
-- [Contoh](https://github.com/wailsapp/wails/tree/master/v3/examples)
+- [Contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 ### Pertanyaan Umum
 
 **T: Dapatkah saya menjalankan v2 dan v3 secara berdampingan?** J: Ya, keduanya menggunakan jalur impor yang berbeda.
 
-**T: Apakah v3 siap digunakan dalam produksi?** J: v3 merupakan perangkat lunak beta dengan API desktop yang stabil. Sudah ada aplikasi yang menggunakannya di lingkungan produksi, tetapi lakukan pengujian menyeluruh sebelum deployment. v2 tetap merupakan riliis stabil saat ini.
+**T: Apakah v3 siap digunakan dalam produksi?** Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. Dukungan Android dan iOS tetap eksperimental dan berada di luar jaminan kompatibilitas desktop yang stabil.
 
 **T: Apakah v2 akan tetap dipelihara?** J: Ya, v2 akan menerima pembaruan kritis.
 
@@ -713,7 +713,7 @@ Pelajari sistem binding yang baru.
 📖 Contoh
 Lihat contoh lengkap v3.
 
-[Lihat Contoh →](https://github.com/wailsapp/wails/tree/master/v3/examples)
+[Lihat Contoh →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 
 @end
 

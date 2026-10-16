@@ -13,7 +13,7 @@ Wizard penyiapan ini masih baru dan terutama telah diuji di Linux. Jika Anda men
 
 ```bash
 # 1. Install the Wails CLI
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 
 # 2. Run the setup wizard
 wails3 setup

@@ -47,12 +47,12 @@ Wails へのコントリビューションを歓迎します！バグ修正、�
 新しい機能や公開されている動作の変更には、Wails Enhancement Proposal（WEP）プロセスを使用します。このプロセスにより、機能開発の透明性が保たれ、承認されたすべての提案に実装担当者が確保されます。機能リクエストの Issue は作成しないでください。
 
 1. 必要に応じて、関心の度合いを確認するため、GitHub Discussions の[Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas)カテゴリまたは[Discord](https://discord.gg/JDdSxwjhGf)でアイデアを共有してください。
-2. [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md)を`v3/wep/proposals/<proposal name>/proposal.md`にコピーし、すべてのセクションを記入してください。
+2. [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md)を`v3/wep/proposals/<proposal name>/proposal.md`にコピーし、すべてのセクションを記入してください。
 3. 提案のみを含み、タイトルを`[WEP] <title>`としたドラフトのプルリクエストを作成してください。この PR が正式な議論の場となります。
 4. フィードバックと支持（PR へのコメントや賛成を示すリアクション）を集めてください。議論には少なくとも 2 週間を設け、提案の実装担当者について合意してください。
 5. PR をレビュー可能な状態にしてください。最終判断はメンテナーが行います。承認された提案には WEP 番号が割り当てられ、マージされます。
 
-プロセス全体については、[`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)に記載されています。
+プロセス全体については、[`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)に記載されています。
 
 ## はじめに
 

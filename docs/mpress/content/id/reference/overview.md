@@ -222,11 +222,11 @@ Perilaku khusus platform didokumentasikan di setiap bagian API.
 
 Wails v3 mengikuti pembuatan versi semantik:
 
-- **Mayor** (v3.x.x): Perubahan yang merusak kompatibilitas
-- **Minor** (v3.x.x): Fitur baru, kompatibel dengan versi sebelumnya
-- **Patch** (v3.x.x): Perbaikan bug, kompatibel dengan versi sebelumnya
+- **Mayor** (v4.0.0): Perubahan yang merusak kompatibilitas
+- **Minor** (v3.1.0): Fitur baru, kompatibel dengan versi sebelumnya
+- **Patch** (v3.0.1): Perbaikan bug, kompatibel dengan versi sebelumnya
 
-**Status saat ini:** Beta (API stabil, penyempurnaan masih berlangsung)
+**Wails v3.0.0:** Stabil
 
 ## Kebijakan Deprekasi
 
@@ -250,22 +250,22 @@ API berikut stabil dan aman digunakan dalam produksi:
 - Dialog berkas
 - Binding layanan
 
-### API Tidak Stabil ⚠️
+### API eksperimental ⚠️
 
-API berikut dapat berubah sebelum rilis final:
+Hanya API yang secara eksplisit didokumentasikan sebagai eksperimental yang berada di luar jaminan kompatibilitas desktop yang stabil:
 
-- Beberapa opsi jendela tingkat lanjut
-- Fitur khusus platform
-- Fitur eksperimental
+- Dukungan Android
+- Dukungan iOS
+- API lain yang secara eksplisit ditandai eksperimental
 
-API yang tidak stabil ditandai dalam dokumentasi.
+API eksperimental ditandai dalam dokumentasi.
 
 ## Mendapatkan Bantuan
 
 ### Pertanyaan tentang API
 
 1. **Periksa referensi ini** - Dokumentasi API lengkap
-2. **Periksa contoh** - [Contoh di GitHub](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **Periksa contoh** - [Contoh di GitHub](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Cari di Discord** - [Server Discord](https://discord.gg/JDdSxwjhGf)
 4. **Tanyakan kepada komunitas** - Kanal #help di Discord
 
@@ -282,7 +282,7 @@ Menemukan bug atau inkonsistensi?
 - [Tutorial](/tutorials/overview/) - Pelajari dengan membangun aplikasi nyata
 - [Panduan](/guides/architecture/) - Panduan berorientasi tugas untuk skenario umum
 - [Fitur](/features/windows/basics/) - Dokumentasi untuk setiap fitur
-- [Contoh](https://github.com/wailsapp/wails/tree/master/v3/examples) - Contoh kode yang berfungsi dan tersedia di GitHub
+- [Contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - Contoh kode yang berfungsi dan tersedia di GitHub
 
 ---
 

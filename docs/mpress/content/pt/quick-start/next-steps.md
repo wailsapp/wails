@@ -30,5 +30,5 @@ O Wails oferece recursos nativos para desktop:
 ## Obtenha ajuda
 
 - [Discord](https://discord.gg/JDdSxwjhGf) - Tire dúvidas e compartilhe projetos
-- [Exemplos](https://github.com/wailsapp/wails/tree/master/v3/examples) - Mais de 50 exemplos funcionais
+- [Exemplos](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - Mais de 50 exemplos funcionais
 - [Referência da API](/reference/overview/) - Documentação completa

@@ -34,7 +34,7 @@ Wails は、Go と Web 技術を使用してデスクトップアプリケーシ
 
 ### Wails v3 は本番環境で使用できますか？
 
-Wails v3 は、安定したデスクトップ API を備えたベータ版ソフトウェアです。すでに本番環境で稼働しているアプリケーションもありますが、3.0 に向けた最終調整が完了するまでは、デプロイ前に十分なテストを行うことを推奨します。現在の状況については、[プロジェクトのステータスページ](/status/)を参照してください。Wails v2 は現在の安定版であり、引き続き修正が提供されます。
+Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケーションの安定版です。 Android と iOS のサポートは引き続き実験的であり、安定版デスクトップの互換性保証の対象外です。 参照： [プロジェクトのステータスページ](/status/).
 
 ## 開発
 
@@ -187,7 +187,7 @@ wails3 doctor
 
 1. `go mod tidy`
 2. `cd frontend && npm install`（`node_modules`がないことが最も一般的な原因です）
-3. CLI を更新します：`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+3. CLI を更新します：`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`
 4. Linux では、`wails3 doctor`を確認し、不足している GTK/WebKit パッケージがないか調べます
 
 ### バインディングがない、または古いままです
@@ -214,7 +214,7 @@ v3 では、マルチウィンドウのサポート、より整理されたサ�
 
 ### v2 は今後もメンテナンスされますか？
 
-はい。v3 が安定版リリースに向けて進む間も、v2 には引き続き修正が提供されます。
+はい。Wails v2 には引き続き重要な更新が提供されます。新しいプロジェクトには Wails v3.0.0 を使用してください。
 
 ### v2 と v3 を併用できますか？
 
@@ -230,11 +230,11 @@ v3 では、マルチウィンドウのサポート、より整理されたサ�
 
 ### 貢献するにはどうすればよいですか？
 
-[コントリビューションガイド](/contributing/)を参照してください。バグ修正はいつでも歓迎します。新機能や公開されている動作の変更には、[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)のドラフト PR を使用します。Discord または GitHub Discussions での非公式な議論は任意です。
+[コントリビューションガイド](/contributing/)を参照してください。バグ修正はいつでも歓迎します。新機能や公開されている動作の変更には、[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)のドラフト PR を使用します。Discord または GitHub Discussions での非公式な議論は任意です。
 
 ### サンプルはどこにありますか？
 
-リポジトリには、ウィンドウ、ダイアログ、イベント、システムトレイ、サービスなどを扱う、実行可能なサンプルが60以上同梱されています：[v3/examples](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+リポジトリには、ウィンドウ、ダイアログ、イベント、システムトレイ、サービスなどを扱う、実行可能なサンプルが60以上同梱されています：[v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
 
 ## ほかに質問がありますか？
 

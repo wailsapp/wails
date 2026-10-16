@@ -47,12 +47,12 @@ Kontribusikan kode melalui pull request:
 Fungsionalitas baru dan perubahan pada perilaku publik menggunakan proses Wails Enhancement Proposal (WEP). Proses ini menjaga transparansi pengembangan fitur dan memastikan setiap proposal yang diterima memiliki pelaksana. Jangan buka issue permintaan fitur.
 
 1. Jika ingin, sampaikan terlebih dahulu ide Anda dalam kategori [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) di GitHub Discussions atau di [Discord](https://discord.gg/JDdSxwjhGf) untuk mengukur minat.
-2. Salin [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) ke `v3/wep/proposals/<proposal name>/proposal.md`, lalu isi setiap bagiannya.
+2. Salin [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) ke `v3/wep/proposals/<proposal name>/proposal.md`, lalu isi setiap bagiannya.
 3. Buka draft pull request berjudul `[WEP] <title>` yang hanya berisi proposal tersebut. PR itu merupakan tempat resmi untuk membahasnya.
 4. Kumpulkan masukan dan dukungan (komentar dan reaksi jempol pada PR). Berikan waktu setidaknya dua minggu untuk berdiskusi dan sepakati siapa yang akan mengimplementasikan proposal tersebut.
 5. Tandai PR sebagai siap ditinjau. Maintainer mengambil keputusan akhir: proposal yang diterima akan diberi nomor WEP dan digabungkan.
 
-Proses lengkapnya didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Proses lengkapnya didokumentasikan dalam [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 
 ## Memulai
 

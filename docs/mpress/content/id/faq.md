@@ -34,7 +34,7 @@ Jalankan `wails3 doctor` kapan saja untuk memeriksa sistem Anda dan mendapatkan 
 
 ### Apakah Wails v3 siap digunakan dalam produksi?
 
-Wails v3 adalah perangkat lunak beta dengan API desktop yang stabil. Aplikasi yang menggunakannya sudah berjalan dalam produksi, tetapi Anda sebaiknya mengujinya secara menyeluruh sebelum melakukan deployment selagi kami menyelesaikan penyempurnaan akhir untuk 3.0. Lihat [halaman status proyek](/status/) untuk mengetahui kondisi terkini. Wails v2 adalah rilis stabil saat ini dan terus menerima perbaikan.
+Wails v3.0.0 adalah rilis stabil untuk aplikasi desktop di Windows, macOS, dan Linux. Dukungan Android dan iOS tetap eksperimental dan berada di luar jaminan kompatibilitas desktop yang stabil. Lihat [halaman status proyek](/status/).
 
 ## Pengembangan
 
@@ -187,7 +187,7 @@ Solusi yang biasanya berhasil, secara berurutan:
 
 1. `go mod tidy`
 2. `cd frontend && npm install` (`node_modules` yang tidak tersedia merupakan penyebab paling umum)
-3. Perbarui CLI: `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+3. Perbarui CLI: `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`
 4. Di Linux, periksa `wails3 doctor` untuk mengetahui paket GTK/WebKit yang belum tersedia
 
 ### Binding saya tidak tersedia atau sudah usang
@@ -214,7 +214,7 @@ v3 menghadirkan dukungan multi-jendela, API berbasis layanan yang lebih rapi, pe
 
 ### Apakah v2 akan tetap dipelihara?
 
-Ya. v2 akan terus menerima perbaikan sementara v3 bergerak menuju rilis stabilnya.
+Ya. Wails v2 terus menerima pembaruan penting. Proyek baru sebaiknya menggunakan Wails v3.0.0.
 
 ### Bisakah saya menjalankan v2 dan v3 secara berdampingan?
 
@@ -230,11 +230,11 @@ Ya. CLI keduanya merupakan biner terpisah (`wails` dan `wails3`), dan modulnya m
 
 ### Bagaimana cara berkontribusi?
 
-Lihat [Panduan Kontribusi](/contributing/). Perbaikan bug selalu diterima; fungsionalitas baru dan perubahan perilaku publik menggunakan PR draf [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md). Diskusi informal di Discord atau GitHub Discussions bersifat opsional.
+Lihat [Panduan Kontribusi](/contributing/). Perbaikan bug selalu diterima; fungsionalitas baru dan perubahan perilaku publik menggunakan PR draf [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md). Diskusi informal di Discord atau GitHub Discussions bersifat opsional.
 
 ### Di mana saya dapat menemukan contoh?
 
-Repositori ini menyertakan lebih dari 60 contoh yang dapat dijalankan, mencakup jendela, dialog, event, baki sistem, layanan, dan lainnya: [v3/examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+Repositori ini menyertakan lebih dari 60 contoh yang dapat dijalankan, mencakup jendela, dialog, event, baki sistem, layanan, dan lainnya: [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
 
 ## Masih Ada Pertanyaan?
 

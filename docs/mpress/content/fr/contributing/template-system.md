@@ -94,7 +94,7 @@ Les espaces réservés sont des directives de modèle Go standard — le `.` ini
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | Option `-n` / nom du répertoire |
 | `{{.ModulePath}}` | `github.com/me/myapp` | Option `-mod` ou valeur dérivée de `-git` |
-| `{{.WailsVersion}}` | `v3.0.0-…` | Constante intégrée à la compilation provenant de `internal/version` |
+| `{{.WailsVersion}}` | `v3.0.0` | Constante intégrée à la compilation provenant de `internal/version` |
 | `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Métadonnées définies lors de l’intégration | Options `-product*` correspondantes |
 
 Si vous avez besoin d’un nouvel espace réservé, ajoutez un champ aux données du modèle dans  

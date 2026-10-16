@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-이는 [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)에서 사용하는 것과 정확히 같은 패턴입니다. `native_features_stub.go`, `native_features_ios.go` 및 `native_features_android.go`을 참조하세요.
+이는 [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)에서 사용하는 것과 정확히 같은 패턴입니다. `native_features_stub.go`, `native_features_ios.go` 및 `native_features_android.go`을 참조하세요.
 
 @note{type="note" title="네이티브 기능 API 및 이벤트 명명 규칙"}
 알아 두어야 할 규칙은 두 가지입니다.
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)에서 소스 코드를 살펴보세요. 특히 `native_features_ios.go` 및 `native_features_android.go` 파일은 플랫폼별 기능을 복사하여 활용하기 위한 시작점으로 유용합니다.
+[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)에서 소스 코드를 살펴보세요. 특히 `native_features_ios.go` 및 `native_features_android.go` 파일은 플랫폼별 기능을 복사하여 활용하기 위한 시작점으로 유용합니다.
 
 ## 다음 단계
 
@@ -519,6 +519,6 @@ Android 가이드
 📖 Kitchen Sink 소스 코드
 햅틱 피드백, 위치 정보, 생체 인증, 알림, 보안 저장소를 하나의 실행 가능한 앱에서 모두 확인할 수 있습니다.
 
-[GitHub에서 보기 →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[GitHub에서 보기 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

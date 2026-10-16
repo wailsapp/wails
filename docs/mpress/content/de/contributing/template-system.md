@@ -94,7 +94,7 @@ Platzhalter sind standardmäßige Go-Vorlagenanweisungen — das vorangestellte 
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | Flag `-n` / Verzeichnisname |
 | `{{.ModulePath}}` | `github.com/me/myapp` | Flag `-mod` oder aus `-git` abgeleitet |
-| `{{.WailsVersion}}` | `v3.0.0-…` | Einkompilierte Konstante aus `internal/version` |
+| `{{.WailsVersion}}` | `v3.0.0` | Einkompilierte Konstante aus `internal/version` |
 | `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Metadaten zum Build-Zeitpunkt | entsprechende `-product*`-Flags |
 
 Wenn Sie einen neuen Platzhalter benötigen, fügen Sie den Vorlagendaten in `internal/templates/templates.go` ein Feld und in `internal/flags/init.go` ein passendes Feld/Flag hinzu (oder setzen Sie es aus `internal/commands/init.go`).

@@ -17,7 +17,7 @@ We'll use **GitHub Releases** as the update source because it's free and require
 
 @note{type="tip" title="Prerequisites"}
 - Go 1.25 or newer
-- `wails3` CLI installed (`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`)
+- `wails3` CLI installed (`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`)
 - A GitHub repository you can push releases to
 - Familiarity with the [QR Code Service tutorial](/tutorials/01-creating-a-service/) is helpful but not required
 
@@ -365,7 +365,7 @@ You now have a Wails app that:
 ## Next steps
 
 - The [Updater guide](/guides/updater/) has the full API reference, every event, every config option, and the helper-mode swap mechanics.
-- Look at [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater) for a complete working example you can clone.
+- Look at [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater) for a complete working example you can clone.
 - The test target repo [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) shows the recommended release-asset layout.
 
 ## Things to watch out for in production

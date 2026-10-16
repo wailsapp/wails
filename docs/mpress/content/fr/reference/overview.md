@@ -222,11 +222,11 @@ Le comportement propre à chaque plateforme est documenté dans chaque section d
 
 Wails v3 suit la gestion sémantique des versions :
 
-- **Majeure** (v3.x.x) : changements incompatibles
-- **Mineure** (v3.x.x) : nouvelles fonctionnalités rétrocompatibles
-- **Corrective** (v3.x.x) : corrections de bogues rétrocompatibles
+- **Majeure** (v4.0.0) : changements incompatibles
+- **Mineure** (v3.1.0) : nouvelles fonctionnalités rétrocompatibles
+- **Corrective** (v3.0.1) : corrections de bogues rétrocompatibles
 
-**État actuel :** bêta (API stable, améliorations en cours)
+**Wails v3.0.0:** Stable
 
 ## Politique d’obsolescence
 
@@ -250,22 +250,22 @@ Ces API sont stables et peuvent être utilisées en production en toute sécurit
 - Boîtes de dialogue de fichiers
 - Liaisons de services
 
-### API instables ⚠️
+### API expérimentales ⚠️
 
-Ces API peuvent changer avant la version finale :
+Seules les API explicitement documentées comme expérimentales ne relèvent pas du contrat de compatibilité stable des applications de bureau :
 
-- Certaines options avancées des fenêtres
-- Fonctionnalités propres à chaque plateforme
-- Fonctionnalités expérimentales
+- Prise en charge d’Android
+- Prise en charge d’iOS
+- Autres API explicitement marquées comme expérimentales
 
-Les API instables sont signalées dans la documentation.
+Les API expérimentales sont signalées dans la documentation.
 
 ## Obtenir de l’aide
 
 ### Questions sur les API
 
 1. **Consultez cette référence** – Documentation complète des API
-2. **Consultez les exemples** – [Exemples sur GitHub](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **Consultez les exemples** – [Exemples sur GitHub](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Effectuez une recherche sur Discord** – [Serveur Discord](https://discord.gg/JDdSxwjhGf)
 4. **Interrogez la communauté** – Canal Discord #help
 
@@ -282,7 +282,7 @@ Vous avez trouvé un bogue ou une incohérence ?
 - [Tutoriels](/tutorials/overview/) – Apprenez en créant de véritables applications
 - [Guides](/guides/architecture/) – Guides axés sur les tâches pour les scénarios courants
 - [Fonctionnalités](/features/windows/basics/) – Documentation détaillée par fonctionnalité
-- [Exemples](https://github.com/wailsapp/wails/tree/master/v3/examples) – Exemples de code fonctionnels sur GitHub
+- [Exemples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) – Exemples de code fonctionnels sur GitHub
 
 ---
 

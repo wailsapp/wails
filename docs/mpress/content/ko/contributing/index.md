@@ -47,12 +47,12 @@ M-Press로 변경 사항을 미리 보고 검증하려면 [문서 수정하기](
 새 기능과 공개 동작의 변경에는 Wails Enhancement Proposal(WEP) 절차를 사용합니다. 이 절차는 기능 개발을 투명하게 유지하고 승인된 모든 제안에 구현 담당자가 있도록 보장합니다. 기능 요청 이슈를 등록하지 마세요.
 
 1. 선택 사항으로, 관심도를 파악하기 위해 GitHub Discussions의 [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) 카테고리나 [Discord](https://discord.gg/JDdSxwjhGf)에서 아이디어를 먼저 공유해도 됩니다.
-2. [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md)을 `v3/wep/proposals/<proposal name>/proposal.md`에 복사하고 모든 섹션을 작성하세요.
+2. [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md)을 `v3/wep/proposals/<proposal name>/proposal.md`에 복사하고 모든 섹션을 작성하세요.
 3. 제안만 포함하는 `[WEP] <title>` 제목의 초안 풀 리퀘스트를 등록하세요. 이 PR이 제안을 논의하는 공식 공간입니다.
 4. 피드백과 지지를 모으세요(PR의 댓글과 좋아요 반응). 논의에 최소 2주를 할애하고 제안을 구현할 담당자를 합의하세요.
 5. PR을 검토 준비 상태로 표시하세요. 최종 결정은 메인테이너가 내립니다. 승인된 제안에는 WEP 번호가 할당되고 병합됩니다.
 
-전체 절차는 [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)에 문서화되어 있습니다.
+전체 절차는 [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)에 문서화되어 있습니다.
 
 ## 시작하기
 

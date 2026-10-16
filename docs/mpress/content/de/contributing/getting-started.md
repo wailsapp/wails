@@ -143,7 +143,7 @@ Bearbeiten Sie die Kommentare aus dem Review und aktualisieren Sie Ihren PR nach
 [WEP (Erweiterung)]
 @steps
 ### WEP verfassen
-- Lesen Sie den [Prozess für WEPs (Wails Enhancement Proposals)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)
+- Lesen Sie den [Prozess für WEPs (Wails Enhancement Proposals)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
 - Kopieren Sie die WEP-Vorlage nach `v3/wep/proposals/<name>/proposal.md`
 - Öffnen Sie einen Entwurfs-PR mit dem Titel `[WEP] <title>`, der ausschließlich das WEP enthält
 - Warten Sie vor der Implementierung auf die Entscheidung eines Maintainers

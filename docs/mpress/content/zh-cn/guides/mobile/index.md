@@ -25,7 +25,7 @@ Android WebView + `WebViewAssetLoader`。Go 通过 NDK 编译为`libwails.so`。
 
 要了解可以实现哪些功能，最好的方式是查看<strong>Kitchen Sink</strong>。这是一个使用单一代码库、在 iOS、Android 和桌面端上以相同方式运行的 Wails 应用：
 
-@linkcard{title="移动端 Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile" description="绑定 · 事件 · 对话框 · 触觉反馈 · 地理位置 · 生物识别 · 通知 · 安全存储 · 以及更多功能——全部来自一个 main.go"}
+@linkcard{title="移动端 Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile" description="绑定 · 事件 · 对话框 · 触觉反馈 · 地理位置 · 生物识别 · 通知 · 安全存储 · 以及更多功能——全部来自一个 main.go"}
 它通过7个选项卡展示了所有主要的移动端 API 功能，而且也能在桌面端运行。前端通过平台检查在桌面端隐藏<strong>移动端</strong>和<strong>硬件</strong>选项卡；构建桌面端版本时，Go 端不会为`common:*`移动端事件注册任何处理程序。这是在所有平台上交付同一套代码库的推荐模式。
 
 | 选项卡 | 平台 | 展示内容 |

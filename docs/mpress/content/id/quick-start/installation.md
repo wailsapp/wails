@@ -10,7 +10,7 @@ sourcePath: "quick-start/installation.md"
 @note{type="tip" title="Ringkasnya - Pengembang Berpengalaman"}
 ```bash
 # Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -197,7 +197,7 @@ Jika distribusi target Anda belum menyediakan WebKitGTK 6.0 (misalnya Ubuntu 22.
 
 ### Instal CLI Wails
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 Langkah ini menginstal perintah `wails3` ke `~/go/bin` (atau `%USERPROFILE%\go\bin` di Windows).
@@ -222,7 +222,7 @@ wails3 doctor
 **Keluaran yang diharapkan (atau serupa):**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -422,7 +422,7 @@ Ingin menggunakan kode paling mutakhir dari cabang pengembangan utama? Dengan ve
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```

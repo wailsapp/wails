@@ -47,12 +47,12 @@ sourcePath: "contributing/index.md"
 新增功能和公共行为变更须遵循 Wails 增强提案（WEP）流程。该流程让功能开发保持透明，并确保每个获批提案都有实施者。请勿创建功能请求议题。
 
 1. 你可以选择先在 GitHub Discussions 的[创意](https://github.com/wailsapp/wails/discussions/categories/ideas)类别或[Discord](https://discord.gg/JDdSxwjhGf)上提出想法，以了解大家的兴趣。
-2. 将[`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md)复制到`v3/wep/proposals/<proposal name>/proposal.md`，并填写所有章节。
+2. 将[`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md)复制到`v3/wep/proposals/<proposal name>/proposal.md`，并填写所有章节。
 3. 创建一个标题为`[WEP] <title>`的草稿拉取请求，其中仅包含提案。该 PR 是讨论提案的正式场所。
 4. 收集反馈和支持（PR 上的评论和点赞回应）。至少留出两周时间进行讨论，并就提案的实施者达成一致。
 5. 将 PR 标记为可供审查。维护者将作出最终决定：获批的提案会分配 WEP 编号并合并。
 
-完整流程记录在[`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)中。
+完整流程记录在[`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)中。
 
 ## 入门
 

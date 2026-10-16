@@ -78,7 +78,7 @@ type WebviewWindowOptions struct {
 
 `WebviewWindowOptions` **tidak** memiliki bidang `Parent` — untuk hubungan induk/modal, gunakan `parentWindow.AttachModal(childWindow)`. Struktur ini juga **tidak** memiliki bidang `Assets` — konfigurasi aset berada di `application.Options` (`Assets AssetOptions`).
 
-Sumber lengkap: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go).
+Sumber lengkap: [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).
 
 ## Opsi Inti
 
@@ -1271,4 +1271,4 @@ Aset frontend disajikan pada tingkat aplikasi (`application.Options.Assets`), bu
 
 ---
 
-**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Ada pertanyaan?** Tanyakan di [Discord](https://discord.gg/JDdSxwjhGf) atau lihat [contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

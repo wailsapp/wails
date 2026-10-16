@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Именно этот подход используется в примере [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — см. `native_features_stub.go`, `native_features_ios.go` и `native_features_android.go`.
+Именно этот подход используется в примере [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) — см. `native_features_stub.go`, `native_features_ios.go` и `native_features_android.go`.
 
 @note{type="note" title="API нативных функций и именование событий"}
 Полезно знать о двух соглашениях:
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Просмотрите исходный код по адресу [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — файлы `native_features_ios.go` и `native_features_android.go` особенно удобны как заготовки для копирования и вставки при реализации функций, специфичных для отдельных платформ.
+Просмотрите исходный код по адресу [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) — файлы `native_features_ios.go` и `native_features_android.go` особенно удобны как заготовки для копирования и вставки при реализации функций, специфичных для отдельных платформ.
 
 ## Что дальше
 
@@ -519,6 +519,6 @@ wails3 task run            # Desktop
 📖 Исходный код Kitchen Sink
 Тактильная обратная связь, геолокация, биометрия, уведомления и защищённое хранилище — всё в одном готовом к запуску приложении.
 
-[Посмотреть на GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[Посмотреть на GitHub →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

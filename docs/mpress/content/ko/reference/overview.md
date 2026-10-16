@@ -222,11 +222,11 @@ export function MyMethod(arg: string): Promise<string>
 
 Wails v3는 유의적 버전 관리를 따릅니다.
 
-- **메이저**(v3.x.x): 호환성을 깨는 변경 사항
-- **마이너**(v3.x.x): 하위 호환성을 유지하는 새로운 기능
-- **패치**(v3.x.x): 하위 호환성을 유지하는 버그 수정
+- **메이저**(v4.0.0): 호환성을 깨는 변경 사항
+- **마이너**(v3.1.0): 하위 호환성을 유지하는 새로운 기능
+- **패치**(v3.0.1): 하위 호환성을 유지하는 버그 수정
 
-**현재 상태:** 베타(API는 안정적이며 개선 작업 진행 중)
+**Wails v3.0.0:** 안정 버전
 
 ## 사용 중단 정책
 
@@ -250,22 +250,22 @@ API가 사용 중단될 때는 다음과 같이 처리합니다.
 - 파일 대화 상자
 - 서비스 바인딩
 
-### 불안정한 API ⚠️
+### 실험적 API ⚠️
 
-다음 API는 최종 릴리스 전에 변경될 수 있습니다:
+문서에 실험적이라고 명시된 API만 안정적인 데스크톱 호환성 보장에서 제외됩니다:
 
-- 일부 고급 창 옵션
-- 플랫폼별 기능
-- 실험적 기능
+- Android 지원
+- iOS 지원
+- 실험적이라고 명시된 기타 API
 
-불안정한 API는 문서에 표시되어 있습니다.
+실험적 API는 문서에 표시되어 있습니다.
 
 ## 도움말
 
 ### API 관련 질문
 
 1. **이 참조 문서 확인** - 전체 API 문서
-2. **예제 확인** - [GitHub 예제](https://github.com/wailsapp/wails/tree/master/v3/examples)
+2. **예제 확인** - [GitHub 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)
 3. **Discord 검색** - [Discord 서버](https://discord.gg/JDdSxwjhGf)
 4. **커뮤니티에 질문** - Discord #help 채널
 
@@ -282,7 +282,7 @@ API가 사용 중단될 때는 다음과 같이 처리합니다.
 - [튜토리얼](/tutorials/overview/) - 실제 애플리케이션을 만들며 학습하세요
 - [가이드](/guides/architecture/) - 일반적인 시나리오를 위한 작업 중심 가이드
 - [기능](/features/windows/basics/) - 기능별 문서
-- [예제](https://github.com/wailsapp/wails/tree/master/v3/examples) - GitHub에 있는 정상 작동하는 코드 예제
+- [예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - GitHub에 있는 정상 작동하는 코드 예제
 
 ---
 

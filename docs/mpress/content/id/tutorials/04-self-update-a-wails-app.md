@@ -17,7 +17,7 @@ Kita akan menggunakan **GitHub Releases** sebagai sumber pembaruan karena gratis
 
 @note{type="tip" title="Prasyarat"}
 - Go 1.25 atau yang lebih baru
-- CLI `wails3` telah diinstal (`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`)
+- CLI `wails3` telah diinstal (`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`)
 - Repositori GitHub tempat Anda dapat mengirim rilis
 - Pemahaman tentang [tutorial QR Code Service](/tutorials/01-creating-a-service/) akan membantu, tetapi tidak diwajibkan
 
@@ -365,7 +365,7 @@ Sekarang Anda memiliki aplikasi Wails yang:
 ## Langkah berikutnya
 
 - [Panduan pembaru](/guides/updater/) berisi referensi API lengkap, setiap peristiwa, setiap opsi konfigurasi, dan mekanisme penggantian dalam mode pembantu.
-- Lihat [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater) untuk contoh lengkap yang berfungsi dan dapat Anda klona.
+- Lihat [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater) untuk contoh lengkap yang berfungsi dan dapat Anda klona.
 - Repositori target pengujian [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo) menunjukkan tata letak aset rilis yang direkomendasikan.
 
 ## Hal yang perlu diperhatikan dalam produksi

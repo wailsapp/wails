@@ -17,7 +17,7 @@ sourcePath: "tutorials/04-self-update-a-wails-app.md"
 
 @note{type="tip" title="前提条件"}
 - Go 1.25或更高版本
-- 已安装`wails3` CLI（`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`）
+- 已安装`wails3` CLI（`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`）
 - 一个可向其推送发行版本的 GitHub 仓库
 - 熟悉[二维码服务教程](/tutorials/01-creating-a-service/)会有所帮助，但并非必需
 
@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## 后续步骤
 
 - [更新程序指南](/guides/updater/)包含完整的 API 参考、所有事件、所有配置选项以及辅助模式下的替换机制。
-- 请查看[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)，其中提供了可供克隆的完整可运行示例。
+- 请查看[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)，其中提供了可供克隆的完整可运行示例。
 - 测试目标仓库[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)展示了推荐的发行资源布局。
 
 ## 生产环境中的注意事项

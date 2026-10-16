@@ -143,7 +143,7 @@ Address review comments and update your PR as needed.
 [WEP (Enhancement)]
 @steps
 ### Write a WEP
-- Read the [WEP (Wails Enhancement Proposal) process](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)
+- Read the [WEP (Wails Enhancement Proposal) process](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
 - Copy the WEP template into `v3/wep/proposals/<name>/proposal.md`
 - Open a draft PR titled `[WEP] <title>` containing the WEP only
 - Wait for a maintainer decision before implementing

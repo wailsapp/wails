@@ -5,15 +5,15 @@ slug: "status"
 sourcePath: "status.md"
 ---
 
-## Status atual: Beta
+## Wails v3.0.0 — Estável
 
 Consulte o [Registro de alterações](/changelog/) para ver o status mais recente.
 
-Nosso objetivo é chegar a uma versão v3.0 estável. Este roteiro descreve as principais funcionalidades e melhorias que precisamos implementar antes da versão final. Este é um documento dinâmico e pode ser atualizado à medida que as prioridades mudarem ou surgirem novas informações.
+Esta documentação abrange o Wails v3.0.0. As correções de bugs são priorizadas por gravidade e distribuídas em atualizações corretivas noturnas. Novos recursos pertencem à v3.1.0; as correções de bugs ficam fora dessa versão de recursos.
 
-## Compromisso de compatibilidade da versão Beta
+## Compatibilidade para desktop
 
-O contrato da versão Beta da v3 abrange aplicativos para desktop:
+O contrato de compatibilidade da v3.0.0 abrange aplicativos de desktop:
 
 | Plataforma | Arquiteturas compatíveis | Requisitos e observações |
 | --- | --- | --- |
@@ -21,11 +21,11 @@ O contrato da versão Beta da v3 abrange aplicativos para desktop:
 | macOS | Intel e Apple Silicon | As versões do macOS e do WebKit documentadas no guia de instalação |
 | Linux | amd64 e arm64 | GTK4 + WebKitGTK 6.0 por padrão; GTK3 + WebKit2GTK 4.1 continua sendo uma opção legada com `-tags gtk3` durante toda a série v3.0.x e é removida na v3.1 |
 
-Todos os destinos exigem Go 1.25 ou posterior para o desenvolvimento. O suporte a Android e iOS é experimental e não impede o lançamento da versão Beta para desktop. As APIs Beta buscam estabilidade, mas defeitos de pré-lançamento e alterações anunciadas explicitamente ainda podem ser corrigidos antes da v3.0.0.
+Todos os destinos exigem Go 1.25 ou posterior para o desenvolvimento. O suporte a Android e iOS permanece experimental e está fora do contrato de compatibilidade estável para desktop.
 
 ## Como você pode contribuir
 
-- Teste a versão Beta mais recente e relate bugs reproduzíveis
+- Teste o Wails v3.0.0 e relate bugs reproduzíveis
 - Contribua para a documentação e os exemplos
 - Participe das discussões e dê feedback sobre os rascunhos de WEPs
 - Envie pull requests para correções de bugs, documentação ou WEPs aprovadas
@@ -34,4 +34,4 @@ Agradecemos as contribuições da comunidade. Se quiser ajudar com esses objetiv
 
 ## Feedback e atualizações
 
-Este roteiro está sujeito a alterações com base no feedback da comunidade e nas prioridades do projeto. Vamos atualizá-lo regularmente para refletir o progresso e as mudanças de direção. Relate problemas reproduzíveis como issues; proponha novas funcionalidades por meio de um PR de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+Este roteiro está sujeito a alterações com base no feedback da comunidade e nas prioridades do projeto. Vamos atualizá-lo regularmente para refletir o progresso e as mudanças de direção. Relate problemas reproduzíveis como issues; proponha novas funcionalidades por meio de um PR de [WEP (Proposta de Aprimoramento do Wails)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).

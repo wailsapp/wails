@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Inilah pola persis yang digunakan oleh [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)—lihat `native_features_stub.go`, `native_features_ios.go`, dan `native_features_android.go`.
+Inilah pola persis yang digunakan oleh [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)—lihat `native_features_stub.go`, `native_features_ios.go`, dan `native_features_android.go`.
 
 @note{type="note" title="API fitur native \u0026 penamaan peristiwa"}
 Ada dua konvensi yang perlu diketahui:
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Telusuri kode sumber di [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — file `native_features_ios.go` dan `native_features_android.go` sangat berguna sebagai titik awal yang dapat disalin dan ditempel untuk fitur khusus platform.
+Telusuri kode sumber di [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) — file `native_features_ios.go` dan `native_features_android.go` sangat berguna sebagai titik awal yang dapat disalin dan ditempel untuk fitur khusus platform.
 
 ## Langkah berikutnya
 
@@ -519,6 +519,6 @@ Referensi lengkap: konfigurasi, toast, pengemasan untuk Play Store, dan detail N
 📖 Kode sumber Kitchen Sink
 Umpan balik haptik, geolokasi, biometrik, notifikasi, dan penyimpanan aman — semuanya dalam satu aplikasi yang dapat dijalankan.
 
-[Lihat di GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[Lihat di GitHub →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

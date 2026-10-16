@@ -78,7 +78,7 @@ type WebviewWindowOptions struct {
 
 `WebviewWindowOptions` ne comporte **aucun** champ `Parent` : pour les relations parent/modale, utilisez `parentWindow.AttachModal(childWindow)`. Il ne comporte **pas non plus** de champ `Assets` : la configuration des ressources se trouve dans `application.Options` (`Assets AssetOptions`).
 
-Code source complet : [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go).
+Code source complet : [`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go).
 
 ## Options principales
 
@@ -1271,4 +1271,4 @@ Les ressources du frontend sont servies au niveau de l’application (`applicati
 
 ---
 
-**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Des questions ?** Posez-les sur [Discord](https://discord.gg/JDdSxwjhGf) ou consultez les [exemples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

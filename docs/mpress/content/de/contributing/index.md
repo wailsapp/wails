@@ -47,12 +47,12 @@ Tragen Sie Code über Pull Requests bei:
 Neue Funktionen und Änderungen am öffentlichen Verhalten durchlaufen den Prozess für Wails Enhancement Proposals (WEP). Er hält die Funktionsentwicklung transparent und stellt sicher, dass es für jeden angenommenen Vorschlag eine für die Implementierung zuständige Person gibt. Erstellen Sie keinen Issue für einen Funktionswunsch.
 
 1. Optional können Sie Ihre Idee in der Kategorie [Ideas](https://github.com/wailsapp/wails/discussions/categories/ideas) der GitHub Discussions oder auf [Discord](https://discord.gg/JDdSxwjhGf) vorstellen, um das Interesse auszuloten.
-2. Kopieren Sie [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/WEP_TEMPLATE.md) nach `v3/wep/proposals/<proposal name>/proposal.md` und füllen Sie jeden Abschnitt aus.
+2. Kopieren Sie [`v3/wep/WEP_TEMPLATE.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/WEP_TEMPLATE.md) nach `v3/wep/proposals/<proposal name>/proposal.md` und füllen Sie jeden Abschnitt aus.
 3. Erstellen Sie einen als Entwurf markierten Pull Request mit dem Titel `[WEP] <title>`, der ausschließlich den Vorschlag enthält. Der PR ist der offizielle Ort für dessen Diskussion.
 4. Holen Sie Feedback und Unterstützung ein (Kommentare und „Daumen hoch“-Reaktionen im PR). Planen Sie mindestens zwei Wochen für die Diskussion ein und einigen Sie sich darauf, wer den Vorschlag implementiert.
 5. Markieren Sie den PR als bereit zur Überprüfung. Die Maintainer treffen die endgültige Entscheidung: Angenommene Vorschläge erhalten eine WEP-Nummer und werden zusammengeführt.
 
-Der vollständige Prozess ist in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md) dokumentiert.
+Der vollständige Prozess ist in [`v3/wep/README.md`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) dokumentiert.
 
 ## Erste Schritte
 

@@ -10,7 +10,7 @@ sourcePath: "quick-start/installation.md"
 @note{type="tip" title="简要说明——面向有经验的开发者"}
 ```bash
 # Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -197,7 +197,7 @@ buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 
 ### 安装 Wails CLI
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 这会将`wails3`命令安装到`~/go/bin`（Windows 上则安装到`%USERPROFILE%\go\bin`）。
@@ -222,7 +222,7 @@ wails3 doctor
 **预期输出（或类似内容）：**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -422,7 +422,7 @@ sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```

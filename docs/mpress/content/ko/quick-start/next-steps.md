@@ -30,5 +30,5 @@ Wails는 네이티브 데스크톱 기능을 제공합니다.
 ## 도움말 보기
 
 - [Discord](https://discord.gg/JDdSxwjhGf) - 질문하고 프로젝트 공유하기
-- [예제](https://github.com/wailsapp/wails/tree/master/v3/examples) - 바로 실행되는 예제 50개 이상
+- [예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - 바로 실행되는 예제 50개 이상
 - [API 레퍼런스](/reference/overview/) - 전체 문서

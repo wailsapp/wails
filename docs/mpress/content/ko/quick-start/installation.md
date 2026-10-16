@@ -10,7 +10,7 @@ sourcePath: "quick-start/installation.md"
 @note{type="tip" title="요약 - 숙련된 개발자용"}
 ```bash
 # Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -197,7 +197,7 @@ Wails를 설치한 후 `wails3 doctor`을 실행하세요. 사용 중인 배포�
 
 ### Wails CLI 설치
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 이렇게 하면 `wails3` 명령이 `~/go/bin`(Windows에서는 `%USERPROFILE%\go\bin`)에 설치됩니다.
@@ -222,7 +222,7 @@ wails3 doctor
 **예상 출력(또는 이와 유사한 출력):**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -422,7 +422,7 @@ sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```

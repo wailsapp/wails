@@ -30,5 +30,5 @@ Wails menyediakan kemampuan desktop native:
 ## Dapatkan Bantuan
 
 - [Discord](https://discord.gg/JDdSxwjhGf) - Ajukan pertanyaan, bagikan proyek
-- [Contoh](https://github.com/wailsapp/wails/tree/master/v3/examples) - 50+ contoh yang dapat dijalankan
+- [Contoh](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - 50+ contoh yang dapat dijalankan
 - [Referensi API](/reference/overview/) - Dokumentasi lengkap

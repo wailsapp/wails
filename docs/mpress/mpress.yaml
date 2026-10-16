@@ -1,6 +1,6 @@
 site:
   title: "Wails"
-  description: "Build beautiful desktop applications using Go and modern web technologies."
+  description: "Build desktop applications with Wails v3.0.0, Go and modern web technologies."
   baseURL: "https://v3.wails.io"
   defaultLanguage: en
   languages: [en, zh-cn, zh-tw, ja, ko, ru, fr, pt, de, id]
@@ -30,11 +30,11 @@ social:
   x: "https://x.com/wailsapp"
   rss: "/blog/rss.xml"
   sponsor: "https://github.com/sponsors/leaanthony"
-  editURL: "https://github.com/wailsapp/wails/edit/master/docs/mpress/content"
+  editURL: "https://github.com/wailsapp/wails/edit/releases/v3.0.0/docs/mpress/content"
 contribution:
   enabled: false
   repository: "https://github.com/wailsapp/wails.git"
-  branch: "master"
+  branch: "releases/v3.0.0"
   quickEdit: false
   guide: CONTRIBUTING.md
 theme:

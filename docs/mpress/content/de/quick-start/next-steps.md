@@ -30,5 +30,5 @@ Wails bietet native Desktopfunktionen:
 ## Hilfe erhalten
 
 - [Discord](https://discord.gg/JDdSxwjhGf) – Fragen stellen und Projekte teilen
-- [Beispiele](https://github.com/wailsapp/wails/tree/master/v3/examples) – mehr als 50 funktionsfähige Beispiele
+- [Beispiele](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) – mehr als 50 funktionsfähige Beispiele
 - [API-Referenz](/reference/overview/) – vollständige Dokumentation

@@ -1,10 +1,10 @@
-# Correct the Wails v3 documentation
+# Correct the Wails v3.0.0 documentation
 
 Correction PRs are welcome: fix a typo, repair a link, clarify an explanation,
 update an example, or correct a translation. You do not need to open an issue
 or add a failing code test for a documentation-only correction.
 
-1. Fork `wailsapp/wails` and create a documentation branch from `master`.
+1. Fork `wailsapp/wails` and create a documentation branch from `releases/v3.0.0`.
 2. Install M-Press v1.0.17 from its release archives, or run:
 
    ```sh
@@ -20,7 +20,7 @@ or add a failing code test for a documentation-only correction.
    Translations that fall behind an English edit are reported as warnings and
    do not fail the check; missing or empty translation files do. Add `--strict`
    to `check_translations.py` to make the warnings fail.
-5. Open a PR against `master`, explain the correction and list the checks run.
+5. Open a PR against `releases/v3.0.0`, explain the correction and list the checks run.
    Include before/after screenshots for layout changes. Verify any code examples
    you change, and identify the platform and Wails version used.
 

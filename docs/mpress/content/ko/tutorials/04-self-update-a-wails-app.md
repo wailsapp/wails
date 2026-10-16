@@ -17,7 +17,7 @@ sourcePath: "tutorials/04-self-update-a-wails-app.md"
 
 @note{type="tip" title="사전 요구 사항"}
 - Go 1.25 이상
-- `wails3` CLI 설치 완료(`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`)
+- `wails3` CLI 설치 완료(`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`)
 - 릴리스를 푸시할 수 있는 GitHub 저장소
 - [QR 코드 서비스 튜토리얼](/tutorials/01-creating-a-service/)을 숙지하면 도움이 되지만 필수는 아닙니다.
 
@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## 다음 단계
 
 - [업데이터 가이드](/guides/updater/)에서 전체 API 레퍼런스, 모든 이벤트와 구성 옵션, 도우미 모드의 교체 메커니즘을 확인할 수 있습니다.
-- 복제하여 사용할 수 있는 완전한 동작 예제는 [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)에서 확인하세요.
+- 복제하여 사용할 수 있는 완전한 동작 예제는 [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)에서 확인하세요.
 - 테스트 대상 저장소 [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)에서 권장 릴리스 자산 구조를 확인할 수 있습니다.
 
 ## 프로덕션 환경에서 주의할 사항

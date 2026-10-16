@@ -34,7 +34,7 @@ Exécutez `wails3 doctor` à tout moment pour vérifier votre système et obteni
 
 ### Wails v3 est-il prêt pour la production ?
 
-Wails v3 est un logiciel bêta doté d’une API de bureau stable. Des applications l’utilisent en production, mais vous devriez effectuer des tests approfondis avant tout déploiement pendant que nous apportons les dernières finitions à 3.0. Consultez la [page d’état du projet](/status/) pour connaître la situation actuelle. Wails v2 est la version stable actuelle et continue de recevoir des correctifs.
+Wails v3.0.0 est la version stable pour les applications de bureau sous Windows, macOS et Linux. La prise en charge d’Android et d’iOS reste expérimentale et ne relève pas du contrat de compatibilité stable des applications de bureau. Consultez [page d’état du projet](/status/).
 
 ## Développement
 
@@ -187,7 +187,7 @@ Essayez les solutions habituelles dans cet ordre :
 
 1. `go mod tidy`
 2. `cd frontend && npm install` (l’absence de `node_modules` est la cause la plus fréquente)
-3. Mettez à jour la CLI : `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+3. Mettez à jour la CLI : `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`
 4. Sous Linux, recherchez dans `wails3 doctor` les paquets GTK/WebKit manquants
 
 ### Mes liaisons sont absentes ou obsolètes
@@ -214,7 +214,7 @@ La v3 apporte la prise en charge de plusieurs fenêtres, une API plus claire fon
 
 ### La v2 continuera-t-elle d’être maintenue ?
 
-Oui. La v2 continue de recevoir des correctifs pendant que la v3 progresse vers sa version stable.
+Oui. Wails v2 continue de recevoir les mises à jour critiques. Les nouveaux projets devraient utiliser Wails v3.0.0.
 
 ### Puis-je utiliser la v2 et la v3 côte à côte ?
 
@@ -230,11 +230,11 @@ Oui. Les CLI sont des exécutables distincts (`wails` et `wails3`) et les module
 
 ### Comment contribuer ?
 
-Consultez le [Guide de contribution](/contributing/). Les correctifs de bogues sont toujours les bienvenus. Les nouvelles fonctionnalités et les modifications du comportement public passent par une PR au statut brouillon proposant une [WEP (proposition d’amélioration de Wails)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md). Une discussion informelle sur Discord ou GitHub Discussions est facultative.
+Consultez le [Guide de contribution](/contributing/). Les correctifs de bogues sont toujours les bienvenus. Les nouvelles fonctionnalités et les modifications du comportement public passent par une PR au statut brouillon proposant une [WEP (proposition d’amélioration de Wails)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md). Une discussion informelle sur Discord ou GitHub Discussions est facultative.
 
 ### Où puis-je trouver des exemples ?
 
-Le dépôt contient plus de 60 exemples exécutables couvrant les fenêtres, les boîtes de dialogue, les événements, la zone de notification système, les services et bien plus encore : [v3/examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+Le dépôt contient plus de 60 exemples exécutables couvrant les fenêtres, les boîtes de dialogue, les événements, la zone de notification système, les services et bien plus encore : [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).
 
 ## Vous avez encore des questions ?
 

@@ -34,7 +34,7 @@ Wails 是一个使用 Go 和 Web 技术构建桌面应用程序的框架。应�
 
 ### Wails v3 是否已可用于生产环境？
 
-Wails v3 是测试版软件，但桌面 API 已保持稳定。已有应用程序使用它在生产环境中运行，但在我们完成3.0的最后完善工作期间，你仍应在部署前进行全面测试。有关当前状况，请参阅[项目状态页面](/status/)。Wails v2 是当前的稳定版本，并会继续获得修复。
+Wails v3.0.0 是面向 Windows、macOS 和 Linux 桌面应用程序的稳定版本。 Android 和 iOS 支持仍处于实验阶段，不在稳定桌面版的兼容性保证范围内。 参阅 [项目状态页面](/status/).
 
 ## 开发
 
@@ -187,7 +187,7 @@ wails3 doctor
 
 1. `go mod tidy`
 2. `cd frontend && npm install`（最常见的原因是缺少`node_modules`）
-3. 更新 CLI：`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+3. 更新 CLI：`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`
 4. 在 Linux 上，检查`wails3 doctor`是否报告缺少 GTK/WebKit 软件包
 
 ### 绑定缺失或已过时
@@ -214,7 +214,7 @@ v3 提供多窗口支持、更简洁的基于服务的 API、内置更新程序�
 
 ### v2 会继续维护吗？
 
-会。在 v3 迈向稳定版本的同时，v2 会继续获得修复。
+是的。Wails v2 会继续获得关键更新。新项目应使用 Wails v3.0.0。
 
 ### 可以同时运行 v2 和 v3 吗？
 
@@ -230,11 +230,11 @@ v3 提供多窗口支持、更简洁的基于服务的 API、内置更新程序�
 
 ### 如何贡献？
 
-请参阅[贡献指南](/contributing/)。随时欢迎提交错误修复；新增功能和公共行为变更需通过[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)草案 PR 提交。可选择在 Discord 或 GitHub Discussions 上进行非正式讨论。
+请参阅[贡献指南](/contributing/)。随时欢迎提交错误修复；新增功能和公共行为变更需通过[WEP（Wails Enhancement Proposal）](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)草案 PR 提交。可选择在 Discord 或 GitHub Discussions 上进行非正式讨论。
 
 ### 在哪里可以找到示例？
 
-代码仓库随附超过60个可运行示例，涵盖窗口、对话框、事件、系统托盘、服务等内容：[v3/examples](https://github.com/wailsapp/wails/tree/master/v3/examples)。
+代码仓库随附超过60个可运行示例，涵盖窗口、对话框、事件、系统托盘、服务等内容：[v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)。
 
 ## 仍有疑问？
 

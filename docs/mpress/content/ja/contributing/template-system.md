@@ -94,7 +94,7 @@ go mod tidy (unless --skipgomodtidy / -skipgomodtidy)
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | `-n` フラグ／ディレクトリ名 |
 | `{{.ModulePath}}` | `github.com/me/myapp` | `-mod` フラグ、または `-git` から導出 |
-| `{{.WailsVersion}}` | `v3.0.0-…` | `internal/version` から取得したコンパイル時組み込み定数 |
+| `{{.WailsVersion}}` | `v3.0.0` | `internal/version` から取得したコンパイル時組み込み定数 |
 | `{{.ProductName}}`、`{{.ProductDescription}}`、`{{.ProductVersion}}`、`{{.ProductCompany}}`、`{{.ProductCopyright}}`、`{{.ProductComments}}`、`{{.ProductIdentifier}}` | ビルド時のメタデータ | 対応する `-product*` フラグ |
 
 新しいプレースホルダーが必要な場合は、`internal/templates/templates.go` のテンプレートデータにフィールドを追加し、`internal/flags/init.go` に対応するフィールドとフラグを追加します（または `internal/commands/init.go` から値を設定します）。

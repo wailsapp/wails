@@ -246,7 +246,7 @@ Der MCP-Server ermöglicht die vollständige programmgesteuerte Kontrolle über 
 
 ## Beispielanwendung
 
-Eine vollständige Playground-Anwendung, die alle Werkzeuge demonstriert, ist unter [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples/mcp) verfügbar. Sie umfasst:
+Eine vollständige Playground-Anwendung, die alle Werkzeuge demonstriert, ist unter [`v3/examples/mcp`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mcp) verfügbar. Sie umfasst:
 
 - Zähler mit Schaltflächen zum Erhöhen und Zurücksetzen
 - Namenseingabe mit den gebundenen Methoden Greet, Add und Shout

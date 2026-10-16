@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Esse é exatamente o padrão usado pelo [Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — consulte `native_features_stub.go`, `native_features_ios.go` e `native_features_android.go`.
+Esse é exatamente o padrão usado pelo [Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) — consulte `native_features_stub.go`, `native_features_ios.go` e `native_features_android.go`.
 
 @note{type="note" title="API de recursos nativos e nomenclatura de eventos"}
 Vale a pena conhecer duas convenções:
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Consulte o código-fonte em [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) — os arquivos `native_features_ios.go` e `native_features_android.go` são especialmente úteis como pontos de partida para copiar e colar ao implementar recursos específicos de cada plataforma.
+Consulte o código-fonte em [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) — os arquivos `native_features_ios.go` e `native_features_android.go` são especialmente úteis como pontos de partida para copiar e colar ao implementar recursos específicos de cada plataforma.
 
 ## Próximos passos
 
@@ -519,6 +519,6 @@ Referência completa: configuração, toasts, empacotamento para a Play Store e 
 📖 Código-fonte do Kitchen Sink
 Resposta tátil, geolocalização, biometria, notificações e armazenamento seguro — tudo em um único aplicativo executável.
 
-[Ver no GitHub →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[Ver no GitHub →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

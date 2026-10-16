@@ -30,5 +30,5 @@ Wails fournit des fonctionnalités de bureau natives :
 ## Obtenir de l’aide
 
 - [Discord](https://discord.gg/JDdSxwjhGf) — posez des questions et partagez vos projets
-- [Exemples](https://github.com/wailsapp/wails/tree/master/v3/examples) — plus de 50 exemples fonctionnels
+- [Exemples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) — plus de 50 exemples fonctionnels
 - [Référence de l’API](/reference/overview/) — documentation complète

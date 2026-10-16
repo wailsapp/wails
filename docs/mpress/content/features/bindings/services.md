@@ -801,4 +801,4 @@ func main() {
 
 ---
 
-**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [service examples](https://github.com/wailsapp/wails/tree/master/v3/examples).
+**Questions?** Ask in [Discord](https://discord.gg/JDdSxwjhGf) or check the [service examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).

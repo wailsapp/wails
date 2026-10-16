@@ -10,7 +10,7 @@ sourcePath: "quick-start/installation.md"
 @note{type="tip" title="Кратко — для опытных разработчиков"}
 ```bash
 # Install Go 1.25+, then:
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 wails3 setup   # Interactive setup wizard (experimental)
 ```
 
@@ -197,7 +197,7 @@ buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 
 ### Установите CLI Wails
 ```bash
-go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 Команда `wails3` будет установлена в `~/go/bin` (или в `%USERPROFILE%\go\bin` в Windows).
@@ -222,7 +222,7 @@ wails3 doctor
 **Ожидаемый (или аналогичный) вывод:**
 
 ```
-Wails (v3.0.0-dev)  Wails Doctor
+Wails (v3.0.0)  Wails Doctor
 
 # System
 
@@ -422,7 +422,7 @@ sudo tar -C /usr/local -xzf go1.25.linux-amd64.tar.gz
 ```bash
 git clone https://github.com/wailsapp/wails.git
 cd wails
-git checkout v3
+git checkout master
 cd v3/cmd/wails3
 go install
 ```

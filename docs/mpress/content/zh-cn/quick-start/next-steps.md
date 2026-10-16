@@ -30,5 +30,5 @@ Wails 提供原生桌面功能：
 ## 获取帮助
 
 - [Discord](https://discord.gg/JDdSxwjhGf) - 提问、分享项目
-- [示例](https://github.com/wailsapp/wails/tree/master/v3/examples) - 50+ 个可运行示例
+- [示例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - 50+ 个可运行示例
 - [API 参考](/reference/overview/) - 完整文档

@@ -78,7 +78,7 @@ type WebviewWindowOptions struct {
 
 `WebviewWindowOptions`には<strong>`Parent`フィールドがありません</strong>。親子関係やモーダル関係には`parentWindow.AttachModal(childWindow)`を使用します。また、**`Assets`フィールドもありません**。アセットの設定は`application.Options`（`Assets AssetOptions`）にあります。
 
-完全なソース：[`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/master/v3/pkg/application/webview_window_options.go)。
+完全なソース：[`v3/pkg/application/webview_window_options.go`](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/pkg/application/webview_window_options.go)。
 
 ## 基本オプション
 
@@ -1271,4 +1271,4 @@ func main() {
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples)を確認してください。
+**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)を確認してください。

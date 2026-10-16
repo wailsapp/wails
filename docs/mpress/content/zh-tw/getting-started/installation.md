@@ -72,7 +72,7 @@ Linux 需要標準的`gcc`建置工具，以及`gtk4`和`webkitgtk-6.0`。安裝
 若要使用 Go Modules 安裝 Wails CLI，請執行下列命令：
 
 ```shell
-go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 若要安裝最新的開發版本，請執行下列命令：

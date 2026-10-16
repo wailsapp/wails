@@ -143,7 +143,7 @@ PR 설명에 다음 내용을 포함하세요.
 [WEP(개선 제안)]
 @steps
 ### WEP 작성하기
-- [WEP(Wails Enhancement Proposal) 절차](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)를 읽으세요.
+- [WEP(Wails Enhancement Proposal) 절차](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)를 읽으세요.
 - WEP 템플릿을 `v3/wep/proposals/<name>/proposal.md`에 복사하세요.
 - WEP만 포함하고 제목이 `[WEP] <title>`인 초안 PR을 여세요.
 - 구현을 시작하기 전에 메인테이너의 결정을 기다리세요.

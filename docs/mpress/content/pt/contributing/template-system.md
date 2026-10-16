@@ -94,7 +94,7 @@ Os placeholders são diretivas padrão de templates Go — o `.` inicial faz par
 | --- | --- | --- |
 | `{{.ProjectName}}` | `myapp` | Opção `-n` / nome do diretório |
 | `{{.ModulePath}}` | `github.com/me/myapp` | Opção `-mod` ou derivado de `-git` |
-| `{{.WailsVersion}}` | `v3.0.0-…` | Constante incorporada durante a compilação, proveniente de `internal/version` |
+| `{{.WailsVersion}}` | `v3.0.0` | Constante incorporada durante a compilação, proveniente de `internal/version` |
 | `{{.ProductName}}`, `{{.ProductDescription}}`, `{{.ProductVersion}}`, `{{.ProductCompany}}`, `{{.ProductCopyright}}`, `{{.ProductComments}}`, `{{.ProductIdentifier}}` | Metadados definidos durante a geração do projeto | opções `-product*` correspondentes |
 
 Se precisar de um novo espaço reservado, adicione um campo aos dados do template em `internal/templates/templates.go` e um campo/opção correspondente em `internal/flags/init.go` (ou defina-o a partir de `internal/commands/init.go`).

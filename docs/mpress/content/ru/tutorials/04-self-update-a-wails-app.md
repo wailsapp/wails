@@ -17,7 +17,7 @@ sourcePath: "tutorials/04-self-update-a-wails-app.md"
 
 @note{type="tip" title="Предварительные требования"}
 - Go 1.25 или новее
-- Установленный CLI `wails3` (`go install github.com/wailsapp/wails/v3/cmd/wails3@latest`)
+- Установленный CLI `wails3` (`go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0`)
 - Репозиторий GitHub, в котором вы можете публиковать выпуски
 - Знакомство с [руководством по службе QR-кодов](/tutorials/01-creating-a-service/) будет полезно, но не обязательно
 
@@ -365,7 +365,7 @@ app.Updater.Init(updater.Config{
 ## Дальнейшие действия
 
 - В [руководстве по средству обновления](/guides/updater/) приведены полная справка по API, все события и параметры конфигурации, а также описание механизма замены в режиме вспомогательного процесса.
-- Полный рабочий пример, который можно клонировать, см. в [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater).
+- Полный рабочий пример, который можно клонировать, см. в [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater).
 - Рекомендуемая структура артефактов выпуска показана в репозитории тестового целевого приложения [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo).
 
 ## На что обратить внимание при использовании в рабочей среде

@@ -72,7 +72,7 @@ xcode-select --install
 Чтобы установить Wails CLI с помощью Go Modules, выполните следующие команды:
 
 ```shell
-go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+go install -v github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
 Чтобы установить последнюю разрабатываемую версию, выполните следующие команды:

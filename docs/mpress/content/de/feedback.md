@@ -34,7 +34,7 @@ Wenn Sie eine Fehlerkorrektur oder eine Verbesserung der Dokumentation haben, ge
 [Erweiterungen]
 Neue Funktionen und Änderungen am öffentlichen Verhalten werden über einen Pull-Request-Entwurf für einen **WEP (Wails Enhancement Proposal)** vorgeschlagen, nicht über ein Feature-Request-Issue.
 
-- Lesen Sie die Beschreibung des [WEP-Prozesses](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+- Lesen Sie die Beschreibung des [WEP-Prozesses](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 - Kopieren Sie die Vorlage und erstellen Sie anschließend einen PR-Entwurf mit dem Titel `[WEP] <title>`, der ausschließlich den WEP und unterstützendes Material enthält.
 - Sie können eine Idee zunächst informell in den [GitHub Discussions](https://github.com/wailsapp/wails/discussions) oder im Discord-Kanal [#v3](https://discord.gg/bdj28QNHmT) diskutieren. Für eine Entscheidung der Maintainer ist jedoch ein WEP-PR erforderlich.
 

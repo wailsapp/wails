@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-これは[Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)で実際に使用されているパターンです。`native_features_stub.go`、`native_features_ios.go`、`native_features_android.go`を参照してください。
+これは[Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)で実際に使用されているパターンです。`native_features_stub.go`、`native_features_ios.go`、`native_features_android.go`を参照してください。
 
 @note{type="note" title="ネイティブ機能 API とイベントの命名規則"}
 知っておくべき規則が 2 つあります。
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile) でソースを参照してください。特に `native_features_ios.go` ファイルと `native_features_android.go` ファイルは、プラットフォーム固有の機能をコピー＆ペーストで実装する際の出発点として役立ちます。
+[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile) でソースを参照してください。特に `native_features_ios.go` ファイルと `native_features_android.go` ファイルは、プラットフォーム固有の機能をコピー＆ペーストで実装する際の出発点として役立ちます。
 
 ## 次のステップ
 
@@ -519,6 +519,6 @@ Android ガイド
 📖 Kitchen Sink のソース
 触覚フィードバック、位置情報、生体認証、通知、セキュアストレージを、実行可能な 1 つのアプリにまとめています。
 
-[GitHub で表示 →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[GitHub で表示 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

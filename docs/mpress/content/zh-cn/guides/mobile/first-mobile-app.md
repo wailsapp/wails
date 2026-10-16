@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-这正是[Kitchen Sink](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)采用的模式 — 请参阅`native_features_stub.go`、`native_features_ios.go`和`native_features_android.go`。
+这正是[Kitchen Sink](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)采用的模式 — 请参阅`native_features_stub.go`、`native_features_ios.go`和`native_features_android.go`。
 
 @note{type="note" title="原生功能 API 与事件命名"}
 有两项约定值得了解：
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-请在[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)浏览源代码，其中`native_features_ios.go`和`native_features_android.go`文件特别适合作为复制粘贴后实现平台特定功能的起点。
+请在[`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)浏览源代码，其中`native_features_ios.go`和`native_features_android.go`文件特别适合作为复制粘贴后实现平台特定功能的起点。
 
 ## 下一步
 
@@ -519,6 +519,6 @@ Android 指南
 📖 Kitchen Sink 源代码
 触觉反馈、地理位置、生物识别、通知、安全存储——全部集成在一个可运行的应用中。
 
-[在 GitHub 上查看 →](https://github.com/wailsapp/wails/tree/master/v3/examples/mobile)
+[在 GitHub 上查看 →](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile)
 
 @end

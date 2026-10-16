@@ -30,5 +30,5 @@ Wails はネイティブデスクトップ機能を提供します。
 ## ヘルプを得る
 
 - [Discord](https://discord.gg/JDdSxwjhGf) - 質問する、プロジェクトを共有する
-- [サンプル](https://github.com/wailsapp/wails/tree/master/v3/examples) - 50以上の動作するサンプル
+- [サンプル](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples) - 50以上の動作するサンプル
 - [API リファレンス](/reference/overview/) - 完全なドキュメント
