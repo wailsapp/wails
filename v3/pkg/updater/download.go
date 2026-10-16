@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// download streams the artifact for rel from p into a temp file, computing
+// download streams the artifact for rel from p into a staging file, computing
 // the verification digest while the bytes flow past. Returns the temp file
 // path and the temp directory enclosing it; the caller is responsible for
 // verifying then renaming or removing the directory (RemoveAll on dir tears
@@ -25,17 +25,28 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (path,
 	u.transition(StateDownloading)
 	u.host.Emit(EventDownloadStarted, rel)
 
-	dir, err = os.MkdirTemp("", "wails-update-*")
+	target, err := resolveTarget()
 	if err != nil {
-		return "", "", fmt.Errorf("updater: temp dir: %w", err)
+		return "", "", fmt.Errorf("updater: resolve self: %w", err)
+	}
+	// Stage beside the target so the helper's swap is a same-filesystem
+	// rename; os.TempDir is often a tmpfs.
+	dir, err = os.MkdirTemp(filepath.Dir(target), "wails-update-*")
+	if err != nil {
+		return "", "", fmt.Errorf("updater: staging dir: %w", err)
 	}
 	tmpPath := filepath.Join(dir, ".artifact")
+
+	// Capture the directory in a local: the named result dir is reset to ""
+	// by the error-path returns, which would make a deferred RemoveAll(dir)
+	// a no-op and leave the temp directory (and partial artifact) behind.
+	tmpDir := dir
 
 	// Track success — on every error path we tear the directory down.
 	success := false
 	defer func() {
 		if !success {
-			_ = os.RemoveAll(dir)
+			_ = os.RemoveAll(tmpDir)
 		}
 	}()
 
