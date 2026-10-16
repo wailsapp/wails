@@ -1,8 +1,6 @@
 package updater
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -241,11 +239,12 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 }
 
 // appliedMarker is where the helper tells the relaunched application which
-// version it replaced. It lives in the temp dir, keyed by target, because
-// environment variables do not survive a relaunch through `open` on macOS.
+// version it replaced, since environment variables do not survive a relaunch
+// through `open` on macOS. It sits beside the target, in the directory the
+// update already has to write to, rather than in a temp dir other local users
+// can write to.
 func appliedMarker(target string) string {
-	sum := sha256.Sum256([]byte(target))
-	return filepath.Join(os.TempDir(), "wails-updated-"+hex.EncodeToString(sum[:8]))
+	return filepath.Join(filepath.Dir(target), "."+filepath.Base(target)+".wails-updated")
 }
 
 // consumeAppliedMarker returns the version recorded by the helper that just
@@ -256,6 +255,10 @@ func consumeAppliedMarker() (string, bool) {
 		return "", false
 	}
 	path := appliedMarker(target)
+	// Reading a FIFO would block Init.
+	if info, err := os.Lstat(path); err != nil || !info.Mode().IsRegular() {
+		return "", false
+	}
 	from, err := os.ReadFile(path)
 	if err != nil {
 		return "", false

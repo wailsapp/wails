@@ -203,6 +203,27 @@ func TestInit_RejectsNilProvider(t *testing.T) {
 	}
 }
 
+func TestInit_OnUpdateAppliedIgnoresNonRegularMarker(t *testing.T) {
+	target := filepath.Join(t.TempDir(), "app")
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) { return target, nil }))
+	if err := os.Mkdir(updater.AppliedMarkerForTest(target), 0o700); err != nil {
+		t.Fatal(err)
+	}
+
+	called := false
+	cfg := updater.Config{
+		CurrentVersion:  "2.0.0",
+		Providers:       []updater.Provider{&fakeProvider{name: "f"}},
+		OnUpdateApplied: func(string) { called = true },
+	}
+	if err := updater.New(&fakeHost{}).Init(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if called {
+		t.Error("OnUpdateApplied ran for a marker that is not a regular file")
+	}
+}
+
 func TestInit_OnUpdateApplied(t *testing.T) {
 	target := filepath.Join(t.TempDir(), "app")
 	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) { return target, nil }))
