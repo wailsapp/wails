@@ -1,3 +1,5 @@
+//go:build linux && !android && !server
+
 package application
 
 import (
