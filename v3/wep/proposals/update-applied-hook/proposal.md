@@ -45,19 +45,19 @@ type Config struct {
 ### Mechanism
 
 1. `Restart` already starts the running executable in helper mode with `WAILS_UPDATER_HELPER_*` environment variables. It adds one more, `WAILS_UPDATER_HELPER_FROM`, set to the current version. This hop is a direct child process, so the environment reaches the helper on every platform.
-2. The helper reads that value before it clears the helper variables. After the swap succeeds and immediately before it relaunches the target, it writes the version to a marker file: `os.TempDir()/wails-updated-<hex>`, where `<hex>` is the first 8 bytes of the SHA-256 of the target path (the executable, or the `.app` bundle on macOS). The file is written with mode `0600`. No marker is written when the version is empty.
+2. The helper reads that value before it clears the helper variables. After the swap succeeds and immediately before it relaunches the target, it writes the version to a marker file beside the target, `.<name>.wails-updated` in the directory holding the executable (or the `.app` bundle on macOS). The file is written with mode `0600`. No marker is written when the version is empty.
 3. If the relaunch fails, the helper deletes the marker before restoring the backup, so a rolled-back app is not told it was updated. If the swap itself fails, the marker is never written.
-4. `Init` resolves the same target path, reads the marker, deletes it, and then calls `OnUpdateApplied` if one is set. It does this after releasing the updater's lock, so the callback may call other `Updater` methods. The marker is consumed even when no callback is set, so a later build that adds a callback is not told about an old update.
+4. `Init` resolves the same target path, reads the marker if it is a regular file, deletes it, and then calls `OnUpdateApplied` if one is set. It does this after releasing the updater's lock, so the callback may call other `Updater` methods. The marker is consumed even when no callback is set, so a later build that adds a callback is not told about an old update.
 
 The reference implementation adds about 65 lines of non-test code across `config.go`, `helper.go`, `updater.go` and `spawn.go`.
 
 ### Why a file and not an environment variable
 
-The obvious way to carry the version into the relaunched app is another environment variable. On macOS the helper relaunches the bundle with `open -n`, which asks LaunchServices to start it. The new process inherits launchd's environment, not the helper's, so the variable is lost. A file in the user's temp directory works the same way on all three desktop platforms.
+The obvious way to carry the version into the relaunched app is another environment variable. On macOS the helper relaunches the bundle with `open -n`, which asks LaunchServices to start it. The new process inherits launchd's environment, not the helper's, so the variable is lost. A file beside the target works the same way on all three desktop platforms, and the helper can always write there, because the update itself stages and swaps in that directory.
 
 ### Impact on existing functionality
 
-The field is optional and defaults to nil. Without it, the only change in behaviour is that the helper writes and `Init` deletes a small file in the temp directory around each applied update.
+The field is optional and defaults to nil. Without it, the only change in behaviour is that the helper writes and `Init` deletes a small file beside the target around each applied update.
 
 ## Non-Goals
 
@@ -68,14 +68,14 @@ The field is optional and defaults to nil. Without it, the only change in behavi
 
 ## Platform Considerations
 
-- **Windows**: the helper starts the new executable directly. The marker lives in `%TEMP%`. The NSIS case applies here. Per-user installs write `DisplayVersion` under `HKCU`, which the app can update. Per-machine installs write it under `HKLM`, which a non-elevated app cannot change, so the hook reports the update but cannot fix that value by itself.
-- **macOS**: the target is the `.app` bundle and the relaunch goes through `open -n`, which is the reason for the file. The helper and the relaunched app normally share the per-user `$TMPDIR`. If the app was started from a shell that set a different `TMPDIR`, the helper writes the marker where the relaunched app does not look, and the callback does not fire.
-- **Linux**: the helper starts the new executable directly. For AppImages the marker key depends on the target resolving to `$APPIMAGE` rather than the per-run mount path; that resolution is proposed separately in [#6201](https://github.com/wailsapp/wails/pull/6201), and self-update of AppImages does not work without it anyway.
+- **Windows**: the helper starts the new executable directly. The marker sits beside the executable. The NSIS case applies here. Per-user installs write `DisplayVersion` under `HKCU`, which the app can update. Per-machine installs write it under `HKLM`, which a non-elevated app cannot change, so the hook reports the update but cannot fix that value by itself.
+- **macOS**: the target is the `.app` bundle and the relaunch goes through `open -n`, which is the reason for the file. The marker sits beside the bundle, so it does not depend on the helper and the relaunched app sharing `$TMPDIR`.
+- **Linux**: the helper starts the new executable directly. For AppImages the target resolves to `$APPIMAGE` rather than the read-only mount ([#6201](https://github.com/wailsapp/wails/pull/6201)), so the marker sits beside the `.AppImage` file.
 - **Mobile**: the updater does not apply there; no change.
 
 ## Failure modes
 
-- **Marker left behind.** If the relaunched app exits before `Init` runs, or the new version does not use the updater at all, the marker stays in the temp directory. The next `Init` for the same target path reports the update late, possibly many launches later. Temp directory cleanup (reboot on a tmpfs `/tmp`, `systemd-tmpfiles`, macOS periodic cleanup, Windows Storage Sense) removes it eventually. A possible refinement is to also store the target's modification time in the marker and ignore a marker that does not match; the reference implementation does not do this yet.
+- **Marker left behind.** If the relaunched app exits before `Init` runs, or the new version does not use the updater at all, the marker stays beside the target. The next `Init` for the same target path reports the update late, possibly many launches later. A possible refinement is to also store the target's modification time in the marker and ignore a marker that does not match; the reference implementation does not do this yet.
 - **Multiple instances.** Only the helper-launched instance is expected to run `Init` first. If the user starts a second instance at the same moment, both may read the marker before either deletes it, and the callback runs in both. Apps that need strict once-only behaviour should make the callback idempotent, which bookkeeping such as rewriting a registry value already is.
 - **Several installs.** Two copies of the same app at different paths get different markers, so updating one does not notify the other.
 - **Callback panics.** The callback runs synchronously on the goroutine that calls `Init`, and a panic propagates to that caller like a panic anywhere else in startup. The marker is already deleted, so the next launch starts normally. The updater does not recover the panic, because hiding a failure in the app's own bookkeeping would be worse than surfacing it. Maintainers may prefer a recover-and-log wrapper; that is a small change.
@@ -93,7 +93,7 @@ The field is optional and defaults to nil. Without it, the only change in behavi
 
 **Cons**
 
-- Relies on a file in the temp directory and on the helper and the new process agreeing on that directory.
+- Leaves a short-lived dotfile beside the target between the swap and the next `Init`.
 - At-most-once delivery is best effort (see Failure modes).
 - It adds a small piece of state to a code path whose main job is replacing files safely.
 
@@ -103,16 +103,16 @@ The field is optional and defaults to nil. Without it, the only change in behavi
 2. **Command-line flag on the relaunch** (for example `open -n App.app --args --wails-updated-from=1.2.3`). This survives `open`, but it puts an argument the app did not define into its `os.Args`. Apps that parse flags strictly with `flag.Parse` would exit with an unknown-flag error on the first launch after every update. Rejected as breaking for existing apps.
 3. **The app compares a stored last-run version itself.** At startup the app reads the version it saved on the previous run, compares it with `CurrentVersion`, runs its bookkeeping if they differ, and saves the new value. This is viable today with no framework change. It also catches version changes the updater did not make, such as a reinstall or a package manager upgrade, which for some uses (migrations, what's-new notes) is the better behaviour.
 
-   The case for a framework hook anyway is narrower than it first looks. It is worth having when the app must act only on self-updates: the NSIS installer already writes `DisplayVersion` when it runs, so only the updater's path leaves it stale. It also spares every app from choosing a place and format for its own version state, and it puts the post-update step next to the rest of the updater configuration where users will look for it. If the maintainers judge that this does not justify a file in the temp directory, a reasonable outcome is to reject this WEP and instead document the stored-version pattern, with the NSIS `DisplayVersion` example, in the updater guide. The author is happy to write that instead.
-4. **Marker next to the target instead of in the temp directory.** This removes the shared-`TMPDIR` assumption on macOS, but the install directory may not be writable at relaunch (for example a read-only AppImage mount without #6201, or a per-machine Windows install), and it leaves a stray file in the app's install directory. Kept as an option if reviewers prefer it.
+   The case for a framework hook anyway is narrower than it first looks. It is worth having when the app must act only on self-updates: the NSIS installer already writes `DisplayVersion` when it runs, so only the updater's path leaves it stale. It also spares every app from choosing a place and format for its own version state, and it puts the post-update step next to the rest of the updater configuration where users will look for it. If the maintainers judge that this does not justify a marker file, a reasonable outcome is to reject this WEP and instead document the stored-version pattern, with the NSIS `DisplayVersion` example, in the updater guide. The author is happy to write that instead.
+4. **Marker in the temp directory.** It would not need write access beside the target, but the update already needs that access, since staging moved beside the target ([#6262](https://github.com/wailsapp/wails/pull/6262)). On a temp directory shared between users, such as `/tmp` on Linux, another local user could pre-create the predictable name as a FIFO, which would block `Init`, or as a forged marker the app cannot delete. On macOS it also needs the helper and the relaunched app to share `$TMPDIR`. Rejected.
 
 ## Backwards Compatibility
 
-Fully compatible. The new field is optional, `Init`'s signature is unchanged, and an old app that never sets it only sees a temp file created by the helper and deleted by `Init`. The new environment variable is set only in the helper process and is cleared, with the other helper variables, before the app is relaunched.
+Fully compatible. The new field is optional, `Init`'s signature is unchanged, and an old app that never sets it only sees a small file beside the target, created by the helper and deleted by `Init`. The new environment variable is set only in the helper process and is cleared, with the other helper variables, before the app is relaunched.
 
 ## Security and Privacy
 
-The marker contains only the previous version string. It is created with mode `0600` in the user's own temp directory and its name reveals only a truncated hash of the install path. Another process running as the same user could plant a marker and make the app believe it was updated from an arbitrary version string; that user can already modify the app itself, so this adds no new capability. Apps must still treat `previousVersion` as untrusted input and not, for example, interpolate it into a shell command. Updating per-machine registry values would need elevation, which this proposal does not provide.
+The marker contains only the previous version string. It is created with mode `0600` beside the target, in a directory the user can write and other users normally cannot. A process that can write there could plant a marker and make the app believe it was updated from an arbitrary version string, but it can already replace the app itself, so this adds no new capability. `Init` ignores a marker that is not a regular file, so a FIFO cannot block it. Apps must still treat `previousVersion` as untrusted input and not, for example, interpolate it into a shell command. Updating per-machine registry values would need elevation, which this proposal does not provide.
 
 ## Test Plan
 
@@ -121,6 +121,7 @@ Unit tests in the reference implementation:
 - `TestRunHelperSwap_RecordsReplacedVersion`: a successful swap writes the marker with the replaced version.
 - `TestRunHelperSwap_LaunchFails_NoReplacedVersion`: when the relaunch fails and the backup is restored, no marker remains.
 - `TestInit_OnUpdateApplied`: `Init` calls the callback once with the recorded version, deletes the marker, and a second `Init` in a new updater does not call it again.
+- `TestInit_OnUpdateAppliedIgnoresNonRegularMarker`: a marker path that is not a regular file is ignored and the callback does not run.
 
 Not yet done, and needed before the implementation leaves draft: a manual end-to-end update on Windows (NSIS per-user install, confirming a sample callback rewrites `DisplayVersion`), macOS (`.app` relaunched through `open -n`) and Linux (plain binary, and AppImage with #6201). Only the unit tests above have been run so far, on Linux.
 
