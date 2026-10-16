@@ -242,29 +242,33 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 func findGTKFiles(files []string) ([]string, error) {
 	notFound := []string{}
 	found := []string{}
-	err := filepath.Walk("/usr/", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			if os.IsPermission(err) {
+	// Distros install WebKit's helpers and injected bundle under these. Walking all of /usr also reaches /usr/local and
+	// /usr/src, where other projects' AppDirs and cross-built binaries would be bundled too.
+	for _, root := range []string{"/usr/lib", "/usr/lib64", "/usr/libexec"} {
+		err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				if os.IsPermission(err) || (path == root && os.IsNotExist(err)) {
+					return nil
+				}
+				return err
+			}
+
+			if info.IsDir() {
 				return nil
 			}
-			return err
-		}
 
-		if info.IsDir() {
-			return nil
-		}
-
-		for _, fileName := range files {
-			if strings.HasSuffix(path, fileName) {
-				found = append(found, path)
-				break
+			for _, fileName := range files {
+				if strings.HasSuffix(path, fileName) {
+					found = append(found, path)
+					break
+				}
 			}
-		}
 
-		return nil
-	})
-	if err != nil {
-		return nil, err
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	for _, fileName := range files {
 		fileFound := false
