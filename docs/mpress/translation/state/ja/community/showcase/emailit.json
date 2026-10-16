@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "31d42ccec848da48a89b",
+  "sourceFile": "community/showcase/emailit.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "targetHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "machineHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "machineText": "![EmailIt](/assets/showcase-images/emailit.webp)",
+      "status": "final",
+      "sourcePreview": "![EmailIt](/assets/showcase-images/emailit.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "cf6c353b8eb58108d414cc4bcd662b2dfdbabc07195ee2db1febc67446b9dfec",
+      "targetHash": "c504ced63fbf868a34ed8ec20446021217de2f5a708b8fe98d79cca3f7543248",
+      "machineHash": "c504ced63fbf868a34ed8ec20446021217de2f5a708b8fe98d79cca3f7543248",
+      "machineText": "[EmailIt](https://github.com/raguay/EmailIt/)は、9つのメモ帳、テキストを操作するスクリプト、テンプレートを備えた、Markdownベースのメール送信専用のWails 2プログラムです。EmailIt内でスクリプトを実行し、システム上のファイルを処理するためのスクリプトターミナルも備えています。スクリプトとテンプレートは、コマンドライン自体から、またはAlfred、Keyboard Maestro、Dropzone、PopClipの拡張機能を使用して利用できます。GitHubからダウンロードしたスクリプトとテーマにも対応しています。ドキュメントは未完成ですが、プログラムは動作します。Wails2とSvelteを使用して構築されており、ダウンロード版はmacOSユニバーサルアプリケーションです。",
+      "status": "final",
+      "sourcePreview": "[EmailIt](https://github.com/raguay/EmailIt/) is a Wails 2 program that is a\\ markdown based email s…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "4f260277d0f7d25b36a1e8739f194f7bafaa73fc391cc1ac0bd1c36270a70c7d",
+      "machineHash": "4f260277d0f7d25b36a1e8739f194f7bafaa73fc391cc1ac0bd1c36270a70c7d",
+      "machineText": "Wailsで構築されたデスクトップアプリケーション",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "targetHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "machineHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "machineText": "EmailIt",
+      "status": "final",
+      "sourcePreview": "EmailIt",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:32Z"
+    }
+  }
+}

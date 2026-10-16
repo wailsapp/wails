@@ -121,7 +121,9 @@ Este projeto é apoiado por estas simpáticas pessoas/empresas:
 
 ## Estrelas ao longo do tempo
 
-[![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Star History Chart" src="website/static/img/star-history.svg" width="800" />
+</a>
 
 ## Colaboradores
 

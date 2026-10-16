@@ -113,6 +113,14 @@ func (rw *responseWriter) Write(buf []byte) (int, error) {
 	return contentLen, nil
 }
 
+// Flush implements the http.Flusher interface.
+//
+// Write hands each chunk straight to the URL scheme task via
+// didReceiveData, so there is nothing buffered on this side and a flush has
+// no work to do. Declaring it anyway is what lets http.ResponseController
+// report success truthfully to a streaming handler.
+func (rw *responseWriter) Flush() {}
+
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.code = code
 	if rw.wroteHeader || rw.finished {

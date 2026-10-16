@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "cfea5e0282b880b507fc",
+  "sourceFile": "features/events/application.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "26845c54881d15b95fb63f536e972bafeefb6c9394c973a519c2c45797b4184b",
+      "targetHash": "c4a87cc431dd06e622218bc1a499c72298f874fe3b4a14b4d6b7eed3d341ab6a",
+      "machineHash": "c4a87cc431dd06e622218bc1a499c72298f874fe3b4a14b4d6b7eed3d341ab6a",
+      "machineText": "Les événements de l’application sont émis lors de changements du cycle de vie qui concernent l’ensemble de l’application, tels que son démarrage, son arrêt et les opérations de gestion des fenêtres.",
+      "status": "final",
+      "sourcePreview": "Application events are emitted for application-wide lifecycle changes, such as starting, stopping, a…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "1efa622f8819d993fce125a504f1a43ab2a2ac1d710d31e6f8ad72bcc124f506",
+      "targetHash": "7c47b1d6eee39e6c608d9668cd5867bd4fe39d020bd97044b9dda33d59c6fc4d",
+      "machineHash": "7c47b1d6eee39e6c608d9668cd5867bd4fe39d020bd97044b9dda33d59c6fc4d",
+      "machineText": "La documentation complète sur les événements de l’application est disponible dans le guide [Système d’événements](/features/events/system/#application-events).",
+      "status": "final",
+      "sourcePreview": "Full documentation of application events is available in the [Event System](/features/events/system/…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8f953b87b1423233ede5986386f01a89328dd1b2d026a2d9ef6c2db46177a718",
+      "targetHash": "f8c16fb3909efdf9a2dfb1c98158917ecdde7277d91f734df6a2924abc034626",
+      "machineHash": "f8c16fb3909efdf9a2dfb1c98158917ecdde7277d91f734df6a2924abc034626",
+      "machineText": "Événements au niveau de l’application émis par Wails v3",
+      "status": "final",
+      "sourcePreview": "Application-level events emitted by Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "68477bfdc8087a71a72921a7960b4c6aec58b182e311175369a5953d6352c226",
+      "targetHash": "18df055eb70389ac0af5730bb9602aa3550e58ee29476be2bdc0b9c1d16b4964",
+      "machineHash": "18df055eb70389ac0af5730bb9602aa3550e58ee29476be2bdc0b9c1d16b4964",
+      "machineText": "Événements de l’application",
+      "status": "final",
+      "sourcePreview": "Application Events",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:26Z"
+    }
+  }
+}

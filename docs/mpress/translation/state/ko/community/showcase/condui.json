@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "9517a90c7cbe4dee3f3d",
+  "sourceFile": "community/showcase/condui.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ko",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "targetHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "machineHash": "da03d4a89f6e585b8e475854406535102a78b2a336f634571c660c21780c9203",
+      "machineText": "![Condui](/assets/showcase-images/condui.png)",
+      "status": "final",
+      "sourcePreview": "![Condui](/assets/showcase-images/condui.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "ee2f0ea8cd31c3c2cff2e046ae5666a0a5804b9c50e0edcbae6adf679cd4b525",
+      "targetHash": "7f84e6bed6279c8b35f0372408429cc09ea8b18f31cf9055647f89ce887b081a",
+      "machineHash": "7f84e6bed6279c8b35f0372408429cc09ea8b18f31cf9055647f89ce887b081a",
+      "machineText": "Condui는 종단 간 암호화 다중 기기 동기화 기능을 갖춘 SSH 연결 관리자입니다. 사용하는 모든 기기에서 연결, SSH 터널, 볼트로 보호된 자격 증명을 동기화하며, 동기화 서버에는 평문 자격 증명이 절대 노출되지 않습니다.",
+      "status": "final",
+      "sourcePreview": "Condui is an SSH connection manager with end-to-end encrypted, multi-device\\ sync. It keeps your con…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "1d4105a0707deabff58b0b90d8f5acf871e8536b40b762ca980f4f38eafb8ac0",
+      "targetHash": "bc4bb57b266c38459d98c92500d60151dbd613182a1d9cc9c4cd547451ee65d9",
+      "machineHash": "bc4bb57b266c38459d98c92500d60151dbd613182a1d9cc9c4cd547451ee65d9",
+      "machineText": "주요 기능",
+      "status": "final",
+      "sourcePreview": "Key Features",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "be0559a49a6516aca836a901b9654646101a46300bfe13ab7244456461245621",
+      "targetHash": "0f8303661c380999fcf2dea356515494fbb4b59b4aa4a1f847bfb08ee48460c0",
+      "machineHash": "0f8303661c380999fcf2dea356515494fbb4b59b4aa4a1f847bfb08ee48460c0",
+      "machineText": "🔐 SSH 비밀번호와 개인 키 암호 구문을 위한 종단 간 암호화 볼트",
+      "status": "final",
+      "sourcePreview": "🔐 End-to-end encrypted vault for SSH passwords and private key passphrases",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "dc66fe3ca06e989add74c24b635fca58fd8b3b0e3e40455610c2e147c9d26aec",
+      "targetHash": "f5e3738ed9c028941bd6ed1f0f531f1f6457dc546c520a740c4a8e7601deb70b",
+      "machineHash": "f5e3738ed9c028941bd6ed1f0f531f1f6457dc546c520a740c4a8e7601deb70b",
+      "machineText": "🔄 연결, 폴더 및 SSH 터널의 다중 기기 동기화",
+      "status": "final",
+      "sourcePreview": "🔄 Multi-device sync of connections, folders and SSH tunnels",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "195faa3f9a4df1b8dfe36c0f0627b71f938c73da525bb4407f570ff4e25e17ed",
+      "targetHash": "c49df2fef5aada3dace58b6078587c4408b12d7d0016665e85a644a233b52ce4",
+      "machineHash": "c49df2fef5aada3dace58b6078587c4408b12d7d0016665e85a644a233b52ce4",
+      "machineText": "🌐 연결별로 유지되는 로컬 포트 포워딩 터널",
+      "status": "final",
+      "sourcePreview": "🌐 Local port-forwarding tunnels persisted per connection",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0007-text-01": {
+      "sourceHash": "bfd07ecab0e319bb768ac7eea7c4e2cad4e2ea3b09e108dc3a0702f2ac41df5b",
+      "targetHash": "f8e99e662fd797c0e961ed027ad063b09287d2cd682e563252d75971b7cc9800",
+      "machineHash": "f8e99e662fd797c0e961ed027ad063b09287d2cd682e563252d75971b7cc9800",
+      "machineText": "🖥️ 통합 터미널, SFTP, Docker 및 데이터베이스 도구",
+      "status": "final",
+      "sourcePreview": "🖥️ Integrated terminal, SFTP, Docker and database tooling",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0008-text-01": {
+      "sourceHash": "254799c3e57415264d9ee8f99c5ef5e02a8c1b0eee8cc20e21d079e6c96ada98",
+      "targetHash": "df15afd6623c6dd1fffab9cec76cf10f38dee1ae1f2885a72db8e1c28f3d917f",
+      "machineHash": "df15afd6623c6dd1fffab9cec76cf10f38dee1ae1f2885a72db8e1c28f3d917f",
+      "machineText": "💻 macOS, Windows 및 Linux 지원",
+      "status": "final",
+      "sourcePreview": "💻 Available for macOS, Windows and Linux",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0009-text-01": {
+      "sourceHash": "3fcc66119619a2abf1bd46ce80a64f90d0b7ee5fbe487097c7a7d413b28a9036",
+      "targetHash": "ca0fb9fe0e1ca44dd85d4d387820019f2862e0b81210972f33225f1d7348e4e8",
+      "machineHash": "ca0fb9fe0e1ca44dd85d4d387820019f2862e0b81210972f33225f1d7348e4e8",
+      "machineText": "지금 Condui를 사용해 보세요!",
+      "status": "final",
+      "sourcePreview": "Try Condui Today!",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "b0010-text-01": {
+      "sourceHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "targetHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "machineHash": "2b3c68d5e02c3ea8ddcaaf914f735ad930a2bf8ec9fe43cbb039d57469dd8a32",
+      "machineText": "💻 [https://condui.codeffeine.io/](https://condui.codeffeine.io/) | [GitHub](https://github.com/mgueregath/condui)",
+      "status": "final",
+      "sourcePreview": "💻 [https://condui.codeffeine.io/](https://condui.codeffeine.io/) | [GitHub](https://github.com/mguer…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineHash": "e426e7561632e7a77d03a5935513a0135bfc9f8cc67cbf5e86fafe0c1759edd6",
+      "machineText": "Wails로 빌드한 데스크톱 애플리케이션",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "targetHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "machineHash": "331ec92913737012d0f84d7e437ba4131aeeec4c89da185cdf4e7b1340a7adde",
+      "machineText": "Condui",
+      "status": "final",
+      "sourcePreview": "Condui",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:36Z"
+    }
+  }
+}

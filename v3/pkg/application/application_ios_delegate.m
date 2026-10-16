@@ -1,4 +1,4 @@
-//go:build ios
+//go:build ios && !server
 #import "application_ios_delegate.h"
 #import "../events/events_ios.h"
 #import "application_ios.h"

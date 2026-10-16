@@ -31,6 +31,9 @@ func init() {
 }
 
 func main() {
+	if os.Getenv("WAILS_MCP_CHILD") == "1" {
+		commands.DisableFooter = true
+	}
 	app := clir.NewCli("wails", "The Wails3 CLI", "v3")
 	app.NewSubCommand("docs", "Open the docs").Action(openDocs)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
@@ -43,6 +46,7 @@ func main() {
 	})
 
 	app.NewSubCommandFunction("dev", "Run in Dev mode", commands.Dev)
+	app.NewSubCommandFunction("mcp", "Run the Wails project MCP server", commands.MCP)
 
 	pkg := app.NewSubCommand("package", "Package application")
 	var pkgFlags flags.Package
@@ -94,6 +98,8 @@ func main() {
 	plugin.NewSubCommandFunction("init", "Initialise a new service", commands.ServiceInit)
 
 	tool := app.NewSubCommand("tool", "Various tools")
+	tool.NewSubCommandFunction("msix", "Create a Windows MSIX package", commands.ToolMSIX)
+	tool.NewSubCommand("msix-install-tools", "Install Windows MSIX packaging tools").Action(commands.InstallMSIXTools)
 	tool.NewSubCommandFunction("checkport", "Checks if a port is open. Useful for testing if vite is running.", commands.ToolCheckPort)
 	tool.NewSubCommandFunction("watcher", "Watches files and runs a command when they change", commands.Watcher)
 	tool.NewSubCommandFunction("cp", "Copy files", commands.Cp)
@@ -103,6 +109,7 @@ func main() {
 	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
 	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
 	tool.NewSubCommandFunction("docker-mounts", "Generate Docker volume mount flags for cross-compilation", commands.ToolDockerMounts)
+	tool.NewSubCommandFunction("prepare-macos-output", "Keep macOS app bundles signable in file-provider-backed projects", commands.ToolPrepareMacOSOutput)
 	tool.NewSubCommandFunction("has", "Check if a tool is available in PATH (e.g. wails3 tool has git, wails3 tool has gcc|clang)", commands.ToolHas)
 	tool.NewSubCommandFunction("has-cc", "Deprecated: use 'wails3 tool has gcc|clang' instead", commands.ToolHasCC)
 

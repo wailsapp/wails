@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "a3f36f3e6216adb8b026",
+  "sourceFile": "community/showcase/snippetexpander.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "ad46622b8630296d91339cd8837101c0a1f500da5ec2e92e7ea1e25582ca9af2",
+      "targetHash": "8be6f7f575b537968af40b5b86a6e4d05784ab97e3621cc4cfeaed94f4ddd511",
+      "machineHash": "8be6f7f575b537968af40b5b86a6e4d05784ab97e3621cc4cfeaed94f4ddd511",
+      "machineText": "![Tangkapan Layar Snippet Expander](/assets/showcase-images/snippetexpandergui-select-snippet.png)",
+      "status": "final",
+      "sourcePreview": "![Snippet Expander Screenshot](/assets/showcase-images/snippetexpandergui-select-snippet.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "c1e3c97770cb243b46168f2b2a4004bfa22369c1693265807023f2dc6883f569",
+      "targetHash": "b8a855c458cfeda0d8653c1e0c349e4d2a726635eb92243a53aa80d69abc158f",
+      "machineHash": "b8a855c458cfeda0d8653c1e0c349e4d2a726635eb92243a53aa80d69abc158f",
+      "machineText": "Tangkapan layar jendela Select Snippet di Snippet Expander",
+      "status": "final",
+      "sourcePreview": "Screenshot of Snippet Expander's Select Snippet window",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0003-text-01": {
+      "sourceHash": "6fe249dbf706e39753e1a6c9054a82fc76676d297a5dc344fe0d12699ea2d528",
+      "targetHash": "2549989c517a0e6097a09fcc4fa6aa7431b3cd15d6e29c00f9fe2788f3ea7289",
+      "machineHash": "2549989c517a0e6097a09fcc4fa6aa7431b3cd15d6e29c00f9fe2788f3ea7289",
+      "machineText": "![Tangkapan Layar Snippet Expander](/assets/showcase-images/snippetexpandergui-add-snippet.png)",
+      "status": "final",
+      "sourcePreview": "![Snippet Expander Screenshot](/assets/showcase-images/snippetexpandergui-add-snippet.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0004-text-01": {
+      "sourceHash": "7c53e7f78938393dddfa6304592e865d751c55cb9d1104923229ac7895862fd6",
+      "targetHash": "057f8a9430fb3b241b5f6174e5b06731ea92f1c318018aca828a32a2b2a0cb22",
+      "machineHash": "057f8a9430fb3b241b5f6174e5b06731ea92f1c318018aca828a32a2b2a0cb22",
+      "machineText": "Tangkapan layar halaman Add Snippet di Snippet Expander",
+      "status": "final",
+      "sourcePreview": "Screenshot of Snippet Expander's Add Snippet screen",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0005-text-01": {
+      "sourceHash": "eccac77f3af258e4b7b3e8117ad21af3d6612daaefee28efa5908701d853cbdc",
+      "targetHash": "7f6b2da76b267e716aca8c5e1f47a58aa2c6b4cf8cdd4513673a83a2284be370",
+      "machineHash": "7f6b2da76b267e716aca8c5e1f47a58aa2c6b4cf8cdd4513673a83a2284be370",
+      "machineText": "![Tangkapan Layar Snippet Expander](/assets/showcase-images/snippetexpandergui-search-and-paste.png)",
+      "status": "final",
+      "sourcePreview": "![Snippet Expander Screenshot](/assets/showcase-images/snippetexpandergui-search-and-paste.png)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0006-text-01": {
+      "sourceHash": "67c3990ba0350b2220f2e4f564322cbfc371fe76b11ca020113df769c74ffe27",
+      "targetHash": "8e23e6449422b0b4d7b29d749ca2db75cfc041ab5eb6660e83861d95e0ca72c3",
+      "machineHash": "8e23e6449422b0b4d7b29d749ca2db75cfc041ab5eb6660e83861d95e0ca72c3",
+      "machineText": "Tangkapan layar jendela Search \u0026 Paste di Snippet Expander",
+      "status": "final",
+      "sourcePreview": "Screenshot of Snippet Expander's Search \u0026 Paste window",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0007-text-01": {
+      "sourceHash": "2fe4335991f369d99265fd9d0eb4373f885aa0112896c6647cd75fe502cf8fb0",
+      "targetHash": "0b64759f8ed8148228d307a3d793e13c2745e05fee4e7dc0d8505bbd1bb66e12",
+      "machineHash": "0b64759f8ed8148228d307a3d793e13c2745e05fee4e7dc0d8505bbd1bb66e12",
+      "machineText": "[Snippet Expander](https://snippetexpander.org) adalah \"Asisten kecil untuk cuplikan teks yang dapat diperluas\" bagi Linux.",
+      "status": "final",
+      "sourcePreview": "[Snippet Expander](https://snippetexpander.org) is \"Your little expandable text\\ snippets helper\", f…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0008-text-01": {
+      "sourceHash": "957f26dc1361991a0c3b87d15b0d85304eca2e12b3c429fa0632869fbe137d58",
+      "targetHash": "9a25e2fd714aa0817acb4b874d44fdcb939bbfbf1357133094f4502e2330ec65",
+      "machineHash": "9a25e2fd714aa0817acb4b874d44fdcb939bbfbf1357133094f4502e2330ec65",
+      "machineText": "Snippet Expander terdiri atas aplikasi GUI yang dibuat dengan Wails untuk mengelola cuplikan dan pengaturan, serta mode jendela Search \u0026 Paste untuk memilih dan menempelkan cuplikan dengan cepat.",
+      "status": "final",
+      "sourcePreview": "Snippet Expander comprises of a GUI application built with Wails for managing\\ snippets and settings…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0009-text-01": {
+      "sourceHash": "54913ac4ef127e1014f3bf9925cad5c29e332a53d0787c0ff624f58d51973abc",
+      "targetHash": "42580ffb2ef0419bd1efbcc2dec26e54e0286a45e545cd73d7dec237e0c11633",
+      "machineHash": "42580ffb2ef0419bd1efbcc2dec26e54e0286a45e545cd73d7dec237e0c11633",
+      "machineText": "GUI berbasis Wails, CLI go-lang, dan daemon perluasan otomatis vala-lang semuanya berkomunikasi dengan daemon go-lang melalui D-Bus. Daemon tersebut menangani sebagian besar pekerjaan, yaitu mengelola basis data cuplikan dan pengaturan umum, serta menyediakan layanan untuk memperluas dan menempelkan cuplikan, dan sebagainya.",
+      "status": "final",
+      "sourcePreview": "The Wails based GUI, go-lang CLI and vala-lang auto expander daemon all\\ communicate with a go-lang …",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "b0010-text-01": {
+      "sourceHash": "9186f5fd4a6b899d853428739e2576257338c5290f35e51669ed63efff1a8bd3",
+      "targetHash": "78622e6630834a8e01b3dd127a38377c19b999ddbe05446246eaea079dc4c5e5",
+      "machineHash": "78622e6630834a8e01b3dd127a38377c19b999ddbe05446246eaea079dc4c5e5",
+      "machineText": "Lihat [kode sumber](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippetexpandergui/app.go#L38) untuk mengetahui cara aplikasi Wails mengirim pesan dari UI ke backend yang kemudian diteruskan ke daemon, serta berlangganan peristiwa D-Bus untuk memantau perubahan cuplikan yang dilakukan melalui instans lain aplikasi atau CLI dan langsung menampilkannya di UI melalui peristiwa Wails.",
+      "status": "final",
+      "sourcePreview": "Check out the\\ [source code](https://git.sr.ht/~ianmjones/snippetexpander/tree/trunk/item/cmd/snippe…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+      "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "61e7fc36cab6517f06beced9254747e272591684bc933c2c3b60860a0726460f",
+      "targetHash": "61e7fc36cab6517f06beced9254747e272591684bc933c2c3b60860a0726460f",
+      "machineHash": "61e7fc36cab6517f06beced9254747e272591684bc933c2c3b60860a0726460f",
+      "machineText": "Snippet Expander",
+      "status": "final",
+      "sourcePreview": "Snippet Expander",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:29Z"
+    }
+  }
+}

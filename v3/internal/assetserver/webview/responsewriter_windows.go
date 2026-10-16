@@ -30,6 +30,17 @@ func (rw *responseWriter) Header() http.Header {
 	return rw.header
 }
 
+// Note: this writer deliberately does not implement http.Flusher.
+//
+// Unlike the other platforms, Write accumulates into an in-memory buffer that
+// is only handed to WebView2 in Finish, so there is no way to push bytes to
+// the client mid-response. A no-op Flush would therefore claim a capability
+// that does not exist and make http.ResponseController report success while
+// nothing reaches the page. Leaving it unimplemented keeps
+// ResponseController.Flush returning ErrNotSupported, which is the truth.
+//
+// This is also why a streaming response cannot work on Windows today,
+// independently of anything WebView2 does.
 func (rw *responseWriter) Write(buf []byte) (int, error) {
 	if rw.finished {
 		return 0, errResponseFinished

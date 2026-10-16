@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "8e230aef279cb1b44146",
+  "sourceFile": "troubleshooting/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "id",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
+      "targetHash": "e8f8bece5356cceb1d892487bc961546f641972e6dc48a3b081f6c7e194c988e",
+      "machineHash": "e8f8bece5356cceb1d892487bc961546f641972e6dc48a3b081f6c7e194c988e",
+      "machineText": "Pemecahan Masalah",
+      "status": "final",
+      "sourcePreview": "Troubleshooting",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "c3af076f92c5ed8dcb0d0b0d36dd120bc31b68264efea96cf8019ca19f1c13a3",
+      "targetHash": "e8f8bece5356cceb1d892487bc961546f641972e6dc48a3b081f6c7e194c988e",
+      "machineHash": "e8f8bece5356cceb1d892487bc961546f641972e6dc48a3b081f6c7e194c988e",
+      "machineText": "Pemecahan Masalah",
+      "status": "final",
+      "sourcePreview": "Troubleshooting",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:31Z"
+    }
+  }
+}

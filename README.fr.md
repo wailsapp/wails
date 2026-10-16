@@ -115,7 +115,9 @@ Ce projet est soutenu par ces personnes aimables et entreprises:
 
 ## Les étoiles au fil du temps
 
-[![Graphique de l'histoire des étoiles](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
+<a href="https://github.com/wailsapp/wails/stargazers">
+  <img alt="Graphique de l'histoire des étoiles" src="website/static/img/star-history.svg" width="800" />
+</a>
 
 ## Les contributeurs
 

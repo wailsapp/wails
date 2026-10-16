@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -142,6 +143,87 @@ func TestExtractChangelogContent_AllEmpty(t *testing.T) {
 	// Verify we got empty string (no content)
 	if content != "" {
 		t.Fatalf("Expected empty string for template-only file, got: %s", content)
+	}
+}
+
+func TestRunRelease_EmptyChangelogSkipsAutomaticRelease(t *testing.T) {
+	cleanup, projectRoot := setupTestEnvironment(t)
+	defer cleanup()
+
+	unreleasedFile := filepath.Join(projectRoot, "v3", "UNRELEASED_CHANGELOG.md")
+	if err := os.WriteFile(unreleasedFile, []byte(getUnreleasedChangelogTemplate()), 0o644); err != nil {
+		t.Fatalf("Failed to create unreleased changelog: %v", err)
+	}
+
+	githubOutput := filepath.Join(t.TempDir(), "github-output")
+	if err := os.WriteFile(githubOutput, nil, 0o644); err != nil {
+		t.Fatalf("Failed to create GitHub output file: %v", err)
+	}
+	t.Setenv("GITHUB_OUTPUT", githubOutput)
+
+	if err := runRelease(releaseOptions{dryRun: true, branch: defaultReleaseBranch, target: defaultReleaseTarget}); err != nil {
+		t.Fatalf("runRelease() failed: %v", err)
+	}
+
+	output, err := os.ReadFile(githubOutput)
+	if err != nil {
+		t.Fatalf("Failed to read GitHub output: %v", err)
+	}
+	got := string(output)
+	if !strings.Contains(got, "release_skipped=true\n") {
+		t.Fatalf("Expected automatic release to be skipped, got output:\n%s", got)
+	}
+	if strings.Contains(got, "release_version=") {
+		t.Fatalf("Skipped release unexpectedly produced a version, got output:\n%s", got)
+	}
+}
+
+func TestRunRelease_ExplicitVersionContinuesWithEmptyChangelog(t *testing.T) {
+	cleanup, projectRoot := setupTestEnvironment(t)
+	defer cleanup()
+
+	unreleasedFile := filepath.Join(projectRoot, "v3", "UNRELEASED_CHANGELOG.md")
+	if err := os.WriteFile(unreleasedFile, []byte(getUnreleasedChangelogTemplate()), 0o644); err != nil {
+		t.Fatalf("Failed to create unreleased changelog: %v", err)
+	}
+
+	versionDir := filepath.Join(projectRoot, "v3", "internal", "version")
+	if err := os.MkdirAll(versionDir, 0o755); err != nil {
+		t.Fatalf("Failed to create version directory: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(versionDir, "version.txt"), []byte("v3.0.0-beta.8"), 0o644); err != nil {
+		t.Fatalf("Failed to create version file: %v", err)
+	}
+
+	githubOutput := filepath.Join(t.TempDir(), "github-output")
+	if err := os.WriteFile(githubOutput, nil, 0o644); err != nil {
+		t.Fatalf("Failed to create GitHub output file: %v", err)
+	}
+	t.Setenv("GITHUB_OUTPUT", githubOutput)
+
+	opts := releaseOptions{
+		version: "3.0.0-beta.9",
+		dryRun:  true,
+		branch:  defaultReleaseBranch,
+		target:  defaultReleaseTarget,
+	}
+	if err := runRelease(opts); err != nil {
+		t.Fatalf("runRelease() failed: %v", err)
+	}
+
+	output, err := os.ReadFile(githubOutput)
+	if err != nil {
+		t.Fatalf("Failed to read GitHub output: %v", err)
+	}
+	got := string(output)
+	if strings.Contains(got, "release_skipped=true\n") {
+		t.Fatalf("Explicit-version release was unexpectedly skipped, got output:\n%s", got)
+	}
+	if !strings.Contains(got, "release_version=v3.0.0-beta.9\n") {
+		t.Fatalf("Expected explicit version output, got:\n%s", got)
+	}
+	if !strings.Contains(got, "release_outcome=dry-run\n") {
+		t.Fatalf("Expected dry-run outcome, got:\n%s", got)
 	}
 }
 
@@ -512,9 +594,9 @@ func TestCopyFile_NonexistentSource(t *testing.T) {
 // out-ranking the stray tag.
 func TestAlpha2OutranksStrayTuiTag(t *testing.T) {
 	const (
-		strayTag    = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
+		strayTag     = "v3.0.0-alpha.98-tui" // the tag stuck as @latest
 		legacyLatest = "v3.0.0-alpha.102"    // highest legacy numeric alpha
-		nextTag     = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
+		nextTag      = "v3.0.0-alpha2.103"   // first tag the new scheme publishes
 	)
 
 	for _, v := range []string{strayTag, legacyLatest, nextTag} {
@@ -946,7 +1028,7 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 		t.Fatalf("Failed to create version directory: %v", err)
 	}
 
-	err = os.MkdirAll(filepath.Join(projectRoot, "docs", "src", "content", "docs"), 0755)
+	err = os.MkdirAll(filepath.Join(projectRoot, "docs", "mpress", "content"), 0755)
 	if err != nil {
 		t.Fatalf("Failed to create docs directory: %v", err)
 	}
@@ -959,9 +1041,10 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 	}
 
 	// Create initial changelog
-	changelogFile := filepath.Join(projectRoot, "docs", "src", "content", "docs", "changelog.mdx")
+	changelogFile := filepath.Join(projectRoot, "docs", "mpress", "content", "changelog.md")
 	initialChangelog := `---
-title: Changelog
+schema = 1
+title = "Changelog"
 ---
 
 ## [Unreleased]
@@ -1170,5 +1253,112 @@ func TestBuildReleaseBody(t *testing.T) {
 func TestFirstBetaIncrement(t *testing.T) {
 	if got := computeNextVersion("v3.0.0-beta.0"); got != "v3.0.0-beta.1" {
 		t.Errorf("computeNextVersion(v3.0.0-beta.0) = %q, want v3.0.0-beta.1", got)
+	}
+}
+
+func TestSyncRuntimePackageVersion(t *testing.T) {
+	repoDir := t.TempDir()
+	runtimeDir := filepath.Join(repoDir, "v3", "internal", "runtime", "desktop", "@wailsio", "runtime")
+	if err := os.MkdirAll(runtimeDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+
+	packageJSON := `{
+  "name": "@wailsio/runtime",
+  "version": "3.0.0-beta.7",
+  "scripts": {"test": "vitest"}
+}
+`
+	packageLockJSON := `{
+  "name": "@wailsio/runtime",
+  "version": "3.0.0-beta.7",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "name": "@wailsio/runtime",
+      "version": "3.0.0-beta.7"
+    },
+    "node_modules/example": {
+      "version": "1.2.3"
+    }
+  }
+}
+`
+	if err := os.WriteFile(filepath.Join(runtimeDir, "package.json"), []byte(packageJSON), 0o644); err != nil {
+		t.Fatalf("WriteFile(package.json) error = %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(runtimeDir, "package-lock.json"), []byte(packageLockJSON), 0o644); err != nil {
+		t.Fatalf("WriteFile(package-lock.json) error = %v", err)
+	}
+
+	if err := syncRuntimePackageVersion(repoDir, "v3.0.0-beta.8"); err != nil {
+		t.Fatalf("syncRuntimePackageVersion() error = %v", err)
+	}
+
+	var packageMetadata struct {
+		Version string `json:"version"`
+	}
+	data, err := os.ReadFile(filepath.Join(runtimeDir, "package.json"))
+	if err != nil {
+		t.Fatalf("ReadFile(package.json) error = %v", err)
+	}
+	if err := json.Unmarshal(data, &packageMetadata); err != nil {
+		t.Fatalf("Unmarshal(package.json) error = %v", err)
+	}
+	if packageMetadata.Version != "3.0.0-beta.8" {
+		t.Fatalf("package.json version = %q, want %q", packageMetadata.Version, "3.0.0-beta.8")
+	}
+
+	var lockMetadata struct {
+		Version  string `json:"version"`
+		Packages map[string]struct {
+			Version string `json:"version"`
+		} `json:"packages"`
+	}
+	data, err = os.ReadFile(filepath.Join(runtimeDir, "package-lock.json"))
+	if err != nil {
+		t.Fatalf("ReadFile(package-lock.json) error = %v", err)
+	}
+	if err := json.Unmarshal(data, &lockMetadata); err != nil {
+		t.Fatalf("Unmarshal(package-lock.json) error = %v", err)
+	}
+	if lockMetadata.Version != "3.0.0-beta.8" {
+		t.Fatalf("package-lock.json version = %q, want %q", lockMetadata.Version, "3.0.0-beta.8")
+	}
+	if got := lockMetadata.Packages[""].Version; got != "3.0.0-beta.8" {
+		t.Fatalf("package-lock.json root version = %q, want %q", got, "3.0.0-beta.8")
+	}
+	if got := lockMetadata.Packages["node_modules/example"].Version; got != "1.2.3" {
+		t.Fatalf("dependency version = %q, want %q", got, "1.2.3")
+	}
+}
+
+func TestReleasePublishesMarkdownChangelog(t *testing.T) {
+	cleanup, root := setupTestEnvironment(t)
+	defer cleanup()
+	archive := filepath.Join(root, "docs/mpress/content/changelog.md")
+	if err := os.MkdirAll(filepath.Dir(archive), 0755); err != nil {
+		t.Fatal(err)
+	}
+	original := "---\ntitle: \"Changelog\"\n---\n\n## [Unreleased]\n\n## v3.0.0-beta.8\nOld notes\n"
+	if err := os.WriteFile(archive, []byte(original), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(unreleasedChangelogFile, []byte("## Fixed\n- A fix\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := applyChangelogUpdates("v3.0.0-beta.9", "### Fixed\n- A fix\n"); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(archive)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(string(data), strings.Split(original, "## [Unreleased]")[0]) || !strings.Contains(string(data), "## v3.0.0-beta.9") || !strings.Contains(string(data), "Old notes") {
+		t.Fatalf("Invalid published Markdown: %s", data)
+	}
+	remaining, err := os.ReadFile(unreleasedChangelogFile)
+	if err != nil || strings.Contains(string(remaining), "- A fix") {
+		t.Fatalf("Unreleased changelog was not reset: %s, %v", remaining, err)
 	}
 }

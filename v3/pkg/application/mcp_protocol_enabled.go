@@ -3,6 +3,8 @@
 package application
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -40,9 +42,9 @@ type mcpJSONRPCError struct {
 }
 
 type mcpJSONRPCResponse struct {
-	JSONRPC string          `json:"jsonrpc"`
-	ID      json.RawMessage `json:"id"`
-	Result  any             `json:"result,omitempty"`
+	JSONRPC string           `json:"jsonrpc"`
+	ID      json.RawMessage  `json:"id"`
+	Result  any              `json:"result,omitempty"`
 	Error   *mcpJSONRPCError `json:"error,omitempty"`
 }
 
@@ -63,11 +65,11 @@ func mcpResultResponse(id json.RawMessage, result any) *mcpJSONRPCResponse {
 // are always allowed; browser contexts must originate from localhost.
 func mcpOriginAllowed(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
-	if origin == "" || origin == "null" {
+	if origin == "" {
 		return true
 	}
 	u, err := url.Parse(origin)
-	if err != nil {
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
 		return false
 	}
 	host := u.Hostname()
@@ -85,9 +87,14 @@ func mcpSetCORSHeaders(w http.ResponseWriter) {
 // handleMCP implements the server side of the MCP streamable HTTP transport.
 // Responses are always plain JSON (the spec allows this in place of SSE).
 func (m *mcpServer) handleMCP(w http.ResponseWriter, r *http.Request) {
-	mcpSetCORSHeaders(w)
 	if !mcpOriginAllowed(r) {
 		http.Error(w, "forbidden origin", http.StatusForbidden)
+		return
+	}
+	mcpSetCORSHeaders(w)
+	if r.Method != http.MethodOptions && !m.authorizedMCPRequest(r) {
+		w.Header().Set("WWW-Authenticate", "Bearer")
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -290,4 +297,18 @@ func mcpToolError(message string) map[string]any {
 		"content": []map[string]any{{"type": "text", "text": message}},
 		"isError": true,
 	}
+}
+
+func (m *mcpServer) authorizedMCPRequest(r *http.Request) bool {
+	if m.authToken == "" {
+		return true
+	}
+	header := r.Header.Get("Authorization")
+	scheme, token, ok := strings.Cut(header, " ")
+	if !ok || !strings.EqualFold(scheme, "Bearer") {
+		return false
+	}
+	supplied := sha256.Sum256([]byte(token))
+	expected := sha256.Sum256([]byte(m.authToken))
+	return subtle.ConstantTimeCompare(supplied[:], expected[:]) == 1
 }
