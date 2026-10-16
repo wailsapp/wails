@@ -34,7 +34,7 @@
     <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+    <img alt="Wails v3.0.0" src="https://img.shields.io/badge/version-v3.0.0-blue"/>
   </a>
 </p>
 
@@ -50,6 +50,16 @@
 </samp>
 </strong>
 </div>
+
+## Wails v3.0.0
+
+Wails v3.0.0 是面向 Windows、macOS 和 Linux 桌面应用程序的稳定版本。 Android 和 iOS 支持仍处于实验阶段，不在稳定桌面版的兼容性保证范围内。
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+```
+
+[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## 内容目录
 
@@ -90,7 +100,7 @@
 
 ## 快速入门
 
-使用说明在 [官网](https://wails.io/zh-Hans/docs/gettingstarted/installation/)。
+使用说明在 [官网](https://v3.wails.io/zh-cn/quick-start/installation/)。
 
 ## 赞助商
 

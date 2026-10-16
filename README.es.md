@@ -32,7 +32,7 @@
     <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+    <img alt="Wails v3.0.0" src="https://img.shields.io/badge/version-v3.0.0-blue"/>
   </a>
 </p>
 
@@ -48,6 +48,16 @@
 </samp>
 </strong>
 </div>
+
+## Wails v3.0.0
+
+Wails v3.0.0 es la versión estable para aplicaciones de escritorio en Windows, macOS y Linux. La compatibilidad con Android e iOS sigue siendo experimental.
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+```
+
+[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## Tabla de Contenidos
 
@@ -99,7 +109,7 @@ consúltalo antes de abrir una solicitud de mejora.
 ## Empezando
 
 Las instrucciones de instalacion se encuentran en nuestra
-[pagina web oficial](https://wails.io/docs/gettingstarted/installation).
+[pagina web oficial](https://v3.wails.io/quick-start/installation/).
 
 ## Patrocinadores
 

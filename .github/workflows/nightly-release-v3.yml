@@ -16,7 +16,7 @@ on:
         default: true
         type: boolean
       release_version:
-        description: 'Optional explicit version for an ad-hoc release (e.g. v3.0.0-beta.8)'
+        description: 'Optional explicit version for an ad-hoc release (e.g. v3.0.1)'
         required: false
         default: ''
         type: string

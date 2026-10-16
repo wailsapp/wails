@@ -9,9 +9,10 @@ Thanks for your interest in contributing! Wails has two active tracks. Pick the 
 - Detailed contributor guide: [wails.io/community-guide](https://wails.io/community-guide).
 - Changelog: update `website/src/pages/changelog.mdx` under the `[Unreleased]` heading.
 
-## v3 (beta)
+## v3.0.0 (stable)
 
-- Source: the `v3/` directory on the `master` branch.
+- Source: the `v3/` directory on the `releases/v3.0.0` branch for the v3.0.0 release. Development of future features continues on `master`.
+- Release scope: prioritise bug fixes by severity and deliver them through nightly patch updates. v3.1.0 is reserved for new features.
 - Docs: [v3.wails.io](https://v3.wails.io/).
 - Detailed contributor guide: [v3.wails.io/contributing](https://v3.wails.io/contributing/).
 - Changelog: v3 entries are added automatically from your PR on merge. To control the wording, add your own entry to `v3/UNRELEASED_CHANGELOG.md` and the automation will use it instead.

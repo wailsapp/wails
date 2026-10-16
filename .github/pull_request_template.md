@@ -6,7 +6,7 @@
 *     YOUR PR MAY BE REJECTED IF IT DOES NOT FOLLOW THESE STEPS     *
 *********************************************************************
 
-- *DO NOT* submit bugs for a source install of v3, ONLY tagged versions, e.g. v3.0.0-beta.1
+- *DO NOT* submit bugs for a source install of v3, ONLY tagged versions, e.g. v3.0.0
 - For a new capability or change to public behaviour, submit a draft **WEP (Wails Enhancement Proposal)** PR first. Do not start implementation until it is accepted.
   The feedback guide for v3 is here: https://v3.wails.io/feedback/
 
