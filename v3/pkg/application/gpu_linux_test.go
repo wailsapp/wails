@@ -54,8 +54,16 @@ func fakeSysfs(t *testing.T, nvidiaLoaded bool, cards map[string]fakeCard) strin
 }
 
 func TestNVIDIARenders(t *testing.T) {
-	hybrid := map[string]fakeCard{"card0": {"nvidia", "disconnected", false}, "card1": {"amdgpu", "connected", false}}
-	offload := map[string]string{"__NV_PRIME_RENDER_OFFLOAD": "1", "__GLX_VENDOR_LIBRARY_NAME": "nvidia"}
+	hybrid := map[string]fakeCard{"card0": {"nvidia", "disconnected", false}, "card1": {"amdgpu", "connected", true}}
+	wayland := map[string]string{"XDG_SESSION_TYPE": "wayland"}
+	with := func(kv ...string) map[string]string {
+		env := map[string]string{"XDG_SESSION_TYPE": "wayland"}
+		for i := 0; i < len(kv); i += 2 {
+			env[kv[i]] = kv[i+1]
+		}
+		return env
+	}
+	mesaAndNVIDIA := "/usr/share/glvnd/egl_vendor.d/50_mesa.json:/usr/share/glvnd/egl_vendor.d/10_nvidia.json"
 	cases := []struct {
 		name   string
 		loaded bool
@@ -63,13 +71,18 @@ func TestNVIDIARenders(t *testing.T) {
 		env    map[string]string
 		want   bool
 	}{
-		{"no nvidia module", false, map[string]fakeCard{"card1": {"amdgpu", "connected", false}}, nil, false},
-		{"nvidia drives the screen", true, map[string]fakeCard{"card0": {"nvidia", "connected", false}}, nil, true},
-		{"hybrid laptop on the AMD iGPU", true, hybrid, nil, false},
-		{"hybrid laptop launched on the dGPU", true, hybrid, offload, true},
-		{"external screen on the dGPU, desktop on the boot iGPU", true, map[string]fakeCard{"card0": {"nvidia", "connected", false}, "card1": {"amdgpu", "connected", true}}, nil, false},
-		{"boot VGA is NVIDIA", true, map[string]fakeCard{"card0": {"nvidia", "connected", true}, "card1": {"amdgpu", "connected", false}}, nil, true},
-		{"nothing known", true, nil, nil, true},
+		{"no nvidia module", false, map[string]fakeCard{"card1": {"amdgpu", "connected", true}}, wayland, false},
+		{"nvidia drives the screen", true, map[string]fakeCard{"card0": {"nvidia", "connected", true}}, wayland, true},
+		{"hybrid laptop on the AMD iGPU", true, hybrid, wayland, false},
+		{"hybrid laptop offloaded to the dGPU", true, hybrid, with("__NV_PRIME_RENDER_OFFLOAD", "1"), true},
+		{"GLX vendor alone does not move EGL", true, hybrid, with("__GLX_VENDOR_LIBRARY_NAME", "nvidia"), false},
+		{"EGL limited to NVIDIA", true, hybrid, with("__EGL_VENDOR_LIBRARY_FILENAMES", "/usr/share/glvnd/egl_vendor.d/10_nvidia.json"), true},
+		{"EGL offered Mesa and NVIDIA", true, hybrid, with("__EGL_VENDOR_LIBRARY_FILENAMES", mesaAndNVIDIA), false},
+		{"external screen on the dGPU, desktop on the boot iGPU", true, map[string]fakeCard{"card0": {"nvidia", "connected", false}, "card1": {"amdgpu", "connected", true}}, wayland, false},
+		{"boot VGA is NVIDIA with an AMD screen too", true, map[string]fakeCard{"card0": {"nvidia", "connected", true}, "card1": {"amdgpu", "connected", false}}, wayland, true},
+		{"screenless AMD boot VGA, screens on NVIDIA", true, map[string]fakeCard{"card0": {"nvidia", "connected", false}, "card1": {"amdgpu", "disconnected", true}}, wayland, true},
+		{"X11 keeps the workaround", true, hybrid, map[string]string{"XDG_SESSION_TYPE": "x11"}, true},
+		{"nothing known", true, nil, wayland, true},
 	}
 	for _, c := range cases {
 		getenv := func(k string) string { return c.env[k] }

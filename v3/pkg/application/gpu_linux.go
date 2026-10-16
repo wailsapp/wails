@@ -17,15 +17,21 @@ func isNVIDIAGPU() bool {
 }
 
 // nvidiaRenders reads the sysfs tree at root and the process environment. NVIDIA renders when the nvidia module is
-// loaded and either the app was offloaded to it (switcheroo's "Launch using Discrete Graphics Card", prime-run), or
-// the compositor's GPU is NVIDIA's: the boot VGA device when the kernel marks one, else the cards driving the
-// connected screens. Without any of that to read, a loaded module counts.
+// loaded and the app was offloaded to it (switcheroo's "Launch using Discrete Graphics Card" and prime-run set
+// __NV_PRIME_RENDER_OFFLOAD, which is all EGL needs), glvnd offers EGL no vendor but NVIDIA's, or the session renders
+// on it. A Wayland compositor renders on its primary GPU, which mutter and KWin take to be the boot VGA device, and
+// WebKit renders on the compositor's device; the boot VGA mark is trusted only when that card drives a connected
+// screen, and otherwise the cards driving the connected screens decide. Xorg renders where its configuration says
+// (reverse PRIME puts NVIDIA behind the iGPU's screen), which cannot be read here, so an X11 session keeps the
+// workaround whenever the module is loaded.
 func nvidiaRenders(root string, getenv func(string) string) bool {
 	if _, err := os.Stat(filepath.Join(root, "module", "nvidia")); err != nil {
 		return false
 	}
-	if getenv("__NV_PRIME_RENDER_OFFLOAD") == "1" || getenv("__GLX_VENDOR_LIBRARY_NAME") == "nvidia" ||
-		strings.Contains(getenv("__EGL_VENDOR_LIBRARY_FILENAMES"), "nvidia") {
+	if getenv("__NV_PRIME_RENDER_OFFLOAD") == "1" || onlyNVIDIAEGL(getenv("__EGL_VENDOR_LIBRARY_FILENAMES")) {
+		return true
+	}
+	if getenv("XDG_SESSION_TYPE") != "wayland" && getenv("WAYLAND_DISPLAY") == "" {
 		return true
 	}
 	drm := filepath.Join(root, "class", "drm")
@@ -36,23 +42,35 @@ func nvidiaRenders(root string, getenv func(string) string) bool {
 		}
 		return filepath.Base(driver)
 	}
-	cards, _ := filepath.Glob(filepath.Join(drm, "card[0-9]*"))
-	for _, card := range cards {
-		if strings.Contains(filepath.Base(card), "-") {
-			continue
-		}
-		if b, err := os.ReadFile(filepath.Join(card, "device", "boot_vga")); err == nil && strings.TrimSpace(string(b)) == "1" {
-			return driverOf(filepath.Base(card)) == "nvidia"
-		}
-	}
+	screens := map[string]bool{}
 	statuses, _ := filepath.Glob(filepath.Join(drm, "card*-*", "status"))
 	for _, status := range statuses {
-		b, err := os.ReadFile(status)
-		if err != nil || strings.TrimSpace(string(b)) != "connected" {
-			continue
+		if b, err := os.ReadFile(status); err == nil && strings.TrimSpace(string(b)) == "connected" {
+			card, _, _ := strings.Cut(filepath.Base(filepath.Dir(status)), "-")
+			screens[card] = true
 		}
-		card, _, _ := strings.Cut(filepath.Base(filepath.Dir(status)), "-")
+	}
+	for card := range screens {
+		if b, err := os.ReadFile(filepath.Join(drm, card, "device", "boot_vga")); err == nil && strings.TrimSpace(string(b)) == "1" {
+			return driverOf(card) == "nvidia"
+		}
+	}
+	for card := range screens {
 		if driver := driverOf(card); driver != "" && driver != "nvidia" {
+			return false
+		}
+	}
+	return true
+}
+
+// onlyNVIDIAEGL reports whether a glvnd EGL vendor list names NVIDIA's vendor file and no other, so EGL can load nothing
+// else.
+func onlyNVIDIAEGL(files string) bool {
+	if files == "" {
+		return false
+	}
+	for _, f := range strings.Split(files, ":") {
+		if !strings.Contains(filepath.Base(f), "nvidia") {
 			return false
 		}
 	}
