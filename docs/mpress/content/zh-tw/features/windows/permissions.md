@@ -85,9 +85,9 @@ Wails 在 macOS 12 及更新版本上處理**相機和麥克風**請求。地理
 | --- | --- | --- |
 | `PermissionDefault` | WebKit 顯示自己的權限提示 | 僅限 TCC |
 | `PermissionAllow` | 略過 WebKit 提示 — **TCC 仍然適用** | 僅限 TCC |
-| `PermissionDeny` | 在存取裝置之前拒絕 | 僅限 TCC |
+| `PermissionDeny` | 由 WebKit 拒絕；系統授權獨立處理 | 僅限 TCC |
 
-`PermissionAllow` 允許的是 WebView 請求，而不是裝置本身。首次擷取仍會觸發 TCC 提示；使用者在系統設定中拒絕的應用程式仍會被拒絕，應用程式無法自行授予裝置存取權。`PermissionAllow` 省略的只有前置的 WebKit 提示。
+`PermissionAllow` 允許的是 WebView 請求，而不是裝置存取。系統授權仍獨立生效，在系統設定中被拒絕的應用程式仍無法存取裝置。省略的只有 WebKit 自己的提示。
 
 macOS 12 之前不存在此委派方法，因此會忽略對應表，所有請求都回到 WebKit 提示。
 
@@ -100,18 +100,11 @@ macOS 12 之前不存在此委派方法，因此會忽略對應表，所有請�
 <string>Used for video calls</string>
 ```
 
-@note{type="caution" title="拒絕 Info.plist 未宣告用途的功能"}
+@note{type="caution" title="用途說明仍然是必要的"}
 
-如果請求在缺少對應用途說明鍵的情況下到達 AVFoundation，結果不只是請求失敗：macOS 會終止應用程式。
+WebKit 可能在呼叫 Wails 權限委派之前要求系統授權。`PermissionDeny` 會阻擋 WebKit 請求，但不保證不會出現 TCC 提示或 AVFoundation 授權請求。
 
-`PermissionDefault` 是零值，因此只設定 `{PermissionMicrophone: PermissionAllow}` 會讓相機繼續使用 WebKit 提示。如果使用者接受提示，而應用程式只宣告了 `NSMicrophoneUsageDescription`，應用程式就會終止。請為每個沒有用途說明的功能明確設定 `PermissionDeny`：
-
-```go
-Permissions: map[application.PermissionType]application.Permission{
-    application.PermissionMicrophone: application.PermissionAllow,
-    application.PermissionCamera:     application.PermissionDeny,
-},
-```
+請為應用程式要求的裝置加入對應的用途說明，並在啟用沙盒時加入對應的裝置授權項目（entitlements）。不要以 `PermissionDeny` 取代這些宣告。
 
 @end
 
@@ -231,7 +224,7 @@ macOS 欄為 ✅ 時，原則回答 WebKit 請求，TCC 仍額外控制裝置。
 
 **網頁內容請求相機或麥克風時，macOS 應用程式結束**
 
-如果請求在缺少對應用途說明鍵的情況下到達 AVFoundation，結果不只是請求失敗：macOS 會終止應用程式。 請加入對應的鍵，或為該功能設定 `PermissionDeny`，使請求無法到達 AVFoundation。`PermissionDefault` 會保留使用者可以接受的 WebKit 提示。
+請檢查 `Info.plist` 是否為應用程式要求的每種裝置包含 `NSCameraUsageDescription` 或 `NSMicrophoneUsageDescription`。缺少用途說明可能導致請求遭到拒絕；在缺少必要說明的情況下存取 AVFoundation 可能導致應用程式終止。`PermissionDeny` 控制的是 WebKit 的決定，不能取代這些鍵。
 
 **地理位置、通知和剪貼簿在 Linux 上不會生效**
 

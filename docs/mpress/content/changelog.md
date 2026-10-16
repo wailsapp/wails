@@ -28,6 +28,48 @@ _/
 
 ## [Unreleased]
 
+## v3.0.0-beta.30 - 2026-10-15
+
+## Fixed
+- Fix the updater trying to replace the read-only mount of an AppImage instead of the `.AppImage` file
+- Stop posting `WindowDidUpdate` and `WindowWillUpdate` on macOS: `NSWindowDidUpdateNotification` fires on every run-loop pass, so the page received ~120 empty `evaluateJavaScript:` calls per second, and on macOS 27.0 each of them consumed the transient activation of the user's click — `navigator.clipboard.writeText()` and other activation-gated APIs rejected with `NotAllowedError` from real clicks ([#6170](https://github.com/wailsapp/wails/issues/6170)) by @APshenkin
+- Fix default Windows info.json language to en-US (0409) so Explorer shows version details (#6210)
+- Handle cross-device rename failures in Linux updater with staged copy fallback in [PR](https://github.com/wailsapp/wails/pull/6135) by @john-okeefe
+- Fix `WebviewWindow.SetMenu` on Windows not redrawing the menu bar unless a menubar theme was configured, fixing [#6103](https://github.com/wailsapp/wails/issues/6103)
+- Fix `WebviewWindow.SetMenu(nil)` panicking on Windows instead of being a no-op like on macOS, fixing [#6104](https://github.com/wailsapp/wails/issues/6104)
+- Preserve changelog entries across competing pushes with retries in [PR](https://github.com/wailsapp/wails/pull/6094) by @leaanthony
+- Fix `go mod vendor` failing with `pattern arm64/WebView2Loader.dll: no matching files found` on every platform, by removing the embeds that referenced binaries never shipped in the module, fixing [#5782](https://github.com/wailsapp/wails/issues/5782) and [#5376](https://github.com/wailsapp/wails/issues/5376), in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
+- Prevent duplicate window teardown on macOS in [PR](https://github.com/wailsapp/wails/pull/6159) by @charlesbalderson
+- Handle WM_CONTEXTMENU for systray menu to open on right-click in [PR](https://github.com/wailsapp/wails/pull/6162) by @wzk2025
+- Fix all five `InvokeSync*` variants blocking their caller forever when the dispatched callback panics, fixing [#6107](https://github.com/wailsapp/wails/issues/6107), in [PR](https://github.com/wailsapp/wails/pull/6108) by @RALIST
+
+## v3.0.0-beta.29 - 2026-10-13
+
+## Added
+- Global shortcuts on macOS are now keyboard-layout aware: letter accelerators bind to the labelled key on non-QWERTY layouts (AZERTY, QWERTZ, Dvorak, ...) via `UCKeyTranslate`, instead of the fixed QWERTY physical position.
+
+## Fixed
+- Initialize native menu before setting it on Linux in [PR](https://github.com/wailsapp/wails/pull/6233) by @abhicodes-007
+- Resolve macOS GA readiness regressions in output handling and setup wizard in [PR](https://github.com/wailsapp/wails/pull/6237) by @taliesin-ai
+- Fix WebView2 COM `AddRef`/`Release` wrappers on Windows reporting a stale thread last-error as a failure. They now return the reference count, so a release can no longer abort the application or fail an asset request (#3931)
+- Fix `ICoreWebView2Deferral.Release` calling the `AddRef` slot, which leaked the deferral of every deferred asset request on Windows (#3931)
+
+## v3.0.0-beta.28 - 2026-10-05
+
+## Fixed
+- Keep macOS app output outside file providers in [PR](https://github.com/wailsapp/wails/pull/6225) by @taliesin-ai
+- Complete setup wizard and show system details in [PR](https://github.com/wailsapp/wails/pull/6224) by @taliesin-ai
+- Improve WebView2 recovery error handling and resource cleanup on Windows in [PR](https://github.com/wailsapp/wails/pull/6222) by @leaanthony
+- Improve WebView2 recovery on Windows to prevent app crashes and controller strandings in [PR](https://github.com/wailsapp/wails/pull/6220) by @taliesin-ai
+- Correct macOS media authorization guidance in [PR](https://github.com/wailsapp/wails/pull/6221) by @taliesin-ai
+- Fix right-clicking a Linux system tray icon running the click handler as well as opening the menu, so an attached window toggled on every right-click (#6018)
+- Keep WebView2 callback handlers alive until native release on Windows in [PR](https://github.com/wailsapp/wails/pull/6184) by @taliesin-ai
+
+## v3.0.0-beta.27 - 2026-10-01
+
+## Fixed
+- Fix the `Permissions` option being ignored on macOS 12 and later: the `WKUIDelegate` media-capture method is now implemented, so `PermissionAllow` and `PermissionDeny` apply to camera and microphone requests as they do on Linux and Windows. `NSCameraUsageDescription` / `NSMicrophoneUsageDescription` and, where sandboxed, the matching device entitlements are still required
+
 ## v3.0.0-beta.26 - 2026-09-25
 
 ## Added

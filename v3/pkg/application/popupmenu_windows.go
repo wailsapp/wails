@@ -339,8 +339,9 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 		p.onMenuOpen()
 	}
 
-	// Get screen dimensions to determine menu positioning
-	monitor := w32.MonitorFromWindow(p.parent, w32.MONITOR_DEFAULTTONEAREST)
+	// Get the dimensions of the monitor containing the menu position, which
+	// may differ from the monitor of the owner window.
+	monitor := w32.MonitorFromPoint(x, y, w32.MONITOR_DEFAULTTONEAREST)
 	var monitorInfo w32.MONITORINFO
 	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
 	if !w32.GetMonitorInfo(monitor, &monitorInfo) {
