@@ -1,4 +1,37 @@
-# AI Agent Instructions for Wails v3
+# AI Agent Instructions for Wails
+
+## Repository intent and layout
+
+This repository contains multiple generations of Wails and the supporting project sites:
+
+- [`v2/`](v2/AGENTS.md) is the maintained Wails v2 codebase and release line.
+- [`v3/`](v3/AGENTS.md) is the Wails v3 codebase, CLI, runtime, platform integrations, examples, and tests.
+- [`docs/`](docs/AGENTS.md) is the current M-Press documentation source for Wails v3.
+- [`website/`](website/AGENTS.md) is the Docusaurus website, including the v2 documentation and versioned historical documentation.
+- [`scripts/`](scripts/AGENTS.md) and [`tools/`](tools/AGENTS.md) contain repository automation and supporting utilities.
+- [`assets/`](assets/AGENTS.md) contains shared artwork and other repository-wide static assets.
+
+Work in the smallest owning directory. Keep v2 and v3 code, documentation, and release assumptions separate unless a task explicitly spans both versions. The root Taskfile delegates to these areas; check the task file in the owning directory for its available commands.
+
+The root is the source of repository-wide policy. A deeper `AGENTS.md` may add constraints for its subtree but does not override these instructions. Preserve existing project conventions and avoid unrelated changes.
+
+## Wails release policy
+
+For Wails release planning and issue/PR triage:
+
+- v3.1.0 contains features only.
+- Prioritise bugs by severity and release their fixes as nightly patch updates; keep them outside the v3.1.0 milestone/project.
+- Triage issue and PR content rather than inferring priority or release placement from missing labels.
+- GitHub Issues and pull requests are the authoritative trackers. Search for existing items before filing, link implementation work to its tracker, and do not create a parallel local issue list.
+
+## Working boundaries
+
+- Keep changes within the requested product/version scope. Do not backport or forward-port between v2 and v3 by assumption; identify compatibility and release intent first.
+- Treat generated files according to the owning project's build workflow. When a workflow requires generated artifacts to be committed, update all coupled outputs together.
+- Do not edit generated website output or dependency caches as source content. Edit the source and regenerate only when the task requires it.
+- Store AI-generated planning documents in `history/`, not at the repository root.
+- Do not push unless the user gives explicit manual confirmation.
+- Use the `taliesin-ai` identity for commits. Before committing, run `coderabbit --plain` as required by this repository's contribution policy.
 
 ## Issue Tracking with GitHub
 
@@ -78,7 +111,7 @@ Some subsystems have a dedicated internals page written for agents. Read the rel
 before changing that code — several of its decisions look arbitrary until you know which
 measured bug they prevent.
 
-- **Streams** (`pkg/application/stream*.go`, `runtime/.../stream.ts`):
+- **Streams** (`v3/pkg/application/stream*.go`, `v3/internal/runtime/.../stream.ts`):
   `docs/mpress/content/guides/advanced/streams-internals.md`. Covers the held-poll
   design, the buffer constants and how to pick them, session and connection lifecycle,
   transport selection, and what is unfinished. To convert an existing WebSocket
