@@ -243,6 +243,49 @@ func TestInit_CheckInterval_TicksProviderAndStops(t *testing.T) {
 	}
 }
 
+// Once an update is staged (StateReady) the periodic loop must leave it
+// alone until Restart; otherwise every tick downloads the release again.
+func TestInit_CheckInterval_DoesNotRedownloadStagedUpdate(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("payload")
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+
+	u := updater.New(host)
+	if err := u.Init(updater.Config{
+		CurrentVersion: "1.0.0",
+		Providers:      []updater.Provider{p},
+		CheckInterval:  20 * time.Millisecond,
+		Window:         updater.WindowNone,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer u.StopPeriodicCheck()
+	t.Cleanup(func() {
+		if path := u.DownloadedPath(); path != "" {
+			_ = os.RemoveAll(filepath.Dir(path))
+		}
+	})
+
+	deadline := time.Now().Add(2 * time.Second)
+	for u.State() != updater.StateReady {
+		if time.Now().After(deadline) {
+			t.Fatalf("update never staged, state %s", u.State())
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	// Leave room for several more ticks while the update is staged.
+	time.Sleep(200 * time.Millisecond)
+	u.StopPeriodicCheck()
+
+	if p.downloads != 1 {
+		t.Fatalf("expected 1 download while the update is staged, got %d", p.downloads)
+	}
+}
+
 func TestInit_RejectsDoubleConfigure(t *testing.T) {
 	u := updater.New(&fakeHost{})
 	cfg := updater.Config{CurrentVersion: "1.0.0", Providers: []updater.Provider{&fakeProvider{name: "f"}}}
