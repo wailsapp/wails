@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "39d0a279d6ddfab5304c",
+  "sourceFile": "migration/from-electron.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "ja",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "76f44833f686ed3d89da63ee436431a10fe095aa5a1a2b108dd0a4832b525682",
+      "targetHash": "07e0b438ee99414aa3b2bd257f2dea2a25a4f0649bddaf3fdbf226ac4b86a01d",
+      "machineHash": "07e0b438ee99414aa3b2bd257f2dea2a25a4f0649bddaf3fdbf226ac4b86a01d",
+      "machineText": "このページはプレースホルダーです。Electron からの移行に関する完全なコンテンツは近日公開予定です。",
+      "status": "final",
+      "sourcePreview": "This page is a placeholder. Full Electron migration content is coming soon.",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "b36bd592b9759b4c7ebae91273f502c3ec3a2d492e838c1063ffa1c5c67e4eaf",
+      "targetHash": "404f7816ec8bd62db7ec2440b6de91e3060ed78bdfa4b32c6f8a1c63890c6743",
+      "machineHash": "404f7816ec8bd62db7ec2440b6de91e3060ed78bdfa4b32c6f8a1c63890c6743",
+      "machineText": "Wails を使用すると、Go と Web 技術を使ってデスクトップアプリケーションを構築でき、Electron の Node.js ランタイムを単一の Go バイナリに置き換えられます。Wails v2 と v3 の違いについては、[v2 から v3 への移行](/migration/v2-to-v3/)を参照してください。",
+      "status": "final",
+      "sourcePreview": "Wails lets you build desktop applications using Go and web technologies, replacing Electron's Node.j…",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "14fbaf9954cadcbf542445f2483970e40df3dc1985ab6a0dedf1f41f0ec1f102",
+      "targetHash": "74c11297f31fd20230d0b14252efa4067a86a8323bb8ebdf0c7403a6604c1d86",
+      "machineHash": "74c11297f31fd20230d0b14252efa4067a86a8323bb8ebdf0c7403a6604c1d86",
+      "machineText": "Electron アプリケーションを Wails v3 に移行する",
+      "status": "final",
+      "sourcePreview": "Migrating an Electron application to Wails v3",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "12962b35e4c08c8f197a436a67f28b63c10cb14abc93e6fda9ccc49dd592a285",
+      "targetHash": "1972adfc4d2dea20db1836115ae89af6bb29e87c9bf4efa60e75f9f39218dc59",
+      "machineHash": "1972adfc4d2dea20db1836115ae89af6bb29e87c9bf4efa60e75f9f39218dc59",
+      "machineText": "Electron からの移行",
+      "status": "final",
+      "sourcePreview": "From Electron",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:35Z"
+    }
+  }
+}

@@ -9,7 +9,7 @@ import "unsafe"
 // COM method on this architecture.
 //
 // 386: stdcall passes the 16-byte struct as four stack words.
-func appendRectArg(args []uintptr, bounds *RECT) ([]uintptr, bool) {
+func appendRectArg(args []uintptr, bounds *RECT) []uintptr {
 	words := (*[4]uintptr)(unsafe.Pointer(bounds))
-	return append(args, words[0], words[1], words[2], words[3]), true
+	return append(args, words[0], words[1], words[2], words[3])
 }

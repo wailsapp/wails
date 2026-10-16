@@ -34,6 +34,11 @@ type Config struct {
 	// manual Check finding an update.
 	CheckInterval time.Duration
 
+	// HelperReadyTimeout bounds how long Restart waits for the helper to reach
+	// application.New. Zero uses 30 seconds. Increase it if application startup
+	// performs lengthy initialization before creating the Wails application.
+	HelperReadyTimeout time.Duration
+
 	// Platform / Arch / Channel override the per-platform defaults passed to
 	// each Provider's Check. Leave empty to use runtime.GOOS / runtime.GOARCH
 	// and the provider's default channel.
@@ -62,6 +67,9 @@ func (c *Config) validate() error {
 	}
 	if c.CurrentVersion == "" {
 		return errors.New("updater: Config.CurrentVersion is required")
+	}
+	if c.HelperReadyTimeout < 0 {
+		return errors.New("updater: HelperReadyTimeout must not be negative")
 	}
 	if len(c.Providers) == 0 {
 		return errors.New("updater: Config.Providers must contain at least one Provider")

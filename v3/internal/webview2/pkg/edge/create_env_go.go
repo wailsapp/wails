@@ -1,4 +1,4 @@
-//go:build windows && !native_webview2loader
+//go:build windows
 
 package edge
 

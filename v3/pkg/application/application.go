@@ -64,9 +64,6 @@ func New(appOptions Options) *App {
 		}
 	}
 
-	// Set up signal handling (platform-specific)
-	result.setupSignalHandler(appOptions)
-
 	result.logStartup()
 	result.logPlatformInfo()
 
@@ -373,6 +370,14 @@ func (r *webViewAssetRequest) URL() (string, error) {
 
 func (r *webViewAssetRequest) Method() (string, error) {
 	return r.Request.Method()
+}
+
+// Context preserves native request cancellation through the header-injecting wrapper.
+func (r *webViewAssetRequest) Context() context.Context {
+	if contextual, ok := r.Request.(interface{ Context() context.Context }); ok {
+		return contextual.Context()
+	}
+	return nil
 }
 
 func (r *webViewAssetRequest) Header() (http.Header, error) {
@@ -763,6 +768,9 @@ func (a *App) Run() error {
 	if err := startup(); err != nil {
 		return err
 	}
+	// Handle signals only after the application is ready to quit.
+	a.setupSignalHandler(a.options)
+
 	return a.impl.run()
 }
 
