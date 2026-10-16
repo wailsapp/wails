@@ -216,7 +216,7 @@ func (e *EventProcessor) registerListener(eventName string, callback func(*Custo
 		e.notifyLock.Lock()
 		defer e.notifyLock.Unlock()
 
-		thisListener.removed.Store(true)
+		thisListener.remove()
 		if _, ok := e.listeners[eventName]; !ok {
 			return
 		}
@@ -259,8 +259,14 @@ func (e *EventProcessor) unRegisterListener(eventName string) {
 
 func removeListeners(listeners []*eventListener) {
 	for _, listener := range listeners {
-		listener.removed.Store(true)
+		listener.remove()
 	}
+}
+
+// remove stops delivery and frees queued events even if a callback is stuck.
+func (l *eventListener) remove() {
+	l.removed.Store(true)
+	l.inbox.Discard()
 }
 
 // dispatchEventToListeners calls all registered listeners event name
