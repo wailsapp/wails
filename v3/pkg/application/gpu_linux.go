@@ -28,7 +28,15 @@ func nvidiaRenders(root string, getenv func(string) string) bool {
 	if _, err := os.Stat(filepath.Join(root, "module", "nvidia")); err != nil {
 		return false
 	}
-	if getenv("__NV_PRIME_RENDER_OFFLOAD") == "1" || onlyNVIDIAEGL(getenv("__EGL_VENDOR_LIBRARY_FILENAMES")) {
+	// glvnd loads only the EGL vendors the list names, so a list settles it before offload can: no NVIDIA vendor
+	// means NVIDIA cannot render EGL, only NVIDIA's means it must.
+	switch eglVendors(getenv("__EGL_VENDOR_LIBRARY_FILENAMES")) {
+	case vendorsNone:
+		return false
+	case vendorsOnlyNVIDIA:
+		return true
+	}
+	if getenv("__NV_PRIME_RENDER_OFFLOAD") == "1" {
 		return true
 	}
 	if getenv("XDG_SESSION_TYPE") != "wayland" && getenv("WAYLAND_DISPLAY") == "" {
@@ -63,16 +71,33 @@ func nvidiaRenders(root string, getenv func(string) string) bool {
 	return true
 }
 
-// onlyNVIDIAEGL reports whether a glvnd EGL vendor list names NVIDIA's vendor file and no other, so EGL can load nothing
-// else.
-func onlyNVIDIAEGL(files string) bool {
+type vendorList int
+
+const (
+	vendorsUnset vendorList = iota
+	vendorsNone
+	vendorsMixed
+	vendorsOnlyNVIDIA
+)
+
+// eglVendors reads a glvnd EGL vendor list: unset, naming no NVIDIA vendor file, mixed, or naming only NVIDIA's.
+func eglVendors(files string) vendorList {
 	if files == "" {
-		return false
+		return vendorsUnset
 	}
+	nvidia, other := false, false
 	for _, f := range strings.Split(files, ":") {
-		if !strings.Contains(filepath.Base(f), "nvidia") {
-			return false
+		if strings.Contains(filepath.Base(f), "nvidia") {
+			nvidia = true
+		} else {
+			other = true
 		}
 	}
-	return true
+	switch {
+	case !nvidia:
+		return vendorsNone
+	case other:
+		return vendorsMixed
+	}
+	return vendorsOnlyNVIDIA
 }

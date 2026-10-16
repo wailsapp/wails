@@ -78,6 +78,8 @@ func TestNVIDIARenders(t *testing.T) {
 		{"GLX vendor alone does not move EGL", true, hybrid, with("__GLX_VENDOR_LIBRARY_NAME", "nvidia"), false},
 		{"EGL limited to NVIDIA", true, hybrid, with("__EGL_VENDOR_LIBRARY_FILENAMES", "/usr/share/glvnd/egl_vendor.d/10_nvidia.json"), true},
 		{"EGL offered Mesa and NVIDIA", true, hybrid, with("__EGL_VENDOR_LIBRARY_FILENAMES", mesaAndNVIDIA), false},
+		{"EGL limited to Mesa outranks offload", true, hybrid, with("__NV_PRIME_RENDER_OFFLOAD", "1", "__EGL_VENDOR_LIBRARY_FILENAMES", "/usr/share/glvnd/egl_vendor.d/50_mesa.json"), false},
+		{"mixed EGL list leaves offload to decide", true, hybrid, with("__NV_PRIME_RENDER_OFFLOAD", "1", "__EGL_VENDOR_LIBRARY_FILENAMES", mesaAndNVIDIA), true},
 		{"external screen on the dGPU, desktop on the boot iGPU", true, map[string]fakeCard{"card0": {"nvidia", "connected", false}, "card1": {"amdgpu", "connected", true}}, wayland, false},
 		{"boot VGA is NVIDIA with an AMD screen too", true, map[string]fakeCard{"card0": {"nvidia", "connected", true}, "card1": {"amdgpu", "connected", false}}, wayland, true},
 		{"screenless AMD boot VGA, screens on NVIDIA", true, map[string]fakeCard{"card0": {"nvidia", "connected", false}, "card1": {"amdgpu", "disconnected", true}}, wayland, true},
