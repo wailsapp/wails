@@ -12,7 +12,7 @@
 
 ## Summary
 
-Add `-nopack` to `wails3 generate appimage`. linuxdeploy still bundles the AppDir, but `--output appimage` is omitted; the command logs the AppDir path and returns without producing an AppImage.
+Add `-nopack` to `wails3 generate appimage`. The AppDir is bundled and prepared as usual, but the packing step is skipped; the command logs the AppDir path and returns without producing an AppImage.
 
 ## Motivation
 
@@ -26,7 +26,7 @@ A new boolean on `GenerateAppImageOptions`:
 NoPack bool `description:"Prepare the AppDir but do not pack it into an AppImage"`
 ```
 
-The linuxdeploy command line is built without `--output appimage` when the flag is set. After linuxdeploy finishes, the command logs `AppDir prepared: <path>` and returns before the step that moves the AppImage into the output directory. Without the flag the command line and flow are unchanged.
+This builds on [#6213](https://github.com/wailsapp/wails/pull/6213), where linuxdeploy runs twice: once to bundle the AppDir, then, after the bundled WebKit library is patched, once more with `--output appimage` to pack it. With the flag set the second run is skipped: after the patch the command logs `AppDir prepared: <path>` and returns before packing and before the step that moves the AppImage into the output directory, so the AppDir it leaves is the one that would have been packed. Without the flag the flow is unchanged.
 
 Documentation: a row in the `generate appimage` flag table of the CLI guide and an `Added` entry in the unreleased changelog.
 
@@ -56,7 +56,7 @@ No new capability: the flag only skips the final packing step. The AppDir is lef
 
 ## Test Plan
 
-A unit test that the command line gains `--output appimage` only without the flag. Manual check: run with `-nopack` and confirm the AppDir exists, no AppImage is written to the output directory, and the AppDir path is logged.
+Manual check: run with `-nopack` and confirm the AppDir exists with the patched WebKit library, no AppImage is written to the output directory, and the AppDir path is logged. Mortar's packaging uses the option this way: it adds files to the AppDir and packs it with a pinned linuxdeploy and runtime.
 
 ## Reference Implementation
 
@@ -68,4 +68,4 @@ The author maintains the option. It is a few lines in `v3/internal/commands/appi
 
 ## Conclusion
 
-A small, additive option for `wails3 generate appimage` (-nopack) that makes AppImage builds possible and repeatable in environments the command currently cannot serve.
+A small, additive option for `wails3 generate appimage` (-nopack) that lets callers post-process the AppDir before it is packed.
