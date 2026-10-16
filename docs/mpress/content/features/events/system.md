@@ -167,6 +167,12 @@ app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
 
+**Delivery order:** each handler registered with `On`, `Once` or `OnMultiple` receives events in
+the order `Emit` was called and handles one event at a time, so it never runs concurrently with
+itself. Different handlers run independently: a slow handler does not delay the others, and
+there is no ordering between handlers. `Emit` never waits for handlers. After a handler is
+removed, events still queued for it are dropped.
+
 ### In JavaScript
 
 **Basic listener:**
