@@ -27,7 +27,7 @@ type Updater struct {
 	current    string // CurrentVersion, snapshot for State()
 	pending    *Release
 	resolved   string // resolved download path (after install)
-	stagingDir string // os.MkdirTemp parent of resolved, removed on Restart / re-Check
+	stagingDir string // staging dir beside the target holding resolved, removed on Restart / re-Check
 	lastDigest []byte // digest computed streaming during the last successful download
 	skipped    string // version recorded by SkipVersion / the default window Skip button
 

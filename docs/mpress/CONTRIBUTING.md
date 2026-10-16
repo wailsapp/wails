@@ -17,6 +17,9 @@ or add a failing code test for a documentation-only correction.
 4. Run `python3 docs/mpress/scripts/check_translations.py`,
    `mpress build --strict --no-purge-css`, `mpress check`, and
    `python3 docs/mpress/scripts/check_site.py docs/mpress/site`.
+   Translations that fall behind an English edit are reported as warnings and
+   do not fail the check; missing or empty translation files do. Add `--strict`
+   to `check_translations.py` to make the warnings fail.
 5. Open a PR against `master`, explain the correction and list the checks run.
    Include before/after screenshots for layout changes. Verify any code examples
    you change, and identify the platform and Wails version used.
