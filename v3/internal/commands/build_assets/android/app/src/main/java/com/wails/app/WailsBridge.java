@@ -625,6 +625,9 @@ public class WailsBridge {
                 JSONObject opts = new JSONObject(json);
                 String style = opts.optString("style", "default");
                 boolean hidden = opts.optBoolean("hidden", false);
+
+                String color = opts.has("color") ? opts.optString("color") : null;
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     WindowInsetsController c = activity.getWindow().getInsetsController();
                     if (c != null) {
@@ -646,6 +649,15 @@ public class WailsBridge {
                     if (hidden) vis |= View.SYSTEM_UI_FLAG_FULLSCREEN;
                     else vis &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
                     activity.getWindow().getDecorView().setSystemUiVisibility(vis);
+                }
+
+                // appicon color
+                if (color != null && !color.isEmpty()) {
+                    try {
+                        activity.getWindow().setStatusBarColor(android.graphics.Color.parseColor(color));
+                    } catch (IllegalArgumentException e) {
+                        Log.e(TAG, "setStatusBar: invalid color \"" + color + "\"", e);
+                    }
                 }
             } catch (Exception e) {
                 Log.e(TAG, "setStatusBar failed", e);
