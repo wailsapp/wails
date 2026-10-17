@@ -281,3 +281,25 @@ func TestGenerateTemplate_GeneratedTemplateCanBeInstalled(t *testing.T) {
 	}
 }
 
+
+func TestSplitTemplateURI(t *testing.T) {
+	tests := []struct {
+		uri, url, tag string
+	}{
+		{"https://github.com/u/r", "https://github.com/u/r", ""},
+		{"https://github.com/u/r@v1.2.3", "https://github.com/u/r", "v1.2.3"},
+		{"https://user@host/x", "https://user@host/x", ""},
+		{"https://user@host/x@v1", "https://user@host/x", "v1"},
+		{"ssh://git@host/x", "ssh://git@host/x", ""},
+		{"ssh://git@host/x@main", "ssh://git@host/x", "main"},
+		{"git@github.com:user/repo", "git@github.com:user/repo", ""},
+		{"git@github.com:u/r@main", "git@github.com:u/r", "main"},
+		{"github.com:u/r@v2", "github.com:u/r", "v2"},
+	}
+	for _, tt := range tests {
+		url, tag := splitTemplateURI(tt.uri)
+		if url != tt.url || tag != tt.tag {
+			t.Errorf("splitTemplateURI(%q) = (%q, %q), want (%q, %q)", tt.uri, url, tag, tt.url, tt.tag)
+		}
+	}
+}
