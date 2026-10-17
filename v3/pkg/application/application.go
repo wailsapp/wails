@@ -664,14 +664,14 @@ func (a *App) Run() error {
 		return err
 	}
 
+	// Built outside earlyDispatchLock: construction can call back into dispatch (an ErrorHandler, a window
+	// procedure interceptor), which would wait on the lock. Work sent meanwhile still queues.
+	impl := newPlatformApp(a)
 	a.earlyDispatchLock.Lock()
-	a.impl = newPlatformApp(a)
+	a.impl = impl
 	early := a.earlyDispatch
 	a.earlyDispatch = nil
 	a.earlyDispatchLock.Unlock()
-	for _, fn := range early {
-		a.dispatchOnMainThread(fn)
-	}
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -764,6 +764,17 @@ func (a *App) Run() error {
 			}()
 		}
 		a.pendingRun = nil
+
+		// Work sent before Run is replayed once startup is done, from another goroutine: on desktop it is posted to
+		// the native loop, so it runs after activation, and in server mode it cannot hold up startup.
+		if len(early) > 0 {
+			go func() {
+				defer handlePanic()
+				for _, fn := range early {
+					a.dispatchOnMainThread(fn)
+				}
+			}()
+		}
 
 		// set the application menu
 		if runtime.GOOS == "darwin" {

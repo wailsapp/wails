@@ -176,7 +176,20 @@ func TestServerMode_InvokeSyncBeforeRun(t *testing.T) {
 	})
 	ran := make(chan struct{})
 	go InvokeSync(func() { close(ran) })
-	time.Sleep(50 * time.Millisecond)
+	// Run starts only once the work is queued, so the test covers the path before Run.
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		app.earlyDispatchLock.Lock()
+		queued := len(app.earlyDispatch)
+		app.earlyDispatchLock.Unlock()
+		if queued > 0 {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("InvokeSync before Run was not queued")
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
 	select {
 	case <-ran:
 		t.Fatal("ran before Run")
