@@ -265,15 +265,25 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 }
 
 // splitTemplateURI splits a remote template value of the form url[@tag].
-// The tag follows the last '@' and is only recognised when it contains no ':'
-// or '/', so userinfo in URLs such as git@github.com:user/repo or
-// ssh://git@host/repo is kept as part of the URL.
+// The tag follows the last '@' and is only recognised when the text before it
+// already names a repository path (a '/' after the scheme for URLs, or a ':'
+// for scp-like addresses), so userinfo in URLs such as git@github.com:user/repo
+// or ssh://git@host/repo is kept as part of the URL, while tags such as
+// release/1.0 may still contain '/'.
 func splitTemplateURI(uri string) (url, tag string) {
 	i := strings.LastIndex(uri, "@")
-	if i < 0 || strings.ContainsAny(uri[i+1:], ":/") {
+	if i < 0 || i == len(uri)-1 {
 		return uri, ""
 	}
-	return uri[:i], uri[i+1:]
+	prefix := uri[:i]
+	hasPath := strings.Contains(prefix, ":")
+	if _, rest, ok := strings.Cut(prefix, "://"); ok {
+		hasPath = strings.Contains(rest, "/")
+	}
+	if !hasPath {
+		return uri, ""
+	}
+	return prefix, uri[i+1:]
 }
 
 // gitclone clones uri into a temporary directory and returns its path.

@@ -295,6 +295,9 @@ func TestSplitTemplateURI(t *testing.T) {
 		{"git@github.com:user/repo", "git@github.com:user/repo", ""},
 		{"git@github.com:u/r@main", "git@github.com:u/r", "main"},
 		{"github.com:u/r@v2", "github.com:u/r", "v2"},
+		{"https://github.com/u/r@release/1.0", "https://github.com/u/r", "release/1.0"},
+		{"git@github.com:u/r@feature/x", "git@github.com:u/r", "feature/x"},
+		{"https://user@host", "https://user@host", ""},
 	}
 	for _, tt := range tests {
 		url, tag := splitTemplateURI(tt.uri)
