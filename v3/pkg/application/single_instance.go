@@ -14,6 +14,10 @@ import (
 )
 
 var alreadyRunningError = errors.New("application is already running")
+
+// errSessionBusUnavailable wraps a failed connection to the session bus that the Linux lock needs; the app runs
+// without single instance rather than exiting.
+var errSessionBusUnavailable = errors.New("no D-Bus session bus")
 var secondInstanceBuffer = make(chan string, 1)
 var once sync.Once
 
