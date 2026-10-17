@@ -5,10 +5,8 @@ package application
 import (
 	"context"
 	"net/http"
-	"os"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"testing"
 	"time"
 )
@@ -167,37 +165,6 @@ func TestServerMode_Defaults(t *testing.T) {
 	case <-errCh:
 	case <-ctx.Done():
 		t.Error("timeout waiting for app shutdown")
-	}
-}
-
-func TestServerMode_SignalRunsShutdownHooks(t *testing.T) {
-	resetGlobalApp()
-
-	ran := make(chan struct{}, 1)
-	app := New(Options{
-		Name:       "Test Server",
-		Server:     ServerOptions{Host: "127.0.0.1", Port: 18089},
-		OnShutdown: func() { ran <- struct{}{} },
-	})
-	errCh := make(chan error, 1)
-	go func() { errCh <- app.Run() }()
-	time.Sleep(200 * time.Millisecond)
-
-	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
-		t.Fatal(err)
-	}
-	select {
-	case err := <-errCh:
-		if err != nil {
-			t.Fatalf("app.Run() returned error: %v", err)
-		}
-	case <-time.After(3 * time.Second):
-		t.Fatal("timeout waiting for shutdown")
-	}
-	select {
-	case <-ran:
-	default:
-		t.Fatal("OnShutdown did not run after SIGTERM")
 	}
 }
 

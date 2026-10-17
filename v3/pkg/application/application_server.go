@@ -117,6 +117,12 @@ func (h *serverApp) run() error {
 		IdleTimeout:  idleTimeout,
 	}
 
+	// Registered before listening, so a caller that can connect knows a signal now reaches this select; stopped on
+	// return so a later run does not share the signal.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(quit)
+
 	// Create listener
 	var err error
 	h.listener, err = net.Listen("tcp", addr)
@@ -137,9 +143,6 @@ func (h *serverApp) run() error {
 	}()
 
 	// Wait for shutdown signal or error
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
 	case err := <-errCh:
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
