@@ -243,6 +243,49 @@ func TestInit_CheckInterval_TicksProviderAndStops(t *testing.T) {
 	}
 }
 
+// Once an update is staged (StateReady) the periodic loop must leave it
+// alone until Restart; otherwise every tick downloads the release again.
+func TestInit_CheckInterval_DoesNotRedownloadStagedUpdate(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("payload")
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+
+	u := updater.New(host)
+	if err := u.Init(updater.Config{
+		CurrentVersion: "1.0.0",
+		Providers:      []updater.Provider{p},
+		CheckInterval:  20 * time.Millisecond,
+		Window:         updater.WindowNone,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer u.StopPeriodicCheck()
+	t.Cleanup(func() {
+		if path := u.DownloadedPath(); path != "" {
+			_ = os.RemoveAll(filepath.Dir(path))
+		}
+	})
+
+	deadline := time.Now().Add(2 * time.Second)
+	for u.State() != updater.StateReady {
+		if time.Now().After(deadline) {
+			t.Fatalf("update never staged, state %s", u.State())
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	// Leave room for several more ticks while the update is staged.
+	time.Sleep(200 * time.Millisecond)
+	u.StopPeriodicCheck()
+
+	if p.downloads != 1 {
+		t.Fatalf("expected 1 download while the update is staged, got %d", p.downloads)
+	}
+}
+
 func TestInit_RejectsDoubleConfigure(t *testing.T) {
 	u := updater.New(&fakeHost{})
 	cfg := updater.Config{CurrentVersion: "1.0.0", Providers: []updater.Provider{&fakeProvider{name: "f"}}}
@@ -844,6 +887,58 @@ func TestDownloadAndInstall_ECDSA_TrailingBytes_Rejected(t *testing.T) {
 	err = u.DownloadAndInstall(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "trailing") {
 		t.Fatalf("expected trailing-data error, got %v", err)
+	}
+}
+
+// With Config.PublicKey pinned, a release that carries no signature must be
+// rejected rather than installed. A compromised feed or mirror can strip the
+// signature (or the whole Verification block) to attempt a downgrade to
+// digest-only mode; that must fail closed end-to-end, not just in
+// runVerification.
+func TestDownloadAndInstall_PublicKeyRequiresSignature(t *testing.T) {
+	pub, _, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkix, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		name string
+		v    *updater.Verification
+	}{
+		{"digest-only", &updater.Verification{DigestAlgo: "sha256"}},
+		{"no-verification", nil},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			host := &fakeHost{}
+			body := []byte("unsigned-payload")
+			if tc.v != nil {
+				sum := sha256.Sum256(body)
+				tc.v.Digest = sum[:]
+			}
+			rel := &updater.Release{
+				Version:      "2.0.0",
+				Artifact:     updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+				Verification: tc.v,
+			}
+			p := &fakeProvider{name: "p", rel: rel, body: body}
+			u := newConfiguredWithKey(t, host, pkix, p)
+
+			if _, err := u.Check(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			err := u.DownloadAndInstall(context.Background())
+			if err == nil || !strings.Contains(err.Error(), "must carry a signature") {
+				t.Fatalf("expected fail-closed signature error, got %v", err)
+			}
+			if u.State() != updater.StateError {
+				t.Errorf("state after rejected unsigned release: %s", u.State())
+			}
+		})
 	}
 }
 

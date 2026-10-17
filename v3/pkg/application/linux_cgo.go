@@ -1954,7 +1954,7 @@ func alertDialogCallback(requestID C.uint, buttonIndex C.int) {
 	close(ch)
 }
 
-func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFile, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
 	requestID := nextDialogRequestID()
 	resultChan := make(chan string, 100)
 
@@ -1981,6 +1981,12 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 				C.free(unsafe.Pointer(cPattern))
 			}
 			C.set_file_dialog_filters(dialog, filterStore)
+		}
+
+		if currentFile != "" {
+			cName := C.CString(currentFile)
+			C.gtk_file_dialog_set_initial_name(dialog, cName)
+			C.free(unsafe.Pointer(cName))
 		}
 
 		if currentFolder != "" {
@@ -2042,6 +2048,7 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 		dialog.allowsMultipleSelection,
 		false, // createFolders not applicable for open
 		dialog.showHiddenFiles,
+		"",
 		dialog.directory,
 		dialog.title,
 		action,
@@ -2069,6 +2076,7 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 		false,
 		dialog.canCreateDirectories,
 		dialog.showHiddenFiles,
+		dialog.filename,
 		dialog.directory,
 		dialog.title,
 		1, // GTK_FILE_CHOOSER_ACTION_SAVE

@@ -25,10 +25,13 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix transparent and translucent windows rendering opaque on Linux with GTK4 by clearing the GtkWindow background
+- Fix AppImages from `wails3 generate appimage` crashing on start outside Debian and Ubuntu with "Unable to spawn a new child process: … WebKitNetworkProcess". The bundled WebKit now runs the helper processes shipped in the AppImage. WebKit's bubblewrap sandbox stays on
+- Fix `-tags server` builds failing to compile for Android and iOS, fixing [#6271](https://github.com/wailsapp/wails/issues/6271)
 - Fix the updater failing to swap on Linux when the temp dir is on another filesystem (such as a tmpfs `/tmp`) by staging beside the installed binary and copying across filesystems
 - Fix the updater trying to replace the read-only mount of an AppImage instead of the `.AppImage` file
 - Stop posting `WindowDidUpdate` and `WindowWillUpdate` on macOS: `NSWindowDidUpdateNotification` fires on every run-loop pass, so the page received ~120 empty `evaluateJavaScript:` calls per second, and on macOS 27.0 each of them consumed the transient activation of the user's click — `navigator.clipboard.writeText()` and other activation-gated APIs rejected with `NotAllowedError` from real clicks ([#6170](https://github.com/wailsapp/wails/issues/6170)) by @APshenkin
 - Fix default Windows info.json language to en-US (0409) so Explorer shows version details (#6210)
+- Fix the Linux DMA-BUF renderer being turned off on laptops with an NVIDIA dGPU beside an AMD or Intel iGPU: on Wayland it is now turned off only when WebKit renders on NVIDIA (the app was offloaded to the dGPU, or the compositor runs on it), not whenever the nvidia module is loaded, which slowed rendering to a crawl on the iGPU; X11 sessions keep the old behaviour, since Xorg's render GPU is set by its configuration
 - Handle cross-device rename failures in Linux updater with staged copy fallback in [PR](https://github.com/wailsapp/wails/pull/6135) by @john-okeefe
 - Fix `WebviewWindow.SetMenu` on Windows not redrawing the menu bar unless a menubar theme was configured, fixing [#6103](https://github.com/wailsapp/wails/issues/6103)
 - Fix `WebviewWindow.SetMenu(nil)` panicking on Windows instead of being a no-op like on macOS, fixing [#6104](https://github.com/wailsapp/wails/issues/6104)
