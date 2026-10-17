@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- `wails init` now warns that remote templates are code: the `frontend:*` commands in `wails.json` and the scripts they call run during `wails build` and `wails dev`. The warning lists the commands found in the generated `wails.json` and is also shown with `-q`. The template docs now describe this trust boundary.
+
 ## v2.16.0 - 2026-09-14
 
 ### Fixed
