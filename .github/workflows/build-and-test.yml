@@ -8,6 +8,9 @@ on:
       - '.github/workflows/build-and-test.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test_go:
     name: Run Go Tests
