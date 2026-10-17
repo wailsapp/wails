@@ -251,6 +251,20 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		ldflags.Add(options.LDFlags)
 	}
 
+	macOSConfig := macOSBuildConfig{}
+	if options.Platform == "darwin" {
+		macOSConfig, err = newMacOSBuildConfig(
+			os.Getenv("MACOSX_DEPLOYMENT_TARGET"),
+			os.Getenv("WAILS_MACOS_STAGED_FRAMEWORKS"),
+		)
+		if err != nil {
+			return err
+		}
+		if macOSConfig.externalLinkerArg != "" {
+			ldflags.Add(macOSConfig.externalLinkerArg)
+		}
+	}
+
 	if options.Mode == Production {
 		ldflags.Add("-w", "-s")
 		if options.Platform == "windows" && !options.WindowsConsole {
@@ -310,7 +324,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 					v += " "
 				}
 				if !strings.Contains(v, "-mmacosx-version-min") {
-					v += "-mmacosx-version-min=10.13"
+					v += "-mmacosx-version-min=" + macOSConfig.deploymentTarget
 				}
 			}
 			return v
@@ -320,6 +334,9 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			if v != "" {
 				v += " "
 			}
+			if options.Platform == "darwin" && !strings.Contains(v, "-mmacosx-version-min") {
+				v += "-mmacosx-version-min=" + macOSConfig.deploymentTarget + " "
+			}
 			v += "-I" + buildBaseDir
 			return v
 		})
@@ -328,6 +345,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			return "1"
 		})
 		if options.Platform == "darwin" {
+			cmd.Env = shell.UpsertEnv(cmd.Env, "MACOSX_DEPLOYMENT_TARGET", func(string) string {
+				return macOSConfig.deploymentTarget
+			})
+
 			// Determine version so we can link to newer frameworks
 			// Why doesn't CGO have this option?!?!
 			info, err := system.GetInfo()
@@ -348,8 +369,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 				if addUTIFramework {
 					v += "-framework UniformTypeIdentifiers "
 				}
+				if macOSConfig.stagedFrameworks != "" {
+					v += "-F" + macOSConfig.stagedFrameworks + " "
+				}
 				if !strings.Contains(v, "-mmacosx-version-min") {
-					v += "-mmacosx-version-min=10.13"
+					v += "-mmacosx-version-min=" + macOSConfig.deploymentTarget
 				}
 
 				return v
