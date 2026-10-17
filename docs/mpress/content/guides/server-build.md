@@ -95,11 +95,11 @@ Server: application.ServerOptions{
     // Graceful shutdown timeout. Default: 30s
     ShutdownTimeout: 30 * time.Second,
 
-    // Additional origins allowed to open WebSocket connections.
-    // Same-origin connections are always allowed.
+    // Additional origins allowed to open WebSocket connections and call
+    // /wails/runtime. Same-origin requests are always allowed.
     WebSocketOriginPatterns: []string{"app.example.com"},
 
-    // Disable WebSocket origin checks. Unsafe; default: false.
+    // Disable WebSocket and runtime origin checks. Unsafe; default: false.
     WebSocketAllowAllOrigins: false,
 
     // TLS configuration (optional)
@@ -322,7 +322,7 @@ When deploying server mode applications:
 1. **Bind to localhost by default** - Only use `0.0.0.0` when needed
 2. **Use TLS in production** - Configure `ServerOptions.TLS`
 3. **Place behind reverse proxy** - Use nginx/traefik for additional security
-4. **Keep WebSockets same-origin** - Add only trusted origins with `WebSocketOriginPatterns`; avoid `WebSocketAllowAllOrigins`
+4. **Keep WebSockets and runtime calls same-origin** - Add only trusted origins with `WebSocketOriginPatterns`; avoid `WebSocketAllowAllOrigins`
 5. **Validate all inputs** - Same security practices as any web application
 
 ## Example
@@ -361,3 +361,7 @@ These take precedence over the `ServerOptions` in your code, which is why the Do
 ### Runtime request size
 
 Requests to `/wails/runtime` are limited to 64 MiB before JSON processing. An ordinary request above this limit receives HTTP 413, including requests without `Content-Length`. Chunked runtime uploads retain their separate 1 MiB per-chunk and 64 MiB assembled-payload limits. Use application middleware or a reverse proxy to impose a lower limit where appropriate.
+
+### Runtime request origin
+
+`/wails/runtime` accepts only `POST` requests; other methods receive HTTP 405. A browser request whose `Origin` is neither the request host nor a match for `WebSocketOriginPatterns` receives HTTP 403, as does one without `Origin` whose `Sec-Fetch-Site` is `cross-site` or `same-site`. Requests carrying neither header, such as those from `curl` or other non-browser clients, are accepted. If a reverse proxy rewrites the `Host` header, add the public origin to `WebSocketOriginPatterns`.

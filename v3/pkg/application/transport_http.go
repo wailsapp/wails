@@ -168,6 +168,10 @@ func (t *HTTPTransport) Handler() func(next http.Handler) http.Handler {
 }
 
 func (t *HTTPTransport) handleRuntimeRequest(rw http.ResponseWriter, r *http.Request) {
+	if !checkRuntimeRequest(rw, r) {
+		return
+	}
+
 	// Chunked upload: JS splits large bodies into smaller pieces to work
 	// around WebView2's ~2MB request body delivery limit in WebResourceRequested.
 	if chunkID := r.Header.Get(chunkIDHeader); chunkID != "" {
