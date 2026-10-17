@@ -54,6 +54,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Security
 <!-- Security-related changes -->
 - Server mode (`-tags server`) now accepts `/wails/runtime` calls only as `POST` requests from the server's own origin or an origin listed in `ServerOptions.WebSocketOriginPatterns`; other methods receive HTTP 405 and other browser origins HTTP 403. Deployments behind a reverse proxy that rewrites the `Host` header should add their public origin to `WebSocketOriginPatterns`
+- Windows notifications no longer fall back to PowerShell when the WinRT toast API fails; the error is returned instead
 
 ---
 
