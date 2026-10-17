@@ -927,6 +927,11 @@ func (a *App) cleanup() {
 	a.performingShutdown = true
 	a.shutdownLock.Unlock()
 
+	// Before the shutdown hooks, which may take a while: an instance launched
+	// from here on must start fresh rather than hand off to this one. On the
+	// main thread, which owns the Windows lock's message window.
+	InvokeSync(a.singleInstanceManager.cleanup)
+
 	// No need to hold the lock here because a.shutdownTasks
 	// may only change while a.performingShutdown is false.
 	for _, shutdownTask := range a.shutdownTasks {
@@ -952,11 +957,6 @@ func (a *App) cleanup() {
 		}
 		a.systemTrays = nil
 		a.systemTraysLock.Unlock()
-
-		// Cleanup single instance manager
-		if a.singleInstanceManager != nil {
-			a.singleInstanceManager.cleanup()
-		}
 
 		a.postQuit()
 
