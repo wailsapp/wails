@@ -65,6 +65,10 @@ func main() {
 
 `Restart` 会等待辅助进程执行到 `application.New`，然后才请求正在运行的应用退出。默认启动超时为 30 秒。如果应用在 `application.New` 之前需要较长时间进行初始化，请将 `Config.HelperReadyTimeout` 设置为更长的时长，例如 `time.Minute`。零值使用默认值；负时长会被拒绝。如果启动超时，`Restart` 会返回 `updater.ErrHelperNotReady`，并保持当前应用运行。
 
+更新会暂存在已安装二进制文件旁边(macOS 上位于 `.app` 包旁边)的 `wails-update-*` 目录中,因此该目录必须可写。
+
+在 AppImage 中，更新程序会替换并重新启动 `$APPIMAGE` 所指向的 `.AppImage` 文件，而不是只读挂载。
+
 默认窗口会自动反映当前状态——例如，当`Check`返回没有可用升级时，用户会看到以下内容，并通过<strong>关闭</strong>将其关闭：
 
 ![处于“已是最新版本”状态的默认更新器窗口——绿色对勾、“你使用的是最新版本”标题，以及唯一的“关闭”按钮。](/assets/updater/default-window-up-to-date.png)

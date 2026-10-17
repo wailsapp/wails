@@ -6,6 +6,8 @@ import (
 	"runtime"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestRelocateMacOSOutputPreservesFilesAndRejectsCollision(t *testing.T) {
@@ -77,6 +79,14 @@ func TestMacOSOutputMarkerDoesNotTrustMovedDirectory(t *testing.T) {
 	if macOSOutputIsLocal(moved) {
 		t.Fatal("moved output retained trust in its previous filesystem location")
 	}
+}
+
+func TestMacOSOutputRejectsLegacyMarker(t *testing.T) {
+	path := t.TempDir()
+	resolved, err := resolveMacOSOutput(path)
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(filepath.Join(path, ".wails-provider-checked"), []byte(resolved), 0o644))
+	require.False(t, macOSOutputIsLocal(path), "legacy probe-only result was trusted")
 }
 
 func TestOutputLinkRejectsFileTarget(t *testing.T) {

@@ -65,6 +65,10 @@ Vous pouvez consulter l’état actuel à tout moment avec `app.Updater.State()`
 
 `Restart` attend que l’assistant atteigne `application.New` avant de demander à l’application en cours de quitter. Le délai de démarrage par défaut est de 30 secondes. Si votre application effectue une longue initialisation avant `application.New`, définissez `Config.HelperReadyTimeout` sur une durée plus longue, par exemple `time.Minute`. Zéro sélectionne la valeur par défaut ; les durées négatives sont rejetées. Si le délai de démarrage expire, `Restart` renvoie `updater.ErrHelperNotReady` et laisse l’application en cours ouverte.
 
+La mise à jour est préparée dans un répertoire `wails-update-*` placé à côté du binaire installé (sous macOS, à côté du bundle `.app`) ; ce répertoire doit donc être accessible en écriture.
+
+Dans une AppImage, le programme de mise à jour remplace et relance le fichier `.AppImage` désigné par `$APPIMAGE` plutôt que le montage en lecture seule.
+
 La fenêtre par défaut reflète automatiquement l’état actuel. Par exemple, lorsque `Check` ne trouve aucune mise à niveau, l’utilisateur en est informé et ferme la fenêtre avec **Fermer** :
 
 ![Fenêtre par défaut du programme de mise à jour dans l’état À jour — coche verte, titre « Vous êtes à jour » et un seul bouton Fermer.](/assets/updater/default-window-up-to-date.png)

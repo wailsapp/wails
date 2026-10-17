@@ -3,7 +3,6 @@
 package edge
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"syscall"
@@ -28,22 +27,20 @@ type ICoreWebView2WebResourceResponse struct {
 	vtbl *_ICoreWebView2WebResourceResponseVtbl
 }
 
-func (i *ICoreWebView2WebResourceResponse) AddRef() error {
-	_, _, err := i.vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-	if err != nil && !errors.Is(err, windows.ERROR_SUCCESS) {
-		return err
-	}
-
-	return nil
+func (i *ICoreWebView2WebResourceResponse) AddRef() uint32 {
+	// The return value is the new reference count, as documented for IUnknown::AddRef.
+	// It is for diagnostics only. The Errno returned by Call is just the thread's
+	// last-error and says nothing about success, so it is ignored.
+	r, _, _ := i.vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(r)
 }
 
-func (i *ICoreWebView2WebResourceResponse) Release() error {
-	_, _, err := i.vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
-	if err != nil && !errors.Is(err, windows.ERROR_SUCCESS) {
-		return err
-	}
-
-	return nil
+func (i *ICoreWebView2WebResourceResponse) Release() uint32 {
+	// The return value is the new reference count, as documented for IUnknown::Release.
+	// It is for diagnostics only. The Errno returned by Call is just the thread's
+	// last-error and says nothing about success, so it is ignored.
+	r, _, _ := i.vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(r)
 }
 
 // GetHeaders returns the mutable HTTP request headers. Make sure to call

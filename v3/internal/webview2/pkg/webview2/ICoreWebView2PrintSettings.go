@@ -3,6 +3,7 @@
 package webview2
 
 import (
+	"github.com/wailsapp/wails/v3/internal/webview2/pkg/doublecall"
 	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
@@ -88,15 +89,10 @@ func (i *ICoreWebView2PrintSettings) GetScaleFactor() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutScaleFactor(scaleFactor float64) error {
-	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI (a pointer here reached
-	// the callee as a garbage near-0.0 value).
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, scaleFactor)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutScaleFactor.Call(args...)
+	// The double parameter is passed BY VALUE; doublecall.Call passes it the way
+	// the target ABI expects (a pointer here reached the callee as a garbage
+	// near-0.0 value).
+	hr := doublecall.Call(uintptr(i.Vtbl.PutScaleFactor), scaleFactor, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -118,15 +114,10 @@ func (i *ICoreWebView2PrintSettings) GetPageWidth() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutPageWidth(pageWidth float64) error {
-	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI (a pointer here reached
-	// the callee as a garbage near-0.0 value).
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, pageWidth)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutPageWidth.Call(args...)
+	// The double parameter is passed BY VALUE; doublecall.Call passes it the way
+	// the target ABI expects (a pointer here reached the callee as a garbage
+	// near-0.0 value).
+	hr := doublecall.Call(uintptr(i.Vtbl.PutPageWidth), pageWidth, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -148,15 +139,10 @@ func (i *ICoreWebView2PrintSettings) GetPageHeight() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutPageHeight(pageHeight float64) error {
-	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI (a pointer here reached
-	// the callee as a garbage near-0.0 value).
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, pageHeight)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutPageHeight.Call(args...)
+	// The double parameter is passed BY VALUE; doublecall.Call passes it the way
+	// the target ABI expects (a pointer here reached the callee as a garbage
+	// near-0.0 value).
+	hr := doublecall.Call(uintptr(i.Vtbl.PutPageHeight), pageHeight, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -178,15 +164,10 @@ func (i *ICoreWebView2PrintSettings) GetMarginTop() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutMarginTop(marginTop float64) error {
-	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI (a pointer here reached
-	// the callee as a garbage near-0.0 value).
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginTop)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutMarginTop.Call(args...)
+	// The double parameter is passed BY VALUE; doublecall.Call passes it the way
+	// the target ABI expects (a pointer here reached the callee as a garbage
+	// near-0.0 value).
+	hr := doublecall.Call(uintptr(i.Vtbl.PutMarginTop), marginTop, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -208,15 +189,10 @@ func (i *ICoreWebView2PrintSettings) GetMarginBottom() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutMarginBottom(marginBottom float64) error {
-	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI (a pointer here reached
-	// the callee as a garbage near-0.0 value).
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginBottom)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutMarginBottom.Call(args...)
+	// The double parameter is passed BY VALUE; doublecall.Call passes it the way
+	// the target ABI expects (a pointer here reached the callee as a garbage
+	// near-0.0 value).
+	hr := doublecall.Call(uintptr(i.Vtbl.PutMarginBottom), marginBottom, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -238,15 +214,10 @@ func (i *ICoreWebView2PrintSettings) GetMarginLeft() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutMarginLeft(marginLeft float64) error {
-	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI (a pointer here reached
-	// the callee as a garbage near-0.0 value).
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginLeft)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutMarginLeft.Call(args...)
+	// The double parameter is passed BY VALUE; doublecall.Call passes it the way
+	// the target ABI expects (a pointer here reached the callee as a garbage
+	// near-0.0 value).
+	hr := doublecall.Call(uintptr(i.Vtbl.PutMarginLeft), marginLeft, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
@@ -268,15 +239,10 @@ func (i *ICoreWebView2PrintSettings) GetMarginRight() (float64, error) {
 }
 
 func (i *ICoreWebView2PrintSettings) PutMarginRight(marginRight float64) error {
-	// The double parameter is passed BY VALUE; the per-arch appendDoubleArg
-	// helpers pass it correctly for the target ABI (a pointer here reached
-	// the callee as a garbage near-0.0 value).
-	args, ok := appendDoubleArg([]uintptr{uintptr(unsafe.Pointer(i))}, marginRight)
-	if !ok {
-		// windows/arm64 cannot pass a by-value double (golang.org/issue/62583).
-		return ErrDoubleArgUnsupported
-	}
-	hr, _, _ := i.Vtbl.PutMarginRight.Call(args...)
+	// The double parameter is passed BY VALUE; doublecall.Call passes it the way
+	// the target ABI expects (a pointer here reached the callee as a garbage
+	// near-0.0 value).
+	hr := doublecall.Call(uintptr(i.Vtbl.PutMarginRight), marginRight, uintptr(unsafe.Pointer(i)))
 	if windows.Handle(hr) != windows.S_OK {
 		return syscall.Errno(hr)
 	}
