@@ -39,6 +39,10 @@ type commonEvents struct {
 	ScreenLocked               ApplicationEventType
 	ScreenUnlocked             ApplicationEventType
 	LowMemory                  ApplicationEventType
+	ApplicationResumed         ApplicationEventType
+	ApplicationPaused          ApplicationEventType
+	ApplicationBackgrounded    ApplicationEventType
+	ApplicationForegrounded    ApplicationEventType
 }
 
 func newCommonEvents() commonEvents {
@@ -76,6 +80,10 @@ func newCommonEvents() commonEvents {
 		ScreenLocked:               1289,
 		ScreenUnlocked:             1290,
 		LowMemory:                  1291,
+		ApplicationResumed:         1292,
+		ApplicationPaused:          1293,
+		ApplicationBackgrounded:    1294,
+		ApplicationForegrounded:    1295,
 	}
 }
 
@@ -872,4 +880,8 @@ var eventToJS = map[uint]string{
 	1289: "common:ScreenLocked",
 	1290: "common:ScreenUnlocked",
 	1291: "common:LowMemory",
+	1292: "common:ApplicationResumed",
+	1293: "common:ApplicationPaused",
+	1294: "common:ApplicationBackgrounded",
+	1295: "common:ApplicationForegrounded",
 }
