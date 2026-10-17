@@ -265,19 +265,28 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 }
 
 // gitclone clones uri into a temporary directory and returns its path.
+// The URL is validated before anything is created or cloned.
 func gitclone(uri string) (string, error) {
-	dirname, err := os.MkdirTemp("", "wails-template-*")
-	if err != nil {
-		return "", err
-	}
-
 	parts := strings.SplitN(uri, "@", 2)
 	url, tag := parts[0], ""
 	if len(parts) > 1 {
 		tag = parts[1]
 	}
 
-	return dirname, git.Clone(url, dirname, tag)
+	if err := git.ValidateRemoteURL(url); err != nil {
+		return "", err
+	}
+
+	dirname, err := os.MkdirTemp("", "wails-template-*")
+	if err != nil {
+		return "", err
+	}
+
+	if err := git.CloneRemote(url, dirname, tag); err != nil {
+		os.RemoveAll(dirname)
+		return "", err
+	}
+	return dirname, nil
 }
 
 func getRemoteTemplate(uri string) (*Template, error) {
@@ -375,6 +384,9 @@ func Install(options *flags.Init) error {
 		}
 		if template == nil {
 			template, err = getRemoteTemplate(options.TemplateName)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
