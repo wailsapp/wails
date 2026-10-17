@@ -27,7 +27,7 @@ type Updater struct {
 	current    string // CurrentVersion, snapshot for State()
 	pending    *Release
 	resolved   string // resolved download path (after install)
-	stagingDir string // os.MkdirTemp parent of resolved, removed on Restart / re-Check
+	stagingDir string // staging dir beside the target holding resolved, removed on Restart / re-Check
 	lastDigest []byte // digest computed streaming during the last successful download
 	skipped    string // version recorded by SkipVersion / the default window Skip button
 
@@ -147,7 +147,9 @@ func (u *Updater) periodicCheckLoop(d time.Duration) {
 			return
 		case <-t.C:
 			s := u.State()
-			if s == StateChecking || s == StateDownloading || s == StateVerifying || s == StateInstalling {
+			// StateReady: an update is already staged and waits for Restart;
+			// checking again would download the same release on every tick.
+			if s == StateChecking || s == StateDownloading || s == StateVerifying || s == StateInstalling || s == StateReady {
 				continue
 			}
 			_ = u.CheckAndInstall(u.periodicCtx)

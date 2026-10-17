@@ -13,17 +13,13 @@ on:
       - '.github/workflows/build-and-test-v3.yml'
   pull_request_review:
     types: [submitted]
-    branches:
-      - master
 
-permissions:
-  contents: read
 
 jobs:
   test_js:
     name: Run JS Tests
     runs-on: ubuntu-latest
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     strategy:
       matrix:
         node-version: [20.x]
@@ -100,7 +96,7 @@ jobs:
     name: Run Go Tests v3
     needs: [test_js]
     runs-on: ${{ matrix.os }}
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -185,6 +181,25 @@ jobs:
         # are already covered by the platform-specific test suites.
         run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk3 -v -timeout 10m -skip "TestService" ./...
 
+      - name: Build server mode for every target
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: v3
+        env:
+          CGO_ENABLED: "0"
+        # Server mode is pure Go on every platform, so it cross-compiles here
+        # without a C toolchain. Mobile targets are included to catch platform
+        # files that are missing their !server constraint.
+        run: |
+          for target in linux/amd64 darwin/arm64 windows/amd64 android/arm64 ios/arm64; do
+            echo "server build: $target"
+            GOOS="${target%/*}" GOARCH="${target#*/}" go build -tags server ./pkg/application
+          done
+
+      - name: Run tests (ubuntu) - server mode
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: v3
+        run: go test -tags server -v -timeout 10m ./pkg/application
+
       - name: Typecheck binding generator output
         working-directory: v3
         run: task generator:test:check
@@ -208,7 +223,7 @@ jobs:
     name: Test Templates
     needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     strategy:
       fail-fast: false
       matrix:
@@ -287,7 +302,7 @@ jobs:
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
 
   build_results:
-    if: ${{ always() }}
+    if: ${{ always() && github.event.pull_request.base.ref == 'master' }}
     runs-on: ubuntu-latest
     name: v3 Build Results
     permissions: {}
@@ -312,7 +327,7 @@ jobs:
 
   test_mac_private_apis:
     name: macOS API variants (${{ matrix.tags || 'public' }})
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     runs-on: macos-latest
     timeout-minutes: 15
     strategy:
