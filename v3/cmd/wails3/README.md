@@ -64,24 +64,31 @@ It can be used to generate many things including:
   - resource files for Windows applications
   - Info.plist files for macOS deployments
 
-#### icon
+#### icons
 
-The `icon` command generates icons for your project. 
+The `icons` command generates icons for your project.
 
-| Flag               | Type   | Description                                          | Default              |
-|--------------------|--------|------------------------------------------------------|----------------------|
-| `-example`         | bool   | Generates example icon file (appicon.png)            |                      |
-| `-input`           | string | The input image file                                 |                      |
-| `-sizes`           | string | The sizes to generate in .ico file (comma separated) | "256,128,64,48,32,16" |
-| `-windowsFilename` | string | The output filename for the Windows icon             | icon.ico             |
-| `-macFilename`     | string | The output filename for the Mac icon bundle          | icons.icns           |
+| Flag                 | Type   | Description                                              | Default                       |
+|----------------------|--------|----------------------------------------------------------|-------------------------------|
+| `-example`           | bool   | Generate example icon file (`appicon.png`)                |                               |
+| `-input`             | string | Input PNG file                                           | `build/appicon.png`           |
+| `-sizes`             | string | Windows ICO sizes (comma-separated)                       | `256,128,64,48,32,16`         |
+| `-windowsfilename`   | string | Windows icon output                                      | `build/windows/icon.ico`      |
+| `-macfilename`       | string | macOS icon bundle output                                 | `build/darwin/icon.icns`      |
+| `-iconcomposerinput` | string | Input Icon Composer file (`.icon`)                        |                               |
+| `-macassetdir`       | string | Output directory for macOS `Assets.car` and `icons.icns` |                               |
+| `-linuxoutputdir`    | string | Output directory for Linux hicolor PNGs                   |                               |
+| `-linuxsizes`        | string | Linux PNG sizes (comma-separated)                         | `16,32,48,64,128,256,512`     |
 
 ```bash
-wails3 generate icon -input myicon.png -sizes "32,64,128" -windowsFilename myicon.ico -macFilename myicon.icns       
+wails3 generate icons \
+  -input build/appicon.png \
+  -windowsfilename build/windows/icon.ico \
+  -macfilename build/darwin/icons.icns \
+  -linuxoutputdir build/linux/icons
 ```
 
-This will generate icons for mac and windows and save them in the current directory as `myicon.ico`
-and `myicons.icns`.
+Linux images are resized without stretching: non-square input is centered on a transparent square canvas. The PNG output is deterministic and can be regenerated from `build/appicon.png` on any supported build host.
 
 #### syso
 
