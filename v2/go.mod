@@ -11,6 +11,7 @@ require (
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/flytam/filenamify v1.2.0
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/gabriel-vasile/mimetype v1.4.16
 	github.com/go-git/go-git/v5 v5.19.2
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.1.0
@@ -39,7 +40,6 @@ require (
 	github.com/tidwall/sjson v1.2.5
 	github.com/tkrajina/go-reflector v0.5.8
 	github.com/wailsapp/go-webview2 v1.0.22
-	github.com/wailsapp/mimetype v1.4.1
 	github.com/wzshiming/ctc v1.2.3
 	golang.org/x/mod v0.37.0
 	golang.org/x/net v0.56.0
