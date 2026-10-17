@@ -105,3 +105,44 @@ func Environment(ctx context.Context) EnvironmentInfo {
 	result.Arch = goruntime.GOARCH
 	return result
 }
+
+// ProductBuildInfo contains product information from the original wails.json file
+type ProductBuildInfo struct {
+	ProductName    string `json:"productName"`
+	ProductVersion string `json:"productVersion"`
+	CompanyName    string `json:"companyName"`
+	Copyright      string `json:"copyright"`
+	Comments       string `json:"comments"`
+}
+
+// ProductInfo returns product information from the original wails.json file
+func ProductInfo(ctx context.Context) ProductBuildInfo {
+	productBuildInfo := ProductBuildInfo{
+		ProductName:    "Unset",
+		ProductVersion: "Unset",
+		CompanyName:    "Unset",
+		Copyright:      "Unset",
+		Comments:       "Unset",
+	}
+	productName := ctx.Value("productName")
+	if productName != nil {
+		productBuildInfo.ProductName = productName.(string)
+	}
+	productVersion := ctx.Value("productVersion")
+	if productVersion != nil {
+		productBuildInfo.ProductVersion = productVersion.(string)
+	}
+	companyName := ctx.Value("companyName")
+	if companyName != nil {
+		productBuildInfo.CompanyName = companyName.(string)
+	}
+	copyright := ctx.Value("copyright")
+	if copyright != nil {
+		productBuildInfo.Copyright = copyright.(string)
+	}
+	comments := ctx.Value("comments")
+	if comments != nil {
+		productBuildInfo.Comments = comments.(string)
+	}
+	return productBuildInfo
+}
