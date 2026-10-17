@@ -459,6 +459,8 @@ func (t *serverSystemTray) setIconPosition(pos IconPosition) {}
 func (t *serverSystemTray) setTemplateIcon(icon []byte)      {}
 func (t *serverSystemTray) destroy()                         {}
 func (t *serverSystemTray) setDarkModeIcon(icon []byte)      {}
+func (t *serverSystemTray) setIconName(name string)          {}
+func (t *serverSystemTray) setIconThemePath(path string)     {}
 func (t *serverSystemTray) bounds() (*Rect, error) {
 	return nil, errors.New("system tray not available in server mode")
 }

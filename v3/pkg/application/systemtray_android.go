@@ -53,6 +53,14 @@ func (s *androidSystemTray) setDarkModeIcon(_ []byte) {
 	// Android doesn't have system tray
 }
 
+func (s *androidSystemTray) setIconName(_ string) {
+	// Android doesn't have system tray
+}
+
+func (s *androidSystemTray) setIconThemePath(_ string) {
+	// Android doesn't have system tray
+}
+
 func (s *androidSystemTray) destroy() {
 	// Android doesn't have system tray
 }
