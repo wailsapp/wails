@@ -6,6 +6,7 @@ import (
 	"context"
 	"net/http"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -164,5 +165,37 @@ func TestServerMode_Defaults(t *testing.T) {
 	case <-errCh:
 	case <-ctx.Done():
 		t.Error("timeout waiting for app shutdown")
+	}
+}
+
+func TestServerMode_RunWaitsForShutdownHooksStartedElsewhere(t *testing.T) {
+	resetGlobalApp()
+
+	var done atomic.Bool
+	app := New(Options{
+		Name:   "Test Server",
+		Server: ServerOptions{Host: "127.0.0.1", Port: 18090},
+		OnShutdown: func() {
+			time.Sleep(300 * time.Millisecond)
+			done.Store(true)
+		},
+	})
+	errCh := make(chan error, 1)
+	go func() { errCh <- app.Run() }()
+	time.Sleep(200 * time.Millisecond)
+
+	// The default signal handler's Quit reaches cleanup on its own goroutine; starting it directly makes that
+	// goroutine the one running the hooks every time rather than only when it wins the race.
+	go app.cleanup()
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Fatalf("app.Run() returned error: %v", err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("timeout waiting for shutdown")
+	}
+	if !done.Load() {
+		t.Fatal("Run returned before the OnShutdown hook finished")
 	}
 }
