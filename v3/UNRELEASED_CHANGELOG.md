@@ -52,6 +52,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Security
 <!-- Security-related changes -->
+- Windows notifications no longer fall back to PowerShell when the WinRT toast API fails; the error is returned instead
 
 ---
 
