@@ -243,6 +243,49 @@ func TestInit_CheckInterval_TicksProviderAndStops(t *testing.T) {
 	}
 }
 
+// Once an update is staged (StateReady) the periodic loop must leave it
+// alone until Restart; otherwise every tick downloads the release again.
+func TestInit_CheckInterval_DoesNotRedownloadStagedUpdate(t *testing.T) {
+	host := &fakeHost{}
+	body := []byte("payload")
+	rel := &updater.Release{
+		Version:  "2.0.0",
+		Artifact: updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+	}
+	p := &fakeProvider{name: "p", rel: rel, body: body}
+
+	u := updater.New(host)
+	if err := u.Init(updater.Config{
+		CurrentVersion: "1.0.0",
+		Providers:      []updater.Provider{p},
+		CheckInterval:  20 * time.Millisecond,
+		Window:         updater.WindowNone,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer u.StopPeriodicCheck()
+	t.Cleanup(func() {
+		if path := u.DownloadedPath(); path != "" {
+			_ = os.RemoveAll(filepath.Dir(path))
+		}
+	})
+
+	deadline := time.Now().Add(2 * time.Second)
+	for u.State() != updater.StateReady {
+		if time.Now().After(deadline) {
+			t.Fatalf("update never staged, state %s", u.State())
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	// Leave room for several more ticks while the update is staged.
+	time.Sleep(200 * time.Millisecond)
+	u.StopPeriodicCheck()
+
+	if p.downloads != 1 {
+		t.Fatalf("expected 1 download while the update is staged, got %d", p.downloads)
+	}
+}
+
 func TestInit_RejectsDoubleConfigure(t *testing.T) {
 	u := updater.New(&fakeHost{})
 	cfg := updater.Config{CurrentVersion: "1.0.0", Providers: []updater.Provider{&fakeProvider{name: "f"}}}
@@ -350,6 +393,10 @@ func TestDownloadAndInstall_NoPendingRelease(t *testing.T) {
 }
 
 func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
+	appDir := t.TempDir()
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		return filepath.Join(appDir, "app"), nil
+	}))
 	host := &fakeHost{}
 	body := []byte("hello-end-to-end")
 	rel := &updater.Release{
@@ -368,6 +415,10 @@ func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
 	if u.State() != updater.StateReady {
 		t.Errorf("state: %s", u.State())
 	}
+	// Staged beside the target so the swap never crosses filesystems.
+	if got := filepath.Dir(filepath.Dir(u.DownloadedPath())); got != appDir {
+		t.Errorf("staged under %s, want %s", got, appDir)
+	}
 	wantOrder := []string{
 		updater.EventCheckStarted,
 		updater.EventUpdateAvailable,
@@ -382,10 +433,14 @@ func TestDownloadAndInstall_HappyPath_NoVerification(t *testing.T) {
 }
 
 // On any failure between download and ready (verify mismatch, unknown
-// digest algo, etc.) the temp staging directory created under
-// os.TempDir/wails-update-* must be removed; otherwise repeated update
+// digest algo, etc.) the staging directory created beside the target as
+// wails-update-* must be removed; otherwise repeated update
 // attempts accumulate orphan directories.
 func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
+	appDir := t.TempDir()
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) {
+		return filepath.Join(appDir, "app"), nil
+	}))
 	host := &fakeHost{}
 	body := []byte("real-bytes")
 	wrong := sha256.Sum256([]byte("different-bytes"))
@@ -400,7 +455,7 @@ func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
 	p := &fakeProvider{name: "p", rel: rel, body: body}
 	u := newConfigured(t, host, p)
 
-	before := countStagingDirs(t)
+	before := countStagingDirs(t, appDir)
 
 	if _, err := u.Check(context.Background()); err != nil {
 		t.Fatal(err)
@@ -409,20 +464,19 @@ func TestDownloadAndInstall_FailedFlow_RemovesStagingDir(t *testing.T) {
 		t.Fatal("expected error from digest mismatch")
 	}
 
-	after := countStagingDirs(t)
+	after := countStagingDirs(t, appDir)
 	if after > before {
-		t.Errorf("staging dir leaked: %d → %d wails-update-* directories under %s", before, after, os.TempDir())
+		t.Errorf("staging dir leaked: %d → %d wails-update-* directories under %s", before, after, appDir)
 	}
 }
 
 // countStagingDirs returns the number of `wails-update-*` directories under
-// os.TempDir. Used to detect leaks across the download/install flow without
-// being sensitive to absolute paths.
-func countStagingDirs(t *testing.T) int {
+// dir. Used to detect leaks across the download/install flow.
+func countStagingDirs(t *testing.T, dir string) int {
 	t.Helper()
-	entries, err := os.ReadDir(os.TempDir())
+	entries, err := os.ReadDir(dir)
 	if err != nil {
-		t.Fatalf("read tempdir: %v", err)
+		t.Fatalf("read %s: %v", dir, err)
 	}
 	n := 0
 	for _, e := range entries {
@@ -833,6 +887,58 @@ func TestDownloadAndInstall_ECDSA_TrailingBytes_Rejected(t *testing.T) {
 	err = u.DownloadAndInstall(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "trailing") {
 		t.Fatalf("expected trailing-data error, got %v", err)
+	}
+}
+
+// With Config.PublicKey pinned, a release that carries no signature must be
+// rejected rather than installed. A compromised feed or mirror can strip the
+// signature (or the whole Verification block) to attempt a downgrade to
+// digest-only mode; that must fail closed end-to-end, not just in
+// runVerification.
+func TestDownloadAndInstall_PublicKeyRequiresSignature(t *testing.T) {
+	pub, _, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkix, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		name string
+		v    *updater.Verification
+	}{
+		{"digest-only", &updater.Verification{DigestAlgo: "sha256"}},
+		{"no-verification", nil},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			host := &fakeHost{}
+			body := []byte("unsigned-payload")
+			if tc.v != nil {
+				sum := sha256.Sum256(body)
+				tc.v.Digest = sum[:]
+			}
+			rel := &updater.Release{
+				Version:      "2.0.0",
+				Artifact:     updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+				Verification: tc.v,
+			}
+			p := &fakeProvider{name: "p", rel: rel, body: body}
+			u := newConfiguredWithKey(t, host, pkix, p)
+
+			if _, err := u.Check(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			err := u.DownloadAndInstall(context.Background())
+			if err == nil || !strings.Contains(err.Error(), "must carry a signature") {
+				t.Fatalf("expected fail-closed signature error, got %v", err)
+			}
+			if u.State() != updater.StateError {
+				t.Errorf("state after rejected unsigned release: %s", u.State())
+			}
+		})
 	}
 }
 
