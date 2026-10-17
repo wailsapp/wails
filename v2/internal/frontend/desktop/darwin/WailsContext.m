@@ -593,6 +593,24 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
     processMessageDialogResponse(result);
 }
 
+#ifdef USE_NEW_FILTERS
+API_AVAILABLE(macos(11.0))
+static NSArray<UTType *>* contentTypesForFilters(NSArray<NSString *> *filterList) {
+    NSMutableArray *contentTypes = [NSMutableArray array];
+    for (NSString *filter in filterList) {
+        UTType *t = [UTType typeWithFilenameExtension:filter];
+        // nil for anything but a single extension, e.g. "tar.gz" or "busted.exe"
+        if (t == nil) {
+            t = [UTType typeWithFilenameExtension:[filter pathExtension]];
+        }
+        if (t != nil) {
+            [contentTypes addObject:t];
+        }
+    }
+    return contentTypes;
+}
+#endif
+
 -(void) OpenFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(NSString*)filters {
 
 
@@ -611,18 +629,14 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
             filters = [filters stringByReplacingOccurrencesOfString:@" " withString:@""];
             NSArray *filterList = [filters componentsSeparatedByString:@";"];
 #ifdef USE_NEW_FILTERS
-                NSMutableArray *contentTypes = [[NSMutableArray new] autorelease];
-                for (NSString *filter in filterList) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-                    if (@available(macOS 11.0, *)) {
-                        UTType *t = [UTType typeWithFilenameExtension:filter];
-                        [contentTypes addObject:t];
-                    }
-#endif
-                }
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
             if (@available(macOS 11.0, *)) {
-                [dialog setAllowedContentTypes:contentTypes];
+                NSArray *contentTypes = contentTypesForFilters(filterList);
+                if( contentTypes.count == 0) {
+                    [dialog setAllowsOtherFileTypes:true];
+                } else {
+                    [dialog setAllowedContentTypes:contentTypes];
+                }
             }
 #endif
 #else
@@ -694,24 +708,18 @@ extern void didReceiveNotificationResponse(const char *jsonPayload, const char* 
         filters = [filters stringByReplacingOccurrencesOfString:@" " withString:@""];
         NSArray *filterList = [filters componentsSeparatedByString:@";"];
 #ifdef USE_NEW_FILTERS
-            NSMutableArray *contentTypes = [[NSMutableArray new] autorelease];
-            for (NSString *filter in filterList) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-                if (@available(macOS 11.0, *)) {
-                    UTType *t = [UTType typeWithFilenameExtension:filter];
-                    [contentTypes addObject:t];
-                }
-#endif
-            }
-        if( contentTypes.count == 0) {
-            [dialog setAllowsOtherFileTypes:true];
-        } else {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
-            if (@available(macOS 11.0, *)) {
+        if (@available(macOS 11.0, *)) {
+            NSArray *contentTypes = contentTypesForFilters(filterList);
+            if( contentTypes.count == 0) {
+                [dialog setAllowsOtherFileTypes:true];
+            } else {
                 [dialog setAllowedContentTypes:contentTypes];
             }
-#endif
+        } else {
+            [dialog setAllowsOtherFileTypes:true];
         }
+#endif
 
 #else
             [dialog setAllowedFileTypes:filterList];
