@@ -461,6 +461,9 @@ type App struct {
 
 	// platform app
 	impl platformApp
+	// earlyDispatch holds main-thread work sent before Run created impl; Run hands it on once impl exists.
+	earlyDispatchLock sync.Mutex
+	earlyDispatch     []func()
 
 	// The main application menu (private - use app.Menu.GetApplicationMenu/SetApplicationMenu)
 	applicationMenu *Menu
@@ -661,7 +664,14 @@ func (a *App) Run() error {
 		return err
 	}
 
-	a.impl = newPlatformApp(a)
+	// Built outside earlyDispatchLock: construction can call back into dispatch (an ErrorHandler, a window
+	// procedure interceptor), which would wait on the lock. Work sent meanwhile still queues.
+	impl := newPlatformApp(a)
+	a.earlyDispatchLock.Lock()
+	a.impl = impl
+	early := a.earlyDispatch
+	a.earlyDispatch = nil
+	a.earlyDispatchLock.Unlock()
 
 	// Ensure services are shut down in case of failures.
 	defer a.shutdownServices()
@@ -754,6 +764,17 @@ func (a *App) Run() error {
 			}()
 		}
 		a.pendingRun = nil
+
+		// Work sent before Run is replayed once startup is done, from another goroutine: on desktop it is posted to
+		// the native loop, so it runs after activation, and in server mode it cannot hold up startup.
+		if len(early) > 0 {
+			go func() {
+				defer handlePanic()
+				for _, fn := range early {
+					a.dispatchOnMainThread(fn)
+				}
+			}()
+		}
 
 		// set the application menu
 		if runtime.GOOS == "darwin" {
@@ -979,6 +1000,14 @@ func (a *App) SetIcon(icon []byte) {
 }
 
 func (a *App) dispatchOnMainThread(fn func()) {
+	// Before Run there is no main loop to run fn on, so it waits for one.
+	a.earlyDispatchLock.Lock()
+	if a.impl == nil {
+		a.earlyDispatch = append(a.earlyDispatch, fn)
+		a.earlyDispatchLock.Unlock()
+		return
+	}
+	a.earlyDispatchLock.Unlock()
 	// If we are on the main thread, just call the function
 	if a.impl.isOnMainThread() {
 		fn()
