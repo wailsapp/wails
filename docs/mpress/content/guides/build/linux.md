@@ -62,6 +62,8 @@ license: MIT
 
 AppImage configuration is in `build/linux/appimage/`. The app icon comes from `build/appicon.png`.
 
+The AppImage bundles WebKit and its helper processes, and patches the bundled library to start them from inside the AppImage. Its `AppRun` starts the app from `usr/lib` inside the AppImage, where the patched path resolves both outside and inside WebKit's bubblewrap sandbox, so the sandbox stays on. Supply your own `AppRun` only if it keeps that working directory.
+
 ## Signing Packages
 
 Sign DEB and RPM packages with a PGP key:

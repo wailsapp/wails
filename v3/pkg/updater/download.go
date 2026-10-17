@@ -126,13 +126,17 @@ func (u *Updater) download(ctx context.Context, p Provider, rel *Release) (path,
 // during download. It does NOT re-read the file from disk — the streaming
 // hash is the authoritative computation.
 func (u *Updater) verify(_ string, rel *Release) error {
-	if rel.Verification == nil {
-		return nil
-	}
 	u.mu.RLock()
 	digest := u.lastDigest
 	cfgKey := u.cfg.PublicKey
 	u.mu.RUnlock()
+	if rel.Verification == nil {
+		// No manifest verification block. Without a pinned key there is
+		// nothing to check; with one, runVerification fails closed. The
+		// digest is legitimately nil here because download() only stands up
+		// a hasher when Verification is present, so don't reject on that.
+		return runVerification(digest, nil, cfgKey)
+	}
 	if digest == nil {
 		return errors.New("updater: no digest available; download path bug")
 	}
