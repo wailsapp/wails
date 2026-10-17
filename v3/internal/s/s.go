@@ -246,8 +246,10 @@ func MOVE(source string, target string) {
 }
 
 // copyAcrossDevices moves a regular file when rename cannot, e.g. from a tmpfs
-// build dir to an on-disk output dir. The file mode is kept so an AppImage
-// stays executable.
+// build dir to an on-disk output dir. It copies into a temporary file beside
+// the target and renames that over it, so a failed copy leaves an existing
+// output untouched and a symlink at the target is replaced, as with rename.
+// The file mode is kept so an AppImage stays executable.
 func copyAcrossDevices(source, target string) error {
 	src, err := os.Open(source)
 	if err != nil {
@@ -258,19 +260,22 @@ func copyAcrossDevices(source, target string) error {
 	if err != nil {
 		return err
 	}
-	dst, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, info.Mode().Perm())
+	tmp, err := os.CreateTemp(filepath.Dir(target), "."+filepath.Base(target)+".*")
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(dst, src)
-	if cerr := dst.Close(); err == nil {
+	_, err = io.Copy(tmp, src)
+	if cerr := tmp.Close(); err == nil {
 		err = cerr
 	}
 	if err == nil {
-		err = os.Chmod(target, info.Mode().Perm())
+		err = os.Chmod(tmp.Name(), info.Mode().Perm())
+	}
+	if err == nil {
+		err = os.Rename(tmp.Name(), target)
 	}
 	if err != nil {
-		_ = os.Remove(target)
+		_ = os.Remove(tmp.Name())
 		return err
 	}
 	return os.Remove(source)

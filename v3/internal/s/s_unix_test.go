@@ -29,7 +29,19 @@ func TestMOVE_CrossDevice(t *testing.T) {
 	if err := os.WriteFile(src, []byte("elf"), 0o755); err != nil {
 		t.Fatal(err)
 	}
+	// A symlink at the target is replaced, as rename would, not written through.
+	linked := filepath.Join(dstDir, "linked")
+	if err := os.WriteFile(linked, []byte("old"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(linked, filepath.Join(dstDir, "app.AppImage")); err != nil {
+		t.Fatal(err)
+	}
 	MOVE(src, dstDir)
+
+	if b, err := os.ReadFile(linked); err != nil || string(b) != "old" {
+		t.Errorf("the symlink's file was written through: %q, %v", b, err)
+	}
 
 	got, err := os.Stat(filepath.Join(dstDir, "app.AppImage"))
 	if err != nil {
