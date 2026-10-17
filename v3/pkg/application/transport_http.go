@@ -319,9 +319,9 @@ func (t *HTTPTransport) processBody(rw http.ResponseWriter, r *http.Request, bod
 	}
 
 	windowIdStr := r.Header.Get(webViewRequestHeaderWindowId)
-	windowId := 0
+	var windowId uint64
 	if windowIdStr != "" {
-		windowId, err = strconv.Atoi(windowIdStr)
+		windowId, err = strconv.ParseUint(windowIdStr, 10, 32)
 		if err != nil {
 			t.httpError(rw, errs.WrapInvalidRuntimeCallErrorf(err, "error decoding windowId value"))
 			return

@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Reject out-of-range `x-wails-window-id` header values in the HTTP runtime transport instead of silently truncating them to another window's ID
 - Harden the updater's archive extraction against zip-slip: entry paths are now checked with `filepath.IsLocal` plus a containment check on the joined path, with tests for nested `..`, backslash, absolute-path and symlink write-through entries in zip and tar.gz archives
 - Fix AppImages from `wails3 generate appimage` crashing on start outside Debian and Ubuntu with "Unable to spawn a new child process: … WebKitNetworkProcess". The bundled WebKit now runs the helper processes shipped in the AppImage. WebKit's bubblewrap sandbox stays on
 - Fix `-tags server` builds failing to compile for Android and iOS, fixing [#6271](https://github.com/wailsapp/wails/issues/6271)
