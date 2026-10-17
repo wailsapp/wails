@@ -143,10 +143,9 @@ func appName() string {
 	return C.GoString(name)
 }
 
-func appNew(name string) pointer {
+func appNew(appId string) pointer {
 	C.install_signal_handlers()
 
-	appId := fmt.Sprintf("org.wails.%s", name)
 	nameC := C.CString(appId)
 	defer C.free(unsafe.Pointer(nameC))
 	return pointer(C.gtk_application_new(nameC, C.APPLICATION_DEFAULT_FLAGS))
@@ -182,6 +181,7 @@ func appRun(app pointer) error {
 }
 
 func appDestroy(application pointer) {
+	webview.CloseActiveRequests()
 	C.g_application_quit((*C.GApplication)(application))
 }
 
@@ -859,6 +859,9 @@ func widgetSetVisible(widget pointer, hidden bool) {
 }
 
 func (w *linuxWebviewWindow) close() {
+	// Stop active loads before destroying the view so outstanding custom
+	// scheme requests release their native references and cancel their handlers.
+	C.webkit_web_view_stop_loading(C.webkit_web_view((*C.GtkWidget)(w.webview)))
 	C.gtk_window_destroy(w.gtkWindow())
 	getNativeApplication().unregisterWindow(windowPointer(w.window))
 }
@@ -1025,6 +1028,9 @@ func (w *linuxWebviewWindow) destroy() {
 		// GTK4: Different menu destruction
 		w.gtkmenu = nil
 	}
+	// Stop active loads before destroying the view so outstanding custom
+	// scheme requests release their native references and cancel their handlers.
+	C.webkit_web_view_stop_loading(C.webkit_web_view((*C.GtkWidget)(w.webview)))
 	C.gtk_window_destroy(w.gtkWindow())
 }
 
@@ -1932,7 +1938,7 @@ func alertDialogCallback(requestID C.uint, buttonIndex C.int) {
 	close(ch)
 }
 
-func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
+func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden bool, currentFile, currentFolder, title string, action int, acceptLabel string, filters []FileFilter) (chan string, error) {
 	requestID := nextDialogRequestID()
 	resultChan := make(chan string, 100)
 
@@ -1959,6 +1965,12 @@ func runChooserDialog(window pointer, allowMultiple, createFolders, showHidden b
 				C.free(unsafe.Pointer(cPattern))
 			}
 			C.set_file_dialog_filters(dialog, filterStore)
+		}
+
+		if currentFile != "" {
+			cName := C.CString(currentFile)
+			C.gtk_file_dialog_set_initial_name(dialog, cName)
+			C.free(unsafe.Pointer(cName))
 		}
 
 		if currentFolder != "" {
@@ -2020,6 +2032,7 @@ func runOpenFileDialog(dialog *OpenFileDialogStruct) (chan string, error) {
 		dialog.allowsMultipleSelection,
 		false, // createFolders not applicable for open
 		dialog.showHiddenFiles,
+		"",
 		dialog.directory,
 		dialog.title,
 		action,
@@ -2047,6 +2060,7 @@ func runSaveFileDialog(dialog *SaveFileDialogStruct) (chan string, error) {
 		false,
 		dialog.canCreateDirectories,
 		dialog.showHiddenFiles,
+		dialog.filename,
 		dialog.directory,
 		dialog.title,
 		1, // GTK_FILE_CHOOSER_ACTION_SAVE

@@ -106,7 +106,10 @@ func cancelRequest(nativeID uintptr) bool {
 }
 
 func (r *requestFinalizer) Context() context.Context {
-	return r.context
+	if r.context != nil {
+		return r.context
+	}
+	return Context(r.Request)
 }
 
 func (r *requestFinalizer) Close() error {

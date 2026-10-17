@@ -8,6 +8,7 @@ package application
 // no user code changes are required. Configure with environment variables:
 //
 //	WAILS_MCP_HOST       bind address (default 127.0.0.1)
+//	WAILS_MCP_TOKEN      bearer token (required for non-loopback binds)
 //	WAILS_MCP_PORT       port number  (default 9099; 0 = free port)
 //	WAILS_MCP_TIMEOUT    JS eval timeout in milliseconds (default 30000)
 //	WAILS_MCP_HIDE_CURSOR  set to 1/true to disable the animated cursor overlay
@@ -28,6 +29,7 @@ import (
 
 const (
 	mcpHostEnvVar       = "WAILS_MCP_HOST"
+	mcpTokenEnvVar      = "WAILS_MCP_TOKEN"
 	mcpPortEnvVar       = "WAILS_MCP_PORT"
 	mcpTimeoutEnvVar    = "WAILS_MCP_TIMEOUT"
 	mcpHideCursorEnvVar = "WAILS_MCP_HIDE_CURSOR"
@@ -44,6 +46,7 @@ type mcpServer struct {
 	hideCursor  bool
 	evalTimeout time.Duration
 	addr        string
+	authToken   string
 
 	httpServer *http.Server
 
@@ -89,6 +92,11 @@ func startMCPServer(a *App) error {
 		hideCursor = true
 	}
 
+	token := os.Getenv(mcpTokenEnvVar)
+	if err := validateMCPBind(host, token); err != nil {
+		return err
+	}
+
 	listener, err := net.Listen("tcp", net.JoinHostPort(host, strconv.Itoa(port)))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
@@ -100,6 +108,7 @@ func startMCPServer(a *App) error {
 		hideCursor:  hideCursor,
 		evalTimeout: evalTimeout,
 		addr:        listener.Addr().String(),
+		authToken:   token,
 		pending:     make(map[string]chan mcpEvalResult),
 	}
 	server.registerTools()
@@ -187,4 +196,13 @@ func (m *mcpServer) mcpEvalTimeout(args map[string]any) time.Duration {
 		return time.Duration(ms) * time.Millisecond
 	}
 	return m.evalTimeout
+}
+
+// Headerless local clients retain the existing development workflow. Any bind
+// that can accept non-loopback clients requires an explicit bearer token.
+func validateMCPBind(host, token string) error {
+	if token != "" || host == "localhost" || net.ParseIP(host).IsLoopback() {
+		return nil
+	}
+	return fmt.Errorf("%s is required when %s is not a loopback address", mcpTokenEnvVar, mcpHostEnvVar)
 }

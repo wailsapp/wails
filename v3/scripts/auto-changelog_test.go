@@ -2,7 +2,118 @@
 
 package main
 
-import "testing"
+import (
+	"encoding/json"
+	"fmt"
+	"io/fs"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestExtractCodeRabbitWalkthrough(t *testing.T) {
+	body := `<!-- This is an auto-generated comment: summarize by coderabbit.ai -->
+<!-- recent_review_start -->
+No actionable comments were generated in the recent review.
+<!-- recent_review_end -->
+<!-- walkthrough_start -->
+## Walkthrough
+
+The website lockfiles update nanoid to a patched release.
+<!-- walkthrough_end -->`
+
+	got, ok := extractCodeRabbitWalkthrough(body)
+	if !ok {
+		t.Fatal("extractCodeRabbitWalkthrough() rejected a complete walkthrough")
+	}
+	want := "## Walkthrough\n\nThe website lockfiles update nanoid to a patched release."
+	if got != want {
+		t.Fatalf("extractCodeRabbitWalkthrough() = %q, want %q", got, want)
+	}
+}
+
+func TestExtractCodeRabbitWalkthroughRejectsSkippedReview(t *testing.T) {
+	// This is the status-only comment shape from PR #5985. Treating it as a
+	// change summary allowed an unrelated JSON-parsing entry into beta.9.
+	body := `<!-- This is an auto-generated comment: summarize by coderabbit.ai -->
+<!-- This is an auto-generated comment: skip review by coderabbit.ai -->
+
+> [!IMPORTANT]
+> ## Review skipped
+>
+> Review was skipped due to path filters
+>
+> * website/package-lock.json is excluded
+> * website/pnpm-lock.yaml is excluded`
+
+	if got, ok := extractCodeRabbitWalkthrough(body); ok {
+		t.Fatalf("extractCodeRabbitWalkthrough() = %q, want rejection", got)
+	}
+}
+
+func TestChangelogContextAlwaysIncludesPRTitle(t *testing.T) {
+	const title = "fix(security): update website nanoid lockfiles"
+	if got, want := changelogContext(title, ""), "PR Title: "+title; got != want {
+		t.Fatalf("changelogContext() = %q, want %q", got, want)
+	}
+
+	got := changelogContext(title, "The lockfiles update nanoid.")
+	want := "PR Title: " + title + "\n\nCodeRabbit Walkthrough:\nThe lockfiles update nanoid."
+	if got != want {
+		t.Fatalf("changelogContext() = %q, want %q", got, want)
+	}
+}
+
+func TestFetchCodeRabbitWalkthroughPaginatesComments(t *testing.T) {
+	type comment struct {
+		User struct {
+			Login string `json:"login"`
+		} `json:"user"`
+		Body string `json:"body"`
+	}
+
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		page := r.URL.Query().Get("page")
+		var comments []comment
+		switch page {
+		case "1":
+			comments = make([]comment, 100)
+			for i := range comments {
+				comments[i].User.Login = "contributor"
+				comments[i].Body = fmt.Sprintf("comment %d", i)
+			}
+		case "2":
+			comments = make([]comment, 1)
+			comments[0].User.Login = "coderabbitai[bot]"
+			comments[0].Body = "<!-- walkthrough_start -->\nSecond-page walkthrough\n<!-- walkthrough_end -->"
+		default:
+			t.Fatalf("unexpected comments page %q", page)
+		}
+		if err := json.NewEncoder(w).Encode(comments); err != nil {
+			t.Fatal(err)
+		}
+	}))
+	defer server.Close()
+
+	oldBaseURL := githubAPIBaseURL
+	githubAPIBaseURL = server.URL
+	defer func() { githubAPIBaseURL = oldBaseURL }()
+
+	got, err := fetchCodeRabbitWalkthrough("wailsapp/wails", "5993", "token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "Second-page walkthrough" {
+		t.Fatalf("fetchCodeRabbitWalkthrough() = %q, want second-page walkthrough", got)
+	}
+	if requests != 2 {
+		t.Fatalf("fetchCodeRabbitWalkthrough() made %d requests, want 2", requests)
+	}
+}
 
 func TestDocumentationURLForFile(t *testing.T) {
 	tests := []struct {
@@ -12,17 +123,17 @@ func TestDocumentationURLForFile(t *testing.T) {
 	}{
 		{
 			name: "regular page",
-			file: "docs/src/content/docs/features/windows/options.mdx",
+			file: "docs/mpress/content/features/windows/options.md",
 			want: "https://v3.wails.io/features/windows/options",
 		},
 		{
 			name: "index page",
-			file: "docs/src/content/docs/guides/mobile/index.mdx",
+			file: "docs/mpress/content/guides/mobile/index.md",
 			want: "https://v3.wails.io/guides/mobile",
 		},
 		{
 			name: "localized page",
-			file: "docs/src/content/docs/de/quick-start/installation.mdx",
+			file: "docs/mpress/content/de/quick-start/installation.md",
 			want: "https://v3.wails.io/de/quick-start/installation",
 		},
 	}
@@ -41,7 +152,7 @@ func TestDocumentationURLForFile(t *testing.T) {
 }
 
 func TestDocumentationURLForSlug(t *testing.T) {
-	got, err := documentationURLFromPath("docs/src/content/docs/blog/legacy-name.md", "blog/the-road-to-wails-v3")
+	got, err := documentationURLFromPath("docs/mpress/content/blog/legacy-name.md", "blog/the-road-to-wails-v3")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,11 +162,110 @@ func TestDocumentationURLForSlug(t *testing.T) {
 }
 
 func TestDocumentationURLForMissingFile(t *testing.T) {
-	got, err := documentationURLForFile("docs/src/content/docs/removed-by-pr.mdx")
+	got, err := documentationURLForFile("docs/mpress/content/removed-by-pr.md")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got != "" {
 		t.Fatalf("documentationURLForFile() = %q, want empty URL for a missing file", got)
+	}
+}
+
+func TestMarkdownFrontmatterSlug(t *testing.T) {
+	tests := []struct {
+		name, fields, want string
+		wantError          bool
+	}{
+		{name: "nested objects", fields: `banner: {"content":"Welcome"}
+slug: "guides/custom-route"
+hero: {"actions":[{"text":"Start"}]}`, want: "guides/custom-route"},
+		{name: "no override", fields: `hero: {"slug":"not-a-page-route"}`},
+		{name: "escaping", fields: `slug: "guides\u002fcustom-route"`, want: "guides/custom-route"},
+		{name: "plain scalar", fields: `slug: guides/custom-route # comment`, want: "guides/custom-route"},
+		{name: "single quotes", fields: `slug: 'guides/custom-route'`, want: "guides/custom-route"},
+		{name: "invalid type", fields: `slug: {"path":"guide"}`, wantError: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			file := filepath.Join(t.TempDir(), "page.md")
+			source := "---\n" + test.fields + "\n---\nBody"
+			if err := os.WriteFile(file, []byte(source), 0600); err != nil {
+				t.Fatal(err)
+			}
+			slug, err := readFrontmatterSlug(file)
+			if (err != nil) != test.wantError || slug != test.want {
+				t.Fatalf("slug = %q, err = %v; want %q, error %v", slug, err, test.want, test.wantError)
+			}
+		})
+	}
+}
+
+func TestDocumentationMetadataCorpus(t *testing.T) {
+	count := 0
+	err := filepath.WalkDir("../../docs/mpress/content", func(file string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() || filepath.Ext(file) != ".md" {
+			return nil
+		}
+		count++
+		_, err = readFrontmatterSlug(file)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count == 0 {
+		t.Fatal("no documentation pages checked")
+	}
+	t.Logf("checked metadata in %d documentation pages", count)
+}
+
+func TestLocalizedMarkdownSlug(t *testing.T) {
+	got, err := documentationURLFromPath("docs/mpress/content/id/contributing/index.md", "contributing")
+	if err != nil || got != "https://v3.wails.io/id/contributing" {
+		t.Fatalf("URL = %q, err = %v", got, err)
+	}
+}
+
+func TestDocumentationIgnoresNonMarkdown(t *testing.T) {
+	files := []string{"docs/legacy/guide.mdx", "docs/mpress/content/changelog.md", "docs/mpress/content/image.svg"}
+	for _, file := range files {
+		t.Run(file, func(t *testing.T) {
+			if isDocumentationPage(file) {
+				t.Errorf("%s must not produce a release-note documentation link", file)
+			}
+		})
+	}
+}
+
+func TestAppendDocumentationLinksKeepsFocusedChangesReadable(t *testing.T) {
+	entry := "Add a focused documentation page"
+	urls := []string{
+		"https://v3.wails.io/guides/one",
+		"https://v3.wails.io/guides/two",
+	}
+
+	got := appendDocumentationLinks(entry, urls)
+	want := entry + " — see [documentation](https://v3.wails.io/guides/one) and [documentation](https://v3.wails.io/guides/two)"
+	if got != want {
+		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
+	}
+}
+
+func TestAppendDocumentationLinksCollapsesBroadChanges(t *testing.T) {
+	entry := "Update the documentation translations"
+	urls := []string{
+		"https://v3.wails.io/one",
+		"https://v3.wails.io/two",
+		"https://v3.wails.io/three",
+		"https://v3.wails.io/four",
+	}
+
+	got := appendDocumentationLinks(entry, urls)
+	want := entry + " — see the [documentation site](https://v3.wails.io) (4 pages updated)"
+	if got != want {
+		t.Fatalf("appendDocumentationLinks() = %q, want %q", got, want)
 	}
 }

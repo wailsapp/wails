@@ -1,0 +1,32 @@
+name: GTK3 Menu Regression v3
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'v3/pkg/application/**'
+      - 'v3/go.mod'
+      - 'v3/go.sum'
+      - '.github/workflows/gtk3-menu-test-v3.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  menus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: v3/go.mod
+          cache-dependency-path: v3/go.sum
+      - name: Install GTK3 and WebKitGTK
+        run: |
+          ./.github/scripts/prune-runner-apt-sources.sh
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config xvfb xauth
+      - name: Test native menu rebuilds and teardown
+        working-directory: v3
+        run: xvfb-run -a go test -tags gtk3,wailsintegration ./pkg/application -run '^TestGTK3MenuRebuild$' -count=1 -timeout=2m -v

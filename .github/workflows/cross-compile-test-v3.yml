@@ -88,6 +88,8 @@ jobs:
 
       - name: Install Linux dependencies
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev libwayland-dev build-essential pkg-config
 

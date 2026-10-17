@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/defaults"
@@ -111,6 +112,12 @@ func signMacOSApp(options *flags.Sign) error {
 		pterm.Info.Printfln("Signing macOS app bundle: %s", options.Input)
 	}
 
+	// Finder and resource-fork metadata can appear on bundles in synced folders
+	// after a previous package run. codesign rejects those attributes.
+	if output, err := exec.Command("xattr", "-cr", options.Input).CombinedOutput(); err != nil {
+		return fmt.Errorf("could not clear bundle metadata before signing: %w: %s", err, strings.TrimSpace(string(output)))
+	}
+
 	// Build codesign command
 	args := []string{
 		"--force",
@@ -133,7 +140,16 @@ func signMacOSApp(options *flags.Sign) error {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("codesign failed: %w", err)
+		return fmt.Errorf("codesign failed (if Finder metadata is reattached, move the bundle to an unsynced directory): %w", err)
+	}
+	if !macOSOutputIsLocal(filepath.Dir(options.Input)) {
+		// An arbitrary input may be in a synced folder. Allow asynchronous Finder
+		// metadata to settle before accepting the signature. Generated local
+		// output carries a path-specific marker and avoids this delay.
+		time.Sleep(2500 * time.Millisecond)
+	}
+	if output, err := exec.Command("codesign", "--verify", "--deep", "--strict", options.Input).CombinedOutput(); err != nil {
+		return fmt.Errorf("signed bundle failed strict verification (synced folders may reattach Finder metadata; try an unsynced build directory): %w: %s", err, strings.TrimSpace(string(output)))
 	}
 
 	pterm.Success.Printfln("Signed: %s", options.Input)

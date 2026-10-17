@@ -31,6 +31,7 @@ const (
 	envHelperNew    = "WAILS_UPDATER_HELPER_NEW"    // path of the verified new artifact
 	envHelperPID    = "WAILS_UPDATER_HELPER_PID"    // parent PID to wait for
 	envHelperLog    = "WAILS_UPDATER_HELPER_LOG"    // optional log file path
+	envHelperReady  = "WAILS_UPDATER_HELPER_READY"  // readiness status file path
 )
 
 // HandleHelperMode returns immediately when the current process was not
@@ -46,14 +47,34 @@ func HandleHelperMode() {
 	}
 	target := os.Getenv(envHelperTarget)
 	newPath := os.Getenv(envHelperNew)
+	readyPath := os.Getenv(envHelperReady)
 	if target == "" || newPath == "" {
+		_ = signalHelperStatus(readyPath, "error: missing helper target or staged artifact")
 		os.Exit(2)
+	}
+	if _, err := os.Stat(target); err != nil {
+		_ = signalHelperStatus(readyPath, "error: target is unavailable: "+err.Error())
+		os.Exit(10)
+	}
+	if _, err := os.Stat(newPath); err != nil {
+		_ = signalHelperStatus(readyPath, "error: staged artifact is unavailable: "+err.Error())
+		os.Exit(11)
+	}
+	if err := signalHelperStatus(readyPath, "ready"); err != nil {
+		os.Exit(3)
 	}
 	pid, _ := strconv.Atoi(os.Getenv(envHelperPID))
 	logPath := os.Getenv(envHelperLog)
 
 	code := runHelperSwap(target, newPath, pid, logPath, waitForPID, osLauncher{})
 	os.Exit(code)
+}
+
+func signalHelperStatus(path, status string) error {
+	if path == "" {
+		return nil
+	}
+	return os.WriteFile(path, []byte(status), 0o600)
 }
 
 // processWaiter abstracts "wait until pid exits" so unit tests can drive the
@@ -115,12 +136,21 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 		}
 	}
 
+	// The parent has exited. Clear helper mode before backup or replacement
+	// so both the new application and any recovered original boot normally.
+	clearHelperEnv()
+
 	backup := target + ".bak"
 	_ = os.RemoveAll(backup)
 
 	lg.logf("backing up %s → %s", target, backup)
 	if err := copyAny(target, backup); err != nil {
 		lg.logf("backup failed: %v", err)
+		// The original is untouched; relaunch it instead of restoring a
+		// potentially incomplete backup.
+		if err := l.launch(target); err != nil {
+			lg.logf("relaunch original failed: %v", err)
+		}
 		return 12
 	}
 
@@ -166,15 +196,6 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 		}
 		return 13
 	}
-
-	// Strip our helper-mode sentinels from the environment before launching
-	// the new binary. exec.Command inherits the parent's env when cmd.Env is
-	// unset, so without this the relaunched app would see WAILS_UPDATER_HELPER
-	// still set, call HandleHelperMode at start-up, try to perform another
-	// swap against a path we've already cleaned up, and exit with code 11 —
-	// the visible effect being "user clicks Restart, app dies, never reopens."
-	// Discovered against wailsapp/updater-demo on macOS arm64.
-	clearHelperEnv()
 
 	if err := l.launch(target); err != nil {
 		lg.logf("launch new failed: %v — restoring backup", err)
@@ -344,11 +365,10 @@ func (h *helperLog) Close() {
 }
 
 // clearHelperEnv unsets every WAILS_UPDATER_HELPER_* variable in the current
-// process. Called by runHelperSwap immediately before launching the new
-// binary so the launched process boots in normal mode instead of inheriting
-// our helper-mode sentinels.
+// process. Called after the parent exits and before backup or replacement,
+// so both the new application and any recovered original boot normally.
 func clearHelperEnv() {
-	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog} {
+	for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady} {
 		_ = os.Unsetenv(k)
 	}
 }
@@ -359,4 +379,10 @@ var (
 	// ErrNotReady is returned by Restart when there is no installed update
 	// staged for launch.
 	ErrNotReady = errors.New("updater: nothing to restart into (call DownloadAndInstall first)")
+	// ErrHelperNotReady is returned when the replacement helper does not
+	// acknowledge that it reached helper mode before the application exits.
+	ErrHelperNotReady = errors.New("updater: helper did not signal readiness")
+	// ErrJobBreakawayDenied is returned on Windows when the helper cannot be
+	// created outside a parent Job that may terminate it with the application.
+	ErrJobBreakawayDenied = errors.New("updater: helper could not break away from the parent Windows Job")
 )

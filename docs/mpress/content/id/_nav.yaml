@@ -1,0 +1,310 @@
+- label: "Beranda"
+  link: "/"
+- label: "Mengapa Wails?"
+  link: "/quick-start/why-wails/"
+- label: "Mulai Cepat"
+  collapsed: false
+  items:
+    - label: "Instalasi"
+      link: "/quick-start/installation/"
+    - label: "Aplikasi Pertama Anda"
+      link: "/quick-start/first-app/"
+    - label: "Langkah Berikutnya"
+      link: "/quick-start/next-steps/"
+- label: "Tutorial"
+  collapsed: true
+  autogenerate:
+    directory: "tutorials"
+- label: "Konsep Inti"
+  collapsed: true
+  items:
+    - label: "Cara Kerja Wails"
+      link: "/concepts/architecture/"
+    - label: "API Manager"
+      link: "/concepts/manager-api/"
+    - label: "Siklus Hidup Aplikasi"
+      link: "/concepts/lifecycle/"
+    - label: "Jembatan Go-Frontend"
+      link: "/concepts/bridge/"
+    - label: "Sistem Build"
+      link: "/concepts/build-system/"
+- label: "Fitur"
+  collapsed: true
+  items:
+    - label: "Jendela"
+      collapsed: true
+      items:
+        - label: "Dasar-Dasar Jendela"
+          link: "/features/windows/basics/"
+        - label: "Opsi Jendela"
+          link: "/features/windows/options/"
+        - label: "Jendela Notch"
+          link: "/features/windows/notch-windows/"
+        - label: "Izin"
+          link: "/features/windows/permissions/"
+        - label: "Beberapa Jendela"
+          link: "/features/windows/multiple/"
+        - label: "Jendela Tanpa Bingkai"
+          link: "/features/windows/frameless/"
+        - label: "Peristiwa Jendela"
+          link: "/features/windows/events/"
+    - label: "Menu"
+      collapsed: true
+      items:
+        - label: "Menu Aplikasi"
+          link: "/features/menus/application/"
+        - label: "Menu Konteks"
+          link: "/features/menus/context/"
+        - label: "Menu Baki Sistem"
+          link: "/features/menus/systray/"
+        - label: "Referensi Menu"
+          link: "/features/menus/reference/"
+    - label: "Binding & Layanan"
+      collapsed: true
+      items:
+        - label: "Binding Metode"
+          link: "/features/bindings/methods/"
+        - label: "Layanan"
+          link: "/features/bindings/services/"
+        - label: "Model Data"
+          link: "/features/bindings/models/"
+        - label: "Enum"
+          link: "/features/bindings/enums/"
+        - label: "Binding Lanjutan"
+          link: "/features/bindings/advanced/"
+        - label: "Praktik Terbaik"
+          link: "/features/bindings/best-practices/"
+    - label: "Peristiwa"
+      collapsed: true
+      items:
+        - label: "Sistem Peristiwa"
+          link: "/features/events/system/"
+        - label: "Peristiwa Aplikasi"
+          link: "/features/events/application/"
+        - label: "Peristiwa Jendela"
+          link: "/features/events/window/"
+        - label: "Peristiwa Kustom"
+          link: "/features/events/custom/"
+    - label: "Dialog"
+      collapsed: true
+      items:
+        - label: "Dialog File"
+          link: "/features/dialogs/file/"
+        - label: "Dialog Pesan"
+          link: "/features/dialogs/message/"
+        - label: "Dialog Kustom"
+          link: "/features/dialogs/custom/"
+    - label: "Mulai Otomatis"
+      collapsed: true
+      autogenerate:
+        directory: "features/autostart"
+    - label: "Papan Klip"
+      collapsed: true
+      autogenerate:
+        directory: "features/clipboard"
+    - label: "Browser"
+      collapsed: true
+      autogenerate:
+        directory: "features/browser"
+    - label: "Seret & Lepas"
+      collapsed: true
+      autogenerate:
+        directory: "features/drag-and-drop"
+    - label: "Keyboard"
+      collapsed: true
+      autogenerate:
+        directory: "features/keyboard"
+    - label: "Notifikasi"
+      collapsed: true
+      autogenerate:
+        directory: "features/notifications"
+    - label: "Layar"
+      collapsed: true
+      autogenerate:
+        directory: "features/screens"
+    - label: "Lingkungan"
+      collapsed: true
+      autogenerate:
+        directory: "features/environment"
+    - label: "Khusus Platform"
+      collapsed: true
+      autogenerate:
+        directory: "features/platform"
+- label: "Seluler"
+  collapsed: true
+  items:
+    - label: "Ikhtisar"
+      link: "/guides/mobile/"
+    - label: "Aplikasi Seluler Pertama Anda"
+      link: "/guides/mobile/first-mobile-app/"
+    - label: "iOS"
+      link: "/guides/mobile/ios/"
+    - label: "Android"
+      link: "/guides/mobile/android/"
+    - label: "API Seluler"
+      link: "/guides/mobile/mobile-api/"
+- label: "Eksperimental"
+  collapsed: true
+  items:
+    - label: "Ikhtisar"
+      link: "/experimental/"
+    - label: "Wake"
+      link: "/experimental/wake/"
+    - label: "Kontrol LLM (MCP)"
+      link: "/guides/mcp-service/"
+- label: "Panduan"
+  collapsed: true
+  items:
+    - label: "Pengembangan"
+      collapsed: true
+      items:
+        - label: "Struktur Proyek"
+          link: "/guides/dev/project-structure/"
+        - label: "Alur Kerja Pengembangan"
+          link: "/guides/dev/workflow/"
+        - label: "Framework Lain"
+          link: "/guides/dev/frontend-frameworks/"
+        - label: "Debugging"
+          link: "/guides/dev/debugging/"
+        - label: "Pengujian"
+          link: "/guides/testing/"
+    - label: "Build & Pemaketan"
+      collapsed: true
+      items:
+        - label: "Membuat Build Aplikasi"
+          link: "/guides/build/building/"
+        - label: "Kustomisasi Build"
+          link: "/guides/build/customization/"
+        - label: "Build Lintas Platform"
+          link: "/guides/build/cross-platform/"
+        - label: "Penandatanganan Kode"
+          link: "/guides/build/signing/"
+        - label: "Pemaketan Windows"
+          link: "/guides/build/windows/"
+        - label: "Pemaketan macOS"
+          link: "/guides/build/macos/"
+        - label: "API macOS Privat"
+          link: "/guides/build/private-macos-apis/"
+        - label: "Pemaketan Linux"
+          link: "/guides/build/linux/"
+        - label: "Pemaketan MSIX"
+          link: "/guides/build/msix/"
+        - label: "Build yang Diobfusikasi"
+          link: "/guides/build/obfuscation/"
+    - label: "Distribusi"
+      collapsed: true
+      items:
+        - label: "Pembaruan Dalam Aplikasi"
+          link: "/guides/updater/"
+        - label: "Asosiasi File"
+          link: "/guides/file-associations/"
+        - label: "Protokol Kustom"
+          link: "/guides/distribution/custom-protocols/"
+        - label: "Instans Tunggal"
+          link: "/guides/single-instance/"
+    - label: "Pola Integrasi"
+      collapsed: true
+      items:
+        - label: "Perutean Frontend"
+          link: "/guides/routing/"
+        - label: "Menggunakan Gin Router"
+          link: "/guides/gin-routing/"
+        - label: "Layanan Gin"
+          link: "/guides/gin-services/"
+        - label: "Integrasi Database"
+          link: "/guides/patterns/database/"
+        - label: "API REST"
+          link: "/guides/patterns/rest-api/"
+    - label: "Topik Lanjutan"
+      collapsed: true
+      items:
+        - label: "Build Server"
+          link: "/guides/server-build/"
+        - label: "Templat Kustom"
+          link: "/guides/advanced/custom-templates/"
+        - label: "WML (Markup Wails)"
+          link: "/guides/advanced/wml/"
+        - label: "Penanganan Panic"
+          link: "/guides/panic-handling/"
+        - label: "Praktik Terbaik Keamanan"
+          link: "/guides/security/"
+- label: "Referensi API"
+  collapsed: true
+  items:
+    - label: "Ikhtisar"
+      link: "/reference/overview/"
+    - label: "Aplikasi"
+      link: "/reference/application/"
+    - label: "Jendela"
+      link: "/reference/window/"
+    - label: "Menu"
+      link: "/reference/menu/"
+    - label: "Peristiwa"
+      link: "/reference/events/"
+    - label: "Dialog"
+      link: "/reference/dialogs/"
+    - label: "Runtime Frontend"
+      link: "/reference/frontend-runtime/"
+    - label: "CLI"
+      link: "/reference/cli/"
+    - label: "Protokol Manifes Pembaruan"
+      link: "/reference/update-manifest/"
+- label: "Berkontribusi"
+  collapsed: true
+  items:
+    - label: "Perbaiki Dokumentasi"
+      link: "/contributing/documentation/"
+    - label: "Panduan Kontribusi"
+      link: "/contributing/"
+    - label: "Ikhtisar Teknis"
+      link: "/contributing/overview/"
+    - label: "Memulai"
+      link: "/contributing/getting-started/"
+    - label: "Penyiapan Pengembangan"
+      link: "/contributing/setup/"
+    - label: "Standar Pengodean"
+      link: "/contributing/standards/"
+- label: "Migrasi"
+  collapsed: true
+  items:
+    - label: "Dari v2 ke v3"
+      link: "/migration/v2-to-v3/"
+    - label: "Dari Electron"
+      link: "/migration/from-electron/"
+- label: "Pemecahan Masalah"
+  collapsed: true
+  items:
+    - label: "File Syso di macOS"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "Masalah RDP"
+          link: "/troubleshooting/windows/rdp/"
+- label: "Komunitas"
+  collapsed: true
+  items:
+    - label: "Tautan"
+      link: "/community/links/"
+    - label: "Templat"
+      link: "/community/templates/"
+    - label: "Media"
+      link: "/community/media/"
+    - label: "Galeri"
+      collapsed: true
+      items:
+        - label: "Ikhtisar"
+          link: "/community/showcase/"
+        - label: "Aplikasi"
+          autogenerate:
+            directory: "community/showcase"
+- label: "Yang Baru"
+  link: "/whats-new/"
+- label: "Status"
+  link: "/status/"
+- label: "Log Perubahan"
+  link: "/changelog/"
+- label: "Sponsor"
+  link: "https://github.com/sponsors/leaanthony"
+- label: "Kredit"
+  link: "/credits/"

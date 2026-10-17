@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "31d42ccec848da48a89b",
+  "sourceFile": "community/showcase/emailit.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "fr",
+  "segments": {
+    "b0001-text-01": {
+      "sourceHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "targetHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "machineHash": "1ee5d749e69e48e83d386ceb5d9d1aad4343b3579c91b26380bd10b00380dc40",
+      "machineText": "![EmailIt](/assets/showcase-images/emailit.webp)",
+      "status": "final",
+      "sourcePreview": "![EmailIt](/assets/showcase-images/emailit.webp)",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "b0002-text-01": {
+      "sourceHash": "cf6c353b8eb58108d414cc4bcd662b2dfdbabc07195ee2db1febc67446b9dfec",
+      "targetHash": "9e83650b1cb5c922ed5cecc4ad3e3faf6f9b70d80d5d762d0022f89a616c3aed",
+      "machineHash": "9e83650b1cb5c922ed5cecc4ad3e3faf6f9b70d80d5d762d0022f89a616c3aed",
+      "machineText": "[EmailIt](https://github.com/raguay/EmailIt/) est un programme Wails 2 destiné uniquement à l’envoi d’e-mails rédigés en Markdown, doté de neuf blocs-notes, de scripts permettant de manipuler le texte et de modèles. Il comprend également un terminal de scripts permettant d’exécuter, depuis EmailIt, des scripts sur les fichiers de votre système. Les scripts et les modèles peuvent être utilisés directement depuis la ligne de commande ou avec les extensions Alfred, Keyboard Maestro, Dropzone ou PopClip. Il prend également en charge les scripts et les thèmes téléchargés depuis GitHub. La documentation n’est pas complète, mais le programme fonctionne. Il est créé avec Wails2 et Svelte, et le téléchargement fournit une application macOS universelle.",
+      "status": "final",
+      "sourcePreview": "[EmailIt](https://github.com/raguay/EmailIt/) is a Wails 2 program that is a\\ markdown based email s…",
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-description-01": {
+      "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+      "targetHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineHash": "311f7c23baac829f2d28cdc9b4e94906424573bd276c1eb3b8c5961ddcd6cbea",
+      "machineText": "Une application de bureau créée avec Wails",
+      "status": "final",
+      "sourcePreview": "A desktop application built with Wails",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "targetHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "machineHash": "d0d2daca2a9193c94021f04e21e8700e0c73c229886be91bc471180dba598362",
+      "machineText": "EmailIt",
+      "status": "final",
+      "sourcePreview": "EmailIt",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:24Z"
+    }
+  }
+}

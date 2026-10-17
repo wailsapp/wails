@@ -27,16 +27,20 @@ type ICoreWebView2HttpRequestHeaders struct {
 	vtbl *_ICoreWebView2HttpRequestHeadersVtbl
 }
 
-func (i *ICoreWebView2HttpRequestHeaders) AddRef() error {
-	i.vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
-
-	return nil
+func (i *ICoreWebView2HttpRequestHeaders) AddRef() uint32 {
+	// The return value is the new reference count, as documented for IUnknown::AddRef.
+	// It is for diagnostics only. The Errno returned by Call is just the thread's
+	// last-error and says nothing about success, so it is ignored.
+	r, _, _ := i.vtbl.AddRef.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(r)
 }
 
-func (i *ICoreWebView2HttpRequestHeaders) Release() error {
-	i.vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
-
-	return nil
+func (i *ICoreWebView2HttpRequestHeaders) Release() uint32 {
+	// The return value is the new reference count, as documented for IUnknown::Release.
+	// It is for diagnostics only. The Errno returned by Call is just the thread's
+	// last-error and says nothing about success, so it is ignored.
+	r, _, _ := i.vtbl.Release.Call(uintptr(unsafe.Pointer(i)))
+	return uint32(r)
 }
 
 // GetHeader returns the value of the specified header. If the header is not found

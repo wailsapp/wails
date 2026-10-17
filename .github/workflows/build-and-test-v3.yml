@@ -1,5 +1,8 @@
 name: Build + Test v3
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -10,13 +13,13 @@ on:
       - '.github/workflows/build-and-test-v3.yml'
   pull_request_review:
     types: [submitted]
-    branches:
-      - master
+
+
 jobs:
   test_js:
     name: Run JS Tests
     runs-on: ubuntu-latest
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     strategy:
       matrix:
         node-version: [20.x]
@@ -93,7 +96,7 @@ jobs:
     name: Run Go Tests v3
     needs: [test_js]
     runs-on: ${{ matrix.os }}
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -108,6 +111,8 @@ jobs:
       - name: Install linux dependencies (GTK4 default)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
 
@@ -176,6 +181,25 @@ jobs:
         # are already covered by the platform-specific test suites.
         run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk3 -v -timeout 10m -skip "TestService" ./...
 
+      - name: Build server mode for every target
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: v3
+        env:
+          CGO_ENABLED: "0"
+        # Server mode is pure Go on every platform, so it cross-compiles here
+        # without a C toolchain. Mobile targets are included to catch platform
+        # files that are missing their !server constraint.
+        run: |
+          for target in linux/amd64 darwin/arm64 windows/amd64 android/arm64 ios/arm64; do
+            echo "server build: $target"
+            GOOS="${target%/*}" GOARCH="${target#*/}" go build -tags server ./pkg/application
+          done
+
+      - name: Run tests (ubuntu) - server mode
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: v3
+        run: go test -tags server -v -timeout 10m ./pkg/application
+
       - name: Typecheck binding generator output
         working-directory: v3
         run: task generator:test:check
@@ -185,6 +209,8 @@ jobs:
     if: always()
     needs: [test_js, test_go, test_templates]
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
     steps:
       - uses: geekyeggo/delete-artifact@v5
         with:
@@ -197,7 +223,7 @@ jobs:
     name: Test Templates
     needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
-    if: github.base_ref == 'master'
+    if: github.event.pull_request.base.ref == 'master'
     strategy:
       fail-fast: false
       matrix:
@@ -219,6 +245,8 @@ jobs:
       - name: Install linux dependencies (GTK4 default)
         if: matrix.os == 'ubuntu-latest'
         run: |
+          # Drop the runner image's unused Microsoft apt repos (no-op off GitHub-hosted runners).
+          ./.github/scripts/prune-runner-apt-sources.sh
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
 
@@ -274,22 +302,54 @@ jobs:
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
 
   build_results:
-    if: ${{ always() }}
+    if: ${{ always() && github.event.pull_request.base.ref == 'master' }}
     runs-on: ubuntu-latest
     name: v3 Build Results
-    needs: [test_go, test_js, test_templates]
+    permissions: {}
+    needs: [test_go, test_js, test_templates, test_mac_private_apis]
     steps:
       - run: |
           go_result="${{ needs.test_go.result }}"
           js_result="${{ needs.test_js.result }}"
           templates_result="${{ needs.test_templates.result }}"
+          mac_apis_result="${{ needs.test_mac_private_apis.result }}"
           
           if [[ $go_result == "success" || $go_result == "skipped" ]] && \
              [[ $js_result == "success" || $js_result == "skipped" ]] && \
-             [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
+             [[ $templates_result == "success" || $templates_result == "skipped" ]] && \
+             [[ $mac_apis_result == "success" || $mac_apis_result == "skipped" ]]; then
             echo "All required jobs succeeded or were skipped"
             exit 0
           else
             echo "One or more required jobs failed"
             exit 1
           fi
+
+  test_mac_private_apis:
+    name: macOS API variants (${{ matrix.tags || 'public' }})
+    if: github.event.pull_request.base.ref == 'master'
+    runs-on: macos-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        tags:
+          - ''
+          - private_mac_apis
+          - production
+          - production,private_mac_apis
+          - production,devtools
+          - production,devtools,private_mac_apis
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: v3/go.mod
+          cache-dependency-path: v3/go.sum
+      - name: Test native bridges, binary isolation, and application package
+        working-directory: v3
+        env:
+          BUILD_TAGS: ${{ matrix.tags }}
+        run: go test -tags "$BUILD_TAGS" ./pkg/application -count=1

@@ -33,11 +33,11 @@ func _ICoreWebView2ExecuteScriptCompletedHandlerIUnknownQueryInterface(this *iCo
 }
 
 func _ICoreWebView2ExecuteScriptCompletedHandlerIUnknownAddRef(this *iCoreWebView2ExecuteScriptCompletedHandler) uintptr {
-	return this.impl.AddRef()
+	return handlerAddRef(unsafe.Pointer(this))
 }
 
 func _ICoreWebView2ExecuteScriptCompletedHandlerIUnknownRelease(this *iCoreWebView2ExecuteScriptCompletedHandler) uintptr {
-	return this.impl.Release()
+	return handlerRelease(unsafe.Pointer(this))
 }
 
 func iCoreWebView2ExecuteScriptCompletedHandlerInvoke(this *iCoreWebView2ExecuteScriptCompletedHandler, errorCode uintptr, executedScript *uint16) uintptr {

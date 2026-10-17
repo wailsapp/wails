@@ -172,6 +172,11 @@ type WebviewWindow struct {
 	impl    webviewWindowImpl
 	id      uint
 
+	// notchWindow is set only by WindowManager.NewNotchWindow. It is kept
+	// outside WebviewWindowOptions so the lower-level constructor cannot create
+	// a partially configured notch window.
+	notchWindow *notchWindowConfig
+
 	eventListeners     map[uint][]*WindowEventListener
 	eventListenersLock sync.RWMutex
 	eventHooks         map[uint][]*WindowEventListener
@@ -201,6 +206,7 @@ type WebviewWindow struct {
 	// Indicates that the window is destroyed
 	destroyed     bool
 	destroyedLock sync.RWMutex
+	closeStarted  atomic.Bool
 
 	runtimeLoaded  bool
 	pendingJS      []string
@@ -359,6 +365,9 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	// Listen for window closing events and de
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
+		if !result.closeStarted.CompareAndSwap(false, true) {
+			return
+		}
 		atomic.StoreUint32(&result.unconditionallyClose, 1)
 		InvokeSync(result.markAsDestroyed)
 		InvokeSync(result.impl.close)
@@ -803,6 +812,9 @@ func (w *WebviewWindow) HandleMessage(message string) {
 	// Check for special messages
 	switch true {
 	case message == "wails:drag":
+		if w.notchWindow != nil {
+			return
+		}
 		if !w.IsFullscreen() {
 			InvokeSync(func() {
 				err := w.startDrag()
@@ -812,6 +824,9 @@ func (w *WebviewWindow) HandleMessage(message string) {
 			})
 		}
 	case message == "wails:drag:doubleclick":
+		if w.notchWindow != nil {
+			return
+		}
 		w.handleTitlebarDoubleClick()
 	case strings.HasPrefix(message, "wails:resize:"):
 		if !w.IsFullscreen() {

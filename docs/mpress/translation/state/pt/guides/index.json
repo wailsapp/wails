@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "9b720f5dae6c49638ec6",
+  "sourceFile": "guides/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "572cd72feb9a84e0c639af3ccae73f3a4406f69fe193eac69ab0678eee32baff",
+      "targetHash": "16ddcd2cf41f31528828918e2f86f02a1bd59596206bebfa76a12ad520394ff4",
+      "machineHash": "16ddcd2cf41f31528828918e2f86f02a1bd59596206bebfa76a12ad520394ff4",
+      "machineText": "Guias",
+      "status": "final",
+      "sourcePreview": "Guides",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "572cd72feb9a84e0c639af3ccae73f3a4406f69fe193eac69ab0678eee32baff",
+      "targetHash": "16ddcd2cf41f31528828918e2f86f02a1bd59596206bebfa76a12ad520394ff4",
+      "machineHash": "16ddcd2cf41f31528828918e2f86f02a1bd59596206bebfa76a12ad520394ff4",
+      "machineText": "Guias",
+      "status": "final",
+      "sourcePreview": "Guides",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    }
+  }
+}

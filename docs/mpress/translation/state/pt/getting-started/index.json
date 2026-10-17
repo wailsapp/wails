@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "pageKey": "e59467c77349e0006ec0",
+  "sourceFile": "getting-started/index.md",
+  "sourceLanguage": "en",
+  "targetLanguage": "pt",
+  "segments": {
+    "b0001-heading-01": {
+      "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
+      "targetHash": "6254a4354624a855874a64a53e572d974339da6f917dfcaf262b6b74e28e59bb",
+      "machineHash": "6254a4354624a855874a64a53e572d974339da6f917dfcaf262b6b74e28e59bb",
+      "machineText": "Primeiros passos",
+      "status": "final",
+      "sourcePreview": "Getting Started",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    },
+    "fm-title-01": {
+      "sourceHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1",
+      "targetHash": "6254a4354624a855874a64a53e572d974339da6f917dfcaf262b6b74e28e59bb",
+      "machineHash": "6254a4354624a855874a64a53e572d974339da6f917dfcaf262b6b74e28e59bb",
+      "machineText": "Primeiros passos",
+      "status": "final",
+      "sourcePreview": "Getting Started",
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "promptVersion": "mpress-translation-v2",
+      "updatedAt": "2026-09-13T23:13:42Z"
+    }
+  }
+}
