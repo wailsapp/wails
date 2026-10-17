@@ -39,6 +39,7 @@ type commonEvents struct {
 	ScreenLocked               ApplicationEventType
 	ScreenUnlocked             ApplicationEventType
 	LowMemory                  ApplicationEventType
+	BackButtonPressed           ApplicationEventType
 }
 
 func newCommonEvents() commonEvents {
@@ -76,6 +77,7 @@ func newCommonEvents() commonEvents {
 		ScreenLocked:               1289,
 		ScreenUnlocked:             1290,
 		LowMemory:                  1291,
+		BackButtonPressed:           1296,
 	}
 }
 
@@ -872,4 +874,5 @@ var eventToJS = map[uint]string{
 	1289: "common:ScreenLocked",
 	1290: "common:ScreenUnlocked",
 	1291: "common:LowMemory",
+	1296: "common:BackButtonPressed",
 }
