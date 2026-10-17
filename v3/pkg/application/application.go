@@ -211,8 +211,11 @@ func New(appOptions Options) *App {
 				}
 				os.Exit(appOptions.SingleInstance.ExitCode)
 			}
-			// Without a session bus (a bare TTY, a container, a sandbox that cannot own the name) the app still
-			// runs; it just cannot hand launches to an earlier instance.
+			if !errors.Is(err, errSessionBusUnavailable) {
+				result.fatal("failed to initialize single instance manager: %w", err)
+			}
+			// Without a session bus (a bare TTY, a container) the app still runs; it just cannot hand launches to
+			// an earlier instance.
 			fmt.Fprintf(os.Stderr, "wails: single instance disabled: %v\n", err)
 		} else {
 			result.singleInstanceManager = manager
