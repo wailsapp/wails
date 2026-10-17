@@ -125,6 +125,9 @@ type Options struct {
 	// OnResume is called when Windows resumes from low power mode
 	OnResume func()
 
+	// PermissionRequested handles WebView2 permission requests.
+	PermissionRequested PermissionRequestedCallback
+
 	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
 	WebviewGpuIsDisabled bool
 
