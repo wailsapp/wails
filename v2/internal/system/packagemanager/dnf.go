@@ -73,7 +73,7 @@ func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, _, err := shell.RunCommand(".", "dnf", "info", "installed", pkg.Name)
+	stdout, _, err := shell.RunCommand(".", "dnf", "-q", "list", "--installed", pkg.Name)
 	if err != nil {
 		_, ok := err.(*exec.ExitError)
 		if ok {
@@ -82,15 +82,19 @@ func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
 		return false, err
 	}
 
-	splitoutput := strings.Split(stdout, "\n")
-	for _, line := range splitoutput {
-		if strings.HasPrefix(line, "Version") {
-			splitline := strings.Split(line, ":")
-			pkg.Version = strings.TrimSpace(splitline[1])
+	lines := strings.Split(stdout, "\n")
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && strings.HasPrefix(fields[0], pkg.Name) {
+			versionArch := fields[1]
+			parts := strings.SplitN(versionArch, "-", 2)
+			if len(parts) > 0 {
+				pkg.Version = parts[0]
+			}
 		}
 	}
 
-	return true, err
+	return true, nil
 }
 
 // PackageAvailable tests if the given package is available for installation
