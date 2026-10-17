@@ -1,4 +1,5 @@
-//go:build linux
+//go:build linux && !webkit_6
+// +build linux,!webkit_6
 
 package linux
 
