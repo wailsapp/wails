@@ -17,10 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - Windows notifications no longer fall back to PowerShell when the WinRT toast API fails; the error is returned instead
+- `wails init` now warns that remote templates are code: the `frontend:*` commands in `wails.json` and the scripts they call run during `wails build` and `wails dev`. The warning lists the commands found in the generated `wails.json` and is also shown with `-q`. The template docs now describe this trust boundary.
+
 ### Changed
 
 - Replaced the `github.com/wailsapp/mimetype` fork with upstream `github.com/gabriel-vasile/mimetype` v1.4.16 for asset MIME type detection
-- `wails init` now warns that remote templates are code: the `frontend:*` commands in `wails.json` and the scripts they call run during `wails build` and `wails dev`. The warning lists the commands found in the generated `wails.json` and is also shown with `-q`. The template docs now describe this trust boundary.
 
 ## v2.16.0 - 2026-09-14
 
