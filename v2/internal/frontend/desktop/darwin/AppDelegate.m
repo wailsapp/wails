@@ -40,6 +40,13 @@
     return NSTerminateCancel;
 }
 
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag {
+    if (!flag) {
+        [self.mainWindow makeKeyAndOrderFront:self];
+    }
+    return YES;
+}
+
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     if (self.alwaysOnTop) {
