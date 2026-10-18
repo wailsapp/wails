@@ -271,6 +271,33 @@ func TestMenu_Clear_RenderedKeepsIDsForOneGeneration(t *testing.T) {
 	}
 }
 
+// While the menu is on screen it may be updated any number of times, and the
+// rows shown are still those of the first generation.
+func TestMenu_Clear_DisplayedKeepsAllIDs(t *testing.T) {
+	menu := NewMenu()
+	menu.impl = stubMenuImpl{}
+	defer menu.Destroy()
+	shown := menu.Add("Shown")
+
+	menu.displayed.Store(true)
+	menu.Clear()
+	menu.Add("Gen 1")
+	menu.Clear()
+	gen2 := menu.Add("Gen 2")
+	if getMenuItemByID(shown.id) != shown {
+		t.Fatal("Clear released the IDs of rows still on screen")
+	}
+
+	menu.displayed.Store(false)
+	menu.Clear()
+	if getMenuItemByID(shown.id) != nil {
+		t.Error("first Clear after close should release the earlier generations")
+	}
+	if getMenuItemByID(gen2.id) != gen2 {
+		t.Error("first Clear after close should keep the last generation resolvable")
+	}
+}
+
 func TestMenu_Append(t *testing.T) {
 	menu1 := NewMenu()
 	menu1.Add("Item 1")

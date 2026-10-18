@@ -1,5 +1,7 @@
 package application
 
+import "sync/atomic"
+
 type menuImpl interface {
 	update()
 }
@@ -35,8 +37,11 @@ type Menu struct {
 	items []*MenuItem
 	label string
 
-	// retiredIDs holds the IDs of items removed by the last Clear. See Clear.
+	// retiredIDs holds the IDs of items removed by Clear. See Clear.
 	retiredIDs []uint
+	// displayed is set while a native menu built from this Menu is on screen
+	// and reports when it closes (the macOS systray).
+	displayed atomic.Bool
 
 	impl menuImpl
 }
@@ -103,9 +108,13 @@ func (m *Menu) Update() {
 func (m *Menu) Clear() {
 	// A rendered menu can still be on screen showing the cleared items, e.g. a
 	// systray menu updated while it is open (#4719). Keep their IDs resolvable
-	// until the next Clear so a click on a stale row still reaches its handler
-	// instead of failing with "MenuItem #N not found".
-	m.releaseRetiredIDs()
+	// so a click on a stale row still reaches its handler instead of failing
+	// with "MenuItem #N not found": while the menu is displayed, keep every
+	// retired ID; otherwise keep only the previous generation, which covers a
+	// click dispatched just after the menu closed.
+	if !m.displayed.Load() {
+		m.releaseRetiredIDs()
+	}
 	for _, item := range m.items {
 		if m.impl == nil {
 			removeMenuItemByID(item.id)
