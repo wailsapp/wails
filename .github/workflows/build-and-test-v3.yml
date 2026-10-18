@@ -6,8 +6,11 @@ permissions:
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    # The branch ruleset requiring "v3 Build Results" covers master and
+    # releases/**, so PRs into either must run the tests.
     branches:
       - master
+      - 'releases/**'
 
 # A new push supersedes the previous run for the same PR. macOS runners are the
 # scarce resource (shared org-wide), so stale runs must not hold them.
@@ -22,7 +25,7 @@ jobs:
   changes:
     name: Detect v3 changes
     runs-on: ubuntu-latest
-    if: github.event.pull_request.base.ref == 'master'
+    if: github.event.pull_request.base.ref == 'master' || startsWith(github.event.pull_request.base.ref, 'releases/')
     outputs:
       v3: ${{ steps.diff.outputs.v3 }}
     steps:
@@ -128,11 +131,21 @@ jobs:
     needs: [test_js]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
+    env:
+      # Fail on a Go version mismatch instead of silently downloading a toolchain.
+      GOTOOLCHAIN: local
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        go-version: [1.25]
+        # Every platform tests the newest Go release; Linux also tests the
+        # oldest supported one (the go directive in v3/go.mod). The GTK3 legacy
+        # and server-mode steps only run on the newest release, as they are
+        # not Go-version specific and would double the Linux job time.
+        include:
+          - { os: windows-latest, go-version: '1.27' }
+          - { os: ubuntu-latest, go-version: '1.26' }
+          - { os: ubuntu-latest, go-version: '1.27' }
+          - { os: macos-latest, go-version: '1.27' }
 
     steps:
       - name: Checkout code
@@ -147,7 +160,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils at-spi2-core xdg-desktop-portal-gtk
 
       - name: Install linux dependencies (GTK3 legacy)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.27'
         run: |
           sudo apt-get install -y --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
 
@@ -179,7 +192,7 @@ jobs:
           echo "Example compilation tests (GTK4 default) completed successfully"
 
       - name: Build Examples (GTK3 legacy)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.27'
         working-directory: v3
         run: |
           echo "Starting example compilation tests (GTK3 legacy)..."
@@ -205,14 +218,14 @@ jobs:
         run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -v -timeout 10m -skip "TestService" ./...
 
       - name: Run tests (ubuntu) - GTK3 legacy
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.27'
         working-directory: v3
         # Service lifecycle tests require a stable live GTK window/display and
         # are already covered by the platform-specific test suites.
         run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk3 -v -timeout 10m -skip "TestService" ./...
 
       - name: Build server mode for every target
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.27'
         working-directory: v3
         env:
           CGO_ENABLED: "0"
@@ -226,7 +239,7 @@ jobs:
           done
 
       - name: Run tests (ubuntu) - server mode
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.27'
         working-directory: v3
         run: go test -tags server -v -timeout 10m ./pkg/application
 
@@ -253,6 +266,8 @@ jobs:
     name: Test Templates
     needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
+    env:
+      GOTOOLCHAIN: local
     strategy:
       fail-fast: false
       # Every template is built on Linux. Frontend tooling behaves the same on
@@ -269,12 +284,12 @@ jobs:
           - vue-js
           - svelte
           - svelte-js
-        go-version: [1.25]
+        go-version: ['1.27']
         include:
-          - { os: windows-latest, template: vanilla, go-version: 1.25 }
-          - { os: windows-latest, template: react, go-version: 1.25 }
-          - { os: macos-latest, template: vanilla, go-version: 1.25 }
-          - { os: macos-latest, template: react, go-version: 1.25 }
+          - { os: windows-latest, template: vanilla, go-version: '1.27' }
+          - { os: windows-latest, template: react, go-version: '1.27' }
+          - { os: macos-latest, template: vanilla, go-version: '1.27' }
+          - { os: macos-latest, template: react, go-version: '1.27' }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -339,7 +354,7 @@ jobs:
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
 
   build_results:
-    if: ${{ always() && github.event.pull_request.base.ref == 'master' }}
+    if: ${{ always() && (github.event.pull_request.base.ref == 'master' || startsWith(github.event.pull_request.base.ref, 'releases/')) }}
     runs-on: ubuntu-latest
     name: v3 Build Results
     permissions: {}
@@ -373,13 +388,15 @@ jobs:
     if: needs.changes.outputs.v3 == 'true'
     runs-on: macos-latest
     timeout-minutes: 30
+    env:
+      GOTOOLCHAIN: local
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
       - uses: actions/setup-go@v5
         with:
-          go-version-file: v3/go.mod
+          go-version: '1.27'
           cache-dependency-path: v3/go.sum
       # The variants run sequentially in one job: each takes about a minute,
       # so separate jobs spent most of their time on setup and runner queueing.
