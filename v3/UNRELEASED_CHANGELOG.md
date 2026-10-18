@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Pin pnpm to version 10 for versioned docs in [PR](https://github.com/wailsapp/wails/pull/6293) by @taliesin-ai
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
