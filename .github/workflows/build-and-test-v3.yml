@@ -11,9 +11,12 @@ on:
     paths:
       - 'v3/**'
       - '.github/workflows/build-and-test-v3.yml'
-  pull_request_review:
-    types: [submitted]
 
+# A new push supersedes the previous run for the same PR. macOS runners are the
+# scarce resource (shared org-wide), so stale runs must not hold them.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   test_js:
@@ -226,8 +229,11 @@ jobs:
     if: github.event.pull_request.base.ref == 'master'
     strategy:
       fail-fast: false
+      # Every template is built on Linux. Frontend tooling behaves the same on
+      # each OS, so macOS and Windows only build a representative pair to cover
+      # the native packaging path without exhausting the macOS runner pool.
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
         template:
           - vanilla
           - vanilla-js
@@ -238,6 +244,11 @@ jobs:
           - svelte
           - svelte-js
         go-version: [1.25]
+        include:
+          - { os: windows-latest, template: vanilla, go-version: 1.25 }
+          - { os: windows-latest, template: react, go-version: 1.25 }
+          - { os: macos-latest, template: vanilla, go-version: 1.25 }
+          - { os: macos-latest, template: react, go-version: 1.25 }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -326,20 +337,10 @@ jobs:
           fi
 
   test_mac_private_apis:
-    name: macOS API variants (${{ matrix.tags || 'public' }})
+    name: macOS API variants
     if: github.event.pull_request.base.ref == 'master'
     runs-on: macos-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        tags:
-          - ''
-          - private_mac_apis
-          - production
-          - production,private_mac_apis
-          - production,devtools
-          - production,devtools,private_mac_apis
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -348,8 +349,18 @@ jobs:
         with:
           go-version-file: v3/go.mod
           cache-dependency-path: v3/go.sum
+      # The variants run sequentially in one job: each takes about a minute,
+      # so separate jobs spent most of their time on setup and runner queueing.
       - name: Test native bridges, binary isolation, and application package
         working-directory: v3
-        env:
-          BUILD_TAGS: ${{ matrix.tags }}
-        run: go test -tags "$BUILD_TAGS" ./pkg/application -count=1
+        run: |
+          failed=()
+          for tags in "" private_mac_apis production production,private_mac_apis production,devtools production,devtools,private_mac_apis; do
+            echo "::group::tags=${tags:-public}"
+            go test -tags "$tags" ./pkg/application -count=1 || failed+=("${tags:-public}")
+            echo "::endgroup::"
+          done
+          if (( ${#failed[@]} )); then
+            echo "::error::Failed variants: ${failed[*]}"
+            exit 1
+          fi
