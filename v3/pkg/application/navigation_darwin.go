@@ -4,12 +4,8 @@ package application
 
 /*
 #include <stdbool.h>
-
-void navigationDecide(void *decisionHandler, bool allow);
 */
 import "C"
-
-import "unsafe"
 
 // windowInterceptsNavigation lets the WKNavigationDelegate in
 // webview_window_darwin.m allow a navigation on the spot when the window has
@@ -17,20 +13,16 @@ import "unsafe"
 //
 //export windowInterceptsNavigation
 func windowInterceptsNavigation(windowID C.uint) C.bool {
-	return C.bool(interceptsNavigation(uint(windowID)))
+	return C.bool(windowInterceptsNavigationByID(uint(windowID)))
 }
 
-// processNavigationAction receives a navigation WebKit is holding for the
-// window's OnBeforeNavigate. decisionHandler is a copy of WebKit's decision
-// block; navigationDecide calls it on the main thread and releases it.
+// processNavigationAction answers a navigation WebKit is holding for the
+// window's OnBeforeNavigate. Called on the main thread.
 //
 //export processNavigationAction
-func processNavigationAction(windowID C.uint, url *C.char, isMainFrame C.bool, decisionHandler unsafe.Pointer) {
-	request := NavigationRequest{
+func processNavigationAction(windowID C.uint, url *C.char, isMainFrame C.bool) C.bool {
+	return C.bool(decideNavigation(uint(windowID), NavigationRequest{
 		URL:         C.GoString(url),
 		IsMainFrame: bool(isMainFrame),
-	}
-	resolveNavigation(uint(windowID), request, func(allow bool) {
-		C.navigationDecide(decisionHandler, C.bool(allow))
-	})
+	}))
 }

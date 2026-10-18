@@ -9,7 +9,9 @@ type NavigationRequest struct {
 	// IsMainFrame reports whether the navigation replaces the window's
 	// top-level document rather than the content of an iframe. A request to
 	// open a new window (target="_blank", window.open) is a new top-level
-	// document too, and is reported as the main frame.
+	// document too, and is reported as the main frame. WebKitGTK does not say
+	// which frame a navigation targets, so on Linux every navigation is
+	// reported as the main frame.
 	IsMainFrame bool
 }
 
@@ -23,35 +25,37 @@ func (w *WebviewWindow) shouldNavigate(request NavigationRequest) bool {
 	return policy(w, request)
 }
 
-// interceptsNavigation reports whether the window identified by windowID has
-// an OnBeforeNavigate, so the platform layer can let navigations through
-// without a round trip when it does not.
-func interceptsNavigation(windowID uint) bool {
-	window := navigationWindow(windowID)
-	return window != nil && window.options.OnBeforeNavigate != nil
+// interceptsNavigation reports whether the window has an OnBeforeNavigate,
+// so the platform layer can leave navigations to the webview's default
+// handling when it does not.
+func (w *WebviewWindow) interceptsNavigation() bool {
+	return w.options.OnBeforeNavigate != nil
 }
 
-// resolveNavigation asks the window identified by windowID whether request
-// may go ahead, and passes the answer to decide exactly once.
-//
-// The webview delivers navigation requests on the main thread and holds the
-// navigation until it is answered. The policy runs on a goroutine instead, so
-// that it can call window and application methods that themselves wait on
-// the main thread. Every path that does not reach a positive answer refuses:
-// a window that has gone away, a policy that returns false, and one that
-// panics.
-func resolveNavigation(windowID uint, request NavigationRequest, decide func(allow bool)) {
-	go func() {
-		allow := false
-		defer func() { decide(allow) }()
-		defer handlePanic()
+// allowNavigation reports whether request may go ahead in window. The
+// platform layer calls it on the main thread while the webview holds the
+// navigation. A policy that panics refuses: the panic is passed to the
+// application's PanicHandler and the zero result stands.
+func allowNavigation(window *WebviewWindow, request NavigationRequest) (allow bool) {
+	defer handlePanic()
+	return window.shouldNavigate(request)
+}
 
-		window := navigationWindow(windowID)
-		if window == nil {
-			return
-		}
-		allow = window.shouldNavigate(request)
-	}()
+// windowInterceptsNavigationByID is interceptsNavigation for platform
+// callbacks that only carry a window ID.
+func windowInterceptsNavigationByID(windowID uint) bool {
+	window := navigationWindow(windowID)
+	return window != nil && window.interceptsNavigation()
+}
+
+// decideNavigation is allowNavigation for platform callbacks that only carry
+// a window ID. A window that has gone away refuses.
+func decideNavigation(windowID uint, request NavigationRequest) bool {
+	window := navigationWindow(windowID)
+	if window == nil {
+		return false
+	}
+	return allowNavigation(window, request)
 }
 
 func navigationWindow(windowID uint) *WebviewWindow {

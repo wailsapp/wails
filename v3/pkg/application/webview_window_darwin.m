@@ -17,7 +17,7 @@ extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern int resolveMediaCapturePermission(unsigned int, bool, bool);
 extern bool windowInterceptsNavigation(unsigned int);
-extern void processNavigationAction(unsigned int, const char*, bool, void*);
+extern bool processNavigationAction(unsigned int, const char*, bool);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
 
@@ -978,11 +978,9 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     [webView reload];
 }
 // WKNavigationDelegate - Ask the window's OnBeforeNavigate whether a frame may
-// load a URL. WebKit asks before every navigation, server redirects included,
-// and holds it until decisionHandler is called. The policy runs on a Go
-// goroutine, so the handler is copied here and answered later by
-// navigationDecide. Without an OnBeforeNavigate this allows everything, which
-// is what WebKit does when the method is not implemented.
+// load a URL. WebKit asks before every navigation, server redirects included.
+// Without an OnBeforeNavigate this allows everything, which is what WebKit
+// does when the method is not implemented.
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
     decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
     if (!windowInterceptsNavigation(self.windowId)) {
@@ -994,8 +992,8 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     // document, so it counts as the main frame.
     WKFrameInfo *targetFrame = navigationAction.targetFrame;
     bool isMainFrame = targetFrame == nil || targetFrame.isMainFrame;
-    processNavigationAction(self.windowId, url != nil ? [url UTF8String] : "", isMainFrame,
-        (void*)[decisionHandler copy]);
+    bool allow = processNavigationAction(self.windowId, url != nil ? [url UTF8String] : "", isMainFrame);
+    decisionHandler(allow ? WKNavigationActionPolicyAllow : WKNavigationActionPolicyCancel);
 }
 // WKUIDelegate - Handle file input element clicks
 - (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
@@ -1029,16 +1027,6 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     decisionHandler((WKPermissionDecision)resolveMediaCapturePermission(self.windowId, needAudio, needVideo));
 }
 @end
-// Answer a navigation held by decidePolicyForNavigationAction. Called from
-// Go, on any thread, exactly once per held navigation; WebKit wants the answer
-// on the main thread. Releases the copy that method made.
-void navigationDecide(void* handler, bool allow) {
-    void (^decisionHandler)(WKNavigationActionPolicy) = (void (^)(WKNavigationActionPolicy))handler;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        decisionHandler(allow ? WKNavigationActionPolicyAllow : WKNavigationActionPolicyCancel);
-        [decisionHandler release];
-    });
-}
 void windowSetScreen(void* window, void* screen, int yOffset) {
     NSWindow* nsWindow = (NSWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;

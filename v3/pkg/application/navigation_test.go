@@ -1,9 +1,6 @@
 package application
 
-import (
-	"testing"
-	"time"
-)
+import "testing"
 
 func TestShouldNavigateWithoutPolicyAllows(t *testing.T) {
 	window := &WebviewWindow{}
@@ -40,22 +37,22 @@ func TestShouldNavigatePassesRequestAndWindow(t *testing.T) {
 func TestInterceptsNavigation(t *testing.T) {
 	withNavigationWindow(t, 1, func(Window, NavigationRequest) bool { return true })
 
-	if !interceptsNavigation(1) {
+	if !windowInterceptsNavigationByID(1) {
 		t.Error("a window with OnBeforeNavigate should intercept navigation")
 	}
-	if interceptsNavigation(2) {
+	if windowInterceptsNavigationByID(2) {
 		t.Error("an unknown window should not intercept navigation")
 	}
 
 	withNavigationWindow(t, 1, nil)
-	if interceptsNavigation(1) {
+	if windowInterceptsNavigationByID(1) {
 		t.Error("a window without OnBeforeNavigate should not intercept navigation")
 	}
 }
 
-func TestResolveNavigation(t *testing.T) {
+func TestDecideNavigation(t *testing.T) {
 	sameOrigin := func(_ Window, request NavigationRequest) bool {
-		return !request.IsMainFrame || request.URL == "wails://wails/"
+		return !request.IsMainFrame || request.URL == "wails://localhost/"
 	}
 
 	tests := []struct {
@@ -69,7 +66,7 @@ func TestResolveNavigation(t *testing.T) {
 			name:     "allowed by the policy",
 			windowID: 1,
 			policy:   sameOrigin,
-			request:  NavigationRequest{URL: "wails://wails/", IsMainFrame: true},
+			request:  NavigationRequest{URL: "wails://localhost/", IsMainFrame: true},
 			want:     true,
 		},
 		{
@@ -87,11 +84,11 @@ func TestResolveNavigation(t *testing.T) {
 			want:     true,
 		},
 		{
-			// The window may close while WebKit is still waiting on an answer.
+			// The window may close while the webview is waiting on an answer.
 			name:     "a window that has gone away is refused",
 			windowID: 2,
 			policy:   func(Window, NavigationRequest) bool { return true },
-			request:  NavigationRequest{URL: "wails://wails/", IsMainFrame: true},
+			request:  NavigationRequest{URL: "wails://localhost/", IsMainFrame: true},
 			want:     false,
 		},
 	}
@@ -100,23 +97,23 @@ func TestResolveNavigation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			withNavigationWindow(t, 1, tt.policy)
 
-			if got := awaitNavigationDecision(t, tt.windowID, tt.request); got != tt.want {
-				t.Errorf("resolveNavigation(%+v) = %t, want %t", tt.request, got, tt.want)
+			if got := decideNavigation(tt.windowID, tt.request); got != tt.want {
+				t.Errorf("decideNavigation(%+v) = %t, want %t", tt.request, got, tt.want)
 			}
 		})
 	}
 }
 
-// A policy that panics must still answer WebKit, which would otherwise hold the
-// navigation forever, and the answer must be a refusal.
-func TestResolveNavigationRefusesWhenPolicyPanics(t *testing.T) {
+// A policy that panics must still give the webview an answer, and the answer
+// must be a refusal.
+func TestDecideNavigationRefusesWhenPolicyPanics(t *testing.T) {
 	app := withNavigationWindow(t, 1, func(Window, NavigationRequest) bool {
 		panic("policy failed")
 	})
 	panics := make(chan *PanicDetails, 1)
 	app.options.PanicHandler = func(details *PanicDetails) { panics <- details }
 
-	if awaitNavigationDecision(t, 1, NavigationRequest{URL: "wails://wails/", IsMainFrame: true}) {
+	if decideNavigation(1, NavigationRequest{URL: "wails://localhost/", IsMainFrame: true}) {
 		t.Error("a panicking policy should refuse the navigation")
 	}
 	select {
@@ -124,26 +121,6 @@ func TestResolveNavigationRefusesWhenPolicyPanics(t *testing.T) {
 	default:
 		t.Error("the panic should reach the application's PanicHandler")
 	}
-}
-
-func awaitNavigationDecision(t *testing.T, windowID uint, request NavigationRequest) bool {
-	t.Helper()
-
-	decisions := make(chan bool, 2)
-	resolveNavigation(windowID, request, func(allow bool) { decisions <- allow })
-
-	var allow bool
-	select {
-	case allow = <-decisions:
-	case <-time.After(5 * time.Second):
-		t.Fatal("resolveNavigation never answered")
-	}
-	select {
-	case <-decisions:
-		t.Fatal("resolveNavigation answered more than once")
-	case <-time.After(50 * time.Millisecond):
-	}
-	return allow
 }
 
 // withNavigationWindow installs an application holding one window with the

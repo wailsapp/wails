@@ -187,6 +187,13 @@ int is_user_media_for_video(WebKitPermissionRequest *request) {
     return webkit_user_media_permission_is_for_video_device(WEBKIT_USER_MEDIA_PERMISSION_REQUEST(request)) ? 1 : 0;
 }
 
+const char* navigation_policy_decision_uri(WebKitPolicyDecision *decision) {
+    WebKitNavigationAction *action = webkit_navigation_policy_decision_get_navigation_action(WEBKIT_NAVIGATION_POLICY_DECISION(decision));
+    WebKitURIRequest *request = action != NULL ? webkit_navigation_action_get_request(action) : NULL;
+    const char *uri = request != NULL ? webkit_uri_request_get_uri(request) : NULL;
+    return uri != NULL ? uri : "";
+}
+
 // ============================================================================
 // WebView helpers
 // ============================================================================

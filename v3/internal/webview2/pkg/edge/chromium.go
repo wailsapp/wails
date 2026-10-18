@@ -71,6 +71,8 @@ type Chromium struct {
 	acceleratorKeyPressed            *ICoreWebView2AcceleratorKeyPressedEventHandler
 	cursorChanged                    *iCoreWebView2CursorChangedEventHandler
 	navigationStarting               *ICoreWebView2NavigationStartingEventHandler
+	frameNavigationStarting          *ICoreWebView2NavigationStartingEventHandler
+	newWindowRequested               *ICoreWebView2NewWindowRequestedEventHandler
 	navigationCompleted              *ICoreWebView2NavigationCompletedEventHandler
 	processFailed                    *ICoreWebView2ProcessFailedEventHandler
 
@@ -94,7 +96,9 @@ type Chromium struct {
 	MessageCallback                          func(message string, sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs)
 	MessageWithAdditionalObjectsCallback     func(message string, sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs)
 	WebResourceRequestedCallback             func(request *ICoreWebView2WebResourceRequest, args *ICoreWebView2WebResourceRequestedEventArgs)
-	NavigationStartingCallback               func(sender *ICoreWebView2)
+	NavigationStartingCallback               func(sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs)
+	FrameNavigationStartingCallback          func(sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs)
+	NewWindowRequestedCallback               func(sender *ICoreWebView2, args *ICoreWebView2NewWindowRequestedEventArgs)
 	NavigationCompletedCallback              func(sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs)
 	ProcessFailedCallback                    func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	ContainsFullScreenElementChangedCallback func(sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs)
@@ -133,6 +137,8 @@ func NewChromium() *Chromium {
 	e.acceleratorKeyPressed = newICoreWebView2AcceleratorKeyPressedEventHandler(e)
 	e.cursorChanged = newICoreWebView2CursorChangedEventHandler(e)
 	e.navigationStarting = newICoreWebView2NavigationStartingEventHandler(e)
+	e.frameNavigationStarting = newICoreWebView2NavigationStartingEventHandler(frameNavigationStartingImpl{e})
+	e.newWindowRequested = newICoreWebView2NewWindowRequestedEventHandler(e)
 	e.navigationCompleted = newICoreWebView2NavigationCompletedEventHandler(e)
 	e.processFailed = newICoreWebView2ProcessFailedEventHandler(e)
 	e.containsFullScreenElementChanged = newICoreWebView2ContainsFullScreenElementChangedEventHandler(e)
@@ -167,6 +173,8 @@ func (e *Chromium) ShuttingDown() {
 	e.MessageWithAdditionalObjectsCallback = nil
 	e.WebResourceRequestedCallback = nil
 	e.NavigationStartingCallback = nil
+	e.FrameNavigationStartingCallback = nil
+	e.NewWindowRequestedCallback = nil
 	e.NavigationCompletedCallback = nil
 	e.ProcessFailedCallback = nil
 	e.ContainsFullScreenElementChangedCallback = nil
@@ -670,6 +678,14 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	if err != nil {
 		return e.initializationFailed(err)
 	}
+	err = e.webview.AddFrameNavigationStarting(e.frameNavigationStarting, &token)
+	if err != nil {
+		return e.initializationFailed(err)
+	}
+	err = e.webview.AddNewWindowRequested(e.newWindowRequested, &token)
+	if err != nil {
+		return e.initializationFailed(err)
+	}
 	err = e.webview.AddNavigationCompleted(e.navigationCompleted, &token)
 	if err != nil {
 		return e.initializationFailed(err)
@@ -922,9 +938,32 @@ func boolToInt(input bool) int {
 	return 0
 }
 
-func (e *Chromium) NavigationStarting(sender *ICoreWebView2, _ *IUnknown) uintptr {
+func (e *Chromium) NavigationStarting(sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs) uintptr {
 	if !e.shuttingDown && e.NavigationStartingCallback != nil {
-		e.NavigationStartingCallback(sender)
+		e.NavigationStartingCallback(sender, args)
+	}
+	return 0
+}
+
+func (e *Chromium) FrameNavigationStarting(sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs) uintptr {
+	if !e.shuttingDown && e.FrameNavigationStartingCallback != nil {
+		e.FrameNavigationStartingCallback(sender, args)
+	}
+	return 0
+}
+
+// frameNavigationStartingImpl routes FrameNavigationStarting, which WebView2
+// delivers through the same handler interface as NavigationStarting, to its
+// own callback.
+type frameNavigationStartingImpl struct{ *Chromium }
+
+func (f frameNavigationStartingImpl) NavigationStarting(sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs) uintptr {
+	return f.FrameNavigationStarting(sender, args)
+}
+
+func (e *Chromium) NewWindowRequested(sender *ICoreWebView2, args *ICoreWebView2NewWindowRequestedEventArgs) uintptr {
+	if !e.shuttingDown && e.NewWindowRequestedCallback != nil {
+		e.NewWindowRequestedCallback(sender, args)
 	}
 	return 0
 }

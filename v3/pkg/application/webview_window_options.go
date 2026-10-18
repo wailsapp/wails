@@ -201,11 +201,13 @@ type WebviewWindowOptions struct {
 	// own initial load and SetURL calls — so a policy that refuses everything
 	// off the app's origin must still allow the app's own URLs.
 	//
-	// It runs on its own goroutine, never on the main thread, and the
-	// navigation waits for its answer. A panic counts as a refusal.
+	// It is called on the main thread and the navigation waits for its
+	// answer, so it should return quickly. A panic counts as a refusal.
 	//
-	// macOS only for now; on other platforms it is ignored and a warning is
-	// logged when the window is created.
+	// Supported on macOS, Windows and Linux. On Linux every navigation is
+	// reported as the main frame (see NavigationRequest.IsMainFrame). On iOS
+	// and Android it is ignored and a warning is logged when the window is
+	// created.
 	OnBeforeNavigate func(window Window, request NavigationRequest) bool
 
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
