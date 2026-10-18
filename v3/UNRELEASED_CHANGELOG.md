@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Linux: detect when WebKitGTK's bwrap sandbox cannot start because AppArmor/the kernel restricts unprivileged user namespaces (Ubuntu 24.04), warn at startup with the AppArmor/sysctl fix instead of an opaque SIGTRAP, and add a check to `wails3 doctor`. The sandbox is never disabled automatically (#6172)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
