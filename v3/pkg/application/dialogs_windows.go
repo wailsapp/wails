@@ -4,7 +4,9 @@ package application
 
 import (
 	"path/filepath"
+	"runtime"
 	"strings"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/go-common-file-dialog/cfd"
 	"github.com/wailsapp/wails/v3/pkg/w32"
@@ -46,6 +48,15 @@ func (m *windowsDialog) show() {
 		}
 	}
 
+	// MessageBox cannot show custom button captions, so question dialogs with
+	// custom buttons use a TaskDialog (#5794). It needs comctl32 v6; if that is
+	// unavailable (no manifest) or the call fails, fall back to MessageBox.
+	if m.dialog.DialogType == QuestionDialogType && len(m.dialog.Buttons) > 0 {
+		if m.showTaskDialog(parentWindow) {
+			return
+		}
+	}
+
 	if m.UseAppIcon || m.dialog.Icon != nil {
 		// Use the application's embedded icon resource (ID 3). MessageBoxIndirect
 		// cannot render arbitrary icon bytes, so a custom Icon also maps to the
@@ -69,20 +80,67 @@ func (m *windowsDialog) show() {
 			globalApplication.handleFatalError(err)
 		}
 	}
-	// This maps MessageBox return values to strings
-	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
-	result := "Error"
-	if int(button) < len(responses) {
-		result = responses[button]
-	}
 	// Check if there's a callback for the button pressed
-	for _, buttonInDialog := range m.dialog.Buttons {
-		if buttonInDialog.Label == result {
-			if buttonInDialog.Callback != nil {
-				buttonInDialog.Callback()
-			}
-		}
+	if b := messageBoxButtonFor(m.dialog.Buttons, button); b != nil && b.Callback != nil {
+		b.Callback()
 	}
+}
+
+// showTaskDialog shows the dialog with its own button captions. It returns
+// false, without having shown anything, when TaskDialogIndirect cannot be used.
+func (m *windowsDialog) showTaskDialog(parentWindow uintptr) bool {
+	if !w32.TaskDialogAvailable() {
+		return false
+	}
+	plan := planTaskDialog(m.dialog.Buttons)
+	if len(plan.buttons) == 0 {
+		return false
+	}
+
+	ptrSize := int(unsafe.Sizeof(uintptr(0)))
+	title := w32.MustStringToUTF16Ptr(m.dialog.Title)
+	message := w32.MustStringToUTF16Ptr(m.dialog.Message)
+	labels := make([]*uint16, len(plan.buttons))
+	labelAddrs := make([]uint64, len(plan.buttons))
+	ids := make([]int32, len(plan.buttons))
+	for i, b := range plan.buttons {
+		labels[i] = w32.MustStringToUTF16Ptr(b.Label)
+		labelAddrs[i] = uint64(uintptr(unsafe.Pointer(labels[i])))
+		ids[i] = b.ID
+	}
+	buttons := encodeTaskDialogButtons(ptrSize, ids, labelAddrs)
+
+	var flags uint32
+	if plan.cancel != nil {
+		flags |= tdfAllowDialogCancellation
+	}
+	if parentWindow != 0 {
+		flags |= tdfPositionRelativeToWindow
+	}
+	config := encodeTaskDialogConfig(ptrSize, taskDialogConfig{
+		hwndParent:    uint64(parentWindow),
+		flags:         flags,
+		title:         uint64(uintptr(unsafe.Pointer(title))),
+		content:       uint64(uintptr(unsafe.Pointer(message))),
+		buttonCount:   uint32(len(plan.buttons)),
+		buttons:       uint64(uintptr(unsafe.Pointer(&buttons[0]))),
+		defaultButton: plan.defaultID,
+	})
+
+	result, err := w32.TaskDialogIndirect(config)
+	// The config only holds raw addresses; keep what they point to alive.
+	runtime.KeepAlive(title)
+	runtime.KeepAlive(message)
+	runtime.KeepAlive(labels)
+	runtime.KeepAlive(buttons)
+	if err != nil {
+		globalApplication.warning("TaskDialogIndirect failed, falling back to MessageBox: %v", err)
+		return false
+	}
+	if b := plan.buttonFor(result); b != nil && b.Callback != nil {
+		b.Callback()
+	}
+	return true
 }
 
 func newDialogImpl(d *MessageDialog) *windowsDialog {
