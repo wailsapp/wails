@@ -4,6 +4,7 @@ package edge
 
 import (
 	"testing"
+	"unsafe"
 )
 
 // Runtime COM failures after startup must be logged and survived, never routed
@@ -42,9 +43,28 @@ func TestCursorChangedSurvivesCOMFailures(t *testing.T) {
 }
 
 func TestSetBackgroundColourSurvivesCOMFailure(t *testing.T) {
+	called := false
+	controller2 := &ICoreWebView2Controller2{vtbl: &_ICoreWebView2Controller2Vtbl{
+		_IUnknownVtbl: _IUnknownVtbl{Release: NewComProc(func(uintptr) uintptr { return 0 })},
+		PutDefaultBackgroundColor: NewComProc(func(uintptr, uintptr) uintptr {
+			called = true
+			return runtimeFailure
+		}),
+	}}
+	controller := &ICoreWebView2Controller{vtbl: &_ICoreWebView2ControllerVtbl{
+		_IUnknownVtbl: _IUnknownVtbl{
+			QueryInterface: NewComProc(func(_, _, ppvObject uintptr) uintptr {
+				*(**ICoreWebView2Controller2)(unsafe.Pointer(ppvObject)) = controller2
+				return 0
+			}),
+		},
+	}}
 	e := fatalOnErrorCallback(t)
-	// No controller: SetBackgroundColourWithError reports an error.
+	e.controller = controller
 	e.SetBackgroundColour(1, 2, 3, 255)
+	if !called {
+		t.Fatal("PutDefaultBackgroundColor was not called")
+	}
 }
 
 func TestAddWebResourceRequestedFilterSurvivesCOMFailure(t *testing.T) {
