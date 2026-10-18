@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Windows webview not regaining focus on window activation, and Tab being trapped inside the webview instead of moving to the native window and back (#3783)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
