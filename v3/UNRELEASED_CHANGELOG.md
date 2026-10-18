@@ -18,6 +18,7 @@ After processing, the content will be moved to the main changelog and this file 
 ## Added
 <!-- New features, capabilities, or enhancements -->
 - Expose the `@wailsio/runtime/cancellable` subpath export so `CancellablePromise` can be imported without evaluating the root runtime entry (#6153)
+- Add `SystemTray.SetIconName` and `SetIconThemePath` so Linux tray icons can come from the icon theme, which desktops draw at panel size and recolour for light and dark panels
 
 ## Changed
 <!-- Changes in existing functionality -->

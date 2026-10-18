@@ -70,6 +70,8 @@ type systemTrayImpl interface {
 	setTemplateIcon(icon []byte)
 	destroy()
 	setDarkModeIcon(icon []byte)
+	setIconName(name string)
+	setIconThemePath(path string)
 	bounds() (*Rect, error)
 	getScreen() (*Screen, error)
 	positionWindow(window Window, offset int) error
@@ -86,6 +88,9 @@ type SystemTray struct {
 	icon         []byte
 	darkModeIcon []byte
 	iconPosition IconPosition
+
+	iconName      string
+	iconThemePath string
 
 	clickHandler            func()
 	rightClickHandler       func()
@@ -259,6 +264,36 @@ func (s *SystemTray) SetDarkModeIcon(icon []byte) *SystemTray {
 	} else {
 		InvokeSync(func() {
 			s.impl.setDarkModeIcon(icon)
+		})
+	}
+	return s
+}
+
+// SetIconName sets the tray icon by its freedesktop icon theme name (Linux only).
+// The desktop looks the name up in the icon theme and renders it at the panel's
+// own size, recolouring -symbolic icons to match the panel. Hosts prefer the
+// name over the icon set with SetIcon; whether they fall back to that icon when
+// the name cannot be resolved varies by desktop. Pass "" to go back to showing it.
+func (s *SystemTray) SetIconName(name string) *SystemTray {
+	if s.impl == nil {
+		s.iconName = name
+	} else {
+		InvokeSync(func() {
+			s.impl.setIconName(name)
+		})
+	}
+	return s
+}
+
+// SetIconThemePath adds a directory to the icon theme search path used to
+// resolve SetIconName (Linux only), for icons not installed under a system
+// theme directory such as /usr/share/icons.
+func (s *SystemTray) SetIconThemePath(path string) *SystemTray {
+	if s.impl == nil {
+		s.iconThemePath = path
+	} else {
+		InvokeSync(func() {
+			s.impl.setIconThemePath(path)
 		})
 	}
 	return s

@@ -227,6 +227,14 @@ func (s *macosSystemTray) setDarkModeIcon(icon []byte) {
 	s.setIcon(icon)
 }
 
+func (s *macosSystemTray) setIconName(_ string) {
+	// Unsupported - do nothing
+}
+
+func (s *macosSystemTray) setIconThemePath(_ string) {
+	// Unsupported - do nothing
+}
+
 func (s *macosSystemTray) setTemplateIcon(icon []byte) {
 	s.icon = icon
 	s.isTemplateIcon = true

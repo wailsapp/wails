@@ -2,7 +2,7 @@
 
 /*
 Portions of this code are derived from the project:
-- https://github.com/fyne-io/systray
+- https://github.com/fyne-io/systray (Apache License 2.0)
 */
 package application
 
@@ -35,6 +35,9 @@ type linuxSystemTray struct {
 
 	iconPosition   IconPosition
 	isTemplateIcon bool
+
+	iconName      string
+	iconThemePath string
 
 	quitChan  chan struct{}
 	conn      *dbus.Conn
@@ -488,6 +491,46 @@ func (s *linuxSystemTray) setTemplateIcon(icon []byte) {
 	s.setIcon(icon)
 }
 
+func (s *linuxSystemTray) setIconName(name string) {
+	s.iconName = name
+	if s.props == nil {
+		return
+	}
+	s.props.SetMust("org.kde.StatusNotifierItem", "IconName", name)
+
+	if s.conn == nil {
+		return
+	}
+
+	err := notifier.Emit(s.conn, &notifier.StatusNotifierItem_NewIconSignal{
+		Path: itemPath,
+		Body: &notifier.StatusNotifierItem_NewIconSignalBody{},
+	})
+	if err != nil {
+		globalApplication.error("systray error: failed to emit new icon signal: %w", err)
+	}
+}
+
+func (s *linuxSystemTray) setIconThemePath(path string) {
+	s.iconThemePath = path
+	if s.props == nil {
+		return
+	}
+	s.props.SetMust("org.kde.StatusNotifierItem", "IconThemePath", path)
+
+	if s.conn == nil {
+		return
+	}
+
+	err := notifier.Emit(s.conn, &notifier.StatusNotifierItem_NewIconThemePathSignal{
+		Path: itemPath,
+		Body: &notifier.StatusNotifierItem_NewIconThemePathSignalBody{IconThemePath: path},
+	})
+	if err != nil {
+		globalApplication.error("systray error: failed to emit new icon theme path signal: %w", err)
+	}
+}
+
 func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 	label := s.label
 	if label == "" {
@@ -502,6 +545,8 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 		menu:           s.menu,
 		iconPosition:   s.iconPosition,
 		isTemplateIcon: s.isTemplateIcon,
+		iconName:       s.iconName,
+		iconThemePath:  s.iconThemePath,
 		quitChan:       make(chan struct{}),
 	}
 	impl.menuVersion.Store(1)
@@ -605,13 +650,13 @@ func (s *linuxSystemTray) createPropSpec() map[string]map[string]*prop.Prop {
 		},
 
 		"IconName": {
-			Value:    "",
+			Value:    s.iconName,
 			Writable: false,
 			Emit:     prop.EmitTrue,
 			Callback: nil,
 		},
 		"IconThemePath": {
-			Value:    "",
+			Value:    s.iconThemePath,
 			Writable: false,
 			Emit:     prop.EmitTrue,
 			Callback: nil,
