@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 **ベストプラクティス：** メニューの先頭や末尾にセパレーターを配置しないでください。
 
+### セクション見出し
+
+**macOS 14+** でメニュー項目のグループに付ける、ネイティブで操作できないラベルです：
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` は AppKit の標準的なセクション見出しの外観を使用します。メニュー項目を返さず、アクションも関連付けません。古いバージョンの macOS、Windows、Linux、モバイル、およびサーバービルドでは、呼び出しても何もせず、行も挿入しません。
+
+トレイメニュー、コンテキストメニュー、アプリケーションメニューで、関連するコマンドにラベルを付けるために使用します。省略された見出しはラジオグループを分割しないため、すべてのプラットフォームでラジオグループを分割するには `AddSeparator()` を使用してください。メソッドのシグネチャは [Menu API](/reference/menu#addsectionheader) を、ホスト名を見出しに使う例は `systray-menu` サンプルを参照してください。
+
 ## メニュー項目のプロパティ
 
 ### ラベル

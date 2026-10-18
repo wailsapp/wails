@@ -98,6 +98,28 @@ menu.Add("Select All")
 
 **Bonne pratique :** utilisez des séparateurs pour regrouper les éléments de menu associés.
 
+### AddSectionHeader()
+
+Ajoute un en-tête de section natif non interactif sous **macOS 14 et versions ultérieures**. Sur les versions antérieures de macOS et toutes les autres plateformes (y compris les compilations serveur), cet appel est sans effet : aucun élément de remplacement n’est inséré.
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+Utilisez les en-têtes pour nommer les groupes dans les menus de la zone de notification, les menus contextuels ou les menus d’application :
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+Les en-têtes utilisent l’apparence standard des en-têtes de section d’AppKit. Appelez `menu.Update()` après avoir reconstruit un menu déjà affiché, comme pour les autres modifications de structure. Consultez l’exemple `systray-menu` pour un en-tête obtenu avec `os.Hostname()`.
+
+Les en-têtes omis ne séparent pas les groupes de boutons radio. Utilisez `AddSeparator()` lorsque les groupes doivent rester séparés sur toutes les plateformes.
+
 ### AddCheckbox()
 
 Ajoute un élément de menu à cocher.
