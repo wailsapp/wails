@@ -711,8 +711,10 @@ OnBeforeNavigate: func(window application.Window, request application.Navigation
         return false
     }
     // The app's own content: wails://localhost on macOS and Linux,
-    // http://wails.localhost on Windows.
-    return u.Scheme == "wails" || u.Hostname() == "wails.localhost"
+    // http://wails.localhost on Windows. Compare the hostname, not the host:
+    // in dev mode the URL carries the dev server's port.
+    return (u.Scheme == "wails" && u.Hostname() == "localhost") ||
+        (u.Scheme == "http" && u.Hostname() == "wails.localhost")
 },
 ```
 

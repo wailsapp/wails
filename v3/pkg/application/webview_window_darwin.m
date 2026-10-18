@@ -995,6 +995,20 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     bool allow = processNavigationAction(self.windowId, url != nil ? [url UTF8String] : "", isMainFrame);
     decisionHandler(allow ? WKNavigationActionPolicyAllow : WKNavigationActionPolicyCancel);
 }
+// WKNavigationDelegate (macOS 26+) - A back/forward navigation that resumes a
+// suspended page (Instant Back) can skip decidePolicyForNavigationAction, so
+// ask OnBeforeNavigate here too. Otherwise the normal load that follows asks
+// it through decidePolicyForNavigationAction, so allow. Older macOS never
+// calls this method.
+- (void)webView:(WKWebView *)webView shouldGoToBackForwardListItem:(WKBackForwardListItem *)item
+    willUseInstantBack:(BOOL)willUseInstantBack completionHandler:(void (^)(BOOL))completionHandler {
+    if (!willUseInstantBack || !windowInterceptsNavigation(self.windowId)) {
+        completionHandler(YES);
+        return;
+    }
+    NSString *url = item.URL.absoluteString;
+    completionHandler(processNavigationAction(self.windowId, url != nil ? [url UTF8String] : "", true));
+}
 // WKUIDelegate - Handle file input element clicks
 - (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
     initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
