@@ -1,12 +1,86 @@
 package commands
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/wailsapp/wails/v3/internal/defaults"
 	"github.com/wailsapp/wails/v3/internal/flags"
 )
+
+func TestPrepareRemoteTemplateConfig(t *testing.T) {
+	tests := []struct {
+		name       string
+		filename   string
+		wantPath   string
+		wantCopied bool
+	}{
+		{name: "yml", filename: "config.yml", wantPath: "build/config.yml"},
+		{name: "yaml", filename: "config.yaml", wantPath: "build/config.yaml", wantCopied: true},
+		{name: "missing", wantPath: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			projectDir := t.TempDir()
+			buildDir := filepath.Join(projectDir, "build")
+			if tt.filename != "" {
+				if err := os.MkdirAll(buildDir, 0o755); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(buildDir, tt.filename), []byte("template config\n"), 0o644); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			gotPath, err := prepareRemoteTemplateConfig(projectDir)
+			if err != nil {
+				t.Fatalf("prepareRemoteTemplateConfig() error = %v", err)
+			}
+			if gotPath != tt.wantPath {
+				t.Fatalf("prepareRemoteTemplateConfig() path = %q, want %q", gotPath, tt.wantPath)
+			}
+
+			canonicalPath := filepath.Join(buildDir, "config.yml")
+			_, canonicalErr := os.Stat(canonicalPath)
+			if tt.wantCopied {
+				if canonicalErr != nil {
+					t.Fatalf("expected config.yaml to be copied to config.yml: %v", canonicalErr)
+				}
+				got, err := os.ReadFile(canonicalPath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if string(got) != "template config\n" {
+					t.Errorf("copied config = %q, want original template config", got)
+				}
+			} else if tt.filename == "" && !os.IsNotExist(canonicalErr) {
+				t.Errorf("unexpected canonical config file for missing source")
+			}
+		})
+	}
+}
+
+func TestPrepareRemoteTemplateConfigRejectsSymlink(t *testing.T) {
+	projectDir := t.TempDir()
+	buildDir := filepath.Join(projectDir, "build")
+	if err := os.MkdirAll(buildDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	target := filepath.Join(projectDir, "outside-config.yml")
+	if err := os.WriteFile(target, []byte("not for copying\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, filepath.Join(buildDir, "config.yaml")); err != nil {
+		t.Skipf("symbolic links are not supported: %v", err)
+	}
+
+	if _, err := prepareRemoteTemplateConfig(projectDir); err == nil {
+		t.Fatal("expected symbolic-link configuration to be rejected")
+	}
+}
 
 func TestGitURLToModulePath(t *testing.T) {
 	tests := []struct {
