@@ -24,10 +24,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Validate remote template URLs passed to `wails3 init -t` before cloning: only `https://`, `http://`, `ssh://`, `git://` and `user@host:path` URLs are accepted, values are passed to git after `--`, and git is restricted to those transports during the clone
+- Reject out-of-range `x-wails-window-id` header values in the HTTP runtime transport instead of silently truncating them to another window's ID
+- Harden the updater's archive extraction against zip-slip: entry paths are now checked with `filepath.IsLocal` plus a containment check on the joined path, with tests for nested `..`, backslash, absolute-path and symlink write-through entries in zip and tar.gz archives
 - Fix AppImages from `wails3 generate appimage` crashing on start outside Debian and Ubuntu with "Unable to spawn a new child process: … WebKitNetworkProcess". The bundled WebKit now runs the helper processes shipped in the AppImage. WebKit's bubblewrap sandbox stays on
 - Fix `-tags server` builds failing to compile for Android and iOS, fixing [#6271](https://github.com/wailsapp/wails/issues/6271)
 - Fix the updater failing to swap on Linux when the temp dir is on another filesystem (such as a tmpfs `/tmp`) by staging beside the installed binary and copying across filesystems
 - Fix the updater trying to replace the read-only mount of an AppImage instead of the `.AppImage` file
+- Fix reserved `wails:` window control messages being accepted from iframes on macOS and iOS. They are now only accepted from the window's main frame; other messages from iframes still reach `RawMessageHandler` with their origin info
 - Stop posting `WindowDidUpdate` and `WindowWillUpdate` on macOS: `NSWindowDidUpdateNotification` fires on every run-loop pass, so the page received ~120 empty `evaluateJavaScript:` calls per second, and on macOS 27.0 each of them consumed the transient activation of the user's click — `navigator.clipboard.writeText()` and other activation-gated APIs rejected with `NotAllowedError` from real clicks ([#6170](https://github.com/wailsapp/wails/issues/6170)) by @APshenkin
 - Fix default Windows info.json language to en-US (0409) so Explorer shows version details (#6210)
 - Fix the Linux DMA-BUF renderer being turned off on laptops with an NVIDIA dGPU beside an AMD or Intel iGPU: on Wayland it is now turned off only when WebKit renders on NVIDIA (the app was offloaded to the dGPU, or the compositor runs on it), not whenever the nvidia module is loaded, which slowed rendering to a crawl on the iGPU; X11 sessions keep the old behaviour, since Xorg's render GPU is set by its configuration
@@ -52,6 +56,9 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Security
 <!-- Security-related changes -->
+- Server mode (`-tags server`) now accepts `/wails/runtime` calls only as `POST` requests from the server's own origin or an origin listed in `ServerOptions.WebSocketOriginPatterns`; other methods receive HTTP 405 and other browser origins HTTP 403. Deployments behind a reverse proxy that rewrites the `Host` header should add their public origin to `WebSocketOriginPatterns`
+- Server mode (`-tags server`) bound to a loopback address (the default `localhost`, `127.0.0.0/8` or `::1`) now rejects requests with HTTP 403 unless the `Host` header is `localhost`, an IP literal, the bind host, or a host matching `ServerOptions.WebSocketOriginPatterns`, blocking DNS rebinding attacks against `/wails/runtime` and the WebSocket endpoints
+- Windows notifications no longer fall back to PowerShell when the WinRT toast API fails; the error is returned instead
 
 ---
 

@@ -8,6 +8,9 @@ on:
       - '.github/workflows/upload-source-documents.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   push_files_to_crowdin:
     name: Push files to Crowdin

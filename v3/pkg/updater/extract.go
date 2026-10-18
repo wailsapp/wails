@@ -368,12 +368,19 @@ func safeJoin(root, name string) (string, error) {
 	if clean == "" || clean == "." {
 		return root, nil
 	}
-	if filepath.IsAbs(clean) || strings.HasPrefix(clean, "..") {
+	// filepath.IsLocal rejects absolute paths, "..", "../x", volume names and
+	// (on Windows) reserved device names. It is also the check CodeQL's
+	// go/zipslip query recognises as a sanitiser.
+	if !filepath.IsLocal(clean) {
 		return "", fmt.Errorf("updater: archive entry escapes root: %s", name)
 	}
 	target := filepath.Join(root, clean)
-	rel, err := filepath.Rel(root, target)
-	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
+	// Defence in depth: the joined path must sit strictly below root.
+	prefix := root
+	if !strings.HasSuffix(prefix, string(os.PathSeparator)) {
+		prefix += string(os.PathSeparator)
+	}
+	if !strings.HasPrefix(target, prefix) {
 		return "", fmt.Errorf("updater: archive entry escapes root: %s", name)
 	}
 	return target, nil
