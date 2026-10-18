@@ -11,6 +11,15 @@ package application
 extern void setMenuItemChecked(void*, unsigned int, bool);
 extern void setMenuItemBitmap(void*, unsigned char*, int);
 
+static bool menuSectionHeadersSupported(void) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 140000
+	if (@available(macOS 14.0, *)) {
+		return true;
+	}
+#endif
+	return false;
+}
+
 // Clear and release all menu items in the menu
 void clearMenu(void* nsMenu) {
 	NSMenu *menu = (NSMenu *)nsMenu;
@@ -79,6 +88,10 @@ type macosMenu struct {
 	nsMenu unsafe.Pointer
 }
 
+func menuSectionHeadersSupported() bool {
+	return bool(C.menuSectionHeadersSupported())
+}
+
 func newMenuImpl(menu *Menu) *macosMenu {
 	result := &macosMenu{
 		menu: menu,
@@ -124,7 +137,7 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			// The NSMenuItem retains its submenu; drop the createNSMenu +1 so
 			// the subtree unwinds when the item goes away.
 			C.releaseNSMenu(nsSubmenu)
-		case text, checkbox, radio:
+		case text, checkbox, radio, sectionHeader:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
 			if item.hidden {
