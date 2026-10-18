@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Settings6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings5Vtbl
 	GetIsSwipeNavigationEnabled ComProc
 	PutIsSwipeNavigationEnabled ComProc
 }

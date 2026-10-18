@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_12Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_11Vtbl
 	AddStatusBarTextChanged    ComProc
 	RemoveStatusBarTextChanged ComProc
 	GetStatusBarText           ComProc
