@@ -522,7 +522,13 @@ func (s *windowsSystemTray) updateMenu(menu *Menu) {
 // popup is a separate Win32Menu from the one Menu.Update rebuilds, so without
 // this a tray never shows changes made with Menu.Update (#4719).
 func refreshSystemTrayMenus(menu *Menu) {
-	app := getNativeApplication()
+	if globalApplication == nil {
+		return
+	}
+	app, ok := globalApplication.impl.(*windowsApp)
+	if !ok || app == nil {
+		return
+	}
 	InvokeSync(func() {
 		app.systrayMapLock.RLock()
 		var popups []*Win32Menu
