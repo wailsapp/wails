@@ -81,9 +81,9 @@ func getWithHost(t *testing.T, url, host string) *http.Response {
 	return resp
 }
 
-func hasCapabilityCookie(resp *http.Response) bool {
+func hasCapabilityCookie(resp *http.Response, port string) bool {
 	for _, ck := range resp.Cookies() {
-		if ck.Name == ipcauth.CookieName {
+		if ck.Name == ipcauth.CookieName+"_"+port {
 			return true
 		}
 	}
@@ -111,8 +111,8 @@ func TestReloadRouteHostGuard(t *testing.T) {
 		if resp.StatusCode != http.StatusNoContent {
 			t.Fatalf("status = %d, want %d", resp.StatusCode, http.StatusNoContent)
 		}
-		if !hasCapabilityCookie(resp) {
-			t.Errorf("an allowed response should carry a %s cookie", ipcauth.CookieName)
+		if !hasCapabilityCookie(resp, port) {
+			t.Errorf("an allowed response should carry a %s_%s cookie", ipcauth.CookieName, port)
 		}
 	})
 
@@ -130,8 +130,8 @@ func TestReloadRouteHostGuard(t *testing.T) {
 		if resp.StatusCode != http.StatusForbidden {
 			t.Fatalf("status = %d, want %d", resp.StatusCode, http.StatusForbidden)
 		}
-		if hasCapabilityCookie(resp) {
-			t.Errorf("a rejected request must not receive a %s cookie", ipcauth.CookieName)
+		if hasCapabilityCookie(resp, port) {
+			t.Errorf("a rejected request must not receive a %s_%s cookie", ipcauth.CookieName, port)
 		}
 	})
 
@@ -150,7 +150,7 @@ func TestIPCWebSocketGate(t *testing.T) {
 
 	withCookie := func() http.Header {
 		h := http.Header{}
-		h.Set("Cookie", ipcauth.CookieName+"="+ipcauth.Token())
+		h.Set("Cookie", ipcauth.CookieName+"_"+port+"="+ipcauth.Token())
 		return h
 	}
 	expectRejected := func(t *testing.T, conn *websocket.Conn, resp *http.Response, err error) {
@@ -194,6 +194,24 @@ func TestIPCWebSocketGate(t *testing.T) {
 		}
 	})
 
+	// Browsers do not scope cookies by port, so another dev server's cookie may
+	// be sent along; it must not open this server's IPC.
+	t.Run("another port's cookie is rejected", func(t *testing.T) {
+		h := http.Header{}
+		h.Set("Cookie", ipcauth.CookieName+"_1="+ipcauth.Token())
+		h.Set("Origin", sameOriginHeader)
+		conn, resp, err := websocket.DefaultDialer.Dial(wsURL(ts), h)
+		expectRejected(t, conn, resp, err)
+	})
+
+	t.Run("unscoped cookie name is rejected", func(t *testing.T) {
+		h := http.Header{}
+		h.Set("Cookie", ipcauth.CookieName+"="+ipcauth.Token())
+		h.Set("Origin", sameOriginHeader)
+		conn, resp, err := websocket.DefaultDialer.Dial(wsURL(ts), h)
+		expectRejected(t, conn, resp, err)
+	})
+
 	t.Run("foreign origin is rejected", func(t *testing.T) {
 		h := withCookie()
 		h.Set("Origin", "http://attacker.example")
@@ -217,6 +235,80 @@ func TestIPCWebSocketGate(t *testing.T) {
 		h.Set("Origin", "http://"+forged)
 		conn, resp, err := websocket.DefaultDialer.Dial(wsURL(ts), h)
 		expectRejected(t, conn, resp, err)
+	})
+}
+
+func TestCapabilityCookieName(t *testing.T) {
+	tests := []struct {
+		addr string
+		want string
+	}{
+		{"localhost:34115", ipcauth.CookieName + "_34115"},
+		{"0.0.0.0:5000", ipcauth.CookieName + "_5000"},
+		{"[::1]:34115", ipcauth.CookieName + "_34115"},
+		{":34115", ipcauth.CookieName + "_34115"},
+		{"", ipcauth.CookieName},
+	}
+	for _, tt := range tests {
+		if got := capabilityCookieName(tt.addr); got != tt.want {
+			t.Errorf("capabilityCookieName(%q) = %q, want %q", tt.addr, got, tt.want)
+		}
+	}
+}
+
+// TestIPCAuthRoute covers the no-op endpoint the dev runtime fetches before
+// each IPC (re)connect to refresh its capability cookie.
+func TestIPCAuthRoute(t *testing.T) {
+	_, ts, port := newTestServer(t)
+	authURL := ts.URL + "/wails/ipcauth"
+
+	t.Run("allowed host gets 204 and a port-scoped cookie", func(t *testing.T) {
+		resp := getWithHost(t, authURL, "")
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusNoContent {
+			t.Fatalf("status = %d, want %d", resp.StatusCode, http.StatusNoContent)
+		}
+		var cookie *http.Cookie
+		for _, ck := range resp.Cookies() {
+			if ck.Name == ipcauth.CookieName+"_"+port {
+				cookie = ck
+			}
+		}
+		if cookie == nil {
+			t.Fatalf("response should carry a %s_%s cookie", ipcauth.CookieName, port)
+		}
+		if !ipcauth.Valid(cookie.Value) {
+			t.Errorf("cookie value is not the current capability")
+		}
+		if !cookie.HttpOnly || cookie.SameSite != http.SameSiteStrictMode || cookie.Path != "/" {
+			t.Errorf("cookie attributes = HttpOnly %v, SameSite %v, Path %q; want true, Strict, /", cookie.HttpOnly, cookie.SameSite, cookie.Path)
+		}
+	})
+
+	t.Run("forged host is rejected and gets no cookie", func(t *testing.T) {
+		resp := getWithHost(t, authURL, "attacker.example:"+port)
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusForbidden {
+			t.Fatalf("status = %d, want %d", resp.StatusCode, http.StatusForbidden)
+		}
+		if hasCapabilityCookie(resp, port) {
+			t.Errorf("a rejected request must not receive a %s_%s cookie", ipcauth.CookieName, port)
+		}
+	})
+
+	t.Run("refreshed cookie opens the IPC socket", func(t *testing.T) {
+		resp := getWithHost(t, authURL, "")
+		resp.Body.Close()
+		h := http.Header{}
+		for _, ck := range resp.Cookies() {
+			h.Add("Cookie", ck.Name+"="+ck.Value)
+		}
+		h.Set("Origin", ts.URL)
+		conn, resp, err := websocket.DefaultDialer.Dial(wsURL(ts), h)
+		if err != nil {
+			t.Fatalf("upgrade failed: %v (status %d)", err, statusOf(resp))
+		}
+		conn.Close()
 	})
 }
 

@@ -21,7 +21,8 @@ import (
 )
 
 // CookieName is the cookie the dev server sets on the pages it serves and
-// requires back on the IPC WebSocket upgrade.
+// requires back on the IPC WebSocket upgrade. The dev server suffixes it with
+// its bind port, since browsers do not scope cookies by port.
 const CookieName = "wails_ipc_capability"
 
 var (
