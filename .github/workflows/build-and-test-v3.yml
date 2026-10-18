@@ -8,9 +8,6 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - master
-    paths:
-      - 'v3/**'
-      - '.github/workflows/build-and-test-v3.yml'
 
 # A new push supersedes the previous run for the same PR. macOS runners are the
 # scarce resource (shared org-wide), so stale runs must not hold them.
@@ -19,10 +16,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_js:
-    name: Run JS Tests
+  # The workflow runs on every PR so that "v3 Build Results" always reports and
+  # can be a required check. The test jobs only run when v3 changed; otherwise
+  # they are skipped and the results job passes.
+  changes:
+    name: Detect v3 changes
     runs-on: ubuntu-latest
     if: github.event.pull_request.base.ref == 'master'
+    outputs:
+      v3: ${{ steps.diff.outputs.v3 }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Check for changes under v3/
+        id: diff
+        # The checked-out PR merge commit has the base branch as its first
+        # parent, so this lists exactly what the PR changes. The diff runs
+        # outside the condition so a git failure fails the step instead of
+        # reading as "no v3 changes".
+        run: |
+          files="$(git diff --name-only HEAD^1 HEAD)"
+          if grep -qE '^(v3/|\.github/workflows/build-and-test-v3\.yml$)' <<< "$files"; then
+            echo "v3=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "v3=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  test_js:
+    name: Run JS Tests
+    needs: [changes]
+    runs-on: ubuntu-latest
+    if: needs.changes.outputs.v3 == 'true'
     strategy:
       matrix:
         node-version: [20.x]
@@ -99,7 +127,6 @@ jobs:
     name: Run Go Tests v3
     needs: [test_js]
     runs-on: ${{ matrix.os }}
-    if: github.event.pull_request.base.ref == 'master'
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -226,7 +253,6 @@ jobs:
     name: Test Templates
     needs: [test_js, test_go]
     runs-on: ${{ matrix.os }}
-    if: github.event.pull_request.base.ref == 'master'
     strategy:
       fail-fast: false
       # Every template is built on Linux. Frontend tooling behaves the same on
@@ -317,9 +343,14 @@ jobs:
     runs-on: ubuntu-latest
     name: v3 Build Results
     permissions: {}
-    needs: [test_go, test_js, test_templates, test_mac_private_apis]
+    needs: [changes, test_go, test_js, test_templates, test_mac_private_apis]
     steps:
       - run: |
+          # A failed change check would skip every test job, so it must pass.
+          if [[ "${{ needs.changes.result }}" != "success" ]]; then
+            echo "Change detection did not succeed"
+            exit 1
+          fi
           go_result="${{ needs.test_go.result }}"
           js_result="${{ needs.test_js.result }}"
           templates_result="${{ needs.test_templates.result }}"
@@ -338,7 +369,8 @@ jobs:
 
   test_mac_private_apis:
     name: macOS API variants
-    if: github.event.pull_request.base.ref == 'master'
+    needs: [changes]
+    if: needs.changes.outputs.v3 == 'true'
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
