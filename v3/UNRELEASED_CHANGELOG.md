@@ -24,6 +24,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Updater helper relaunches unchanged target after parent timeout or failed replacement in [PR](https://github.com/wailsapp/wails/pull/6298) by @taliesin-ai
 - Pin pnpm to version 10 for versioned docs in [PR](https://github.com/wailsapp/wails/pull/6293) by @taliesin-ai
 
 ## Deprecated
