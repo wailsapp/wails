@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -237,5 +238,28 @@ func TestRemoteAdd_RejectsOptions(t *testing.T) {
 	}
 	if err := RemoteAdd(dir, "-f", "https://example.com/repo.git"); err == nil {
 		t.Fatal("expected error for name starting with '-'")
+	}
+}
+
+func TestValidationErrorsOmitCredentials(t *testing.T) {
+	const secret = "s3cr3t-token"
+	for _, raw := range []string{
+		"https://user:" + secret + "@-host/repo",
+		"https://user:" + secret + "@host:bad/repo",
+		"ftp://user:" + secret + "@host/repo",
+	} {
+		err := ValidateRemoteURL(raw)
+		if err == nil {
+			t.Fatalf("ValidateRemoteURL(%q) = nil, want error", raw)
+		}
+		if strings.Contains(err.Error(), secret) {
+			t.Errorf("ValidateRemoteURL(%q) error leaks credentials: %v", raw, err)
+		}
+	}
+	if _, err := cloneArgs("-https://user:"+secret+"@host/repo", "dir", ""); err == nil || strings.Contains(err.Error(), secret) {
+		t.Errorf("cloneArgs error = %v, want an error without credentials", err)
+	}
+	if err := RemoteAdd(t.TempDir(), "origin", "-https://user:"+secret+"@host/repo"); err == nil || strings.Contains(err.Error(), secret) {
+		t.Errorf("RemoteAdd error = %v, want an error without credentials", err)
 	}
 }

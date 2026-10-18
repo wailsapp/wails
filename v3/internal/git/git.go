@@ -102,8 +102,9 @@ var (
 // '-'), transport helpers (<transport>::<address>), file:// URLs and local
 // paths are rejected.
 func ValidateRemoteURL(rawURL string) error {
+	// The URL is left out of the error: its userinfo may carry a token.
 	invalid := func(reason string) error {
-		return fmt.Errorf("%w %q: %s", ErrInvalidRemoteURL, rawURL, reason)
+		return fmt.Errorf("%w: %s", ErrInvalidRemoteURL, reason)
 	}
 
 	if rawURL == "" {
@@ -122,6 +123,11 @@ func ValidateRemoteURL(rawURL string) error {
 	if strings.Contains(rawURL, "://") {
 		u, err := url.Parse(rawURL)
 		if err != nil {
+			// url.Error repeats the input URL; report only the cause.
+			var urlErr *url.Error
+			if errors.As(err, &urlErr) {
+				err = urlErr.Err
+			}
 			return invalid(err.Error())
 		}
 		if !remoteSchemes[strings.ToLower(u.Scheme)] {
@@ -156,7 +162,7 @@ func ValidateRemoteURL(rawURL string) error {
 func cloneArgs(url, dir, tag string) ([]string, error) {
 	for name, value := range map[string]string{"url": url, "directory": dir, "tag": tag} {
 		if strings.HasPrefix(value, "-") {
-			return nil, fmt.Errorf("invalid git clone %s %q: must not start with '-'", name, value)
+			return nil, fmt.Errorf("invalid git clone %s: must not start with '-'", name)
 		}
 	}
 	args := []string{"clone", "--quiet"}
@@ -197,7 +203,7 @@ func Init(dir string) error {
 // RemoteAdd adds a named remote to the repository at dir.
 func RemoteAdd(dir, name, url string) error {
 	if strings.HasPrefix(name, "-") || strings.HasPrefix(url, "-") {
-		return fmt.Errorf("invalid git remote %q %q: must not start with '-'", name, url)
+		return fmt.Errorf("invalid git remote %q: name and URL must not start with '-'", name)
 	}
 	return run("-C", dir, "remote", "add", "--", name, url)
 }
