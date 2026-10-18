@@ -28,6 +28,16 @@ _/
 
 ## [Unreleased]
 
+## v3.0.0-beta.32 - 2026-10-18
+
+## Added
+- Add native macOS menu section headers for macOS 14+ — see the [documentation site](https://v3.wails.io) (20 pages updated) in [PR](https://github.com/wailsapp/wails/pull/6297) by @leaanthony
+
+## Fixed
+- Make SetRelativePosition relative to screen work area on macOS in [PR](https://github.com/wailsapp/wails/pull/6299) by @leaanthony
+- Updater helper relaunches unchanged target after parent timeout or failed replacement in [PR](https://github.com/wailsapp/wails/pull/6298) by @taliesin-ai
+- Pin pnpm to version 10 for versioned docs in [PR](https://github.com/wailsapp/wails/pull/6293) by @taliesin-ai
+
 ## v3.0.0-beta.31 - 2026-10-18
 
 ## Added
