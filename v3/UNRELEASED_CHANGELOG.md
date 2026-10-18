@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix binding generator output changing when building with Go 1.27, where `encoding/json` types such as `Marshaler`, `Unmarshaler` and `RawMessage` became aliases of `encoding/json/v2` and `encoding/json/jsontext` types: they are rendered as `any` again and no models are emitted for `encoding/json/v2` (#6292)
 - Validate remote template URLs passed to `wails3 init -t` before cloning: only `https://`, `http://`, `ssh://`, `git://` and `user@host:path` URLs are accepted, values are passed to git after `--`, and git is restricted to those transports during the clone
 - Reject out-of-range `x-wails-window-id` header values in the HTTP runtime transport instead of silently truncating them to another window's ID
 - Harden the updater's archive extraction against zip-slip: entry paths are now checked with `filepath.IsLocal` plus a containment check on the joined path, with tests for nested `..`, backslash, absolute-path and symlink write-through entries in zip and tar.gz archives
