@@ -194,6 +194,20 @@ type WebviewWindowOptions struct {
 	// per-platform meaning of the default.
 	Permissions map[PermissionType]Permission
 
+	// OnBeforeNavigate, when set, is asked before the webview loads a URL into
+	// any of the window's frames, and the navigation goes ahead only if it
+	// returns true. It is consulted for every navigation — link clicks, form
+	// submissions, script-initiated loads, server redirects, and the window's
+	// own initial load and SetURL calls — so a policy that refuses everything
+	// off the app's origin must still allow the app's own URLs.
+	//
+	// It runs on its own goroutine, never on the main thread, and the
+	// navigation waits for its answer. A panic counts as a refusal.
+	//
+	// macOS only for now; on other platforms it is ignored and a warning is
+	// logged when the window is created.
+	OnBeforeNavigate func(window Window, request NavigationRequest) bool
+
 	// OpenInspectorOnStartup will open the inspector when the window is first shown.
 	// On macOS this uses a private WebKit API and is ignored unless built with
 	// -tags private_mac_apis. Safari inspection remains available on macOS 13.3+

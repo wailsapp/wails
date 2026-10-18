@@ -61,6 +61,9 @@ type WebviewWindowOptions struct {
     // Permissions
     Permissions map[PermissionType]Permission
 
+    // Navigation policy (macOS)
+    OnBeforeNavigate func(window Window, request NavigationRequest) bool
+
     // Window-control button states
     MinimiseButtonState ButtonState
     MaximiseButtonState ButtonState
@@ -693,6 +696,40 @@ Permissions: map[application.PermissionType]application.Permission{
 **Important — Windows:** Before this option existed, Wails silently granted all WebView2 capabilities. Now, setting any entry in `Permissions` disables that blanket grant. Capabilities not listed will show WebView2's native prompt rather than being auto-allowed. List every capability your app needs explicitly.
 
 **See [Permissions](/features/windows/permissions/) for the full guide, platform matrix, and examples.**
+
+### OnBeforeNavigate
+
+**Type:** `func(window Window, request NavigationRequest) bool` **Default:** `nil` (every navigation is allowed) **Platform:** macOS
+
+```go
+OnBeforeNavigate: func(window application.Window, request application.NavigationRequest) bool {
+    if !request.IsMainFrame {
+        return true
+    }
+    u, err := url.Parse(request.URL)
+    if err != nil {
+        return false
+    }
+    // The app's own content is served from wails://localhost.
+    return u.Scheme == "wails"
+},
+```
+
+**Purpose:** Decide, before it happens, whether the webview may load a URL into the window. Return `true` to let the navigation go ahead or `false` to cancel it. Use it to keep the main frame on the app's origin when the window renders content you do not fully control, or to catch a redirect to a callback URL.
+
+**NavigationRequest fields:**
+
+- `URL` — the absolute URL the frame is about to load
+- `IsMainFrame` — `true` when the navigation replaces the window's top-level document, `false` for an iframe. A request to open a new window (`target="_blank"`, `window.open`) is reported as the main frame
+
+**Behaviour:**
+
+- Called for **every** navigation of every frame: link clicks, form submissions, script-initiated loads, server redirects, and the window's own initial load and `SetURL` calls. A policy that refuses everything off the app's origin must still allow the app's own URLs (`wails://localhost`, including in dev mode)
+- Runs on its own goroutine, never the main thread, so it may call window and application methods. The navigation waits for the answer, so keep it quick
+- A panic counts as a refusal, and is reported to the application's `PanicHandler`
+- To send a refused link to the user's browser instead, call `application.Get().Browser.OpenURL(request.URL)` before returning `false`
+
+**Platform:** macOS only for now. On Windows and Linux it is ignored, and a warning is logged when the window is created.
 
 ## Window Lifecycle Events
 

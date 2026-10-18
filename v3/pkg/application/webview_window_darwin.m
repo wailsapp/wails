@@ -16,6 +16,8 @@ extern char* acceleratorFromKeyPress(unsigned short keyCode, unsigned long modif
 extern bool processWindowKeyEquivalent(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 extern int resolveMediaCapturePermission(unsigned int, bool, bool);
+extern bool windowInterceptsNavigation(unsigned int);
+extern void processNavigationAction(unsigned int, const char*, bool, void*);
 extern bool windowShouldUnconditionallyClose(unsigned int);
 extern bool windowIsHidden(unsigned int);
 
@@ -975,6 +977,26 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     }
     [webView reload];
 }
+// WKNavigationDelegate - Ask the window's OnBeforeNavigate whether a frame may
+// load a URL. WebKit asks before every navigation, server redirects included,
+// and holds it until decisionHandler is called. The policy runs on a Go
+// goroutine, so the handler is copied here and answered later by
+// navigationDecide. Without an OnBeforeNavigate this allows everything, which
+// is what WebKit does when the method is not implemented.
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
+    decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if (!windowInterceptsNavigation(self.windowId)) {
+        decisionHandler(WKNavigationActionPolicyAllow);
+        return;
+    }
+    NSString *url = navigationAction.request.URL.absoluteString;
+    // A nil targetFrame is a request for a new window: a new top-level
+    // document, so it counts as the main frame.
+    WKFrameInfo *targetFrame = navigationAction.targetFrame;
+    bool isMainFrame = targetFrame == nil || targetFrame.isMainFrame;
+    processNavigationAction(self.windowId, url != nil ? [url UTF8String] : "", isMainFrame,
+        (void*)[decisionHandler copy]);
+}
 // WKUIDelegate - Handle file input element clicks
 - (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters
     initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
@@ -1007,6 +1029,16 @@ BOOL dispatchKeyEquivalent(NSEvent* event, NSWindow* window) {
     decisionHandler((WKPermissionDecision)resolveMediaCapturePermission(self.windowId, needAudio, needVideo));
 }
 @end
+// Answer a navigation held by decidePolicyForNavigationAction. Called from
+// Go, on any thread, exactly once per held navigation; WebKit wants the answer
+// on the main thread. Releases the copy that method made.
+void navigationDecide(void* handler, bool allow) {
+    void (^decisionHandler)(WKNavigationActionPolicy) = (void (^)(WKNavigationActionPolicy))handler;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        decisionHandler(allow ? WKNavigationActionPolicyAllow : WKNavigationActionPolicyCancel);
+        [decisionHandler release];
+    });
+}
 void windowSetScreen(void* window, void* screen, int yOffset) {
     NSWindow* nsWindow = (NSWindow*)window;
     NSScreen* nsScreen = (NSScreen*)screen;

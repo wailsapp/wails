@@ -363,6 +363,10 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	result.setupEventMapping()
 
+	if options.OnBeforeNavigate != nil && runtime.GOOS != "darwin" && globalApplication != nil {
+		globalApplication.warning("window %q: OnBeforeNavigate is only supported on macOS and will not be called on %s", options.Name, runtime.GOOS)
+	}
+
 	// Listen for window closing events and de
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
 		if !result.closeStarted.CompareAndSwap(false, true) {
