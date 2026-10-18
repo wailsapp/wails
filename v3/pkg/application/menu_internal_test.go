@@ -230,6 +230,47 @@ func TestMenu_Clear(t *testing.T) {
 	}
 }
 
+func TestMenu_Clear_UnrenderedReleasesIDs(t *testing.T) {
+	menu := NewMenu()
+	item := menu.Add("First")
+
+	menu.Clear()
+	if getMenuItemByID(item.id) != nil {
+		t.Error("a menu that was never rendered should release cleared IDs immediately")
+	}
+}
+
+type stubMenuImpl struct{}
+
+func (stubMenuImpl) update() {}
+
+// A systray menu can be updated while it is open, so clicks can still arrive
+// for the cleared rows (#4719).
+func TestMenu_Clear_RenderedKeepsIDsForOneGeneration(t *testing.T) {
+	menu := NewMenu()
+	menu.impl = stubMenuImpl{}
+	gen0 := menu.Add("Gen 0")
+
+	menu.Clear()
+	gen1 := menu.Add("Gen 1")
+	if getMenuItemByID(gen0.id) != gen0 {
+		t.Fatal("cleared item should still resolve until the next Clear")
+	}
+
+	menu.Clear()
+	if getMenuItemByID(gen0.id) != nil {
+		t.Error("second Clear should release the first generation")
+	}
+	if getMenuItemByID(gen1.id) != gen1 {
+		t.Error("second Clear should keep the previous generation resolvable")
+	}
+
+	menu.Destroy()
+	if getMenuItemByID(gen1.id) != nil {
+		t.Error("Destroy should release retired IDs")
+	}
+}
+
 func TestMenu_Append(t *testing.T) {
 	menu1 := NewMenu()
 	menu1.Add("Item 1")

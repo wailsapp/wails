@@ -44,6 +44,8 @@ func newMenuImpl(menu *Menu) *windowsMenu {
 }
 
 func (w *windowsMenu) update() {
+	defer refreshSystemTrayMenus(w.menu)
+
 	// Stage the rebuild into a fresh HMENU and fresh mapping, only swapping
 	// the old state out once processMenu returns successfully. See
 	// Win32Menu.Update for the item.impl caveat on the failure path.
