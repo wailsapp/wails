@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Binding generator now emits a `bindings/events` module exporting a typed name constant for every event registered with `application.RegisterEvent` (e.g. `UserLogin` for `user:login`), usable with `Events.On`/`Emit` without the Vite plugin (#5645)
 
 ## Changed
 <!-- Changes in existing functionality -->
