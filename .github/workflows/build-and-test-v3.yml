@@ -6,8 +6,11 @@ permissions:
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    # The branch ruleset requiring "v3 Build Results" covers master and
+    # releases/**, so PRs into either must run the tests.
     branches:
       - master
+      - 'releases/**'
 
 # A new push supersedes the previous run for the same PR. macOS runners are the
 # scarce resource (shared org-wide), so stale runs must not hold them.
@@ -22,7 +25,7 @@ jobs:
   changes:
     name: Detect v3 changes
     runs-on: ubuntu-latest
-    if: github.event.pull_request.base.ref == 'master'
+    if: github.event.pull_request.base.ref == 'master' || startsWith(github.event.pull_request.base.ref, 'releases/')
     outputs:
       v3: ${{ steps.diff.outputs.v3 }}
     steps:
@@ -351,7 +354,7 @@ jobs:
       # GTK3 legacy template builds are covered by the Go example compilation tests above.
 
   build_results:
-    if: ${{ always() && github.event.pull_request.base.ref == 'master' }}
+    if: ${{ always() && (github.event.pull_request.base.ref == 'master' || startsWith(github.event.pull_request.base.ref, 'releases/')) }}
     runs-on: ubuntu-latest
     name: v3 Build Results
     permissions: {}
