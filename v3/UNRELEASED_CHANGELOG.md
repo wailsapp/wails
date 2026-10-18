@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add native macOS menu section headers for macOS 14+ — see the [documentation site](https://v3.wails.io) (20 pages updated) in [PR](https://github.com/wailsapp/wails/pull/6297) by @leaanthony
 
 ## Changed
 <!-- Changes in existing functionality -->
