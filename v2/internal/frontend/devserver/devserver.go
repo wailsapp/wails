@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -167,6 +168,8 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 func (d *DevWebServer) registerRoutes() {
 	d.server.Use(d.requireAllowedHost())
 
+	cookieName := capabilityCookieName(d.devServerAddr)
+
 	// Hand the per-launch capability to every page the dev server serves, as an
 	// HttpOnly, SameSite=Strict cookie — defense in depth behind the host guard
 	// and origin check. A same-origin page returns it automatically on the IPC
@@ -174,11 +177,15 @@ func (d *DevWebServer) registerRoutes() {
 	// running as the same user can read it straight off a served response. Its
 	// job is to raise the bar for the browser vector, not to authenticate an
 	// arbitrary local caller.
+	//
+	// Browsers scope cookies by host but not by port, so the name carries the
+	// bind port to keep two dev servers on different ports from overwriting
+	// each other's cookie.
 	d.server.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if !c.IsWebSocket() {
 				http.SetCookie(c.Response(), &http.Cookie{
-					Name:     ipcauth.CookieName,
+					Name:     cookieName,
 					Value:    ipcauth.Token(),
 					Path:     "/",
 					HttpOnly: true,
@@ -190,7 +197,29 @@ func (d *DevWebServer) registerRoutes() {
 	})
 
 	d.server.GET("/wails/reload", d.handleReload)
-	d.server.GET("/wails/ipc", d.handleIPCWebSocket)
+	d.server.GET("/wails/ipcauth", handleIPCAuth)
+	d.server.GET("/wails/ipc", func(c echo.Context) error {
+		return d.handleIPCWebSocket(c, cookieName)
+	})
+}
+
+// capabilityCookieName returns the capability cookie name for a dev server
+// bound to devServerAddr. The port comes from the configured bind address, not
+// the request, so it is stable for the life of the server and cannot be chosen
+// by a client. An address without a port falls back to the bare name.
+func capabilityCookieName(devServerAddr string) string {
+	if _, port, err := net.SplitHostPort(devServerAddr); err == nil && port != "" {
+		return ipcauth.CookieName + "_" + port
+	}
+	return ipcauth.CookieName
+}
+
+// handleIPCAuth is a no-op the dev runtime fetches before each IPC (re)connect.
+// It exists only so the response passes through the host guard and cookie
+// middleware: after `wails dev` restarts the app a new capability is minted, and
+// this refreshes the browser's cookie without a page reload.
+func handleIPCAuth(c echo.Context) error {
+	return c.NoContent(http.StatusNoContent)
 }
 
 func (d *DevWebServer) WindowReload() {
@@ -217,12 +246,12 @@ func (d *DevWebServer) handleReloadApp(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (d *DevWebServer) handleIPCWebSocket(c echo.Context) error {
+func (d *DevWebServer) handleIPCWebSocket(c echo.Context, cookieName string) error {
 	// Require the capability cookie on the upgrade as defense in depth, behind
 	// the host guard and the same-origin check. This is not local-client
 	// authentication — a process running as the same user can read the cookie
 	// from a served response — so it is not relied on to stop such a caller.
-	if cookie, err := c.Cookie(ipcauth.CookieName); err != nil || !ipcauth.Valid(cookie.Value) {
+	if cookie, err := c.Cookie(cookieName); err != nil || !ipcauth.Valid(cookie.Value) {
 		d.logger.Error("IPC WebSocket rejected: missing or invalid capability")
 		return c.NoContent(http.StatusForbidden)
 	}
