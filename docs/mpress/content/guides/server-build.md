@@ -365,3 +365,9 @@ Requests to `/wails/runtime` are limited to 64 MiB before JSON processing. An or
 ### Runtime request origin
 
 `/wails/runtime` accepts only `POST` requests; other methods receive HTTP 405. A browser request whose `Origin` is neither the request host nor a match for `WebSocketOriginPatterns` receives HTTP 403, as does one without `Origin` whose `Sec-Fetch-Site` is `cross-site` or `same-site`. Requests carrying neither header, such as those from `curl` or other non-browser clients, are accepted. If a reverse proxy rewrites the `Host` header, add the public origin to `WebSocketOriginPatterns`.
+
+`WebSocketOriginPatterns` exists for reverse-proxy deployments, where the public origin differs from the `Host` seen by the application. Frontends served from a different origin that call `/wails/runtime` directly are not supported: the endpoint emits no CORS headers and answers preflight `OPTIONS` requests with HTTP 405. Serve the frontend from the Wails server, or put both behind the same proxy origin.
+
+### Loopback Host check
+
+When the server binds a loopback address (the default `localhost`, any `127.0.0.0/8` address, or `::1`, whether set in `ServerOptions.Host` or `WAILS_SERVER_HOST`), every request must carry a `Host` header naming `localhost`, an IP literal, the bind host, or a host matching the host part of a `WebSocketOriginPatterns` entry; any other `Host` receives HTTP 403. This stops DNS rebinding, where a hostile web page points its own hostname at `127.0.0.1` so that its requests pass the same-origin checks above. The port is not compared, and spellings such as `localhost.` (trailing dot) or `127.1` are rejected. The check still applies when `WebSocketAllowAllOrigins` is set. If a local reverse proxy forwards its public `Host`, add that host to `WebSocketOriginPatterns`. Binds to other addresses, such as `0.0.0.0` in containers, are not affected.
