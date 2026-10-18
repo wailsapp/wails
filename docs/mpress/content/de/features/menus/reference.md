@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 **Bewährte Vorgehensweise:** Beginnen oder beenden Sie Menüs nicht mit Trennlinien.
 
+### Abschnittsüberschriften
+
+Native, nicht interaktive Beschriftungen für eine Gruppe von Menüeinträgen unter **macOS 14+**:
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` verwendet das standardmäßige Erscheinungsbild von AppKit für Abschnittsüberschriften. Die Methode gibt keinen Menüeintrag zurück und verknüpft keine Aktion. Unter älteren macOS-Versionen, Windows, Linux, auf mobilen Plattformen und in Server-Builds bleibt der Aufruf ohne Wirkung und fügt keine Zeile ein.
+
+Verwenden Sie die Methode in Taskleisten-, Kontext- oder Anwendungsmenüs, um zusammengehörige Befehle zu beschriften. Verwenden Sie `AddSeparator()`, um Optionsgruppen auf allen Plattformen zu trennen, da ausgelassene Überschriften diese Gruppen nicht trennen. Die Methodensignatur finden Sie in der [Menu-API](/reference/menu#addsectionheader); das Beispiel `systray-menu` zeigt eine Überschrift mit dem Hostnamen.
+
 ## Eigenschaften von Menüeinträgen
 
 ### Beschriftung

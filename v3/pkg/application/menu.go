@@ -53,6 +53,18 @@ func (m *Menu) AddSeparator() {
 	m.items = append(m.items, result)
 }
 
+// AddSectionHeader adds a native, non-interactive section heading on macOS 14+.
+// It is a no-op on older macOS versions and all other platforms.
+func (m *Menu) AddSectionHeader(label string) {
+	if !menuSectionHeadersSupported() {
+		return
+	}
+	item := NewMenuItem(label)
+	item.itemType = sectionHeader
+	item.disabled = true
+	m.items = append(m.items, item)
+}
+
 func (m *Menu) AddCheckbox(label string, enabled bool) *MenuItem {
 	result := NewMenuItemCheckbox(label, enabled)
 	m.items = append(m.items, result)

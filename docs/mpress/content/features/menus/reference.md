@@ -103,6 +103,25 @@ menu.Add("Item 2")
 
 **Best practice:** Don't start or end menus with separators.
 
+### Section Headers
+
+Native, non-interactive labels for a group of menu items on **macOS 14+**:
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` uses AppKit's standard section-header appearance. It returns
+no menu item and does not attach an action. On older macOS versions, Windows,
+Linux, mobile and server builds, the call is a no-op and inserts no row.
+
+Use it in tray, context or application menus to label related commands. Use
+`AddSeparator()` to separate radio groups across all platforms, since omitted
+headers do not break radio groups. See [Menu API](/reference/menu#addsectionheader)
+for the method signature and the `systray-menu` example for a hostname heading.
+
 ## Menu Item Properties
 
 ### Label
