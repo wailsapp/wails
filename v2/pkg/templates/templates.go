@@ -286,6 +286,16 @@ func Install(options *Options) (bool, *Template, error) {
 		return false, nil, err
 	}
 
+	// Match the permissions `wails generate module` and `wails build` leave on
+	// wailsjs, so the first regeneration doesn't change file modes.
+	wailsjsDir := filepath.Join(options.TargetDir, "frontend", "wailsjs")
+	if _, statErr := os.Stat(wailsjsDir); statErr == nil {
+		err = fs.SetPermissions(wailsjsDir, 0755)
+		if err != nil {
+			return false, nil, err
+		}
+	}
+
 	err = generateIDEFiles(options)
 	if err != nil {
 		return false, nil, err
