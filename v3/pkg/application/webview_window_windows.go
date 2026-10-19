@@ -1880,6 +1880,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		if wparam == w32.VK_TAB && w.chromium != nil && w.chromium.IsReady() {
 			// Focus is on the host window after tabbing out of the WebView;
 			// Tab / Shift+Tab re-enters it at the first / last element.
+			// Host-window re-entry takes precedence over user-defined Tab bindings.
 			shift := int(w32.GetKeyState(w32.VK_SHIFT))&0x8000 != 0
 			if previous, ok := w.focusHandoff.tabIn(shift); ok {
 				var reason edge.COREWEBVIEW2_MOVE_FOCUS_REASON = edge.COREWEBVIEW2_MOVE_FOCUS_REASON_NEXT
