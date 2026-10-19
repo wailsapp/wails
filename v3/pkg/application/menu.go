@@ -1,5 +1,7 @@
 package application
 
+import "sync/atomic"
+
 type menuImpl interface {
 	update()
 }
@@ -35,6 +37,12 @@ type Menu struct {
 	items []*MenuItem
 	label string
 
+	// retiredIDs holds the IDs of items removed by Clear. See Clear.
+	retiredIDs []uint
+	// displayed is set while a native menu built from this Menu is on screen
+	// and reports when it closes (the macOS systray).
+	displayed atomic.Bool
+
 	impl menuImpl
 }
 
@@ -51,6 +59,18 @@ func (m *Menu) Add(label string) *MenuItem {
 func (m *Menu) AddSeparator() {
 	result := NewMenuItemSeparator()
 	m.items = append(m.items, result)
+}
+
+// AddSectionHeader adds a native, non-interactive section heading on macOS 14+.
+// It is a no-op on older macOS versions and all other platforms.
+func (m *Menu) AddSectionHeader(label string) {
+	if !menuSectionHeadersSupported() {
+		return
+	}
+	item := NewMenuItem(label)
+	item.itemType = sectionHeader
+	item.disabled = true
+	m.items = append(m.items, item)
 }
 
 func (m *Menu) AddCheckbox(label string, enabled bool) *MenuItem {
@@ -86,13 +106,34 @@ func (m *Menu) Update() {
 
 // Clear all menu items
 func (m *Menu) Clear() {
+	// A rendered menu can still be on screen showing the cleared items, e.g. a
+	// systray menu updated while it is open (#4719). Keep their IDs resolvable
+	// so a click on a stale row still reaches its handler instead of failing
+	// with "MenuItem #N not found": while the menu is displayed, keep every
+	// retired ID; otherwise keep only the previous generation, which covers a
+	// click dispatched just after the menu closed.
+	if !m.displayed.Load() {
+		m.releaseRetiredIDs()
+	}
 	for _, item := range m.items {
-		removeMenuItemByID(item.id)
+		if m.impl == nil {
+			removeMenuItemByID(item.id)
+		} else {
+			m.retiredIDs = append(m.retiredIDs, item.id)
+		}
 	}
 	m.items = nil
 }
 
+func (m *Menu) releaseRetiredIDs() {
+	for _, id := range m.retiredIDs {
+		removeMenuItemByID(id)
+	}
+	m.retiredIDs = nil
+}
+
 func (m *Menu) Destroy() {
+	m.releaseRetiredIDs()
 	for _, item := range m.items {
 		item.Destroy()
 	}
