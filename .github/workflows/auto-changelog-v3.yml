@@ -63,7 +63,7 @@ jobs:
       if: steps.check.outputs.skip == 'false'
       uses: actions/setup-go@v5
       with:
-        go-version: '1.25'
+        go-version: '1.27'
 
     - name: Test and build changelog helper
       if: steps.check.outputs.skip == 'false'

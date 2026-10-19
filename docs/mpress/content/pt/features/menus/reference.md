@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 **Boa prática:** não inicie nem termine menus com separadores.
 
+### Cabeçalhos de seção
+
+Rótulos nativos e não interativos para um grupo de itens de menu no **macOS 14+**:
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` usa a aparência padrão de cabeçalhos de seção do AppKit. Não retorna nenhum item de menu nem associa uma ação. Em versões anteriores do macOS, Windows, Linux, plataformas móveis e compilações de servidor, a chamada não faz nada e não insere nenhuma linha.
+
+Use esse método em menus da bandeja do sistema, de contexto ou do aplicativo para identificar comandos relacionados. Use `AddSeparator()` para separar grupos de botões de opção em todas as plataformas, pois cabeçalhos omitidos não separam esses grupos. Consulte a [API Menu](/reference/menu#addsectionheader) para ver a assinatura do método e o exemplo `systray-menu` para um cabeçalho com o nome do host.
+
 ## Propriedades dos itens de menu
 
 ### Rótulo

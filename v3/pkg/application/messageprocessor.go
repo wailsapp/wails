@@ -157,9 +157,9 @@ func (m *MessageProcessor) getTargetWindow(req *RuntimeRequest) (Window, string)
 	targetWindow, _ := globalApplication.Window.GetByID(uint(req.WebviewWindowID))
 	if targetWindow == nil {
 		m.Error("Window ID not found:", "id", req.WebviewWindowID)
-		return nil, strconv.Itoa(int(req.WebviewWindowID))
+		return nil, strconv.FormatUint(uint64(req.WebviewWindowID), 10)
 	}
-	return targetWindow, strconv.Itoa(int(req.WebviewWindowID))
+	return targetWindow, strconv.FormatUint(uint64(req.WebviewWindowID), 10)
 }
 
 func (m *MessageProcessor) Error(message string, args ...any) {

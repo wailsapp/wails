@@ -28,6 +28,7 @@ type serverApp struct {
 	server      *http.Server
 	listener    net.Listener
 	broadcaster *WebSocketBroadcaster
+	bindHost    string
 }
 
 // newPlatformApp creates a new server-mode platform app.
@@ -51,6 +52,20 @@ func parsePort(s string) (int, error) {
 	return p, nil
 }
 
+// resolveServerHost returns the address the server binds to. The
+// WAILS_SERVER_HOST environment variable overrides the configured host
+// (useful for Docker/containers), and the default is localhost.
+func resolveServerHost(opts ServerOptions) string {
+	host := os.Getenv("WAILS_SERVER_HOST")
+	if host == "" {
+		host = opts.Host
+	}
+	if host == "" {
+		host = "localhost"
+	}
+	return host
+}
+
 // run starts the HTTP server and blocks until shutdown.
 func (h *serverApp) run() error {
 	// Set up common events
@@ -65,14 +80,8 @@ func (h *serverApp) run() error {
 
 	opts := h.app.options.Server
 
-	// Environment variables override config (useful for Docker/containers)
-	host := os.Getenv("WAILS_SERVER_HOST")
-	if host == "" {
-		host = opts.Host
-	}
-	if host == "" {
-		host = "localhost"
-	}
+	host := resolveServerHost(opts)
+	h.bindHost = host
 
 	port := opts.Port
 	if envPort := os.Getenv("WAILS_SERVER_PORT"); envPort != "" {
@@ -227,7 +236,9 @@ func (h *serverApp) createHandler() http.Handler {
 	// Serve all other requests through the asset server
 	mux.Handle("/", h.app.assets)
 
-	return mux
+	// A loopback bind is reachable only from this machine, so reject Host
+	// headers that a DNS-rebound page would send before any route runs.
+	return requireAllowedHost(mux, h.app, h.bindHost, h.app.options.Server)
 }
 
 // destroy stops the server and cleans up.

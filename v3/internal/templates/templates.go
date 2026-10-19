@@ -264,20 +264,47 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	return result, nil
 }
 
+// splitTemplateURI splits a remote template value of the form url[@tag].
+// The tag follows the last '@' and is only recognised when the text before it
+// already names a repository path (a '/' after the scheme for URLs, or a ':'
+// for scp-like addresses), so userinfo in URLs such as git@github.com:user/repo
+// or ssh://git@host/repo is kept as part of the URL, while tags such as
+// release/1.0 may still contain '/'.
+func splitTemplateURI(uri string) (url, tag string) {
+	i := strings.LastIndex(uri, "@")
+	if i < 0 || i == len(uri)-1 {
+		return uri, ""
+	}
+	prefix := uri[:i]
+	hasPath := strings.Contains(prefix, ":")
+	if _, rest, ok := strings.Cut(prefix, "://"); ok {
+		hasPath = strings.Contains(rest, "/")
+	}
+	if !hasPath {
+		return uri, ""
+	}
+	return prefix, uri[i+1:]
+}
+
 // gitclone clones uri into a temporary directory and returns its path.
+// The URL is validated before anything is created or cloned.
 func gitclone(uri string) (string, error) {
+	url, tag := splitTemplateURI(uri)
+
+	if err := git.ValidateRemoteURL(url); err != nil {
+		return "", err
+	}
+
 	dirname, err := os.MkdirTemp("", "wails-template-*")
 	if err != nil {
 		return "", err
 	}
 
-	parts := strings.SplitN(uri, "@", 2)
-	url, tag := parts[0], ""
-	if len(parts) > 1 {
-		tag = parts[1]
+	if err := git.CloneRemote(url, dirname, tag); err != nil {
+		os.RemoveAll(dirname)
+		return "", err
 	}
-
-	return dirname, git.Clone(url, dirname, tag)
+	return dirname, nil
 }
 
 func getRemoteTemplate(uri string) (*Template, error) {
@@ -375,6 +402,9 @@ func Install(options *flags.Init) error {
 		}
 		if template == nil {
 			template, err = getRemoteTemplate(options.TemplateName)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

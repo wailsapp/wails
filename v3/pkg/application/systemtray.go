@@ -269,6 +269,7 @@ func (s *SystemTray) SetMenu(menu *Menu) *SystemTray {
 		s.menu = menu
 	} else {
 		InvokeSync(func() {
+			s.menu = menu
 			s.impl.setMenu(menu)
 		})
 	}
@@ -413,11 +414,12 @@ func (s *SystemTray) WindowDebounce(debounce time.Duration) *SystemTray {
 }
 
 func (s *SystemTray) OpenMenu() {
-	if s.menu == nil {
-		return
-	}
 	if s.impl == nil {
 		return
 	}
-	InvokeSync(s.impl.openMenu)
+	InvokeSync(func() {
+		if s.menu != nil {
+			s.impl.openMenu()
+		}
+	})
 }

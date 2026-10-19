@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 **Praktik terbaik:** Jangan mengawali atau mengakhiri menu dengan pemisah.
 
+### Judul Bagian
+
+Label bawaan yang tidak interaktif untuk sekelompok item menu di **macOS 14+**:
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` menggunakan tampilan judul bagian standar AppKit. Metode ini tidak mengembalikan item menu dan tidak mengaitkan tindakan. Pada versi macOS yang lebih lama, Windows, Linux, platform seluler, dan build server, pemanggilan ini tidak melakukan apa pun dan tidak menyisipkan baris.
+
+Gunakan metode ini di menu baki sistem, menu konteks, atau menu aplikasi untuk memberi label pada perintah yang terkait. Gunakan `AddSeparator()` untuk memisahkan grup radio di semua platform, karena judul yang dihilangkan tidak memisahkan grup radio. Lihat [API Menu](/reference/menu#addsectionheader) untuk tanda tangan metode dan contoh `systray-menu` untuk judul yang menampilkan nama host.
+
 ## Properti Item Menu
 
 ### Label
