@@ -187,7 +187,14 @@ func (info *ModelInfo) Collect() *ModelInfo {
 		var def types.Type
 		var constants []*types.Const
 
-		switch t := typ.(type) {
+		// Aliases from encoding/json to encoding/json/v2 (Go 1.27+)
+		// are treated like the named types they used to be.
+		modelType := typ
+		if IsJSONv2CompatAlias(typ) {
+			modelType = types.Unalias(typ)
+		}
+
+		switch t := modelType.(type) {
 		case *types.Alias:
 			// Model is an alias: take rhs as definition.
 			// It is important not to skip alias chains with [types.Unalias]

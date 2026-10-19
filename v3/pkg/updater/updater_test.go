@@ -890,6 +890,58 @@ func TestDownloadAndInstall_ECDSA_TrailingBytes_Rejected(t *testing.T) {
 	}
 }
 
+// With Config.PublicKey pinned, a release that carries no signature must be
+// rejected rather than installed. A compromised feed or mirror can strip the
+// signature (or the whole Verification block) to attempt a downgrade to
+// digest-only mode; that must fail closed end-to-end, not just in
+// runVerification.
+func TestDownloadAndInstall_PublicKeyRequiresSignature(t *testing.T) {
+	pub, _, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkix, err := x509.MarshalPKIXPublicKey(pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		name string
+		v    *updater.Verification
+	}{
+		{"digest-only", &updater.Verification{DigestAlgo: "sha256"}},
+		{"no-verification", nil},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			host := &fakeHost{}
+			body := []byte("unsigned-payload")
+			if tc.v != nil {
+				sum := sha256.Sum256(body)
+				tc.v.Digest = sum[:]
+			}
+			rel := &updater.Release{
+				Version:      "2.0.0",
+				Artifact:     updater.Artifact{Filename: "app.bin", Size: int64(len(body))},
+				Verification: tc.v,
+			}
+			p := &fakeProvider{name: "p", rel: rel, body: body}
+			u := newConfiguredWithKey(t, host, pkix, p)
+
+			if _, err := u.Check(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			err := u.DownloadAndInstall(context.Background())
+			if err == nil || !strings.Contains(err.Error(), "must carry a signature") {
+				t.Fatalf("expected fail-closed signature error, got %v", err)
+			}
+			if u.State() != updater.StateError {
+				t.Errorf("state after rejected unsigned release: %s", u.State())
+			}
+		})
+	}
+}
+
 func TestDownloadAndInstall_SignatureWithoutPublicKey_Fails(t *testing.T) {
 	host := &fakeHost{}
 	body := []byte("payload")

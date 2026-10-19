@@ -161,14 +161,29 @@ type ServerOptions struct {
 	ShutdownTimeout time.Duration
 
 	// WebSocketOriginPatterns lists additional origins permitted to connect to
-	// the server's WebSocket endpoints. The request host is always permitted, so
-	// the default empty list enforces same-origin connections. Patterns follow
-	// path.Match syntax; include a scheme to match both scheme and host.
+	// the server's WebSocket endpoints and to call /wails/runtime. The request
+	// host is always permitted, so the default empty list enforces same-origin
+	// requests. It is intended for reverse-proxy deployments where the public
+	// origin differs from the Host seen by the application; add the public
+	// origin here when a proxy rewrites the Host header. Frontends served from
+	// a different origin calling /wails/runtime directly are not supported:
+	// the endpoint emits no CORS headers and rejects preflight requests.
+	// Patterns follow path.Match syntax; include a scheme to match both scheme
+	// and host.
+	//
+	// When the server binds a loopback address (the default "localhost",
+	// 127.0.0.0/8 or ::1), requests are also rejected with HTTP 403 unless
+	// their Host header is localhost, an IP literal, the bind host, or matches
+	// the host part of one of these patterns. This blocks DNS rebinding,
+	// where a hostile page repoints its own name at 127.0.0.1.
 	WebSocketOriginPatterns []string
 
-	// WebSocketAllowAllOrigins disables WebSocket origin verification. This is
-	// unsafe for servers reachable by untrusted browser content and should be
-	// enabled only when an application deliberately accepts that CSRF risk.
+	// WebSocketAllowAllOrigins disables origin verification for the server's
+	// WebSocket endpoints and /wails/runtime. This is unsafe for servers
+	// reachable by untrusted browser content and should be enabled only when
+	// an application deliberately accepts that CSRF risk. It does not disable
+	// the loopback Host check; trust additional hostnames through
+	// WebSocketOriginPatterns.
 	WebSocketAllowAllOrigins bool
 
 	// TLS configures HTTPS. If nil, HTTP is used.
