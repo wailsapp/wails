@@ -1732,12 +1732,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			w.focusHandoff.reset()
 			w.parent.emit(events.Windows.WindowInactive)
 		}
-		if wparam == w32.WA_ACTIVE {
+		if int(wparam&0xffff) == w32.WA_ACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
 			w.restoreWebviewFocus()
 			w.parent.emit(events.Windows.WindowActive)
 		}
-		if wparam == w32.WA_CLICKACTIVE {
+		if int(wparam&0xffff) == w32.WA_CLICKACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
 			w.restoreWebviewFocus()
 			w.parent.emit(events.Windows.WindowClickActive)
@@ -1782,6 +1782,8 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 			return 1
 		}
 	case w32.WM_KILLFOCUS:
+		// The host no longer owns focus, including when the user clicks the page.
+		w.focusHandoff.reset()
 		if w.focusingChromium {
 			return 0
 		}
@@ -1875,7 +1877,7 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_SYSKEYUP:
 		w.parent.emit(events.Windows.WindowKeyUp)
 	case w32.WM_KEYDOWN:
-		if wparam == w32.VK_TAB {
+		if wparam == w32.VK_TAB && w.chromium != nil && w.chromium.IsReady() {
 			// Focus is on the host window after tabbing out of the WebView;
 			// Tab / Shift+Tab re-enters it at the first / last element.
 			shift := int(w32.GetKeyState(w32.VK_SHIFT))&0x8000 != 0
