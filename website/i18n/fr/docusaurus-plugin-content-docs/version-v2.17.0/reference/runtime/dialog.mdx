@@ -1,0 +1,302 @@
+---
+sidebar_position: 5
+---
+
+# Boîte de dialogue
+
+Cette partie du runtime fournit un accès aux boîtes de dialogue natives, telles que les sélecteurs de fichiers et les boîtes de messages.
+
+:::info JavaScript
+
+La boîte de dialogue n'est actuellement pas prise en charge dans l'exécuteur JS.
+
+:::
+
+### OpenDirectoryDialog
+
+Ouvre une boîte de dialogue qui invite l'utilisateur à sélectionner un répertoire. Peut être personnalisé en utilisant [OpenDialogOptions](#opendialogoptions).
+
+Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+
+Renvoie : le répertoire sélectionné (vide si l'utilisateur a annulé) ou une erreur
+
+### OpenFileDialog
+
+Ouvre une boîte de dialogue qui invite l'utilisateur à sélectionner un fichier. Peut être personnalisé en utilisant [OpenDialogOptions](#opendialogoptions).
+
+Go: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+
+Renvoie : le fichier sélectionné (vide si l'utilisateur a annulé) ou une erreur
+
+### OpenFileDialog
+
+Ouvre une boîte de dialogue qui invite l'utilisateur à sélectionner plusieurs fichiers. Peut être personnalisé en utilisant [OpenDialogOptions](#opendialogoptions).
+
+Go: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
+
+Renvoie : les fichiers sélectionnés (nil si l'utilisateur a annulé) ou une erreur
+
+### SaveFileDialog
+
+Ouvre une boîte de dialogue qui invite l'utilisateur à saisir un nom pour le fichier à enregistrer. Peut être personnalisé en utilisant [SaveDialogOptions](#savedialogoptions).
+
+Go: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
+
+Renvoie : le fichier sélectionné (vide si l'utilisateur a annulé) ou une erreur
+
+### MessageDialog
+
+Affiche un message en utilisant une boîte de dialogue. Peut être personnalisé en utilisant [MessageDialogOptions](#messagedialogoptions).
+
+Go: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
+
+Renvoie : Le texte du bouton sélectionné ou une erreur
+
+## Options
+
+### OpenDialogOptions
+
+```go
+type OpenDialogOptions struct {
+    DefaultDirectory           string
+    DefaultFilename            string
+    Title                      string
+    Filters                    []FileFilter
+    ShowHiddenFiles            bool
+    CanCreateDirectories       bool
+    ResolvesAliases            bool
+    TreatPackagesAsDirectories bool
+}
+```
+
+| Champ                      | Description                                                    | Win | Mac | Lin |
+| -------------------------- | -------------------------------------------------------------- | --- | --- | --- |
+| DefaultDirectory           | Le répertoire que la boîte de dialogue affichera à l'ouverture | ✅   | ✅   | ✅   |
+| DefaultFilename            | Le nom du fichier par défaut                                   | ✅   | ✅   | ✅   |
+| Title                      | Titre pour la boite de dialogue                                | ✅   | ✅   | ✅   |
+| [Filters](#filefilter)     | Une liste de filtres de fichiers                               | ✅   | ✅   | ✅   |
+| ShowHiddenFiles            | Afficher les fichiers cachés par le système                    |     | ✅   | ✅   |
+| CanCreateDirectories       | Autoriser l'utilisateur de créer des dossiers                  |     | ✅   |     |
+| ResolvesAliases            | Si vrai, retourne le fichier et non l'alias                    |     | ✅   |     |
+| TreatPackagesAsDirectories | Autoriser la navigation dans les dossiers                      |     | ✅   |     |
+
+### SaveDialogOptions
+
+```go
+type SaveDialogOptions struct {
+    DefaultDirectory           string
+    DefaultFilename            string
+    Title                      string
+    Filters                    []FileFilter
+    ShowHiddenFiles            bool
+    CanCreateDirectories       bool
+    TreatPackagesAsDirectories bool
+}
+```
+
+| Champ                      | Description                                                    | Win | Mac | Lin |
+| -------------------------- | -------------------------------------------------------------- | --- | --- | --- |
+| DefaultDirectory           | Le répertoire que la boîte de dialogue affichera à l'ouverture | ✅   | ✅   | ✅   |
+| DefaultFilename            | Le nom du fichier par défaut                                   | ✅   | ✅   | ✅   |
+| Title                      | Titre pour la boite de dialogue                                | ✅   | ✅   | ✅   |
+| [Filters](#filefilter)     | Une liste de filtres de fichiers                               | ✅   | ✅   | ✅   |
+| ShowHiddenFiles            | Afficher les fichiers cachés par le système                    |     | ✅   | ✅   |
+| CanCreateDirectories       | Autoriser l'utilisateur de créer des dossiers                  |     | ✅   |     |
+| TreatPackagesAsDirectories | Autoriser la navigation dans les dossiers                      |     | ✅   |     |
+
+### MessageDialogOptions
+
+```go
+type MessageDialogOptions struct {
+    Type          DialogType
+    Title         string
+    Message       string
+    Buttons       []string
+    DefaultButton string
+    CancelButton  string
+}
+```
+
+| Champ         | Description                                                                                    | Win            | Mac | Lin |
+| ------------- | ---------------------------------------------------------------------------------------------- | -------------- | --- | --- |
+| Type          | Le type de boîte de dialogue de message: question, info...                                     | ✅              | ✅   | ✅   |
+| Title         | Titre pour la boite de dialogue                                                                | ✅              | ✅   | ✅   |
+| Message       | Le message à afficher à l'utilisateur                                                          | ✅              | ✅   | ✅   |
+| Buttons       | La liste des noms des boutons                                                                  |                | ✅   |     |
+| DefaultButton | Le bouton avec ce texte doit être traité comme le bouton par défaut. Lié à la touche `entrée`. | ✅[*](#windows) | ✅   |     |
+| CancelButton  | Le bouton avec ce texte doit être traité permettant d'annuler. Lié à la touche `echap`         |                | ✅   |     |
+
+#### Windows
+
+Windows a des boites de dialogue standard dans lesquels les boutons ne sont pas personnalisables. La valeur retournée sera une des valeurs suivantes : "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" ou "Continue".
+
+Pour les boites de dialogues pour les questions, le bouton par défaut est "Oui" et le bouton d'annulation est "Non". Cela peut être modifié en définissant la valeur `DefaultButton` à `"No"`.
+
+Exemple:
+```go
+    result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+        Type:          runtime.QuestionDialog,
+        Title:         "Question",
+        Message:       "Do you want to continue?",
+        DefaultButton: "No",
+    })
+```
+
+#### Linux
+
+Linux a des boites de dialogue standard dans lesquels les boutons ne sont pas personnalisables. La valeur retournée sera de :"Ok", "Cancel", "Yes", "No"
+
+#### Mac
+
+Une boîte de dialogue sur Mac peut avoir jusqu'à 4 boutons. Si aucun `DefaultButton` ou `CancelButton` n'est donné, le premier bouton est considéré comme par défaut et est lié à la touche `entrée`.
+
+Pour le code suivant :
+
+```go
+selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
+    Title:        "C'est ton tour",
+    Message:      "Choisi un nombre",
+    Buttons:      []string{"un", "deux", "trois", "quatre"},
+})
+```
+
+le premier bouton est affiché comme étant celui par défaut :
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/runtime/dialog_no_defaults.png").default} 
+    width="30%"
+    class="screenshot"
+  />
+</div>
+<br />
+```
+
+Et si nous spécifions que le `DefaultButton` est "deux":
+
+```go
+selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
+    Title:         "It's your turn!",
+    Message:       "Select a number",
+    Buttons:       []string{"one", "two", "three", "four"},
+    DefaultButton: "two",
+})
+```
+
+le deuxième bouton est affiché comme étant la réponse par défaut. Lorsque la touche `entrée` est appuyée, la valeur "deux" est retournée.
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/runtime/dialog_default_button.png").default} 
+    width="30%"
+    class="screenshot"
+  />
+</div>
+<br />
+```
+
+Si nous spécifions maintenant `CancelButton` à "trois":
+
+```go
+selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
+    Title:         "It's your turn!",
+    Message:       "Select a number",
+    Buttons:       []string{"one", "two", "three", "four"},
+    DefaultButton: "two",
+    CancelButton:  "three",
+})
+```
+
+le bouton avec "trois" est affiché en bas de la boîte de dialogue. Si la touche `echap` est appuyée, la valeur "trois" est retournée:
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/runtime/dialog_default_cancel.png").default} 
+    width="30%"
+    class="screenshot"
+  />
+</div>
+<br />
+<br />
+<br />
+```
+
+#### DialogType
+
+```go
+const (
+        InfoDialog     DialogType = "info"
+        WarningDialog  DialogType = "warning"
+        ErrorDialog    DialogType = "error"
+        QuestionDialog DialogType = "question"
+     )
+```
+
+### FileFilter
+
+```go
+type FileFilter struct {
+    DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
+    Pattern     string // semi-colon separated list of extensions, EG: "*.jpg;*.png"
+}
+```
+
+#### Windows
+
+Windows vous permet d'utiliser plusieurs filtres de fichiers dans les boîtes de dialogue. Chaque FileFilter s'affichera comme une entrée séparée dans la boîte de dialogue :
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/runtime/dialog_win_filters.png").default} 
+    width="50%"
+    class="screenshot"
+  />
+</div>
+<br />
+<br />
+<br />
+```
+
+#### Linux
+
+Linux vous permet d'utiliser plusieurs filtres de fichiers dans les boîtes de dialogue. Chaque FileFilter s'affichera comme une entrée séparée dans la boîte de dialogue :
+
+```mdx-code-block
+<div class="text--center">
+  <img
+    src={require("@site/static/img/runtime/dialog_lin_filters.png").default} 
+    width="50%"
+    class="screenshot"
+  />
+</div>
+<br />
+<br />
+<br />
+```
+
+#### Mac
+
+Les dialogues Mac n'ont qu'un ensemble unique de motifs pour filtrer les fichiers. Si plusieurs filtres de fichiers sont fournis, Wails utilisera tous les modèles définis.
+
+Exemple:
+
+```go
+    selection, err := runtime.OpenFileDialog(b.ctx, runtime.OpenDialogOptions{
+        Title: "Select File",
+        Filters: []runtime.FileFilter{
+            {
+                DisplayName: "Images (*.png;*.jpg)",
+                Pattern:     "*.png;*.jpg",
+            }, {
+                DisplayName: "Videos (*.mov;*.mp4)",
+                Pattern:     "*.mov;*.mp4",
+            },
+        },
+    })
+```
+
+Cela se traduira par l'ouverture de la boîte de dialogue "Ouvrir un fichier" en utilisant `*.png,*.jpg,*.mov,*.mp4` comme filtres.

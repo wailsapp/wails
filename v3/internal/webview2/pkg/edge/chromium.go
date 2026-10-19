@@ -710,15 +710,18 @@ func (e *Chromium) CursorChanged(sender *ICoreWebView2CompositionController, _ *
 		return 0
 	}
 
+	// A cursor that cannot be read leaves the previous cursor showing until
+	// the next change; that is recoverable, killing the process
+	// (errorCallback) is not (wailsapp/wails#5580).
 	cursor, err := sender.GetCursor()
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] CursorChanged failed to get cursor: %v", err)
 		return 0
 	}
 
 	systemCursorID, err := sender.GetSystemCursorId()
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] CursorChanged failed to get system cursor id: %v", err)
 		return 0
 	}
 
@@ -771,7 +774,10 @@ func (e *Chromium) SetBackgroundColour(R, G, B, A uint8) {
 		return
 	}
 	if err := e.SetBackgroundColourWithError(R, G, B, A); err != nil {
-		e.errorCallback(err)
+		// The window keeps its previous background colour; that is
+		// recoverable, killing the process is not (wailsapp/wails#5580).
+		// Setup uses SetBackgroundColourWithError to see the error.
+		log.Printf("[WebView2] SetBackgroundColour failed: %v", err)
 	}
 }
 
@@ -807,12 +813,19 @@ func (e *Chromium) SetGlobalPermission(state CoreWebView2PermissionState) {
 }
 
 func (e *Chromium) PermissionRequested(_ *ICoreWebView2, args *iCoreWebView2PermissionRequestedEventArgs) uintptr {
+	var result CoreWebView2PermissionState
 	kind, err := args.GetPermissionKind()
 	if err != nil {
-		e.errorCallback(err)
-	}
-	var result CoreWebView2PermissionState
-	if e.globalPermission != nil {
+		// A request whose kind cannot be read cannot match a per-kind rule,
+		// so it is denied unless a global permission applies; denying one
+		// request is recoverable, killing the process is not
+		// (wailsapp/wails#5580).
+		log.Printf("[WebView2] PermissionRequested failed to get permission kind: %v", err)
+		result = CoreWebView2PermissionStateDeny
+		if e.globalPermission != nil {
+			result = *e.globalPermission
+		}
+	} else if e.globalPermission != nil {
 		result = *e.globalPermission
 	} else {
 		var ok bool
@@ -823,7 +836,8 @@ func (e *Chromium) PermissionRequested(_ *ICoreWebView2, args *iCoreWebView2Perm
 	}
 	err = args.PutState(result)
 	if err != nil {
-		e.errorCallback(err)
+		// WebView2 then applies its default handling to this request.
+		log.Printf("[WebView2] PermissionRequested failed to set state: %v", err)
 	}
 	return 0
 }
@@ -850,7 +864,11 @@ func (e *Chromium) WebResourceRequested(sender *ICoreWebView2, args *ICoreWebVie
 
 func (e *Chromium) AddWebResourceRequestedFilter(filter string, ctx COREWEBVIEW2_WEB_RESOURCE_CONTEXT) {
 	if err := e.AddWebResourceRequestedFilterWithError(filter, ctx); err != nil {
-		e.errorCallback(err)
+		// Requests matching the filter fall back to WebView2's default
+		// handling; that is recoverable, killing the process is not
+		// (wailsapp/wails#5580). Setup uses
+		// AddWebResourceRequestedFilterWithError to see the error.
+		log.Printf("[WebView2] AddWebResourceRequestedFilter failed: %v", err)
 	}
 }
 
@@ -881,7 +899,10 @@ func (e *Chromium) AcceleratorKeyPressed(sender *ICoreWebView2Controller, args *
 		if !status.WasKeyDown {
 			err := args.PutHandled(e.AcceleratorKeyCallback(virtualKey))
 			if err != nil {
-				e.errorCallback(err)
+				// The key then takes WebView2's default path; that is
+				// recoverable, killing the process on a keypress is not
+				// (wailsapp/wails#5580).
+				log.Printf("[WebView2] AcceleratorKeyPressed failed to set handled: %v", err)
 			}
 		} else {
 			return 0
@@ -889,7 +910,7 @@ func (e *Chromium) AcceleratorKeyPressed(sender *ICoreWebView2Controller, args *
 	}
 	err := args.PutHandled(false)
 	if err != nil {
-		e.errorCallback(err)
+		log.Printf("[WebView2] AcceleratorKeyPressed failed to set handled: %v", err)
 	}
 	return 0
 }
@@ -950,7 +971,9 @@ func (e *Chromium) Bounds() *Rect {
 
 	rect, err := e.controller.GetBounds()
 	if err != nil {
-		e.errorCallback(err)
+		// nil already means "bounds unavailable" (see above); a failed read
+		// is recoverable, killing the process is not (wailsapp/wails#5580).
+		log.Printf("[WebView2] Bounds failed: %v", err)
 		return nil
 	}
 	return rect

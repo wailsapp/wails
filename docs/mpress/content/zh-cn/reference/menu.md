@@ -98,6 +98,28 @@ menu.Add("Select All")
 
 <strong>最佳实践：</strong>使用分隔线对相关菜单项进行分组。
 
+### AddSectionHeader()
+
+在 **macOS 14 及更高版本**上添加原生、不可交互的分区标题。在较早版本的 macOS 和所有其他平台（包括服务器构建）上，此调用不执行任何操作：不会插入占位菜单项。
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+使用标题为托盘菜单、上下文菜单或应用程序菜单中的分组添加标签：
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+标题使用 AppKit 标准的分区标题外观。重新构建已显示的菜单后，与其他结构性更改一样，请调用 `menu.Update()`。有关使用 `os.Hostname()` 获取标题的示例，请参阅 `systray-menu`。
+
+被省略的标题不会分隔单选组。如果需要在每个平台上保持各组独立，请使用 `AddSeparator()`。
+
 ### AddCheckbox()
 
 添加一个可勾选的菜单项。
