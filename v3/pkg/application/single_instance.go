@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 
 	"encoding/json"
 )
@@ -20,6 +21,10 @@ var alreadyRunningError = errors.New("application is already running")
 var errSessionBusUnavailable = errors.New("no D-Bus session bus")
 var secondInstanceBuffer = make(chan string, 1)
 var once sync.Once
+
+// secondInstanceTarget is the manager the shared listener hands launches to, read per message so a manager
+// created after a failed one receives them under its own key and callback.
+var secondInstanceTarget atomic.Pointer[singleInstanceManager]
 
 // SecondInstanceData contains information about the second instance launch
 type SecondInstanceData struct {
@@ -76,37 +81,13 @@ func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*single
 		app:     app,
 	}
 
-	// Launch second instance data listener
-	once.Do(func() {
-		go func() {
-			defer handlePanic()
-			for encryptedData := range secondInstanceBuffer {
-				var secondInstanceData SecondInstanceData
-				var jsonData []byte
-				var err error
-
-				// Check if encryption key is non-zero
-				var zeroKey [32]byte
-				if options.EncryptionKey != zeroKey {
-					// Try to decrypt the data
-					jsonData, err = decrypt(options.EncryptionKey, encryptedData)
-					if err != nil {
-						continue // Skip invalid data
-					}
-				} else {
-					jsonData = []byte(encryptedData)
-				}
-
-				if err := json.Unmarshal(jsonData, &secondInstanceData); err == nil && manager.options.OnSecondInstanceLaunch != nil {
-					manager.options.OnSecondInstanceLaunch(secondInstanceData)
-				}
-			}
-		}()
-	})
+	secondInstanceTarget.Store(manager)
+	once.Do(func() { go listenForSecondInstances() })
 
 	// Create platform-specific lock
 	lock, err := newPlatformLock(manager)
 	if err != nil {
+		secondInstanceTarget.CompareAndSwap(manager, nil)
 		return nil, err
 	}
 
@@ -115,10 +96,33 @@ func newSingleInstanceManager(app *App, options *SingleInstanceOptions) (*single
 	// Try to acquire the lock
 	err = lock.acquire(options.UniqueID)
 	if err != nil {
+		secondInstanceTarget.CompareAndSwap(manager, nil)
 		return manager, err
 	}
 
 	return manager, nil
+}
+
+func listenForSecondInstances() {
+	defer handlePanic()
+	var zeroKey [32]byte
+	for encryptedData := range secondInstanceBuffer {
+		manager := secondInstanceTarget.Load()
+		if manager == nil {
+			continue
+		}
+		jsonData := []byte(encryptedData)
+		if manager.options.EncryptionKey != zeroKey {
+			var err error
+			if jsonData, err = decrypt(manager.options.EncryptionKey, encryptedData); err != nil {
+				continue // Skip invalid data
+			}
+		}
+		var secondInstanceData SecondInstanceData
+		if err := json.Unmarshal(jsonData, &secondInstanceData); err == nil && manager.options.OnSecondInstanceLaunch != nil {
+			manager.options.OnSecondInstanceLaunch(secondInstanceData)
+		}
+	}
 }
 
 func (m *singleInstanceManager) cleanup() {
