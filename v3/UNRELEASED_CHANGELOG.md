@@ -17,13 +17,14 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Binding generator now emits a `bindings/events` module exporting a typed name constant for every event registered with `application.RegisterEvent` (e.g. `UserLogin` for `user:login`), usable with `Events.On`/`Emit` without the Vite plugin (#5645)
+- Binding generator now emits a `bindings/events` module exporting a typed name constant for every discoverable event registered with `application.RegisterEvent` using a compile-time constant name (e.g. `UserLogin` for `user:login`), usable with `Events.On`/`Emit` without the Vite plugin (#5645)
 
 ## Changed
 <!-- Changes in existing functionality -->
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `wails3 dev` hanging for 60s against Vite: the automatic frontend readiness gate now uses a TCP probe instead of an HTTP GET that sent no `Accept` header and received a 404 ([#6209](https://github.com/wailsapp/wails/issues/6209))
 - Keep systray menus working when updated while open in [PR](https://github.com/wailsapp/wails/pull/6301) by @taliesin-ai
 - Handle transient WebView2 COM errors gracefully in runtime operations in [PR](https://github.com/wailsapp/wails/pull/6302) by @leaanthony
 

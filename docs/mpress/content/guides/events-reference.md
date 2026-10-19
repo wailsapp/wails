@@ -385,7 +385,7 @@ Run the binding generator:
 wails3 generate bindings
 ```
 
-This creates TypeScript files in your frontend directory with typed event data definitions, plus a `bindings/events` module that exports one constant per registered event name (for example `user:login` becomes `UserLogin`).
+This creates TypeScript files in your frontend directory with typed event data definitions, plus a `bindings/events` module that exports one constant per registered event name that is a compile-time constant discoverable by the generator (for example `user:login` becomes `UserLogin`).
 
 #### 3. Use Typed Events in Frontend
 

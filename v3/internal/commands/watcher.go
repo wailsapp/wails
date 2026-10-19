@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -78,6 +80,28 @@ func Watcher(options *WatcherOptions) error {
 	return nil
 }
 
+// frontendTCPTarget converts the dev server URL into a host:port address.
+//
+// The readiness gate deliberately uses a TCP probe rather than an HTTP one:
+// the HTTP probe sends no Accept header and requires exactly 200, which dev
+// servers such as Vite answer with 404 (see #6209). "Port accepts connections"
+// is all the gate needs to hold the primary process back until the frontend
+// is listening.
+func frontendTCPTarget(frontendURL string) (string, error) {
+	u, err := url.Parse(frontendURL)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Hostname() == "" || u.Fragment != "" {
+		return "", fmt.Errorf("frontend URL %q must be an absolute HTTP(S) URL without a fragment", frontendURL)
+	}
+	port := u.Port()
+	if port == "" {
+		port = "80"
+		if u.Scheme == "https" {
+			port = "443"
+		}
+	}
+	return net.JoinHostPort(u.Hostname(), port), nil
+}
+
 // Standard projects get startup ordering without rewriting their Taskfiles.
 // Custom commands and explicitly configured readiness remain user-owned.
 func applyFrontendReadiness(config *engine.Config, frontendURL string) error {
@@ -89,7 +113,11 @@ func applyFrontendReadiness(config *engine.Config, frontendURL string) error {
 		if step.Type != process.Background || step.Readiness != nil || len(step.Command) != 0 || strings.Join(strings.Fields(step.Cmd), " ") != "wails3 task common:dev:frontend" {
 			continue
 		}
-		step.Readiness = &process.Readiness{HTTP: frontendURL, Timeout: "60s"}
+		tcpTarget, err := frontendTCPTarget(frontendURL)
+		if err != nil {
+			return fmt.Errorf("invalid frontend readiness: %w", err)
+		}
+		step.Readiness = &process.Readiness{TCP: tcpTarget, Timeout: "60s"}
 		if err := step.Validate(); err != nil {
 			return fmt.Errorf("invalid frontend readiness: %w", err)
 		}

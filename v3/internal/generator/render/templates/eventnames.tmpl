@@ -17,7 +17,7 @@ import "{{js .CreatePath}}";
 {{end}}
 {{- range .Names}}
 /**
- * Name of the custom event "{{js .Name}}".
+ * Name of the custom event "{{jsdocline .Name}}".
  */
 export const {{.Ident}} = "{{js .Name}}";
 {{end}}
