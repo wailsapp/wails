@@ -39,7 +39,7 @@ tasks:
     deps:
       - install-deps
     cmds:
-      - npx tsc
+      - node typecheck.mjs
       - npx madge --circular output/
 
   install-deps:
