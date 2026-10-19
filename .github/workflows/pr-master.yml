@@ -1,12 +1,18 @@
 on:
+  # The branch ruleset requiring "Run Go Tests" covers master and releases/**,
+  # so PRs into either must run the tests.
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
       - master
+      - 'releases/**'
+  # GitHub does not apply branch filters to pull_request_review; the job
+  # conditions below check the base branch.
   pull_request_review:
     types: [submitted]
     branches:
       - master
+      - 'releases/**'
   workflow_dispatch: {}
 
 name: PR Checks (master)
@@ -20,7 +26,8 @@ jobs:
       github.repository == 'wailsapp/wails' &&
       (
         github.event_name == 'workflow_dispatch' ||
-        github.event.pull_request.base.ref == 'master'
+        github.event.pull_request.base.ref == 'master' ||
+        startsWith(github.event.pull_request.base.ref, 'releases/')
       )
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +54,10 @@ jobs:
       (
         github.event_name == 'workflow_dispatch' ||
         (
-          github.event.pull_request.base.ref == 'master' &&
+          (
+            github.event.pull_request.base.ref == 'master' ||
+            startsWith(github.event.pull_request.base.ref, 'releases/')
+          ) &&
           (
             github.event_name == 'pull_request' ||
             (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
@@ -56,10 +66,16 @@ jobs:
       )
     env:
       GOWORK: "off"
+      # Fail on a Go version mismatch instead of silently downloading a toolchain.
+      GOTOOLCHAIN: local
     strategy:
       matrix:
+        # Every platform tests the newest Go release; ubuntu-24.04 also tests
+        # the oldest supported one.
         os: [ubuntu-22.04, windows-latest, macos-latest, ubuntu-24.04]
-        go-version: ['1.25']
+        go-version: ['1.27']
+        include:
+          - { os: ubuntu-24.04, go-version: '1.26' }
 
     steps:
       - name: Checkout code
@@ -150,7 +166,10 @@ jobs:
           (
             github.event_name == 'workflow_dispatch' ||
             (
-              github.event.pull_request.base.ref == 'master' &&
+              (
+                github.event.pull_request.base.ref == 'master' ||
+                startsWith(github.event.pull_request.base.ref, 'releases/')
+              ) &&
               (
                 github.event_name == 'pull_request' ||
                 (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')

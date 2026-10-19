@@ -6,6 +6,7 @@
 
 extern void systrayClickCallback(long, int);
 extern int systrayPreClickCallback(long, int);
+extern void systrayMenuDisplayedCallback(long, int);
 
 // Bit returned by +[NSEvent pressedMouseButtons] for the right mouse button.
 static const NSUInteger kRightMouseButtonBit = 1UL << 1;
@@ -31,7 +32,12 @@ int systemTrayCoerceEventType(int rawEventType, unsigned long pressedMouseButton
 		                          (unsigned long)[NSEvent pressedMouseButtons]));
 }
 
+- (void)menuWillOpen:(NSMenu *)menu {
+	systrayMenuDisplayedCallback(self.id, 1);
+}
+
 - (void)menuDidClose:(NSMenu *)menu {
+	systrayMenuDisplayedCallback(self.id, 0);
 	// Remove the menu from the status item so future clicks invoke the
 	// action handler instead of re-showing the menu.
 	self.statusItem.menu = nil;

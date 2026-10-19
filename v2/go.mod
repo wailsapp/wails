@@ -11,6 +11,7 @@ require (
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/flytam/filenamify v1.2.0
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/gabriel-vasile/mimetype v1.4.16
 	github.com/go-git/go-git/v5 v5.19.2
 	github.com/go-ole/go-ole v1.3.0
 	github.com/godbus/dbus/v5 v5.1.0
@@ -19,8 +20,8 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/jaypipes/ghw v0.21.3
-	github.com/labstack/echo/v4 v4.13.3
-	github.com/labstack/gommon v0.4.2
+	github.com/labstack/echo/v4 v4.15.3
+	github.com/labstack/gommon v0.5.0
 	github.com/leaanthony/clir v1.3.0
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.6.1
@@ -39,7 +40,6 @@ require (
 	github.com/tidwall/sjson v1.2.5
 	github.com/tkrajina/go-reflector v0.5.8
 	github.com/wailsapp/go-webview2 v1.0.22
-	github.com/wailsapp/mimetype v1.4.1
 	github.com/wzshiming/ctc v1.2.3
 	golang.org/x/mod v0.37.0
 	golang.org/x/net v0.56.0
@@ -79,8 +79,8 @@ require (
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
