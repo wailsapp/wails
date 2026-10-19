@@ -263,6 +263,10 @@ type windowMessage struct {
 	windowId   uint
 	message    string
 	originInfo *OriginInfo
+	// childFrame is true when the platform reports that the message was posted
+	// by a child frame (iframe) rather than the window's main frame. Platforms
+	// that cannot identify the posting frame leave it false.
+	childFrame bool
 }
 
 type OriginInfo struct {
@@ -859,6 +863,11 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Check if the message starts with "wails:"
 	if strings.HasPrefix(event.message, "wails:") {
+		// Reserved framework messages are only accepted from the main frame
+		if event.childFrame {
+			a.debug("handleWindowMessage: Ignoring wails message from child frame", "message", event.message)
+			return
+		}
 		a.debug("handleWindowMessage: Processing wails message", "message", event.message)
 		window.HandleMessage(event.message)
 	} else {

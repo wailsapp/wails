@@ -17,7 +17,6 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
-- Expose the `@wailsio/runtime/cancellable` subpath export so `CancellablePromise` can be imported without evaluating the root runtime entry (#6153)
 
 ## Changed
 <!-- Changes in existing functionality -->
@@ -25,25 +24,6 @@ After processing, the content will be moved to the main changelog and this file 
 ## Fixed
 <!-- Bug fixes -->
 - Fix a second instance launched while the first is quitting handing its launch to the exiting app, by releasing the single-instance lock (the D-Bus name on Linux, the mutex on Windows) at the start of shutdown
-- Fix AppImages from `wails3 generate appimage` crashing on start outside Debian and Ubuntu with "Unable to spawn a new child process: … WebKitNetworkProcess". The bundled WebKit now runs the helper processes shipped in the AppImage. WebKit's bubblewrap sandbox stays on
-- Fix `-tags server` builds failing to compile for Android and iOS, fixing [#6271](https://github.com/wailsapp/wails/issues/6271)
-- Fix the updater failing to swap on Linux when the temp dir is on another filesystem (such as a tmpfs `/tmp`) by staging beside the installed binary and copying across filesystems
-- Fix the updater trying to replace the read-only mount of an AppImage instead of the `.AppImage` file
-- Stop posting `WindowDidUpdate` and `WindowWillUpdate` on macOS: `NSWindowDidUpdateNotification` fires on every run-loop pass, so the page received ~120 empty `evaluateJavaScript:` calls per second, and on macOS 27.0 each of them consumed the transient activation of the user's click — `navigator.clipboard.writeText()` and other activation-gated APIs rejected with `NotAllowedError` from real clicks ([#6170](https://github.com/wailsapp/wails/issues/6170)) by @APshenkin
-- Fix default Windows info.json language to en-US (0409) so Explorer shows version details (#6210)
-- Fix the Linux DMA-BUF renderer being turned off on laptops with an NVIDIA dGPU beside an AMD or Intel iGPU: on Wayland it is now turned off only when WebKit renders on NVIDIA (the app was offloaded to the dGPU, or the compositor runs on it), not whenever the nvidia module is loaded, which slowed rendering to a crawl on the iGPU; X11 sessions keep the old behaviour, since Xorg's render GPU is set by its configuration
-- Handle cross-device rename failures in Linux updater with staged copy fallback in [PR](https://github.com/wailsapp/wails/pull/6135) by @john-okeefe
-- Fix `WebviewWindow.SetMenu` on Windows not redrawing the menu bar unless a menubar theme was configured, fixing [#6103](https://github.com/wailsapp/wails/issues/6103)
-- Fix `WebviewWindow.SetMenu(nil)` panicking on Windows instead of being a no-op like on macOS, fixing [#6104](https://github.com/wailsapp/wails/issues/6104)
-- Preserve changelog entries across competing pushes with retries in [PR](https://github.com/wailsapp/wails/pull/6094) by @leaanthony
-- Fix `go mod vendor` failing with `pattern arm64/WebView2Loader.dll: no matching files found` on every platform, by removing the embeds that referenced binaries never shipped in the module, fixing [#5782](https://github.com/wailsapp/wails/issues/5782) and [#5376](https://github.com/wailsapp/wails/issues/5376), in [PR](https://github.com/wailsapp/wails/pull/6031) by @Grantmartin2002
-- Prevent duplicate window teardown on macOS in [PR](https://github.com/wailsapp/wails/pull/6159) by @charlesbalderson
-- Handle WM_CONTEXTMENU for systray menu to open on right-click in [PR](https://github.com/wailsapp/wails/pull/6162) by @wzk2025
-- Fix all five `InvokeSync*` variants blocking their caller forever when the dispatched callback panics, fixing [#6107](https://github.com/wailsapp/wails/issues/6107), in [PR](https://github.com/wailsapp/wails/pull/6108) by @RALIST
-- Rebuilds destroyed GTK3 submenus safely in [PR](https://github.com/wailsapp/wails/pull/6236) by @leaanthony
-- Implement Windows worker forwarding shim for nested workers in [PR](https://github.com/wailsapp/wails/pull/6261) by @taliesin-ai
-- Fix `OpenFile()` on Windows ignoring `PromptForMultipleSelection()` when `CanChooseDirectories(true)`: users can now pick several folders at once, as on macOS and Linux (#6263)
-- Fix by-value `double` arguments to WebView2 COM methods on windows/arm64 — `ZoomFactor`, `RasterizationScale`, cookie `Expires`, and the print settings scale, page size and margins were affected there (the print-settings setters previously returned `ErrDoubleArgUnsupported`): affected calls now goes through a `runtime.cgocall` trampoline that loads `d0`, which Go's syscall path cannot (golang.org/issue/62583) by @APshenkin
 
 ## Deprecated
 <!-- Soon-to-be removed features -->

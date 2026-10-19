@@ -8,12 +8,13 @@ on:
     paths:
       - 'v3/**'
       - '.github/workflows/cross-compile-test-v3.yml'
+  # Manual runs test the dispatched ref only. A PR-number input that checked
+  # out PR code here was removed: workflow_dispatch runs in the default
+  # branch's context, so executing PR code there could poison its caches.
   workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'PR number to test (optional, uses current branch if not specified)'
-        required: false
-        type: string
+
+permissions:
+  contents: read
 
 jobs:
   check_approval:
@@ -66,16 +67,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Checkout PR (if specified)
-        if: github.event_name == 'workflow_dispatch' && inputs.pr_number != ''
-        run: gh pr checkout ${{ inputs.pr_number }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.27'
           cache: true
           cache-dependency-path: |
             v3/go.sum

@@ -425,6 +425,7 @@ func processMessage(windowID C.uint, message *C.char, origin *C.char, isMainFram
 			Origin:      o,
 			IsMainFrame: isMainFrame,
 		},
+		childFrame: !isMainFrame,
 	}
 }
 

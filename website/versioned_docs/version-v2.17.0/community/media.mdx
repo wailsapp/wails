@@ -1,0 +1,77 @@
+---
+sidebar_position: 3
+---
+
+# Media
+
+Use the official Wails assets when sharing a project built with Wails. The buttons
+below link to [wails.io](https://wails.io) and remain hosted by Wails, so you do
+not need to copy the image into your project.
+
+## Built with Wails
+
+Choose the version with sufficient contrast for its background. Each preview is
+the exact linked image that your visitors will see.
+
+### Light background
+
+Standard (`180` by `48` pixels):
+
+<a href="https://wails.io">
+  <img src="/img/wails-button-light.svg" width="180" height="48" alt="Built with Wails" />
+</a>
+
+Compact (`90` by `24` pixels):
+
+<a href="https://wails.io">
+  <img src="/img/wails-button-light.svg" width="90" height="24" alt="Built with Wails" />
+</a>
+
+#### HTML
+
+```html
+<a href="https://wails.io">
+  <img src="https://wails.io/img/wails-button-light.svg" width="180" height="48" alt="Built with Wails">
+</a>
+```
+
+For the compact version, use `width="90" height="24"`.
+
+#### Markdown
+
+```md
+[![Built with Wails](https://wails.io/img/wails-button-light.svg)](https://wails.io)
+```
+
+### Dark background
+
+<div style={{ background: "#18181b", color: "#fff", padding: "16px", borderRadius: "8px", display: "inline-block" }}>
+  <p>Standard (`180` by `48` pixels):</p>
+  <a href="https://wails.io">
+    <img src="/img/wails-button-dark.svg" width="180" height="48" alt="Built with Wails" />
+  </a>
+  <p>Compact (`90` by `24` pixels):</p>
+  <a href="https://wails.io">
+    <img src="/img/wails-button-dark.svg" width="90" height="24" alt="Built with Wails" />
+  </a>
+</div>
+
+#### HTML
+
+```html
+<a href="https://wails.io">
+  <img src="https://wails.io/img/wails-button-dark.svg" width="180" height="48" alt="Built with Wails">
+</a>
+```
+
+For the compact version, use `width="90" height="24"`.
+
+#### Markdown
+
+```md
+[![Built with Wails](https://wails.io/img/wails-button-dark.svg)](https://wails.io)
+```
+
+Markdown renders the image at its intrinsic `180` by `48` pixel size. Use the
+HTML version when you need to set a different display size. Keep the buttons at
+their original `15:4` proportions.
