@@ -108,14 +108,14 @@ func applyFrontendReadiness(config *engine.Config, frontendURL string) error {
 	if frontendURL == "" {
 		return nil
 	}
-	tcpTarget, err := frontendTCPTarget(frontendURL)
-	if err != nil {
-		return fmt.Errorf("invalid frontend readiness: %w", err)
-	}
 	for i := range config.ExecStruct {
 		step := &config.ExecStruct[i]
 		if step.Type != process.Background || step.Readiness != nil || len(step.Command) != 0 || strings.Join(strings.Fields(step.Cmd), " ") != "wails3 task common:dev:frontend" {
 			continue
+		}
+		tcpTarget, err := frontendTCPTarget(frontendURL)
+		if err != nil {
+			return fmt.Errorf("invalid frontend readiness: %w", err)
 		}
 		step.Readiness = &process.Readiness{TCP: tcpTarget, Timeout: "60s"}
 		if err := step.Validate(); err != nil {

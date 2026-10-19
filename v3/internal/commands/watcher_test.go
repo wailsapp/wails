@@ -82,6 +82,7 @@ func TestFrontendReadiness(t *testing.T) {
 			{Cmd: "wails3 task common:dev:frontend", Type: process.Primary},
 		}}
 		require.NoError(t, applyFrontendReadiness(&config, "http://localhost:9245"))
+		require.NoError(t, applyFrontendReadiness(&config, "custom frontend URL"))
 		assert.Same(t, explicit, config.ExecStruct[0].Readiness)
 		for _, step := range config.ExecStruct[1:] {
 			assert.Nil(t, step.Readiness)
