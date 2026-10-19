@@ -186,6 +186,113 @@ func TestMaybeExtract_Tar_InternalSymlink_Allowed(t *testing.T) {
 	}
 }
 
+// Zip-slip variants beyond the plain "../" prefix: nested traversal that
+// only escapes after cleaning, Windows-style separators, and absolute paths.
+// Each must be rejected for both zip and tar.gz and leave nothing outside the
+// extraction root.
+func TestMaybeExtract_SlipVariants_Rejected(t *testing.T) {
+	names := []string{
+		"bundle/../../escape.txt",
+		`..\escape.txt`,
+		`bundle\..\..\escape.txt`,
+		"/escape.txt",
+		"./../escape.txt",
+	}
+	for _, name := range names {
+		t.Run("zip "+name, func(t *testing.T) {
+			dir := t.TempDir()
+			archive := filepath.Join(dir, "evil.zip")
+			writeZip(t, archive, []zipEntry{{name: name, body: []byte("pwned")}})
+			_, _, err := maybeExtractInto(archive)
+			if err == nil || !strings.Contains(err.Error(), "escapes root") {
+				t.Fatalf("expected zip-slip rejection for %q, got %v", name, err)
+			}
+			if _, err := os.Stat(filepath.Join(dir, "escape.txt")); !os.IsNotExist(err) {
+				t.Errorf("escape file should not exist: %v", err)
+			}
+		})
+		t.Run("tar "+name, func(t *testing.T) {
+			dir := t.TempDir()
+			archive := filepath.Join(dir, "evil.tar.gz")
+			writeTarGz(t, archive, []tarEntry{{name: name, body: []byte("pwned")}})
+			_, _, err := maybeExtractInto(archive)
+			if err == nil || !strings.Contains(err.Error(), "escapes root") {
+				t.Fatalf("expected tar-slip rejection for %q, got %v", name, err)
+			}
+			if _, err := os.Stat(filepath.Join(dir, "escape.txt")); !os.IsNotExist(err) {
+				t.Errorf("escape file should not exist: %v", err)
+			}
+		})
+	}
+}
+
+// Zip variant of the symlink-escape check: a zip entry with the symlink mode
+// bit whose body points outside the root must be rejected.
+func TestMaybeExtract_Zip_SymlinkEscape_Rejected(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlinks on Windows require elevation; the path is the same")
+	}
+	for _, link := range []string{"../../../../etc/passwd", "/etc/passwd"} {
+		dir := t.TempDir()
+		archive := filepath.Join(dir, "evil.zip")
+		writeZip(t, archive, []zipEntry{
+			{name: "bundle/", isDir: true},
+			{name: "bundle/link", body: []byte(link), mode: os.ModeSymlink | 0o777},
+		})
+		_, _, err := maybeExtractInto(archive)
+		if err == nil || !strings.Contains(err.Error(), "symlink") {
+			t.Fatalf("expected zip symlink-escape rejection for %q, got %v", link, err)
+		}
+	}
+}
+
+// Symlink-then-write-through: an archive plants a symlink pointing at a
+// directory outside the root and then writes a file "through" it. The
+// symlink is rejected before any write, so nothing lands outside the root.
+func TestMaybeExtract_Tar_SymlinkWriteThrough_Rejected(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlinks on Windows require elevation; the path is the same")
+	}
+	outside := t.TempDir()
+	dir := t.TempDir()
+	archive := filepath.Join(dir, "evil.tar.gz")
+	writeTarGz(t, archive, []tarEntry{
+		{name: "bundle/", isDir: true, mode: 0o755},
+		{name: "bundle/link", symlinkTarget: outside},
+		{name: "bundle/link/pwned.txt", body: []byte("pwned")},
+	})
+	if _, _, err := maybeExtractInto(archive); err == nil {
+		t.Fatal("expected rejection of symlink write-through archive")
+	}
+	if _, err := os.Stat(filepath.Join(outside, "pwned.txt")); !os.IsNotExist(err) {
+		t.Errorf("write-through file should not exist outside root: %v", err)
+	}
+}
+
+func TestSafeJoin(t *testing.T) {
+	root := filepath.Clean(t.TempDir())
+	ok := map[string]string{
+		"a.txt":        filepath.Join(root, "a.txt"),
+		"dir/b.txt":    filepath.Join(root, "dir", "b.txt"),
+		`dir\c.txt`:    filepath.Join(root, "dir", "c.txt"),
+		"dir/../d.txt": filepath.Join(root, "d.txt"),
+		".":            root,
+		"":             root,
+		"..foo":        filepath.Join(root, "..foo"),
+	}
+	for name, want := range ok {
+		got, err := safeJoin(root, name)
+		if err != nil || got != want {
+			t.Errorf("safeJoin(%q) = %q, %v; want %q", name, got, err, want)
+		}
+	}
+	for _, name := range []string{"..", "../x", "a/../../x", "/abs", `..\x`} {
+		if got, err := safeJoin(root, name); err == nil {
+			t.Errorf("safeJoin(%q) = %q; want escape error", name, got)
+		}
+	}
+}
+
 // --- test fixtures ---
 
 type zipEntry struct {
