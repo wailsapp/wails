@@ -224,6 +224,31 @@ func TestInit_OnUpdateAppliedIgnoresNonRegularMarker(t *testing.T) {
 	}
 }
 
+func TestInit_OnUpdateAppliedIgnoresOwnVersion(t *testing.T) {
+	target := filepath.Join(t.TempDir(), "app")
+	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) { return target, nil }))
+	marker := updater.AppliedMarkerForTest(target)
+	if err := os.WriteFile(marker, []byte("1.0.0"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	called := false
+	cfg := updater.Config{
+		CurrentVersion:  "1.0.0",
+		Providers:       []updater.Provider{&fakeProvider{name: "f"}},
+		OnUpdateApplied: func(string) { called = true },
+	}
+	if err := updater.New(&fakeHost{}).Init(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if called {
+		t.Error("OnUpdateApplied ran in the restored version the marker names")
+	}
+	if _, err := os.Lstat(marker); !os.IsNotExist(err) {
+		t.Errorf("marker left behind: %v", err)
+	}
+}
+
 func TestInit_OnUpdateApplied(t *testing.T) {
 	target := filepath.Join(t.TempDir(), "app")
 	t.Cleanup(updater.SetSelfExecutableForTest(func() (string, error) { return target, nil }))

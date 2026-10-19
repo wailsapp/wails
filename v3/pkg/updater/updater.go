@@ -133,7 +133,7 @@ func (u *Updater) Init(cfg Config) error {
 
 	// Consume the marker even without a callback so a later build that adds
 	// one is not told about an old update.
-	if from, ok := consumeAppliedMarker(); ok && cfg.OnUpdateApplied != nil {
+	if from, ok := consumeAppliedMarker(cfg.CurrentVersion); ok && cfg.OnUpdateApplied != nil {
 		cfg.OnUpdateApplied(from)
 	}
 	return nil

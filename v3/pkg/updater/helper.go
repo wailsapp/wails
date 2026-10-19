@@ -248,7 +248,11 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 	}
 
 	if err := l.launch(target); err != nil {
-		_ = os.Remove(marker)
+		// A marker left behind names the restored version itself, which
+		// consumeAppliedMarker ignores.
+		if err := os.Remove(marker); err != nil && !os.IsNotExist(err) {
+			lg.logf("applied marker cleanup: %v", err)
+		}
 		lg.logf("launch new failed: %v — restoring backup", err)
 		if err := restoreFromBackup(backup, target, l); err != nil {
 			lg.logf("restore failed: %v", err)
@@ -289,8 +293,10 @@ func appliedMarker(target string) string {
 }
 
 // consumeAppliedMarker returns the version recorded by the helper that just
-// replaced this application, removing the marker so it is reported once.
-func consumeAppliedMarker() (string, bool) {
+// replaced this application, removing the marker so it is reported once. It
+// reports nothing when the marker cannot be removed, or when it names current,
+// which means the helper restored the old version after a failed launch.
+func consumeAppliedMarker(current string) (string, bool) {
 	target, err := resolveTarget()
 	if err != nil {
 		return "", false
@@ -304,8 +310,10 @@ func consumeAppliedMarker() (string, bool) {
 	if err != nil {
 		return "", false
 	}
-	_ = os.Remove(path)
-	return string(from), true
+	if err := os.Remove(path); err != nil {
+		return "", false
+	}
+	return string(from), string(from) != current
 }
 
 func restoreFromBackup(backup, target string, l launcher) error {
