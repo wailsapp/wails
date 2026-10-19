@@ -5,10 +5,17 @@ on:
   schedule:
     - cron: "0 0 * * *"
 
+permissions:
+  contents: read
+
 jobs:
   sync-translated-documents:
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
+    permissions:
+      # peter-evans/create-pull-request pushes a branch and opens a PR.
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v3
 

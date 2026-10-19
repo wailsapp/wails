@@ -43,5 +43,51 @@
   "devDependencies": {
     "@crowdin/cli": "^4.14.3",
     "prettier": "^2.8.7"
+  },
+  "overrides": {
+    "@docusaurus/core": {
+      "tinypool": "^2.1.2"
+    },
+    "copy-webpack-plugin": {
+      "serialize-javascript": "^7.0.5"
+    },
+    "css-minimizer-webpack-plugin": {
+      "serialize-javascript": "^7.0.5"
+    },
+    "postcss-calc": {
+      "postcss-selector-parser": "^7.1.6"
+    },
+    "postcss-discard-unused": {
+      "postcss-selector-parser": "^7.1.6"
+    },
+    "postcss-merge-rules": {
+      "postcss-selector-parser": "^7.1.6"
+    },
+    "postcss-minify-selectors": {
+      "postcss-selector-parser": "^7.1.6"
+    },
+    "postcss-unique-selectors": {
+      "postcss-selector-parser": "^7.1.6"
+    },
+    "sockjs": {
+      "uuid": "^11.1.1"
+    },
+    "stylehacks": {
+      "postcss-selector-parser": "^7.1.6"
+    }
+  },
+  "pnpm": {
+    "overrides": {
+      "@docusaurus/core>tinypool": "^2.1.2",
+      "copy-webpack-plugin>serialize-javascript": "^7.0.5",
+      "css-minimizer-webpack-plugin>serialize-javascript": "^7.0.5",
+      "postcss-calc>postcss-selector-parser": "^7.1.6",
+      "postcss-discard-unused>postcss-selector-parser": "^7.1.6",
+      "postcss-merge-rules>postcss-selector-parser": "^7.1.6",
+      "postcss-minify-selectors>postcss-selector-parser": "^7.1.6",
+      "postcss-unique-selectors>postcss-selector-parser": "^7.1.6",
+      "sockjs>uuid": "^11.1.1",
+      "stylehacks>postcss-selector-parser": "^7.1.6"
+    }
   }
 }

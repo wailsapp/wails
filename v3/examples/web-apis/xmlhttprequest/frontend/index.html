@@ -264,11 +264,14 @@ xhr.abort();</div>
             const time = new Date().toLocaleTimeString();
             const entry = document.createElement('div');
             entry.className = `log-entry ${className}`;
-            entry.innerHTML = `
-                <span class="log-time">${time}</span>
-                <span class="log-type">${type}</span>
-                <span class="log-message">${message}</span>
-            `;
+            // Build the entry with textContent: messages include URLs and
+            // response data, which must not be interpreted as HTML.
+            for (const [cls, text] of [['log-time', time], ['log-type', type], ['log-message', message]]) {
+                const span = document.createElement('span');
+                span.className = cls;
+                span.textContent = text;
+                entry.appendChild(span);
+            }
             log.appendChild(entry);
             log.scrollTop = log.scrollHeight;
         }

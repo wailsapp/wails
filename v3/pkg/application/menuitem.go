@@ -13,6 +13,7 @@ const (
 	checkbox
 	radio
 	submenu
+	sectionHeader
 )
 
 var menuItemID uintptr

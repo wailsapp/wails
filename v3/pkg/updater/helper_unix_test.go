@@ -8,7 +8,17 @@ import (
 	"path/filepath"
 	"syscall"
 	"testing"
+	"time"
 )
+
+// withSwapRetryDelay shortens the pause between replace attempts so tests
+// that exhaust all 20 attempts do not spend 10s sleeping.
+func withSwapRetryDelay(t *testing.T, d time.Duration) {
+	t.Helper()
+	prev := swapRetryDelay
+	swapRetryDelay = d
+	t.Cleanup(func() { swapRetryDelay = prev })
+}
 
 // crossDeviceErr builds the synthetic EXDEV failure os.Rename returns for a
 // cross-filesystem move. Tests inject it via renameFunc so the fallback is
@@ -397,5 +407,47 @@ func TestRunHelperSwap_DirReplaceFails_RestoresBackup(t *testing.T) {
 	}
 	if got := readFile(t, filepath.Join(newPath, "Contents", "MacOS", "exe")); string(got) != "new-bin" {
 		t.Errorf("staged bundle must be untouched, got %q", got)
+	}
+}
+
+// Exit-14 regression: when every replace attempt fails because the target is
+// locked (Windows: another process opened it without FILE_SHARE_DELETE), the
+// original is still intact at target. The helper must relaunch it directly
+// instead of calling restoreFromBackup, whose os.RemoveAll(target) hits the
+// same lock and aborts with exit 14 while nothing is running.
+func TestRunHelperSwap_AllReplaceAttemptsFail_RelaunchesIntactOriginal(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+	t.Setenv(envHelperMode, "1")
+
+	withSwapRetryDelay(t, time.Millisecond)
+	withRenameFunc(t, func(oldpath, newpath string) error {
+		return &os.LinkError{Op: "rename", Old: oldpath, New: newpath, Err: syscall.EACCES}
+	})
+
+	var launches []string
+	l := &funcLauncher{fn: func(path string) error {
+		launches = append(launches, path)
+		if os.Getenv(envHelperMode) != "" {
+			t.Errorf("%s leaked to relaunched original", envHelperMode)
+		}
+		return nil
+	}}
+
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 13 {
+		t.Fatalf("code: %d (want 13 — original relaunched)", code)
+	}
+	if got := readFile(t, target); string(got) != "OLD" {
+		t.Errorf("target must keep the original: %q", got)
+	}
+	if len(launches) != 1 || launches[0] != target {
+		t.Errorf("launcher calls: %+v (want one launch of %q)", launches, target)
+	}
+	if _, err := os.Stat(target + ".bak"); !os.IsNotExist(err) {
+		t.Errorf("backup should be cleaned up after relaunch: %v", err)
 	}
 }
