@@ -30,9 +30,10 @@ func (f *focusHandoff) shouldRestoreWebview() bool {
 
 // tabIn is called on Tab / Shift+Tab while the host window has focus. When
 // focus is on the host it returns the direction to enter the WebView
-// (previous=true for Shift+Tab) and clears the hand-off.
-func (f *focusHandoff) tabIn(shift bool) (previous bool, ok bool) {
-	if !f.onHost {
+// (previous=true for Shift+Tab) and clears the hand-off. Ctrl-modified Tab
+// remains available to key bindings without changing the hand-off.
+func (f *focusHandoff) tabIn(shift, ctrl bool) (previous bool, ok bool) {
+	if ctrl || !f.onHost {
 		return false, false
 	}
 	f.onHost = false
