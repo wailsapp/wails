@@ -103,6 +103,10 @@ func (osLauncher) launch(path string) error {
 	return cmd.Start()
 }
 
+// swapRetryDelay is the pause between replace attempts. Held in a var so
+// focused tests can shorten the retry window without sleeping for 10s.
+var swapRetryDelay = 500 * time.Millisecond
+
 // runHelperSwap implements the actual swap logic. It is unexported and
 // dependency-injected so unit tests can drive every branch without process
 // spawning. Returns the exit code the helper should use.
@@ -132,6 +136,16 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 	if parentPID > 0 {
 		if err := wait(parentPID, 30*time.Second); err != nil {
 			lg.logf("parent did not exit within timeout: %v — aborting swap", err)
+			// The target was never touched. Leaving the user with no
+			// running application is worse than briefly overlapping with a
+			// parent that is still shutting down, so relaunch the intact
+			// original and let the parent finish exiting.
+			clearHelperEnv()
+			if err := l.launch(target); err != nil {
+				lg.logf("relaunch original failed: %v", err)
+			} else {
+				lg.logf("relaunched original after parent-timeout abort")
+			}
 			return 17
 		}
 	}
@@ -173,7 +187,7 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 	for i := 0; i < 20; i++ {
 		if err := replaceTarget(target, newPath); err != nil {
 			lg.logf("replace (attempt %d): %v", i+1, err)
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(swapRetryDelay)
 			continue
 		}
 		swapped = true
@@ -189,6 +203,25 @@ func runHelperSwap(target, newPath string, parentPID int, logPath string, wait p
 	}
 
 	if !swapped {
+		// Every replace attempt left the original executable in place: the
+		// Windows rename-aside is reverted on failure, and the Unix file
+		// rename only takes effect on success. Calling restoreFromBackup
+		// here would first os.RemoveAll(target), which fails on the very
+		// lock that blocked the swap (and, on Unix .app bundles, needlessly
+		// deletes an intact original). Relaunch the original instead.
+		lg.logf("all swap attempts exhausted — relaunching intact original")
+		if _, err := os.Stat(target); err == nil {
+			if err := l.launch(target); err == nil {
+				if err := os.RemoveAll(backup); err != nil {
+					lg.logf("backup cleanup: %v (non-fatal)", err)
+				}
+				return 13
+			} else {
+				lg.logf("relaunch original failed: %v — restoring backup", err)
+			}
+		}
+		// The target slot is missing (e.g. a directory swap cleared it
+		// before the move failed); fall back to the backup.
 		lg.logf("all swap attempts exhausted — restoring backup")
 		if err := restoreFromBackup(backup, target, l); err != nil {
 			lg.logf("restore failed: %v", err)
