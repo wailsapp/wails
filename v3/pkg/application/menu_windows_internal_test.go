@@ -219,3 +219,35 @@ func TestWindowsSetMenuNilIsNoOp(t *testing.T) {
 		t.Errorf("setMenu(nil) should not create a native menu, got %#v", w.menu)
 	}
 }
+
+// A tray popup updated while TrackPopupMenuEx is tracking it must keep its
+// HMENU and command mapping until it closes (#4719).
+func TestWin32MenuRequestUpdateDefersWhileShowing(t *testing.T) {
+	menu := NewMenu()
+	gen0 := menu.Add("Gen 0")
+	popup := NewPopupMenu(0, menu)
+	defer popup.Destroy()
+
+	popup.isShowing.Store(true)
+	hmenu := popup.menu
+	menu.Clear()
+	gen1 := menu.Add("Gen 1")
+	popup.requestUpdate()
+
+	if popup.menu != hmenu {
+		t.Fatal("requestUpdate rebuilt the HMENU while the popup was showing")
+	}
+	if popup.menuMapping[MenuItemMsgID+1] != gen0 {
+		t.Fatal("requestUpdate replaced the command mapping while the popup was showing")
+	}
+	if !popup.updatePending.Load() {
+		t.Fatal("requestUpdate did not record the deferred rebuild")
+	}
+
+	popup.isShowing.Store(false)
+	popup.updatePending.Store(false)
+	popup.requestUpdate()
+	if popup.menuMapping[MenuItemMsgID+1] != gen1 {
+		t.Fatal("requestUpdate did not rebuild once the popup closed")
+	}
+}
