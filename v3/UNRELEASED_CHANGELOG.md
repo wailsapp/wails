@@ -23,6 +23,8 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Keep systray menus working when updated while open in [PR](https://github.com/wailsapp/wails/pull/6301) by @taliesin-ai
+- Handle transient WebView2 COM errors gracefully in runtime operations in [PR](https://github.com/wailsapp/wails/pull/6302) by @leaanthony
 - Fix a second instance launched while the first is quitting handing its launch to the exiting app, by releasing the single-instance lock (the D-Bus name on Linux, the mutex on Windows) at the start of shutdown
 
 ## Deprecated

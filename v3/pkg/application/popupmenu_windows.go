@@ -57,6 +57,11 @@ type Win32Menu struct {
 	onMenuOpen    func()
 	isShowing     atomic.Bool // guards against concurrent TrackPopupMenuEx calls
 
+	// updatePending records a rebuild requested while the popup was showing.
+	// See requestUpdate.
+	updatePending atomic.Bool
+	destroyed     bool
+
 	// bitmaps tracks HBITMAP handles allocated by SetMenuIcons during
 	// buildMenu so they can be released when the menu is rebuilt or
 	// destroyed. DestroyMenu does not free bitmaps set via
@@ -331,7 +336,16 @@ func (p *Win32Menu) ShowAt(x int, y int) {
 	if !p.isShowing.CompareAndSwap(false, true) {
 		return
 	}
-	defer p.isShowing.Store(false)
+	defer func() {
+		p.isShowing.Store(false)
+		if p.updatePending.Swap(false) {
+			// TrackPopupMenuEx has already posted the WM_COMMAND for the
+			// clicked row, numbered against the current menuMapping. Post the
+			// rebuild behind it (from a goroutine, as InvokeAsync runs inline
+			// on the main thread) so that command is dispatched first.
+			go InvokeAsync(p.requestUpdate)
+		}
+	}()
 
 	w32.SetForegroundWindow(p.parent)
 
@@ -408,7 +422,23 @@ func (p *Win32Menu) ProcessCommand(cmdMsgID int) bool {
 	return true
 }
 
+// requestUpdate rebuilds the menu from menuData, or defers the rebuild until
+// the popup closes if it is showing: TrackPopupMenuEx is still tracking the
+// current HMENU and Update would destroy it (#4719). Must run on the main
+// thread.
+func (p *Win32Menu) requestUpdate() {
+	if p.destroyed {
+		return
+	}
+	if p.isShowing.Load() {
+		p.updatePending.Store(true)
+		return
+	}
+	p.Update()
+}
+
 func (p *Win32Menu) Destroy() {
+	p.destroyed = true
 	p.freeBitmaps()
 	p.detachedSubmenus.destroyAll()
 	w32.DestroyMenu(p.menu)
