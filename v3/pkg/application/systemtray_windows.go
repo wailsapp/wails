@@ -504,12 +504,44 @@ func (s *windowsSystemTray) wndProc(msg uint32, wParam, lParam uintptr) uintptr 
 }
 
 func (s *windowsSystemTray) updateMenu(menu *Menu) {
+	if s.menu != nil && menu != nil {
+		// Rebuild in place rather than destroying the popup: it may be open.
+		s.menu.menuData = menu
+		s.menu.requestUpdate()
+		return
+	}
 	if s.menu != nil {
 		s.menu.Destroy()
 	}
 	s.menu = NewPopupMenu(s.hwnd, menu)
 	s.menu.onMenuOpen = s.parent.onMenuOpen
 	s.menu.onMenuClose = s.parent.onMenuClose
+}
+
+// refreshSystemTrayMenus rebuilds every tray popup built from menu. The tray
+// popup is a separate Win32Menu from the one Menu.Update rebuilds, so without
+// this a tray never shows changes made with Menu.Update (#4719).
+func refreshSystemTrayMenus(menu *Menu) {
+	if globalApplication == nil {
+		return
+	}
+	app, ok := globalApplication.impl.(*windowsApp)
+	if !ok || app == nil {
+		return
+	}
+	InvokeSync(func() {
+		app.systrayMapLock.RLock()
+		var popups []*Win32Menu
+		for _, tray := range app.systrayMap {
+			if tray.menu != nil && tray.menu.menuData == menu {
+				popups = append(popups, tray.menu)
+			}
+		}
+		app.systrayMapLock.RUnlock()
+		for _, popup := range popups {
+			popup.requestUpdate()
+		}
+	})
 }
 
 // setTooltip and setLabel both show SystemTray.tooltipOrLabel rather than their

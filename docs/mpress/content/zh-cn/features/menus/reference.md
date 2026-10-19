@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 <strong>最佳实践：</strong>不要在菜单开头或末尾放置分隔符。
 
+### 分区标题
+
+在 **macOS 14+** 上为一组菜单项提供原生、不可交互的标签：
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` 使用 AppKit 标准的分区标题外观。它不返回菜单项，也不关联操作。在较早版本的 macOS、Windows、Linux、移动平台和服务器构建中，调用不执行任何操作，也不会插入任何行。
+
+可在托盘菜单、上下文菜单或应用程序菜单中使用它，为相关命令添加标签。要在所有平台上分隔单选组，请使用 `AddSeparator()`，因为被省略的标题不会分隔单选组。方法签名请参阅 [Menu API](/reference/menu#addsectionheader)，使用主机名作为标题的示例请参阅 `systray-menu`。
+
 ## 菜单项属性
 
 ### 标签

@@ -123,21 +123,22 @@ static NSMutableArray<NSString *> *pendingConsoleJS;
     return self;
 }
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+    bool isMainFrame = message.frameInfo.isMainFrame;
     // Support both plain string messages and structured objects
     if ([message.body isKindOfClass:[NSString class]]) {
         NSString *msg = (NSString *)message.body;
-        HandleJSMessage(self.windowID, (char *)[msg UTF8String]);
+        HandleJSMessage(self.windowID, (char *)[msg UTF8String], isMainFrame);
         return;
     }
     NSError *error = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:message.body options:0 error:&error];
     if (!error && jsonData) {
         NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        HandleJSMessage(self.windowID, (char *)[jsonString UTF8String]);
+        HandleJSMessage(self.windowID, (char *)[jsonString UTF8String], isMainFrame);
     } else {
         // Fallback: attempt to stringify non-serializable payloads
         NSString *desc = [NSString stringWithFormat:@"%@", message.body];
-        HandleJSMessage(self.windowID, (char *)[desc UTF8String]);
+        HandleJSMessage(self.windowID, (char *)[desc UTF8String], isMainFrame);
     }
 }
 @end

@@ -1,14 +1,17 @@
 package assetserver
 
 import (
+	"bytes"
 	"net/http"
 	"path/filepath"
 	"sync"
 
-	"github.com/wailsapp/mimetype"
+	"github.com/gabriel-vasile/mimetype"
 )
 
 var (
+	utf8BOM = []byte{0xEF, 0xBB, 0xBF}
+
 	mimeCache = map[string]string{}
 	mimeMutex sync.Mutex
 
@@ -51,7 +54,10 @@ func GetMimetype(filename string, data []byte) string {
 		return result
 	}
 
-	detect := mimetype.Detect(data)
+	// Strip a leading UTF-8 BOM before content detection. The mimetype
+	// detectors do not skip it for every format (e.g. SVG), and the charset
+	// of BOM-prefixed text is still reported as UTF-8 without it.
+	detect := mimetype.Detect(bytes.TrimPrefix(data, utf8BOM))
 	if detect == nil {
 		result = http.DetectContentType(data)
 	} else {

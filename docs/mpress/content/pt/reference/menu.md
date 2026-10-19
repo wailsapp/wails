@@ -98,6 +98,28 @@ menu.Add("Select All")
 
 **Prática recomendada:** Use separadores para agrupar itens de menu relacionados.
 
+### AddSectionHeader()
+
+Adiciona um cabeçalho de seção nativo e não interativo no **macOS 14 e posterior**. Em versões anteriores do macOS e em todas as outras plataformas (incluindo compilações de servidor), a chamada não faz nada: nenhum item substituto é inserido.
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+Use cabeçalhos para identificar grupos em menus da bandeja do sistema, de contexto ou do aplicativo:
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+Os cabeçalhos usam a aparência padrão de cabeçalhos de seção do AppKit. Chame `menu.Update()` após reconstruir um menu já exibido, como em outras alterações estruturais. Veja o exemplo `systray-menu` para um cabeçalho obtido com `os.Hostname()`.
+
+Cabeçalhos omitidos não separam grupos de botões de opção. Use `AddSeparator()` quando os grupos precisarem permanecer separados em todas as plataformas.
+
 ### AddCheckbox()
 
 Adiciona um item de menu que pode ser marcado.

@@ -98,6 +98,28 @@ menu.Add("Select All")
 
 **Praktik terbaik:** Gunakan pemisah untuk mengelompokkan item menu yang saling berkaitan.
 
+### AddSectionHeader()
+
+Menambahkan judul bagian bawaan yang tidak interaktif di **macOS 14 dan versi lebih baru**. Pada versi macOS yang lebih lama dan semua platform lain (termasuk build server), pemanggilan ini tidak melakukan apa pun: tidak ada item pengganti yang disisipkan.
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+Gunakan judul untuk memberi label pada grup di menu baki sistem, menu konteks, atau menu aplikasi:
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+Judul menggunakan tampilan judul bagian standar AppKit. Panggil `menu.Update()` setelah membangun ulang menu yang sudah ditampilkan, seperti pada perubahan struktur lainnya. Lihat contoh `systray-menu` untuk judul yang diperoleh dari `os.Hostname()`.
+
+Judul yang dihilangkan tidak memisahkan grup radio. Gunakan `AddSeparator()` jika grup harus tetap terpisah di setiap platform.
+
 ### AddCheckbox()
 
 Menambahkan item menu yang dapat dicentang.

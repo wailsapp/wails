@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 **권장 사항:** 메뉴의 시작이나 끝에 구분선을 배치하지 마세요.
 
+### 섹션 제목
+
+**macOS 14+** 에서 메뉴 항목 그룹에 사용하는 상호 작용이 불가능한 네이티브 레이블입니다:
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader`는 AppKit의 표준 섹션 제목 모양을 사용합니다. 메뉴 항목을 반환하지 않으며 동작을 연결하지도 않습니다. 이전 macOS 버전, Windows, Linux, 모바일 및 서버 빌드에서는 호출해도 아무 작업을 수행하지 않으며 행을 삽입하지 않습니다.
+
+트레이, 컨텍스트 또는 애플리케이션 메뉴에서 관련 명령에 레이블을 붙일 때 사용합니다. 생략된 제목은 라디오 그룹을 나누지 않으므로 모든 플랫폼에서 라디오 그룹을 분리하려면 `AddSeparator()`를 사용하세요. 메서드 시그니처는 [Menu API](/reference/menu#addsectionheader)를, 호스트 이름을 제목으로 사용하는 방법은 `systray-menu` 예제를 참고하세요.
+
 ## 메뉴 항목 속성
 
 ### 레이블
