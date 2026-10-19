@@ -51,6 +51,13 @@ func TestMessageBoxButtonFor(t *testing.T) {
 	if got := messageBoxButtonFor([]*Button{ok, cancel}, 2); got != cancel {
 		t.Error("IDCANCEL should map to the cancel button")
 	}
+	// A leading custom cancel button must not turn No into confirmation.
+	if got := messageBoxButtonFor([]*Button{cancel, ok}, 7); got != cancel {
+		t.Error("IDNO should prefer the cancel role regardless of order")
+	}
+	if got := messageBoxButtonFor([]*Button{cancel, ok}, 6); got != ok {
+		t.Error("IDYES should skip the cancel button")
+	}
 	// Standard captions still match by label, case-insensitively.
 	yes := &Button{Label: "yes"}
 	no := &Button{Label: "No"}
@@ -64,12 +71,12 @@ func TestMessageBoxButtonFor(t *testing.T) {
 }
 
 func TestEncodeTaskDialogConfigLayout(t *testing.T) {
-	c := taskDialogConfig{hwndParent: 0x11, flags: 0x1008, title: 0x22, content: 0x33, buttonCount: 2, buttons: 0x44, defaultButton: 1001}
+	c := taskDialogConfig{hwndParent: 0x11, hInstance: 0x55, mainIcon: 3, callback: 0x66, flags: 0x1008, title: 0x22, content: 0x33, buttonCount: 2, buttons: 0x44, defaultButton: 1001}
 	b := encodeTaskDialogConfig(8, c)
 	if len(b) != 160 || binary.LittleEndian.Uint32(b) != 160 {
 		t.Fatalf("amd64 size = %d", len(b))
 	}
-	checks := map[int]uint64{4: 0x11, 20: 0x1008, 28: 0x22, 52: 0x33, 60: 2, 64: 0x44, 72: 1001}
+	checks := map[int]uint64{4: 0x11, 12: 0x55, 36: 3, 140: 0x66, 20: 0x1008, 28: 0x22, 52: 0x33, 60: 2, 64: 0x44, 72: 1001}
 	for off, want := range checks {
 		var got uint64
 		switch off {
@@ -82,8 +89,14 @@ func TestEncodeTaskDialogConfigLayout(t *testing.T) {
 			t.Errorf("offset %d = %#x, want %#x", off, got, want)
 		}
 	}
-	if b32 := encodeTaskDialogConfig(4, c); len(b32) != 96 {
-		t.Errorf("386 size = %d, want 96", len(b32))
+	b32 := encodeTaskDialogConfig(4, c)
+	if len(b32) != 96 {
+		t.Fatalf("386 size = %d, want 96", len(b32))
+	}
+	for off, want := range map[int]uint32{8: 0x55, 24: 3, 84: 0x66} {
+		if got := binary.LittleEndian.Uint32(b32[off:]); got != want {
+			t.Errorf("386 offset %d = %#x, want %#x", off, got, want)
+		}
 	}
 	btn := encodeTaskDialogButtons(8, []int32{1000, 1001}, []uint64{0xA, 0xB})
 	if len(btn) != 24 || binary.LittleEndian.Uint32(btn[12:]) != 1001 || binary.LittleEndian.Uint64(btn[16:]) != 0xB {

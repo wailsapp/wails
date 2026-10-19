@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/go-common-file-dialog/cfd"
@@ -86,6 +87,28 @@ func (m *windowsDialog) show() {
 	}
 }
 
+// taskDialogCreated preserves MessageBox's MB_SYSTEMMODAL topmost behavior.
+// TaskDialogIndirect itself provides modality relative to hwndParent.
+var taskDialogCreated = syscall.NewCallback(func(hwnd, notification, wparam, lparam, data uintptr) uintptr {
+	const tdnCreated = 0
+	if notification == tdnCreated {
+		w32.SetWindowPos(hwnd, w32.HWND_TOPMOST, 0, 0, 0, 0, w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOACTIVATE)
+	}
+	return 0 // S_OK
+})
+
+// taskDialogIcon uses the same embedded app icon as MessageBoxWithIcon.
+// Missing development resources omit the icon while preserving custom captions.
+func (m *windowsDialog) taskDialogIcon() (instance, resource uint64) {
+	if m.UseAppIcon || m.dialog.Icon != nil {
+		handle := w32.GetApplicationHandle()
+		if w32.LoadIconWithResourceID(handle, 3) != 0 {
+			return uint64(handle), 3
+		}
+	}
+	return 0, 0
+}
+
 // showTaskDialog shows the dialog with its own button captions. It returns
 // false, without having shown anything, when TaskDialogIndirect cannot be used.
 func (m *windowsDialog) showTaskDialog(parentWindow uintptr) bool {
@@ -117,8 +140,12 @@ func (m *windowsDialog) showTaskDialog(parentWindow uintptr) bool {
 	if parentWindow != 0 {
 		flags |= tdfPositionRelativeToWindow
 	}
+	hInstance, mainIcon := m.taskDialogIcon()
 	config := encodeTaskDialogConfig(ptrSize, taskDialogConfig{
 		hwndParent:    uint64(parentWindow),
+		hInstance:     hInstance,
+		mainIcon:      mainIcon,
+		callback:      uint64(taskDialogCreated),
 		flags:         flags,
 		title:         uint64(uintptr(unsafe.Pointer(title))),
 		content:       uint64(uintptr(unsafe.Pointer(message))),

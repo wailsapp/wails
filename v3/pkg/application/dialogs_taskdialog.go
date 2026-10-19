@@ -75,7 +75,7 @@ func (p taskDialogPlan) buttonFor(result int32) *Button {
 // used when TaskDialogIndirect is unavailable (no comctl32 v6 manifest). The
 // button is found by caption first (case-insensitive, so "OK" matches "Ok"); as
 // MessageBox cannot show custom captions, Yes/No results then fall back to the
-// first/second button and Cancel to the cancel button.
+// first/second non-cancel button. No and Cancel prefer the cancel button.
 func messageBoxButtonFor(buttons []*Button, result int32) *Button {
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
 	if result > 0 && int(result) < len(responses) && responses[result] != "" {
@@ -85,35 +85,51 @@ func messageBoxButtonFor(buttons []*Button, result int32) *Button {
 			}
 		}
 	}
-	var present []*Button
-	for _, b := range buttons {
-		if b != nil {
-			present = append(present, b)
-		}
-	}
+	present, cancel := messageBoxFallbackButtons(buttons)
 	switch result {
 	case 6: // IDYES
 		if len(present) > 0 {
 			return present[0]
 		}
 	case 7: // IDNO
+		if cancel != nil {
+			return cancel
+		}
 		if len(present) > 1 {
 			return present[1]
 		}
 	case 2: // IDCANCEL
-		for _, b := range present {
-			if b.IsCancel {
-				return b
-			}
-		}
+		return cancel
 	}
 	return nil
+}
+
+// messageBoxFallbackButtons separates the cancel role from positional responses.
+func messageBoxFallbackButtons(buttons []*Button) ([]*Button, *Button) {
+	var present []*Button
+	var cancel *Button
+	for _, b := range buttons {
+		if b == nil {
+			continue
+		}
+		if b.IsCancel {
+			if cancel == nil {
+				cancel = b
+			}
+		} else {
+			present = append(present, b)
+		}
+	}
+	return present, cancel
 }
 
 // taskDialogConfig holds the values for a TASKDIALOGCONFIG. Pointer fields are
 // passed as raw addresses; the caller keeps the pointed-to data alive.
 type taskDialogConfig struct {
 	hwndParent    uint64
+	hInstance     uint64
+	mainIcon      uint64
+	callback      uint64
 	flags         uint32
 	title         uint64 // PCWSTR
 	content       uint64 // PCWSTR
@@ -147,28 +163,28 @@ func encodeTaskDialogConfig(ptrSize int, c taskDialogConfig) []byte {
 	}
 	u32(0) // cbSize, patched below
 	ptr(c.hwndParent)
-	ptr(0) // hInstance
+	ptr(c.hInstance)
 	u32(c.flags)
 	u32(0) // dwCommonButtons
 	ptr(c.title)
-	ptr(0) // hMainIcon / pszMainIcon
-	ptr(0) // pszMainInstruction
+	ptr(c.mainIcon) // pszMainIcon resource ID
+	ptr(0)          // pszMainInstruction
 	ptr(c.content)
 	u32(c.buttonCount)
 	ptr(c.buttons)
 	u32(uint32(c.defaultButton))
-	u32(0) // cRadioButtons
-	ptr(0) // pRadioButtons
-	u32(0) // nDefaultRadioButton
-	ptr(0) // pszVerificationText
-	ptr(0) // pszExpandedInformation
-	ptr(0) // pszExpandedControlText
-	ptr(0) // pszCollapsedControlText
-	ptr(0) // hFooterIcon / pszFooterIcon
-	ptr(0) // pszFooter
-	ptr(0) // pfCallback
-	ptr(0) // lpCallbackData
-	u32(0) // cxWidth
+	u32(0)          // cRadioButtons
+	ptr(0)          // pRadioButtons
+	u32(0)          // nDefaultRadioButton
+	ptr(0)          // pszVerificationText
+	ptr(0)          // pszExpandedInformation
+	ptr(0)          // pszExpandedControlText
+	ptr(0)          // pszCollapsedControlText
+	ptr(0)          // hFooterIcon / pszFooterIcon
+	ptr(0)          // pszFooter
+	ptr(c.callback) // pfCallback
+	ptr(0)          // lpCallbackData
+	u32(0)          // cxWidth
 	binary.LittleEndian.PutUint32(buf, uint32(len(buf)))
 	return buf
 }
