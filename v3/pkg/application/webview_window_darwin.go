@@ -413,42 +413,51 @@ void windowSetMaxSize(void* nsWindow, int width, int height) {
 	[window setMaxSize:size];
 }
 
+static double webViewGetPageZoom(WKWebView* webView) {
+	if (@available(macOS 11.0, *)) {
+		return webView.pageZoom;
+	}
+	return webView.magnification;
+}
+
+static void webViewSetPageZoom(WKWebView* webView, double zoom) {
+	if (@available(macOS 11.0, *)) {
+		webView.pageZoom = zoom;
+		return;
+	}
+	[webView setMagnification:zoom];
+}
+
 // windowZoomReset
 void windowZoomReset(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
+	webViewSetPageZoom(window.webView, 1.0);
 	[window.webView setMagnification:1.0];
 }
 
 // windowZoomSet
 void windowZoomSet(void* nsWindow, double zoom) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Reset zoom
-	[window.webView setMagnification:zoom];
+	webViewSetPageZoom(window.webView, zoom);
 }
 
 // windowZoomGet
 float windowZoomGet(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Get zoom
-	return [window.webView magnification];
+	return webViewGetPageZoom(window.webView);
 }
 
 // windowZoomIn
 void windowZoomIn(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Zoom in
-	[window.webView setMagnification:window.webView.magnification + 0.05];
+	webViewSetPageZoom(window.webView, webViewGetPageZoom(window.webView) + 0.05);
 }
 
 // windowZoomOut
 void windowZoomOut(void* nsWindow) {
 	NSWindow<WailsWebviewWindow>* window = webviewHost(nsWindow);
-	// Zoom out
-	if( window.webView.magnification > 1.05 ) {
-		[window.webView setMagnification:window.webView.magnification - 0.05];
-	} else {
-		[window.webView setMagnification:1.0];
-	}
+	double zoom = webViewGetPageZoom(window.webView);
+	webViewSetPageZoom(window.webView, zoom > 1.05 ? zoom - 0.05 : 1.0);
 }
 
 // windowReload reloads the current page using the cached version.
@@ -481,7 +490,11 @@ void createModalWindow(void* parentWindowPtr, void* modalWindowPtr) {
 	});
 }
 
-// set the window position relative to the screen
+// Set the window position relative to the top-left of its screen's work area
+// (NSScreen visibleFrame, which excludes the menu bar and dock), matching the
+// documented SetRelativePosition contract and the Windows implementation.
+// Previously this used the full NSScreen frame, so windows were placed under
+// the menu bar (and under a left-side dock) on macOS (issue #4300).
 void windowSetRelativePosition(void* nsWindow, int x, int y) {
 	NSWindow* window = nativeWindow(nsWindow);
 	NSScreen* screen = [window screen];
@@ -489,9 +502,9 @@ void windowSetRelativePosition(void* nsWindow, int x, int y) {
 		screen = [NSScreen mainScreen];
 	}
 	NSRect windowFrame = [window frame];
-	NSRect screenFrame = [screen frame];
-	windowFrame.origin.x = screenFrame.origin.x + (float)x;
-	windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
+	NSRect workArea = [screen visibleFrame];
+	windowFrame.origin.x = workArea.origin.x + (CGFloat)x;
+	windowFrame.origin.y = (workArea.origin.y + workArea.size.height) - windowFrame.size.height - (CGFloat)y;
 
 	[window setFrame:windowFrame display:TRUE animate:FALSE];
 }
@@ -729,14 +742,14 @@ int windowGetHeight(void* nsWindow) {
 	return [nativeWindow(nsWindow) frame].size.height;
 }
 
-// Get the window position relative to its screen's NSScreen frame origin:
-// X from the screen's left edge, Y from the screen's top edge (Y-down).
-// Uses NSScreen frame (full extent, including menu bar/dock) rather than
-// visibleFrame. Must mirror windowSetRelativePosition exactly so Get/Set
+// Get the window position relative to its screen's work area (NSScreen
+// visibleFrame): X from the work area's left edge, Y from its top edge
+// (Y-down). Must mirror windowSetRelativePosition exactly so Get/Set
 // round-trip on every screen: previously X was returned absolute (missing
-// the screenFrame.origin.x subtraction) and Y omitted screenFrame.origin.y,
-// so each axis was wrong only on screens whose corresponding NSScreen
-// frame.origin component is non-zero (issue #5408).
+// the origin.x subtraction) and Y omitted origin.y, so each axis was wrong
+// only on screens whose corresponding origin component is non-zero
+// (issue #5408). Both now use visibleFrame rather than frame so the
+// position excludes the menu bar and dock, as on Windows (issue #4300).
 void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	NSWindow* window = nativeWindow(nsWindow);
 	NSRect frame = [window frame];
@@ -745,9 +758,9 @@ void windowGetRelativePosition(void* nsWindow, int* x, int* y) {
 	if( screen == NULL ) {
 		screen = [NSScreen mainScreen];
 	}
-	NSRect screenFrame = [screen frame];
-	*x = frame.origin.x - screenFrame.origin.x;
-	*y = (screenFrame.origin.y + screenFrame.size.height) - frame.origin.y - frame.size.height;
+	NSRect workArea = [screen visibleFrame];
+	*x = frame.origin.x - workArea.origin.x;
+	*y = (workArea.origin.y + workArea.size.height) - frame.origin.y - frame.size.height;
 }
 
 // Get absolute window position in the canonical Wails coordinate space:

@@ -34,7 +34,7 @@ func init() {
 		_ = os.Setenv("GDK_BACKEND", "x11")
 	}
 
-	// Disable DMA-BUF renderer on any session type with NVIDIA to prevent blank windows and
+	// Disable the DMA-BUF renderer when WebKit renders on NVIDIA (isNVIDIAGPU), on any session type, to prevent blank windows and
 	// "Error 71 (Protocol error)" crashes. NVIDIA proprietary drivers fail gbm_bo_map() when
 	// importing DMA-BUF, causing blank/white screens on both X11 and Wayland.
 	// See: https://bugs.webkit.org/show_bug.cgi?id=262607
@@ -42,15 +42,6 @@ func init() {
 	if os.Getenv("WEBKIT_DISABLE_DMABUF_RENDERER") == "" && isNVIDIAGPU() {
 		_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
 	}
-}
-
-// isNVIDIAGPU checks if an NVIDIA GPU is present by looking for the nvidia kernel module.
-func isNVIDIAGPU() bool {
-	// Check if nvidia module is loaded (most reliable for proprietary driver)
-	if _, err := os.Stat("/sys/module/nvidia"); err == nil {
-		return true
-	}
-	return false
 }
 
 type linuxApp struct {

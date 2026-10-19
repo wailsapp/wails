@@ -5,20 +5,18 @@ on:
     branches: [ master ]
     paths:
       - 'docs/mpress/content/changelog.md'
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'PR number to validate'
-        required: true
-        type: string
+  # No workflow_dispatch trigger: a manual run executes in the default
+  # branch's context, and this job runs PR-controlled code (go test / go run
+  # on the PR checkout), which could poison the default branch's caches. Use
+  # "Re-run jobs" on the PR's check run to validate again.
+
+permissions:
+  contents: read
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
-    outputs:
-      pr_number: ${{ steps.pr_info.outputs.pr_number }}
-      result: ${{ steps.validate.outputs.result }}
     env:
       GOWORK: "off"
     permissions:
@@ -28,7 +26,7 @@ jobs:
     - name: Checkout PR code
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.inputs.pr_number) }}
+        ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
         persist-credentials: false
         
@@ -49,7 +47,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.25'
+        go-version: '1.27'
 
     - name: Test validation script changes
       run: |
@@ -60,13 +58,8 @@ jobs:
     - name: Get PR information
       id: pr_info
       run: |
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
-          echo "base_ref=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
-        else
-          echo "pr_number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
-          echo "base_ref=master" >> $GITHUB_OUTPUT
-        fi
+        echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+        echo "base_ref=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
         
     - name: Check changelog modifications
       id: changelog_check
@@ -126,41 +119,3 @@ jobs:
       run: |
         echo "❌ Changelog validation failed"
         exit 1
-
-  report:
-    needs: validate
-    if: always() && github.event.inputs.pr_number && needs.validate.outputs.result
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: read
-
-    steps:
-    - name: Comment on PR
-      uses: actions/github-script@v7
-      env:
-        PR_NUMBER: ${{ needs.validate.outputs.pr_number }}
-        VALIDATION_RESULT: ${{ needs.validate.outputs.result }}
-      with:
-        script: |
-          const prNumber = Number(process.env.PR_NUMBER);
-          const result = process.env.VALIDATION_RESULT;
-          const { data: pr } = await github.rest.pulls.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: prNumber,
-          });
-
-          const message = result === 'success'
-            ? '## ✅ Changelog Validation Passed\n\nNo misplaced changelog entries detected.'
-            : '## ⚠️ Changelog Validation Issue\n\n@' + pr.user.login +
-              ' your PR contains changelog entries outside `[Unreleased]`. ' +
-              'The validation job is read-only; apply the correction manually and rerun it.';
-
-          await github.rest.issues.createComment({
-            issue_number: prNumber,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: message,
-          });
