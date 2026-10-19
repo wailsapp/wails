@@ -49,6 +49,10 @@ type macosSystemTray struct {
 	isTemplateIcon    bool
 	parent            *SystemTray
 	lastClickedScreen unsafe.Pointer
+
+	// displayedMenu is the menu on screen, if any. SetMenu can replace s.menu
+	// while it is open, so the close must be reported to this one.
+	displayedMenu *Menu
 }
 
 func (s *macosSystemTray) Show() {
@@ -97,6 +101,26 @@ func systrayClickCallback(id C.long, buttonID C.int) {
 		return
 	}
 	systemTray.processClick(button(buttonID))
+}
+
+// systrayMenuDisplayedCallback is called on the main thread when the tray
+// menu opens (displayed=1) or closes (displayed=0), so Menu.Clear keeps the IDs
+// of the rows on screen resolvable however often the menu is updated (#4719).
+//
+//export systrayMenuDisplayedCallback
+func systrayMenuDisplayedCallback(id C.long, displayed C.int) {
+	systemTray := systemTrayMap[uint(id)]
+	if systemTray == nil {
+		return
+	}
+	if systemTray.displayedMenu != nil {
+		systemTray.displayedMenu.displayed.Store(false)
+		systemTray.displayedMenu = nil
+	}
+	if displayed != 0 && systemTray.menu != nil {
+		systemTray.displayedMenu = systemTray.menu
+		systemTray.displayedMenu.displayed.Store(true)
+	}
 }
 
 // systrayPreClickCallback is called from the NSEvent local monitor BEFORE the

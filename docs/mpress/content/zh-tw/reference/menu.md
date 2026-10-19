@@ -98,6 +98,28 @@ menu.Add("Select All")
 
 <strong>最佳實務：</strong>使用分隔線將相關的選單項目分組。
 
+### AddSectionHeader()
+
+在 **macOS 14 及更新版本**上新增原生、不可互動的區段標題。在較舊版本的 macOS 和所有其他平台（包括伺服器建置）上，此呼叫不會執行任何操作：不會插入預留位置項目。
+
+```go
+func (m *Menu) AddSectionHeader(label string)
+```
+
+使用標題為系統匣選單、快顯選單或應用程式選單中的群組加上標籤：
+
+```go
+menu.AddSectionHeader("mac-node1")
+menu.Add("Windows VM").OnClick(openWindowsVM)
+menu.Add("Linux VM").OnClick(openLinuxVM)
+menu.AddSectionHeader("ai-master")
+menu.Add("Build VM").OnClick(openBuildVM)
+```
+
+標題使用 AppKit 標準的區段標題外觀。重新建構已顯示的選單後，與其他結構變更一樣，請呼叫 `menu.Update()`。如需使用 `os.Hostname()` 取得標題的範例，請參閱 `systray-menu`。
+
+省略的標題不會分隔單選群組。若群組必須在每個平台上保持獨立，請使用 `AddSeparator()`。
+
 ### AddCheckbox()
 
 新增可勾選的選單項目。

@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 <strong>最佳做法：</strong>不要在選單開頭或結尾放置分隔線。
 
+### 區段標題
+
+在 **macOS 14+** 上為一組選單項目提供原生、不可互動的標籤：
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` 使用 AppKit 標準的區段標題外觀。它不會傳回選單項目，也不會關聯動作。在較舊版本的 macOS、Windows、Linux、行動平台和伺服器建置中，呼叫不會執行任何操作，也不會插入任何列。
+
+可在系統匣選單、快顯選單或應用程式選單中使用它，為相關命令加上標籤。若要在所有平台上分隔單選群組，請使用 `AddSeparator()`，因為省略的標題不會分隔單選群組。方法簽章請參閱 [Menu API](/reference/menu#addsectionheader)，使用主機名稱作為標題的範例請參閱 `systray-menu`。
+
 ## 選單項目屬性
 
 ### 標籤

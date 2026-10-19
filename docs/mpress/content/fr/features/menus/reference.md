@@ -103,6 +103,20 @@ menu.Add("Item 2")
 
 **Bonne pratique :** ne placez pas de séparateur au début ou à la fin d’un menu.
 
+### En-têtes de section
+
+Libellés natifs non interactifs pour un groupe d’éléments de menu sous **macOS 14+** :
+
+```go
+menu.AddSectionHeader("Build server")
+menu.Add("Start build").OnClick(startBuild)
+menu.Add("View logs").OnClick(viewLogs)
+```
+
+`AddSectionHeader` utilise l’apparence standard des en-têtes de section d’AppKit. Cette méthode ne renvoie aucun élément de menu et n’associe aucune action. Sur les versions antérieures de macOS, Windows, Linux, les plateformes mobiles et les compilations serveur, l’appel est sans effet et n’insère aucune ligne.
+
+Utilisez cette méthode dans les menus de la zone de notification, les menus contextuels ou les menus d’application pour nommer des groupes de commandes associées. Utilisez `AddSeparator()` pour séparer les groupes de boutons radio sur toutes les plateformes, car les en-têtes omis ne séparent pas ces groupes. Consultez [l’API Menu](/reference/menu#addsectionheader) pour la signature de la méthode et l’exemple `systray-menu` pour un en-tête affichant le nom d’hôte.
+
 ## Propriétés des éléments de menu
 
 ### Libellé
