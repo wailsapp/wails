@@ -28,6 +28,17 @@ _/
 
 ## [Unreleased]
 
+## v3.0.0-beta.33 - 2026-10-19
+
+## Added
+- Binding generator now emits a `bindings/events` module exporting a typed name constant for every discoverable event registered with `application.RegisterEvent` using a compile-time constant name (e.g. `UserLogin` for `user:login`), usable with `Events.On`/`Emit` without the Vite plugin (#5645)
+
+## Fixed
+- Fix Windows question dialogs ignoring custom button labels and never firing button callbacks; custom buttons are now shown with a TaskDialog (falling back to MessageBox with positional callback mapping when comctl32 v6 is unavailable) (#5794)
+- Fix `wails3 dev` hanging for 60s against Vite: the automatic frontend readiness gate now uses a TCP probe instead of an HTTP GET that sent no `Accept` header and received a 404 ([#6209](https://github.com/wailsapp/wails/issues/6209))
+- Keep systray menus working when updated while open in [PR](https://github.com/wailsapp/wails/pull/6301) by @taliesin-ai
+- Handle transient WebView2 COM errors gracefully in runtime operations in [PR](https://github.com/wailsapp/wails/pull/6302) by @leaanthony
+
 ## v3.0.0-beta.32 - 2026-10-18
 
 ## Added
