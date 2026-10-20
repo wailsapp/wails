@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Linux: detect when WebKitGTK's bwrap sandbox cannot start because AppArmor/the kernel restricts unprivileged user namespaces (Ubuntu 24.04), warn at startup with the AppArmor/sysctl fix instead of an opaque SIGTRAP, and add a check to `wails3 doctor`. The sandbox is never disabled automatically (#6172)
 - Fix Windows webview not regaining focus on window activation, and Tab being trapped inside the webview instead of moving to the native window and back (#3783)
 - Fix `internal/webview2/pkg/webview2` COM vtable structs (`ICoreWebView2_2`..`_27` and other derived interfaces) omitting the inherited method chain, which made calls land on the wrong vtable slot (#6129)
 - Fix Windows question dialogs ignoring custom button labels and never firing button callbacks; custom buttons are now shown with a TaskDialog (falling back to MessageBox with positional callback mapping when comctl32 v6 is unavailable) (#5794)

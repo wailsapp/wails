@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// checkCommonDependencies records shared dependencies without clearing earlier failures.
 func checkCommonDependencies(result map[string]string, ok *bool) {
 	// Check for npm
 	npmVersion := []byte("Not Installed. Requires npm >= 7.0.0")
@@ -27,8 +28,6 @@ func checkCommonDependencies(result map[string]string, ok *bool) {
 			if major < 7 {
 				*ok = false
 				npmVersion = append(npmVersion, []byte(". Installed, but requires npm >= 7.0.0")...)
-			} else {
-				*ok = true
 			}
 		}
 	}
