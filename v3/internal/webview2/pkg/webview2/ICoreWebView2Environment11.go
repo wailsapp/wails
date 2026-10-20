@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment11Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment10Vtbl
 	GetFailureReportFolderPath ComProc
 }
 

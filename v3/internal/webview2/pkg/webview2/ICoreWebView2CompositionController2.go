@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2CompositionController2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2CompositionControllerVtbl
 	GetAutomationProvider ComProc
 }
 

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2PermissionRequestedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2PermissionRequestedEventArgsVtbl
 	GetHandled ComProc
 	PutHandled ComProc
 }

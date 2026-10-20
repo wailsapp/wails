@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Profile3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile2Vtbl
 	GetPreferredTrackingPreventionLevel ComProc
 	PutPreferredTrackingPreventionLevel ComProc
 }

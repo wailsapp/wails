@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2PrintSettings2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2PrintSettingsVtbl
 	GetPageRanges   ComProc
 	PutPageRanges   ComProc
 	GetPagesPerSide ComProc

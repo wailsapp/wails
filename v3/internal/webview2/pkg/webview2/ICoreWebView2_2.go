@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Vtbl
 	AddWebResourceResponseReceived    ComProc
 	RemoveWebResourceResponseReceived ComProc
 	NavigateWithWebResourceRequest    ComProc

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_14Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_13Vtbl
 	AddServerCertificateErrorDetected    ComProc
 	RemoveServerCertificateErrorDetected ComProc
 	ClearServerCertificateErrorActions   ComProc
