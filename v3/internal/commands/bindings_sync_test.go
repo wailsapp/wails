@@ -177,3 +177,26 @@ func TestSyncDirsIdenticalContent(t *testing.T) {
 	}
 	checkTree(t, dst, files)
 }
+
+func TestSyncDirsOptNoPruneKeepsExisting(t *testing.T) {
+	root := t.TempDir()
+	src := filepath.Join(root, ".bindings-tmp-1")
+	dst := filepath.Join(root, "bindings")
+	// Incomplete generation: the service in internal/ was not found.
+	writeFiles(t, src, map[string]string{"svc/a.ts": "new a"})
+	writeFiles(t, dst, map[string]string{
+		"svc/a.ts":              "old a",
+		"internal/servicev2.ts": "kept",
+	})
+
+	if err := syncDirsOpt(src, dst, false); err != nil {
+		t.Fatal(err)
+	}
+	checkTree(t, dst, map[string]string{
+		"svc/a.ts":              "new a",
+		"internal/servicev2.ts": "kept",
+	})
+	if _, err := os.Lstat(src); !os.IsNotExist(err) {
+		t.Errorf("source directory should be gone, got err=%v", err)
+	}
+}

@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `wails3 generate bindings -clean` deleting previously generated bindings when the generator emitted warnings (e.g. Go code temporarily failing to type-check mid-edit so a service was not found), which made the frontend dev server fail with "Failed to resolve import" until the Go code was fixed; stale files are now kept in that case (#6215)
 - Fix Windows webview not regaining focus on window activation, and Tab being trapped inside the webview instead of moving to the native window and back (#3783)
 - Fix `internal/webview2/pkg/webview2` COM vtable structs (`ICoreWebView2_2`..`_27` and other derived interfaces) omitting the inherited method chain, which made calls land on the wrong vtable slot (#6129)
 - Fix Windows question dialogs ignoring custom button labels and never firing button callbacks; custom buttons are now shown with a TaskDialog (falling back to MessageBox with positional callback mapping when comctl32 v6 is unavailable) (#5794)

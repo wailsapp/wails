@@ -20,6 +20,15 @@ import (
 // directory (#3976), and leaves unchanged files untouched so the dev server
 // only reloads what actually changed.
 func syncDirs(src, dst string) error {
+	return syncDirsOpt(src, dst, true)
+}
+
+// syncDirsOpt is like syncDirs. When prune is false, files and directories in
+// dst that are absent from src are left in place (the sync is purely additive).
+// This is used when generation was incomplete (e.g. Go code temporarily failed
+// to type-check while being edited), so that previously generated bindings
+// that the frontend still imports are not deleted (#6215).
+func syncDirsOpt(src, dst string, prune bool) error {
 	info, err := os.Lstat(dst)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
@@ -75,6 +84,10 @@ func syncDirs(src, dst string) error {
 	})
 	if err != nil {
 		return err
+	}
+
+	if !prune {
+		return withRetry(func() error { return os.RemoveAll(src) })
 	}
 
 	// Delete phase: drop anything in dst that the generator did not produce.
