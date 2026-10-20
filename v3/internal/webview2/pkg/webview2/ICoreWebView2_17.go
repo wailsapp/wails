@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_17Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_16Vtbl
 	PostSharedBufferToScript ComProc
 }
 

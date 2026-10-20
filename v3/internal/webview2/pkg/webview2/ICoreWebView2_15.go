@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_15Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_14Vtbl
 	AddFaviconChanged    ComProc
 	RemoveFaviconChanged ComProc
 	GetFaviconUri        ComProc
