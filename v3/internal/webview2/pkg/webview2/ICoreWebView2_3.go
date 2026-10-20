@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_2Vtbl
 	TrySuspend                          ComProc
 	Resume                              ComProc
 	GetIsSuspended                      ComProc
