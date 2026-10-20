@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `wails3 generate bindings -clean` deleting previously generated bindings when the generator emitted warnings (e.g. Go code temporarily failing to type-check mid-edit so a service was not found), which made the frontend dev server fail with "Failed to resolve import" until the Go code was fixed; stale files are now kept in that case (#6215)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
