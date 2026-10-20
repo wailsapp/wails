@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment12Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment11Vtbl
 	CreateSharedBuffer ComProc
 }
 

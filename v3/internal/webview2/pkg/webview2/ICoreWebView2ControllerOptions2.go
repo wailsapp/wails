@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2ControllerOptions2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ControllerOptionsVtbl
 	GetScriptLocale ComProc
 	PutScriptLocale ComProc
 }

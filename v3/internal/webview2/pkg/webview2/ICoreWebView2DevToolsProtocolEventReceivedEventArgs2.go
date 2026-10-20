@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2DevToolsProtocolEventReceivedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2DevToolsProtocolEventReceivedEventArgsVtbl
 	GetSessionId ComProc
 }
 
