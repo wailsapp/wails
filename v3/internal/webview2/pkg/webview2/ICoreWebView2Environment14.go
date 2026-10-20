@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment14Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment13Vtbl
 	CreateWebFileSystemFileHandle      ComProc
 	CreateWebFileSystemDirectoryHandle ComProc
 	CreateObjectCollection             ComProc

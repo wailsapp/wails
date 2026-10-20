@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment6Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment5Vtbl
 	CreatePrintSettings ComProc
 }
 

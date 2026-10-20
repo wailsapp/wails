@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2WebResourceRequestedEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2WebResourceRequestedEventArgsVtbl
 	GetRequestedSourceKind ComProc
 }
 

@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_13Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_12Vtbl
 	GetProfile ComProc
 }
 
