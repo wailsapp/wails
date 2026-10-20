@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2FrameInfo2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2FrameInfoVtbl
 	GetParentFrameInfo ComProc
 	GetFrameId         ComProc
 	GetFrameKind       ComProc
