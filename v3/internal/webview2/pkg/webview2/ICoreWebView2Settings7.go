@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Settings7Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings6Vtbl
 	GetHiddenPdfToolbarItems ComProc
 	PutHiddenPdfToolbarItems ComProc
 }
