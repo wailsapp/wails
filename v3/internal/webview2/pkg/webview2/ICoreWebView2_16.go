@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_16Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_15Vtbl
 	Print            ComProc
 	ShowPrintUI      ComProc
 	PrintToPdfStream ComProc

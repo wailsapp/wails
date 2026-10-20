@@ -1220,6 +1220,11 @@ func TestStreamControlStateBoundedWithoutPolling(t *testing.T) {
 			case <-time.After(time.Second):
 				t.Fatalf("connection %d did not close after its handler returned", id)
 			}
+			// Cancellation starts Close; its queue and connection bookkeeping may
+			// still be running. Join the idempotent Close before the next open.
+			if err := c.Close(); err != nil {
+				t.Fatalf("close %d: %v", id, err)
+			}
 		}
 		if err := s.open(maxConnections+1, "short"); !errors.Is(err, ErrStreamFull) {
 			t.Fatalf("open past the bound = %v, want ErrStreamFull", err)

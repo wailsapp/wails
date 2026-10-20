@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_5Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_4Vtbl
 	AddClientCertificateRequested    ComProc
 	RemoveClientCertificateRequested ComProc
 }

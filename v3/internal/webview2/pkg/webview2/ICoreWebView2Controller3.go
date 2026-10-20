@@ -11,7 +11,7 @@ import (
 )
 
 type ICoreWebView2Controller3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Controller2Vtbl
 	GetRasterizationScale              ComProc
 	PutRasterizationScale              ComProc
 	GetShouldDetectMonitorScaleChanges ComProc
