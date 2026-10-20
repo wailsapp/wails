@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_22Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_21Vtbl
 	AddWebResourceRequestedFilterWithRequestSourceKinds    ComProc
 	RemoveWebResourceRequestedFilterWithRequestSourceKinds ComProc
 }

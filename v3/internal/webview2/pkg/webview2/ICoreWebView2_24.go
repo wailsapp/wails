@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_24Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_23Vtbl
 	AddNotificationReceived    ComProc
 	RemoveNotificationReceived ComProc
 }

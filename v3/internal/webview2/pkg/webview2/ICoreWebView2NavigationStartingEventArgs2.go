@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2NavigationStartingEventArgs2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2NavigationStartingEventArgsVtbl
 	GetAdditionalAllowedFrameAncestors ComProc
 	PutAdditionalAllowedFrameAncestors ComProc
 }

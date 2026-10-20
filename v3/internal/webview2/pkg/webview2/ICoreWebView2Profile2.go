@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Profile2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2ProfileVtbl
 	ClearBrowsingData            ComProc
 	ClearBrowsingDataInTimeRange ComProc
 	ClearBrowsingDataAll         ComProc

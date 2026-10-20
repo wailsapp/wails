@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Settings8Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Settings7Vtbl
 	GetIsReputationCheckingRequired ComProc
 	PutIsReputationCheckingRequired ComProc
 }
