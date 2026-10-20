@@ -50,4 +50,26 @@ func (generator *Generator) generateEvents(events *collect.EventMap) {
 			generator.logger.Errorf("event creation code generation failed")
 		}
 	})
+
+	// Generate event names module.
+	generator.scheduler.Schedule(func() {
+		file, err := generator.creator.Create(generator.renderer.EventNamesFile())
+		if err != nil {
+			generator.logger.Errorf("%v", err)
+			generator.logger.Errorf("event names generation failed")
+			return
+		}
+		defer func() {
+			if err := file.Close(); err != nil {
+				generator.logger.Errorf("%v", err)
+				generator.logger.Errorf("event names generation failed")
+			}
+		}()
+
+		err = generator.renderer.EventNames(file, events)
+		if err != nil {
+			generator.logger.Errorf("%v", err)
+			generator.logger.Errorf("event names generation failed")
+		}
+	})
 }
