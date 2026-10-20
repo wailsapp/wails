@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Profile8Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Profile7Vtbl
 	Delete        ComProc
 	AddDeleted    ComProc
 	RemoveDeleted ComProc

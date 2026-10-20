@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Environment4Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2Environment3Vtbl
 	GetAutomationProviderForWindow ComProc
 }
 
