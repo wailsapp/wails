@@ -112,6 +112,12 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		term.Infof("Output directory: %s", absPath)
 	}
 
+	// If generation was incomplete (no packages matched, or the generator
+	// emitted warnings such as type-check errors in user code that make a
+	// service disappear), do not prune previously generated files: deleting
+	// them breaks frontend imports until the Go code is fixed (#6215).
+	prune := true
+
 	// Process generator error.
 	if err != nil {
 		var report *generator.ErrorReport
@@ -119,6 +125,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 		case errors.Is(err, generator.ErrNoPackages):
 			// Convert to warning message.
 			term.Warning(err)
+			prune = false
 		case errors.As(err, &report):
 			if report.HasErrors() {
 				// Report error count.
@@ -126,6 +133,7 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 			} else if report.HasWarnings() {
 				// Report warning count.
 				term.Warning(report)
+				prune = false
 			}
 		default:
 			// Report error.
@@ -138,7 +146,10 @@ func GenerateBindings(options *flags.GenerateBindingsOptions, patterns []string)
 	// renaming over the output directory fails with "Access is denied" while
 	// a file watcher (e.g. Vite's dev server) holds it open (#5515).
 	if !swapped && generationDir != absPath {
-		if err := syncDirs(generationDir, absPath); err != nil {
+		if !prune {
+			term.Warning("Generation emitted warnings: keeping existing binding files that were not regenerated.")
+		}
+		if err := syncDirsOpt(generationDir, absPath, prune); err != nil {
 			return fmt.Errorf("failed to install new bindings at %q: %w\nThe bindings directory may be partially updated. Re-run the command to retry.", absPath, err)
 		}
 		swapped = true
