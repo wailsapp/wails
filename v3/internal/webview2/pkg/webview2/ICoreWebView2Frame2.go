@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2Frame2Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2FrameVtbl
 	AddNavigationStarting     ComProc
 	RemoveNavigationStarting  ComProc
 	AddContentLoading         ComProc
