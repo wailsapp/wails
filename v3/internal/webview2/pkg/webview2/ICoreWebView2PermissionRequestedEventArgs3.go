@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2PermissionRequestedEventArgs3Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2PermissionRequestedEventArgs2Vtbl
 	GetSavesInProfile ComProc
 	PutSavesInProfile ComProc
 }
