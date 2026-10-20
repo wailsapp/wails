@@ -101,6 +101,10 @@ type SystemTray struct {
 	menu           *Menu
 	isTemplateIcon bool
 	attachedWindow WindowAttachConfig
+
+	// menuGuard tracks whether the context menu is open (Linux only), so an
+	// attached window is not hidden by the focus loss the menu causes.
+	menuGuard trayMenuGuard
 }
 
 func newSystemTray(id uint) *SystemTray {

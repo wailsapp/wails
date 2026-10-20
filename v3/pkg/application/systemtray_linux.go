@@ -11,6 +11,7 @@ import (
 	"os"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
@@ -687,6 +688,10 @@ func iconToPX(icon []byte) (PX, error) {
 
 // AboutToShow is an implementation of the com.canonical.dbusmenu.AboutToShow method.
 func (s *linuxSystemTray) AboutToShow(id int32) (needUpdate bool, err *dbus.Error) {
+	// The host asks this just before showing the menu, which then takes focus
+	// from the attached window. Not every host sends "closed", so the guard
+	// also expires on its own.
+	s.parent.menuGuard.opened(time.Now())
 	return
 }
 
@@ -718,6 +723,7 @@ func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, tim
 			gtkDispatch(item.menuItem.handleClick)
 		}
 	case "opened":
+		s.parent.menuGuard.opened(time.Now())
 		// Not the click handler: "opened" says the host is about to show the
 		// context menu, which is the secondary button. ItemIsMenu is false, so
 		// a primary click arrives as Activate and is handled there — firing the
@@ -727,6 +733,7 @@ func (s *linuxSystemTray) Event(id int32, eventID string, data dbus.Variant, tim
 			s.parent.onMenuOpen()
 		}
 	case "closed":
+		s.parent.menuGuard.closed()
 		if s.parent.onMenuClose != nil {
 			s.parent.onMenuClose()
 		}
