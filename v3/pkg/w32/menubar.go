@@ -203,10 +203,8 @@ type MenuBarTheme struct {
 	menuHoverBackgroundBrush    HBRUSH
 	menuSelectedBackgroundBrush HBRUSH
 
-	// lastSizeWParam tracks the most-recent WM_SIZE wParam to detect genuine
-	// snap/restore state transitions. SIZE_RESTORED fires on every WM_SIZE during
-	// live drag-resize; only repaint when the size state actually changes.
-	lastSizeWParam WPARAM
+	// sizeGate decides when a size change needs a forced menubar redraw (#4462).
+	sizeGate sizeRedrawGate
 }
 
 func createColourWithDefaultColor(color *uint32, def uint32) *uint32 {
@@ -276,6 +274,14 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		return false, 0
 	}
 	switch msg {
+	case WM_ENTERSIZEMOVE:
+		theme.sizeGate.enterSizeMove()
+		return false, 0
+	case WM_EXITSIZEMOVE:
+		if theme.sizeGate.exitSizeMove() {
+			redrawMenuBar(hwnd)
+		}
+		return false, 0
 	case WM_UAHDRAWMENU:
 		udm := (*UAHMENU)(unsafe.Pointer(lParam))
 
@@ -569,21 +575,13 @@ func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		// Repaint menubar after size change
 		paintDarkMenuBar(hwnd, theme)
 
-		// Force-redraw only on genuine snap/maximize state transitions.
-		// SIZE_RESTORED fires continuously during live drag-resize (wParam stays the same),
-		// so gate on a wParam change to avoid per-frame InvalidateRect/DrawMenuBar calls.
-		// WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE cannot be used here because keyboard snap
-		// (Win+Left) bypasses those messages entirely.
-		if msg == WM_SIZE && (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED) && wParam != theme.lastSizeWParam {
-			var mbi MENUBARINFO
-			mbi.CbSize = uint32(unsafe.Sizeof(mbi))
-			if GetMenuBarInfo(hwnd, OBJID_MENU, 0, &mbi) {
-				InvalidateRect(hwnd, &mbi.Bar, true)
-				DrawMenuBar(hwnd)
-			}
-		}
-		if msg == WM_SIZE {
-			theme.lastSizeWParam = wParam
+		// Force-redraw the menubar after snap/maximize/restore. Snapping a
+		// normal window to a screen edge sends SIZE_RESTORED with no state
+		// change, so gating on a wParam transition (as before) missed it
+		// (#4462). Suppress only inside an interactive move/size loop, where
+		// WM_SIZE fires every frame; WM_EXITSIZEMOVE redraws once at the end.
+		if msg == WM_SIZE && theme.sizeGate.onSize(wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED) {
+			redrawMenuBar(hwnd)
 		}
 
 		return false, result
@@ -990,5 +988,16 @@ func drawMenuBarText(hwnd HWND, hdc HDC, menuBarInfo *MENUBARINFO, theme *MenuBa
 			// Draw the text
 			DrawText(hdc, menuString, -1, &itemRect, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
 		}
+	}
+}
+
+// redrawMenuBar invalidates the non-client menubar area and asks Windows to
+// redraw it, which routes through the WM_UAHDRAWMENU dark painting.
+func redrawMenuBar(hwnd HWND) {
+	var mbi MENUBARINFO
+	mbi.CbSize = uint32(unsafe.Sizeof(mbi))
+	if GetMenuBarInfo(hwnd, OBJID_MENU, 0, &mbi) {
+		InvalidateRect(hwnd, &mbi.Bar, true)
+		DrawMenuBar(hwnd)
 	}
 }
