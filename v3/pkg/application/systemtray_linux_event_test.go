@@ -4,6 +4,7 @@ package application
 
 import (
 	"testing"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 )

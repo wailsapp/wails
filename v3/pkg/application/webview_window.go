@@ -413,6 +413,11 @@ func (w *WebviewWindow) setupHideOnFocusLost() {
 		return
 	}
 	w.OnWindowEvent(events.Common.WindowLostFocus, func(event *WindowEvent) {
+		// Opening the context menu of a system tray this window is attached
+		// to steals focus (#4494); that is not the user clicking away.
+		if globalApplication.trayMenuActiveFor(w) {
+			return
+		}
 		w.Hide()
 	})
 }
