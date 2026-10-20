@@ -69,6 +69,7 @@ type Chromium struct {
 	permissionRequested              *iCoreWebView2PermissionRequestedEventHandler
 	webResourceRequested             *iCoreWebView2WebResourceRequestedEventHandler
 	acceleratorKeyPressed            *ICoreWebView2AcceleratorKeyPressedEventHandler
+	moveFocusRequested               *ICoreWebView2MoveFocusRequestedEventHandler
 	cursorChanged                    *iCoreWebView2CursorChangedEventHandler
 	navigationStarting               *ICoreWebView2NavigationStartingEventHandler
 	navigationCompleted              *ICoreWebView2NavigationCompletedEventHandler
@@ -99,7 +100,11 @@ type Chromium struct {
 	ProcessFailedCallback                    func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	ContainsFullScreenElementChangedCallback func(sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs)
 	AcceleratorKeyCallback                   func(uint) bool
-	CursorChangedCallback                    func(cursor HCURSOR, systemCursorID uint32)
+	// MoveFocusRequestedCallback is called when the user tabs (or shift+tabs)
+	// out of the WebView. Return true to take over focus handling (the
+	// WebView will not wrap focus back to its own first/last element).
+	MoveFocusRequestedCallback func(reason COREWEBVIEW2_MOVE_FOCUS_REASON) bool
+	CursorChangedCallback      func(cursor HCURSOR, systemCursorID uint32)
 
 	// Error handling
 	globalErrorCallback func(error)
@@ -131,6 +136,7 @@ func NewChromium() *Chromium {
 	e.permissionRequested = newICoreWebView2PermissionRequestedEventHandler(e)
 	e.webResourceRequested = newICoreWebView2WebResourceRequestedEventHandler(e)
 	e.acceleratorKeyPressed = newICoreWebView2AcceleratorKeyPressedEventHandler(e)
+	e.moveFocusRequested = newICoreWebView2MoveFocusRequestedEventHandler(e)
 	e.cursorChanged = newICoreWebView2CursorChangedEventHandler(e)
 	e.navigationStarting = newICoreWebView2NavigationStartingEventHandler(e)
 	e.navigationCompleted = newICoreWebView2NavigationCompletedEventHandler(e)
@@ -171,6 +177,7 @@ func (e *Chromium) ShuttingDown() {
 	e.ProcessFailedCallback = nil
 	e.ContainsFullScreenElementChangedCallback = nil
 	e.AcceleratorKeyCallback = nil
+	e.MoveFocusRequestedCallback = nil
 	e.CursorChangedCallback = nil
 	e.globalErrorCallback = globalErrorHandler
 }
@@ -686,6 +693,12 @@ func (e *Chromium) initializeController(controller *ICoreWebView2Controller) uin
 	if err != nil {
 		return e.initializationFailed(err)
 	}
+	// Without this handler WebView2 wraps Tab focus around inside the page,
+	// so keyboard focus can never leave the WebView (wailsapp/wails#3783).
+	err = e.controller.AddMoveFocusRequested(e.moveFocusRequested, &token)
+	if err != nil {
+		return e.initializationFailed(err)
+	}
 	if e.compositionController != nil {
 		err = e.compositionController.AddCursorChanged(e.cursorChanged, &token)
 		if err != nil {
@@ -913,6 +926,34 @@ func (e *Chromium) AcceleratorKeyPressed(sender *ICoreWebView2Controller, args *
 		log.Printf("[WebView2] AcceleratorKeyPressed failed to set handled: %v", err)
 	}
 	return 0
+}
+
+// MoveFocusRequested is called when the user tabs out of the WebView. If
+// MoveFocusRequestedCallback reports the request as handled, WebView2's default
+// behaviour (wrapping focus inside the page) is suppressed.
+func (e *Chromium) MoveFocusRequested(sender *ICoreWebView2Controller, args *ICoreWebView2MoveFocusRequestedEventArgs) uintptr {
+	handled := false
+	if !e.shuttingDown && e.MoveFocusRequestedCallback != nil {
+		if reason, err := args.GetReason(); err == nil {
+			handled = e.MoveFocusRequestedCallback(reason)
+		}
+	}
+	if err := args.PutHandled(handled); err != nil {
+		log.Printf("[WebView2] MoveFocusRequested PutHandled failed: %v", err)
+	}
+	return 0
+}
+
+// MoveFocus moves focus into the WebView for the given reason. Use
+// COREWEBVIEW2_MOVE_FOCUS_REASON_NEXT / _PREVIOUS to enter at the first / last
+// focusable element when tabbing in from the host window.
+func (e *Chromium) MoveFocus(reason COREWEBVIEW2_MOVE_FOCUS_REASON) {
+	if !e.IsReady() {
+		return
+	}
+	if err := e.controller.MoveFocus(reason); err != nil {
+		log.Printf("[WebView2] MoveFocus failed: %v", err)
+	}
 }
 
 func (e *Chromium) GetSettings() (*ICoreWebViewSettings, error) {

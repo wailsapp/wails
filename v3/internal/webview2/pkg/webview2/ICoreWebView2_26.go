@@ -9,7 +9,7 @@ import (
 )
 
 type ICoreWebView2_26Vtbl struct {
-	IUnknownVtbl
+	ICoreWebView2_25Vtbl
 	AddSaveFileSecurityCheckStarting    ComProc
 	RemoveSaveFileSecurityCheckStarting ComProc
 }
