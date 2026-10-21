@@ -618,6 +618,17 @@ func (w *windowsWebviewWindow) run() {
 			int(rcClient.Right-rcClient.Left),
 			int(rcClient.Bottom-rcClient.Top),
 			w32.SWP_FRAMECHANGED)
+
+		// The decorations are otherwise only applied on WM_ACTIVATE. setupChromium
+		// pumps messages, so a Show() dispatched while WebView2 initialises
+		// activates the window before registerWindow lets WndProc route to it.
+		// That activation is lost, and the window has no border, shadow or rounded
+		// corners until the next one.
+		if w.framelessWithDecorations() {
+			if err := w.extendFrameIntoClientArea(true); err != nil {
+				globalApplication.handleFatalError(err)
+			}
+		}
 	}
 
 	// Icon
