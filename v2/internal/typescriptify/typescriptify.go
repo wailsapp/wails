@@ -44,6 +44,11 @@ const (
 
 var jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
 
+// timeType is the reflect.Type of time.Time. It is detected explicitly because
+// time.Time has no exported fields, so it would otherwise be treated as an
+// unknown struct and generated as any.
+var timeType = reflect.TypeOf(time.Time{})
+
 func nameTypeOf(typeOf reflect.Type) string {
 	tname := typeOf.Name()
 	gidx := strings.IndexRune(tname, '[')
@@ -304,7 +309,9 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 		// TODO: support nested maps
 		valueTypeName = "any" // valueType.Elem().Name()
 	}
-	if valueType.Kind() == reflect.Struct && differentNamespaces(t.namespace, valueType) {
+	if valueType == timeType {
+		valueTypeName = "string"
+	} else if valueType.Kind() == reflect.Struct && differentNamespaces(t.namespace, valueType) {
 		valueTypeName = valueType.String()
 	}
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
@@ -328,7 +335,7 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 		}
 	}
 	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypePrefix+valueTypeName+valueTypeSuffix))
-	if valueType.Kind() == reflect.Struct {
+	if valueType.Kind() == reflect.Struct && valueType != timeType {
 		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);",
 			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypePrefix+valueTypeName+valueTypeSuffix+t.suffix))
 	} else {
@@ -686,6 +693,9 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		} else if fldOpts.TSType != "" { // Struct:
 			t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
 			err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+		} else if field.Type == timeType { // time.Time:
+			t.logf(depth, "- time field %s.%s", typeOf.Name(), field.Name)
+			err = builder.AddSimpleField(jsonFieldName, field, TypeOptions{TSType: "string", TSTransform: fldOpts.TSTransform})
 		} else if field.Type.Kind() == reflect.Struct { // Struct:
 			t.logf(depth, "- struct %s.%s (%s)", typeOf.Name(), field.Name, field.Type.String())
 
@@ -734,6 +744,10 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 			case reflect.Ptr:
 				valueTypeToConvert = field.Type.Elem().Elem()
 			}
+			if valueTypeToConvert == timeType {
+				// time.Time is generated as a string; no class to emit.
+				valueTypeToConvert = nil
+			}
 			if valueTypeToConvert != nil {
 				typeScriptChunk, err := t.convertType(depth+1, valueTypeToConvert, customCode)
 				if err != nil {
@@ -760,7 +774,10 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 				field.Type = field.Type.Elem()
 			}
 
-			if field.Type.Elem().Kind() == reflect.Struct { // Slice of structs:
+			if field.Type.Elem() == timeType { // Slice of time.Time:
+				t.logf(depth, "- time slice field %s.%s", typeOf.Name(), field.Name)
+				err = builder.AddSimpleArrayField(jsonFieldName, field, arrayDepth, TypeOptions{TSType: "string"})
+			} else if field.Type.Elem().Kind() == reflect.Struct { // Slice of structs:
 				t.logf(depth, "- struct slice %s.%s (%s)", typeOf.Name(), field.Name, field.Type.String())
 				typeScriptChunk, err := t.convertType(depth+1, field.Type.Elem(), customCode)
 				if err != nil {
@@ -859,7 +876,7 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 	if len(fieldName) > 0 {
 		strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 		if len(opts.TSType) > 0 {
-			t.addField(fieldName, opts.TSType, false)
+			t.addField(fieldName, fmt.Sprint(opts.TSType, strings.Repeat("[]", arrayDepth)), false)
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		} else if len(typeScriptType) > 0 {

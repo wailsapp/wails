@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- TypeScript bindings for `time.Time` fields are now generated as `string` (its RFC 3339 JSON representation) instead of `any`, including pointer, slice and map value fields [#2883](https://github.com/wailsapp/wails/issues/2883)
+
 ## v2.17.0 - 2026-10-18
 
 ### Security
