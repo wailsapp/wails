@@ -10,7 +10,7 @@ import (
 
 func TestHandlerReferenceCounting(t *testing.T) {
 	e := NewChromium()
-	handler := comAddr(uintptr(unsafe.Pointer(e.processFailed)))
+	handler := newComRef(unsafe.Pointer(e.processFailed))
 	unbalanced := unbalancedHandlerReleases.Load()
 	if handler.addRef() != 1 || handler.addRef() != 2 {
 		t.Fatal("AddRef did not count native references")
@@ -32,7 +32,7 @@ type hostWindow struct{ events int }
 // and the window whose callbacks its abandoned Chromium used to hold.
 //
 //go:noinline
-func abandonWithHostCallbacks() (comAddr, weak.Pointer[hostWindow]) {
+func abandonWithHostCallbacks() (comRef, weak.Pointer[hostWindow]) {
 	w := &hostWindow{}
 	e := NewChromium()
 	e.MessageCallback = func(string, *ICoreWebView2, *ICoreWebView2WebMessageReceivedEventArgs) { w.events++ }
@@ -45,7 +45,7 @@ func abandonWithHostCallbacks() (comAddr, weak.Pointer[hostWindow]) {
 	e.AcceleratorKeyCallback = func(uint) bool { w.events++; return false }
 	e.CursorChangedCallback = func(HCURSOR, uint32) { w.events++ }
 	e.SetErrorCallback(func(error) { w.events++ })
-	handler := comAddr(uintptr(unsafe.Pointer(e.processFailed)))
+	handler := newComRef(unsafe.Pointer(e.processFailed))
 	handler.addRef()
 	e.ShuttingDown()
 	return handler, weak.Make(w)
@@ -57,7 +57,7 @@ func TestAbandonedChromiumDoesNotRetainWindow(t *testing.T) {
 	if !waitCollected(window) {
 		t.Fatal("a native reference to an abandoned Chromium retained its window")
 	}
-	if handlerRefCount(unsafe.Pointer(uintptr(handler))) != 1 {
+	if handler.refs() != 1 {
 		t.Fatal("handler lost its native reference")
 	}
 }

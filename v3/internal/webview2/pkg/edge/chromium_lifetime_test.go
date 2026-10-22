@@ -9,20 +9,43 @@ import (
 	"weak"
 )
 
-// comAddr is a handler address as native code holds it: an integer that does
-// not keep the Go object alive.
-type comAddr uintptr
-
-func (a comAddr) unknown() *IUnknown { return (*IUnknown)(unsafe.Pointer(a)) }
-
-func (a comAddr) addRef() uintptr {
-	r, _, _ := a.unknown().Vtbl.AddRef.Call(uintptr(a))
-	return r
+// comRef is a handler reference as native code holds it: the address as an
+// integer, which does not keep the Go object alive, and the vtable read from
+// the object while it was reachable. The vtable is a package-level value shared
+// by every handler of its type, so holding it keeps no handler alive. Nothing
+// here turns the integer back into a Go pointer; checkptr, enabled by -race,
+// rejects that conversion.
+type comRef struct {
+	addr uintptr
+	vtbl *IUnknownVtbl
 }
 
-func (a comAddr) release() uintptr {
-	r, _, _ := a.unknown().Vtbl.Release.Call(uintptr(a))
-	return r
+func newComRef(handler unsafe.Pointer) comRef {
+	return comRef{addr: uintptr(handler), vtbl: (*IUnknown)(handler).Vtbl}
+}
+
+func (r comRef) addRef() uintptr {
+	n, _, _ := r.vtbl.AddRef.Call(r.addr)
+	return n
+}
+
+func (r comRef) release() uintptr {
+	n, _, _ := r.vtbl.Release.Call(r.addr)
+	return n
+}
+
+// refs reports the native references counted for the handler, matching it by
+// address. It cannot call handlerRefCount, which takes the handler as a
+// pointer: rebuilding that pointer from addr is the conversion checkptr rejects.
+func (r comRef) refs() uint32 {
+	handlerRefs.Lock()
+	defer handlerRefs.Unlock()
+	for handler, n := range handlerRefs.counts {
+		if uintptr(handler) == r.addr {
+			return n
+		}
+	}
+	return 0
 }
 
 // collectGarbage runs several cycles with allocation churn so that freed
@@ -50,21 +73,23 @@ func waitCollected[T any](p weak.Pointer[T]) bool {
 
 // abandonWithNativeReference mirrors a timed-out initialization: native code
 // takes a reference to the controller callback, then the window drops the
-// Chromium. Only the handler address and a weak pointer escape.
+// Chromium. Only the native reference, the handler's Invoke slot and a weak
+// pointer escape.
 //
 //go:noinline
-func abandonWithNativeReference(t *testing.T) (comAddr, weak.Pointer[Chromium]) {
+func abandonWithNativeReference(t *testing.T) (comRef, ComProc, weak.Pointer[Chromium]) {
 	e := NewChromium()
-	handler := comAddr(uintptr(unsafe.Pointer(e.controllerCompleted)))
+	handler := newComRef(unsafe.Pointer(e.controllerCompleted))
 	if refs := handler.addRef(); refs == 0 {
 		t.Fatalf("AddRef returned %d", refs)
 	}
+	invoke := e.controllerCompleted.vtbl.Invoke
 	e.ShuttingDown()
-	return handler, weak.Make(e)
+	return handler, invoke, weak.Make(e)
 }
 
 func TestNativeReferenceKeepsAbandonedHandlerAlive(t *testing.T) {
-	handler, instance := abandonWithNativeReference(t)
+	handler, invoke, instance := abandonWithNativeReference(t)
 	collectGarbage()
 	if instance.Value() == nil {
 		// Invoking the handler now would read freed memory.
@@ -75,8 +100,7 @@ func TestNativeReferenceKeepsAbandonedHandlerAlive(t *testing.T) {
 	controller := &ICoreWebView2Controller{vtbl: &_ICoreWebView2ControllerVtbl{
 		Close: NewComProc(func(uintptr) uintptr { closed = true; return 0 }),
 	}}
-	invoke := (*iCoreWebView2CreateCoreWebView2ControllerCompletedHandler)(unsafe.Pointer(handler)).vtbl.Invoke
-	invoke.Call(uintptr(handler), 0, uintptr(unsafe.Pointer(controller)))
+	invoke.Call(handler.addr, 0, uintptr(unsafe.Pointer(controller)))
 	if !closed {
 		t.Fatal("late controller callback did not close the controller")
 	}
