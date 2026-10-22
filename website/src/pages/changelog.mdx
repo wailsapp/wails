@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a crash on macOS when `EventsEmit` or another runtime call that runs JavaScript in the window was made from the main thread, for example from a system tray callback. `ExecJS` released its script string one time too many; it now drains it through its own autorelease pool, so calls from goroutines still don't leak [#6214](https://github.com/wailsapp/wails/issues/6214) by @junkerderprovinz and @richardwooding
+
 ## v2.17.0 - 2026-10-18
 
 ### Security
