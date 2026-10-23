@@ -88,8 +88,9 @@ func timeTypeScriptType(typeOf reflect.Type, arrayGeneric bool) (tsType string, 
 	}
 }
 
-// arrayDepthOf returns the number of slice and array layers in typeOf.
-// Pointers between layers are ignored because they do not add JSON arrays.
+// arrayDepthOf returns the number of JSON array layers in typeOf. Byte slices
+// marshal to a string, so they do not add a layer. Pointers between layers are
+// ignored because they do not add JSON arrays.
 func arrayDepthOf(typeOf reflect.Type) int {
 	depth := 0
 	seen := map[reflect.Type]struct{}{}
@@ -102,6 +103,9 @@ func arrayDepthOf(typeOf reflect.Type) int {
 		case reflect.Ptr:
 			typeOf = typeOf.Elem()
 		case reflect.Slice, reflect.Array:
+			if isByteSlice(typeOf) {
+				return depth
+			}
 			depth++
 			typeOf = typeOf.Elem()
 		default:

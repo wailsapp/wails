@@ -130,6 +130,9 @@ func (b *customByte) MarshalJSON() ([]byte, error) {
 	return []byte("0"), nil
 }
 
+// namedBytes is a named byte slice; it still marshals to base64.
+type namedBytes []byte
+
 // textByte marshals as JSON text, so a slice of it is a JSON array.
 type textByte byte
 
@@ -153,6 +156,15 @@ type CustomArrayFields struct {
 	NestedPtrTimes []*[]*time.Time `json:"nestedPtrTimes" ts_type:"Date"`
 	CustomBytes    []customByte    `json:"customBytes" ts_type:"Date"`
 	TextBytes      []textByte      `json:"textBytes" ts_type:"Date"`
+	NestedBytes    [][]byte        `json:"nestedBytes" ts_type:"string"`
+	DeepBytes      [][][]byte      `json:"deepBytes" ts_type:"string"`
+	ByteArrays     [2][]byte       `json:"byteArrays" ts_type:"string"`
+	PtrNestedBytes []*[]byte       `json:"ptrNestedBytes" ts_type:"string"`
+	NestedCustom   [][]customByte  `json:"nestedCustomBytes" ts_type:"string"`
+	NestedText     [][]textByte    `json:"nestedTextBytes" ts_type:"string"`
+	NamedBytes     []namedBytes    `json:"namedBytes" ts_type:"string"`
+	ByteArray      [2]byte         `json:"byteArray" ts_type:"string"`
+	DeepPtrBytes   []*[][]byte     `json:"deepPtrBytes" ts_type:"string"`
 	Recursive      recursiveSlice  `json:"recursive" ts_type:"Date"`
 	Transformed    time.Time       `json:"transformed" ts_type:"Date" ts_transform:"new Date(__VALUE__)"`
 }
@@ -191,6 +203,15 @@ func TestCustomArrayFieldsKeepDimensions(t *testing.T) {
 		"    nestedPtrTimes: Date[][];",
 		"    customBytes: Date[];",
 		"    textBytes: Date[];",
+		"    nestedBytes: string[];",
+		"    deepBytes: string[][];",
+		"    byteArrays: string[];",
+		"    ptrNestedBytes: string[];",
+		"    nestedCustomBytes: string[][];",
+		"    nestedTextBytes: string[][];",
+		"    namedBytes: string[];",
+		"    byteArray: string[];",
+		"    deepPtrBytes: string[][];",
 		"    recursive: Date[];",
 		"    transformed: Date;",
 	}
@@ -206,6 +227,13 @@ func TestCustomArrayFieldsKeepDimensions(t *testing.T) {
 		"    times: string[];",
 		"    ptrTimes: (string | null)[];",
 		"    bytes: {[key:string]:string}[];",
+		"    nestedBytes: string[][];",
+		"    deepBytes: string[][][];",
+		"    byteArrays: string[][];",
+		"    ptrNestedBytes: string[][];",
+		"    nestedCustomBytes: string[];",
+		"    nestedTextBytes: string[];",
+		"    deepPtrBytes: string[][][];",
 	}
 	for _, notWant := range notWantFields {
 		if strings.Contains(code, notWant) {
