@@ -49,6 +49,38 @@ var jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
 // unknown struct and generated as any.
 var timeType = reflect.TypeOf(time.Time{})
 
+// timeTypeScriptType returns the TypeScript type for time.Time and any
+// pointers, slices or arrays wrapping it. A nil pointer marshals to JSON null
+// at every level, so pointer levels add a null member. arrayGeneric selects
+// the Array<T> form used for map values instead of T[].
+func timeTypeScriptType(typeOf reflect.Type, arrayGeneric bool) (tsType string, union bool, ok bool) {
+	if typeOf == timeType {
+		return "string", false, true
+	}
+	switch typeOf.Kind() {
+	case reflect.Ptr:
+		inner, isUnion, ok := timeTypeScriptType(typeOf.Elem(), arrayGeneric)
+		if !ok || isUnion {
+			return inner, isUnion, ok
+		}
+		return inner + " | null", true, true
+	case reflect.Slice, reflect.Array:
+		inner, isUnion, ok := timeTypeScriptType(typeOf.Elem(), arrayGeneric)
+		if !ok {
+			return "", false, false
+		}
+		if arrayGeneric {
+			return "Array<" + inner + ">", false, true
+		}
+		if isUnion {
+			inner = "(" + inner + ")"
+		}
+		return inner + "[]", false, true
+	default:
+		return "", false, false
+	}
+}
+
 func nameTypeOf(typeOf reflect.Type) string {
 	tname := typeOf.Name()
 	gidx := strings.IndexRune(tname, '[')
@@ -277,9 +309,12 @@ func (t *TypeScriptify) AddType(typeOf reflect.Type) *TypeScriptify {
 	return t
 }
 
+// AddMapField adds a map field to the generated class, including nullable
+// time.Time values.
 func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.StructField) {
 	keyType := field.Type.Key()
 	valueType := field.Type.Elem()
+	valueTimeType, _, isTimeValue := timeTypeScriptType(valueType, true)
 	valueTypeName := nameTypeOf(valueType)
 	valueTypeSuffix := ""
 	valueTypePrefix := ""
@@ -309,8 +344,9 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 		// TODO: support nested maps
 		valueTypeName = "any" // valueType.Elem().Name()
 	}
-	if valueType == timeType {
-		valueTypeName = "string"
+	if isTimeValue {
+		valueTypeName = valueTimeType
+		valueTypePrefix, valueTypeSuffix = "", ""
 	} else if valueType.Kind() == reflect.Struct && differentNamespaces(t.namespace, valueType) {
 		valueTypeName = valueType.String()
 	}
@@ -637,6 +673,7 @@ func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) 
 	return jsonFieldName
 }
 
+// convertType converts a Go type into a TypeScript class declaration.
 func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode map[string]string) (string, error) {
 	if _, found := t.alreadyConverted[typeOf.String()]; found { // Already converted
 		return "", nil
@@ -693,9 +730,12 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		} else if fldOpts.TSType != "" { // Struct:
 			t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
 			err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
-		} else if field.Type == timeType { // time.Time:
+		} else if tsType, isUnion, isTime := timeTypeScriptType(field.Type, false); isTime {
+			if isPtr && !isUnion {
+				tsType += " | null"
+			}
 			t.logf(depth, "- time field %s.%s", typeOf.Name(), field.Name)
-			err = builder.AddSimpleField(jsonFieldName, field, TypeOptions{TSType: "string", TSTransform: fldOpts.TSTransform})
+			err = builder.AddSimpleField(jsonFieldName, field, TypeOptions{TSType: tsType, TSTransform: fldOpts.TSTransform})
 		} else if field.Type.Kind() == reflect.Struct { // Struct:
 			t.logf(depth, "- struct %s.%s (%s)", typeOf.Name(), field.Name, field.Type.String())
 
@@ -774,10 +814,7 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 				field.Type = field.Type.Elem()
 			}
 
-			if field.Type.Elem() == timeType { // Slice of time.Time:
-				t.logf(depth, "- time slice field %s.%s", typeOf.Name(), field.Name)
-				err = builder.AddSimpleArrayField(jsonFieldName, field, arrayDepth, TypeOptions{TSType: "string"})
-			} else if field.Type.Elem().Kind() == reflect.Struct { // Slice of structs:
+			if field.Type.Elem().Kind() == reflect.Struct { // Slice of structs:
 				t.logf(depth, "- struct slice %s.%s (%s)", typeOf.Name(), field.Name, field.Type.String())
 				typeScriptChunk, err := t.convertType(depth+1, field.Type.Elem(), customCode)
 				if err != nil {
@@ -865,6 +902,7 @@ type typeScriptClassBuilder struct {
 	namespace            string
 }
 
+// AddSimpleArrayField adds a slice or array field to the generated class.
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
 	fieldType := nameTypeOf(field.Type.Elem())
 	kind := field.Type.Elem().Kind()
@@ -876,7 +914,7 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 	if len(fieldName) > 0 {
 		strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 		if len(opts.TSType) > 0 {
-			t.addField(fieldName, fmt.Sprint(opts.TSType, strings.Repeat("[]", arrayDepth)), false)
+			t.addField(fieldName, opts.TSType, false)
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		} else if len(typeScriptType) > 0 {
