@@ -914,7 +914,7 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 	if len(fieldName) > 0 {
 		strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 		if len(opts.TSType) > 0 {
-			t.addField(fieldName, opts.TSType, false)
+			t.addField(fieldName, fmt.Sprint(opts.TSType, strings.Repeat("[]", arrayDepth)), false)
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		} else if len(typeScriptType) > 0 {

@@ -28,6 +28,7 @@ type TimeFields struct {
 	PtrMap       map[string]*time.Time   `json:"ptrMap"`
 	MapSlice     map[string][]*time.Time `json:"mapSlice"`
 	Custom       time.Time               `json:"custom" ts_type:"Date"`
+	CustomPtr    *time.Time              `json:"customPtr" ts_type:"Date"`
 }
 
 // newTimeFieldsTS returns a generator configured for the TimeFields struct.
@@ -72,7 +73,8 @@ func TestTimeFieldsGeneratedAsString(t *testing.T) {
 		"    map: Record<string, string>;",
 		"    ptrMap: Record<string, string | null>;",
 		"    mapSlice: Record<string, Array<string | null>>;",
-		"    custom: Date;", // ts_type must win over the built-in time handling
+		"    custom: Date;",     // ts_type must win over the built-in time handling
+		"    customPtr?: Date;", // including pointer fields, where ts_type supplies the type
 	}
 	for _, want := range wantFields {
 		if !strings.Contains(code, want) {
