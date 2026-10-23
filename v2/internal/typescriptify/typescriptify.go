@@ -3,6 +3,8 @@ package typescriptify
 import (
 	"bufio"
 	"cmp"
+	"encoding"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -43,6 +45,85 @@ const (
 )
 
 var jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
+
+// timeType is the reflect.Type of time.Time. It is detected explicitly because
+// time.Time has no exported fields, so it would otherwise be treated as an
+// unknown struct and generated as any.
+var timeType = reflect.TypeOf(time.Time{})
+
+var (
+	jsonMarshalerType = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
+	textMarshalerType = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
+)
+
+// timeTypeScriptType returns the TypeScript type for time.Time and any
+// pointers, slices or arrays wrapping it. A nil pointer marshals to JSON null
+// at every level, so pointer levels add a null member. arrayGeneric selects
+// the Array<T> form used for map values instead of T[].
+func timeTypeScriptType(typeOf reflect.Type, arrayGeneric bool) (tsType string, union bool, ok bool) {
+	if typeOf == timeType {
+		return "string", false, true
+	}
+	switch typeOf.Kind() {
+	case reflect.Ptr:
+		inner, isUnion, ok := timeTypeScriptType(typeOf.Elem(), arrayGeneric)
+		if !ok || isUnion {
+			return inner, isUnion, ok
+		}
+		return inner + " | null", true, true
+	case reflect.Slice, reflect.Array:
+		inner, isUnion, ok := timeTypeScriptType(typeOf.Elem(), arrayGeneric)
+		if !ok {
+			return "", false, false
+		}
+		if arrayGeneric {
+			return "Array<" + inner + ">", false, true
+		}
+		if isUnion {
+			inner = "(" + inner + ")"
+		}
+		return inner + "[]", false, true
+	default:
+		return "", false, false
+	}
+}
+
+// arrayDepthOf returns the number of JSON array layers in typeOf. Byte slices
+// marshal to a string, so they do not add a layer. Pointers between layers are
+// ignored because they do not add JSON arrays.
+func arrayDepthOf(typeOf reflect.Type) int {
+	depth := 0
+	seen := map[reflect.Type]struct{}{}
+	for {
+		if _, ok := seen[typeOf]; ok {
+			return depth
+		}
+		seen[typeOf] = struct{}{}
+		switch typeOf.Kind() {
+		case reflect.Ptr:
+			typeOf = typeOf.Elem()
+		case reflect.Slice, reflect.Array:
+			if isByteSlice(typeOf) {
+				return depth
+			}
+			depth++
+			typeOf = typeOf.Elem()
+		default:
+			return depth
+		}
+	}
+}
+
+// isByteSlice reports whether typeOf marshals to a JSON string (base64)
+// rather than an array. A byte element with its own JSON or text marshaler is
+// encoded as an array of values, so it is not treated as a byte slice.
+func isByteSlice(typeOf reflect.Type) bool {
+	if typeOf.Kind() != reflect.Slice || typeOf.Elem().Kind() != reflect.Uint8 {
+		return false
+	}
+	elemPtr := reflect.PointerTo(typeOf.Elem())
+	return !elemPtr.Implements(jsonMarshalerType) && !elemPtr.Implements(textMarshalerType)
+}
 
 func nameTypeOf(typeOf reflect.Type) string {
 	tname := typeOf.Name()
@@ -272,9 +353,12 @@ func (t *TypeScriptify) AddType(typeOf reflect.Type) *TypeScriptify {
 	return t
 }
 
+// AddMapField adds a map field to the generated class, including nullable
+// time.Time values.
 func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.StructField) {
 	keyType := field.Type.Key()
 	valueType := field.Type.Elem()
+	valueTimeType, _, isTimeValue := timeTypeScriptType(valueType, true)
 	valueTypeName := nameTypeOf(valueType)
 	valueTypeSuffix := ""
 	valueTypePrefix := ""
@@ -304,7 +388,10 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 		// TODO: support nested maps
 		valueTypeName = "any" // valueType.Elem().Name()
 	}
-	if valueType.Kind() == reflect.Struct && differentNamespaces(t.namespace, valueType) {
+	if isTimeValue {
+		valueTypeName = valueTimeType
+		valueTypePrefix, valueTypeSuffix = "", ""
+	} else if valueType.Kind() == reflect.Struct && differentNamespaces(t.namespace, valueType) {
 		valueTypeName = valueType.String()
 	}
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
@@ -328,7 +415,7 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 		}
 	}
 	t.fields = append(t.fields, fmt.Sprintf("%s%s: Record<%s, %s>;", t.indent, fieldName, keyTypeStr, valueTypePrefix+valueTypeName+valueTypeSuffix))
-	if valueType.Kind() == reflect.Struct {
+	if valueType.Kind() == reflect.Struct && valueType != timeType {
 		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);",
 			t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypePrefix+valueTypeName+valueTypeSuffix+t.suffix))
 	} else {
@@ -630,6 +717,7 @@ func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) 
 	return jsonFieldName
 }
 
+// convertType converts a Go type into a TypeScript class declaration.
 func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode map[string]string) (string, error) {
 	if _, found := t.alreadyConverted[typeOf.String()]; found { // Already converted
 		return "", nil
@@ -683,9 +771,22 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		} else if _, isEnum := t.enums[field.Type]; isEnum {
 			t.logf(depth, "- enum field %s.%s", typeOf.Name(), field.Name)
 			builder.AddEnumField(jsonFieldName, field)
-		} else if fldOpts.TSType != "" { // Struct:
-			t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
-			err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+		} else if fldOpts.TSType != "" {
+			if (field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array) && !isByteSlice(field.Type) {
+				// For arrays the tag supplies the element type; a byte slice
+				// marshals to a string, so its tag remains the whole type.
+				t.logf(depth, "- array field %s.%s", typeOf.Name(), field.Name)
+				err = builder.AddSimpleArrayField(jsonFieldName, field, arrayDepthOf(field.Type), fldOpts)
+			} else {
+				t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
+				err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+			}
+		} else if tsType, isUnion, isTime := timeTypeScriptType(field.Type, false); isTime {
+			if isPtr && !isUnion {
+				tsType += " | null"
+			}
+			t.logf(depth, "- time field %s.%s", typeOf.Name(), field.Name)
+			err = builder.AddSimpleField(jsonFieldName, field, TypeOptions{TSType: tsType, TSTransform: fldOpts.TSTransform})
 		} else if field.Type.Kind() == reflect.Struct { // Struct:
 			t.logf(depth, "- struct %s.%s (%s)", typeOf.Name(), field.Name, field.Type.String())
 
@@ -733,6 +834,10 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 				valueTypeToConvert = field.Type.Elem()
 			case reflect.Ptr:
 				valueTypeToConvert = field.Type.Elem().Elem()
+			}
+			if valueTypeToConvert == timeType {
+				// time.Time is generated as a string; no class to emit.
+				valueTypeToConvert = nil
 			}
 			if valueTypeToConvert != nil {
 				typeScriptChunk, err := t.convertType(depth+1, valueTypeToConvert, customCode)
@@ -848,6 +953,8 @@ type typeScriptClassBuilder struct {
 	namespace            string
 }
 
+// AddSimpleArrayField adds a slice or array field to the generated class.
+// opts.TSType, when set, is the element type; array dimensions are appended.
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
 	fieldType := nameTypeOf(field.Type.Elem())
 	kind := field.Type.Elem().Kind()
@@ -859,7 +966,11 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 	if len(fieldName) > 0 {
 		strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 		if len(opts.TSType) > 0 {
-			t.addField(fieldName, opts.TSType, false)
+			tsType := opts.TSType
+			if strings.Contains(tsType, "|") {
+				tsType = "(" + tsType + ")"
+			}
+			t.addField(fieldName, fmt.Sprint(tsType, strings.Repeat("[]", arrayDepth)), false)
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		} else if len(typeScriptType) > 0 {
