@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix Windows context menus opening above the cursor and covering the clicked row (#6272)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
