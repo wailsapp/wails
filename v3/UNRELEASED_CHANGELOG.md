@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix `Browser.OpenURL` doing nothing on Android and iOS; it now opens the URL through the native bridge (#6324)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
