@@ -119,3 +119,125 @@ func TestTimeFieldsDoNotReportNotFound(t *testing.T) {
 		t.Errorf("conversion printed %q\nstderr:\n%s", "Not found: time.Time", stderr.String())
 	}
 }
+
+// recursiveSlice is a legal recursive slice type used to check depth detection.
+type recursiveSlice []recursiveSlice
+
+// customByte marshals as a JSON number, so a slice of it is a JSON array.
+type customByte byte
+
+func (b *customByte) MarshalJSON() ([]byte, error) {
+	return []byte("0"), nil
+}
+
+// textByte marshals as JSON text, so a slice of it is a JSON array.
+type textByte byte
+
+func (b *textByte) MarshalText() ([]byte, error) {
+	return []byte("byte"), nil
+}
+
+// CustomArrayFields covers ts_type overrides on slice and array fields and
+// keeps the non-array override, map and ts_transform paths in the same build.
+type CustomArrayFields struct {
+	Ints           []int           `json:"ints" ts_type:"Date"`
+	Nested         [][]int         `json:"nested" ts_type:"Date"`
+	Array          [2]int          `json:"array" ts_type:"Date"`
+	Times          []time.Time     `json:"times" ts_type:"Date"`
+	PtrTimes       []*time.Time    `json:"ptrTimes" ts_type:"Date"`
+	PlainTimes     []*time.Time    `json:"plainTimes"`
+	CustomMap      map[string]int  `json:"customMap" ts_type:"CustomType"`
+	Bytes          []byte          `json:"bytes" ts_type:"{[key:string]:string}"`
+	Union          []int           `json:"union" ts_type:"Date | null"`
+	PtrInts        *[]int          `json:"ptrInts" ts_type:"Date"`
+	NestedPtrTimes []*[]*time.Time `json:"nestedPtrTimes" ts_type:"Date"`
+	CustomBytes    []customByte    `json:"customBytes" ts_type:"Date"`
+	TextBytes      []textByte      `json:"textBytes" ts_type:"Date"`
+	Recursive      recursiveSlice  `json:"recursive" ts_type:"Date"`
+	Transformed    time.Time       `json:"transformed" ts_type:"Date" ts_transform:"new Date(__VALUE__)"`
+}
+
+// generateCustomArrayFields returns the TypeScript generated for
+// CustomArrayFields.
+func generateCustomArrayFields(t *testing.T) string {
+	t.Helper()
+	ts := New()
+	ts.Namespace = "typescriptify"
+	ts.KnownStructs = slicer.String()
+	ts.Add(CustomArrayFields{})
+	code, err := ts.Convert(nil)
+	if err != nil {
+		t.Fatalf("Convert() error: %v", err)
+	}
+	return code
+}
+
+// TestCustomArrayFieldsKeepDimensions checks that a ts_type tag on a slice or
+// array supplies the element type while the array dimensions are preserved.
+func TestCustomArrayFieldsKeepDimensions(t *testing.T) {
+	code := generateCustomArrayFields(t)
+
+	wantFields := []string{
+		"    ints: Date[];",
+		"    nested: Date[][];",
+		"    array: Date[];",
+		"    times: Date[];",
+		"    ptrTimes: Date[];",
+		"    plainTimes: (string | null)[];",
+		"    customMap: CustomType;",
+		"    bytes: {[key:string]:string};",
+		"    union: (Date | null)[];",
+		"    ptrInts?: Date[];",
+		"    nestedPtrTimes: Date[][];",
+		"    customBytes: Date[];",
+		"    textBytes: Date[];",
+		"    recursive: Date[];",
+		"    transformed: Date;",
+	}
+	for _, want := range wantFields {
+		if !strings.Contains(code, want) {
+			t.Errorf("generated code does not contain %q\n%s", want, code)
+		}
+	}
+
+	notWantFields := []string{
+		"    ints: Date;",
+		"    nested: Date;",
+		"    times: string[];",
+		"    ptrTimes: (string | null)[];",
+		"    bytes: {[key:string]:string}[];",
+	}
+	for _, notWant := range notWantFields {
+		if strings.Contains(code, notWant) {
+			t.Errorf("generated code unexpectedly contains %q\n%s", notWant, code)
+		}
+	}
+
+	if !strings.Contains(code, `this.transformed = new Date(source["transformed"]);`) {
+		t.Errorf("ts_transform initializer was not generated\n%s", code)
+	}
+	if strings.Contains(code, "convertValues") {
+		t.Errorf("generated code contains convertValues for simple array/custom fields\n%s", code)
+	}
+}
+
+// ManageTypeArray covers a field option supplied through WithFieldOpts.
+type ManageTypeArray struct {
+	Values []int `json:"values"`
+}
+
+// TestManageTypeArrayKeepsDimensions checks that a WithFieldOpts ts_type on a
+// slice keeps the array dimensions.
+func TestManageTypeArrayKeepsDimensions(t *testing.T) {
+	ts := New()
+	ts.Namespace = "typescriptify"
+	ts.KnownStructs = slicer.String()
+	ts.Add(NewStruct(ManageTypeArray{}).WithFieldOpts([]int{}, TypeOptions{TSType: "Date"}))
+	code, err := ts.Convert(nil)
+	if err != nil {
+		t.Fatalf("Convert() error: %v", err)
+	}
+	if !strings.Contains(code, "    values: Date[];") {
+		t.Errorf("generated code does not contain %q\n%s", "    values: Date[];", code)
+	}
+}

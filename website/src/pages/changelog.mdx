@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - TypeScript bindings for `time.Time` fields are now generated as `string` (its RFC 3339 JSON representation) instead of `any`, including slice and map value fields; pointer values, including pointer elements in slices and maps, are nullable because a nil `*time.Time` marshals to JSON `null` [#2883](https://github.com/wailsapp/wails/issues/2883)
+- `ts_type` overrides on slice and array fields now provide the element type and keep the array dimensions when no `ts_transform` is set; existing tags that include `[]` need to be reduced to the element type. A `[]byte` tag remains a whole-field override because byte slices marshal to a base64 string
 
 ## v2.17.0 - 2026-10-18
 

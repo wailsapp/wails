@@ -3,6 +3,8 @@ package typescriptify
 import (
 	"bufio"
 	"cmp"
+	"encoding"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -49,6 +51,11 @@ var jsVariableUnsafeChars = regexp.MustCompile(`[^A-Za-z0-9_]`)
 // unknown struct and generated as any.
 var timeType = reflect.TypeOf(time.Time{})
 
+var (
+	jsonMarshalerType = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
+	textMarshalerType = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
+)
+
 // timeTypeScriptType returns the TypeScript type for time.Time and any
 // pointers, slices or arrays wrapping it. A nil pointer marshals to JSON null
 // at every level, so pointer levels add a null member. arrayGeneric selects
@@ -79,6 +86,39 @@ func timeTypeScriptType(typeOf reflect.Type, arrayGeneric bool) (tsType string, 
 	default:
 		return "", false, false
 	}
+}
+
+// arrayDepthOf returns the number of slice and array layers in typeOf.
+// Pointers between layers are ignored because they do not add JSON arrays.
+func arrayDepthOf(typeOf reflect.Type) int {
+	depth := 0
+	seen := map[reflect.Type]struct{}{}
+	for {
+		if _, ok := seen[typeOf]; ok {
+			return depth
+		}
+		seen[typeOf] = struct{}{}
+		switch typeOf.Kind() {
+		case reflect.Ptr:
+			typeOf = typeOf.Elem()
+		case reflect.Slice, reflect.Array:
+			depth++
+			typeOf = typeOf.Elem()
+		default:
+			return depth
+		}
+	}
+}
+
+// isByteSlice reports whether typeOf marshals to a JSON string (base64)
+// rather than an array. A byte element with its own JSON or text marshaler is
+// encoded as an array of values, so it is not treated as a byte slice.
+func isByteSlice(typeOf reflect.Type) bool {
+	if typeOf.Kind() != reflect.Slice || typeOf.Elem().Kind() != reflect.Uint8 {
+		return false
+	}
+	elemPtr := reflect.PointerTo(typeOf.Elem())
+	return !elemPtr.Implements(jsonMarshalerType) && !elemPtr.Implements(textMarshalerType)
 }
 
 func nameTypeOf(typeOf reflect.Type) string {
@@ -727,9 +767,16 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		} else if _, isEnum := t.enums[field.Type]; isEnum {
 			t.logf(depth, "- enum field %s.%s", typeOf.Name(), field.Name)
 			builder.AddEnumField(jsonFieldName, field)
-		} else if fldOpts.TSType != "" { // Struct:
-			t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
-			err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+		} else if fldOpts.TSType != "" {
+			if (field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Array) && !isByteSlice(field.Type) {
+				// For arrays the tag supplies the element type; a byte slice
+				// marshals to a string, so its tag remains the whole type.
+				t.logf(depth, "- array field %s.%s", typeOf.Name(), field.Name)
+				err = builder.AddSimpleArrayField(jsonFieldName, field, arrayDepthOf(field.Type), fldOpts)
+			} else {
+				t.logf(depth, "- simple field %s.%s", typeOf.Name(), field.Name)
+				err = builder.AddSimpleField(jsonFieldName, field, fldOpts)
+			}
 		} else if tsType, isUnion, isTime := timeTypeScriptType(field.Type, false); isTime {
 			if isPtr && !isUnion {
 				tsType += " | null"
@@ -903,6 +950,7 @@ type typeScriptClassBuilder struct {
 }
 
 // AddSimpleArrayField adds a slice or array field to the generated class.
+// opts.TSType, when set, is the element type; array dimensions are appended.
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
 	fieldType := nameTypeOf(field.Type.Elem())
 	kind := field.Type.Elem().Kind()
@@ -914,7 +962,11 @@ func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field ref
 	if len(fieldName) > 0 {
 		strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 		if len(opts.TSType) > 0 {
-			t.addField(fieldName, fmt.Sprint(opts.TSType, strings.Repeat("[]", arrayDepth)), false)
+			tsType := opts.TSType
+			if strings.Contains(tsType, "|") {
+				tsType = "(" + tsType + ")"
+			}
+			t.addField(fieldName, fmt.Sprint(tsType, strings.Repeat("[]", arrayDepth)), false)
 			t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("source[\"%s\"]", strippedFieldName))
 			return nil
 		} else if len(typeScriptType) > 0 {
