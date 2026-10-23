@@ -1,9 +1,5 @@
 package application
 
-import (
-	"github.com/wailsapp/wails/v3/internal/browser"
-)
-
 // BrowserManager manages browser-related operations
 type BrowserManager struct {
 	app *App
@@ -18,10 +14,10 @@ func newBrowserManager(app *App) *BrowserManager {
 
 // OpenURL opens a URL in the default browser
 func (bm *BrowserManager) OpenURL(url string) error {
-	return browser.OpenURL(url)
+	return openBrowserURL(url)
 }
 
 // OpenFile opens a file in the default browser
 func (bm *BrowserManager) OpenFile(path string) error {
-	return browser.OpenFile(path)
+	return openBrowserFile(path)
 }

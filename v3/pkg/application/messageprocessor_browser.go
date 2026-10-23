@@ -1,7 +1,6 @@
 package application
 
 import (
-	"github.com/wailsapp/wails/v3/internal/browser"
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
@@ -26,7 +25,7 @@ func (m *MessageProcessor) processBrowserMethod(req *RuntimeRequest) (any, error
 			return nil, errs.WrapInvalidBrowserCallErrorf(err, "invalid URL")
 		}
 
-		err = browser.OpenURL(sanitizedURL)
+		err = openBrowserURL(sanitizedURL)
 		if err != nil {
 			m.Error("OpenURL: invalid URL - %s", err.Error())
 			return nil, errs.WrapInvalidBrowserCallErrorf(err, "OpenURL failed")
