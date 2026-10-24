@@ -188,6 +188,8 @@ buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 
 @end
 
+播放音频或视频的应用还需要所选格式对应的 GStreamer 编解码器。有关本地媒体设置和播放故障排查，请参阅[播放本地音频和视频](/guides/linux-media/)。
+
 @note{type="info" title="旧版 GTK3 技术栈"}
 如果目标发行版尚未提供 WebKitGTK 6.0（例如 Ubuntu 22.04 LTS、Debian 12），请改为安装 GTK3 + WebKit2GTK 4.1开发库（在 Debian/Ubuntu 上为`libgtk-3-dev libwebkit2gtk-4.1-dev`；其他发行版请安装对应软件包），并使用`wails3 build -tags gtk3`进行构建。旧版路径在 v3.0.x 系列中受支持，并将在 v3.1中移除。有关详细信息，请参阅[Linux 打包——旧版 GTK3 支持](/guides/build/linux/#legacy-gtk3-support)。
 
