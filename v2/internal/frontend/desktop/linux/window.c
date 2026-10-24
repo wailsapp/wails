@@ -1,3 +1,6 @@
+//go:build linux && !webkit_6
+// +build linux,!webkit_6
+
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
