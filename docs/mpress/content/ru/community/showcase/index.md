@@ -48,6 +48,7 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Снимок экрана Packsmith" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Снимок экрана Condui" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="Снимок экрана MQ Studio" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/zentro/"><img src="/assets/showcase-images/zentro.png" alt="Zentro screenshot" loading="lazy"><span>Zentro</span></a>
 </div>
 
 ## Как добавить свой проект в витрину
