@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -175,7 +176,9 @@ func (f *Frontend) Run(ctx context.Context) error {
 	}
 
 	f.WindowCenter()
-	f.setupChromium()
+	if err := f.setupChromium(); err != nil {
+		return err
+	}
 
 	mainWindow.OnSize().Bind(func(arg *winc.Event) {
 		if f.frontendOptions.Frameless {
@@ -463,11 +466,11 @@ func (f *Frontend) WindowPrint() {
 	f.ExecJS("window.print();")
 }
 
-func (f *Frontend) setupChromium() {
+func (f *Frontend) setupChromium() error {
 	chromium := f.chromium
 
 	disableFeatues := []string{}
-	if !f.frontendOptions.EnableFraudulentWebsiteDetection {
+	if !f.frontendOptions.EnableFraudulentWebsiteDetection && (f.frontendOptions.Windows == nil || !f.frontendOptions.Windows.LocalShellPrivacy) {
 		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
 	}
 
@@ -546,72 +549,113 @@ func (f *Frontend) setupChromium() {
 		}
 	}
 
-	chromium.Embed(f.mainWindow.Handle())
+	return embedChromium(chromium, f.frontendOptions.Windows,
+		func() bool { return chromium.Embed(f.mainWindow.Handle()) }, chromium, func() {
 
-	if chromium.HasCapability(edge.SwipeNavigation) {
-		swipeGesturesEnabled := f.frontendOptions.Windows != nil && f.frontendOptions.Windows.EnableSwipeGestures
-		err := chromium.PutIsSwipeNavigationEnabled(swipeGesturesEnabled)
-		if err != nil {
-			log.Fatal(err)
+			if chromium.HasCapability(edge.SwipeNavigation) {
+				swipeGesturesEnabled := f.frontendOptions.Windows != nil && f.frontendOptions.Windows.EnableSwipeGestures
+				err := chromium.PutIsSwipeNavigationEnabled(swipeGesturesEnabled)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			chromium.Resize()
+			settings, err := chromium.GetSettings()
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = settings.PutAreDefaultContextMenusEnabled(f.debug || f.frontendOptions.EnableDefaultContextMenu)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = settings.PutAreDevToolsEnabled(f.devtoolsEnabled)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if opts := f.frontendOptions.Windows; opts != nil {
+				if opts.ZoomFactor > 0.0 {
+					chromium.PutZoomFactor(opts.ZoomFactor)
+				}
+				err = settings.PutIsZoomControlEnabled(opts.IsZoomControlEnabled)
+				if err != nil {
+					log.Fatal(err)
+				}
+				err = settings.PutIsPinchZoomEnabled(!opts.DisablePinchZoom)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			err = settings.PutIsStatusBarEnabled(false)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if f.debug && f.frontendOptions.Debug.OpenInspectorOnStartup {
+				chromium.OpenDevToolsWindow()
+			}
+
+			// Setup focus event handler
+			onFocus := f.mainWindow.OnSetFocus()
+			onFocus.Bind(f.onFocus)
+
+			// Set background colour
+			f.WindowSetBackgroundColour(f.frontendOptions.BackgroundColour)
+
+			configurePermissionRequested(
+				f.frontendOptions.Windows,
+				func(callback windows.PermissionRequestedCallback) {
+					chromium.PermissionRequestedCallback = callback
+				},
+				chromium.SetGlobalPermission,
+			)
+			chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
+			chromium.Navigate(f.startURL.String())
+		})
+}
+
+type privacySettings interface {
+	PutIsGeneralAutofillEnabled(bool) error
+	PutIsPasswordAutosaveEnabled(bool) error
+	PutIsReputationCheckingRequired(bool) error
+}
+
+// embedChromium owns the local-shell policy: environment options precede Embed;
+// required settings precede navigation. A refused control aborts startup.
+func embedChromium(chromium *edge.Chromium, opts *windows.Options, embed func() bool, settings privacySettings, navigate func()) error {
+	if opts != nil {
+		chromium.CustomCrashReportingEnabled = opts.LocalShellPrivacy
+		if path := opts.DiagnosticNetLogPath; path != "" {
+			if !filepath.IsAbs(path) || strings.ContainsAny(path, "\"\x00\r\n") {
+				return fmt.Errorf("diagnostic NetLog requires an absolute path without quotes or control characters")
+			}
+			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--log-net-log=\""+path+"\"")
 		}
 	}
-	chromium.Resize()
-	settings, err := chromium.GetSettings()
-	if err != nil {
-		log.Fatal(err)
+	if !embed() {
+		return fmt.Errorf("WebView2 Embed failed")
 	}
-	err = settings.PutAreDefaultContextMenusEnabled(f.debug || f.frontendOptions.EnableDefaultContextMenu)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutAreDevToolsEnabled(f.devtoolsEnabled)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if opts := f.frontendOptions.Windows; opts != nil {
-		if opts.ZoomFactor > 0.0 {
-			chromium.PutZoomFactor(opts.ZoomFactor)
-		}
-		err = settings.PutIsZoomControlEnabled(opts.IsZoomControlEnabled)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = settings.PutIsPinchZoomEnabled(!opts.DisablePinchZoom)
-		if err != nil {
-			log.Fatal(err)
+	if opts != nil && opts.LocalShellPrivacy {
+		for _, setting := range []struct {
+			name string
+			set  func(bool) error
+		}{
+			{"general autofill", settings.PutIsGeneralAutofillEnabled},
+			{"password autosave", settings.PutIsPasswordAutosaveEnabled},
+			{"reputation checking", settings.PutIsReputationCheckingRequired},
+		} {
+			if err := setting.set(false); err != nil {
+				return fmt.Errorf("local shell privacy: %s: %w", setting.name, err)
+			}
 		}
 	}
-
-	err = settings.PutIsStatusBarEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if f.debug && f.frontendOptions.Debug.OpenInspectorOnStartup {
-		chromium.OpenDevToolsWindow()
-	}
-
-	// Setup focus event handler
-	onFocus := f.mainWindow.OnSetFocus()
-	onFocus.Bind(f.onFocus)
-
-	// Set background colour
-	f.WindowSetBackgroundColour(f.frontendOptions.BackgroundColour)
-
-	configurePermissionRequested(
-		f.frontendOptions.Windows,
-		func(callback windows.PermissionRequestedCallback) {
-			chromium.PermissionRequestedCallback = callback
-		},
-		chromium.SetGlobalPermission,
-	)
-	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-	chromium.Navigate(f.startURL.String())
+	navigate()
+	return nil
 }
 
 func configurePermissionRequested(
