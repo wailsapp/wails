@@ -21,6 +21,7 @@ func (mobileStub) SetOrientation(string)        {}
 func (mobileStub) SetStatusBar(string)          {}
 func (mobileStub) StorageJSON() string          { return "" }
 func (mobileStub) StoragePath() string          { return "" }
+func (mobileStub) Timezone() string             { return "" }
 func (mobileStub) PowerJSON() string            { return "" }
 func (mobileStub) NetworkJSON() string          { return "" }
 func (mobileStub) BiometricAuthenticate(string) {}
