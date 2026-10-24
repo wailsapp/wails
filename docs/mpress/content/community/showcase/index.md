@@ -48,6 +48,7 @@ Check out the [How to add my project in showcase](#how-to-add-my-project-in-show
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Packsmith screenshot" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui screenshot" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio screenshot" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/docker-swarm-mx/"><img src="/assets/showcase-images/docker-swarm-mx.png" alt="Docker Swarm MX screenshot" loading="lazy"><span>Docker Swarm MX</span></a>
 </div>
 
 ## How to add my project in showcase
