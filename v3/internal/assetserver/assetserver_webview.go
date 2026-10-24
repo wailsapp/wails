@@ -194,7 +194,12 @@ func (a *AssetServer) processWebViewRequestInternal(r webview.Request) {
 	}
 
 	if req.ContentLength == 0 {
-		req.ContentLength, _ = strconv.ParseInt(req.Header.Get(HeaderContentLength), 10, 64)
+		if contentLength := req.Header.Get(HeaderContentLength); contentLength != "" {
+			req.ContentLength, _ = strconv.ParseInt(contentLength, 10, 64)
+		} else if body != http.NoBody {
+			// WebView2 doesn't send a Content-Length header, mark the length as unknown so the body isn't dropped
+			req.ContentLength = -1
+		}
 	} else {
 		req.Header.Set(HeaderContentLength, fmt.Sprintf("%d", req.ContentLength))
 	}
