@@ -8,7 +8,8 @@ import (
 // generateService collects information
 // and generates JS/TS binding code
 // for the given service type object.
-func (generator *Generator) generateService(obj *types.TypeName) {
+func (generator *Generator) generateService(binding *ServiceBinding) {
+	obj := binding.Type
 	generator.logger.Debugf(
 		"discovered service type %s from package %s",
 		obj.Name(),
@@ -27,7 +28,7 @@ func (generator *Generator) generateService(obj *types.TypeName) {
 	}()
 
 	// Collect service information.
-	info := generator.collector.Service(obj).Collect()
+	info := generator.collector.Service(obj, binding.Projection).Collect()
 	if info == nil {
 		return
 	}
