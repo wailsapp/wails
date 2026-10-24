@@ -34,6 +34,7 @@ var knownEvents = map[string]struct{}{
 	"common:WindowZoomIn":                                         {},
 	"common:WindowZoomOut":                                        {},
 	"common:WindowZoomReset":                                      {},
+	"common:BackButtonPressed":                                    {},
 	"linux:ApplicationStartup":                                    {},
 	"linux:SystemDidWake":                                         {},
 	"linux:SystemThemeChanged":                                    {},
