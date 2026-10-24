@@ -23,6 +23,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Fixed
 <!-- Bug fixes -->
+- Fix a second instance launched while the first is quitting handing its launch to the exiting app, by releasing the single-instance lock (the D-Bus name on Linux, the mutex on Windows) at the start of shutdown
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
