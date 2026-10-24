@@ -136,6 +136,32 @@ func TestRunHelperSwap_LaunchFails_RestoresBackup(t *testing.T) {
 	}
 }
 
+func TestRunHelperSwap_MarkerWriteFails_RestoresBackup(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+	t.Setenv(envHelperFrom, "v1.0.0")
+	// A directory where the marker goes makes writing it fail.
+	if err := os.MkdirAll(appliedMarker(target), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	l := &fakeLauncher{}
+	code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l)
+	if code != 15 {
+		t.Fatalf("code: %d (want 15)", code)
+	}
+	if got := readFile(t, target); string(got) != "OLD" {
+		t.Errorf("after restore target contents: %q (want OLD)", got)
+	}
+	// Only the restored old version is launched, never the new one without its marker.
+	if len(l.calls) != 1 {
+		t.Errorf("expected 1 launch attempt, got %d: %+v", len(l.calls), l.calls)
+	}
+}
+
 func TestRunHelperSwap_AppBundleDirectory(t *testing.T) {
 	dir := t.TempDir()
 	target := filepath.Join(dir, "App.app")
@@ -224,13 +250,14 @@ func TestRunHelperSwap_ClearsHelperEnvBeforeLaunch(t *testing.T) {
 	t.Setenv(envHelperPID, "1234")
 	t.Setenv(envHelperLog, filepath.Join(dir, "log"))
 	t.Setenv(envHelperReady, filepath.Join(dir, "ready"))
+	t.Setenv(envHelperFrom, "1.0.0")
 
 	// envAtLaunch is captured by the launcher at the moment it would spawn the
 	// new binary — that's exactly the snapshot the inherited exec would see.
 	var envAtLaunch map[string]string
 	envCapturingLauncher := &funcLauncher{fn: func(path string) error {
 		envAtLaunch = map[string]string{}
-		for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady} {
+		for _, k := range []string{envHelperMode, envHelperTarget, envHelperNew, envHelperPID, envHelperLog, envHelperReady, envHelperFrom} {
 			envAtLaunch[k] = os.Getenv(k)
 		}
 		return nil
@@ -244,6 +271,49 @@ func TestRunHelperSwap_ClearsHelperEnvBeforeLaunch(t *testing.T) {
 		if v != "" {
 			t.Errorf("env var %s leaked to launched process: %q", k, v)
 		}
+	}
+}
+
+func TestRunHelperSwap_RecordsReplacedVersion(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+	t.Setenv(envHelperFrom, "1.0.0")
+	marker := appliedMarker(target)
+	t.Cleanup(func() { _ = os.Remove(marker) })
+
+	var atLaunch string
+	l := &funcLauncher{fn: func(string) error {
+		b, _ := os.ReadFile(marker)
+		atLaunch = string(b)
+		return nil
+	}}
+	if code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l); code != 0 {
+		t.Fatalf("swap code: %d", code)
+	}
+	if atLaunch != "1.0.0" {
+		t.Errorf("marker at launch: %q, want 1.0.0", atLaunch)
+	}
+}
+
+func TestRunHelperSwap_LaunchFails_NoReplacedVersion(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "app.bin")
+	newPath := filepath.Join(dir, "app.bin.new")
+	writeFile(t, target, []byte("OLD"))
+	writeFile(t, newPath, []byte("NEW"))
+	t.Setenv(envHelperFrom, "1.0.0")
+	marker := appliedMarker(target)
+	t.Cleanup(func() { _ = os.Remove(marker) })
+
+	l := &fakeLauncher{errsByCall: []error{errors.New("boom"), nil}}
+	if code := runHelperSwap(target, newPath, 0, filepath.Join(dir, "log"), instantWaiter, l); code != 15 {
+		t.Fatalf("swap code: %d, want 15", code)
+	}
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Errorf("marker must not survive a restored original: %v", err)
 	}
 }
 

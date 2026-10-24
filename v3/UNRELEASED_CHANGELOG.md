@@ -17,6 +17,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Added
 <!-- New features, capabilities, or enhancements -->
+- Add `updater.Config.OnUpdateApplied`, called on the first launch after an update with the replaced version, for bookkeeping such as refreshing an installer's registered version
 
 ## Changed
 <!-- Changes in existing functionality -->
