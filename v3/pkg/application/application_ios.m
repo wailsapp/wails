@@ -21,6 +21,7 @@ WailsAppDelegate *appDelegate = nil;
 unsigned int nextWindowID = 1;
 static bool g_disableInputAccessory = false; // default: enabled (shown)
 // New global flags with sensible iOS defaults
+static bool g_disableSafeAreaInsets = false; // default: WebView respects safe area insets
 static bool g_disableScroll = false;              // default: scrolling enabled
 static bool g_disableBounce = false;              // default: bounce enabled
 static bool g_disableScrollIndicators = false;    // default: indicators shown
@@ -74,6 +75,14 @@ bool ios_is_dark_mode(void) {
         return style == UIUserInterfaceStyleDark;
     }
     return false;
+}
+
+// Safe area insets control
+void ios_set_disable_safe_area_insets(bool disabled) {
+    g_disableSafeAreaInsets = disabled;
+}
+bool ios_is_safe_area_insets_disabled(void) {
+    return g_disableSafeAreaInsets;
 }
 
 void ios_set_disable_input_accessory(bool disabled) {
