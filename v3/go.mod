@@ -2,7 +2,7 @@ module github.com/wailsapp/wails/v3
 
 go 1.26.0
 
-toolchain go1.26.9
+toolchain go1.26.10
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3
@@ -119,7 +119,7 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
-	github.com/klauspost/compress v1.18.3 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
@@ -155,7 +155,7 @@ require (
 	golang.org/x/crypto v0.57.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/exp/typeparams v0.0.0-20260112195511-716be5621a96
-	golang.org/x/image v0.41.0
+	golang.org/x/image v0.45.0
 	golang.org/x/mod v0.41.0
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
