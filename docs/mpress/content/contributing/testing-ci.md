@@ -148,7 +148,7 @@ Real workflow files under `.github/workflows/` (verified against the tree):
 | `publish-npm.yml` | Publishes the embedded `@wailsio/runtime` JS runtime to npm |
 | `pr-master.yml` | PR-side checks against the `master` branch |
 | `semgrep.yml` | Semgrep static analysis |
-| `stale-issues.yml`, `claude.yml`, `generate-sponsor-image.yml`, `sync-translated-documents.yml`, `upload-source-documents.yml`, `build-and-test.yml`, `weekly-release-v2.yml` | Repo-housekeeping / v2-side flows |
+| `stale-issues.yml`, `generate-sponsor-image.yml`, `sync-translated-documents.yml`, `upload-source-documents.yml`, `build-and-test.yml`, `weekly-release-v2.yml` | Repo-housekeeping / v2-side flows |
 
 There is **no** `qodana.yaml` and **no** `runtime.yml` in this tree — older drafts of this page named both, but only `semgrep.yml` covers static analysis and the runtime JS package is published through `publish-npm.yml`.
 
