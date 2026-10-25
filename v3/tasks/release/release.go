@@ -425,7 +425,7 @@ func versionKind(version string) (string, error) {
 // policyFor maps a version to GitHub release flags and the npm dist-tag.
 //
 //	weekly / hotfix -> normal release, make_latest=true,  npm "latest"
-//	nightly         -> prerelease,     make_latest=false, npm "next"
+//	nightly         -> prerelease,     make_latest=false, npm "nightly"
 //	legacy -beta.N  -> prerelease,     make_latest=false, npm "latest" (unchanged pre-GA behaviour)
 func policyFor(version string) (releasePolicy, error) {
 	kind, err := versionKind(version)
@@ -436,7 +436,7 @@ func policyFor(version string) (releasePolicy, error) {
 	case kindWeekly, kindHotfix:
 		return releasePolicy{Kind: kind, Prerelease: false, MakeLatest: "true", NPMTag: "latest"}, nil
 	case kindNightly:
-		return releasePolicy{Kind: kind, Prerelease: true, MakeLatest: "false", NPMTag: "next"}, nil
+		return releasePolicy{Kind: kind, Prerelease: true, MakeLatest: "false", NPMTag: "nightly"}, nil
 	}
 	return releasePolicy{Kind: kind, Prerelease: true, MakeLatest: "false", NPMTag: "latest"}, nil
 }

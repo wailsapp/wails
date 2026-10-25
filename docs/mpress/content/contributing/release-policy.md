@@ -13,7 +13,7 @@ Wails v3 releases on a **clock, not on features**. After the `v3.0.0` baseline:
 
 | Release | Tag | Cadence | GitHub release | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
-| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC date; `.N` appended if re-run the same day) | automated, daily, only when `UNRELEASED_CHANGELOG.md` has content | pre-release, **not** Latest | same version without `v`, dist-tag `next` |
+| Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC date; `.N` appended if re-run the same day) | automated, daily, only when `UNRELEASED_CHANGELOG.md` has content | pre-release, **not** Latest | same version without `v`, dist-tag `nightly` |
 | Weekly | `v3.<next>.0` | automated, Sunday 20:00 Australia/Sydney **(day unconfirmed)** | normal release, Latest **(decision pending)** | same version, dist-tag `latest` |
 | Hotfix | `v3.<current>.<N>`, `N > 0` | rare, manual | normal release, Latest | same version, dist-tag `latest` |
 | Major | `v4.0.0` | only for breaking changes | normal release | `latest` |
@@ -49,7 +49,7 @@ A weekly always sorts above every nightly of its own number, and a nightly never
 | **Reproducible (recommended)** | pin an exact tag: `v3.1.0` in `go.mod`, CI and docs |
 | A nightly | its exact tag (`@v3.2.0-nightly.20261102`), or `wails3 update cli -nightly` |
 | Newest build of any kind | `wails3 update cli -pre` |
-| Runtime npm package | `@wailsio/runtime` (`latest` = weekly/hotfix, `next` = nightly) |
+| Runtime npm package | `@wailsio/runtime` (`latest` = weekly/hotfix, `nightly` = nightly) |
 
 Why this works: Go resolves `@latest` to the highest tag **without a pre-release suffix**, and only considers pre-releases when no release exists. The GitHub "pre-release" checkbox is invisible to the Go proxy, so nightlies carry a semver pre-release suffix instead of relying on it. Always pin in production.
 

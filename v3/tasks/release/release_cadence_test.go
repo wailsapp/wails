@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -15,7 +16,7 @@ import (
 // Release model under test (see docs/mpress/content/contributing/release-policy.md):
 //   weekly  vX.Y.0                   normal release, make_latest, npm latest
 //   hotfix  vX.Y.Z (Z>0, manual)     normal release, make_latest, npm latest
-//   nightly vX.(Y+1).0-nightly.DATE  prerelease, not latest, npm next
+//   nightly vX.(Y+1).0-nightly.DATE  prerelease, not latest, npm nightly
 //   legacy  vX.Y.Z-beta.N            prerelease, not latest, npm latest (pre-GA)
 
 func day(y int, m time.Month, d int) time.Time { return time.Date(y, m, d, 15, 0, 0, 0, time.UTC) }
@@ -32,8 +33,8 @@ func TestPolicyByVersionShape(t *testing.T) {
 		{"v3.0.0", releasePolicy{kindWeekly, false, "true", "latest"}},
 		{"v3.1.0", releasePolicy{kindWeekly, false, "true", "latest"}},
 		{"v3.1.1", releasePolicy{kindHotfix, false, "true", "latest"}},
-		{"v3.1.0-nightly.20261026", releasePolicy{kindNightly, true, "false", "next"}},
-		{"v3.1.0-nightly.20261026.2", releasePolicy{kindNightly, true, "false", "next"}},
+		{"v3.1.0-nightly.20261026", releasePolicy{kindNightly, true, "false", "nightly"}},
+		{"v3.1.0-nightly.20261026.2", releasePolicy{kindNightly, true, "false", "nightly"}},
 	}
 	for _, tt := range tests {
 		got, err := policyFor(tt.version)
@@ -247,7 +248,7 @@ func TestDryRunScenarios(t *testing.T) {
 	}{
 		{"beta.34 auto (pre-GA)", "v3.0.0-beta.34", releaseOptions{}, true, nil, []string{"release_version=v3.0.0-beta.35", "release_kind=prerelease", "release_prerelease=true", "release_npm_tag=latest"}, ""},
 		{"beta.34 -> explicit GA v3.0.0", "v3.0.0-beta.34", releaseOptions{version: "v3.0.0"}, true, nil, []string{"release_version=v3.0.0", "release_kind=weekly", "release_prerelease=false", "release_npm_tag=latest"}, ""},
-		{"v3.0.0 first nightly", "v3.0.0", releaseOptions{}, true, []string{"v3.0.0"}, []string{"release_version=v3.1.0-nightly.20261102", "release_kind=nightly", "release_prerelease=true", "release_npm_tag=next"}, ""},
+		{"v3.0.0 first nightly", "v3.0.0", releaseOptions{}, true, []string{"v3.0.0"}, []string{"release_version=v3.1.0-nightly.20261102", "release_kind=nightly", "release_prerelease=true", "release_npm_tag=nightly"}, ""},
 		{"v3.1.0 nightly previews v3.2.0", "v3.1.0", releaseOptions{}, true, ga, []string{"release_version=v3.2.0-nightly.20261102", "release_kind=nightly"}, ""},
 		{"same-day re-run", "v3.1.0", releaseOptions{}, true, append([]string{"v3.2.0-nightly.20261102"}, ga...), []string{"release_version=v3.2.0-nightly.20261102.1"}, ""},
 		{"first weekly", "v3.0.0", releaseOptions{channel: "weekly"}, true, []string{"v3.0.0", "v3.1.0-nightly.20261031"}, []string{"release_version=v3.1.0", "release_kind=weekly", "release_prerelease=false", "release_npm_tag=latest"}, ""},
@@ -283,5 +284,37 @@ func TestWeeklyTagOnlyIgnoresStaleCommit(t *testing.T) {
 	got, err := dryRun(t, "v3.0.0-beta.34", releaseOptions{channel: "weekly", tagOnly: true}, true, "v3.0.0", "v3.1.0", "v3.2.0-nightly.20261031")
 	if err != nil || !strings.Contains(got, "release_version=v3.2.0\n") {
 		t.Fatalf("err=%v\n%s", err, got)
+	}
+}
+
+// The npm runtime package and the Go module release share one version: the
+// package.json and package-lock.json versions must equal version.txt without
+// its leading "v", so a release tag, a Go module version and an npm version
+// can never drift apart.
+func TestRuntimePackageVersionMatchesVersionTxt(t *testing.T) {
+	read := func(rel string) []byte {
+		data, err := os.ReadFile(filepath.Join("..", "..", rel))
+		if err != nil {
+			t.Fatalf("read %s: %v", rel, err)
+		}
+		return data
+	}
+	version := strings.TrimPrefix(strings.TrimSpace(string(read("internal/version/version.txt"))), "v")
+	if version == "" {
+		t.Fatal("version.txt is empty")
+	}
+	for _, rel := range []string{
+		"internal/runtime/desktop/@wailsio/runtime/package.json",
+		"internal/runtime/desktop/@wailsio/runtime/package-lock.json",
+	} {
+		var doc struct {
+			Version string `json:"version"`
+		}
+		if err := json.Unmarshal(read(rel), &doc); err != nil {
+			t.Fatalf("parse %s: %v", rel, err)
+		}
+		if doc.Version != version {
+			t.Errorf("%s version = %q, want %q (version.txt without the v)", rel, doc.Version, version)
+		}
 	}
 }
