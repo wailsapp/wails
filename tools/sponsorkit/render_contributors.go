@@ -223,10 +223,12 @@ func (r *renderer) contributor(c Contributor, bi int, cx, cy float64) {
 		r.body.WriteString(fmt.Sprintf(`%s stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="%s" stroke-linecap="round" stroke-dasharray="%s %s"><animate attributeName="stroke-dashoffset" from="0" to="%s" dur="6s" repeatCount="indefinite"/></use>`,
 			ring, num(b.RingWidth*0.6), num(perim*0.12), num(perim*0.88), num(-perim)))
 		// Hover-only bloom and fast counter-marching sweep.
-		r.body.WriteString(fmt.Sprintf(`%s class="bloom" stroke="url(#%s)" stroke-width="%s" filter="url(#soften)"/>`,
-			ring, b.RingGradient, num(b.RingWidth+7)))
-		r.body.WriteString(fmt.Sprintf(`%s class="fast" stroke="#FFFFFF" stroke-width="%s" stroke-linecap="round" stroke-dasharray="%s %s"><animate attributeName="stroke-dashoffset" from="0" to="%s" dur="1.4s" repeatCount="indefinite"/></use>`,
-			ring, num(b.RingWidth*0.7), num(perim*0.07), num(perim*0.93), num(perim)))
+		if b.Hover {
+			r.body.WriteString(fmt.Sprintf(`%s class="bloom" stroke="url(#%s)" stroke-width="%s" filter="url(#soften)"/>`,
+				ring, b.RingGradient, num(b.RingWidth+7)))
+			r.body.WriteString(fmt.Sprintf(`%s class="fast" stroke="#FFFFFF" stroke-width="%s" stroke-linecap="round" stroke-dasharray="%s %s"><animate attributeName="stroke-dashoffset" from="0" to="%s" dur="1.4s" repeatCount="indefinite"/></use>`,
+				ring, num(b.RingWidth*0.7), num(perim*0.07), num(perim*0.93), num(perim)))
+		}
 	case "static":
 		r.body.WriteString(fmt.Sprintf(`%s stroke="url(#%s)" stroke-width="%s"/>`,
 			ring, b.RingGradient, num(b.RingWidth)))
