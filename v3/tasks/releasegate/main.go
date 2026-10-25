@@ -49,6 +49,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -271,31 +272,49 @@ func (g *gate) preflight() {
 // collaborator whose permission is in ALLOW_COLLAB_PERMS. A failed lookup
 // means "not allowed" (preflight already proved the allowlist is readable).
 // Results are cached per login.
-func (g *gate) actorAllowed(login string) bool {
+func (g *gate) actorAllowed(login string) (bool, error) {
 	if ok, seen := g.actorOK[login]; seen {
-		return ok
+		return ok, nil
 	}
-	g.actorOK[login] = false
 	org, slug := g.teamParts()
 	var membership struct {
 		State string `json:"state"`
 	}
-	if err := g.gh.get(fmt.Sprintf("orgs/%s/teams/%s/memberships/%s", org, slug, login), &membership); err == nil && membership.State == "active" {
+	err := g.gh.get(fmt.Sprintf("orgs/%s/teams/%s/memberships/%s", org, slug, login), &membership)
+	switch {
+	case err == nil && membership.State == "active":
 		g.actorOK[login] = true
-		return true
+		return true, nil
+	case err != nil && !isNotFound(err):
+		// Only a 404 means "not a member". Any other failure (5xx, rate
+		// limit, network) is unknown, and an unknown answer must not let a
+		// maintainer's blocker label be ignored: the gate fails closed.
+		return false, err
 	}
 	var collab struct {
 		Permission string `json:"permission"`
 	}
-	if err := g.gh.get(fmt.Sprintf("repos/%s/collaborators/%s/permission", g.cfg.repo, login), &collab); err == nil {
-		for _, p := range g.cfg.allowPerms {
-			if collab.Permission == p {
-				g.actorOK[login] = true
-				return true
-			}
+	if err := g.gh.get(fmt.Sprintf("repos/%s/collaborators/%s/permission", g.cfg.repo, login), &collab); err != nil {
+		if !isNotFound(err) {
+			return false, err
+		}
+		g.actorOK[login] = false
+		return false, nil
+	}
+	for _, p := range g.cfg.allowPerms {
+		if collab.Permission == p {
+			g.actorOK[login] = true
+			return true, nil
 		}
 	}
-	return false
+	g.actorOK[login] = false
+	return false, nil
+}
+
+// isNotFound reports a GitHub 404 (a definite "no", not an unknown).
+func isNotFound(err error) bool {
+	var ae *apiError
+	return errors.As(err, &ae) && ae.status == 404
 }
 
 type issueEvent struct {
@@ -370,7 +389,12 @@ func (g *gate) checkLabel(label, since string, issuesOnly bool) {
 		if applier == "" {
 			continue
 		}
-		if g.actorAllowed(applier) {
+		allowed, aerr := g.actorAllowed(applier)
+		if aerr != nil {
+			g.failClosed(fmt.Sprintf("cannot check whether @%s may set '%s' on #%d", applier, label, is.Number))
+			continue
+		}
+		if allowed {
 			g.blockers = append(g.blockers, fmt.Sprintf("[%s] #%d %s - %s (label set by @%s)", label, is.Number, is.Title, is.HTMLURL, applier))
 		} else {
 			fmt.Fprintf(g.stderr, "ignoring '%s' on #%d: applied by non-allowlisted @%s\n", label, is.Number, applier)

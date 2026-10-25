@@ -490,3 +490,17 @@ func TestNormaliseSince(t *testing.T) {
 		}
 	}
 }
+
+// An unknown answer about who set a blocker label fails closed: a 5xx (or a
+// rate limit) while checking the applier must not let the label be ignored
+// and the release pass. A 404 stays a definite "not allowed".
+func TestGate_ActorCheckErrorFailsClosed(t *testing.T) {
+	g := newGate(t)
+	g.issues(issueP0)
+	g.events(7, labeled("flaky"))
+	g.setStatus("orgs/wailsapp/teams/maintainers/memberships/flaky", http.StatusInternalServerError)
+	out, code := g.run()
+	if code != 2 || !strings.Contains(out, "@flaky") {
+		t.Fatalf("code=%d (want 2, could not evaluate)\n%s", code, out)
+	}
+}
