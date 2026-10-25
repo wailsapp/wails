@@ -391,13 +391,15 @@ func menuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 
 					if GetMenuItemInfo(menuBarInfo.Menu, uint32(i), true, &mii) {
 						// Draw the text
+						textColor := *theme.TitleBarText
 						if i == currentHoverItem {
-							TrySetTextColor(udm.Hdc, COLORREF(*theme.MenuHoverText))
-						} else {
-							TrySetTextColor(udm.Hdc, COLORREF(*theme.TitleBarText))
+							textColor = *theme.MenuHoverText
 						}
-						SetBkMode(udm.Hdc, TRANSPARENT)
-						DrawText(udm.Hdc, menuString, -1, &itemRect, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+						// Leave the item undrawn when the DC rejects the text
+						// style: SetBkMode would panic on an unusable DC.
+						if TrySetTextColor(udm.Hdc, COLORREF(textColor)) && TrySetBkMode(udm.Hdc, TRANSPARENT) {
+							DrawText(udm.Hdc, menuString, -1, &itemRect, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+						}
 					}
 				}
 			}
@@ -433,9 +435,9 @@ func menuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 				text := (*uint16)(unsafe.Pointer(dis.ItemData))
 				if text != nil {
 					// Set text color and draw
-					TrySetTextColor(dis.HDC, COLORREF(textColor))
-					SetBkMode(dis.HDC, TRANSPARENT)
-					DrawText(dis.HDC, (*[256]uint16)(unsafe.Pointer(text))[:], -1, &dis.RcItem, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+					if TrySetTextColor(dis.HDC, COLORREF(textColor)) && TrySetBkMode(dis.HDC, TRANSPARENT) {
+						DrawText(dis.HDC, (*[256]uint16)(unsafe.Pointer(text))[:], -1, &dis.RcItem, DT_CENTER|DT_SINGLELINE|DT_VCENTER)
+					}
 				}
 			}
 
@@ -521,10 +523,9 @@ func menuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *
 		}
 
 		// Draw text
-		if !TrySetTextColor(hdc, COLORREF(textColor)) {
+		if !TrySetTextColor(hdc, COLORREF(textColor)) || !TrySetBkMode(hdc, TRANSPARENT) {
 			return false, 0
 		}
-		SetBkMode(hdc, TRANSPARENT)
 
 		// When maximized/fullscreen and menubar item, use the same font settings as drawMenuBarText
 		if isMaximized && isMenuBarItem {
@@ -988,8 +989,9 @@ func drawMenuBarText(hwnd HWND, hdc HDC, menuBarInfo *MENUBARINFO, theme *MenuBa
 	}
 
 	// Set text color and background mode
-	TrySetTextColor(hdc, COLORREF(*theme.TitleBarText))
-	SetBkMode(hdc, TRANSPARENT)
+	if !TrySetTextColor(hdc, COLORREF(*theme.TitleBarText)) || !TrySetBkMode(hdc, TRANSPARENT) {
+		return
+	}
 
 	// Get the window rect for coordinate conversion
 	winRect := GetWindowRect(hwnd)

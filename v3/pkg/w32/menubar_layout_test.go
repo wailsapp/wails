@@ -29,16 +29,13 @@ func TestDrawingHelpersNeverPanic(t *testing.T) {
 	if IsValidDC(0) {
 		t.Error("IsValidDC(0) = true")
 	}
-	if IsValidDC(HDC(0xffffffff94011e00)) {
-		t.Error("IsValidDC(garbage) = true")
+	if IsValidDC(^HDC(0)) {
+		t.Error("IsValidDC(all-ones handle) = true")
 	}
 	if TrySetTextColor(0, 0xdedede) {
 		t.Error("TrySetTextColor on a nil DC reported success")
 	}
-	dc := CreateCompatibleDC(0)
-	if dc == 0 {
-		t.Skip("no memory DC available")
-	}
+	dc := memoryDC(t)
 	defer DeleteDC(dc)
 	if !IsValidDC(dc) {
 		t.Error("IsValidDC(memory DC) = false")
@@ -51,10 +48,7 @@ func TestDrawingHelpersNeverPanic(t *testing.T) {
 // A DC whose previous text colour is CLR_INVALID makes SetTextColor return
 // CLR_INVALID even though the call worked; that is not a failure (#6311).
 func TestTrySetTextColorAcceptsInvalidPreviousColour(t *testing.T) {
-	dc := CreateCompatibleDC(0)
-	if dc == 0 {
-		t.Skip("no memory DC available")
-	}
+	dc := memoryDC(t)
 	defer DeleteDC(dc)
 	procSetTextColor.Call(uintptr(dc), uintptr(CLR_INVALID))
 	if got, _, _ := procGetTextColor.Call(uintptr(dc)); uint32(got) != CLR_INVALID {
@@ -81,5 +75,31 @@ func TestMenuBarWndProcContainsFailures(t *testing.T) {
 	}
 	if handled, result := MenuBarWndProc(0, WM_UAHDRAWMENUITEM, 0, 1, &MenuBarTheme{}); handled || result != 0 {
 		t.Errorf("a panic was not contained: handled=%v result=%v", handled, result)
+	}
+}
+
+// memoryDC creates a memory DC with the raw API call, skipping the test when
+// none is available (the CreateCompatibleDC wrapper panics on failure).
+func memoryDC(t *testing.T) HDC {
+	t.Helper()
+	ret, _, _ := procCreateCompatibleDC.Call(0)
+	if ret == 0 {
+		t.Skip("no memory DC available")
+	}
+	return HDC(ret)
+}
+
+// The Try helpers report failure on an unusable DC instead of panicking.
+func TestTrySetBkModeReportsFailure(t *testing.T) {
+	if TrySetBkMode(0, TRANSPARENT) {
+		t.Error("TrySetBkMode on a nil DC reported success")
+	}
+	if TrySetBkMode(^HDC(0), TRANSPARENT) {
+		t.Error("TrySetBkMode on an all-ones handle reported success")
+	}
+	dc := memoryDC(t)
+	defer DeleteDC(dc)
+	if !TrySetBkMode(dc, TRANSPARENT) {
+		t.Error("TrySetBkMode on a memory DC failed")
 	}
 }

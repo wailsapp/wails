@@ -391,6 +391,14 @@ func SetBkMode(hdc HDC, iBkMode int) int {
 	return int(ret)
 }
 
+// TrySetBkMode sets the background mode of a device context and reports
+// whether it worked. Window procedures use it instead of SetBkMode, which
+// panics on failure (#6311).
+func TrySetBkMode(hdc HDC, iBkMode int) bool {
+	ret, _, _ := procSetBkMode.Call(uintptr(hdc), uintptr(iBkMode))
+	return ret != 0
+}
+
 func SetBrushOrgEx(hdc HDC, nXOrg, nYOrg int, lppt *POINT) bool {
 	ret, _, _ := procSetBrushOrgEx.Call(
 		uintptr(hdc),
