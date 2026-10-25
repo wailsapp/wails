@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -367,5 +368,14 @@ func TestParseEntryDefaultsUnknownSectionAndRejectsGarbage(t *testing.T) {
 	}
 	if _, _, err := parseEntry("no json here"); err == nil {
 		t.Fatal("expected an error for a response with no JSON")
+	}
+}
+
+func TestBuildPromptSteersSecurityAndStyle(t *testing.T) {
+	prompt := buildPrompt("PR body")
+	for _, want := range []string{"Use Security for any change that hardens", "imperative present tense", "<pr_data>\nPR body\n</pr_data>"} {
+		if !strings.Contains(prompt, want) {
+			t.Fatalf("prompt missing %q", want)
+		}
 	}
 }
