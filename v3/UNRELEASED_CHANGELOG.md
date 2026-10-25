@@ -29,6 +29,7 @@ After processing, the content will be moved to the main changelog and this file 
 
 ## Removed
 <!-- Features removed in this release -->
+- Remove Crowdin integration after final translation sync in [PR](https://github.com/wailsapp/wails/pull/5736) by @github-actions[bot]
 
 ## Security
 <!-- Security-related changes -->
