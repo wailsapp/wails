@@ -8,7 +8,7 @@ sourcePath: "contributing/documentation.md"
 
 ## 在本機預覽
 
-建立 [wailsapp/wails](https://github.com/wailsapp/wails/fork) 的分支版本（fork），複製您的分支版本至本機，然後從 `releases/v3.0.0` 建立分支。
+建立 [wailsapp/wails](https://github.com/wailsapp/wails/fork) 的分支版本（fork），複製您的分支版本至本機，然後從 `master` 建立分支。
 
 安裝鎖定版本的文件產生器：
 
@@ -45,7 +45,7 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 
 ## 提交拉取請求
 
-針對 `releases/v3.0.0` 建立 PR。說明原本的問題、解釋您的修正，並列出您執行過的檢查。若有可見的版面配置變更，請附上螢幕擷取畫面；若變更了程式碼範例，請提供平台和版本詳細資訊。
+針對 `master` 建立 PR。說明原本的問題、解釋您的修正，並列出您執行過的檢查。若有可見的版面配置變更，請附上螢幕擷取畫面；若變更了程式碼範例，請提供平台和版本詳細資訊。
 
 不需要 Cloudflare 憑證或私人服務。公開 PR 的檢查會在不使用部署憑證的情況下建置並驗證靜態網站。
 

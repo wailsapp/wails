@@ -14,11 +14,6 @@ We will build a simple greeting application that demonstrates the core Wails con
 
 **Time to complete:** 10 minutes
 
-@note{type="tip" title="Performance Tip for Windows 11 Users"}
-Consider using [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) to store your projects. Dev Drives are optimized for developer workloads and can significantly improve build times and disk access speeds by up to 30% compared to regular NTFS drives.
-
-@end
-
 ## Create Your Project
 
 @steps
@@ -64,6 +59,11 @@ The first run may take longer than expected as it installs frontend dependencies
 @end
 
 The app opens showing a greeting interface. Enter your name and click "Greet" - the Go backend processes your input and returns a greeting.
+
+@end
+
+@note{type="tip" title="Performance Tip for Windows 11 Users"}
+Consider using [Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) to store your projects. Dev Drives are optimized for developer workloads and can significantly improve build times and disk access speeds by up to 30% compared to regular NTFS drives.
 
 @end
 

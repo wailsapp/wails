@@ -1,5 +1,5 @@
 ---
-title: "Method Bindings"
+title: "Call Go from JavaScript"
 description: "Call Go methods from JavaScript with type safety"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"

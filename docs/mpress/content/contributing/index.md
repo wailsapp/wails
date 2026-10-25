@@ -237,7 +237,7 @@ func TestProcessData(t *testing.T) {
 
 ### Writing Docs
 
-Follow [Write documentation with M-Press](/contributing/documentation/) for the complete documentation workflow. It covers the pinned version, executable and Go installation options, editable source files, navigation, translation checks and submitting a PR against `releases/v3.0.0`.
+Follow [Write documentation with M-Press](/contributing/documentation/) for the complete documentation workflow. It covers the pinned version, executable and Go installation options, editable source files, navigation, translation checks and submitting a PR against `master`.
 
 Documentation-only work needs no Wails application build or platform dependencies. M-Press previews the existing site with `mpress dev` from the repository root.
 

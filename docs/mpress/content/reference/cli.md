@@ -1,9 +1,11 @@
 ---
-title: "CLI Reference"
-description: "Complete reference for the Wails CLI commands"
+title: "CLI Command Overview"
+description: "Find Wails CLI commands by purpose: projects, builds, signing, tools and services"
 slug: "reference/cli"
 sourcePath: "reference/cli.md"
 ---
+
+Start here to find a command by purpose. For command-specific flags and usage examples, see [CLI Flags and Examples](/guides/cli/).
 
 ## Overview
 

@@ -10,7 +10,7 @@ You need Git to prepare a contribution and a GitHub account to submit a pull req
 
 ## Start from a documentation page
 
-The **Contribute docs** link in the site header or sidebar brings you here. To work on a particular page, select the **edit icon** in that page's header, then **Edit this page locally**. Copy the command for your operating system and run it in a terminal.
+Open **Contributing → Documentation** in the sidebar to reach this guide. To work on a particular page, select the **edit icon** in that page's header, then **Edit this page locally**. Copy the command for your operating system and run it in a terminal.
 
 The command uses M-Press if installed; otherwise its installer downloads an official release and verifies the checksum. It prepares a local contribution checkout and opens the selected page in M-Press. Check `mpress version` against the pinned version below before running the repository checks: the automatic installer can download a newer release.
 
@@ -20,7 +20,7 @@ For a reproducible manual setup, follow the steps below.
 
 ## Download and install M-Press
 
-This release branch uses **M-Press v1.0.19**. Choose one installation method, then verify that `mpress version` prints `mpress 1.0.19`.
+The documentation toolchain uses **M-Press v1.0.19**. Choose one installation method, then verify that `mpress version` prints `mpress 1.0.19`.
 
 ### Download an executable
 
@@ -115,11 +115,11 @@ Go installs the command in `GOBIN`, or in the `bin` directory under `go env GOPA
 git clone https://github.com/YOUR_USERNAME/wails.git
 cd wails
 git remote add upstream https://github.com/wailsapp/wails.git
-git fetch upstream releases/v3.0.0
-git switch -c docs/my-change upstream/releases/v3.0.0
+git fetch upstream master
+git switch -c docs/my-change upstream/master
 ```
 
-This starts your documentation branch from **releases/v3.0.0**, including when your fork contains only `master`. Use your own descriptive branch name in place of `docs/my-change`.
+This starts your documentation branch from the upstream **master** branch. Use your own descriptive branch name in place of `docs/my-change`.
 
 ## Run the live preview
 
@@ -175,7 +175,7 @@ Read the changed page in the browser and run any code examples you modify. If a 
 
 ## Submit a pull request
 
-Review your diff, commit your source changes, and push your contribution branch to your fork. Open a PR against **releases/v3.0.0** in `wailsapp/wails`. Describe what changed, link the affected page, and list the checks you ran. Include before/after screenshots for layout changes and platform/version details for changed code examples.
+Review your diff, commit your source changes, and push your contribution branch to your fork. Open a PR against **master** in `wailsapp/wails`. Describe what changed, link the affected page, and list the checks you ran. Include before/after screenshots for layout changes and platform/version details for changed code examples.
 
 The production site is static; local preview and validation need no deployment credentials or translation provider. Maintainers handle publication after review.
 

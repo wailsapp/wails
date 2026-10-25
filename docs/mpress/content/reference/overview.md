@@ -1,23 +1,25 @@
 ---
 title: "API Reference"
-description: "Complete API documentation for Wails v3"
+description: "Look up Wails types, methods, options and CLI commands"
 slug: "reference/overview"
 sourcePath: "reference/overview.md"
 ---
 
 ## About This Reference
 
-This is the complete API reference for Wails v3. It documents every public type, method, and option available in the framework.
+Use this section to look up Wails types, methods, options and commands while working on an application. If you need a guided lesson, start with [Tutorials](/tutorials/overview/). For steps to complete a task, use [How-to Guides](/quick-start/next-steps/#features). For design background, use [Core Concepts](/concepts/architecture/).
 
 **Organisation:**
 
 - [Application](/reference/application/) - Core application APIs
-- [Window](/reference/window/) - Window creation and management
-- [Menu](/reference/menu/) - Application, context, and system tray menus
+- [Window](/reference/window/) - Window creation and management; [window options](/features/windows/options/) lists configuration fields
+- [Menu](/reference/menu/) - Application, context, and system tray APIs; [menu item reference](/features/menus/reference/) covers item types and properties
 - [Events](/reference/events/) - Event system and built-in events
 - [Dialogs](/reference/dialogs/) - File and message dialogs
 - [Frontend Runtime](/reference/frontend-runtime/) - Frontend runtime APIs
-- [CLI](/reference/cli/) - Command-line interface
+- [CLI command overview](/reference/cli/) - Commands grouped by purpose; [flags and examples](/guides/cli/) gives individual command details
+- [Update manifest protocol](/reference/update-manifest/) - Update metadata and verification fields
+- [Mobile API](/guides/mobile/mobile-api/) - Experimental mobile APIs
 
 ## API Conventions
 

@@ -7,7 +7,7 @@ validation, and submitting a pull request. The same guide is published at
 
 Documentation-only corrections do not need a prior issue or a failing code test.
 Fork `wailsapp/wails`, then create your contribution branch from
-`releases/v3.0.0` and target that branch in your PR.
+`master` and target that branch in your PR.
 
 ## Quick start
 
@@ -47,7 +47,7 @@ Do not insert English placeholders. Translated changelog segment findings remain
 excluded by the checker's existing historical exception; file coverage still applies.
 
 Review your source diff and changed examples, then submit the PR against
-`releases/v3.0.0` with the checks you ran. Layout changes need screenshots.
+`master` with the checks you ran. Layout changes need screenshots.
 Generated `docs/mpress/site/` files and local caches stay out of commits.
 Deployment credentials and translation providers are not needed for this workflow.
 

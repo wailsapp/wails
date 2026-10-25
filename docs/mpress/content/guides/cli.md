@@ -1,9 +1,11 @@
 ---
-title: "CLI Reference"
-description: "Complete reference for the Wails CLI commands"
+title: "CLI Flags and Examples"
+description: "Look up flags and usage examples for individual Wails CLI commands"
 slug: "guides/cli"
 sourcePath: "guides/cli.md"
 ---
+
+Use this reference when you already know which command you need. To browse commands by purpose, start with the [CLI Command Overview](/reference/cli/).
 
 The Wails CLI provides a comprehensive set of commands to help you develop, build, and maintain your Wails applications.
 

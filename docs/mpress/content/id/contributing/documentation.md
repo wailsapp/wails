@@ -11,7 +11,7 @@ kode yang gagal untuk koreksi yang hanya menyangkut dokumentasi.
 ## Pratinjau secara lokal
 
 Fork [wailsapp/wails](https://github.com/wailsapp/wails/fork), kloning fork Anda,  
-lalu buat branch dari `releases/v3.0.0`.
+lalu buat branch dari `master`.
 
 Instal generator dokumentasi dengan versi yang telah ditetapkan:
 
@@ -60,7 +60,7 @@ dalam bahasa lain yang dipublikasikan; halaman yang tidak terkait tidak perlu di
 
 ## Kirim pull request
 
-Buka PR terhadap `releases/v3.0.0`. Jelaskan apa yang salah, uraikan koreksi Anda,
+Buka PR terhadap `master`. Jelaskan apa yang salah, uraikan koreksi Anda,
 dan cantumkan pemeriksaan yang Anda jalankan. Sertakan tangkapan layar untuk perubahan tata letak yang terlihat  
 dan detail platform/versi untuk contoh kode yang diubah.
 

@@ -18,8 +18,6 @@ site:
   defaultLanguageAtRoot: true
   missingTranslation: omit
   headerLinks:
-    - label: "Contribute docs"
-      url: "/contributing/documentation/"
     - label: "Blog"
       url: "/blog/"
   logoLight: "assets/wails-logo-horizontal-light.svg"
@@ -32,11 +30,11 @@ social:
   x: "https://x.com/wailsapp"
   rss: "/blog/rss.xml"
   sponsor: "https://github.com/sponsors/leaanthony"
-  editURL: "https://github.com/wailsapp/wails/edit/releases/v3.0.0/docs/mpress/content"
+  editURL: "https://github.com/wailsapp/wails/edit/master/docs/mpress/content"
 contribution:
   enabled: false
   repository: "https://github.com/wailsapp/wails.git"
-  branch: "releases/v3.0.0"
+  branch: "master"
   quickEdit: false
   guide: CONTRIBUTING.md
 theme:

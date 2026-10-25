@@ -15,8 +15,8 @@ documentation-only correction.
 
 Follow [Write documentation with M-Press](mpress/content/contributing/documentation.md)
 for executable downloads, checksum verification, PATH setup on macOS/Linux/Windows,
-live preview, adding pages and submitting a release-branch PR. The public site
-links to this guide through **Contribute docs** in its header.
+live preview, adding pages and submitting a PR against `master`. The public site
+links to this guide through **Contributing → Documentation** in its sidebar.
 
 ## Preview and validate
 

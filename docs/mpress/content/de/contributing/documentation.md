@@ -8,7 +8,7 @@ Korrektur-PRs sind willkommen. Korrigiere Tippfehler, defekte Links, veraltete B
 
 ## Lokale Vorschau
 
-Forke [wailsapp/wails](https://github.com/wailsapp/wails/fork), klone deinen Fork und erstelle aus `releases/v3.0.0` einen Branch.
+Forke [wailsapp/wails](https://github.com/wailsapp/wails/fork), klone deinen Fork und erstelle aus `master` einen Branch.
 
 Installiere den festgelegten Dokumentationsgenerator:
 
@@ -45,7 +45,7 @@ Für jede veröffentlichte Sprache muss jede englische Seite vollständig übers
 
 ## Pull Request einreichen
 
-Eröffne einen PR gegen `releases/v3.0.0`. Beschreibe, was falsch war, erläutere deine Korrektur und führe die vorgenommenen Prüfungen auf. Füge bei sichtbaren Layoutänderungen Screenshots und bei geänderten Codebeispielen Angaben zu Plattform und Version hinzu.
+Eröffne einen PR gegen `master`. Beschreibe, was falsch war, erläutere deine Korrektur und führe die vorgenommenen Prüfungen auf. Füge bei sichtbaren Layoutänderungen Screenshots und bei geänderten Codebeispielen Angaben zu Plattform und Version hinzu.
 
 Cloudflare-Zugangsdaten und private Dienste sind nicht erforderlich. Die öffentlichen PR-Prüfungen erstellen und validieren die statische Website ohne Zugangsdaten für die Bereitstellung.
 
