@@ -61,6 +61,7 @@ jobs:
     name: Resolve cadence
     runs-on: ubuntu-latest
     if: github.repository == 'wailsapp/wails'
+    permissions: {}
     outputs:
       proceed: ${{ steps.resolve.outputs.proceed }}
       channel: ${{ steps.resolve.outputs.channel }}
