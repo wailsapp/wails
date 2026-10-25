@@ -244,7 +244,7 @@ Wails (v3.0.0)  Wails Doctor
 # Build Environment
 
 ┌─────────────┬─────────────────┐
-| Wails CLI   | Your installed version |
+| Wails CLI   | v3.0.0          |
 | Go Version  | go1.25.0        |
 └─────────────┴─────────────────┘
 

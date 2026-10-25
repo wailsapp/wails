@@ -6,7 +6,7 @@ authors: ["leaanthony"]
 tags: ["wails","v3","release"]
 date: "2026-10-25"
 slug: "blog/wails-v3-released"
-image: "/assets/screenshots/frameless-v3-native-corners-macos.png"
+image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"
 ---
 
@@ -90,6 +90,12 @@ wails3 init
 - Documentation: <https://v3.wails.io/>
 - Migration guide: <https://v3.wails.io/migration/v2-to-v3/>
 - Release notes: [Wails v3.0.0 on GitHub](https://github.com/wailsapp/wails/releases/tag/v3.0.0) <!-- TODO: confirm this release URL once the tag is published. -->
+
+## Support and releases
+
+Wails has grown far beyond what I expected, and it has been hard to keep up with the volume of issues and pull requests. Releases have sometimes been ad hoc, and fixes and contributions have waited too long to reach users. We’ve put systems in place to automate more of the groundwork in triage and release preparation, so we can respond more quickly to problems and spend more time shipping improvements and new features.
+
+After v3.0.0, we’re moving to **nightly pre-releases** with dated tags such as `v3.1.0-nightly.20261026`, alongside **weekly minor releases** such as `v3.1.0` and `v3.2.0`. Nightlies make recent fixes available sooner, while the weekly releases give you a regular cadence of tested updates.
 
 If you find a reproducible bug, please report it with the output of `wails3 doctor` and a minimal example. If you want to propose a new capability or a change to public behaviour, start a draft WEP (Wails Enhancement Proposal) PR rather than a feature-request issue.
 
