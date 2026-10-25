@@ -10,9 +10,7 @@ image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"
 ---
 
-<!-- Review draft: confirm publication date and complete the editorial review before publishing. Accuracy follow-up: https://github.com/wailsapp/wails/issues/6337 -->
-
-@video{src="/assets/videos/wails-v3-release-clean-av1.mp4" poster="/assets/videos/wails-v3-release-clean-poster.webp" title="Wails v3.0.0 release film" width="1920" height="1080"}
+@video{src="/assets/videos/wails-v3-release-clean-av1.mp4" poster="/assets/videos/wails-v3-release-clean-poster.webp" title="Wails v3.0.0 release film — best viewed full screen" width="1920" height="1080"}
 
 ## It's here!
 
@@ -39,7 +37,7 @@ v3 starts from a different model. Applications, windows, services, events and pl
 - **A build system you can see.** Projects use a [Taskfile](https://taskfile.dev)-based build you can inspect, extend and debug, instead of one opaque command.
 - **Cross-platform.** Windows (amd64 and arm64), macOS (Intel and Apple Silicon) and Linux (amd64 and arm64), with GTK4 and WebKitGTK 6.0 as the Linux default. The legacy GTK3 stack is still available with `-tags gtk3` until v3.1.
 - **iOS and Android.** The same `main.go` and frontend can run on mobile. Mobile support is still marked experimental in the docs, so treat it as something to explore and give feedback on rather than a stable promise.
-- **Built with Go 1.26.** The v3 module builds with Go 1.26. <!-- TODO: confirm the minimum Go version to state for users; getting-started/installation.md still says "At least 1.24" while v3/go.mod declares go 1.26.0. -->
+- **Built with Go 1.26.** The v3 module builds with Go 1.26.
 - **An in-app updater.** Pluggable providers, cryptographic verification, an atomic swap and a default UI you can theme or replace. See the [updater guide](/guides/updater/).
 - **Packaging and signing.** Guides for [code signing](/guides/build/signing/) on every platform, [installers](/guides/installers/) and [MSIX packaging](/guides/build/msix/).
 - **Server builds.** Run the same application and services as an HTTP server without a native window.
@@ -55,15 +53,13 @@ The beta post went out on 2 August, and the changelog has been busy since then. 
 - **Setup and tooling.** The `wails3 setup` wizard was completed, and `wails3 dev` now stops its background processes when your app exits.
 - **Native Liquid Glass on macOS.** Support for the Liquid Glass effect on macOS 26 and later, with a fallback for earlier versions.
 
-<!-- TODO: Lea to review this list and add or remove highlights. Sources: docs/mpress/content/changelog.md (beta.2 to beta.30) and v3/release_notes.md. The Liquid Glass entry comes from v3/release_notes.md and is not yet in the changelog. -->
-
 ## Moving from v2
 
 v3 is a new major version, and migrating is a real port rather than a version bump. The big shifts are the application and window lifecycle, services in place of context-bound bindings, direct application and window APIs in place of the v2 runtime package, and regenerated frontend bindings.
 
 The [v2-to-v3 migration guide](/migration/v2-to-v3/) walks through all of it, with before-and-after examples. Please port deliberately, test as you go, and keep v2 in place until your v3 application is ready.
 
-**Wails v2 isn't going away.** The FAQ says that v2 continues to receive critical updates, and that new projects should use v3.0.0. The two CLIs are separate binaries (`wails` and `wails3`) with different module import paths, so you can have both on one machine. <!-- TODO: the repo only states "critical updates" for v2 (docs/mpress/content/faq.md). Confirm whether to say anything more specific about the v2 support policy. The beta post said fixes would continue. -->
+**Wails v2 isn't going away.** It continues to receive critical updates. For new projects, use v3.0.0. The two CLIs are separate binaries (`wails` and `wails3`) with different module import paths, so you can have both on one machine.
 
 ## Install
 
@@ -89,7 +85,7 @@ wails3 init
 
 - Documentation: <https://v3.wails.io/>
 - Migration guide: <https://v3.wails.io/migration/v2-to-v3/>
-- Release notes: [Wails v3.0.0 on GitHub](https://github.com/wailsapp/wails/releases/tag/v3.0.0) <!-- TODO: confirm this release URL once the tag is published. -->
+- Release notes: [Wails v3.0.0 on GitHub](https://github.com/wailsapp/wails/releases/tag/v3.0.0)
 
 ## Support and releases
 
@@ -109,7 +105,7 @@ Special thanks to [Fabio Massaioli (fbbdev)](https://github.com/fbbdev) for crea
 
 Thank you also to [Travis McLane](https://github.com/tmclane) for his extensive early platform work; [Stffabi](https://github.com/stffabi) for the asset server and native platform foundations; [Zach Botterman (popaprozac)](https://github.com/popaprozac) for notifications, Dock integration and other desktop features; [Ian VanSchooten (IanVS)](https://github.com/IanVS) for typed events and runtime improvements; and [Lyimmi](https://github.com/Lyimmi) for Linux work. These contributions remain part of v3, alongside the work of everyone who has helped build and refine it.
 
-A very heartfelt thank you to the sponsors who have carried Wails through this long transition. Your support gave us the time to work on the architecture, tooling, testing and documentation that got us here. Special thanks also to JetBrains and ZSA, and to [CodeRabbit](https://www.coderabbit.ai/oss) for supporting the project with code reviews. <!-- TODO: Lea to add named sponsors if wanted; the repo only has the sponsors image, not a list of names. -->
+A very heartfelt thank you to the sponsors who have carried Wails through this long transition. Your support gave us the time to work on the architecture, tooling, testing and documentation that got us here. Special thanks also to JetBrains and ZSA, and to [CodeRabbit](https://www.coderabbit.ai/oss) for supporting the project with code reviews.
 
 ## Final Words
 
