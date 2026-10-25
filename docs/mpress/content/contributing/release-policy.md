@@ -87,7 +87,7 @@ The **weekly** (never the nightly) refuses to tag while any of these exist:
 
 1. open issues or pull requests labelled `P0` or `release-blocker`;
 2. open issues labelled `regression` created since the last weekly;
-3. open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high severity, and any open secret-scanning alert, **only for shipped code**. Alerts located solely under `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` or any `examples/` directory are ignored (`SHIPPED_ALERT_IGNORE` in `.github/scripts/check-release-blockers.sh`, **owner to review**);
+3. open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high severity, and any open secret-scanning alert, **only for shipped code**. Alerts located solely under `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` or any `examples/` directory are ignored (`SHIPPED_ALERT_IGNORE` in `v3/tasks/releasegate/main.go`, **owner to review**);
 4. repository security advisories still in `triage`.
 
 **Who can set a blocker.** A label counts only if its most recent `labeled` event (with no later `unlabeled`) was made by a member of the `wailsapp/maintainers` team or a collaborator with `maintain`/`admin` permission. The same label applied by anyone else is ignored and logged, so outsiders cannot block or unblock a release. The auto-applied `high-priority` label is deliberately **not** used. Bot accounts such as `taliesin-ai` pass the allowlist if they hold `maintain` **(decision pending: keep or exclude bots)**.

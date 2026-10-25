@@ -145,14 +145,15 @@ jobs:
     - name: Release gate (weekly)
       # Runs from master HEAD (before the detached checkout of the green SHA). Fails (and does not tag) when a maintainer-set blocker exists. Nightlies
       # never run the gate. Needs WAILS_REPO_TOKEN with the scopes listed in
-      # .github/scripts/check-release-blockers.sh; the gate FAILS CLOSED without them.
+      # v3/tasks/releasegate/main.go; the gate FAILS CLOSED without them.
       if: env.CHANNEL == 'weekly' && inputs.release_version == ''
+      working-directory: v3
       env:
         GH_TOKEN: ${{ secrets.WAILS_REPO_TOKEN }}
         REPO: ${{ github.repository }}
         OVERRIDE_REASON: ${{ inputs.override_reason }}
         STATUS_ISSUE: ${{ vars.WEEKLY_STATUS_ISSUE }}
-      run: .github/scripts/check-release-blockers.sh
+      run: go run ./tasks/releasegate
 
     - name: Select newest green master commit (weekly)
       # The weekly promotes the newest master commit whose required checks
