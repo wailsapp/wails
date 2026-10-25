@@ -46,8 +46,8 @@ A weekly always sorts above every nightly of its own number, and a nightly never
 | Goal | Command |
 | --- | --- |
 | Newest release (weekly or hotfix) | `go install github.com/wailsapp/wails/v3/cmd/wails3@latest` or `wails3 update cli` |
-| **Reproducible (recommended)** | pin an exact tag: `@v3.1.0` in `go.mod`, CI and docs |
-| A nightly | its exact tag (`@v3.2.0-nightly.20261102`), or `wails3 update cli -nightly`, or `@master` |
+| **Reproducible (recommended)** | pin an exact tag: `v3.1.0` in `go.mod`, CI and docs |
+| A nightly | its exact tag (`@v3.2.0-nightly.20261102`), or `wails3 update cli -nightly` |
 | Newest build of any kind | `wails3 update cli -pre` |
 | Runtime npm package | `@wailsio/runtime` (`latest` = weekly/hotfix, `next` = nightly) |
 

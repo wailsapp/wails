@@ -254,6 +254,8 @@
   items:
     - label: "Исправление документации"
       link: "/contributing/documentation/"
+    - label: "Политика выпусков"
+      link: "/contributing/release-policy/"
     - label: "Руководство по участию в разработке"
       link: "/contributing/"
     - label: "Технический обзор"

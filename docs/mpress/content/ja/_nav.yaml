@@ -254,6 +254,8 @@
   items:
     - label: "ドキュメントの修正"
       link: "/contributing/documentation/"
+    - label: "リリースポリシー"
+      link: "/contributing/release-policy/"
     - label: "コントリビューションガイド"
       link: "/contributing/"
     - label: "技術概要"

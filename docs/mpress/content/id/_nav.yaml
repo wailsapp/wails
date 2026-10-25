@@ -254,6 +254,8 @@
   items:
     - label: "Perbaiki Dokumentasi"
       link: "/contributing/documentation/"
+    - label: "Kebijakan Rilis"
+      link: "/contributing/release-policy/"
     - label: "Panduan Kontribusi"
       link: "/contributing/"
     - label: "Ikhtisar Teknis"

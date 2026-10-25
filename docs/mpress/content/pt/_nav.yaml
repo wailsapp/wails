@@ -254,6 +254,8 @@
   items:
     - label: "Corrigir a documentação"
       link: "/contributing/documentation/"
+    - label: "Política de lançamentos"
+      link: "/contributing/release-policy/"
     - label: "Guia de contribuição"
       link: "/contributing/"
     - label: "Visão geral técnica"

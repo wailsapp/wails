@@ -254,6 +254,8 @@
   items:
     - label: "修正文件"
       link: "/contributing/documentation/"
+    - label: "發布政策"
+      link: "/contributing/release-policy/"
     - label: "貢獻指南"
       link: "/contributing/"
     - label: "技術概觀"

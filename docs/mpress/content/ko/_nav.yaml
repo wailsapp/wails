@@ -254,6 +254,8 @@
   items:
     - label: "문서 수정"
       link: "/contributing/documentation/"
+    - label: "릴리스 정책"
+      link: "/contributing/release-policy/"
     - label: "기여 가이드"
       link: "/contributing/"
     - label: "기술 개요"

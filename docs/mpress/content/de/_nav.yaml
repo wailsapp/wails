@@ -254,6 +254,8 @@
   items:
     - label: "Dokumentation korrigieren"
       link: "/contributing/documentation/"
+    - label: "Release-Richtlinie"
+      link: "/contributing/release-policy/"
     - label: "Leitfaden zum Mitwirken"
       link: "/contributing/"
     - label: "Technische Übersicht"

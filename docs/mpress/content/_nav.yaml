@@ -281,6 +281,8 @@
       link: "/contributing/"
     - label: "Documentation"
       link: "/contributing/documentation/"
+    - label: "Release Policy"
+      link: "/contributing/release-policy/"
     - label: "Technical overview"
       link: "/contributing/overview/"
     - label: "Getting Started"
