@@ -234,7 +234,7 @@ Wails v3 문서는 M-Press로 작성됩니다. 영어 원본 파일은
 저장소 루트에서 문서 변경 사항을 미리 보고 검증하세요:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

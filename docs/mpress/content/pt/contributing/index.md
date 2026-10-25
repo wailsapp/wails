@@ -242,7 +242,7 @@ A documentação usa o M-Press. Edite os arquivos `.md` em
 `docs/mpress/content/` e, em seguida, visualize e valide as alterações a partir da raiz do repositório:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

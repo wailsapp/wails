@@ -242,7 +242,7 @@ La documentation utilise M-Press. Modifiez les fichiers `.md` situés dans
 `docs/mpress/content/`, puis prévisualisez-les et validez-les depuis la racine du dépôt :
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

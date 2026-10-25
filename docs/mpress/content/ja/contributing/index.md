@@ -241,7 +241,7 @@ func TestProcessData(t *testing.T) {
 `.md` ファイルを編集し、リポジトリのルートからプレビューと検証を実行してください。
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

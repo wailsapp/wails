@@ -241,7 +241,7 @@ Die Dokumentation verwendet M-Press. Bearbeite die `.md`-Dateien unter
 `docs/mpress/content/` und führe anschließend die Vorschau und Validierung aus dem Stammverzeichnis des Repositorys aus:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

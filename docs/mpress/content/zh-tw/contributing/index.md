@@ -240,7 +240,7 @@ func TestProcessData(t *testing.T) {
 文件使用 M-Press。請編輯 `docs/mpress/content/` 下的 `.md` 檔案，然後從儲存庫根目錄預覽並驗證：
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

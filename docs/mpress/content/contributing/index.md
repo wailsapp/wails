@@ -24,8 +24,7 @@ Found a bug? [Open an issue](https://github.com/wailsapp/wails/issues/new) with:
 ### 2. Improve Documentation
 
 Correction PRs are welcome without a prior issue or a failing code test.  
-Follow [Correct the documentation](/contributing/documentation/) to preview  
-and validate a change with M-Press.
+Follow [Write documentation with M-Press](/contributing/documentation/) for downloads, installation on macOS/Linux/Windows, live preview and submitting your change.
 
 Documentation improvements are always welcome:
 
@@ -238,17 +237,9 @@ func TestProcessData(t *testing.T) {
 
 ### Writing Docs
 
-Documentation uses M-Press. Edit the `.md` files under  
-`docs/mpress/content/`, then preview and validate from the repository root:
+Follow [Write documentation with M-Press](/contributing/documentation/) for the complete documentation workflow. It covers the pinned version, executable and Go installation options, editable source files, navigation, translation checks and submitting a PR against `releases/v3.0.0`.
 
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
+Documentation-only work needs no Wails application build or platform dependencies. M-Press previews the existing site with `mpress dev` from the repository root.
 
 ### Documentation Style
 

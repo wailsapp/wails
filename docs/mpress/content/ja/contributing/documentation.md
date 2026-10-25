@@ -8,15 +8,15 @@ sourcePath: "contributing/documentation.md"
 
 ## ローカルでプレビューする
 
-[wailsapp/wails](https://github.com/wailsapp/wails/fork) をフォークし、そのフォークをクローンして、`master` からブランチを作成します。
+[wailsapp/wails](https://github.com/wailsapp/wails/fork) をフォークし、そのフォークをクローンして、`releases/v3.0.0` からブランチを作成します。
 
 バージョンが固定されたドキュメントジェネレーターをインストールします。
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 ```
 
-[M-Press v1.0.17 リリース](https://github.com/leaanthony/mpress/releases/tag/v1.0.17)から検証済みのバイナリをダウンロードすることもできます。
+[M-Press v1.0.19 リリース](https://github.com/leaanthony/mpress/releases/tag/v1.0.19)から検証済みのバイナリをダウンロードすることもできます。
 
 Wails リポジトリのルートで、次を実行します。
 
@@ -45,7 +45,7 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 
 ## プルリクエストを提出する
 
-`master` に対して PR を作成します。問題の内容と修正内容を説明し、実行した確認項目を列挙してください。目に見えるレイアウト変更についてはスクリーンショットを、変更したコード例についてはプラットフォームとバージョンの詳細を含めてください。
+`releases/v3.0.0` に対して PR を作成します。問題の内容と修正内容を説明し、実行した確認項目を列挙してください。目に見えるレイアウト変更についてはスクリーンショットを、変更したコード例についてはプラットフォームとバージョンの詳細を含めてください。
 
 Cloudflare の認証情報や非公開サービスは必要ありません。公開 PR のチェックでは、デプロイ用の認証情報なしで静的サイトをビルドし、検証します。
 

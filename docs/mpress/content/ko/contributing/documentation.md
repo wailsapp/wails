@@ -8,15 +8,15 @@ sourcePath: "contributing/documentation.md"
 
 ## 로컬에서 미리 보기
 
-[wailsapp/wails](https://github.com/wailsapp/wails/fork)를 포크하고, 포크한 저장소를 클론한 다음, `master`에서 브랜치를 생성하세요.
+[wailsapp/wails](https://github.com/wailsapp/wails/fork)를 포크하고, 포크한 저장소를 클론한 다음, `releases/v3.0.0`에서 브랜치를 생성하세요.
 
 고정된 버전의 문서 생성기를 설치하세요:
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 ```
 
-[M-Press v1.0.17 릴리스](https://github.com/leaanthony/mpress/releases/tag/v1.0.17)에서도 검증된 바이너리를 다운로드할 수 있습니다.
+[M-Press v1.0.19 릴리스](https://github.com/leaanthony/mpress/releases/tag/v1.0.19)에서도 검증된 바이너리를 다운로드할 수 있습니다.
 
 Wails 저장소 루트에서 다음을 실행하세요:
 
@@ -45,7 +45,7 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 
 ## 풀 리퀘스트 제출하기
 
-`master`을 대상으로 PR을 생성하세요. 무엇이 잘못되었는지 기술하고, 수정 내용을 설명하며, 실행한 검사 항목을 나열하세요. 눈에 보이는 레이아웃 변경에는 스크린샷을 포함하고, 변경한 코드 예제에는 플랫폼 및 버전 세부 정보를 포함하세요.
+`releases/v3.0.0`을 대상으로 PR을 생성하세요. 무엇이 잘못되었는지 기술하고, 수정 내용을 설명하며, 실행한 검사 항목을 나열하세요. 눈에 보이는 레이아웃 변경에는 스크린샷을 포함하고, 변경한 코드 예제에는 플랫폼 및 버전 세부 정보를 포함하세요.
 
 Cloudflare 자격 증명과 비공개 서비스는 필요하지 않습니다. 공개 PR 검사는 배포 자격 증명 없이 정적 사이트를 빌드하고 검증합니다.
 

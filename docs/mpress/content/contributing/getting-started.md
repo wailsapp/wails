@@ -246,7 +246,7 @@ Maintainers may request changes. Be patient and collaborative.
 [Documentation]
 Correction PRs are welcome without opening an issue first. Documentation-only  
 corrections do not need a failing code test. Follow  
-[Correct the documentation](/contributing/documentation/) for the M-Press  
+[Write documentation with M-Press](/contributing/documentation/) for the M-Press
 installation, source paths, preview, validation and PR steps.
 
 @end

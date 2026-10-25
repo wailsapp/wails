@@ -235,7 +235,7 @@ go test ./... -race
 Предварительно просмотрите и проверьте изменения в документации из корневого каталога репозитория:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

@@ -235,7 +235,7 @@ A documentação do Wails v3 é escrita em M-Press. Os arquivos-fonte em inglês
 Visualize e valide as alterações na documentação a partir da raiz do repositório:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

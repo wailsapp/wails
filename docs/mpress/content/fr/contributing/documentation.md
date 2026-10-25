@@ -8,15 +8,15 @@ Les PR de correction sont les bienvenues. Corrigez les fautes de frappe, les lie
 
 ## Prévisualiser localement
 
-Créez un fork de [wailsapp/wails](https://github.com/wailsapp/wails/fork), clonez votre fork, puis créez une branche à partir de `master`.
+Créez un fork de [wailsapp/wails](https://github.com/wailsapp/wails/fork), clonez votre fork, puis créez une branche à partir de `releases/v3.0.0`.
 
 Installez la version épinglée du générateur de documentation :
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 ```
 
-Vous pouvez également télécharger un binaire vérifié depuis la [version M-Press v1.0.17](https://github.com/leaanthony/mpress/releases/tag/v1.0.17).
+Vous pouvez également télécharger un binaire vérifié depuis la [version M-Press v1.0.19](https://github.com/leaanthony/mpress/releases/tag/v1.0.19).
 
 Depuis la racine du dépôt Wails :
 
@@ -45,7 +45,7 @@ Chaque langue publiée doit proposer une traduction complète de chaque page ang
 
 ## Soumettre une pull request
 
-Ouvrez une PR vers `master`. Décrivez le problème, expliquez votre correction et indiquez les vérifications que vous avez effectuées. Ajoutez des captures d’écran pour les modifications visibles de la mise en page, ainsi que les détails de plateforme et de version pour les exemples de code modifiés.
+Ouvrez une PR vers `releases/v3.0.0`. Décrivez le problème, expliquez votre correction et indiquez les vérifications que vous avez effectuées. Ajoutez des captures d’écran pour les modifications visibles de la mise en page, ainsi que les détails de plateforme et de version pour les exemples de code modifiés.
 
 Les identifiants Cloudflare et les services privés ne sont pas nécessaires. Les vérifications publiques des PR génèrent et valident le site statique sans identifiants de déploiement.
 

@@ -235,7 +235,7 @@ La documentation de Wails v3 est rédigée avec M-Press. Les fichiers sources en
 Prévisualisez et validez les modifications apportées à la documentation depuis la racine du dépôt :
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

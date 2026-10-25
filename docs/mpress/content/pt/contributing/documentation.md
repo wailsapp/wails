@@ -11,16 +11,16 @@ um teste de código com falha.
 ## Visualize localmente
 
 Faça um fork de [wailsapp/wails](https://github.com/wailsapp/wails/fork), clone seu fork  
-e crie uma branch a partir de `master`.
+e crie uma branch a partir de `releases/v3.0.0`.
 
 Instale o gerador de documentação na versão fixada:
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 ```
 
 Você também pode baixar um binário verificado da  
-[versão v1.0.17 do M-Press](https://github.com/leaanthony/mpress/releases/tag/v1.0.17).
+[versão v1.0.19 do M-Press](https://github.com/leaanthony/mpress/releases/tag/v1.0.19).
 
 A partir da raiz do repositório do Wails:
 
@@ -60,7 +60,7 @@ nos outros idiomas publicados; páginas não relacionadas não precisam ser gera
 
 ## Envie um pull request
 
-Abra um PR direcionado a `master`. Descreva o que estava errado, explique sua correção  
+Abra um PR direcionado a `releases/v3.0.0`. Descreva o que estava errado, explique sua correção
 e liste as verificações que você executou. Inclua capturas de tela para alterações visíveis no layout  
 e detalhes da plataforma e da versão para exemplos de código alterados.
 

@@ -11,16 +11,16 @@ kode yang gagal untuk koreksi yang hanya menyangkut dokumentasi.
 ## Pratinjau secara lokal
 
 Fork [wailsapp/wails](https://github.com/wailsapp/wails/fork), kloning fork Anda,  
-lalu buat branch dari `master`.
+lalu buat branch dari `releases/v3.0.0`.
 
 Instal generator dokumentasi dengan versi yang telah ditetapkan:
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 ```
 
 Anda juga dapat mengunduh berkas biner terverifikasi dari  
-[rilis M-Press v1.0.17](https://github.com/leaanthony/mpress/releases/tag/v1.0.17).
+[rilis M-Press v1.0.19](https://github.com/leaanthony/mpress/releases/tag/v1.0.19).
 
 Dari direktori root repositori Wails:
 
@@ -60,7 +60,7 @@ dalam bahasa lain yang dipublikasikan; halaman yang tidak terkait tidak perlu di
 
 ## Kirim pull request
 
-Buka PR terhadap `master`. Jelaskan apa yang salah, uraikan koreksi Anda,  
+Buka PR terhadap `releases/v3.0.0`. Jelaskan apa yang salah, uraikan koreksi Anda,
 dan cantumkan pemeriksaan yang Anda jalankan. Sertakan tangkapan layar untuk perubahan tata letak yang terlihat  
 dan detail platform/versi untuk contoh kode yang diubah.
 

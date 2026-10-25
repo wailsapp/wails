@@ -235,7 +235,7 @@ Wails v3 文件使用 M-Press 編寫。英文原始檔位於
 請從儲存庫根目錄預覽並驗證文件變更：
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

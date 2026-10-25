@@ -137,6 +137,8 @@ Thanks to [CodeRabbit](https://www.coderabbit.ai/oss) for supporting Wails with 
 
 ## Contributors
 
+To improve the v3 documentation, follow [Write documentation with M-Press](docs/mpress/content/contributing/documentation.md) for downloads, installation, preview and submitting a PR.
+
 The contributors list is getting too big for the readme! All the amazing people who have contributed to this
 project have their own page [here](https://wails.io/credits#contributors).
 

@@ -241,7 +241,7 @@ Dokumentasi menggunakan M-Press. Edit file `.md` di bawah
 `docs/mpress/content/`, lalu pratinjau dan validasi dari direktori akar repositori:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

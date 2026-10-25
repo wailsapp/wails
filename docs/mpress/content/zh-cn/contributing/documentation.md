@@ -8,15 +8,15 @@ sourcePath: "contributing/documentation.md"
 
 ## 在本地预览
 
-复刻 [wailsapp/wails](https://github.com/wailsapp/wails/fork)，克隆你的复刻仓库，然后从 `master` 创建分支。
+复刻 [wailsapp/wails](https://github.com/wailsapp/wails/fork)，克隆你的复刻仓库，然后从 `releases/v3.0.0` 创建分支。
 
 安装固定版本的文档生成器：
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 ```
 
-你也可以从[M-Press v1.0.17发布版本](https://github.com/leaanthony/mpress/releases/tag/v1.0.17)下载经过验证的二进制文件。
+你也可以从[M-Press v1.0.19发布版本](https://github.com/leaanthony/mpress/releases/tag/v1.0.19)下载经过验证的二进制文件。
 
 在 Wails 仓库根目录中运行：
 
@@ -45,7 +45,7 @@ python3 docs/mpress/scripts/check_site.py docs/mpress/site
 
 ## 提交拉取请求
 
-向 `master` 发起 PR。描述原有问题，说明你的更正，并列出已执行的检查。对于可见的布局更改，请提供屏幕截图；对于已更改的代码示例，请提供平台和版本详情。
+向 `releases/v3.0.0` 发起 PR。描述原有问题，说明你的更正，并列出已执行的检查。对于可见的布局更改，请提供屏幕截图；对于已更改的代码示例，请提供平台和版本详情。
 
 不需要 Cloudflare 凭据或私有服务。公开 PR 的检查会在无需部署凭据的情况下构建并验证静态站点。
 

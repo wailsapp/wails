@@ -235,7 +235,7 @@ Dokumentasi Wails v3 ditulis dalam M-Press. File sumber bahasa Inggris berada di
 Pratinjau dan validasi perubahan dokumentasi dari direktori utama repositori:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

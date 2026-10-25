@@ -8,15 +8,15 @@ Korrektur-PRs sind willkommen. Korrigiere Tippfehler, defekte Links, veraltete B
 
 ## Lokale Vorschau
 
-Forke [wailsapp/wails](https://github.com/wailsapp/wails/fork), klone deinen Fork und erstelle aus `master` einen Branch.
+Forke [wailsapp/wails](https://github.com/wailsapp/wails/fork), klone deinen Fork und erstelle aus `releases/v3.0.0` einen Branch.
 
 Installiere den festgelegten Dokumentationsgenerator:
 
 ```sh
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 ```
 
-Sie können auch eine verifizierte Binärdatei aus dem [M-Press-Release v1.0.17](https://github.com/leaanthony/mpress/releases/tag/v1.0.17) herunterladen.
+Sie können auch eine verifizierte Binärdatei aus dem [M-Press-Release v1.0.19](https://github.com/leaanthony/mpress/releases/tag/v1.0.19) herunterladen.
 
 Führe im Stammverzeichnis des Wails-Repositorys Folgendes aus:
 
@@ -45,7 +45,7 @@ Für jede veröffentlichte Sprache muss jede englische Seite vollständig übers
 
 ## Pull Request einreichen
 
-Eröffne einen PR gegen `master`. Beschreibe, was falsch war, erläutere deine Korrektur und führe die vorgenommenen Prüfungen auf. Füge bei sichtbaren Layoutänderungen Screenshots und bei geänderten Codebeispielen Angaben zu Plattform und Version hinzu.
+Eröffne einen PR gegen `releases/v3.0.0`. Beschreibe, was falsch war, erläutere deine Korrektur und führe die vorgenommenen Prüfungen auf. Füge bei sichtbaren Layoutänderungen Screenshots und bei geänderten Codebeispielen Angaben zu Plattform und Version hinzu.
 
 Cloudflare-Zugangsdaten und private Dienste sind nicht erforderlich. Die öffentlichen PR-Prüfungen erstellen und validieren die statische Website ohne Zugangsdaten für die Bereitstellung.
 

@@ -241,7 +241,7 @@ func TestProcessData(t *testing.T) {
 `docs/mpress/content/`, затем из корневого каталога репозитория выполните предварительный просмотр и проверку:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check

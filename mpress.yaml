@@ -18,6 +18,8 @@ site:
   defaultLanguageAtRoot: true
   missingTranslation: omit
   headerLinks:
+    - label: "Contribute docs"
+      url: "/contributing/documentation/"
     - label: "Blog"
       url: "/blog/"
   logoLight: "assets/wails-logo-horizontal-light.svg"

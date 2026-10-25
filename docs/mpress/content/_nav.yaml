@@ -249,11 +249,11 @@
       link: "/reference/cli/"
     - label: "Update Manifest Protocol"
       link: "/reference/update-manifest/"
+- label: "Contribute docs"
+  link: "/contributing/documentation/"
 - label: "Contributing"
   collapsed: true
   items:
-    - label: "Correct the documentation"
-      link: "/contributing/documentation/"
     - label: "Contribution guide"
       link: "/contributing/"
     - label: "Technical overview"

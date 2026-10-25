@@ -240,7 +240,7 @@ func TestProcessData(t *testing.T) {
 문서는 M-Press를 사용합니다. `docs/mpress/content/` 아래의 `.md` 파일을 편집한 다음, 저장소 루트에서 미리 보고 유효성을 검사하세요:
 
 ```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
+go install github.com/leaanthony/mpress/cmd/mpress@v1.0.19
 mpress dev
 mpress build --strict --no-purge-css
 mpress check
