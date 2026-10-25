@@ -45,6 +45,18 @@ export class RuntimeError extends Error {
     }
 }
 
+function restoreCallError(json: CallErrorType): Error {
+    let err;
+    switch (json.kind) {
+        case "ReferenceError": err = new ReferenceError(json.message); break;
+        case "TypeError":      err = new TypeError(json.message); break;
+        case "RuntimeError":   err = new RuntimeError(json.message); break;
+        default:               err = new Error(json.message);
+    }
+    err.cause = json.cause;
+    return err;
+}
+
 // Object Names
 export const objectNames = Object.freeze({
     Call: 0,
@@ -166,15 +178,7 @@ async function runtimeCallWithID(objectID: number, method: number, windowName: s
       const ct = response.headers.get("Content-Type");
       if (ct?.includes("application/json")) {
           const json: CallErrorType = await response.json();
-          let err;
-          switch (json.kind) {
-              case "ReferenceError": err = new ReferenceError(json.message); break;
-              case "TypeError":      err = new TypeError(json.message); break;
-              case "RuntimeError":   err = new RuntimeError(json.message); break;
-              default:               err = new Error(json.message);
-          }
-          err.cause = json.cause;
-          throw err
+          throw restoreCallError(json);
       }
       throw new Error(await response.text());
     }
@@ -253,7 +257,10 @@ if (androidBridge) {
         try {
             const envelope = JSON.parse(response ?? "{}");
             if (!envelope.ok) {
-                promise.reject(new Error(envelope.error ?? "unknown runtime call error"));
+                const error = envelope.error;
+                promise.reject(error !== null && typeof error === "object"
+                    ? restoreCallError(error)
+                    : new Error(error ?? "unknown runtime call error"));
                 return;
             }
             promise.resolve("text" in envelope ? envelope.text : envelope.data);
