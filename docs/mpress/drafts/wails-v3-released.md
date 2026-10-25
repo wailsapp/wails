@@ -95,6 +95,14 @@ After v3.0.0, we’re moving to **nightly pre-releases** with dated tags such as
 
 If you find a reproducible bug, please report it with the output of `wails3 doctor` and a minimal example. If you want to propose a new capability or a change to public behaviour, start a draft WEP (Wails Enhancement Proposal) PR rather than a feature-request issue.
 
+## Translations
+
+To everyone who helped translate the Wails v2 documentation: thank you, from the bottom of our hearts. You gave your time so that developers could read the docs in their own language, and that mattered to a lot of people. We are deeply grateful.
+
+We found Crowdin particularly difficult to manage, and we have stopped using it. From v3 onwards, the documentation is translated automatically, and the translations live in the repository next to the English pages.
+
+If you would like a translation in a language we don't have yet, or you have spotted a mistake in one that we do, please open an issue and tell us. We would love to hear from you, and we are thankful for every report.
+
 ## Credit & Thanks
 
 Wails v3 exists because of the people who tested incomplete builds, reported hard bugs, translated documentation, answered questions and contributed code. Thank you. The full list of contributors lives on the [credits page](/credits/), and I'd encourage you to go and look at it.
