@@ -51,6 +51,7 @@ var (
 	procSetBrushOrgEx             = modgdi32.NewProc("SetBrushOrgEx")
 	procSetStretchBltMode         = modgdi32.NewProc("SetStretchBltMode")
 	procSetTextColor              = modgdi32.NewProc("SetTextColor")
+	procGetObjectType             = modgdi32.NewProc("GetObjectType")
 	procSetBkColor                = modgdi32.NewProc("SetBkColor")
 	procStartDoc                  = modgdi32.NewProc("StartDocW")
 	procStartPage                 = modgdi32.NewProc("StartPage")
@@ -417,6 +418,29 @@ func SetTextColor(hdc HDC, crColor COLORREF) COLORREF {
 	}
 
 	return COLORREF(ret)
+}
+
+// TrySetTextColor sets the text colour of a device context and reports
+// whether it worked. Window procedures use it instead of SetTextColor, which
+// panics on failure: a failed paint must never take the whole app down
+// (#6311).
+func TrySetTextColor(hdc HDC, crColor COLORREF) bool {
+	ret, _, _ := procSetTextColor.Call(uintptr(hdc), uintptr(crColor))
+	return ret != CLR_INVALID
+}
+
+// IsValidDC reports whether hdc is a device context GDI recognises
+// (GetObjectType returns 0 for anything else).
+func IsValidDC(hdc HDC) bool {
+	if hdc == 0 {
+		return false
+	}
+	ret, _, _ := procGetObjectType.Call(uintptr(hdc))
+	switch ret {
+	case 3, 4, 10, 12: // OBJ_DC, OBJ_METADC, OBJ_MEMDC, OBJ_ENHMETADC
+		return true
+	}
+	return false
 }
 
 func SetBkColor(hdc HDC, crColor COLORREF) COLORREF {
