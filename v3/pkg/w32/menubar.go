@@ -272,7 +272,30 @@ var (
 	menuIsOpen       bool = false // Track if a dropdown menu is open
 )
 
-func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (bool, LRESULT) {
+// menuBarImpl is the real window-procedure logic; tests replace it to check
+// that MenuBarWndProc contains a failure.
+var menuBarImpl = menuBarWndProc
+
+// MenuBarWndProc draws the themed menu bar. It runs inside the window
+// procedure, where a panic would take the whole app down (#6311), so any
+// failure here is contained and the message is left to Windows' default
+// drawing.
+func MenuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (handled bool, result LRESULT) {
+	switch msg {
+	case WM_UAHDRAWMENU, WM_UAHDRAWMENUITEM, WM_UAHMEASUREMENUITEM:
+		if lParam == 0 {
+			return false, 0
+		}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			handled, result = false, 0
+		}
+	}()
+	return menuBarImpl(hwnd, msg, wParam, lParam, theme)
+}
+
+func menuBarWndProc(hwnd HWND, msg uint32, wParam WPARAM, lParam LPARAM, theme *MenuBarTheme) (bool, LRESULT) {
 	// Only proceed if we have a theme (either for dark or light mode)
 	if theme == nil {
 		return false, 0

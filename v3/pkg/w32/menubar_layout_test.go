@@ -47,3 +47,39 @@ func TestDrawingHelpersNeverPanic(t *testing.T) {
 		t.Error("TrySetTextColor on a memory DC failed")
 	}
 }
+
+// A DC whose previous text colour is CLR_INVALID makes SetTextColor return
+// CLR_INVALID even though the call worked; that is not a failure (#6311).
+func TestTrySetTextColorAcceptsInvalidPreviousColour(t *testing.T) {
+	dc := CreateCompatibleDC(0)
+	if dc == 0 {
+		t.Skip("no memory DC available")
+	}
+	defer DeleteDC(dc)
+	procSetTextColor.Call(uintptr(dc), uintptr(CLR_INVALID))
+	if got, _, _ := procGetTextColor.Call(uintptr(dc)); uint32(got) != CLR_INVALID {
+		t.Skip("this Windows build does not let a DC hold CLR_INVALID")
+	}
+	if !TrySetTextColor(dc, 0xdedede) {
+		t.Error("TrySetTextColor reported failure for a DC whose previous colour was CLR_INVALID")
+	}
+	if got, _, _ := procGetTextColor.Call(uintptr(dc)); uint32(got) != 0xdedede {
+		t.Errorf("text colour = %#x, want 0xdedede", got)
+	}
+}
+
+// MenuBarWndProc must contain a panic and a missing message parameter.
+func TestMenuBarWndProcContainsFailures(t *testing.T) {
+	if handled, _ := MenuBarWndProc(0, WM_UAHDRAWMENUITEM, 0, 0, &MenuBarTheme{}); handled {
+		t.Error("a nil lParam was reported as handled")
+	}
+
+	orig := menuBarImpl
+	defer func() { menuBarImpl = orig }()
+	menuBarImpl = func(HWND, uint32, WPARAM, LPARAM, *MenuBarTheme) (bool, LRESULT) {
+		panic("boom")
+	}
+	if handled, result := MenuBarWndProc(0, WM_UAHDRAWMENUITEM, 0, 1, &MenuBarTheme{}); handled || result != 0 {
+		t.Errorf("a panic was not contained: handled=%v result=%v", handled, result)
+	}
+}

@@ -51,6 +51,7 @@ var (
 	procSetBrushOrgEx             = modgdi32.NewProc("SetBrushOrgEx")
 	procSetStretchBltMode         = modgdi32.NewProc("SetStretchBltMode")
 	procSetTextColor              = modgdi32.NewProc("SetTextColor")
+	procGetTextColor              = modgdi32.NewProc("GetTextColor")
 	procGetObjectType             = modgdi32.NewProc("GetObjectType")
 	procSetBkColor                = modgdi32.NewProc("SetBkColor")
 	procStartDoc                  = modgdi32.NewProc("StartDocW")
@@ -426,7 +427,16 @@ func SetTextColor(hdc HDC, crColor COLORREF) COLORREF {
 // (#6311).
 func TrySetTextColor(hdc HDC, crColor COLORREF) bool {
 	ret, _, _ := procSetTextColor.Call(uintptr(hdc), uintptr(crColor))
-	return ret != CLR_INVALID
+	// COLORREF is a 32-bit value returned in EAX; the upper half of the
+	// register is not defined, so compare only the low 32 bits.
+	if uint32(ret) != CLR_INVALID {
+		return true
+	}
+	// CLR_INVALID is the failure value, but it is also what the call returns
+	// when the DC's previous text colour was CLR_INVALID. Read the colour back
+	// to tell the two apart: on a real failure it will not have changed.
+	cur, _, _ := procGetTextColor.Call(uintptr(hdc))
+	return uint32(cur) == uint32(crColor)
 }
 
 // IsValidDC reports whether hdc is a device context GDI recognises
