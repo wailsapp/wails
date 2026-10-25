@@ -168,6 +168,8 @@
           link: "/guides/dev/debugging/"
         - label: "테스트"
           link: "/guides/testing/"
+        - label: "로컬 오디오 및 비디오 재생"
+          link: "/guides/linux-media/"
     - label: "빌드 & 패키징"
       collapsed: true
       items:

@@ -154,7 +154,17 @@ go build -tags gtk3 -o myapp .
 
 執行`wails3 doctor`以驗證您的設定。不加任何旗標時，它會檢查 GTK4 / WebKitGTK 6.0（預設選項）。舊版 GTK3 / WebKit2GTK 4.1套件會列為選用項目。
 
+## 音訊與影片
+
+對於隨附片段，請依照[播放本機音訊與影片](/guides/linux-media/)使用 `Media.SetSource` 與 `Media.ClearSource`。指南涵蓋媒體檔案系統註冊、取消載入、釋放 blob 與設定大小限制。傳輸使用 Wails 串流，不會開啟監聽通訊端；每個片段在播放前會完整載入，前端預設限制為 32 MiB。
+
+請將媒體格式所需的 GStreamer 編解碼器納入散布需求。傳輸成功不保證目標系統能解碼檔案。請在支援的 Linux 發行版上測試播放。
+
 ## 疑難排解
+
+### 本機音訊或影片無法播放
+
+如果 GStreamer 回報 **No URI handler implemented for "wails"**，請遵循[本機媒體播放指南](/guides/linux-media/)。如果片段載入成功但播放失敗，請檢查編解碼器需求與播放器的 `error` 事件。
 
 ### AppImage 無法執行
 

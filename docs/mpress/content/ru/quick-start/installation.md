@@ -188,6 +188,8 @@ buildInputs = with pkgs; [ webkitgtk_6_0 gtk4 pkg-config gcc ];
 
 @end
 
+Приложениям с аудио или видео также нужны кодеки GStreamer для выбранных форматов. Настройку и устранение проблем см. в руководстве [Воспроизведение локального аудио и видео](/guides/linux-media/).
+
 @note{type="info" title="Устаревший стек GTK3"}
 Если в целевом дистрибутиве ещё нет WebKitGTK 6.0 (например, в Ubuntu 22.04 LTS или Debian 12), вместо этого установите библиотеки разработки GTK3 и WebKit2GTK 4.1 (`libgtk-3-dev libwebkit2gtk-4.1-dev` в Debian/Ubuntu; соответствующие пакеты в других дистрибутивах) и выполните сборку с `wails3 build -tags gtk3`. Устаревший вариант поддерживается в линейке v3.0.x и будет удалён в v3.1. Подробнее см. в разделе [«Пакетирование для Linux — поддержка устаревшего GTK3»](/guides/build/linux/#legacy-gtk3-support).
 

@@ -188,6 +188,8 @@ Jalankan `wails3 doctor` setelah menginstal Wails—perintah tersebut akan menam
 
 @end
 
+Aplikasi yang memutar audio atau video juga memerlukan codec GStreamer untuk format pilihan. Lihat [Memutar Audio dan Video Lokal](/guides/linux-media/) untuk penyiapan media lokal dan pemecahan masalah pemutaran.
+
 @note{type="info" title="Stack GTK3 lama"}
 Jika distribusi target Anda belum menyediakan WebKitGTK 6.0 (misalnya Ubuntu 22.04 LTS, Debian 12), instal pustaka pengembangan GTK3 + WebKit2GTK 4.1 sebagai gantinya (`libgtk-3-dev libwebkit2gtk-4.1-dev` di Debian/Ubuntu; paket setara di distribusi lain), lalu lakukan build dengan `wails3 build -tags gtk3`. Jalur lama didukung hingga lini v3.0.x dan akan dihapus pada v3.1. Lihat [Pemaketan Linux - Dukungan GTK3 Lama](/guides/build/linux/#legacy-gtk3-support) untuk detailnya.
 
