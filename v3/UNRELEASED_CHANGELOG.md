@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Serve v3 documentation from wails.io and v2 documentation from v2.wails.io in [PR](https://github.com/wailsapp/wails/pull/6364) by @taliesin-ai
 - Update v3.0.0 release notes and correct the security advisory claim in [PR](https://github.com/wailsapp/wails/pull/6363) by @taliesin-ai
 
 ## Fixed
