@@ -2,7 +2,7 @@ name: Nightly + Weekly Release v3
 
 on:
   schedule:
-    - cron: '0 15 * * *'  # 3 PM UTC daily  -> nightly (patch bump, vX.Y.N)
+    - cron: '0 15 * * *'  # 3 PM UTC daily  -> nightly pre-release (vX.(Y+1).0-nightly.YYYYMMDD)
     # Weekly (minor bump, vX.Y.0) at 20:00 Australia/Sydney. GitHub cron is
     # UTC-only and has no timezone key, so both DST offsets are scheduled and
     # the `cadence` job proceeds only when it is really 20:00 in Sydney
