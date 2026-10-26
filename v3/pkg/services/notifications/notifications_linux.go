@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -27,6 +28,9 @@ type linuxNotifier struct {
 	scheduledLock     sync.Mutex
 	appName           string
 	cancel            context.CancelFunc
+	// actions is set when the server advertises the "actions" capability: a click then arrives
+	// as ActionInvoked, so a NotificationClosed with reason 2 is a dismissal.
+	actions bool
 }
 
 type notificationData struct {
@@ -71,6 +75,11 @@ func (ln *linuxNotifier) Startup(ctx context.Context, options application.Servic
 		return fmt.Errorf("failed to connect to session bus: %w", err)
 	}
 	ln.conn = conn
+
+	var caps []string
+	if err := conn.Object(dbusNotificationInterface, dbusNotificationPath).Call(dbusNotificationInterface+".GetCapabilities", 0).Store(&caps); err == nil {
+		ln.actions = slices.Contains(caps, "actions")
+	}
 
 	if err := ln.loadCategories(); err != nil {
 		fmt.Printf("Failed to load notification categories: %v\n", err)
@@ -626,7 +635,7 @@ func (ln *linuxNotifier) handleActionInvoked(signal *dbus.Signal) {
 // Handle NotificationClosed signal.
 // Reason codes:
 // 1 - expired timeout
-// 2 - dismissed by user (click on X)
+// 2 - dismissed by user (click on X; on a server without actions, also a click on the body)
 // 3 - closed by CloseNotification call
 // 4 - undefined/reserved
 func (ln *linuxNotifier) handleNotificationClosed(signal *dbus.Signal) {
@@ -655,7 +664,8 @@ func (ln *linuxNotifier) handleNotificationClosed(signal *dbus.Signal) {
 		return
 	}
 
-	if reason == 2 {
+	// With actions, a click already came as ActionInvoked and removed the notification (#6334).
+	if reason == 2 && !ln.actions {
 		response := NotificationResponse{
 			ID:               notification.ID,
 			ActionIdentifier: DefaultActionIdentifier,
