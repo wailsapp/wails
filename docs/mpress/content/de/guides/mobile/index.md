@@ -25,7 +25,7 @@ Android WebView und `WebViewAssetLoader`. Go wird über das NDK als `libwails.so
 
 Am besten erkennen Sie die Möglichkeiten anhand von **Kitchen Sink** – einer einzelnen Wails-App, die aus einer Codebasis identisch auf iOS, Android und Desktop-Plattformen läuft:
 
-@linkcard{title="Mobile Kitchen Sink – GitHub" href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile" description="Bindings · Ereignisse · Dialoge · Haptik · Geolokalisierung · Biometrie · Benachrichtigungen · sicherer Speicher · und mehr – alles aus einer main.go"}
+@linkcard{title="Mobile Kitchen Sink – GitHub" href="https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile" description="Bindings · Ereignisse · Dialoge · Haptik · Geolokalisierung · Biometrie · Benachrichtigungen · sicherer Speicher · und mehr – alles aus einer main.go"}
 Das Beispiel demonstriert alle wichtigen mobilen API-Bereiche auf 7 Registerkarten und läuft auch auf Desktop-Plattformen. Die Registerkarten **Mobil** und **Hardware** werden dort durch eine Plattformprüfung im Frontend ausgeblendet; beim Erstellen für Desktop-Plattformen registriert die Go-Seite keine Handler für mobile `common:*`-Ereignisse. Dies ist das empfohlene Muster, um eine Codebasis auf allen Plattformen auszuliefern.
 
 | Registerkarte | Plattformen | Gezeigte Funktionen |

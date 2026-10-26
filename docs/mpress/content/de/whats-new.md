@@ -348,4 +348,4 @@ Eine experimentelle Funktion zum Aufrufen von Laufzeitmethoden mit einfachem HTM
 
 ## Beispiele
 
-Weitere Beispiele finden Sie im Verzeichnis [examples](https://github.com/wailsapp/wails/tree/master/v3/examples). Sehen Sie sie sich an!
+Weitere Beispiele finden Sie im Verzeichnis [examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples). Sehen Sie sie sich an!

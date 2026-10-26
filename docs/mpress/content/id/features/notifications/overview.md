@@ -416,7 +416,7 @@ Di Linux, notifikasi:
 
 Pelajari contoh ini:
 
-- [Notifikasi](https://github.com/wailsapp/wails/tree/master/v3/examples/notifications)
+- [Notifikasi](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/notifications)
 
 ## Referensi API
 

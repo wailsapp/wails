@@ -652,6 +652,6 @@ app.Updater.SkipVersion("")
 
 ## 関連項目
 
-- 実行可能な例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- 実行可能な例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - テスト用デモリポジトリ：[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - チュートリアル：[Wailsアプリに自己更新機能を追加する](/tutorials/04-self-update-a-wails-app/)

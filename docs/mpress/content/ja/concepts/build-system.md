@@ -686,4 +686,4 @@ v3でのLinux、Windows、macOS間のクロスコンパイルは、通常、Dock
 
 ---
 
-**ビルドについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ビルド例](https://github.com/wailsapp/wails/tree/master/v3/examples/build)を確認してください。
+**ビルドについて質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[ビルド例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/build)を確認してください。

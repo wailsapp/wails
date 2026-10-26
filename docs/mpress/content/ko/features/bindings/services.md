@@ -7,7 +7,7 @@ sourcePath: "features/bindings/services.md"
 
 ## 서비스 아키텍처
 
-Wails <strong>서비스</strong>는 모듈식의 독립적인 컴포넌트로 애플리케이션 로직을 체계적으로 구성할 수 있게 해 줍니다. 서비스는 시작 및 종료 훅을 통해 수명 주기를 인식하고, 프런트엔드에 자동으로 바인딩되며, 종속성을 주입할 수 있고, 완전히 격리된 상태로 테스트할 수 있습니다.
+Wails **서비스**는 모듈식의 독립적인 컴포넌트로 애플리케이션 로직을 체계적으로 구성하는 방법을 제공합니다. 서비스는 시작 및 종료 훅을 통해 수명 주기를 인식하고, 프런트엔드에 자동으로 바인딩되며, 종속성을 주입할 수 있고, 완전히 격리하여 테스트할 수 있습니다.
 
 ## 빠른 시작
 
@@ -70,7 +70,7 @@ app := application.New(application.Options{
 **핵심 사항:**
 
 - **내보낸 메서드**(PascalCase)만 바인딩됩니다.
-- 서비스는 <strong>싱글턴</strong>입니다(인스턴스 하나).
+- 서비스는 **싱글턴**입니다(인스턴스 하나).
 - 메서드는 `(value, error)`을(를) 반환할 수 있습니다.
 
 ### 상태가 있는 서비스
@@ -181,8 +181,8 @@ func (u *UserService) ServiceStartup(ctx context.Context, options application.Se
 
 **중요:**
 
-- 서비스는 <strong>등록 순서</strong>대로 시작됩니다.
-- <strong>애플리케이션 시작을 중단</strong>하려면 오류를 반환하세요.
+- 서비스는 **등록 순서**대로 시작됩니다.
+- 오류를 반환하여 **애플리케이션 시작을 방지**합니다.
 - 취소에는 `ctx`을(를) 사용하세요.
 
 ### ServiceShutdown
@@ -210,14 +210,14 @@ func (u *UserService) ServiceShutdown() error {
 - 연결 닫기
 - 상태 저장
 - 리소스 정리
-- 버퍼 비우기
+- 버퍼 플러시
 - 백그라운드 작업 취소
 
 **중요:**
 
-- 서비스는 <strong>역순</strong>으로 종료됩니다.
+- 서비스는 **역순**으로 종료됩니다.
 - 애플리케이션 컨텍스트는 이미 취소된 상태입니다.
-- <strong>경고를 기록</strong>하려면 오류를 반환하세요(종료를 막지는 않습니다).
+- 오류를 반환하면 **경고가 기록**됩니다(종료를 막지는 않음).
 
 ### 전체 수명 주기 예제
 
@@ -304,9 +304,17 @@ app := application.New(application.Options{
 
 **사용 사례:**
 
-- 동일한 서비스 유형의 여러 인스턴스
 - 더 명확한 로깅
 - 더 나은 디버깅
+
+`ServiceOptions.Name`은(는) 로깅 및 디버깅에 사용하는 표시 이름이며, 생성되는 바인딩 네임스페이스를 변경하지 않습니다. 각 Go 타입의 서비스는 최대 하나만 등록하세요. 서로 독립적으로 구성된 인스턴스가 필요하면 다음과 같이 서로 다른 래퍼 타입을 사용하세요.
+
+```go
+type PrimaryStore struct { *Store }
+type ArchiveStore struct { *Store }
+```
+
+`*Store` 값 두 개를 등록하는 대신 `application.NewService(&PrimaryStore{primary})` 및 `application.NewService(&ArchiveStore{archive})`을(를) 등록하세요.
 
 ### HTTP 경로
 
@@ -332,7 +340,7 @@ app := application.New(application.Options{
 })
 ```
 
-**접속:** `http://wails.localhost/files/...`
+**접근:** `http://wails.localhost/files/...`
 
 **사용 사례:**
 
@@ -403,7 +411,7 @@ func (s *UserService) RegisterUser(email, password string) (*User, error) {
 }
 ```
 
-### 팩토리 패턴
+### 팩터리 패턴
 
 ```go
 type ServiceFactory struct {
@@ -548,7 +556,7 @@ func TestCalculatorService_Add(t *testing.T) {
 }
 ```
 
-### 종속성을 사용한 테스트
+### 종속성을 포함한 테스트
 
 ```go
 func TestUserService_GetUser(t *testing.T) {
@@ -604,21 +612,21 @@ func TestDatabaseService_Lifecycle(t *testing.T) {
 
 ### ✅ 권장 사항
 
-- **단일 책임** - 하나의 서비스는 하나의 목적만 담당하도록 하세요
-- **생성자 주입** - 의존성을 명시적으로 전달하세요
-- **스레드 안전 상태** - 뮤텍스를 사용하세요
-- **오류 반환** - 패닉을 발생시키지 마세요
-- **중요한 이벤트 로깅** - 구조화된 로깅을 사용하세요
-- **격리된 환경에서 테스트** - 의존성을 모의 객체로 대체하세요
+- **단일 책임** - 서비스 하나에는 목적 하나만 부여하세요.
+- **생성자 주입** - 종속성을 명시적으로 전달하세요.
+- **스레드 안전 상태** - 뮤텍스를 사용하세요.
+- **오류 반환** - 패닉을 발생시키지 마세요.
+- **중요한 이벤트 기록** - 구조화된 로깅을 사용하세요.
+- **격리 테스트** - 종속성을 모킹하세요.
 
-### ❌ 피해야 할 사항
+### ❌ 금지 사항
 
-- **전역 상태를 사용하지 마세요** - 의존성을 전달하세요
-- **시작을 지연시키지 마세요** - ServiceStartup을 빠르게 완료하세요
-- **종료 처리를 무시하지 마세요** - 항상 정리 작업을 수행하세요
-- **순환 의존성을 만들지 마세요** - 신중하게 설계하세요
-- **내부 메서드를 노출하지 마세요** - 비공개로 유지하세요
-- **스레드 안전성을 잊지 마세요** - 서비스는 공유됩니다
+- **전역 상태를 사용하지 마세요** - 종속성을 전달하세요.
+- **시작을 지연시키지 마세요** - ServiceStartup을 빠르게 완료하세요.
+- **종료를 무시하지 마세요** - 항상 정리하세요.
+- **순환 종속성을 만들지 마세요** - 신중하게 설계하세요.
+- **내부 메서드를 노출하지 마세요** - 비공개로 유지하세요.
+- **스레드 안전성을 잊지 마세요** - 서비스는 공유됩니다.
 
 ## 전체 예제
 
@@ -794,11 +802,11 @@ func main() {
 
 ## 다음 단계
 
-- [메서드 바인딩](/features/bindings/methods/) - Go 메서드를 JavaScript에 바인딩하는 방법을 알아보세요
-- [모델](/features/bindings/models/) - 복잡한 데이터 구조를 바인딩하세요
-- [이벤트](/features/events/system/) - 게시/구독 통신에 이벤트를 사용하세요
+- [메서드 바인딩](/features/bindings/methods/) - Go 메서드를 JavaScript에 바인딩하는 방법을 알아보세요.
+- [모델](/features/bindings/models/) - 복잡한 데이터 구조를 바인딩하세요.
+- [이벤트](/features/events/system/) - 게시/구독 통신에 이벤트를 사용하세요.
 - [모범 사례](/features/bindings/best-practices/) - 서비스 설계 패턴 및 모범 사례
 
 ---
 
-**질문이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [서비스 예제](https://github.com/wailsapp/wails/tree/master/v3/examples)를 확인하세요.
+**궁금한 점이 있으신가요?** [Discord](https://discord.gg/JDdSxwjhGf)에서 질문하거나 [서비스 예제](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples)를 확인하세요.

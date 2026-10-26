@@ -13,7 +13,7 @@ Terima kasih atas minat Anda untuk berkontribusi pada Wails! Panduan ini akan me
 
 Sebelum memulai, pastikan Anda memiliki:
 
-- **Go 1.25+** yang telah terinstal ([unduh](https://go.dev/dl/))
+- **Go 1.26+** yang telah terinstal ([unduh](https://go.dev/dl/))
 - **Node.js 20+** dan **npm** ([unduh](https://nodejs.org/))
 - **Git** yang telah dikonfigurasi dengan akun GitHub Anda
 - Pemahaman dasar tentang Go dan JavaScript/TypeScript
@@ -33,18 +33,18 @@ Sebelum memulai, pastikan Anda memiliki:
 
 - `gcc`, `pkg-config`, `libgtk-4-dev`, `libwebkitgtk-6.0-dev` (tumpukan GTK4 bawaan)
 - Instal melalui: `sudo apt install build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev` (Debian/Ubuntu)
-- Untuk jalur build `-tags gtk3` lama, instal juga `libgtk-3-dev` dan `libwebkit2gtk-4.1-dev`
+- Untuk jalur build `-tags gtk3` versi lama, instal juga `libgtk-3-dev` dan `libwebkit2gtk-4.1-dev`
 
-## Ikhtisar Proses Kontribusi
+## Ringkasan Proses Kontribusi
 
 Alur kerja kontribusi umumnya mengikuti langkah-langkah berikut:
 
-1. **Fork & Klona** - Buat salinan repositori Wails milik Anda sendiri
+1. **Fork & Clone** - Buat salinan repositori Wails Anda sendiri
 2. **Siapkan** - Build CLI Wails dan verifikasi lingkungan Anda
 3. **Buat Branch** - Buat branch fitur untuk perubahan Anda
-4. **Kembangkan** - Buat perubahan sesuai standar pengodean kami
+4. **Kembangkan** - Lakukan perubahan sesuai standar penulisan kode kami
 5. **Uji** - Jalankan pengujian untuk memastikan semuanya berfungsi
-6. **Commit** - Lakukan commit dengan pesan commit konvensional yang jelas
+6. **Commit** - Buat commit dengan pesan conventional commit yang jelas
 7. **Kirim** - Buka pull request untuk ditinjau
 8. **Iterasikan** - Tanggapi umpan balik dan lakukan penyesuaian
 9. **Gabungkan** - Setelah disetujui, perubahan Anda menjadi bagian dari Wails!
@@ -61,10 +61,10 @@ Pilih jenis kontribusi Anda:
 - Jika belum, buat issue baru yang menyertakan langkah-langkah untuk mereproduksinya
 - Tunggu konfirmasi sebelum mulai mengerjakannya
 
-### Fork dan Klona
+### Fork dan Clone
 Fork repositori di [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
 
-Klona fork Anda:
+Clone fork Anda:
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/wails.git
@@ -73,7 +73,7 @@ git remote add upstream https://github.com/wailsapp/wails.git
 ```
 
 ### Build dan Verifikasi
-Build Wails dan verifikasi bahwa Anda dapat mereproduksi bug tersebut:
+Build Wails dan pastikan Anda dapat mereproduksi bug tersebut:
 
 ```bash
 cd v3
@@ -90,8 +90,8 @@ git checkout -b fix/issue-123-window-crash
 ```
 
 ### Perbaiki Bug
-- Buat perubahan seminimal mungkin yang diperlukan untuk memperbaiki bug
-- Jangan merefaktor kode yang tidak terkait
+- Lakukan perubahan seminimal mungkin yang diperlukan untuk memperbaiki bug
+- Jangan melakukan refaktor pada kode yang tidak terkait
 - Tambahkan atau perbarui pengujian untuk mencegah regresi
 
 ```bash
@@ -113,7 +113,7 @@ go test ./... -race
 ```
 
 ### Commit Perbaikan Anda
-Lakukan commit dengan pesan yang jelas:
+Buat commit dengan pesan yang jelas:
 
 ```bash
 git commit -m "fix: prevent window crash when closing during initialization
@@ -122,7 +122,7 @@ Fixes #123"
 ```
 
 ### Kirim Pull Request
-Lakukan push dan buat PR:
+Push perubahan dan buat PR:
 
 ```bash
 git push origin fix/issue-123-window-crash
@@ -132,26 +132,26 @@ Dalam deskripsi PR Anda:
 
 - Jelaskan bug dan akar penyebabnya
 - Jelaskan perbaikan Anda
-- Cantumkan referensi issue: "Fixes #123"
+- Cantumkan referensi ke issue: "Fixes #123"
 - Sertakan perilaku sebelum dan sesudah perbaikan
 
 ### Tanggapi Umpan Balik
-Tindak lanjuti komentar tinjauan dan perbarui PR Anda sesuai kebutuhan.
+Tanggapi komentar tinjauan dan perbarui PR Anda sesuai kebutuhan.
 
 @end
 
 [WEP (Peningkatan)]
 @steps
 ### Tulis WEP
-- Baca [proses WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)
+- Baca proses [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)
 - Salin templat WEP ke `v3/wep/proposals/<name>/proposal.md`
 - Buka draf PR berjudul `[WEP] <title>` yang hanya berisi WEP
-- Tunggu keputusan pengelola sebelum mengimplementasikannya
+- Tunggu keputusan maintainer sebelum mulai mengimplementasikannya
 
-### Fork dan Klona
+### Fork dan Clone
 Fork repositori di [github.com/wailsapp/wails/fork](https://github.com/wailsapp/wails/fork)
 
-Klona fork Anda:
+Clone fork Anda:
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/wails.git
@@ -180,7 +180,7 @@ git checkout -b feat/window-transparency-support
 ### Implementasikan Fitur
 - Ikuti [Standar Penulisan Kode](/contributing/standards/) kami
 - Pastikan perubahan tetap berfokus pada fitur tersebut
-- Tulis kode yang rapi dan terdokumentasi
+- Tulis kode yang bersih dan terdokumentasi
 - Tambahkan pengujian yang menyeluruh
 
 ```bash
@@ -209,7 +209,7 @@ cd feature-test
 ### Dokumentasikan Fitur Anda
 - Tambahkan docstring ke semua API publik
 - Perbarui dokumentasi yang relevan di `/docs/mpress/content/`
-- Tambahkan contoh jika relevan
+- Tambahkan contoh jika sesuai
 
 ### Buat Commit Sesuai Konvensi
 Gunakan conventional commit:
@@ -225,7 +225,7 @@ Closes #456"
 ```
 
 ### Kirim Pull Request
-Lakukan push dan buat PR:
+Push perubahan dan buat PR:
 
 ```bash
 git push origin feat/window-transparency-support
@@ -235,16 +235,16 @@ Dalam PR Anda:
 
 - Jelaskan fitur dan kasus penggunaannya
 - Tampilkan contoh atau tangkapan layar
-- Cantumkan setiap breaking change
-- Referensikan PR WEP yang telah diterima
+- Cantumkan semua breaking change
+- Cantumkan referensi ke PR WEP yang telah disetujui
 
-### Lakukan Iterasi Berdasarkan Hasil Tinjauan
-Maintainer mungkin meminta perubahan. Bersabarlah dan bekerjalah secara kolaboratif.
+### Iterasikan Berdasarkan Hasil Tinjauan
+Pengelola mungkin meminta perubahan. Bersabarlah dan bekerja samalah.
 
 @end
 
 [Dokumentasi]
-PR koreksi dapat langsung diajukan tanpa perlu membuka issue terlebih dahulu. Koreksi yang hanya menyangkut dokumentasi tidak memerlukan pengujian kode yang gagal. Ikuti [Perbaiki dokumentasi](/contributing/documentation/) untuk langkah-langkah instalasi M-Press, path sumber, pratinjau, validasi, dan PR.
+PR koreksi dapat diajukan tanpa perlu membuka issue terlebih dahulu. Koreksi yang hanya menyangkut dokumentasi tidak memerlukan pengujian kode yang gagal. Ikuti [Menulis dokumentasi dengan M-Press](/contributing/documentation/) untuk mengetahui langkah-langkah instalasi M-Press, jalur sumber, pratinjau, validasi, dan PR.
 
 @end
 
@@ -252,20 +252,20 @@ PR koreksi dapat langsung diajukan tanpa perlu membuka issue terlebih dahulu. Ko
 
 - Cari label [`good first issue`](https://github.com/wailsapp/wails/labels/good%20first%20issue)
 - Periksa issue [`help wanted`](https://github.com/wailsapp/wails/labels/help%20wanted)
-- Telusuri [issue yang terbuka](https://github.com/wailsapp/wails/issues) dan mintalah agar issue tersebut ditugaskan kepada Anda
+- Telusuri [issue yang terbuka](https://github.com/wailsapp/wails/issues) dan mintalah agar issue ditugaskan kepada Anda
 
 ## Mendapatkan Bantuan
 
 - **Discord:** Bergabunglah dengan [Discord Wails](https://discord.gg/JDdSxwjhGf)
 - **Diskusi:** Buat postingan di [GitHub Discussions](https://github.com/wailsapp/wails/discussions)
-- **Issue:** Buka issue untuk bug yang dapat direproduksi; gunakan Discussions untuk pertanyaan dan PR WEP untuk peningkatan
+- **Issue:** Buka issue untuk bug yang dapat direproduksi; gunakan Discussions untuk pertanyaan dan PR WEP untuk penyempurnaan
 
 ## Kode Etik
 
-Bersikaplah penuh hormat, konstruktif, dan ramah. Kita membangun komunitas yang bersahabat dengan fokus menciptakan perangkat lunak hebat bersama-sama.
+Bersikaplah saling menghormati, konstruktif, dan ramah. Kita sedang membangun komunitas yang bersahabat dan berfokus pada pembuatan perangkat lunak hebat bersama-sama.
 
 ## Langkah Berikutnya
 
 - Siapkan [Lingkungan Pengembangan](/contributing/setup/) Anda
-- Tinjau [Standar Penulisan Kode](/contributing/standards/) kami
+- Tinjau [Standar Pengodean](/contributing/standards/) kami
 - Jelajahi [Dokumentasi Teknis](/contributing/overview/)

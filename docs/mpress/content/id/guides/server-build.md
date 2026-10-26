@@ -5,15 +5,15 @@ slug: "guides/server-build"
 sourcePath: "guides/server-build.md"
 ---
 
-Wails v3 mendukung mode server, yang memungkinkan Anda menjalankan aplikasi sebagai server HTTP murni tanpa membuat jendela native atau memerlukan dependensi GUI. Dengan demikian, aplikasi Wails yang sama dapat diterapkan ke server dan kontainer, serta diakses melalui browser web.
+Wails v3 mendukung mode server, sehingga Anda dapat menjalankan aplikasi sebagai server HTTP murni tanpa membuat jendela native atau memerlukan dependensi GUI. Dengan demikian, aplikasi Wails yang sama dapat diterapkan ke server, kontainer, dan browser web.
 
 Mode server berguna untuk:
 
-- **Penerapan Docker/kontainer** - Berjalan tanpa dependensi X11/Wayland
+- **Deployment Docker/kontainer** - Jalankan tanpa dependensi X11/Wayland
 - **Aplikasi sisi server** - Terapkan sebagai server web yang dapat diakses melalui browser
 - **Akses khusus web** - Gunakan basis kode yang sama untuk desktop dan web
 - **Pengujian CI/CD** - Jalankan pengujian integrasi tanpa server tampilan
-- **Layanan mikro** - Gunakan binding Wails dalam layanan backend tanpa antarmuka grafis
+- **Layanan mikro** - Gunakan binding Wails dalam layanan backend headless
 
 ## Mulai Cepat
 
@@ -28,7 +28,7 @@ wails3 task run:server
 go build -tags server -o myapp-server .
 ```
 
-Berikut contoh minimalnya:
+Berikut contoh minimal:
 
 ```go
 package main
@@ -95,11 +95,11 @@ Server: application.ServerOptions{
     // Graceful shutdown timeout. Default: 30s
     ShutdownTimeout: 30 * time.Second,
 
-    // Additional origins allowed to open WebSocket connections.
-    // Same-origin connections are always allowed.
+    // Additional origins allowed to open WebSocket connections and call
+    // /wails/runtime. Same-origin requests are always allowed.
     WebSocketOriginPatterns: []string{"app.example.com"},
 
-    // Disable WebSocket origin checks. Unsafe; default: false.
+    // Disable WebSocket and runtime origin checks. Unsafe; default: false.
     WebSocketAllowAllOrigins: false,
 
     // TLS configuration (optional)
@@ -121,7 +121,7 @@ curl http://localhost:8080/health
 # {"status":"ok"}
 ```
 
-Endpoint ini berguna untuk:
+Ini berguna untuk:
 
 - Probe liveness/readiness Kubernetes
 - Pemeriksaan kesehatan load balancer
@@ -152,7 +152,7 @@ const greeting = await wails.Call.ByName('main.GreetService.Greet', 'World');
 
 ### Peristiwa
 
-Peristiwa berfungsi dua arah dalam mode server:
+Peristiwa bekerja dua arah dalam mode server:
 
 - **Frontend ke Backend**: Peristiwa yang dipancarkan dari browser dikirim melalui HTTP dan diterima oleh handler peristiwa Go Anda
 - **Backend ke Frontend**: Peristiwa yang dipancarkan dari Go disiarkan ke semua browser yang terhubung melalui WebSocket
@@ -182,9 +182,9 @@ wails.Events.On('server-update', (event) => {
 });
 ```
 
-### Penghentian yang Mulus
+### Penghentian dengan Aman
 
-Server menangani sinyal `SIGINT` dan `SIGTERM` dengan baik:
+Server menangani sinyal `SIGINT` dan `SIGTERM` dengan aman:
 
 1. Berhenti menerima koneksi baru
 2. Menunggu permintaan aktif selesai (hingga `ShutdownTimeout`)
@@ -199,7 +199,7 @@ Server menangani sinyal `SIGINT` dan `SIGTERM` dengan baik:
 | Baki sistem | Tersedia | Tidak tersedia |
 | Dialog native | Tersedia | Tidak tersedia |
 | Menu aplikasi | Tersedia | Tidak tersedia |
-| Informasi layar | Tersedia | Mengembalikan galat |
+| Informasi layar | Tersedia | Tidak ada layar native; `GetPrimary()` mengembalikan `nil` |
 | Binding layanan | Berfungsi | Berfungsi |
 | Peristiwa | Berfungsi | Berfungsi (melalui WebSocket) |
 | Aset | Melalui webview | Melalui HTTP |
@@ -207,17 +207,24 @@ Server menangani sinyal `SIGINT` dan `SIGTERM` dengan baik:
 
 ### Perilaku API Jendela
 
-Dalam mode server, API terkait jendela ditangani dengan aman:
+Dalam mode server, API yang berkaitan dengan jendela ditangani dengan aman:
 
-- `app.Window.NewWithOptions()` - Mencatat peringatan dan mengembalikan nil
+- `app.Window.NewWithOptions(options)` - Mengembalikan objek jendela Go non-nil; tindakan ini tidak membuat jendela desktop native
 - `app.Hide()` / `app.Show()` - Tidak melakukan apa pun
-- `app.Screen.GetPrimary()` - Mengembalikan galat
+- `app.Screen.GetPrimary()` - Mengembalikan `*application.Screen`, yang bernilai `nil` jika tidak tersedia layar utama; periksa sebelum melakukan dereferensi
 
-Hal ini memungkinkan kode yang merujuk ke jendela berjalan tanpa mengalami crash, meskipun operasi jendela tidak memiliki efek apa pun.
+Bedakan objek jendela Go dari ketersediaan jendela native. Lindungi perilaku khusus desktop saat melakukan build server; objek jendela Go non-nil tidak membuktikan bahwa jendela atau layar native tersedia.
+
+### Platform yang Didukung
+
+Mode server menggunakan Go murni dan dapat dikompilasi untuk setiap `GOOS` yang didukung Wails, termasuk `android` dan `ios`, tanpa CGO. Pada target seluler, mode ini hanya membangun server headless:
+
+- API seluler native, `application.Android` dan `application.IOS`, tidak tersedia. Kode yang menggunakannya harus dikecualikan dari build server dengan batasan build `!server`.
+- Logger default adalah logger desktop, yang menulis ke stderr dalam build pengembangan, bukan ke logcat atau konsol WebView.
 
 ## Build untuk Produksi
 
-### Menggunakan Task (Direkomendasikan)
+### Menggunakan Task (Disarankan)
 
 Proyek yang dibuat dengan `wails3 init` menyertakan task `build:server`:
 
@@ -238,7 +245,7 @@ go build -tags server -o myapp-server .
 
 ### Docker
 
-Proyek Wails menyertakan penyiapan Docker yang siap digunakan. Untuk mem-build dan menjalankan aplikasi Anda di dalam container:
+Proyek Wails menyertakan konfigurasi Docker yang siap digunakan. Untuk mem-build dan menjalankan aplikasi Anda dalam kontainer:
 
 ```bash
 # Build the Docker image
@@ -250,7 +257,7 @@ wails3 task run:docker
 
 Selesai! Aplikasi Anda akan tersedia di `http://localhost:8080`.
 
-Anda dapat menyesuaikan proses build dengan beberapa opsi:
+Anda dapat menyesuaikan build dengan beberapa opsi:
 
 ```bash
 # Use a custom image tag
@@ -260,7 +267,7 @@ wails3 task build:docker TAG=myapp:v1.0.0
 wails3 task run:docker PORT=3000
 ```
 
-`Dockerfile.server` yang dihasilkan membuat image minimal berbasis distroless. Pengikatan jaringan ditangani secara otomatis sehingga aplikasi Anda dapat diakses dari luar container.
+`Dockerfile.server` yang dihasilkan membuat image minimal berbasis distroless. Konfigurasi tersebut menangani binding jaringan secara otomatis, sehingga aplikasi Anda dapat diakses dari luar kontainer.
 
 ### Docker Compose
 
@@ -282,7 +289,7 @@ services:
 ```
 
 @note{type="info"}
-Contoh pemeriksaan kesehatan menggunakan `wget`. Jika menggunakan base image distroless, Anda harus menyertakan binary pemeriksaan kesehatan dalam image atau menggunakan mekanisme pemeriksaan kesehatan eksternal (misalnya, opsi `curl` Docker atau container sidecar).
+Contoh pemeriksaan kesehatan menggunakan `wget`. Jika menggunakan image dasar distroless, Anda perlu menyertakan biner pemeriksaan kesehatan dalam image atau menggunakan mekanisme pemeriksaan kesehatan eksternal (misalnya, opsi `curl` Docker atau container sidecar).
 
 @end
 
@@ -310,13 +317,13 @@ ENTRYPOINT ["/server"]
 
 ## Pertimbangan Keamanan
 
-Saat men-deploy aplikasi dalam mode server:
+Saat menerapkan aplikasi dalam mode server:
 
 1. **Ikat ke localhost secara default** - Gunakan `0.0.0.0` hanya jika diperlukan
-2. **Gunakan TLS dalam produksi** - Konfigurasikan `ServerOptions.TLS`
-3. **Tempatkan di belakang reverse proxy** - Gunakan nginx/traefik untuk keamanan tambahan
-4. **Pertahankan WebSocket pada origin yang sama** - Tambahkan hanya origin tepercaya dengan `WebSocketOriginPatterns`; hindari `WebSocketAllowAllOrigins`
-5. **Validasi semua input** - Terapkan praktik keamanan yang sama seperti pada aplikasi web lainnya
+2. **Gunakan TLS di lingkungan produksi** - Konfigurasikan `ServerOptions.TLS`
+3. **Tempatkan di belakang proksi balik** - Gunakan nginx/traefik untuk keamanan tambahan
+4. **Pastikan WebSocket dan panggilan runtime menggunakan origin yang sama** - Tambahkan hanya origin tepercaya dengan `WebSocketOriginPatterns`; hindari `WebSocketAllowAllOrigins`
+5. **Validasi semua input** - Terapkan praktik keamanan yang sama seperti pada aplikasi web apa pun
 
 ## Contoh
 
@@ -336,14 +343,14 @@ go run -tags server .
 
 ## Variabel Lingkungan
 
-Untuk skenario deployment yang mengharuskan Anda mengganti konfigurasi server tanpa mengubah kode, Wails mengenali variabel lingkungan berikut:
+Untuk skenario penerapan yang mengharuskan Anda mengganti konfigurasi server tanpa mengubah kode, Wails mengenali variabel lingkungan berikut:
 
 | Variabel | Deskripsi | Default |
 | --- | --- | --- |
-| `WAILS_SERVER_HOST` | Antarmuka jaringan yang akan diikat | `localhost` |
-| `WAILS_SERVER_PORT` | Port yang akan digunakan untuk menerima koneksi | `8080` |
+| `WAILS_SERVER_HOST` | Antarmuka jaringan yang akan digunakan untuk pengikatan | `localhost` |
+| `WAILS_SERVER_PORT` | Port yang akan dipantau | `8080` |
 
-Variabel ini diprioritaskan daripada `ServerOptions` dalam kode Anda. Karena itu, contoh Docker mengatur `WAILS_SERVER_HOST=0.0.0.0` agar container dapat menerima koneksi eksternal tanpa memerlukan perubahan apa pun pada aplikasi Anda.
+Variabel ini lebih diutamakan daripada `ServerOptions` dalam kode Anda. Karena itu, contoh Docker mengatur `WAILS_SERVER_HOST=0.0.0.0` agar container dapat menerima koneksi eksternal tanpa memerlukan perubahan apa pun pada aplikasi Anda.
 
 ## Lihat Juga
 
@@ -353,4 +360,14 @@ Variabel ini diprioritaskan daripada `ServerOptions` dalam kode Anda. Karena itu
 
 ### Ukuran permintaan runtime
 
-Permintaan ke `/wails/runtime` dibatasi hingga 64 MiB sebelum pemrosesan JSON. Permintaan biasa yang melebihi batas ini menerima HTTP 413, termasuk permintaan tanpa `Content-Length`. Unggahan runtime bertahap tetap memiliki batas terpisah sebesar 1 MiB per potongan dan 64 MiB untuk payload yang telah dirangkai. Gunakan middleware aplikasi atau reverse proxy untuk memberlakukan batas yang lebih rendah jika diperlukan.
+Permintaan ke `/wails/runtime` dibatasi hingga 64 MiB sebelum pemrosesan JSON. Permintaan biasa yang melebihi batas ini menerima HTTP 413, termasuk permintaan tanpa `Content-Length`. Unggahan runtime bertahap tetap memiliki batas tersendiri sebesar 1 MiB per bagian dan 64 MiB untuk payload yang telah dirakit. Gunakan middleware aplikasi atau proksi balik untuk menerapkan batas yang lebih rendah jika diperlukan.
+
+### Origin permintaan runtime
+
+`/wails/runtime` hanya menerima permintaan `POST`; metode lain menerima HTTP 405. Permintaan browser yang nilai `Origin`-nya bukan host permintaan maupun tidak cocok dengan `WebSocketOriginPatterns` akan menerima HTTP 403. Hal yang sama berlaku untuk permintaan tanpa `Origin` yang `Sec-Fetch-Site`-nya adalah `cross-site` atau `same-site`. Permintaan yang tidak membawa kedua header tersebut, seperti permintaan dari `curl` atau klien non-browser lainnya, akan diterima. Jika proksi balik menulis ulang header `Host`, tambahkan origin publik ke `WebSocketOriginPatterns`.
+
+`WebSocketOriginPatterns` disediakan untuk penerapan dengan proksi balik, ketika origin publik berbeda dari `Host` yang dilihat oleh aplikasi. Frontend yang disajikan dari origin berbeda dan memanggil `/wails/runtime` secara langsung tidak didukung: endpoint tidak mengirim header CORS dan merespons permintaan preflight `OPTIONS` dengan HTTP 405. Sajikan frontend dari server Wails, atau tempatkan keduanya di belakang origin proksi yang sama.
+
+### Pemeriksaan Host Loopback
+
+Saat server diikat ke alamat loopback (`localhost` default, alamat `127.0.0.0/8` apa pun, atau `::1`, baik yang diatur dalam `ServerOptions.Host` maupun `WAILS_SERVER_HOST`), setiap permintaan harus membawa header `Host` yang menyebutkan `localhost`, literal IP, host pengikatan, atau host yang cocok dengan bagian host dari entri `WebSocketOriginPatterns`; setiap `Host` lainnya akan menerima HTTP 403. Pemeriksaan ini mencegah DNS rebinding, yaitu ketika halaman web berbahaya mengarahkan nama host-nya sendiri ke `127.0.0.1` agar permintaannya lolos dari pemeriksaan origin yang sama di atas. Port tidak dibandingkan, dan penulisan seperti `localhost.` (dengan titik di belakang) atau `127.1` ditolak. Pemeriksaan tetap berlaku ketika `WebSocketAllowAllOrigins` diatur. Jika proksi balik lokal meneruskan `Host` publiknya, tambahkan host tersebut ke `WebSocketOriginPatterns`. Pengikatan ke alamat lain, seperti `0.0.0.0` dalam container, tidak terpengaruh.

@@ -34,7 +34,7 @@ sourcePath: "feedback.md"
 [功能增強]
 新功能及公開行為的變更應透過<strong>WEP（Wails Enhancement Proposal）</strong>草稿提取要求提出，而非建立功能要求議題。
 
-- 閱讀[WEP 流程](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md)。
+- 閱讀[WEP 流程](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md)。
 - 複製範本，接著建立標題為`[WEP] <title>`的草稿 PR，其中僅包含 WEP 及其支援資料。
 - 您可以先在[GitHub Discussions](https://github.com/wailsapp/wails/discussions)或 Discord 的[#v3](https://discord.gg/bdj28QNHmT)頻道非正式討論構想，但維護者必須收到 WEP PR 才能作出決定。
 

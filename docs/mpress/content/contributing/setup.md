@@ -13,7 +13,7 @@ This guide walks you through setting up a complete development environment for w
 
 ### Go Development
 
-1. **Install Go 1.25 or later:**
+1. **Install Go 1.26 or later:**
   ```bash
   # Download from https://go.dev/dl/
   go version  # Verify installation
@@ -97,7 +97,7 @@ sudo pacman -S gtk3 webkit2gtk-4.1
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/wails.git
+git clone --branch releases/v3.0.0 https://github.com/YOUR_USERNAME/wails.git
 cd wails
 
 # Add upstream remote
@@ -228,23 +228,9 @@ go test ./... -race
 
 ## Working with Documentation
 
-The Wails v3 documentation is written in M-Press. English source files live in  
-`docs/mpress/content/`; translations live in language directories such as  
-`fr/` and `id/`.
+Documentation contributors can use M-Press without installing the Wails CLI or desktop build dependencies. Follow [Write documentation with M-Press](/contributing/documentation/) for the pinned executable downloads, installation, live preview, validation and release-branch PR workflow.
 
-Preview and validate documentation changes from the repository root:
-
-```bash
-go install github.com/leaanthony/mpress/cmd/mpress@v1.0.17
-mpress dev
-mpress build --strict --no-purge-css
-mpress check
-# Use `python` on Windows if `python3` is unavailable.
-python3 docs/mpress/scripts/check_site.py docs/mpress/site
-```
-
-The production site is static. Node.js, a translation provider, and Cloudflare  
-credentials are not required for local documentation work.
+English Markdown lives in `docs/mpress/content/`; translations live in language directories. From the repository root, `mpress dev` serves the preview at `http://127.0.0.1:3000`. Stop it with Ctrl+C before running the guide's validation commands.
 
 ## Debugging
 

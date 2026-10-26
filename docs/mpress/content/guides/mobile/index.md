@@ -25,7 +25,7 @@ Android WebView + `WebViewAssetLoader`. Go compiled as `libwails.so` via the NDK
 
 The best way to understand what's possible is to look at the **Kitchen Sink** — a single Wails app that runs identically on iOS, Android and desktop from one codebase:
 
-@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/master/v3/examples/mobile" description="Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · and more — all from one main.go"}
+@linkcard{title="Mobile Kitchen Sink — GitHub" href="https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/mobile" description="Bindings · Events · Dialogs · Haptics · Geolocation · Biometrics · Notifications · Secure storage · and more — all from one main.go"}
 It demonstrates every major mobile API surface across 7 tabs — and it runs on desktop too. The **Mobile** and **Hardware** tabs are hidden on desktop via a platform check in the frontend; the Go side registers no handlers for `common:*` mobile events when built for desktop. This is the recommended pattern for shipping one codebase everywhere.
 
 | Tab | Platforms | What it shows |

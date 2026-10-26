@@ -201,7 +201,10 @@ func bundleExecutable(path string) (string, bool) {
 		return "", false
 	}
 	name, ok := xmlPlistString(data, "CFBundleExecutable")
-	if !ok && runtime.GOOS == "darwin" {
+	// plutil is only a fallback for binary plists. Apple's parser accepts XML
+	// that the strict reader above rejects (an unclosed dict, content after
+	// </plist>), so an XML plist must not get a second chance through it.
+	if !ok && runtime.GOOS == "darwin" && isBinaryPlist(data) {
 		name, ok = plutilString(path, "CFBundleExecutable")
 	}
 	if name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
@@ -261,6 +264,12 @@ func xmlPlistString(data []byte, key string) (value string, ok bool) {
 			depth--
 		}
 	}
+}
+
+// isBinaryPlist reports whether data starts with the binary property list
+// header ("bplist", followed by a format version such as "00").
+func isBinaryPlist(data []byte) bool {
+	return bytes.HasPrefix(data, []byte("bplist"))
 }
 
 // plutilString validates a binary plist before looking up its executable key.

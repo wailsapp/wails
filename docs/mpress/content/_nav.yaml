@@ -1,68 +1,45 @@
 - label: "Home"
   link: "/"
-- label: "Why Wails?"
-  link: "/quick-start/why-wails/"
-- label: "Quick Start"
+- label: "Get Started"
   collapsed: false
   items:
+    - label: "Why Wails?"
+      link: "/quick-start/why-wails/"
     - label: "Installation"
       link: "/quick-start/installation/"
     - label: "Your First App"
       link: "/quick-start/first-app/"
     - label: "Next Steps"
       link: "/quick-start/next-steps/"
+    - label: "Migration"
+      collapsed: true
+      items:
+        - label: "From v2 to v3"
+          link: "/migration/v2-to-v3/"
+        - label: "From Electron"
+          link: "/migration/from-electron/"
 - label: "Tutorials"
   collapsed: true
-  autogenerate:
-    directory: "tutorials"
-- label: "Core Concepts"
+  items:
+    - label: "Choose a Tutorial"
+      link: "/tutorials/overview/"
+    - label: "QR Code Service"
+      link: "/tutorials/01-creating-a-service/"
+    - label: "TODO List"
+      link: "/tutorials/02-todo-vanilla/"
+    - label: "Notes"
+      link: "/tutorials/03-notes-vanilla/"
+    - label: "Self-Updating App"
+      link: "/tutorials/04-self-update-a-wails-app/"
+    - label: "Your First Mobile App (Experimental)"
+      link: "/guides/mobile/first-mobile-app/"
+- label: "How-to Guides"
   collapsed: true
   items:
-    - label: "How Wails Works"
-      link: "/concepts/architecture/"
-    - label: "Manager API"
-      link: "/concepts/manager-api/"
-    - label: "Application Lifecycle"
-      link: "/concepts/lifecycle/"
-    - label: "Go-Frontend Bridge"
-      link: "/concepts/bridge/"
-    - label: "Build System"
-      link: "/concepts/build-system/"
-- label: "Features"
-  collapsed: true
-  items:
-    - label: "Windows"
+    - label: "Go Calls, Services & Data"
       collapsed: true
       items:
-        - label: "Window Basics"
-          link: "/features/windows/basics/"
-        - label: "Window Options"
-          link: "/features/windows/options/"
-        - label: "Notch Windows"
-          link: "/features/windows/notch-windows/"
-        - label: "Permissions"
-          link: "/features/windows/permissions/"
-        - label: "Multiple Windows"
-          link: "/features/windows/multiple/"
-        - label: "Frameless Windows"
-          link: "/features/windows/frameless/"
-        - label: "Window Events"
-          link: "/features/windows/events/"
-    - label: "Menus"
-      collapsed: true
-      items:
-        - label: "Application Menus"
-          link: "/features/menus/application/"
-        - label: "Context Menus"
-          link: "/features/menus/context/"
-        - label: "System Tray Menus"
-          link: "/features/menus/systray/"
-        - label: "Menu Reference"
-          link: "/features/menus/reference/"
-    - label: "Bindings & Services"
-      collapsed: true
-      items:
-        - label: "Method Binding"
+        - label: "Call Go from JavaScript"
           link: "/features/bindings/methods/"
         - label: "Services"
           link: "/features/bindings/services/"
@@ -85,6 +62,30 @@
           link: "/features/events/window/"
         - label: "Custom Events"
           link: "/features/events/custom/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "Window Basics"
+          link: "/features/windows/basics/"
+        - label: "Notch Windows"
+          link: "/features/windows/notch-windows/"
+        - label: "Permissions"
+          link: "/features/windows/permissions/"
+        - label: "Multiple Windows"
+          link: "/features/windows/multiple/"
+        - label: "Frameless Windows"
+          link: "/features/windows/frameless/"
+        - label: "Window Events"
+          link: "/features/windows/events/"
+    - label: "Menus"
+      collapsed: true
+      items:
+        - label: "Application Menus"
+          link: "/features/menus/application/"
+        - label: "Context Menus"
+          link: "/features/menus/context/"
+        - label: "System Tray Menus"
+          link: "/features/menus/systray/"
     - label: "Dialogs"
       collapsed: true
       items:
@@ -94,67 +95,31 @@
           link: "/features/dialogs/message/"
         - label: "Custom Dialogs"
           link: "/features/dialogs/custom/"
-    - label: "Autostart"
+    - label: "Desktop Integration"
       collapsed: true
-      autogenerate:
-        directory: "features/autostart"
-    - label: "Clipboard"
-      collapsed: true
-      autogenerate:
-        directory: "features/clipboard"
-    - label: "Browser"
-      collapsed: true
-      autogenerate:
-        directory: "features/browser"
-    - label: "Drag & Drop"
-      collapsed: true
-      autogenerate:
-        directory: "features/drag-and-drop"
-    - label: "Keyboard"
-      collapsed: true
-      autogenerate:
-        directory: "features/keyboard"
-    - label: "Notifications"
-      collapsed: true
-      autogenerate:
-        directory: "features/notifications"
-    - label: "Screens"
-      collapsed: true
-      autogenerate:
-        directory: "features/screens"
-    - label: "Environment"
-      collapsed: true
-      autogenerate:
-        directory: "features/environment"
-    - label: "Platform-Specific"
-      collapsed: true
-      autogenerate:
-        directory: "features/platform"
-- label: "Mobile"
-  collapsed: true
-  items:
-    - label: "Overview"
-      link: "/guides/mobile/"
-    - label: "Your First Mobile App"
-      link: "/guides/mobile/first-mobile-app/"
-    - label: "iOS"
-      link: "/guides/mobile/ios/"
-    - label: "Android"
-      link: "/guides/mobile/android/"
-    - label: "Mobile API"
-      link: "/guides/mobile/mobile-api/"
-- label: "Experimental"
-  collapsed: true
-  items:
-    - label: "Overview"
-      link: "/experimental/"
-    - label: "Wake"
-      link: "/experimental/wake/"
-    - label: "LLM Control (MCP)"
-      link: "/guides/mcp-service/"
-- label: "Guides"
-  collapsed: true
-  items:
+      items:
+        - label: "Autostart"
+          link: "/features/autostart/basics/"
+        - label: "Clipboard"
+          link: "/features/clipboard/basics/"
+        - label: "Browser Integration"
+          link: "/features/browser/integration/"
+        - label: "Drag & Drop"
+          collapsed: true
+          autogenerate:
+            directory: "features/drag-and-drop"
+        - label: "Keyboard"
+          collapsed: true
+          autogenerate:
+            directory: "features/keyboard"
+        - label: "Notifications"
+          link: "/features/notifications/overview/"
+        - label: "Screens"
+          link: "/features/screens/info/"
+        - label: "Environment"
+          link: "/features/environment/info/"
+        - label: "macOS Dock"
+          link: "/features/platform/dock/"
     - label: "Development"
       collapsed: true
       items:
@@ -228,6 +193,37 @@
           link: "/guides/panic-handling/"
         - label: "Security Best Practices"
           link: "/guides/security/"
+    - label: "Mobile (Experimental)"
+      collapsed: true
+      items:
+        - label: "Overview"
+          link: "/guides/mobile/"
+        - label: "iOS"
+          link: "/guides/mobile/ios/"
+        - label: "Android"
+          link: "/guides/mobile/android/"
+    - label: "Experimental"
+      collapsed: true
+      items:
+        - label: "Overview"
+          link: "/experimental/"
+        - label: "Wake"
+          link: "/experimental/wake/"
+        - label: "LLM Control (MCP)"
+          link: "/guides/mcp-service/"
+- label: "Core Concepts"
+  collapsed: true
+  items:
+    - label: "How Wails Works"
+      link: "/concepts/architecture/"
+    - label: "Manager API"
+      link: "/concepts/manager-api/"
+    - label: "Application Lifecycle"
+      link: "/concepts/lifecycle/"
+    - label: "Go-Frontend Bridge"
+      link: "/concepts/bridge/"
+    - label: "Build System"
+      link: "/concepts/build-system/"
 - label: "API Reference"
   collapsed: true
   items:
@@ -235,10 +231,20 @@
       link: "/reference/overview/"
     - label: "Application"
       link: "/reference/application/"
-    - label: "Window"
-      link: "/reference/window/"
-    - label: "Menu"
-      link: "/reference/menu/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "Window API"
+          link: "/reference/window/"
+        - label: "Window Options"
+          link: "/features/windows/options/"
+    - label: "Menus"
+      collapsed: true
+      items:
+        - label: "Menu API"
+          link: "/reference/menu/"
+        - label: "Menu Reference"
+          link: "/features/menus/reference/"
     - label: "Events"
       link: "/reference/events/"
     - label: "Dialogs"
@@ -246,16 +252,37 @@
     - label: "Frontend Runtime"
       link: "/reference/frontend-runtime/"
     - label: "CLI"
-      link: "/reference/cli/"
+      collapsed: true
+      items:
+        - label: "Command Overview"
+          link: "/reference/cli/"
+        - label: "Flags & Examples"
+          link: "/guides/cli/"
     - label: "Update Manifest Protocol"
       link: "/reference/update-manifest/"
+    - label: "Mobile API (Experimental)"
+      link: "/guides/mobile/mobile-api/"
+- label: "Troubleshooting"
+  collapsed: true
+  items:
+    - label: "Frequently Asked Questions"
+      link: "/faq/"
+    - label: "Syso files on macOS"
+      link: "/troubleshooting/mac-syso/"
+    - label: "Windows"
+      collapsed: true
+      items:
+        - label: "RDP Issues"
+          link: "/troubleshooting/windows/rdp/"
 - label: "Contributing"
   collapsed: true
   items:
-    - label: "Correct the documentation"
-      link: "/contributing/documentation/"
     - label: "Contribution guide"
       link: "/contributing/"
+    - label: "Documentation"
+      link: "/contributing/documentation/"
+    - label: "Release Policy"
+      link: "/contributing/release-policy/"
     - label: "Technical overview"
       link: "/contributing/overview/"
     - label: "Getting Started"
@@ -264,23 +291,6 @@
       link: "/contributing/setup/"
     - label: "Coding Standards"
       link: "/contributing/standards/"
-- label: "Migration"
-  collapsed: true
-  items:
-    - label: "From v2 to v3"
-      link: "/migration/v2-to-v3/"
-    - label: "From Electron"
-      link: "/migration/from-electron/"
-- label: "Troubleshooting"
-  collapsed: true
-  items:
-    - label: "Syso files on macOS"
-      link: "/troubleshooting/mac-syso/"
-    - label: "Windows"
-      collapsed: true
-      items:
-        - label: "RDP Issues"
-          link: "/troubleshooting/windows/rdp/"
 - label: "Community"
   collapsed: true
   items:
@@ -298,13 +308,16 @@
         - label: "Applications"
           autogenerate:
             directory: "community/showcase"
-- label: "What's New"
-  link: "/whats-new/"
-- label: "Status"
-  link: "/status/"
-- label: "Changelog"
-  link: "/changelog/"
-- label: "Sponsor"
-  link: "https://github.com/sponsors/leaanthony"
-- label: "Credits"
-  link: "/credits/"
+- label: "Project"
+  collapsed: true
+  items:
+    - label: "What's New"
+      link: "/whats-new/"
+    - label: "Status"
+      link: "/status/"
+    - label: "Changelog"
+      link: "/changelog/"
+    - label: "Sponsor"
+      link: "https://github.com/sponsors/leaanthony"
+    - label: "Credits"
+      link: "/credits/"

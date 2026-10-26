@@ -6,7 +6,7 @@
 *     YOUR PR MAY BE REJECTED IF IT DOES NOT FOLLOW THESE STEPS     *
 *********************************************************************
 
-- *DO NOT* submit bugs for a source install of v3, ONLY tagged versions, e.g. v3.0.0-beta.1
+- *DO NOT* submit bugs for a source install of v3, ONLY tagged versions, e.g. v3.0.0
 - For a new capability or change to public behaviour, submit a draft **WEP (Wails Enhancement Proposal)** PR first. Do not start implementation until it is accepted.
   The feedback guide for v3 is here: https://v3.wails.io/feedback/
 
@@ -48,6 +48,7 @@ Please paste the output of `wails doctor`. If you are unable to run this command
 # Checklist:
 
 - [ ] (v2 only) I have updated `website/src/pages/changelog.mdx` with details of this PR (v3 changelog entries are added automatically)
+- [ ] (v3 only) My PR title and description explain the user-visible change; I have left generated changelog entries to automation (except explicitly scoped changelog maintenance)
 - [ ] My code follows the general coding style of this project
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas

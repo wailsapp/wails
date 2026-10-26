@@ -34,7 +34,7 @@ If you have a fix for a bug or an improvement to documentation, please:
 [Enhancements]
 New functionality and changes to public behaviour are proposed through a **WEP (Wails Enhancement Proposal)** draft pull request, not a feature-request issue.
 
-- Read the [WEP process](https://github.com/wailsapp/wails/blob/master/v3/wep/README.md).
+- Read the [WEP process](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md).
 - Copy the template, then open a draft PR titled `[WEP] <title>` containing only the WEP and supporting material.
 - You may discuss an idea informally in [GitHub Discussions](https://github.com/wailsapp/wails/discussions) or the [#v3](https://discord.gg/bdj28QNHmT) Discord channel first, but a WEP PR is required for a maintainer decision.
 

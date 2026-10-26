@@ -338,3 +338,22 @@ func TestIsUnsigned(t *testing.T) {
 		t.Error("a genuine rejection must not be read as unsigned")
 	}
 }
+
+// Only binary plists may fall back to plutil on macOS; XML plists, including
+// malformed ones, must be judged by the strict XML reader on every platform.
+func TestIsBinaryPlist(t *testing.T) {
+	for _, tc := range []struct {
+		data string
+		want bool
+	}{
+		{"bplist00\x00\x01", true},
+		{"<plist><dict></dict></plist>trailing junk", false},
+		{"<?xml version=\"1.0\"?><plist><dict></dict></plist>", false},
+		{"not a plist", false},
+		{"", false},
+	} {
+		if got := isBinaryPlist([]byte(tc.data)); got != tc.want {
+			t.Errorf("isBinaryPlist(%q) = %v, want %v", tc.data, got, tc.want)
+		}
+	}
+}

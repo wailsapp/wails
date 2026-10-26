@@ -192,4 +192,4 @@ func main() {
 }
 ```
 
-ステータス／有効化／無効化ボタンを備えた、完全に実行可能な例は[`examples/autostart/`](https://github.com/wailsapp/wails/tree/master/v3/examples/autostart)にあります。
+ステータス／有効化／無効化ボタンを備えた、完全に実行可能な例は[`examples/autostart/`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/autostart)にあります。

@@ -1,5 +1,5 @@
 ---
-title: "メソッドバインディング"
+title: "JavaScript から Go を呼び出す"
 description: "型安全に JavaScript から Go メソッドを呼び出す"
 slug: "features/bindings/methods"
 sourcePath: "features/bindings/methods.md"
@@ -7,7 +7,7 @@ sourcePath: "features/bindings/methods.md"
 
 ## 型安全な Go-JavaScript バインディング
 
-Wails は、Go メソッド用の<strong>型安全な JavaScript/TypeScript バインディングを自動生成します</strong>。Go コードを記述してコマンドを 1 つ実行するだけで、HTTP のオーバーヘッドも手作業もボイラープレートもなく、完全に型付けされたフロントエンド関数を利用できます。
+Wails は、Go メソッド用の**型安全な JavaScript/TypeScript バインディングを自動生成します**。Go コードを記述してコマンドを 1 つ実行するだけで、HTTP のオーバーヘッドも手作業もボイラープレートもなく、完全に型付けされたフロントエンド関数を取得できます。
 
 ## クイックスタート
 
@@ -46,7 +46,7 @@ const message = await Greet("World")
 console.log(message)  // "Hello, World!"
 ```
 
-**これだけです！** 型安全に Go から JavaScript を呼び出せます。
+**これで完了です！** 型安全に Go を JavaScript から呼び出せます。
 
 ## サービスの作成
 
@@ -93,14 +93,14 @@ app := application.New(application.Options{
 
 - **エクスポートされたメソッド**（PascalCase）のみがバインドされます
 - メソッドは値または `(value, error)` を返せます
-- サービスは<strong>シングルトン</strong>です（アプリケーションごとに 1 インスタンス）
+- サービスは**シングルトン**です（アプリケーションごとに 1 インスタンス）
 
 ### 状態を持つサービス
 
 ```go
 type CounterService struct {
     count int
-    mu    sync.Mutex
+    mu    sync.RWMutex
 }
 
 func (c *CounterService) Increment() int {
@@ -130,7 +130,7 @@ func (c *CounterService) Reset() {
 }
 ```
 
-<strong>重要：</strong>サービスはすべてのウィンドウで共有されます。スレッドセーフにするために mutex を使用してください。
+<strong>重要：</strong>サービスはすべてのウィンドウで共有されます。スレッドセーフにするため、ミューテックスを使用してください。
 
 ### 依存関係を持つサービス
 
@@ -177,7 +177,7 @@ INFO  347 Packages, 3 Services, 12 Methods, 0 Enums, 0 Models in 1.98s
 INFO  Output directory: /myproject/frontend/bindings
 ```
 
-**生成される構造：**
+**生成される構成：**
 
 @filetree
 - frontend/bindings
@@ -194,9 +194,9 @@ INFO  Output directory: /myproject/frontend/bindings
 wails3 generate bindings -ts
 ```
 
-**完全な TypeScript 型を備えた `.ts` ファイルを生成します**。
+完全な TypeScript 型を含む<strong>`.ts`ファイル</strong>を生成します。
 
-### 出力先ディレクトリのカスタマイズ
+### 出力先ディレクトリの指定
 
 ```bash
 wails3 generate bindings -d ./src/bindings
@@ -285,7 +285,7 @@ try {
 - 完全な型チェック
 - IDE の自動補完
 - コンパイル時のエラー検出
-- リファクタリングのしやすさ
+- リファクタリングの向上
 
 ### インデックスファイル
 
@@ -299,7 +299,7 @@ export * as CounterService from './counterservice.js'
 export * as DatabaseService from './databaseservice.js'
 ```
 
-**簡潔なインポート：**
+**簡略化されたインポート：**
 
 ```javascript
 import { CalculatorService } from './bindings/myapp'
@@ -315,37 +315,37 @@ const sum = await CalculatorService.Add(5, 3)
 | --- | --- |
 | `string` | `string` |
 | `bool` | `boolean` |
-| `int`、`int8`、`int16`、`int32`、`int64` | `number` |
-| `uint`、`uint8`、`uint16`、`uint32`、`uint64` | `number` |
-| `float32`、`float64` | `number` |
+| `int`, `int8`, `int16`, `int32`, `int64` | `number` |
+| `uint`, `uint8`, `uint16`, `uint32`, `uint64` | `number` |
+| `float32`, `float64` | `number` |
 | `byte` | `number` |
 | `rune` | `number` |
 
 ### 複合型
 
-| Go の型 | JavaScript/TypeScript | 注記 |
+| Go の型 | JavaScript/TypeScript | 備考 |
 | --- | --- | --- |
 | `[]T` | `T[]` | - |
 | `[N]T` | `T[]` | - |
 | `map[string]T` | `{ [_: string]: T }` | 文字列をキーとするマップ |
-| `map[K]V` | `{ [_ in K]?: V }` | 文字列以外の`K`は、JS の`Map`では<strong>なく</strong>、マップ型として生成される |
-| `[]byte` | `string` | Base64 エンコード済み |
+| `map[K]V` | `{ [_ in K]?: V }` | 文字列以外の `K` は、JS の `Map` では**なく**、マップ型としてレンダリングされます |
+| `[]byte` | `string` | base64 エンコード済み |
 | `struct` | `class` / `interface` | フィールドを持つ |
-| `time.Time` | `any` | 実行時に RFC3339Nano 文字列としてシリアライズされる |
-| `*T` | `T \| null` | ポインターは null 許容を意味する |
+| `time.Time` | `string`（デフォルト）または `Date` | `-time-type` で生成される表現を選択します。JSON では RFC3339Nano 文字列を使用します |
+| `*T` | `T \| null` | ポインターは nullable を意味します |
 | `any` / `interface{}` | `any` | - |
 | `error` | `any` / `Exception` | 戻り値の場合は例外、それ以外は any |
 
 ### サポートされていない型
 
-次の型はブリッジを介して渡すことが<strong>できません</strong>。
+次の型はブリッジを介して渡すことが**できません**：
 
 - `chan T`（チャネル）
 - `func()`（関数）
 - 複雑なインターフェース（`interface{}`を除く）
-- 非公開フィールド（小文字で始まるもの）
+- 非公開フィールド（小文字で始まるフィールド）
 
-<strong>回避策：</strong>ID またはハンドルを使用します。
+**回避策：** ID またはハンドルを使用します。
 
 ```go
 // ❌ Can't return file handle
@@ -401,7 +401,7 @@ func (d *DatabaseService) GetUser(id int) (*User, error) {
 
 ### JavaScript 側
 
-バインドされたメソッドが失敗すると、返された Promise は JavaScript の`Error`オブジェクトで拒否されます。
+バインドされたメソッドが失敗すると、返された Promise は JavaScript の `Error` オブジェクトで拒否されます。
 
 ```javascript
 import { GetUser } from './bindings/changeme/databaseservice'
@@ -415,21 +415,21 @@ try {
 }
 ```
 
-ランタイムは、発生した問題に応じて異なるエラー型をスローします。
+ランタイムは、発生した問題に応じて異なる種類のエラーをスローします。
 
-| エラー型 | スローされる条件 |
+| エラーの種類 | スローされる条件 |
 | --- | --- |
 | `TypeError` | 呼び出しの引数の数が正しくないか、引数を Go の型に変換できない場合 |
 | `RuntimeError` | メソッドがエラーを返したか、実行中にパニックが発生した場合 |
-| `Error` | 存在しないメソッドの呼び出しなど、その他の障害が発生した場合 |
+| `Error` | 存在しないメソッドの呼び出しなど、その他のエラーが発生した場合 |
 
-すべてのエラーには次の情報が含まれます。
+すべてのエラーには、次の情報が含まれます。
 
-- `name`：上の表に記載されたエラー型
+- `name`：上の表に示したエラーの種類
 - `message`：Go エラーのメッセージ
-- `cause`：利用可能な場合は、JSON としてシリアライズされた Go エラー。メソッドが複数のエラーを返した場合、`cause`はエラーごとに 1 つの要素を持つ配列になります。
+- `cause`：取得可能な場合は、JSON にシリアライズされた Go エラー。メソッドが複数のエラーを返した場合、`cause` は各エラーにつき1要素を含む配列になります。
 
-`RuntimeError`クラスは`@wailsio/runtime`パッケージからエクスポートされるため、Go コードが返したエラーをその他の障害と区別できます。
+`RuntimeError` クラスは `@wailsio/runtime` パッケージからエクスポートされるため、Go コードが返したエラーを他のエラーと区別できます。
 
 ```javascript
 import { Call } from '@wailsio/runtime'
@@ -447,13 +447,13 @@ try {
 ```
 
 @note{type="info"}
-以前のバージョンのランタイムでは、失敗した呼び出しはすべて、基となるエラーの未加工の JSON をメッセージに含む通常の`Error`で拒否されていました。
+以前のバージョンのランタイムでは、失敗した呼び出しはすべて、基となるエラーの未加工の JSON をメッセージに含む通常の `Error` で拒否されていました。
 
 @end
 
-### 構造化エラーデータ
+### 構造化されたエラーデータ
 
-Go からカスタムエラー型を返すと、スローされたエラーの`cause`プロパティで、その JSON 形式を利用できます。
+Go からカスタムエラー型を返すと、スローされたエラーの `cause` プロパティで、そのエラーの JSON 形式を取得できます。
 
 ```go
 type ValidationError struct {
@@ -485,9 +485,9 @@ try {
 }
 ```
 
-エラーは標準の`encoding/json`パッケージでシリアライズされるため、エクスポートされたフィールドのみが含まれます。`errors.New`または`fmt.Errorf`で作成したエラーにはエクスポートされたフィールドがないため、空のオブジェクトとしてシリアライズされます。
+エラーは標準の `encoding/json` パッケージでシリアライズされるため、公開フィールドのみが含まれます。`errors.New` または `fmt.Errorf` で作成されたエラーには公開フィールドがないため、空のオブジェクトとしてシリアライズされます。
 
-エラーのシリアライズ方法を完全に制御するには、サービスオプションに`MarshalError`関数を指定します。
+エラーのシリアライズ方法を完全に制御するには、サービスオプションに `MarshalError` 関数を指定します。
 
 ```go
 app := application.New(application.Options{
@@ -509,7 +509,7 @@ app := application.New(application.Options{
 })
 ```
 
-`MarshalError`は有効な JSON を返す必要があります。デフォルトのシリアライズにフォールバックする場合は、`nil`を返す必要があります。
+`MarshalError` は有効な JSON を返す必要があります。デフォルトのシリアライズにフォールバックする場合は、`nil` を返します。
 
 ## パフォーマンス
 
@@ -531,7 +531,7 @@ JavaScript → Bridge → Go → Bridge → JavaScript
 
 ### 最適化のヒント
 
-**✅ 操作をバッチ処理する：**
+**✅ 操作を一括処理する：**
 
 ```javascript
 // ❌ Slow: N calls
@@ -695,20 +695,20 @@ app.loadTodos()
 
 ### ✅ 推奨事項
 
-- **メソッドをシンプルに保つ** — 単一責任にする
-- **エラーを返す** — パニックを発生させない
-- **スレッドセーフな状態を使用する** — 共有データにはミューテックスを使用する
-- **操作をバッチ処理する** — ブリッジ呼び出しを減らす
-- **Go 側でキャッシュする** — 同じ処理の繰り返しを避ける
-- **メソッドを文書化する** — コメントは JSDoc に変換される
+- **メソッドをシンプルに保つ** - 単一責任にする
+- **エラーを返す** - パニックを発生させない
+- **スレッドセーフな状態を使用する** - 共有データにはミューテックスを使用する
+- **操作を一括処理する** - ブリッジの呼び出し回数を減らす
+- **Go 側でキャッシュする** - 同じ処理の繰り返しを避ける
+- **メソッドを文書化する** - コメントは JSDoc になる
 
-### ❌ 禁止事項
+### ❌ 非推奨事項
 
-- **ブロックしない** — 時間のかかる処理には goroutine を使用する
-- **チャネルを返さない** — 代わりにイベントを使用する
-- **関数を返さない** — サポートされていない
-- **エラーを無視しない** — 必ず処理する
-- **エクスポートされていないフィールドを使用しない** — バインドされない
+- **ブロックしない** - 長時間かかる処理には goroutine を使用する
+- **チャネルを返さない** - 代わりにイベントを使用する
+- **関数を返さない** - サポートされていない
+- **エラーを無視しない** - 必ず処理する
+- **非公開フィールドを使用しない** - バインドされない
 
 ## 次のステップ
 
@@ -716,28 +716,28 @@ app.loadTodos()
 ◆ サービス
 サービスシステムについて詳しく学びます。
 
-[詳しく見る →](/features/bindings/services/)
+[詳細を見る →](/features/bindings/services/)
 
 ---
 📖 モデル
 複雑なデータ構造をバインドします。
 
-[詳しく見る →](/features/bindings/models/)
+[詳細を見る →](/features/bindings/models/)
 
 ---
 🚀 Go-フロントエンドブリッジ
 ブリッジの仕組みを理解します。
 
-[詳しく見る →](/concepts/bridge/)
+[詳細を見る →](/concepts/bridge/)
 
 ---
 ★ イベント
-イベントを使用してパブリッシュ／サブスクライブ通信を行います。
+イベントを使用して Pub/Sub 通信を行います。
 
-[詳しく見る →](/features/events/system/)
+[詳細を見る →](/features/events/system/)
 
 @end
 
 ---
 
-**質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/master/v3/examples/binding)を確認してください。
+**質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[バインディングの例](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/binding)を確認してください。

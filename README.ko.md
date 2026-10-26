@@ -34,7 +34,7 @@
     <img src="https://img.shields.io/github/actions/workflow/status/wailsapp/wails/build-and-test.yml?branch=master&logo=Github" alt="Build" />
   </a>
   <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
-    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+    <img alt="Wails v3.0.0" src="https://img.shields.io/badge/version-v3.0.0-blue"/>
   </a>
 </p>
 
@@ -50,6 +50,16 @@
 </samp>
 </strong>
 </div>
+
+## Wails v3.0.0
+
+Wails v3.0.0은 Windows, macOS, Linux 데스크톱 애플리케이션용 안정 버전입니다. Android 및 iOS 지원은 계속 실험 단계이며 안정적인 데스크톱 호환성 보장에 포함되지 않습니다.
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
+```
+
+[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## 목차
 
@@ -95,7 +105,7 @@ Wails는 다르게 접근합니다: Go 코드와 웹 프론트엔드를 단일 �
 ## 시작하기
 
 설치 지침은 
-[공식 웹사이트](https://wails.io/docs/gettingstarted/installation)에 있습니다.
+[공식 웹사이트](https://v3.wails.io/quick-start/installation/)에 있습니다.
 
 ## 스폰서
 

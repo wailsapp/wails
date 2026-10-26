@@ -652,6 +652,6 @@ app.Updater.SkipVersion("")
 
 ## 관련 자료
 
-- 실행 가능한 예제: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/master/v3/examples/updater)
+- 실행 가능한 예제: [`v3/examples/updater`](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples/updater)
 - 테스트 데모 저장소: [`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
 - 튜토리얼: [Wails 앱에 자동 업데이트 추가하기](/tutorials/04-self-update-a-wails-app/)
