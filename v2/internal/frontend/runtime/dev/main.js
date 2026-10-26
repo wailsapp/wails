@@ -9,6 +9,7 @@ The electron alternative for Go
 */
 /* jshint esversion: 6 */
 
+import {mount} from "svelte";
 import {log} from "./log";
 import Overlay from "./Overlay.svelte";
 import {hideOverlay, showOverlay} from "./store";
@@ -28,7 +29,7 @@ window.WailsInvoke = (message) => {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
-    components.overlay = new Overlay({
+    components.overlay = mount(Overlay, {
         target: document.body,
         anchor: document.querySelector('#wails-spinner'),
     });

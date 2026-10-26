@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed the `wails dev` reconnect overlay failing to mount with the bundled Svelte 5 runtime, which logged `TypeError: Cannot read properties of null (reading 'nodes')` on every page load [#6317](https://github.com/wailsapp/wails/issues/6317) by @DangTAnh
+
 ## v2.17.0 - 2026-10-18
 
 ### Security
