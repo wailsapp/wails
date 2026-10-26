@@ -17,6 +17,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Changed
 <!-- Changes in existing functionality -->
+- Prepare the Wails v3.0.0 release in [PR](https://github.com/wailsapp/wails/pull/6344) by @taliesin-ai
 
 ## Fixed
 <!-- Bug fixes -->
