@@ -7,6 +7,7 @@ from pathlib import Path
 import json
 import sys
 from urllib.parse import unquote, urljoin, urlsplit
+from xml.etree import ElementTree
 
 from check_translations import LANGUAGES
 
@@ -137,6 +138,26 @@ def check_knowledge_assets(site, errors):
         errors.append("Invalid knowledge manifest: " + str(exc))
 
 
+def check_rss_feed(site, pages, errors):
+    expected = {page.canonical for path, page in pages.items()
+                if page.lang == "en" and path.relative_to(site).parts[0] == "blog"
+                and path != site / "blog/index.html"}
+    try:
+        channel = ElementTree.parse(site / "blog/rss.xml").getroot().find("channel")
+        if channel is None or not channel.findtext("title", "").strip():
+            raise ValueError("missing channel title")
+        items = channel.findall("item")
+        links = [item.findtext("link", "") for item in items]
+        if set(links) != expected or len(links) != len(expected):
+            errors.append("RSS items do not match published English blog posts")
+        for item in items:
+            for field in ["title", "link", "guid", "description", "pubDate"]:
+                if not item.findtext(field, "").strip():
+                    errors.append("RSS item is missing " + field)
+    except (OSError, ElementTree.ParseError, ValueError) as exc:
+        errors.append("Invalid blog RSS feed: " + str(exc))
+
+
 def main():
     site = Path(sys.argv[1] if len(sys.argv) > 1 else "docs/mpress/site").resolve()
     repository = Path(__file__).resolve().parents[3]
@@ -159,6 +180,7 @@ def main():
         if not (site / name).is_file():
             errors.append("Missing generated asset: " + name)
     check_knowledge_assets(site, errors)
+    check_rss_feed(site, pages, errors)
     for source, target in aliases.items():
         if not (site / target.lstrip("/") / "index.html").is_file():
             errors.append("Redirect target is missing: " + source + " -> " + target)

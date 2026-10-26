@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from check_site import Page, check_links, check_page, check_translation_routes, check_knowledge_assets
+from check_site import Page, check_links, check_page, check_translation_routes, check_knowledge_assets, check_rss_feed
 
 
 class SiteChecks(unittest.TestCase):
@@ -21,6 +21,24 @@ class SiteChecks(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(body, encoding="utf-8")
         return Page(path)
+
+    def test_rss_must_include_every_published_english_post(self):
+        page = self.page("blog/release/index.html", '<html lang="en">'
+                         '<link rel="canonical" href="https://v3.wails.io/blog/release/">')
+        feed = self.site / "blog/rss.xml"
+        feed.write_text('<rss><channel><title>Wails</title></channel></rss>')
+        errors = []
+        check_rss_feed(self.site, {page.path: page}, errors)
+        self.assertIn("RSS items do not match published English blog posts", errors)
+        feed.write_text('<rss><channel><title>Wails</title><item><title>Release</title>'
+                        '<link>https://v3.wails.io/blog/release/</link>'
+                        '<guid>https://v3.wails.io/blog/release/</guid>'
+                        '<description>Released</description>'
+                        '<pubDate>Mon, 26 Oct 2026 00:00:00 +0000</pubDate>'
+                        '</item></channel></rss>')
+        errors = []
+        check_rss_feed(self.site, {page.path: page}, errors)
+        self.assertEqual(errors, [])
 
     def test_absolute_internal_link_is_checked(self):
         page = self.page("index.html", '<a href="https://v3.wails.io/missing/">broken</a>')
