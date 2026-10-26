@@ -604,6 +604,20 @@ func main() {
 	args := os.Args[1:]
 	if len(args) > 0 {
 		switch args[0] {
+		case "--sync-runtime-version":
+			if len(args) != 2 {
+				fmt.Fprintln(os.Stderr, "usage: --sync-runtime-version VERSION")
+				os.Exit(1)
+			}
+			releaseDir, err := os.Getwd()
+			if err == nil {
+				err = syncRuntimePackageVersion(filepath.Clean(filepath.Join(releaseDir, "..", "..", "..")), args[1])
+			}
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			return
 		case "--print-policy":
 			if len(args) < 2 {
 				fmt.Println("usage: --print-policy VERSION")

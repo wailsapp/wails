@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -315,6 +316,65 @@ func TestRuntimePackageVersionMatchesVersionTxt(t *testing.T) {
 		}
 		if doc.Version != version {
 			t.Errorf("%s version = %q, want %q (version.txt without the v)", rel, doc.Version, version)
+		}
+	}
+}
+
+func TestSyncRuntimeVersionCommandPreservesNewerDependencies(t *testing.T) {
+	binary := filepath.Join(t.TempDir(), "release")
+	if runtime.GOOS == "windows" {
+		binary += ".exe"
+	}
+	build := exec.Command("go", "build", "-o", binary, "release.go")
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build release command: %v\n%s", err, out)
+	}
+	root := t.TempDir()
+	releaseDir := filepath.Join(root, "v3", "tasks", "release")
+	pkgDir := filepath.Join(root, "v3", "internal", "runtime", "desktop", "@wailsio", "runtime")
+	for _, dir := range []string{releaseDir, pkgDir} {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	packageJSON := `{
+  "version": "3.0.0",
+  "dependencies": {"example": "1.0.1"}
+}
+`
+	lockJSON := `{
+  "version": "3.0.0",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "version": "3.0.0"
+    },
+    "node_modules/example": {
+      "version": "1.0.1",
+      "integrity": "newer-integrity"
+    }
+  }
+}
+`
+	fixtures := map[string]string{"package.json": packageJSON, "package-lock.json": lockJSON}
+	for name, data := range fixtures {
+		if err := os.WriteFile(filepath.Join(pkgDir, name), []byte(data), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cmd := exec.Command(binary, "--sync-runtime-version", "v3.1.0")
+	cmd.Dir = releaseDir
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("sync version: %v\n%s", err, out)
+	}
+	for name, original := range fixtures {
+		data, err := os.ReadFile(filepath.Join(pkgDir, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := strings.ReplaceAll(original, "3.0.0", "3.1.0")
+		if string(data) != want {
+			t.Errorf("%s changed more than package versions:\n%s", name, data)
 		}
 	}
 }

@@ -31,16 +31,16 @@
       "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0003-text-01": {
-      "sourceHash": "49b9aa5be430e07a35de48ce98fe03b6440276d9467d60f21505cbd7c1675556",
-      "targetHash": "3eacc7be99cc0719ff981ebef3a192d3e59286b706afb70888dc8799cf948fc2",
-      "machineHash": "3eacc7be99cc0719ff981ebef3a192d3e59286b706afb70888dc8799cf948fc2",
-      "machineText": "Esta documentação abrange o Wails v3.0.0. As correções de bugs são priorizadas de acordo com a gravidade e disponibilizadas por meio de atualizações de patch noturnas. Novas funcionalidades devem fazer parte da versão v3.1.0; as correções de bugs ficam fora dessa versão de funcionalidades.",
+      "sourceHash": "708f73ec31d2b49e6915fe082b5e0b06367f78b202252faf5438f11a7bd6ceb6",
+      "targetHash": "905c31682e731afd944024272878619e24a3dd66cf6d1468e5c476b6032a0b2f",
+      "machineHash": "905c31682e731afd944024272878619e24a3dd66cf6d1468e5c476b6032a0b2f",
+      "machineText": "Esta documentação abrange o Wails v3.0.0. Após o v3.0.0, correções e melhorias são disponibilizadas em versões semanais, com prévias nightly datadas entre elas e hotfixes para problemas urgentes. Consulte a [política de lançamentos](/contributing/release-policy/).",
       "status": "machine-translated",
-      "sourcePreview": "This documentation covers Wails v3.0.0. Bug fixes are prioritised by severity and delivered through …",
+      "sourcePreview": "This documentation covers Wails v3.0.0. After v3.0.0, fixes and improvements ship in weekly releases…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:50:44Z"
+      "updatedAt": "2026-10-26T08:50:46Z"
     },
     "b0004-heading-01": {
       "sourceHash": "01a154329233e99f7f4ca0bc0aca16d4f4be071adfe5fb60e9b163dd5cb2c41c",

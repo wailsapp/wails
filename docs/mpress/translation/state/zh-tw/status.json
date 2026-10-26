@@ -31,16 +31,16 @@
       "updatedAt": "2026-10-25T21:50:44Z"
     },
     "b0003-text-01": {
-      "sourceHash": "49b9aa5be430e07a35de48ce98fe03b6440276d9467d60f21505cbd7c1675556",
-      "targetHash": "5fa6c9154d16d1aa0bd50d2e6087e85b8122b5581b2d8c9e25bcdb827c1e6b58",
-      "machineHash": "5fa6c9154d16d1aa0bd50d2e6087e85b8122b5581b2d8c9e25bcdb827c1e6b58",
-      "machineText": "本文件涵蓋 Wails v3.0.0。錯誤修正會依嚴重程度排定優先順序，並透過每夜修補更新發布。新功能應納入v3.1.0；錯誤修正則不納入該功能版本。",
+      "sourceHash": "708f73ec31d2b49e6915fe082b5e0b06367f78b202252faf5438f11a7bd6ceb6",
+      "targetHash": "27fe4a7fa43c8efd524c1db7dde97ff40f559fd3f7cc7da4807b8d3bb85b2717",
+      "machineHash": "27fe4a7fa43c8efd524c1db7dde97ff40f559fd3f7cc7da4807b8d3bb85b2717",
+      "machineText": "本文件涵蓋 Wails v3.0.0。v3.0.0之後，修正與改進會透過每週版本發布；兩次發布之間會提供標註日期的每夜預覽版，緊急問題則會發布 Hotfix。請參閱[發布政策](/contributing/release-policy/)。",
       "status": "machine-translated",
-      "sourcePreview": "This documentation covers Wails v3.0.0. Bug fixes are prioritised by severity and delivered through …",
+      "sourcePreview": "This documentation covers Wails v3.0.0. After v3.0.0, fixes and improvements ship in weekly releases…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:50:44Z"
+      "updatedAt": "2026-10-26T08:51:47Z"
     },
     "b0004-heading-01": {
       "sourceHash": "01a154329233e99f7f4ca0bc0aca16d4f4be071adfe5fb60e9b163dd5cb2c41c",

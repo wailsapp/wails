@@ -211,7 +211,7 @@ jobs:
       - name: Resolve npm dist-tag
         id: dist-tag
         # Same policy function the release tool uses for the GitHub flags:
-        # weekly (vX.Y.0) -> latest, nightly (vX.Y.N) -> next, pre-GA -> latest.
+        # weekly (vX.Y.0) and hotfix (vX.Y.N) -> latest, nightly (vX.Y.0-nightly.DATE) -> nightly, pre-GA -> latest.
         env:
           OVERRIDE: ${{ inputs.dist_tag }}
           VERSION: ${{ steps.bump-version.outputs.version }}

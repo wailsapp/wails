@@ -31,16 +31,16 @@
       "updatedAt": "2026-10-25T21:50:38Z"
     },
     "b0003-text-01": {
-      "sourceHash": "49b9aa5be430e07a35de48ce98fe03b6440276d9467d60f21505cbd7c1675556",
-      "targetHash": "1cda16c2673dac6c33bdf79c0e4666471d07e21ecb352bdb83d7db5566c28552",
-      "machineHash": "1cda16c2673dac6c33bdf79c0e4666471d07e21ecb352bdb83d7db5566c28552",
-      "machineText": "このドキュメントは Wails v3.0.0 を対象としています。バグ修正は重大度に応じて優先順位を付け、ナイトリーパッチアップデートとして提供します。新機能は v3.1.0 に含めますが、バグ修正はその機能リリースには含めません。",
+      "sourceHash": "708f73ec31d2b49e6915fe082b5e0b06367f78b202252faf5438f11a7bd6ceb6",
+      "targetHash": "92a2f63bc4768da5814b734e9fae7a0f0f2f0d36a8c70ce94b27ff637dd4fe81",
+      "machineHash": "92a2f63bc4768da5814b734e9fae7a0f0f2f0d36a8c70ce94b27ff637dd4fe81",
+      "machineText": "このドキュメントでは Wails v3.0.0 を扱います。v3.0.0以降、修正と改善は週次リリースで提供され、その合間には日付付きのナイトリープレビューが提供されます。また、緊急の問題にはホットフィックスが提供されます。[リリースポリシー](/contributing/release-policy/)を参照してください。",
       "status": "machine-translated",
-      "sourcePreview": "This documentation covers Wails v3.0.0. Bug fixes are prioritised by severity and delivered through …",
+      "sourcePreview": "This documentation covers Wails v3.0.0. After v3.0.0, fixes and improvements ship in weekly releases…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:50:38Z"
+      "updatedAt": "2026-10-26T08:51:02Z"
     },
     "b0004-heading-01": {
       "sourceHash": "01a154329233e99f7f4ca0bc0aca16d4f4be071adfe5fb60e9b163dd5cb2c41c",

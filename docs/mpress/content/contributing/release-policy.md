@@ -5,8 +5,6 @@ slug: "contributing/release-policy"
 sourcePath: "contributing/release-policy.md"
 ---
 
-> **Status: draft for owner review.** Items marked **(decision pending)** are not confirmed.
-
 ## The model in one table
 
 Wails v3 releases on a **clock, not on features**. After the `v3.0.0` baseline:
@@ -14,11 +12,11 @@ Wails v3 releases on a **clock, not on features**. After the `v3.0.0` baseline:
 | Release | Tag | Cadence | GitHub release | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
 | Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC date; `.N` appended if re-run the same day) | automated, daily, only when `UNRELEASED_CHANGELOG.md` has content | pre-release, **not** Latest | same version without `v`, dist-tag `nightly` |
-| Weekly | `v3.<next>.0` | automated, Sunday 20:00 Australia/Sydney **(day unconfirmed)** | normal release, Latest **(decision pending)** | same version, dist-tag `latest` |
+| Weekly | `v3.<next>.0` | automated, Sunday 20:00 Australia/Sydney **(day unconfirmed)** | normal release, Latest | same version, dist-tag `latest` |
 | Hotfix | `v3.<current>.<N>`, `N > 0` | rare, manual | normal release, Latest | same version, dist-tag `latest` |
 | Major | `v4.0.0` | only for breaking changes | normal release | `latest` |
 
-`<next>` is the highest **released** v3 minor plus one. A nightly is a preview of the **next weekly**, which is why its base is the highest release tag (pre-releases are ignored): after a hotfix `v3.1.1` the next nightly is still `v3.2.0-nightly.*`.
+`<next>` is the highest **released** v3 minor plus one. A nightly is a preview of the **next weekly**, which is why its base is the highest release tag (pre-releases are ignored): after a hotfix `v3.1.1` the next nightly is still `v3.2.0-nightly.*`. It has to name a higher version because a pre-release sorts below its own release: `v3.0.0-nightly.<date>` would sort before `v3.0.0`.
 
 **A minor bump is not a feature milestone.** `v3.4.0` is "the weekly release after `v3.3.0`". Read the release notes, not the version number, to see what changed.
 
@@ -69,9 +67,9 @@ Release rights are limited to the project Lead (see the governance document). Co
 Everything runs from **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`):
 
 - **Nightly (automatic)** at 15:00 UTC. Skipped when the unreleased changelog is empty.
-- **Weekly (automatic)** at 20:00 Sydney time. GitHub cron is UTC-only, so two crons (09:00 and 10:00 UTC) are scheduled and a guard job proceeds only when it is 20:00 in Sydney (DST-aware). The weekly passes the release gate, selects the newest green commit, bumps the minor, tags that commit without touching the changelog, then copies the version files back onto `master`.
+- **Weekly (automatic)** at 20:00 Sydney time. GitHub cron is UTC-only, so two crons (09:00 and 10:00 UTC) are scheduled and a guard job proceeds only when it is 20:00 in Sydney (DST-aware). The weekly passes the release gate, selects the newest green commit, bumps the minor, tags that commit without touching the changelog, then updates only the version fields on `master` (`version.txt` and the runtime package versions), so dependency and lockfile updates merged after the selected commit are kept. npm publishes from the tag, not from `master`.
 - **Manual.** Run the workflow with `channel`, `dry_run` (default on) and optionally `release_version`. A dry run prints version, kind, GitHub flags, npm dist-tag and notes without touching GitHub or npm.
-- **GA or hotfix.** Set `ref: releases/...` and `release_version` (`v3.0.0`, `v3.1.1`). The release commit is cherry-picked back to `master`.
+- **GA or hotfix.** Set `release_version` (`v3.0.0`, `v3.1.1`). A hotfix for an older line can also set `ref: releases/...`; its release commit is cherry-picked back to `master`.
 
 Local dry run: `cd v3/tasks/release && go run release.go --dry-run --channel weekly`; `go run release.go --print-policy v3.2.0-nightly.20261102` shows the derived flags.
 
@@ -90,7 +88,7 @@ The **weekly** (never the nightly) refuses to tag while any of these exist:
 3. open Dependabot alerts of severity critical or high, open code-scanning alerts of critical or high severity, and any open secret-scanning alert, **only for shipped code**. Alerts located solely under `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` or any `examples/` directory are ignored (`SHIPPED_ALERT_IGNORE` in `v3/tasks/releasegate/main.go`, **owner to review**);
 4. repository security advisories still in `triage`.
 
-**Who can set a blocker.** A label counts only if its most recent `labeled` event (with no later `unlabeled`) was made by a member of the `wailsapp/maintainers` team or a collaborator with `maintain`/`admin` permission. The same label applied by anyone else is ignored and logged, so outsiders cannot block or unblock a release. The auto-applied `high-priority` label is deliberately **not** used. Bot accounts such as `taliesin-ai` pass the allowlist if they hold `maintain` **(decision pending: keep or exclude bots)**.
+**Who can set a blocker.** A label counts only if its most recent `labeled` event (with no later `unlabeled`) was made by a member of the `wailsapp/maintainers` team or a collaborator with `maintain`/`admin` permission. The same label applied by anyone else is ignored and logged, so outsiders cannot block or unblock a release. The auto-applied `high-priority` label is deliberately **not** used. Bot accounts such as `taliesin-ai` pass the allowlist if they hold `maintain`; this is intended, and the triage agent may apply blocker labels with evidence.
 
 **Failure behaviour.** The gate fails **closed**: if an alert API or the allowlist cannot be read, the weekly stops. On failure it tags nothing, writes the list (with links) to the job summary, and updates a comment on the single "Weekly release status" issue when the repository variable `WEEKLY_STATUS_ISSUE` is set.
 

@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 Check out the [Changelog](/changelog/) for the latest status.
 
-This documentation covers Wails v3.0.0. Bug fixes are prioritised by severity and delivered through nightly patch updates. New features belong in v3.1.0; bug fixes stay outside that feature release.
+This documentation covers Wails v3.0.0. After v3.0.0, fixes and improvements ship in weekly releases, with dated nightly previews in between and hotfixes for urgent problems. See the [release policy](/contributing/release-policy/).
 
 ## Desktop Compatibility
 

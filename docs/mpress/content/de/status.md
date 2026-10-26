@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 Den aktuellen Stand finden Sie im [Changelog](/changelog/).
 
-Diese Dokumentation behandelt Wails v3.0.0. Fehlerkorrekturen werden nach Schweregrad priorisiert und über nächtliche Patch-Updates bereitgestellt. Neue Funktionen gehören in v3.1.0; Fehlerkorrekturen bleiben außerhalb dieses Feature-Releases.
+Diese Dokumentation behandelt Wails v3.0.0. Nach v3.0.0 werden Fehlerbehebungen und Verbesserungen in wöchentlichen Releases veröffentlicht, dazwischen gibt es datierte Nightly-Vorabversionen und bei dringenden Problemen Hotfixes. Weitere Informationen finden Sie in der [Release-Richtlinie](/contributing/release-policy/).
 
 ## Desktop-Kompatibilität
 

@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 Lihat [Catatan Perubahan](/changelog/) untuk mengetahui status terbaru.
 
-Dokumentasi ini mencakup Wails v3.0.0. Perbaikan bug diprioritaskan berdasarkan tingkat keparahan dan dirilis melalui pembaruan patch nightly. Fitur baru dimasukkan ke v3.1.0; perbaikan bug tetap berada di luar rilis fitur tersebut.
+Dokumentasi ini membahas Wails v3.0.0. Setelah v3.0.0, perbaikan dan penyempurnaan dirilis setiap minggu, diselingi pratinjau nightly bertanggal serta hotfix untuk masalah mendesak. Lihat [kebijakan rilis](/contributing/release-policy/).
 
 ## Kompatibilitas Desktop
 

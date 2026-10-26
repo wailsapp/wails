@@ -344,7 +344,12 @@ jobs:
           git fetch origin master
           git checkout -B sync-master origin/master
           if [ -n "$GREEN_SHA" ]; then
-            git checkout "$TAG" -- v3/internal/version/version.txt "$PKG/package.json" "$PKG/package-lock.json"
+            # Copy only the version fields: a weekly is cut from an older green
+            # commit, so checking out whole files from the tag would revert
+            # dependency and lockfile updates merged to master since then.
+            git show "$TAG:v3/internal/version/version.txt" > v3/internal/version/version.txt
+            (cd v3/tasks/release && go run release.go --sync-runtime-version "$TAG")
+            git add v3/internal/version/version.txt "$PKG/package.json" "$PKG/package-lock.json"
             git commit -m "chore(v3): sync version to ${TAG}"
           else
             git cherry-pick -x "${TAG}^{commit}"

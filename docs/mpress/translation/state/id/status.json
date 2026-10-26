@@ -31,16 +31,16 @@
       "updatedAt": "2026-10-25T21:50:48Z"
     },
     "b0003-text-01": {
-      "sourceHash": "49b9aa5be430e07a35de48ce98fe03b6440276d9467d60f21505cbd7c1675556",
-      "targetHash": "cd7e5cda306269893829d470a405cd3e9e4b2ab1d6bd380dc333120d3ac18e13",
-      "machineHash": "cd7e5cda306269893829d470a405cd3e9e4b2ab1d6bd380dc333120d3ac18e13",
-      "machineText": "Dokumentasi ini mencakup Wails v3.0.0. Perbaikan bug diprioritaskan berdasarkan tingkat keparahan dan dirilis melalui pembaruan patch nightly. Fitur baru dimasukkan ke v3.1.0; perbaikan bug tetap berada di luar rilis fitur tersebut.",
+      "sourceHash": "708f73ec31d2b49e6915fe082b5e0b06367f78b202252faf5438f11a7bd6ceb6",
+      "targetHash": "2c1f962f77638ee351de5f9364644e70eb938641e2a5a9d5762f9da0047d19bf",
+      "machineHash": "2c1f962f77638ee351de5f9364644e70eb938641e2a5a9d5762f9da0047d19bf",
+      "machineText": "Dokumentasi ini membahas Wails v3.0.0. Setelah v3.0.0, perbaikan dan penyempurnaan dirilis setiap minggu, diselingi pratinjau nightly bertanggal serta hotfix untuk masalah mendesak. Lihat [kebijakan rilis](/contributing/release-policy/).",
       "status": "machine-translated",
-      "sourcePreview": "This documentation covers Wails v3.0.0. Bug fixes are prioritised by severity and delivered through …",
+      "sourcePreview": "This documentation covers Wails v3.0.0. After v3.0.0, fixes and improvements ship in weekly releases…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T21:50:48Z"
+      "updatedAt": "2026-10-26T08:51:56Z"
     },
     "b0004-heading-01": {
       "sourceHash": "01a154329233e99f7f4ca0bc0aca16d4f4be071adfe5fb60e9b163dd5cb2c41c",

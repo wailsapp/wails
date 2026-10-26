@@ -9,7 +9,7 @@ sourcePath: "status.md"
 
 Consultez le [journal des modifications](/changelog/) pour connaître le dernier état du projet.
 
-Cette documentation concerne Wails v3.0.0. Les corrections de bogues sont classées par ordre de priorité selon leur gravité et livrées sous forme de mises à jour correctives nocturnes. Les nouvelles fonctionnalités sont destinées à la version v3.1.0 ; les corrections de bogues restent en dehors de cette version fonctionnelle.
+Cette documentation concerne Wails v3.0.0. Après v3.0.0, les correctifs et les améliorations sont publiés chaque semaine, avec, dans l’intervalle, des versions préliminaires nocturnes datées et des correctifs d’urgence pour les problèmes critiques. Consultez la [politique de publication](/contributing/release-policy/).
 
 ## Compatibilité avec les environnements de bureau
 
