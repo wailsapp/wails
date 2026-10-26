@@ -279,57 +279,65 @@ tasks:
     silent: true
     cmds:
       - |
-        # Check if an emulator is already running
-        if "{{.ADB}}" devices | grep -q "emulator"; then
-          echo "Emulator already running"
-          exit 0
-        fi
-
-        # Get first available AVD
-        AVD_NAME=$("{{.EMULATOR}}" -list-avds | tail -1)
-        if [ -z "$AVD_NAME" ]; then
-          # No AVD yet. Mirror the iOS `ensure-simulator` flow and create one
-          # automatically — but ONLY from a system image that is already
-          # installed. We never trigger an sdkmanager download from a `run`
-          # task (that would be a surprise multi-GB download + license prompt).
-          # Pick the highest-API installed image matching the host ABI.
-          SDK_ROOT="{{.SDK_ROOT}}"
-          ABI="{{.ANDROID_ABI}}"
-          IMG=$(ls -d "$SDK_ROOT"/system-images/android-*/*/"$ABI" 2>/dev/null | sort -V | tail -1)
-          AVDMANAGER="{{.AVDMANAGER}}"
-          if [ -n "$IMG" ] && [ -x "$AVDMANAGER" ]; then
-            PKG="system-images;$(echo "$IMG" | sed "s|$SDK_ROOT/system-images/||" | tr '/' ';')"
-            echo "No Android Virtual Devices found. Creating 'wails' from $PKG..."
-            echo "no" | "$AVDMANAGER" create avd --name wails --package "$PKG" --device pixel_7 --force
-            AVD_NAME=wails
-          else
-            echo "No Android Virtual Devices found, and no system image is installed to create one from."
-            echo "Install a system image and create an AVD, e.g.:"
-            echo "  sdkmanager 'system-images;android-35;google_apis;$ABI'"
-            echo "  avdmanager create avd --name wails --package 'system-images;android-35;google_apis;$ABI' --device pixel_7"
-            exit 1
+        # Prefer an online emulator, but also wait for one still registering.
+        find_emulator() {
+          "{{.ADB}}" devices | awk 'NR > 1 && $1 ~ /^emulator-/ {
+            if ($2 == "device") { print $1; online = 1; exit }
+            if ($2 == "offline" && pending == "") pending = $1
+          } END { if (!online && pending != "") print pending }'
+        }
+        EMULATOR_SERIAL=$(find_emulator)
+        if [ -z "$EMULATOR_SERIAL" ]; then
+          # Get first available AVD
+          AVD_NAME=$("{{.EMULATOR}}" -list-avds | tail -1)
+          if [ -z "$AVD_NAME" ]; then
+            # No AVD yet. Mirror the iOS `ensure-simulator` flow and create one
+            # automatically — but ONLY from a system image that is already
+            # installed. We never trigger an sdkmanager download from a `run`
+            # task (that would be a surprise multi-GB download + license prompt).
+            # Pick the highest-API installed image matching the host ABI.
+            SDK_ROOT="{{.SDK_ROOT}}"
+            ABI="{{.ANDROID_ABI}}"
+            IMG=$(ls -d "$SDK_ROOT"/system-images/android-*/*/"$ABI" 2>/dev/null | sort -V | tail -1)
+            AVDMANAGER="{{.AVDMANAGER}}"
+            if [ -n "$IMG" ] && [ -x "$AVDMANAGER" ]; then
+              PKG="system-images;$(echo "$IMG" | sed "s|$SDK_ROOT/system-images/||" | tr '/' ';')"
+              echo "No Android Virtual Devices found. Creating 'wails' from $PKG..."
+              echo "no" | "$AVDMANAGER" create avd --name wails --package "$PKG" --device pixel_7 --force
+              AVD_NAME=wails
+            else
+              echo "No Android Virtual Devices found, and no system image is installed to create one from."
+              echo "Install a system image and create an AVD, e.g.:"
+              echo "  sdkmanager 'system-images;android-35;google_apis;$ABI'"
+              echo "  avdmanager create avd --name wails --package 'system-images;android-35;google_apis;$ABI' --device pixel_7"
+              exit 1
+            fi
           fi
-        fi
 
-        echo "Starting emulator: $AVD_NAME"
-        # Start the emulator daemonized so it outlives this task step. go-task's
-        # shell tracks background jobs by PID and reaps them when the command's
-        # interpreter finishes (which nohup/setsid alone don't prevent — the kill
-        # is direct), so a bare `emulator &` is gone before the later
-        # install/launch steps run. Launch it from a short-lived child shell that
-        # backgrounds the emulator and exits immediately: the emulator is then
-        # reparented to init/launchd and go-task's shell has no handle to reap it.
-        nohup sh -c "'{{.EMULATOR}}' -avd '$AVD_NAME' -no-snapshot-load </dev/null >/dev/null 2>&1 &" >/dev/null 2>&1
+          echo "Starting emulator: $AVD_NAME"
+          # Start the emulator daemonized so it outlives this task step. go-task's
+          # shell tracks background jobs by PID and reaps them when the command's
+          # interpreter finishes (which nohup/setsid alone don't prevent — the kill
+          # is direct), so a bare `emulator &` is gone before the later
+          # install/launch steps run. Launch it from a short-lived child shell that
+          # backgrounds the emulator and exits immediately: the emulator is then
+          # reparented to init/launchd and go-task's shell has no handle to reap it.
+          nohup sh -c "'{{.EMULATOR}}' -avd '$AVD_NAME' -no-snapshot-load </dev/null >/dev/null 2>&1 &" >/dev/null 2>&1
+        fi
 
         # Wait for emulator to boot (max 120 seconds)
         echo "Waiting for emulator to boot..."
-        "{{.ADB}}" wait-for-device
 
         for i in $(seq 1 120); do
-          BOOT_COMPLETED=$("{{.ADB}}" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-          if [ "$BOOT_COMPLETED" = "1" ]; then
-            echo "Emulator booted successfully"
-            exit 0
+          if [ -z "$EMULATOR_SERIAL" ]; then
+            EMULATOR_SERIAL=$(find_emulator)
+          fi
+          if [ -n "$EMULATOR_SERIAL" ]; then
+            BOOT_COMPLETED=$("{{.ADB}}" -s "$EMULATOR_SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "$BOOT_COMPLETED" = "1" ]; then
+              echo "Emulator booted successfully: $EMULATOR_SERIAL"
+              exit 0
+            fi
           fi
           sleep 1
         done
@@ -350,9 +358,17 @@ tasks:
           ARCH: '{{.ARCH | default .HOST_ARCH}}'
     cmds:
       - task: ensure-emulator
-      - '"{{.ADB}}" uninstall {{.APP_ID}} 2>/dev/null || true'
-      - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
-      - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
+      - |
+        DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 ~ /^emulator-/ { print $1; exit }')
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected Android emulator found."
+          exit 1
+        fi
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to emulator $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
 
   run:
     summary: Build, install and launch a debug build in the Android Emulator
@@ -361,9 +377,17 @@ tasks:
       - task: build
     cmds:
       - task: assemble:apk
-      - '"{{.ADB}}" uninstall {{.APP_ID}} 2>/dev/null || true'
-      - '"{{.ADB}}" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"'
-      - '"{{.ADB}}" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity'
+      - |
+        DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" && $1 ~ /^emulator-/ { print $1; exit }')
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected Android emulator found."
+          exit 1
+        fi
+
+        echo "Deploying {{.BIN_DIR}}/{{.APP_NAME}}.apk to emulator $DEVICE..."
+        "{{.ADB}}" -s "$DEVICE" uninstall {{.APP_ID}} 2>/dev/null || true
+        "{{.ADB}}" -s "$DEVICE" install "{{.BIN_DIR}}/{{.APP_NAME}}.apk"
+        "{{.ADB}}" -s "$DEVICE" shell am start -n {{.APP_ID}}/com.wails.app.MainActivity
 
   device:list:
     summary: Lists connected Android devices and emulators (serials)
@@ -448,12 +472,30 @@ tasks:
   logs:
     summary: Stream Android logcat filtered to this app
     cmds:
-      - '"{{.ADB}}" logcat -v time | grep -E "(Wails|{{.APP_NAME}})" || true'
+      - |
+        DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" {
+          if ($1 ~ /^emulator-/) { print $1; emulator = 1; exit }
+          if (device == "") device = $1
+        } END { if (!emulator && device != "") print device }')
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected Android device or emulator found."
+          exit 1
+        fi
+        "{{.ADB}}" -s "$DEVICE" logcat -v time | grep -E "(Wails|{{.APP_NAME}})" || true
 
   logs:all:
     summary: Stream all Android logcat (verbose)
     cmds:
-      - '"{{.ADB}}" logcat -v time'
+      - |
+        DEVICE=$("{{.ADB}}" devices | awk 'NR > 1 && $2 == "device" {
+          if ($1 ~ /^emulator-/) { print $1; emulator = 1; exit }
+          if (device == "") device = $1
+        } END { if (!emulator && device != "") print device }')
+        if [ -z "$DEVICE" ]; then
+          echo "Error: no connected Android device or emulator found."
+          exit 1
+        fi
+        "{{.ADB}}" -s "$DEVICE" logcat -v time
 
   clean:
     summary: Clean build artifacts
