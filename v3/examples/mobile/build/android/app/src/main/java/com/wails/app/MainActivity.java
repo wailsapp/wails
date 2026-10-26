@@ -143,16 +143,28 @@ public class MainActivity extends AppCompatActivity {
                         }
                         if (DEBUG) Log.d(TAG, "Wails API call: " + fullPath);
 
+                        // Resolve the real MIME type for this path. Everything under
+                        // /wails/ used to be served as application/json, which makes
+                        // WebView refuse to execute ES modules such as
+                        // /wails/runtime.js ("Failed to load module script").
+                        // The bridge reports application/octet-stream for paths
+                        // without a known extension, so extension-less RPC calls
+                        // (/wails/runtime?...) keep their previous JSON type.
+                        String mimeType = bridge.getAssetMimeType(path);
+                        if ("application/octet-stream".equals(mimeType)) {
+                            mimeType = "application/json";
+                        }
+
                         byte[] data = bridge.serveAsset(fullPath, request.getMethod(), "{}");
                         if (data != null && data.length > 0) {
                             java.io.InputStream inputStream = new java.io.ByteArrayInputStream(data);
                             java.util.Map<String, String> headers = new java.util.HashMap<>();
                             headers.put("Access-Control-Allow-Origin", "*");
                             headers.put("Cache-Control", "no-cache");
-                            headers.put("Content-Type", "application/json");
+                            headers.put("Content-Type", mimeType);
 
                             return new WebResourceResponse(
-                                "application/json",
+                                mimeType,
                                 "UTF-8",
                                 200,
                                 "OK",

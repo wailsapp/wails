@@ -24,6 +24,7 @@ follow the changelog ownership policy in AGENTS.md and preserve existing entries
 
 ## Fixed
 <!-- Bug fixes -->
+- Serve `/wails/*` assets on Android with their real MIME type instead of a hardcoded `application/json`, so ES modules such as `/wails/runtime.js` are no longer rejected by the WebView and the runtime initialises correctly (#6014)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
