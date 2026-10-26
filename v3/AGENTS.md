@@ -21,6 +21,8 @@ Read the [repository-wide agent instructions](../AGENTS.md) first. This file sco
 - Apply the root release policy: v3.1.0 is feature-only; bug fixes are severity-prioritised and released as nightly patch updates outside that milestone/project.
 - Triage the actual issue or PR content. Do not infer priority or release placement from absent labels.
 - Use GitHub issues and PRs as the authoritative tracker; do not create local task lists.
+- Do not add entries to `UNRELEASED_CHANGELOG.md` or the published v3 changelog in ordinary PRs. They are maintained by the merge/release automation; provide the change's user-visible impact in the PR title and description instead. See the root changelog ownership policy for maintenance exceptions.
+- For agent-assisted builds and app testing, follow the root Wails MCP guidance: `wails3 mcp` manages project jobs; the separate `mcp`-tagged application server controls a running app.
 
 ## In scope
 

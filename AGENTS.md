@@ -33,6 +33,24 @@ For Wails release planning and issue/PR triage:
 - Do not push unless the user gives explicit manual confirmation.
 - Use the `taliesin-ai` identity for commits. Before committing, run `coderabbit --plain` as required by this repository's contribution policy.
 
+## Changelog ownership
+
+- For ordinary v3 contributions, **do not edit `v3/UNRELEASED_CHANGELOG.md` or `docs/mpress/content/changelog.md`**. The former is the automation's staging file; the latter is the published release history. The root `CHANGELOG.md` is only a legacy link, not another v3 changelog.
+- Describe the user-visible change accurately in the PR title and description. After merge, `.github/workflows/auto-changelog-v3.yml` generates an entry from the PR title and CodeRabbit walkthrough when available. Internal-only PRs may intentionally produce no entry.
+- Release tooling consumes the staged entries, adds a versioned section to the published changelog, and resets the staging file. Do not delete, rename, reset or replace either file to simplify an ordinary PR.
+- Changelog automation maintenance and explicitly requested release-note corrections are exceptions: change the owning generator/workflow and any coupled output together, preserve existing entries, and run the changelog publication and release tests.
+- v2 retains its separate contributor workflow in `website/src/pages/changelog.mdx`; the v3 automation rule does not change it.
+
+## Wails MCP tools for agents
+
+Wails v3 provides two separate MCP servers. Prefer their connected tools for the tasks they support; if they are unavailable, use the documented CLI and Taskfile commands. Use a CLI built from the checkout you intend to test, rather than assuming an installed release includes local changes.
+
+**Project lifecycle:** launch `wails3 mcp --stdio --root /absolute/path/to/app` through an MCP client. It can inspect projects, run diagnostics, list tasks, start builds/development jobs, and generate bindings. Relevant tools include `wails_project_inspect`, `wails_project_doctor`, `wails_project_task_list`, `wails_project_build`, `wails_project_dev_start`, `wails_project_generate_bindings` and `wails_project_task_run`. Builds return job IDs: use `wails_job_status` to check completion, output and exit status; a job starting is not a successful build. Use `wails_job_stop` for jobs this server started.
+
+The project server is confined to its configured root. Mutating and process-control tools require the session token supplied in the MCP initialization instructions; HTTP transport also requires bearer authentication. A token does not grant permission for actions outside the user's request. See [CLI MCP documentation](docs/mpress/content/guides/cli.md#mcp) and `v3/internal/commands/mcp.go`.
+
+**Running application:** `WAILS_MCP=1 wails3 dev` enables the experimental in-app server. Connect using the endpoint printed by the application (normally `http://127.0.0.1:9099/mcp`). Its tools inspect windows/DOM, interact with the UI, call bound methods and observe events; they do not replace the project build tools. `screenshot_dom` is a structural DOM snapshot, not a pixel screenshot. Keep the `mcp` build tag out of shipped builds. See [application MCP documentation](docs/mpress/content/guides/mcp-service.md).
+
 ## Issue Tracking with GitHub
 
 **IMPORTANT**: GitHub Issues and pull requests are the authoritative trackers for this project. Do not create a parallel local issue database or markdown task list.
