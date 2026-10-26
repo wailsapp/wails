@@ -5,8 +5,6 @@ slug: "contributing/release-policy"
 sourcePath: "contributing/release-policy.md"
 ---
 
-> <strong>状态：草案，待负责人审核。</strong>标有<strong>（待决定）</strong>的项目尚未确认。
-
 ## 用一张表说明模型
 
 Wails v3按**时间表而非功能**发布。在`v3.0.0`基线之后：
@@ -14,11 +12,11 @@ Wails v3按**时间表而非功能**发布。在`v3.0.0`基线之后：
 | 发布类型 | 标签 | 发布频率 | GitHub 发布版 | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
 | 每夜版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若在同一天重新运行，则追加`.N`） | 自动、每日，仅当`UNRELEASED_CHANGELOG.md`有内容时发布 | 预发布版，**不**标记为 Latest | 相同版本，但不含`v`，dist-tag 为`nightly` |
-| 每周版 | `v3.<next>.0` | 自动，于 Australia/Sydney 时区星期日20:00发布<strong>（日期尚未确认）</strong> | 常规发布版，标记为 Latest **（待决定）** | 相同版本，dist-tag 为`latest` |
-| 热修复版 | `v3.<current>.<N>`, `N > 0` | 很少发布，手动操作 | 常规发布版，标记为 Latest | 相同版本，dist-tag 为`latest` |
+| 每周版 | `v3.<next>.0` | 自动，于 Australia/Sydney 时区星期日20:00发布<strong>（日期尚未确认）</strong> | 常规发布版，标记为 Latest | 相同版本，dist-tag 为`latest` |
+| 热修复版 | `v3.<current>.<N>`, `N > 0` | 很少发布，手动操作 | 正常发布，Latest | 相同版本，dist-tag 为`latest` |
 | 主版本 | `v4.0.0` | 仅用于破坏性变更 | 常规发布版 | `latest` |
 
-`<next>`是已**发布**的最高v3次版本号加一。每夜版是对**下一个每周版**的预览，因此其基础版本取自最高的发布标签（忽略预发布版）：在热修复版`v3.1.1`之后，下一个每夜版仍为`v3.2.0-nightly.*`。
+`<next>`是已**发布**的最高 v3 次版本号加一。nightly 是**下一个 weekly** 的预览，因此其基础版本取自最高的发布标签（忽略预发布版本）：在发布热修复 `v3.1.1` 后，下一个 nightly 仍为 `v3.2.0-nightly.*`。它必须使用更高的版本号，因为预发布版本的排序低于其对应的正式版本：`v3.0.0-nightly.<date>`会排在 `v3.0.0` 之前。
 
 **提升次版本号并不代表功能里程碑。**`v3.4.0`表示“`v3.3.0`之后的每周发布版”。要了解具体变更，请阅读发布说明，而不要只看版本号。
 
@@ -69,9 +67,9 @@ CLI、Go 模块和 npm 包`@wailsio/runtime`使用取自`v3/internal/version/ver
 所有操作都通过**Nightly + Weekly Release v3**（`.github/workflows/nightly-release-v3.yml`）运行：
 
 - <strong>每夜版（自动）</strong>于 UTC 15:00运行。未发布的变更日志为空时跳过。
-- <strong>每周版（自动）</strong>于 Sydney 时间20:00运行。GitHub cron 仅支持 UTC，因此会安排两个 cron（UTC 09:00和10:00）；防护作业仅在 Sydney 当地时间为20:00时继续执行（会考虑夏令时）。每周版会通过发布门禁，选取最新的已通过全部检查的提交，提升次版本号，为该提交打标签但不修改变更日志，然后将版本文件复制回`master`。
+- 悉尼时间 20:00 执行**每周发布（自动）**。GitHub cron 仅支持 UTC，因此会安排两个 cron（UTC 时间 09:00 和 10:00），而守卫作业仅在悉尼时间为 20:00 时继续执行（可感知夏令时）。每周发布通过发布门禁后，会选择最新的绿色提交，递增次版本号，为该提交添加标签而不改动变更日志，然后仅更新 `master` 上的版本字段（`version.txt`和运行时软件包版本），因此会保留所选提交之后合并的依赖项和锁文件更新。npm 从标签发布，而不是从 `master` 发布。
 - <strong>手动。</strong>使用`channel`、`dry_run`（默认启用）以及可选的`release_version`运行工作流。试运行会输出版本、类型、GitHub 标志、npm dist-tag 和说明，而不会改动 GitHub 或 npm。
-- <strong>GA 或热修复版。</strong>设置`ref: releases/...`和`release_version`（`v3.0.0`、`v3.1.1`）。发布提交会被拣选回`master`。
+- <strong>GA 或热修复。</strong>设置 `release_version`（`v3.0.0`、`v3.1.1`）。针对旧发布线的热修复还可以设置 `ref: releases/...`；其发布提交会被 cherry-pick 回 `master`。
 
 本地试运行：`cd v3/tasks/release && go run release.go --dry-run --channel weekly`；`go run release.go --print-policy v3.2.0-nightly.20261102`会显示推导出的标志。
 
@@ -90,7 +88,7 @@ CLI、Go 模块和 npm 包`@wailsio/runtime`使用取自`v3/internal/version/ver
 3. 严重级别为严重或高的未解决 Dependabot 警报、严重级别为严重或高的未解决代码扫描警报，以及任何未解决的密钥扫描警报，但**仅限已发布的代码**。如果警报仅位于`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`或任意`examples/`目录下，则会被忽略（`v3/tasks/releasegate/main.go`中的`SHIPPED_ALERT_IGNORE`，**由负责人审核**）；
 4. 仍处于`triage`状态的仓库安全公告。
 
-<strong>谁可以设置阻止项。</strong>仅当某标签最近一次`labeled`事件（且之后没有`unlabeled`事件）由`wailsapp/maintainers`团队成员或拥有`maintain`/`admin`权限的协作者执行时，该标签才会生效。其他任何人应用的同一标签都会被忽略并记录，因此外部人员无法阻止发布或解除发布阻止。系统自动应用的`high-priority`标签特意<strong>不</strong>用于此目的。诸如`taliesin-ai`之类的机器人账户如果拥有`maintain`权限，也会通过允许列表检查<strong>（待决定：保留还是排除机器人）</strong>。
+**谁可以设置阻塞项。**只有当某标签最近一次 `labeled` 事件（之后没有 `unlabeled`）由 `wailsapp/maintainers` 团队成员或拥有 `maintain`/`admin` 权限的协作者执行时，该标签才有效。其他任何人应用的同一标签都会被忽略并记录到日志中，因此外部人员无法阻塞发布或解除发布阻塞。自动应用的 `high-priority` 标签特意**不**用于此目的。`taliesin-ai`等机器人账户只要拥有 `maintain`，即可通过允许列表检查；这是有意为之，分类代理可以在提供证据的情况下应用阻塞标签。
 
 **失败时的行为。**门禁采用**故障关闭**策略：如果无法读取警报 API 或允许列表，每周发布就会停止。失败时不会创建任何标签；阻止项列表（含链接）会写入作业摘要；如果已设置仓库变量`WEEKLY_STATUS_ISSUE`，还会更新唯一的“每周发布状态”议题中的评论。
 

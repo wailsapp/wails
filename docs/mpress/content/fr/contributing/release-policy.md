@@ -5,8 +5,6 @@ slug: "contributing/release-policy"
 sourcePath: "contributing/release-policy.md"
 ---
 
-> **État : brouillon à faire valider par le responsable.** Les éléments marqués **(décision en attente)** ne sont pas confirmés.
-
 ## Le modèle en un tableau
 
 Les publications de Wails v3 suivent un **calendrier, et non les fonctionnalités**. Après la version de référence `v3.0.0` :
@@ -14,11 +12,11 @@ Les publications de Wails v3 suivent un **calendrier, et non les fonctionnalité
 | Publication | Tag | Fréquence | Publication GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
 | Nocturne | `v3.<next>.0-nightly.<YYYYMMDD>` (date UTC ; `.N` ajouté en cas de nouvelle exécution le même jour) | automatique, quotidienne, uniquement lorsque `UNRELEASED_CHANGELOG.md` contient des éléments | préversion, **pas** Latest | même version sans `v`, dist-tag `nightly` |
-| Hebdomadaire | `v3.<next>.0` | automatique, le dimanche 20:00, heure d’Australia/Sydney **(jour non confirmé)** | publication normale, Latest **(décision en attente)** | même version, dist-tag `latest` |
-| Correctif urgent | `v3.<current>.<N>`, `N > 0` | rare, manuelle | publication normale, Latest | même version, dist-tag `latest` |
+| Hebdomadaire | `v3.<next>.0` | automatique, le dimanche 20:00, heure d’Australia/Sydney **(jour non confirmé)** | publication normale, Latest | même version, dist-tag `latest` |
+| Correctif urgent | `v3.<current>.<N>`, `N > 0` | rare, manuelle | version normale, Latest | même version, dist-tag `latest` |
 | Majeure | `v4.0.0` | uniquement pour les changements incompatibles | publication normale | `latest` |
 
-`<next>` correspond au numéro mineur le plus élevé **publié** pour v3, augmenté de un. Une version nocturne est un aperçu de la **prochaine version hebdomadaire** ; sa base est donc le tag de publication le plus élevé (les préversions sont ignorées) : après un correctif urgent `v3.1.1`, la prochaine version nocturne reste `v3.2.0-nightly.*`.
+`<next>` correspond à la version mineure qui suit la plus élevée des versions **publiées** v3. Une version nightly est un aperçu de la **prochaine version hebdomadaire** ; sa base est donc le tag de version le plus élevé (les préversions sont ignorées) : après un correctif `v3.1.1`, la version nightly suivante reste `v3.2.0-nightly.*`. Elle doit porter un numéro de version supérieur, car une préversion est classée avant la version finale correspondante : `v3.0.0-nightly.<date>` serait classée avant `v3.0.0`.
 
 **L’incrémentation du numéro mineur ne constitue pas un jalon fonctionnel.** `v3.4.0` désigne « la publication hebdomadaire qui suit `v3.3.0` ». Consultez les notes de publication, et non le numéro de version, pour connaître les changements.
 
@@ -69,9 +67,9 @@ Les droits de publication sont réservés au responsable du projet (consultez le
 Toutes les opérations s’effectuent depuis **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`) :
 
 - **Nocturne (automatique)** à 15:00 UTC. Elle est ignorée lorsque le journal des modifications non publiées est vide.
-- **Hebdomadaire (automatique)** à 20:00, heure de Sydney. Le cron de GitHub ne prend en charge que l’heure UTC ; deux crons (09:00 et 10:00 UTC) sont donc planifiés, et une tâche de garde ne poursuit l’exécution que lorsqu’il est 20:00 à Sydney (avec prise en compte de l’heure d’été). La publication hebdomadaire franchit la porte de validation, sélectionne le commit au vert le plus récent, incrémente le numéro mineur, applique le tag à ce commit sans modifier le journal des modifications, puis recopie les fichiers de version sur `master`.
+- **Version hebdomadaire (automatique)** à 20:00, heure de Sydney. Les tâches cron de GitHub ne prennent en charge que l'heure UTC ; deux tâches cron (09:00 et 10:00 UTC) sont donc planifiées, et une tâche de garde ne poursuit l'exécution que lorsqu'il est 20:00 à Sydney (en tenant compte de l'heure d'été). La version hebdomadaire franchit la porte de validation de la publication, sélectionne le commit réussi le plus récent, incrémente la version mineure, attribue un tag à ce commit sans modifier le journal des modifications, puis met à jour uniquement les champs de version sur `master` (`version.txt` et les versions des packages du runtime), afin de conserver les mises à jour des dépendances et des fichiers de verrouillage fusionnées après le commit sélectionné. npm publie à partir du tag, et non de `master`.
 - **Manuelle.** Exécutez le workflow avec `channel`, `dry_run` (activé par défaut) et, facultativement, `release_version`. Une simulation affiche la version, le type, les indicateurs GitHub, le dist-tag npm et les notes sans modifier GitHub ni npm.
-- **Disponibilité générale ou correctif urgent.** Définissez `ref: releases/...` et `release_version` (`v3.0.0`, `v3.1.1`). Le commit de publication est réappliqué sur `master` par cherry-pick.
+- **Version GA ou correctif.** Définissez `release_version` (`v3.0.0`, `v3.1.1`). Pour un correctif destiné à une branche de version antérieure, vous pouvez également définir `ref: releases/...` ; son commit de publication est réappliqué par cherry-pick sur `master`.
 
 Simulation locale : `cd v3/tasks/release && go run release.go --dry-run --channel weekly` ; `go run release.go --print-policy v3.2.0-nightly.20261102` affiche les indicateurs calculés.
 
@@ -90,7 +88,7 @@ La publication **hebdomadaire**, jamais la nightly, refuse de créer une balise 
 3. des alertes Dependabot ouvertes de gravité critique ou élevée, des alertes d’analyse du code ouvertes de gravité critique ou élevée, ainsi que toute alerte ouverte d’analyse des secrets, **uniquement pour le code distribué**. Les alertes situées exclusivement sous `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` ou dans tout répertoire `examples/` sont ignorées (`SHIPPED_ALERT_IGNORE` dans `v3/tasks/releasegate/main.go`, **à examiner par le responsable**) ;
 4. des avis de sécurité du dépôt toujours à l’état `triage`.
 
-**Qui peut définir un blocage.** Un libellé n’est pris en compte que si son événement `labeled` le plus récent, sans événement `unlabeled` ultérieur, a été créé par un membre de l’équipe `wailsapp/maintainers` ou par un collaborateur disposant de l’autorisation `maintain`/`admin`. Le même libellé appliqué par toute autre personne est ignoré et journalisé, afin que les personnes externes ne puissent ni bloquer ni débloquer une publication. Le libellé `high-priority` appliqué automatiquement n’est délibérément **pas** utilisé. Les comptes de bots tels que `taliesin-ai` sont acceptés par la liste d’autorisation s’ils disposent de `maintain` **(décision en attente : conserver ou exclure les bots)**.
+**Qui peut définir un blocage.** Un label n'est pris en compte que si son événement `labeled` le plus récent (sans événement `unlabeled` ultérieur) a été déclenché par un membre de l'équipe `wailsapp/maintainers` ou par un collaborateur disposant de l'autorisation `maintain`/`admin`. Le même label appliqué par toute autre personne est ignoré et consigné dans le journal, afin qu'aucune personne extérieure ne puisse bloquer ou débloquer une publication. Le label `high-priority` appliqué automatiquement n'est délibérément **pas** utilisé. Les comptes de bots tels que `taliesin-ai` passent la liste d'autorisation s'ils disposent de `maintain` ; c'est intentionnel, et l'agent de triage peut appliquer des labels de blocage en fournissant des éléments justificatifs.
 
 **Comportement en cas d’échec.** Le point de contrôle échoue en mode **fermé** : si une API d’alertes ou la liste d’autorisation ne peut pas être lue, la publication hebdomadaire s’arrête. En cas d’échec, il ne crée aucune balise, inscrit la liste, liens compris, dans le résumé de la tâche et met à jour un commentaire dans l’unique issue « État de la publication hebdomadaire » lorsque la variable de dépôt `WEEKLY_STATUS_ISSUE` est définie.
 

@@ -5,8 +5,6 @@ slug: "contributing/release-policy"
 sourcePath: "contributing/release-policy.md"
 ---
 
-> <strong>狀態：草稿，待負責人審閱。</strong> 標有<strong>（決策待定）</strong>的項目尚未確認。
-
 ## 以一張表說明整套模型
 
 Wails v3依**固定時程，而非依功能**發布版本。在`v3.0.0`基準版本之後：
@@ -14,11 +12,11 @@ Wails v3依**固定時程，而非依功能**發布版本。在`v3.0.0`基準版
 | 版本類型 | 標籤 | 發布頻率 | GitHub 發布版本 | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
 | 夜間版 | `v3.<next>.0-nightly.<YYYYMMDD>`（UTC 日期；若同一天重新執行，則附加`.N`） | 每日自動執行，僅在`UNRELEASED_CHANGELOG.md`有內容時發布 | 預發布版本，**不會**標為 Latest | 相同版本但不含`v`，dist-tag 為`nightly` |
-| 每週版 | `v3.<next>.0` | 於 Australia/Sydney 時區星期日20:00自動執行<strong>（日期尚未確認）</strong> | 一般發布版本，標為 Latest **（決策待定）** | 相同版本，dist-tag 為`latest` |
-| 緊急修補版 | `v3.<current>.<N>`, `N > 0` | 很少發布，手動執行 | 一般發布版本，標為 Latest | 相同版本，dist-tag 為`latest` |
+| 每週版 | `v3.<next>.0` | 於 Australia/Sydney 時區星期日20:00自動執行<strong>（日期尚未確認）</strong> | 一般發布版本，標為 Latest | 相同版本，dist-tag 為`latest` |
+| 緊急修補版 | `v3.<current>.<N>`, `N > 0` | 很少發布，手動執行 | 一般版本、Latest | 相同版本，dist-tag 為`latest` |
 | 主要版本 | `v4.0.0` | 僅用於破壞性變更 | 一般發布版本 | `latest` |
 
-`<next>`是已**發布**的最高v3次要版本再加一。夜間版是**下一個每週版**的預覽，因此其基準為最高的發布標籤（忽略預發布版本）：緊急修補版`v3.1.1`發布後，下一個夜間版仍是`v3.2.0-nightly.*`。
+`<next>`是最高的**已發布**v3次要版本加一。nightly 是**下一個每週版本**的預覽，因此其基準是最高的發布標籤（忽略預發布版本）：在修補版本`v3.1.1`之後，下一個 nightly 仍是`v3.2.0-nightly.*`。它必須使用較高的版本號，因為預發布版本的排序會低於其對應的正式版本：`v3.0.0-nightly.<date>`會排在`v3.0.0`之前。
 
 **提高次要版本號並不代表功能里程碑。** `v3.4.0`代表「`v3.3.0`之後的每週發布版本」。請閱讀版本資訊而非僅查看版本號，以瞭解變更內容。
 
@@ -69,9 +67,9 @@ CLI、Go 模組與 npm 套件`@wailsio/runtime`採用**相同版本**，取自`v
 所有作業都從**Nightly + Weekly Release v3**（`.github/workflows/nightly-release-v3.yml`）執行：
 
 - <strong>夜間版（自動）</strong>於 UTC 15:00執行。未發布的變更記錄為空時會略過。
-- <strong>每週版（自動）</strong>於雪梨時間20:00執行。GitHub cron 僅支援 UTC，因此會排定兩個 cron（UTC 09:00與10:00），而防護工作僅在雪梨當地時間為20:00時繼續執行（會考量日光節約時間）。每週版會通過發布關卡、選取通過檢查的最新提交、提高次要版本號，並在不變更變更記錄的情況下為該提交加上標籤，然後將版本檔案複製回`master`。
+- <strong>每週（自動）</strong>於雪梨時間20:00執行。GitHub cron 僅支援 UTC，因此會排定兩個 cron（UTC 09:00和10:00），而防護工作只會在雪梨時間為20:00時繼續執行（會考量日光節約時間）。每週版本會通過發布閘門、選取最新且檢查通過的提交、遞增次要版本，並為該提交加上標籤而不變更變更記錄；接著只更新`master`上的版本欄位（`version.txt`和執行階段套件版本），因此會保留在所選提交之後合併的相依套件與鎖定檔更新。npm 從標籤發布，而不是從`master`發布。
 - <strong>手動。</strong>執行工作流程時使用`channel`、`dry_run`（預設開啟），並可選擇使用`release_version`。試執行會輸出版本、類型、GitHub 旗標、npm dist-tag 與版本資訊，而不會變更 GitHub 或 npm。
-- <strong>正式版或緊急修補版。</strong>設定`ref: releases/...`與`release_version`（`v3.0.0`、`v3.1.1`）。發布提交會以 cherry-pick 方式套用回`master`。
+- <strong>GA 或修補版本。</strong>設定`release_version`（`v3.0.0`、`v3.1.1`）。較舊版本線的修補版本也可以設定`ref: releases/...`；其發布提交會以 cherry-pick 方式帶回`master`。
 
 本機模擬執行：`cd v3/tasks/release && go run release.go --dry-run --channel weekly`；`go run release.go --print-policy v3.2.0-nightly.20261102`會顯示推導出的旗標。
 
@@ -90,7 +88,7 @@ CLI、Go 模組與 npm 套件`@wailsio/runtime`採用**相同版本**，取自`v
 3. 嚴重性為重大或高的未結 Dependabot 警示、嚴重性為重大或高的未結程式碼掃描警示，以及任何未結的祕密掃描警示，且**僅限已發布的程式碼**。若警示只位於`v3/examples/`、`v2/examples/`、`website/`、`docs/`、`.github/`或任何`examples/`目錄下，則會忽略該警示（`v3/tasks/releasegate/main.go`中的`SHIPPED_ALERT_IGNORE`，**由擁有者審查**）；
 4. 仍處於`triage`狀態的儲存庫安全公告。
 
-<strong>誰可以設定阻擋項目。</strong>只有在某標籤最近一次的`labeled`事件（之後沒有`unlabeled`事件）是由`wailsapp/maintainers`團隊成員，或具備`maintain`/`admin`權限的協作者執行時，該標籤才會生效。其他人套用的相同標籤會被忽略並記錄，因此外部人員無法阻擋或解除阻擋發行。系統刻意<strong>不</strong>使用自動套用的`high-priority`標籤。`taliesin-ai`等機器人帳號若具備`maintain`，即可通過允許清單<strong>（尚待決定：保留或排除機器人）</strong>。
+**誰可以設定阻擋項目。**只有在某標籤最近一次的`labeled`事件（之後沒有`unlabeled`事件）是由`wailsapp/maintainers`團隊成員，或具有`maintain`／`admin`權限的協作者執行時，該標籤才會生效。其他任何人套用的相同標籤都會被忽略並記錄，因此外部人員無法阻擋或解除阻擋版本發布。自動套用的`high-priority`標籤刻意**不**採用。`taliesin-ai`等機器人帳號若具備`maintain`，即可通過允許清單；這是預期行為，分流代理程式可在提供佐證的情況下套用阻擋標籤。
 
 **失敗時的行為。**閘門採取**預設拒絕**策略：若無法讀取警示 API 或允許清單，每週發行就會停止。失敗時不會建立任何標籤，會將清單（含連結）寫入作業摘要；若已設定儲存庫變數`WEEKLY_STATUS_ISSUE`，還會更新唯一一個「每週發行狀態」問題中的留言。
 

@@ -5,8 +5,6 @@ slug: "contributing/release-policy"
 sourcePath: "contributing/release-policy.md"
 ---
 
-> **Status: draf untuk ditinjau pemilik.** Hal yang ditandai **(keputusan tertunda)** belum dikonfirmasi.
-
 ## Ringkasan model dalam satu tabel
 
 Wails v3 merilis berdasarkan **jadwal, bukan fitur**. Setelah versi dasar `v3.0.0`:
@@ -14,11 +12,11 @@ Wails v3 merilis berdasarkan **jadwal, bukan fitur**. Setelah versi dasar `v3.0.
 | Rilis | Tag | Frekuensi | Rilis GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
 | Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (tanggal UTC; `.N` ditambahkan jika dijalankan ulang pada hari yang sama) | otomatis, setiap hari, hanya jika `UNRELEASED_CHANGELOG.md` memiliki konten | prarilis, **bukan** Latest | versi yang sama tanpa `v`, dist-tag `nightly` |
-| Weekly | `v3.<next>.0` | otomatis, Minggu 20:00 waktu Australia/Sydney **(hari belum dikonfirmasi)** | rilis normal, Latest **(keputusan tertunda)** | versi yang sama, dist-tag `latest` |
-| Hotfix | `v3.<current>.<N>`, `N > 0` | jarang, manual | rilis normal, Latest | versi yang sama, dist-tag `latest` |
+| Weekly | `v3.<next>.0` | otomatis, Minggu 20:00 waktu Australia/Sydney **(hari belum dikonfirmasi)** | rilis normal, Latest | versi yang sama, dist-tag `latest` |
+| Hotfix | `v3.<current>.<N>`, `N > 0` | jarang, manual | rilis normal, Terbaru | versi yang sama, dist-tag `latest` |
 | Mayor | `v4.0.0` | hanya untuk perubahan yang merusak kompatibilitas | rilis normal | `latest` |
 
-`<next>` adalah versi minor tertinggi yang **telah dirilis** v3 ditambah satu. Nightly adalah pratinjau **weekly berikutnya**. Karena itu, versi dasarnya adalah tag rilis tertinggi (prarilis diabaikan): setelah hotfix `v3.1.1`, nightly berikutnya tetap `v3.2.0-nightly.*`.
+`<next>` adalah minor **yang telah dirilis** v3 tertinggi ditambah satu. Nightly adalah pratinjau **rilis mingguan berikutnya**. Karena itu, versi dasarnya adalah tag rilis tertinggi (prarilis diabaikan): setelah hotfix `v3.1.1`, nightly berikutnya tetap `v3.2.0-nightly.*`. Nightly harus menggunakan nomor versi yang lebih tinggi karena prarilis diurutkan sebelum rilisnya sendiri: `v3.0.0-nightly.<date>` akan diurutkan sebelum `v3.0.0`.
 
 **Kenaikan versi minor bukan tonggak pencapaian fitur.** `v3.4.0` berarti "rilis weekly setelah `v3.3.0`". Untuk mengetahui perubahan yang terjadi, baca catatan rilis, bukan nomor versinya.
 
@@ -69,9 +67,9 @@ Hak merilis hanya diberikan kepada Lead proyek (lihat dokumen tata kelola). Kont
 Semuanya dijalankan dari **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`):
 
 - **Nightly (otomatis)** pada pukul 15:00 UTC. Dilewati jika changelog yang belum dirilis kosong.
-- **Weekly (otomatis)** pada pukul 20:00 waktu Sydney. Cron GitHub hanya menggunakan UTC, sehingga dua cron (09:00 dan 10:00 UTC) dijadwalkan dan sebuah guard job hanya melanjutkan proses ketika waktu di Sydney menunjukkan 20:00 (dengan memperhitungkan DST). Weekly melewati gerbang rilis, memilih commit terbaru yang berstatus hijau, menaikkan versi minor, menandai commit tersebut dengan tag tanpa mengubah changelog, lalu menyalin kembali berkas versi ke `master`.
+- **Mingguan (otomatis)** pada 20:00 waktu Sydney. Cron GitHub hanya mendukung UTC, sehingga dua cron (09:00 dan 10:00 UTC) dijadwalkan, dan job pengaman hanya dilanjutkan saat waktu di Sydney menunjukkan 20:00 (dengan memperhitungkan DST). Rilis mingguan harus lolos gerbang rilis, memilih commit terbaru yang berhasil melewati semua pemeriksaan, menaikkan versi minor, memberi tag pada commit tersebut tanpa mengubah changelog, lalu hanya memperbarui kolom versi pada `master` (`version.txt` dan versi paket runtime), sehingga pembaruan dependensi dan lockfile yang digabungkan setelah commit terpilih tetap dipertahankan. npm menerbitkan dari tag, bukan dari `master`.
 - **Manual.** Jalankan alur kerja dengan `channel`, `dry_run` (aktif secara default), dan jika perlu `release_version`. Dry run menampilkan versi, jenis, flag GitHub, dist-tag npm, dan catatan tanpa mengubah apa pun di GitHub atau npm.
-- **GA atau hotfix.** Tetapkan `ref: releases/...` dan `release_version` (`v3.0.0`, `v3.1.1`). Commit rilis di-cherry-pick kembali ke `master`.
+- **GA atau hotfix.** Tetapkan `release_version` (`v3.0.0`, `v3.1.1`). Hotfix untuk lini versi lama juga dapat menetapkan `ref: releases/...`; commit rilisnya di-cherry-pick kembali ke `master`.
 
 Uji coba lokal: `cd v3/tasks/release && go run release.go --dry-run --channel weekly`; `go run release.go --print-policy v3.2.0-nightly.20261102` menampilkan flag yang diturunkan.
 
@@ -90,7 +88,7 @@ Proses **mingguan** (bukan proses nightly) menolak membuat tag selama salah satu
 3. peringatan Dependabot terbuka dengan tingkat keparahan kritis atau tinggi, peringatan pemindaian kode terbuka dengan tingkat keparahan kritis atau tinggi, serta setiap peringatan pemindaian rahasia yang masih terbuka, **hanya untuk kode yang didistribusikan**. Peringatan yang hanya berada di bawah `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/`, atau direktori `examples/` mana pun akan diabaikan (`SHIPPED_ALERT_IGNORE` di `v3/tasks/releasegate/main.go`, **perlu ditinjau oleh pemilik**);
 4. advisori keamanan repositori yang masih berstatus `triage`.
 
-**Siapa yang dapat menetapkan pemblokir.** Label hanya diperhitungkan jika peristiwa `labeled` terbaru untuk label tersebut (tanpa `unlabeled` setelahnya) dilakukan oleh anggota tim `wailsapp/maintainers` atau kolaborator dengan izin `maintain`/`admin`. Label yang sama yang diterapkan oleh orang lain akan diabaikan dan dicatat, sehingga pihak luar tidak dapat memblokir atau membuka blokir rilis. Label `high-priority` yang diterapkan secara otomatis sengaja **tidak** digunakan. Akun bot seperti `taliesin-ai` lolos daftar izin jika memiliki `maintain` **(keputusan masih tertunda: pertahankan atau kecualikan bot)**.
+**Siapa yang dapat menetapkan pemblokir.** Sebuah label hanya diperhitungkan jika peristiwa `labeled` terbarunya (tanpa `unlabeled` setelahnya) dilakukan oleh anggota tim `wailsapp/maintainers` atau kolaborator dengan izin `maintain`/`admin`. Label yang sama jika diterapkan oleh pihak lain akan diabaikan dan dicatat dalam log, sehingga pihak luar tidak dapat memblokir atau membuka blokir rilis. Label `high-priority` yang diterapkan secara otomatis sengaja **tidak** digunakan. Akun bot seperti `taliesin-ai` lolos daftar izin jika memiliki `maintain`; hal ini memang disengaja, dan agen triase dapat menerapkan label pemblokir dengan bukti.
 
 **Perilaku saat terjadi kegagalan.** Gerbang menerapkan prinsip **fail-closed**: jika API peringatan atau daftar izin tidak dapat dibaca, proses mingguan akan berhenti. Jika gagal, proses ini tidak membuat tag apa pun, menuliskan daftar tersebut (beserta tautannya) ke ringkasan tugas, dan memperbarui komentar pada satu-satunya issue "Status rilis mingguan" jika variabel repositori `WEEKLY_STATUS_ISSUE` telah ditetapkan.
 

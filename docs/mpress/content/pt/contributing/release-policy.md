@@ -5,8 +5,6 @@ slug: "contributing/release-policy"
 sourcePath: "contributing/release-policy.md"
 ---
 
-> **Status: rascunho para revisão do responsável.** Os itens marcados com **(decisão pendente)** não estão confirmados.
-
 ## O modelo em uma tabela
 
 O Wails v3 faz lançamentos com base em um **cronograma, não em funcionalidades**. Após a versão de referência `v3.0.0`:
@@ -14,11 +12,11 @@ O Wails v3 faz lançamentos com base em um **cronograma, não em funcionalidades
 | Lançamento | Tag | Periodicidade | Lançamento no GitHub | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
 | Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (data UTC; `.N` é acrescentado se houver uma nova execução no mesmo dia) | automatizado, diariamente, somente quando `UNRELEASED_CHANGELOG.md` contém algo | pré-lançamento, **não** marcado como Latest | mesma versão sem `v`, dist-tag `nightly` |
-| Semanal | `v3.<next>.0` | automatizado, domingo às 20:00 no fuso Australia/Sydney **(dia não confirmado)** | lançamento normal, marcado como Latest **(decisão pendente)** | mesma versão, dist-tag `latest` |
-| Correção emergencial | `v3.<current>.<N>`, `N > 0` | raro, manual | lançamento normal, marcado como Latest | mesma versão, dist-tag `latest` |
+| Semanal | `v3.<next>.0` | automatizado, domingo às 20:00 no fuso Australia/Sydney **(dia não confirmado)** | lançamento normal, marcado como Latest | mesma versão, dist-tag `latest` |
+| Correção emergencial | `v3.<current>.<N>`, `N > 0` | raro, manual | versão normal, Latest | mesma versão, dist-tag `latest` |
 | Principal | `v4.0.0` | somente para alterações incompatíveis | lançamento normal | `latest` |
 
-`<next>` é a maior versão secundária **lançada** de v3 mais um. Um nightly é uma prévia do **próximo lançamento semanal**; por isso, sua base é a tag de lançamento mais alta (os pré-lançamentos são ignorados): após uma correção emergencial `v3.1.1`, o próximo nightly ainda é `v3.2.0-nightly.*`.
+`<next>` é a versão secundária mais alta **lançada** em v3, mais um. Uma versão nightly é uma prévia da **próxima versão semanal**; por isso, sua base é a tag da versão mais alta (pré-lançamentos são ignorados): após um hotfix `v3.1.1`, a próxima nightly ainda é `v3.2.0-nightly.*`. Ela precisa indicar uma versão superior porque um pré-lançamento é ordenado antes de sua própria versão final: `v3.0.0-nightly.<date>` seria ordenada antes de `v3.0.0`.
 
 **O incremento da versão secundária não é um marco de funcionalidade.** `v3.4.0` é "o lançamento semanal posterior a `v3.3.0`". Para saber o que mudou, leia as notas de lançamento, não o número da versão.
 
@@ -69,9 +67,9 @@ Os direitos de lançamento são restritos ao líder do projeto (consulte o docum
 Tudo é executado por meio de **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`):
 
 - **Nightly (automático)** às 15:00 UTC. É ignorado quando o changelog ainda não lançado está vazio.
-- **Semanal (automático)** às 20:00 no horário de Sydney. O cron do GitHub aceita somente UTC, portanto, dois crons (09:00 e 10:00 UTC) são agendados, e um job de proteção só prossegue quando são 20:00 em Sydney (considerando o horário de verão). O lançamento semanal passa pelo gate de lançamento, seleciona o commit aprovado mais recente, incrementa a versão secundária, aplica a tag a esse commit sem alterar o changelog e, em seguida, copia os arquivos de versão de volta para `master`.
+- **Semanal (automática)** às 20:00, no horário de Sydney. O cron do GitHub aceita apenas UTC; por isso, dois crons (09:00 e 10:00 UTC) são agendados, e um job de verificação só prossegue quando são 20:00 em Sydney (considerando o horário de verão). A versão semanal passa pelo gate de lançamento, seleciona o commit aprovado mais recente, incrementa a versão secundária, cria uma tag nesse commit sem alterar o changelog e, em seguida, atualiza apenas os campos de versão em `master` (`version.txt` e as versões dos pacotes de runtime), preservando assim as atualizações de dependências e do arquivo de lock mescladas após o commit selecionado. O npm publica a partir da tag, não de `master`.
 - **Manual.** Execute o fluxo de trabalho com `channel`, `dry_run` (ativado por padrão) e, opcionalmente, `release_version`. Uma simulação imprime a versão, o tipo, os sinalizadores do GitHub, a dist-tag do npm e as notas sem alterar o GitHub nem o npm.
-- **GA ou correção emergencial.** Defina `ref: releases/...` e `release_version` (`v3.0.0`, `v3.1.1`). O commit de lançamento é aplicado de volta a `master` com cherry-pick.
+- **GA ou hotfix.** Defina `release_version` (`v3.0.0`, `v3.1.1`). Um hotfix para uma linha mais antiga também pode definir `ref: releases/...`; o commit de lançamento correspondente é trazido de volta para `master` por cherry-pick.
 
 Simulação local: `cd v3/tasks/release && go run release.go --dry-run --channel weekly`; `go run release.go --print-policy v3.2.0-nightly.20261102` mostra os sinalizadores derivados.
 
@@ -90,7 +88,7 @@ O fluxo **semanal** (nunca o noturno) se recusa a criar uma tag enquanto existir
 3. alertas abertos do Dependabot de severidade crítica ou alta, alertas abertos de análise de código de severidade crítica ou alta e qualquer alerta aberto de verificação de segredos, **somente para código distribuído**. Alertas localizados exclusivamente em `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` ou em qualquer diretório `examples/` são ignorados (`SHIPPED_ALERT_IGNORE` em `v3/tasks/releasegate/main.go`, **o proprietário deve revisar**);
 4. avisos de segurança do repositório que ainda estejam em `triage`.
 
-**Quem pode definir um bloqueio.** Um rótulo só é considerado se o evento `labeled` mais recente relacionado a ele (sem um `unlabeled` posterior) tiver sido realizado por um membro da equipe `wailsapp/maintainers` ou por um colaborador com permissão `maintain`/`admin`. O mesmo rótulo aplicado por qualquer outra pessoa é ignorado e registrado, portanto pessoas externas não podem bloquear nem desbloquear um lançamento. O rótulo `high-priority` aplicado automaticamente deliberadamente **não** é usado. Contas de bot, como `taliesin-ai`, passam pela lista de permissões se tiverem `maintain` **(decisão pendente: manter ou excluir bots)**.
+**Quem pode definir um bloqueador.** Um rótulo só é considerado se o evento `labeled` mais recente correspondente (sem um `unlabeled` posterior) tiver sido realizado por um membro da equipe `wailsapp/maintainers` ou por um colaborador com permissão `maintain`/`admin`. O mesmo rótulo aplicado por qualquer outra pessoa é ignorado e registrado, de modo que pessoas externas não possam bloquear nem desbloquear um lançamento. O rótulo `high-priority` aplicado automaticamente **não** é usado deliberadamente. Contas de bot, como `taliesin-ai`, passam pela lista de permissões se tiverem `maintain`; isso é intencional, e o agente de triagem pode aplicar rótulos de bloqueio com evidências.
 
 **Comportamento em caso de falha.** O controle falha de forma **restritiva**: se não for possível ler uma API de alertas ou a lista de permissões, o fluxo semanal é interrompido. Em caso de falha, ele não cria nenhuma tag, grava a lista (com links) no resumo do trabalho e atualiza um comentário na única issue "Status do lançamento semanal" quando a variável de repositório `WEEKLY_STATUS_ISSUE` está definida.
 

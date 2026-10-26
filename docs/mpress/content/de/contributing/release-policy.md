@@ -5,8 +5,6 @@ slug: "contributing/release-policy"
 sourcePath: "contributing/release-policy.md"
 ---
 
-> **Status: Entwurf zur Prüfung durch den Verantwortlichen.** Mit **(Entscheidung ausstehend)** gekennzeichnete Punkte sind nicht bestätigt.
-
 ## Das Modell in einer Tabelle
 
 Wails v3 veröffentlicht **zeitgesteuert, nicht funktionsgesteuert**. Nach der `v3.0.0`-Basisversion:
@@ -14,11 +12,11 @@ Wails v3 veröffentlicht **zeitgesteuert, nicht funktionsgesteuert**. Nach der `
 | Release | Tag | Rhythmus | GitHub-Release | npm `@wailsio/runtime` |
 | --- | --- | --- | --- | --- |
 | Nightly | `v3.<next>.0-nightly.<YYYYMMDD>` (UTC-Datum; bei erneuter Ausführung am selben Tag wird `.N` angehängt) | automatisiert, täglich, nur wenn `UNRELEASED_CHANGELOG.md` Inhalt enthält | Pre-Release, **nicht** Latest | dieselbe Version ohne `v`, Dist-Tag `nightly` |
-| Weekly | `v3.<next>.0` | automatisiert, sonntags um 20:00 Uhr Australia/Sydney **(Tag nicht bestätigt)** | reguläres Release, Latest **(Entscheidung ausstehend)** | dieselbe Version, Dist-Tag `latest` |
-| Hotfix | `v3.<current>.<N>`, `N > 0` | selten, manuell | reguläres Release, Latest | dieselbe Version, Dist-Tag `latest` |
+| Weekly | `v3.<next>.0` | automatisiert, sonntags um 20:00 Uhr Australia/Sydney **(Tag nicht bestätigt)** | reguläres Release, Latest | dieselbe Version, Dist-Tag `latest` |
+| Hotfix | `v3.<current>.<N>`, `N > 0` | selten, manuell | normale Veröffentlichung, Latest | dieselbe Version, Dist-Tag `latest` |
 | Major | `v4.0.0` | nur bei inkompatiblen Änderungen | reguläres Release | `latest` |
 
-`<next>` ist die höchste **veröffentlichte** v3-Minor-Version plus eins. Ein Nightly ist eine Vorschau auf das **nächste Weekly**. Daher basiert es auf dem höchsten Release-Tag; Pre-Releases werden ignoriert: Nach einem Hotfix `v3.1.1` ist das nächste Nightly weiterhin `v3.2.0-nightly.*`.
+`<next>` ist die höchste **veröffentlichte** Nebenversion v3 plus eins. Ein Nightly ist eine Vorschau auf das **nächste Weekly**. Daher basiert es auf dem höchsten Release-Tag (Vorabversionen werden ignoriert): Nach einem Hotfix `v3.1.1` ist das nächste Nightly weiterhin `v3.2.0-nightly.*`. Es muss eine höhere Version angeben, da eine Vorabversion vor der zugehörigen endgültigen Version einsortiert wird: `v3.0.0-nightly.<date>` würde vor `v3.0.0` einsortiert.
 
 **Eine Erhöhung der Minor-Version ist kein Feature-Meilenstein.** `v3.4.0` ist „das Weekly-Release nach `v3.3.0`“. Lesen Sie die Release Notes statt der Versionsnummer, um zu sehen, was sich geändert hat.
 
@@ -69,9 +67,9 @@ Release-Berechtigungen sind auf die Projektleitung beschränkt (siehe Governance
 Alles wird über **Nightly + Weekly Release v3** (`.github/workflows/nightly-release-v3.yml`) ausgeführt:
 
 - **Nightly (automatisch)** um 15:00 Uhr UTC. Wird übersprungen, wenn das Changelog für unveröffentlichte Änderungen leer ist.
-- **Weekly (automatisch)** um 20:00 Uhr Sydney-Zeit. GitHub-Cron unterstützt nur UTC. Daher werden zwei Cron-Jobs (um 09:00 und 10:00 Uhr UTC) geplant, und ein vorgeschalteter Prüfjob fährt nur fort, wenn es in Sydney 20:00 Uhr ist; dabei wird die Sommerzeit berücksichtigt. Das Weekly passiert das Release-Gate, wählt den neuesten erfolgreich geprüften Commit aus, erhöht die Minor-Version, versieht diesen Commit mit einem Tag, ohne das Changelog zu ändern, und kopiert anschließend die Versionsdateien zurück auf `master`.
+- **Weekly (automatisch)** um 20:00 Sydney-Zeit. GitHub-Cron unterstützt nur UTC. Daher werden zwei Cron-Jobs (09:00 und 10:00 UTC) geplant; ein vorgeschalteter Prüfjob fährt nur fort, wenn es in Sydney 20:00 ist (unter Berücksichtigung der Sommerzeit). Das Weekly durchläuft das Release-Gate, wählt den neuesten erfolgreichen Commit aus, erhöht die Nebenversion, versieht diesen Commit mit einem Tag, ohne das Changelog zu ändern, und aktualisiert anschließend auf `master` nur die Versionsfelder (`version.txt` und die Versionen der Runtime-Pakete). Dadurch bleiben nach dem ausgewählten Commit zusammengeführte Aktualisierungen von Abhängigkeiten und Lockfiles erhalten. npm veröffentlicht vom Tag, nicht von `master`.
 - **Manuell.** Führen Sie den Workflow mit `channel`, `dry_run` (standardmäßig aktiviert) und optional `release_version` aus. Ein Probelauf gibt Version, Art, GitHub-Flags, npm-Dist-Tag und Hinweise aus, ohne GitHub oder npm zu verändern.
-- **GA oder Hotfix.** Legen Sie `ref: releases/...` und `release_version` (`v3.0.0`, `v3.1.1`) fest. Der Release-Commit wird per Cherry-Pick zurück nach `master` übernommen.
+- **GA oder Hotfix.** Lege `release_version` fest (`v3.0.0`, `v3.1.1`). Für einen Hotfix einer älteren Versionslinie kann zusätzlich `ref: releases/...` festgelegt werden; der zugehörige Release-Commit wird per Cherry-Pick zurück nach `master` übernommen.
 
 Lokaler Probelauf: `cd v3/tasks/release && go run release.go --dry-run --channel weekly`; `go run release.go --print-policy v3.2.0-nightly.20261102` zeigt die abgeleiteten Flags an.
 
@@ -90,7 +88,7 @@ Der **wöchentliche Release** (niemals der Nightly-Build) verweigert das Setzen 
 3. offene Dependabot-Warnungen mit kritischem oder hohem Schweregrad, offene Code-Scanning-Warnungen mit kritischem oder hohem Schweregrad sowie alle offenen Secret-Scanning-Warnungen, **jedoch nur für ausgelieferten Code**. Warnungen, die sich ausschließlich unter `v3/examples/`, `v2/examples/`, `website/`, `docs/`, `.github/` oder in einem beliebigen `examples/`-Verzeichnis befinden, werden ignoriert (`SHIPPED_ALERT_IGNORE` in `v3/tasks/releasegate/main.go`, **vom Verantwortlichen zu prüfen**);
 4. Sicherheitshinweise des Repositorys, die sich noch im Status `triage` befinden.
 
-**Wer eine Sperre setzen darf.** Ein Label zählt nur, wenn das zugehörige neueste `labeled`-Ereignis (ohne späteres `unlabeled`) von einem Mitglied des `wailsapp/maintainers`-Teams oder von einem Mitwirkenden mit `maintain`-/`admin`-Berechtigung ausgelöst wurde. Wird dasselbe Label von einer anderen Person angewendet, wird es ignoriert und protokolliert, sodass Außenstehende einen Release weder sperren noch entsperren können. Das automatisch angewendete Label `high-priority` wird absichtlich **nicht** verwendet. Bot-Konten wie `taliesin-ai` bestehen die Zulassungsprüfung, wenn sie über `maintain` verfügen **(Entscheidung ausstehend: Bots zulassen oder ausschließen)**.
+**Wer einen Blocker setzen kann.** Ein Label zählt nur, wenn sein neuestes `labeled`-Ereignis (ohne ein späteres `unlabeled`-Ereignis) von einem Mitglied des Teams `wailsapp/maintainers` oder von einem Mitwirkenden mit der Berechtigung `maintain`/`admin` stammt. Dasselbe von einer anderen Person angewendete Label wird ignoriert und protokolliert, sodass Außenstehende eine Veröffentlichung weder blockieren noch die Blockierung aufheben können. Das automatisch angewendete Label `high-priority` wird bewusst **nicht** verwendet. Bot-Konten wie `taliesin-ai` passieren die Zulassungsliste, wenn sie über `maintain` verfügen; dies ist beabsichtigt, und der Triage-Agent darf Blocker-Labels mit entsprechenden Nachweisen anwenden.
 
 **Verhalten bei Fehlern.** Die Sperre schlägt **restriktiv** fehl: Wenn eine Warnungs-API oder die Zulassungsliste nicht gelesen werden kann, wird der wöchentliche Release abgebrochen. Bei einem Fehler setzt er kein Tag, schreibt die Liste einschließlich Links in die Job-Zusammenfassung und aktualisiert einen Kommentar im einzigen Issue „Weekly release status“, sofern die Repository-Variable `WEEKLY_STATUS_ISSUE` gesetzt ist.
 
