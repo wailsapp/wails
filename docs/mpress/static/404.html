@@ -9,41 +9,124 @@
   <title>Page not found | Wails</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <style>
-    :root { font-family: system-ui, sans-serif; color: #20232b; background: #fff; line-height: 1.6; }
-    * { box-sizing: border-box; }
-    body { margin: 0; }
-    main { max-width: 42rem; margin: 0 auto; padding: 4rem 1.5rem; }
-    .brand { display: inline-block; margin-bottom: 3rem; }
-    .brand img { display: block; width: 10rem; height: auto; }
-    .code { margin: 0; color: #b52222; font-size: 1rem; font-weight: 700; letter-spacing: .1em; }
-    h1 { margin: .5rem 0 1rem; font-size: clamp(2rem, 7vw, 3rem); line-height: 1.2; }
-    h2 { margin: 2rem 0 .5rem; font-size: 1.4rem; }
-    p { margin: 0 0 1rem; }
-    a { color: #a31d1d; text-underline-offset: .2em; }
-    a:focus-visible { outline: 3px solid currentColor; outline-offset: 5px; }
-    .button { display: inline-block; min-height: 44px; padding: .65rem 1rem; border: 1px solid currentColor; border-radius: .4rem; font-weight: 600; }
+    /* Colours, background and buttons follow the landing page (docs/mpress/custom.css). */
+    :root {
+      --bg: #ffffff;
+      --surface: #f6f7f9;
+      --text: #17181c;
+      --muted: #353841;
+      --border: #edeef3;
+      --accent-strong: hsl(0, 90%, 35%);
+      --on-accent: #ffffff;
+      --link: hsl(0, 90%, 45%);
+      --card: rgba(255, 255, 255, .78);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
     @media (prefers-color-scheme: dark) {
-      :root { color: #e6e6ea; background: #17181c; }
-      a, .code { color: #ffb4a8; }
+      :root {
+        --bg: #17181c;
+        --surface: #23262f;
+        --text: #ffffff;
+        --muted: #c1c3c8;
+        --border: #353841;
+        --accent-strong: hsl(0, 90%, 60%);
+        --on-accent: #17181c;
+        --link: hsl(0, 90%, 60%);
+        --card: rgba(35, 38, 47, .72);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { position: relative; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    /* The Digital Wales artwork behind the landing page. */
+    body::after {
+      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background: url("/digital_wales_master.webp") 50% 50% / cover no-repeat; opacity: .35;
+    }
+    body > * { position: relative; z-index: 0; }
+
+    header {
+      height: 64px; display: flex; align-items: center; gap: 1.5rem; padding: 0 1.5rem;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    header .brand img { display: block; width: 150px; height: auto; }
+    header nav { margin-left: auto; display: flex; gap: 1.25rem; }
+    header nav a { color: var(--link); font-weight: 600; text-decoration: none; }
+    header nav a:hover { text-decoration: underline; }
+
+    main { flex: 1; width: 100%; max-width: 60rem; margin: 0 auto; padding: 5rem 1.5rem 4rem; }
+    .intro { margin-bottom: 2.5rem; }
+    .intro .code { margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: .12em; color: var(--accent-strong); }
+    h1 { margin: .5rem 0 1rem; font-size: clamp(2.25rem, 6vw, 3.5rem); font-weight: 700; line-height: 1.15; }
+    .intro p.lead { margin: 0; max-width: 34rem; font-size: 1.15rem; color: var(--muted); }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1.25rem; }
+    .card {
+      display: flex; flex-direction: column; gap: .75rem; padding: 1.75rem;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    }
+    .card h2 { margin: 0; font-size: 1.25rem; }
+    .card p { margin: 0; color: var(--muted); }
+    .card .actions { margin-top: auto; padding-top: 1rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+
+    a { color: var(--link); text-underline-offset: .2em; }
+    /* Same as .mpress-frontmatter-hero-action on the landing page. */
+    .action {
+      display: inline-flex; align-items: center; gap: .5rem; min-height: 56px; padding: .75rem 1.25rem;
+      border: 1px solid var(--text); border-radius: 999px; background: transparent; color: var(--text);
+      font-size: 1rem; font-weight: 700; text-decoration: none;
+    }
+    .action.primary { border-color: var(--accent-strong); background: var(--accent-strong); color: var(--on-accent); }
+    .action:hover { opacity: .88; }
+    .action svg { flex: none; }
+    a:focus-visible { outline: 3px solid var(--link); outline-offset: 3px; }
+
+    @media (max-width: 30rem) {
+      header { padding: 0 1rem; }
+      main { padding-top: 3rem; }
+      .action { width: 100%; justify-content: center; }
     }
   </style>
 </head>
 <body>
-  <main>
+  <header>
     <a class="brand" href="/" aria-label="Wails documentation home">
       <picture>
         <source srcset="/assets/wails-logo-horizontal-dark.svg" media="(prefers-color-scheme: dark)">
-        <img src="/assets/wails-logo-horizontal-light.svg" alt="Wails" width="160" height="40">
+        <img src="/assets/wails-logo-horizontal-light.svg" alt="Wails" width="150" height="32">
       </picture>
     </a>
-    <p class="code">404</p>
-    <h1>We couldn’t find this page</h1>
-    <p>The link may be outdated, or the address may be incorrect.</p>
-    <h2>Looking for Wails v2?</h2>
-    <p>If you followed an older documentation link, you may be looking for the Wails v2 documentation. You can find it at <a href="https://v2.wails.io/">v2.wails.io</a>.</p>
-    <p><a class="button" id="v2-link" href="https://v2.wails.io/docs/introduction">Open Wails v2 documentation</a></p>
-    <h2>Working with Wails v3?</h2>
-    <p><a href="/">Go to the Wails v3 documentation home</a> or <a href="/quick-start/installation/">start with installation</a>.</p>
+    <nav aria-label="Primary navigation">
+      <a href="/quick-start/installation/">Docs</a>
+      <a href="/blog/">Blog</a>
+    </nav>
+  </header>
+  <main>
+    <div class="intro">
+      <p class="code">404</p>
+      <h1>We couldn’t find this page</h1>
+      <p class="lead">The link may be outdated, or the address may be incorrect.</p>
+    </div>
+    <div class="cards">
+      <section class="card">
+        <h2>Looking for Wails v2?</h2>
+        <p>Older documentation links point to the Wails v2 docs, which now live at <a href="https://v2.wails.io/">v2.wails.io</a>.</p>
+        <div class="actions">
+          <a class="action primary" id="v2-link" href="https://v2.wails.io/docs/introduction"><span>Open Wails v2 documentation</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Working with Wails v3?</h2>
+        <p>Start from the documentation home, or install Wails v3 and build your first app.</p>
+        <div class="actions">
+          <a class="action" href="/"><span>Documentation</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg></a>
+          <a class="action" href="/quick-start/installation/"><span>Installation</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </div>
+      </section>
+    </div>
   </main>
   <script>
     // Old wails.io links to v2-only pages (/docs/..., translated /de/docs/...,
@@ -55,7 +138,7 @@
       if (!v2Page) return;
       var link = document.getElementById("v2-link");
       link.href = "https://v2.wails.io" + path + location.search + location.hash;
-      link.textContent = "Open this page in the Wails v2 documentation";
+      link.firstChild.textContent = "Open this page in the v2 docs";
     })();
   </script>
 </body>
