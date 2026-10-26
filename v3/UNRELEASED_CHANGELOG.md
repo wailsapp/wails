@@ -25,6 +25,7 @@ After processing, the content will be moved to the main changelog and this file 
 <!-- Bug fixes -->
 - Fix Windows apps crashing with `panic: SetTextColor failed` when painting the application menu bar on some Windows builds: the menu bar draws on a valid device context or falls back to default drawing, `UAHMENUITEM.Position` now matches the C `int`, and menu painting never panics (#6311)
 - Keep the staged update safe while a restart is pending: a download or a second restart started during shutdown cannot delete or contend for the payload the swap helper is waiting to install by @julianstorer
+- Fix Windows apps crashing in `applyDarkMode` when `pkg/w32`'s init unloaded `uxtheme.dll` while its ordinal function pointers were still in use: the module is now kept loaded for the process lifetime (#6356)
 
 ## Deprecated
 <!-- Soon-to-be removed features -->
