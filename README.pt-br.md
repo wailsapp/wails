@@ -56,7 +56,7 @@ O Wails v3.0.0 é a versão estável para aplicativos de desktop no Windows, mac
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## Índice
 
@@ -100,7 +100,7 @@ isso antes de abrir um pedido de melhoria.
 
 ## Iniciando
 
-As instruções de instalação estão no [site oficial](https://v3.wails.io/quick-start/installation/).
+As instruções de instalação estão no [site oficial](https://wails.io/quick-start/installation/).
 
 ## Patrocinadores
 
@@ -108,7 +108,7 @@ Este projeto é apoiado por estas simpáticas pessoas/empresas:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+<img src="https://v2.wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
 ## Perguntas frequentes
@@ -138,7 +138,7 @@ Este projeto é apoiado por estas simpáticas pessoas/empresas:
 ## Colaboradores
 
 A lista de colaboradores está ficando grande demais para o arquivo readme! Todas as pessoas incríveis que contribuíram para o
-projeto tem sua própria página [aqui](https://wails.io/credits#contributors).
+projeto tem sua própria página [aqui](https://wails.io/credits/).
 
 ## Licença
 

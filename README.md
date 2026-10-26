@@ -94,10 +94,10 @@ Wails has two active versions:
 
 | Version | Status | Install | Docs |
 |---|---|---|---|
-| v2 | Stable | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
-| v3.0.0 | Stable | `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0` | [v3.wails.io](https://v3.wails.io/) |
+| v2 | Stable | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [v2.wails.io](https://v2.wails.io/) |
+| v3.0.0 | Stable | `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0` | [wails.io](https://wails.io/) |
 
-Full installation instructions are available for [v2](https://wails.io/docs/gettingstarted/installation) and [v3](https://v3.wails.io).
+Full installation instructions are available for [v2](https://v2.wails.io/docs/gettingstarted/installation) and [v3](https://wails.io).
 
 ## Sponsors
 
@@ -140,7 +140,7 @@ Thanks to [CodeRabbit](https://www.coderabbit.ai/oss) for supporting Wails with 
 To improve the v3 documentation, follow [Write documentation with M-Press](docs/mpress/content/contributing/documentation.md) for downloads, installation, preview and submitting a PR.
 
 The contributors list is getting too big for the readme! All the amazing people who have contributed to this
-project have their own page [here](https://wails.io/credits#contributors).
+project have their own page [here](https://wails.io/credits/).
 
 ## License
 

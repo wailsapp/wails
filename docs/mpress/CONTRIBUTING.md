@@ -3,7 +3,7 @@
 Use the [M-Press contributor walkthrough](content/contributing/documentation.md)
 for downloads, installation on macOS/Linux/Windows, live preview, authoring,
 validation, and submitting a pull request. The same guide is published at
-[Write documentation with M-Press](https://v3.wails.io/contributing/documentation/).
+[Write documentation with M-Press](https://wails.io/contributing/documentation/).
 
 Documentation-only corrections do not need a prior issue or a failing code test.
 Fork `wailsapp/wails`, then create your contribution branch from

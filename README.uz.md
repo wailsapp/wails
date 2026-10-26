@@ -57,7 +57,7 @@ Wails v3.0.0 — Windows, macOS va Linux ish stoli ilovalari uchun barqaror vers
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## Tarkib
 
@@ -102,7 +102,7 @@ Buni yaxshilash so'rovini ochishdan oldin.
 
 ## Ishni boshlash
 
-O'rnatish bo'yicha ko'rsatmalar [Rasmiy veb saytda](https://v3.wails.io/quick-start/installation/) mavjud.
+O'rnatish bo'yicha ko'rsatmalar [Rasmiy veb saytda](https://wails.io/quick-start/installation/) mavjud.
 
 ## Homiylar
 
@@ -110,7 +110,7 @@ Ushbu loyiha quyidagi mehribon odamlar / kompaniyalar tomonidan qo'llab-quvvatla
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+<img src="https://v2.wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
 ## FAQ
@@ -140,7 +140,7 @@ Ushbu loyiha quyidagi mehribon odamlar / kompaniyalar tomonidan qo'llab-quvvatla
 ## Ishtirokchilar
 
 Ishtirokchilar roʻyxati oʻqish uchun juda kattalashib bormoqda! Bunga hissa qo'shgan barcha ajoyib odamlarning
-loyihada o'z sahifasi bor [bu yerga](https://wails.io/credits#contributors).
+loyihada o'z sahifasi bor [bu yerga](https://wails.io/credits/).
 
 ## Litsenziya
 

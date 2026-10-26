@@ -56,7 +56,7 @@ Wails v3.0.0 — стабильная версия для настольных �
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## Содержание
 
@@ -101,7 +101,7 @@ Roadmap проекта вы можете найти [здесь](https://github.
 
 ## Быстрый старт
 
-Инструкции по установке находятся на [официальном сайте](https://v3.wails.io/quick-start/installation/).
+Инструкции по установке находятся на [официальном сайте](https://wails.io/quick-start/installation/).
 
 ## Спонсоры
 
@@ -109,7 +109,7 @@ Roadmap проекта вы можете найти [здесь](https://github.
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+<img src="https://v2.wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
 ## FAQ
@@ -140,7 +140,7 @@ Roadmap проекта вы можете найти [здесь](https://github.
 ## Контрибьюторы
 
 Список участников слишком велик для README! У всех замечательных людей, которые внесли свой вклад в этот
-проект, есть своя [страничка](https://wails.io/credits#contributors).
+проект, есть своя [страничка](https://wails.io/credits/).
 
 ## Лицензия
 

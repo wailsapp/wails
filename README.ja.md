@@ -59,7 +59,7 @@ Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケ�
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## 目次
 
@@ -104,7 +104,7 @@ Wails では Go のコードとウェブフロントエンドを単一のバイ�
 
 ## 始め方
 
-インストール方法は[公式サイト](https://v3.wails.io/quick-start/installation/)に掲載されています。
+インストール方法は[公式サイト](https://wails.io/quick-start/installation/)に掲載されています。
 
 ## スポンサー
 
@@ -138,7 +138,7 @@ Wails では Go のコードとウェブフロントエンドを単一のバイ�
 ## コントリビューター
 
 貢献してくれた方のリストが大きくなりすぎて、readme に入りきらなくなりました！  
-このプロジェクトに貢献してくれた素晴らしい方々のページは[こちら](https://wails.io/credits#contributors)です。
+このプロジェクトに貢献してくれた素晴らしい方々のページは[こちら](https://wails.io/credits/)です。
 
 ## ライセンス
 

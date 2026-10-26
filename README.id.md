@@ -95,10 +95,10 @@ Wails memiliki dua versi aktif:
 
 | Versi | Status | Instalasi | Dokumentasi |
 |---|---|---|---|
-| v2 | Stabil | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [wails.io](https://wails.io/) |
-| v3.0.0 | Stabil | `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0` | [v3.wails.io](https://v3.wails.io/) |
+| v2 | Stabil | `go install github.com/wailsapp/wails/v2/cmd/wails@latest` | [v2.wails.io](https://v2.wails.io/) |
+| v3.0.0 | Stabil | `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0` | [wails.io](https://wails.io/) |
 
-Petunjuk instalasi lengkap tersedia untuk [v2](https://wails.io/docs/gettingstarted/installation) dan [v3](https://v3.wails.io).
+Petunjuk instalasi lengkap tersedia untuk [v2](https://v2.wails.io/docs/gettingstarted/installation) dan [v3](https://wails.io).
 
 ## Sponsor
 
@@ -137,7 +137,7 @@ Proyek ini didukung oleh orang-orang / perusahaan baik hati ini:
 ## Kontributor
 
 Daftar kontributor sudah terlalu panjang untuk readme! Semua orang luar biasa yang telah berkontribusi pada
-proyek ini memiliki halaman mereka sendiri [di sini](https://wails.io/credits#contributors).
+proyek ini memiliki halaman mereka sendiri [di sini](https://wails.io/credits/).
 
 ## Lisensi
 

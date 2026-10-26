@@ -57,7 +57,7 @@ Wails v3.0.0 est la version stable pour les applications de bureau sous Windows,
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0
 ```
 
-[v3.wails.io](https://v3.wails.io/) · [v2.wails.io](https://v2.wails.io/)
+[wails.io](https://wails.io/) · [v2.wails.io](https://v2.wails.io/)
 
 ## Sommaire
 
@@ -98,7 +98,7 @@ La feuille de route du projet peut être consultée [ici](https://github.com/wai
 
 ## Démarrage
 
-Les instructions d'installation se trouvent sur le site [site officiel](https://v3.wails.io/quick-start/installation/).
+Les instructions d'installation se trouvent sur le site [site officiel](https://wails.io/quick-start/installation/).
 
 ## Les sponsors
 
@@ -106,7 +106,7 @@ Ce projet est soutenu par ces personnes aimables et entreprises:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 <p align="center">
-<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+<img src="https://v2.wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
 
 ## Foire aux questions
@@ -131,7 +131,7 @@ Ce projet est soutenu par ces personnes aimables et entreprises:
 
 ## Les contributeurs
 
-La liste des contributeurs devient trop importante pour le readme ! Toutes les personnes extraordinaires qui ont contribué à ce projet ont leur propre page [ici](https://wails.io/credits#contributors).
+La liste des contributeurs devient trop importante pour le readme ! Toutes les personnes extraordinaires qui ont contribué à ce projet ont leur propre page [ici](https://wails.io/credits/).
 
 ## License
 
